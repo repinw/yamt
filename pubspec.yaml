@@ -9,12 +9,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   go_router: ^17.1.0
 
 #riverpod
   riverpod: ^3.2.1
   riverpod_annotation: ^4.0.2
   flutter_riverpod: ^3.2.1
+  firebase_core: ^4.4.0
+  firebase_auth: ^6.1.4
+  form_validator: ^2.1.1
 
 
 dev_dependencies:
@@ -25,4 +30,5 @@ dev_dependencies:
   build_runner: ^2.11.1
 
 flutter:
+  generate: true
   uses-material-design: true

@@ -1,0 +1,16 @@
+{
+  "@@locale": "en",
+  "welcomeTitle": "Welcome",
+  "appSubtitle": "Yet Another Meal Tracker",
+  "login": "Login",
+  "register": "Register",
+  "loginAsGuest": "Login as guest",
+  "createAccount": "Create account",
+  "authSwitchToRegister": "Don't have an account? Register",
+  "authSwitchToLogin": "Already have an account? Login",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "confirmPasswordLabel": "Confirm password",
+  "validationPasswordsDoNotMatch": "Passwords do not match",
+  "authFailed": "Authentication failed"
+}
