@@ -1,14 +1,19 @@
 import os
+import sys
 import google.generativeai as genai
 from github import Github
 
 # --- CONFIG ---
-MODEL_NAME = 'gemini-3-pro-preview' 
+MODEL_NAME = 'gemini-3-pro-preview'
+REVIEW_HEADER = f'## 🤖 Gemini Review ({MODEL_NAME})\n'
+REVIEW_MARKER = '## 🤖 Gemini Review ('
+MAX_GITHUB_COMMENT_CHARS = 60000
+TRUNCATION_NOTICE = '\n\n_Review was truncated to fit GitHub comment limits._'
 
 api_key = os.environ.get('GEMINI_API_KEY')
 if not api_key:
     print("❌ Kein API Key gefunden!")
-    exit(1)
+    sys.exit(1)
 
 genai.configure(api_key=api_key)
 
@@ -20,7 +25,12 @@ pr = repo.get_pull(int(os.environ['PR_NUMBER']))
 print("🧹 Suche nach alten Bot-Kommentaren...")
 try:
     for comment in pr.get_issue_comments():
-        if "🤖 Gemini Review" in comment.body:
+        comment_body = comment.body or ""
+        author_login = getattr(comment.user, "login", "")
+        is_own_review_comment = (
+            REVIEW_MARKER in comment_body and author_login == "github-actions[bot]"
+        )
+        if is_own_review_comment:
             comment.delete()
             print(f"   Alten Kommentar {comment.id} gelöscht.")
 except Exception as e:
@@ -47,7 +57,7 @@ for file in pr.get_files():
 
 if not diff_text:
     print("✅ Keine review-relevanten Änderungen (Code) gefunden.")
-    exit(0)
+    sys.exit(0)
 
 # --- 3. PROMPT ---
 # Optimierter Prompt für Gemini 3 Context
@@ -95,12 +105,21 @@ try:
     }
     
     response = model.generate_content(prompt, generation_config=generation_config)
-    review_body = response.text
+    review_body = (response.text or "").strip()
+    if not review_body:
+        review_body = "⚠️ Gemini returned an empty response."
 except Exception as e:
     review_body = f"❌ **KI-Fehler:** {str(e)}"
     print(review_body)
 
 # --- 5. POSTEN ---
-header = f'## 🤖 Gemini Review ({MODEL_NAME})\n'
-pr.create_issue_comment(header + review_body)
+max_body_len = MAX_GITHUB_COMMENT_CHARS - len(REVIEW_HEADER)
+if len(review_body) > max_body_len:
+    keep_len = max_body_len - len(TRUNCATION_NOTICE)
+    if keep_len > 0:
+        review_body = review_body[:keep_len] + TRUNCATION_NOTICE
+    else:
+        review_body = TRUNCATION_NOTICE.strip()
+
+pr.create_issue_comment(REVIEW_HEADER + review_body)
 print("✅ Review gepostet!")
