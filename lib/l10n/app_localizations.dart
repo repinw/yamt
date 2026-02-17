@@ -62,8 +62,7 @@ import 'app_localizations_en.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
-    Locale('en'),
+    Locale('en')
   ];
 
   /// No description provided for @welcomeTitle.
@@ -103,6 +100,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Welcome'**
   String get welcomeTitle;
+
+  /// No description provided for @homeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get homeTitle;
 
   /// No description provided for @appSubtitle.
   ///
@@ -127,6 +130,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Login as guest'**
   String get loginAsGuest;
+
+  /// No description provided for @loginWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Login with Google'**
+  String get loginWithGoogle;
+
+  /// No description provided for @registerWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Register with Google'**
+  String get registerWithGoogle;
 
   /// No description provided for @createAccount.
   ///
@@ -175,10 +190,105 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Authentication failed'**
   String get authFailed;
+
+  /// No description provided for @authErrorInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'The email address is not valid.'**
+  String get authErrorInvalidEmail;
+
+  /// No description provided for @authErrorUserDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'This user account has been disabled.'**
+  String get authErrorUserDisabled;
+
+  /// No description provided for @authErrorUserNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No account found for this email.'**
+  String get authErrorUserNotFound;
+
+  /// No description provided for @authErrorWrongPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'The password is incorrect.'**
+  String get authErrorWrongPassword;
+
+  /// No description provided for @authErrorInvalidCredential.
+  ///
+  /// In en, this message translates to:
+  /// **'The login credentials are invalid.'**
+  String get authErrorInvalidCredential;
+
+  /// No description provided for @authErrorEmailAlreadyInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'An account already exists for this email.'**
+  String get authErrorEmailAlreadyInUse;
+
+  /// No description provided for @authErrorWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'The password is too weak.'**
+  String get authErrorWeakPassword;
+
+  /// No description provided for @authErrorOperationNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'This sign-in method is not enabled.'**
+  String get authErrorOperationNotAllowed;
+
+  /// No description provided for @authErrorTooManyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests. Please try again later.'**
+  String get authErrorTooManyRequests;
+
+  /// No description provided for @authErrorNetworkRequestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Please check your connection.'**
+  String get authErrorNetworkRequestFailed;
+
+  /// No description provided for @authErrorRequiresRecentLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Please log in again to continue.'**
+  String get authErrorRequiresRecentLogin;
+
+  /// No description provided for @authErrorAccountExistsWithDifferentCredential.
+  ///
+  /// In en, this message translates to:
+  /// **'An account already exists with a different sign-in method.'**
+  String get authErrorAccountExistsWithDifferentCredential;
+
+  /// No description provided for @authErrorCredentialAlreadyInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'This credential is already used by another account.'**
+  String get authErrorCredentialAlreadyInUse;
+
+  /// No description provided for @authErrorProviderAlreadyLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'This sign-in provider is already linked to your account.'**
+  String get authErrorProviderAlreadyLinked;
+
+  /// No description provided for @authErrorGoogleSignInCanceled.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in failed. Please try again.'**
+  String get authErrorGoogleSignInCanceled;
+
+  /// No description provided for @authErrorGoogleIdTokenMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in did not return a valid token.'**
+  String get authErrorGoogleIdTokenMissing;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -187,26 +297,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['de', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['de', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'de':
-      return AppLocalizationsDe();
-    case 'en':
-      return AppLocalizationsEn();
+    case 'de': return AppLocalizationsDe();
+    case 'en': return AppLocalizationsEn();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

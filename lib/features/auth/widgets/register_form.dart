@@ -1,11 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/auth/provider/auth_form_controller.dart';
 import 'package:yamt/features/auth/widgets/auth_form_components.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 class RegisterForm extends ConsumerStatefulWidget {
   const RegisterForm({super.key});
@@ -20,8 +17,6 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  bool _isLoading = false;
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -35,39 +30,18 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     if (formState == null || !formState.validate()) {
       return;
     }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    final auth = ref.read(firebaseAuthProvider);
-
-    try {
-      await auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-
-      if (!mounted) return;
-      context.go(AppRoutes.welcome);
-    } on FirebaseAuthException catch (error) {
-      if (!mounted) return;
-      final message = error.message ?? AppLocalizations.of(context)!.authFailed;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
+    await ref
+        .read(authFormControllerProvider.notifier)
+        .createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isLoading = ref.watch(authFormControllerProvider).isLoading;
     final emailValidator = buildEmailValidator(context);
     final passwordValidator = buildPasswordValidator(context);
     final confirmPasswordValidator = buildConfirmPasswordValidator(
@@ -99,7 +73,7 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
           ),
           const SizedBox(height: 20),
           AuthSubmitButton(
-            isLoading: _isLoading,
+            isLoading: isLoading,
             onPressed: _submit,
             label: l10n.createAccount,
           ),

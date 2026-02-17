@@ -46,43 +46,53 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1081825170446',
     projectId: 'mealtrack-4b239',
     authDomain: 'mealtrack-4b239.firebaseapp.com',
+    databaseURL: 'https://mealtrack-4b239-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'mealtrack-4b239.firebasestorage.app',
     measurementId: 'G-FKNDX9FM4M',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyABE2n8tu6VQzxVi5eWlEMilapAgd0ddzU',
-    appId: '1:1081825170446:android:7e36f8505733fbcbfc985f',
+    appId: '1:1081825170446:android:1cdfeec570d1806dfc985f',
     messagingSenderId: '1081825170446',
     projectId: 'mealtrack-4b239',
+    databaseURL: 'https://mealtrack-4b239-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'mealtrack-4b239.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyB38XzsVo2n44ug8NRqUm-9KWPFl6g2ItM',
-    appId: '1:1081825170446:ios:38cf9c851ee1c541fc985f',
+    appId: '1:1081825170446:ios:c050f165faab6af0fc985f',
     messagingSenderId: '1081825170446',
     projectId: 'mealtrack-4b239',
+    databaseURL: 'https://mealtrack-4b239-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'mealtrack-4b239.firebasestorage.app',
-    iosBundleId: 'com.example.mealtrack',
+    androidClientId: '1081825170446-tnn6jbopa129bhtr621m3p1qrr9ds4em.apps.googleusercontent.com',
+    iosClientId: '1081825170446-ll4e5o6s18a7quu7hohm8pdhs7jhumrf.apps.googleusercontent.com',
+    iosBundleId: 'com.example.yamt',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyB38XzsVo2n44ug8NRqUm-9KWPFl6g2ItM',
-    appId: '1:1081825170446:ios:38cf9c851ee1c541fc985f',
+    appId: '1:1081825170446:ios:c050f165faab6af0fc985f',
     messagingSenderId: '1081825170446',
     projectId: 'mealtrack-4b239',
+    databaseURL: 'https://mealtrack-4b239-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'mealtrack-4b239.firebasestorage.app',
-    iosBundleId: 'com.example.mealtrack',
+    androidClientId: '1081825170446-tnn6jbopa129bhtr621m3p1qrr9ds4em.apps.googleusercontent.com',
+    iosClientId: '1081825170446-ll4e5o6s18a7quu7hohm8pdhs7jhumrf.apps.googleusercontent.com',
+    iosBundleId: 'com.example.yamt',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyDcVFS2UJg6VAXu9DmAHrN9LlDWDQgUIfY',
-    appId: '1:1081825170446:web:d7ee2415970da130fc985f',
+    apiKey: 'AIzaSyCUWIw3J9lxFmzdWqN-vK_6Q4qQkB-xmt8',
+    appId: '1:1081825170446:web:774cdfd8b990040dfc985f',
     messagingSenderId: '1081825170446',
     projectId: 'mealtrack-4b239',
     authDomain: 'mealtrack-4b239.firebaseapp.com',
+    databaseURL: 'https://mealtrack-4b239-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'mealtrack-4b239.firebasestorage.app',
-    measurementId: 'G-V11TP1119T',
+    measurementId: 'G-TVHEZFNPKR',
   );
+
 }

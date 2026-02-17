@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/auth_page.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
+import 'package:yamt/features/home/home_page.dart';
 
 part 'app_router.g.dart';
 
@@ -18,6 +19,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.welcome,
         builder: (context, state) => const WelcomePage(),
+      ),
+      GoRoute(
+        path: AppRoutes.home,
+        builder: (context, state) => const HomePage(),
       ),
       GoRoute(
         path: AppRoutes.auth,

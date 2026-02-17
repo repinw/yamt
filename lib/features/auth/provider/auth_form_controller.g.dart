@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'guest_auth_controller.dart';
+part of 'auth_form_controller.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,34 +9,34 @@ part of 'guest_auth_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(GuestAuthController)
-final guestAuthControllerProvider = GuestAuthControllerProvider._();
+@ProviderFor(AuthFormController)
+final authFormControllerProvider = AuthFormControllerProvider._();
 
-final class GuestAuthControllerProvider
-    extends $AsyncNotifierProvider<GuestAuthController, void> {
-  GuestAuthControllerProvider._()
+final class AuthFormControllerProvider
+    extends $AsyncNotifierProvider<AuthFormController, void> {
+  AuthFormControllerProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'guestAuthControllerProvider',
+        name: r'authFormControllerProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$guestAuthControllerHash();
+  String debugGetCreateSourceHash() => _$authFormControllerHash();
 
   @$internal
   @override
-  GuestAuthController create() => GuestAuthController();
+  AuthFormController create() => AuthFormController();
 }
 
-String _$guestAuthControllerHash() =>
-    r'41bccfb4f17f82ec68576e910c70a7c5d2b5b659';
+String _$authFormControllerHash() =>
+    r'040a1e62855e8d5d21d965286bec4b4980050522';
 
-abstract class _$GuestAuthController extends $AsyncNotifier<void> {
+abstract class _$AuthFormController extends $AsyncNotifier<void> {
   FutureOr<void> build();
   @$mustCallSuper
   @override

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/auth/provider/auth_repository.dart';
 
 part 'guest_auth_controller.g.dart';
 
@@ -13,7 +13,7 @@ class GuestAuthController extends _$GuestAuthController {
   Future<void> signInAnonymously() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(
-      () => ref.read(firebaseAuthProvider).signInAnonymously(),
+      () => ref.read(authRepositoryProvider).signInAnonymously(),
     );
   }
 }
