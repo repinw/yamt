@@ -155,18 +155,37 @@ void main() {
 
     final router = container.read(appRouterProvider);
     expect(router.state.uri.path, AppRoutes.homeInventory);
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text('Inventory'),
+      ),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
     await tester.pumpAndSettle();
     expect(router.state.uri.path, AppRoutes.homeShopping);
+    expect(
+      find.descendant(of: find.byType(AppBar), matching: find.text('Shopping')),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byIcon(Icons.local_fire_department_outlined));
     await tester.pumpAndSettle();
     expect(router.state.uri.path, AppRoutes.homeCalories);
+    expect(
+      find.descendant(of: find.byType(AppBar), matching: find.text('Calories')),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
     expect(router.state.uri.path, AppRoutes.homeSettings);
+    expect(
+      find.descendant(of: find.byType(AppBar), matching: find.text('Settings')),
+      findsOneWidget,
+    );
     expect(find.text('Language'), findsOneWidget);
     expect(find.text('Notifications'), findsOneWidget);
     expect(find.text('About'), findsOneWidget);
