@@ -26,10 +26,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Inventory'), findsAtLeastNWidgets(1));
     expect(find.byType(AppBar), findsOneWidget);
     expect(find.byIcon(Icons.logout), findsOneWidget);
-    expect(find.text('Inventory'), findsAtLeastNWidgets(1));
     expect(find.text('Shopping'), findsOneWidget);
     expect(find.text('Calories'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);

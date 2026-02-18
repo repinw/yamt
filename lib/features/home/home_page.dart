@@ -26,13 +26,28 @@ class HomePage extends ConsumerWidget {
     );
   }
 
+  String _titleForTab(AppLocalizations l10n) {
+    switch (navigationShell.currentIndex) {
+      case 0:
+        return l10n.homeInventory;
+      case 1:
+        return l10n.homeShopping;
+      case 2:
+        return l10n.homeCalories;
+      case 3:
+        return l10n.homeSettings;
+      default:
+        return l10n.homeTitle;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.homeTitle),
+        title: Text(_titleForTab(l10n)),
         actions: [
           IconButton(
             tooltip: 'Debug logout',

@@ -6,6 +6,7 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/home_tab_page.dart';
+import 'package:yamt/features/settings/settings_page.dart';
 
 part 'app_router.g.dart';
 
@@ -89,8 +90,7 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.homeSettings,
-                builder: (context, state) =>
-                    const HomeTabPage(tab: HomeTabType.settings),
+                builder: (context, state) => const SettingsPage(),
               ),
             ],
           ),
