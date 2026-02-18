@@ -46,3 +46,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local AI agent instructions (private, do not commit)
+AGENTS.md
+
+AGENTS.md.bk

@@ -131,6 +131,18 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get homeSettings;
 
+  /// No description provided for @homeQuickActionTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick action'**
+  String get homeQuickActionTooltip;
+
+  /// No description provided for @homeQuickActionTapped.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick action tapped'**
+  String get homeQuickActionTapped;
+
   /// No description provided for @settingsLanguageTitle.
   ///
   /// In en, this message translates to:
@@ -142,6 +154,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose app language'**
   String get settingsLanguageSubtitle;
+
+  /// No description provided for @settingsThemeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsThemeTitle;
+
+  /// No description provided for @settingsThemeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsThemeSystem;
+
+  /// No description provided for @settingsThemeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get settingsThemeLight;
+
+  /// No description provided for @settingsThemeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsThemeDark;
+
+  /// No description provided for @settingsColorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent color'**
+  String get settingsColorTitle;
+
+  /// No description provided for @settingsColorLime.
+  ///
+  /// In en, this message translates to:
+  /// **'Lime'**
+  String get settingsColorLime;
+
+  /// No description provided for @settingsColorBlue.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get settingsColorBlue;
+
+  /// No description provided for @settingsColorTeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Teal'**
+  String get settingsColorTeal;
+
+  /// No description provided for @settingsColorPink.
+  ///
+  /// In en, this message translates to:
+  /// **'Pink'**
+  String get settingsColorPink;
+
+  /// No description provided for @settingsColorOrange.
+  ///
+  /// In en, this message translates to:
+  /// **'Orange'**
+  String get settingsColorOrange;
 
   /// No description provided for @settingsNotificationsTitle.
   ///
@@ -196,6 +268,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Account linked successfully.'**
   String get accountPageLinkSuccess;
+
+  /// No description provided for @accountPageLinkNotCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Account linking was not completed. Please try again.'**
+  String get accountPageLinkNotCompleted;
+
+  /// No description provided for @accountPageLinkConflictTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Google account already in use'**
+  String get accountPageLinkConflictTitle;
+
+  /// No description provided for @accountPageLinkConflictDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This Google account is already linked to another profile. Choose how to continue.'**
+  String get accountPageLinkConflictDescription;
+
+  /// No description provided for @accountPageLinkConflictOverwriteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite with this guest'**
+  String get accountPageLinkConflictOverwriteAction;
+
+  /// No description provided for @accountPageLinkConflictOverwriteSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this guest account and replace the old Google-linked account.'**
+  String get accountPageLinkConflictOverwriteSubtitle;
+
+  /// No description provided for @accountPageLinkConflictDeleteGuestAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete guest and sign in'**
+  String get accountPageLinkConflictDeleteGuestAction;
+
+  /// No description provided for @accountPageLinkConflictDeleteGuestSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this guest account and continue with the existing Google account.'**
+  String get accountPageLinkConflictDeleteGuestSubtitle;
+
+  /// No description provided for @accountPageLinkConflictOverwriteDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Google account moved to this guest account.'**
+  String get accountPageLinkConflictOverwriteDone;
+
+  /// No description provided for @accountPageLinkConflictDeleteGuestDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest account deleted. Signed in with Google.'**
+  String get accountPageLinkConflictDeleteGuestDone;
+
+  /// No description provided for @accountPageGuestSessionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'This action is only available for guest accounts.'**
+  String get accountPageGuestSessionRequired;
 
   /// No description provided for @accountPageSignOut.
   ///
@@ -418,6 +550,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Google sign-in did not return a valid token.'**
   String get authErrorGoogleIdTokenMissing;
+
+  /// No description provided for @commonNotImplementedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not implemented yet'**
+  String get commonNotImplementedYet;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

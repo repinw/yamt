@@ -1,0 +1,102 @@
+import 'package:flutter/widgets.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+import 'package:yamt/l10n/app_localizations_de.dart';
+import 'package:yamt/l10n/app_localizations_en.dart';
+
+void _assertAllGettersReturnText(AppLocalizations l10n) {
+  final values = <String>[
+    l10n.welcomeTitle,
+    l10n.homeTitle,
+    l10n.homeInventory,
+    l10n.homeShopping,
+    l10n.homeCalories,
+    l10n.homeSettings,
+    l10n.homeQuickActionTooltip,
+    l10n.homeQuickActionTapped,
+    l10n.settingsLanguageTitle,
+    l10n.settingsLanguageSubtitle,
+    l10n.settingsThemeTitle,
+    l10n.settingsThemeSystem,
+    l10n.settingsThemeLight,
+    l10n.settingsThemeDark,
+    l10n.settingsColorTitle,
+    l10n.settingsColorLime,
+    l10n.settingsColorBlue,
+    l10n.settingsColorTeal,
+    l10n.settingsColorPink,
+    l10n.settingsColorOrange,
+    l10n.settingsNotificationsTitle,
+    l10n.settingsNotificationsSubtitle,
+    l10n.settingsAccountTitle,
+    l10n.settingsAccountSubtitle,
+    l10n.accountPageNoSession,
+    l10n.accountPageGuestTitle,
+    l10n.accountPageGuestDescription,
+    l10n.accountPageLinkGoogle,
+    l10n.accountPageLinkSuccess,
+    l10n.accountPageLinkNotCompleted,
+    l10n.accountPageLinkConflictTitle,
+    l10n.accountPageLinkConflictDescription,
+    l10n.accountPageLinkConflictOverwriteAction,
+    l10n.accountPageLinkConflictOverwriteSubtitle,
+    l10n.accountPageLinkConflictDeleteGuestAction,
+    l10n.accountPageLinkConflictDeleteGuestSubtitle,
+    l10n.accountPageLinkConflictOverwriteDone,
+    l10n.accountPageLinkConflictDeleteGuestDone,
+    l10n.accountPageGuestSessionRequired,
+    l10n.accountPageSignOut,
+    l10n.accountPageDisplayName,
+    l10n.accountPageEmail,
+    l10n.accountPageUserId,
+    l10n.accountPageNotSet,
+    l10n.settingsAboutTitle,
+    l10n.settingsAboutSubtitle,
+    l10n.appSubtitle,
+    l10n.login,
+    l10n.register,
+    l10n.loginAsGuest,
+    l10n.loginWithGoogle,
+    l10n.registerWithGoogle,
+    l10n.createAccount,
+    l10n.authSwitchToRegister,
+    l10n.authSwitchToLogin,
+    l10n.emailLabel,
+    l10n.passwordLabel,
+    l10n.confirmPasswordLabel,
+    l10n.validationPasswordsDoNotMatch,
+    l10n.authFailed,
+    l10n.authErrorInvalidEmail,
+    l10n.authErrorUserDisabled,
+    l10n.authErrorUserNotFound,
+    l10n.authErrorWrongPassword,
+    l10n.authErrorInvalidCredential,
+    l10n.authErrorEmailAlreadyInUse,
+    l10n.authErrorWeakPassword,
+    l10n.authErrorOperationNotAllowed,
+    l10n.authErrorTooManyRequests,
+    l10n.authErrorNetworkRequestFailed,
+    l10n.authErrorRequiresRecentLogin,
+    l10n.authErrorAccountExistsWithDifferentCredential,
+    l10n.authErrorCredentialAlreadyInUse,
+    l10n.authErrorProviderAlreadyLinked,
+    l10n.authErrorGoogleSignInCanceled,
+    l10n.authErrorGoogleIdTokenMissing,
+  ];
+
+  expect(values.every((text) => text.isNotEmpty), isTrue);
+}
+
+void main() {
+  test('all English and German localization getters return text', () {
+    _assertAllGettersReturnText(AppLocalizationsEn());
+    _assertAllGettersReturnText(AppLocalizationsDe());
+  });
+
+  test('lookupAppLocalizations throws for unsupported locale', () {
+    expect(
+      () => lookupAppLocalizations(const Locale('fr')),
+      throwsA(isA<FlutterError>()),
+    );
+  });
+}

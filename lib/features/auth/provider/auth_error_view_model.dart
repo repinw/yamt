@@ -12,7 +12,9 @@ class AuthErrorViewModel {
 
   String messageFor({required AppLocalizations l10n, required Object error}) {
     if (error is FirebaseAuthException) {
-      return _firebaseAuthMessage(l10n, error.code);
+      return _firebaseAuthMessage(l10n, error.code) ??
+          error.message ??
+          l10n.authFailed;
     }
     if (error is GoogleSignInException) {
       return error.description ?? l10n.authFailed;
@@ -20,7 +22,7 @@ class AuthErrorViewModel {
     return l10n.authFailed;
   }
 
-  String _firebaseAuthMessage(AppLocalizations l10n, String code) {
+  String? _firebaseAuthMessage(AppLocalizations l10n, String code) {
     switch (code) {
       case 'invalid-email':
         return l10n.authErrorInvalidEmail;
@@ -54,8 +56,14 @@ class AuthErrorViewModel {
         return l10n.authErrorGoogleSignInCanceled;
       case 'google-id-token-missing':
         return l10n.authErrorGoogleIdTokenMissing;
+      case 'no-current-user':
+        return l10n.accountPageNoSession;
+      case 'guest-session-required':
+        return l10n.accountPageGuestSessionRequired;
+      case 'link-not-completed':
+        return l10n.accountPageLinkNotCompleted;
       default:
-        return l10n.authFailed;
+        return null;
     }
   }
 }

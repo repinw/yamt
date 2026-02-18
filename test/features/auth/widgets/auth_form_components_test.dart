@@ -3,8 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/auth/widgets/auth_form_components.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-Widget _testHarness(Widget child) {
+Widget _testHarness(Widget child, {Locale? locale}) {
   return MaterialApp(
+    locale: locale,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(body: child),
@@ -46,5 +47,38 @@ void main() {
 
     expect(validator('secret12'), 'no match');
     expect(validator('secret123'), isNull);
+  });
+
+  testWidgets('validator locale resolution handles region locale fallback', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _testHarness(
+        const SizedBox(key: Key('root')),
+        locale: const Locale('de', 'AT'),
+      ),
+    );
+    final context = tester.element(find.byKey(const Key('root')));
+
+    final validator = buildEmailValidator(context);
+
+    expect(validator('not-an-email'), isNotNull);
+  });
+
+  testWidgets('validator locale resolution falls back to english', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _testHarness(
+        const SizedBox(key: Key('root')),
+        locale: const Locale('zz'),
+      ),
+    );
+    final context = tester.element(find.byKey(const Key('root')));
+
+    final validator = buildEmailValidator(context);
+
+    expect(validator('not-an-email'), isNotNull);
+    expect(validator('valid@example.com'), isNull);
   });
 }

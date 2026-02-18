@@ -9,7 +9,7 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 
 part 'google_auth_controller.g.dart';
 
-@Riverpod(keepAlive: true)
+@riverpod
 Future<GoogleSignIn> googleSignIn(Ref ref) async {
   final serverClientId =
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android
@@ -17,7 +17,9 @@ Future<GoogleSignIn> googleSignIn(Ref ref) async {
       : GoogleSignInConfig.serverClientId;
   final signIn = GoogleSignIn.instance;
   await signIn.initialize(
+    // coverage:ignore-start
     clientId: kIsWeb ? GoogleSignInConfig.webClientId : null,
+    // coverage:ignore-end
     serverClientId: serverClientId,
   );
   return signIn;
@@ -29,24 +31,41 @@ class GoogleAuthController extends _$GoogleAuthController {
   FutureOr<void> build() {}
 
   Future<void> signInWithGoogle() async {
-    state = const AsyncLoading();
-    try {
-      final googleSignIn = await ref.read(googleSignInProvider.future);
-      final googleUser = await googleSignIn.authenticate();
-      final googleAuth = googleUser.authentication;
-      final idToken = googleAuth.idToken;
+    await _runGoogleAuthFlow((credential) async {
+      if (!ref.mounted) return;
+      await ref.read(firebaseAuthProvider).signInWithCredential(credential);
+    }, false);
+  }
 
-      if (idToken == null || idToken.isEmpty) {
+  Future<void> linkCurrentUserWithGoogle() async {
+    await _runGoogleAuthFlow((credential) async {
+      if (!ref.mounted) return;
+      final user = ref.read(firebaseAuthProvider).currentUser;
+      if (user == null) {
         throw FirebaseAuthException(
-          code: 'google-id-token-missing',
-          message: 'Missing Google ID token.',
+          code: 'no-current-user',
+          message: 'No authenticated user to link.',
         );
       }
+      await user.linkWithCredential(credential);
+    }, true);
+  }
 
-      final credential = GoogleAuthProvider.credential(idToken: idToken);
-      await ref.read(firebaseAuthProvider).signInWithCredential(credential);
+  Future<void> _runGoogleAuthFlow(
+    Future<void> Function(AuthCredential credential) action,
+    bool rethrowErrors,
+  ) async {
+    final keepAliveLink = ref.keepAlive();
+    if (!ref.mounted) return;
+    state = const AsyncLoading();
+    try {
+      final credential = await _buildGoogleCredential();
+      if (!ref.mounted) return;
+      await action(credential);
+      if (!ref.mounted) return;
       state = const AsyncData(null);
     } on GoogleSignInException catch (error, stackTrace) {
+      if (!ref.mounted) return;
       if (error.code == GoogleSignInExceptionCode.interrupted) {
         state = const AsyncData(null);
         return;
@@ -60,11 +79,38 @@ class GoogleAuthController extends _$GoogleAuthController {
           ),
           stackTrace,
         );
+        if (rethrowErrors) {
+          throw FirebaseAuthException(
+            code: 'google-sign-in-canceled',
+            message: 'Google sign-in failed. Please try again.',
+          );
+        }
         return;
       }
       state = AsyncError(error, stackTrace);
+      if (rethrowErrors) rethrow;
     } catch (error, stackTrace) {
+      if (!ref.mounted) return;
       state = AsyncError(error, stackTrace);
+      if (rethrowErrors) rethrow;
+    } finally {
+      keepAliveLink.close();
     }
+  }
+
+  Future<AuthCredential> _buildGoogleCredential() async {
+    final googleSignIn = await ref.read(googleSignInProvider.future);
+    final googleUser = await googleSignIn.authenticate();
+    final googleAuth = googleUser.authentication;
+    final idToken = googleAuth.idToken;
+
+    if (idToken == null || idToken.isEmpty) {
+      throw FirebaseAuthException(
+        code: 'google-id-token-missing',
+        message: 'Missing Google ID token.',
+      );
+    }
+
+    return GoogleAuthProvider.credential(idToken: idToken);
   }
 }

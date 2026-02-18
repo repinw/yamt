@@ -1,0 +1,50 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
+
+part 'seed_color_controller.g.dart';
+
+@Riverpod(keepAlive: true)
+class SeedColorController extends _$SeedColorController {
+  static const String _seedColorKey = 'preferred_seed_color';
+
+  @override
+  Color build() {
+    unawaited(_loadSavedSeedColor());
+    return AppColors.seed;
+  }
+
+  Future<void> setSeedColor(Color color) async {
+    if (state.toARGB32() == color.toARGB32()) {
+      return;
+    }
+    state = color;
+    await ref
+        .read(appPreferencesProvider)
+        .setInt(_seedColorKey, color.toARGB32());
+  }
+
+  Future<void> _loadSavedSeedColor() async {
+    final storedColorValue = await ref
+        .read(appPreferencesProvider)
+        .getInt(_seedColorKey);
+    if (!ref.mounted || storedColorValue == null) {
+      return;
+    }
+
+    final hasSupportedColor = AppSeedColors.values.any(
+      (color) => color.toARGB32() == storedColorValue,
+    );
+    if (!hasSupportedColor) {
+      await ref
+          .read(appPreferencesProvider)
+          .setInt(_seedColorKey, AppColors.seed.toARGB32());
+      return;
+    }
+
+    state = Color(storedColorValue);
+  }
+}

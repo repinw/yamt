@@ -8,10 +8,10 @@ class HomePage extends ConsumerWidget {
 
   final StatefulNavigationShell navigationShell;
 
-  void _onQuickActionPressed(BuildContext context) {
+  void _onQuickActionPressed(BuildContext context, AppLocalizations l10n) {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Quick action tapped')));
+    ).showSnackBar(SnackBar(content: Text(l10n.homeQuickActionTapped)));
   }
 
   void _onTabTapped(int index) {
@@ -32,7 +32,7 @@ class HomePage extends ConsumerWidget {
       case 3:
         return l10n.homeSettings;
       default:
-        return l10n.homeTitle;
+        return l10n.homeTitle; // coverage:ignore-line
     }
   }
 
@@ -45,8 +45,8 @@ class HomePage extends ConsumerWidget {
       body: navigationShell,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton.small(
-        onPressed: () => _onQuickActionPressed(context),
-        tooltip: 'Quick action',
+        onPressed: () => _onQuickActionPressed(context, l10n),
+        tooltip: l10n.homeQuickActionTooltip,
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(

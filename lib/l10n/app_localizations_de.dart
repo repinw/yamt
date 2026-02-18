@@ -27,10 +27,46 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeSettings => 'Einstellungen';
 
   @override
+  String get homeQuickActionTooltip => 'Schnellaktion';
+
+  @override
+  String get homeQuickActionTapped => 'Schnellaktion ausgeführt';
+
+  @override
   String get settingsLanguageTitle => 'Sprache';
 
   @override
   String get settingsLanguageSubtitle => 'App-Sprache auswählen';
+
+  @override
+  String get settingsThemeTitle => 'Design';
+
+  @override
+  String get settingsThemeSystem => 'System';
+
+  @override
+  String get settingsThemeLight => 'Hell';
+
+  @override
+  String get settingsThemeDark => 'Dunkel';
+
+  @override
+  String get settingsColorTitle => 'Akzentfarbe';
+
+  @override
+  String get settingsColorLime => 'Limette';
+
+  @override
+  String get settingsColorBlue => 'Blau';
+
+  @override
+  String get settingsColorTeal => 'Türkis';
+
+  @override
+  String get settingsColorPink => 'Pink';
+
+  @override
+  String get settingsColorOrange => 'Orange';
 
   @override
   String get settingsNotificationsTitle => 'Benachrichtigungen';
@@ -58,6 +94,36 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get accountPageLinkSuccess => 'Konto erfolgreich verknüpft.';
+
+  @override
+  String get accountPageLinkNotCompleted => 'Die Kontoverknüpfung wurde nicht abgeschlossen. Bitte erneut versuchen.';
+
+  @override
+  String get accountPageLinkConflictTitle => 'Google-Konto bereits vergeben';
+
+  @override
+  String get accountPageLinkConflictDescription => 'Dieses Google-Konto ist bereits mit einem anderen Profil verknüpft. Wähle, wie du fortfahren möchtest.';
+
+  @override
+  String get accountPageLinkConflictOverwriteAction => 'Mit diesem Gastkonto überschreiben';
+
+  @override
+  String get accountPageLinkConflictOverwriteSubtitle => 'Dieses Gastkonto behalten und das alte Google-verknüpfte Konto ersetzen.';
+
+  @override
+  String get accountPageLinkConflictDeleteGuestAction => 'Gastkonto löschen und anmelden';
+
+  @override
+  String get accountPageLinkConflictDeleteGuestSubtitle => 'Dieses Gastkonto löschen und mit dem bestehenden Google-Konto weitermachen.';
+
+  @override
+  String get accountPageLinkConflictOverwriteDone => 'Google-Konto wurde auf dieses Gastkonto übertragen.';
+
+  @override
+  String get accountPageLinkConflictDeleteGuestDone => 'Gastkonto gelöscht. Mit Google angemeldet.';
+
+  @override
+  String get accountPageGuestSessionRequired => 'Diese Aktion ist nur für Gastkonten verfügbar.';
 
   @override
   String get accountPageSignOut => 'Abmelden';
@@ -169,4 +235,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get authErrorGoogleIdTokenMissing => 'Google-Anmeldung hat kein gültiges Token geliefert.';
+
+  @override
+  String get commonNotImplementedYet => 'Noch nicht implementiert';
 }

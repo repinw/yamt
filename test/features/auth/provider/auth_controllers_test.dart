@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -18,6 +19,8 @@ class _MockGoogleSignInAccount extends Mock implements GoogleSignInAccount {}
 class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 class _MockUserCredential extends Mock implements UserCredential {}
+
+class _MockFirebaseUser extends Mock implements User {}
 
 class _FakeAuthCredential extends Fake implements AuthCredential {}
 
@@ -97,68 +100,81 @@ void main() {
   });
 
   group('GoogleAuthController', () {
-    test('maps canceled GoogleSignInException to user-friendly auth error', () async {
-      final mockGoogleSignIn = _MockGoogleSignIn();
-      when(() => mockGoogleSignIn.authenticate()).thenThrow(
-        const GoogleSignInException(
-          code: GoogleSignInExceptionCode.canceled,
-          description: 'account picker canceled',
-        ),
-      );
-
-      final container = ProviderContainer(
-        overrides: [
-          googleSignInProvider.overrideWith(
-            (ref) => Future<GoogleSignIn>.value(mockGoogleSignIn),
+    test(
+      'maps canceled GoogleSignInException to user-friendly auth error',
+      () async {
+        final mockGoogleSignIn = _MockGoogleSignIn();
+        when(() => mockGoogleSignIn.authenticate()).thenThrow(
+          const GoogleSignInException(
+            code: GoogleSignInExceptionCode.canceled,
+            description: 'account picker canceled',
           ),
-        ],
-      );
-      addTearDown(container.dispose);
-      final subscription = container.listen(
-        googleAuthControllerProvider,
-        (previous, next) {},
-      );
-      addTearDown(subscription.close);
+        );
 
-      await container.read(googleAuthControllerProvider.notifier).signInWithGoogle();
+        final container = ProviderContainer(
+          overrides: [
+            googleSignInProvider.overrideWith(
+              (ref) => Future<GoogleSignIn>.value(mockGoogleSignIn),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+        final subscription = container.listen(
+          googleAuthControllerProvider,
+          (previous, next) {},
+        );
+        addTearDown(subscription.close);
 
-      final state = container.read(googleAuthControllerProvider);
-      expect(state.hasError, isTrue);
-      final error = state.asError!.error;
-      expect(error, isA<FirebaseAuthException>());
-      expect((error as FirebaseAuthException).code, 'google-sign-in-canceled');
-      expect(error.message, 'Google sign-in failed. Please try again.');
-    });
+        await container
+            .read(googleAuthControllerProvider.notifier)
+            .signInWithGoogle();
 
-    test('treats interrupted GoogleSignInException as non-error state', () async {
-      final mockGoogleSignIn = _MockGoogleSignIn();
-      when(() => mockGoogleSignIn.authenticate()).thenThrow(
-        const GoogleSignInException(
-          code: GoogleSignInExceptionCode.interrupted,
-          description: 'flow interrupted',
-        ),
-      );
+        final state = container.read(googleAuthControllerProvider);
+        expect(state.hasError, isTrue);
+        final error = state.asError!.error;
+        expect(error, isA<FirebaseAuthException>());
+        expect(
+          (error as FirebaseAuthException).code,
+          'google-sign-in-canceled',
+        );
+        expect(error.message, 'Google sign-in failed. Please try again.');
+      },
+    );
 
-      final container = ProviderContainer(
-        overrides: [
-          googleSignInProvider.overrideWith(
-            (ref) => Future<GoogleSignIn>.value(mockGoogleSignIn),
+    test(
+      'treats interrupted GoogleSignInException as non-error state',
+      () async {
+        final mockGoogleSignIn = _MockGoogleSignIn();
+        when(() => mockGoogleSignIn.authenticate()).thenThrow(
+          const GoogleSignInException(
+            code: GoogleSignInExceptionCode.interrupted,
+            description: 'flow interrupted',
           ),
-        ],
-      );
-      addTearDown(container.dispose);
-      final subscription = container.listen(
-        googleAuthControllerProvider,
-        (previous, next) {},
-      );
-      addTearDown(subscription.close);
+        );
 
-      await container.read(googleAuthControllerProvider.notifier).signInWithGoogle();
+        final container = ProviderContainer(
+          overrides: [
+            googleSignInProvider.overrideWith(
+              (ref) => Future<GoogleSignIn>.value(mockGoogleSignIn),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+        final subscription = container.listen(
+          googleAuthControllerProvider,
+          (previous, next) {},
+        );
+        addTearDown(subscription.close);
 
-      final state = container.read(googleAuthControllerProvider);
-      expect(state.hasError, isFalse);
-      expect(state, const AsyncData<void>(null));
-    });
+        await container
+            .read(googleAuthControllerProvider.notifier)
+            .signInWithGoogle();
+
+        final state = container.read(googleAuthControllerProvider);
+        expect(state.hasError, isFalse);
+        expect(state, const AsyncData<void>(null));
+      },
+    );
 
     test('returns auth error when Google ID token is missing', () async {
       final mockGoogleSignIn = _MockGoogleSignIn();
@@ -185,7 +201,9 @@ void main() {
       );
       addTearDown(subscription.close);
 
-      await container.read(googleAuthControllerProvider.notifier).signInWithGoogle();
+      await container
+          .read(googleAuthControllerProvider.notifier)
+          .signInWithGoogle();
 
       final state = container.read(googleAuthControllerProvider);
       expect(state.hasError, isTrue);
@@ -226,7 +244,9 @@ void main() {
       );
       addTearDown(subscription.close);
 
-      await container.read(googleAuthControllerProvider.notifier).signInWithGoogle();
+      await container
+          .read(googleAuthControllerProvider.notifier)
+          .signInWithGoogle();
 
       final state = container.read(googleAuthControllerProvider);
       expect(state.hasError, isFalse);
@@ -240,5 +260,166 @@ void main() {
       expect(capturedCredential.providerId, 'google.com');
       expect((capturedCredential as OAuthCredential).idToken, 'id-token-123');
     });
+
+    test(
+      'links Google credential to current user when linking account',
+      () async {
+        final mockGoogleSignIn = _MockGoogleSignIn();
+        final mockGoogleAccount = _MockGoogleSignInAccount();
+        final mockFirebaseAuth = _MockFirebaseAuth();
+        final mockFirebaseUser = _MockFirebaseUser();
+        final mockUserCredential = _MockUserCredential();
+
+        when(
+          () => mockGoogleSignIn.authenticate(),
+        ).thenAnswer((_) async => mockGoogleAccount);
+        when(
+          () => mockGoogleAccount.authentication,
+        ).thenReturn(const GoogleSignInAuthentication(idToken: 'id-token-123'));
+        when(() => mockFirebaseAuth.currentUser).thenReturn(mockFirebaseUser);
+        when(
+          () => mockFirebaseUser.linkWithCredential(any()),
+        ).thenAnswer((_) async => mockUserCredential);
+
+        final container = ProviderContainer(
+          overrides: [
+            googleSignInProvider.overrideWith(
+              (ref) => Future<GoogleSignIn>.value(mockGoogleSignIn),
+            ),
+            firebaseAuthProvider.overrideWithValue(mockFirebaseAuth),
+          ],
+        );
+        addTearDown(container.dispose);
+        final subscription = container.listen(
+          googleAuthControllerProvider,
+          (previous, next) {},
+        );
+        addTearDown(subscription.close);
+
+        await container
+            .read(googleAuthControllerProvider.notifier)
+            .linkCurrentUserWithGoogle();
+
+        final state = container.read(googleAuthControllerProvider);
+        expect(state.hasError, isFalse);
+        expect(state, const AsyncData<void>(null));
+        verifyNever(() => mockFirebaseAuth.signInWithCredential(any()));
+
+        final capturedCredential =
+            verify(
+                  () => mockFirebaseUser.linkWithCredential(captureAny()),
+                ).captured.single
+                as AuthCredential;
+        expect(capturedCredential.providerId, 'google.com');
+        expect((capturedCredential as OAuthCredential).idToken, 'id-token-123');
+      },
+    );
+
+    test('linking without current user throws no-current-user', () async {
+      final mockGoogleSignIn = _MockGoogleSignIn();
+      final mockGoogleAccount = _MockGoogleSignInAccount();
+      final mockFirebaseAuth = _MockFirebaseAuth();
+
+      when(
+        () => mockGoogleSignIn.authenticate(),
+      ).thenAnswer((_) async => mockGoogleAccount);
+      when(
+        () => mockGoogleAccount.authentication,
+      ).thenReturn(const GoogleSignInAuthentication(idToken: 'id-token-123'));
+      when(() => mockFirebaseAuth.currentUser).thenReturn(null);
+
+      final container = ProviderContainer(
+        overrides: [
+          googleSignInProvider.overrideWith(
+            (ref) => Future<GoogleSignIn>.value(mockGoogleSignIn),
+          ),
+          firebaseAuthProvider.overrideWithValue(mockFirebaseAuth),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = container.listen(
+        googleAuthControllerProvider,
+        (previous, next) {},
+      );
+      addTearDown(subscription.close);
+
+      await expectLater(
+        container
+            .read(googleAuthControllerProvider.notifier)
+            .linkCurrentUserWithGoogle(),
+        throwsA(
+          isA<FirebaseAuthException>().having(
+            (e) => e.code,
+            'code',
+            'no-current-user',
+          ),
+        ),
+      );
+
+      expect(container.read(googleAuthControllerProvider).hasError, isTrue);
+    });
+
+    test(
+      'linking rethrows canceled Google sign-in as FirebaseAuthException',
+      () async {
+        final mockGoogleSignIn = _MockGoogleSignIn();
+        when(() => mockGoogleSignIn.authenticate()).thenThrow(
+          const GoogleSignInException(code: GoogleSignInExceptionCode.canceled),
+        );
+
+        final container = ProviderContainer(
+          overrides: [
+            googleSignInProvider.overrideWith(
+              (ref) => Future<GoogleSignIn>.value(mockGoogleSignIn),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+        final subscription = container.listen(
+          googleAuthControllerProvider,
+          (previous, next) {},
+        );
+        addTearDown(subscription.close);
+
+        await expectLater(
+          container
+              .read(googleAuthControllerProvider.notifier)
+              .linkCurrentUserWithGoogle(),
+          throwsA(
+            isA<FirebaseAuthException>().having(
+              (e) => e.code,
+              'code',
+              'google-sign-in-canceled',
+            ),
+          ),
+        );
+      },
+    );
+
+    test('googleSignInProvider executes default initialization path', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await expectLater(
+        container.read(googleSignInProvider.future),
+        throwsA(anything),
+      );
+    });
+
+    test(
+      'googleSignInProvider evaluates non-android server client path',
+      () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+        addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        await expectLater(
+          container.read(googleSignInProvider.future),
+          throwsA(anything),
+        );
+      },
+    );
   });
 }

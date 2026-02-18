@@ -1,11 +1,17 @@
+import 'dart:developer' as developer;
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/auth/provider/auth_error_view_model.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart'
     show authStateChangesProvider;
 import 'package:yamt/features/settings/provider/account_controller.dart';
+import 'package:yamt/features/settings/widgets/account_cards.dart';
+import 'package:yamt/features/settings/widgets/account_status_snackbar.dart';
+import 'package:yamt/features/settings/widgets/credential_conflict_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class AccountPage extends ConsumerStatefulWidget {
@@ -19,9 +25,6 @@ class _AccountPageState extends ConsumerState<AccountPage> {
   Future<void> _signOut(AppLocalizations l10n) async {
     try {
       await ref.read(accountControllerProvider.notifier).signOut();
-      if (mounted) {
-        context.pop();
-      }
     } catch (error) {
       if (!mounted) return;
       _showAuthError(l10n, error);
@@ -35,91 +38,126 @@ class _AccountPageState extends ConsumerState<AccountPage> {
           .linkGuestWithGoogle();
       if (!mounted) return;
       if (linked) {
-        ScaffoldMessenger.of(
+        showAccountStatusSnackBar(
           context,
-        ).showSnackBar(SnackBar(content: Text(l10n.accountPageLinkSuccess)));
+          message: l10n.accountPageLinkSuccess,
+        );
       }
-    } catch (error) {
+    } catch (error, stackTrace) {
       if (!mounted) return;
+      if (error is FirebaseAuthException &&
+          error.code == 'credential-already-in-use') {
+        await _handleCredentialAlreadyInUse(l10n, error);
+        return;
+      }
+      _logAuthError(error: error, stackTrace: stackTrace);
       _showAuthError(l10n, error);
     }
+  }
+
+  Future<void> _handleCredentialAlreadyInUse(
+    AppLocalizations l10n,
+    FirebaseAuthException error,
+  ) async {
+    final credential = error.credential;
+    if (credential == null) {
+      _showAuthError(l10n, error);
+      return;
+    }
+
+    final action = await showDialog<CredentialConflictAction>(
+      context: context,
+      builder: (dialogContext) {
+        return CredentialConflictDialog(
+          title: l10n.accountPageLinkConflictTitle,
+          description: l10n.accountPageLinkConflictDescription,
+          overwriteAction: l10n.accountPageLinkConflictOverwriteAction,
+          overwriteSubtitle: l10n.accountPageLinkConflictOverwriteSubtitle,
+          deleteGuestAction: l10n.accountPageLinkConflictDeleteGuestAction,
+          deleteGuestSubtitle: l10n.accountPageLinkConflictDeleteGuestSubtitle,
+          cancelLabel: MaterialLocalizations.of(context).cancelButtonLabel,
+          onCancel: () => _popConflictDialog(dialogContext),
+          onOverwrite: () => _popConflictDialog(
+            dialogContext,
+            CredentialConflictAction.overwriteWithGuest,
+          ),
+          onDeleteGuestAndContinue: () => _popConflictDialog(
+            dialogContext,
+            CredentialConflictAction.deleteGuestAndSignInWithGoogle,
+          ),
+        );
+      },
+    );
+    if (!mounted || action == null) return;
+
+    try {
+      switch (action) {
+        case CredentialConflictAction.overwriteWithGuest:
+          await ref
+              .read(accountControllerProvider.notifier)
+              .overwriteExistingGoogleAccountWithGuest(credential);
+          if (!mounted) return;
+          showAccountStatusSnackBar(
+            context,
+            message: l10n.accountPageLinkConflictOverwriteDone,
+          );
+          break;
+        case CredentialConflictAction.deleteGuestAndSignInWithGoogle:
+          await ref
+              .read(accountControllerProvider.notifier)
+              .deleteGuestAndSignInWithGoogleCredential(credential);
+          if (!mounted) return;
+          showAccountStatusSnackBar(
+            context,
+            message: l10n.accountPageLinkConflictDeleteGuestDone,
+          );
+          break;
+      }
+    } catch (error, stackTrace) {
+      if (!mounted) return;
+      _logAuthError(error: error, stackTrace: stackTrace);
+      _showAuthError(l10n, error);
+    }
+  }
+
+  void _logAuthError({required Object error, required StackTrace stackTrace}) {
+    if (error case final FirebaseAuthException authError) {
+      developer.log(
+        'Failed account action: ${authError.code}',
+        name: 'yamt.settings.account',
+        level: 1000,
+        error: authError,
+        stackTrace: stackTrace,
+      );
+      return;
+    }
+
+    developer.log(
+      'Failed account action: ${error.runtimeType}',
+      name: 'yamt.settings.account',
+      level: 1000,
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
+
+  void _popConflictDialog(
+    BuildContext dialogContext, [
+    CredentialConflictAction? result,
+  ]) {
+    final router = GoRouter.maybeOf(dialogContext);
+    if (router != null) {
+      router.pop(result);
+      return;
+    }
+    Navigator.of(dialogContext).pop(result);
   }
 
   void _showAuthError(AppLocalizations l10n, Object error) {
     final message = ref
         .read(authErrorViewModelProvider)
         .messageFor(l10n: l10n, error: error);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Widget _buildGuestCard({
-    required AppLocalizations l10n,
-    required bool isActionLoading,
-  }) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.accountPageGuestTitle,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(l10n.accountPageGuestDescription),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: isActionLoading
-                  ? null
-                  : () => _linkGuestWithGoogle(l10n),
-              icon: const Icon(Icons.link),
-              label: Text(l10n.accountPageLinkGoogle),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUserInfoCard(User user, AppLocalizations l10n) {
-    String valueOrFallback(String? value) {
-      if (value == null || value.isEmpty) {
-        return l10n.accountPageNotSet;
-      }
-      return value;
-    }
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.person_outline),
-              title: Text(l10n.accountPageDisplayName),
-              subtitle: Text(valueOrFallback(user.displayName)),
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.email_outlined),
-              title: Text(l10n.accountPageEmail),
-              subtitle: Text(valueOrFallback(user.email)),
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.fingerprint_outlined),
-              title: Text(l10n.accountPageUserId),
-              subtitle: Text(user.uid),
-            ),
-          ],
-        ),
-      ),
-    );
+    showAccountStatusSnackBar(context, message: message, isError: true);
   }
 
   Widget _buildContent({
@@ -128,13 +166,17 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     required bool isActionLoading,
   }) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: AppInsets.page,
       children: [
         if (user.isAnonymous)
-          _buildGuestCard(l10n: l10n, isActionLoading: isActionLoading),
-        if (user.isAnonymous) const SizedBox(height: 12),
-        _buildUserInfoCard(user, l10n),
-        const SizedBox(height: 16),
+          AccountGuestCard(
+            l10n: l10n,
+            isActionLoading: isActionLoading,
+            onLinkWithGoogle: () => _linkGuestWithGoogle(l10n),
+          ),
+        if (user.isAnonymous) const SizedBox(height: AppSpacing.md),
+        AccountUserInfoCard(user: user, l10n: l10n),
+        const SizedBox(height: AppSpacing.xl),
         FilledButton.icon(
           onPressed: isActionLoading ? null : () => _signOut(l10n),
           icon: const Icon(Icons.logout),
@@ -166,7 +208,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: AppInsets.pageLarge,
             child: Text(
               ref
                   .read(authErrorViewModelProvider)

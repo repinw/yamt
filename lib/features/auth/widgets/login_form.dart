@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/auth/provider/auth_form_controller.dart';
 import 'package:yamt/features/auth/widgets/auth_form_components.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -53,13 +54,13 @@ class _LoginFormState extends ConsumerState<LoginForm> {
             controller: _emailController,
             validator: emailValidator,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.xl),
           AuthPasswordField(
             controller: _passwordController,
             textInputAction: TextInputAction.done,
             validator: passwordValidator,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.xxl),
           AuthSubmitButton(
             isLoading: isLoading,
             onPressed: _submit,

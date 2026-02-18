@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -61,6 +63,35 @@ void main() {
     expect(find.text('The field is required'), findsNWidgets(2));
   });
 
+  testWidgets('LoginForm submits valid credentials', (tester) async {
+    final fakeRepository = FakeAuthRepository();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(body: LoginForm()),
+        ),
+      ),
+    );
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email'),
+      'user@example.com',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Password'),
+      'secret123',
+    );
+
+    await tester.tap(find.text('Login'));
+    await tester.pumpAndSettle();
+
+    expect(fakeRepository.signInCalls, 1);
+  });
+
   testWidgets(
     'RegisterForm shows validation error when passwords do not match',
     (tester) async {
@@ -85,6 +116,39 @@ void main() {
       expect(find.text('Passwords do not match'), findsOneWidget);
     },
   );
+
+  testWidgets('RegisterForm submits valid credentials', (tester) async {
+    final fakeRepository = FakeAuthRepository();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(body: RegisterForm()),
+        ),
+      ),
+    );
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email'),
+      'user@example.com',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Password'),
+      'secret123',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Confirm password'),
+      'secret123',
+    );
+
+    await tester.tap(find.text('Create account'));
+    await tester.pumpAndSettle();
+
+    expect(fakeRepository.registerCalls, 1);
+  });
 
   testWidgets('WelcomePage guest button triggers guest sign in', (
     tester,
@@ -174,6 +238,47 @@ void main() {
     expect(find.text("Don't have an account? Register"), findsOneWidget);
   });
 
+  testWidgets('WelcomePage shows auth form error from login submit', (
+    tester,
+  ) async {
+    final fakeRepository = FakeAuthRepository(shouldFailSignIn: true);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(fakeRepository),
+          authStateChangesProvider.overrideWith(
+            (ref) => const Stream<User?>.empty(),
+          ),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const WelcomePage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Already have an account? Login'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email'),
+      'user@example.com',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Password'),
+      'secret123',
+    );
+
+    await tester.tap(find.text('Login'));
+    await tester.pumpAndSettle();
+
+    expect(fakeRepository.signInCalls, 1);
+    expect(find.text('Authentication failed'), findsOneWidget);
+  });
+
   testWidgets('WelcomePage localizes FirebaseAuthException code in snackbar', (
     tester,
   ) async {
@@ -244,6 +349,46 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(googleErrorMessage), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'WelcomePage shows progress indicator while Google auth is loading',
+    (tester) async {
+      final mockGoogleSignIn = _MockGoogleSignIn();
+      final completer = Completer<GoogleSignInAccount>();
+      when(
+        () => mockGoogleSignIn.authenticate(),
+      ).thenAnswer((_) => completer.future);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authStateChangesProvider.overrideWith(
+              (ref) => const Stream<User?>.empty(),
+            ),
+            googleSignInProvider.overrideWith(
+              (ref) => Future<GoogleSignIn>.value(mockGoogleSignIn),
+            ),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const WelcomePage(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Register with Google'));
+      await tester.pump();
+
+      expect(find.byType(CircularProgressIndicator), findsWidgets);
+
+      completer.completeError(
+        const GoogleSignInException(code: GoogleSignInExceptionCode.canceled),
+      );
+      await tester.pumpAndSettle();
     },
   );
 }
