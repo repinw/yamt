@@ -107,6 +107,30 @@ abstract class AppLocalizations {
   /// **'Home'**
   String get homeTitle;
 
+  /// No description provided for @homeInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get homeInventory;
+
+  /// No description provided for @homeShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get homeShopping;
+
+  /// No description provided for @homeCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get homeCalories;
+
+  /// No description provided for @homeSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get homeSettings;
+
   /// No description provided for @appSubtitle.
   ///
   /// In en, this message translates to:

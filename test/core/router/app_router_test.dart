@@ -132,6 +132,73 @@ void main() {
     container.read(appRouterProvider).go(AppRoutes.welcome);
     await tester.pumpAndSettle();
 
-    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.home);
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.homeInventory,
+    );
+  });
+
+  testWidgets('switches home tabs and updates route path', (tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(_MockUser()),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await tester.pumpAndSettle();
+
+    final router = container.read(appRouterProvider);
+    expect(router.state.uri.path, AppRoutes.homeInventory);
+
+    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, AppRoutes.homeShopping);
+
+    await tester.tap(find.byIcon(Icons.local_fire_department_outlined));
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, AppRoutes.homeCalories);
+
+    await tester.tap(find.byIcon(Icons.settings));
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, AppRoutes.homeSettings);
+  });
+
+  testWidgets('redirects to welcome after logout from a home route', (
+    tester,
+  ) async {
+    final authController = StreamController<User?>();
+    final container = ProviderContainer(
+      overrides: [
+        authStateChangesProvider.overrideWith((ref) => authController.stream),
+      ],
+    );
+    addTearDown(authController.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await tester.pump();
+
+    authController.add(_MockUser());
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.homeInventory,
+    );
+
+    authController.add(null);
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.welcome);
   });
 }

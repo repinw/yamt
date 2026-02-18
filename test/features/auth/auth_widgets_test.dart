@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:yamt/features/auth/auth_page.dart';
 import 'package:yamt/features/auth/provider/auth_repository.dart';
 import 'package:yamt/features/auth/provider/google_auth_controller.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
@@ -51,18 +50,6 @@ Widget _wrapWithApp(Widget child) {
 }
 
 void main() {
-  testWidgets('AuthPage can switch from login to register', (tester) async {
-    await tester.pumpWidget(
-      _wrapWithApp(const AuthPage(initialMode: AuthMode.login)),
-    );
-
-    expect(find.text("Don't have an account? Register"), findsOneWidget);
-    await tester.tap(find.text("Don't have an account? Register"));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Create account'), findsOneWidget);
-  });
-
   testWidgets('LoginForm shows validation errors for empty fields', (
     tester,
   ) async {

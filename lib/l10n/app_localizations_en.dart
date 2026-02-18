@@ -15,6 +15,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTitle => 'Home';
 
   @override
+  String get homeInventory => 'Inventory';
+
+  @override
+  String get homeShopping => 'Shopping';
+
+  @override
+  String get homeCalories => 'Calories';
+
+  @override
+  String get homeSettings => 'Settings';
+
+  @override
   String get appSubtitle => 'Yet Another Meal Tracker';
 
   @override

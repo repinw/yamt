@@ -1,25 +1,37 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/home/home_page.dart';
-import 'package:yamt/l10n/app_localizations.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:yamt/app.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart';
+
+class _MockUser extends Mock implements User {}
 
 void main() {
-  testWidgets('HomePage shows localized title in app bar and body', (
+  testWidgets('home shell shows app bar and tabs for authenticated user', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const HomePage(),
+    final container = ProviderContainer(
+      overrides: [
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(_MockUser()),
         ),
-      ),
+      ],
     );
+    addTearDown(container.dispose);
 
-    expect(find.text('Home'), findsNWidgets(2));
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Home'), findsOneWidget);
     expect(find.byType(AppBar), findsOneWidget);
     expect(find.byIcon(Icons.logout), findsOneWidget);
+    expect(find.text('Inventory'), findsAtLeastNWidgets(1));
+    expect(find.text('Shopping'), findsOneWidget);
+    expect(find.text('Calories'), findsOneWidget);
+    expect(find.text('Settings'), findsOneWidget);
   });
 }
