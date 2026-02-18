@@ -168,6 +168,7 @@ void main() {
 
     await tester.tap(colorDropdownFinder);
     await tester.pumpAndSettle();
+    expect(find.text('Pink'), findsOneWidget);
     await tester.tap(find.text('Teal').last);
     await tester.pumpAndSettle();
 

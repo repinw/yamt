@@ -15,19 +15,35 @@ abstract interface class AppPreferences {
 
 class SharedPreferencesStore implements AppPreferences {
   SharedPreferencesStore({SharedPreferences? preferences})
-    : _preferences = preferences;
+    : _preferences = preferences,
+      _instanceFuture = preferences != null
+          ? Future<SharedPreferences?>.value(preferences)
+          : null;
 
   SharedPreferences? _preferences;
+  Future<SharedPreferences?>? _instanceFuture;
   final Map<String, Object> _memoryFallback = <String, Object>{};
 
-  Future<SharedPreferences?> _instance() async {
+  Future<SharedPreferences?> _instance() {
     if (_preferences != null) {
-      return _preferences;
+      return Future<SharedPreferences?>.value(_preferences);
     }
 
+    final existingFuture = _instanceFuture;
+    if (existingFuture != null) {
+      return existingFuture;
+    }
+
+    final createdFuture = _loadPreferences();
+    _instanceFuture = createdFuture;
+    return createdFuture;
+  }
+
+  Future<SharedPreferences?> _loadPreferences() async {
     try {
-      _preferences = await SharedPreferences.getInstance();
-      return _preferences;
+      final preferences = await SharedPreferences.getInstance();
+      _preferences = preferences;
+      return preferences;
     } on MissingPluginException {
       return null;
     } on PlatformException {

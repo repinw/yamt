@@ -33,7 +33,7 @@ class SettingsPage extends ConsumerWidget {
       0xFF29F006 => l10n.settingsColorLime,
       0xFF0D47A1 => l10n.settingsColorBlue,
       0xFF00695C => l10n.settingsColorTeal,
-      0xFFAD1457 => l10n.settingsColorPink,
+      0xFFFF006F => l10n.settingsColorPink,
       0xFFE65100 => l10n.settingsColorOrange,
       _ => l10n.settingsColorLime,
     };
