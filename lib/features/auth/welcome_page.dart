@@ -1,6 +1,7 @@
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/auth/provider/auth_error_view_model.dart';
 import 'package:yamt/features/auth/provider/auth_form_controller.dart';
 import 'package:yamt/features/auth/provider/google_auth_controller.dart';
@@ -80,22 +81,22 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              padding: AppInsets.authPage,
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 24,
+                  minHeight: constraints.maxHeight - AppSpacing.xxxl,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _WelcomeHeader(l10n: l10n),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: AppSpacing.xxxl),
                     if (_isLoginMode)
                       const LoginForm()
                     else
                       const RegisterForm(),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.xs),
                     TextButton(
                       onPressed: _toggleAuthMode,
                       child: Text(
@@ -104,7 +105,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                             : l10n.authSwitchToLogin,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: AppSpacing.xxxl),
                     _SocialAuthButtons(
                       isLoginMode: _isLoginMode,
                       onGooglePressed: () => ref
@@ -135,8 +136,8 @@ class _WelcomeHeader extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(Icons.kitchen_outlined, size: 80),
-        const SizedBox(height: 24),
+        const Icon(Icons.kitchen_outlined, size: AppSizes.welcomeIcon),
+        const SizedBox(height: AppSpacing.xxxl),
         Text(
           l10n.welcomeTitle,
           style: Theme.of(
@@ -144,10 +145,10 @@ class _WelcomeHeader extends StatelessWidget {
           ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         Text(
           l10n.appSubtitle,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(),
+          style: Theme.of(context).textTheme.bodyLarge,
           textAlign: TextAlign.center,
         ),
       ],
@@ -187,7 +188,7 @@ class _SocialAuthButtons extends ConsumerWidget {
                   isLoginMode ? l10n.loginWithGoogle : l10n.registerWithGoogle,
                 ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         OutlinedButton.icon(
           onPressed: isGuestLoading || isGoogleLoading || isAuthFormLoading
               ? null
@@ -208,9 +209,11 @@ class _ButtonProgressIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SizedBox(
-      width: 20,
-      height: 20,
-      child: CircularProgressIndicator(strokeWidth: 2),
+      width: AppSizes.inlineProgressIndicator,
+      height: AppSizes.inlineProgressIndicator,
+      child: CircularProgressIndicator(
+        strokeWidth: AppSizes.progressStrokeWidth,
+      ),
     );
   }
 }

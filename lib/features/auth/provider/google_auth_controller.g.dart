@@ -26,7 +26,7 @@ final class GoogleSignInProvider
         argument: null,
         retry: null,
         name: r'googleSignInProvider',
-        isAutoDispose: false,
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -46,7 +46,7 @@ final class GoogleSignInProvider
   }
 }
 
-String _$googleSignInHash() => r'3df1a6ba37aec166ba4579693211686ce0746440';
+String _$googleSignInHash() => r'7cbaad2e0aeb6e69e23d7ccec0a53197f17deff4';
 
 @ProviderFor(GoogleAuthController)
 final googleAuthControllerProvider = GoogleAuthControllerProvider._();
@@ -73,7 +73,7 @@ final class GoogleAuthControllerProvider
 }
 
 String _$googleAuthControllerHash() =>
-    r'70eb2f5397e688a80017861a6961307672b45778';
+    r'38f6e9a69f010e2eb902ac185d095f6c0ee8ea05';
 
 abstract class _$GoogleAuthController extends $AsyncNotifier<void> {
   FutureOr<void> build();

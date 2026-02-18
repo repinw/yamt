@@ -52,6 +52,12 @@ void main() {
         code: 'google-id-token-missing',
         expected: en.authErrorGoogleIdTokenMissing,
       ),
+      (code: 'no-current-user', expected: en.accountPageNoSession),
+      (code: 'link-not-completed', expected: en.accountPageLinkNotCompleted),
+      (
+        code: 'guest-session-required',
+        expected: en.accountPageGuestSessionRequired,
+      ),
     ];
 
     for (final testCase in firebaseCases) {
@@ -65,14 +71,30 @@ void main() {
       });
     }
 
-    test('falls back for unknown FirebaseAuthException code', () {
+    test('uses FirebaseAuthException message for unknown code', () {
+      const backendMessage = 'Provider already linked to another account.';
       final message = viewModel.messageFor(
         l10n: en,
-        error: FirebaseAuthException(code: 'some-new-code'),
+        error: FirebaseAuthException(
+          code: 'some-new-code',
+          message: backendMessage,
+        ),
       );
 
-      expect(message, en.authFailed);
+      expect(message, backendMessage);
     });
+
+    test(
+      'falls back for unknown FirebaseAuthException code without message',
+      () {
+        final message = viewModel.messageFor(
+          l10n: en,
+          error: FirebaseAuthException(code: 'some-new-code'),
+        );
+
+        expect(message, en.authFailed);
+      },
+    );
 
     test('uses localized string from provided locale', () {
       final message = viewModel.messageFor(

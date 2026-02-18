@@ -6,6 +6,7 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/home_tab_page.dart';
+import 'package:yamt/features/settings/account_page.dart';
 import 'package:yamt/features/settings/settings_page.dart';
 
 part 'app_router.g.dart';
@@ -54,6 +55,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.home,
         redirect: (context, state) => AppRoutes.homeInventory,
+      ),
+      GoRoute(
+        path: AppRoutes.homeSettingsAccount,
+        builder: (context, state) => const AccountPage(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

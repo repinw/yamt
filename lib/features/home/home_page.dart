@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class HomePage extends ConsumerWidget {
@@ -9,14 +8,10 @@ class HomePage extends ConsumerWidget {
 
   final StatefulNavigationShell navigationShell;
 
-  Future<void> _debugSignOut(WidgetRef ref) async {
-    await ref.read(firebaseAuthProvider).signOut();
-  }
-
-  void _onQuickActionPressed(BuildContext context) {
+  void _onQuickActionPressed(BuildContext context, AppLocalizations l10n) {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Quick action tapped')));
+    ).showSnackBar(SnackBar(content: Text(l10n.homeQuickActionTapped)));
   }
 
   void _onTabTapped(int index) {
@@ -37,7 +32,7 @@ class HomePage extends ConsumerWidget {
       case 3:
         return l10n.homeSettings;
       default:
-        return l10n.homeTitle;
+        return l10n.homeTitle; // coverage:ignore-line
     }
   }
 
@@ -46,21 +41,12 @@ class HomePage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_titleForTab(l10n)),
-        actions: [
-          IconButton(
-            tooltip: 'Debug logout',
-            icon: const Icon(Icons.logout),
-            onPressed: () => _debugSignOut(ref),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text(_titleForTab(l10n))),
       body: navigationShell,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton.small(
-        onPressed: () => _onQuickActionPressed(context),
-        tooltip: 'Quick action',
+        onPressed: () => _onQuickActionPressed(context, l10n),
+        tooltip: l10n.homeQuickActionTooltip,
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(

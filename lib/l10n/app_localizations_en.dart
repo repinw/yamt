@@ -27,10 +27,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeSettings => 'Settings';
 
   @override
+  String get homeQuickActionTooltip => 'Quick action';
+
+  @override
+  String get homeQuickActionTapped => 'Quick action tapped';
+
+  @override
   String get settingsLanguageTitle => 'Language';
 
   @override
   String get settingsLanguageSubtitle => 'Choose app language';
+
+  @override
+  String get settingsThemeTitle => 'Theme';
+
+  @override
+  String get settingsThemeSystem => 'System';
+
+  @override
+  String get settingsThemeLight => 'Light';
+
+  @override
+  String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsColorTitle => 'Accent color';
+
+  @override
+  String get settingsColorLime => 'Lime';
+
+  @override
+  String get settingsColorBlue => 'Blue';
+
+  @override
+  String get settingsColorTeal => 'Teal';
+
+  @override
+  String get settingsColorPink => 'Pink';
+
+  @override
+  String get settingsColorOrange => 'Orange';
 
   @override
   String get settingsNotificationsTitle => 'Notifications';
@@ -43,6 +79,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAccountSubtitle => 'Manage profile and sign-in';
+
+  @override
+  String get accountPageNoSession => 'No active account session.';
+
+  @override
+  String get accountPageGuestTitle => 'Guest account';
+
+  @override
+  String get accountPageGuestDescription => 'Link your guest account with Google to keep access across devices.';
+
+  @override
+  String get accountPageLinkGoogle => 'Link with Google';
+
+  @override
+  String get accountPageLinkSuccess => 'Account linked successfully.';
+
+  @override
+  String get accountPageLinkNotCompleted => 'Account linking was not completed. Please try again.';
+
+  @override
+  String get accountPageLinkConflictTitle => 'Google account already in use';
+
+  @override
+  String get accountPageLinkConflictDescription => 'This Google account is already linked to another profile. Choose how to continue.';
+
+  @override
+  String get accountPageLinkConflictOverwriteAction => 'Overwrite with this guest';
+
+  @override
+  String get accountPageLinkConflictOverwriteSubtitle => 'Keep this guest account and replace the old Google-linked account.';
+
+  @override
+  String get accountPageLinkConflictDeleteGuestAction => 'Delete guest and sign in';
+
+  @override
+  String get accountPageLinkConflictDeleteGuestSubtitle => 'Delete this guest account and continue with the existing Google account.';
+
+  @override
+  String get accountPageLinkConflictOverwriteDone => 'Google account moved to this guest account.';
+
+  @override
+  String get accountPageLinkConflictDeleteGuestDone => 'Guest account deleted. Signed in with Google.';
+
+  @override
+  String get accountPageGuestSessionRequired => 'This action is only available for guest accounts.';
+
+  @override
+  String get accountPageSignOut => 'Sign out';
+
+  @override
+  String get accountPageDisplayName => 'Display name';
+
+  @override
+  String get accountPageEmail => 'Email';
+
+  @override
+  String get accountPageUserId => 'User ID';
+
+  @override
+  String get accountPageNotSet => 'Not set';
 
   @override
   String get settingsAboutTitle => 'About';
@@ -139,4 +235,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authErrorGoogleIdTokenMissing => 'Google sign-in did not return a valid token.';
+
+  @override
+  String get commonNotImplementedYet => 'Not implemented yet';
 }

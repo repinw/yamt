@@ -28,9 +28,29 @@ void main() {
 
     expect(find.text('Inventory'), findsAtLeastNWidgets(1));
     expect(find.byType(AppBar), findsOneWidget);
-    expect(find.byIcon(Icons.logout), findsOneWidget);
     expect(find.text('Shopping'), findsOneWidget);
     expect(find.text('Calories'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
+  });
+
+  testWidgets('quick action button shows feedback snackbar', (tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(_MockUser()),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Quick action tapped'), findsOneWidget);
   });
 }

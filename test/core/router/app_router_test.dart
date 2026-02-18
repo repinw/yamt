@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/constants/app_routes.dart';
@@ -139,10 +140,16 @@ void main() {
   });
 
   testWidgets('switches home tabs and updates route path', (tester) async {
+    final user = _MockUser();
+    when(() => user.isAnonymous).thenReturn(false);
+    when(() => user.displayName).thenReturn('Jane Doe');
+    when(() => user.email).thenReturn('jane@example.com');
+    when(() => user.uid).thenReturn('uid-123');
+
     final container = ProviderContainer(
       overrides: [
         authStateChangesProvider.overrideWith(
-          (ref) => Stream<User?>.value(_MockUser()),
+          (ref) => Stream<User?>.value(user),
         ),
       ],
     );
@@ -189,6 +196,11 @@ void main() {
     expect(find.text('Language'), findsOneWidget);
     expect(find.text('Notifications'), findsOneWidget);
     expect(find.text('About'), findsOneWidget);
+
+    await tester.tap(find.text('Account').first);
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, AppRoutes.homeSettingsAccount);
+    expect(find.text('Sign out'), findsOneWidget);
   });
 
   testWidgets('redirects to welcome after logout from a home route', (
@@ -222,5 +234,60 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(container.read(appRouterProvider).state.uri.path, AppRoutes.welcome);
+  });
+
+  testWidgets('route-level redirects for root and home routes are configured', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(_MockUser()),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await tester.pumpAndSettle();
+
+    final router = container.read(appRouterProvider);
+    final context = tester.element(find.byType(YAMT));
+    final routes = router.configuration.routes.whereType<GoRoute>().toList();
+    final rootRoute = routes.firstWhere(
+      (route) => route.path == AppRoutes.root,
+    );
+    final homeRoute = routes.firstWhere(
+      (route) => route.path == AppRoutes.home,
+    );
+
+    expect(
+      rootRoute.redirect?.call(context, router.state),
+      AppRoutes.homeInventory,
+    );
+    expect(
+      homeRoute.redirect?.call(context, router.state),
+      AppRoutes.homeInventory,
+    );
+  });
+
+  testWidgets('appRouterProvider supports overrideWithValue', (tester) async {
+    final stubRouter = GoRouter(
+      routes: [
+        GoRoute(
+          path: AppRoutes.root,
+          builder: (context, state) => const SizedBox.shrink(),
+        ),
+      ],
+    );
+
+    final container = ProviderContainer(
+      overrides: [appRouterProvider.overrideWithValue(stubRouter)],
+    );
+    addTearDown(container.dispose);
+
+    expect(container.read(appRouterProvider), same(stubRouter));
   });
 }
