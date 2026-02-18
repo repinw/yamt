@@ -33,6 +33,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeQuickActionTapped => 'Quick action tapped';
 
   @override
+  String get inventoryFabTooltip => 'Receipt actions';
+
+  @override
+  String get inventoryActionScanCamera => 'Scan receipt (camera)';
+
+  @override
+  String get inventoryActionUploadFile => 'Upload receipt (image/PDF)';
+
+  @override
+  String get inventoryActionCameraUnsupported => 'Camera is not supported on this platform.';
+
+  @override
+  String get inventoryReceiptSelectedCamera => 'Receipt image captured.';
+
+  @override
+  String get inventoryReceiptSelectedFile => 'Receipt file selected.';
+
+  @override
+  String get inventoryReceiptSelectionFailed => 'Could not select a receipt. Please try again.';
+
+  @override
+  String get homeShoppingActionContextPlaceholder => 'Shopping action coming soon.';
+
+  @override
+  String get homeCaloriesActionContextPlaceholder => 'Calories action coming soon.';
+
+  @override
+  String get homeSettingsActionContextPlaceholder => 'Settings action coming soon.';
+
+  @override
   String get settingsLanguageTitle => 'Language';
 
   @override

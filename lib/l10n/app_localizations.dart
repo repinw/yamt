@@ -143,6 +143,66 @@ abstract class AppLocalizations {
   /// **'Quick action tapped'**
   String get homeQuickActionTapped;
 
+  /// No description provided for @inventoryFabTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt actions'**
+  String get inventoryFabTooltip;
+
+  /// No description provided for @inventoryActionScanCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan receipt (camera)'**
+  String get inventoryActionScanCamera;
+
+  /// No description provided for @inventoryActionUploadFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload receipt (image/PDF)'**
+  String get inventoryActionUploadFile;
+
+  /// No description provided for @inventoryActionCameraUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera is not supported on this platform.'**
+  String get inventoryActionCameraUnsupported;
+
+  /// No description provided for @inventoryReceiptSelectedCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt image captured.'**
+  String get inventoryReceiptSelectedCamera;
+
+  /// No description provided for @inventoryReceiptSelectedFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt file selected.'**
+  String get inventoryReceiptSelectedFile;
+
+  /// No description provided for @inventoryReceiptSelectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not select a receipt. Please try again.'**
+  String get inventoryReceiptSelectionFailed;
+
+  /// No description provided for @homeShoppingActionContextPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping action coming soon.'**
+  String get homeShoppingActionContextPlaceholder;
+
+  /// No description provided for @homeCaloriesActionContextPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories action coming soon.'**
+  String get homeCaloriesActionContextPlaceholder;
+
+  /// No description provided for @homeSettingsActionContextPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings action coming soon.'**
+  String get homeSettingsActionContextPlaceholder;
+
   /// No description provided for @settingsLanguageTitle.
   ///
   /// In en, this message translates to:

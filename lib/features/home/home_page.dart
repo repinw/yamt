@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
-
-  void _onQuickActionPressed(BuildContext context, AppLocalizations l10n) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.homeQuickActionTapped)));
-  }
 
   void _onTabTapped(int index) {
     navigationShell.goBranch(
@@ -44,10 +39,8 @@ class HomePage extends ConsumerWidget {
       appBar: AppBar(title: Text(_titleForTab(l10n))),
       body: navigationShell,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton.small(
-        onPressed: () => _onQuickActionPressed(context, l10n),
-        tooltip: l10n.homeQuickActionTooltip,
-        child: const Icon(Icons.add),
+      floatingActionButton: HomeContextFab(
+        currentTabIndex: navigationShell.currentIndex,
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
