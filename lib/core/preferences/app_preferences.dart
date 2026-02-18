@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/services.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 part 'app_preferences.g.dart';
 
 abstract interface class AppPreferences {
+  String? getStringSync(String key);
+  int? getIntSync(String key);
   Future<String?> getString(String key);
   Future<int?> getInt(String key);
   Future<bool> setString(String key, String value);
@@ -22,7 +22,6 @@ class SharedPreferencesStore implements AppPreferences {
 
   SharedPreferences? _preferences;
   Future<SharedPreferences?>? _instanceFuture;
-  final Map<String, Object> _memoryFallback = <String, Object>{};
 
   Future<SharedPreferences?> _instance() {
     if (_preferences != null) {
@@ -52,12 +51,30 @@ class SharedPreferencesStore implements AppPreferences {
   }
 
   @override
+  String? getStringSync(String key) {
+    final preferences = _preferences;
+    if (preferences != null) {
+      return preferences.getString(key);
+    }
+    return null;
+  }
+
+  @override
+  int? getIntSync(String key) {
+    final preferences = _preferences;
+    if (preferences != null) {
+      return preferences.getInt(key);
+    }
+    return null;
+  }
+
+  @override
   Future<String?> getString(String key) async {
     final preferences = await _instance();
     if (preferences != null) {
       return preferences.getString(key);
     }
-    return _memoryFallback[key] as String?;
+    return null;
   }
 
   @override
@@ -66,7 +83,7 @@ class SharedPreferencesStore implements AppPreferences {
     if (preferences != null) {
       return preferences.getInt(key);
     }
-    return _memoryFallback[key] as int?;
+    return null;
   }
 
   @override
@@ -75,8 +92,7 @@ class SharedPreferencesStore implements AppPreferences {
     if (preferences != null) {
       return preferences.setString(key, value);
     }
-    _memoryFallback[key] = value;
-    return true;
+    return false;
   }
 
   @override
@@ -85,8 +101,7 @@ class SharedPreferencesStore implements AppPreferences {
     if (preferences != null) {
       return preferences.setInt(key, value);
     }
-    _memoryFallback[key] = value;
-    return true;
+    return false;
   }
 }
 

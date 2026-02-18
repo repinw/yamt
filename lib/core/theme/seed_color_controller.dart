@@ -13,6 +13,16 @@ class SeedColorController extends _$SeedColorController {
 
   @override
   Color build() {
+    final preferences = ref.read(appPreferencesProvider);
+    final storedColorValue = preferences.getIntSync(_seedColorKey);
+    if (storedColorValue != null) {
+      if (_isSupportedColor(storedColorValue)) {
+        return Color(storedColorValue);
+      }
+      unawaited(preferences.setInt(_seedColorKey, AppColors.seed.toARGB32()));
+      return AppColors.seed;
+    }
+
     unawaited(_loadSavedSeedColor());
     return AppColors.seed;
   }
@@ -35,10 +45,7 @@ class SeedColorController extends _$SeedColorController {
       return;
     }
 
-    final hasSupportedColor = AppSeedColors.values.any(
-      (color) => color.toARGB32() == storedColorValue,
-    );
-    if (!hasSupportedColor) {
+    if (!_isSupportedColor(storedColorValue)) {
       await ref
           .read(appPreferencesProvider)
           .setInt(_seedColorKey, AppColors.seed.toARGB32());
@@ -46,5 +53,9 @@ class SeedColorController extends _$SeedColorController {
     }
 
     state = Color(storedColorValue);
+  }
+
+  bool _isSupportedColor(int colorValue) {
+    return AppSeedColors.values.any((color) => color.toARGB32() == colorValue);
   }
 }

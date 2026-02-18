@@ -12,6 +12,12 @@ class ThemeModeController extends _$ThemeModeController {
 
   @override
   ThemeMode build() {
+    final preferences = ref.read(appPreferencesProvider);
+    final storedMode = preferences.getStringSync(_themeModeKey);
+    if (storedMode != null) {
+      return _themeModeFromName(storedMode);
+    }
+
     unawaited(_loadSavedThemeMode());
     return ThemeMode.system;
   }
@@ -32,7 +38,11 @@ class ThemeModeController extends _$ThemeModeController {
       return;
     }
 
-    state = switch (storedMode) {
+    state = _themeModeFromName(storedMode);
+  }
+
+  ThemeMode _themeModeFromName(String mode) {
+    return switch (mode) {
       'system' => ThemeMode.system,
       'light' => ThemeMode.light,
       'dark' => ThemeMode.dark,

@@ -22,6 +22,16 @@ class _FakeAppPreferences implements AppPreferences {
   final Map<String, Object> _values;
 
   @override
+  String? getStringSync(String key) {
+    return _values[key] as String?;
+  }
+
+  @override
+  int? getIntSync(String key) {
+    return _values[key] as int?;
+  }
+
+  @override
   Future<String?> getString(String key) async {
     return _values[key] as String?;
   }
