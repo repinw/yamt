@@ -1,5 +1,7 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
 
@@ -18,28 +20,25 @@ const List<String> _allowedReceiptExtensions = <String>[
 const String _defaultMimeType = 'application/octet-stream';
 const String _fallbackCameraFileName = 'camera-image.jpg';
 const String _fallbackUploadFileName = 'receipt-upload';
-
-const Map<String, String> _mimeTypeByExtension = <String, String>{
-  'jpg': 'image/jpeg',
-  'jpeg': 'image/jpeg',
-  'png': 'image/png',
-  'webp': 'image/webp',
-  'heic': 'image/heic',
-  'heif': 'image/heif',
-  'pdf': 'application/pdf',
-};
+const int _mimeHeaderLength = 32;
 
 @riverpod
 ReceiptInputRepository receiptInputRepository(Ref ref) {
   return DeviceReceiptInputRepository();
 }
 
+/// Abstraction for receipt input sources used by the controller layer.
 abstract interface class ReceiptInputRepository {
   Future<ReceiptInputResult> pickFromCamera();
 
   Future<ReceiptInputResult> pickFromFile();
 }
 
+/// Plugin-backed implementation using `image_picker` and `file_picker`.
+///
+/// Note: This class calls platform channels directly. We cover its decision
+/// flow through controller tests with a fake [ReceiptInputRepository], while
+/// end-to-end plugin behavior is validated in integration/manual testing.
 class DeviceReceiptInputRepository implements ReceiptInputRepository {
   DeviceReceiptInputRepository({
     ImagePicker? imagePicker,
@@ -93,19 +92,20 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
       fallbackPath: pickedFile.path,
       fallbackName: _fallbackCameraFileName,
     );
+    final bytes = await pickedFile.readAsBytes();
 
     return ReceiptInputSelection(
       source: ReceiptInputSource.camera,
       name: fileName,
-      mimeType: _mimeTypeForFileName(fileName),
-      bytes: await pickedFile.readAsBytes(),
+      mimeType: _detectMimeType(fileName: fileName, bytes: bytes),
+      bytes: bytes,
     );
   }
 
   Future<ReceiptInputSelection?> _pickFileSelection() async {
     final result = await _filePicker.pickFiles(
       allowMultiple: false,
-      withData: true,
+      withData: _shouldPreloadFileBytes,
       type: FileType.custom,
       allowedExtensions: _allowedReceiptExtensions,
     );
@@ -114,7 +114,7 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
     }
 
     final file = result.files.first;
-    final bytes = file.bytes;
+    final bytes = await _resolveFileBytes(file);
     if (bytes == null) {
       return null;
     }
@@ -128,9 +128,25 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
     return ReceiptInputSelection(
       source: ReceiptInputSource.file,
       name: fileName,
-      mimeType: _mimeTypeForFileName(fileName),
+      mimeType: _detectMimeType(fileName: fileName, bytes: bytes),
       bytes: bytes,
     );
+  }
+
+  bool get _shouldPreloadFileBytes => kIsWeb;
+
+  Future<Uint8List?> _resolveFileBytes(PlatformFile file) async {
+    final inMemoryBytes = file.bytes;
+    if (inMemoryBytes != null) {
+      return inMemoryBytes;
+    }
+
+    final path = file.path;
+    if (path == null || path.isEmpty) {
+      return null;
+    }
+
+    return XFile(path).readAsBytes();
   }
 }
 
@@ -160,16 +176,16 @@ String _fileNameFromPath(String path) {
   return normalizedPath.substring(separatorIndex + 1);
 }
 
-String _mimeTypeForFileName(String fileName) {
-  final extension = _fileExtension(fileName);
-  return _mimeTypeByExtension[extension] ?? _defaultMimeType;
-}
+String _detectMimeType({required String fileName, required Uint8List bytes}) {
+  final headerLength = bytes.length < _mimeHeaderLength
+      ? bytes.length
+      : _mimeHeaderLength;
+  final headerBytes = bytes.sublist(0, headerLength);
 
-String _fileExtension(String fileName) {
-  final dotIndex = fileName.lastIndexOf('.');
-  if (dotIndex == -1 || dotIndex == fileName.length - 1) {
-    return '';
+  final mimeType = lookupMimeType(fileName, headerBytes: headerBytes);
+  if (mimeType == null || mimeType.isEmpty) {
+    return _defaultMimeType;
   }
 
-  return fileName.substring(dotIndex + 1).toLowerCase();
+  return mimeType;
 }
