@@ -139,10 +139,16 @@ void main() {
   });
 
   testWidgets('switches home tabs and updates route path', (tester) async {
+    final user = _MockUser();
+    when(() => user.isAnonymous).thenReturn(false);
+    when(() => user.displayName).thenReturn('Jane Doe');
+    when(() => user.email).thenReturn('jane@example.com');
+    when(() => user.uid).thenReturn('uid-123');
+
     final container = ProviderContainer(
       overrides: [
         authStateChangesProvider.overrideWith(
-          (ref) => Stream<User?>.value(_MockUser()),
+          (ref) => Stream<User?>.value(user),
         ),
       ],
     );
@@ -189,6 +195,11 @@ void main() {
     expect(find.text('Language'), findsOneWidget);
     expect(find.text('Notifications'), findsOneWidget);
     expect(find.text('About'), findsOneWidget);
+
+    await tester.tap(find.text('Account').first);
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, AppRoutes.homeSettingsAccount);
+    expect(find.text('Sign out'), findsOneWidget);
   });
 
   testWidgets('redirects to welcome after logout from a home route', (

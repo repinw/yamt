@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
-  void _onTileTap(BuildContext context) {
+  void _onNotImplementedTap(BuildContext context) {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Not implemented yet')));
+  }
+
+  void _openAccountPage(BuildContext context) {
+    context.push(AppRoutes.homeSettingsAccount);
   }
 
   List<Widget> _tiles(AppLocalizations l10n, BuildContext context) {
@@ -16,25 +22,25 @@ class SettingsPage extends StatelessWidget {
         leading: const Icon(Icons.person_outline),
         title: Text(l10n.settingsAccountTitle),
         subtitle: Text(l10n.settingsAccountSubtitle),
-        onTap: () => _onTileTap(context),
+        onTap: () => _openAccountPage(context),
       ),
       ListTile(
         leading: const Icon(Icons.language_outlined),
         title: Text(l10n.settingsLanguageTitle),
         subtitle: Text(l10n.settingsLanguageSubtitle),
-        onTap: () => _onTileTap(context),
+        onTap: () => _onNotImplementedTap(context),
       ),
       ListTile(
         leading: const Icon(Icons.notifications_outlined),
         title: Text(l10n.settingsNotificationsTitle),
         subtitle: Text(l10n.settingsNotificationsSubtitle),
-        onTap: () => _onTileTap(context),
+        onTap: () => _onNotImplementedTap(context),
       ),
       ListTile(
         leading: const Icon(Icons.info_outline),
         title: Text(l10n.settingsAboutTitle),
         subtitle: Text(l10n.settingsAboutSubtitle),
-        onTap: () => _onTileTap(context),
+        onTap: () => _onNotImplementedTap(context),
       ),
     ];
   }

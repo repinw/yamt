@@ -46,7 +46,7 @@ final class GoogleSignInProvider
   }
 }
 
-String _$googleSignInHash() => r'3df1a6ba37aec166ba4579693211686ce0746440';
+String _$googleSignInHash() => r'89e250ff7810efbf0683555296eb50695555bceb';
 
 @ProviderFor(GoogleAuthController)
 final googleAuthControllerProvider = GoogleAuthControllerProvider._();
@@ -73,7 +73,7 @@ final class GoogleAuthControllerProvider
 }
 
 String _$googleAuthControllerHash() =>
-    r'70eb2f5397e688a80017861a6961307672b45778';
+    r'88863efe044143bd8d41ac7562858ec68ee5a92b';
 
 abstract class _$GoogleAuthController extends $AsyncNotifier<void> {
   FutureOr<void> build();

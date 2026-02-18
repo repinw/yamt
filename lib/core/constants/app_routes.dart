@@ -7,4 +7,5 @@ abstract final class AppRoutes {
   static const homeShopping = '/home/shopping';
   static const homeCalories = '/home/calories';
   static const homeSettings = '/home/settings';
+  static const homeSettingsAccount = '/home/settings/account';
 }

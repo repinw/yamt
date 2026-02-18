@@ -45,6 +45,36 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsAccountSubtitle => 'Profil und Anmeldung verwalten';
 
   @override
+  String get accountPageNoSession => 'Keine aktive Kontositzung.';
+
+  @override
+  String get accountPageGuestTitle => 'Gastkonto';
+
+  @override
+  String get accountPageGuestDescription => 'Verknüpfe dein Gastkonto mit Google, um den Zugriff geräteübergreifend zu behalten.';
+
+  @override
+  String get accountPageLinkGoogle => 'Mit Google verknüpfen';
+
+  @override
+  String get accountPageLinkSuccess => 'Konto erfolgreich verknüpft.';
+
+  @override
+  String get accountPageSignOut => 'Abmelden';
+
+  @override
+  String get accountPageDisplayName => 'Anzeigename';
+
+  @override
+  String get accountPageEmail => 'E-Mail';
+
+  @override
+  String get accountPageUserId => 'Benutzer-ID';
+
+  @override
+  String get accountPageNotSet => 'Nicht gesetzt';
+
+  @override
   String get settingsAboutTitle => 'Über die App';
 
   @override

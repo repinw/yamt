@@ -167,6 +167,66 @@ abstract class AppLocalizations {
   /// **'Manage profile and sign-in'**
   String get settingsAccountSubtitle;
 
+  /// No description provided for @accountPageNoSession.
+  ///
+  /// In en, this message translates to:
+  /// **'No active account session.'**
+  String get accountPageNoSession;
+
+  /// No description provided for @accountPageGuestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest account'**
+  String get accountPageGuestTitle;
+
+  /// No description provided for @accountPageGuestDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Link your guest account with Google to keep access across devices.'**
+  String get accountPageGuestDescription;
+
+  /// No description provided for @accountPageLinkGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link with Google'**
+  String get accountPageLinkGoogle;
+
+  /// No description provided for @accountPageLinkSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Account linked successfully.'**
+  String get accountPageLinkSuccess;
+
+  /// No description provided for @accountPageSignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get accountPageSignOut;
+
+  /// No description provided for @accountPageDisplayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name'**
+  String get accountPageDisplayName;
+
+  /// No description provided for @accountPageEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get accountPageEmail;
+
+  /// No description provided for @accountPageUserId.
+  ///
+  /// In en, this message translates to:
+  /// **'User ID'**
+  String get accountPageUserId;
+
+  /// No description provided for @accountPageNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get accountPageNotSet;
+
   /// No description provided for @settingsAboutTitle.
   ///
   /// In en, this message translates to:

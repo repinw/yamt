@@ -45,6 +45,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAccountSubtitle => 'Manage profile and sign-in';
 
   @override
+  String get accountPageNoSession => 'No active account session.';
+
+  @override
+  String get accountPageGuestTitle => 'Guest account';
+
+  @override
+  String get accountPageGuestDescription => 'Link your guest account with Google to keep access across devices.';
+
+  @override
+  String get accountPageLinkGoogle => 'Link with Google';
+
+  @override
+  String get accountPageLinkSuccess => 'Account linked successfully.';
+
+  @override
+  String get accountPageSignOut => 'Sign out';
+
+  @override
+  String get accountPageDisplayName => 'Display name';
+
+  @override
+  String get accountPageEmail => 'Email';
+
+  @override
+  String get accountPageUserId => 'User ID';
+
+  @override
+  String get accountPageNotSet => 'Not set';
+
+  @override
   String get settingsAboutTitle => 'About';
 
   @override
