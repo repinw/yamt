@@ -167,6 +167,9 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
     expect(router.state.uri.path, AppRoutes.homeSettings);
+    expect(find.text('Language'), findsOneWidget);
+    expect(find.text('Notifications'), findsOneWidget);
+    expect(find.text('About'), findsOneWidget);
   });
 
   testWidgets('redirects to welcome after logout from a home route', (

@@ -27,6 +27,30 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeSettings => 'Einstellungen';
 
   @override
+  String get settingsLanguageTitle => 'Sprache';
+
+  @override
+  String get settingsLanguageSubtitle => 'App-Sprache auswählen';
+
+  @override
+  String get settingsNotificationsTitle => 'Benachrichtigungen';
+
+  @override
+  String get settingsNotificationsSubtitle => 'Erinnerungen und Hinweise verwalten';
+
+  @override
+  String get settingsAccountTitle => 'Konto';
+
+  @override
+  String get settingsAccountSubtitle => 'Profil und Anmeldung verwalten';
+
+  @override
+  String get settingsAboutTitle => 'Über die App';
+
+  @override
+  String get settingsAboutSubtitle => 'App-Version und Informationen';
+
+  @override
   String get appSubtitle => 'Yet Another Meal Tracker';
 
   @override
