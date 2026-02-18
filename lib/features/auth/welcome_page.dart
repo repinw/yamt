@@ -1,12 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/provider/auth_error_view_model.dart';
 import 'package:yamt/features/auth/provider/auth_form_controller.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/provider/google_auth_controller.dart';
 import 'package:yamt/features/auth/provider/guest_auth_controller.dart';
 import 'package:yamt/features/auth/widgets/login_form.dart';
@@ -25,6 +21,8 @@ class WelcomePage extends ConsumerStatefulWidget {
 class _WelcomePageState extends ConsumerState<WelcomePage> {
   _AuthFormMode _authFormMode = _AuthFormMode.register;
 
+  bool get _isLoginMode => _authFormMode == _AuthFormMode.login;
+
   void _showAuthError({
     required BuildContext context,
     required AppLocalizations l10n,
@@ -38,163 +36,181 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final authState = ref.watch(authStateChangesProvider);
-    final authUser = authState is AsyncData<User?> ? authState.value : null;
-    if (authUser != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          context.go(AppRoutes.home);
-        }
-      });
-    }
+  void _handleAsyncError(
+    AsyncValue<void> next,
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
+    next.whenOrNull(
+      error: (error, stackTrace) =>
+          _showAuthError(context: context, l10n: l10n, error: error),
+    );
+  }
 
-    final authFormState = ref.watch(authFormControllerProvider);
-    final isAuthFormLoading = authFormState.isLoading;
-    final googleAuthState = ref.watch(googleAuthControllerProvider);
-    final isGoogleLoading = googleAuthState.isLoading;
-    final guestAuthState = ref.watch(guestAuthControllerProvider);
-    final isGuestLoading = guestAuthState.isLoading;
-
-    ref.listen<AsyncValue<User?>>(authStateChangesProvider, (previous, next) {
-      next.whenData((user) {
-        if (user != null) {
-          context.go(AppRoutes.home);
-        }
-      });
-    });
-
+  void _listenForAuthErrors(BuildContext context, AppLocalizations l10n) {
     ref.listen<AsyncValue<void>>(authFormControllerProvider, (previous, next) {
-      next.whenOrNull(
-        error: (error, stackTrace) =>
-            _showAuthError(context: context, l10n: l10n, error: error),
-      );
+      _handleAsyncError(next, context, l10n);
     });
-
     ref.listen<AsyncValue<void>>(guestAuthControllerProvider, (previous, next) {
-      next.whenOrNull(
-        error: (error, stackTrace) =>
-            _showAuthError(context: context, l10n: l10n, error: error),
-      );
+      _handleAsyncError(next, context, l10n);
     });
     ref.listen<AsyncValue<void>>(googleAuthControllerProvider, (
       previous,
       next,
     ) {
-      next.whenOrNull(
-        error: (error, stackTrace) =>
-            _showAuthError(context: context, l10n: l10n, error: error),
-      );
+      _handleAsyncError(next, context, l10n);
     });
+  }
+
+  void _toggleAuthMode() {
+    setState(() {
+      _authFormMode = _isLoginMode
+          ? _AuthFormMode.register
+          : _AuthFormMode.login;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    _listenForAuthErrors(context, l10n);
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                flex: 3,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - 24,
+                ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.kitchen_outlined, size: 80),
+                    _WelcomeHeader(l10n: l10n),
                     const SizedBox(height: 24),
-                    Text(
-                      l10n.welcomeTitle,
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
+                    if (_isLoginMode)
+                      const LoginForm()
+                    else
+                      const RegisterForm(),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: _toggleAuthMode,
+                      child: Text(
+                        _isLoginMode
+                            ? l10n.authSwitchToRegister
+                            : l10n.authSwitchToLogin,
+                      ),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.appSubtitle,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(),
-                      textAlign: TextAlign.center,
+                    const SizedBox(height: 24),
+                    _SocialAuthButtons(
+                      isLoginMode: _isLoginMode,
+                      onGooglePressed: () => ref
+                          .read(googleAuthControllerProvider.notifier)
+                          .signInWithGoogle(),
+                      onGuestPressed: () => ref
+                          .read(guestAuthControllerProvider.notifier)
+                          .signInAnonymously(),
                     ),
                   ],
                 ),
               ),
-              Expanded(
-                flex: 4,
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(vertical: 5),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (_authFormMode == _AuthFormMode.login)
-                        const LoginForm()
-                      else
-                        const RegisterForm(),
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _authFormMode = _authFormMode == _AuthFormMode.login
-                                ? _AuthFormMode.register
-                                : _AuthFormMode.login;
-                          });
-                        },
-                        child: Text(
-                          _authFormMode == _AuthFormMode.login
-                              ? l10n.authSwitchToRegister
-                              : l10n.authSwitchToLogin,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      OutlinedButton.icon(
-                        onPressed: isGoogleLoading || isAuthFormLoading
-                            ? null
-                            : () => ref
-                                  .read(googleAuthControllerProvider.notifier)
-                                  .signInWithGoogle(),
-                        icon: const FaIcon(FontAwesomeIcons.google, size: 18),
-                        label: isGoogleLoading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(
-                                _authFormMode == _AuthFormMode.login
-                                    ? l10n.loginWithGoogle
-                                    : l10n.registerWithGoogle,
-                              ),
-                      ),
-                      const SizedBox(height: 12),
-                      OutlinedButton.icon(
-                        onPressed:
-                            isGuestLoading ||
-                                isGoogleLoading ||
-                                isAuthFormLoading
-                            ? null
-                            : () => ref
-                                  .read(guestAuthControllerProvider.notifier)
-                                  .signInAnonymously(),
-                        icon: const Icon(Icons.person_outline),
-                        label: isGuestLoading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(l10n.loginAsGuest),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
+    );
+  }
+}
+
+class _WelcomeHeader extends StatelessWidget {
+  const _WelcomeHeader({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.kitchen_outlined, size: 80),
+        const SizedBox(height: 24),
+        Text(
+          l10n.welcomeTitle,
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          l10n.appSubtitle,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+}
+
+class _SocialAuthButtons extends ConsumerWidget {
+  const _SocialAuthButtons({
+    required this.isLoginMode,
+    required this.onGooglePressed,
+    required this.onGuestPressed,
+  });
+
+  final bool isLoginMode;
+  final VoidCallback onGooglePressed;
+  final VoidCallback onGuestPressed;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final isAuthFormLoading = ref.watch(authFormControllerProvider).isLoading;
+    final isGoogleLoading = ref.watch(googleAuthControllerProvider).isLoading;
+    final isGuestLoading = ref.watch(guestAuthControllerProvider).isLoading;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        OutlinedButton.icon(
+          onPressed: isGoogleLoading || isAuthFormLoading
+              ? null
+              : onGooglePressed,
+          icon: const FaIcon(FontAwesomeIcons.google, size: 18),
+          label: isGoogleLoading
+              ? const _ButtonProgressIndicator()
+              : Text(
+                  isLoginMode ? l10n.loginWithGoogle : l10n.registerWithGoogle,
+                ),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: isGuestLoading || isGoogleLoading || isAuthFormLoading
+              ? null
+              : onGuestPressed,
+          icon: const Icon(Icons.person_outline),
+          label: isGuestLoading
+              ? const _ButtonProgressIndicator()
+              : Text(l10n.loginAsGuest),
+        ),
+      ],
+    );
+  }
+}
+
+class _ButtonProgressIndicator extends StatelessWidget {
+  const _ButtonProgressIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 20,
+      height: 20,
+      child: CircularProgressIndicator(strokeWidth: 2),
     );
   }
 }

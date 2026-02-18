@@ -42,11 +42,11 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isLoading = ref.watch(authFormControllerProvider).isLoading;
-    final emailValidator = buildEmailValidator(context);
-    final passwordValidator = buildPasswordValidator(context);
-    final confirmPasswordValidator = buildConfirmPasswordValidator(
-      _passwordController,
-      context,
+    final validators = AuthValidationFactory.fromContext(context);
+    final emailValidator = validators.email();
+    final passwordValidator = validators.password();
+    final confirmPasswordValidator = validators.confirmPassword(
+      passwordController: _passwordController,
       mismatchMessage: l10n.validationPasswordsDoNotMatch,
     );
 

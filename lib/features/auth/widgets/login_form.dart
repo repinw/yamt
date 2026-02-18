@@ -40,8 +40,9 @@ class _LoginFormState extends ConsumerState<LoginForm> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isLoading = ref.watch(authFormControllerProvider).isLoading;
-    final emailValidator = buildEmailValidator(context);
-    final passwordValidator = buildPasswordValidator(context);
+    final validators = AuthValidationFactory.fromContext(context);
+    final emailValidator = validators.email();
+    final passwordValidator = validators.password();
 
     return Form(
       key: _formKey,
