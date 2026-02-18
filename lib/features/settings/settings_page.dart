@@ -44,13 +44,11 @@ class SettingsPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final tiles = _tiles(l10n, context);
 
-    return Material(
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        itemCount: tiles.length,
-        itemBuilder: (context, index) => tiles[index],
-        separatorBuilder: (context, index) => const Divider(height: 1),
-      ),
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      itemCount: tiles.length,
+      itemBuilder: (context, index) => tiles[index],
+      separatorBuilder: (context, index) => const Divider(height: 1),
     );
   }
 }
