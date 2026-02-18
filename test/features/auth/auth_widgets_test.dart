@@ -10,6 +10,7 @@ import 'package:yamt/features/auth/provider/google_auth_controller.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
 import 'package:yamt/features/auth/widgets/login_form.dart';
+import 'package:yamt/features/auth/widgets/register_form.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../helpers/fake_auth_repository.dart';
@@ -72,6 +73,31 @@ void main() {
 
     expect(find.text('The field is required'), findsNWidgets(2));
   });
+
+  testWidgets(
+    'RegisterForm shows validation error when passwords do not match',
+    (tester) async {
+      await tester.pumpWidget(_wrapWithApp(const RegisterForm()));
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Email'),
+        'user@example.com',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Password'),
+        'secret123',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Confirm password'),
+        'different-secret',
+      );
+
+      await tester.tap(find.text('Create account'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Passwords do not match'), findsOneWidget);
+    },
+  );
 
   testWidgets('WelcomePage guest button triggers guest sign in', (
     tester,

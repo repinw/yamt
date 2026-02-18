@@ -47,12 +47,6 @@ class GoogleAuthController extends _$GoogleAuthController {
       await ref.read(firebaseAuthProvider).signInWithCredential(credential);
       state = const AsyncData(null);
     } on GoogleSignInException catch (error, stackTrace) {
-      debugPrint(
-        'GoogleSignInException: code=${error.code}, '
-        'description=${error.description}, details=${error.details}',
-      );
-      debugPrintStack(stackTrace: stackTrace);
-
       if (error.code == GoogleSignInExceptionCode.interrupted) {
         state = const AsyncData(null);
         return;

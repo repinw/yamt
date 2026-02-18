@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -10,24 +13,70 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 class _MockUser extends Mock implements User {}
 
 void main() {
-  testWidgets('shows welcome screen on app start', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          authStateChangesProvider.overrideWith((ref) => const Stream.empty()),
-        ],
-        child: const YAMT(),
-      ),
+  testWidgets('shows splash while auth state is loading', (tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.fromFuture(
+            Future<User?>.delayed(const Duration(milliseconds: 50), () => null),
+          ),
+        ),
+      ],
     );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await tester.pump();
+
+    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.splash);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    await tester.pump(const Duration(milliseconds: 60));
     await tester.pumpAndSettle();
 
+    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.welcome);
     expect(find.text('Yet Another Meal Tracker'), findsOneWidget);
+  });
+
+  testWidgets('keeps redirecting to splash while auth stream has not emitted', (
+    tester,
+  ) async {
+    final authController = StreamController<User?>();
+    final container = ProviderContainer(
+      overrides: [
+        authStateChangesProvider.overrideWith((ref) => authController.stream),
+      ],
+    );
+    addTearDown(authController.close);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await tester.pump();
+
+    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.splash);
+
+    container.read(appRouterProvider).go(AppRoutes.home);
+    await tester.pump();
+
+    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.splash);
+
+    authController.add(null);
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.welcome);
   });
 
   testWidgets('redirects root path to welcome', (tester) async {
     final container = ProviderContainer(
       overrides: [
-        authStateChangesProvider.overrideWith((ref) => const Stream.empty()),
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(null),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -47,7 +96,9 @@ void main() {
   testWidgets('redirects unauthenticated user away from home', (tester) async {
     final container = ProviderContainer(
       overrides: [
-        authStateChangesProvider.overrideWith((ref) => const Stream.empty()),
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(null),
+        ),
       ],
     );
     addTearDown(container.dispose);
