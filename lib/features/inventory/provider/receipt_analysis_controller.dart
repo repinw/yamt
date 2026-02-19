@@ -8,7 +8,7 @@ import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
 
 part 'receipt_analysis_controller.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class ReceiptAnalysisController extends _$ReceiptAnalysisController {
   @override
   FutureOr<ReceiptAnalysisResult?> build() {
