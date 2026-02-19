@@ -60,6 +60,114 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptAnalysisFailed => 'Beleganalyse fehlgeschlagen. Bitte erneut versuchen.';
 
   @override
+  String get inventoryReceiptReviewTitle => 'Belegpositionen prüfen';
+
+  @override
+  String get inventoryReceiptReviewPriceTitle => 'Preisübersicht';
+
+  @override
+  String get inventoryReceiptReviewPriceTotal => 'Beleg gesamt';
+
+  @override
+  String get inventoryReceiptReviewPriceSavable => 'Im Vorrat gespeichert';
+
+  @override
+  String get inventoryReceiptReviewPriceExcluded => 'Ausgeschlossene Positionen';
+
+  @override
+  String get inventoryReceiptReviewEmpty => 'Keine Positionen im Beleg gefunden.';
+
+  @override
+  String get inventoryReceiptReviewExcludedTag => 'Nur prüfen';
+
+  @override
+  String get inventoryReceiptReviewEditAction => 'Bearbeiten';
+
+  @override
+  String get inventoryReceiptReviewEditTitle => 'Belegposition bearbeiten';
+
+  @override
+  String get inventoryReceiptReviewApplyItemAction => 'Änderungen übernehmen';
+
+  @override
+  String get inventoryReceiptReviewFieldId => 'ID';
+
+  @override
+  String get inventoryReceiptReviewFieldName => 'Name';
+
+  @override
+  String get inventoryReceiptReviewFieldEntryDate => 'Erfassungsdatum';
+
+  @override
+  String get inventoryReceiptReviewFieldStoreName => 'Geschäft';
+
+  @override
+  String get inventoryReceiptReviewFieldQuantity => 'Menge';
+
+  @override
+  String get inventoryReceiptReviewFieldInitialQuantity => 'Anfangsmenge';
+
+  @override
+  String get inventoryReceiptReviewFieldUnitPrice => 'Stückpreis';
+
+  @override
+  String get inventoryReceiptReviewFieldWeight => 'Gewicht';
+
+  @override
+  String get inventoryReceiptReviewFieldBrand => 'Marke';
+
+  @override
+  String get inventoryReceiptReviewFieldCategory => 'Kategorie';
+
+  @override
+  String get inventoryReceiptReviewFieldDiscounts => 'Rabatte (JSON)';
+
+  @override
+  String get inventoryReceiptReviewDiscountsHint => 'JSON oder Paare: coupon=-1.50';
+
+  @override
+  String get inventoryReceiptReviewFieldReceiptId => 'Beleg-ID';
+
+  @override
+  String get inventoryReceiptReviewFieldReceiptDate => 'Belegdatum';
+
+  @override
+  String get inventoryReceiptReviewFieldLanguage => 'Sprache';
+
+  @override
+  String get inventoryReceiptReviewFieldIsDeposit => 'Ist Pfandartikel';
+
+  @override
+  String get inventoryReceiptReviewFieldIsDiscount => 'Ist Rabattposition';
+
+  @override
+  String get inventoryReceiptReviewSelectDateAction => 'Datum wählen';
+
+  @override
+  String get inventoryReceiptReviewClearDateAction => 'Datum löschen';
+
+  @override
+  String get inventoryReceiptReviewNoDate => 'Kein Datum';
+
+  @override
+  String get inventoryReceiptReviewInvalidNumber => 'Bitte gültige Zahlen eingeben.';
+
+  @override
+  String get inventoryReceiptReviewInvalidDiscounts => 'JSON oder key=value verwenden.';
+
+  @override
+  String get inventoryReceiptReviewCancelAction => 'Abbrechen';
+
+  @override
+  String get inventoryReceiptReviewSaveAction => 'Im Vorrat speichern';
+
+  @override
+  String get inventoryReceiptSaveSucceeded => 'Positionen zum Vorrat hinzugefügt.';
+
+  @override
+  String get inventoryReceiptSaveFailed => 'Positionen konnten nicht gespeichert werden.';
+
+  @override
   String get inventoryEmptyState => 'Noch keine Vorratsartikel vorhanden. Scanne einen Beleg, um zu starten.';
 
   @override

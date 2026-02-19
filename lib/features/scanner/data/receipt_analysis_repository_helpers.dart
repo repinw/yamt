@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
-import 'package:yamt/features/inventory/domain/receipt_analysis_models.dart';
-import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 
 const String _repositoryLogName = 'DeviceReceiptAnalysisRepository';
 

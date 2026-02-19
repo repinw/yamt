@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/data/receipt_analysis_parser.dart';
-import 'package:yamt/features/inventory/data/receipt_analysis_repository.dart';
-import 'package:yamt/features/inventory/domain/receipt_analysis_contracts.dart';
-import 'package:yamt/features/inventory/domain/receipt_analysis_models.dart';
-import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/data/receipt_analysis_parser.dart';
+import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_contracts.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 
 class _FakeTemplateConfigClient implements ReceiptTemplateConfigClient {
   _FakeTemplateConfigClient({required this.onLoadTemplateId});

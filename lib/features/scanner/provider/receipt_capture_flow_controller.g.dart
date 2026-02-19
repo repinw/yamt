@@ -39,7 +39,7 @@ final class ReceiptCaptureFlowControllerProvider
 }
 
 String _$receiptCaptureFlowControllerHash() =>
-    r'084d9ffeddc5a882814def547be5e77e81fe25c5';
+    r'fd0a61fd7ee98a48d555ba47dd81eca2350a8cbf';
 
 abstract class _$ReceiptCaptureFlowController
     extends $AsyncNotifier<ReceiptCaptureFlowResult?> {
