@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/scanner/domain/receipt_item_input_parser.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryReceiptItemEditorSheet extends StatefulWidget {
@@ -18,6 +19,8 @@ class InventoryReceiptItemEditorSheet extends StatefulWidget {
 
 class _InventoryReceiptItemEditorSheetState
     extends State<InventoryReceiptItemEditorSheet> {
+  static const _inputParser = ReceiptItemInputParser();
+
   late final TextEditingController _nameController;
   late final TextEditingController _storeNameController;
   late final TextEditingController _quantityController;
@@ -299,20 +302,28 @@ class _InventoryReceiptItemEditorSheetState
 
   void _applyChanges() {
     final l10n = AppLocalizations.of(context)!;
-    final parsedNumbers = _parseNumbers();
+    final locale = Localizations.localeOf(context).toString();
+    final parsedNumbers = _inputParser.parseNumbers(
+      quantityText: _quantityController.text,
+      unitPriceText: _unitPriceController.text,
+      locale: locale,
+    );
     if (parsedNumbers == null) {
       _showError(l10n.inventoryReceiptReviewInvalidNumber);
       return;
     }
 
-    final parsedDiscounts = _parseDiscounts(_discountsController.text);
+    final parsedDiscounts = _inputParser.parseDiscounts(
+      _discountsController.text,
+      locale: locale,
+    );
     if (parsedDiscounts == null) {
       _showError(l10n.inventoryReceiptReviewInvalidDiscounts);
       return;
     }
 
-    final quantity = parsedNumbers.$1;
-    final unitPrice = parsedNumbers.$2;
+    final quantity = parsedNumbers.quantity;
+    final unitPrice = parsedNumbers.unitPrice;
     final safeInitialQuantity = quantity < 1 ? 1 : quantity;
 
     final updated = widget.item.copyWith(
@@ -335,103 +346,6 @@ class _InventoryReceiptItemEditorSheetState
     );
 
     Navigator.of(context).pop(updated);
-  }
-
-  (int, double)? _parseNumbers() {
-    final quantity = int.tryParse(_quantityController.text.trim());
-    final unitPrice = _parseDouble(_unitPriceController.text.trim());
-
-    if (quantity == null || unitPrice == null) {
-      return null;
-    }
-    return (quantity, unitPrice);
-  }
-
-  double? _parseDouble(String value) {
-    if (value.isEmpty) {
-      return null;
-    }
-    final normalized = value.replaceAll(',', '.');
-    return double.tryParse(normalized);
-  }
-
-  Map<String, double>? _parseDiscounts(String raw) {
-    final normalized = raw.trim();
-    if (normalized.isEmpty) {
-      return const <String, double>{};
-    }
-
-    final fromJson = _parseDiscountsFromJson(normalized);
-    if (fromJson != null) {
-      return fromJson;
-    }
-
-    return _parseDiscountsFromPairs(normalized);
-  }
-
-  Map<String, double>? _parseDiscountsFromJson(String raw) {
-    try {
-      final decoded = jsonDecode(raw);
-      if (decoded is! Map<String, dynamic>) {
-        return null;
-      }
-
-      final parsed = <String, double>{};
-      for (final entry in decoded.entries) {
-        final amount = entry.value;
-        if (amount is num) {
-          parsed[entry.key] = amount.toDouble();
-          continue;
-        }
-        if (amount is String) {
-          final parsedAmount = _parseDouble(amount);
-          if (parsedAmount == null) {
-            return null;
-          }
-          parsed[entry.key] = parsedAmount;
-          continue;
-        }
-        return null;
-      }
-      return parsed;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  Map<String, double>? _parseDiscountsFromPairs(String raw) {
-    final entries = raw.split(',');
-    final parsed = <String, double>{};
-
-    for (final entry in entries) {
-      final normalizedEntry = entry.trim();
-      if (normalizedEntry.isEmpty) {
-        continue;
-      }
-
-      final separator = normalizedEntry.contains('=')
-          ? '='
-          : normalizedEntry.contains(':')
-          ? ':'
-          : null;
-      if (separator == null) {
-        return null;
-      }
-
-      final parts = normalizedEntry.split(separator);
-      if (parts.length != 2) {
-        return null;
-      }
-
-      final key = parts.first.trim();
-      final value = _parseDouble(parts.last.trim());
-      if (key.isEmpty || value == null) {
-        return null;
-      }
-      parsed[key] = value;
-    }
-
-    return parsed;
   }
 
   String _requiredText(String value, {required String fallback}) {
