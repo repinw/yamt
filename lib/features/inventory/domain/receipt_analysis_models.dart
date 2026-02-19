@@ -10,6 +10,7 @@ abstract final class ReceiptAnalysisErrorCodes {
   static const emptyResponse = 'analysis_empty_response';
   static const aiRequestFailed = 'analysis_ai_request_failed';
   static const parseFailed = 'analysis_parse_failed';
+  static const storageFailed = 'analysis_storage_failed';
   static const unexpected = 'analysis_unexpected';
 }
 
