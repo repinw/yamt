@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:yamt/features/home/home_tab_page.dart';
 import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_receipt_actions_sheet.dart';
+import 'package:yamt/features/inventory/provider/receipt_analysis_controller.dart';
 import 'package:yamt/features/inventory/provider/receipt_input_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -106,6 +108,10 @@ class HomeContextFab extends ConsumerWidget {
       ReceiptInputSource.camera => await controller.pickFromCamera(),
       ReceiptInputSource.file => await controller.pickFromFile(),
     };
+    if (result.status == ReceiptInputStatus.selected &&
+        result.selection != null) {
+      unawaited(_runReceiptAnalysis(ref, result.selection!));
+    }
     if (!context.mounted) return;
 
     final message = switch (result.status) {
@@ -117,6 +123,22 @@ class HomeContextFab extends ConsumerWidget {
     if (message == null) return;
 
     _showSnackBar(context, message);
+  }
+
+  Future<void> _runReceiptAnalysis(
+    WidgetRef ref,
+    ReceiptInputSelection selection,
+  ) async {
+    final controller = ref.read(receiptAnalysisControllerProvider.notifier);
+    final result = await controller.analyzeSelection(selection);
+    if (result.isSuccess) {
+      return;
+    }
+
+    log(
+      'Receipt analysis not finished yet: ${result.errorCode}',
+      name: 'HomeContextFab',
+    );
   }
 
   String _selectedMessage(ReceiptInputSource source, AppLocalizations l10n) {
