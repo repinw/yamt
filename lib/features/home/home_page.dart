@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/features/home/home_tab_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -16,18 +17,26 @@ class HomePage extends ConsumerWidget {
     );
   }
 
+  HomeTabType _currentTab() {
+    return switch (navigationShell.currentIndex) {
+      0 => HomeTabType.inventory,
+      1 => HomeTabType.shopping,
+      2 => HomeTabType.calories,
+      3 => HomeTabType.settings,
+      _ => HomeTabType.inventory, // coverage:ignore-line
+    };
+  }
+
   String _titleForTab(AppLocalizations l10n) {
-    switch (navigationShell.currentIndex) {
-      case 0:
+    switch (_currentTab()) {
+      case HomeTabType.inventory:
         return l10n.homeInventory;
-      case 1:
+      case HomeTabType.shopping:
         return l10n.homeShopping;
-      case 2:
+      case HomeTabType.calories:
         return l10n.homeCalories;
-      case 3:
+      case HomeTabType.settings:
         return l10n.homeSettings;
-      default:
-        return l10n.homeTitle; // coverage:ignore-line
     }
   }
 
@@ -39,9 +48,7 @@ class HomePage extends ConsumerWidget {
       appBar: AppBar(title: Text(_titleForTab(l10n))),
       body: navigationShell,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: HomeContextFab(
-        currentTabIndex: navigationShell.currentIndex,
-      ),
+      floatingActionButton: HomeContextFab(currentTab: _currentTab()),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: navigationShell.currentIndex,

@@ -3,15 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/features/home/home_tab_page.dart';
 import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_receipt_actions_sheet.dart';
 import 'package:yamt/features/inventory/provider/receipt_input_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class HomeContextFab extends ConsumerWidget {
-  const HomeContextFab({super.key, required this.currentTabIndex});
+  const HomeContextFab({super.key, required this.currentTab});
 
-  final int currentTabIndex;
+  final HomeTabType currentTab;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,11 +26,12 @@ class HomeContextFab extends ConsumerWidget {
   }
 
   String _fabTooltip(AppLocalizations l10n) {
-    if (currentTabIndex == 0) {
-      return l10n.inventoryFabTooltip;
-    }
-
-    return l10n.homeQuickActionTooltip;
+    return switch (currentTab) {
+      HomeTabType.inventory => l10n.inventoryFabTooltip,
+      HomeTabType.shopping ||
+      HomeTabType.calories ||
+      HomeTabType.settings => l10n.homeQuickActionTooltip,
+    };
   }
 
   Future<void> _onPressed(
@@ -37,21 +39,18 @@ class HomeContextFab extends ConsumerWidget {
     WidgetRef ref,
     AppLocalizations l10n,
   ) async {
-    switch (currentTabIndex) {
-      case 0:
+    switch (currentTab) {
+      case HomeTabType.inventory:
         await _openInventoryActionSheet(context, ref, l10n);
         return;
-      case 1:
+      case HomeTabType.shopping:
         _showSnackBar(context, l10n.homeShoppingActionContextPlaceholder);
         return;
-      case 2:
+      case HomeTabType.calories:
         _showSnackBar(context, l10n.homeCaloriesActionContextPlaceholder);
         return;
-      case 3:
+      case HomeTabType.settings:
         _showSnackBar(context, l10n.homeSettingsActionContextPlaceholder);
-        return;
-      default:
-        _showSnackBar(context, l10n.homeQuickActionTapped);
         return;
     }
   }

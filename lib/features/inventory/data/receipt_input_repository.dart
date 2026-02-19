@@ -23,8 +23,21 @@ const String _fallbackUploadFileName = 'receipt-upload';
 const int _mimeHeaderLength = 32;
 
 @riverpod
+ImagePicker imagePicker(Ref ref) {
+  return ImagePicker();
+}
+
+@riverpod
+FilePicker filePicker(Ref ref) {
+  return FilePicker.platform;
+}
+
+@riverpod
 ReceiptInputRepository receiptInputRepository(Ref ref) {
-  return DeviceReceiptInputRepository();
+  return DeviceReceiptInputRepository(
+    imagePicker: ref.watch(imagePickerProvider),
+    filePicker: ref.watch(filePickerProvider),
+  );
 }
 
 /// Abstraction for receipt input sources used by the controller layer.
@@ -41,10 +54,10 @@ abstract interface class ReceiptInputRepository {
 /// end-to-end plugin behavior is validated in integration/manual testing.
 class DeviceReceiptInputRepository implements ReceiptInputRepository {
   DeviceReceiptInputRepository({
-    ImagePicker? imagePicker,
-    FilePicker? filePicker,
-  }) : _imagePicker = imagePicker ?? ImagePicker(),
-       _filePicker = filePicker ?? FilePicker.platform;
+    required ImagePicker imagePicker,
+    required FilePicker filePicker,
+  }) : _imagePicker = imagePicker,
+       _filePicker = filePicker;
 
   final ImagePicker _imagePicker;
   final FilePicker _filePicker;
@@ -155,8 +168,9 @@ String _resolvedFileName({
   required String fallbackName,
   String? fallbackPath,
 }) {
-  if (primaryName.isNotEmpty) {
-    return primaryName;
+  final normalizedPrimaryName = _fileNameFromPath(primaryName);
+  if (normalizedPrimaryName.isNotEmpty) {
+    return normalizedPrimaryName;
   }
 
   final fromPath = fallbackPath == null ? '' : _fileNameFromPath(fallbackPath);

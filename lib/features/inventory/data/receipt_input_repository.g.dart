@@ -9,6 +9,88 @@ part of 'receipt_input_repository.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(imagePicker)
+final imagePickerProvider = ImagePickerProvider._();
+
+final class ImagePickerProvider
+    extends $FunctionalProvider<ImagePicker, ImagePicker, ImagePicker>
+    with $Provider<ImagePicker> {
+  ImagePickerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'imagePickerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$imagePickerHash();
+
+  @$internal
+  @override
+  $ProviderElement<ImagePicker> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  ImagePicker create(Ref ref) {
+    return imagePicker(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ImagePicker value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ImagePicker>(value),
+    );
+  }
+}
+
+String _$imagePickerHash() => r'7877699a862be48e962306635347623c45e91971';
+
+@ProviderFor(filePicker)
+final filePickerProvider = FilePickerProvider._();
+
+final class FilePickerProvider
+    extends $FunctionalProvider<FilePicker, FilePicker, FilePicker>
+    with $Provider<FilePicker> {
+  FilePickerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'filePickerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$filePickerHash();
+
+  @$internal
+  @override
+  $ProviderElement<FilePicker> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  FilePicker create(Ref ref) {
+    return filePicker(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(FilePicker value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<FilePicker>(value),
+    );
+  }
+}
+
+String _$filePickerHash() => r'bae1fe0c95c85532cffec63b62cfe564b8356d75';
+
 @ProviderFor(receiptInputRepository)
 final receiptInputRepositoryProvider = ReceiptInputRepositoryProvider._();
 
@@ -55,4 +137,4 @@ final class ReceiptInputRepositoryProvider
 }
 
 String _$receiptInputRepositoryHash() =>
-    r'bdbe44b861541ba8ad02238ad4d4a8e62fbcd0ef';
+    r'd7db312d54ac4d1b64927f93b0c4a138a432234e';
