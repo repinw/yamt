@@ -33,7 +33,7 @@ void main() {
     expect(find.text('Settings'), findsOneWidget);
   });
 
-  testWidgets('quick action button shows feedback snackbar', (tester) async {
+  testWidgets('inventory FAB opens receipt action sheet', (tester) async {
     final container = ProviderContainer(
       overrides: [
         authStateChangesProvider.overrideWith(
@@ -51,6 +51,41 @@ void main() {
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
 
-    expect(find.text('Quick action tapped'), findsOneWidget);
+    expect(find.text('Scan receipt (camera)'), findsOneWidget);
+    expect(find.text('Upload receipt (image/PDF)'), findsOneWidget);
+  });
+
+  testWidgets('non-inventory tabs show contextual snackbar', (tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(_MockUser()),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    expect(find.text('Shopping action coming soon.'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.local_fire_department_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    expect(find.text('Calories action coming soon.'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.settings));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    expect(find.text('Settings action coming soon.'), findsOneWidget);
   });
 }

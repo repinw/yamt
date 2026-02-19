@@ -1,0 +1,42 @@
+import 'package:flutter/material.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+class InventoryReceiptActionsSheet extends StatelessWidget {
+  const InventoryReceiptActionsSheet({
+    super.key,
+    required this.isCameraEnabled,
+    required this.onScanCameraTap,
+    required this.onUploadFileTap,
+  });
+
+  final bool isCameraEnabled;
+  final VoidCallback onScanCameraTap;
+  final VoidCallback onUploadFileTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.photo_camera_outlined),
+            title: Text(l10n.inventoryActionScanCamera),
+            subtitle: isCameraEnabled
+                ? null
+                : Text(l10n.inventoryActionCameraUnsupported),
+            enabled: isCameraEnabled,
+            onTap: isCameraEnabled ? onScanCameraTap : null,
+          ),
+          ListTile(
+            leading: const Icon(Icons.upload_file_outlined),
+            title: Text(l10n.inventoryActionUploadFile),
+            onTap: onUploadFileTap,
+          ),
+        ],
+      ),
+    );
+  }
+}

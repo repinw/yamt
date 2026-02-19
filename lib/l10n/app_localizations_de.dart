@@ -33,6 +33,36 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeQuickActionTapped => 'Schnellaktion ausgeführt';
 
   @override
+  String get inventoryFabTooltip => 'Belegaktionen';
+
+  @override
+  String get inventoryActionScanCamera => 'Beleg scannen (Kamera)';
+
+  @override
+  String get inventoryActionUploadFile => 'Beleg hochladen (Bild/PDF)';
+
+  @override
+  String get inventoryActionCameraUnsupported => 'Kamera wird auf dieser Plattform nicht unterstützt.';
+
+  @override
+  String get inventoryReceiptSelectedCamera => 'Belegbild aufgenommen.';
+
+  @override
+  String get inventoryReceiptSelectedFile => 'Belegdatei ausgewählt.';
+
+  @override
+  String get inventoryReceiptSelectionFailed => 'Beleg konnte nicht ausgewählt werden. Bitte erneut versuchen.';
+
+  @override
+  String get homeShoppingActionContextPlaceholder => 'Einkaufsaktion folgt bald.';
+
+  @override
+  String get homeCaloriesActionContextPlaceholder => 'Kalorienaktion folgt bald.';
+
+  @override
+  String get homeSettingsActionContextPlaceholder => 'Einstellungsaktion folgt bald.';
+
+  @override
   String get settingsLanguageTitle => 'Sprache';
 
   @override
