@@ -60,6 +60,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptAnalysisFailed => 'Beleganalyse fehlgeschlagen. Bitte erneut versuchen.';
 
   @override
+  String get inventoryEmptyState => 'Noch keine Vorratsartikel vorhanden. Scanne einen Beleg, um zu starten.';
+
+  @override
+  String get inventoryLoadFailed => 'Vorratsartikel konnten nicht geladen werden.';
+
+  @override
+  String get inventoryRetryAction => 'Erneut versuchen';
+
+  @override
   String get homeShoppingActionContextPlaceholder => 'Einkaufsaktion folgt bald.';
 
   @override

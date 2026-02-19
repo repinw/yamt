@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' show log;
 
@@ -34,6 +35,7 @@ class PreferencesFridgeItemRepository implements FridgeItemRepository {
     : _preferences = preferences;
 
   final AppPreferences _preferences;
+  Future<void> _writeBarrier = Future<void>.value();
 
   @override
   Future<List<FridgeItem>> readAll() async {
@@ -84,20 +86,35 @@ class PreferencesFridgeItemRepository implements FridgeItemRepository {
 
   @override
   Future<bool> saveAll(List<FridgeItem> items) {
+    return _runExclusiveWrite(() => _saveAllUnlocked(items));
+  }
+
+  @override
+  Future<bool> appendAll(List<FridgeItem> items) async {
+    return _runExclusiveWrite(() async {
+      if (items.isEmpty) {
+        return true;
+      }
+
+      final existing = await readAll();
+      final combined = <FridgeItem>[...existing, ...items];
+      return _saveAllUnlocked(combined);
+    });
+  }
+
+  Future<bool> _saveAllUnlocked(List<FridgeItem> items) {
     final encoded = jsonEncode(
       items.map((item) => item.toJson()).toList(growable: false),
     );
     return _preferences.setString(_fridgeItemsStorageKey, encoded);
   }
 
-  @override
-  Future<bool> appendAll(List<FridgeItem> items) async {
-    if (items.isEmpty) {
-      return true;
-    }
-
-    final existing = await readAll();
-    final combined = <FridgeItem>[...existing, ...items];
-    return saveAll(combined);
+  Future<T> _runExclusiveWrite<T>(Future<T> Function() operation) {
+    final queuedOperation = _writeBarrier.then((_) => operation());
+    _writeBarrier = queuedOperation.then<void>(
+      (_) {},
+      onError: (Object error, StackTrace stackTrace) {},
+    );
+    return queuedOperation;
   }
 }

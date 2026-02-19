@@ -197,6 +197,24 @@ abstract class AppLocalizations {
   /// **'Receipt analysis failed. Please try again.'**
   String get inventoryReceiptAnalysisFailed;
 
+  /// No description provided for @inventoryEmptyState.
+  ///
+  /// In en, this message translates to:
+  /// **'No items in your fridge yet. Scan a receipt to get started.'**
+  String get inventoryEmptyState;
+
+  /// No description provided for @inventoryLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load inventory items.'**
+  String get inventoryLoadFailed;
+
+  /// No description provided for @inventoryRetryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get inventoryRetryAction;
+
   /// No description provided for @homeShoppingActionContextPlaceholder.
   ///
   /// In en, this message translates to:

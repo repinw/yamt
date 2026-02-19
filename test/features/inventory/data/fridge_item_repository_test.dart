@@ -44,6 +44,22 @@ class _FakeAppPreferences implements AppPreferences {
   }
 }
 
+class _DelayedFakeAppPreferences extends _FakeAppPreferences {
+  _DelayedFakeAppPreferences();
+
+  @override
+  Future<String?> getString(String key) async {
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    return super.getString(key);
+  }
+
+  @override
+  Future<bool> setString(String key, String value) async {
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    return super.setString(key, value);
+  }
+}
+
 FridgeItem _item(String id) {
   return FridgeItem(
     id: id,
@@ -121,4 +137,19 @@ void main() {
       expect(items[1].id, 'b');
     },
   );
+
+  test('appendAll writes are serialized for concurrent calls', () async {
+    final prefs = _DelayedFakeAppPreferences();
+    final repository = PreferencesFridgeItemRepository(preferences: prefs);
+
+    final writeA = repository.appendAll(<FridgeItem>[_item('a')]);
+    final writeB = repository.appendAll(<FridgeItem>[_item('b')]);
+    final results = await Future.wait(<Future<bool>>[writeA, writeB]);
+    final items = await repository.readAll();
+
+    expect(results.every((saved) => saved), isTrue);
+    expect(items, hasLength(2));
+    expect(items[0].id, 'a');
+    expect(items[1].id, 'b');
+  });
 }

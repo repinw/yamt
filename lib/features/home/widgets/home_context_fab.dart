@@ -7,6 +7,7 @@ import 'package:yamt/features/home/home_tab_page.dart';
 import 'package:yamt/features/inventory/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_receipt_actions_sheet.dart';
+import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
 import 'package:yamt/features/inventory/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/inventory/provider/receipt_input_capabilities.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -96,6 +97,10 @@ class HomeContextFab extends ConsumerWidget {
     final controller = ref.read(receiptCaptureFlowControllerProvider.notifier);
     final result = await controller.run(source: source);
     if (!context.mounted) return;
+
+    if (result.status == ReceiptCaptureFlowStatus.completed) {
+      ref.invalidate(fridgeItemsControllerProvider);
+    }
 
     final message = _messageForFlowResult(result, l10n);
     if (message == null) return;

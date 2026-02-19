@@ -60,6 +60,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptAnalysisFailed => 'Receipt analysis failed. Please try again.';
 
   @override
+  String get inventoryEmptyState => 'No items in your fridge yet. Scan a receipt to get started.';
+
+  @override
+  String get inventoryLoadFailed => 'Could not load inventory items.';
+
+  @override
+  String get inventoryRetryAction => 'Retry';
+
+  @override
   String get homeShoppingActionContextPlaceholder => 'Shopping action coming soon.';
 
   @override

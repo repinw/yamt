@@ -6,6 +6,7 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/home_tab_page.dart';
+import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/settings/account_page.dart';
 import 'package:yamt/features/settings/settings_page.dart';
 
@@ -68,8 +69,7 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.homeInventory,
-                builder: (context, state) =>
-                    const HomeTabPage(tab: HomeTabType.inventory),
+                builder: (context, state) => const InventoryPage(),
               ),
             ],
           ),

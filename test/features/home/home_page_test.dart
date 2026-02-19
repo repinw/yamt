@@ -4,9 +4,49 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/app.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 
 class _MockUser extends Mock implements User {}
+
+class _FakeAppPreferences implements AppPreferences {
+  _FakeAppPreferences({Map<String, Object>? initialValues})
+    : _values = initialValues ?? <String, Object>{};
+
+  final Map<String, Object> _values;
+
+  @override
+  String? getStringSync(String key) {
+    return _values[key] as String?;
+  }
+
+  @override
+  int? getIntSync(String key) {
+    return _values[key] as int?;
+  }
+
+  @override
+  Future<String?> getString(String key) async {
+    return _values[key] as String?;
+  }
+
+  @override
+  Future<int?> getInt(String key) async {
+    return _values[key] as int?;
+  }
+
+  @override
+  Future<bool> setString(String key, String value) async {
+    _values[key] = value;
+    return true;
+  }
+
+  @override
+  Future<bool> setInt(String key, int value) async {
+    _values[key] = value;
+    return true;
+  }
+}
 
 void main() {
   testWidgets('home shell shows app bar and tabs for authenticated user', (
@@ -17,6 +57,7 @@ void main() {
         authStateChangesProvider.overrideWith(
           (ref) => Stream<User?>.value(_MockUser()),
         ),
+        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
       ],
     );
     addTearDown(container.dispose);
@@ -39,6 +80,7 @@ void main() {
         authStateChangesProvider.overrideWith(
           (ref) => Stream<User?>.value(_MockUser()),
         ),
+        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
       ],
     );
     addTearDown(container.dispose);
@@ -61,6 +103,7 @@ void main() {
         authStateChangesProvider.overrideWith(
           (ref) => Stream<User?>.value(_MockUser()),
         ),
+        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
       ],
     );
     addTearDown(container.dispose);
