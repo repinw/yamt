@@ -54,6 +54,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptSelectionFailed => 'Could not select a receipt. Please try again.';
 
   @override
+  String get inventoryReceiptAnalysisSucceeded => 'Receipt analyzed successfully.';
+
+  @override
+  String get inventoryReceiptAnalysisFailed => 'Receipt analysis failed. Please try again.';
+
+  @override
   String get homeShoppingActionContextPlaceholder => 'Shopping action coming soon.';
 
   @override
