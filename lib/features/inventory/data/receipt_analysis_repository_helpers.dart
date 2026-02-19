@@ -16,6 +16,9 @@ abstract final class ReceiptAnalysisRepositoryFailures {
   static const aiRequest = ReceiptAnalysisResult.failed(
     errorCode: ReceiptAnalysisErrorCodes.aiRequestFailed,
   );
+  static const parse = ReceiptAnalysisResult.failed(
+    errorCode: ReceiptAnalysisErrorCodes.parseFailed,
+  );
 }
 
 Map<String, Object?> buildReceiptTemplateInputs(

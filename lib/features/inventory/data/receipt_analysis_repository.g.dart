@@ -55,4 +55,4 @@ final class ReceiptAnalysisRepositoryProvider
 }
 
 String _$receiptAnalysisRepositoryHash() =>
-    r'eee21a4940a8364af860624d8bb707a5c8c3d465';
+    r'73f63a0d04b92d71a37117749199578d14171a1b';

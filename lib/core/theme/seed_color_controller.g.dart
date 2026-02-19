@@ -42,7 +42,7 @@ final class SeedColorControllerProvider
 }
 
 String _$seedColorControllerHash() =>
-    r'32f394505c3a104df7db1e8e6ef5704d501a42c9';
+    r'ca705f25d28364c45ac2536a44fb987f684b4ad3';
 
 abstract class _$SeedColorController extends $Notifier<Color> {
   Color build();

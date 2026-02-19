@@ -1,0 +1,22 @@
+import 'package:yamt/features/inventory/domain/receipt_analysis_models.dart';
+import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
+
+/// Reads a picked receipt input and returns the analysis output.
+abstract interface class ReceiptAnalysisRepository {
+  Future<ReceiptAnalysisResult> analyzeSelection(
+    ReceiptInputSelection selection,
+  );
+}
+
+/// Resolves the active template id used by Firebase AI templates.
+abstract interface class ReceiptTemplateConfigClient {
+  Future<String> loadTemplateId();
+}
+
+/// Executes a Firebase AI template and returns generated text.
+abstract interface class ReceiptTemplateModelClient {
+  Future<String?> generateContent({
+    required String templateId,
+    required Map<String, Object?> inputs,
+  });
+}

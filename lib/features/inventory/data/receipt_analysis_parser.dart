@@ -47,19 +47,48 @@ class JsonReceiptAnalysisParser implements ReceiptAnalysisParser {
     );
   }
 
-  List<Map<String, dynamic>> _extractItems(dynamic rawItems) {
-    if (rawItems is! List<dynamic>) {
-      return const <Map<String, dynamic>>[];
+  List<ReceiptAnalysisItem> _extractItems(dynamic rawItems) {
+    if (rawItems == null) {
+      return const <ReceiptAnalysisItem>[];
     }
 
-    final items = <Map<String, dynamic>>[];
-    for (final entry in rawItems) {
-      if (entry is Map<String, dynamic>) {
-        items.add(entry);
-      }
+    if (rawItems is! List<dynamic>) {
+      throw const FormatException('INVALID_ITEMS_CONTAINER');
+    }
+
+    final items = <ReceiptAnalysisItem>[];
+    for (var index = 0; index < rawItems.length; index++) {
+      items.add(_parseItem(rawItems[index], index));
     }
 
     return items;
+  }
+
+  ReceiptAnalysisItem _parseItem(dynamic rawItem, int index) {
+    if (rawItem is! Map<String, dynamic>) {
+      throw FormatException('INVALID_ITEM_TYPE_AT_$index');
+    }
+
+    final itemName = _extractItemName(rawItem);
+    if (itemName == null || itemName.isEmpty) {
+      throw FormatException('INVALID_ITEM_NAME_AT_$index');
+    }
+
+    return ReceiptAnalysisItem(name: itemName, rawPayload: rawItem);
+  }
+
+  String? _extractItemName(Map<String, dynamic> rawItem) {
+    final minified = rawItem['n'];
+    if (minified is String && minified.trim().isNotEmpty) {
+      return minified.trim();
+    }
+
+    final full = rawItem['name'];
+    if (full is String && full.trim().isNotEmpty) {
+      return full.trim();
+    }
+
+    return null;
   }
 }
 
@@ -69,7 +98,11 @@ String _extractJsonPayload(String rawResponse) {
     return '';
   }
 
-  final fencedPattern = RegExp(r'```(?:json)?\s*(.*?)\s*```', dotAll: true);
+  final fencedPattern = RegExp(
+    r'```(?:json)?\s*(.*?)\s*```',
+    dotAll: true,
+    caseSensitive: false,
+  );
   final fencedMatch = fencedPattern.firstMatch(trimmed);
   if (fencedMatch != null) {
     return fencedMatch.group(1)?.trim() ?? '';

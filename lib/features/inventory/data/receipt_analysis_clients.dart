@@ -4,6 +4,7 @@ import 'package:firebase_ai/firebase_ai.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/inventory/domain/receipt_analysis_contracts.dart';
 
 part 'receipt_analysis_clients.g.dart';
 
@@ -27,19 +28,6 @@ ReceiptTemplateModelClient receiptTemplateModelClient(Ref ref) {
       location: _vertexLocation,
     ).templateGenerativeModel(),
   );
-}
-
-/// Resolves the active template id used by Firebase AI templates.
-abstract interface class ReceiptTemplateConfigClient {
-  Future<String> loadTemplateId();
-}
-
-/// Executes a Firebase AI template and returns generated text.
-abstract interface class ReceiptTemplateModelClient {
-  Future<String?> generateContent({
-    required String templateId,
-    required Map<String, Object?> inputs,
-  });
 }
 
 class FirebaseReceiptTemplateConfigClient

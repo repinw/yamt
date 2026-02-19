@@ -1,14 +1,14 @@
 import 'dart:async';
-import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/features/home/home_tab_page.dart';
+import 'package:yamt/features/inventory/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_receipt_actions_sheet.dart';
-import 'package:yamt/features/inventory/provider/receipt_analysis_controller.dart';
-import 'package:yamt/features/inventory/provider/receipt_input_controller.dart';
+import 'package:yamt/features/inventory/provider/receipt_capture_flow_controller.dart';
+import 'package:yamt/features/inventory/provider/receipt_input_capabilities.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class HomeContextFab extends ConsumerWidget {
@@ -18,6 +18,7 @@ class HomeContextFab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(receiptCaptureFlowControllerProvider);
     final l10n = AppLocalizations.of(context)!;
 
     return FloatingActionButton.small(
@@ -62,8 +63,7 @@ class HomeContextFab extends ConsumerWidget {
     WidgetRef ref,
     AppLocalizations l10n,
   ) {
-    final controller = ref.read(receiptInputControllerProvider.notifier);
-    final isCameraEnabled = controller.isCameraSupported;
+    final isCameraEnabled = ref.read(receiptCameraSupportedProvider);
 
     return showModalBottomSheet<void>(
       context: context,
@@ -73,23 +73,13 @@ class HomeContextFab extends ConsumerWidget {
           onScanCameraTap: () {
             sheetContext.pop();
             unawaited(
-              _handleReceiptInput(
-                context: context,
-                ref: ref,
-                l10n: l10n,
-                source: ReceiptInputSource.camera,
-              ),
+              _runInventoryFlow(context, ref, l10n, ReceiptInputSource.camera),
             );
           },
           onUploadFileTap: () {
             sheetContext.pop();
             unawaited(
-              _handleReceiptInput(
-                context: context,
-                ref: ref,
-                l10n: l10n,
-                source: ReceiptInputSource.file,
-              ),
+              _runInventoryFlow(context, ref, l10n, ReceiptInputSource.file),
             );
           },
         );
@@ -97,69 +87,36 @@ class HomeContextFab extends ConsumerWidget {
     );
   }
 
-  Future<void> _handleReceiptInput({
-    required BuildContext context,
-    required WidgetRef ref,
-    required AppLocalizations l10n,
-    required ReceiptInputSource source,
-  }) async {
-    final controller = ref.read(receiptInputControllerProvider.notifier);
-    final result = switch (source) {
-      ReceiptInputSource.camera => await controller.pickFromCamera(),
-      ReceiptInputSource.file => await controller.pickFromFile(),
-    };
+  Future<void> _runInventoryFlow(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    ReceiptInputSource source,
+  ) async {
+    final controller = ref.read(receiptCaptureFlowControllerProvider.notifier);
+    final result = await controller.run(source: source);
     if (!context.mounted) return;
 
-    if (result.status == ReceiptInputStatus.selected &&
-        result.selection != null) {
-      unawaited(
-        _runReceiptAnalysis(
-          context: context,
-          ref: ref,
-          l10n: l10n,
-          selection: result.selection!,
-        ),
-      );
-    }
-    final message = switch (result.status) {
-      ReceiptInputStatus.selected => _selectedMessage(source, l10n),
-      ReceiptInputStatus.failed => l10n.inventoryReceiptSelectionFailed,
-      ReceiptInputStatus.unsupported => l10n.inventoryActionCameraUnsupported,
-      ReceiptInputStatus.canceled => null,
-    };
+    final message = _messageForFlowResult(result, l10n);
     if (message == null) return;
-
     _showSnackBar(context, message);
   }
 
-  Future<void> _runReceiptAnalysis({
-    required BuildContext context,
-    required WidgetRef ref,
-    required AppLocalizations l10n,
-    required ReceiptInputSelection selection,
-  }) async {
-    final controller = ref.read(receiptAnalysisControllerProvider.notifier);
-    final result = await controller.analyzeSelection(selection);
-    if (!context.mounted) return;
-
-    if (result.isSuccess) {
-      _showSnackBar(context, l10n.inventoryReceiptAnalysisSucceeded);
-      return;
-    }
-
-    _showSnackBar(context, l10n.inventoryReceiptAnalysisFailed);
-
-    log(
-      'Receipt analysis not finished yet: ${result.errorCode}',
-      name: 'HomeContextFab',
-    );
-  }
-
-  String _selectedMessage(ReceiptInputSource source, AppLocalizations l10n) {
-    if (source == ReceiptInputSource.camera) {
-      return l10n.inventoryReceiptSelectedCamera;
-    }
-    return l10n.inventoryReceiptSelectedFile;
+  String? _messageForFlowResult(
+    ReceiptCaptureFlowResult result,
+    AppLocalizations l10n,
+  ) {
+    return switch (result.status) {
+      ReceiptCaptureFlowStatus.completed =>
+        l10n.inventoryReceiptAnalysisSucceeded,
+      ReceiptCaptureFlowStatus.inputCanceled => null,
+      ReceiptCaptureFlowStatus.inputUnsupported =>
+        l10n.inventoryActionCameraUnsupported,
+      ReceiptCaptureFlowStatus.inputFailed =>
+        l10n.inventoryReceiptSelectionFailed,
+      ReceiptCaptureFlowStatus.analysisFailed =>
+        l10n.inventoryReceiptAnalysisFailed,
+    };
   }
 
   void _showSnackBar(BuildContext context, String message) {

@@ -24,7 +24,7 @@ final class ReceiptAnalysisControllerProvider
         argument: null,
         retry: null,
         name: r'receiptAnalysisControllerProvider',
-        isAutoDispose: false,
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -38,7 +38,7 @@ final class ReceiptAnalysisControllerProvider
 }
 
 String _$receiptAnalysisControllerHash() =>
-    r'ffc9d7e3f6711d8a8572ea78c82e21d8e0191b0c';
+    r'1233cda38d11b3e280d0cbbd795c135bbcfb8527';
 
 abstract class _$ReceiptAnalysisController
     extends $AsyncNotifier<ReceiptAnalysisResult?> {
