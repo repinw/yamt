@@ -1,3 +1,7 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'receipt_analysis_models.freezed.dart';
+
 enum ReceiptAnalysisStatus { succeeded, failed }
 
 abstract final class ReceiptAnalysisErrorCodes {
@@ -9,37 +13,43 @@ abstract final class ReceiptAnalysisErrorCodes {
   static const unexpected = 'analysis_unexpected';
 }
 
-class ReceiptAnalysisExtraction {
-  const ReceiptAnalysisExtraction({required this.root, required this.items});
-
-  final Map<String, dynamic> root;
-  final List<Map<String, dynamic>> items;
+@freezed
+abstract class ReceiptAnalysisExtraction with _$ReceiptAnalysisExtraction {
+  const factory ReceiptAnalysisExtraction({
+    required Map<String, dynamic> root,
+    required List<ReceiptAnalysisItem> items,
+  }) = _ReceiptAnalysisExtraction;
 }
 
-class ReceiptAnalysisResult {
-  const ReceiptAnalysisResult({
-    required this.status,
-    this.rawResponse,
-    this.extraction,
-    this.errorCode,
-  });
+@freezed
+abstract class ReceiptAnalysisItem with _$ReceiptAnalysisItem {
+  const factory ReceiptAnalysisItem({
+    required String name,
+    required Map<String, dynamic> rawPayload,
+  }) = _ReceiptAnalysisItem;
+}
 
-  const ReceiptAnalysisResult.succeeded({
+@freezed
+sealed class ReceiptAnalysisResult with _$ReceiptAnalysisResult {
+  const ReceiptAnalysisResult._();
+
+  const factory ReceiptAnalysisResult.succeeded({
     required String rawResponse,
-    ReceiptAnalysisExtraction? extraction,
-  }) : this(
-         status: ReceiptAnalysisStatus.succeeded,
-         rawResponse: rawResponse,
-         extraction: extraction,
-       );
+    required ReceiptAnalysisExtraction extraction,
+  }) = ReceiptAnalysisSuccess;
 
-  const ReceiptAnalysisResult.failed({String? errorCode})
-    : this(status: ReceiptAnalysisStatus.failed, errorCode: errorCode);
+  const factory ReceiptAnalysisResult.failed({required String errorCode}) =
+      ReceiptAnalysisFailure;
 
-  final ReceiptAnalysisStatus status;
-  final String? rawResponse;
-  final ReceiptAnalysisExtraction? extraction;
-  final String? errorCode;
+  ReceiptAnalysisStatus get status => switch (this) {
+    ReceiptAnalysisSuccess() => ReceiptAnalysisStatus.succeeded,
+    ReceiptAnalysisFailure() => ReceiptAnalysisStatus.failed,
+  };
 
   bool get isSuccess => status == ReceiptAnalysisStatus.succeeded;
+
+  String? get errorCode => switch (this) {
+    ReceiptAnalysisFailure(:final errorCode) => errorCode,
+    ReceiptAnalysisSuccess() => null,
+  };
 }

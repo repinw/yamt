@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/data/receipt_analysis_parser.dart';
 import 'package:yamt/features/inventory/data/receipt_analysis_repository.dart';
+import 'package:yamt/features/inventory/domain/receipt_analysis_contracts.dart';
 import 'package:yamt/features/inventory/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
 
@@ -35,6 +37,17 @@ class _FakeTemplateModelClient implements ReceiptTemplateModelClient {
   }
 }
 
+class _FakeReceiptAnalysisParser implements ReceiptAnalysisParser {
+  _FakeReceiptAnalysisParser({required this.onParse});
+
+  final ReceiptAnalysisExtraction Function(String rawResponse) onParse;
+
+  @override
+  ReceiptAnalysisExtraction parse(String rawResponse) {
+    return onParse(rawResponse);
+  }
+}
+
 ReceiptInputSelection _selection() {
   return ReceiptInputSelection(
     source: ReceiptInputSource.file,
@@ -61,12 +74,19 @@ void main() {
           return '{"items": []}';
         },
       ),
+      parser: _FakeReceiptAnalysisParser(
+        onParse: (_) => const ReceiptAnalysisExtraction(
+          root: <String, dynamic>{},
+          items: <ReceiptAnalysisItem>[],
+        ),
+      ),
     );
 
     final result = await repository.analyzeSelection(selection);
 
     expect(result.status, ReceiptAnalysisStatus.succeeded);
-    expect(result.rawResponse, '{"items": []}');
+    final successResult = result as ReceiptAnalysisSuccess;
+    expect(successResult.rawResponse, '{"items": []}');
     expect(capturedTemplateId, 'receiptocr');
     expect(capturedInputs?['mimeType'], selection.mimeType);
     expect(capturedInputs?['imageData'], base64Encode(selection.bytes));
@@ -81,6 +101,12 @@ void main() {
         onGenerateContent: ({required templateId, required inputs}) async {
           return '   ';
         },
+      ),
+      parser: _FakeReceiptAnalysisParser(
+        onParse: (_) => const ReceiptAnalysisExtraction(
+          root: <String, dynamic>{},
+          items: <ReceiptAnalysisItem>[],
+        ),
       ),
     );
 
@@ -102,6 +128,12 @@ void main() {
             return '{"items": []}';
           },
         ),
+        parser: _FakeReceiptAnalysisParser(
+          onParse: (_) => const ReceiptAnalysisExtraction(
+            root: <String, dynamic>{},
+            items: <ReceiptAnalysisItem>[],
+          ),
+        ),
       );
 
       final result = await repository.analyzeSelection(_selection());
@@ -121,11 +153,38 @@ void main() {
           throw Exception('ai failed');
         },
       ),
+      parser: _FakeReceiptAnalysisParser(
+        onParse: (_) => const ReceiptAnalysisExtraction(
+          root: <String, dynamic>{},
+          items: <ReceiptAnalysisItem>[],
+        ),
+      ),
     );
 
     final result = await repository.analyzeSelection(_selection());
 
     expect(result.status, ReceiptAnalysisStatus.failed);
     expect(result.errorCode, ReceiptAnalysisErrorCodes.aiRequestFailed);
+  });
+
+  test('analyzeSelection maps parser exception to parse failure', () async {
+    final repository = DeviceReceiptAnalysisRepository(
+      templateConfigClient: _FakeTemplateConfigClient(
+        onLoadTemplateId: () async => 'receiptocr',
+      ),
+      templateModelClient: _FakeTemplateModelClient(
+        onGenerateContent: ({required templateId, required inputs}) async {
+          return '{"items":[{"n":"Milk"}]}';
+        },
+      ),
+      parser: _FakeReceiptAnalysisParser(
+        onParse: (_) => throw const FormatException('invalid payload'),
+      ),
+    );
+
+    final result = await repository.analyzeSelection(_selection());
+
+    expect(result.status, ReceiptAnalysisStatus.failed);
+    expect(result.errorCode, ReceiptAnalysisErrorCodes.parseFailed);
   });
 }
