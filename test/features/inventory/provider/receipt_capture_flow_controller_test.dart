@@ -2,10 +2,13 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:yamt/features/inventory/data/receipt_analysis_repository.dart';
 import 'package:yamt/features/inventory/data/receipt_input_repository.dart';
+import 'package:yamt/features/inventory/data/receipt_to_fridge_item_mapper.dart';
 import 'package:yamt/features/inventory/domain/receipt_analysis_contracts.dart';
 import 'package:yamt/features/inventory/domain/receipt_analysis_models.dart';
+import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
 import 'package:yamt/features/inventory/provider/receipt_capture_flow_controller.dart';
@@ -49,12 +52,69 @@ class _FakeReceiptAnalysisRepository implements ReceiptAnalysisRepository {
   }
 }
 
+class _FakeReceiptToFridgeItemMapper implements ReceiptToFridgeItemMapper {
+  _FakeReceiptToFridgeItemMapper({required this.onMap});
+
+  final List<FridgeItem> Function(ReceiptAnalysisExtraction extraction) onMap;
+
+  @override
+  List<FridgeItem> map(ReceiptAnalysisExtraction extraction) {
+    return onMap(extraction);
+  }
+}
+
+class _FakeFridgeItemRepository implements FridgeItemRepository {
+  _FakeFridgeItemRepository({this.onAppendAll});
+
+  final Future<bool> Function(List<FridgeItem> items)? onAppendAll;
+
+  List<FridgeItem> appendedItems = const <FridgeItem>[];
+
+  @override
+  Future<bool> appendAll(List<FridgeItem> items) async {
+    appendedItems = items;
+    final callback = onAppendAll;
+    if (callback != null) {
+      return callback(items);
+    }
+    return true;
+  }
+
+  @override
+  Future<List<FridgeItem>> readAll() async {
+    return const <FridgeItem>[];
+  }
+
+  @override
+  Future<bool> saveAll(List<FridgeItem> items) async {
+    return true;
+  }
+}
+
 ReceiptInputSelection _selection() {
   return ReceiptInputSelection(
     source: ReceiptInputSource.file,
     name: 'receipt.jpg',
     mimeType: 'image/jpeg',
     bytes: Uint8List.fromList(<int>[1, 2, 3]),
+  );
+}
+
+FridgeItem _fridgeItem({
+  required String id,
+  required bool isDeposit,
+  required bool isDiscount,
+}) {
+  return FridgeItem(
+    id: id,
+    name: 'Milk',
+    entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
+    storeName: 'Store',
+    quantity: 1,
+    initialQuantity: 1,
+    unitPrice: 1.99,
+    isDeposit: isDeposit,
+    isDiscount: isDiscount,
   );
 }
 
@@ -171,6 +231,13 @@ void main() {
     'successful analysis maps to completed status with extraction',
     () async {
       final selection = _selection();
+      final fridgeRepository = _FakeFridgeItemRepository();
+      final mapper = _FakeReceiptToFridgeItemMapper(
+        onMap: (_) => <FridgeItem>[
+          _fridgeItem(id: 'food', isDeposit: false, isDiscount: false),
+          _fridgeItem(id: 'deposit', isDeposit: true, isDiscount: false),
+        ],
+      );
       final inputRepository = _FakeReceiptInputRepository(
         pickFile: () async => ReceiptInputResult.selected(selection: selection),
       );
@@ -195,6 +262,8 @@ void main() {
           receiptAnalysisRepositoryProvider.overrideWithValue(
             analysisRepository,
           ),
+          receiptToFridgeItemMapperProvider.overrideWithValue(mapper),
+          fridgeItemRepositoryProvider.overrideWithValue(fridgeRepository),
         ],
       );
       addTearDown(container.dispose);
@@ -206,10 +275,58 @@ void main() {
       expect(result.status, ReceiptCaptureFlowStatus.completed);
       expect(result.extraction, isNotNull);
       expect(result.extraction!.items.single.name, 'Milk');
+      expect(fridgeRepository.appendedItems, hasLength(1));
+      expect(fridgeRepository.appendedItems.single.id, 'food');
       expect(
         container.read(receiptCaptureFlowControllerProvider).value,
         result,
       );
     },
   );
+
+  test('storage failure maps to analysisFailed status', () async {
+    final selection = _selection();
+    final fridgeRepository = _FakeFridgeItemRepository(
+      onAppendAll: (_) async => false,
+    );
+    final mapper = _FakeReceiptToFridgeItemMapper(
+      onMap: (_) => <FridgeItem>[
+        _fridgeItem(id: 'food', isDeposit: false, isDiscount: false),
+      ],
+    );
+    final inputRepository = _FakeReceiptInputRepository(
+      pickFile: () async => ReceiptInputResult.selected(selection: selection),
+    );
+    final analysisRepository = _FakeReceiptAnalysisRepository(
+      onAnalyzeSelection: (_) async => const ReceiptAnalysisResult.succeeded(
+        rawResponse: '{"i":[{"n":"Milk"}]}',
+        extraction: ReceiptAnalysisExtraction(
+          root: <String, dynamic>{},
+          items: <ReceiptAnalysisItem>[
+            ReceiptAnalysisItem(
+              name: 'Milk',
+              rawPayload: <String, dynamic>{'n': 'Milk'},
+            ),
+          ],
+        ),
+      ),
+    );
+    final container = ProviderContainer(
+      overrides: [
+        receiptCameraSupportedProvider.overrideWith((ref) => true),
+        receiptInputRepositoryProvider.overrideWithValue(inputRepository),
+        receiptAnalysisRepositoryProvider.overrideWithValue(analysisRepository),
+        receiptToFridgeItemMapperProvider.overrideWithValue(mapper),
+        fridgeItemRepositoryProvider.overrideWithValue(fridgeRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final result = await container
+        .read(receiptCaptureFlowControllerProvider.notifier)
+        .run(source: ReceiptInputSource.file);
+
+    expect(result.status, ReceiptCaptureFlowStatus.analysisFailed);
+    expect(result.errorCode, ReceiptAnalysisErrorCodes.storageFailed);
+  });
 }
