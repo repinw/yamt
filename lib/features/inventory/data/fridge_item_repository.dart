@@ -49,11 +49,26 @@ class PreferencesFridgeItemRepository implements FridgeItemRepository {
       }
 
       final items = <FridgeItem>[];
-      for (final entry in decoded) {
+      for (var index = 0; index < decoded.length; index++) {
+        final entry = decoded[index];
         if (entry is! Map<String, dynamic>) {
+          log(
+            'Skipping non-map fridge item entry at index $index',
+            name: _repositoryLogName,
+          );
           continue;
         }
-        items.add(FridgeItem.fromJson(entry));
+
+        try {
+          items.add(FridgeItem.fromJson(entry));
+        } catch (error, stackTrace) {
+          log(
+            'Skipping corrupted fridge item at index $index',
+            name: _repositoryLogName,
+            error: error,
+            stackTrace: stackTrace,
+          );
+        }
       }
       return items;
     } catch (error, stackTrace) {

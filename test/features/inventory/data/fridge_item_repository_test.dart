@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
@@ -93,4 +95,30 @@ void main() {
 
     expect(items, isEmpty);
   });
+
+  test(
+    'readAll keeps valid entries when list contains corrupted items',
+    () async {
+      final validA = _item('a').toJson();
+      final validB = _item('b').toJson();
+      final corrupted = <String, dynamic>{'id': 123};
+
+      final prefs = _FakeAppPreferences(
+        initialValues: <String, Object>{
+          'inventory_fridge_items_v1': jsonEncode(<Object?>[
+            validA,
+            corrupted,
+            validB,
+          ]),
+        },
+      );
+      final repository = PreferencesFridgeItemRepository(preferences: prefs);
+
+      final items = await repository.readAll();
+
+      expect(items, hasLength(2));
+      expect(items[0].id, 'a');
+      expect(items[1].id, 'b');
+    },
+  );
 }
