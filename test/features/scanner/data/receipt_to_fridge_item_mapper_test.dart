@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/data/receipt_analysis_parser.dart';
-import 'package:yamt/features/inventory/data/receipt_to_fridge_item_mapper.dart';
-import 'package:yamt/features/inventory/domain/receipt_analysis_models.dart';
+import 'package:yamt/features/scanner/data/receipt_analysis_parser.dart';
+import 'package:yamt/features/scanner/data/receipt_to_fridge_item_mapper.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 
 void main() {
   final fixedNow = DateTime.parse('2026-02-19T10:30:00.000Z');

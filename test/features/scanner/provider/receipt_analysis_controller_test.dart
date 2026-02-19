@@ -2,11 +2,11 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/data/receipt_analysis_repository.dart';
-import 'package:yamt/features/inventory/domain/receipt_analysis_contracts.dart';
-import 'package:yamt/features/inventory/domain/receipt_analysis_models.dart';
-import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
-import 'package:yamt/features/inventory/provider/receipt_analysis_controller.dart';
+import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_contracts.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/provider/receipt_analysis_controller.dart';
 
 class _FakeReceiptAnalysisRepository implements ReceiptAnalysisRepository {
   _FakeReceiptAnalysisRepository({required this.onAnalyze});

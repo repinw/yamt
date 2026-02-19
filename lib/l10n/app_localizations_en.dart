@@ -60,6 +60,114 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptAnalysisFailed => 'Receipt analysis failed. Please try again.';
 
   @override
+  String get inventoryReceiptReviewTitle => 'Review receipt items';
+
+  @override
+  String get inventoryReceiptReviewPriceTitle => 'Price overview';
+
+  @override
+  String get inventoryReceiptReviewPriceTotal => 'Total receipt';
+
+  @override
+  String get inventoryReceiptReviewPriceSavable => 'Saved to inventory';
+
+  @override
+  String get inventoryReceiptReviewPriceExcluded => 'Excluded lines';
+
+  @override
+  String get inventoryReceiptReviewEmpty => 'No items found on this receipt.';
+
+  @override
+  String get inventoryReceiptReviewExcludedTag => 'Review only';
+
+  @override
+  String get inventoryReceiptReviewEditAction => 'Edit';
+
+  @override
+  String get inventoryReceiptReviewEditTitle => 'Edit receipt item';
+
+  @override
+  String get inventoryReceiptReviewApplyItemAction => 'Apply changes';
+
+  @override
+  String get inventoryReceiptReviewFieldId => 'ID';
+
+  @override
+  String get inventoryReceiptReviewFieldName => 'Name';
+
+  @override
+  String get inventoryReceiptReviewFieldEntryDate => 'Entry date';
+
+  @override
+  String get inventoryReceiptReviewFieldStoreName => 'Store name';
+
+  @override
+  String get inventoryReceiptReviewFieldQuantity => 'Quantity';
+
+  @override
+  String get inventoryReceiptReviewFieldInitialQuantity => 'Initial quantity';
+
+  @override
+  String get inventoryReceiptReviewFieldUnitPrice => 'Unit price';
+
+  @override
+  String get inventoryReceiptReviewFieldWeight => 'Weight';
+
+  @override
+  String get inventoryReceiptReviewFieldBrand => 'Brand';
+
+  @override
+  String get inventoryReceiptReviewFieldCategory => 'Category';
+
+  @override
+  String get inventoryReceiptReviewFieldDiscounts => 'Discounts (JSON)';
+
+  @override
+  String get inventoryReceiptReviewDiscountsHint => 'JSON or pairs: coupon=-1.50';
+
+  @override
+  String get inventoryReceiptReviewFieldReceiptId => 'Receipt ID';
+
+  @override
+  String get inventoryReceiptReviewFieldReceiptDate => 'Receipt date';
+
+  @override
+  String get inventoryReceiptReviewFieldLanguage => 'Language';
+
+  @override
+  String get inventoryReceiptReviewFieldIsDeposit => 'Is deposit item';
+
+  @override
+  String get inventoryReceiptReviewFieldIsDiscount => 'Is discount item';
+
+  @override
+  String get inventoryReceiptReviewSelectDateAction => 'Select date';
+
+  @override
+  String get inventoryReceiptReviewClearDateAction => 'Clear date';
+
+  @override
+  String get inventoryReceiptReviewNoDate => 'No date';
+
+  @override
+  String get inventoryReceiptReviewInvalidNumber => 'Please enter valid numbers.';
+
+  @override
+  String get inventoryReceiptReviewInvalidDiscounts => 'Use JSON or key=value pairs.';
+
+  @override
+  String get inventoryReceiptReviewCancelAction => 'Cancel';
+
+  @override
+  String get inventoryReceiptReviewSaveAction => 'Save to inventory';
+
+  @override
+  String get inventoryReceiptSaveSucceeded => 'Items added to inventory.';
+
+  @override
+  String get inventoryReceiptSaveFailed => 'Could not save receipt items. Please try again.';
+
+  @override
   String get inventoryEmptyState => 'No items in your fridge yet. Scan a receipt to get started.';
 
   @override

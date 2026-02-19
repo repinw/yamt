@@ -4,7 +4,7 @@ import 'package:firebase_ai/firebase_ai.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/inventory/domain/receipt_analysis_contracts.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_contracts.dart';
 
 part 'receipt_analysis_clients.g.dart';
 

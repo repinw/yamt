@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 
 part 'receipt_input_repository.g.dart';
 

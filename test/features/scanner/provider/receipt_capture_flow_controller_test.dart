@@ -3,16 +3,16 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
-import 'package:yamt/features/inventory/data/receipt_analysis_repository.dart';
-import 'package:yamt/features/inventory/data/receipt_input_repository.dart';
-import 'package:yamt/features/inventory/data/receipt_to_fridge_item_mapper.dart';
-import 'package:yamt/features/inventory/domain/receipt_analysis_contracts.dart';
-import 'package:yamt/features/inventory/domain/receipt_analysis_models.dart';
+import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
+import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
+import 'package:yamt/features/scanner/data/receipt_to_fridge_item_mapper.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_contracts.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
-import 'package:yamt/features/inventory/domain/receipt_capture_flow_models.dart';
-import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
-import 'package:yamt/features/inventory/provider/receipt_capture_flow_controller.dart';
-import 'package:yamt/features/inventory/provider/receipt_input_capabilities.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
+import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 
 class _FakeReceiptInputRepository implements ReceiptInputRepository {
   _FakeReceiptInputRepository({this.pickFile});
@@ -231,7 +231,6 @@ void main() {
     'successful analysis maps to completed status with extraction',
     () async {
       final selection = _selection();
-      final fridgeRepository = _FakeFridgeItemRepository();
       final mapper = _FakeReceiptToFridgeItemMapper(
         onMap: (_) => <FridgeItem>[
           _fridgeItem(id: 'food', isDeposit: false, isDiscount: false),
@@ -263,7 +262,6 @@ void main() {
             analysisRepository,
           ),
           receiptToFridgeItemMapperProvider.overrideWithValue(mapper),
-          fridgeItemRepositoryProvider.overrideWithValue(fridgeRepository),
         ],
       );
       addTearDown(container.dispose);
@@ -275,8 +273,8 @@ void main() {
       expect(result.status, ReceiptCaptureFlowStatus.completed);
       expect(result.extraction, isNotNull);
       expect(result.extraction!.items.single.name, 'Milk');
-      expect(fridgeRepository.appendedItems, hasLength(1));
-      expect(fridgeRepository.appendedItems.single.id, 'food');
+      expect(result.mappedItems, hasLength(2));
+      expect(result.mappedItems!.first.id, 'food');
       expect(
         container.read(receiptCaptureFlowControllerProvider).value,
         result,
@@ -284,49 +282,50 @@ void main() {
     },
   );
 
-  test('storage failure maps to analysisFailed status', () async {
-    final selection = _selection();
-    final fridgeRepository = _FakeFridgeItemRepository(
-      onAppendAll: (_) async => false,
-    );
-    final mapper = _FakeReceiptToFridgeItemMapper(
-      onMap: (_) => <FridgeItem>[
-        _fridgeItem(id: 'food', isDeposit: false, isDiscount: false),
-      ],
-    );
-    final inputRepository = _FakeReceiptInputRepository(
-      pickFile: () async => ReceiptInputResult.selected(selection: selection),
-    );
-    final analysisRepository = _FakeReceiptAnalysisRepository(
-      onAnalyzeSelection: (_) async => const ReceiptAnalysisResult.succeeded(
-        rawResponse: '{"i":[{"n":"Milk"}]}',
-        extraction: ReceiptAnalysisExtraction(
-          root: <String, dynamic>{},
-          items: <ReceiptAnalysisItem>[
-            ReceiptAnalysisItem(
-              name: 'Milk',
-              rawPayload: <String, dynamic>{'n': 'Milk'},
-            ),
-          ],
-        ),
-      ),
-    );
+  test('persistReviewedItems saves only non-review-only items', () async {
+    final fridgeRepository = _FakeFridgeItemRepository();
     final container = ProviderContainer(
       overrides: [
-        receiptCameraSupportedProvider.overrideWith((ref) => true),
-        receiptInputRepositoryProvider.overrideWithValue(inputRepository),
-        receiptAnalysisRepositoryProvider.overrideWithValue(analysisRepository),
-        receiptToFridgeItemMapperProvider.overrideWithValue(mapper),
         fridgeItemRepositoryProvider.overrideWithValue(fridgeRepository),
       ],
     );
     addTearDown(container.dispose);
 
-    final result = await container
-        .read(receiptCaptureFlowControllerProvider.notifier)
-        .run(source: ReceiptInputSource.file);
+    final controller = container.read(
+      receiptCaptureFlowControllerProvider.notifier,
+    );
+    final saved = await controller.persistReviewedItems(<FridgeItem>[
+      _fridgeItem(id: 'food', isDeposit: false, isDiscount: false),
+      _fridgeItem(id: 'deposit', isDeposit: true, isDiscount: false),
+      _fridgeItem(id: 'discount', isDeposit: false, isDiscount: true),
+    ]);
 
-    expect(result.status, ReceiptCaptureFlowStatus.analysisFailed);
-    expect(result.errorCode, ReceiptAnalysisErrorCodes.storageFailed);
+    expect(saved, isTrue);
+    expect(fridgeRepository.appendedItems, hasLength(1));
+    expect(fridgeRepository.appendedItems.single.id, 'food');
   });
+
+  test(
+    'persistReviewedItems returns false when repository save fails',
+    () async {
+      final fridgeRepository = _FakeFridgeItemRepository(
+        onAppendAll: (_) async => false,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          fridgeItemRepositoryProvider.overrideWithValue(fridgeRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final controller = container.read(
+        receiptCaptureFlowControllerProvider.notifier,
+      );
+      final saved = await controller.persistReviewedItems(<FridgeItem>[
+        _fridgeItem(id: 'food', isDeposit: false, isDiscount: false),
+      ]);
+
+      expect(saved, isFalse);
+    },
+  );
 }

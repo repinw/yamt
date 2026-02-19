@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/inventory/domain/receipt_analysis_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 
 part 'receipt_analysis_parser.g.dart';
 

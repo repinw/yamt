@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:yamt/features/inventory/domain/receipt_analysis_models.dart';
-import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
+import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 
 part 'receipt_capture_flow_models.freezed.dart';
 
@@ -19,6 +20,7 @@ sealed class ReceiptCaptureFlowResult with _$ReceiptCaptureFlowResult {
   const factory ReceiptCaptureFlowResult.completed({
     required ReceiptInputSource source,
     required ReceiptAnalysisExtraction extraction,
+    required List<FridgeItem> mappedItems,
   }) = ReceiptCaptureFlowCompleted;
 
   const factory ReceiptCaptureFlowResult.inputCanceled({
@@ -59,6 +61,14 @@ sealed class ReceiptCaptureFlowResult with _$ReceiptCaptureFlowResult {
 
   ReceiptAnalysisExtraction? get extraction => switch (this) {
     ReceiptCaptureFlowCompleted(:final extraction) => extraction,
+    ReceiptCaptureFlowInputCanceled() ||
+    ReceiptCaptureFlowInputUnsupported() ||
+    ReceiptCaptureFlowInputFailed() ||
+    ReceiptCaptureFlowAnalysisFailed() => null,
+  };
+
+  List<FridgeItem>? get mappedItems => switch (this) {
+    ReceiptCaptureFlowCompleted(:final mappedItems) => mappedItems,
     ReceiptCaptureFlowInputCanceled() ||
     ReceiptCaptureFlowInputUnsupported() ||
     ReceiptCaptureFlowInputFailed() ||

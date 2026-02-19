@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/inventory/data/receipt_input_repository.dart';
-import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
-import 'package:yamt/features/inventory/provider/receipt_input_capabilities.dart';
+import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 
 part 'receipt_input_controller.g.dart';
 

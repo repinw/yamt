@@ -2,10 +2,10 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/data/receipt_input_repository.dart';
-import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
-import 'package:yamt/features/inventory/provider/receipt_input_capabilities.dart';
-import 'package:yamt/features/inventory/provider/receipt_input_controller.dart';
+import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/provider/receipt_input_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 
 class _FakeReceiptInputRepository implements ReceiptInputRepository {
   _FakeReceiptInputRepository({this.pickCamera, this.pickFile});

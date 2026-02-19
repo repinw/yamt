@@ -4,8 +4,8 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:yamt/features/inventory/data/receipt_input_repository.dart';
-import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 
 class _FakeImagePicker extends ImagePicker {
   _FakeImagePicker({this.onPickImage});

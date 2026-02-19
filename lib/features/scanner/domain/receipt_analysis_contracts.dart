@@ -1,5 +1,5 @@
-import 'package:yamt/features/inventory/domain/receipt_analysis_models.dart';
-import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 
 /// Reads a picked receipt input and returns the analysis output.
 abstract interface class ReceiptAnalysisRepository {

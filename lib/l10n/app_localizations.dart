@@ -197,6 +197,222 @@ abstract class AppLocalizations {
   /// **'Receipt analysis failed. Please try again.'**
   String get inventoryReceiptAnalysisFailed;
 
+  /// No description provided for @inventoryReceiptReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review receipt items'**
+  String get inventoryReceiptReviewTitle;
+
+  /// No description provided for @inventoryReceiptReviewPriceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Price overview'**
+  String get inventoryReceiptReviewPriceTitle;
+
+  /// No description provided for @inventoryReceiptReviewPriceTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total receipt'**
+  String get inventoryReceiptReviewPriceTotal;
+
+  /// No description provided for @inventoryReceiptReviewPriceSavable.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to inventory'**
+  String get inventoryReceiptReviewPriceSavable;
+
+  /// No description provided for @inventoryReceiptReviewPriceExcluded.
+  ///
+  /// In en, this message translates to:
+  /// **'Excluded lines'**
+  String get inventoryReceiptReviewPriceExcluded;
+
+  /// No description provided for @inventoryReceiptReviewEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No items found on this receipt.'**
+  String get inventoryReceiptReviewEmpty;
+
+  /// No description provided for @inventoryReceiptReviewExcludedTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Review only'**
+  String get inventoryReceiptReviewExcludedTag;
+
+  /// No description provided for @inventoryReceiptReviewEditAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get inventoryReceiptReviewEditAction;
+
+  /// No description provided for @inventoryReceiptReviewEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit receipt item'**
+  String get inventoryReceiptReviewEditTitle;
+
+  /// No description provided for @inventoryReceiptReviewApplyItemAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply changes'**
+  String get inventoryReceiptReviewApplyItemAction;
+
+  /// No description provided for @inventoryReceiptReviewFieldId.
+  ///
+  /// In en, this message translates to:
+  /// **'ID'**
+  String get inventoryReceiptReviewFieldId;
+
+  /// No description provided for @inventoryReceiptReviewFieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get inventoryReceiptReviewFieldName;
+
+  /// No description provided for @inventoryReceiptReviewFieldEntryDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry date'**
+  String get inventoryReceiptReviewFieldEntryDate;
+
+  /// No description provided for @inventoryReceiptReviewFieldStoreName.
+  ///
+  /// In en, this message translates to:
+  /// **'Store name'**
+  String get inventoryReceiptReviewFieldStoreName;
+
+  /// No description provided for @inventoryReceiptReviewFieldQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get inventoryReceiptReviewFieldQuantity;
+
+  /// No description provided for @inventoryReceiptReviewFieldInitialQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Initial quantity'**
+  String get inventoryReceiptReviewFieldInitialQuantity;
+
+  /// No description provided for @inventoryReceiptReviewFieldUnitPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit price'**
+  String get inventoryReceiptReviewFieldUnitPrice;
+
+  /// No description provided for @inventoryReceiptReviewFieldWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get inventoryReceiptReviewFieldWeight;
+
+  /// No description provided for @inventoryReceiptReviewFieldBrand.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand'**
+  String get inventoryReceiptReviewFieldBrand;
+
+  /// No description provided for @inventoryReceiptReviewFieldCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get inventoryReceiptReviewFieldCategory;
+
+  /// No description provided for @inventoryReceiptReviewFieldDiscounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Discounts (JSON)'**
+  String get inventoryReceiptReviewFieldDiscounts;
+
+  /// No description provided for @inventoryReceiptReviewDiscountsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'JSON or pairs: coupon=-1.50'**
+  String get inventoryReceiptReviewDiscountsHint;
+
+  /// No description provided for @inventoryReceiptReviewFieldReceiptId.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt ID'**
+  String get inventoryReceiptReviewFieldReceiptId;
+
+  /// No description provided for @inventoryReceiptReviewFieldReceiptDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt date'**
+  String get inventoryReceiptReviewFieldReceiptDate;
+
+  /// No description provided for @inventoryReceiptReviewFieldLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get inventoryReceiptReviewFieldLanguage;
+
+  /// No description provided for @inventoryReceiptReviewFieldIsDeposit.
+  ///
+  /// In en, this message translates to:
+  /// **'Is deposit item'**
+  String get inventoryReceiptReviewFieldIsDeposit;
+
+  /// No description provided for @inventoryReceiptReviewFieldIsDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'Is discount item'**
+  String get inventoryReceiptReviewFieldIsDiscount;
+
+  /// No description provided for @inventoryReceiptReviewSelectDateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Select date'**
+  String get inventoryReceiptReviewSelectDateAction;
+
+  /// No description provided for @inventoryReceiptReviewClearDateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear date'**
+  String get inventoryReceiptReviewClearDateAction;
+
+  /// No description provided for @inventoryReceiptReviewNoDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No date'**
+  String get inventoryReceiptReviewNoDate;
+
+  /// No description provided for @inventoryReceiptReviewInvalidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter valid numbers.'**
+  String get inventoryReceiptReviewInvalidNumber;
+
+  /// No description provided for @inventoryReceiptReviewInvalidDiscounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Use JSON or key=value pairs.'**
+  String get inventoryReceiptReviewInvalidDiscounts;
+
+  /// No description provided for @inventoryReceiptReviewCancelAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get inventoryReceiptReviewCancelAction;
+
+  /// No description provided for @inventoryReceiptReviewSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to inventory'**
+  String get inventoryReceiptReviewSaveAction;
+
+  /// No description provided for @inventoryReceiptSaveSucceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Items added to inventory.'**
+  String get inventoryReceiptSaveSucceeded;
+
+  /// No description provided for @inventoryReceiptSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save receipt items. Please try again.'**
+  String get inventoryReceiptSaveFailed;
+
   /// No description provided for @inventoryEmptyState.
   ///
   /// In en, this message translates to:

@@ -3,14 +3,14 @@ import 'dart:developer' show log;
 
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/inventory/data/receipt_analysis_repository.dart';
-import 'package:yamt/features/inventory/data/receipt_input_repository.dart';
-import 'package:yamt/features/inventory/data/receipt_to_fridge_item_mapper.dart';
-import 'package:yamt/features/inventory/domain/receipt_analysis_models.dart';
-import 'package:yamt/features/inventory/domain/receipt_capture_flow_models.dart';
+import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
+import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
+import 'package:yamt/features/scanner/data/receipt_to_fridge_item_mapper.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
-import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
-import 'package:yamt/features/inventory/provider/receipt_input_capabilities.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
+import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 
 part 'receipt_capture_flow_controller.g.dart';
 
@@ -112,9 +112,12 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
       }
 
       return switch (analysisResult) {
-        ReceiptAnalysisSuccess(:final extraction) => await _persistMappedItems(
-          source: source,
-          extraction: extraction,
+        ReceiptAnalysisSuccess(:final extraction) => _setAndReturn(
+          ReceiptCaptureFlowResult.completed(
+            source: source,
+            extraction: extraction,
+            mappedItems: _mapExtraction(extraction),
+          ),
         ),
         ReceiptAnalysisFailure(:final errorCode) => _setAndReturn(
           ReceiptCaptureFlowResult.analysisFailed(
@@ -153,39 +156,17 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     return result;
   }
 
-  Future<ReceiptCaptureFlowResult> _persistMappedItems({
-    required ReceiptInputSource source,
-    required ReceiptAnalysisExtraction extraction,
-  }) async {
+  List<FridgeItem> _mapExtraction(ReceiptAnalysisExtraction extraction) {
+    final mapper = ref.read(receiptToFridgeItemMapperProvider);
+    return mapper.map(extraction);
+  }
+
+  Future<bool> persistReviewedItems(List<FridgeItem> reviewedItems) async {
     try {
-      final mapper = ref.read(receiptToFridgeItemMapperProvider);
       final itemRepository = ref.read(fridgeItemRepositoryProvider);
-      final mappedItems = mapper.map(extraction);
-      final storableItems = _storableItems(mappedItems);
+      final storableItems = _storableItems(reviewedItems);
       final saved = await itemRepository.appendAll(storableItems);
-
-      if (!ref.mounted) {
-        return ReceiptCaptureFlowResult.analysisFailed(
-          source: source,
-          errorCode: ReceiptAnalysisErrorCodes.unexpected,
-        );
-      }
-
-      if (!saved) {
-        return _setAndReturn(
-          ReceiptCaptureFlowResult.analysisFailed(
-            source: source,
-            errorCode: ReceiptAnalysisErrorCodes.storageFailed,
-          ),
-        );
-      }
-
-      return _setAndReturn(
-        ReceiptCaptureFlowResult.completed(
-          source: source,
-          extraction: extraction,
-        ),
-      );
+      return saved;
     } catch (error, stackTrace) {
       log(
         'Receipt flow storage failed unexpectedly',
@@ -193,12 +174,7 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
         error: error,
         stackTrace: stackTrace,
       );
-      return _setAndReturn(
-        ReceiptCaptureFlowResult.analysisFailed(
-          source: source,
-          errorCode: ReceiptAnalysisErrorCodes.storageFailed,
-        ),
-      );
+      return false;
     }
   }
 
