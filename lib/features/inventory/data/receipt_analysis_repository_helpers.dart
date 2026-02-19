@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer' show log;
 
+import 'package:flutter/foundation.dart';
 import 'package:yamt/features/inventory/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
 
@@ -38,6 +39,14 @@ String? normalizeReceiptAnalysisResponse(String? responseText) {
   }
 
   return responseText;
+}
+
+void logReceiptAnalysisRawResponse(String rawResponse) {
+  if (!kDebugMode) {
+    return;
+  }
+
+  log('Receipt AI raw response:\n$rawResponse', name: _repositoryLogName);
 }
 
 void logReceiptAnalysisRepositoryError({

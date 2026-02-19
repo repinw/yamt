@@ -58,6 +58,7 @@ class DeviceReceiptAnalysisRepository implements ReceiptAnalysisRepository {
         return ReceiptAnalysisRepositoryFailures.emptyResponse;
       }
 
+      logReceiptAnalysisRawResponse(normalizedResponse);
       final extraction = _parse(normalizedResponse);
       return ReceiptAnalysisResult.succeeded(
         rawResponse: normalizedResponse,
