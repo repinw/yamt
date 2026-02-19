@@ -54,6 +54,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptSelectionFailed => 'Beleg konnte nicht ausgewählt werden. Bitte erneut versuchen.';
 
   @override
+  String get inventoryReceiptAnalysisSucceeded => 'Beleg erfolgreich analysiert.';
+
+  @override
+  String get inventoryReceiptAnalysisFailed => 'Beleganalyse fehlgeschlagen. Bitte erneut versuchen.';
+
+  @override
   String get homeShoppingActionContextPlaceholder => 'Einkaufsaktion folgt bald.';
 
   @override

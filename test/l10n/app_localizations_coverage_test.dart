@@ -21,6 +21,8 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.inventoryReceiptSelectedCamera,
     l10n.inventoryReceiptSelectedFile,
     l10n.inventoryReceiptSelectionFailed,
+    l10n.inventoryReceiptAnalysisSucceeded,
+    l10n.inventoryReceiptAnalysisFailed,
     l10n.homeShoppingActionContextPlaceholder,
     l10n.homeCaloriesActionContextPlaceholder,
     l10n.homeSettingsActionContextPlaceholder,

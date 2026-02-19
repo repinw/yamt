@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/data/receipt_analysis_parser.dart';
 import 'package:yamt/features/inventory/data/receipt_analysis_repository.dart';
 import 'package:yamt/features/inventory/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/inventory/domain/receipt_input_models.dart';
@@ -21,6 +22,17 @@ class _FakeReceiptAnalysisRepository implements ReceiptAnalysisRepository {
   }
 }
 
+class _FakeReceiptAnalysisParser implements ReceiptAnalysisParser {
+  _FakeReceiptAnalysisParser({required this.onParse});
+
+  final ReceiptAnalysisExtraction Function(String rawResponse) onParse;
+
+  @override
+  ReceiptAnalysisExtraction parse(String rawResponse) {
+    return onParse(rawResponse);
+  }
+}
+
 ReceiptInputSelection _selection() {
   return ReceiptInputSelection(
     source: ReceiptInputSource.file,
@@ -36,9 +48,16 @@ void main() {
       onAnalyze: (_) async =>
           const ReceiptAnalysisResult.succeeded(rawResponse: '{}'),
     );
+    final parser = _FakeReceiptAnalysisParser(
+      onParse: (_) => const ReceiptAnalysisExtraction(
+        root: <String, dynamic>{},
+        items: <Map<String, dynamic>>[],
+      ),
+    );
     final container = ProviderContainer(
       overrides: [
         receiptAnalysisRepositoryProvider.overrideWithValue(repository),
+        receiptAnalysisParserProvider.overrideWithValue(parser),
       ],
     );
     addTearDown(container.dispose);
@@ -48,6 +67,7 @@ void main() {
         .analyzeSelection(_selection());
 
     expect(result.status, ReceiptAnalysisStatus.succeeded);
+    expect(result.extraction, isNotNull);
     expect(container.read(receiptAnalysisControllerProvider).value, result);
   });
 
@@ -90,6 +110,32 @@ void main() {
 
     expect(result.status, ReceiptAnalysisStatus.failed);
     expect(result.errorCode, ReceiptAnalysisErrorCodes.unexpected);
+    expect(container.read(receiptAnalysisControllerProvider).value, result);
+  });
+
+  test('analysis parse failure maps to parse_failed result', () async {
+    final repository = _FakeReceiptAnalysisRepository(
+      onAnalyze: (_) async => const ReceiptAnalysisResult.succeeded(
+        rawResponse: '{"items":[{"name":"milk"}]}',
+      ),
+    );
+    final parser = _FakeReceiptAnalysisParser(
+      onParse: (_) => throw const FormatException('bad json shape'),
+    );
+    final container = ProviderContainer(
+      overrides: [
+        receiptAnalysisRepositoryProvider.overrideWithValue(repository),
+        receiptAnalysisParserProvider.overrideWithValue(parser),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final result = await container
+        .read(receiptAnalysisControllerProvider.notifier)
+        .analyzeSelection(_selection());
+
+    expect(result.status, ReceiptAnalysisStatus.failed);
+    expect(result.errorCode, ReceiptAnalysisErrorCodes.parseFailed);
     expect(container.read(receiptAnalysisControllerProvider).value, result);
   });
 }

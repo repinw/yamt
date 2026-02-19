@@ -185,6 +185,18 @@ abstract class AppLocalizations {
   /// **'Could not select a receipt. Please try again.'**
   String get inventoryReceiptSelectionFailed;
 
+  /// No description provided for @inventoryReceiptAnalysisSucceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt analyzed successfully.'**
+  String get inventoryReceiptAnalysisSucceeded;
+
+  /// No description provided for @inventoryReceiptAnalysisFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt analysis failed. Please try again.'**
+  String get inventoryReceiptAnalysisFailed;
+
   /// No description provided for @homeShoppingActionContextPlaceholder.
   ///
   /// In en, this message translates to:

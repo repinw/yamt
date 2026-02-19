@@ -108,12 +108,19 @@ class HomeContextFab extends ConsumerWidget {
       ReceiptInputSource.camera => await controller.pickFromCamera(),
       ReceiptInputSource.file => await controller.pickFromFile(),
     };
-    if (result.status == ReceiptInputStatus.selected &&
-        result.selection != null) {
-      unawaited(_runReceiptAnalysis(ref, result.selection!));
-    }
     if (!context.mounted) return;
 
+    if (result.status == ReceiptInputStatus.selected &&
+        result.selection != null) {
+      unawaited(
+        _runReceiptAnalysis(
+          context: context,
+          ref: ref,
+          l10n: l10n,
+          selection: result.selection!,
+        ),
+      );
+    }
     final message = switch (result.status) {
       ReceiptInputStatus.selected => _selectedMessage(source, l10n),
       ReceiptInputStatus.failed => l10n.inventoryReceiptSelectionFailed,
@@ -125,15 +132,22 @@ class HomeContextFab extends ConsumerWidget {
     _showSnackBar(context, message);
   }
 
-  Future<void> _runReceiptAnalysis(
-    WidgetRef ref,
-    ReceiptInputSelection selection,
-  ) async {
+  Future<void> _runReceiptAnalysis({
+    required BuildContext context,
+    required WidgetRef ref,
+    required AppLocalizations l10n,
+    required ReceiptInputSelection selection,
+  }) async {
     final controller = ref.read(receiptAnalysisControllerProvider.notifier);
     final result = await controller.analyzeSelection(selection);
+    if (!context.mounted) return;
+
     if (result.isSuccess) {
+      _showSnackBar(context, l10n.inventoryReceiptAnalysisSucceeded);
       return;
     }
+
+    _showSnackBar(context, l10n.inventoryReceiptAnalysisFailed);
 
     log(
       'Receipt analysis not finished yet: ${result.errorCode}',
