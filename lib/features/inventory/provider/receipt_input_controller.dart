@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/inventory/data/receipt_input_repository.dart';
@@ -58,7 +59,13 @@ class ReceiptInputController extends _$ReceiptInputController {
 
       state = AsyncData(result);
       return result;
-    } catch (_) {
+    } catch (error, stackTrace) {
+      log(
+        'Receipt input action failed (code: $fallbackErrorCode)',
+        name: 'ReceiptInputController',
+        error: error,
+        stackTrace: stackTrace,
+      );
       final failure = ReceiptInputResult.failed(errorCode: fallbackErrorCode);
       if (ref.mounted) {
         state = AsyncData(failure);

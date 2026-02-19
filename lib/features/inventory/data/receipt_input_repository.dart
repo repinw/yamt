@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
@@ -89,7 +91,13 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
       }
 
       return ReceiptInputResult.selected(selection: selection);
-    } catch (_) {
+    } catch (error, stackTrace) {
+      log(
+        'Receipt input repository pick failed (code: $failureCode)',
+        name: 'DeviceReceiptInputRepository',
+        error: error,
+        stackTrace: stackTrace,
+      );
       return ReceiptInputResult.failed(errorCode: failureCode);
     }
   }
