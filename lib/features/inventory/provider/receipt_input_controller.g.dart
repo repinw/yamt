@@ -35,7 +35,7 @@ final class ReceiptInputControllerProvider
 }
 
 String _$receiptInputControllerHash() =>
-    r'709bd220d0a9d89252b6cbda040a06a18ca05bdf';
+    r'48ac2680bdcda90c75a40f23c0ea0c8f263c00b2';
 
 abstract class _$ReceiptInputController
     extends $AsyncNotifier<ReceiptInputResult?> {
