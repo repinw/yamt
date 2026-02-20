@@ -305,6 +305,36 @@ abstract class AppLocalizations {
   /// **'Weight'**
   String get inventoryReceiptReviewFieldWeight;
 
+  /// No description provided for @inventoryReceiptReviewFieldWeightUnitFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Fallback unit'**
+  String get inventoryReceiptReviewFieldWeightUnitFallback;
+
+  /// No description provided for @inventoryReceiptReviewWeightUnitAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get inventoryReceiptReviewWeightUnitAuto;
+
+  /// No description provided for @inventoryReceiptReviewWeightUnitGram.
+  ///
+  /// In en, this message translates to:
+  /// **'Gram (g)'**
+  String get inventoryReceiptReviewWeightUnitGram;
+
+  /// No description provided for @inventoryReceiptReviewWeightUnitMilliliter.
+  ///
+  /// In en, this message translates to:
+  /// **'Milliliter (ml)'**
+  String get inventoryReceiptReviewWeightUnitMilliliter;
+
+  /// No description provided for @inventoryReceiptReviewWeightUnitPiece.
+  ///
+  /// In en, this message translates to:
+  /// **'Piece'**
+  String get inventoryReceiptReviewWeightUnitPiece;
+
   /// No description provided for @inventoryReceiptReviewFieldBrand.
   ///
   /// In en, this message translates to:

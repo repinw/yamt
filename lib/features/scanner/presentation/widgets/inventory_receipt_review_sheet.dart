@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
-import 'package:yamt/features/scanner/presentation/widgets/inventory_receipt_item_editor_sheet.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_price_summary.dart';
+import 'inventory_receipt_item_editor_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryReceiptReviewSheet extends StatefulWidget {
@@ -24,6 +25,8 @@ class InventoryReceiptReviewSheet extends StatefulWidget {
 
 class _InventoryReceiptReviewSheetState
     extends State<InventoryReceiptReviewSheet> {
+  static const _priceSummaryCalculator = ReceiptReviewPriceSummaryCalculator();
+
   late final List<FridgeItem> _items;
   var _isSaving = false;
 
@@ -45,6 +48,7 @@ class _InventoryReceiptReviewSheetState
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final currency = NumberFormat.currency(locale: locale, symbol: '€');
+    final priceSummary = _priceSummaryCalculator.calculate(_items);
     final saveChild = _isSaving
         ? const SizedBox.square(
             dimension: AppSpacing.xl,
@@ -74,9 +78,9 @@ class _InventoryReceiptReviewSheetState
             ),
             const SizedBox(height: AppSpacing.md),
             _PriceOverview(
-              totalPrice: _totalPrice,
-              storablePrice: _storablePrice,
-              excludedPrice: _excludedPrice,
+              totalPrice: priceSummary.totalPrice,
+              storablePrice: priceSummary.storablePrice,
+              excludedPrice: priceSummary.excludedPrice,
               currency: currency,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -143,7 +147,11 @@ class _InventoryReceiptReviewSheetState
     final subtitleStyle = muted
         ? textTheme.bodyMedium?.copyWith(color: disabledColor)
         : textTheme.bodyMedium;
-    final subtitle = '${item.quantity}x · ${item.storeName}';
+    final subtitle = _buildItemSubtitle(
+      context: context,
+      l10n: l10n,
+      item: item,
+    );
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
@@ -169,6 +177,19 @@ class _InventoryReceiptReviewSheetState
         ],
       ),
     );
+  }
+
+  String _buildItemSubtitle({
+    required BuildContext context,
+    required AppLocalizations l10n,
+    required FridgeItem item,
+  }) {
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final receiptDate = item.receiptDate;
+    final dateText = receiptDate == null
+        ? l10n.inventoryReceiptReviewNoDate
+        : DateFormat.yMMMd(locale).format(receiptDate);
+    return '${item.quantity}x · ${item.storeName} · $dateText';
   }
 
   Future<void> _openItemEditor(int index) async {
@@ -202,26 +223,6 @@ class _InventoryReceiptReviewSheetState
     setState(() {
       _isSaving = false;
     });
-  }
-
-  double get _totalPrice => _sumPrice(_items);
-
-  double get _storablePrice {
-    final storable = _items.where((item) => item.canBeSavedToFridge);
-    return _sumPrice(storable);
-  }
-
-  double get _excludedPrice {
-    final excluded = _items.where((item) => item.isReviewOnly);
-    return _sumPrice(excluded);
-  }
-
-  double _sumPrice(Iterable<FridgeItem> items) {
-    return items.fold(0.0, (sum, item) => sum + _linePrice(item));
-  }
-
-  double _linePrice(FridgeItem item) {
-    return item.quantity * item.unitPrice;
   }
 }
 
