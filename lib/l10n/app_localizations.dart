@@ -383,6 +383,12 @@ abstract class AppLocalizations {
   /// **'Please enter valid numbers.'**
   String get inventoryReceiptReviewInvalidNumber;
 
+  /// No description provided for @inventoryReceiptReviewInvalidWeightUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Please add a unit (e.g. g or ml).'**
+  String get inventoryReceiptReviewInvalidWeightUnit;
+
   /// No description provided for @inventoryReceiptReviewInvalidDiscounts.
   ///
   /// In en, this message translates to:

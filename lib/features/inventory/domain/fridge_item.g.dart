@@ -15,6 +15,12 @@ _FridgeItem _$FridgeItemFromJson(Map<String, dynamic> json) => _FridgeItem(
   initialQuantity: (json['initialQuantity'] as num?)?.toInt() ?? 1,
   unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0.0,
   weight: json['weight'] as String?,
+  initialAmount: (json['initialAmount'] as num?)?.toInt() ?? 0,
+  currentAmount: (json['currentAmount'] as num?)?.toInt() ?? 0,
+  amountUnit: $enumDecodeNullable(
+    _$FridgeAmountUnitEnumMap,
+    json['amountUnit'],
+  ),
   brand: json['brand'] as String?,
   category: json['category'] as String?,
   discounts:
@@ -41,6 +47,9 @@ Map<String, dynamic> _$FridgeItemToJson(_FridgeItem instance) =>
       'initialQuantity': instance.initialQuantity,
       'unitPrice': instance.unitPrice,
       'weight': instance.weight,
+      'initialAmount': instance.initialAmount,
+      'currentAmount': instance.currentAmount,
+      'amountUnit': _$FridgeAmountUnitEnumMap[instance.amountUnit],
       'brand': instance.brand,
       'category': instance.category,
       'discounts': instance.discounts,
@@ -50,3 +59,9 @@ Map<String, dynamic> _$FridgeItemToJson(_FridgeItem instance) =>
       'isDeposit': instance.isDeposit,
       'isDiscount': instance.isDiscount,
     };
+
+const _$FridgeAmountUnitEnumMap = {
+  FridgeAmountUnit.gram: 'g',
+  FridgeAmountUnit.milliliter: 'ml',
+  FridgeAmountUnit.piece: 'pc',
+};

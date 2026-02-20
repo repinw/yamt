@@ -169,4 +169,34 @@ void main() {
 
     expect(find.text('Please enter valid numbers.'), findsOneWidget);
   });
+
+  testWidgets('weight without unit shows validation snackbar', (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(id: 'food', isDeposit: false, isDiscount: false),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_edit_button_0')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_field_weight')),
+      '500',
+    );
+    await tester.pumpAndSettle();
+
+    final applyButton = find.byKey(
+      const Key('receipt_review_apply_item_button'),
+    );
+    await tester.ensureVisible(applyButton);
+    await tester.tap(applyButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please add a unit (e.g. g or ml).'), findsOneWidget);
+  });
 }

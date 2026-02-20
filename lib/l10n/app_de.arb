@@ -48,6 +48,7 @@
   "inventoryReceiptReviewClearDateAction": "Datum löschen",
   "inventoryReceiptReviewNoDate": "Kein Datum",
   "inventoryReceiptReviewInvalidNumber": "Bitte gültige Zahlen eingeben.",
+  "inventoryReceiptReviewInvalidWeightUnit": "Bitte eine Einheit angeben (z. B. g oder ml).",
   "inventoryReceiptReviewInvalidDiscounts": "JSON oder key=value verwenden.",
   "inventoryReceiptReviewCancelAction": "Abbrechen",
   "inventoryReceiptReviewSaveAction": "Im Vorrat speichern",
