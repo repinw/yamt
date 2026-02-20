@@ -196,6 +196,38 @@ void main() {
     expect(find.text('Please enter valid numbers.'), findsOneWidget);
   });
 
+  testWidgets('editor hides keyboard when tapping outside text field', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(id: 'food', isDeposit: false, isDiscount: false),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_edit_button_0')));
+    await tester.pumpAndSettle();
+
+    final nameField = find.byKey(const Key('receipt_review_field_name'));
+    await tester.showKeyboard(nameField);
+    await tester.pump();
+    expect(tester.testTextInput.isVisible, isTrue);
+
+    final l10n = AppLocalizations.of(tester.element(nameField))!;
+    await tester.tap(find.text(l10n.inventoryReceiptReviewEditTitle));
+    await tester.pump();
+
+    expect(tester.testTextInput.isVisible, isFalse);
+    expect(
+      find.byKey(const Key('receipt_review_apply_item_button')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('weight without unit shows validation snackbar', (tester) async {
     await tester.pumpWidget(
       _wrap(

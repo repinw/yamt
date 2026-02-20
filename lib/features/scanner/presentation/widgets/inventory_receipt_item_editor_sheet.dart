@@ -240,6 +240,7 @@ class _InventoryReceiptItemEditorSheetState
         key: key,
         controller: controller,
         keyboardType: keyboardType,
+        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         decoration: InputDecoration(labelText: label, hintText: hintText),
       ),
     );
