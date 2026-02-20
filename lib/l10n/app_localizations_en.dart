@@ -114,6 +114,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewFieldWeight => 'Weight';
 
   @override
+  String get inventoryReceiptReviewFieldWeightUnitFallback => 'Fallback unit';
+
+  @override
+  String get inventoryReceiptReviewWeightUnitAuto => 'Auto';
+
+  @override
+  String get inventoryReceiptReviewWeightUnitGram => 'Gram (g)';
+
+  @override
+  String get inventoryReceiptReviewWeightUnitMilliliter => 'Milliliter (ml)';
+
+  @override
+  String get inventoryReceiptReviewWeightUnitPiece => 'Piece';
+
+  @override
   String get inventoryReceiptReviewFieldBrand => 'Brand';
 
   @override

@@ -1,0 +1,47 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_price_summary.dart';
+
+FridgeItem _item({
+  required String id,
+  required int quantity,
+  required double unitPrice,
+  bool isDeposit = false,
+  bool isDiscount = false,
+}) {
+  return FridgeItem(
+    id: id,
+    name: 'Item $id',
+    entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
+    storeName: 'Store',
+    quantity: quantity,
+    initialQuantity: quantity,
+    unitPrice: unitPrice,
+    isDeposit: isDeposit,
+    isDiscount: isDiscount,
+  );
+}
+
+void main() {
+  const calculator = ReceiptReviewPriceSummaryCalculator();
+
+  test('calculate returns total, storable and excluded sums', () {
+    final summary = calculator.calculate([
+      _item(id: 'food-1', quantity: 2, unitPrice: 1.5),
+      _item(id: 'food-2', quantity: 1, unitPrice: 2.0),
+      _item(id: 'deposit', quantity: 1, unitPrice: 0.25, isDeposit: true),
+    ]);
+
+    expect(summary.totalPrice, 5.25);
+    expect(summary.storablePrice, 5.0);
+    expect(summary.excludedPrice, 0.25);
+  });
+
+  test('calculate returns zeros for empty item list', () {
+    final summary = calculator.calculate(const <FridgeItem>[]);
+
+    expect(summary.totalPrice, 0.0);
+    expect(summary.storablePrice, 0.0);
+    expect(summary.excludedPrice, 0.0);
+  });
+}

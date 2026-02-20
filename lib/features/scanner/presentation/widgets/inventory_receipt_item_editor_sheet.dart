@@ -4,8 +4,33 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
-import 'package:yamt/features/scanner/domain/receipt_item_input_parser.dart';
+import 'package:yamt/features/scanner/domain/receipt_item_editor_updater.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+enum _WeightUnitFallbackOption {
+  auto,
+  gram,
+  milliliter,
+  piece;
+
+  FridgeAmountUnit? resolve({required FridgeAmountUnit? autoFallback}) {
+    return switch (this) {
+      _WeightUnitFallbackOption.auto => autoFallback,
+      _WeightUnitFallbackOption.gram => FridgeAmountUnit.gram,
+      _WeightUnitFallbackOption.milliliter => FridgeAmountUnit.milliliter,
+      _WeightUnitFallbackOption.piece => FridgeAmountUnit.piece,
+    };
+  }
+
+  static _WeightUnitFallbackOption fromUnit(FridgeAmountUnit? unit) {
+    return switch (unit) {
+      FridgeAmountUnit.gram => _WeightUnitFallbackOption.gram,
+      FridgeAmountUnit.milliliter => _WeightUnitFallbackOption.milliliter,
+      FridgeAmountUnit.piece => _WeightUnitFallbackOption.piece,
+      null => _WeightUnitFallbackOption.auto,
+    };
+  }
+}
 
 class InventoryReceiptItemEditorSheet extends StatefulWidget {
   const InventoryReceiptItemEditorSheet({super.key, required this.item});
@@ -19,7 +44,7 @@ class InventoryReceiptItemEditorSheet extends StatefulWidget {
 
 class _InventoryReceiptItemEditorSheetState
     extends State<InventoryReceiptItemEditorSheet> {
-  static const _inputParser = ReceiptItemInputParser();
+  static const _itemUpdater = ReceiptItemEditorUpdater();
 
   late final TextEditingController _nameController;
   late final TextEditingController _storeNameController;
@@ -33,6 +58,7 @@ class _InventoryReceiptItemEditorSheetState
   DateTime? _receiptDate;
   late bool _isDeposit;
   late bool _isDiscount;
+  late _WeightUnitFallbackOption _weightUnitFallbackOption;
 
   @override
   void initState() {
@@ -54,6 +80,9 @@ class _InventoryReceiptItemEditorSheetState
     _receiptDate = item.receiptDate;
     _isDeposit = item.isDeposit;
     _isDiscount = item.isDiscount;
+    _weightUnitFallbackOption = _WeightUnitFallbackOption.fromUnit(
+      item.amountUnit,
+    );
   }
 
   @override
@@ -127,6 +156,7 @@ class _InventoryReceiptItemEditorSheetState
               controller: _weightController,
               label: l10n.inventoryReceiptReviewFieldWeight,
             ),
+            _weightUnitField(context),
             _textField(
               key: const Key('receipt_review_field_brand'),
               controller: _brandController,
@@ -256,6 +286,51 @@ class _InventoryReceiptItemEditorSheetState
     );
   }
 
+  Widget _weightUnitField(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: DropdownButtonFormField<_WeightUnitFallbackOption>(
+        key: const Key('receipt_review_field_weight_unit_fallback'),
+        initialValue: _weightUnitFallbackOption,
+        decoration: InputDecoration(
+          labelText: l10n.inventoryReceiptReviewFieldWeightUnitFallback,
+        ),
+        items: [
+          DropdownMenuItem<_WeightUnitFallbackOption>(
+            key: const Key('receipt_review_weight_unit_option_auto'),
+            value: _WeightUnitFallbackOption.auto,
+            child: Text(l10n.inventoryReceiptReviewWeightUnitAuto),
+          ),
+          DropdownMenuItem<_WeightUnitFallbackOption>(
+            key: const Key('receipt_review_weight_unit_option_gram'),
+            value: _WeightUnitFallbackOption.gram,
+            child: Text(l10n.inventoryReceiptReviewWeightUnitGram),
+          ),
+          DropdownMenuItem<_WeightUnitFallbackOption>(
+            key: const Key('receipt_review_weight_unit_option_milliliter'),
+            value: _WeightUnitFallbackOption.milliliter,
+            child: Text(l10n.inventoryReceiptReviewWeightUnitMilliliter),
+          ),
+          DropdownMenuItem<_WeightUnitFallbackOption>(
+            key: const Key('receipt_review_weight_unit_option_piece'),
+            value: _WeightUnitFallbackOption.piece,
+            child: Text(l10n.inventoryReceiptReviewWeightUnitPiece),
+          ),
+        ],
+        onChanged: (value) {
+          if (value == null) {
+            return;
+          }
+          setState(() {
+            _weightUnitFallbackOption = value;
+          });
+        },
+      ),
+    );
+  }
+
   String? _formatDate(BuildContext context, DateTime? value) {
     if (value == null) {
       return null;
@@ -303,81 +378,49 @@ class _InventoryReceiptItemEditorSheetState
   void _applyChanges() {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toString();
-    final parsedNumbers = _inputParser.parseNumbers(
-      quantityText: _quantityController.text,
-      unitPriceText: _unitPriceController.text,
-      locale: locale,
+    final fallbackUnit = _weightUnitFallbackOption.resolve(
+      autoFallback: widget.item.amountUnit,
     );
-    if (parsedNumbers == null) {
-      _showError(l10n.inventoryReceiptReviewInvalidNumber);
-      return;
-    }
-
-    final parsedDiscounts = _inputParser.parseDiscounts(
-      _discountsController.text,
+    final result = _itemUpdater.apply(
+      sourceItem: widget.item,
+      formData: ReceiptItemEditorFormData(
+        name: _nameController.text,
+        entryDate: _entryDate,
+        storeName: _storeNameController.text,
+        quantityText: _quantityController.text,
+        unitPriceText: _unitPriceController.text,
+        weightText: _weightController.text,
+        brandText: _brandController.text,
+        categoryText: _categoryController.text,
+        discountsText: _discountsController.text,
+        receiptDate: _receiptDate,
+        isDeposit: _isDeposit,
+        isDiscount: _isDiscount,
+      ),
       locale: locale,
+      fallbackUnit: fallbackUnit,
     );
-    if (parsedDiscounts == null) {
-      _showError(l10n.inventoryReceiptReviewInvalidDiscounts);
-      return;
+
+    switch (result) {
+      case ReceiptItemEditorApplySuccess(:final item):
+        Navigator.of(context).pop(item);
+      case ReceiptItemEditorApplyFailure(:final error):
+        _showError(_errorMessageForApplyError(l10n, error));
     }
-
-    final quantity = parsedNumbers.quantity;
-    final unitPrice = parsedNumbers.unitPrice;
-    final safeInitialQuantity = quantity < 1 ? 1 : quantity;
-    final safeQuantity = quantity < 0 ? 0 : quantity;
-    final weight = _nullableText(_weightController.text);
-    final fallbackUnit = widget.item.amountUnit;
-
-    final updated = widget.item
-        .copyWith(
-          name: _requiredText(_nameController.text, fallback: widget.item.name),
-          entryDate: _entryDate,
-          storeName: _requiredText(
-            _storeNameController.text,
-            fallback: widget.item.storeName,
-          ),
-          initialQuantity: safeInitialQuantity,
-          unitPrice: unitPrice < 0 ? 0 : unitPrice,
-          brand: _nullableText(_brandController.text),
-          category: _nullableText(_categoryController.text),
-          discounts: parsedDiscounts,
-          receiptDate: _receiptDate,
-          isDeposit: _isDeposit,
-          isDiscount: _isDiscount,
-        )
-        .withDerivedAmount(
-          weight: weight,
-          quantity: safeQuantity,
-          fallbackUnit: fallbackUnit,
-        );
-
-    final hasUnresolvedWeight =
-        weight != null &&
-        updated.initialAmount == 0 &&
-        updated.amountUnit == null;
-    if (hasUnresolvedWeight) {
-      _showError(l10n.inventoryReceiptReviewInvalidWeightUnit);
-      return;
-    }
-
-    Navigator.of(context).pop(updated);
   }
 
-  String _requiredText(String value, {required String fallback}) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) {
-      return fallback;
-    }
-    return trimmed;
-  }
-
-  String? _nullableText(String value) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) {
-      return null;
-    }
-    return trimmed;
+  String _errorMessageForApplyError(
+    AppLocalizations l10n,
+    ReceiptItemEditorApplyError error,
+  ) {
+    return switch (error) {
+      ReceiptItemEditorApplyError.invalidNumber =>
+        l10n.inventoryReceiptReviewInvalidNumber,
+      ReceiptItemEditorApplyError.invalidDiscounts =>
+        l10n.inventoryReceiptReviewInvalidDiscounts,
+      ReceiptItemEditorApplyError.invalidWeightUnit =>
+        l10n.inventoryReceiptReviewInvalidWeightUnit,
+    };
   }
 
   void _showError(String message) {

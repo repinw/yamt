@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/scanner/presentation/widgets/inventory_receipt_review_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -61,6 +62,31 @@ void main() {
     expect(find.text('Saved to inventory'), findsOneWidget);
     expect(find.text('Excluded lines'), findsOneWidget);
     expect(find.textContaining('€'), findsNWidgets(3));
+  });
+
+  testWidgets('item preview shows receipt date', (tester) async {
+    final receiptDate = DateTime.parse('2026-01-05');
+
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            receiptDate: receiptDate,
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final expectedDate = DateFormat.yMMMd(locale).format(receiptDate);
+
+    expect(find.textContaining(expectedDate), findsOneWidget);
   });
 
   testWidgets('edited item including receiptDate is passed to save callback', (
@@ -198,5 +224,61 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Please add a unit (e.g. g or ml).'), findsOneWidget);
+  });
+
+  testWidgets('weight without suffix saves when gram fallback is selected', (
+    tester,
+  ) async {
+    List<FridgeItem>? savedItems;
+
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(id: 'food', isDeposit: false, isDiscount: false),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (items) async {
+          savedItems = items;
+        },
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_edit_button_0')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_field_weight')),
+      '500',
+    );
+    await tester.pumpAndSettle();
+
+    final unitDropdown = find.byKey(
+      const Key('receipt_review_field_weight_unit_fallback'),
+    );
+    await tester.ensureVisible(unitDropdown);
+    await tester.tap(unitDropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Gram (g)').last);
+    await tester.pumpAndSettle();
+
+    final applyButton = find.byKey(
+      const Key('receipt_review_apply_item_button'),
+    );
+    await tester.ensureVisible(applyButton);
+    await tester.tap(applyButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please add a unit (e.g. g or ml).'), findsNothing);
+
+    final saveButton = find.byKey(const Key('receipt_review_save_button'));
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect(savedItems, isNotNull);
+    expect(savedItems, hasLength(1));
+    expect(savedItems!.single.initialAmount, 500);
+    expect(savedItems!.single.currentAmount, 500);
+    expect(savedItems!.single.amountUnit, FridgeAmountUnit.gram);
   });
 }
