@@ -1,7 +1,11 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_list.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryPage extends ConsumerWidget {
@@ -14,18 +18,40 @@ class InventoryPage extends ConsumerWidget {
     final itemsAsync = ref.watch(fridgeItemsControllerProvider);
 
     return itemsAsync.when(
-      data: (items) => _InventoryListView(
+      data: (items) => InventoryList(
         items: items,
-        onRefresh: controller.refresh,
-        emptyMessage: l10n.inventoryEmptyState,
+        onDeleteItem: controller.deleteItem,
+        onThrowAwayItem: controller.throwAwayItem,
       ),
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => _InventoryErrorView(
-        onRetry: () {
-          controller.refresh();
-        },
-        message: l10n.inventoryLoadFailed,
-        retryLabel: l10n.inventoryRetryAction,
+      loading: () => const _InventoryLoadingView(),
+      error: (error, stackTrace) {
+        developer.log(
+          'Failed to load inventory items.',
+          name: 'InventoryPage',
+          error: error,
+          stackTrace: stackTrace,
+        );
+        return _InventoryErrorView(
+          onRetry: controller.refresh,
+          message: l10n.inventoryLoadFailed,
+          retryLabel: l10n.inventoryRetryAction,
+        );
+      },
+    );
+  }
+}
+
+class _InventoryLoadingView extends StatelessWidget {
+  const _InventoryLoadingView();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: SizedBox.square(
+        dimension: AppSizes.inlineProgressIndicator,
+        child: CircularProgressIndicator(
+          strokeWidth: AppSizes.progressStrokeWidth,
+        ),
       ),
     );
   }
@@ -44,59 +70,35 @@ class _InventoryErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            ElevatedButton(onPressed: onRetry, child: Text(retryLabel)),
-          ],
+        padding: AppInsets.pageLarge,
+        child: Card(
+          margin: EdgeInsets.zero,
+          child: Padding(
+            padding: AppInsets.card,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.wifi_tethering_error_rounded,
+                  color: colors.error,
+                  size: AppSizes.welcomeIcon * 0.45,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(message, textAlign: TextAlign.center),
+                const SizedBox(height: AppSpacing.md),
+                FilledButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh),
+                  label: Text(retryLabel),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
-    );
-  }
-}
-
-class _InventoryListView extends StatelessWidget {
-  const _InventoryListView({
-    required this.items,
-    required this.onRefresh,
-    required this.emptyMessage,
-  });
-
-  final List<FridgeItem> items;
-  final Future<void> Function() onRefresh;
-  final String emptyMessage;
-
-  @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(emptyMessage, textAlign: TextAlign.center),
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: items.length,
-        separatorBuilder: (context, index) => const Divider(height: 1),
-        itemBuilder: (context, index) {
-          final item = items[index];
-          return ListTile(
-            leading: const Icon(Icons.kitchen_outlined),
-            title: Text(item.name),
-            subtitle: Text(item.brand ?? item.storeName),
-            trailing: Text('${item.quantity}'),
-          );
-        },
       ),
     );
   }

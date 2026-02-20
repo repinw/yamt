@@ -168,6 +168,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptSaveFailed => 'Could not save receipt items. Please try again.';
 
   @override
+  String get inventorySummaryTitle => 'Overview';
+
+  @override
+  String get inventorySummaryEntries => 'Entries';
+
+  @override
+  String get inventorySummaryQuantity => 'Total quantity';
+
+  @override
+  String get inventorySummaryEstimatedValue => 'Estimated value';
+
+  @override
+  String get inventoryListSectionTitle => 'Items';
+
+  @override
+  String get inventoryReceiptGroupTitle => 'Receipt';
+
+  @override
+  String get inventoryReceiptGroupNoReceipt => 'No receipt';
+
+  @override
+  String get inventoryReceiptGroupItems => 'items';
+
+  @override
+  String get inventoryItemNoPrice => 'No price';
+
+  @override
+  String get inventoryItemDeleteAction => 'Delete';
+
+  @override
+  String get inventoryItemEatAction => 'Eat';
+
+  @override
+  String get inventoryItemThrowAwayAction => 'Throw away';
+
+  @override
+  String get inventoryItemActionFailed => 'Action failed. Please try again.';
+
+  @override
   String get inventoryEmptyState => 'No items in your fridge yet. Scan a receipt to get started.';
 
   @override

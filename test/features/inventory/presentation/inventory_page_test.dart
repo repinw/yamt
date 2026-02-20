@@ -27,15 +27,24 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
   }
 }
 
-FridgeItem _item(String id) {
+FridgeItem _item(
+  String id, {
+  String? brand,
+  String? name,
+  String? receiptId,
+  DateTime? receiptDate,
+}) {
   return FridgeItem(
     id: id,
-    name: 'Milk',
+    name: name ?? 'Milk',
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
     storeName: 'Store',
     quantity: 2,
     initialQuantity: 2,
     unitPrice: 1.0,
+    brand: brand,
+    receiptId: receiptId,
+    receiptDate: receiptDate,
   );
 }
 
@@ -43,6 +52,7 @@ Widget _buildTestApp(FridgeItemRepository repository) {
   return ProviderScope(
     overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
     child: MaterialApp(
+      locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: const Scaffold(body: InventoryPage()),
@@ -69,14 +79,48 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[_item('a')],
+      onReadAll: () async => <FridgeItem>[_item('a', brand: 'Acme')],
     );
 
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
 
+    expect(find.text('No receipt'), findsOneWidget);
+    expect(find.textContaining('Store'), findsOneWidget);
+    expect(find.text('Overview'), findsOneWidget);
+    expect(find.text('Items'), findsOneWidget);
+    expect(find.text('Entries'), findsOneWidget);
+    expect(find.text('Total quantity'), findsOneWidget);
+    expect(find.text('Estimated value'), findsOneWidget);
+
+    await tester.tap(find.text('No receipt'));
+    await tester.pumpAndSettle();
+
     expect(find.text('Milk'), findsOneWidget);
-    expect(find.text('Store'), findsOneWidget);
-    expect(find.text('2'), findsOneWidget);
+    expect(find.text('ACME'), findsOneWidget);
+  });
+
+  testWidgets('groups items under one receipt and expands on tap', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item('a', name: 'Milk', receiptId: 'abc123999'),
+        _item('b', name: 'Bread', receiptId: 'abc123999'),
+      ],
+    );
+
+    await tester.pumpWidget(_buildTestApp(repository));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Receipt #abc123'), findsOneWidget);
+    expect(find.text('Milk'), findsNothing);
+    expect(find.text('Bread'), findsNothing);
+
+    await tester.tap(find.text('Receipt #abc123'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Milk'), findsOneWidget);
+    expect(find.text('Bread'), findsOneWidget);
   });
 }
