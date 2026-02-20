@@ -3,7 +3,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-import 'receipt_item_editor_draft.dart';
+import '../models/receipt_item_editor_draft.dart';
 import 'receipt_item_editor_form_field_metadata.dart';
 import 'receipt_item_editor_weight_unit_fallback_option.dart';
 

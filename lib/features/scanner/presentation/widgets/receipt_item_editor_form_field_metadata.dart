@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-import 'receipt_item_editor_draft.dart';
+import '../models/receipt_item_editor_draft.dart';
 
 class ReceiptItemEditorFieldGroups {
   static const beforeEntryDate = <ReceiptItemEditorDraftField>[
