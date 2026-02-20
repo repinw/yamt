@@ -6,7 +6,6 @@ import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 import 'receipt_item_editor_draft.dart';
 import 'receipt_item_editor_form_field_metadata.dart';
-import 'receipt_item_editor_inline_error_state.dart';
 
 enum ReceiptWeightUnitFallbackOption {
   auto,
@@ -33,58 +32,21 @@ enum ReceiptWeightUnitFallbackOption {
   }
 }
 
-class ReceiptItemEditorFormValues {
-  const ReceiptItemEditorFormValues({
-    required this.draft,
-    required this.inlineErrors,
-    required this.entryDate,
-    required this.receiptDate,
-    required this.isDeposit,
-    required this.isDiscount,
-    required this.weightUnitFallbackOption,
-  });
-
-  final ReceiptItemEditorDraft draft;
-  final ReceiptItemEditorInlineErrorState inlineErrors;
-  final DateTime entryDate;
-  final DateTime? receiptDate;
-  final bool isDeposit;
-  final bool isDiscount;
-  final ReceiptWeightUnitFallbackOption weightUnitFallbackOption;
-}
-
-class ReceiptItemEditorFormActions {
-  const ReceiptItemEditorFormActions({
-    required this.onPickEntryDate,
-    required this.onPickReceiptDate,
-    required this.onClearReceiptDate,
-    required this.onWeightUnitChanged,
-    required this.onIsDepositChanged,
-    required this.onIsDiscountChanged,
-    required this.onTextChanged,
-    required this.onSubmit,
-  });
-
-  final Future<void> Function() onPickEntryDate;
-  final Future<void> Function() onPickReceiptDate;
-  final VoidCallback onClearReceiptDate;
-  final ValueChanged<ReceiptWeightUnitFallbackOption> onWeightUnitChanged;
-  final ValueChanged<bool> onIsDepositChanged;
-  final ValueChanged<bool> onIsDiscountChanged;
-  final void Function(ReceiptItemEditorDraftField field, String value)
-  onTextChanged;
-  final VoidCallback onSubmit;
-}
+typedef ReceiptItemEditorTextValidator = String? Function(String? value);
 
 class ReceiptItemEditorFormSection extends StatelessWidget {
   const ReceiptItemEditorFormSection({
     super.key,
-    required this.values,
-    required this.actions,
+    required this.onSubmit,
+    required this.numberValidator,
+    required this.weightValidator,
+    required this.discountsValidator,
   });
 
-  final ReceiptItemEditorFormValues values;
-  final ReceiptItemEditorFormActions actions;
+  final VoidCallback onSubmit;
+  final ReceiptItemEditorTextValidator numberValidator;
+  final ReceiptItemEditorTextValidator weightValidator;
+  final ReceiptItemEditorTextValidator discountsValidator;
 
   @override
   Widget build(BuildContext context) {
@@ -95,46 +57,45 @@ class ReceiptItemEditorFormSection extends StatelessWidget {
       children: [
         _ReceiptEditorTextFieldsGroup(
           fields: ReceiptItemEditorFieldGroups.beforeEntryDate,
-          values: values,
-          actions: actions,
+          numberValidator: numberValidator,
+          weightValidator: weightValidator,
+          discountsValidator: discountsValidator,
+          onSubmit: onSubmit,
         ),
         _ReceiptEditorDateField(
+          name: ReceiptItemEditorFormFieldName.entryDate,
           label: l10n.inventoryReceiptReviewFieldEntryDate,
-          value: values.entryDate,
           noDateLabel: l10n.inventoryReceiptReviewNoDate,
-          onSelectTap: actions.onPickEntryDate,
         ),
         _ReceiptEditorTextFieldsGroup(
           fields: ReceiptItemEditorFieldGroups.beforeWeightUnitFallback,
-          values: values,
-          actions: actions,
+          numberValidator: numberValidator,
+          weightValidator: weightValidator,
+          discountsValidator: discountsValidator,
+          onSubmit: onSubmit,
         ),
-        _ReceiptEditorWeightUnitField(
-          value: values.weightUnitFallbackOption,
-          onChanged: actions.onWeightUnitChanged,
-        ),
+        const _ReceiptEditorWeightUnitField(),
         _ReceiptEditorTextFieldsGroup(
           fields: ReceiptItemEditorFieldGroups.afterWeightUnitFallback,
-          values: values,
-          actions: actions,
+          numberValidator: numberValidator,
+          weightValidator: weightValidator,
+          discountsValidator: discountsValidator,
+          onSubmit: onSubmit,
         ),
         _ReceiptEditorDateField(
+          name: ReceiptItemEditorFormFieldName.receiptDate,
           label: l10n.inventoryReceiptReviewFieldReceiptDate,
-          value: values.receiptDate,
           noDateLabel: l10n.inventoryReceiptReviewNoDate,
-          onSelectTap: actions.onPickReceiptDate,
-          onClearTap: actions.onClearReceiptDate,
+          allowClear: true,
           clearButtonKey: const Key('receipt_review_clear_receipt_date_button'),
         ),
-        SwitchListTile.adaptive(
-          title: Text(l10n.inventoryReceiptReviewFieldIsDeposit),
-          value: values.isDeposit,
-          onChanged: actions.onIsDepositChanged,
+        _ReceiptEditorSwitchField(
+          name: ReceiptItemEditorFormFieldName.isDeposit,
+          title: l10n.inventoryReceiptReviewFieldIsDeposit,
         ),
-        SwitchListTile.adaptive(
-          title: Text(l10n.inventoryReceiptReviewFieldIsDiscount),
-          value: values.isDiscount,
-          onChanged: actions.onIsDiscountChanged,
+        _ReceiptEditorSwitchField(
+          name: ReceiptItemEditorFormFieldName.isDiscount,
+          title: l10n.inventoryReceiptReviewFieldIsDiscount,
         ),
       ],
     );
@@ -144,13 +105,17 @@ class ReceiptItemEditorFormSection extends StatelessWidget {
 class _ReceiptEditorTextFieldsGroup extends StatelessWidget {
   const _ReceiptEditorTextFieldsGroup({
     required this.fields,
-    required this.values,
-    required this.actions,
+    required this.numberValidator,
+    required this.weightValidator,
+    required this.discountsValidator,
+    required this.onSubmit,
   });
 
   final List<ReceiptItemEditorDraftField> fields;
-  final ReceiptItemEditorFormValues values;
-  final ReceiptItemEditorFormActions actions;
+  final ReceiptItemEditorTextValidator numberValidator;
+  final ReceiptItemEditorTextValidator weightValidator;
+  final ReceiptItemEditorTextValidator discountsValidator;
+  final VoidCallback onSubmit;
 
   @override
   Widget build(BuildContext context) {
@@ -161,39 +126,44 @@ class _ReceiptEditorTextFieldsGroup extends StatelessWidget {
         for (final field in fields)
           _ReceiptEditorTextField(
             field: field,
-            value: values.draft.valueFor(field),
             label: field.labelText(l10n),
             keyboardType: field.keyboardType,
             hintText: field.hintText(l10n),
-            errorText: values.inlineErrors.errorFor(field),
-            onTextChanged: actions.onTextChanged,
-            onSubmitted: actions.onSubmit,
+            validator: _validatorFor(field),
+            onSubmitted: onSubmit,
           ),
       ],
     );
+  }
+
+  ReceiptItemEditorTextValidator? _validatorFor(
+    ReceiptItemEditorDraftField field,
+  ) {
+    return switch (field) {
+      ReceiptItemEditorDraftField.quantity ||
+      ReceiptItemEditorDraftField.unitPrice => numberValidator,
+      ReceiptItemEditorDraftField.weight => weightValidator,
+      ReceiptItemEditorDraftField.discounts => discountsValidator,
+      _ => null,
+    };
   }
 }
 
 class _ReceiptEditorTextField extends StatelessWidget {
   const _ReceiptEditorTextField({
     required this.field,
-    required this.value,
     required this.label,
     required this.keyboardType,
     required this.hintText,
-    required this.errorText,
-    required this.onTextChanged,
+    required this.validator,
     required this.onSubmitted,
   });
 
   final ReceiptItemEditorDraftField field;
-  final String value;
   final String label;
   final TextInputType? keyboardType;
   final String? hintText;
-  final String? errorText;
-  final void Function(ReceiptItemEditorDraftField field, String value)
-  onTextChanged;
+  final ReceiptItemEditorTextValidator? validator;
   final VoidCallback onSubmitted;
 
   @override
@@ -203,84 +173,124 @@ class _ReceiptEditorTextField extends StatelessWidget {
       child: FormBuilderTextField(
         key: field.fieldKey,
         name: field.name,
-        initialValue: value,
         keyboardType: keyboardType,
         textInputAction: TextInputAction.done,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         onSubmitted: (_) => onSubmitted(),
-        onChanged: (nextValue) => onTextChanged(field, nextValue ?? ''),
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: hintText,
-          errorText: errorText,
-        ),
+        onChanged: (_) => _revalidateLinkedFields(context),
+        validator: validator,
+        decoration: InputDecoration(labelText: label, hintText: hintText),
       ),
     );
+  }
+
+  void _revalidateLinkedFields(BuildContext context) {
+    final formState = FormBuilder.of(context);
+    if (formState == null) {
+      return;
+    }
+    for (final linkedField in field.linkedValidationFields) {
+      formState.fields[linkedField.name]?.validate();
+    }
   }
 }
 
 class _ReceiptEditorDateField extends StatelessWidget {
   const _ReceiptEditorDateField({
+    required this.name,
     required this.label,
-    required this.value,
     required this.noDateLabel,
-    required this.onSelectTap,
-    this.onClearTap,
+    this.allowClear = false,
     this.clearButtonKey,
   });
 
+  final String name;
   final String label;
-  final DateTime? value;
   final String noDateLabel;
-  final Future<void> Function() onSelectTap;
-  final VoidCallback? onClearTap;
+  final bool allowClear;
   final Key? clearButtonKey;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final formattedDate = _formatDate(context, value);
-    final valueText = formattedDate ?? noDateLabel;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: AppSpacing.xxs * 2),
-          Text(valueText),
-          const SizedBox(height: AppSpacing.xs),
-          Row(
+    return FormBuilderField<DateTime?>(
+      name: name,
+      builder: (field) {
+        final formattedDate = _formatDate(context, field.value);
+        final valueText = formattedDate ?? noDateLabel;
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextButton(
-                onPressed: onSelectTap,
-                child: Text(l10n.inventoryReceiptReviewSelectDateAction),
+              Text(label, style: Theme.of(context).textTheme.bodyMedium),
+              const SizedBox(height: AppSpacing.xxs * 2),
+              Text(valueText),
+              const SizedBox(height: AppSpacing.xs),
+              Row(
+                children: [
+                  TextButton(
+                    onPressed: () => _pickDate(context, field),
+                    child: Text(l10n.inventoryReceiptReviewSelectDateAction),
+                  ),
+                  if (allowClear)
+                    TextButton(
+                      key: clearButtonKey,
+                      onPressed: () => field.didChange(null),
+                      child: Text(l10n.inventoryReceiptReviewClearDateAction),
+                    ),
+                ],
               ),
-              if (onClearTap != null)
-                TextButton(
-                  key: clearButtonKey,
-                  onPressed: onClearTap,
-                  child: Text(l10n.inventoryReceiptReviewClearDateAction),
-                ),
             ],
           ),
-        ],
-      ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickDate(
+    BuildContext context,
+    FormFieldState<DateTime?> field,
+  ) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: field.value ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (!context.mounted || picked == null) {
+      return;
+    }
+    field.didChange(DateUtils.dateOnly(picked));
+  }
+}
+
+class _ReceiptEditorSwitchField extends StatelessWidget {
+  const _ReceiptEditorSwitchField({required this.name, required this.title});
+
+  final String name;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return FormBuilderField<bool>(
+      name: name,
+      builder: (field) {
+        return SwitchListTile.adaptive(
+          title: Text(title),
+          value: field.value ?? false,
+          onChanged: field.didChange,
+        );
+      },
     );
   }
 }
 
 class _ReceiptEditorWeightUnitField extends StatelessWidget {
-  const _ReceiptEditorWeightUnitField({
-    required this.value,
-    required this.onChanged,
-  });
-
-  static const _fieldName = 'weight_unit_fallback_option';
-
-  final ReceiptWeightUnitFallbackOption value;
-  final ValueChanged<ReceiptWeightUnitFallbackOption> onChanged;
+  const _ReceiptEditorWeightUnitField();
 
   @override
   Widget build(BuildContext context) {
@@ -290,8 +300,7 @@ class _ReceiptEditorWeightUnitField extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: FormBuilderDropdown<ReceiptWeightUnitFallbackOption>(
         key: const Key('receipt_review_field_weight_unit_fallback'),
-        name: _fieldName,
-        initialValue: value,
+        name: ReceiptItemEditorFormFieldName.weightUnitFallbackOption,
         decoration: InputDecoration(
           labelText: l10n.inventoryReceiptReviewFieldWeightUnitFallback,
         ),
@@ -303,11 +312,10 @@ class _ReceiptEditorWeightUnitField extends StatelessWidget {
               child: Text(option.labelText(l10n)),
             ),
         ],
-        onChanged: (nextValue) {
-          if (nextValue == null) {
-            return;
-          }
-          onChanged(nextValue);
+        onChanged: (_) {
+          final formState = FormBuilder.of(context);
+          formState?.fields[ReceiptItemEditorDraftField.weight.name]
+              ?.validate();
         },
       ),
     );

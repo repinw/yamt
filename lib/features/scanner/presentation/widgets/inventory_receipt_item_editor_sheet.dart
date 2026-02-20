@@ -3,11 +3,12 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_item_editor_updater.dart';
+import 'package:yamt/features/scanner/domain/receipt_item_input_parser.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 import 'receipt_item_editor_action_row.dart';
 import 'receipt_item_editor_draft.dart';
+import 'receipt_item_editor_form_field_metadata.dart';
 import 'receipt_item_editor_form_section.dart';
-import 'receipt_item_editor_inline_error_state.dart';
 
 class InventoryReceiptItemEditorSheet extends StatefulWidget {
   const InventoryReceiptItemEditorSheet({super.key, required this.item});
@@ -22,27 +23,27 @@ class InventoryReceiptItemEditorSheet extends StatefulWidget {
 class _InventoryReceiptItemEditorSheetState
     extends State<InventoryReceiptItemEditorSheet> {
   static const _itemUpdater = ReceiptItemEditorUpdater();
+  static const _inputParser = ReceiptItemInputParser();
 
-  late ReceiptItemEditorDraft _draft;
-  var _inlineErrors = ReceiptItemEditorInlineErrorState.empty;
-  late DateTime _entryDate;
-  DateTime? _receiptDate;
-  late bool _isDeposit;
-  late bool _isDiscount;
-  late ReceiptWeightUnitFallbackOption _weightUnitFallbackOption;
+  final _formKey = GlobalKey<FormBuilderState>();
+  late final Map<String, dynamic> _initialFormValues;
 
   @override
   void initState() {
     super.initState();
+
     final item = widget.item;
-    _draft = ReceiptItemEditorDraft.fromItem(item);
-    _entryDate = item.entryDate;
-    _receiptDate = item.receiptDate;
-    _isDeposit = item.isDeposit;
-    _isDiscount = item.isDiscount;
-    _weightUnitFallbackOption = ReceiptWeightUnitFallbackOption.fromUnit(
-      item.amountUnit,
-    );
+    final draft = ReceiptItemEditorDraft.fromItem(item);
+    _initialFormValues = {
+      for (final field in ReceiptItemEditorDraftField.values)
+        field.name: draft.valueFor(field),
+      ReceiptItemEditorFormFieldName.entryDate: item.entryDate,
+      ReceiptItemEditorFormFieldName.receiptDate: item.receiptDate,
+      ReceiptItemEditorFormFieldName.isDeposit: item.isDeposit,
+      ReceiptItemEditorFormFieldName.isDiscount: item.isDiscount,
+      ReceiptItemEditorFormFieldName.weightUnitFallbackOption:
+          ReceiptWeightUnitFallbackOption.fromUnit(item.amountUnit),
+    };
   }
 
   @override
@@ -68,9 +69,13 @@ class _InventoryReceiptItemEditorSheetState
             ),
             const SizedBox(height: AppSpacing.md),
             FormBuilder(
+              key: _formKey,
+              initialValue: _initialFormValues,
               child: ReceiptItemEditorFormSection(
-                values: _formValues,
-                actions: _formActions,
+                onSubmit: _applyChanges,
+                numberValidator: _validateNumbers,
+                weightValidator: _validateWeight,
+                discountsValidator: _validateDiscounts,
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -84,138 +89,163 @@ class _InventoryReceiptItemEditorSheetState
     );
   }
 
-  Future<void> _pickEntryDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _entryDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (!mounted || picked == null) {
-      return;
-    }
-    setState(() {
-      _entryDate = DateUtils.dateOnly(picked);
-    });
-  }
-
-  Future<void> _pickReceiptDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _receiptDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (!mounted || picked == null) {
-      return;
-    }
-    setState(() {
-      _receiptDate = DateUtils.dateOnly(picked);
-    });
-  }
-
-  void _clearReceiptDate() {
-    setState(() {
-      _receiptDate = null;
-    });
-  }
-
-  ReceiptItemEditorFormValues get _formValues {
-    return ReceiptItemEditorFormValues(
-      draft: _draft,
-      inlineErrors: _inlineErrors,
-      entryDate: _entryDate,
-      receiptDate: _receiptDate,
-      isDeposit: _isDeposit,
-      isDiscount: _isDiscount,
-      weightUnitFallbackOption: _weightUnitFallbackOption,
-    );
-  }
-
-  ReceiptItemEditorFormActions get _formActions {
-    return ReceiptItemEditorFormActions(
-      onPickEntryDate: _pickEntryDate,
-      onPickReceiptDate: _pickReceiptDate,
-      onClearReceiptDate: _clearReceiptDate,
-      onWeightUnitChanged: _updateWeightUnit,
-      onIsDepositChanged: _updateIsDeposit,
-      onIsDiscountChanged: _updateIsDiscount,
-      onTextChanged: _onTextChanged,
-      onSubmit: _applyChanges,
-    );
-  }
-
-  void _updateWeightUnit(ReceiptWeightUnitFallbackOption value) {
-    setState(() {
-      _weightUnitFallbackOption = value;
-    });
-  }
-
-  void _updateIsDeposit(bool value) {
-    setState(() {
-      _isDeposit = value;
-    });
-  }
-
-  void _updateIsDiscount(bool value) {
-    setState(() {
-      _isDiscount = value;
-    });
-  }
-
-  void _onTextChanged(ReceiptItemEditorDraftField field, String value) {
-    _draft = _draft.withField(field, value);
-
-    final nextInlineErrors = switch (field) {
-      ReceiptItemEditorDraftField.quantity ||
-      ReceiptItemEditorDraftField.unitPrice =>
-        _inlineErrors.hasNumberError ? _inlineErrors.clearNumbers() : null,
-      ReceiptItemEditorDraftField.weight =>
-        _inlineErrors.hasWeightError ? _inlineErrors.clearWeight() : null,
-      ReceiptItemEditorDraftField.discounts =>
-        _inlineErrors.hasDiscountsError ? _inlineErrors.clearDiscounts() : null,
-      _ => null,
-    };
-    if (nextInlineErrors == null) {
-      return;
-    }
-
-    setState(() {
-      _inlineErrors = nextInlineErrors;
-    });
-  }
-
   void _applyChanges() {
-    final locale = Localizations.localeOf(context).toString();
-    final fallbackUnit = _weightUnitFallbackOption.resolve(
-      autoFallback: widget.item.amountUnit,
+    final formState = _formKey.currentState;
+    if (formState == null) {
+      return;
+    }
+
+    final isValid = formState.saveAndValidate();
+    if (!isValid) {
+      return;
+    }
+
+    final formValues = Map<String, dynamic>.from(formState.value);
+    final fallbackOption = _readFormValue(
+      values: formValues,
+      name: ReceiptItemEditorFormFieldName.weightUnitFallbackOption,
+      fallback: ReceiptWeightUnitFallbackOption.fromUnit(
+        widget.item.amountUnit,
+      ),
     );
     final result = _itemUpdater.apply(
       sourceItem: widget.item,
-      formData: _draft.toFormData(
-        entryDate: _entryDate,
-        receiptDate: _receiptDate,
-        isDeposit: _isDeposit,
-        isDiscount: _isDiscount,
+      formData: _toFormData(formValues),
+      locale: _locale,
+      fallbackUnit: fallbackOption.resolve(
+        autoFallback: widget.item.amountUnit,
       ),
-      locale: locale,
-      fallbackUnit: fallbackUnit,
     );
 
     switch (result) {
       case ReceiptItemEditorApplySuccess(:final item):
         Navigator.of(context).pop(item);
       case ReceiptItemEditorApplyFailure(:final error):
-        final l10n = AppLocalizations.of(context)!;
-        _showInlineError(l10n, error);
+        _showApplyError(error);
     }
   }
 
-  String _errorTextForApplyError(
-    AppLocalizations l10n,
-    ReceiptItemEditorApplyError error,
-  ) {
-    return switch (error) {
+  ReceiptItemEditorFormData _toFormData(Map<String, dynamic> values) {
+    return ReceiptItemEditorFormData(
+      name: _readFormValue(
+        values: values,
+        name: ReceiptItemEditorDraftField.name.name,
+        fallback: '',
+      ),
+      entryDate: _readFormValue(
+        values: values,
+        name: ReceiptItemEditorFormFieldName.entryDate,
+        fallback: widget.item.entryDate,
+      ),
+      storeName: _readFormValue(
+        values: values,
+        name: ReceiptItemEditorDraftField.storeName.name,
+        fallback: '',
+      ),
+      quantityText: _readFormValue(
+        values: values,
+        name: ReceiptItemEditorDraftField.quantity.name,
+        fallback: '',
+      ),
+      unitPriceText: _readFormValue(
+        values: values,
+        name: ReceiptItemEditorDraftField.unitPrice.name,
+        fallback: '',
+      ),
+      weightText: _readFormValue(
+        values: values,
+        name: ReceiptItemEditorDraftField.weight.name,
+        fallback: '',
+      ),
+      brandText: _readFormValue(
+        values: values,
+        name: ReceiptItemEditorDraftField.brand.name,
+        fallback: '',
+      ),
+      categoryText: _readFormValue(
+        values: values,
+        name: ReceiptItemEditorDraftField.category.name,
+        fallback: '',
+      ),
+      discountsText: _readFormValue(
+        values: values,
+        name: ReceiptItemEditorDraftField.discounts.name,
+        fallback: '',
+      ),
+      receiptDate: _readNullableDate(
+        values: values,
+        name: ReceiptItemEditorFormFieldName.receiptDate,
+      ),
+      isDeposit: _readFormValue(
+        values: values,
+        name: ReceiptItemEditorFormFieldName.isDeposit,
+        fallback: false,
+      ),
+      isDiscount: _readFormValue(
+        values: values,
+        name: ReceiptItemEditorFormFieldName.isDiscount,
+        fallback: false,
+      ),
+    );
+  }
+
+  String? _validateNumbers(String? _) {
+    final numbers = _inputParser.parseNumbers(
+      quantityText: _currentTextValue(ReceiptItemEditorDraftField.quantity),
+      unitPriceText: _currentTextValue(ReceiptItemEditorDraftField.unitPrice),
+      locale: _locale,
+    );
+    if (numbers != null) {
+      return null;
+    }
+    final l10n = AppLocalizations.of(context)!;
+    return l10n.inventoryReceiptReviewInvalidNumber;
+  }
+
+  String? _validateDiscounts(String? value) {
+    final discounts = _inputParser.parseDiscounts(value ?? '', locale: _locale);
+    if (discounts != null) {
+      return null;
+    }
+    final l10n = AppLocalizations.of(context)!;
+    return l10n.inventoryReceiptReviewInvalidDiscounts;
+  }
+
+  String? _validateWeight(String? value) {
+    final weightText = (value ?? '').trim();
+    if (weightText.isEmpty) {
+      return null;
+    }
+
+    final quantity = _inputParser.parseInt(
+      _currentTextValue(ReceiptItemEditorDraftField.quantity),
+      locale: _locale,
+    );
+    if (quantity == null) {
+      return null;
+    }
+
+    final fallbackOption = _currentWeightFallbackOption();
+    final updated = widget.item.withDerivedAmount(
+      weight: weightText,
+      quantity: quantity < 0 ? 0 : quantity,
+      fallbackUnit: fallbackOption.resolve(
+        autoFallback: widget.item.amountUnit,
+      ),
+    );
+    final hasUnresolvedWeight =
+        updated.initialAmount == 0 && updated.amountUnit == null;
+    if (!hasUnresolvedWeight) {
+      return null;
+    }
+
+    final l10n = AppLocalizations.of(context)!;
+    return l10n.inventoryReceiptReviewInvalidWeightUnit;
+  }
+
+  void _showApplyError(ReceiptItemEditorApplyError error) {
+    final l10n = AppLocalizations.of(context)!;
+    final message = switch (error) {
       ReceiptItemEditorApplyError.invalidNumber =>
         l10n.inventoryReceiptReviewInvalidNumber,
       ReceiptItemEditorApplyError.invalidDiscounts =>
@@ -223,18 +253,85 @@ class _InventoryReceiptItemEditorSheetState
       ReceiptItemEditorApplyError.invalidWeightUnit =>
         l10n.inventoryReceiptReviewInvalidWeightUnit,
     };
+    final fields = switch (error) {
+      ReceiptItemEditorApplyError.invalidNumber => <String>[
+        ReceiptItemEditorDraftField.quantity.name,
+        ReceiptItemEditorDraftField.unitPrice.name,
+      ],
+      ReceiptItemEditorApplyError.invalidDiscounts => <String>[
+        ReceiptItemEditorDraftField.discounts.name,
+      ],
+      ReceiptItemEditorApplyError.invalidWeightUnit => <String>[
+        ReceiptItemEditorDraftField.weight.name,
+      ],
+    };
+
+    for (final field in fields) {
+      _formKey.currentState?.fields[field]?.invalidate(message);
+    }
   }
 
-  void _showInlineError(
-    AppLocalizations l10n,
-    ReceiptItemEditorApplyError error,
-  ) {
-    final errorText = _errorTextForApplyError(l10n, error);
-    setState(() {
-      _inlineErrors = ReceiptItemEditorInlineErrorState.empty.withApplyError(
-        error: error,
-        errorText: errorText,
-      );
-    });
+  String _currentTextValue(ReceiptItemEditorDraftField field) {
+    return _readFormValue(
+      values: _currentValues,
+      name: field.name,
+      fallback: '',
+    );
+  }
+
+  ReceiptWeightUnitFallbackOption _currentWeightFallbackOption() {
+    return _readFormValue(
+      values: _currentValues,
+      name: ReceiptItemEditorFormFieldName.weightUnitFallbackOption,
+      fallback: ReceiptWeightUnitFallbackOption.fromUnit(
+        widget.item.amountUnit,
+      ),
+    );
+  }
+
+  Map<String, dynamic> get _currentValues {
+    final stateValues = _formKey.currentState?.instantValue;
+    if (stateValues == null) {
+      return _initialFormValues;
+    }
+    return stateValues;
+  }
+
+  T _readFormValue<T>({
+    required Map<String, dynamic> values,
+    required String name,
+    required T fallback,
+  }) {
+    final value = values[name];
+    if (value is T) {
+      return value;
+    }
+    final initialValue = _initialFormValues[name];
+    if (initialValue is T) {
+      return initialValue;
+    }
+    return fallback;
+  }
+
+  DateTime? _readNullableDate({
+    required Map<String, dynamic> values,
+    required String name,
+  }) {
+    if (values.containsKey(name)) {
+      final value = values[name];
+      if (value is DateTime) {
+        return value;
+      }
+      return null;
+    }
+    final initialValue = _initialFormValues[name];
+    if (initialValue is DateTime) {
+      return initialValue;
+    }
+    return null;
+  }
+
+  String get _locale {
+    return Localizations.localeOf(context).toString();
   }
 }

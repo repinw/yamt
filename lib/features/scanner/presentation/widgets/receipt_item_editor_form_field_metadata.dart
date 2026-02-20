@@ -21,6 +21,14 @@ class ReceiptItemEditorFieldGroups {
   ];
 }
 
+class ReceiptItemEditorFormFieldName {
+  static const entryDate = 'entry_date';
+  static const receiptDate = 'receipt_date';
+  static const isDeposit = 'is_deposit';
+  static const isDiscount = 'is_discount';
+  static const weightUnitFallbackOption = 'weight_unit_fallback_option';
+}
+
 extension ReceiptItemEditorDraftFieldMetadata on ReceiptItemEditorDraftField {
   Key get fieldKey {
     return switch (this) {
@@ -57,6 +65,20 @@ extension ReceiptItemEditorDraftFieldMetadata on ReceiptItemEditorDraftField {
       ReceiptItemEditorDraftField.unitPrice =>
         const TextInputType.numberWithOptions(decimal: true),
       _ => null,
+    };
+  }
+
+  List<ReceiptItemEditorDraftField> get linkedValidationFields {
+    return switch (this) {
+      ReceiptItemEditorDraftField.quantity =>
+        const <ReceiptItemEditorDraftField>[
+          ReceiptItemEditorDraftField.unitPrice,
+        ],
+      ReceiptItemEditorDraftField.unitPrice =>
+        const <ReceiptItemEditorDraftField>[
+          ReceiptItemEditorDraftField.quantity,
+        ],
+      _ => const <ReceiptItemEditorDraftField>[],
     };
   }
 
