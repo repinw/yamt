@@ -153,6 +153,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewInvalidNumber => 'Please enter valid numbers.';
 
   @override
+  String get inventoryReceiptReviewInvalidWeightUnit => 'Please add a unit (e.g. g or ml).';
+
+  @override
   String get inventoryReceiptReviewInvalidDiscounts => 'Use JSON or key=value pairs.';
 
   @override

@@ -327,6 +327,7 @@ class _InventoryReceiptItemEditorSheetState
     final safeInitialQuantity = quantity < 1 ? 1 : quantity;
     final safeQuantity = quantity < 0 ? 0 : quantity;
     final weight = _nullableText(_weightController.text);
+    final fallbackUnit = widget.item.amountUnit;
 
     final updated = widget.item
         .copyWith(
@@ -336,10 +337,8 @@ class _InventoryReceiptItemEditorSheetState
             _storeNameController.text,
             fallback: widget.item.storeName,
           ),
-          quantity: safeQuantity,
           initialQuantity: safeInitialQuantity,
           unitPrice: unitPrice < 0 ? 0 : unitPrice,
-          weight: weight,
           brand: _nullableText(_brandController.text),
           category: _nullableText(_categoryController.text),
           discounts: parsedDiscounts,
@@ -347,7 +346,20 @@ class _InventoryReceiptItemEditorSheetState
           isDeposit: _isDeposit,
           isDiscount: _isDiscount,
         )
-        .withDerivedAmount(weight: weight, quantity: safeQuantity);
+        .withDerivedAmount(
+          weight: weight,
+          quantity: safeQuantity,
+          fallbackUnit: fallbackUnit,
+        );
+
+    final hasUnresolvedWeight =
+        weight != null &&
+        updated.initialAmount == 0 &&
+        updated.amountUnit == null;
+    if (hasUnresolvedWeight) {
+      _showError(l10n.inventoryReceiptReviewInvalidWeightUnit);
+      return;
+    }
 
     Navigator.of(context).pop(updated);
   }
