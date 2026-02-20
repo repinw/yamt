@@ -1,36 +1,13 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_item_editor_updater.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-enum _WeightUnitFallbackOption {
-  auto,
-  gram,
-  milliliter,
-  piece;
-
-  FridgeAmountUnit? resolve({required FridgeAmountUnit? autoFallback}) {
-    return switch (this) {
-      _WeightUnitFallbackOption.auto => autoFallback,
-      _WeightUnitFallbackOption.gram => FridgeAmountUnit.gram,
-      _WeightUnitFallbackOption.milliliter => FridgeAmountUnit.milliliter,
-      _WeightUnitFallbackOption.piece => FridgeAmountUnit.piece,
-    };
-  }
-
-  static _WeightUnitFallbackOption fromUnit(FridgeAmountUnit? unit) {
-    return switch (unit) {
-      FridgeAmountUnit.gram => _WeightUnitFallbackOption.gram,
-      FridgeAmountUnit.milliliter => _WeightUnitFallbackOption.milliliter,
-      FridgeAmountUnit.piece => _WeightUnitFallbackOption.piece,
-      null => _WeightUnitFallbackOption.auto,
-    };
-  }
-}
+import 'receipt_item_editor_action_row.dart';
+import 'receipt_item_editor_draft.dart';
+import 'receipt_item_editor_form_section.dart';
+import 'receipt_item_editor_inline_error_state.dart';
 
 class InventoryReceiptItemEditorSheet extends StatefulWidget {
   const InventoryReceiptItemEditorSheet({super.key, required this.item});
@@ -46,56 +23,26 @@ class _InventoryReceiptItemEditorSheetState
     extends State<InventoryReceiptItemEditorSheet> {
   static const _itemUpdater = ReceiptItemEditorUpdater();
 
-  late final TextEditingController _nameController;
-  late final TextEditingController _storeNameController;
-  late final TextEditingController _quantityController;
-  late final TextEditingController _unitPriceController;
-  late final TextEditingController _weightController;
-  late final TextEditingController _brandController;
-  late final TextEditingController _categoryController;
-  late final TextEditingController _discountsController;
+  late ReceiptItemEditorDraft _draft;
+  var _inlineErrors = ReceiptItemEditorInlineErrorState.empty;
   late DateTime _entryDate;
   DateTime? _receiptDate;
   late bool _isDeposit;
   late bool _isDiscount;
-  late _WeightUnitFallbackOption _weightUnitFallbackOption;
+  late ReceiptWeightUnitFallbackOption _weightUnitFallbackOption;
 
   @override
   void initState() {
     super.initState();
     final item = widget.item;
-    _nameController = TextEditingController(text: item.name);
-    _storeNameController = TextEditingController(text: item.storeName);
-    _quantityController = TextEditingController(text: item.quantity.toString());
-    _unitPriceController = TextEditingController(
-      text: item.unitPrice.toString(),
-    );
-    _weightController = TextEditingController(text: item.weight ?? '');
-    _brandController = TextEditingController(text: item.brand ?? '');
-    _categoryController = TextEditingController(text: item.category ?? '');
-    _discountsController = TextEditingController(
-      text: _encodeDiscounts(item.discounts),
-    );
+    _draft = ReceiptItemEditorDraft.fromItem(item);
     _entryDate = item.entryDate;
     _receiptDate = item.receiptDate;
     _isDeposit = item.isDeposit;
     _isDiscount = item.isDiscount;
-    _weightUnitFallbackOption = _WeightUnitFallbackOption.fromUnit(
+    _weightUnitFallbackOption = ReceiptWeightUnitFallbackOption.fromUnit(
       item.amountUnit,
     );
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _storeNameController.dispose();
-    _quantityController.dispose();
-    _unitPriceController.dispose();
-    _weightController.dispose();
-    _brandController.dispose();
-    _categoryController.dispose();
-    _discountsController.dispose();
-    super.dispose();
   }
 
   @override
@@ -120,224 +67,21 @@ class _InventoryReceiptItemEditorSheetState
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppSpacing.md),
-            _textField(
-              key: const Key('receipt_review_field_name'),
-              controller: _nameController,
-              label: l10n.inventoryReceiptReviewFieldName,
-            ),
-            _dateField(
-              context: context,
-              label: l10n.inventoryReceiptReviewFieldEntryDate,
-              value: _entryDate,
-              noDateLabel: l10n.inventoryReceiptReviewNoDate,
-              onSelectTap: _pickEntryDate,
-            ),
-            _textField(
-              key: const Key('receipt_review_field_store_name'),
-              controller: _storeNameController,
-              label: l10n.inventoryReceiptReviewFieldStoreName,
-            ),
-            _textField(
-              key: const Key('receipt_review_field_quantity'),
-              controller: _quantityController,
-              label: l10n.inventoryReceiptReviewFieldQuantity,
-              keyboardType: TextInputType.number,
-            ),
-            _textField(
-              key: const Key('receipt_review_field_unit_price'),
-              controller: _unitPriceController,
-              label: l10n.inventoryReceiptReviewFieldUnitPrice,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
+            FormBuilder(
+              child: ReceiptItemEditorFormSection(
+                values: _formValues,
+                actions: _formActions,
               ),
-            ),
-            _textField(
-              key: const Key('receipt_review_field_weight'),
-              controller: _weightController,
-              label: l10n.inventoryReceiptReviewFieldWeight,
-            ),
-            _weightUnitField(context),
-            _textField(
-              key: const Key('receipt_review_field_brand'),
-              controller: _brandController,
-              label: l10n.inventoryReceiptReviewFieldBrand,
-            ),
-            _textField(
-              key: const Key('receipt_review_field_category'),
-              controller: _categoryController,
-              label: l10n.inventoryReceiptReviewFieldCategory,
-            ),
-            _textField(
-              key: const Key('receipt_review_field_discounts'),
-              controller: _discountsController,
-              label: l10n.inventoryReceiptReviewFieldDiscounts,
-              hintText: l10n.inventoryReceiptReviewDiscountsHint,
-            ),
-            _dateField(
-              context: context,
-              label: l10n.inventoryReceiptReviewFieldReceiptDate,
-              value: _receiptDate,
-              noDateLabel: l10n.inventoryReceiptReviewNoDate,
-              onSelectTap: _pickReceiptDate,
-              onClearTap: _clearReceiptDate,
-              clearButtonKey: const Key(
-                'receipt_review_clear_receipt_date_button',
-              ),
-            ),
-            SwitchListTile.adaptive(
-              title: Text(l10n.inventoryReceiptReviewFieldIsDeposit),
-              value: _isDeposit,
-              onChanged: (value) {
-                setState(() {
-                  _isDeposit = value;
-                });
-              },
-            ),
-            SwitchListTile.adaptive(
-              title: Text(l10n.inventoryReceiptReviewFieldIsDiscount),
-              value: _isDiscount,
-              onChanged: (value) {
-                setState(() {
-                  _isDiscount = value;
-                });
-              },
             ),
             const SizedBox(height: AppSpacing.xs),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l10n.inventoryReceiptReviewCancelAction),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: FilledButton(
-                    key: const Key('receipt_review_apply_item_button'),
-                    onPressed: _applyChanges,
-                    child: Text(l10n.inventoryReceiptReviewApplyItemAction),
-                  ),
-                ),
-              ],
+            ReceiptItemEditorActionRow(
+              onCancelTap: () => Navigator.of(context).pop(),
+              onApplyTap: _applyChanges,
             ),
           ],
         ),
       ),
     );
-  }
-
-  Widget _textField({
-    required Key key,
-    required TextEditingController controller,
-    required String label,
-    TextInputType? keyboardType,
-    String? hintText,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: TextField(
-        key: key,
-        controller: controller,
-        keyboardType: keyboardType,
-        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-        decoration: InputDecoration(labelText: label, hintText: hintText),
-      ),
-    );
-  }
-
-  Widget _dateField({
-    required BuildContext context,
-    required String label,
-    required DateTime? value,
-    required String noDateLabel,
-    required Future<void> Function() onSelectTap,
-    VoidCallback? onClearTap,
-    Key? clearButtonKey,
-  }) {
-    final l10n = AppLocalizations.of(context)!;
-    final formattedDate = _formatDate(context, value);
-    final valueText = formattedDate ?? noDateLabel;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: AppSpacing.xxs * 2),
-          Text(valueText),
-          const SizedBox(height: AppSpacing.xs),
-          Row(
-            children: [
-              TextButton(
-                onPressed: onSelectTap,
-                child: Text(l10n.inventoryReceiptReviewSelectDateAction),
-              ),
-              if (onClearTap != null)
-                TextButton(
-                  key: clearButtonKey,
-                  onPressed: onClearTap,
-                  child: Text(l10n.inventoryReceiptReviewClearDateAction),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _weightUnitField(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: DropdownButtonFormField<_WeightUnitFallbackOption>(
-        key: const Key('receipt_review_field_weight_unit_fallback'),
-        initialValue: _weightUnitFallbackOption,
-        decoration: InputDecoration(
-          labelText: l10n.inventoryReceiptReviewFieldWeightUnitFallback,
-        ),
-        items: [
-          DropdownMenuItem<_WeightUnitFallbackOption>(
-            key: const Key('receipt_review_weight_unit_option_auto'),
-            value: _WeightUnitFallbackOption.auto,
-            child: Text(l10n.inventoryReceiptReviewWeightUnitAuto),
-          ),
-          DropdownMenuItem<_WeightUnitFallbackOption>(
-            key: const Key('receipt_review_weight_unit_option_gram'),
-            value: _WeightUnitFallbackOption.gram,
-            child: Text(l10n.inventoryReceiptReviewWeightUnitGram),
-          ),
-          DropdownMenuItem<_WeightUnitFallbackOption>(
-            key: const Key('receipt_review_weight_unit_option_milliliter'),
-            value: _WeightUnitFallbackOption.milliliter,
-            child: Text(l10n.inventoryReceiptReviewWeightUnitMilliliter),
-          ),
-          DropdownMenuItem<_WeightUnitFallbackOption>(
-            key: const Key('receipt_review_weight_unit_option_piece'),
-            value: _WeightUnitFallbackOption.piece,
-            child: Text(l10n.inventoryReceiptReviewWeightUnitPiece),
-          ),
-        ],
-        onChanged: (value) {
-          if (value == null) {
-            return;
-          }
-          setState(() {
-            _weightUnitFallbackOption = value;
-          });
-        },
-      ),
-    );
-  }
-
-  String? _formatDate(BuildContext context, DateTime? value) {
-    if (value == null) {
-      return null;
-    }
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    return DateFormat.yMMMd(locale).format(value);
   }
 
   Future<void> _pickEntryDate() async {
@@ -376,24 +120,80 @@ class _InventoryReceiptItemEditorSheetState
     });
   }
 
+  ReceiptItemEditorFormValues get _formValues {
+    return ReceiptItemEditorFormValues(
+      draft: _draft,
+      inlineErrors: _inlineErrors,
+      entryDate: _entryDate,
+      receiptDate: _receiptDate,
+      isDeposit: _isDeposit,
+      isDiscount: _isDiscount,
+      weightUnitFallbackOption: _weightUnitFallbackOption,
+    );
+  }
+
+  ReceiptItemEditorFormActions get _formActions {
+    return ReceiptItemEditorFormActions(
+      onPickEntryDate: _pickEntryDate,
+      onPickReceiptDate: _pickReceiptDate,
+      onClearReceiptDate: _clearReceiptDate,
+      onWeightUnitChanged: _updateWeightUnit,
+      onIsDepositChanged: _updateIsDeposit,
+      onIsDiscountChanged: _updateIsDiscount,
+      onTextChanged: _onTextChanged,
+      onSubmit: _applyChanges,
+    );
+  }
+
+  void _updateWeightUnit(ReceiptWeightUnitFallbackOption value) {
+    setState(() {
+      _weightUnitFallbackOption = value;
+    });
+  }
+
+  void _updateIsDeposit(bool value) {
+    setState(() {
+      _isDeposit = value;
+    });
+  }
+
+  void _updateIsDiscount(bool value) {
+    setState(() {
+      _isDiscount = value;
+    });
+  }
+
+  void _onTextChanged(ReceiptItemEditorDraftField field, String value) {
+    _draft = _draft.withField(field, value);
+
+    final nextInlineErrors = switch (field) {
+      ReceiptItemEditorDraftField.quantity ||
+      ReceiptItemEditorDraftField.unitPrice =>
+        _inlineErrors.hasNumberError ? _inlineErrors.clearNumbers() : null,
+      ReceiptItemEditorDraftField.weight =>
+        _inlineErrors.hasWeightError ? _inlineErrors.clearWeight() : null,
+      ReceiptItemEditorDraftField.discounts =>
+        _inlineErrors.hasDiscountsError ? _inlineErrors.clearDiscounts() : null,
+      _ => null,
+    };
+    if (nextInlineErrors == null) {
+      return;
+    }
+
+    setState(() {
+      _inlineErrors = nextInlineErrors;
+    });
+  }
+
   void _applyChanges() {
-    final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toString();
     final fallbackUnit = _weightUnitFallbackOption.resolve(
       autoFallback: widget.item.amountUnit,
     );
     final result = _itemUpdater.apply(
       sourceItem: widget.item,
-      formData: ReceiptItemEditorFormData(
-        name: _nameController.text,
+      formData: _draft.toFormData(
         entryDate: _entryDate,
-        storeName: _storeNameController.text,
-        quantityText: _quantityController.text,
-        unitPriceText: _unitPriceController.text,
-        weightText: _weightController.text,
-        brandText: _brandController.text,
-        categoryText: _categoryController.text,
-        discountsText: _discountsController.text,
         receiptDate: _receiptDate,
         isDeposit: _isDeposit,
         isDiscount: _isDiscount,
@@ -406,11 +206,12 @@ class _InventoryReceiptItemEditorSheetState
       case ReceiptItemEditorApplySuccess(:final item):
         Navigator.of(context).pop(item);
       case ReceiptItemEditorApplyFailure(:final error):
-        _showError(_errorMessageForApplyError(l10n, error));
+        final l10n = AppLocalizations.of(context)!;
+        _showInlineError(l10n, error);
     }
   }
 
-  String _errorMessageForApplyError(
+  String _errorTextForApplyError(
     AppLocalizations l10n,
     ReceiptItemEditorApplyError error,
   ) {
@@ -424,16 +225,16 @@ class _InventoryReceiptItemEditorSheetState
     };
   }
 
-  void _showError(String message) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+  void _showInlineError(
+    AppLocalizations l10n,
+    ReceiptItemEditorApplyError error,
+  ) {
+    final errorText = _errorTextForApplyError(l10n, error);
+    setState(() {
+      _inlineErrors = ReceiptItemEditorInlineErrorState.empty.withApplyError(
+        error: error,
+        errorText: errorText,
+      );
+    });
   }
-}
-
-String _encodeDiscounts(Map<String, double> discounts) {
-  if (discounts.isEmpty) {
-    return '';
-  }
-  return jsonEncode(discounts);
 }
