@@ -73,6 +73,7 @@ extension ReceiptItemEditorDraftFieldMetadata on ReceiptItemEditorDraftField {
       ReceiptItemEditorDraftField.quantity =>
         const <ReceiptItemEditorDraftField>[
           ReceiptItemEditorDraftField.unitPrice,
+          ReceiptItemEditorDraftField.weight,
         ],
       ReceiptItemEditorDraftField.unitPrice =>
         const <ReceiptItemEditorDraftField>[

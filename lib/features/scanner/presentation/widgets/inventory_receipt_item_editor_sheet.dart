@@ -303,9 +303,12 @@ class _InventoryReceiptItemEditorSheetState
     required String name,
     required T fallback,
   }) {
-    final value = values[name];
-    if (value is T) {
-      return value;
+    if (values.containsKey(name)) {
+      final value = values[name];
+      if (value is T) {
+        return value;
+      }
+      return fallback;
     }
     final initialValue = _initialFormValues[name];
     if (initialValue is T) {

@@ -11,14 +11,17 @@ FridgeItem _item({
   required bool isDeposit,
   required bool isDiscount,
   DateTime? receiptDate,
+  String storeName = 'Store',
+  String? brand,
 }) {
   return FridgeItem(
     id: id,
     name: 'Item $id',
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
-    storeName: 'Store',
+    storeName: storeName,
     quantity: 1,
     unitPrice: 1.0,
+    brand: brand,
     isDeposit: isDeposit,
     isDiscount: isDiscount,
     receiptDate: receiptDate,
@@ -232,6 +235,90 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Please enter valid numbers.'), findsNothing);
+  });
+
+  testWidgets('changing quantity revalidates weight error immediately', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(id: 'food', isDeposit: false, isDiscount: false),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_edit_button_0')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_field_quantity')),
+      'abc',
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_field_weight')),
+      '500',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please add a unit (e.g. g or ml).'), findsNothing);
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_field_quantity')),
+      '2',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please add a unit (e.g. g or ml).'), findsOneWidget);
+  });
+
+  testWidgets('clearing prefilled brand persists as null', (tester) async {
+    List<FridgeItem>? savedItems;
+
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            brand: 'House Brand',
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (items) async {
+          savedItems = items;
+        },
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_edit_button_0')));
+    await tester.pumpAndSettle();
+
+    final brandField = find.byKey(const Key('receipt_review_field_brand'));
+    await tester.ensureVisible(brandField);
+    await tester.enterText(brandField, '');
+    await tester.pumpAndSettle();
+
+    final applyButton = find.byKey(
+      const Key('receipt_review_apply_item_button'),
+    );
+    await tester.ensureVisible(applyButton);
+    await tester.tap(applyButton);
+    await tester.pumpAndSettle();
+
+    final saveButton = find.byKey(const Key('receipt_review_save_button'));
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect(savedItems, isNotNull);
+    expect(savedItems, hasLength(1));
+    expect(savedItems!.single.brand, isNull);
   });
 
   testWidgets('editor hides keyboard when tapping outside text field', (
