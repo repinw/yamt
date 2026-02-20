@@ -9,6 +9,7 @@ import 'receipt_item_editor_action_row.dart';
 import 'receipt_item_editor_draft.dart';
 import 'receipt_item_editor_form_field_metadata.dart';
 import 'receipt_item_editor_form_section.dart';
+import 'receipt_item_editor_weight_unit_fallback_option.dart';
 
 class InventoryReceiptItemEditorSheet extends StatefulWidget {
   const InventoryReceiptItemEditorSheet({super.key, required this.item});
