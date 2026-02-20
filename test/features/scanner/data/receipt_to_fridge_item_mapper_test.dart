@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_parser.dart';
 import 'package:yamt/features/scanner/data/receipt_to_fridge_item_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
@@ -45,6 +46,9 @@ void main() {
     expect(item.initialQuantity, 2);
     expect(item.unitPrice, closeTo(1.99, 0.0001));
     expect(item.weight, '1l');
+    expect(item.initialAmount, 2000);
+    expect(item.currentAmount, 2000);
+    expect(item.amountUnit, FridgeAmountUnit.milliliter);
     expect(item.brand, 'Milbona');
     expect(item.category, 'Dairy');
     expect(item.discounts, <String, double>{'Coupon': 0.5});
@@ -83,6 +87,9 @@ void main() {
     expect(item.quantity, 1);
     expect(item.initialQuantity, 1);
     expect(item.unitPrice, 0);
+    expect(item.initialAmount, 0);
+    expect(item.currentAmount, 0);
+    expect(item.amountUnit, isNull);
     expect(item.discounts, <String, double>{'Promo': 1.25});
     expect(item.isDeposit, isTrue);
     expect(item.isDiscount, isTrue);
@@ -130,6 +137,9 @@ void main() {
     expect(first.brand, 'Bitburger');
     expect(first.category, 'Bier');
     expect(first.weight, '20x0.33l');
+    expect(first.initialAmount, 13200);
+    expect(first.currentAmount, 13200);
+    expect(first.amountUnit, FridgeAmountUnit.milliliter);
     expect(first.quantity, 2);
     expect(first.unitPrice, closeTo(8.99, 0.0001));
     expect(first.isDeposit, isFalse);
@@ -141,6 +151,9 @@ void main() {
     expect(second.name, 'Pfandartikel');
     expect(second.quantity, 2);
     expect(second.unitPrice, closeTo(3.1, 0.0001));
+    expect(second.initialAmount, 0);
+    expect(second.currentAmount, 0);
+    expect(second.amountUnit, isNull);
     expect(second.isDeposit, isTrue);
     expect(second.isDiscount, isFalse);
     expect(second.isReviewOnly, isTrue);
@@ -148,6 +161,9 @@ void main() {
     final third = items[2];
     expect(third.name, 'Leergut Getränke');
     expect(third.unitPrice, closeTo(-6.4, 0.0001));
+    expect(third.initialAmount, 0);
+    expect(third.currentAmount, 0);
+    expect(third.amountUnit, isNull);
     expect(third.isDeposit, isTrue);
     expect(third.isDiscount, isTrue);
     expect(third.language, 'de_DE');

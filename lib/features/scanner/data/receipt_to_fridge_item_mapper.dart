@@ -76,6 +76,7 @@ class DefaultReceiptToFridgeItemMapper implements ReceiptToFridgeItemMapper {
               _boolValue(payload['id']) ??
               _boolValue(payload['isDiscount']) ??
               false;
+          final weight = _firstNonBlankString(payload['w'], payload['weight']);
 
           return FridgeItem(
             id: _buildItemId(now, index),
@@ -85,7 +86,7 @@ class DefaultReceiptToFridgeItemMapper implements ReceiptToFridgeItemMapper {
             quantity: safeQuantity,
             initialQuantity: safeQuantity,
             unitPrice: unitPrice,
-            weight: _firstNonBlankString(payload['w'], payload['weight']),
+            weight: weight,
             brand: _firstNonBlankString(payload['b'], payload['brand']),
             category: _firstNonBlankString(payload['c'], payload['category']),
             discounts: _parseDiscounts(
@@ -101,7 +102,7 @@ class DefaultReceiptToFridgeItemMapper implements ReceiptToFridgeItemMapper {
             language: language,
             isDeposit: !isFood,
             isDiscount: isDiscount,
-          );
+          ).withDerivedAmount(weight: weight, quantity: safeQuantity);
         })
         .toList(growable: false);
   }

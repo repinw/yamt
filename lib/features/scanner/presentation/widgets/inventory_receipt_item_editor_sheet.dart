@@ -325,25 +325,29 @@ class _InventoryReceiptItemEditorSheetState
     final quantity = parsedNumbers.quantity;
     final unitPrice = parsedNumbers.unitPrice;
     final safeInitialQuantity = quantity < 1 ? 1 : quantity;
+    final safeQuantity = quantity < 0 ? 0 : quantity;
+    final weight = _nullableText(_weightController.text);
 
-    final updated = widget.item.copyWith(
-      name: _requiredText(_nameController.text, fallback: widget.item.name),
-      entryDate: _entryDate,
-      storeName: _requiredText(
-        _storeNameController.text,
-        fallback: widget.item.storeName,
-      ),
-      quantity: quantity < 0 ? 0 : quantity,
-      initialQuantity: safeInitialQuantity,
-      unitPrice: unitPrice < 0 ? 0 : unitPrice,
-      weight: _nullableText(_weightController.text),
-      brand: _nullableText(_brandController.text),
-      category: _nullableText(_categoryController.text),
-      discounts: parsedDiscounts,
-      receiptDate: _receiptDate,
-      isDeposit: _isDeposit,
-      isDiscount: _isDiscount,
-    );
+    final updated = widget.item
+        .copyWith(
+          name: _requiredText(_nameController.text, fallback: widget.item.name),
+          entryDate: _entryDate,
+          storeName: _requiredText(
+            _storeNameController.text,
+            fallback: widget.item.storeName,
+          ),
+          quantity: safeQuantity,
+          initialQuantity: safeInitialQuantity,
+          unitPrice: unitPrice < 0 ? 0 : unitPrice,
+          weight: weight,
+          brand: _nullableText(_brandController.text),
+          category: _nullableText(_categoryController.text),
+          discounts: parsedDiscounts,
+          receiptDate: _receiptDate,
+          isDeposit: _isDeposit,
+          isDiscount: _isDiscount,
+        )
+        .withDerivedAmount(weight: weight, quantity: safeQuantity);
 
     Navigator.of(context).pop(updated);
   }
