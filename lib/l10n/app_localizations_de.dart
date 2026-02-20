@@ -168,6 +168,45 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptSaveFailed => 'Positionen konnten nicht gespeichert werden.';
 
   @override
+  String get inventorySummaryTitle => 'Übersicht';
+
+  @override
+  String get inventorySummaryEntries => 'Positionen';
+
+  @override
+  String get inventorySummaryQuantity => 'Gesamtmenge';
+
+  @override
+  String get inventorySummaryEstimatedValue => 'Geschätzter Wert';
+
+  @override
+  String get inventoryListSectionTitle => 'Artikel';
+
+  @override
+  String get inventoryReceiptGroupTitle => 'Beleg';
+
+  @override
+  String get inventoryReceiptGroupNoReceipt => 'Ohne Beleg';
+
+  @override
+  String get inventoryReceiptGroupItems => 'Artikel';
+
+  @override
+  String get inventoryItemNoPrice => 'Kein Preis';
+
+  @override
+  String get inventoryItemDeleteAction => 'Löschen';
+
+  @override
+  String get inventoryItemEatAction => 'Essen';
+
+  @override
+  String get inventoryItemThrowAwayAction => 'Wegwerfen';
+
+  @override
+  String get inventoryItemActionFailed => 'Aktion fehlgeschlagen. Bitte erneut versuchen.';
+
+  @override
   String get inventoryEmptyState => 'Noch keine Vorratsartikel vorhanden. Scanne einen Beleg, um zu starten.';
 
   @override

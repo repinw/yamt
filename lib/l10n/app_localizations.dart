@@ -413,6 +413,84 @@ abstract class AppLocalizations {
   /// **'Could not save receipt items. Please try again.'**
   String get inventoryReceiptSaveFailed;
 
+  /// No description provided for @inventorySummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get inventorySummaryTitle;
+
+  /// No description provided for @inventorySummaryEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries'**
+  String get inventorySummaryEntries;
+
+  /// No description provided for @inventorySummaryQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Total quantity'**
+  String get inventorySummaryQuantity;
+
+  /// No description provided for @inventorySummaryEstimatedValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated value'**
+  String get inventorySummaryEstimatedValue;
+
+  /// No description provided for @inventoryListSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Items'**
+  String get inventoryListSectionTitle;
+
+  /// No description provided for @inventoryReceiptGroupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get inventoryReceiptGroupTitle;
+
+  /// No description provided for @inventoryReceiptGroupNoReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'No receipt'**
+  String get inventoryReceiptGroupNoReceipt;
+
+  /// No description provided for @inventoryReceiptGroupItems.
+  ///
+  /// In en, this message translates to:
+  /// **'items'**
+  String get inventoryReceiptGroupItems;
+
+  /// No description provided for @inventoryItemNoPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'No price'**
+  String get inventoryItemNoPrice;
+
+  /// No description provided for @inventoryItemDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get inventoryItemDeleteAction;
+
+  /// No description provided for @inventoryItemEatAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat'**
+  String get inventoryItemEatAction;
+
+  /// No description provided for @inventoryItemThrowAwayAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Throw away'**
+  String get inventoryItemThrowAwayAction;
+
+  /// No description provided for @inventoryItemActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Action failed. Please try again.'**
+  String get inventoryItemActionFailed;
+
   /// No description provided for @inventoryEmptyState.
   ///
   /// In en, this message translates to:

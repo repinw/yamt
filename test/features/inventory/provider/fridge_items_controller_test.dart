@@ -8,6 +8,7 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
   _FakeFridgeItemRepository({required this.onReadAll});
 
   final Future<List<FridgeItem>> Function() onReadAll;
+  List<FridgeItem> savedItems = const <FridgeItem>[];
 
   @override
   Future<List<FridgeItem>> readAll() {
@@ -16,6 +17,7 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
 
   @override
   Future<bool> saveAll(List<FridgeItem> items) async {
+    savedItems = List<FridgeItem>.from(items);
     return true;
   }
 
@@ -75,5 +77,44 @@ void main() {
     final refreshed = container.read(fridgeItemsControllerProvider).value;
     expect(refreshed, isNotNull);
     expect(refreshed, hasLength(2));
+  });
+
+  test('deleteItem removes item and updates state', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[_item('a'), _item('b')],
+    );
+    final container = ProviderContainer(
+      overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(fridgeItemsControllerProvider.future);
+    final deleted = await container
+        .read(fridgeItemsControllerProvider.notifier)
+        .deleteItem('a');
+
+    expect(deleted, isTrue);
+    expect(repository.savedItems, hasLength(1));
+    expect(repository.savedItems.single.id, 'b');
+    expect(container.read(fridgeItemsControllerProvider).value, hasLength(1));
+  });
+
+  test('throwAwayItem delegates to delete behavior', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[_item('a')],
+    );
+    final container = ProviderContainer(
+      overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(fridgeItemsControllerProvider.future);
+    final removed = await container
+        .read(fridgeItemsControllerProvider.notifier)
+        .throwAwayItem('a');
+
+    expect(removed, isTrue);
+    expect(repository.savedItems, isEmpty);
+    expect(container.read(fridgeItemsControllerProvider).value, isEmpty);
   });
 }
