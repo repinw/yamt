@@ -34,7 +34,7 @@ class ReceiptItemEditorDraft {
       weightText: item.weight ?? '',
       brandText: item.brand ?? '',
       categoryText: item.category ?? '',
-      discountsText: _encodeDiscounts(item.discounts),
+      discountsText: ReceiptItemEditorDraft._encodeDiscounts(item.discounts),
     );
   }
 
@@ -59,11 +59,11 @@ class ReceiptItemEditorDraft {
       ReceiptItemEditorDraftField.discounts => discountsText,
     };
   }
-}
 
-String _encodeDiscounts(Map<String, double> discounts) {
-  if (discounts.isEmpty) {
-    return '';
+  static String _encodeDiscounts(Map<String, double> discounts) {
+    if (discounts.isEmpty) {
+      return '';
+    }
+    return jsonEncode(discounts);
   }
-  return jsonEncode(discounts);
 }

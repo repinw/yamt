@@ -303,16 +303,9 @@ class _InventoryReceiptItemEditorSheetState
     required String name,
     required T fallback,
   }) {
-    if (values.containsKey(name)) {
-      final value = values[name];
-      if (value is T) {
-        return value;
-      }
-      return fallback;
-    }
-    final initialValue = _initialFormValues[name];
-    if (initialValue is T) {
-      return initialValue;
+    final value = values[name];
+    if (value is T) {
+      return value;
     }
     return fallback;
   }
@@ -321,18 +314,8 @@ class _InventoryReceiptItemEditorSheetState
     required Map<String, dynamic> values,
     required String name,
   }) {
-    if (values.containsKey(name)) {
-      final value = values[name];
-      if (value is DateTime) {
-        return value;
-      }
-      return null;
-    }
-    final initialValue = _initialFormValues[name];
-    if (initialValue is DateTime) {
-      return initialValue;
-    }
-    return null;
+    final value = values[name];
+    return value is DateTime ? value : null;
   }
 
   String get _locale {
