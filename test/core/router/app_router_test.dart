@@ -13,6 +13,13 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 
 class _MockUser extends Mock implements User {}
 
+const _routerTransitionDuration = Duration(milliseconds: 350);
+
+Future<void> _pumpRouterTransition(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump(_routerTransitionDuration);
+}
+
 void main() {
   testWidgets('shows splash while auth state is loading', (tester) async {
     final container = ProviderContainer(
@@ -128,10 +135,14 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
     );
-    await tester.pumpAndSettle();
+    await _pumpRouterTransition(tester);
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.homeInventory,
+    );
 
     container.read(appRouterProvider).go(AppRoutes.welcome);
-    await tester.pumpAndSettle();
+    await _pumpRouterTransition(tester);
 
     expect(
       container.read(appRouterProvider).state.uri.path,
@@ -158,7 +169,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
     );
-    await tester.pumpAndSettle();
+    await _pumpRouterTransition(tester);
 
     final router = container.read(appRouterProvider);
     expect(router.state.uri.path, AppRoutes.homeInventory);
@@ -171,7 +182,7 @@ void main() {
     );
 
     await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
-    await tester.pumpAndSettle();
+    await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeShopping);
     expect(
       find.descendant(of: find.byType(AppBar), matching: find.text('Shopping')),
@@ -179,7 +190,7 @@ void main() {
     );
 
     await tester.tap(find.byIcon(Icons.local_fire_department_outlined));
-    await tester.pumpAndSettle();
+    await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeCalories);
     expect(
       find.descendant(of: find.byType(AppBar), matching: find.text('Calories')),
@@ -187,7 +198,7 @@ void main() {
     );
 
     await tester.tap(find.byIcon(Icons.settings));
-    await tester.pumpAndSettle();
+    await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeSettings);
     expect(
       find.descendant(of: find.byType(AppBar), matching: find.text('Settings')),
@@ -198,7 +209,7 @@ void main() {
     expect(find.text('About'), findsOneWidget);
 
     await tester.tap(find.text('Account').first);
-    await tester.pumpAndSettle();
+    await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeSettingsAccount);
     expect(find.text('Sign out'), findsOneWidget);
   });
@@ -222,7 +233,7 @@ void main() {
 
     authController.add(_MockUser());
     await tester.pump();
-    await tester.pumpAndSettle();
+    await _pumpRouterTransition(tester);
 
     expect(
       container.read(appRouterProvider).state.uri.path,
@@ -231,7 +242,7 @@ void main() {
 
     authController.add(null);
     await tester.pump();
-    await tester.pumpAndSettle();
+    await _pumpRouterTransition(tester);
 
     expect(container.read(appRouterProvider).state.uri.path, AppRoutes.welcome);
   });
@@ -251,7 +262,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
     );
-    await tester.pumpAndSettle();
+    await _pumpRouterTransition(tester);
 
     final router = container.read(appRouterProvider);
     final context = tester.element(find.byType(YAMT));

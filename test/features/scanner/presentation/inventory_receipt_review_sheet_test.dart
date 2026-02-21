@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
-import 'package:yamt/features/scanner/presentation/widgets/inventory_receipt_review_sheet.dart';
+import 'package:yamt/features/scanner/presentation/widgets/'
+    'inventory_receipt_review_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 FridgeItem _item({
@@ -10,14 +11,17 @@ FridgeItem _item({
   required bool isDeposit,
   required bool isDiscount,
   DateTime? receiptDate,
+  String storeName = 'Store',
+  String? brand,
 }) {
   return FridgeItem(
     id: id,
     name: 'Item $id',
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
-    storeName: 'Store',
+    storeName: storeName,
     quantity: 1,
     unitPrice: 1.0,
+    brand: brand,
     isDeposit: isDeposit,
     isDiscount: isDiscount,
     receiptDate: receiptDate,
@@ -164,7 +168,7 @@ void main() {
     expect(button.onPressed, isNull);
   });
 
-  testWidgets('invalid item number input shows validation snackbar', (
+  testWidgets('invalid item number input shows inline validation', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -193,7 +197,128 @@ void main() {
     await tester.tap(applyButton);
     await tester.pumpAndSettle();
 
-    expect(find.text('Please enter valid numbers.'), findsOneWidget);
+    expect(find.text('Please enter valid numbers.'), findsNWidgets(2));
+  });
+
+  testWidgets('correcting number input clears inline validation', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(id: 'food', isDeposit: false, isDiscount: false),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_edit_button_0')));
+    await tester.pumpAndSettle();
+
+    final quantityField = find.byKey(
+      const Key('receipt_review_field_quantity'),
+    );
+    await tester.enterText(quantityField, 'abc');
+    await tester.pumpAndSettle();
+
+    final applyButton = find.byKey(
+      const Key('receipt_review_apply_item_button'),
+    );
+    await tester.ensureVisible(applyButton);
+    await tester.tap(applyButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please enter valid numbers.'), findsNWidgets(2));
+
+    await tester.enterText(quantityField, '2');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please enter valid numbers.'), findsNothing);
+  });
+
+  testWidgets('changing quantity revalidates weight error immediately', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(id: 'food', isDeposit: false, isDiscount: false),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_edit_button_0')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_field_quantity')),
+      'abc',
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_field_weight')),
+      '500',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please add a unit (e.g. g or ml).'), findsNothing);
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_field_quantity')),
+      '2',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please add a unit (e.g. g or ml).'), findsOneWidget);
+  });
+
+  testWidgets('clearing prefilled brand persists as null', (tester) async {
+    List<FridgeItem>? savedItems;
+
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            brand: 'House Brand',
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (items) async {
+          savedItems = items;
+        },
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_edit_button_0')));
+    await tester.pumpAndSettle();
+
+    final brandField = find.byKey(const Key('receipt_review_field_brand'));
+    await tester.ensureVisible(brandField);
+    await tester.enterText(brandField, '');
+    await tester.pumpAndSettle();
+
+    final applyButton = find.byKey(
+      const Key('receipt_review_apply_item_button'),
+    );
+    await tester.ensureVisible(applyButton);
+    await tester.tap(applyButton);
+    await tester.pumpAndSettle();
+
+    final saveButton = find.byKey(const Key('receipt_review_save_button'));
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect(savedItems, isNotNull);
+    expect(savedItems, hasLength(1));
+    expect(savedItems!.single.brand, isNull);
   });
 
   testWidgets('editor hides keyboard when tapping outside text field', (
@@ -228,7 +353,44 @@ void main() {
     );
   });
 
-  testWidgets('weight without unit shows validation snackbar', (tester) async {
+  testWidgets('editor submits on keyboard done action', (tester) async {
+    List<FridgeItem>? savedItems;
+
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(id: 'food', isDeposit: false, isDiscount: false),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (items) async {
+          savedItems = items;
+        },
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_edit_button_0')));
+    await tester.pumpAndSettle();
+
+    final nameField = find.byKey(const Key('receipt_review_field_name'));
+    await tester.enterText(nameField, 'Submitted from keyboard');
+    await tester.pump();
+
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('receipt_review_field_name')), findsNothing);
+
+    final saveButton = find.byKey(const Key('receipt_review_save_button'));
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect(savedItems, isNotNull);
+    expect(savedItems, hasLength(1));
+    expect(savedItems!.single.name, 'Submitted from keyboard');
+  });
+
+  testWidgets('weight without unit shows inline validation', (tester) async {
     await tester.pumpWidget(
       _wrap(
         items: <FridgeItem>[
@@ -256,6 +418,38 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Please add a unit (e.g. g or ml).'), findsOneWidget);
+  });
+
+  testWidgets('invalid discounts input shows inline validation', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(id: 'food', isDeposit: false, isDiscount: false),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_edit_button_0')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_field_discounts')),
+      'coupon 1.20',
+    );
+    await tester.pumpAndSettle();
+
+    final applyButton = find.byKey(
+      const Key('receipt_review_apply_item_button'),
+    );
+    await tester.ensureVisible(applyButton);
+    await tester.tap(applyButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Use JSON or key=value pairs.'), findsOneWidget);
   });
 
   testWidgets('weight without suffix saves when gram fallback is selected', (
