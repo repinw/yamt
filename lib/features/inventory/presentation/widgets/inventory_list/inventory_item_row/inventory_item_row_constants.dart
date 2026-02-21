@@ -8,4 +8,5 @@ abstract final class InventoryItemRowConstants {
   static const expandPanelDuration = Duration(milliseconds: 220);
   static const actionPanelTopSpacing = AppSpacing.sm;
   static const actionButtonHeight = 36.0;
+  static const actionIconSize = AppSpacing.xxl;
 }

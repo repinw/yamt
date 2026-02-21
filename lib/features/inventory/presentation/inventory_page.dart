@@ -21,6 +21,7 @@ class InventoryPage extends ConsumerWidget {
       data: (items) => InventoryList(
         items: items,
         onDeleteItem: controller.deleteItem,
+        onEatItem: controller.eatItem,
         onThrowAwayItem: controller.throwAwayItem,
       ),
       loading: () => const _InventoryLoadingView(),

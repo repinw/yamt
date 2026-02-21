@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
@@ -33,15 +34,25 @@ FridgeItem _item(
   String? name,
   String? receiptId,
   DateTime? receiptDate,
+  int quantity = 2,
+  int initialQuantity = 2,
+  String? weight,
+  int initialAmount = 0,
+  int currentAmount = 0,
+  FridgeAmountUnit? amountUnit,
 }) {
   return FridgeItem(
     id: id,
     name: name ?? 'Milk',
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
     storeName: 'Store',
-    quantity: 2,
-    initialQuantity: 2,
+    quantity: quantity,
+    initialQuantity: initialQuantity,
     unitPrice: 1.0,
+    weight: weight,
+    initialAmount: initialAmount,
+    currentAmount: currentAmount,
+    amountUnit: amountUnit,
     brand: brand,
     receiptId: receiptId,
     receiptDate: receiptDate,
@@ -49,13 +60,22 @@ FridgeItem _item(
 }
 
 Widget _buildTestApp(FridgeItemRepository repository) {
+  final router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const Scaffold(body: InventoryPage()),
+      ),
+    ],
+  );
+
   return ProviderScope(
     overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
-    child: MaterialApp(
+    child: MaterialApp.router(
+      routerConfig: router,
       locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const Scaffold(body: InventoryPage()),
     ),
   );
 }
@@ -98,6 +118,7 @@ void main() {
 
     expect(find.text('Milk'), findsOneWidget);
     expect(find.text('ACME'), findsOneWidget);
+    expect(find.textContaining('Store'), findsOneWidget);
   });
 
   testWidgets('groups items under one receipt and expands on tap', (
@@ -122,5 +143,108 @@ void main() {
 
     expect(find.text('Milk'), findsOneWidget);
     expect(find.text('Bread'), findsOneWidget);
+  });
+
+  testWidgets('shows amount-based stock label when amount data exists', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item(
+          'a',
+          initialQuantity: 2,
+          quantity: 1,
+          weight: '500g',
+          initialAmount: 1000,
+          currentAmount: 500,
+          amountUnit: FridgeAmountUnit.gram,
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(_buildTestApp(repository));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('No receipt'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('500g / 1000g'), findsOneWidget);
+  });
+
+  testWidgets('eat action opens amount dialog and updates stock', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item('a', quantity: 3, initialQuantity: 3),
+      ],
+    );
+
+    await tester.pumpWidget(_buildTestApp(repository));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('No receipt'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('3/3'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Eat'));
+    await tester.pumpAndSettle();
+
+    final amountField = find.byKey(
+      const Key('inventory_item_amount_dialog_field'),
+    );
+    expect(amountField, findsOneWidget);
+    await tester.enterText(amountField, '2');
+
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      findsNothing,
+    );
+    expect(find.text('1/3'), findsOneWidget);
+  });
+
+  testWidgets('throw away action opens amount dialog and updates stock', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item('a', quantity: 3, initialQuantity: 3),
+      ],
+    );
+
+    await tester.pumpWidget(_buildTestApp(repository));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('No receipt'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Milk'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Throw away'));
+    await tester.pumpAndSettle();
+
+    final amountField = find.byKey(
+      const Key('inventory_item_amount_dialog_field'),
+    );
+    expect(amountField, findsOneWidget);
+    await tester.enterText(amountField, '1');
+
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      findsNothing,
+    );
+    expect(find.text('2/3'), findsOneWidget);
   });
 }
