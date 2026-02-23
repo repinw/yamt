@@ -34,8 +34,8 @@ class InventoryItemProgressCalculator {
     final unit = item.amountUnit!;
     final initialAmount = item.initialAmount;
     final totalUnits = _safeTotalUnits(item.initialQuantity);
-    final remainingAmount = _clampInt(item.currentAmount, 0, initialAmount);
-    final remainingUnits = _clampInt(item.quantity, 0, totalUnits);
+    final remainingAmount = item.currentAmount.clamp(0, initialAmount);
+    final remainingUnits = item.quantity.clamp(0, totalUnits);
 
     return InventoryItemProgress(
       remainingRatio: remainingAmount / initialAmount,
@@ -50,7 +50,7 @@ class InventoryItemProgressCalculator {
 
   InventoryItemProgress _fromQuantity(FridgeItem item) {
     final totalUnits = _safeTotalUnits(item.initialQuantity);
-    final remainingUnits = _clampInt(item.quantity, 0, totalUnits);
+    final remainingUnits = item.quantity.clamp(0, totalUnits);
 
     return InventoryItemProgress(
       remainingRatio: remainingUnits / totalUnits,
@@ -66,16 +66,6 @@ class InventoryItemProgressCalculator {
       return 1;
     }
     return initialQuantity;
-  }
-
-  int _clampInt(int value, int min, int max) {
-    if (value < min) {
-      return min;
-    }
-    if (value > max) {
-      return max;
-    }
-    return value;
   }
 
   String _formatAmount(int value, FridgeAmountUnit unit) {
