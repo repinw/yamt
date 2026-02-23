@@ -81,7 +81,7 @@ class FridgeItemsController extends _$FridgeItemsController {
     if (nextItems.length == currentItems.length) {
       return true;
     }
-    return _saveItems(nextItems);
+    return _saveItems(previousItems: currentItems, nextItems: nextItems);
   }
 
   Future<bool> eatItem(String itemId, int amount) {
@@ -135,7 +135,7 @@ class FridgeItemsController extends _$FridgeItemsController {
           ),
         );
       }
-      return _saveItems(nextItems);
+      return _saveItems(previousItems: currentItems, nextItems: nextItems);
     }
 
     final nextQuantity = item.quantity - reducedAmount;
@@ -144,7 +144,7 @@ class FridgeItemsController extends _$FridgeItemsController {
     } else {
       nextItems[itemIndex] = item.copyWith(quantity: nextQuantity);
     }
-    return _saveItems(nextItems);
+    return _saveItems(previousItems: currentItems, nextItems: nextItems);
   }
 
   bool _usesAmountProgress(FridgeItem item) {
@@ -181,9 +181,26 @@ class FridgeItemsController extends _$FridgeItemsController {
     return projectedQuantity;
   }
 
-  Future<bool> _saveItems(List<FridgeItem> items) async {
+  Future<bool> _saveItems({
+    required List<FridgeItem> previousItems,
+    required List<FridgeItem> nextItems,
+  }) async {
+    if (ref.mounted) {
+      state = AsyncData(nextItems);
+    }
+
     final repository = ref.read(fridgeItemRepositoryProvider);
-    final saved = await repository.saveAll(items);
-    return saved;
+    try {
+      final saved = await repository.saveAll(nextItems);
+      if (!saved && ref.mounted) {
+        state = AsyncData(previousItems);
+      }
+      return saved;
+    } catch (_) {
+      if (ref.mounted) {
+        state = AsyncData(previousItems);
+      }
+      return false;
+    }
   }
 }

@@ -13,6 +13,9 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
   final StreamController<List<FridgeItem>> _watchController =
       StreamController<List<FridgeItem>>.broadcast();
   List<FridgeItem> savedItems = const <FridgeItem>[];
+  Duration saveDelay = Duration.zero;
+  bool saveAllShouldFail = false;
+  bool emitRealtimeOnSave = true;
 
   @override
   Future<List<FridgeItem>> readAll() {
@@ -36,8 +39,16 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
 
   @override
   Future<bool> saveAll(List<FridgeItem> items) async {
+    if (saveDelay > Duration.zero) {
+      await Future<void>.delayed(saveDelay);
+    }
     savedItems = List<FridgeItem>.from(items);
-    _watchController.add(savedItems);
+    if (saveAllShouldFail) {
+      return false;
+    }
+    if (emitRealtimeOnSave) {
+      _watchController.add(savedItems);
+    }
     return true;
   }
 
@@ -314,6 +325,52 @@ void main() {
     expect(repository.savedItems.single.id, 'b');
     expect(container.read(fridgeItemsControllerProvider).value, hasLength(1));
   });
+
+  test(
+    'deleteItem applies optimistic update and rolls back on save failure',
+    () async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <FridgeItem>[_item('a'), _item('b')],
+      );
+      repository.saveDelay = const Duration(milliseconds: 20);
+      repository.saveAllShouldFail = true;
+      repository.emitRealtimeOnSave = false;
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+      final controllerSubscription = _keepControllerAlive(container);
+      addTearDown(controllerSubscription.close);
+
+      await container.read(fridgeItemsControllerProvider.future);
+      final deleteFuture = container
+          .read(fridgeItemsControllerProvider.notifier)
+          .deleteItem('a');
+      await _waitForAsyncPropagation();
+
+      final optimisticItems = container
+          .read(fridgeItemsControllerProvider)
+          .value;
+      expect(optimisticItems, isNotNull);
+      expect(optimisticItems, hasLength(1));
+      expect(optimisticItems?.single.id, 'b');
+
+      final deleted = await deleteFuture;
+      expect(deleted, isFalse);
+
+      final rolledBackItems = container
+          .read(fridgeItemsControllerProvider)
+          .value;
+      expect(rolledBackItems, isNotNull);
+      expect(rolledBackItems, hasLength(2));
+      expect(
+        rolledBackItems?.map((item) => item.id),
+        containsAll(<String>['a', 'b']),
+      );
+    },
+  );
 
   test('eatItem reduces quantity and keeps item if quantity remains', () async {
     final repository = _FakeFridgeItemRepository(
