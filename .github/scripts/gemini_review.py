@@ -1,7 +1,7 @@
 import os
 import sys
-import google.generativeai as genai
-from github import Github
+from google import genai
+from github import Auth, Github
 
 # --- CONFIG ---
 MODEL_NAME = 'gemini-3.1-pro-preview'
@@ -15,9 +15,9 @@ if not api_key:
     print("❌ Kein API Key gefunden!")
     sys.exit(1)
 
-genai.configure(api_key=api_key)
+client = genai.Client(api_key=api_key)
 
-g = Github(os.environ['GITHUB_TOKEN'])
+g = Github(auth=Auth.Token(os.environ['GITHUB_TOKEN']))
 repo = g.get_repo(os.environ['REPO_NAME'])
 pr = repo.get_pull(int(os.environ['PR_NUMBER']))
 
@@ -96,15 +96,16 @@ CODE DIFF:
 # --- 4. KI ANFRAGE ---
 try:
     print(f"🚀 Sende Anfrage an {MODEL_NAME}...")
-    model = genai.GenerativeModel(MODEL_NAME)
-    
     generation_config = {
-        "temperature": 0.0,         # Volle Strenge
-        "top_p": 0.95,              # Stabile Wortwahl
-        "max_output_tokens": 65536  # Genug Platz für lange Reviews
+        "temperature": 0.0,  # Volle Strenge
+        "top_p": 0.95,  # Stabile Wortwahl
+        "max_output_tokens": 65536,  # Genug Platz für lange Reviews
     }
-    
-    response = model.generate_content(prompt, generation_config=generation_config)
+    response = client.models.generate_content(
+        model=MODEL_NAME,
+        contents=prompt,
+        config=generation_config,
+    )
     review_body = (response.text or "").strip()
     if not review_body:
         review_body = "⚠️ Gemini returned an empty response."
