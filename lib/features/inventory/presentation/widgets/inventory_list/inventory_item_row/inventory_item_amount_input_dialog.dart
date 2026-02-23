@@ -30,15 +30,19 @@ class _InventoryItemAmountInputDialogState
     extends State<InventoryItemAmountInputDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _controller;
+  late final FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: '1');
+    _focusNode = FocusNode()..addListener(_onFocusChanged);
   }
 
   @override
   void dispose() {
+    _focusNode.removeListener(_onFocusChanged);
+    _focusNode.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -52,6 +56,7 @@ class _InventoryItemAmountInputDialogState
         child: TextFormField(
           key: const Key('inventory_item_amount_dialog_field'),
           controller: _controller,
+          focusNode: _focusNode,
           autofocus: true,
           keyboardType: TextInputType.number,
           textInputAction: TextInputAction.done,
@@ -103,5 +108,15 @@ class _InventoryItemAmountInputDialogState
       return;
     }
     context.pop(parsed);
+  }
+
+  void _onFocusChanged() {
+    if (!_focusNode.hasFocus) {
+      return;
+    }
+    _controller.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: _controller.text.length,
+    );
   }
 }

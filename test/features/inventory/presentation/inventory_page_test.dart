@@ -209,6 +209,40 @@ void main() {
     expect(find.text('1/3'), findsOneWidget);
   });
 
+  testWidgets('eat action validates amount above available stock', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item('a', quantity: 3, initialQuantity: 3),
+      ],
+    );
+
+    await tester.pumpWidget(_buildTestApp(repository));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('No receipt'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Eat'));
+    await tester.pumpAndSettle();
+
+    final amountField = find.byKey(
+      const Key('inventory_item_amount_dialog_field'),
+    );
+    expect(amountField, findsOneWidget);
+    await tester.enterText(amountField, '999');
+
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please enter valid numbers.'), findsOneWidget);
+    expect(amountField, findsOneWidget);
+    expect(find.text('3/3'), findsOneWidget);
+  });
+
   testWidgets('throw away action opens amount dialog and updates stock', (
     tester,
   ) async {
