@@ -14,12 +14,14 @@ class InventoryList extends StatelessWidget {
     super.key,
     required this.items,
     required this.onDeleteItem,
+    required this.onEatItem,
     required this.onThrowAwayItem,
   });
 
   final List<FridgeItem> items;
   final Future<bool> Function(String itemId) onDeleteItem;
-  final Future<bool> Function(String itemId) onThrowAwayItem;
+  final Future<bool> Function(String itemId, int amount) onEatItem;
+  final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +82,7 @@ class InventoryList extends StatelessWidget {
                     currency: currency,
                     dateFormat: dateFormat,
                     onDeleteItem: onDeleteItem,
+                    onEatItem: onEatItem,
                     onThrowAwayItem: onThrowAwayItem,
                   ),
                 );

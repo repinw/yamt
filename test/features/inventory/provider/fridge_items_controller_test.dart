@@ -39,6 +39,21 @@ FridgeItem _item(String id) {
   );
 }
 
+FridgeItem _amountItem(String id) {
+  return FridgeItem(
+    id: id,
+    name: 'Juice',
+    entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
+    storeName: 'Store',
+    quantity: 2,
+    initialQuantity: 2,
+    unitPrice: 1.0,
+    initialAmount: 1000,
+    currentAmount: 600,
+    amountUnit: FridgeAmountUnit.milliliter,
+  );
+}
+
 void main() {
   test('build loads fridge items from repository', () async {
     final repository = _FakeFridgeItemRepository(
@@ -99,7 +114,49 @@ void main() {
     expect(container.read(fridgeItemsControllerProvider).value, hasLength(1));
   });
 
-  test('throwAwayItem delegates to delete behavior', () async {
+  test('eatItem reduces quantity and keeps item if quantity remains', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[_item('a').copyWith(quantity: 3)],
+    );
+    final container = ProviderContainer(
+      overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(fridgeItemsControllerProvider.future);
+    final updated = await container
+        .read(fridgeItemsControllerProvider.notifier)
+        .eatItem('a', 2);
+
+    expect(updated, isTrue);
+    expect(repository.savedItems, hasLength(1));
+    expect(repository.savedItems.single.quantity, 1);
+    expect(container.read(fridgeItemsControllerProvider).value, hasLength(1));
+  });
+
+  test(
+    'eatItem clips amount and removes quantity-based item when over-limit',
+    () async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <FridgeItem>[_item('a').copyWith(quantity: 3)],
+      );
+      final container = ProviderContainer(
+        overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(fridgeItemsControllerProvider.future);
+      final removed = await container
+          .read(fridgeItemsControllerProvider.notifier)
+          .eatItem('a', 99);
+
+      expect(removed, isTrue);
+      expect(repository.savedItems, isEmpty);
+      expect(container.read(fridgeItemsControllerProvider).value, isEmpty);
+    },
+  );
+
+  test('throwAwayItem removes quantity-based item when depleted', () async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <FridgeItem>[_item('a')],
     );
@@ -111,10 +168,52 @@ void main() {
     await container.read(fridgeItemsControllerProvider.future);
     final removed = await container
         .read(fridgeItemsControllerProvider.notifier)
-        .throwAwayItem('a');
+        .throwAwayItem('a', 1);
 
     expect(removed, isTrue);
     expect(repository.savedItems, isEmpty);
     expect(container.read(fridgeItemsControllerProvider).value, isEmpty);
   });
+
+  test('throwAwayItem reduces amount-based stock and keeps item', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[_amountItem('a')],
+    );
+    final container = ProviderContainer(
+      overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(fridgeItemsControllerProvider.future);
+    final updated = await container
+        .read(fridgeItemsControllerProvider.notifier)
+        .throwAwayItem('a', 200);
+
+    expect(updated, isTrue);
+    expect(repository.savedItems, hasLength(1));
+    expect(repository.savedItems.single.currentAmount, 400);
+    expect(repository.savedItems.single.quantity, 1);
+  });
+
+  test(
+    'throwAwayItem clips amount and removes amount-based item when over-limit',
+    () async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <FridgeItem>[_amountItem('a')],
+      );
+      final container = ProviderContainer(
+        overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(fridgeItemsControllerProvider.future);
+      final removed = await container
+          .read(fridgeItemsControllerProvider.notifier)
+          .throwAwayItem('a', 9999);
+
+      expect(removed, isTrue);
+      expect(repository.savedItems, isEmpty);
+      expect(container.read(fridgeItemsControllerProvider).value, isEmpty);
+    },
+  );
 }

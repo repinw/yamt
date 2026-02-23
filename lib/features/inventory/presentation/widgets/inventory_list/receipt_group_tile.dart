@@ -14,6 +14,7 @@ class ReceiptGroupTile extends StatelessWidget {
     required this.currency,
     required this.dateFormat,
     required this.onDeleteItem,
+    required this.onEatItem,
     required this.onThrowAwayItem,
   });
 
@@ -21,7 +22,8 @@ class ReceiptGroupTile extends StatelessWidget {
   final NumberFormat currency;
   final DateFormat dateFormat;
   final Future<bool> Function(String itemId) onDeleteItem;
-  final Future<bool> Function(String itemId) onThrowAwayItem;
+  final Future<bool> Function(String itemId, int amount) onEatItem;
+  final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +58,7 @@ class ReceiptGroupTile extends StatelessWidget {
                     l10n: l10n,
                     currency: currency,
                     onDeletePressed: onDeleteItem,
+                    onEatPressed: onEatItem,
                     onThrowAwayPressed: onThrowAwayItem,
                   ),
                 ),

@@ -12,7 +12,7 @@ class InventoryItemRowViewData {
     required this.statusColor,
     required this.remainingRatio,
     required this.remainingLabel,
-    required this.hasWeight,
+    required this.segmentedByUnits,
     required this.isPrimaryActionEnabled,
     required this.eatActionBackgroundColor,
     required this.disabledActionBackgroundColor,
@@ -34,7 +34,7 @@ class InventoryItemRowViewData {
   final Color? statusColor;
   final double remainingRatio;
   final String remainingLabel;
-  final bool hasWeight;
+  final bool segmentedByUnits;
   final bool isPrimaryActionEnabled;
   final Color eatActionBackgroundColor;
   final Color disabledActionBackgroundColor;

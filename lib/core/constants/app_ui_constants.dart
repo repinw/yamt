@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 abstract final class AppColors {
   static const Color seed = Color(0xFF29F006);
@@ -72,4 +72,61 @@ abstract final class AppSizes {
   static const double welcomeIcon = 80;
   static const double inlineProgressIndicator = 20;
   static const double progressStrokeWidth = 2;
+}
+
+abstract final class AppBrandBadge {
+  static const EdgeInsets padding = EdgeInsets.symmetric(
+    horizontal: AppSpacing.xs - AppSpacing.xxs,
+    vertical: AppSpacing.xxs,
+  );
+  static const double borderRadius = 999;
+  static const double fontSize = 9;
+  static const FontWeight fontWeight = FontWeight.w600;
+  static const double letterSpacing = 0.6;
+}
+
+abstract final class AppInventoryEatAction {
+  static const Color tint = Color(0xFF2E7D32);
+  static const double backgroundAlpha = 0.24;
+  static const double borderAlpha = 0.45;
+  static const double iconAlpha = 0.8;
+}
+
+class AppInventoryEatActionColors {
+  const AppInventoryEatActionColors({
+    required this.backgroundColor,
+    required this.borderColor,
+    required this.iconColor,
+  });
+
+  factory AppInventoryEatActionColors.fromColorScheme(ColorScheme colors) {
+    final backgroundColor = Color.alphaBlend(
+      AppInventoryEatAction.tint.withValues(
+        alpha: AppInventoryEatAction.backgroundAlpha,
+      ),
+      colors.secondaryContainer,
+    );
+    final borderColor = Color.alphaBlend(
+      AppInventoryEatAction.tint.withValues(
+        alpha: AppInventoryEatAction.borderAlpha,
+      ),
+      colors.outlineVariant,
+    );
+    final iconColor = Color.alphaBlend(
+      AppInventoryEatAction.tint.withValues(
+        alpha: AppInventoryEatAction.iconAlpha,
+      ),
+      colors.onSecondaryContainer,
+    );
+
+    return AppInventoryEatActionColors(
+      backgroundColor: backgroundColor,
+      borderColor: borderColor,
+      iconColor: iconColor,
+    );
+  }
+
+  final Color backgroundColor;
+  final Color borderColor;
+  final Color iconColor;
 }
