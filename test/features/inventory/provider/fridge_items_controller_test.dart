@@ -120,8 +120,29 @@ FridgeItem _amountItem(String id) {
   );
 }
 
-Future<void> _waitForAsyncPropagation() {
-  return Future<void>.delayed(const Duration(milliseconds: 1));
+Future<void> _waitForItems(
+  ProviderContainer container,
+  bool Function(List<FridgeItem> items) predicate,
+) async {
+  final currentItems = container
+      .read(fridgeItemsControllerProvider)
+      .asData
+      ?.value;
+  if (currentItems != null && predicate(currentItems)) {
+    return;
+  }
+
+  final ready = Completer<void>();
+  late final ProviderSubscription<AsyncValue<List<FridgeItem>>> subscription;
+  subscription = container.listen(fridgeItemsControllerProvider, (_, next) {
+    final items = next.asData?.value;
+    if (items == null || !predicate(items) || ready.isCompleted) {
+      return;
+    }
+    ready.complete();
+    subscription.close();
+  }, fireImmediately: true);
+  await ready.future.timeout(const Duration(seconds: 1));
 }
 
 ProviderSubscription<AsyncValue<List<FridgeItem>>> _keepControllerAlive(
@@ -307,14 +328,17 @@ void main() {
     expect(itemsAfterLogout, isEmpty);
 
     signedInRepository.emitWatchItems(<FridgeItem>[_item('old')]);
-    await _waitForAsyncPropagation();
+    await _waitForItems(container, (items) => items.isEmpty);
     expect(
       container.read(fridgeItemsControllerProvider).asData?.value,
       isEmpty,
     );
 
     signedOutRepository.emitWatchItems(<FridgeItem>[_item('new')]);
-    await _waitForAsyncPropagation();
+    await _waitForItems(
+      container,
+      (items) => items.length == 1 && items.single.id == 'new',
+    );
     expect(
       container.read(fridgeItemsControllerProvider).asData?.value,
       hasLength(1),
@@ -341,7 +365,10 @@ void main() {
     final deleted = await container
         .read(fridgeItemsControllerProvider.notifier)
         .deleteItem('a');
-    await _waitForAsyncPropagation();
+    await _waitForItems(
+      container,
+      (items) => items.length == 1 && items.single.id == 'b',
+    );
 
     expect(deleted, isTrue);
     expect(repository.savedItems, hasLength(1));
@@ -371,7 +398,10 @@ void main() {
       final deleteFuture = container
           .read(fridgeItemsControllerProvider.notifier)
           .deleteItem('a');
-      await _waitForAsyncPropagation();
+      await _waitForItems(
+        container,
+        (items) => items.length == 1 && items.single.id == 'b',
+      );
 
       final optimisticItems = container
           .read(fridgeItemsControllerProvider)
@@ -415,7 +445,10 @@ void main() {
     final deleteFuture = container
         .read(fridgeItemsControllerProvider.notifier)
         .deleteItem('a');
-    await _waitForAsyncPropagation();
+    await _waitForItems(
+      container,
+      (items) => items.length == 1 && items.single.id == 'b',
+    );
 
     final optimisticItems = container.read(fridgeItemsControllerProvider).value;
     expect(optimisticItems, isNotNull);
@@ -457,7 +490,10 @@ void main() {
       final deleteA = container
           .read(fridgeItemsControllerProvider.notifier)
           .deleteItem('a');
-      await _waitForAsyncPropagation();
+      await _waitForItems(
+        container,
+        (items) => items.length == 1 && items.single.id == 'b',
+      );
       final deleteB = container
           .read(fridgeItemsControllerProvider.notifier)
           .deleteItem('b');
@@ -488,7 +524,10 @@ void main() {
     final updated = await container
         .read(fridgeItemsControllerProvider.notifier)
         .eatItem('a', 2);
-    await _waitForAsyncPropagation();
+    await _waitForItems(
+      container,
+      (items) => items.length == 1 && items.single.quantity == 1,
+    );
 
     expect(updated, isTrue);
     expect(repository.savedItems, hasLength(1));
@@ -516,7 +555,10 @@ void main() {
     final eatFuture = container
         .read(fridgeItemsControllerProvider.notifier)
         .eatItem('a', 1);
-    await _waitForAsyncPropagation();
+    await _waitForItems(
+      container,
+      (items) => items.length == 1 && items.single.quantity == 2,
+    );
 
     final optimisticItems = container.read(fridgeItemsControllerProvider).value;
     expect(optimisticItems, isNotNull);
@@ -552,7 +594,7 @@ void main() {
     final eatFuture = container
         .read(fridgeItemsControllerProvider.notifier)
         .eatItem('a', 1);
-    await _waitForAsyncPropagation();
+    await _waitForItems(container, (items) => items.isEmpty);
 
     final optimisticItems = container.read(fridgeItemsControllerProvider).value;
     expect(optimisticItems, isNotNull);
@@ -586,7 +628,7 @@ void main() {
       final removed = await container
           .read(fridgeItemsControllerProvider.notifier)
           .eatItem('a', 99);
-      await _waitForAsyncPropagation();
+      await _waitForItems(container, (items) => items.isEmpty);
 
       expect(removed, isTrue);
       expect(repository.savedItems, isEmpty);
@@ -610,7 +652,7 @@ void main() {
     final removed = await container
         .read(fridgeItemsControllerProvider.notifier)
         .throwAwayItem('a', 1);
-    await _waitForAsyncPropagation();
+    await _waitForItems(container, (items) => items.isEmpty);
 
     expect(removed, isTrue);
     expect(repository.savedItems, isEmpty);
@@ -633,7 +675,13 @@ void main() {
     final updated = await container
         .read(fridgeItemsControllerProvider.notifier)
         .throwAwayItem('a', 200);
-    await _waitForAsyncPropagation();
+    await _waitForItems(
+      container,
+      (items) =>
+          items.length == 1 &&
+          items.single.currentAmount == 400 &&
+          items.single.quantity == 1,
+    );
 
     expect(updated, isTrue);
     expect(repository.savedItems, hasLength(1));
@@ -659,7 +707,7 @@ void main() {
       final removed = await container
           .read(fridgeItemsControllerProvider.notifier)
           .throwAwayItem('a', 9999);
-      await _waitForAsyncPropagation();
+      await _waitForItems(container, (items) => items.isEmpty);
 
       expect(removed, isTrue);
       expect(repository.savedItems, isEmpty);

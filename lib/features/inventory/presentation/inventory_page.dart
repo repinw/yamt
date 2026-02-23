@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
@@ -13,6 +14,8 @@ class InventoryPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(fridgeItemsControllerProvider, _logLoadErrorOnce);
+
     final l10n = AppLocalizations.of(context)!;
     final controller = ref.read(fridgeItemsControllerProvider.notifier);
     final itemsAsync = ref.watch(fridgeItemsControllerProvider);
@@ -25,19 +28,35 @@ class InventoryPage extends ConsumerWidget {
         onThrowAwayItem: controller.throwAwayItem,
       ),
       loading: () => const _InventoryLoadingView(),
-      error: (error, stackTrace) {
-        developer.log(
-          'Failed to load inventory items.',
-          name: 'InventoryPage',
-          error: error,
-          stackTrace: stackTrace,
-        );
-        return _InventoryErrorView(
-          onRetry: controller.refresh,
-          message: l10n.inventoryLoadFailed,
-          retryLabel: l10n.inventoryRetryAction,
-        );
-      },
+      error: (error, stackTrace) => _InventoryErrorView(
+        onRetry: controller.refresh,
+        message: l10n.inventoryLoadFailed,
+        retryLabel: l10n.inventoryRetryAction,
+      ),
+    );
+  }
+
+  void _logLoadErrorOnce(
+    AsyncValue<List<FridgeItem>>? previous,
+    AsyncValue<List<FridgeItem>> next,
+  ) {
+    final nextError = next.asError;
+    if (nextError == null) {
+      return;
+    }
+
+    final previousError = previous?.asError;
+    final unchangedError = identical(previousError?.error, nextError.error);
+    final unchangedStack = previousError?.stackTrace == nextError.stackTrace;
+    if (unchangedError && unchangedStack) {
+      return;
+    }
+
+    developer.log(
+      'Failed to load inventory items.',
+      name: 'InventoryPage',
+      error: nextError.error,
+      stackTrace: nextError.stackTrace,
     );
   }
 }
