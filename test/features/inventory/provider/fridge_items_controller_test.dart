@@ -496,6 +496,78 @@ void main() {
     expect(container.read(fridgeItemsControllerProvider).value, hasLength(1));
   });
 
+  test('eatItem rolls back quantity change when save throws', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[_item('a').copyWith(quantity: 3)],
+    );
+    repository.saveDelay = const Duration(milliseconds: 20);
+    repository.saveAllShouldThrow = true;
+    repository.emitRealtimeOnSave = false;
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+
+    await container.read(fridgeItemsControllerProvider.future);
+    final eatFuture = container
+        .read(fridgeItemsControllerProvider.notifier)
+        .eatItem('a', 1);
+    await _waitForAsyncPropagation();
+
+    final optimisticItems = container.read(fridgeItemsControllerProvider).value;
+    expect(optimisticItems, isNotNull);
+    expect(optimisticItems, hasLength(1));
+    expect(optimisticItems?.single.quantity, 2);
+
+    final updated = await eatFuture;
+    expect(updated, isFalse);
+
+    final rolledBackItems = container.read(fridgeItemsControllerProvider).value;
+    expect(rolledBackItems, isNotNull);
+    expect(rolledBackItems, hasLength(1));
+    expect(rolledBackItems?.single.quantity, 3);
+  });
+
+  test('eatItem rolls back optimistic removal when save throws', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[_item('a').copyWith(quantity: 1)],
+    );
+    repository.saveDelay = const Duration(milliseconds: 20);
+    repository.saveAllShouldThrow = true;
+    repository.emitRealtimeOnSave = false;
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+
+    await container.read(fridgeItemsControllerProvider.future);
+    final eatFuture = container
+        .read(fridgeItemsControllerProvider.notifier)
+        .eatItem('a', 1);
+    await _waitForAsyncPropagation();
+
+    final optimisticItems = container.read(fridgeItemsControllerProvider).value;
+    expect(optimisticItems, isNotNull);
+    expect(optimisticItems, isEmpty);
+
+    final updated = await eatFuture;
+    expect(updated, isFalse);
+
+    final rolledBackItems = container.read(fridgeItemsControllerProvider).value;
+    expect(rolledBackItems, isNotNull);
+    expect(rolledBackItems, hasLength(1));
+    expect(rolledBackItems?.single.id, 'a');
+    expect(rolledBackItems?.single.quantity, 1);
+  });
+
   test(
     'eatItem clips amount and removes quantity-based item when over-limit',
     () async {
