@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
@@ -6,9 +7,12 @@ import 'package:yamt/features/inventory/domain/fridge_item.dart';
 
 part 'fridge_items_controller.g.dart';
 
+const _controllerLogName = 'FridgeItemsController';
+
 @riverpod
 class FridgeItemsController extends _$FridgeItemsController {
   StreamSubscription<List<FridgeItem>>? _itemsSubscription;
+  Future<void> _mutationQueue = Future<void>.value();
 
   @override
   FutureOr<List<FridgeItem>> build() {
@@ -74,22 +78,28 @@ class FridgeItemsController extends _$FridgeItemsController {
   }
 
   Future<bool> deleteItem(String itemId) async {
-    final currentItems = await _currentItems();
-    final nextItems = currentItems
-        .where((item) => item.id != itemId)
-        .toList(growable: false);
-    if (nextItems.length == currentItems.length) {
-      return true;
-    }
-    return _saveItems(nextItems);
+    return _runSerializedMutation(() async {
+      final currentItems = await _currentItems();
+      final nextItems = currentItems
+          .where((item) => item.id != itemId)
+          .toList(growable: false);
+      if (nextItems.length == currentItems.length) {
+        return true;
+      }
+      return _saveItems(previousItems: currentItems, nextItems: nextItems);
+    });
   }
 
   Future<bool> eatItem(String itemId, int amount) {
-    return _reduceItem(itemId: itemId, amount: amount);
+    return _runSerializedMutation(
+      () => _reduceItem(itemId: itemId, amount: amount),
+    );
   }
 
   Future<bool> throwAwayItem(String itemId, int amount) {
-    return _reduceItem(itemId: itemId, amount: amount);
+    return _runSerializedMutation(
+      () => _reduceItem(itemId: itemId, amount: amount),
+    );
   }
 
   Future<List<FridgeItem>> _currentItems() async {
@@ -135,7 +145,7 @@ class FridgeItemsController extends _$FridgeItemsController {
           ),
         );
       }
-      return _saveItems(nextItems);
+      return _saveItems(previousItems: currentItems, nextItems: nextItems);
     }
 
     final nextQuantity = item.quantity - reducedAmount;
@@ -144,7 +154,7 @@ class FridgeItemsController extends _$FridgeItemsController {
     } else {
       nextItems[itemIndex] = item.copyWith(quantity: nextQuantity);
     }
-    return _saveItems(nextItems);
+    return _saveItems(previousItems: currentItems, nextItems: nextItems);
   }
 
   bool _usesAmountProgress(FridgeItem item) {
@@ -181,9 +191,51 @@ class FridgeItemsController extends _$FridgeItemsController {
     return projectedQuantity;
   }
 
-  Future<bool> _saveItems(List<FridgeItem> items) async {
+  Future<bool> _saveItems({
+    required List<FridgeItem> previousItems,
+    required List<FridgeItem> nextItems,
+  }) async {
+    if (ref.mounted) {
+      state = AsyncData(nextItems);
+    }
+
     final repository = ref.read(fridgeItemRepositoryProvider);
-    final saved = await repository.saveAll(items);
-    return saved;
+    try {
+      final saved = await repository.saveAll(nextItems);
+      if (!saved && ref.mounted) {
+        state = AsyncData(previousItems);
+      }
+      return saved;
+    } catch (error, stackTrace) {
+      log(
+        'Failed to persist inventory mutation.',
+        name: _controllerLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (ref.mounted) {
+        state = AsyncData(previousItems);
+      }
+      return false;
+    }
+  }
+
+  Future<bool> _runSerializedMutation(Future<bool> Function() mutation) {
+    final result = Completer<bool>();
+    _mutationQueue = _mutationQueue.then((_) async {
+      try {
+        final mutationResult = await mutation();
+        result.complete(mutationResult);
+      } catch (error, stackTrace) {
+        log(
+          'Unexpected inventory mutation error.',
+          name: _controllerLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+        result.complete(false);
+      }
+    });
+    return result.future;
   }
 }
