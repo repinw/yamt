@@ -8,23 +8,69 @@ part 'fridge_items_controller.g.dart';
 
 @riverpod
 class FridgeItemsController extends _$FridgeItemsController {
+  StreamSubscription<List<FridgeItem>>? _itemsSubscription;
+
   @override
   FutureOr<List<FridgeItem>> build() {
-    return _loadItems();
+    // Reconnect stream when repository instance changes (for auth changes).
+    ref.watch(fridgeItemRepositoryProvider);
+    ref.onDispose(_disposeRealtimeSubscription);
+    return _restartRealtimeSubscription();
   }
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    final nextState = await AsyncValue.guard(_loadItems);
+    final nextState = await AsyncValue.guard(_restartRealtimeSubscription);
     if (!ref.mounted) {
       return;
     }
     state = nextState;
   }
 
-  Future<List<FridgeItem>> _loadItems() {
+  Future<List<FridgeItem>> _restartRealtimeSubscription() {
+    final initialItems = Completer<List<FridgeItem>>();
     final repository = ref.read(fridgeItemRepositoryProvider);
-    return repository.readAll();
+    _disposeRealtimeSubscription();
+
+    _itemsSubscription = repository.watchAll().listen(
+      (items) {
+        if (!initialItems.isCompleted) {
+          initialItems.complete(items);
+          return;
+        }
+        _onRealtimeItems(items);
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        if (!initialItems.isCompleted) {
+          initialItems.completeError(error, stackTrace);
+          return;
+        }
+        _onRealtimeError(error, stackTrace);
+      },
+    );
+    return initialItems.future;
+  }
+
+  void _disposeRealtimeSubscription() {
+    final currentSubscription = _itemsSubscription;
+    _itemsSubscription = null;
+    if (currentSubscription != null) {
+      unawaited(currentSubscription.cancel());
+    }
+  }
+
+  void _onRealtimeItems(List<FridgeItem> items) {
+    if (!ref.mounted) {
+      return;
+    }
+    state = AsyncData(items);
+  }
+
+  void _onRealtimeError(Object error, StackTrace stackTrace) {
+    if (!ref.mounted) {
+      return;
+    }
+    state = AsyncError(error, stackTrace);
   }
 
   Future<bool> deleteItem(String itemId) async {
@@ -51,7 +97,7 @@ class FridgeItemsController extends _$FridgeItemsController {
     if (currentData != null) {
       return currentData;
     }
-    return _loadItems();
+    return future;
   }
 
   Future<bool> _reduceItem({
@@ -138,10 +184,6 @@ class FridgeItemsController extends _$FridgeItemsController {
   Future<bool> _saveItems(List<FridgeItem> items) async {
     final repository = ref.read(fridgeItemRepositoryProvider);
     final saved = await repository.saveAll(items);
-    if (!ref.mounted || !saved) {
-      return saved;
-    }
-    state = AsyncData(items);
-    return true;
+    return saved;
   }
 }

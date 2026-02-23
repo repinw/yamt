@@ -71,6 +71,11 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
   List<FridgeItem> appendedItems = const <FridgeItem>[];
 
   @override
+  Stream<List<FridgeItem>> watchAll() async* {
+    yield const <FridgeItem>[];
+  }
+
+  @override
   Future<bool> appendAll(List<FridgeItem> items) async {
     appendedItems = items;
     final callback = onAppendAll;
