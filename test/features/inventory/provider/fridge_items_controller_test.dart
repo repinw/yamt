@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,7 +16,10 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
   List<FridgeItem> savedItems = const <FridgeItem>[];
   Duration saveDelay = Duration.zero;
   bool saveAllShouldFail = false;
+  bool saveAllShouldThrow = false;
   bool emitRealtimeOnSave = true;
+  final Queue<bool> _saveResults = Queue<bool>();
+  final Queue<Object> _saveErrors = Queue<Object>();
 
   @override
   Future<List<FridgeItem>> readAll() {
@@ -42,7 +46,18 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
     if (saveDelay > Duration.zero) {
       await Future<void>.delayed(saveDelay);
     }
+
     savedItems = List<FridgeItem>.from(items);
+
+    if (_saveErrors.isNotEmpty) {
+      throw _saveErrors.removeFirst();
+    }
+    if (saveAllShouldThrow) {
+      throw StateError('saveAll failed');
+    }
+    if (_saveResults.isNotEmpty) {
+      return _saveResults.removeFirst();
+    }
     if (saveAllShouldFail) {
       return false;
     }
@@ -67,6 +82,14 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
 
   void emitWatchError(Object error, [StackTrace? stackTrace]) {
     _watchController.addError(error, stackTrace);
+  }
+
+  void enqueueSaveResult(bool result) {
+    _saveResults.add(result);
+  }
+
+  void enqueueSaveError(Object error) {
+    _saveErrors.add(error);
   }
 }
 
@@ -369,6 +392,83 @@ void main() {
         rolledBackItems?.map((item) => item.id),
         containsAll(<String>['a', 'b']),
       );
+    },
+  );
+
+  test('deleteItem rolls back on save exception and returns false', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[_item('a'), _item('b')],
+    );
+    repository.saveDelay = const Duration(milliseconds: 20);
+    repository.saveAllShouldThrow = true;
+    repository.emitRealtimeOnSave = false;
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+
+    await container.read(fridgeItemsControllerProvider.future);
+    final deleteFuture = container
+        .read(fridgeItemsControllerProvider.notifier)
+        .deleteItem('a');
+    await _waitForAsyncPropagation();
+
+    final optimisticItems = container.read(fridgeItemsControllerProvider).value;
+    expect(optimisticItems, isNotNull);
+    expect(optimisticItems, hasLength(1));
+    expect(optimisticItems?.single.id, 'b');
+
+    final deleted = await deleteFuture;
+    expect(deleted, isFalse);
+
+    final rolledBackItems = container.read(fridgeItemsControllerProvider).value;
+    expect(rolledBackItems, isNotNull);
+    expect(rolledBackItems, hasLength(2));
+    expect(
+      rolledBackItems?.map((item) => item.id),
+      containsAll(<String>['a', 'b']),
+    );
+  });
+
+  test(
+    'sequential deletes keep consistent state when first save fails',
+    () async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <FridgeItem>[_item('a'), _item('b')],
+      );
+      repository.saveDelay = const Duration(milliseconds: 20);
+      repository.emitRealtimeOnSave = false;
+      repository.enqueueSaveResult(false);
+      repository.enqueueSaveResult(true);
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+      final controllerSubscription = _keepControllerAlive(container);
+      addTearDown(controllerSubscription.close);
+
+      await container.read(fridgeItemsControllerProvider.future);
+      final deleteA = container
+          .read(fridgeItemsControllerProvider.notifier)
+          .deleteItem('a');
+      await _waitForAsyncPropagation();
+      final deleteB = container
+          .read(fridgeItemsControllerProvider.notifier)
+          .deleteItem('b');
+
+      expect(await deleteA, isFalse);
+      expect(await deleteB, isTrue);
+
+      final finalItems = container.read(fridgeItemsControllerProvider).value;
+      expect(finalItems, isNotNull);
+      expect(finalItems, hasLength(1));
+      expect(finalItems?.single.id, 'a');
     },
   );
 
