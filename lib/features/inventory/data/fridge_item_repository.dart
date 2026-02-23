@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
@@ -15,11 +17,69 @@ part 'fridge_item_repository.g.dart';
 
 @riverpod
 FridgeItemRepository fridgeItemRepository(Ref ref) {
-  final auth = ref.watch(firebaseAuthProvider);
+  final authState = ref.watch(authStateChangesProvider);
+  final currentUserId = authState.asData?.value?.uid;
+  final store = _resolveStore();
   return FirestoreFridgeItemRepository(
-    session: FirebaseInventoryUserSession(auth: auth),
-    store: FirestoreInventoryFridgeItemStore(
-      firestore: FirebaseFirestore.instance,
-    ),
+    session: _CurrentInventoryUserSession(currentUserId: currentUserId),
+    store: store,
   );
+}
+
+InventoryFridgeItemStore _resolveStore() {
+  try {
+    return FirestoreInventoryFridgeItemStore(
+      firestore: FirebaseFirestore.instance,
+    );
+  } catch (error, stackTrace) {
+    log(
+      'Falling back to unavailable inventory store.',
+      name: 'FridgeItemRepositoryProvider',
+      error: error,
+      stackTrace: stackTrace,
+    );
+    return const _UnavailableInventoryFridgeItemStore();
+  }
+}
+
+class _CurrentInventoryUserSession implements InventoryUserSession {
+  const _CurrentInventoryUserSession({required String? currentUserId})
+    : _currentUserId = currentUserId;
+
+  final String? _currentUserId;
+
+  @override
+  String? get currentUserId => _currentUserId;
+}
+
+class _UnavailableInventoryFridgeItemStore implements InventoryFridgeItemStore {
+  const _UnavailableInventoryFridgeItemStore();
+
+  @override
+  Future<List<InventoryFridgeItemDocument>> readAll({
+    required String userId,
+  }) async {
+    return const <InventoryFridgeItemDocument>[];
+  }
+
+  @override
+  Stream<List<InventoryFridgeItemDocument>> watchAll({required String userId}) {
+    return const Stream<List<InventoryFridgeItemDocument>>.empty();
+  }
+
+  @override
+  Future<bool> replaceAll({
+    required String userId,
+    required Map<String, Map<String, dynamic>> documentsById,
+  }) async {
+    return false;
+  }
+
+  @override
+  Future<bool> upsertAll({
+    required String userId,
+    required Map<String, Map<String, dynamic>> documentsById,
+  }) async {
+    return false;
+  }
 }

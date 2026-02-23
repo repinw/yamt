@@ -12,6 +12,8 @@ class FridgeItemsController extends _$FridgeItemsController {
 
   @override
   FutureOr<List<FridgeItem>> build() {
+    // Reconnect stream when repository instance changes (for auth changes).
+    ref.watch(fridgeItemRepositoryProvider);
     ref.onDispose(_disposeRealtimeSubscription);
     return _restartRealtimeSubscription();
   }
@@ -34,12 +36,14 @@ class FridgeItemsController extends _$FridgeItemsController {
       (items) {
         if (!initialItems.isCompleted) {
           initialItems.complete(items);
+          return;
         }
         _onRealtimeItems(items);
       },
       onError: (Object error, StackTrace stackTrace) {
         if (!initialItems.isCompleted) {
-          initialItems.completeError(error, stackTrace);
+          initialItems.complete(const <FridgeItem>[]);
+          return;
         }
         _onRealtimeError(error, stackTrace);
       },
@@ -180,10 +184,6 @@ class FridgeItemsController extends _$FridgeItemsController {
   Future<bool> _saveItems(List<FridgeItem> items) async {
     final repository = ref.read(fridgeItemRepositoryProvider);
     final saved = await repository.saveAll(items);
-    if (!ref.mounted || !saved) {
-      return saved;
-    }
-    state = AsyncData(items);
-    return true;
+    return saved;
   }
 }

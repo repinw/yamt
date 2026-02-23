@@ -93,6 +93,9 @@ class FirestoreInventoryFridgeItemStore implements InventoryFridgeItemStore {
     required String userId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
+    // Intentional tradeoff: read-diff-write without transaction.
+    // Concurrent writers between read and commit can race.
+    // For current inventory size this is acceptable.
     final collection = _collection(userId);
     final existingSnapshot = await collection.get();
     final operations = <_InventoryWriteOperation>[

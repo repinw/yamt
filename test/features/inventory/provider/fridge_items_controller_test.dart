@@ -37,6 +37,7 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
   @override
   Future<bool> saveAll(List<FridgeItem> items) async {
     savedItems = List<FridgeItem>.from(items);
+    _watchController.add(savedItems);
     return true;
   }
 
@@ -51,6 +52,10 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
 
   void emitWatchItems(List<FridgeItem> items) {
     _watchController.add(items);
+  }
+
+  void emitWatchError(Object error, [StackTrace? stackTrace]) {
+    _watchController.addError(error, stackTrace);
   }
 }
 
@@ -81,6 +86,16 @@ FridgeItem _amountItem(String id) {
   );
 }
 
+Future<void> _waitForAsyncPropagation() {
+  return Future<void>.delayed(const Duration(milliseconds: 1));
+}
+
+ProviderSubscription<AsyncValue<List<FridgeItem>>> _keepControllerAlive(
+  ProviderContainer container,
+) {
+  return container.listen(fridgeItemsControllerProvider, (previous, next) {});
+}
+
 void main() {
   test('build loads fridge items from repository', () async {
     final repository = _FakeFridgeItemRepository(
@@ -91,6 +106,8 @@ void main() {
       overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
     );
     addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
 
     final items = await container.read(fridgeItemsControllerProvider.future);
 
@@ -113,6 +130,8 @@ void main() {
       overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
     );
     addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
 
     await container.read(fridgeItemsControllerProvider.future);
     phase = 1;
@@ -132,6 +151,8 @@ void main() {
       overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
     );
     addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
 
     final realtimeUpdate = Completer<void>();
     final subscription = container.listen(fridgeItemsControllerProvider, (
@@ -153,6 +174,97 @@ void main() {
     expect(updated, hasLength(2));
   });
 
+  test('watchAll stream error puts controller into AsyncError', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[_item('a')],
+    );
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+
+    final errorSeen = Completer<void>();
+    final subscription = container.listen(fridgeItemsControllerProvider, (
+      _,
+      next,
+    ) {
+      if (next.hasError && !errorSeen.isCompleted) {
+        errorSeen.complete();
+      }
+    });
+    addTearDown(subscription.close);
+
+    await container.read(fridgeItemsControllerProvider.future);
+    final error = StateError('permission denied');
+    repository.emitWatchError(error);
+    await errorSeen.future.timeout(const Duration(seconds: 1));
+
+    final state = container.read(fridgeItemsControllerProvider);
+    expect(state.hasError, isTrue);
+    expect(state.error, same(error));
+  });
+
+  test('logout swaps repository stream and clears inventory state', () async {
+    var signedIn = true;
+    final signedInRepository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[_item('a')],
+    );
+    final signedOutRepository = _FakeFridgeItemRepository(
+      onReadAll: () async => const <FridgeItem>[],
+    );
+    addTearDown(signedInRepository.dispose);
+    addTearDown(signedOutRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        fridgeItemRepositoryProvider.overrideWith((ref) {
+          if (signedIn) {
+            return signedInRepository;
+          }
+          return signedOutRepository;
+        }),
+      ],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+
+    await container.read(fridgeItemsControllerProvider.future);
+    expect(
+      container.read(fridgeItemsControllerProvider).asData?.value,
+      hasLength(1),
+    );
+
+    signedIn = false;
+    container.invalidate(fridgeItemRepositoryProvider);
+    final itemsAfterLogout = await container.read(
+      fridgeItemsControllerProvider.future,
+    );
+
+    expect(itemsAfterLogout, isEmpty);
+
+    signedInRepository.emitWatchItems(<FridgeItem>[_item('old')]);
+    await _waitForAsyncPropagation();
+    expect(
+      container.read(fridgeItemsControllerProvider).asData?.value,
+      isEmpty,
+    );
+
+    signedOutRepository.emitWatchItems(<FridgeItem>[_item('new')]);
+    await _waitForAsyncPropagation();
+    expect(
+      container.read(fridgeItemsControllerProvider).asData?.value,
+      hasLength(1),
+    );
+    expect(
+      container.read(fridgeItemsControllerProvider).asData?.value.single.id,
+      'new',
+    );
+  });
+
   test('deleteItem removes item and updates state', () async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <FridgeItem>[_item('a'), _item('b')],
@@ -162,11 +274,14 @@ void main() {
       overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
     );
     addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
 
     await container.read(fridgeItemsControllerProvider.future);
     final deleted = await container
         .read(fridgeItemsControllerProvider.notifier)
         .deleteItem('a');
+    await _waitForAsyncPropagation();
 
     expect(deleted, isTrue);
     expect(repository.savedItems, hasLength(1));
@@ -183,11 +298,14 @@ void main() {
       overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
     );
     addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
 
     await container.read(fridgeItemsControllerProvider.future);
     final updated = await container
         .read(fridgeItemsControllerProvider.notifier)
         .eatItem('a', 2);
+    await _waitForAsyncPropagation();
 
     expect(updated, isTrue);
     expect(repository.savedItems, hasLength(1));
@@ -206,11 +324,14 @@ void main() {
         overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
       );
       addTearDown(container.dispose);
+      final controllerSubscription = _keepControllerAlive(container);
+      addTearDown(controllerSubscription.close);
 
       await container.read(fridgeItemsControllerProvider.future);
       final removed = await container
           .read(fridgeItemsControllerProvider.notifier)
           .eatItem('a', 99);
+      await _waitForAsyncPropagation();
 
       expect(removed, isTrue);
       expect(repository.savedItems, isEmpty);
@@ -227,11 +348,14 @@ void main() {
       overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
     );
     addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
 
     await container.read(fridgeItemsControllerProvider.future);
     final removed = await container
         .read(fridgeItemsControllerProvider.notifier)
         .throwAwayItem('a', 1);
+    await _waitForAsyncPropagation();
 
     expect(removed, isTrue);
     expect(repository.savedItems, isEmpty);
@@ -247,11 +371,14 @@ void main() {
       overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
     );
     addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
 
     await container.read(fridgeItemsControllerProvider.future);
     final updated = await container
         .read(fridgeItemsControllerProvider.notifier)
         .throwAwayItem('a', 200);
+    await _waitForAsyncPropagation();
 
     expect(updated, isTrue);
     expect(repository.savedItems, hasLength(1));
@@ -270,11 +397,14 @@ void main() {
         overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
       );
       addTearDown(container.dispose);
+      final controllerSubscription = _keepControllerAlive(container);
+      addTearDown(controllerSubscription.close);
 
       await container.read(fridgeItemsControllerProvider.future);
       final removed = await container
           .read(fridgeItemsControllerProvider.notifier)
           .throwAwayItem('a', 9999);
+      await _waitForAsyncPropagation();
 
       expect(removed, isTrue);
       expect(repository.savedItems, isEmpty);

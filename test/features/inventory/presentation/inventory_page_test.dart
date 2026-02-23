@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,25 +13,54 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
   _FakeFridgeItemRepository({required this.onReadAll});
 
   final Future<List<FridgeItem>> Function() onReadAll;
+  final StreamController<List<FridgeItem>> _watchController =
+      StreamController<List<FridgeItem>>.broadcast();
+  List<FridgeItem> _items = const <FridgeItem>[];
+  bool _isInitialized = false;
 
   @override
-  Stream<List<FridgeItem>> watchAll() async* {
-    yield await onReadAll();
+  Stream<List<FridgeItem>> watchAll() {
+    return Stream<List<FridgeItem>>.multi((controller) {
+      final watchSubscription = _watchController.stream.listen(
+        controller.add,
+        onError: controller.addError,
+        onDone: controller.close,
+      );
+      _loadItems().then(controller.add, onError: controller.addError);
+      controller.onCancel = () {
+        unawaited(watchSubscription.cancel());
+      };
+    });
   }
 
   @override
   Future<List<FridgeItem>> readAll() {
-    return onReadAll();
+    return _loadItems();
   }
 
   @override
   Future<bool> saveAll(List<FridgeItem> items) async {
+    _items = List<FridgeItem>.from(items);
+    _isInitialized = true;
+    _watchController.add(_items);
     return true;
   }
 
   @override
   Future<bool> appendAll(List<FridgeItem> items) async {
     return true;
+  }
+
+  Future<void> dispose() {
+    return _watchController.close();
+  }
+
+  Future<List<FridgeItem>> _loadItems() async {
+    if (!_isInitialized) {
+      _items = List<FridgeItem>.from(await onReadAll());
+      _isInitialized = true;
+    }
+    return List<FridgeItem>.from(_items);
   }
 }
 
@@ -90,6 +121,7 @@ void main() {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => const <FridgeItem>[],
     );
+    addTearDown(repository.dispose);
 
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
@@ -106,6 +138,7 @@ void main() {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <FridgeItem>[_item('a', brand: 'Acme')],
     );
+    addTearDown(repository.dispose);
 
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
@@ -135,6 +168,7 @@ void main() {
         _item('b', name: 'Bread', receiptId: 'abc123999'),
       ],
     );
+    addTearDown(repository.dispose);
 
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
@@ -166,6 +200,7 @@ void main() {
         ),
       ],
     );
+    addTearDown(repository.dispose);
 
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
@@ -184,6 +219,7 @@ void main() {
         _item('a', quantity: 3, initialQuantity: 3),
       ],
     );
+    addTearDown(repository.dispose);
 
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
@@ -222,6 +258,7 @@ void main() {
         _item('a', quantity: 3, initialQuantity: 3),
       ],
     );
+    addTearDown(repository.dispose);
 
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
@@ -256,6 +293,7 @@ void main() {
         _item('a', quantity: 3, initialQuantity: 3),
       ],
     );
+    addTearDown(repository.dispose);
 
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
