@@ -42,7 +42,7 @@ class FridgeItemsController extends _$FridgeItemsController {
       },
       onError: (Object error, StackTrace stackTrace) {
         if (!initialItems.isCompleted) {
-          initialItems.complete(const <FridgeItem>[]);
+          initialItems.completeError(error, stackTrace);
           return;
         }
         _onRealtimeError(error, stackTrace);

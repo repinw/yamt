@@ -207,6 +207,32 @@ void main() {
     expect(state.error, same(error));
   });
 
+  test(
+    'initial watchAll stream error puts controller into AsyncError',
+    () async {
+      final error = StateError('permission denied');
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => throw error,
+      );
+      addTearDown(repository.dispose);
+      final container = ProviderContainer(
+        overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+      final controllerSubscription = _keepControllerAlive(container);
+      addTearDown(controllerSubscription.close);
+
+      await expectLater(
+        container.read(fridgeItemsControllerProvider.future),
+        throwsA(same(error)),
+      );
+
+      final state = container.read(fridgeItemsControllerProvider);
+      expect(state.hasError, isTrue);
+      expect(state.error, same(error));
+    },
+  );
+
   test('logout swaps repository stream and clears inventory state', () async {
     var signedIn = true;
     final signedInRepository = _FakeFridgeItemRepository(
