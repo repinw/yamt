@@ -1,10 +1,12 @@
 import 'dart:developer' show log;
+import 'dart:math' as math;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 const String _storeLogName = 'FirestoreInventoryFridgeItemStore';
 const String _usersCollection = 'users';
 const String _inventoryItemsCollection = 'inventory_items';
+const int _maxFirestoreBatchOperations = 500;
 
 class InventoryFridgeItemDocument {
   const InventoryFridgeItemDocument({required this.id, required this.data});
@@ -16,7 +18,14 @@ class InventoryFridgeItemDocument {
 abstract interface class InventoryFridgeItemStore {
   Future<List<InventoryFridgeItemDocument>> readAll({required String userId});
 
+  Stream<List<InventoryFridgeItemDocument>> watchAll({required String userId});
+
   Future<bool> replaceAll({
+    required String userId,
+    required Map<String, Map<String, dynamic>> documentsById,
+  });
+
+  Future<bool> upsertAll({
     required String userId,
     required Map<String, Map<String, dynamic>> documentsById,
   });
@@ -34,7 +43,12 @@ class FirestoreInventoryFridgeItemStore implements InventoryFridgeItemStore {
     required String userId,
   }) async {
     final snapshot = await _collection(userId).get();
-    return snapshot.docs.map(_toDocument).toList(growable: false);
+    return _mapSnapshot(snapshot);
+  }
+
+  @override
+  Stream<List<InventoryFridgeItemDocument>> watchAll({required String userId}) {
+    return _collection(userId).snapshots().map(_mapSnapshot);
   }
 
   @override
@@ -56,48 +70,99 @@ class FirestoreInventoryFridgeItemStore implements InventoryFridgeItemStore {
     }
   }
 
+  @override
+  Future<bool> upsertAll({
+    required String userId,
+    required Map<String, Map<String, dynamic>> documentsById,
+  }) async {
+    try {
+      await _upsertAllUnsafe(userId: userId, documentsById: documentsById);
+      return true;
+    } catch (error, stackTrace) {
+      log(
+        'Failed to upsert inventory items for user $userId',
+        name: _storeLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
   Future<void> _replaceAllUnsafe({
     required String userId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     final collection = _collection(userId);
     final existingSnapshot = await collection.get();
-    final batch = _firestore.batch();
+    final operations = <_InventoryWriteOperation>[
+      ..._upsertOperations(
+        collection: collection,
+        documentsById: documentsById,
+      ),
+      ..._deleteOperations(
+        existingSnapshot: existingSnapshot,
+        documentsById: documentsById,
+      ),
+    ];
+    await _commitInChunks(operations);
+  }
 
-    _upsertDocuments(
-      batch: batch,
+  Future<void> _upsertAllUnsafe({
+    required String userId,
+    required Map<String, Map<String, dynamic>> documentsById,
+  }) async {
+    final collection = _collection(userId);
+    final operations = _upsertOperations(
       collection: collection,
       documentsById: documentsById,
     );
-    _deleteMissingDocuments(
-      batch: batch,
-      existingSnapshot: existingSnapshot,
-      documentsById: documentsById,
-    );
-
-    await batch.commit();
+    await _commitInChunks(operations);
   }
 
-  void _upsertDocuments({
-    required WriteBatch batch,
+  List<_InventoryWriteOperation> _upsertOperations({
     required CollectionReference<Map<String, dynamic>> collection,
     required Map<String, Map<String, dynamic>> documentsById,
   }) {
-    for (final entry in documentsById.entries) {
-      batch.set(collection.doc(entry.key), entry.value);
-    }
+    return documentsById.entries
+        .map(
+          (entry) => _InventoryWriteOperation.set(
+            collection.doc(entry.key),
+            entry.value,
+          ),
+        )
+        .toList(growable: false);
   }
 
-  void _deleteMissingDocuments({
-    required WriteBatch batch,
+  List<_InventoryWriteOperation> _deleteOperations({
     required QuerySnapshot<Map<String, dynamic>> existingSnapshot,
     required Map<String, Map<String, dynamic>> documentsById,
   }) {
-    for (final existingDocument in existingSnapshot.docs) {
-      if (!documentsById.containsKey(existingDocument.id)) {
-        batch.delete(existingDocument.reference);
+    return existingSnapshot.docs
+        .where((document) => !documentsById.containsKey(document.id))
+        .map((document) => _InventoryWriteOperation.delete(document.reference))
+        .toList(growable: false);
+  }
+
+  Future<void> _commitInChunks(
+    List<_InventoryWriteOperation> operations,
+  ) async {
+    for (final chunk in InventoryWriteOperationChunker.chunk(
+      operations: operations,
+      maxChunkSize: _maxFirestoreBatchOperations,
+    )) {
+      final batch = _firestore.batch();
+      for (final operation in chunk) {
+        operation.apply(batch);
       }
+      await batch.commit();
     }
+  }
+
+  List<InventoryFridgeItemDocument> _mapSnapshot(
+    QuerySnapshot<Map<String, dynamic>> snapshot,
+  ) {
+    return snapshot.docs.map(_toDocument).toList(growable: false);
   }
 
   InventoryFridgeItemDocument _toDocument(
@@ -114,5 +179,51 @@ class FirestoreInventoryFridgeItemStore implements InventoryFridgeItemStore {
         .collection(_usersCollection)
         .doc(userId)
         .collection(_inventoryItemsCollection);
+  }
+}
+
+class InventoryWriteOperationChunker {
+  const InventoryWriteOperationChunker._();
+
+  static Iterable<List<T>> chunk<T>({
+    required List<T> operations,
+    required int maxChunkSize,
+  }) sync* {
+    if (maxChunkSize < 1) {
+      throw ArgumentError.value(
+        maxChunkSize,
+        'maxChunkSize',
+        'Must be greater than zero.',
+      );
+    }
+    if (operations.isEmpty) {
+      return;
+    }
+
+    for (var start = 0; start < operations.length; start += maxChunkSize) {
+      final end = math.min(start + maxChunkSize, operations.length);
+      yield operations.sublist(start, end);
+    }
+  }
+}
+
+class _InventoryWriteOperation {
+  const _InventoryWriteOperation.set(this.reference, this.data)
+    : _delete = false;
+
+  const _InventoryWriteOperation.delete(this.reference)
+    : data = null,
+      _delete = true;
+
+  final DocumentReference<Map<String, dynamic>> reference;
+  final Map<String, dynamic>? data;
+  final bool _delete;
+
+  void apply(WriteBatch batch) {
+    if (_delete) {
+      batch.delete(reference);
+      return;
+    }
+    batch.set(reference, data!);
   }
 }

@@ -13,6 +13,11 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
   final Future<List<FridgeItem>> Function() onReadAll;
 
   @override
+  Stream<List<FridgeItem>> watchAll() async* {
+    yield await onReadAll();
+  }
+
+  @override
   Future<List<FridgeItem>> readAll() {
     return onReadAll();
   }

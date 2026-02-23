@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
@@ -17,12 +19,90 @@ class _FakeInventoryFridgeItemStore implements InventoryFridgeItemStore {
            <String, List<InventoryFridgeItemDocument>>{};
 
   final Map<String, List<InventoryFridgeItemDocument>> _documentsByUser;
+  final Map<String, StreamController<List<InventoryFridgeItemDocument>>>
+  _controllersByUser =
+      <String, StreamController<List<InventoryFridgeItemDocument>>>{};
+
   bool replaceAllShouldFail = false;
+  bool upsertAllShouldFail = false;
+  Duration upsertDelay = Duration.zero;
+
+  int _activeUpserts = 0;
+  int maxConcurrentUpserts = 0;
 
   @override
   Future<List<InventoryFridgeItemDocument>> readAll({
     required String userId,
   }) async {
+    return _copyDocuments(userId);
+  }
+
+  @override
+  Stream<List<InventoryFridgeItemDocument>> watchAll({
+    required String userId,
+  }) async* {
+    yield _copyDocuments(userId);
+    yield* _controllerFor(userId).stream;
+  }
+
+  @override
+  Future<bool> replaceAll({
+    required String userId,
+    required Map<String, Map<String, dynamic>> documentsById,
+  }) async {
+    if (replaceAllShouldFail) {
+      return false;
+    }
+
+    _documentsByUser[userId] = _documentsFromMap(documentsById);
+    _emit(userId);
+    return true;
+  }
+
+  @override
+  Future<bool> upsertAll({
+    required String userId,
+    required Map<String, Map<String, dynamic>> documentsById,
+  }) async {
+    if (upsertAllShouldFail) {
+      return false;
+    }
+
+    _activeUpserts++;
+    if (_activeUpserts > maxConcurrentUpserts) {
+      maxConcurrentUpserts = _activeUpserts;
+    }
+
+    try {
+      if (upsertDelay > Duration.zero) {
+        await Future<void>.delayed(upsertDelay);
+      }
+
+      final mergedById = <String, InventoryFridgeItemDocument>{
+        for (final document in _copyDocuments(userId)) document.id: document,
+      };
+      for (final entry in documentsById.entries) {
+        mergedById[entry.key] = InventoryFridgeItemDocument(
+          id: entry.key,
+          data: Map<String, dynamic>.from(entry.value),
+        );
+      }
+      _documentsByUser[userId] = mergedById.values.toList(growable: false);
+      _emit(userId);
+      return true;
+    } finally {
+      _activeUpserts--;
+    }
+  }
+
+  Future<void> dispose() async {
+    for (final controller in _controllersByUser.values) {
+      await controller.close();
+    }
+    _controllersByUser.clear();
+  }
+
+  List<InventoryFridgeItemDocument> _copyDocuments(String userId) {
     final documents =
         _documentsByUser[userId] ?? const <InventoryFridgeItemDocument>[];
     return documents
@@ -35,16 +115,10 @@ class _FakeInventoryFridgeItemStore implements InventoryFridgeItemStore {
         .toList(growable: false);
   }
 
-  @override
-  Future<bool> replaceAll({
-    required String userId,
-    required Map<String, Map<String, dynamic>> documentsById,
-  }) async {
-    if (replaceAllShouldFail) {
-      return false;
-    }
-
-    final documents = documentsById.entries
+  List<InventoryFridgeItemDocument> _documentsFromMap(
+    Map<String, Map<String, dynamic>> documentsById,
+  ) {
+    return documentsById.entries
         .map(
           (entry) => InventoryFridgeItemDocument(
             id: entry.key,
@@ -52,8 +126,23 @@ class _FakeInventoryFridgeItemStore implements InventoryFridgeItemStore {
           ),
         )
         .toList(growable: false);
-    _documentsByUser[userId] = documents;
-    return true;
+  }
+
+  StreamController<List<InventoryFridgeItemDocument>> _controllerFor(
+    String userId,
+  ) {
+    return _controllersByUser.putIfAbsent(
+      userId,
+      () => StreamController<List<InventoryFridgeItemDocument>>.broadcast(),
+    );
+  }
+
+  void _emit(String userId) {
+    final controller = _controllersByUser[userId];
+    if (controller == null || controller.isClosed) {
+      return;
+    }
+    controller.add(_copyDocuments(userId));
   }
 }
 
@@ -73,9 +162,11 @@ void main() {
   test(
     'firestore repo returns empty list when user is not signed in',
     () async {
+      final store = _FakeInventoryFridgeItemStore();
+      addTearDown(store.dispose);
       final repository = FirestoreFridgeItemRepository(
         session: _FakeInventoryUserSession(currentUserId: null),
-        store: _FakeInventoryFridgeItemStore(),
+        store: store,
       );
 
       final items = await repository.readAll();
@@ -84,10 +175,28 @@ void main() {
     },
   );
 
+  test(
+    'firestore repo watchAll emits empty when user is not signed in',
+    () async {
+      final store = _FakeInventoryFridgeItemStore();
+      addTearDown(store.dispose);
+      final repository = FirestoreFridgeItemRepository(
+        session: _FakeInventoryUserSession(currentUserId: ''),
+        store: store,
+      );
+
+      final items = await repository.watchAll().first;
+
+      expect(items, isEmpty);
+    },
+  );
+
   test('firestore repo saveAll fails when user is not signed in', () async {
+    final store = _FakeInventoryFridgeItemStore();
+    addTearDown(store.dispose);
     final repository = FirestoreFridgeItemRepository(
       session: _FakeInventoryUserSession(currentUserId: ''),
-      store: _FakeInventoryFridgeItemStore(),
+      store: store,
     );
 
     final saved = await repository.saveAll(<FridgeItem>[_item('a')]);
@@ -105,6 +214,7 @@ void main() {
         ],
       },
     );
+    addTearDown(store.dispose);
     final repository = FirestoreFridgeItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
       store: store,
@@ -116,7 +226,7 @@ void main() {
     expect(items.single.id, 'doc-a');
   });
 
-  test('firestore repo appendAll merges by id and appends new item', () async {
+  test('firestore repo watchAll emits updates after remote writes', () async {
     final store = _FakeInventoryFridgeItemStore(
       initialDocumentsByUser: <String, List<InventoryFridgeItemDocument>>{
         'user-1': <InventoryFridgeItemDocument>[
@@ -124,6 +234,42 @@ void main() {
         ],
       },
     );
+    addTearDown(store.dispose);
+    final repository = FirestoreFridgeItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      store: store,
+    );
+
+    final emitted = <List<FridgeItem>>[];
+    final subscription = repository.watchAll().listen(emitted.add);
+    addTearDown(() {
+      unawaited(subscription.cancel());
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 1));
+    await store.upsertAll(
+      userId: 'user-1',
+      documentsById: <String, Map<String, dynamic>>{'b': _item('b').toJson()},
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 1));
+
+    expect(emitted.length, greaterThanOrEqualTo(2));
+    expect(emitted.first.map((item) => item.id), contains('a'));
+    expect(
+      emitted.last.map((item) => item.id),
+      containsAll(<String>['a', 'b']),
+    );
+  });
+
+  test('firestore repo appendAll upserts by id and appends new item', () async {
+    final store = _FakeInventoryFridgeItemStore(
+      initialDocumentsByUser: <String, List<InventoryFridgeItemDocument>>{
+        'user-1': <InventoryFridgeItemDocument>[
+          InventoryFridgeItemDocument(id: 'a', data: _item('a').toJson()),
+        ],
+      },
+    );
+    addTearDown(store.dispose);
     final repository = FirestoreFridgeItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
       store: store,
@@ -143,9 +289,43 @@ void main() {
     expect(itemB.id, 'b');
   });
 
+  test('firestore repo serializes concurrent appendAll writes', () async {
+    final store = _FakeInventoryFridgeItemStore();
+    store.upsertDelay = const Duration(milliseconds: 25);
+    addTearDown(store.dispose);
+    final repository = FirestoreFridgeItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      store: store,
+    );
+
+    final first = repository.appendAll(<FridgeItem>[_item('a')]);
+    final second = repository.appendAll(<FridgeItem>[_item('b')]);
+    final saved = await Future.wait<bool>(<Future<bool>>[first, second]);
+
+    expect(saved, everyElement(isTrue));
+    expect(store.maxConcurrentUpserts, 1);
+    final items = await repository.readAll();
+    expect(items.map((item) => item.id), containsAll(<String>['a', 'b']));
+  });
+
+  test('firestore repo appendAll returns false when upsert fails', () async {
+    final store = _FakeInventoryFridgeItemStore();
+    store.upsertAllShouldFail = true;
+    addTearDown(store.dispose);
+    final repository = FirestoreFridgeItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      store: store,
+    );
+
+    final saved = await repository.appendAll(<FridgeItem>[_item('a')]);
+
+    expect(saved, isFalse);
+  });
+
   test('firestore repo saveAll returns false when replace fails', () async {
     final store = _FakeInventoryFridgeItemStore();
     store.replaceAllShouldFail = true;
+    addTearDown(store.dispose);
     final repository = FirestoreFridgeItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
       store: store,

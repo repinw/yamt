@@ -21,6 +21,15 @@ class FirestoreFridgeItemRepository implements FridgeItemRepository {
   Future<void> _writeBarrier = Future<void>.value();
 
   @override
+  Stream<List<FridgeItem>> watchAll() {
+    final userId = _currentUserId();
+    if (userId == null) {
+      return Stream<List<FridgeItem>>.value(const <FridgeItem>[]);
+    }
+    return _watchAllForUser(userId);
+  }
+
+  @override
   Future<List<FridgeItem>> readAll() async {
     final userId = _currentUserId();
     if (userId == null) {
@@ -44,30 +53,18 @@ class FirestoreFridgeItemRepository implements FridgeItemRepository {
     if (userId == null) {
       return Future<bool>.value(false);
     }
-    return _runExclusiveWrite(() => _appendAllForUser(userId, items));
+    return _runExclusiveWrite(() => _upsertAllForUser(userId, items));
   }
 
-  Future<bool> _appendAllForUser(String userId, List<FridgeItem> items) async {
+  Future<bool> _upsertAllForUser(String userId, List<FridgeItem> items) {
     if (items.isEmpty) {
-      return true;
+      return Future<bool>.value(true);
     }
 
-    final existing = await _readAllForUser(userId);
-    final merged = _mergeById(existing: existing, incoming: items);
-    return _replaceAllForUser(userId, merged);
-  }
-
-  List<FridgeItem> _mergeById({
-    required List<FridgeItem> existing,
-    required List<FridgeItem> incoming,
-  }) {
-    final mergedById = <String, FridgeItem>{
-      for (final item in existing) item.id: item,
+    final documentsById = <String, Map<String, dynamic>>{
+      for (final item in items) item.id: item.toJson(),
     };
-    for (final item in incoming) {
-      mergedById[item.id] = item;
-    }
-    return mergedById.values.toList(growable: false);
+    return _store.upsertAll(userId: userId, documentsById: documentsById);
   }
 
   String? _currentUserId() {
@@ -80,6 +77,22 @@ class FirestoreFridgeItemRepository implements FridgeItemRepository {
       name: _repositoryLogName,
     );
     return null;
+  }
+
+  Stream<List<FridgeItem>> _watchAllForUser(String userId) async* {
+    try {
+      await for (final documents in _store.watchAll(userId: userId)) {
+        yield _decodeDocuments(documents);
+      }
+    } catch (error, stackTrace) {
+      log(
+        'Failed to watch inventory items from firestore for user $userId',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
   }
 
   Future<List<FridgeItem>> _readAllForUser(String userId) async {

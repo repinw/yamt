@@ -8,8 +8,11 @@ part 'fridge_items_controller.g.dart';
 
 @riverpod
 class FridgeItemsController extends _$FridgeItemsController {
+  StreamSubscription<List<FridgeItem>>? _itemsSubscription;
+
   @override
   FutureOr<List<FridgeItem>> build() {
+    _subscribeToRealtimeUpdates();
     return _loadItems();
   }
 
@@ -25,6 +28,41 @@ class FridgeItemsController extends _$FridgeItemsController {
   Future<List<FridgeItem>> _loadItems() {
     final repository = ref.read(fridgeItemRepositoryProvider);
     return repository.readAll();
+  }
+
+  void _subscribeToRealtimeUpdates() {
+    final repository = ref.read(fridgeItemRepositoryProvider);
+    final existingSubscription = _itemsSubscription;
+    if (existingSubscription != null) {
+      unawaited(existingSubscription.cancel());
+    }
+
+    _itemsSubscription = repository.watchAll().listen(
+      _onRealtimeItems,
+      onError: _onRealtimeError,
+    );
+
+    ref.onDispose(() {
+      final currentSubscription = _itemsSubscription;
+      _itemsSubscription = null;
+      if (currentSubscription != null) {
+        unawaited(currentSubscription.cancel());
+      }
+    });
+  }
+
+  void _onRealtimeItems(List<FridgeItem> items) {
+    if (!ref.mounted) {
+      return;
+    }
+    state = AsyncData(items);
+  }
+
+  void _onRealtimeError(Object error, StackTrace stackTrace) {
+    if (!ref.mounted) {
+      return;
+    }
+    state = AsyncError(error, stackTrace);
   }
 
   Future<bool> deleteItem(String itemId) async {
