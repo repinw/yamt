@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
@@ -36,8 +37,8 @@ class InventoryPage extends ConsumerWidget {
   }
 
   void _logLoadErrorOnce(
-    AsyncValue<List<dynamic>>? previous,
-    AsyncValue<List<dynamic>> next,
+    AsyncValue<List<FridgeItem>>? previous,
+    AsyncValue<List<FridgeItem>> next,
   ) {
     final nextError = next.asError;
     if (nextError == null) {
