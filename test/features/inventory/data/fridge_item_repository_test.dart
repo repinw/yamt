@@ -1,62 +1,59 @@
-import 'dart:convert';
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 
-class _FakeAppPreferences implements AppPreferences {
-  _FakeAppPreferences({Map<String, Object>? initialValues})
-    : _values = initialValues ?? <String, Object>{};
-
-  final Map<String, Object> _values;
+class _FakeInventoryUserSession implements InventoryUserSession {
+  _FakeInventoryUserSession({this.currentUserId});
 
   @override
-  String? getStringSync(String key) {
-    return _values[key] as String?;
-  }
-
-  @override
-  int? getIntSync(String key) {
-    return _values[key] as int?;
-  }
-
-  @override
-  Future<String?> getString(String key) async {
-    return _values[key] as String?;
-  }
-
-  @override
-  Future<int?> getInt(String key) async {
-    return _values[key] as int?;
-  }
-
-  @override
-  Future<bool> setString(String key, String value) async {
-    _values[key] = value;
-    return true;
-  }
-
-  @override
-  Future<bool> setInt(String key, int value) async {
-    _values[key] = value;
-    return true;
-  }
+  final String? currentUserId;
 }
 
-class _DelayedFakeAppPreferences extends _FakeAppPreferences {
-  _DelayedFakeAppPreferences();
+class _FakeInventoryFridgeItemStore implements InventoryFridgeItemStore {
+  _FakeInventoryFridgeItemStore({
+    Map<String, List<InventoryFridgeItemDocument>>? initialDocumentsByUser,
+  }) : _documentsByUser =
+           initialDocumentsByUser ??
+           <String, List<InventoryFridgeItemDocument>>{};
+
+  final Map<String, List<InventoryFridgeItemDocument>> _documentsByUser;
+  bool replaceAllShouldFail = false;
 
   @override
-  Future<String?> getString(String key) async {
-    await Future<void>.delayed(const Duration(milliseconds: 20));
-    return super.getString(key);
+  Future<List<InventoryFridgeItemDocument>> readAll({
+    required String userId,
+  }) async {
+    final documents =
+        _documentsByUser[userId] ?? const <InventoryFridgeItemDocument>[];
+    return documents
+        .map(
+          (document) => InventoryFridgeItemDocument(
+            id: document.id,
+            data: Map<String, dynamic>.from(document.data),
+          ),
+        )
+        .toList(growable: false);
   }
 
   @override
-  Future<bool> setString(String key, String value) async {
-    await Future<void>.delayed(const Duration(milliseconds: 20));
-    return super.setString(key, value);
+  Future<bool> replaceAll({
+    required String userId,
+    required Map<String, Map<String, dynamic>> documentsById,
+  }) async {
+    if (replaceAllShouldFail) {
+      return false;
+    }
+
+    final documents = documentsById.entries
+        .map(
+          (entry) => InventoryFridgeItemDocument(
+            id: entry.key,
+            data: Map<String, dynamic>.from(entry.value),
+          ),
+        )
+        .toList(growable: false);
+    _documentsByUser[userId] = documents;
+    return true;
   }
 }
 
@@ -73,83 +70,89 @@ FridgeItem _item(String id) {
 }
 
 void main() {
-  test('readAll returns empty list if nothing is stored', () async {
-    final repository = PreferencesFridgeItemRepository(
-      preferences: _FakeAppPreferences(),
-    );
-
-    final items = await repository.readAll();
-
-    expect(items, isEmpty);
-  });
-
-  test('appendAll persists items and keeps existing entries', () async {
-    final repository = PreferencesFridgeItemRepository(
-      preferences: _FakeAppPreferences(),
-    );
-
-    final firstSave = await repository.appendAll(<FridgeItem>[_item('a')]);
-    final secondSave = await repository.appendAll(<FridgeItem>[_item('b')]);
-    final items = await repository.readAll();
-
-    expect(firstSave, isTrue);
-    expect(secondSave, isTrue);
-    expect(items, hasLength(2));
-    expect(items[0].id, 'a');
-    expect(items[1].id, 'b');
-  });
-
-  test('readAll returns empty list for invalid json payload', () async {
-    final prefs = _FakeAppPreferences(
-      initialValues: <String, Object>{
-        'inventory_fridge_items_v1': '{not-valid-json',
-      },
-    );
-    final repository = PreferencesFridgeItemRepository(preferences: prefs);
-
-    final items = await repository.readAll();
-
-    expect(items, isEmpty);
-  });
-
   test(
-    'readAll keeps valid entries when list contains corrupted items',
+    'firestore repo returns empty list when user is not signed in',
     () async {
-      final validA = _item('a').toJson();
-      final validB = _item('b').toJson();
-      final corrupted = <String, dynamic>{'id': 123};
-
-      final prefs = _FakeAppPreferences(
-        initialValues: <String, Object>{
-          'inventory_fridge_items_v1': jsonEncode(<Object?>[
-            validA,
-            corrupted,
-            validB,
-          ]),
-        },
+      final repository = FirestoreFridgeItemRepository(
+        session: _FakeInventoryUserSession(currentUserId: null),
+        store: _FakeInventoryFridgeItemStore(),
       );
-      final repository = PreferencesFridgeItemRepository(preferences: prefs);
 
       final items = await repository.readAll();
 
-      expect(items, hasLength(2));
-      expect(items[0].id, 'a');
-      expect(items[1].id, 'b');
+      expect(items, isEmpty);
     },
   );
 
-  test('appendAll writes are serialized for concurrent calls', () async {
-    final prefs = _DelayedFakeAppPreferences();
-    final repository = PreferencesFridgeItemRepository(preferences: prefs);
+  test('firestore repo saveAll fails when user is not signed in', () async {
+    final repository = FirestoreFridgeItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: ''),
+      store: _FakeInventoryFridgeItemStore(),
+    );
 
-    final writeA = repository.appendAll(<FridgeItem>[_item('a')]);
-    final writeB = repository.appendAll(<FridgeItem>[_item('b')]);
-    final results = await Future.wait(<Future<bool>>[writeA, writeB]);
+    final saved = await repository.saveAll(<FridgeItem>[_item('a')]);
+
+    expect(saved, isFalse);
+  });
+
+  test('firestore repo maps missing payload id from document id', () async {
+    final itemJson = Map<String, dynamic>.from(_item('doc-a').toJson())
+      ..remove('id');
+    final store = _FakeInventoryFridgeItemStore(
+      initialDocumentsByUser: <String, List<InventoryFridgeItemDocument>>{
+        'user-1': <InventoryFridgeItemDocument>[
+          InventoryFridgeItemDocument(id: 'doc-a', data: itemJson),
+        ],
+      },
+    );
+    final repository = FirestoreFridgeItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      store: store,
+    );
+
     final items = await repository.readAll();
 
-    expect(results.every((saved) => saved), isTrue);
+    expect(items, hasLength(1));
+    expect(items.single.id, 'doc-a');
+  });
+
+  test('firestore repo appendAll merges by id and appends new item', () async {
+    final store = _FakeInventoryFridgeItemStore(
+      initialDocumentsByUser: <String, List<InventoryFridgeItemDocument>>{
+        'user-1': <InventoryFridgeItemDocument>[
+          InventoryFridgeItemDocument(id: 'a', data: _item('a').toJson()),
+        ],
+      },
+    );
+    final repository = FirestoreFridgeItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      store: store,
+    );
+
+    final appended = await repository.appendAll(<FridgeItem>[
+      _item('a').copyWith(quantity: 4),
+      _item('b'),
+    ]);
+    final items = await repository.readAll();
+    final itemA = items.firstWhere((item) => item.id == 'a');
+    final itemB = items.firstWhere((item) => item.id == 'b');
+
+    expect(appended, isTrue);
     expect(items, hasLength(2));
-    expect(items[0].id, 'a');
-    expect(items[1].id, 'b');
+    expect(itemA.quantity, 4);
+    expect(itemB.id, 'b');
+  });
+
+  test('firestore repo saveAll returns false when replace fails', () async {
+    final store = _FakeInventoryFridgeItemStore();
+    store.replaceAllShouldFail = true;
+    final repository = FirestoreFridgeItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      store: store,
+    );
+
+    final saved = await repository.saveAll(<FridgeItem>[_item('a')]);
+
+    expect(saved, isFalse);
   });
 }
