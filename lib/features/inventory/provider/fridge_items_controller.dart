@@ -12,43 +12,47 @@ class FridgeItemsController extends _$FridgeItemsController {
 
   @override
   FutureOr<List<FridgeItem>> build() {
-    _subscribeToRealtimeUpdates();
-    return _loadItems();
+    ref.onDispose(_disposeRealtimeSubscription);
+    return _restartRealtimeSubscription();
   }
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    final nextState = await AsyncValue.guard(_loadItems);
+    final nextState = await AsyncValue.guard(_restartRealtimeSubscription);
     if (!ref.mounted) {
       return;
     }
     state = nextState;
   }
 
-  Future<List<FridgeItem>> _loadItems() {
+  Future<List<FridgeItem>> _restartRealtimeSubscription() {
+    final initialItems = Completer<List<FridgeItem>>();
     final repository = ref.read(fridgeItemRepositoryProvider);
-    return repository.readAll();
-  }
-
-  void _subscribeToRealtimeUpdates() {
-    final repository = ref.read(fridgeItemRepositoryProvider);
-    final existingSubscription = _itemsSubscription;
-    if (existingSubscription != null) {
-      unawaited(existingSubscription.cancel());
-    }
+    _disposeRealtimeSubscription();
 
     _itemsSubscription = repository.watchAll().listen(
-      _onRealtimeItems,
-      onError: _onRealtimeError,
+      (items) {
+        if (!initialItems.isCompleted) {
+          initialItems.complete(items);
+        }
+        _onRealtimeItems(items);
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        if (!initialItems.isCompleted) {
+          initialItems.completeError(error, stackTrace);
+        }
+        _onRealtimeError(error, stackTrace);
+      },
     );
+    return initialItems.future;
+  }
 
-    ref.onDispose(() {
-      final currentSubscription = _itemsSubscription;
-      _itemsSubscription = null;
-      if (currentSubscription != null) {
-        unawaited(currentSubscription.cancel());
-      }
-    });
+  void _disposeRealtimeSubscription() {
+    final currentSubscription = _itemsSubscription;
+    _itemsSubscription = null;
+    if (currentSubscription != null) {
+      unawaited(currentSubscription.cancel());
+    }
   }
 
   void _onRealtimeItems(List<FridgeItem> items) {
@@ -89,7 +93,7 @@ class FridgeItemsController extends _$FridgeItemsController {
     if (currentData != null) {
       return currentData;
     }
-    return _loadItems();
+    return future;
   }
 
   Future<bool> _reduceItem({

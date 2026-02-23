@@ -4,7 +4,7 @@ import google.generativeai as genai
 from github import Github
 
 # --- CONFIG ---
-MODEL_NAME = 'gemini-3-pro-preview'
+MODEL_NAME = 'gemini-3.1-pro-preview'
 REVIEW_HEADER = f'## 🤖 Gemini Review ({MODEL_NAME})\n'
 REVIEW_MARKER = '## 🤖 Gemini Review ('
 MAX_GITHUB_COMMENT_CHARS = 60000
