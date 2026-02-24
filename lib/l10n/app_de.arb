@@ -93,6 +93,19 @@
   "shoppingListQuantityLabel": "Menge",
   "shoppingListIncreaseQuantityAction": "Menge erhöhen",
   "shoppingListDecreaseQuantityAction": "Menge verringern",
+  "shoppingListClearCrossedOffAction": "Durchgestrichene löschen ({count})",
+  "@shoppingListClearCrossedOffAction": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingListClearCrossedOffDialogTitle":
+      "Durchgestrichene Artikel löschen?",
+  "shoppingListClearCrossedOffDialogMessage":
+      "Alle durchgestrichenen Artikel werden von der Einkaufsliste entfernt.",
+  "shoppingListClearCrossedOffConfirmAction": "Löschen",
   "homeCaloriesActionContextPlaceholder": "Kalorienaktion folgt bald.",
   "homeSettingsActionContextPlaceholder": "Einstellungsaktion folgt bald.",
   "settingsLanguageTitle": "Sprache",

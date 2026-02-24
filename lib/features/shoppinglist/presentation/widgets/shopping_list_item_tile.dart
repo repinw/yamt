@@ -24,6 +24,10 @@ class ShoppingListItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isCrossedOff = item.quantity == 0;
+    final titleStyle = Theme.of(context).textTheme.titleMedium;
+    final subtitleStyle = Theme.of(context).textTheme.bodySmall;
+
     return Dismissible(
       key: ValueKey<String>(item.id),
       direction: DismissDirection.endToStart,
@@ -47,12 +51,19 @@ class ShoppingListItemTile extends StatelessWidget {
       child: Card(
         margin: EdgeInsets.zero,
         child: ListTile(
-          title: Text(item.name),
-          subtitle: Text(_subtitle()),
+          title: Text(
+            item.name,
+            style: _crossedOffStyle(titleStyle, isCrossedOff),
+          ),
+          subtitle: Text(
+            _subtitle(),
+            style: _crossedOffStyle(subtitleStyle, isCrossedOff),
+          ),
           trailing: _ShoppingListQuantityStepper(
             quantity: item.quantity,
+            isCrossedOff: isCrossedOff,
             onIncrement: () => onIncrement(item.id),
-            onDecrement: () => onDecrement(item.id),
+            onDecrement: isCrossedOff ? null : () => onDecrement(item.id),
             increaseTooltip: l10n.shoppingListIncreaseQuantityAction,
             decreaseTooltip: l10n.shoppingListDecreaseQuantityAction,
           ),
@@ -78,6 +89,7 @@ class ShoppingListItemTile extends StatelessWidget {
 class _ShoppingListQuantityStepper extends StatelessWidget {
   const _ShoppingListQuantityStepper({
     required this.quantity,
+    required this.isCrossedOff,
     required this.onIncrement,
     required this.onDecrement,
     required this.increaseTooltip,
@@ -85,8 +97,9 @@ class _ShoppingListQuantityStepper extends StatelessWidget {
   });
 
   final int quantity;
+  final bool isCrossedOff;
   final VoidCallback onIncrement;
-  final VoidCallback onDecrement;
+  final VoidCallback? onDecrement;
   final String increaseTooltip;
   final String decreaseTooltip;
 
@@ -100,12 +113,7 @@ class _ShoppingListQuantityStepper extends StatelessWidget {
           icon: const Icon(Icons.remove_circle_outline),
           tooltip: decreaseTooltip,
         ),
-        Text(
-          quantity.toString(),
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
-        ),
+        Text(quantity.toString(), style: _quantityStyle(context, isCrossedOff)),
         IconButton(
           onPressed: onIncrement,
           icon: const Icon(Icons.add_circle_outline),
@@ -114,4 +122,21 @@ class _ShoppingListQuantityStepper extends StatelessWidget {
       ],
     );
   }
+}
+
+TextStyle? _crossedOffStyle(TextStyle? base, bool isCrossedOff) {
+  if (!isCrossedOff) {
+    return base;
+  }
+  return (base ?? const TextStyle()).copyWith(
+    decoration: TextDecoration.lineThrough,
+  );
+}
+
+TextStyle? _quantityStyle(BuildContext context, bool isCrossedOff) {
+  final base = Theme.of(context).textTheme.bodyMedium;
+  final withWeight = (base ?? const TextStyle()).copyWith(
+    fontWeight: FontWeight.w700,
+  );
+  return _crossedOffStyle(withWeight, isCrossedOff);
 }

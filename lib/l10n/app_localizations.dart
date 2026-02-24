@@ -647,6 +647,30 @@ abstract class AppLocalizations {
   /// **'Decrease quantity'**
   String get shoppingListDecreaseQuantityAction;
 
+  /// No description provided for @shoppingListClearCrossedOffAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear crossed-off ({count})'**
+  String shoppingListClearCrossedOffAction(int count);
+
+  /// No description provided for @shoppingListClearCrossedOffDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear crossed-off items?'**
+  String get shoppingListClearCrossedOffDialogTitle;
+
+  /// No description provided for @shoppingListClearCrossedOffDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'All crossed-off items will be removed from the shopping list.'**
+  String get shoppingListClearCrossedOffDialogMessage;
+
+  /// No description provided for @shoppingListClearCrossedOffConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get shoppingListClearCrossedOffConfirmAction;
+
   /// No description provided for @homeCaloriesActionContextPlaceholder.
   ///
   /// In en, this message translates to:
