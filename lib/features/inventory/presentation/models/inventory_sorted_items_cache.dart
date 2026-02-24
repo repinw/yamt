@@ -26,19 +26,16 @@ class InventorySortedItemsCache {
 
   List<FridgeItem> materialize(List<FridgeItem> items) {
     final byId = <String, FridgeItem>{for (final item in items) item.id: item};
-    final sorted = <FridgeItem>[];
-
-    for (final itemId in sortedItemIds) {
-      final item = byId.remove(itemId);
-      if (item != null) {
-        sorted.add(item);
-      }
+    final hasConsistentIds = byId.length == sortedItemIds.length;
+    assert(
+      hasConsistentIds,
+      'InventorySortedItemsCache received inconsistent item ids.',
+    );
+    if (!hasConsistentIds) {
+      return sortInventoryItems(items);
     }
 
-    if (sorted.length == items.length) {
-      return sorted;
-    }
-    return sortInventoryItems(items);
+    return sortedItemIds.map((itemId) => byId[itemId]!).toList(growable: false);
   }
 }
 
