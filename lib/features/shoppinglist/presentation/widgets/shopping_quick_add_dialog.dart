@@ -9,10 +9,11 @@ class ShoppingQuickAddDialogKeys {
   static const brandField = Key('shopping_quick_add_brand_field');
   static const confirmButton = Key('shopping_quick_add_confirm_button');
   static const cancelButton = Key('shopping_quick_add_cancel_button');
+  static const submitErrorText = Key('shopping_quick_add_submit_error_text');
 }
 
 typedef ShoppingQuickAddSubmit =
-    bool Function({required String name, required String brand});
+    Future<bool> Function({required String name, required String brand});
 
 Future<void> showShoppingQuickAddDialog({
   required BuildContext context,
@@ -39,9 +40,11 @@ class _ShoppingQuickAddDialog extends StatefulWidget {
 }
 
 class _ShoppingQuickAddDialogState extends State<_ShoppingQuickAddDialog> {
+  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _brandController = TextEditingController();
-  var _showNameError = false;
+  var _isSubmitting = false;
+  String? _submitErrorText;
 
   @override
   void dispose() {
@@ -50,20 +53,31 @@ class _ShoppingQuickAddDialogState extends State<_ShoppingQuickAddDialog> {
     super.dispose();
   }
 
-  void _submit() {
-    final added = widget.onSubmit(
+  Future<void> _submit() async {
+    if (_isSubmitting) {
+      return;
+    }
+    final form = _formKey.currentState;
+    if (form == null || !form.validate()) {
+      return;
+    }
+    setState(() {
+      _isSubmitting = true;
+      _submitErrorText = null;
+    });
+
+    final added = await widget.onSubmit(
       name: _nameController.text,
       brand: _brandController.text,
     );
-    if (!added) {
-      if (!_showNameError) {
-        setState(() {
-          _showNameError = true;
-        });
-      }
+    if (!mounted) {
       return;
     }
-    if (!mounted) {
+    if (!added) {
+      setState(() {
+        _isSubmitting = false;
+        _submitErrorText = widget.l10n.shoppingListAddFailedError;
+      });
       return;
     }
     Navigator.of(context).pop();
@@ -71,53 +85,75 @@ class _ShoppingQuickAddDialogState extends State<_ShoppingQuickAddDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return AlertDialog(
       title: Text(widget.l10n.shoppingListAddAction),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            key: ShoppingQuickAddDialogKeys.nameField,
-            controller: _nameController,
-            autofocus: true,
-            textInputAction: TextInputAction.next,
-            onChanged: (_) {
-              if (!_showNameError) {
-                return;
-              }
-              setState(() {
-                _showNameError = false;
-              });
-            },
-            decoration: InputDecoration(
-              labelText: widget.l10n.shoppingListNameFieldLabel,
-              errorText: _showNameError
-                  ? widget.l10n.shoppingListInvalidNameError
-                  : null,
+      content: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              key: ShoppingQuickAddDialogKeys.nameField,
+              controller: _nameController,
+              autofocus: true,
+              enabled: !_isSubmitting,
+              textInputAction: TextInputAction.next,
+              validator: (value) {
+                final name = value?.trim() ?? '';
+                if (name.isEmpty) {
+                  return widget.l10n.shoppingListInvalidNameError;
+                }
+                return null;
+              },
+              decoration: InputDecoration(
+                labelText: widget.l10n.shoppingListNameFieldLabel,
+              ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          TextField(
-            key: ShoppingQuickAddDialogKeys.brandField,
-            controller: _brandController,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => _submit(),
-            decoration: InputDecoration(
-              labelText: widget.l10n.shoppingListBrandFieldLabel,
+            const SizedBox(height: AppSpacing.sm),
+            TextFormField(
+              key: ShoppingQuickAddDialogKeys.brandField,
+              controller: _brandController,
+              enabled: !_isSubmitting,
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => _submit(),
+              decoration: InputDecoration(
+                labelText: widget.l10n.shoppingListBrandFieldLabel,
+              ),
             ),
-          ),
-        ],
+            if (_submitErrorText != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _submitErrorText!,
+                  key: ShoppingQuickAddDialogKeys.submitErrorText,
+                  style: TextStyle(color: colors.error),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
       actions: [
         TextButton(
           key: ShoppingQuickAddDialogKeys.cancelButton,
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
           child: Text(widget.l10n.inventoryReceiptReviewCancelAction),
         ),
         FilledButton(
           key: ShoppingQuickAddDialogKeys.confirmButton,
-          onPressed: _submit,
-          child: Text(widget.l10n.shoppingListAddAction),
+          onPressed: _isSubmitting ? null : _submit,
+          child: _isSubmitting
+              ? const SizedBox.square(
+                  dimension: AppSizes.inlineProgressIndicator,
+                  child: CircularProgressIndicator(
+                    strokeWidth: AppSizes.progressStrokeWidth,
+                  ),
+                )
+              : Text(widget.l10n.shoppingListAddAction),
         ),
       ],
     );

@@ -81,7 +81,7 @@ class HomeContextFab extends ConsumerWidget {
     return showShoppingQuickAddDialog(
       context: context,
       l10n: l10n,
-      onSubmit: ({required name, required brand}) {
+      onSubmit: ({required name, required brand}) async {
         final controller = ref.read(shoppingListControllerProvider.notifier);
         return controller.addItem(name: name, brand: brand);
       },

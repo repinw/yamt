@@ -6,8 +6,10 @@ import 'package:mocktail/mocktail.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_quick_add_dialog.dart';
+import '../shoppinglist/support/fake_shopping_list_repository.dart';
 
 class _MockUser extends Mock implements User {}
 
@@ -50,19 +52,27 @@ class _FakeAppPreferences implements AppPreferences {
   }
 }
 
+ProviderContainer _createContainer() {
+  final shoppingRepository = FakeShoppingListRepository();
+  final container = ProviderContainer(
+    overrides: [
+      authStateChangesProvider.overrideWith(
+        (ref) => Stream<User?>.value(_MockUser()),
+      ),
+      appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+      shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
+    ],
+  );
+  addTearDown(container.dispose);
+  addTearDown(shoppingRepository.dispose);
+  return container;
+}
+
 void main() {
   testWidgets('home shell shows app bar and tabs for authenticated user', (
     tester,
   ) async {
-    final container = ProviderContainer(
-      overrides: [
-        authStateChangesProvider.overrideWith(
-          (ref) => Stream<User?>.value(_MockUser()),
-        ),
-        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
-      ],
-    );
-    addTearDown(container.dispose);
+    final container = _createContainer();
 
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
@@ -77,15 +87,7 @@ void main() {
   });
 
   testWidgets('inventory FAB opens receipt action sheet', (tester) async {
-    final container = ProviderContainer(
-      overrides: [
-        authStateChangesProvider.overrideWith(
-          (ref) => Stream<User?>.value(_MockUser()),
-        ),
-        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
-      ],
-    );
-    addTearDown(container.dispose);
+    final container = _createContainer();
 
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
@@ -100,15 +102,7 @@ void main() {
   });
 
   testWidgets('shopping FAB opens add dialog and adds item', (tester) async {
-    final container = ProviderContainer(
-      overrides: [
-        authStateChangesProvider.overrideWith(
-          (ref) => Stream<User?>.value(_MockUser()),
-        ),
-        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
-      ],
-    );
-    addTearDown(container.dispose);
+    final container = _createContainer();
 
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
@@ -142,15 +136,7 @@ void main() {
   testWidgets('shopping FAB shows validation error on empty name', (
     tester,
   ) async {
-    final container = ProviderContainer(
-      overrides: [
-        authStateChangesProvider.overrideWith(
-          (ref) => Stream<User?>.value(_MockUser()),
-        ),
-        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
-      ],
-    );
-    addTearDown(container.dispose);
+    final container = _createContainer();
 
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
@@ -176,15 +162,7 @@ void main() {
   testWidgets('shopping quick-add cancel closes dialog and keeps list', (
     tester,
   ) async {
-    final container = ProviderContainer(
-      overrides: [
-        authStateChangesProvider.overrideWith(
-          (ref) => Stream<User?>.value(_MockUser()),
-        ),
-        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
-      ],
-    );
-    addTearDown(container.dispose);
+    final container = _createContainer();
 
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
@@ -210,15 +188,7 @@ void main() {
   testWidgets('calories and settings tabs show contextual snackbar', (
     tester,
   ) async {
-    final container = ProviderContainer(
-      overrides: [
-        authStateChangesProvider.overrideWith(
-          (ref) => Stream<User?>.value(_MockUser()),
-        ),
-        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
-      ],
-    );
-    addTearDown(container.dispose);
+    final container = _createContainer();
 
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
