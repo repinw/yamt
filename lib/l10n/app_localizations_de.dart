@@ -252,6 +252,39 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeShoppingActionContextPlaceholder => 'Einkaufsaktion folgt bald.';
 
   @override
+  String get shoppingListStatsEntries => 'Positionen';
+
+  @override
+  String get shoppingListStatsQuantity => 'Gesamtmenge';
+
+  @override
+  String get shoppingListStatsEstimatedTotal => 'Geschätzte Summe';
+
+  @override
+  String get shoppingListNameFieldLabel => 'Name';
+
+  @override
+  String get shoppingListBrandFieldLabel => 'Marke (optional)';
+
+  @override
+  String get shoppingListAddAction => 'Artikel hinzufügen';
+
+  @override
+  String get shoppingListEmptyState => 'Deine Einkaufsliste ist leer.';
+
+  @override
+  String get shoppingListInvalidNameError => 'Bitte einen Artikelnamen eingeben.';
+
+  @override
+  String get shoppingListQuantityLabel => 'Menge';
+
+  @override
+  String get shoppingListIncreaseQuantityAction => 'Menge erhöhen';
+
+  @override
+  String get shoppingListDecreaseQuantityAction => 'Menge verringern';
+
+  @override
   String get homeCaloriesActionContextPlaceholder => 'Kalorienaktion folgt bald.';
 
   @override

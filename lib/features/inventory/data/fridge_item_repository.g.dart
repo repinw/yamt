@@ -55,4 +55,4 @@ final class FridgeItemRepositoryProvider
 }
 
 String _$fridgeItemRepositoryHash() =>
-    r'a06fba7c3e0207abe76ac85cce97c2834b73943c';
+    r'ffc9afd4ddcbc3300c68d58356e630a7aee00cc5';

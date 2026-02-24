@@ -1,0 +1,94 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+class ShoppingListStatsCardKeys {
+  const ShoppingListStatsCardKeys._();
+
+  static const entriesValue = Key('shopping_list_stats_entries_value');
+  static const quantityValue = Key('shopping_list_stats_quantity_value');
+  static const estimatedValue = Key('shopping_list_stats_estimated_value');
+}
+
+class ShoppingListStatsCard extends StatelessWidget {
+  const ShoppingListStatsCard({
+    super.key,
+    required this.entryCount,
+    required this.totalQuantity,
+    required this.estimatedTotal,
+    required this.currency,
+    required this.l10n,
+  });
+
+  final int entryCount;
+  final int totalQuantity;
+  final double estimatedTotal;
+  final NumberFormat currency;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: AppInsets.card,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.homeShopping,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            _ShoppingStatRow(
+              label: l10n.shoppingListStatsEntries,
+              value: entryCount.toString(),
+              valueKey: ShoppingListStatsCardKeys.entriesValue,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            _ShoppingStatRow(
+              label: l10n.shoppingListStatsQuantity,
+              value: totalQuantity.toString(),
+              valueKey: ShoppingListStatsCardKeys.quantityValue,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            _ShoppingStatRow(
+              label: l10n.shoppingListStatsEstimatedTotal,
+              value: currency.format(estimatedTotal),
+              valueKey: ShoppingListStatsCardKeys.estimatedValue,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ShoppingStatRow extends StatelessWidget {
+  const _ShoppingStatRow({
+    required this.label,
+    required this.value,
+    this.valueKey,
+  });
+
+  final String label;
+  final String value;
+  final Key? valueKey;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: Text(label)),
+        Text(
+          key: valueKey,
+          value,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+      ],
+    );
+  }
+}
