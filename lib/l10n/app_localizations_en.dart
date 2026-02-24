@@ -276,6 +276,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingListInvalidNameError => 'Please enter an item name.';
 
   @override
+  String get shoppingListAddFailedError => 'Could not add item. Please try again.';
+
+  @override
+  String get shoppingListLoadFailed => 'Could not load shopping list items.';
+
+  @override
+  String get shoppingListRetryAction => 'Retry';
+
+  @override
   String get shoppingListQuantityLabel => 'Qty';
 
   @override

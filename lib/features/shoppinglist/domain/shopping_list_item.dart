@@ -19,6 +19,30 @@ class ShoppingListItem {
 
   double get estimatedTotal => estimatedUnitPrice * quantity;
 
+  factory ShoppingListItem.fromJson(Map<String, dynamic> json) {
+    return ShoppingListItem(
+      id: _stringValue(json['id']),
+      name: _stringValue(json['name']),
+      brand: _nullableStringValue(json['brand']),
+      normalizedName: _stringValue(json['normalized_name']),
+      normalizedBrand: _stringValue(json['normalized_brand']),
+      quantity: _intValue(json['quantity']),
+      estimatedUnitPrice: _doubleValue(json['estimated_unit_price']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'id': id,
+      'name': name,
+      'brand': brand,
+      'normalized_name': normalizedName,
+      'normalized_brand': normalizedBrand,
+      'quantity': quantity,
+      'estimated_unit_price': estimatedUnitPrice,
+    };
+  }
+
   ShoppingListItem copyWith({
     String? id,
     String? name,
@@ -37,5 +61,42 @@ class ShoppingListItem {
       quantity: quantity ?? this.quantity,
       estimatedUnitPrice: estimatedUnitPrice ?? this.estimatedUnitPrice,
     );
+  }
+
+  static String _stringValue(Object? value) {
+    if (value is String) {
+      return value;
+    }
+    throw FormatException('Expected a string but got: $value');
+  }
+
+  static String? _nullableStringValue(Object? value) {
+    if (value == null) {
+      return null;
+    }
+    if (value is String) {
+      return value;
+    }
+    throw FormatException('Expected a nullable string but got: $value');
+  }
+
+  static int _intValue(Object? value) {
+    if (value is int) {
+      return value;
+    }
+    if (value is num) {
+      return value.toInt();
+    }
+    throw FormatException('Expected an int but got: $value');
+  }
+
+  static double _doubleValue(Object? value) {
+    if (value is double) {
+      return value;
+    }
+    if (value is num) {
+      return value.toDouble();
+    }
+    throw FormatException('Expected a double but got: $value');
   }
 }

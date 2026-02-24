@@ -90,6 +90,10 @@
   "shoppingListAddAction": "Artikel hinzufügen",
   "shoppingListEmptyState": "Deine Einkaufsliste ist leer.",
   "shoppingListInvalidNameError": "Bitte einen Artikelnamen eingeben.",
+  "shoppingListAddFailedError":
+      "Artikel konnte nicht hinzugefügt werden. Bitte erneut versuchen.",
+  "shoppingListLoadFailed": "Einkaufsartikel konnten nicht geladen werden.",
+  "shoppingListRetryAction": "Erneut versuchen",
   "shoppingListQuantityLabel": "Menge",
   "shoppingListIncreaseQuantityAction": "Menge erhöhen",
   "shoppingListDecreaseQuantityAction": "Menge verringern",

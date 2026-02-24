@@ -13,7 +13,8 @@ part of 'shopping_list_controller.dart';
 final shoppingListControllerProvider = ShoppingListControllerProvider._();
 
 final class ShoppingListControllerProvider
-    extends $NotifierProvider<ShoppingListController, List<ShoppingListItem>> {
+    extends
+        $AsyncNotifierProvider<ShoppingListController, List<ShoppingListItem>> {
   ShoppingListControllerProvider._()
     : super(
         from: null,
@@ -31,32 +32,28 @@ final class ShoppingListControllerProvider
   @$internal
   @override
   ShoppingListController create() => ShoppingListController();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(List<ShoppingListItem> value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<List<ShoppingListItem>>(value),
-    );
-  }
 }
 
 String _$shoppingListControllerHash() =>
-    r'067197d91afbf41d9fb3a7495d47e4f2eedbb2d0';
+    r'67cbd920ab33ea8756add7fb4774c50235617172';
 
 abstract class _$ShoppingListController
-    extends $Notifier<List<ShoppingListItem>> {
-  List<ShoppingListItem> build();
+    extends $AsyncNotifier<List<ShoppingListItem>> {
+  FutureOr<List<ShoppingListItem>> build();
   @$mustCallSuper
   @override
   void runBuild() {
     final ref =
-        this.ref as $Ref<List<ShoppingListItem>, List<ShoppingListItem>>;
+        this.ref
+            as $Ref<AsyncValue<List<ShoppingListItem>>, List<ShoppingListItem>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<List<ShoppingListItem>, List<ShoppingListItem>>,
-              List<ShoppingListItem>,
+              AnyNotifier<
+                AsyncValue<List<ShoppingListItem>>,
+                List<ShoppingListItem>
+              >,
+              AsyncValue<List<ShoppingListItem>>,
               Object?,
               Object?
             >;

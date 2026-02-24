@@ -629,6 +629,24 @@ abstract class AppLocalizations {
   /// **'Please enter an item name.'**
   String get shoppingListInvalidNameError;
 
+  /// No description provided for @shoppingListAddFailedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add item. Please try again.'**
+  String get shoppingListAddFailedError;
+
+  /// No description provided for @shoppingListLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load shopping list items.'**
+  String get shoppingListLoadFailed;
+
+  /// No description provided for @shoppingListRetryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get shoppingListRetryAction;
+
   /// No description provided for @shoppingListQuantityLabel.
   ///
   /// In en, this message translates to:
