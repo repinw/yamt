@@ -7,6 +7,7 @@ import 'package:yamt/features/auth/welcome_page.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/home_tab_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:yamt/features/settings/account_page.dart';
 import 'package:yamt/features/settings/settings_page.dart';
 
@@ -77,8 +78,7 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.homeShopping,
-                builder: (context, state) =>
-                    const HomeTabPage(tab: HomeTabType.shopping),
+                builder: (context, state) => const ShoppingListPage(),
               ),
             ],
           ),

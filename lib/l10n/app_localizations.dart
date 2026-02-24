@@ -581,6 +581,72 @@ abstract class AppLocalizations {
   /// **'Shopping action coming soon.'**
   String get homeShoppingActionContextPlaceholder;
 
+  /// No description provided for @shoppingListStatsEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries'**
+  String get shoppingListStatsEntries;
+
+  /// No description provided for @shoppingListStatsQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Total quantity'**
+  String get shoppingListStatsQuantity;
+
+  /// No description provided for @shoppingListStatsEstimatedTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated total'**
+  String get shoppingListStatsEstimatedTotal;
+
+  /// No description provided for @shoppingListNameFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get shoppingListNameFieldLabel;
+
+  /// No description provided for @shoppingListBrandFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand (optional)'**
+  String get shoppingListBrandFieldLabel;
+
+  /// No description provided for @shoppingListAddAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add item'**
+  String get shoppingListAddAction;
+
+  /// No description provided for @shoppingListEmptyState.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shopping list is empty.'**
+  String get shoppingListEmptyState;
+
+  /// No description provided for @shoppingListInvalidNameError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an item name.'**
+  String get shoppingListInvalidNameError;
+
+  /// No description provided for @shoppingListQuantityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Qty'**
+  String get shoppingListQuantityLabel;
+
+  /// No description provided for @shoppingListIncreaseQuantityAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase quantity'**
+  String get shoppingListIncreaseQuantityAction;
+
+  /// No description provided for @shoppingListDecreaseQuantityAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease quantity'**
+  String get shoppingListDecreaseQuantityAction;
+
   /// No description provided for @homeCaloriesActionContextPlaceholder.
   ///
   /// In en, this message translates to:
