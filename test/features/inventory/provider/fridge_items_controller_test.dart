@@ -574,7 +574,7 @@ void main() {
     expect(rolledBackItems?.single.quantity, 3);
   });
 
-  test('eatItem rolls back optimistic removal when save throws', () async {
+  test('eatItem rolls back optimistic depletion when save throws', () async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <FridgeItem>[_item('a').copyWith(quantity: 1)],
     );
@@ -594,11 +594,15 @@ void main() {
     final eatFuture = container
         .read(fridgeItemsControllerProvider.notifier)
         .eatItem('a', 1);
-    await _waitForItems(container, (items) => items.isEmpty);
+    await _waitForItems(
+      container,
+      (items) => items.length == 1 && items.single.quantity == 0,
+    );
 
     final optimisticItems = container.read(fridgeItemsControllerProvider).value;
     expect(optimisticItems, isNotNull);
-    expect(optimisticItems, isEmpty);
+    expect(optimisticItems, hasLength(1));
+    expect(optimisticItems?.single.quantity, 0);
 
     final updated = await eatFuture;
     expect(updated, isFalse);
@@ -611,7 +615,7 @@ void main() {
   });
 
   test(
-    'eatItem clips amount and removes quantity-based item when over-limit',
+    'eatItem clips amount and keeps quantity-based item at zero stock',
     () async {
       final repository = _FakeFridgeItemRepository(
         onReadAll: () async => <FridgeItem>[_item('a').copyWith(quantity: 3)],
@@ -625,18 +629,26 @@ void main() {
       addTearDown(controllerSubscription.close);
 
       await container.read(fridgeItemsControllerProvider.future);
-      final removed = await container
+      final updated = await container
           .read(fridgeItemsControllerProvider.notifier)
           .eatItem('a', 99);
-      await _waitForItems(container, (items) => items.isEmpty);
+      await _waitForItems(
+        container,
+        (items) => items.length == 1 && items.single.quantity == 0,
+      );
 
-      expect(removed, isTrue);
-      expect(repository.savedItems, isEmpty);
-      expect(container.read(fridgeItemsControllerProvider).value, isEmpty);
+      expect(updated, isTrue);
+      expect(repository.savedItems, hasLength(1));
+      expect(repository.savedItems.single.quantity, 0);
+      expect(container.read(fridgeItemsControllerProvider).value, hasLength(1));
+      expect(
+        container.read(fridgeItemsControllerProvider).value?.single.quantity,
+        0,
+      );
     },
   );
 
-  test('throwAwayItem removes quantity-based item when depleted', () async {
+  test('throwAwayItem keeps quantity-based item when depleted', () async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <FridgeItem>[_item('a')],
     );
@@ -649,14 +661,22 @@ void main() {
     addTearDown(controllerSubscription.close);
 
     await container.read(fridgeItemsControllerProvider.future);
-    final removed = await container
+    final updated = await container
         .read(fridgeItemsControllerProvider.notifier)
         .throwAwayItem('a', 1);
-    await _waitForItems(container, (items) => items.isEmpty);
+    await _waitForItems(
+      container,
+      (items) => items.length == 1 && items.single.quantity == 0,
+    );
 
-    expect(removed, isTrue);
-    expect(repository.savedItems, isEmpty);
-    expect(container.read(fridgeItemsControllerProvider).value, isEmpty);
+    expect(updated, isTrue);
+    expect(repository.savedItems, hasLength(1));
+    expect(repository.savedItems.single.quantity, 0);
+    expect(container.read(fridgeItemsControllerProvider).value, hasLength(1));
+    expect(
+      container.read(fridgeItemsControllerProvider).value?.single.quantity,
+      0,
+    );
   });
 
   test('throwAwayItem reduces amount-based stock and keeps item', () async {
@@ -690,7 +710,7 @@ void main() {
   });
 
   test(
-    'throwAwayItem clips amount and removes amount-based item when over-limit',
+    'throwAwayItem clips amount and keeps amount-based item at zero stock',
     () async {
       final repository = _FakeFridgeItemRepository(
         onReadAll: () async => <FridgeItem>[_amountItem('a')],
@@ -704,14 +724,30 @@ void main() {
       addTearDown(controllerSubscription.close);
 
       await container.read(fridgeItemsControllerProvider.future);
-      final removed = await container
+      final updated = await container
           .read(fridgeItemsControllerProvider.notifier)
           .throwAwayItem('a', 9999);
-      await _waitForItems(container, (items) => items.isEmpty);
+      await _waitForItems(
+        container,
+        (items) =>
+            items.length == 1 &&
+            items.single.currentAmount == 0 &&
+            items.single.quantity == 0,
+      );
 
-      expect(removed, isTrue);
-      expect(repository.savedItems, isEmpty);
-      expect(container.read(fridgeItemsControllerProvider).value, isEmpty);
+      expect(updated, isTrue);
+      expect(repository.savedItems, hasLength(1));
+      expect(repository.savedItems.single.currentAmount, 0);
+      expect(repository.savedItems.single.quantity, 0);
+      expect(container.read(fridgeItemsControllerProvider).value, hasLength(1));
+      expect(
+        container
+            .read(fridgeItemsControllerProvider)
+            .value
+            ?.single
+            .currentAmount,
+        0,
+      );
     },
   );
 }

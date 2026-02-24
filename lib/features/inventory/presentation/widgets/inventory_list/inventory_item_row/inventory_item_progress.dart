@@ -20,14 +20,10 @@ class InventoryItemProgressCalculator {
   const InventoryItemProgressCalculator();
 
   InventoryItemProgress fromItem(FridgeItem item) {
-    if (_hasAmountProgress(item)) {
+    if (item.usesAmountProgress) {
       return _fromAmount(item);
     }
     return _fromQuantity(item);
-  }
-
-  bool _hasAmountProgress(FridgeItem item) {
-    return item.amountUnit != null && item.initialAmount > 0;
   }
 
   InventoryItemProgress _fromAmount(FridgeItem item) {

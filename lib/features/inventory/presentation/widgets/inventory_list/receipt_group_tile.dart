@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/inventory_item_row.dart';
+    'inventory_item_row_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -50,18 +50,15 @@ class ReceiptGroupTile extends StatelessWidget {
         subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
         children: group.items
             .map((item) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: RepaintBoundary(
-                  child: InventoryItemRow(
-                    item: item,
-                    l10n: l10n,
-                    currency: currency,
-                    onDeletePressed: onDeleteItem,
-                    onEatPressed: onEatItem,
-                    onThrowAwayPressed: onThrowAwayItem,
-                  ),
-                ),
+              return InventoryItemRowListEntry(
+                item: item,
+                keyPrefix: 'receipt_item_row',
+                bottomSpacing: AppSpacing.sm,
+                l10n: l10n,
+                currency: currency,
+                onDeleteItem: onDeleteItem,
+                onEatItem: onEatItem,
+                onThrowAwayItem: onThrowAwayItem,
               );
             })
             .toList(growable: false),

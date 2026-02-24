@@ -132,37 +132,27 @@ class FridgeItemsController extends _$FridgeItemsController {
     final reducedAmount = amount > maxReducible ? maxReducible : amount;
 
     final nextItems = List<FridgeItem>.from(currentItems);
-    if (_usesAmountProgress(item)) {
+    if (item.usesAmountProgress) {
       final nextCurrentAmount = item.currentAmount - reducedAmount;
-      if (nextCurrentAmount <= 0) {
-        nextItems.removeAt(itemIndex);
-      } else {
-        nextItems[itemIndex] = item.copyWith(
-          currentAmount: nextCurrentAmount,
-          quantity: _quantityForCurrentAmount(
-            item: item,
-            currentAmount: nextCurrentAmount,
-          ),
-        );
-      }
+      final safeCurrentAmount = nextCurrentAmount < 0 ? 0 : nextCurrentAmount;
+      nextItems[itemIndex] = item.copyWith(
+        currentAmount: safeCurrentAmount,
+        quantity: _quantityForCurrentAmount(
+          item: item,
+          currentAmount: safeCurrentAmount,
+        ),
+      );
       return _saveItems(previousItems: currentItems, nextItems: nextItems);
     }
 
     final nextQuantity = item.quantity - reducedAmount;
-    if (nextQuantity <= 0) {
-      nextItems.removeAt(itemIndex);
-    } else {
-      nextItems[itemIndex] = item.copyWith(quantity: nextQuantity);
-    }
+    final safeQuantity = nextQuantity < 0 ? 0 : nextQuantity;
+    nextItems[itemIndex] = item.copyWith(quantity: safeQuantity);
     return _saveItems(previousItems: currentItems, nextItems: nextItems);
   }
 
-  bool _usesAmountProgress(FridgeItem item) {
-    return item.amountUnit != null && item.initialAmount > 0;
-  }
-
   int _maxReducibleAmount(FridgeItem item) {
-    if (_usesAmountProgress(item)) {
+    if (item.usesAmountProgress) {
       final currentAmount = item.currentAmount;
       return currentAmount > 0 ? currentAmount : 0;
     }

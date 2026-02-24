@@ -51,7 +51,9 @@ class InventoryItemRowExpandSection extends StatelessWidget {
               alignment: Alignment.topCenter,
               child: InkWell(
                 onTap: onToggleExpanded,
-                borderRadius: BorderRadius.circular(999),
+                borderRadius: BorderRadius.circular(
+                  InventoryItemRowConstants.expandToggleRadius,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.only(
                     top: InventoryItemRowConstants.expandIndicatorTopPadding,
@@ -61,10 +63,10 @@ class InventoryItemRowExpandSection extends StatelessWidget {
                     duration: InventoryItemRowConstants.expandArrowDuration,
                     curve: Curves.easeOutCubic,
                     child: Transform.scale(
-                      scaleX: 1.4,
+                      scaleX: InventoryItemRowConstants.expandArrowScaleX,
                       child: Icon(
                         Icons.keyboard_arrow_down_rounded,
-                        size: 14,
+                        size: InventoryItemRowConstants.expandArrowSize,
                         color: viewData.expandHintColor,
                       ),
                     ),
@@ -77,79 +79,106 @@ class InventoryItemRowExpandSection extends StatelessWidget {
             ),
           ),
         ),
-        TweenAnimationBuilder<double>(
-          tween: Tween<double>(end: isExpanded ? 1.0 : 0.0),
+        AnimatedSize(
           duration: InventoryItemRowConstants.expandPanelDuration,
           curve: Curves.easeOutCubic,
-          child: Padding(
-            padding: const EdgeInsets.only(
-              top: InventoryItemRowConstants.actionPanelTopSpacing,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  viewData.unitPriceLabel,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurfaceVariant,
+          alignment: Alignment.topCenter,
+          child: isExpanded
+              ? Padding(
+                  padding: const EdgeInsets.only(
+                    top: InventoryItemRowConstants.actionPanelTopSpacing,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: onDeletePressed,
-                        icon: const Icon(Icons.delete_outline, size: 18),
-                        label: Text(deleteLabel),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: colorScheme.error,
-                          side: BorderSide(
-                            color: colorScheme.error.withValues(alpha: 0.45),
-                          ),
-                          minimumSize: const Size(
-                            0,
-                            InventoryItemRowConstants.actionButtonHeight,
-                          ),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: FilledButton.tonalIcon(
-                        onPressed: onThrowAwayPressed,
-                        icon: const Icon(Icons.delete_sweep_outlined, size: 18),
-                        label: Text(throwAwayLabel),
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size(
-                            0,
-                            InventoryItemRowConstants.actionButtonHeight,
-                          ),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          builder: (context, value, child) {
-            if (value == 0) {
-              return const SizedBox.shrink();
-            }
+                  child: _InventoryItemActionPanel(
+                    viewData: viewData,
+                    colorScheme: colorScheme,
+                    deleteLabel: deleteLabel,
+                    throwAwayLabel: throwAwayLabel,
+                    onDeletePressed: onDeletePressed,
+                    onThrowAwayPressed: onThrowAwayPressed,
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
+}
 
-            return ClipRect(
-              child: Align(
-                alignment: Alignment.topCenter,
-                heightFactor: value,
-                child: Opacity(opacity: value, child: child),
+class _InventoryItemActionPanel extends StatelessWidget {
+  const _InventoryItemActionPanel({
+    required this.viewData,
+    required this.colorScheme,
+    required this.deleteLabel,
+    required this.throwAwayLabel,
+    required this.onDeletePressed,
+    required this.onThrowAwayPressed,
+  });
+
+  final InventoryItemRowViewData viewData;
+  final ColorScheme colorScheme;
+  final String deleteLabel;
+  final String throwAwayLabel;
+  final VoidCallback onDeletePressed;
+  final VoidCallback? onThrowAwayPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          viewData.unitPriceLabel,
+          style: TextStyle(
+            fontSize: InventoryItemRowConstants.actionMetadataFontSize,
+            fontWeight: FontWeight.w600,
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: InventoryItemRowConstants.actionContentSpacing),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: onDeletePressed,
+                icon: const Icon(
+                  Icons.delete_outline,
+                  size: InventoryItemRowConstants.actionButtonIconSize,
+                ),
+                label: Text(deleteLabel),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: colorScheme.error,
+                  side: BorderSide(
+                    color: colorScheme.error.withValues(alpha: 0.45),
+                  ),
+                  minimumSize: const Size(
+                    0,
+                    InventoryItemRowConstants.actionButtonHeight,
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
               ),
-            );
-          },
+            ),
+            const SizedBox(
+              width: InventoryItemRowConstants.actionButtonSpacing,
+            ),
+            Expanded(
+              child: FilledButton.tonalIcon(
+                onPressed: onThrowAwayPressed,
+                icon: const Icon(
+                  Icons.delete_sweep_outlined,
+                  size: InventoryItemRowConstants.actionButtonIconSize,
+                ),
+                label: Text(throwAwayLabel),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(
+                    0,
+                    InventoryItemRowConstants.actionButtonHeight,
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
