@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:yamt/application/shopping_list_facade.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
@@ -80,6 +81,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   _InventoryItemRowLayoutData _buildLayoutData(BuildContext context) {
     final item = widget.item;
     final hasAdjustableAmount = _buildInputConfig(item) != null;
+    final isAlreadyInShoppingList = _isAlreadyInShoppingList(item);
     return _InventoryItemRowLayoutData.fromItem(
       context: context,
       item: item,
@@ -87,7 +89,21 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       currency: widget.currency,
       hasAdjustableAmount: hasAdjustableAmount,
       isWorking: _isWorking,
+      isAlreadyInShoppingList: isAlreadyInShoppingList,
     );
+  }
+
+  bool _isAlreadyInShoppingList(FridgeItem item) {
+    if (!item.isFullyConsumed) {
+      return false;
+    }
+    final activeItemKeys = ref.watch(activeShoppingListItemKeysProvider);
+    return ref
+        .read(shoppingListFacadeProvider)
+        .isInventoryItemInActiveList(
+          item: item,
+          activeItemKeys: activeItemKeys,
+        );
   }
 
   void _toggleExpanded() {
@@ -262,6 +278,7 @@ class _InventoryItemRowLayoutData {
     required NumberFormat currency,
     required bool hasAdjustableAmount,
     required bool isWorking,
+    required bool isAlreadyInShoppingList,
   }) {
     final colors = Theme.of(context).colorScheme;
     final isBuyAgainPrimaryAction = item.isFullyConsumed;
@@ -273,7 +290,10 @@ class _InventoryItemRowLayoutData {
     final hasBrand = brand.isNotEmpty;
     final isAdjustActionEnabled = !isWorking && hasAdjustableAmount;
     final isPrimaryActionEnabled =
-        !isWorking && (isAdjustActionEnabled || isBuyAgainPrimaryAction);
+        !isWorking &&
+        (isBuyAgainPrimaryAction
+            ? !isAlreadyInShoppingList
+            : isAdjustActionEnabled);
 
     return _InventoryItemRowLayoutData(
       colorScheme: colors,

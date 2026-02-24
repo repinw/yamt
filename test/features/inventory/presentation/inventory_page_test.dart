@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 import '../../shoppinglist/support/fake_shopping_list_repository.dart';
@@ -94,6 +95,25 @@ FridgeItem _item(
     brand: brand,
     receiptId: receiptId,
     receiptDate: receiptDate,
+  );
+}
+
+ShoppingListItem _shoppingItem(
+  String id, {
+  required String name,
+  String? brand,
+  int quantity = 1,
+}) {
+  final normalizedName = name.trim().toLowerCase();
+  final normalizedBrand = (brand ?? '').trim().toLowerCase();
+  return ShoppingListItem(
+    id: id,
+    name: name,
+    brand: brand,
+    normalizedName: normalizedName,
+    normalizedBrand: normalizedBrand,
+    quantity: quantity,
+    estimatedUnitPrice: 1.0,
   );
 }
 
@@ -460,6 +480,84 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Action failed. Please try again.'), findsOneWidget);
+  });
+
+  testWidgets('buy-again button is disabled when item is already shopping', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item(
+          'a',
+          name: 'Milk',
+          brand: 'Acme',
+          quantity: 0,
+          initialQuantity: 1,
+        ),
+      ],
+    );
+    final shoppingRepository = FakeShoppingListRepository(
+      initialItems: <ShoppingListItem>[
+        _shoppingItem('s1', name: 'Milk', brand: 'Acme', quantity: 2),
+      ],
+    );
+    addTearDown(repository.dispose);
+    addTearDown(shoppingRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        repository,
+        overrides: [
+          shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('All items'));
+    await tester.pumpAndSettle();
+
+    final buyAgainButton = find.ancestor(
+      of: find.byIcon(Icons.shopping_cart_checkout_rounded),
+      matching: find.byType(IconButton),
+    );
+    expect(buyAgainButton, findsOneWidget);
+    expect(tester.widget<IconButton>(buyAgainButton).onPressed, isNull);
+    expect(shoppingRepository.savedItems, isEmpty);
+  });
+
+  testWidgets('buy-again does not throw when row unmounts mid-action', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item('a', name: 'Milk', quantity: 0, initialQuantity: 1),
+      ],
+    );
+    final shoppingRepository = FakeShoppingListRepository()
+      ..saveDelay = const Duration(milliseconds: 80);
+    addTearDown(repository.dispose);
+    addTearDown(shoppingRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        repository,
+        overrides: [
+          shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('All items'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Buy again'));
+    await tester.pump();
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 120));
+
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('eat action validates amount above available stock', (
