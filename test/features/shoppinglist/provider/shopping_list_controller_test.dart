@@ -41,6 +41,74 @@ void main() {
     expect(container.read(shoppingListControllerProvider), isEmpty);
   });
 
+  test('addItem clamps negative quantity to one', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final controller = container.read(shoppingListControllerProvider.notifier);
+
+    controller.addItem(name: 'Milk', quantity: -5);
+    final item = container.read(shoppingListControllerProvider).single;
+
+    expect(item.quantity, 1);
+  });
+
+  test('addItem keeps previous price when duplicate has zero price', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final controller = container.read(shoppingListControllerProvider.notifier);
+
+    controller.addItem(name: 'Milk', estimatedUnitPrice: 2.49);
+    controller.addItem(name: 'Milk', estimatedUnitPrice: 0);
+    final item = container.read(shoppingListControllerProvider).single;
+
+    expect(item.quantity, 2);
+    expect(item.estimatedUnitPrice, 2.49);
+  });
+
+  test('addItem updates price when duplicate has positive price', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final controller = container.read(shoppingListControllerProvider.notifier);
+
+    controller.addItem(name: 'Milk', estimatedUnitPrice: 2.49);
+    controller.addItem(name: 'Milk', estimatedUnitPrice: 3.19);
+    final item = container.read(shoppingListControllerProvider).single;
+
+    expect(item.quantity, 2);
+    expect(item.estimatedUnitPrice, 3.19);
+  });
+
+  test('incrementQuantity increases quantity for existing item', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final controller = container.read(shoppingListControllerProvider.notifier);
+
+    controller.addItem(name: 'Milk', quantity: 2);
+    final itemId = container.read(shoppingListControllerProvider).single.id;
+
+    controller.incrementQuantity(itemId);
+    final item = container.read(shoppingListControllerProvider).single;
+
+    expect(item.quantity, 3);
+  });
+
+  test('removeItem removes matching item id', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final controller = container.read(shoppingListControllerProvider.notifier);
+
+    controller.addItem(name: 'Milk');
+    controller.addItem(name: 'Bread');
+    final items = container.read(shoppingListControllerProvider);
+    final milkId = items.firstWhere((item) => item.name == 'Milk').id;
+
+    controller.removeItem(milkId);
+    final nextItems = container.read(shoppingListControllerProvider);
+
+    expect(nextItems, hasLength(1));
+    expect(nextItems.single.name, 'Bread');
+  });
+
   test('decrementQuantity removes item when quantity reaches zero', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);

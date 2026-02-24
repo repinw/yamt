@@ -16,6 +16,14 @@ class ShoppingListPage extends ConsumerStatefulWidget {
   ConsumerState<ShoppingListPage> createState() => _ShoppingListPageState();
 }
 
+class ShoppingListPageKeys {
+  const ShoppingListPageKeys._();
+
+  static const nameField = Key('shopping_list_name_field');
+  static const brandField = Key('shopping_list_brand_field');
+  static const addButton = Key('shopping_list_add_button');
+}
+
 class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
   final _nameController = TextEditingController();
   final _brandController = TextEditingController();
@@ -118,6 +126,7 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
 
     _nameController.clear();
     _brandController.clear();
+    FocusScope.of(context).unfocus();
   }
 
   void _onDismissed(String itemId) {
@@ -125,11 +134,13 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
   }
 
   void _onIncrement(String itemId) {
-    ref.read(shoppingListControllerProvider.notifier).incrementQuantity(itemId);
+    final controller = ref.read(shoppingListControllerProvider.notifier);
+    controller.incrementQuantity(itemId);
   }
 
   void _onDecrement(String itemId) {
-    ref.read(shoppingListControllerProvider.notifier).decrementQuantity(itemId);
+    final controller = ref.read(shoppingListControllerProvider.notifier);
+    controller.decrementQuantity(itemId);
   }
 }
 
@@ -155,7 +166,7 @@ class _ShoppingListAddCard extends StatelessWidget {
         child: Column(
           children: [
             TextField(
-              key: const Key('shopping_list_name_field'),
+              key: ShoppingListPageKeys.nameField,
               controller: nameController,
               textInputAction: TextInputAction.next,
               decoration: InputDecoration(
@@ -164,7 +175,7 @@ class _ShoppingListAddCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             TextField(
-              key: const Key('shopping_list_brand_field'),
+              key: ShoppingListPageKeys.brandField,
               controller: brandController,
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => onSubmit(l10n),
@@ -176,7 +187,7 @@ class _ShoppingListAddCard extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: FilledButton.icon(
-                key: const Key('shopping_list_add_button'),
+                key: ShoppingListPageKeys.addButton,
                 onPressed: () => onSubmit(l10n),
                 icon: const Icon(Icons.add),
                 label: Text(l10n.shoppingListAddAction),

@@ -25,29 +25,23 @@ void main() {
   testWidgets('adds item and merges duplicate input', (tester) async {
     await tester.pumpWidget(_wrap());
 
-    await tester.enterText(
-      find.byKey(const Key('shopping_list_name_field')),
-      'Milk',
-    );
-    await tester.enterText(
-      find.byKey(const Key('shopping_list_brand_field')),
-      'Acme',
-    );
-    await tester.tap(find.byKey(const Key('shopping_list_add_button')));
+    await tester.enterText(find.byKey(ShoppingListPageKeys.nameField), 'Milk');
+    await tester.enterText(find.byKey(ShoppingListPageKeys.brandField), 'Acme');
+    await tester.tap(find.byKey(ShoppingListPageKeys.addButton));
     await tester.pumpAndSettle();
 
     expect(find.text('Milk'), findsOneWidget);
     expect(find.textContaining('Qty: 1'), findsOneWidget);
 
     await tester.enterText(
-      find.byKey(const Key('shopping_list_name_field')),
+      find.byKey(ShoppingListPageKeys.nameField),
       ' milk ',
     );
     await tester.enterText(
-      find.byKey(const Key('shopping_list_brand_field')),
+      find.byKey(ShoppingListPageKeys.brandField),
       ' acme ',
     );
-    await tester.tap(find.byKey(const Key('shopping_list_add_button')));
+    await tester.tap(find.byKey(ShoppingListPageKeys.addButton));
     await tester.pumpAndSettle();
 
     expect(find.text('Milk'), findsOneWidget);
@@ -57,11 +51,8 @@ void main() {
   testWidgets('supports swipe-to-delete and quantity stepper', (tester) async {
     await tester.pumpWidget(_wrap());
 
-    await tester.enterText(
-      find.byKey(const Key('shopping_list_name_field')),
-      'Bread',
-    );
-    await tester.tap(find.byKey(const Key('shopping_list_add_button')));
+    await tester.enterText(find.byKey(ShoppingListPageKeys.nameField), 'Bread');
+    await tester.tap(find.byKey(ShoppingListPageKeys.addButton));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Qty: 1'), findsOneWidget);

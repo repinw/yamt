@@ -1,10 +1,13 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
 part 'shopping_list_controller.g.dart';
 
 @riverpod
 class ShoppingListController extends _$ShoppingListController {
+  static const _uuid = Uuid();
+
   @override
   List<ShoppingListItem> build() {
     return const <ShoppingListItem>[];
@@ -95,6 +98,6 @@ class ShoppingListController extends _$ShoppingListController {
   }
 
   String _nextId() {
-    return DateTime.now().microsecondsSinceEpoch.toString();
+    return _uuid.v4();
   }
 }
