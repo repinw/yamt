@@ -3,6 +3,14 @@ import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+class ShoppingListStatsCardKeys {
+  const ShoppingListStatsCardKeys._();
+
+  static const entriesValue = Key('shopping_list_stats_entries_value');
+  static const quantityValue = Key('shopping_list_stats_quantity_value');
+  static const estimatedValue = Key('shopping_list_stats_estimated_value');
+}
+
 class ShoppingListStatsCard extends StatelessWidget {
   const ShoppingListStatsCard({
     super.key,
@@ -36,16 +44,19 @@ class ShoppingListStatsCard extends StatelessWidget {
             _ShoppingStatRow(
               label: l10n.shoppingListStatsEntries,
               value: entryCount.toString(),
+              valueKey: ShoppingListStatsCardKeys.entriesValue,
             ),
             const SizedBox(height: AppSpacing.xs),
             _ShoppingStatRow(
               label: l10n.shoppingListStatsQuantity,
               value: totalQuantity.toString(),
+              valueKey: ShoppingListStatsCardKeys.quantityValue,
             ),
             const SizedBox(height: AppSpacing.xs),
             _ShoppingStatRow(
               label: l10n.shoppingListStatsEstimatedTotal,
               value: currency.format(estimatedTotal),
+              valueKey: ShoppingListStatsCardKeys.estimatedValue,
             ),
           ],
         ),
@@ -55,10 +66,15 @@ class ShoppingListStatsCard extends StatelessWidget {
 }
 
 class _ShoppingStatRow extends StatelessWidget {
-  const _ShoppingStatRow({required this.label, required this.value});
+  const _ShoppingStatRow({
+    required this.label,
+    required this.value,
+    this.valueKey,
+  });
 
   final String label;
   final String value;
+  final Key? valueKey;
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +82,7 @@ class _ShoppingStatRow extends StatelessWidget {
       children: [
         Expanded(child: Text(label)),
         Text(
+          key: valueKey,
           value,
           style: Theme.of(
             context,

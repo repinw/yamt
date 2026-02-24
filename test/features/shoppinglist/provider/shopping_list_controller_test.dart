@@ -30,6 +30,20 @@ void main() {
     expect(items, hasLength(2));
   });
 
+  test('addItem treats whitespace brand as empty and merges rows', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final controller = container.read(shoppingListControllerProvider.notifier);
+
+    controller.addItem(name: 'Milk', brand: '   ');
+    controller.addItem(name: 'Milk');
+    final items = container.read(shoppingListControllerProvider);
+
+    expect(items, hasLength(1));
+    expect(items.single.quantity, 2);
+    expect(items.single.normalizedBrand, isEmpty);
+  });
+
   test('addItem returns false for empty name input', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
@@ -92,6 +106,20 @@ void main() {
     expect(item.quantity, 3);
   });
 
+  test('incrementQuantity keeps state unchanged for unknown id', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final controller = container.read(shoppingListControllerProvider.notifier);
+
+    controller.addItem(name: 'Milk', quantity: 2);
+    final before = container.read(shoppingListControllerProvider);
+
+    controller.incrementQuantity('missing-id');
+    final after = container.read(shoppingListControllerProvider);
+
+    expect(after, before);
+  });
+
   test('removeItem removes matching item id', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
@@ -120,5 +148,19 @@ void main() {
     controller.decrementQuantity(itemId);
 
     expect(container.read(shoppingListControllerProvider), isEmpty);
+  });
+
+  test('decrementQuantity keeps state unchanged for unknown id', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final controller = container.read(shoppingListControllerProvider.notifier);
+
+    controller.addItem(name: 'Milk', quantity: 2);
+    final before = container.read(shoppingListControllerProvider);
+
+    controller.decrementQuantity('missing-id');
+    final after = container.read(shoppingListControllerProvider);
+
+    expect(after, before);
   });
 }

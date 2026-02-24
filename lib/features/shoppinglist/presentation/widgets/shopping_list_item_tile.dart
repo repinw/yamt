@@ -25,7 +25,7 @@ class ShoppingListItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dismissible(
-      key: ValueKey<String>('shopping_item_${item.id}'),
+      key: ValueKey<String>(item.id),
       direction: DismissDirection.endToStart,
       onDismissed: (_) => onDismissed(item.id),
       background: DecoratedBox(

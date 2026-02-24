@@ -27,11 +27,13 @@ class ShoppingListPageKeys {
 class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
   final _nameController = TextEditingController();
   final _brandController = TextEditingController();
+  final _nameFocusNode = FocusNode();
 
   @override
   void dispose() {
     _nameController.dispose();
     _brandController.dispose();
+    _nameFocusNode.dispose();
     super.dispose();
   }
 
@@ -70,6 +72,7 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
           child: _ShoppingListAddCard(
             nameController: _nameController,
             brandController: _brandController,
+            nameFocusNode: _nameFocusNode,
             l10n: l10n,
             onSubmit: _onSubmit,
           ),
@@ -126,7 +129,7 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
 
     _nameController.clear();
     _brandController.clear();
-    FocusScope.of(context).unfocus();
+    FocusScope.of(context).requestFocus(_nameFocusNode);
   }
 
   void _onDismissed(String itemId) {
@@ -148,12 +151,14 @@ class _ShoppingListAddCard extends StatelessWidget {
   const _ShoppingListAddCard({
     required this.nameController,
     required this.brandController,
+    required this.nameFocusNode,
     required this.l10n,
     required this.onSubmit,
   });
 
   final TextEditingController nameController;
   final TextEditingController brandController;
+  final FocusNode nameFocusNode;
   final AppLocalizations l10n;
   final ValueChanged<AppLocalizations> onSubmit;
 
@@ -168,6 +173,7 @@ class _ShoppingListAddCard extends StatelessWidget {
             TextField(
               key: ShoppingListPageKeys.nameField,
               controller: nameController,
+              focusNode: nameFocusNode,
               textInputAction: TextInputAction.next,
               decoration: InputDecoration(
                 labelText: l10n.shoppingListNameFieldLabel,
