@@ -25,12 +25,14 @@ class InventoryList extends StatefulWidget {
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
+    required this.onBuyAgainItem,
   });
 
   final List<FridgeItem> items;
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
   final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
+  final Future<bool> Function(FridgeItem item) onBuyAgainItem;
 
   @override
   State<InventoryList> createState() => _InventoryListState();
@@ -123,6 +125,7 @@ class _InventoryListState extends State<InventoryList> {
             onDeleteItem: widget.onDeleteItem,
             onEatItem: widget.onEatItem,
             onThrowAwayItem: widget.onThrowAwayItem,
+            onBuyAgainItem: widget.onBuyAgainItem,
           )
         else
           InventoryAllItemsSliver(
@@ -132,6 +135,7 @@ class _InventoryListState extends State<InventoryList> {
             onDeleteItem: widget.onDeleteItem,
             onEatItem: widget.onEatItem,
             onThrowAwayItem: widget.onThrowAwayItem,
+            onBuyAgainItem: widget.onBuyAgainItem,
           ),
       ],
     );

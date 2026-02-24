@@ -7,7 +7,9 @@ import 'package:go_router/go_router.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+import '../../shoppinglist/support/fake_shopping_list_repository.dart';
 
 class _FakeFridgeItemRepository implements FridgeItemRepository {
   _FakeFridgeItemRepository({required this.onReadAll});
@@ -95,7 +97,10 @@ FridgeItem _item(
   );
 }
 
-Widget _buildTestApp(FridgeItemRepository repository) {
+Widget _buildTestApp(
+  FridgeItemRepository repository, {
+  List overrides = const [],
+}) {
   final router = GoRouter(
     routes: [
       GoRoute(
@@ -106,7 +111,10 @@ Widget _buildTestApp(FridgeItemRepository repository) {
   );
 
   return ProviderScope(
-    overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+    overrides: [
+      fridgeItemRepositoryProvider.overrideWithValue(repository),
+      ...overrides,
+    ],
     child: MaterialApp.router(
       routerConfig: router,
       locale: const Locale('en'),
@@ -338,6 +346,86 @@ void main() {
 
     expect(find.text('Milk'), findsOneWidget);
     expect(find.text('0/1'), findsOneWidget);
+  });
+
+  testWidgets(
+    'fully consumed item shows buy-again action and success feedback',
+    (tester) async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <FridgeItem>[
+          _item(
+            'a',
+            name: 'Milk',
+            brand: 'Acme',
+            quantity: 0,
+            initialQuantity: 1,
+          ),
+        ],
+      );
+      final shoppingRepository = FakeShoppingListRepository();
+      addTearDown(repository.dispose);
+      addTearDown(shoppingRepository.dispose);
+
+      await tester.pumpWidget(
+        _buildTestApp(
+          repository,
+          overrides: [
+            shoppingListRepositoryProvider.overrideWithValue(
+              shoppingRepository,
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('All items'));
+      await tester.pumpAndSettle();
+
+      expect(find.byTooltip('Buy again'), findsOneWidget);
+      expect(find.byTooltip('Eat'), findsNothing);
+
+      await tester.tap(find.byTooltip('Buy again'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Item added to shopping list.'), findsOneWidget);
+      expect(shoppingRepository.savedItems, hasLength(1));
+      final addedItem = shoppingRepository.savedItems.single;
+      expect(addedItem.name, 'Milk');
+      expect(addedItem.brand, 'Acme');
+      expect(addedItem.quantity, 1);
+    },
+  );
+
+  testWidgets('buy-again action shows add-failed feedback on save failure', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item('a', name: 'Milk', quantity: 0, initialQuantity: 1),
+      ],
+    );
+    final shoppingRepository = FakeShoppingListRepository()
+      ..saveAllShouldFail = true;
+    addTearDown(repository.dispose);
+    addTearDown(shoppingRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        repository,
+        overrides: [
+          shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('All items'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Buy again'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Could not add item. Please try again.'), findsOneWidget);
   });
 
   testWidgets('eat action validates amount above available stock', (

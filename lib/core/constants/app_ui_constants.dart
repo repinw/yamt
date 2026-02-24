@@ -92,6 +92,13 @@ abstract final class AppInventoryEatAction {
   static const double iconAlpha = 0.8;
 }
 
+abstract final class AppInventoryBuyAgainAction {
+  static const Color tint = Color(0xFF1565C0);
+  static const double backgroundAlpha = 0.24;
+  static const double borderAlpha = 0.45;
+  static const double iconAlpha = 0.8;
+}
+
 class AppInventoryEatActionColors {
   const AppInventoryEatActionColors({
     required this.backgroundColor,
@@ -120,6 +127,45 @@ class AppInventoryEatActionColors {
     );
 
     return AppInventoryEatActionColors(
+      backgroundColor: backgroundColor,
+      borderColor: borderColor,
+      iconColor: iconColor,
+    );
+  }
+
+  final Color backgroundColor;
+  final Color borderColor;
+  final Color iconColor;
+}
+
+class AppInventoryBuyAgainActionColors {
+  const AppInventoryBuyAgainActionColors({
+    required this.backgroundColor,
+    required this.borderColor,
+    required this.iconColor,
+  });
+
+  factory AppInventoryBuyAgainActionColors.fromColorScheme(ColorScheme colors) {
+    final backgroundColor = Color.alphaBlend(
+      AppInventoryBuyAgainAction.tint.withValues(
+        alpha: AppInventoryBuyAgainAction.backgroundAlpha,
+      ),
+      colors.primaryContainer,
+    );
+    final borderColor = Color.alphaBlend(
+      AppInventoryBuyAgainAction.tint.withValues(
+        alpha: AppInventoryBuyAgainAction.borderAlpha,
+      ),
+      colors.outlineVariant,
+    );
+    final iconColor = Color.alphaBlend(
+      AppInventoryBuyAgainAction.tint.withValues(
+        alpha: AppInventoryBuyAgainAction.iconAlpha,
+      ),
+      colors.onPrimaryContainer,
+    );
+
+    return AppInventoryBuyAgainActionColors(
       backgroundColor: backgroundColor,
       borderColor: borderColor,
       iconColor: iconColor,

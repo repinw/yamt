@@ -27,6 +27,7 @@ class InventoryItemRow extends StatefulWidget {
     required this.onDeletePressed,
     required this.onEatPressed,
     required this.onThrowAwayPressed,
+    required this.onBuyAgainPressed,
   });
 
   final FridgeItem item;
@@ -35,6 +36,7 @@ class InventoryItemRow extends StatefulWidget {
   final Future<bool> Function(String itemId) onDeletePressed;
   final Future<bool> Function(String itemId, int amount) onEatPressed;
   final Future<bool> Function(String itemId, int amount) onThrowAwayPressed;
+  final Future<bool> Function(FridgeItem item) onBuyAgainPressed;
 
   @override
   State<InventoryItemRow> createState() => _InventoryItemRowState();
@@ -47,6 +49,7 @@ class _InventoryItemRowState extends State<InventoryItemRow> {
   @override
   Widget build(BuildContext context) {
     final layoutData = _buildLayoutData(context);
+    final onPrimaryActionPressed = _buildPrimaryActionPressed(layoutData);
 
     return _InventoryItemRowCard(
       layoutData: layoutData,
@@ -55,11 +58,23 @@ class _InventoryItemRowState extends State<InventoryItemRow> {
       throwAwayLabel: widget.l10n.inventoryItemThrowAwayAction,
       onToggleExpanded: _toggleExpanded,
       onDeletePressed: _isWorking ? () {} : _onDeletePressed,
-      onEatPressed: layoutData.isAdjustActionEnabled ? _onEatPressed : null,
+      onPrimaryActionPressed: onPrimaryActionPressed,
       onThrowAwayPressed: layoutData.isAdjustActionEnabled
           ? _onThrowAwayPressed
           : null,
     );
+  }
+
+  VoidCallback? _buildPrimaryActionPressed(
+    _InventoryItemRowLayoutData layoutData,
+  ) {
+    if (!layoutData.isPrimaryActionEnabled) {
+      return null;
+    }
+    if (layoutData.isBuyAgainPrimaryAction) {
+      return _onBuyAgainPressed;
+    }
+    return _onEatPressed;
   }
 
   _InventoryItemRowLayoutData _buildLayoutData(BuildContext context) {
@@ -105,6 +120,16 @@ class _InventoryItemRowState extends State<InventoryItemRow> {
     );
   }
 
+  void _onBuyAgainPressed() {
+    unawaited(
+      _runAction(
+        () => widget.onBuyAgainPressed(widget.item),
+        successMessage: widget.l10n.inventoryItemBuyAgainSucceeded,
+        failureMessage: widget.l10n.shoppingListAddFailedError,
+      ),
+    );
+  }
+
   Future<void> _requestAmountAndRunAction({
     required Future<bool> Function(String itemId, int amount) action,
     required String title,
@@ -136,7 +161,11 @@ class _InventoryItemRowState extends State<InventoryItemRow> {
     await _runAction(() => action(widget.item.id, amount));
   }
 
-  Future<void> _runAction(Future<bool> Function() action) async {
+  Future<void> _runAction(
+    Future<bool> Function() action, {
+    String? successMessage,
+    String? failureMessage,
+  }) async {
     if (_isWorking) {
       return;
     }
@@ -153,14 +182,21 @@ class _InventoryItemRowState extends State<InventoryItemRow> {
     });
 
     if (success) {
+      if (successMessage != null) {
+        _showActionSnackBar(successMessage);
+      }
       return;
     }
 
+    _showActionSnackBar(
+      failureMessage ?? widget.l10n.inventoryItemActionFailed,
+    );
+  }
+
+  void _showActionSnackBar(String message) {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(content: Text(widget.l10n.inventoryItemActionFailed)),
-    );
+    messenger.showSnackBar(SnackBar(content: Text(message)));
   }
 
   _ItemAmountInputConfig? _buildInputConfig(FridgeItem item) {
@@ -213,6 +249,8 @@ class _InventoryItemRowLayoutData {
     required this.colorScheme,
     required this.snapshot,
     required this.viewData,
+    required this.isPrimaryActionEnabled,
+    required this.isBuyAgainPrimaryAction,
     required this.isAdjustActionEnabled,
   });
 
@@ -225,11 +263,16 @@ class _InventoryItemRowLayoutData {
     required bool isWorking,
   }) {
     final colors = Theme.of(context).colorScheme;
+    final isBuyAgainPrimaryAction = item.isFullyConsumed;
     final eatActionColors = AppInventoryEatActionColors.fromColorScheme(colors);
+    final buyAgainActionColors =
+        AppInventoryBuyAgainActionColors.fromColorScheme(colors);
     final progress = const InventoryItemProgressCalculator().fromItem(item);
     final brand = item.brand?.trim() ?? '';
     final hasBrand = brand.isNotEmpty;
     final isAdjustActionEnabled = !isWorking && hasAdjustableAmount;
+    final isPrimaryActionEnabled =
+        !isWorking && (isAdjustActionEnabled || isBuyAgainPrimaryAction);
 
     return _InventoryItemRowLayoutData(
       colorScheme: colors,
@@ -249,16 +292,29 @@ class _InventoryItemRowLayoutData {
         remainingRatio: progress.remainingRatio,
         remainingLabel: progress.remainingLabel,
         segmentedByUnits: progress.segmentedByUnits,
-        isPrimaryActionEnabled: isAdjustActionEnabled,
-        eatActionBackgroundColor: eatActionColors.backgroundColor,
+        isPrimaryActionEnabled: isPrimaryActionEnabled,
+        isBuyAgainPrimaryAction: isBuyAgainPrimaryAction,
+        eatActionBackgroundColor: isBuyAgainPrimaryAction
+            ? buyAgainActionColors.backgroundColor
+            : eatActionColors.backgroundColor,
         disabledActionBackgroundColor: colors.surfaceContainerHighest,
-        eatActionBorderColor: eatActionColors.borderColor,
+        eatActionBorderColor: isBuyAgainPrimaryAction
+            ? buyAgainActionColors.borderColor
+            : eatActionColors.borderColor,
         disabledActionBorderColor: colors.outlineVariant.withValues(alpha: 0.5),
-        primaryActionTooltip: l10n.inventoryItemEatAction,
-        primaryActionIcon: Icons.restaurant_menu,
-        eatActionIconColor: eatActionColors.iconColor,
+        primaryActionTooltip: isBuyAgainPrimaryAction
+            ? l10n.inventoryItemBuyAgainAction
+            : l10n.inventoryItemEatAction,
+        primaryActionIcon: isBuyAgainPrimaryAction
+            ? Icons.shopping_cart_checkout_rounded
+            : Icons.restaurant_menu,
+        eatActionIconColor: isBuyAgainPrimaryAction
+            ? buyAgainActionColors.iconColor
+            : eatActionColors.iconColor,
         disabledActionIconColor: colors.onSurfaceVariant,
       ),
+      isPrimaryActionEnabled: isPrimaryActionEnabled,
+      isBuyAgainPrimaryAction: isBuyAgainPrimaryAction,
       isAdjustActionEnabled: isAdjustActionEnabled,
     );
   }
@@ -266,6 +322,8 @@ class _InventoryItemRowLayoutData {
   final ColorScheme colorScheme;
   final InventoryItemRowSnapshot snapshot;
   final InventoryItemRowViewData viewData;
+  final bool isPrimaryActionEnabled;
+  final bool isBuyAgainPrimaryAction;
   final bool isAdjustActionEnabled;
 }
 
@@ -277,7 +335,7 @@ class _InventoryItemRowCard extends StatelessWidget {
     required this.throwAwayLabel,
     required this.onToggleExpanded,
     required this.onDeletePressed,
-    required this.onEatPressed,
+    required this.onPrimaryActionPressed,
     required this.onThrowAwayPressed,
   });
 
@@ -287,7 +345,7 @@ class _InventoryItemRowCard extends StatelessWidget {
   final String throwAwayLabel;
   final VoidCallback onToggleExpanded;
   final VoidCallback onDeletePressed;
-  final VoidCallback? onEatPressed;
+  final VoidCallback? onPrimaryActionPressed;
   final VoidCallback? onThrowAwayPressed;
 
   @override
@@ -304,7 +362,7 @@ class _InventoryItemRowCard extends StatelessWidget {
           throwAwayLabel: throwAwayLabel,
           onToggleExpanded: onToggleExpanded,
           onDeletePressed: onDeletePressed,
-          onEatPressed: onEatPressed,
+          onPrimaryActionPressed: onPrimaryActionPressed,
           onThrowAwayPressed: onThrowAwayPressed,
         ),
       ),
@@ -320,7 +378,7 @@ class _InventoryItemRowBody extends StatelessWidget {
     required this.throwAwayLabel,
     required this.onToggleExpanded,
     required this.onDeletePressed,
-    required this.onEatPressed,
+    required this.onPrimaryActionPressed,
     required this.onThrowAwayPressed,
   });
 
@@ -330,7 +388,7 @@ class _InventoryItemRowBody extends StatelessWidget {
   final String throwAwayLabel;
   final VoidCallback onToggleExpanded;
   final VoidCallback onDeletePressed;
-  final VoidCallback? onEatPressed;
+  final VoidCallback? onPrimaryActionPressed;
   final VoidCallback? onThrowAwayPressed;
 
   @override
@@ -343,7 +401,7 @@ class _InventoryItemRowBody extends StatelessWidget {
           InventoryItemRowMainSection(
             item: layoutData.snapshot,
             viewData: layoutData.viewData,
-            onPrimaryActionPressed: onEatPressed,
+            onPrimaryActionPressed: onPrimaryActionPressed,
           ),
           const SizedBox(height: AppSpacing.xs),
           InventoryItemRowExpandSection(

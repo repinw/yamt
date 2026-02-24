@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -16,6 +17,7 @@ class ReceiptGroupTile extends StatelessWidget {
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
+    required this.onBuyAgainItem,
   });
 
   final InventoryReceiptGroup group;
@@ -24,6 +26,7 @@ class ReceiptGroupTile extends StatelessWidget {
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
   final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
+  final Future<bool> Function(FridgeItem item) onBuyAgainItem;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +62,7 @@ class ReceiptGroupTile extends StatelessWidget {
                 onDeleteItem: onDeleteItem,
                 onEatItem: onEatItem,
                 onThrowAwayItem: onThrowAwayItem,
+                onBuyAgainItem: onBuyAgainItem,
               );
             })
             .toList(growable: false),

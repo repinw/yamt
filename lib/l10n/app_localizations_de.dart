@@ -231,6 +231,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemEatAction => 'Essen';
 
   @override
+  String get inventoryItemBuyAgainAction => 'Erneut kaufen';
+
+  @override
+  String get inventoryItemBuyAgainSucceeded => 'Artikel zur Einkaufsliste hinzugefügt.';
+
+  @override
   String get inventoryItemThrowAwayAction => 'Wegwerfen';
 
   @override

@@ -539,6 +539,18 @@ abstract class AppLocalizations {
   /// **'Eat'**
   String get inventoryItemEatAction;
 
+  /// No description provided for @inventoryItemBuyAgainAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy again'**
+  String get inventoryItemBuyAgainAction;
+
+  /// No description provided for @inventoryItemBuyAgainSucceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Item added to shopping list.'**
+  String get inventoryItemBuyAgainSucceeded;
+
   /// No description provided for @inventoryItemThrowAwayAction.
   ///
   /// In en, this message translates to:

@@ -74,6 +74,8 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.inventoryItemNoPrice,
     l10n.inventoryItemDeleteAction,
     l10n.inventoryItemEatAction,
+    l10n.inventoryItemBuyAgainAction,
+    l10n.inventoryItemBuyAgainSucceeded,
     l10n.inventoryItemThrowAwayAction,
     l10n.inventoryItemActionFailed,
     l10n.inventoryEmptyState,

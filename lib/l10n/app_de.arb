@@ -74,6 +74,9 @@
   "inventoryItemNoPrice": "Kein Preis",
   "inventoryItemDeleteAction": "Löschen",
   "inventoryItemEatAction": "Essen",
+  "inventoryItemBuyAgainAction": "Erneut kaufen",
+  "inventoryItemBuyAgainSucceeded":
+      "Artikel zur Einkaufsliste hinzugefügt.",
   "inventoryItemThrowAwayAction": "Wegwerfen",
   "inventoryItemActionFailed": "Aktion fehlgeschlagen. Bitte erneut versuchen.",
   "inventoryEmptyState": "Noch keine Vorratsartikel vorhanden. Scanne einen Beleg, um zu starten.",
