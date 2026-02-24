@@ -146,7 +146,6 @@ void main() {
     expect(find.text('No receipt'), findsOneWidget);
     expect(find.textContaining('Store'), findsOneWidget);
     expect(find.text('Overview'), findsOneWidget);
-    expect(find.text('Items'), findsOneWidget);
     expect(find.text('Entries'), findsOneWidget);
     expect(find.text('Total quantity'), findsOneWidget);
     expect(find.text('Estimated value'), findsOneWidget);
@@ -182,6 +181,63 @@ void main() {
 
     expect(find.text('Milk'), findsOneWidget);
     expect(find.text('Bread'), findsOneWidget);
+  });
+
+  testWidgets('all items mode shows consolidated rows', (tester) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item('a', name: 'Milk', receiptId: 'abc123999'),
+        _item('b', name: 'Bread', receiptId: 'abc123999'),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildTestApp(repository));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Receipt #abc123'), findsOneWidget);
+    expect(find.text('Milk'), findsNothing);
+    expect(find.text('Bread'), findsNothing);
+
+    await tester.tap(find.text('All items'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Receipt #abc123'), findsNothing);
+    expect(find.text('Milk'), findsOneWidget);
+    expect(find.text('Bread'), findsOneWidget);
+  });
+
+  testWidgets('consumption filters hide and show rows in all-items mode', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item('a', name: 'Apple', quantity: 0, initialQuantity: 2),
+        _item('b', name: 'Banana', quantity: 2, initialQuantity: 2),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildTestApp(repository));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('All items'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Apple'), findsOneWidget);
+    expect(find.text('Banana'), findsOneWidget);
+
+    await tester.tap(find.text('Consumed'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Apple'), findsNothing);
+    expect(find.text('Banana'), findsOneWidget);
+
+    await tester.tap(find.text('Consumed'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Apple'), findsOneWidget);
+    expect(find.text('Banana'), findsOneWidget);
   });
 
   testWidgets('shows amount-based stock label when amount data exists', (
@@ -248,6 +304,40 @@ void main() {
       findsNothing,
     );
     expect(find.text('1/3'), findsOneWidget);
+  });
+
+  testWidgets('eat action depletes item but keeps it visible', (tester) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item('a', quantity: 1, initialQuantity: 1),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildTestApp(repository));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('All items'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1/1'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Eat'));
+    await tester.pumpAndSettle();
+
+    final amountField = find.byKey(
+      const Key('inventory_item_amount_dialog_field'),
+    );
+    expect(amountField, findsOneWidget);
+    await tester.enterText(amountField, '1');
+
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Milk'), findsOneWidget);
+    expect(find.text('0/1'), findsOneWidget);
   });
 
   testWidgets('eat action validates amount above available stock', (

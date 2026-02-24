@@ -201,6 +201,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryListSectionTitle => 'Items';
 
   @override
+  String get inventoryListModeByReceipt => 'By receipt';
+
+  @override
+  String get inventoryListModeAllItems => 'All items';
+
+  @override
+  String get inventoryFilterConsumed => 'Consumed';
+
+  @override
+  String get inventoryFilterNotConsumed => 'Not consumed';
+
+  @override
   String get inventoryReceiptGroupTitle => 'Receipt';
 
   @override
@@ -226,6 +238,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryEmptyState => 'No items in your fridge yet. Scan a receipt to get started.';
+
+  @override
+  String get inventoryFilteredEmptyState => 'No items match the selected filters.';
 
   @override
   String get inventoryLoadFailed => 'Could not load inventory items.';

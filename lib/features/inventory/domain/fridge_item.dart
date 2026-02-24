@@ -65,6 +65,35 @@ abstract class FridgeItem with _$FridgeItem {
   bool get isReviewOnly => isDeposit || isDiscount;
 
   bool get canBeSavedToFridge => !isReviewOnly;
+
+  bool get usesAmountProgress => amountUnit != null && initialAmount > 0;
+
+  bool get isConsumed {
+    final progress = _consumptionProgress;
+    return progress.remaining < progress.initial;
+  }
+
+  bool get isFullyConsumed {
+    final progress = _consumptionProgress;
+    return progress.remaining <= 0;
+  }
+
+  _ConsumptionProgress get _consumptionProgress {
+    if (usesAmountProgress) {
+      return _ConsumptionProgress(
+        initial: initialAmount,
+        remaining: currentAmount,
+      );
+    }
+    return _ConsumptionProgress(initial: initialQuantity, remaining: quantity);
+  }
+}
+
+class _ConsumptionProgress {
+  const _ConsumptionProgress({required this.initial, required this.remaining});
+
+  final int initial;
+  final int remaining;
 }
 
 const _amountParser = FridgeItemAmountParser();

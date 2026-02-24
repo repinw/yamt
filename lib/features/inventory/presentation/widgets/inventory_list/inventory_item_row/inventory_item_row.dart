@@ -164,7 +164,7 @@ class _InventoryItemRowState extends State<InventoryItemRow> {
   }
 
   _ItemAmountInputConfig? _buildInputConfig(FridgeItem item) {
-    if (_usesAmountProgress(item)) {
+    if (item.usesAmountProgress) {
       final maxAmount = item.currentAmount > 0 ? item.currentAmount : 0;
       if (maxAmount < 1 || item.amountUnit == null) {
         return null;
@@ -185,10 +185,6 @@ class _InventoryItemRowState extends State<InventoryItemRow> {
       fieldLabel: widget.l10n.inventoryReceiptReviewFieldQuantity,
       suffixText: null,
     );
-  }
-
-  bool _usesAmountProgress(FridgeItem item) {
-    return item.amountUnit != null && item.initialAmount > 0;
   }
 
   String _unitSuffix(FridgeAmountUnit unit) {

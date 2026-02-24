@@ -479,6 +479,30 @@ abstract class AppLocalizations {
   /// **'Items'**
   String get inventoryListSectionTitle;
 
+  /// No description provided for @inventoryListModeByReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'By receipt'**
+  String get inventoryListModeByReceipt;
+
+  /// No description provided for @inventoryListModeAllItems.
+  ///
+  /// In en, this message translates to:
+  /// **'All items'**
+  String get inventoryListModeAllItems;
+
+  /// No description provided for @inventoryFilterConsumed.
+  ///
+  /// In en, this message translates to:
+  /// **'Consumed'**
+  String get inventoryFilterConsumed;
+
+  /// No description provided for @inventoryFilterNotConsumed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not consumed'**
+  String get inventoryFilterNotConsumed;
+
   /// No description provided for @inventoryReceiptGroupTitle.
   ///
   /// In en, this message translates to:
@@ -532,6 +556,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No items in your fridge yet. Scan a receipt to get started.'**
   String get inventoryEmptyState;
+
+  /// No description provided for @inventoryFilteredEmptyState.
+  ///
+  /// In en, this message translates to:
+  /// **'No items match the selected filters.'**
+  String get inventoryFilteredEmptyState;
 
   /// No description provided for @inventoryLoadFailed.
   ///

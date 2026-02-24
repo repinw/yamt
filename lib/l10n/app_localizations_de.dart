@@ -201,6 +201,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryListSectionTitle => 'Artikel';
 
   @override
+  String get inventoryListModeByReceipt => 'Nach Beleg';
+
+  @override
+  String get inventoryListModeAllItems => 'Alle Artikel';
+
+  @override
+  String get inventoryFilterConsumed => 'Verbraucht';
+
+  @override
+  String get inventoryFilterNotConsumed => 'Nicht verbraucht';
+
+  @override
   String get inventoryReceiptGroupTitle => 'Beleg';
 
   @override
@@ -226,6 +238,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryEmptyState => 'Noch keine Vorratsartikel vorhanden. Scanne einen Beleg, um zu starten.';
+
+  @override
+  String get inventoryFilteredEmptyState => 'Keine Artikel entsprechen den ausgewählten Filtern.';
 
   @override
   String get inventoryLoadFailed => 'Vorratsartikel konnten nicht geladen werden.';

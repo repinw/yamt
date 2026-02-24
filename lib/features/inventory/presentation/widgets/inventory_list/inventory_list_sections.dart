@@ -106,14 +106,16 @@ class InventorySummaryCard extends StatelessWidget {
 }
 
 class InventoryEmptyState extends StatelessWidget {
-  const InventoryEmptyState({super.key});
+  const InventoryEmptyState({super.key, this.message});
+
+  final String? message;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final muted = colors.onSurfaceVariant;
     final l10n = AppLocalizations.of(context)!;
-    final message = l10n.inventoryEmptyState;
+    final emptyStateMessage = message ?? l10n.inventoryEmptyState;
 
     return Card(
       margin: EdgeInsets.zero,
@@ -128,7 +130,7 @@ class InventoryEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              message,
+              emptyStateMessage,
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
