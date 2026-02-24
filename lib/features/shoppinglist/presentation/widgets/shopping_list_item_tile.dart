@@ -53,15 +53,11 @@ class ShoppingListItemTile extends StatelessWidget {
         child: ListTile(
           title: Text(
             item.name,
-            style: titleStyle?.copyWith(
-              decoration: isCrossedOff ? TextDecoration.lineThrough : null,
-            ),
+            style: _crossedOffStyle(titleStyle, isCrossedOff),
           ),
           subtitle: Text(
             _subtitle(),
-            style: subtitleStyle?.copyWith(
-              decoration: isCrossedOff ? TextDecoration.lineThrough : null,
-            ),
+            style: _crossedOffStyle(subtitleStyle, isCrossedOff),
           ),
           trailing: _ShoppingListQuantityStepper(
             quantity: item.quantity,
@@ -117,13 +113,7 @@ class _ShoppingListQuantityStepper extends StatelessWidget {
           icon: const Icon(Icons.remove_circle_outline),
           tooltip: decreaseTooltip,
         ),
-        Text(
-          quantity.toString(),
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            decoration: isCrossedOff ? TextDecoration.lineThrough : null,
-          ),
-        ),
+        Text(quantity.toString(), style: _quantityStyle(context, isCrossedOff)),
         IconButton(
           onPressed: onIncrement,
           icon: const Icon(Icons.add_circle_outline),
@@ -132,4 +122,21 @@ class _ShoppingListQuantityStepper extends StatelessWidget {
       ],
     );
   }
+}
+
+TextStyle? _crossedOffStyle(TextStyle? base, bool isCrossedOff) {
+  if (!isCrossedOff) {
+    return base;
+  }
+  return (base ?? const TextStyle()).copyWith(
+    decoration: TextDecoration.lineThrough,
+  );
+}
+
+TextStyle? _quantityStyle(BuildContext context, bool isCrossedOff) {
+  final base = Theme.of(context).textTheme.bodyMedium;
+  final withWeight = (base ?? const TextStyle()).copyWith(
+    fontWeight: FontWeight.w700,
+  );
+  return _crossedOffStyle(withWeight, isCrossedOff);
 }

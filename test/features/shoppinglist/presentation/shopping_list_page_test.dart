@@ -142,4 +142,29 @@ void main() {
     expect(find.text('Bread'), findsNothing);
     expect(find.text('Your shopping list is empty.'), findsOneWidget);
   });
+
+  testWidgets('cancel clear crossed-off keeps crossed-off rows', (
+    tester,
+  ) async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    _addItem(container, name: 'Bread', quantity: 1);
+
+    await tester.pumpWidget(_wrap(container));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Decrease quantity'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(ShoppingListPageKeys.clearCrossedOffButton));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(ShoppingListPageKeys.clearCrossedOffCancelButton),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('Bread'), findsOneWidget);
+    expect(find.textContaining('Qty: 0'), findsOneWidget);
+  });
 }

@@ -90,11 +90,7 @@ class HomeContextFab extends ConsumerWidget {
       l10n: l10n,
       onSubmit: ({required name, required brand}) {
         final controller = ref.read(shoppingListControllerProvider.notifier);
-        final added = controller.addItem(name: name, brand: brand);
-        if (!added) {
-          _showSnackBar(context, l10n.shoppingListInvalidNameError);
-        }
-        return added;
+        return controller.addItem(name: name, brand: brand);
       },
     );
   }

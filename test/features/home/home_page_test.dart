@@ -173,6 +173,40 @@ void main() {
     expect(find.text('Please enter an item name.'), findsOneWidget);
   });
 
+  testWidgets('shopping quick-add cancel closes dialog and keeps list', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(_MockUser()),
+        ),
+        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(ShoppingQuickAddDialogKeys.nameField),
+      'Milk',
+    );
+    await tester.tap(find.byKey(ShoppingQuickAddDialogKeys.cancelButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('Milk'), findsNothing);
+  });
+
   testWidgets('calories and settings tabs show contextual snackbar', (
     tester,
   ) async {

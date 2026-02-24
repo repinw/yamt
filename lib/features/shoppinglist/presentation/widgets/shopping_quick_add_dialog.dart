@@ -41,6 +41,7 @@ class _ShoppingQuickAddDialog extends StatefulWidget {
 class _ShoppingQuickAddDialogState extends State<_ShoppingQuickAddDialog> {
   final _nameController = TextEditingController();
   final _brandController = TextEditingController();
+  var _showNameError = false;
 
   @override
   void dispose() {
@@ -54,7 +55,16 @@ class _ShoppingQuickAddDialogState extends State<_ShoppingQuickAddDialog> {
       name: _nameController.text,
       brand: _brandController.text,
     );
-    if (!added || !mounted) {
+    if (!added) {
+      if (_showNameError) {
+        return;
+      }
+      setState(() {
+        _showNameError = true;
+      });
+      return;
+    }
+    if (!mounted) {
       return;
     }
     Navigator.of(context).pop();
@@ -72,8 +82,19 @@ class _ShoppingQuickAddDialogState extends State<_ShoppingQuickAddDialog> {
             controller: _nameController,
             autofocus: true,
             textInputAction: TextInputAction.next,
+            onChanged: (_) {
+              if (!_showNameError) {
+                return;
+              }
+              setState(() {
+                _showNameError = false;
+              });
+            },
             decoration: InputDecoration(
               labelText: widget.l10n.shoppingListNameFieldLabel,
+              errorText: _showNameError
+                  ? widget.l10n.shoppingListInvalidNameError
+                  : null,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
