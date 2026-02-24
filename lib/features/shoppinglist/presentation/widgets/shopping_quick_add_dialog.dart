@@ -56,12 +56,11 @@ class _ShoppingQuickAddDialogState extends State<_ShoppingQuickAddDialog> {
       brand: _brandController.text,
     );
     if (!added) {
-      if (_showNameError) {
-        return;
+      if (!_showNameError) {
+        setState(() {
+          _showNameError = true;
+        });
       }
-      setState(() {
-        _showNameError = true;
-      });
       return;
     }
     if (!mounted) {

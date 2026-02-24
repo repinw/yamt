@@ -17,21 +17,14 @@ class HomeContextFab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final isBusy = _isBusy(ref);
+    final flowState = ref.watch(receiptCaptureFlowControllerProvider);
+    final isBusy = currentTab == HomeTabType.inventory && flowState.isLoading;
 
     return FloatingActionButton.small(
       tooltip: _fabTooltip(l10n),
       onPressed: isBusy ? null : () => _onPressed(context, ref, l10n),
       child: _fabChild(isBusy),
     );
-  }
-
-  bool _isBusy(WidgetRef ref) {
-    if (currentTab != HomeTabType.inventory) {
-      return false;
-    }
-    final flowState = ref.watch(receiptCaptureFlowControllerProvider);
-    return flowState.isLoading;
   }
 
   Widget _fabChild(bool isBusy) {
