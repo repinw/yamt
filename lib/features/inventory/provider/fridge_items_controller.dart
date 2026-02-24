@@ -4,6 +4,7 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 
 part 'fridge_items_controller.g.dart';
 
@@ -99,6 +100,19 @@ class FridgeItemsController extends _$FridgeItemsController {
   Future<bool> throwAwayItem(String itemId, int amount) {
     return _runSerializedMutation(
       () => _reduceItem(itemId: itemId, amount: amount),
+    );
+  }
+
+  Future<bool> buyAgainItem(FridgeItem item) {
+    final shoppingController = ref.read(
+      shoppingListControllerProvider.notifier,
+    );
+    final quantity = item.initialQuantity > 0 ? item.initialQuantity : 1;
+    return shoppingController.addItem(
+      name: item.name,
+      brand: item.brand,
+      quantity: quantity,
+      estimatedUnitPrice: item.unitPrice,
     );
   }
 

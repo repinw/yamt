@@ -396,6 +396,40 @@ void main() {
     },
   );
 
+  testWidgets(
+    'buy-again falls back to quantity one when initial quantity is zero',
+    (tester) async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <FridgeItem>[
+          _item('a', name: 'Milk', quantity: 0, initialQuantity: 0),
+        ],
+      );
+      final shoppingRepository = FakeShoppingListRepository();
+      addTearDown(repository.dispose);
+      addTearDown(shoppingRepository.dispose);
+
+      await tester.pumpWidget(
+        _buildTestApp(
+          repository,
+          overrides: [
+            shoppingListRepositoryProvider.overrideWithValue(
+              shoppingRepository,
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('All items'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Buy again'));
+      await tester.pumpAndSettle();
+
+      expect(shoppingRepository.savedItems, hasLength(1));
+      expect(shoppingRepository.savedItems.single.quantity, 1);
+    },
+  );
+
   testWidgets('buy-again action shows add-failed feedback on save failure', (
     tester,
   ) async {

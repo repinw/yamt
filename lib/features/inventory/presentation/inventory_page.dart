@@ -7,7 +7,6 @@ import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
-import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryPage extends ConsumerWidget {
@@ -27,18 +26,7 @@ class InventoryPage extends ConsumerWidget {
         onDeleteItem: controller.deleteItem,
         onEatItem: controller.eatItem,
         onThrowAwayItem: controller.throwAwayItem,
-        onBuyAgainItem: (item) {
-          final shoppingController = ref.read(
-            shoppingListControllerProvider.notifier,
-          );
-          final quantity = item.initialQuantity > 0 ? item.initialQuantity : 1;
-          return shoppingController.addItem(
-            name: item.name,
-            brand: item.brand,
-            quantity: quantity,
-            estimatedUnitPrice: item.unitPrice,
-          );
-        },
+        onBuyAgainItem: controller.buyAgainItem,
       ),
       loading: () => const _InventoryLoadingView(),
       error: (error, stackTrace) => _InventoryErrorView(
