@@ -285,6 +285,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shoppingListDecreaseQuantityAction => 'Menge verringern';
 
   @override
+  String shoppingListClearCrossedOffAction(int count) {
+    return 'Durchgestrichene löschen ($count)';
+  }
+
+  @override
+  String get shoppingListClearCrossedOffDialogTitle => 'Durchgestrichene Artikel löschen?';
+
+  @override
+  String get shoppingListClearCrossedOffDialogMessage => 'Alle durchgestrichenen Artikel werden von der Einkaufsliste entfernt.';
+
+  @override
+  String get shoppingListClearCrossedOffConfirmAction => 'Löschen';
+
+  @override
   String get homeCaloriesActionContextPlaceholder => 'Kalorienaktion folgt bald.';
 
   @override

@@ -137,7 +137,7 @@ void main() {
     expect(nextItems.single.name, 'Bread');
   });
 
-  test('decrementQuantity removes item when quantity reaches zero', () {
+  test('decrementQuantity keeps item and sets quantity to zero', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     final controller = container.read(shoppingListControllerProvider.notifier);
@@ -146,8 +146,10 @@ void main() {
     final itemId = container.read(shoppingListControllerProvider).single.id;
 
     controller.decrementQuantity(itemId);
+    final items = container.read(shoppingListControllerProvider);
 
-    expect(container.read(shoppingListControllerProvider), isEmpty);
+    expect(items, hasLength(1));
+    expect(items.single.quantity, 0);
   });
 
   test('decrementQuantity keeps state unchanged for unknown id', () {
@@ -162,5 +164,24 @@ void main() {
     final after = container.read(shoppingListControllerProvider);
 
     expect(after, before);
+  });
+
+  test('clearCrossedOffItems removes only items with quantity zero', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final controller = container.read(shoppingListControllerProvider.notifier);
+
+    controller.addItem(name: 'Milk', quantity: 1);
+    controller.addItem(name: 'Bread', quantity: 2);
+    final items = container.read(shoppingListControllerProvider);
+    final milkId = items.firstWhere((item) => item.name == 'Milk').id;
+
+    controller.decrementQuantity(milkId);
+    controller.clearCrossedOffItems();
+
+    final nextItems = container.read(shoppingListControllerProvider);
+    expect(nextItems, hasLength(1));
+    expect(nextItems.single.name, 'Bread');
+    expect(nextItems.single.quantity, 2);
   });
 }

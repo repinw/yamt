@@ -74,6 +74,10 @@ class ShoppingListController extends _$ShoppingListController {
     _updateQuantity(itemId, (quantity) => quantity - 1);
   }
 
+  void clearCrossedOffItems() {
+    state = state.where((item) => item.quantity > 0).toList(growable: false);
+  }
+
   void _updateQuantity(String itemId, int Function(int quantity) transform) {
     final index = state.indexWhere((item) => item.id == itemId);
     if (index < 0) {
@@ -83,13 +87,9 @@ class ShoppingListController extends _$ShoppingListController {
     final items = List<ShoppingListItem>.from(state);
     final item = items[index];
     final nextQuantity = transform(item.quantity);
-    if (nextQuantity < 1) {
-      items.removeAt(index);
-      state = items;
-      return;
-    }
+    final safeQuantity = nextQuantity < 0 ? 0 : nextQuantity;
 
-    items[index] = item.copyWith(quantity: nextQuantity);
+    items[index] = item.copyWith(quantity: safeQuantity);
     state = items;
   }
 

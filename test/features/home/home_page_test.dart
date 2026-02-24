@@ -6,6 +6,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/'
+    'shopping_quick_add_dialog.dart';
 
 class _MockUser extends Mock implements User {}
 
@@ -97,7 +99,7 @@ void main() {
     expect(find.text('Upload receipt (image/PDF)'), findsOneWidget);
   });
 
-  testWidgets('non-inventory tabs show contextual snackbar', (tester) async {
+  testWidgets('shopping FAB opens add dialog and adds item', (tester) async {
     final container = ProviderContainer(
       overrides: [
         authStateChangesProvider.overrideWith(
@@ -115,9 +117,79 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
     await tester.pumpAndSettle();
+
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
-    expect(find.text('Shopping action coming soon.'), findsOneWidget);
+
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.byKey(ShoppingQuickAddDialogKeys.nameField), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(ShoppingQuickAddDialogKeys.nameField),
+      'Milk',
+    );
+    await tester.enterText(
+      find.byKey(ShoppingQuickAddDialogKeys.brandField),
+      'Acme',
+    );
+    await tester.tap(find.byKey(ShoppingQuickAddDialogKeys.confirmButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('Milk'), findsOneWidget);
+  });
+
+  testWidgets('shopping FAB shows validation error on empty name', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(_MockUser()),
+        ),
+        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(ShoppingQuickAddDialogKeys.nameField),
+      ' ',
+    );
+    await tester.tap(find.byKey(ShoppingQuickAddDialogKeys.confirmButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Please enter an item name.'), findsOneWidget);
+  });
+
+  testWidgets('calories and settings tabs show contextual snackbar', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(_MockUser()),
+        ),
+        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.local_fire_department_outlined));
     await tester.pumpAndSettle();

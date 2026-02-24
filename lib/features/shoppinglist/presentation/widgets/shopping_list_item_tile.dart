@@ -24,6 +24,10 @@ class ShoppingListItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isCrossedOff = item.quantity == 0;
+    final titleStyle = Theme.of(context).textTheme.titleMedium;
+    final subtitleStyle = Theme.of(context).textTheme.bodySmall;
+
     return Dismissible(
       key: ValueKey<String>(item.id),
       direction: DismissDirection.endToStart,
@@ -47,12 +51,23 @@ class ShoppingListItemTile extends StatelessWidget {
       child: Card(
         margin: EdgeInsets.zero,
         child: ListTile(
-          title: Text(item.name),
-          subtitle: Text(_subtitle()),
+          title: Text(
+            item.name,
+            style: titleStyle?.copyWith(
+              decoration: isCrossedOff ? TextDecoration.lineThrough : null,
+            ),
+          ),
+          subtitle: Text(
+            _subtitle(),
+            style: subtitleStyle?.copyWith(
+              decoration: isCrossedOff ? TextDecoration.lineThrough : null,
+            ),
+          ),
           trailing: _ShoppingListQuantityStepper(
             quantity: item.quantity,
+            isCrossedOff: isCrossedOff,
             onIncrement: () => onIncrement(item.id),
-            onDecrement: () => onDecrement(item.id),
+            onDecrement: isCrossedOff ? null : () => onDecrement(item.id),
             increaseTooltip: l10n.shoppingListIncreaseQuantityAction,
             decreaseTooltip: l10n.shoppingListDecreaseQuantityAction,
           ),
@@ -78,6 +93,7 @@ class ShoppingListItemTile extends StatelessWidget {
 class _ShoppingListQuantityStepper extends StatelessWidget {
   const _ShoppingListQuantityStepper({
     required this.quantity,
+    required this.isCrossedOff,
     required this.onIncrement,
     required this.onDecrement,
     required this.increaseTooltip,
@@ -85,8 +101,9 @@ class _ShoppingListQuantityStepper extends StatelessWidget {
   });
 
   final int quantity;
+  final bool isCrossedOff;
   final VoidCallback onIncrement;
-  final VoidCallback onDecrement;
+  final VoidCallback? onDecrement;
   final String increaseTooltip;
   final String decreaseTooltip;
 
@@ -102,9 +119,10 @@ class _ShoppingListQuantityStepper extends StatelessWidget {
         ),
         Text(
           quantity.toString(),
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+            decoration: isCrossedOff ? TextDecoration.lineThrough : null,
+          ),
         ),
         IconButton(
           onPressed: onIncrement,

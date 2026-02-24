@@ -92,6 +92,18 @@
   "shoppingListQuantityLabel": "Qty",
   "shoppingListIncreaseQuantityAction": "Increase quantity",
   "shoppingListDecreaseQuantityAction": "Decrease quantity",
+  "shoppingListClearCrossedOffAction": "Clear crossed-off ({count})",
+  "@shoppingListClearCrossedOffAction": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingListClearCrossedOffDialogTitle": "Clear crossed-off items?",
+  "shoppingListClearCrossedOffDialogMessage":
+      "All crossed-off items will be removed from the shopping list.",
+  "shoppingListClearCrossedOffConfirmAction": "Clear",
   "homeCaloriesActionContextPlaceholder": "Calories action coming soon.",
   "homeSettingsActionContextPlaceholder": "Settings action coming soon.",
   "settingsLanguageTitle": "Language",

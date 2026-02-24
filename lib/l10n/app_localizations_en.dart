@@ -285,6 +285,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingListDecreaseQuantityAction => 'Decrease quantity';
 
   @override
+  String shoppingListClearCrossedOffAction(int count) {
+    return 'Clear crossed-off ($count)';
+  }
+
+  @override
+  String get shoppingListClearCrossedOffDialogTitle => 'Clear crossed-off items?';
+
+  @override
+  String get shoppingListClearCrossedOffDialogMessage => 'All crossed-off items will be removed from the shopping list.';
+
+  @override
+  String get shoppingListClearCrossedOffConfirmAction => 'Clear';
+
+  @override
   String get homeCaloriesActionContextPlaceholder => 'Calories action coming soon.';
 
   @override
