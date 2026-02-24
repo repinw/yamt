@@ -16,7 +16,6 @@ class InventoryItemRowListEntry extends StatelessWidget {
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
-    required this.onBuyAgainItem,
   });
 
   final FridgeItem item;
@@ -27,7 +26,6 @@ class InventoryItemRowListEntry extends StatelessWidget {
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
   final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
-  final Future<bool> Function(FridgeItem item) onBuyAgainItem;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +40,6 @@ class InventoryItemRowListEntry extends StatelessWidget {
           onDeletePressed: onDeleteItem,
           onEatPressed: onEatItem,
           onThrowAwayPressed: onThrowAwayItem,
-          onBuyAgainPressed: onBuyAgainItem,
         ),
       ),
     );

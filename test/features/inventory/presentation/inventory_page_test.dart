@@ -459,7 +459,7 @@ void main() {
     await tester.tap(find.byTooltip('Buy again'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Could not add item. Please try again.'), findsOneWidget);
+    expect(find.text('Action failed. Please try again.'), findsOneWidget);
   });
 
   testWidgets('eat action validates amount above available stock', (

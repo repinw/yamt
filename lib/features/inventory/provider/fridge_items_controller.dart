@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/application/shopping_list_facade.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
-import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 
 part 'fridge_items_controller.g.dart';
 
@@ -104,16 +104,7 @@ class FridgeItemsController extends _$FridgeItemsController {
   }
 
   Future<bool> buyAgainItem(FridgeItem item) {
-    final shoppingController = ref.read(
-      shoppingListControllerProvider.notifier,
-    );
-    final quantity = item.initialQuantity > 0 ? item.initialQuantity : 1;
-    return shoppingController.addItem(
-      name: item.name,
-      brand: item.brand,
-      quantity: quantity,
-      estimatedUnitPrice: item.unitPrice,
-    );
+    return ref.read(shoppingListFacadeProvider).addInventoryItem(item);
   }
 
   Future<List<FridgeItem>> _currentItems() async {

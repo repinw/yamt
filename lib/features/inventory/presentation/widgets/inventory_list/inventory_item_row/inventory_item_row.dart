@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_amount_input_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -18,7 +20,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class InventoryItemRow extends StatefulWidget {
+class InventoryItemRow extends ConsumerStatefulWidget {
   const InventoryItemRow({
     super.key,
     required this.item,
@@ -27,7 +29,6 @@ class InventoryItemRow extends StatefulWidget {
     required this.onDeletePressed,
     required this.onEatPressed,
     required this.onThrowAwayPressed,
-    required this.onBuyAgainPressed,
   });
 
   final FridgeItem item;
@@ -36,13 +37,12 @@ class InventoryItemRow extends StatefulWidget {
   final Future<bool> Function(String itemId) onDeletePressed;
   final Future<bool> Function(String itemId, int amount) onEatPressed;
   final Future<bool> Function(String itemId, int amount) onThrowAwayPressed;
-  final Future<bool> Function(FridgeItem item) onBuyAgainPressed;
 
   @override
-  State<InventoryItemRow> createState() => _InventoryItemRowState();
+  ConsumerState<InventoryItemRow> createState() => _InventoryItemRowState();
 }
 
-class _InventoryItemRowState extends State<InventoryItemRow> {
+class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   var _isExpanded = false;
   var _isWorking = false;
 
@@ -121,11 +121,12 @@ class _InventoryItemRowState extends State<InventoryItemRow> {
   }
 
   void _onBuyAgainPressed() {
+    final controller = ref.read(fridgeItemsControllerProvider.notifier);
     unawaited(
       _runAction(
-        () => widget.onBuyAgainPressed(widget.item),
+        () => controller.buyAgainItem(widget.item),
         successMessage: widget.l10n.inventoryItemBuyAgainSucceeded,
-        failureMessage: widget.l10n.shoppingListAddFailedError,
+        failureMessage: widget.l10n.inventoryItemActionFailed,
       ),
     );
   }
