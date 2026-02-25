@@ -7,6 +7,7 @@ import 'package:yamt/features/auth/provider/auth_form_controller.dart';
 import 'package:yamt/features/auth/provider/auth_repository.dart';
 import 'package:yamt/features/auth/provider/google_auth_controller.dart';
 import 'package:yamt/features/auth/provider/guest_auth_controller.dart';
+import 'package:yamt/features/auth/provider/guest_name_setup_controller.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -96,6 +97,45 @@ void main() {
 
       expect(fakeRepository.guestCalls, 1);
       expect(container.read(guestAuthControllerProvider).hasError, isTrue);
+    });
+  });
+
+  group('GuestNameSetupController', () {
+    test('saveDisplayName updates repository with trimmed value', () async {
+      final fakeRepository = FakeAuthRepository();
+      final container = ProviderContainer(
+        overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(guestNameSetupControllerProvider.notifier)
+          .saveDisplayName('  Guest Wlad  ');
+
+      expect(fakeRepository.guestNameUpdateCalls, 1);
+      expect(fakeRepository.lastGuestDisplayName, 'Guest Wlad');
+      expect(
+        container.read(guestNameSetupControllerProvider).hasError,
+        isFalse,
+      );
+    });
+
+    test('saveDisplayName ignores empty values', () async {
+      final fakeRepository = FakeAuthRepository();
+      final container = ProviderContainer(
+        overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(guestNameSetupControllerProvider.notifier)
+          .saveDisplayName('  ');
+
+      expect(fakeRepository.guestNameUpdateCalls, 0);
+      expect(
+        container.read(guestNameSetupControllerProvider),
+        const AsyncData<void>(null),
+      );
     });
   });
 

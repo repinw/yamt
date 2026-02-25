@@ -57,6 +57,15 @@ _MockUser _authenticatedUser({
   return user;
 }
 
+_MockUser _guestUser({String uid = 'guest-123', String? displayName}) {
+  final user = _MockUser();
+  when(() => user.uid).thenReturn(uid);
+  when(() => user.isAnonymous).thenReturn(true);
+  when(() => user.displayName).thenReturn(displayName);
+  when(() => user.email).thenReturn(null);
+  return user;
+}
+
 void main() {
   testWidgets('shows splash while auth state is loading', (tester) async {
     final container = _createContainerWithAuth(
@@ -152,6 +161,41 @@ void main() {
     );
 
     container.read(appRouterProvider).go(AppRoutes.welcome);
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.homeInventory,
+    );
+  });
+
+  testWidgets('redirects anonymous user without name to guest setup', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_guestUser(displayName: null)),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.guestNameSetup,
+    );
+    expect(find.text('Set your guest name'), findsOneWidget);
+  });
+
+  testWidgets('named anonymous user is routed to home', (tester) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_guestUser(displayName: 'Guest Name')),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
     await _pumpRouterTransition(tester);
 
     expect(

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/auth/guest_name_setup_page.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_barcode_scan_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
@@ -21,8 +22,11 @@ part 'app_router.g.dart';
 GoRouter appRouter(Ref ref) {
   final authState = ref.watch(authStateChangesProvider);
   final isAuthLoading = authState.isLoading;
-  final user = authState.asData?.value;
-  final isAuthenticated = user != null;
+  final currentUser = authState.asData?.value;
+  final isAuthenticated = currentUser != null;
+  final needsGuestNameSetup =
+      currentUser?.isAnonymous == true &&
+      ((currentUser?.displayName ?? '').trim().isEmpty);
 
   return GoRouter(
     initialLocation: AppRoutes.root,
@@ -36,6 +40,16 @@ GoRouter appRouter(Ref ref) {
 
       if (!isAuthenticated) {
         return path == AppRoutes.welcome ? null : AppRoutes.welcome;
+      }
+
+      if (needsGuestNameSetup) {
+        return path == AppRoutes.guestNameSetup
+            ? null
+            : AppRoutes.guestNameSetup;
+      }
+
+      if (path == AppRoutes.guestNameSetup) {
+        return AppRoutes.homeInventory;
       }
 
       if (path == AppRoutes.welcome || isStartupRoute) {
@@ -57,6 +71,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.welcome,
         builder: (context, state) => const WelcomePage(),
+      ),
+      GoRoute(
+        path: AppRoutes.guestNameSetup,
+        builder: (context, state) => const GuestNameSetupPage(),
       ),
       GoRoute(
         path: AppRoutes.home,

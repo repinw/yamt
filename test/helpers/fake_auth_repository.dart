@@ -14,6 +14,8 @@ class FakeAuthRepository implements AuthRepository {
   int signInCalls = 0;
   int registerCalls = 0;
   int guestCalls = 0;
+  int guestNameUpdateCalls = 0;
+  String? lastGuestDisplayName;
 
   @override
   Future<void> signInWithEmailAndPassword({
@@ -43,5 +45,13 @@ class FakeAuthRepository implements AuthRepository {
     if (shouldFailGuest) {
       throw Exception('guest failed');
     }
+  }
+
+  @override
+  Future<void> updateCurrentUserDisplayName({
+    required String displayName,
+  }) async {
+    guestNameUpdateCalls++;
+    lastGuestDisplayName = displayName;
   }
 }

@@ -696,6 +696,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get authSwitchToLogin => 'Bereits ein Konto? Login';
 
   @override
+  String get authGuestNameSetupTitle => 'Gastnamen festlegen';
+
+  @override
+  String get authGuestNameSetupSubtitle => 'Wähle einen Anzeigenamen, damit dein Gastkonto leichter erkennbar ist.';
+
+  @override
+  String get authGuestNameFieldLabel => 'Anzeigename';
+
+  @override
+  String get authGuestNameSaveAction => 'Weiter';
+
+  @override
+  String get authGuestNameRequiredError => 'Bitte einen Anzeigenamen eingeben.';
+
+  @override
   String get emailLabel => 'E-Mail';
 
   @override
