@@ -49,7 +49,11 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
 
   @override
   Widget build(BuildContext context) {
-    final layoutData = _buildLayoutData(context);
+    final activeItemKeys = ref.watch(activeShoppingListItemKeysProvider);
+    final layoutData = _buildLayoutData(
+      context,
+      activeItemKeys: activeItemKeys,
+    );
     final onPrimaryActionPressed = _buildPrimaryActionPressed(layoutData);
 
     return _InventoryItemRowCard(
@@ -78,10 +82,16 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     return _onEatPressed;
   }
 
-  _InventoryItemRowLayoutData _buildLayoutData(BuildContext context) {
+  _InventoryItemRowLayoutData _buildLayoutData(
+    BuildContext context, {
+    required Set<String> activeItemKeys,
+  }) {
     final item = widget.item;
     final hasAdjustableAmount = _buildInputConfig(item) != null;
-    final isAlreadyInShoppingList = _isAlreadyInShoppingList(item);
+    final isAlreadyInShoppingList = _isAlreadyInShoppingList(
+      item,
+      activeItemKeys: activeItemKeys,
+    );
     return _InventoryItemRowLayoutData.fromItem(
       context: context,
       item: item,
@@ -93,11 +103,13 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     );
   }
 
-  bool _isAlreadyInShoppingList(FridgeItem item) {
+  bool _isAlreadyInShoppingList(
+    FridgeItem item, {
+    required Set<String> activeItemKeys,
+  }) {
     if (!item.isFullyConsumed) {
       return false;
     }
-    final activeItemKeys = ref.watch(activeShoppingListItemKeysProvider);
     return ref
         .read(shoppingListFacadeProvider)
         .isInventoryItemInActiveList(
@@ -211,6 +223,9 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   }
 
   void _showActionSnackBar(String message) {
+    if (!mounted) {
+      return;
+    }
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(message)));
