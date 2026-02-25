@@ -7,6 +7,10 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const _receiptGroupBorderAlpha = 0.28;
+const _receiptGroupBorderWidth = 0.8;
+const _receiptGroupElevation = 0.0;
+
 class ReceiptGroupTile extends StatelessWidget {
   const ReceiptGroupTile({
     super.key,
@@ -34,8 +38,7 @@ class ReceiptGroupTile extends StatelessWidget {
 
     return Card(
       margin: EdgeInsets.zero,
-      elevation: AppInventoryReceiptGroupTile.elevation,
-      shadowColor: Colors.transparent,
+      elevation: _receiptGroupElevation,
       surfaceTintColor: Colors.transparent,
       color: colors.surfaceContainerLow,
       clipBehavior: Clip.antiAlias,
@@ -43,9 +46,9 @@ class ReceiptGroupTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.lg),
         side: BorderSide(
           color: colors.outlineVariant.withValues(
-            alpha: AppInventoryReceiptGroupTile.borderAlpha,
+            alpha: _receiptGroupBorderAlpha,
           ),
-          width: AppInventoryReceiptGroupTile.borderWidth,
+          width: _receiptGroupBorderWidth,
         ),
       ),
       child: ExpansionTile(
