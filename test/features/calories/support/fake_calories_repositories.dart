@@ -1,9 +1,16 @@
 import 'dart:async';
 
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_nutrition_ocr_repository_contract.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_product_cache_repository_contract.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_product_lookup_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 
 class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   FakeCalorieLogRepository({List<CalorieEntry>? initialEntries})
@@ -183,5 +190,78 @@ class FakeCalorieSettingsRepository implements CalorieSettingsRepository {
 
   Future<void> dispose() {
     return _controller.close();
+  }
+}
+
+class FakeCalorieProductCacheRepository
+    implements CalorieProductCacheRepositoryContract {
+  final Map<String, CalorieProductProfile> global = <String, CalorieProductProfile>{};
+  final Map<String, CalorieProductProfile> overrides =
+      <String, CalorieProductProfile>{};
+  final List<String> savedOverrideReasons = <String>[];
+
+  @override
+  Future<CalorieProductProfile?> readGlobalProduct(String barcode) async {
+    return global[barcode];
+  }
+
+  @override
+  Future<CalorieProductProfile?> readUserOverride(String barcode) async {
+    return overrides[barcode];
+  }
+
+  @override
+  Future<bool> saveGlobalProduct(CalorieProductProfile profile) async {
+    global[profile.barcode] = profile;
+    return true;
+  }
+
+  @override
+  Future<bool> saveUserOverride({
+    required CalorieProductProfile profile,
+    required String reason,
+  }) async {
+    overrides[profile.barcode] = profile;
+    savedOverrideReasons.add(reason);
+    return true;
+  }
+}
+
+class FakeCalorieProductLookupRepository
+    implements CalorieProductLookupRepositoryContract {
+  FakeCalorieProductLookupRepository({
+    required this.onLookupByBarcode,
+  });
+
+  final Future<CalorieLookupOutcome> Function(String barcode) onLookupByBarcode;
+  final List<CalorieProductProfile> persistedProfiles =
+      <CalorieProductProfile>[];
+
+  @override
+  Future<CalorieLookupOutcome> lookupByBarcode(String rawBarcode) {
+    return onLookupByBarcode(rawBarcode);
+  }
+
+  @override
+  Future<bool> persistGlobalProduct(CalorieProductProfile profile) async {
+    persistedProfiles.add(profile);
+    return true;
+  }
+}
+
+class FakeCalorieNutritionOcrRepository
+    implements CalorieNutritionOcrRepositoryContract {
+  FakeCalorieNutritionOcrRepository({
+    required this.onScanNutritionLabel,
+  });
+
+  final Future<CalorieNutritionOcrResult> Function(String barcode)
+  onScanNutritionLabel;
+
+  @override
+  Future<CalorieNutritionOcrResult> scanNutritionLabel({
+    required String barcode,
+  }) {
+    return onScanNutritionLabel(barcode);
   }
 }

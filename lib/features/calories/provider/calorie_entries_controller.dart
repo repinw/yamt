@@ -4,7 +4,9 @@ import 'dart:developer' show log;
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
@@ -82,7 +84,10 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     state = next;
   }
 
-  Future<bool> saveEntry(CalorieEntry entry) {
+  Future<bool> saveEntry(
+    CalorieEntry entry, {
+    CalorieScannedSourceRef? scannedSourceRef,
+  }) {
     return _runSerializedMutation(() async {
       final repository = ref.read(calorieLogRepositoryProvider);
       final selectedDay = ref.read(calorieDayControllerProvider);
@@ -101,6 +106,12 @@ class CalorieEntriesController extends _$CalorieEntriesController {
         final saved = await repository.saveEntry(entry);
         if (!saved && ref.mounted) {
           state = AsyncData(previousEntries);
+        }
+        if (saved && scannedSourceRef != null) {
+          await _saveUserProductOverride(
+            entry: entry,
+            scannedSourceRef: scannedSourceRef,
+          );
         }
         return saved;
       } catch (error, stackTrace) {
@@ -271,6 +282,32 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     });
 
     return result.future;
+  }
+
+  Future<void> _saveUserProductOverride({
+    required CalorieEntry entry,
+    required CalorieScannedSourceRef scannedSourceRef,
+  }) async {
+    final cacheRepository = ref.read(calorieProductCacheRepositoryProvider);
+    final now = DateTime.now();
+    final profile = CalorieProductProfile.fromEntry(
+      entry: entry,
+      barcode: scannedSourceRef.barcode,
+      source: scannedSourceRef.source,
+      offProductId: scannedSourceRef.offProductId,
+      now: now,
+    );
+    final saved = await cacheRepository.saveUserOverride(
+      profile: profile,
+      reason: 'user_edit_after_scan',
+    );
+    if (!saved) {
+      log(
+        'Failed to persist user calorie override '
+        'for ${scannedSourceRef.barcode}.',
+        name: _entriesControllerLogName,
+      );
+    }
   }
 }
 

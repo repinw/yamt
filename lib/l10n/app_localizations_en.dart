@@ -317,7 +317,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeCaloriesActionContextPlaceholder => 'Calories action coming soon.';
 
   @override
+  String get caloriesAddOptionManual => 'Manual entry';
+
+  @override
+  String get caloriesAddOptionBarcode => 'Scan barcode';
+
+  @override
   String get caloriesFabTooltip => 'Add calorie entry';
+
+  @override
+  String get caloriesBarcodeScannerTitle => 'Scan barcode';
+
+  @override
+  String get caloriesBarcodeResolving => 'Looking up product...';
+
+  @override
+  String get caloriesBarcodeLookupFailed => 'Barcode lookup failed. Please try again.';
+
+  @override
+  String get caloriesBarcodeCandidateTitle => 'Choose product';
+
+  @override
+  String get caloriesBarcodeCandidateSubtitle => 'Multiple products were found for this barcode.';
+
+  @override
+  String get caloriesBarcodeUnknownBrand => 'Unknown brand';
+
+  @override
+  String get caloriesBarcodeNotFoundTitle => 'Product not found';
+
+  @override
+  String get caloriesBarcodeNotFoundMessage => 'No product was found for this barcode.';
+
+  @override
+  String get caloriesBarcodeNotFoundManualAction => 'Manual entry';
+
+  @override
+  String get caloriesBarcodeNotFoundOcrAction => 'Scan nutrition label';
+
+  @override
+  String get caloriesOcrFailed => 'Nutrition label scan failed. Please try again.';
 
   @override
   String get caloriesLoadFailed => 'Could not load calorie entries.';
