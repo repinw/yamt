@@ -110,7 +110,24 @@
       "All crossed-off items will be removed from the shopping list.",
   "shoppingListClearCrossedOffConfirmAction": "Clear",
   "homeCaloriesActionContextPlaceholder": "Calories action coming soon.",
+  "caloriesAddOptionManual": "Manual entry",
+  "caloriesAddOptionBarcode": "Scan barcode",
   "caloriesFabTooltip": "Add calorie entry",
+  "caloriesBarcodeScannerTitle": "Scan barcode",
+  "caloriesBarcodeResolving": "Looking up product...",
+  "caloriesBarcodeLookupFailed":
+      "Barcode lookup failed. Please try again.",
+  "caloriesBarcodeCandidateTitle": "Choose product",
+  "caloriesBarcodeCandidateSubtitle":
+      "Multiple products were found for this barcode.",
+  "caloriesBarcodeUnknownBrand": "Unknown brand",
+  "caloriesBarcodeNotFoundTitle": "Product not found",
+  "caloriesBarcodeNotFoundMessage":
+      "No product was found for this barcode.",
+  "caloriesBarcodeNotFoundManualAction": "Manual entry",
+  "caloriesBarcodeNotFoundOcrAction": "Scan nutrition label",
+  "caloriesOcrFailed":
+      "Nutrition label scan failed. Please try again.",
   "caloriesLoadFailed": "Could not load calorie entries.",
   "caloriesRetryAction": "Retry",
   "caloriesAuthRequired": "Please sign in to manage calories.",

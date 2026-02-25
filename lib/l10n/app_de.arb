@@ -114,7 +114,24 @@
       "Alle durchgestrichenen Artikel werden von der Einkaufsliste entfernt.",
   "shoppingListClearCrossedOffConfirmAction": "Löschen",
   "homeCaloriesActionContextPlaceholder": "Kalorienaktion folgt bald.",
+  "caloriesAddOptionManual": "Manueller Eintrag",
+  "caloriesAddOptionBarcode": "Barcode scannen",
   "caloriesFabTooltip": "Kalorien-Eintrag hinzufügen",
+  "caloriesBarcodeScannerTitle": "Barcode scannen",
+  "caloriesBarcodeResolving": "Produkt wird gesucht...",
+  "caloriesBarcodeLookupFailed":
+      "Barcode-Suche fehlgeschlagen. Bitte erneut versuchen.",
+  "caloriesBarcodeCandidateTitle": "Produkt auswählen",
+  "caloriesBarcodeCandidateSubtitle":
+      "Für diesen Barcode wurden mehrere Produkte gefunden.",
+  "caloriesBarcodeUnknownBrand": "Unbekannte Marke",
+  "caloriesBarcodeNotFoundTitle": "Produkt nicht gefunden",
+  "caloriesBarcodeNotFoundMessage":
+      "Für diesen Barcode wurde kein Produkt gefunden.",
+  "caloriesBarcodeNotFoundManualAction": "Manueller Eintrag",
+  "caloriesBarcodeNotFoundOcrAction": "Nährwertetikett scannen",
+  "caloriesOcrFailed":
+      "Nährwertetikett konnte nicht erkannt werden.",
   "caloriesLoadFailed": "Kalorien-Einträge konnten nicht geladen werden.",
   "caloriesRetryAction": "Erneut versuchen",
   "caloriesAuthRequired": "Bitte melde dich an, um Kalorien zu verwalten.",

@@ -8,6 +8,7 @@ abstract final class AppRoutes {
   static const homeCalories = '/home/calories';
   static const homeCaloriesEntryCreate = '/home/calories/entry/create';
   static const homeCaloriesEntryEdit = '/home/calories/entry/:entryId/edit';
+  static const homeCaloriesBarcodeScan = '/home/calories/barcode-scan';
   static const homeSettings = '/home/settings';
   static const homeSettingsAccount = '/home/settings/account';
 

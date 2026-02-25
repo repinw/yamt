@@ -707,11 +707,89 @@ abstract class AppLocalizations {
   /// **'Calories action coming soon.'**
   String get homeCaloriesActionContextPlaceholder;
 
+  /// No description provided for @caloriesAddOptionManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual entry'**
+  String get caloriesAddOptionManual;
+
+  /// No description provided for @caloriesAddOptionBarcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan barcode'**
+  String get caloriesAddOptionBarcode;
+
   /// No description provided for @caloriesFabTooltip.
   ///
   /// In en, this message translates to:
   /// **'Add calorie entry'**
   String get caloriesFabTooltip;
+
+  /// No description provided for @caloriesBarcodeScannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan barcode'**
+  String get caloriesBarcodeScannerTitle;
+
+  /// No description provided for @caloriesBarcodeResolving.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking up product...'**
+  String get caloriesBarcodeResolving;
+
+  /// No description provided for @caloriesBarcodeLookupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode lookup failed. Please try again.'**
+  String get caloriesBarcodeLookupFailed;
+
+  /// No description provided for @caloriesBarcodeCandidateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose product'**
+  String get caloriesBarcodeCandidateTitle;
+
+  /// No description provided for @caloriesBarcodeCandidateSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple products were found for this barcode.'**
+  String get caloriesBarcodeCandidateSubtitle;
+
+  /// No description provided for @caloriesBarcodeUnknownBrand.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown brand'**
+  String get caloriesBarcodeUnknownBrand;
+
+  /// No description provided for @caloriesBarcodeNotFoundTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Product not found'**
+  String get caloriesBarcodeNotFoundTitle;
+
+  /// No description provided for @caloriesBarcodeNotFoundMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'No product was found for this barcode.'**
+  String get caloriesBarcodeNotFoundMessage;
+
+  /// No description provided for @caloriesBarcodeNotFoundManualAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual entry'**
+  String get caloriesBarcodeNotFoundManualAction;
+
+  /// No description provided for @caloriesBarcodeNotFoundOcrAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan nutrition label'**
+  String get caloriesBarcodeNotFoundOcrAction;
+
+  /// No description provided for @caloriesOcrFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition label scan failed. Please try again.'**
+  String get caloriesOcrFailed;
 
   /// No description provided for @caloriesLoadFailed.
   ///

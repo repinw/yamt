@@ -7,6 +7,8 @@ abstract final class CaloriesPageKeys {
   static const summaryCard = Key('calories_summary_card');
   static const setGoalButton = Key('calories_set_goal_button');
   static const retryButton = Key('calories_retry_button');
+  static const addOptionsManualButton = Key('calories_add_options_manual');
+  static const addOptionsBarcodeButton = Key('calories_add_options_barcode');
 
   static Key sectionCard(String mealType) {
     return Key('calories_section_card_$mealType');
@@ -39,4 +41,12 @@ abstract final class CalorieEntryEditorKeys {
   static const dateButton = Key('calorie_entry_date_button');
   static const timeButton = Key('calorie_entry_time_button');
   static const saveButton = Key('calorie_entry_save_button');
+}
+
+abstract final class CalorieBarcodeScanKeys {
+  static const scannerView = Key('calorie_barcode_scanner_view');
+  static const candidateSheet = Key('calorie_barcode_candidate_sheet');
+  static const notFoundDialog = Key('calorie_barcode_not_found_dialog');
+  static const notFoundManualButton = Key('calorie_barcode_not_found_manual');
+  static const notFoundOcrButton = Key('calorie_barcode_not_found_ocr');
 }

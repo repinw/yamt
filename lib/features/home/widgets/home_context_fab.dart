@@ -5,6 +5,8 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/home/home_tab_page.dart';
 import 'package:yamt/features/home/widgets/home_inventory_fab_flow.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_add_options_sheet.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_quick_add_dialog.dart';
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
@@ -67,7 +69,7 @@ class HomeContextFab extends ConsumerWidget {
         await _openShoppingAddDialog(context, ref, l10n);
         return;
       case HomeTabType.calories:
-        context.push(AppRoutes.homeCaloriesEntryCreate);
+        await _openCaloriesAddOptions(context);
         return;
       case HomeTabType.settings:
         _showSnackBar(context, l10n.homeSettingsActionContextPlaceholder);
@@ -95,4 +97,30 @@ class HomeContextFab extends ConsumerWidget {
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(message)));
   }
+
+  Future<void> _openCaloriesAddOptions(BuildContext context) async {
+    final action = await showModalBottomSheet<_CaloriesAddAction>(
+      context: context,
+      builder: (sheetContext) {
+        return CalorieAddOptionsSheet(
+          onManualTap: () => sheetContext.pop(_CaloriesAddAction.manual),
+          onBarcodeTap: () => sheetContext.pop(_CaloriesAddAction.barcode),
+        );
+      },
+    );
+    if (!context.mounted || action == null) {
+      return;
+    }
+
+    switch (action) {
+      case _CaloriesAddAction.manual:
+        context.push(AppRoutes.homeCaloriesEntryCreate);
+        return;
+      case _CaloriesAddAction.barcode:
+        context.push(AppRoutes.homeCaloriesBarcodeScan);
+        return;
+    }
+  }
 }
+
+enum _CaloriesAddAction { manual, barcode }

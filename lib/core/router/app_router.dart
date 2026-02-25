@@ -4,8 +4,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
+import 'package:yamt/features/calories/presentation/calorie_barcode_scan_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/calories_page.dart';
+import 'package:yamt/features/calories/presentation/models/'
+    'calorie_entry_create_args.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
@@ -65,7 +68,15 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.homeCaloriesEntryCreate,
-        builder: (context, state) => const CalorieEntryEditorPage(),
+        builder: (context, state) {
+          final args = state.extra is CalorieEntryCreateArgs
+              ? state.extra! as CalorieEntryCreateArgs
+              : null;
+          return CalorieEntryEditorPage(
+            prefilledProfile: args?.prefilledProfile,
+            scannedSourceRef: args?.scannedSourceRef,
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.homeCaloriesEntryEdit,
@@ -73,6 +84,10 @@ GoRouter appRouter(Ref ref) {
           final entryId = state.pathParameters['entryId'];
           return CalorieEntryEditorPage(entryId: entryId);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.homeCaloriesBarcodeScan,
+        builder: (context, state) => const CalorieBarcodeScanPage(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

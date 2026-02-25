@@ -317,7 +317,46 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeCaloriesActionContextPlaceholder => 'Kalorienaktion folgt bald.';
 
   @override
+  String get caloriesAddOptionManual => 'Manueller Eintrag';
+
+  @override
+  String get caloriesAddOptionBarcode => 'Barcode scannen';
+
+  @override
   String get caloriesFabTooltip => 'Kalorien-Eintrag hinzufügen';
+
+  @override
+  String get caloriesBarcodeScannerTitle => 'Barcode scannen';
+
+  @override
+  String get caloriesBarcodeResolving => 'Produkt wird gesucht...';
+
+  @override
+  String get caloriesBarcodeLookupFailed => 'Barcode-Suche fehlgeschlagen. Bitte erneut versuchen.';
+
+  @override
+  String get caloriesBarcodeCandidateTitle => 'Produkt auswählen';
+
+  @override
+  String get caloriesBarcodeCandidateSubtitle => 'Für diesen Barcode wurden mehrere Produkte gefunden.';
+
+  @override
+  String get caloriesBarcodeUnknownBrand => 'Unbekannte Marke';
+
+  @override
+  String get caloriesBarcodeNotFoundTitle => 'Produkt nicht gefunden';
+
+  @override
+  String get caloriesBarcodeNotFoundMessage => 'Für diesen Barcode wurde kein Produkt gefunden.';
+
+  @override
+  String get caloriesBarcodeNotFoundManualAction => 'Manueller Eintrag';
+
+  @override
+  String get caloriesBarcodeNotFoundOcrAction => 'Nährwertetikett scannen';
+
+  @override
+  String get caloriesOcrFailed => 'Nährwertetikett konnte nicht erkannt werden.';
 
   @override
   String get caloriesLoadFailed => 'Kalorien-Einträge konnten nicht geladen werden.';

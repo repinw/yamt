@@ -6,15 +6,23 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class CalorieEntryEditorPage extends ConsumerStatefulWidget {
-  const CalorieEntryEditorPage({super.key, this.entryId});
+  const CalorieEntryEditorPage({
+    super.key,
+    this.entryId,
+    this.prefilledProfile,
+    this.scannedSourceRef,
+  });
 
   final String? entryId;
+  final CalorieProductProfile? prefilledProfile;
+  final CalorieScannedSourceRef? scannedSourceRef;
 
   @override
   ConsumerState<CalorieEntryEditorPage> createState() {
@@ -45,19 +53,23 @@ class _CalorieEntryEditorPageState
   @override
   void initState() {
     super.initState();
-    _initializeFromEntry(null);
+    _initializeForCreate();
     _subscribeToEntry();
   }
 
   @override
   void didUpdateWidget(covariant CalorieEntryEditorPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.entryId == widget.entryId) {
+    final didEntryIdChange = oldWidget.entryId != widget.entryId;
+    final oldBarcode = oldWidget.prefilledProfile?.barcode;
+    final nextBarcode = widget.prefilledProfile?.barcode;
+    final didPrefillChange = oldBarcode != nextBarcode;
+    if (!didEntryIdChange && !didPrefillChange) {
       return;
     }
     _entrySubscription?.close();
     _entrySubscription = null;
-    _initializeFromEntry(null);
+    _initializeForCreate();
     _subscribeToEntry();
     if (mounted) {
       setState(() {});
@@ -156,6 +168,33 @@ class _CalorieEntryEditorPageState
     _consumedUnit = entry?.consumedUnit ?? ConsumedUnit.grams;
     _loggedAt = entry?.loggedAt ?? DateTime.now();
     _initializedEntryId = nextEntryId;
+    return true;
+  }
+
+  bool _initializeForCreate() {
+    if (widget.entryId != null) {
+      return false;
+    }
+
+    final prefill = widget.prefilledProfile;
+    final prefillKey = prefill == null
+        ? '__new_entry__'
+        : '__new_entry__${prefill.barcode}_${prefill.source.jsonValue}';
+    if (_initializedEntryId == prefillKey) {
+      return false;
+    }
+
+    _nameController.text = prefill?.name ?? '';
+    _brandController.text = prefill?.brand ?? '';
+    _amountController.text = _formatDouble(100);
+    _per100KcalController.text = _formatDouble(prefill?.per100Kcal ?? 0);
+    _per100ProteinController.text = _formatDouble(prefill?.per100Protein ?? 0);
+    _per100CarbsController.text = _formatDouble(prefill?.per100Carbs ?? 0);
+    _per100FatController.text = _formatDouble(prefill?.per100Fat ?? 0);
+    _mealType = MealType.defaultForDateTime(DateTime.now());
+    _consumedUnit = ConsumedUnit.grams;
+    _loggedAt = DateTime.now();
+    _initializedEntryId = prefillKey;
     return true;
   }
 
@@ -508,7 +547,12 @@ class _CalorieEntryEditorPageState
 
     final saved = await ref
         .read(calorieEntriesControllerProvider.notifier)
-        .saveEntry(entry);
+        .saveEntry(
+          entry,
+          scannedSourceRef: initialEntry == null
+              ? widget.scannedSourceRef
+              : null,
+        );
 
     if (!mounted) {
       return;
