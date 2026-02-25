@@ -6,12 +6,25 @@ import 'package:mocktail/mocktail.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_quick_add_dialog.dart';
+import '../calories/support/fake_calories_repositories.dart';
 import '../shoppinglist/support/fake_shopping_list_repository.dart';
 
 class _MockUser extends Mock implements User {}
+
+_MockUser _authenticatedUser() {
+  final user = _MockUser();
+  when(() => user.uid).thenReturn('uid-123');
+  when(() => user.isAnonymous).thenReturn(false);
+  when(() => user.displayName).thenReturn('Jane Doe');
+  when(() => user.email).thenReturn('jane@example.com');
+  return user;
+}
 
 class _FakeAppPreferences implements AppPreferences {
   _FakeAppPreferences({Map<String, Object>? initialValues})
@@ -54,18 +67,31 @@ class _FakeAppPreferences implements AppPreferences {
 
 ProviderContainer _createContainer() {
   final shoppingRepository = FakeShoppingListRepository();
+  final calorieLogRepository = FakeCalorieLogRepository();
+  final calorieSettingsRepository = FakeCalorieSettingsRepository();
   final container = ProviderContainer(
     overrides: [
       authStateChangesProvider.overrideWith(
-        (ref) => Stream<User?>.value(_MockUser()),
+        (ref) => Stream<User?>.value(_authenticatedUser()),
       ),
       appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
       shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
+      calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+      calorieSettingsRepositoryProvider.overrideWithValue(
+        calorieSettingsRepository,
+      ),
     ],
   );
   addTearDown(container.dispose);
   addTearDown(shoppingRepository.dispose);
+  addTearDown(calorieLogRepository.dispose);
+  addTearDown(calorieSettingsRepository.dispose);
   return container;
+}
+
+Future<void> _pumpUi(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
 }
 
 void main() {
@@ -77,7 +103,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
     );
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     expect(find.text('Inventory'), findsAtLeastNWidgets(1));
     expect(find.byType(AppBar), findsOneWidget);
@@ -92,10 +118,10 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
     );
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     await tester.tap(find.byType(FloatingActionButton));
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     expect(find.text('Scan receipt (camera)'), findsOneWidget);
     expect(find.text('Upload receipt (image/PDF)'), findsOneWidget);
@@ -107,13 +133,13 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
     );
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     await tester.tap(find.byType(FloatingActionButton));
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     expect(find.byType(AlertDialog), findsOneWidget);
     expect(find.byKey(ShoppingQuickAddDialogKeys.nameField), findsOneWidget);
@@ -127,7 +153,7 @@ void main() {
       'Acme',
     );
     await tester.tap(find.byKey(ShoppingQuickAddDialogKeys.confirmButton));
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     expect(find.byType(AlertDialog), findsNothing);
     expect(find.text('Milk'), findsOneWidget);
@@ -141,19 +167,19 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
     );
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     await tester.tap(find.byType(FloatingActionButton));
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
     await tester.enterText(
       find.byKey(ShoppingQuickAddDialogKeys.nameField),
       ' ',
     );
     await tester.tap(find.byKey(ShoppingQuickAddDialogKeys.confirmButton));
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     expect(find.byType(AlertDialog), findsOneWidget);
     expect(find.text('Please enter an item name.'), findsOneWidget);
@@ -167,25 +193,25 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
     );
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     await tester.tap(find.byType(FloatingActionButton));
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
     await tester.enterText(
       find.byKey(ShoppingQuickAddDialogKeys.nameField),
       'Milk',
     );
     await tester.tap(find.byKey(ShoppingQuickAddDialogKeys.cancelButton));
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     expect(find.byType(AlertDialog), findsNothing);
     expect(find.text('Milk'), findsNothing);
   });
 
-  testWidgets('calories and settings tabs show contextual snackbar', (
+  testWidgets('calories tab opens entry editor and settings shows snackbar', (
     tester,
   ) async {
     final container = _createContainer();
@@ -193,18 +219,24 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
     );
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     await tester.tap(find.byIcon(Icons.local_fire_department_outlined));
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
     await tester.tap(find.byType(FloatingActionButton));
-    await tester.pumpAndSettle();
-    expect(find.text('Calories action coming soon.'), findsOneWidget);
+    await _pumpUi(tester);
+    expect(find.text('Add calorie entry'), findsOneWidget);
+    expect(find.byKey(CalorieEntryEditorKeys.nameField), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.settings));
-    await tester.pumpAndSettle();
+    await tester.pageBack();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Add calorie entry'), findsNothing);
+
+    await tester.tap(find.text('Settings').first);
+    await _pumpUi(tester);
     await tester.tap(find.byType(FloatingActionButton));
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
     expect(find.text('Settings action coming soon.'), findsOneWidget);
   });
 }

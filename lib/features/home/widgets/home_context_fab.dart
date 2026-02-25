@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/home/home_tab_page.dart';
 import 'package:yamt/features/home/widgets/home_inventory_fab_flow.dart';
@@ -43,7 +45,7 @@ class HomeContextFab extends ConsumerWidget {
     return switch (currentTab) {
       HomeTabType.inventory => l10n.inventoryFabTooltip,
       HomeTabType.shopping => l10n.shoppingListAddAction,
-      HomeTabType.calories ||
+      HomeTabType.calories => l10n.caloriesFabTooltip,
       HomeTabType.settings => l10n.homeQuickActionTooltip,
     };
   }
@@ -65,7 +67,7 @@ class HomeContextFab extends ConsumerWidget {
         await _openShoppingAddDialog(context, ref, l10n);
         return;
       case HomeTabType.calories:
-        _showSnackBar(context, l10n.homeCaloriesActionContextPlaceholder);
+        context.push(AppRoutes.homeCaloriesEntryCreate);
         return;
       case HomeTabType.settings:
         _showSnackBar(context, l10n.homeSettingsActionContextPlaceholder);
