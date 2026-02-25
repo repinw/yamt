@@ -2,12 +2,104 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // TODO: Replace this generic owner-based rule with collection-specific rules
-    // once your document schema is stable.
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOptionalString(data, key) {
+      return !(key in data) || data[key] == null || data[key] is string;
+    }
+
+    function isAllowedCalorieSource(source) {
+      return source in [
+        'user_override',
+        'global_catalog',
+        'off_barcode',
+        'off_search',
+        'ocr',
+      ];
+    }
+
+    function isValidCalorieProductCore(data) {
+      return data.keys().hasAll([
+          'barcode',
+          'name',
+          'per100_kcal',
+          'per100_protein',
+          'per100_carbs',
+          'per100_fat',
+          'source',
+          'created_at',
+          'updated_at',
+        ])
+        && data.barcode is string
+        && data.name is string
+        && data.per100_kcal is number
+        && data.per100_protein is number
+        && data.per100_carbs is number
+        && data.per100_fat is number
+        && data.created_at is timestamp
+        && data.updated_at is timestamp
+        && data.source is string
+        && isAllowedCalorieSource(data.source)
+        && isOptionalString(data, 'brand')
+        && isOptionalString(data, 'off_product_id');
+    }
+
+    match /calorie_product_catalog/{barcode} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn()
+        && request.resource.data.keys().hasOnly([
+          'barcode',
+          'name',
+          'brand',
+          'per100_kcal',
+          'per100_protein',
+          'per100_carbs',
+          'per100_fat',
+          'source',
+          'off_product_id',
+          'created_at',
+          'updated_at',
+        ])
+        && request.resource.data.barcode == barcode
+        && isValidCalorieProductCore(request.resource.data);
+      allow delete: if false;
+    }
+
+    match /users/{uid}/calorie_product_overrides/{barcode} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow create, update: if isSignedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly([
+          'barcode',
+          'name',
+          'brand',
+          'per100_kcal',
+          'per100_protein',
+          'per100_carbs',
+          'per100_fat',
+          'source',
+          'off_product_id',
+          'created_at',
+          'updated_at',
+          'user_id',
+          'reason',
+        ])
+        && request.resource.data.barcode == barcode
+        && request.resource.data.user_id == uid
+        && request.resource.data.reason is string
+        && request.resource.data.source == 'user_override'
+        && isValidCalorieProductCore(request.resource.data);
+      allow delete: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    // TODO: Replace this generic owner-based rule once all collection
+    // schemas are stable and covered with explicit rules.
     match /{document=**} {
-      allow create: if request.auth != null
+      allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid;
-      allow read, update, delete: if request.auth != null
+      allow read, update, delete: if isSignedIn()
         && resource.data.userId == request.auth.uid;
     }
   }

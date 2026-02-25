@@ -12,7 +12,8 @@ import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_page_keys.dart';
 
 import '../../features/calories/support/fake_calories_repositories.dart';
 
@@ -317,5 +318,28 @@ void main() {
     await _pumpRouterTransition(tester);
     expect(find.text('Edit calorie entry'), findsOneWidget);
     expect(find.text('Entry not found.'), findsOneWidget);
+  });
+
+  testWidgets('barcode scan route is registered on app router', (tester) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    final routes = container
+        .read(appRouterProvider)
+        .configuration
+        .routes
+        .whereType<GoRoute>()
+        .toList();
+    final barcodeRoute = routes.firstWhere(
+      (route) => route.path == AppRoutes.homeCaloriesBarcodeScan,
+    );
+
+    expect(barcodeRoute.path, AppRoutes.homeCaloriesBarcodeScan);
   });
 }
