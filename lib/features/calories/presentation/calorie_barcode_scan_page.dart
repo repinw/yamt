@@ -21,9 +21,14 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 class CalorieBarcodeScanPage extends ConsumerStatefulWidget {
-  const CalorieBarcodeScanPage({super.key, this.barcodeStreamForTesting});
+  const CalorieBarcodeScanPage({
+    super.key,
+    this.barcodeStreamForTesting,
+    this.showScannerPreview = true,
+  });
 
   final Stream<String>? barcodeStreamForTesting;
+  final bool showScannerPreview;
 
   @override
   ConsumerState<CalorieBarcodeScanPage> createState() {
@@ -68,11 +73,14 @@ class _CalorieBarcodeScanPageState
       body: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-          MobileScanner(
-            key: CalorieBarcodeScanKeys.scannerView,
-            controller: _scannerController,
-            onDetect: _onDetect,
-          ),
+          if (widget.showScannerPreview)
+            MobileScanner(
+              key: CalorieBarcodeScanKeys.scannerView,
+              controller: _scannerController,
+              onDetect: _onDetect,
+            )
+          else
+            const SizedBox.expand(key: CalorieBarcodeScanKeys.scannerView),
           if (_isResolving)
             ColoredBox(
               color: Colors.black45,

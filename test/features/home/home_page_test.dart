@@ -8,7 +8,8 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_page_keys.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_quick_add_dialog.dart';
@@ -211,7 +212,7 @@ void main() {
     expect(find.text('Milk'), findsNothing);
   });
 
-  testWidgets('calories tab opens entry editor and settings shows snackbar', (
+  testWidgets('calories FAB opens add-options sheet and manual entry route', (
     tester,
   ) async {
     final container = _createContainer();
@@ -225,13 +226,23 @@ void main() {
     await _pumpUi(tester);
     await tester.tap(find.byType(FloatingActionButton));
     await _pumpUi(tester);
+
+    expect(find.text('Manual entry'), findsOneWidget);
+    expect(find.text('Scan barcode'), findsOneWidget);
+
+    await tester.tap(find.byKey(CaloriesPageKeys.addOptionsManualButton));
+    await _pumpUi(tester);
     expect(find.text('Add calorie entry'), findsOneWidget);
     expect(find.byKey(CalorieEntryEditorKeys.nameField), findsOneWidget);
+  });
 
-    await tester.pageBack();
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(find.text('Add calorie entry'), findsNothing);
+  testWidgets('settings FAB shows context snackbar', (tester) async {
+    final container = _createContainer();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpUi(tester);
 
     await tester.tap(find.text('Settings').first);
     await _pumpUi(tester);
