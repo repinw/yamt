@@ -95,6 +95,54 @@ Future<void> _pumpUi(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('multiple lookup outcome shows candidate picker bottom sheet', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final streamController = StreamController<String>();
+    addTearDown(streamController.close);
+
+    final first = _profile(
+      barcode: '4006381333931',
+      name: 'First',
+      source: CalorieProductSource.offSearch,
+    );
+    final second = _profile(
+      barcode: '4006381333931',
+      name: 'Second',
+      source: CalorieProductSource.offSearch,
+    );
+    final lookupRepository = FakeCalorieProductLookupRepository(
+      onLookupByBarcode: (_) async {
+        return CalorieLookupOutcome.foundMultiple(<CalorieProductCandidate>[
+          CalorieProductCandidate(profile: first, completenessScore: 9),
+          CalorieProductCandidate(profile: second, completenessScore: 8),
+        ]);
+      },
+    );
+    final ocrRepository = FakeCalorieNutritionOcrRepository(
+      onScanNutritionLabel: (_) async {
+        return const CalorieNutritionOcrResult.failed(errorCode: 'unused');
+      },
+    );
+
+    await tester.pumpWidget(
+      _buildHarness(
+        barcodeStream: streamController.stream,
+        lookupRepository: lookupRepository,
+        ocrRepository: ocrRepository,
+      ),
+    );
+    await _pumpUi(tester);
+
+    streamController.add('4006381333931');
+    await _pumpUi(tester);
+
+    expect(find.byKey(CalorieBarcodeScanKeys.candidateSheet), findsOneWidget);
+  });
+
   testWidgets('single lookup outcome opens editor with prefilled profile', (
     tester,
   ) async {
