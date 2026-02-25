@@ -4,8 +4,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
+import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
+import 'package:yamt/features/calories/presentation/calories_page.dart';
 import 'package:yamt/features/home/home_page.dart';
-import 'package:yamt/features/home/home_tab_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:yamt/features/settings/account_page.dart';
@@ -62,6 +63,17 @@ GoRouter appRouter(Ref ref) {
         path: AppRoutes.homeSettingsAccount,
         builder: (context, state) => const AccountPage(),
       ),
+      GoRoute(
+        path: AppRoutes.homeCaloriesEntryCreate,
+        builder: (context, state) => const CalorieEntryEditorPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.homeCaloriesEntryEdit,
+        builder: (context, state) {
+          final entryId = state.pathParameters['entryId'];
+          return CalorieEntryEditorPage(entryId: entryId);
+        },
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             HomePage(navigationShell: navigationShell),
@@ -86,8 +98,7 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.homeCalories,
-                builder: (context, state) =>
-                    const HomeTabPage(tab: HomeTabType.calories),
+                builder: (context, state) => const CaloriesPage(),
               ),
             ],
           ),

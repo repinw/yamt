@@ -6,6 +6,12 @@ abstract final class AppRoutes {
   static const homeInventory = '/home/inventory';
   static const homeShopping = '/home/shopping';
   static const homeCalories = '/home/calories';
+  static const homeCaloriesEntryCreate = '/home/calories/entry/create';
+  static const homeCaloriesEntryEdit = '/home/calories/entry/:entryId/edit';
   static const homeSettings = '/home/settings';
   static const homeSettingsAccount = '/home/settings/account';
+
+  static String homeCaloriesEntryEditPath(String entryId) {
+    return '/home/calories/entry/$entryId/edit';
+  }
 }

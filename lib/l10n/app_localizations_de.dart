@@ -317,6 +317,167 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeCaloriesActionContextPlaceholder => 'Kalorienaktion folgt bald.';
 
   @override
+  String get caloriesFabTooltip => 'Kalorien-Eintrag hinzufügen';
+
+  @override
+  String get caloriesLoadFailed => 'Kalorien-Einträge konnten nicht geladen werden.';
+
+  @override
+  String get caloriesRetryAction => 'Erneut versuchen';
+
+  @override
+  String get caloriesAuthRequired => 'Bitte melde dich an, um Kalorien zu verwalten.';
+
+  @override
+  String get caloriesTodayTitle => 'Heute';
+
+  @override
+  String get caloriesTodayAction => 'Heute';
+
+  @override
+  String get caloriesPreviousDayAction => 'Vorheriger Tag';
+
+  @override
+  String get caloriesNextDayAction => 'Nächster Tag';
+
+  @override
+  String get caloriesSetGoalAction => 'Ziel setzen';
+
+  @override
+  String get caloriesGoalDialogTitle => 'Tagesziel setzen';
+
+  @override
+  String get caloriesGoalFieldLabel => 'Tagesziel in kcal';
+
+  @override
+  String get caloriesGoalSaveAction => 'Ziel speichern';
+
+  @override
+  String get caloriesGoalClearAction => 'Ziel löschen';
+
+  @override
+  String get caloriesGoalInvalidValue => 'Bitte eine Zahl größer als null eingeben.';
+
+  @override
+  String get caloriesGoalSaveFailed => 'Kalorienziel konnte nicht gespeichert werden.';
+
+  @override
+  String get caloriesConsumedLabel => 'Verbraucht';
+
+  @override
+  String get caloriesGoalLabel => 'Ziel';
+
+  @override
+  String get caloriesRemainingLabel => 'Verbleibend';
+
+  @override
+  String get caloriesProteinLabel => 'Eiweiß';
+
+  @override
+  String get caloriesCarbsLabel => 'Kohlenhydrate';
+
+  @override
+  String get caloriesFatLabel => 'Fett';
+
+  @override
+  String get caloriesSectionEmptyState => 'Noch keine Einträge.';
+
+  @override
+  String get caloriesDeleteEntryAction => 'Eintrag löschen';
+
+  @override
+  String get caloriesDeleteEntryDialogTitle => 'Eintrag löschen?';
+
+  @override
+  String caloriesDeleteEntryDialogMessage(String name) {
+    return '\"$name\" für diesen Tag löschen?';
+  }
+
+  @override
+  String get caloriesDeleteEntryConfirmAction => 'Löschen';
+
+  @override
+  String get caloriesDeleteFailed => 'Eintrag konnte nicht gelöscht werden.';
+
+  @override
+  String get caloriesAddEntryTitle => 'Kalorien-Eintrag hinzufügen';
+
+  @override
+  String get caloriesEditEntryTitle => 'Kalorien-Eintrag bearbeiten';
+
+  @override
+  String get caloriesEntryNotFound => 'Eintrag wurde nicht gefunden.';
+
+  @override
+  String get caloriesEntryNameLabel => 'Name';
+
+  @override
+  String get caloriesEntryBrandLabel => 'Marke (optional)';
+
+  @override
+  String get caloriesEntryMealLabel => 'Mahlzeit';
+
+  @override
+  String get caloriesEntryAmountLabel => 'Verzehrte Menge';
+
+  @override
+  String get caloriesEntryUnitLabel => 'Einheit';
+
+  @override
+  String get caloriesPer100SectionTitle => 'Nährwerte pro 100';
+
+  @override
+  String get caloriesPer100KcalLabel => 'Brennwert (kcal)';
+
+  @override
+  String get caloriesPer100ProteinLabel => 'Eiweiß (g)';
+
+  @override
+  String get caloriesPer100CarbsLabel => 'Kohlenhydrate (g)';
+
+  @override
+  String get caloriesPer100FatLabel => 'Fett (g)';
+
+  @override
+  String get caloriesEntryDateTimeLabel => 'Datum und Uhrzeit';
+
+  @override
+  String get caloriesSaveEntryAction => 'Speichern';
+
+  @override
+  String get caloriesSaveFailed => 'Eintrag konnte nicht gespeichert werden.';
+
+  @override
+  String get caloriesRequiredField => 'Pflichtfeld';
+
+  @override
+  String get caloriesInvalidNumber => 'Bitte gültige Zahlen eingeben.';
+
+  @override
+  String get caloriesPositiveNumberValidation => 'Bitte eine Zahl größer als null eingeben.';
+
+  @override
+  String get caloriesNonNegativeNumberValidation => 'Bitte eine Zahl größer oder gleich null eingeben.';
+
+  @override
+  String get caloriesMealBreakfast => 'Frühstück';
+
+  @override
+  String get caloriesMealLunch => 'Mittagessen';
+
+  @override
+  String get caloriesMealDinner => 'Abendessen';
+
+  @override
+  String get caloriesMealSnack => 'Snack';
+
+  @override
+  String get caloriesUnitGram => 'g';
+
+  @override
+  String get caloriesUnitMilliliter => 'ml';
+
+  @override
   String get homeSettingsActionContextPlaceholder => 'Einstellungsaktion folgt bald.';
 
   @override

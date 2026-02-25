@@ -1,0 +1,355 @@
+import 'dart:async';
+import 'dart:developer' show log;
+
+import 'package:flutter/foundation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+
+part 'calorie_entries_controller.g.dart';
+
+const _entriesControllerLogName = 'CalorieEntriesController';
+const _defaultDailyGoalKcal = 2500.0;
+
+class CalorieDaySummary {
+  const CalorieDaySummary({
+    required this.entryCount,
+    required this.totalKcal,
+    required this.totalProtein,
+    required this.totalCarbs,
+    required this.totalFat,
+  });
+
+  final int entryCount;
+  final double totalKcal;
+  final double totalProtein;
+  final double totalCarbs;
+  final double totalFat;
+}
+
+class CalorieMealSection {
+  const CalorieMealSection({
+    required this.mealType,
+    required this.entries,
+    required this.totalKcal,
+  });
+
+  final MealType mealType;
+  final List<CalorieEntry> entries;
+  final double totalKcal;
+}
+
+class CalorieDayViewData {
+  const CalorieDayViewData({
+    required this.selectedDay,
+    required this.summary,
+    required this.sections,
+    required this.goalKcal,
+    required this.remainingKcal,
+    required this.progress,
+  });
+
+  final DateTime selectedDay;
+  final CalorieDaySummary summary;
+  final List<CalorieMealSection> sections;
+  final double goalKcal;
+  final double remainingKcal;
+  final double progress;
+}
+
+@riverpod
+class CalorieEntriesController extends _$CalorieEntriesController {
+  StreamSubscription<List<CalorieEntry>>? _entriesSubscription;
+  Future<void> _mutationQueue = Future<void>.value();
+
+  @override
+  FutureOr<List<CalorieEntry>> build() {
+    ref.watch(calorieLogRepositoryProvider);
+    ref.watch(calorieDayControllerProvider);
+    ref.onDispose(_disposeSubscription);
+    return _restartSubscription();
+  }
+
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    final next = await AsyncValue.guard(_restartSubscription);
+    if (!ref.mounted) {
+      return;
+    }
+    state = next;
+  }
+
+  Future<bool> saveEntry(CalorieEntry entry) {
+    return _runSerializedMutation(() async {
+      final repository = ref.read(calorieLogRepositoryProvider);
+      final selectedDay = ref.read(calorieDayControllerProvider);
+      final previousEntries = await _currentEntries();
+      final nextEntries = _applySavedEntry(
+        previousEntries: previousEntries,
+        entry: entry,
+        selectedDay: selectedDay,
+      );
+
+      if (!listEquals(previousEntries, nextEntries) && ref.mounted) {
+        state = AsyncData(nextEntries);
+      }
+
+      try {
+        final saved = await repository.saveEntry(entry);
+        if (!saved && ref.mounted) {
+          state = AsyncData(previousEntries);
+        }
+        return saved;
+      } catch (error, stackTrace) {
+        log(
+          'Failed to persist calorie entry ${entry.id}.',
+          name: _entriesControllerLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+        if (ref.mounted) {
+          state = AsyncData(previousEntries);
+        }
+        return false;
+      }
+    });
+  }
+
+  Future<bool> deleteEntry(String entryId) {
+    return _runSerializedMutation(() async {
+      final repository = ref.read(calorieLogRepositoryProvider);
+      final previousEntries = await _currentEntries();
+      final nextEntries = previousEntries
+          .where((entry) => entry.id != entryId)
+          .toList(growable: false);
+
+      if (nextEntries.length != previousEntries.length && ref.mounted) {
+        state = AsyncData(nextEntries);
+      }
+
+      try {
+        final deleted = await repository.deleteEntry(entryId);
+        if (!deleted && ref.mounted) {
+          state = AsyncData(previousEntries);
+        }
+        return deleted;
+      } catch (error, stackTrace) {
+        log(
+          'Failed to delete calorie entry $entryId.',
+          name: _entriesControllerLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+        if (ref.mounted) {
+          state = AsyncData(previousEntries);
+        }
+        return false;
+      }
+    });
+  }
+
+  Future<List<CalorieEntry>> _restartSubscription() {
+    final initialEntries = Completer<List<CalorieEntry>>();
+    final repository = ref.read(calorieLogRepositoryProvider);
+    final selectedDay = ref.read(calorieDayControllerProvider);
+    _disposeSubscription();
+
+    _entriesSubscription = repository
+        .watchEntriesForDay(selectedDay)
+        .listen(
+          (entries) {
+            if (!initialEntries.isCompleted) {
+              initialEntries.complete(entries);
+              return;
+            }
+            _onRealtimeEntries(entries);
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            if (!initialEntries.isCompleted) {
+              initialEntries.completeError(error, stackTrace);
+              return;
+            }
+            _onRealtimeError(error, stackTrace);
+          },
+        );
+
+    return initialEntries.future;
+  }
+
+  void _disposeSubscription() {
+    final currentSubscription = _entriesSubscription;
+    _entriesSubscription = null;
+    if (currentSubscription != null) {
+      unawaited(currentSubscription.cancel());
+    }
+  }
+
+  void _onRealtimeEntries(List<CalorieEntry> entries) {
+    if (!ref.mounted) {
+      return;
+    }
+    state = AsyncData(entries);
+  }
+
+  void _onRealtimeError(Object error, StackTrace stackTrace) {
+    if (!ref.mounted) {
+      return;
+    }
+    state = AsyncError(error, stackTrace);
+  }
+
+  Future<List<CalorieEntry>> _currentEntries() async {
+    final currentData = state.asData?.value;
+    if (currentData != null) {
+      return currentData;
+    }
+    return future;
+  }
+
+  List<CalorieEntry> _applySavedEntry({
+    required List<CalorieEntry> previousEntries,
+    required CalorieEntry entry,
+    required DateTime selectedDay,
+  }) {
+    final entries = List<CalorieEntry>.from(previousEntries);
+    final existingIndex = entries.indexWhere((item) => item.id == entry.id);
+    final shouldBeVisible = _isSameLocalDay(entry.loggedAt, selectedDay);
+
+    if (existingIndex >= 0 && !shouldBeVisible) {
+      entries.removeAt(existingIndex);
+      return _sortEntries(entries);
+    }
+
+    if (existingIndex >= 0) {
+      entries[existingIndex] = entry;
+      return _sortEntries(entries);
+    }
+
+    if (shouldBeVisible) {
+      entries.add(entry);
+    }
+
+    return _sortEntries(entries);
+  }
+
+  List<CalorieEntry> _sortEntries(List<CalorieEntry> entries) {
+    entries.sort((left, right) {
+      final byDate = left.loggedAt.compareTo(right.loggedAt);
+      if (byDate != 0) {
+        return byDate;
+      }
+      return left.id.compareTo(right.id);
+    });
+    return List<CalorieEntry>.unmodifiable(entries);
+  }
+
+  bool _isSameLocalDay(DateTime first, DateTime second) {
+    return first.year == second.year &&
+        first.month == second.month &&
+        first.day == second.day;
+  }
+
+  Future<bool> _runSerializedMutation(Future<bool> Function() mutation) {
+    final result = Completer<bool>();
+
+    _mutationQueue = _mutationQueue.then((_) async {
+      try {
+        final mutationResult = await mutation();
+        result.complete(mutationResult);
+      } catch (error, stackTrace) {
+        log(
+          'Unexpected calorie mutation error.',
+          name: _entriesControllerLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+        result.complete(false);
+      }
+    });
+
+    return result.future;
+  }
+}
+
+@riverpod
+Future<CalorieEntry?> calorieEntryById(Ref ref, String entryId) async {
+  return ref.read(calorieLogRepositoryProvider).getById(entryId);
+}
+
+@riverpod
+AsyncValue<CalorieDayViewData> calorieDayViewData(Ref ref) {
+  final selectedDay = ref.watch(calorieDayControllerProvider);
+  final entriesState = ref.watch(calorieEntriesControllerProvider);
+  final goalState = ref.watch(calorieGoalControllerProvider);
+
+  return entriesState.whenData((entries) {
+    final goalKcal =
+        goalState.asData?.value.dailyKcalGoal ?? _defaultDailyGoalKcal;
+    final aggregate = _aggregate(entries);
+    final remaining = goalKcal - aggregate.summary.totalKcal;
+    final progress = goalKcal <= 0
+        ? 0.0
+        : (aggregate.summary.totalKcal / goalKcal).clamp(0.0, 1.0).toDouble();
+
+    return CalorieDayViewData(
+      selectedDay: selectedDay,
+      summary: aggregate.summary,
+      sections: aggregate.sections,
+      goalKcal: goalKcal,
+      remainingKcal: remaining,
+      progress: progress,
+    );
+  });
+}
+
+({CalorieDaySummary summary, List<CalorieMealSection> sections}) _aggregate(
+  List<CalorieEntry> entries,
+) {
+  final sectionEntries = <MealType, List<CalorieEntry>>{
+    for (final mealType in MealType.sectionOrder) mealType: <CalorieEntry>[],
+  };
+  final sectionKcal = <MealType, double>{
+    for (final mealType in MealType.sectionOrder) mealType: 0,
+  };
+
+  var totalKcal = 0.0;
+  var totalProtein = 0.0;
+  var totalCarbs = 0.0;
+  var totalFat = 0.0;
+
+  for (final entry in entries) {
+    totalKcal += entry.totalKcal;
+    totalProtein += entry.totalProtein;
+    totalCarbs += entry.totalCarbs;
+    totalFat += entry.totalFat;
+
+    sectionEntries[entry.mealType]?.add(entry);
+    sectionKcal[entry.mealType] =
+        (sectionKcal[entry.mealType] ?? 0) + entry.totalKcal;
+  }
+
+  final sections = MealType.sectionOrder
+      .map((mealType) {
+        final mealEntries = sectionEntries[mealType] ?? const <CalorieEntry>[];
+        return CalorieMealSection(
+          mealType: mealType,
+          entries: List<CalorieEntry>.unmodifiable(mealEntries),
+          totalKcal: sectionKcal[mealType] ?? 0,
+        );
+      })
+      .toList(growable: false);
+
+  return (
+    summary: CalorieDaySummary(
+      entryCount: entries.length,
+      totalKcal: totalKcal,
+      totalProtein: totalProtein,
+      totalCarbs: totalCarbs,
+      totalFat: totalFat,
+    ),
+    sections: sections,
+  );
+}

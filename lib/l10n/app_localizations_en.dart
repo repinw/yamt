@@ -317,6 +317,167 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeCaloriesActionContextPlaceholder => 'Calories action coming soon.';
 
   @override
+  String get caloriesFabTooltip => 'Add calorie entry';
+
+  @override
+  String get caloriesLoadFailed => 'Could not load calorie entries.';
+
+  @override
+  String get caloriesRetryAction => 'Retry';
+
+  @override
+  String get caloriesAuthRequired => 'Please sign in to manage calories.';
+
+  @override
+  String get caloriesTodayTitle => 'Today';
+
+  @override
+  String get caloriesTodayAction => 'Today';
+
+  @override
+  String get caloriesPreviousDayAction => 'Previous day';
+
+  @override
+  String get caloriesNextDayAction => 'Next day';
+
+  @override
+  String get caloriesSetGoalAction => 'Set goal';
+
+  @override
+  String get caloriesGoalDialogTitle => 'Set daily goal';
+
+  @override
+  String get caloriesGoalFieldLabel => 'Daily kcal goal';
+
+  @override
+  String get caloriesGoalSaveAction => 'Save goal';
+
+  @override
+  String get caloriesGoalClearAction => 'Clear goal';
+
+  @override
+  String get caloriesGoalInvalidValue => 'Please enter a number greater than zero.';
+
+  @override
+  String get caloriesGoalSaveFailed => 'Could not save calorie goal.';
+
+  @override
+  String get caloriesConsumedLabel => 'Consumed';
+
+  @override
+  String get caloriesGoalLabel => 'Goal';
+
+  @override
+  String get caloriesRemainingLabel => 'Remaining';
+
+  @override
+  String get caloriesProteinLabel => 'Protein';
+
+  @override
+  String get caloriesCarbsLabel => 'Carbs';
+
+  @override
+  String get caloriesFatLabel => 'Fat';
+
+  @override
+  String get caloriesSectionEmptyState => 'No entries yet.';
+
+  @override
+  String get caloriesDeleteEntryAction => 'Delete entry';
+
+  @override
+  String get caloriesDeleteEntryDialogTitle => 'Delete entry?';
+
+  @override
+  String caloriesDeleteEntryDialogMessage(String name) {
+    return 'Delete \"$name\" from this day?';
+  }
+
+  @override
+  String get caloriesDeleteEntryConfirmAction => 'Delete';
+
+  @override
+  String get caloriesDeleteFailed => 'Could not delete entry.';
+
+  @override
+  String get caloriesAddEntryTitle => 'Add calorie entry';
+
+  @override
+  String get caloriesEditEntryTitle => 'Edit calorie entry';
+
+  @override
+  String get caloriesEntryNotFound => 'Entry not found.';
+
+  @override
+  String get caloriesEntryNameLabel => 'Name';
+
+  @override
+  String get caloriesEntryBrandLabel => 'Brand (optional)';
+
+  @override
+  String get caloriesEntryMealLabel => 'Meal';
+
+  @override
+  String get caloriesEntryAmountLabel => 'Consumed amount';
+
+  @override
+  String get caloriesEntryUnitLabel => 'Unit';
+
+  @override
+  String get caloriesPer100SectionTitle => 'Nutrition per 100';
+
+  @override
+  String get caloriesPer100KcalLabel => 'Energy (kcal)';
+
+  @override
+  String get caloriesPer100ProteinLabel => 'Protein (g)';
+
+  @override
+  String get caloriesPer100CarbsLabel => 'Carbs (g)';
+
+  @override
+  String get caloriesPer100FatLabel => 'Fat (g)';
+
+  @override
+  String get caloriesEntryDateTimeLabel => 'Date and time';
+
+  @override
+  String get caloriesSaveEntryAction => 'Save';
+
+  @override
+  String get caloriesSaveFailed => 'Could not save entry.';
+
+  @override
+  String get caloriesRequiredField => 'This field is required.';
+
+  @override
+  String get caloriesInvalidNumber => 'Please enter valid numbers.';
+
+  @override
+  String get caloriesPositiveNumberValidation => 'Please enter a number greater than zero.';
+
+  @override
+  String get caloriesNonNegativeNumberValidation => 'Please enter a number equal to or greater than zero.';
+
+  @override
+  String get caloriesMealBreakfast => 'Breakfast';
+
+  @override
+  String get caloriesMealLunch => 'Lunch';
+
+  @override
+  String get caloriesMealDinner => 'Dinner';
+
+  @override
+  String get caloriesMealSnack => 'Snack';
+
+  @override
+  String get caloriesUnitGram => 'g';
+
+  @override
+  String get caloriesUnitMilliliter => 'ml';
+
+  @override
   String get homeSettingsActionContextPlaceholder => 'Settings action coming soon.';
 
   @override

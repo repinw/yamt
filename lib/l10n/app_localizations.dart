@@ -707,6 +707,324 @@ abstract class AppLocalizations {
   /// **'Calories action coming soon.'**
   String get homeCaloriesActionContextPlaceholder;
 
+  /// No description provided for @caloriesFabTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Add calorie entry'**
+  String get caloriesFabTooltip;
+
+  /// No description provided for @caloriesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load calorie entries.'**
+  String get caloriesLoadFailed;
+
+  /// No description provided for @caloriesRetryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get caloriesRetryAction;
+
+  /// No description provided for @caloriesAuthRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in to manage calories.'**
+  String get caloriesAuthRequired;
+
+  /// No description provided for @caloriesTodayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get caloriesTodayTitle;
+
+  /// No description provided for @caloriesTodayAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get caloriesTodayAction;
+
+  /// No description provided for @caloriesPreviousDayAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous day'**
+  String get caloriesPreviousDayAction;
+
+  /// No description provided for @caloriesNextDayAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Next day'**
+  String get caloriesNextDayAction;
+
+  /// No description provided for @caloriesSetGoalAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Set goal'**
+  String get caloriesSetGoalAction;
+
+  /// No description provided for @caloriesGoalDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set daily goal'**
+  String get caloriesGoalDialogTitle;
+
+  /// No description provided for @caloriesGoalFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily kcal goal'**
+  String get caloriesGoalFieldLabel;
+
+  /// No description provided for @caloriesGoalSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save goal'**
+  String get caloriesGoalSaveAction;
+
+  /// No description provided for @caloriesGoalClearAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear goal'**
+  String get caloriesGoalClearAction;
+
+  /// No description provided for @caloriesGoalInvalidValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a number greater than zero.'**
+  String get caloriesGoalInvalidValue;
+
+  /// No description provided for @caloriesGoalSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save calorie goal.'**
+  String get caloriesGoalSaveFailed;
+
+  /// No description provided for @caloriesConsumedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Consumed'**
+  String get caloriesConsumedLabel;
+
+  /// No description provided for @caloriesGoalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get caloriesGoalLabel;
+
+  /// No description provided for @caloriesRemainingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining'**
+  String get caloriesRemainingLabel;
+
+  /// No description provided for @caloriesProteinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein'**
+  String get caloriesProteinLabel;
+
+  /// No description provided for @caloriesCarbsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs'**
+  String get caloriesCarbsLabel;
+
+  /// No description provided for @caloriesFatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat'**
+  String get caloriesFatLabel;
+
+  /// No description provided for @caloriesSectionEmptyState.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries yet.'**
+  String get caloriesSectionEmptyState;
+
+  /// No description provided for @caloriesDeleteEntryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete entry'**
+  String get caloriesDeleteEntryAction;
+
+  /// No description provided for @caloriesDeleteEntryDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete entry?'**
+  String get caloriesDeleteEntryDialogTitle;
+
+  /// No description provided for @caloriesDeleteEntryDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\" from this day?'**
+  String caloriesDeleteEntryDialogMessage(String name);
+
+  /// No description provided for @caloriesDeleteEntryConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get caloriesDeleteEntryConfirmAction;
+
+  /// No description provided for @caloriesDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete entry.'**
+  String get caloriesDeleteFailed;
+
+  /// No description provided for @caloriesAddEntryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add calorie entry'**
+  String get caloriesAddEntryTitle;
+
+  /// No description provided for @caloriesEditEntryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit calorie entry'**
+  String get caloriesEditEntryTitle;
+
+  /// No description provided for @caloriesEntryNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry not found.'**
+  String get caloriesEntryNotFound;
+
+  /// No description provided for @caloriesEntryNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get caloriesEntryNameLabel;
+
+  /// No description provided for @caloriesEntryBrandLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand (optional)'**
+  String get caloriesEntryBrandLabel;
+
+  /// No description provided for @caloriesEntryMealLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal'**
+  String get caloriesEntryMealLabel;
+
+  /// No description provided for @caloriesEntryAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Consumed amount'**
+  String get caloriesEntryAmountLabel;
+
+  /// No description provided for @caloriesEntryUnitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get caloriesEntryUnitLabel;
+
+  /// No description provided for @caloriesPer100SectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition per 100'**
+  String get caloriesPer100SectionTitle;
+
+  /// No description provided for @caloriesPer100KcalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy (kcal)'**
+  String get caloriesPer100KcalLabel;
+
+  /// No description provided for @caloriesPer100ProteinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein (g)'**
+  String get caloriesPer100ProteinLabel;
+
+  /// No description provided for @caloriesPer100CarbsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs (g)'**
+  String get caloriesPer100CarbsLabel;
+
+  /// No description provided for @caloriesPer100FatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat (g)'**
+  String get caloriesPer100FatLabel;
+
+  /// No description provided for @caloriesEntryDateTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date and time'**
+  String get caloriesEntryDateTimeLabel;
+
+  /// No description provided for @caloriesSaveEntryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get caloriesSaveEntryAction;
+
+  /// No description provided for @caloriesSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save entry.'**
+  String get caloriesSaveFailed;
+
+  /// No description provided for @caloriesRequiredField.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required.'**
+  String get caloriesRequiredField;
+
+  /// No description provided for @caloriesInvalidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter valid numbers.'**
+  String get caloriesInvalidNumber;
+
+  /// No description provided for @caloriesPositiveNumberValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a number greater than zero.'**
+  String get caloriesPositiveNumberValidation;
+
+  /// No description provided for @caloriesNonNegativeNumberValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a number equal to or greater than zero.'**
+  String get caloriesNonNegativeNumberValidation;
+
+  /// No description provided for @caloriesMealBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast'**
+  String get caloriesMealBreakfast;
+
+  /// No description provided for @caloriesMealLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch'**
+  String get caloriesMealLunch;
+
+  /// No description provided for @caloriesMealDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner'**
+  String get caloriesMealDinner;
+
+  /// No description provided for @caloriesMealSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Snack'**
+  String get caloriesMealSnack;
+
+  /// No description provided for @caloriesUnitGram.
+  ///
+  /// In en, this message translates to:
+  /// **'g'**
+  String get caloriesUnitGram;
+
+  /// No description provided for @caloriesUnitMilliliter.
+  ///
+  /// In en, this message translates to:
+  /// **'ml'**
+  String get caloriesUnitMilliliter;
+
   /// No description provided for @homeSettingsActionContextPlaceholder.
   ///
   /// In en, this message translates to:
