@@ -20,6 +20,7 @@ class _FakeAccountController extends AccountController {
     this.onLinkGuestWithGoogle,
     this.onOverwriteExisting,
     this.onDeleteGuestAndSignIn,
+    this.onDeleteCurrentAccount,
   });
 
   final Future<void> Function()? onSignOut;
@@ -27,6 +28,7 @@ class _FakeAccountController extends AccountController {
   final Future<void> Function(AuthCredential credential)? onOverwriteExisting;
   final Future<void> Function(AuthCredential credential)?
   onDeleteGuestAndSignIn;
+  final Future<void> Function()? onDeleteCurrentAccount;
 
   @override
   FutureOr<void> build() {}
@@ -53,6 +55,11 @@ class _FakeAccountController extends AccountController {
     AuthCredential credential,
   ) async {
     await onDeleteGuestAndSignIn?.call(credential);
+  }
+
+  @override
+  Future<void> deleteCurrentAccount() async {
+    await onDeleteCurrentAccount?.call();
   }
 }
 
@@ -354,6 +361,91 @@ void main() {
     await tester.tap(find.text('Link with Google'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Overwrite with this guest'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('This sign-in method is not enabled.'), findsOneWidget);
+  });
+
+  testWidgets('delete account cancel keeps account untouched', (tester) async {
+    final user = _MockUser();
+    when(() => user.isAnonymous).thenReturn(false);
+    when(() => user.displayName).thenReturn('Jane');
+    when(() => user.email).thenReturn('jane@example.com');
+    when(() => user.uid).thenReturn('uid-123');
+    var deleteCalled = false;
+
+    await tester.pumpWidget(
+      _wrap(
+        authStream: Stream<User?>.value(user),
+        controller: _FakeAccountController(
+          onDeleteCurrentAccount: () async => deleteCalled = true,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Delete account'));
+    await tester.pumpAndSettle();
+    expect(find.text('Delete account?'), findsOneWidget);
+
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(deleteCalled, isFalse);
+  });
+
+  testWidgets('delete account confirm triggers controller and snackbar', (
+    tester,
+  ) async {
+    final user = _MockUser();
+    when(() => user.isAnonymous).thenReturn(false);
+    when(() => user.displayName).thenReturn('Jane');
+    when(() => user.email).thenReturn('jane@example.com');
+    when(() => user.uid).thenReturn('uid-123');
+    var deleteCalled = false;
+
+    await tester.pumpWidget(
+      _wrap(
+        authStream: Stream<User?>.value(user),
+        controller: _FakeAccountController(
+          onDeleteCurrentAccount: () async => deleteCalled = true,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Delete account'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete'));
+    await tester.pumpAndSettle();
+
+    expect(deleteCalled, isTrue);
+    expect(find.text('Account deleted.'), findsOneWidget);
+  });
+
+  testWidgets('delete account failure shows localized auth error', (
+    tester,
+  ) async {
+    final user = _MockUser();
+    when(() => user.isAnonymous).thenReturn(false);
+    when(() => user.displayName).thenReturn('Jane');
+    when(() => user.email).thenReturn('jane@example.com');
+    when(() => user.uid).thenReturn('uid-123');
+
+    await tester.pumpWidget(
+      _wrap(
+        authStream: Stream<User?>.value(user),
+        controller: _FakeAccountController(
+          onDeleteCurrentAccount: () async =>
+              throw FirebaseAuthException(code: 'operation-not-allowed'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Delete account'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();
 
     expect(find.text('This sign-in method is not enabled.'), findsOneWidget);

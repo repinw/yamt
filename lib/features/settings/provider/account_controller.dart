@@ -160,6 +160,29 @@ class AccountController extends _$AccountController {
     }
   }
 
+  Future<void> deleteCurrentAccount() async {
+    if (!ref.mounted) return;
+    state = const AsyncLoading();
+    try {
+      final user = ref.read(firebaseAuthProvider).currentUser;
+      if (user == null) {
+        throw FirebaseAuthException(
+          code: 'no-current-user',
+          message: 'No authenticated user found.',
+        );
+      }
+      await user.delete();
+
+      if (!ref.mounted) return;
+      state = const AsyncData(null);
+    } catch (error, stackTrace) {
+      if (ref.mounted) {
+        state = AsyncError(error, stackTrace);
+      }
+      rethrow;
+    }
+  }
+
   User _requireAnonymousCurrentUser(FirebaseAuth auth) {
     final user = auth.currentUser;
     final isAnonymous = user?.isAnonymous ?? false;

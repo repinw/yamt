@@ -651,6 +651,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountPageSignOut => 'Sign out';
 
   @override
+  String get accountPageDeleteAction => 'Delete account';
+
+  @override
+  String get accountPageDeleteDialogTitle => 'Delete account?';
+
+  @override
+  String get accountPageDeleteDialogMessage => 'This permanently deletes your account and cannot be undone.';
+
+  @override
+  String get accountPageDeleteDialogConfirmAction => 'Delete';
+
+  @override
+  String get accountPageDeleteSuccess => 'Account deleted.';
+
+  @override
   String get accountPageDisplayName => 'Display name';
 
   @override

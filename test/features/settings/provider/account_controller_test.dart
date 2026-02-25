@@ -90,6 +90,50 @@ void main() {
     expect(container.read(accountControllerProvider).hasError, isTrue);
   });
 
+  test('deleteCurrentAccount deletes authenticated user', () async {
+    final auth = _MockFirebaseAuth();
+    final user = _MockUser();
+    when(() => auth.currentUser).thenReturn(user);
+    when(() => user.delete()).thenAnswer((_) async {});
+
+    final container = ProviderContainer(
+      overrides: [firebaseAuthProvider.overrideWithValue(auth)],
+    );
+    addTearDown(container.dispose);
+
+    await container
+        .read(accountControllerProvider.notifier)
+        .deleteCurrentAccount();
+
+    verify(() => user.delete()).called(1);
+    expect(
+      container.read(accountControllerProvider),
+      const AsyncData<void>(null),
+    );
+  });
+
+  test('deleteCurrentAccount throws when no active user exists', () async {
+    final auth = _MockFirebaseAuth();
+    when(() => auth.currentUser).thenReturn(null);
+
+    final container = ProviderContainer(
+      overrides: [firebaseAuthProvider.overrideWithValue(auth)],
+    );
+    addTearDown(container.dispose);
+
+    await expectLater(
+      container.read(accountControllerProvider.notifier).deleteCurrentAccount(),
+      throwsA(
+        isA<FirebaseAuthException>().having(
+          (e) => e.code,
+          'code',
+          'no-current-user',
+        ),
+      ),
+    );
+    expect(container.read(accountControllerProvider).hasError, isTrue);
+  });
+
   test(
     'linkGuestWithGoogle returns true for linked non-anonymous user',
     () async {
