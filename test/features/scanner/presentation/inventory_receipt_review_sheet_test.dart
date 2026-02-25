@@ -437,8 +437,12 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(
-      find.byKey(const Key('receipt_review_field_discounts')),
-      'coupon 1.20',
+      find.byKey(const Key('receipt_review_discount_name_0')),
+      'coupon',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_discount_amount_0')),
+      'abc',
     );
     await tester.pumpAndSettle();
 

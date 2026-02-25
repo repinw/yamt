@@ -17,7 +17,7 @@ class ReceiptItemEditorFormData {
     required this.weightText,
     required this.brandText,
     required this.categoryText,
-    required this.discountsText,
+    required this.discountEntries,
     required this.receiptDate,
     required this.isDeposit,
     required this.isDiscount,
@@ -31,7 +31,7 @@ class ReceiptItemEditorFormData {
   final String weightText;
   final String brandText;
   final String categoryText;
-  final String discountsText;
+  final List<MapEntry<String, String>> discountEntries;
   final DateTime? receiptDate;
   final bool isDeposit;
   final bool isDiscount;
@@ -77,8 +77,8 @@ class ReceiptItemEditorUpdater {
       );
     }
 
-    final parsedDiscounts = _inputParser.parseDiscounts(
-      formData.discountsText,
+    final parsedDiscounts = _inputParser.parseDiscountEntries(
+      formData.discountEntries,
       locale: locale,
     );
     if (parsedDiscounts == null) {

@@ -28,6 +28,8 @@ class _InventoryReceiptItemEditorSheetState
 
   final _formKey = GlobalKey<FormBuilderState>();
   late final Map<String, dynamic> _initialFormValues;
+  late List<MapEntry<String, String>> _discountEntries;
+  String? _discountsErrorText;
 
   @override
   void initState() {
@@ -35,9 +37,11 @@ class _InventoryReceiptItemEditorSheetState
 
     final item = widget.item;
     final draft = ReceiptItemEditorDraft.fromItem(item);
+    _discountEntries = _toDiscountEntries(item.discounts);
     _initialFormValues = {
       for (final field in ReceiptItemEditorDraftField.values)
-        field.name: draft.valueFor(field),
+        if (field != ReceiptItemEditorDraftField.discounts)
+          field.name: draft.valueFor(field),
       ReceiptItemEditorFormFieldName.entryDate: item.entryDate,
       ReceiptItemEditorFormFieldName.receiptDate: item.receiptDate,
       ReceiptItemEditorFormFieldName.isDeposit: item.isDeposit,
@@ -76,7 +80,9 @@ class _InventoryReceiptItemEditorSheetState
                 onSubmit: _applyChanges,
                 numberValidator: _validateNumbers,
                 weightValidator: _validateWeight,
-                discountsValidator: _validateDiscounts,
+                initialDiscountEntries: _discountEntries,
+                onDiscountEntriesChanged: _onDiscountEntriesChanged,
+                discountsErrorText: _discountsErrorText,
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -168,11 +174,7 @@ class _InventoryReceiptItemEditorSheetState
         name: ReceiptItemEditorDraftField.category.name,
         fallback: '',
       ),
-      discountsText: _readFormValue(
-        values: values,
-        name: ReceiptItemEditorDraftField.discounts.name,
-        fallback: '',
-      ),
+      discountEntries: List<MapEntry<String, String>>.from(_discountEntries),
       receiptDate: _readNullableDate(
         values: values,
         name: ReceiptItemEditorFormFieldName.receiptDate,
@@ -201,15 +203,6 @@ class _InventoryReceiptItemEditorSheetState
     }
     final l10n = AppLocalizations.of(context)!;
     return l10n.inventoryReceiptReviewInvalidNumber;
-  }
-
-  String? _validateDiscounts(String? value) {
-    final discounts = _inputParser.parseDiscounts(value ?? '', locale: _locale);
-    if (discounts != null) {
-      return null;
-    }
-    final l10n = AppLocalizations.of(context)!;
-    return l10n.inventoryReceiptReviewInvalidDiscounts;
   }
 
   String? _validateWeight(String? value) {
@@ -259,17 +252,28 @@ class _InventoryReceiptItemEditorSheetState
         ReceiptItemEditorDraftField.quantity.name,
         ReceiptItemEditorDraftField.unitPrice.name,
       ],
-      ReceiptItemEditorApplyError.invalidDiscounts => <String>[
-        ReceiptItemEditorDraftField.discounts.name,
-      ],
+      ReceiptItemEditorApplyError.invalidDiscounts => const <String>[],
       ReceiptItemEditorApplyError.invalidWeightUnit => <String>[
         ReceiptItemEditorDraftField.weight.name,
       ],
     };
 
+    if (error == ReceiptItemEditorApplyError.invalidDiscounts) {
+      setState(() {
+        _discountsErrorText = message;
+      });
+    }
+
     for (final field in fields) {
       _formKey.currentState?.fields[field]?.invalidate(message);
     }
+  }
+
+  void _onDiscountEntriesChanged(List<MapEntry<String, String>> entries) {
+    setState(() {
+      _discountEntries = entries;
+      _discountsErrorText = null;
+    });
   }
 
   String _currentTextValue(ReceiptItemEditorDraftField field) {
@@ -320,5 +324,19 @@ class _InventoryReceiptItemEditorSheetState
 
   String get _locale {
     return Localizations.localeOf(context).toString();
+  }
+
+  List<MapEntry<String, String>> _toDiscountEntries(
+    Map<String, double> discounts,
+  ) {
+    if (discounts.isEmpty) {
+      return const <MapEntry<String, String>>[];
+    }
+    return discounts.entries
+        .map(
+          (entry) =>
+              MapEntry<String, String>(entry.key, entry.value.toString()),
+        )
+        .toList(growable: false);
   }
 }

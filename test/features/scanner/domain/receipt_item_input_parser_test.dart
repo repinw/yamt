@@ -47,4 +47,25 @@ void main() {
     final parsed = parser.parseDiscounts('coupon 1.20', locale: 'en_US');
     expect(parsed, isNull);
   });
+
+  test(
+    'parseDiscountEntries parses structured rows and ignores empty ones',
+    () {
+      final parsed = parser.parseDiscountEntries(
+        const <MapEntry<String, String>>[
+          MapEntry<String, String>('coupon', '1,20'),
+          MapEntry<String, String>('', ''),
+        ],
+        locale: 'de_DE',
+      );
+      expect(parsed, <String, double>{'coupon': 1.2});
+    },
+  );
+
+  test('parseDiscountEntries returns null when row is incomplete', () {
+    final parsed = parser.parseDiscountEntries(const <MapEntry<String, String>>[
+      MapEntry<String, String>('coupon', ''),
+    ], locale: 'en_US');
+    expect(parsed, isNull);
+  });
 }

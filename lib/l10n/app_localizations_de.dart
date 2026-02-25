@@ -164,7 +164,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewFieldCategory => 'Kategorie';
 
   @override
-  String get inventoryReceiptReviewFieldDiscounts => 'Rabatte (JSON)';
+  String get inventoryReceiptReviewFieldDiscounts => 'Rabatte';
+
+  @override
+  String get inventoryReceiptReviewDiscountNameLabel => 'Rabattname';
+
+  @override
+  String get inventoryReceiptReviewDiscountAmountLabel => 'Betrag';
+
+  @override
+  String get inventoryReceiptReviewAddDiscountAction => 'Rabattzeile hinzufügen';
 
   @override
   String get inventoryReceiptReviewDiscountsHint => 'JSON oder Paare: coupon=-1.50';

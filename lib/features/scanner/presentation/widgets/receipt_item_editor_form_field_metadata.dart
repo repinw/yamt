@@ -17,7 +17,6 @@ class ReceiptItemEditorFieldGroups {
   static const afterWeightUnitFallback = <ReceiptItemEditorDraftField>[
     ReceiptItemEditorDraftField.brand,
     ReceiptItemEditorDraftField.category,
-    ReceiptItemEditorDraftField.discounts,
   ];
 }
 
