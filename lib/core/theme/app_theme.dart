@@ -17,12 +17,22 @@ abstract final class AppTheme {
       seedColor: seedColor,
       brightness: brightness,
     );
+    final scaffoldBackground = _scaffoldBackground(colorScheme);
 
     return ThemeData(
       colorScheme: colorScheme,
+      scaffoldBackgroundColor: scaffoldBackground,
+      canvasColor: scaffoldBackground,
       appBarTheme: AppBarTheme(
-        backgroundColor: colorScheme.surface,
+        backgroundColor: scaffoldBackground,
         foregroundColor: colorScheme.onSurface,
+      ),
+      cardTheme: CardThemeData(
+        color: colorScheme.surfaceContainerLow,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -46,6 +56,17 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
       ),
+    );
+  }
+
+  static Color _scaffoldBackground(ColorScheme colorScheme) {
+    final tintAlpha = colorScheme.brightness == Brightness.dark
+        ? AppThemeBackground.darkTintAlpha
+        : AppThemeBackground.lightTintAlpha;
+
+    return Color.alphaBlend(
+      colorScheme.primary.withValues(alpha: tintAlpha),
+      colorScheme.surface,
     );
   }
 }
