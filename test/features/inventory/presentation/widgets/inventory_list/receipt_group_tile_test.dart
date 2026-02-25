@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
@@ -65,28 +66,37 @@ Widget _buildHarness({
   Future<bool> Function(String itemId, int amount)? onThrowAwayItem,
 }) {
   final localeTag = const Locale('en').toLanguageTag();
-  return ProviderScope(
-    child: MaterialApp(
-      theme: theme,
-      locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: Center(
-          child: SizedBox(
-            width: 360,
-            child: ReceiptGroupTile(
-              group: group,
-              currency: NumberFormat.currency(locale: localeTag, symbol: '€'),
-              dateFormat: DateFormat.yMMMd(localeTag),
-              onDeleteItem: onDeleteItem ?? (_) async => true,
-              onEatItem: onEatItem ?? (itemId, amount) async => true,
-              onThrowAwayItem:
-                  onThrowAwayItem ?? (itemId, amount) async => true,
+  final router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 360,
+              child: ReceiptGroupTile(
+                group: group,
+                currency: NumberFormat.currency(locale: localeTag, symbol: '€'),
+                dateFormat: DateFormat.yMMMd(localeTag),
+                onDeleteItem: onDeleteItem ?? (_) async => true,
+                onEatItem: onEatItem ?? (itemId, amount) async => true,
+                onThrowAwayItem:
+                    onThrowAwayItem ?? (itemId, amount) async => true,
+              ),
             ),
           ),
         ),
       ),
+    ],
+  );
+
+  return ProviderScope(
+    child: MaterialApp.router(
+      routerConfig: router,
+      theme: theme,
+      locale: const Locale('en'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
     ),
   );
 }
@@ -189,5 +199,76 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(deletedItemId, 'a');
+  });
+
+  testWidgets('triggers onEatItem when eat action is confirmed', (
+    tester,
+  ) async {
+    String? eatenItemId;
+    int? eatenAmount;
+    await tester.pumpWidget(
+      _buildHarness(
+        theme: lightTheme,
+        group: _group(),
+        onEatItem: (itemId, amount) async {
+          eatenItemId = itemId;
+          eatenAmount = amount;
+          return true;
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _expand(tester);
+    await tester.tap(find.byTooltip('Eat').first);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      '1',
+    );
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(eatenItemId, isNotNull);
+    expect(<String>['a', 'b'], contains(eatenItemId));
+    expect(eatenAmount, 1);
+  });
+
+  testWidgets('triggers onThrowAwayItem when action is confirmed', (
+    tester,
+  ) async {
+    String? thrownAwayItemId;
+    int? thrownAwayAmount;
+    await tester.pumpWidget(
+      _buildHarness(
+        theme: lightTheme,
+        group: _group(),
+        onThrowAwayItem: (itemId, amount) async {
+          thrownAwayItemId = itemId;
+          thrownAwayAmount = amount;
+          return true;
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _expand(tester);
+    await tester.tap(find.text('Milk'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Throw away').first);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      '1',
+    );
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(thrownAwayItemId, 'a');
+    expect(thrownAwayAmount, 1);
   });
 }
