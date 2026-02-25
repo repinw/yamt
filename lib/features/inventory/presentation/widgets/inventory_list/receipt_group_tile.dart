@@ -7,6 +7,10 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const _receiptGroupBorderAlpha = 0.28;
+const _receiptGroupBorderWidth = 0.8;
+const _receiptGroupElevation = 0.0;
+
 class ReceiptGroupTile extends StatelessWidget {
   const ReceiptGroupTile({
     super.key,
@@ -28,14 +32,34 @@ class ReceiptGroupTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
     final title = group.title(l10n: l10n, dateFormat: dateFormat);
     final subtitle = group.subtitle(l10n: l10n, currency: currency);
 
     return Card(
       margin: EdgeInsets.zero,
+      elevation: _receiptGroupElevation,
+      surfaceTintColor: Colors.transparent,
+      color: colors.surfaceContainerLow,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        side: BorderSide(
+          color: colors.outlineVariant.withValues(
+            alpha: _receiptGroupBorderAlpha,
+          ),
+          width: _receiptGroupBorderWidth,
+        ),
+      ),
       child: ExpansionTile(
         key: PageStorageKey<String>('receipt_group_${group.key}'),
         initiallyExpanded: false,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
+        collapsedShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
         tilePadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.xxs,
