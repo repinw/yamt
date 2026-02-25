@@ -60,6 +60,9 @@ InventoryReceiptGroup _group() {
 Widget _buildHarness({
   required ThemeData theme,
   required InventoryReceiptGroup group,
+  Future<bool> Function(String itemId)? onDeleteItem,
+  Future<bool> Function(String itemId, int amount)? onEatItem,
+  Future<bool> Function(String itemId, int amount)? onThrowAwayItem,
 }) {
   final localeTag = const Locale('en').toLanguageTag();
   return ProviderScope(
@@ -76,9 +79,10 @@ Widget _buildHarness({
               group: group,
               currency: NumberFormat.currency(locale: localeTag, symbol: '€'),
               dateFormat: DateFormat.yMMMd(localeTag),
-              onDeleteItem: (_) async => true,
-              onEatItem: (itemId, amount) async => true,
-              onThrowAwayItem: (itemId, amount) async => true,
+              onDeleteItem: onDeleteItem ?? (_) async => true,
+              onEatItem: onEatItem ?? (itemId, amount) async => true,
+              onThrowAwayItem:
+                  onThrowAwayItem ?? (itemId, amount) async => true,
             ),
           ),
         ),
@@ -140,5 +144,50 @@ void main() {
       find.byType(Scaffold),
       matchesGoldenFile('goldens/receipt_group_tile_dark_collapsed.png'),
     );
+  });
+
+  testWidgets('golden: dark expanded', (tester) async {
+    await _pump(tester, theme: darkTheme);
+    await _expand(tester);
+    await expectLater(
+      find.byType(Scaffold),
+      matchesGoldenFile('goldens/receipt_group_tile_dark_expanded.png'),
+    );
+  });
+
+  testWidgets('expanded tile shows receipt item rows', (tester) async {
+    await _pump(tester, theme: lightTheme);
+    expect(find.text('Milk'), findsNothing);
+    expect(find.text('Bread'), findsNothing);
+
+    await _expand(tester);
+
+    expect(find.text('Milk'), findsOneWidget);
+    expect(find.text('Bread'), findsOneWidget);
+  });
+
+  testWidgets('triggers onDeleteItem when delete button is pressed', (
+    tester,
+  ) async {
+    String? deletedItemId;
+    await tester.pumpWidget(
+      _buildHarness(
+        theme: lightTheme,
+        group: _group(),
+        onDeleteItem: (itemId) async {
+          deletedItemId = itemId;
+          return true;
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _expand(tester);
+    await tester.tap(find.text('Milk'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete'));
+    await tester.pumpAndSettle();
+
+    expect(deletedItemId, 'a');
   });
 }
