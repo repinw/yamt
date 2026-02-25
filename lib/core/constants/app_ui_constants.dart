@@ -176,3 +176,9 @@ class AppInventoryBuyAgainActionColors {
   final Color borderColor;
   final Color iconColor;
 }
+
+abstract final class AppInventoryReceiptGroupTile {
+  static const double borderAlpha = 0.28;
+  static const double borderWidth = 0.8;
+  static const double elevation = 0;
+}

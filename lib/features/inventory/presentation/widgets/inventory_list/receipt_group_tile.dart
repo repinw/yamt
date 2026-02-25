@@ -28,14 +28,35 @@ class ReceiptGroupTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
     final title = group.title(l10n: l10n, dateFormat: dateFormat);
     final subtitle = group.subtitle(l10n: l10n, currency: currency);
 
     return Card(
       margin: EdgeInsets.zero,
+      elevation: AppInventoryReceiptGroupTile.elevation,
+      shadowColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      color: colors.surfaceContainerLow,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        side: BorderSide(
+          color: colors.outlineVariant.withValues(
+            alpha: AppInventoryReceiptGroupTile.borderAlpha,
+          ),
+          width: AppInventoryReceiptGroupTile.borderWidth,
+        ),
+      ),
       child: ExpansionTile(
         key: PageStorageKey<String>('receipt_group_${group.key}'),
         initiallyExpanded: false,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
+        collapsedShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
         tilePadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.xxs,
