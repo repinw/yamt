@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/application/shopping_list_facade.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
@@ -19,6 +18,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_snapshot.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
+import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryItemRow extends ConsumerStatefulWidget {
@@ -49,10 +49,12 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
 
   @override
   Widget build(BuildContext context) {
-    final activeItemKeys = ref.watch(activeShoppingListItemKeysProvider);
+    final isAlreadyInShoppingList = ref.watch(
+      isInventoryItemInActiveShoppingListProvider(widget.item),
+    );
     final layoutData = _buildLayoutData(
       context,
-      activeItemKeys: activeItemKeys,
+      isAlreadyInShoppingList: isAlreadyInShoppingList,
     );
     final onPrimaryActionPressed = _buildPrimaryActionPressed(layoutData);
 
@@ -84,14 +86,10 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
 
   _InventoryItemRowLayoutData _buildLayoutData(
     BuildContext context, {
-    required Set<String> activeItemKeys,
+    required bool isAlreadyInShoppingList,
   }) {
     final item = widget.item;
     final hasAdjustableAmount = _buildInputConfig(item) != null;
-    final isAlreadyInShoppingList = _isAlreadyInShoppingList(
-      item,
-      activeItemKeys: activeItemKeys,
-    );
     return _InventoryItemRowLayoutData.fromItem(
       context: context,
       item: item,
@@ -101,21 +99,6 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       isWorking: _isWorking,
       isAlreadyInShoppingList: isAlreadyInShoppingList,
     );
-  }
-
-  bool _isAlreadyInShoppingList(
-    FridgeItem item, {
-    required Set<String> activeItemKeys,
-  }) {
-    if (!item.isFullyConsumed) {
-      return false;
-    }
-    return ref
-        .read(shoppingListFacadeProvider)
-        .isInventoryItemInActiveList(
-          item: item,
-          activeItemKeys: activeItemKeys,
-        );
   }
 
   void _toggleExpanded() {

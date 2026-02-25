@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/application/shopping_list_facade.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 
 part 'fridge_items_controller.g.dart';
 
