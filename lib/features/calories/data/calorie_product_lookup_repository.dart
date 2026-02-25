@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' show log;
 
@@ -10,7 +11,8 @@ import 'package:yamt/features/calories/data/'
 import 'package:yamt/features/calories/data/'
     'calorie_product_lookup_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_barcode_utils.dart';
-import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_product_lookup_models.dart';
 
 part 'calorie_product_lookup_repository.g.dart';
 
@@ -18,6 +20,7 @@ const _lookupLogName = 'CalorieProductLookupRepository';
 const _offBaseUrl = 'world.openfoodfacts.org';
 const _lookupErrorInvalidBarcode = 'invalid_barcode';
 const _lookupErrorRequestFailed = 'off_request_failed';
+const _offLookupTimeout = Duration(seconds: 10);
 
 @riverpod
 http.Client calorieLookupHttpClient(Ref ref) {
@@ -37,13 +40,16 @@ class OffBackedCalorieProductLookupRepository
   OffBackedCalorieProductLookupRepository({
     required CalorieProductCacheRepositoryContract cacheRepository,
     required http.Client httpClient,
+    Duration requestTimeout = _offLookupTimeout,
     DateTime Function()? now,
   }) : _cacheRepository = cacheRepository,
        _httpClient = httpClient,
+       _requestTimeout = requestTimeout,
        _now = now ?? DateTime.now;
 
   final CalorieProductCacheRepositoryContract _cacheRepository;
   final http.Client _httpClient;
+  final Duration _requestTimeout;
   final DateTime Function() _now;
 
   @override
@@ -89,12 +95,11 @@ class OffBackedCalorieProductLookupRepository
 
       return CalorieLookupOutcome.foundMultiple(candidates);
     } catch (error, stackTrace) {
-      log(
-        'OFF lookup failed for barcode $barcode.',
-        name: _lookupLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
+      final isTimeout = error is TimeoutException;
+      final message = isTimeout
+          ? 'OFF lookup timed out for barcode $barcode.'
+          : 'OFF lookup failed for barcode $barcode.';
+      log(message, name: _lookupLogName, error: error, stackTrace: stackTrace);
       return const CalorieLookupOutcome.failed(
         errorCode: _lookupErrorRequestFailed,
       );
@@ -116,7 +121,7 @@ class OffBackedCalorieProductLookupRepository
         'fields': '_id,code,product_name,brands,nutriments,status',
       },
     );
-    final response = await _httpClient.get(uri);
+    final response = await _httpClient.get(uri).timeout(_requestTimeout);
     if (response.statusCode != 200) {
       return null;
     }
@@ -146,19 +151,15 @@ class OffBackedCalorieProductLookupRepository
   Future<List<CalorieProductCandidate>> _searchCandidates(
     String barcode,
   ) async {
-    final uri = Uri.https(
-      _offBaseUrl,
-      '/cgi/search.pl',
-      <String, String>{
-        'search_terms': barcode,
-        'search_simple': '1',
-        'action': 'process',
-        'json': '1',
-        'page_size': '20',
-        'fields': '_id,code,product_name,brands,nutriments',
-      },
-    );
-    final response = await _httpClient.get(uri);
+    final uri = Uri.https(_offBaseUrl, '/cgi/search.pl', <String, String>{
+      'search_terms': barcode,
+      'search_simple': '1',
+      'action': 'process',
+      'json': '1',
+      'page_size': '20',
+      'fields': '_id,code,product_name,brands,nutriments',
+    });
+    final response = await _httpClient.get(uri).timeout(_requestTimeout);
     if (response.statusCode != 200) {
       return const <CalorieProductCandidate>[];
     }
@@ -191,7 +192,8 @@ class OffBackedCalorieProductLookupRepository
 
     final uniqueByKey = <String, CalorieProductProfile>{};
     for (final profile in profiles) {
-      final key = '${profile.name.toLowerCase()}::'
+      final key =
+          '${profile.name.toLowerCase()}::'
           '${profile.brand?.toLowerCase() ?? ''}';
       uniqueByKey.putIfAbsent(key, () => profile);
     }

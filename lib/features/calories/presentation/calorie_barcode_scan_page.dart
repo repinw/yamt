@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,20 +8,20 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_barcode_utils.dart';
-import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_barcode_candidate_picker_sheet.dart';
-import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
-import 'package:yamt/features/calories/provider/calorie_barcode_flow_controller.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_page_keys.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_barcode_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class CalorieBarcodeScanPage extends ConsumerStatefulWidget {
-  const CalorieBarcodeScanPage({
-    super.key,
-    this.barcodeStreamForTesting,
-  });
+  const CalorieBarcodeScanPage({super.key, this.barcodeStreamForTesting});
 
   final Stream<String>? barcodeStreamForTesting;
 
@@ -30,10 +31,14 @@ class CalorieBarcodeScanPage extends ConsumerStatefulWidget {
   }
 }
 
-class _CalorieBarcodeScanPageState extends ConsumerState<CalorieBarcodeScanPage> {
+class _CalorieBarcodeScanPageState
+    extends ConsumerState<CalorieBarcodeScanPage> {
+  static const _logName = 'CalorieBarcodeScanPage';
+
   final MobileScannerController _scannerController = MobileScannerController();
   StreamSubscription<String>? _testBarcodeSubscription;
   bool _isResolving = false;
+  bool _isDisposed = false;
 
   @override
   void initState() {
@@ -49,6 +54,7 @@ class _CalorieBarcodeScanPageState extends ConsumerState<CalorieBarcodeScanPage>
 
   @override
   void dispose() {
+    _isDisposed = true;
     _testBarcodeSubscription?.cancel();
     _scannerController.dispose();
     super.dispose();
@@ -112,7 +118,7 @@ class _CalorieBarcodeScanPageState extends ConsumerState<CalorieBarcodeScanPage>
     setState(() {
       _isResolving = true;
     });
-    await _scannerController.stop();
+    await _stopScanner();
 
     try {
       final outcome = await ref
@@ -130,8 +136,40 @@ class _CalorieBarcodeScanPageState extends ConsumerState<CalorieBarcodeScanPage>
         setState(() {
           _isResolving = false;
         });
-        await _scannerController.start();
+        await _startScanner();
       }
+    }
+  }
+
+  Future<void> _stopScanner() async {
+    if (_isDisposed) {
+      return;
+    }
+    try {
+      await _scannerController.stop();
+    } catch (error, stackTrace) {
+      log(
+        'Stopping barcode scanner failed.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<void> _startScanner() async {
+    if (_isDisposed) {
+      return;
+    }
+    try {
+      await _scannerController.start();
+    } catch (error, stackTrace) {
+      log(
+        'Starting barcode scanner failed.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -230,9 +268,7 @@ class _CalorieBarcodeScanPageState extends ConsumerState<CalorieBarcodeScanPage>
           return;
         }
         if (ocrResult.status == CalorieNutritionOcrStatus.failed) {
-          _showSnackBar(
-            AppLocalizations.of(context)!.caloriesOcrFailed,
-          );
+          _showSnackBar(AppLocalizations.of(context)!.caloriesOcrFailed);
         }
         return;
       case _CalorieNotFoundAction.cancel:

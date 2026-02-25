@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
-import 'package:yamt/features/calories/data/calorie_product_lookup_repository.dart';
-import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_product_lookup_repository.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_product_lookup_models.dart';
 
 import '../support/fake_calories_repositories.dart';
 
@@ -179,5 +182,25 @@ void main() {
     expect(outcome.candidates, hasLength(2));
     expect(outcome.candidates.first.profile.name, 'A Product');
     expect(outcome.candidates.last.profile.name, 'B Product');
+  });
+
+  test('OFF lookup returns failed when request times out', () async {
+    final cache = FakeCalorieProductCacheRepository();
+    final httpClient = _FakeHttpClient(
+      onGet: (uri) async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        return http.Response(jsonEncode(<String, Object?>{'status': 0}), 200);
+      },
+    );
+    final repository = OffBackedCalorieProductLookupRepository(
+      cacheRepository: cache,
+      httpClient: httpClient,
+      requestTimeout: const Duration(milliseconds: 10),
+      now: () => DateTime(2026, 2, 25, 10),
+    );
+
+    final outcome = await repository.lookupByBarcode('4006381333931');
+
+    expect(outcome.status, CalorieLookupStatus.failed);
   });
 }

@@ -11,7 +11,8 @@ import 'package:mime/mime.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_nutrition_ocr_repository_contract.dart';
-import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_product_lookup_models.dart';
 
 part 'calorie_nutrition_ocr_repository.g.dart';
 
@@ -256,10 +257,7 @@ class FirebaseCalorieNutritionOcrRepository
       'carbohydrates',
       'per100_carbs',
     ]);
-    final fat = _extractDouble(flat, const <String>[
-      'fat',
-      'per100_fat',
-    ]);
+    final fat = _extractDouble(flat, const <String>['fat', 'per100_fat']);
 
     if ((name == null || name.isEmpty) && kcal <= 0) {
       return null;
@@ -344,16 +342,17 @@ class FirebaseCalorieNutritionOcrRepository
     if (value is num) {
       return value.toDouble();
     }
-    if (value is String) {
-      return double.tryParse(value.replaceAll(',', '.').trim());
+    if (value is! String) {
+      return null;
     }
-    return null;
+    final normalized = value.replaceAll(',', '.').trim();
+    if (normalized.isEmpty) {
+      return null;
+    }
+    return double.tryParse(normalized);
   }
 
-  String _detectMimeType({
-    required String fileName,
-    required List<int> bytes,
-  }) {
+  String _detectMimeType({required String fileName, required List<int> bytes}) {
     final length = bytes.length < _lookupHeaderLength
         ? bytes.length
         : _lookupHeaderLength;
