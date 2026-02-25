@@ -39,10 +39,34 @@ class _CalorieEntryEditorPageState
   ConsumedUnit _consumedUnit = ConsumedUnit.grams;
   DateTime _loggedAt = DateTime.now();
   String? _initializedEntryId;
+  ProviderSubscription<AsyncValue<CalorieEntry?>>? _entrySubscription;
   bool _isSaving = false;
 
   @override
+  void initState() {
+    super.initState();
+    _initializeFromEntry(null);
+    _subscribeToEntry();
+  }
+
+  @override
+  void didUpdateWidget(covariant CalorieEntryEditorPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.entryId == widget.entryId) {
+      return;
+    }
+    _entrySubscription?.close();
+    _entrySubscription = null;
+    _initializeFromEntry(null);
+    _subscribeToEntry();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
   void dispose() {
+    _entrySubscription?.close();
     _nameController.dispose();
     _brandController.dispose();
     _amountController.dispose();
@@ -81,7 +105,6 @@ class _CalorieEntryEditorPageState
 
     final entryId = widget.entryId;
     if (entryId == null) {
-      _initializeFromEntry(null);
       return _buildEditorScaffold(context, user: user, initialEntry: null);
     }
 
@@ -94,7 +117,6 @@ class _CalorieEntryEditorPageState
             body: Center(child: Text(l10n.caloriesEntryNotFound)),
           );
         }
-        _initializeFromEntry(entry);
         return _buildEditorScaffold(context, user: user, initialEntry: entry);
       },
       loading: () => const Scaffold(
@@ -116,10 +138,10 @@ class _CalorieEntryEditorPageState
     );
   }
 
-  void _initializeFromEntry(CalorieEntry? entry) {
+  bool _initializeFromEntry(CalorieEntry? entry) {
     final nextEntryId = entry?.id ?? '__new_entry__';
     if (_initializedEntryId == nextEntryId) {
-      return;
+      return false;
     }
 
     _nameController.text = entry?.name ?? '';
@@ -134,6 +156,30 @@ class _CalorieEntryEditorPageState
     _consumedUnit = entry?.consumedUnit ?? ConsumedUnit.grams;
     _loggedAt = entry?.loggedAt ?? DateTime.now();
     _initializedEntryId = nextEntryId;
+    return true;
+  }
+
+  void _subscribeToEntry() {
+    final entryId = widget.entryId;
+    if (entryId == null) {
+      return;
+    }
+
+    _entrySubscription = ref.listenManual<AsyncValue<CalorieEntry?>>(
+      calorieEntryByIdProvider(entryId),
+      (previous, next) {
+        final entry = next.asData?.value;
+        if (entry == null || !mounted) {
+          return;
+        }
+        final changed = _initializeFromEntry(entry);
+        if (!changed) {
+          return;
+        }
+        setState(() {});
+      },
+      fireImmediately: true,
+    );
   }
 
   Scaffold _buildEditorScaffold(

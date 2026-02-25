@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 
+/// Parses numeric JSON values from `num` or locale-like `String` input.
 class FlexibleDoubleConverter implements JsonConverter<double, Object?> {
   const FlexibleDoubleConverter();
 

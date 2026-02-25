@@ -180,4 +180,88 @@ void main() {
     expect(find.text('This field is required.'), findsOneWidget);
     expect(logRepository.entries, isEmpty);
   });
+
+  testWidgets('validation blocks save for negative consumed amount', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.homeCaloriesEntryCreate,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(CalorieEntryEditorKeys.nameField),
+      'Greek Yogurt',
+    );
+    await tester.enterText(
+      find.byKey(CalorieEntryEditorKeys.amountField),
+      '-10',
+    );
+    await tester.enterText(
+      find.byKey(CalorieEntryEditorKeys.per100KcalField),
+      '95',
+    );
+
+    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Please enter a number greater than zero.'),
+      findsOneWidget,
+    );
+    expect(logRepository.entries, isEmpty);
+  });
+
+  testWidgets('validation blocks save for invalid number characters', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.homeCaloriesEntryCreate,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(CalorieEntryEditorKeys.nameField),
+      'Greek Yogurt',
+    );
+    await tester.enterText(
+      find.byKey(CalorieEntryEditorKeys.amountField),
+      '200',
+    );
+    await tester.enterText(
+      find.byKey(CalorieEntryEditorKeys.per100KcalField),
+      '95',
+    );
+    await tester.enterText(
+      find.byKey(CalorieEntryEditorKeys.per100ProteinField),
+      'abc',
+    );
+
+    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Please enter a number equal to or greater than zero.'),
+      findsOneWidget,
+    );
+    expect(logRepository.entries, isEmpty);
+  });
 }
