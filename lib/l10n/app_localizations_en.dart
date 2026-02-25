@@ -615,6 +615,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountPageLinkGoogle => 'Link with Google';
 
   @override
+  String get accountPageLinkEmailPassword => 'Link with email & password';
+
+  @override
+  String get accountPageLinkEmailPasswordTitle => 'Link guest account';
+
+  @override
+  String get accountPageLinkEmailPasswordDescription => 'Create email sign-in credentials for this guest account.';
+
+  @override
+  String get accountPageLinkEmailPasswordConfirmAction => 'Link account';
+
+  @override
   String get accountPageLinkSuccess => 'Account linked successfully.';
 
   @override

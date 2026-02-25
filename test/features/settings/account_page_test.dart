@@ -60,6 +60,7 @@ void main() {
 
     expect(find.text('Guest account'), findsOneWidget);
     expect(find.text('Link with Google'), findsOneWidget);
+    expect(find.text('Link with email & password'), findsOneWidget);
     expect(find.text('Not set'), findsNWidgets(2));
     expect(find.text('guest-123'), findsOneWidget);
   });

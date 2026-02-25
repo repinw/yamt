@@ -615,6 +615,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get accountPageLinkGoogle => 'Mit Google verknüpfen';
 
   @override
+  String get accountPageLinkEmailPassword => 'Mit E-Mail & Passwort verknüpfen';
+
+  @override
+  String get accountPageLinkEmailPasswordTitle => 'Gastkonto verknüpfen';
+
+  @override
+  String get accountPageLinkEmailPasswordDescription => 'Lege E-Mail-Anmeldedaten für dieses Gastkonto an.';
+
+  @override
+  String get accountPageLinkEmailPasswordConfirmAction => 'Konto verknüpfen';
+
+  @override
   String get accountPageLinkSuccess => 'Konto erfolgreich verknüpft.';
 
   @override

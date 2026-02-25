@@ -18,6 +18,7 @@ class _FakeAccountController extends AccountController {
   _FakeAccountController({
     this.onSignOut,
     this.onLinkGuestWithGoogle,
+    this.onLinkGuestWithEmailPassword,
     this.onOverwriteExisting,
     this.onDeleteGuestAndSignIn,
     this.onDeleteCurrentAccount,
@@ -25,6 +26,11 @@ class _FakeAccountController extends AccountController {
 
   final Future<void> Function()? onSignOut;
   final Future<bool> Function()? onLinkGuestWithGoogle;
+  final Future<bool> Function({
+    required String email,
+    required String password,
+  })?
+  onLinkGuestWithEmailPassword;
   final Future<void> Function(AuthCredential credential)? onOverwriteExisting;
   final Future<void> Function(AuthCredential credential)?
   onDeleteGuestAndSignIn;
@@ -41,6 +47,18 @@ class _FakeAccountController extends AccountController {
   @override
   Future<bool> linkGuestWithGoogle() async {
     return onLinkGuestWithGoogle?.call() ?? true;
+  }
+
+  @override
+  Future<bool> linkGuestWithEmailPassword({
+    required String email,
+    required String password,
+  }) async {
+    final callback = onLinkGuestWithEmailPassword;
+    if (callback == null) {
+      return true;
+    }
+    return callback(email: email, password: password);
   }
 
   @override
@@ -163,6 +181,90 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Account linked successfully.'), findsOneWidget);
+  });
+
+  testWidgets('guest email/password link submits credentials and succeeds', (
+    tester,
+  ) async {
+    final user = _MockUser();
+    when(() => user.isAnonymous).thenReturn(true);
+    when(() => user.displayName).thenReturn(null);
+    when(() => user.email).thenReturn(null);
+    when(() => user.uid).thenReturn('guest-123');
+    String? capturedEmail;
+    String? capturedPassword;
+
+    await tester.pumpWidget(
+      _wrap(
+        authStream: Stream<User?>.value(user),
+        controller: _FakeAccountController(
+          onLinkGuestWithEmailPassword:
+              ({required String email, required String password}) async {
+                capturedEmail = email;
+                capturedPassword = password;
+                return true;
+              },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Link with email & password'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Link guest account'), findsOneWidget);
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email'),
+      'a@b.c',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Password'),
+      'secret123',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Confirm password'),
+      'secret123',
+    );
+
+    await tester.tap(find.text('Link account'));
+    await tester.pumpAndSettle();
+
+    expect(capturedEmail, 'a@b.c');
+    expect(capturedPassword, 'secret123');
+    expect(find.text('Account linked successfully.'), findsOneWidget);
+  });
+
+  testWidgets('guest email/password link dialog cancel does nothing', (
+    tester,
+  ) async {
+    final user = _MockUser();
+    when(() => user.isAnonymous).thenReturn(true);
+    when(() => user.displayName).thenReturn(null);
+    when(() => user.email).thenReturn(null);
+    when(() => user.uid).thenReturn('guest-123');
+    var called = false;
+
+    await tester.pumpWidget(
+      _wrap(
+        authStream: Stream<User?>.value(user),
+        controller: _FakeAccountController(
+          onLinkGuestWithEmailPassword:
+              ({required String email, required String password}) async {
+                called = true;
+                return true;
+              },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Link with email & password'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(called, isFalse);
+    expect(find.text('Account linked successfully.'), findsNothing);
   });
 
   testWidgets(

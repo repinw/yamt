@@ -1295,6 +1295,30 @@ abstract class AppLocalizations {
   /// **'Link with Google'**
   String get accountPageLinkGoogle;
 
+  /// No description provided for @accountPageLinkEmailPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Link with email & password'**
+  String get accountPageLinkEmailPassword;
+
+  /// No description provided for @accountPageLinkEmailPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link guest account'**
+  String get accountPageLinkEmailPasswordTitle;
+
+  /// No description provided for @accountPageLinkEmailPasswordDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Create email sign-in credentials for this guest account.'**
+  String get accountPageLinkEmailPasswordDescription;
+
+  /// No description provided for @accountPageLinkEmailPasswordConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Link account'**
+  String get accountPageLinkEmailPasswordConfirmAction;
+
   /// No description provided for @accountPageLinkSuccess.
   ///
   /// In en, this message translates to:

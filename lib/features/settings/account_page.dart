@@ -13,6 +13,7 @@ import 'package:yamt/features/settings/provider/account_controller.dart';
 import 'package:yamt/features/settings/widgets/account_cards.dart';
 import 'package:yamt/features/settings/widgets/account_status_snackbar.dart';
 import 'package:yamt/features/settings/widgets/credential_conflict_dialog.dart';
+import 'package:yamt/features/settings/widgets/link_email_password_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class AccountPage extends ConsumerStatefulWidget {
@@ -120,6 +121,40 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       _logAuthError(error: error, stackTrace: stackTrace);
       _showAuthError(l10n, error);
     }
+  }
+
+  Future<void> _linkGuestWithEmailPassword(AppLocalizations l10n) async {
+    final credentials = await _showEmailPasswordDialog(l10n);
+    if (!mounted || credentials == null) return;
+
+    try {
+      final linked = await ref
+          .read(accountControllerProvider.notifier)
+          .linkGuestWithEmailPassword(
+            email: credentials.email,
+            password: credentials.password,
+          );
+      if (!mounted) return;
+      if (linked) {
+        showAccountStatusSnackBar(
+          context,
+          message: l10n.accountPageLinkSuccess,
+        );
+      }
+    } catch (error, stackTrace) {
+      if (!mounted) return;
+      _logAuthError(error: error, stackTrace: stackTrace);
+      _showAuthError(l10n, error);
+    }
+  }
+
+  Future<EmailPasswordCredentials?> _showEmailPasswordDialog(
+    AppLocalizations l10n,
+  ) {
+    return showDialog<EmailPasswordCredentials>(
+      context: context,
+      builder: (_) => LinkEmailPasswordDialog(l10n: l10n),
+    );
   }
 
   Future<void> _handleCredentialAlreadyInUse(
@@ -240,6 +275,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
             l10n: l10n,
             isActionLoading: isActionLoading,
             onLinkWithGoogle: () => _linkGuestWithGoogle(l10n),
+            onLinkWithEmailPassword: () => _linkGuestWithEmailPassword(l10n),
           ),
         if (user.isAnonymous) const SizedBox(height: AppSpacing.md),
         AccountUserInfoCard(user: user, l10n: l10n),

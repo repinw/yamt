@@ -9,11 +9,13 @@ class AccountGuestCard extends StatelessWidget {
     required this.l10n,
     required this.isActionLoading,
     required this.onLinkWithGoogle,
+    required this.onLinkWithEmailPassword,
   });
 
   final AppLocalizations l10n;
   final bool isActionLoading;
   final VoidCallback onLinkWithGoogle;
+  final VoidCallback onLinkWithEmailPassword;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +36,12 @@ class AccountGuestCard extends StatelessWidget {
               onPressed: isActionLoading ? null : onLinkWithGoogle,
               icon: const Icon(Icons.link),
               label: Text(l10n.accountPageLinkGoogle),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            OutlinedButton.icon(
+              onPressed: isActionLoading ? null : onLinkWithEmailPassword,
+              icon: const Icon(Icons.email_outlined),
+              label: Text(l10n.accountPageLinkEmailPassword),
             ),
           ],
         ),
