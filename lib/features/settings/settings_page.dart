@@ -5,6 +5,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
+import 'package:yamt/features/settings/provider/ai_processing_level_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class SettingsPage extends ConsumerWidget {
@@ -36,6 +37,17 @@ class SettingsPage extends ConsumerWidget {
       0xFFFF006F => l10n.settingsColorPink,
       0xFFE65100 => l10n.settingsColorOrange,
       _ => l10n.settingsColorLime,
+    };
+  }
+
+  String _aiProcessingLevelLabel(
+    AppLocalizations l10n,
+    AiProcessingLevel level,
+  ) {
+    return switch (level) {
+      AiProcessingLevel.low => l10n.settingsAiProcessingLow,
+      AiProcessingLevel.balanced => l10n.settingsAiProcessingBalanced,
+      AiProcessingLevel.high => l10n.settingsAiProcessingHigh,
     };
   }
 
@@ -102,11 +114,42 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
+  Widget _aiProcessingTile(
+    AppLocalizations l10n,
+    AiProcessingLevel level,
+    WidgetRef ref,
+  ) {
+    return ListTile(
+      leading: const Icon(Icons.auto_awesome_outlined),
+      title: Text(l10n.settingsAiProcessingTitle),
+      subtitle: Text(l10n.settingsAiProcessingSubtitle),
+      trailing: DropdownButtonHideUnderline(
+        child: DropdownButton<AiProcessingLevel>(
+          value: level,
+          onChanged: (selectedLevel) {
+            if (selectedLevel == null) return;
+            ref
+                .read(aiProcessingLevelControllerProvider.notifier)
+                .setLevel(selectedLevel);
+          },
+          items: [
+            for (final option in AiProcessingLevel.values)
+              DropdownMenuItem<AiProcessingLevel>(
+                value: option,
+                child: Text(_aiProcessingLevelLabel(l10n, option)),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   List<Widget> _tiles(
     AppLocalizations l10n,
     BuildContext context,
     ThemeMode themeMode,
     Color seedColor,
+    AiProcessingLevel aiProcessingLevel,
     WidgetRef ref,
   ) {
     return [
@@ -118,6 +161,7 @@ class SettingsPage extends ConsumerWidget {
       ),
       _themeModeTile(l10n, themeMode, ref),
       _colorTile(l10n, seedColor, ref),
+      _aiProcessingTile(l10n, aiProcessingLevel, ref),
       ListTile(
         leading: const Icon(Icons.language_outlined),
         title: Text(l10n.settingsLanguageTitle),
@@ -144,7 +188,15 @@ class SettingsPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final themeMode = ref.watch(themeModeControllerProvider);
     final seedColor = ref.watch(seedColorControllerProvider);
-    final tiles = _tiles(l10n, context, themeMode, seedColor, ref);
+    final aiProcessingLevel = ref.watch(aiProcessingLevelControllerProvider);
+    final tiles = _tiles(
+      l10n,
+      context,
+      themeMode,
+      seedColor,
+      aiProcessingLevel,
+      ref,
+    );
 
     return ListView.separated(
       padding: AppInsets.listVertical,

@@ -614,6 +614,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsColorOrange => 'Orange';
 
   @override
+  String get settingsAiProcessingTitle => 'AI processing';
+
+  @override
+  String get settingsAiProcessingSubtitle => 'Control OCR and analysis intensity';
+
+  @override
+  String get settingsAiProcessingLow => 'Low';
+
+  @override
+  String get settingsAiProcessingBalanced => 'Balanced';
+
+  @override
+  String get settingsAiProcessingHigh => 'High';
+
+  @override
   String get settingsNotificationsTitle => 'Notifications';
 
   @override
