@@ -19,6 +19,8 @@ import '../../features/calories/support/fake_calories_repositories.dart';
 
 class _MockUser extends Mock implements User {}
 
+class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+
 const _routerTransitionDuration = Duration(milliseconds: 350);
 
 Future<void> _pumpRouterTransition(WidgetTester tester) async {
@@ -27,10 +29,13 @@ Future<void> _pumpRouterTransition(WidgetTester tester) async {
 }
 
 ProviderContainer _createContainerWithAuth(Stream<User?> authStream) {
+  final firebaseAuth = _MockFirebaseAuth();
+  when(() => firebaseAuth.currentUser).thenReturn(null);
   final calorieLogRepository = FakeCalorieLogRepository();
   final calorieSettingsRepository = FakeCalorieSettingsRepository();
   final container = ProviderContainer(
     overrides: [
+      firebaseAuthProvider.overrideWithValue(firebaseAuth),
       authStateChangesProvider.overrideWith((ref) => authStream),
       calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(

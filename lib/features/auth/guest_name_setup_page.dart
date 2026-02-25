@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/auth/provider/auth_error_view_model.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/provider/guest_name_setup_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -15,6 +16,19 @@ class GuestNameSetupPage extends ConsumerStatefulWidget {
 class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
   final _nameController = TextEditingController();
   String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    final currentDisplayName = ref
+        .read(firebaseAuthProvider)
+        .currentUser
+        ?.displayName
+        ?.trim();
+    if (currentDisplayName != null && currentDisplayName.isNotEmpty) {
+      _nameController.text = currentDisplayName;
+    }
+  }
 
   @override
   void dispose() {
