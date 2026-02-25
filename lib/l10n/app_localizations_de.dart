@@ -60,6 +60,26 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptAnalysisFailed => 'Beleganalyse fehlgeschlagen. Bitte erneut versuchen.';
 
   @override
+  String get inventoryReceiptBatchTitle => 'Belege werden verarbeitet';
+
+  @override
+  String inventoryReceiptBatchProgress(int processed, int total) {
+    return '$processed/$total';
+  }
+
+  @override
+  String get inventoryReceiptBatchQueued => 'Wartend';
+
+  @override
+  String get inventoryReceiptBatchProcessing => 'Verarbeitung';
+
+  @override
+  String get inventoryReceiptBatchSucceeded => 'Fertig';
+
+  @override
+  String get inventoryReceiptBatchFailed => 'Fehlgeschlagen';
+
+  @override
   String get inventoryReceiptReviewTitle => 'Belegpositionen prüfen';
 
   @override

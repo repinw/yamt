@@ -4,6 +4,8 @@ enum ReceiptInputSource { camera, file }
 
 enum ReceiptInputStatus { selected, canceled, unsupported, failed }
 
+enum ReceiptInputBatchStatus { selected, canceled, failed }
+
 abstract final class ReceiptInputErrorCodes {
   static const cameraNotSupported = 'camera_not_supported';
   static const cameraPickFailed = 'camera_pick_failed';
@@ -47,5 +49,34 @@ class ReceiptInputResult {
 
   final ReceiptInputStatus status;
   final ReceiptInputSelection? selection;
+  final String? errorCode;
+}
+
+class ReceiptInputBatchResult {
+  const ReceiptInputBatchResult._({
+    required this.status,
+    required this.selections,
+    this.errorCode,
+  });
+
+  const ReceiptInputBatchResult.selected({
+    required List<ReceiptInputSelection> selections,
+  }) : this._(status: ReceiptInputBatchStatus.selected, selections: selections);
+
+  const ReceiptInputBatchResult.canceled()
+    : this._(
+        status: ReceiptInputBatchStatus.canceled,
+        selections: const <ReceiptInputSelection>[],
+      );
+
+  const ReceiptInputBatchResult.failed({String? errorCode})
+    : this._(
+        status: ReceiptInputBatchStatus.failed,
+        selections: const <ReceiptInputSelection>[],
+        errorCode: errorCode,
+      );
+
+  final ReceiptInputBatchStatus status;
+  final List<ReceiptInputSelection> selections;
   final String? errorCode;
 }

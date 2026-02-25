@@ -15,9 +15,10 @@ import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.d
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 
 class _FakeReceiptInputRepository implements ReceiptInputRepository {
-  _FakeReceiptInputRepository({this.pickFile});
+  _FakeReceiptInputRepository({this.pickFile, this.pickFiles});
 
   final Future<ReceiptInputResult> Function()? pickFile;
+  final Future<ReceiptInputBatchResult> Function()? pickFiles;
 
   @override
   Future<ReceiptInputResult> pickFromCamera() {
@@ -34,6 +35,17 @@ class _FakeReceiptInputRepository implements ReceiptInputRepository {
     }
     return Future<ReceiptInputResult>.value(
       const ReceiptInputResult.canceled(),
+    );
+  }
+
+  @override
+  Future<ReceiptInputBatchResult> pickFromFiles() {
+    final callback = pickFiles;
+    if (callback != null) {
+      return callback();
+    }
+    return Future<ReceiptInputBatchResult>.value(
+      const ReceiptInputBatchResult.canceled(),
     );
   }
 }
@@ -97,9 +109,13 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
 }
 
 ReceiptInputSelection _selection() {
+  return _selectionWithName('receipt.jpg');
+}
+
+ReceiptInputSelection _selectionWithName(String name) {
   return ReceiptInputSelection(
     source: ReceiptInputSource.file,
-    name: 'receipt.jpg',
+    name: name,
     mimeType: 'image/jpeg',
     bytes: Uint8List.fromList(<int>[1, 2, 3]),
   );
@@ -286,6 +302,125 @@ void main() {
       );
     },
   );
+
+  test('runFileBatch returns inputCanceled when picker is dismissed', () async {
+    final inputRepository = _FakeReceiptInputRepository(
+      pickFiles: () async => const ReceiptInputBatchResult.canceled(),
+    );
+    final container = ProviderContainer(
+      overrides: [
+        receiptInputRepositoryProvider.overrideWithValue(inputRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final result = await container
+        .read(receiptCaptureFlowControllerProvider.notifier)
+        .runFileBatch();
+
+    expect(result.status, ReceiptBatchRunStatus.inputCanceled);
+    expect(
+      container.read(receiptCaptureFlowControllerProvider).value?.status,
+      ReceiptCaptureFlowStatus.inputCanceled,
+    );
+  });
+
+  test(
+    'runFileBatch processes selections in order and tracks progress',
+    () async {
+      final analysisOrder = <String>[];
+      final progressUpdates = <ReceiptBatchProgress>[];
+      final inputRepository = _FakeReceiptInputRepository(
+        pickFiles: () async => ReceiptInputBatchResult.selected(
+          selections: <ReceiptInputSelection>[
+            _selectionWithName('a.jpg'),
+            _selectionWithName('b.jpg'),
+          ],
+        ),
+      );
+      final analysisRepository = _FakeReceiptAnalysisRepository(
+        onAnalyzeSelection: (selection) async {
+          analysisOrder.add(selection.name);
+          if (selection.name == 'a.jpg') {
+            return const ReceiptAnalysisResult.succeeded(
+              rawResponse: '{"i":[{"n":"A"}]}',
+              extraction: ReceiptAnalysisExtraction(
+                root: <String, dynamic>{},
+                items: <ReceiptAnalysisItem>[
+                  ReceiptAnalysisItem(
+                    name: 'A',
+                    rawPayload: <String, dynamic>{'n': 'A'},
+                  ),
+                ],
+              ),
+            );
+          }
+          return const ReceiptAnalysisResult.failed(
+            errorCode: ReceiptAnalysisErrorCodes.aiRequestFailed,
+          );
+        },
+      );
+      final mapper = _FakeReceiptToFridgeItemMapper(
+        onMap: (_) => <FridgeItem>[
+          _fridgeItem(id: 'mapped-a', isDeposit: false, isDiscount: false),
+        ],
+      );
+      final container = ProviderContainer(
+        overrides: [
+          receiptInputRepositoryProvider.overrideWithValue(inputRepository),
+          receiptAnalysisRepositoryProvider.overrideWithValue(
+            analysisRepository,
+          ),
+          receiptToFridgeItemMapperProvider.overrideWithValue(mapper),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container
+          .read(receiptCaptureFlowControllerProvider.notifier)
+          .runFileBatch(onProgress: progressUpdates.add);
+
+      expect(result.status, ReceiptBatchRunStatus.completed);
+      expect(result.mappedItems, hasLength(1));
+      expect(result.progress.totalCount, 2);
+      expect(result.progress.processedCount, 2);
+      expect(result.progress.succeededCount, 1);
+      expect(result.progress.failedCount, 1);
+      expect(analysisOrder, <String>['a.jpg', 'b.jpg']);
+      expect(progressUpdates, isNotEmpty);
+      expect(
+        progressUpdates.first.items.every(
+          (item) => item.status == ReceiptBatchItemStatus.queued,
+        ),
+        isTrue,
+      );
+    },
+  );
+
+  test('runFileBatch maps picker failure to inputFailed', () async {
+    final inputRepository = _FakeReceiptInputRepository(
+      pickFiles: () async => const ReceiptInputBatchResult.failed(
+        errorCode: ReceiptInputErrorCodes.filePickFailed,
+      ),
+    );
+    final container = ProviderContainer(
+      overrides: [
+        receiptInputRepositoryProvider.overrideWithValue(inputRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final result = await container
+        .read(receiptCaptureFlowControllerProvider.notifier)
+        .runFileBatch();
+
+    expect(result.status, ReceiptBatchRunStatus.inputFailed);
+    expect(result.errorCode, ReceiptInputErrorCodes.filePickFailed);
+    expect(
+      container.read(receiptCaptureFlowControllerProvider).value?.status,
+      ReceiptCaptureFlowStatus.inputFailed,
+    );
+  });
 
   test('persistReviewedItems saves only non-review-only items', () async {
     final fridgeRepository = _FakeFridgeItemRepository();

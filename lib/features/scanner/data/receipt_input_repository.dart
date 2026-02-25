@@ -47,6 +47,8 @@ abstract interface class ReceiptInputRepository {
   Future<ReceiptInputResult> pickFromCamera();
 
   Future<ReceiptInputResult> pickFromFile();
+
+  Future<ReceiptInputBatchResult> pickFromFiles();
 }
 
 /// Plugin-backed implementation using `image_picker` and `file_picker`.
@@ -80,6 +82,14 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
     );
   }
 
+  @override
+  Future<ReceiptInputBatchResult> pickFromFiles() {
+    return _runBatchPick(
+      failureCode: ReceiptInputErrorCodes.filePickFailed,
+      loadSelections: _pickFileSelections,
+    );
+  }
+
   Future<ReceiptInputResult> _runPick({
     required String failureCode,
     required Future<ReceiptInputSelection?> Function() loadSelection,
@@ -99,6 +109,28 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
         stackTrace: stackTrace,
       );
       return ReceiptInputResult.failed(errorCode: failureCode);
+    }
+  }
+
+  Future<ReceiptInputBatchResult> _runBatchPick({
+    required String failureCode,
+    required Future<List<ReceiptInputSelection>?> Function() loadSelections,
+  }) async {
+    try {
+      final selections = await loadSelections();
+      if (selections == null || selections.isEmpty) {
+        return const ReceiptInputBatchResult.canceled();
+      }
+
+      return ReceiptInputBatchResult.selected(selections: selections);
+    } catch (error, stackTrace) {
+      log(
+        'Receipt input batch pick failed (code: $failureCode)',
+        name: 'DeviceReceiptInputRepository',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return ReceiptInputBatchResult.failed(errorCode: failureCode);
     }
   }
 
@@ -124,17 +156,41 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
   }
 
   Future<ReceiptInputSelection?> _pickFileSelection() async {
-    final result = await _filePicker.pickFiles(
-      allowMultiple: false,
-      withData: _shouldPreloadFileBytes,
-      type: FileType.custom,
-      allowedExtensions: _allowedReceiptExtensions,
-    );
+    final result = await _pickFiles(allowMultiple: false);
     if (result == null || result.files.isEmpty) {
       return null;
     }
 
-    final file = result.files.first;
+    return _selectionFromFile(result.files.first);
+  }
+
+  Future<List<ReceiptInputSelection>?> _pickFileSelections() async {
+    final result = await _pickFiles(allowMultiple: true);
+    if (result == null || result.files.isEmpty) {
+      return null;
+    }
+
+    final selections = <ReceiptInputSelection>[];
+    for (final file in result.files) {
+      final selection = await _selectionFromFile(file);
+      if (selection == null) {
+        throw StateError('Could not load selected file bytes');
+      }
+      selections.add(selection);
+    }
+    return selections;
+  }
+
+  Future<FilePickerResult?> _pickFiles({required bool allowMultiple}) {
+    return _filePicker.pickFiles(
+      allowMultiple: allowMultiple,
+      withData: _shouldPreloadFileBytes,
+      type: FileType.custom,
+      allowedExtensions: _allowedReceiptExtensions,
+    );
+  }
+
+  Future<ReceiptInputSelection?> _selectionFromFile(PlatformFile file) async {
     final bytes = await _resolveFileBytes(file);
     if (bytes == null) {
       return null;
@@ -145,7 +201,6 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
       fallbackPath: file.path,
       fallbackName: _fallbackUploadFileName,
     );
-
     return ReceiptInputSelection(
       source: ReceiptInputSource.file,
       name: fileName,

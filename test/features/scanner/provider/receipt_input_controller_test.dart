@@ -34,6 +34,13 @@ class _FakeReceiptInputRepository implements ReceiptInputRepository {
       const ReceiptInputResult.canceled(),
     );
   }
+
+  @override
+  Future<ReceiptInputBatchResult> pickFromFiles() {
+    return Future<ReceiptInputBatchResult>.value(
+      const ReceiptInputBatchResult.canceled(),
+    );
+  }
 }
 
 ReceiptInputResult _selectedResult(ReceiptInputSource source) {

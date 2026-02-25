@@ -17,6 +17,22 @@
   "inventoryReceiptSelectionFailed": "Beleg konnte nicht ausgewählt werden. Bitte erneut versuchen.",
   "inventoryReceiptAnalysisSucceeded": "Beleg erfolgreich analysiert.",
   "inventoryReceiptAnalysisFailed": "Beleganalyse fehlgeschlagen. Bitte erneut versuchen.",
+  "inventoryReceiptBatchTitle": "Belege werden verarbeitet",
+  "inventoryReceiptBatchProgress": "{processed}/{total}",
+  "@inventoryReceiptBatchProgress": {
+    "placeholders": {
+      "processed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "inventoryReceiptBatchQueued": "Wartend",
+  "inventoryReceiptBatchProcessing": "Verarbeitung",
+  "inventoryReceiptBatchSucceeded": "Fertig",
+  "inventoryReceiptBatchFailed": "Fehlgeschlagen",
   "inventoryReceiptReviewTitle": "Belegpositionen prüfen",
   "inventoryReceiptReviewPriceTitle": "Preisübersicht",
   "inventoryReceiptReviewPriceTotal": "Beleg gesamt",

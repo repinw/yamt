@@ -9,6 +9,8 @@ import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_actions_sheet.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
+    'inventory_receipt_batch_progress_dialog.dart';
+import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_review_sheet.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
@@ -35,7 +37,7 @@ class HomeInventoryFabFlow {
           },
           onUploadFileTap: () {
             Navigator.of(sheetContext).pop();
-            unawaited(_runFlow(context, ref, l10n, ReceiptInputSource.file));
+            unawaited(_runBatchFlow(context, ref, l10n));
           },
         );
       },
@@ -70,6 +72,69 @@ class HomeInventoryFabFlow {
       return;
     }
     _showSnackBar(context, message);
+  }
+
+  static Future<void> _runBatchFlow(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) async {
+    final controller = ref.read(receiptCaptureFlowControllerProvider.notifier);
+    final progressListenable = ValueNotifier<ReceiptBatchProgress>(
+      const ReceiptBatchProgress(items: <ReceiptBatchItemProgress>[]),
+    );
+    final dialogReady = Completer<void>();
+    NavigatorState? dialogNavigator;
+    final progressDialog = showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (sheetContext) {
+        dialogNavigator = Navigator.of(sheetContext);
+        if (!dialogReady.isCompleted) {
+          dialogReady.complete();
+        }
+        return InventoryReceiptBatchProgressDialog(
+          progressListenable: progressListenable,
+        );
+      },
+    );
+    await dialogReady.future;
+
+    final result = await controller.runFileBatch(
+      onProgress: (progress) {
+        progressListenable.value = progress;
+      },
+    );
+
+    final navigator = dialogNavigator;
+    if (navigator?.mounted ?? false) {
+      navigator!.pop();
+    }
+    await progressDialog;
+    progressListenable.dispose();
+
+    if (!context.mounted) {
+      return;
+    }
+    if (result.status == ReceiptBatchRunStatus.inputCanceled) {
+      return;
+    }
+    if (result.status == ReceiptBatchRunStatus.inputFailed) {
+      _showSnackBar(context, l10n.inventoryReceiptSelectionFailed);
+      return;
+    }
+    if (result.mappedItems.isEmpty) {
+      _showSnackBar(context, l10n.inventoryReceiptAnalysisFailed);
+      return;
+    }
+
+    await _openReviewSheet(
+      context: context,
+      ref: ref,
+      l10n: l10n,
+      controller: controller,
+      mappedItems: result.mappedItems,
+    );
   }
 
   static Future<void> _openReviewSheet({

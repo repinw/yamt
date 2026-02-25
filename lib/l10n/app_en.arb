@@ -17,6 +17,22 @@
   "inventoryReceiptSelectionFailed": "Could not select a receipt. Please try again.",
   "inventoryReceiptAnalysisSucceeded": "Receipt analyzed successfully.",
   "inventoryReceiptAnalysisFailed": "Receipt analysis failed. Please try again.",
+  "inventoryReceiptBatchTitle": "Processing receipts",
+  "inventoryReceiptBatchProgress": "{processed}/{total}",
+  "@inventoryReceiptBatchProgress": {
+    "placeholders": {
+      "processed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "inventoryReceiptBatchQueued": "Queued",
+  "inventoryReceiptBatchProcessing": "Processing",
+  "inventoryReceiptBatchSucceeded": "Done",
+  "inventoryReceiptBatchFailed": "Failed",
   "inventoryReceiptReviewTitle": "Review receipt items",
   "inventoryReceiptReviewPriceTitle": "Price overview",
   "inventoryReceiptReviewPriceTotal": "Total receipt",

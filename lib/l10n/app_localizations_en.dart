@@ -60,6 +60,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptAnalysisFailed => 'Receipt analysis failed. Please try again.';
 
   @override
+  String get inventoryReceiptBatchTitle => 'Processing receipts';
+
+  @override
+  String inventoryReceiptBatchProgress(int processed, int total) {
+    return '$processed/$total';
+  }
+
+  @override
+  String get inventoryReceiptBatchQueued => 'Queued';
+
+  @override
+  String get inventoryReceiptBatchProcessing => 'Processing';
+
+  @override
+  String get inventoryReceiptBatchSucceeded => 'Done';
+
+  @override
+  String get inventoryReceiptBatchFailed => 'Failed';
+
+  @override
   String get inventoryReceiptReviewTitle => 'Review receipt items';
 
   @override

@@ -80,6 +80,46 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     }
   }
 
+  Future<ReceiptBatchRunResult> runFileBatch({
+    void Function(ReceiptBatchProgress progress)? onProgress,
+  }) async {
+    state = const AsyncLoading();
+
+    final inputRepository = ref.read(receiptInputRepositoryProvider);
+    final inputResult = await inputRepository.pickFromFiles();
+    if (!ref.mounted) {
+      return ReceiptBatchRunResult.inputFailed(
+        errorCode: _inputUnexpectedCode(ReceiptInputSource.file),
+      );
+    }
+
+    switch (inputResult.status) {
+      case ReceiptInputBatchStatus.selected:
+        return _runSelectedBatch(
+          selections: inputResult.selections,
+          onProgress: onProgress,
+        );
+      case ReceiptInputBatchStatus.canceled:
+        _setAndReturn(
+          const ReceiptCaptureFlowResult.inputCanceled(
+            source: ReceiptInputSource.file,
+          ),
+        );
+        return const ReceiptBatchRunResult.inputCanceled();
+      case ReceiptInputBatchStatus.failed:
+        final errorCode =
+            inputResult.errorCode ??
+            _inputUnexpectedCode(ReceiptInputSource.file);
+        _setAndReturn(
+          ReceiptCaptureFlowResult.inputFailed(
+            source: ReceiptInputSource.file,
+            errorCode: errorCode,
+          ),
+        );
+        return ReceiptBatchRunResult.inputFailed(errorCode: errorCode);
+    }
+  }
+
   bool _isSourceSupported(ReceiptInputSource source) {
     if (source != ReceiptInputSource.camera) {
       return true;
@@ -138,6 +178,124 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
           source: source,
           errorCode: ReceiptAnalysisErrorCodes.unexpected,
         ),
+      );
+    }
+  }
+
+  Future<ReceiptBatchRunResult> _runSelectedBatch({
+    required List<ReceiptInputSelection> selections,
+    void Function(ReceiptBatchProgress progress)? onProgress,
+  }) async {
+    var progress = _queuedBatchProgress(selections);
+    onProgress?.call(progress);
+
+    final mappedItems = <FridgeItem>[];
+    for (var index = 0; index < selections.length; index++) {
+      progress = _updateBatchItem(
+        progress: progress,
+        index: index,
+        status: ReceiptBatchItemStatus.processing,
+        clearErrorCode: true,
+      );
+      onProgress?.call(progress);
+
+      final analysis = await _analyzeBatchSelection(selections[index]);
+      if (!ref.mounted) {
+        return ReceiptBatchRunResult.inputFailed(
+          errorCode: _inputUnexpectedCode(ReceiptInputSource.file),
+        );
+      }
+
+      if (analysis.errorCode == null) {
+        mappedItems.addAll(analysis.mappedItems);
+        progress = _updateBatchItem(
+          progress: progress,
+          index: index,
+          status: ReceiptBatchItemStatus.succeeded,
+          mappedItemCount: analysis.mappedItems.length,
+          clearErrorCode: true,
+        );
+      } else {
+        progress = _updateBatchItem(
+          progress: progress,
+          index: index,
+          status: ReceiptBatchItemStatus.failed,
+          errorCode: analysis.errorCode,
+          mappedItemCount: 0,
+        );
+      }
+      onProgress?.call(progress);
+    }
+
+    if (ref.mounted) {
+      state = const AsyncData(null);
+    }
+    return ReceiptBatchRunResult.completed(
+      progress: progress,
+      mappedItems: mappedItems,
+    );
+  }
+
+  ReceiptBatchProgress _queuedBatchProgress(
+    List<ReceiptInputSelection> selections,
+  ) {
+    return ReceiptBatchProgress(
+      items: selections
+          .map(
+            (selection) => ReceiptBatchItemProgress(
+              fileName: selection.name,
+              status: ReceiptBatchItemStatus.queued,
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+
+  ReceiptBatchProgress _updateBatchItem({
+    required ReceiptBatchProgress progress,
+    required int index,
+    required ReceiptBatchItemStatus status,
+    String? errorCode,
+    bool clearErrorCode = false,
+    int? mappedItemCount,
+  }) {
+    final currentItem = progress.items[index];
+    final updatedItem = currentItem.copyWith(
+      status: status,
+      errorCode: errorCode,
+      clearErrorCode: clearErrorCode,
+      mappedItemCount: mappedItemCount,
+    );
+    return progress.updateItem(index, updatedItem);
+  }
+
+  Future<({List<FridgeItem> mappedItems, String? errorCode})>
+  _analyzeBatchSelection(ReceiptInputSelection selection) async {
+    try {
+      final analysisRepository = ref.read(receiptAnalysisRepositoryProvider);
+      final analysisResult = await analysisRepository.analyzeSelection(
+        selection,
+      );
+      return switch (analysisResult) {
+        ReceiptAnalysisSuccess(:final extraction) => (
+          mappedItems: _mapExtraction(extraction),
+          errorCode: null,
+        ),
+        ReceiptAnalysisFailure(:final errorCode) => (
+          mappedItems: const <FridgeItem>[],
+          errorCode: errorCode,
+        ),
+      };
+    } catch (error, stackTrace) {
+      log(
+        'Receipt batch analysis failed for ${selection.name}',
+        name: 'ReceiptCaptureFlowController',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return (
+        mappedItems: const <FridgeItem>[],
+        errorCode: ReceiptAnalysisErrorCodes.unexpected,
       );
     }
   }
