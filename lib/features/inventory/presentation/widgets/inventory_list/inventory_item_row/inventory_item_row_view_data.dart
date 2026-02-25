@@ -14,6 +14,7 @@ class InventoryItemRowViewData {
     required this.remainingLabel,
     required this.segmentedByUnits,
     required this.isPrimaryActionEnabled,
+    required this.isBuyAgainPrimaryAction,
     required this.eatActionBackgroundColor,
     required this.disabledActionBackgroundColor,
     required this.eatActionBorderColor,
@@ -36,6 +37,7 @@ class InventoryItemRowViewData {
   final String remainingLabel;
   final bool segmentedByUnits;
   final bool isPrimaryActionEnabled;
+  final bool isBuyAgainPrimaryAction;
   final Color eatActionBackgroundColor;
   final Color disabledActionBackgroundColor;
   final Color eatActionBorderColor;

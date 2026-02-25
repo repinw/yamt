@@ -231,6 +231,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemEatAction => 'Eat';
 
   @override
+  String get inventoryItemBuyAgainAction => 'Buy again';
+
+  @override
+  String get inventoryItemBuyAgainSucceeded => 'Item added to shopping list.';
+
+  @override
   String get inventoryItemThrowAwayAction => 'Throw away';
 
   @override

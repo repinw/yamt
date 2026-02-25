@@ -74,6 +74,8 @@
   "inventoryItemNoPrice": "No price",
   "inventoryItemDeleteAction": "Delete",
   "inventoryItemEatAction": "Eat",
+  "inventoryItemBuyAgainAction": "Buy again",
+  "inventoryItemBuyAgainSucceeded": "Item added to shopping list.",
   "inventoryItemThrowAwayAction": "Throw away",
   "inventoryItemActionFailed": "Action failed. Please try again.",
   "inventoryEmptyState": "No items in your fridge yet. Scan a receipt to get started.",
