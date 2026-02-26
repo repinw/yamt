@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/auth/provider/auth_repository.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart';
 
 part 'guest_name_setup_controller.g.dart';
 
@@ -23,6 +24,9 @@ class GuestNameSetupController extends _$GuestNameSetupController {
     );
     if (!ref.mounted) {
       return;
+    }
+    if (!nextState.hasError) {
+      ref.invalidate(authStateChangesProvider);
     }
     state = nextState;
   }
