@@ -24,77 +24,73 @@ class InventoryReceiptBatchProgressDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final mergedListenable = Listenable.merge(<Listenable>[
+      progressListenable,
+      reviewableIndicesListenable,
+      reviewedIndicesListenable,
+      batchCompletedListenable,
+    ]);
 
-    return AlertDialog(
-      title: Text(l10n.inventoryReceiptBatchTitle),
-      content: ValueListenableBuilder<ReceiptBatchProgress>(
-        valueListenable: progressListenable,
-        builder: (context, progress, _) {
-          return ValueListenableBuilder<Set<int>>(
-            valueListenable: reviewableIndicesListenable,
-            builder: (context, reviewableIndices, _) {
-              return ValueListenableBuilder<Set<int>>(
-                valueListenable: reviewedIndicesListenable,
-                builder: (context, reviewedIndices, _) {
-                  return SizedBox(
-                    width: double.maxFinite,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.inventoryReceiptBatchProgress(
-                            progress.processedCount,
-                            progress.totalCount,
-                          ),
+    return AnimatedBuilder(
+      animation: mergedListenable,
+      builder: (context, _) {
+        final progress = progressListenable.value;
+        final reviewableIndices = reviewableIndicesListenable.value;
+        final reviewedIndices = reviewedIndicesListenable.value;
+        final isBatchCompleted = batchCompletedListenable.value;
+
+        return AlertDialog(
+          title: Text(l10n.inventoryReceiptBatchTitle),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.inventoryReceiptBatchProgress(
+                    progress.processedCount,
+                    progress.totalCount,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: progress.items.length,
+                    itemBuilder: (context, index) {
+                      final item = progress.items[index];
+                      return ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: _statusLeading(item.status),
+                        title: Text(
+                          item.fileName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 12),
-                        Flexible(
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: progress.items.length,
-                            itemBuilder: (context, index) {
-                              final item = progress.items[index];
-                              return ListTile(
-                                dense: true,
-                                contentPadding: EdgeInsets.zero,
-                                leading: _statusLeading(item.status),
-                                title: Text(
-                                  item.fileName,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                subtitle: Text(_statusLabel(l10n, item.status)),
-                                trailing: _buildReviewAction(
-                                  l10n: l10n,
-                                  index: index,
-                                  reviewableIndices: reviewableIndices,
-                                  reviewedIndices: reviewedIndices,
-                                ),
-                              );
-                            },
-                          ),
+                        subtitle: Text(_statusLabel(l10n, item.status)),
+                        trailing: _buildReviewAction(
+                          l10n: l10n,
+                          index: index,
+                          reviewableIndices: reviewableIndices,
+                          reviewedIndices: reviewedIndices,
                         ),
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
-          );
-        },
-      ),
-      actions: [
-        ValueListenableBuilder<bool>(
-          valueListenable: batchCompletedListenable,
-          builder: (context, isCompleted, _) {
-            return TextButton(
-              onPressed: isCompleted ? onCloseTap : null,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isBatchCompleted ? onCloseTap : null,
               child: Text(l10n.inventoryReceiptBatchCloseAction),
-            );
-          },
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 

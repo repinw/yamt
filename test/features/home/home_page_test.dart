@@ -496,4 +496,70 @@ void main() {
     await _pumpFor(tester);
     expect(find.text(l10n.inventoryReceiptBatchTitle), findsNothing);
   });
+
+  testWidgets(
+    'inventory upload keeps batch dialog when review is swiped down',
+    (tester) async {
+      final inputRepository = _FakeReceiptInputRepository(
+        onPickFromFiles: () async => ReceiptInputBatchResult.selected(
+          selections: <ReceiptInputSelection>[_receiptSelection(name: 'a.jpg')],
+        ),
+      );
+      final analysisRepository = _FakeReceiptAnalysisRepository(
+        onAnalyzeSelection: (_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 200));
+          return const ReceiptAnalysisResult.succeeded(
+            rawResponse: '{"items":[{"name":"Milk"}]}',
+            extraction: ReceiptAnalysisExtraction(
+              root: <String, dynamic>{},
+              items: <ReceiptAnalysisItem>[
+                ReceiptAnalysisItem(
+                  name: 'Milk',
+                  rawPayload: <String, dynamic>{'n': 'Milk'},
+                ),
+              ],
+            ),
+          );
+        },
+      );
+      final mapper = _FakeReceiptToFridgeItemMapper(
+        onMap: (_) => <FridgeItem>[_mappedFridgeItem()],
+      );
+      final container = _createContainer(
+        overrides: [
+          receiptInputRepositoryProvider.overrideWithValue(inputRepository),
+          receiptAnalysisRepositoryProvider.overrideWithValue(
+            analysisRepository,
+          ),
+          receiptToFridgeItemMapperProvider.overrideWithValue(mapper),
+        ],
+      );
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: container, child: const YAMT()),
+      );
+      await _pumpUi(tester);
+      final context = tester.element(find.byType(Scaffold).first);
+      final l10n = AppLocalizations.of(context)!;
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await _pumpUi(tester);
+      await tester.tap(find.text('Upload receipt (image/PDF)'));
+      await tester.pump(const Duration(milliseconds: 300));
+      await _pumpFor(tester, steps: 2);
+
+      expect(find.text(l10n.inventoryReceiptReviewTitle), findsOneWidget);
+      expect(find.byType(BottomSheet), findsOneWidget);
+
+      await tester.drag(find.byType(BottomSheet), const Offset(0, 500));
+      await _pumpFor(tester);
+
+      expect(find.text(l10n.inventoryReceiptReviewTitle), findsNothing);
+      expect(find.text(l10n.inventoryReceiptBatchTitle), findsOneWidget);
+
+      await tester.tap(find.text(l10n.inventoryReceiptBatchCloseAction));
+      await _pumpFor(tester);
+      expect(find.text(l10n.inventoryReceiptBatchTitle), findsNothing);
+    },
+  );
 }

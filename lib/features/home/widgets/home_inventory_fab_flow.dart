@@ -90,6 +90,7 @@ class HomeInventoryFabFlow {
     final mappedItemsByIndex = <int, List<FridgeItem>>{};
     var hasOpenedFirstReview = false;
     var isReviewOpen = false;
+    String? feedbackMessage;
 
     Future<void> openReviewForIndex(int index) async {
       if (isReviewOpen) {
@@ -101,22 +102,31 @@ class HomeInventoryFabFlow {
       }
 
       isReviewOpen = true;
-      final saved = await _openReviewSheet(
-        context: context,
-        ref: ref,
-        l10n: l10n,
-        controller: controller,
-        mappedItems: mappedItems,
-      );
-      isReviewOpen = false;
-
-      if (!context.mounted || !saved) {
-        return;
+      try {
+        final saved = await _openReviewSheet(
+          context: context,
+          ref: ref,
+          l10n: l10n,
+          controller: controller,
+          mappedItems: mappedItems,
+        );
+        if (!context.mounted || !saved) {
+          return;
+        }
+        reviewedIndicesListenable.value = <int>{
+          ...reviewedIndicesListenable.value,
+          index,
+        };
+      } catch (error, stackTrace) {
+        log(
+          'Receipt review sheet failed unexpectedly',
+          name: 'HomeInventoryFabFlow',
+          error: error,
+          stackTrace: stackTrace,
+        );
+      } finally {
+        isReviewOpen = false;
       }
-      reviewedIndicesListenable.value = <int>{
-        ...reviewedIndicesListenable.value,
-        index,
-      };
     }
 
     final rootNavigator = Navigator.of(context, rootNavigator: true);
@@ -157,9 +167,8 @@ class HomeInventoryFabFlow {
       batchCompletedListenable.dispose();
     }
 
-    late final ReceiptBatchRunResult result;
     try {
-      result = await controller.runFileBatch(
+      final result = await controller.runFileBatch(
         onProgress: (progress) {
           progressListenable.value = progress;
         },
@@ -178,6 +187,32 @@ class HomeInventoryFabFlow {
           }
         },
       );
+
+      if (!context.mounted) {
+        return;
+      }
+      if (result.status == ReceiptBatchRunStatus.inputCanceled) {
+        return;
+      }
+      if (result.status == ReceiptBatchRunStatus.inputFailed) {
+        feedbackMessage = l10n.inventoryReceiptSelectionFailed;
+        return;
+      }
+      final progress = result.progress;
+      final isBatchComplete =
+          progress.totalCount == 0 ||
+          progress.processedCount == progress.totalCount;
+      if (!isBatchComplete) {
+        feedbackMessage = l10n.inventoryReceiptAnalysisFailed;
+        return;
+      }
+      if (result.mappedItems.isEmpty) {
+        feedbackMessage = l10n.inventoryReceiptAnalysisFailed;
+        return;
+      }
+
+      batchCompletedListenable.value = true;
+      await progressDialog;
     } catch (error, stackTrace) {
       log(
         'Receipt batch flow failed unexpectedly',
@@ -185,59 +220,14 @@ class HomeInventoryFabFlow {
         error: error,
         stackTrace: stackTrace,
       );
+      feedbackMessage = l10n.inventoryReceiptAnalysisFailed;
+    } finally {
       await closeProgressDialog();
       disposeListenables();
-      if (context.mounted) {
-        _showSnackBar(context, l10n.inventoryReceiptAnalysisFailed);
+      if (feedbackMessage != null && context.mounted) {
+        _showSnackBar(context, feedbackMessage);
       }
-      return;
     }
-
-    if (!context.mounted) {
-      await closeProgressDialog();
-      disposeListenables();
-      return;
-    }
-    if (result.status == ReceiptBatchRunStatus.inputCanceled) {
-      await closeProgressDialog();
-      disposeListenables();
-      return;
-    }
-    if (result.status == ReceiptBatchRunStatus.inputFailed) {
-      await closeProgressDialog();
-      disposeListenables();
-      if (!context.mounted) {
-        return;
-      }
-      _showSnackBar(context, l10n.inventoryReceiptSelectionFailed);
-      return;
-    }
-    final progress = result.progress;
-    final isBatchComplete =
-        progress.totalCount == 0 ||
-        progress.processedCount == progress.totalCount;
-    if (!isBatchComplete) {
-      await closeProgressDialog();
-      disposeListenables();
-      if (!context.mounted) {
-        return;
-      }
-      _showSnackBar(context, l10n.inventoryReceiptAnalysisFailed);
-      return;
-    }
-    if (result.mappedItems.isEmpty) {
-      await closeProgressDialog();
-      disposeListenables();
-      if (!context.mounted) {
-        return;
-      }
-      _showSnackBar(context, l10n.inventoryReceiptAnalysisFailed);
-      return;
-    }
-
-    batchCompletedListenable.value = true;
-    await progressDialog;
-    disposeListenables();
   }
 
   static Future<bool> _openReviewSheet({
