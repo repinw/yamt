@@ -28,9 +28,12 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
     if (state.isReviewOpen) {
       return false;
     }
+    final pendingAutoReviewIndex = state.pendingAutoReviewIndex == index
+        ? null
+        : state.pendingAutoReviewIndex;
     state = state.copyWith(
       activeReviewIndex: index,
-      clearPendingAutoReview: state.pendingAutoReviewIndex == index,
+      pendingAutoReviewIndex: pendingAutoReviewIndex,
     );
     return true;
   }
@@ -44,12 +47,12 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
         : state.reviewedIndices;
     state = state.copyWith(
       reviewedIndices: reviewedIndices,
-      clearActiveReviewIndex: true,
+      activeReviewIndex: null,
     );
   }
 
   void consumePendingAutoReview() {
-    state = state.copyWith(clearPendingAutoReview: true);
+    state = state.copyWith(pendingAutoReviewIndex: null);
   }
 
   Future<void> runFileBatch() async {
@@ -72,7 +75,6 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
         state = state.copyWith(
           status: ReceiptBatchFlowStatus.inputFailed,
           errorCode: errorCode,
-          clearErrorCode: false,
         );
     }
   }
@@ -86,10 +88,10 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
       reviewableIndices: reviewableIndices,
       reviewedIndices: <int>{},
       mappedItemsByIndex: mappedItemsByIndex,
-      clearPendingAutoReview: true,
-      clearActiveReviewIndex: true,
+      pendingAutoReviewIndex: null,
+      activeReviewIndex: null,
       autoReviewDispatched: false,
-      clearErrorCode: true,
+      errorCode: null,
     );
 
     final batchProcessor = _batchProcessor();
@@ -118,7 +120,6 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
           mappedItemsByIndex: mappedItemsByIndex,
           reviewableIndices: reviewableIndices,
           pendingAutoReviewIndex: shouldDispatchAutoReview ? index : null,
-          clearPendingAutoReview: !shouldDispatchAutoReview,
           autoReviewDispatched:
               state.autoReviewDispatched || shouldDispatchAutoReview,
         );

@@ -182,6 +182,35 @@ void main() {
     },
   );
 
+  test('pickFromFile returns failed when selected file is oversized', () async {
+    final filePicker = _FakeFilePicker(
+      onPickFiles:
+          ({
+            required withData,
+            required allowMultiple,
+            required allowedExtensions,
+          }) async {
+            return FilePickerResult([
+              PlatformFile(
+                name: 'huge.pdf',
+                size: 13 * 1024 * 1024,
+                bytes: Uint8List.fromList(<int>[0x01, 0x02]),
+              ),
+            ]);
+          },
+    );
+
+    final repository = DeviceReceiptInputRepository(
+      imagePicker: _FakeImagePicker(),
+      filePicker: filePicker,
+    );
+
+    final result = await repository.pickFromFile();
+
+    expect(result.status, ReceiptInputStatus.failed);
+    expect(result.errorCode, ReceiptInputErrorCodes.filePickFailed);
+  });
+
   test(
     'pickFromFiles allows multi-select and returns all selections',
     () async {
@@ -343,4 +372,73 @@ void main() {
       expect(result.selections.single.name, 'ok.jpg');
     },
   );
+
+  test(
+    'pickFromFiles returns failed when selection count exceeds limit',
+    () async {
+      final files = List<PlatformFile>.generate(
+        21,
+        (index) => PlatformFile(
+          name: 'r$index.jpg',
+          size: 2,
+          bytes: Uint8List.fromList(<int>[0x01, 0x02]),
+        ),
+      );
+      final filePicker = _FakeFilePicker(
+        onPickFiles:
+            ({
+              required withData,
+              required allowMultiple,
+              required allowedExtensions,
+            }) async {
+              return FilePickerResult(files);
+            },
+      );
+
+      final repository = DeviceReceiptInputRepository(
+        imagePicker: _FakeImagePicker(),
+        filePicker: filePicker,
+      );
+
+      final result = await repository.pickFromFiles();
+
+      expect(result.status, ReceiptInputBatchStatus.failed);
+      expect(result.errorCode, ReceiptInputErrorCodes.filePickFailed);
+    },
+  );
+
+  test('pickFromFiles skips oversized files but keeps valid ones', () async {
+    final filePicker = _FakeFilePicker(
+      onPickFiles:
+          ({
+            required withData,
+            required allowMultiple,
+            required allowedExtensions,
+          }) async {
+            return FilePickerResult([
+              PlatformFile(
+                name: 'oversized.jpg',
+                size: 13 * 1024 * 1024,
+                bytes: Uint8List.fromList(<int>[0x01, 0x02]),
+              ),
+              PlatformFile(
+                name: 'ok.jpg',
+                size: 3,
+                bytes: Uint8List.fromList(<int>[0x01, 0x02, 0x03]),
+              ),
+            ]);
+          },
+    );
+
+    final repository = DeviceReceiptInputRepository(
+      imagePicker: _FakeImagePicker(),
+      filePicker: filePicker,
+    );
+
+    final result = await repository.pickFromFiles();
+
+    expect(result.status, ReceiptInputBatchStatus.selected);
+    expect(result.selections, hasLength(1));
+    expect(result.selections.single.name, 'ok.jpg');
+  });
 }

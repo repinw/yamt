@@ -23,6 +23,9 @@ const String _defaultMimeType = 'application/octet-stream';
 const String _fallbackCameraFileName = 'camera-image.jpg';
 const String _fallbackUploadFileName = 'receipt-upload';
 const int _mimeHeaderLength = 32;
+const int _maxBatchSelectionCount = 20;
+const int _maxReceiptInputBytes = 12 * 1024 * 1024;
+final Uint8List _emptySelectionBytes = Uint8List(0);
 
 @riverpod
 ImagePicker imagePicker(Ref ref) {
@@ -170,10 +173,20 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
     if (result == null || result.files.isEmpty) {
       return null;
     }
+    if (result.files.length > _maxBatchSelectionCount) {
+      throw const ReceiptInputBatchException(
+        'Too many files selected for receipt batch processing.',
+      );
+    }
 
     final selections = <ReceiptInputSelection>[];
     final skippedFileNames = <String>[];
+    final skippedLargeFileNames = <String>[];
     for (final file in result.files) {
+      if (_isFileTooLarge(file)) {
+        skippedLargeFileNames.add(file.name);
+        continue;
+      }
       final selection = _selectionMetadataFromFile(file);
       if (selection == null) {
         skippedFileNames.add(file.name);
@@ -186,6 +199,13 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
       log(
         'Skipped unreadable receipt files in batch: '
         '${skippedFileNames.join(', ')}',
+        name: 'DeviceReceiptInputRepository',
+      );
+    }
+    if (skippedLargeFileNames.isNotEmpty) {
+      log(
+        'Skipped oversized receipt files in batch: '
+        '${skippedLargeFileNames.join(', ')}',
         name: 'DeviceReceiptInputRepository',
       );
     }
@@ -209,9 +229,19 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
   }
 
   Future<ReceiptInputSelection?> _selectionFromFile(PlatformFile file) async {
+    if (_isFileTooLarge(file)) {
+      throw ReceiptInputBatchException(
+        'Receipt file exceeds size limit: ${file.name}',
+      );
+    }
     final bytes = await _resolveFileBytes(file);
     if (bytes == null) {
       return null;
+    }
+    if (bytes.length > _maxReceiptInputBytes) {
+      throw ReceiptInputBatchException(
+        'Receipt file exceeds size limit: ${file.name}',
+      );
     }
     return _buildFileSelection(file: file, bytes: bytes);
   }
@@ -239,7 +269,7 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
       source: ReceiptInputSource.file,
       name: fileName,
       mimeType: _detectMimeType(fileName: fileName, bytes: bytes),
-      bytes: bytes ?? Uint8List(0),
+      bytes: bytes ?? _emptySelectionBytes,
       filePath: file.path,
     );
   }
@@ -258,6 +288,15 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
     }
 
     return XFile(path).readAsBytes();
+  }
+
+  bool _isFileTooLarge(PlatformFile file) {
+    final bytesLength = file.bytes?.length ?? 0;
+    final resolvedLength = bytesLength > file.size ? bytesLength : file.size;
+    if (resolvedLength <= 0) {
+      return false;
+    }
+    return resolvedLength > _maxReceiptInputBytes;
   }
 }
 

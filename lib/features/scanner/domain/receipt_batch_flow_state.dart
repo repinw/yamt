@@ -48,13 +48,10 @@ class ReceiptBatchFlowState {
     Set<int>? reviewableIndices,
     Set<int>? reviewedIndices,
     Map<int, List<FridgeItem>>? mappedItemsByIndex,
-    int? pendingAutoReviewIndex,
-    bool clearPendingAutoReview = false,
+    Object? pendingAutoReviewIndex = _keepFieldValue,
     bool? autoReviewDispatched,
-    int? activeReviewIndex,
-    bool clearActiveReviewIndex = false,
-    String? errorCode,
-    bool clearErrorCode = false,
+    Object? activeReviewIndex = _keepFieldValue,
+    Object? errorCode = _keepFieldValue,
   }) {
     return ReceiptBatchFlowState(
       status: status ?? this.status,
@@ -62,14 +59,18 @@ class ReceiptBatchFlowState {
       reviewableIndices: reviewableIndices ?? this.reviewableIndices,
       reviewedIndices: reviewedIndices ?? this.reviewedIndices,
       mappedItemsByIndex: mappedItemsByIndex ?? this.mappedItemsByIndex,
-      pendingAutoReviewIndex: clearPendingAutoReview
-          ? null
-          : (pendingAutoReviewIndex ?? this.pendingAutoReviewIndex),
+      pendingAutoReviewIndex: pendingAutoReviewIndex == _keepFieldValue
+          ? this.pendingAutoReviewIndex
+          : pendingAutoReviewIndex as int?,
       autoReviewDispatched: autoReviewDispatched ?? this.autoReviewDispatched,
-      activeReviewIndex: clearActiveReviewIndex
-          ? null
-          : (activeReviewIndex ?? this.activeReviewIndex),
-      errorCode: clearErrorCode ? null : (errorCode ?? this.errorCode),
+      activeReviewIndex: activeReviewIndex == _keepFieldValue
+          ? this.activeReviewIndex
+          : activeReviewIndex as int?,
+      errorCode: errorCode == _keepFieldValue
+          ? this.errorCode
+          : errorCode as String?,
     );
   }
 }
+
+const Object _keepFieldValue = Object();
