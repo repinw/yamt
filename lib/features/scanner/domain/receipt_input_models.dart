@@ -15,17 +15,21 @@ abstract final class ReceiptInputErrorCodes {
 }
 
 class ReceiptInputSelection {
-  const ReceiptInputSelection({
+  ReceiptInputSelection({
     required this.source,
     required this.name,
     required this.mimeType,
     required this.bytes,
+    this.filePath,
   });
 
   final ReceiptInputSource source;
   final String name;
   final String mimeType;
   final Uint8List bytes;
+  final String? filePath;
+
+  bool get hasEmbeddedBytes => bytes.isNotEmpty;
 }
 
 class ReceiptInputResult {

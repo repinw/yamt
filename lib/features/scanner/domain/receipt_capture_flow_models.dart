@@ -120,19 +120,17 @@ class ReceiptBatchProgress {
   int get totalCount => items.length;
 
   int get processedCount {
-    return items.where((item) => item.isFinished).length;
+    return _countWhere((item) => item.isFinished);
   }
 
   int get succeededCount {
-    return items
-        .where((item) => item.status == ReceiptBatchItemStatus.succeeded)
-        .length;
+    return _countWhere(
+      (item) => item.status == ReceiptBatchItemStatus.succeeded,
+    );
   }
 
   int get failedCount {
-    return items
-        .where((item) => item.status == ReceiptBatchItemStatus.failed)
-        .length;
+    return _countWhere((item) => item.status == ReceiptBatchItemStatus.failed);
   }
 
   bool get hasFailures => failedCount > 0;
@@ -143,6 +141,16 @@ class ReceiptBatchProgress {
     final nextItems = List<ReceiptBatchItemProgress>.of(items);
     nextItems[index] = item;
     return ReceiptBatchProgress(items: nextItems);
+  }
+
+  int _countWhere(bool Function(ReceiptBatchItemProgress item) predicate) {
+    var count = 0;
+    for (final item in items) {
+      if (predicate(item)) {
+        count += 1;
+      }
+    }
+    return count;
   }
 }
 

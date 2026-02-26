@@ -221,6 +221,41 @@ void main() {
     },
   );
 
+  test(
+    'pickFromFiles keeps metadata without eagerly loading file path bytes',
+    () async {
+      final filePicker = _FakeFilePicker(
+        onPickFiles:
+            ({
+              required withData,
+              required allowMultiple,
+              required allowedExtensions,
+            }) async {
+              return FilePickerResult([
+                PlatformFile(
+                  name: 'later-read.jpg',
+                  size: 8,
+                  path: '/tmp/does-not-exist.jpg',
+                ),
+              ]);
+            },
+      );
+
+      final repository = DeviceReceiptInputRepository(
+        imagePicker: _FakeImagePicker(),
+        filePicker: filePicker,
+      );
+
+      final result = await repository.pickFromFiles();
+
+      expect(result.status, ReceiptInputBatchStatus.selected);
+      expect(result.selections, hasLength(1));
+      expect(result.selections.single.name, 'later-read.jpg');
+      expect(result.selections.single.bytes, isEmpty);
+      expect(result.selections.single.filePath, '/tmp/does-not-exist.jpg');
+    },
+  );
+
   test('pickFromFiles returns canceled when picker is dismissed', () async {
     final filePicker = _FakeFilePicker(
       onPickFiles:

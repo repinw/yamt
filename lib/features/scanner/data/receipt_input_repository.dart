@@ -152,6 +152,7 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
       name: fileName,
       mimeType: _detectMimeType(fileName: fileName, bytes: bytes),
       bytes: bytes,
+      filePath: pickedFile.path,
     );
   }
 
@@ -173,7 +174,7 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
     final selections = <ReceiptInputSelection>[];
     final skippedFileNames = <String>[];
     for (final file in result.files) {
-      final selection = await _selectionFromFile(file);
+      final selection = _selectionMetadataFromFile(file);
       if (selection == null) {
         skippedFileNames.add(file.name);
         continue;
@@ -223,6 +224,29 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
       name: fileName,
       mimeType: _detectMimeType(fileName: fileName, bytes: bytes),
       bytes: bytes,
+      filePath: file.path,
+    );
+  }
+
+  ReceiptInputSelection? _selectionMetadataFromFile(PlatformFile file) {
+    final inMemoryBytes = file.bytes;
+    final path = file.path;
+    final hasLoadablePath = path != null && path.isNotEmpty;
+    if (inMemoryBytes == null && !hasLoadablePath) {
+      return null;
+    }
+
+    final fileName = _resolvedFileName(
+      primaryName: file.name,
+      fallbackPath: file.path,
+      fallbackName: _fallbackUploadFileName,
+    );
+    return ReceiptInputSelection(
+      source: ReceiptInputSource.file,
+      name: fileName,
+      mimeType: _detectMimeType(fileName: fileName, bytes: inMemoryBytes),
+      bytes: inMemoryBytes ?? Uint8List(0),
+      filePath: path,
     );
   }
 
@@ -279,11 +303,14 @@ String _fileNameFromPath(String path) {
   return normalizedPath.substring(separatorIndex + 1);
 }
 
-String _detectMimeType({required String fileName, required Uint8List bytes}) {
-  final headerLength = bytes.length < _mimeHeaderLength
-      ? bytes.length
-      : _mimeHeaderLength;
-  final headerBytes = bytes.sublist(0, headerLength);
+String _detectMimeType({required String fileName, Uint8List? bytes}) {
+  List<int>? headerBytes;
+  if (bytes != null && bytes.isNotEmpty) {
+    final headerLength = bytes.length < _mimeHeaderLength
+        ? bytes.length
+        : _mimeHeaderLength;
+    headerBytes = bytes.sublist(0, headerLength);
+  }
 
   final mimeType = lookupMimeType(fileName, headerBytes: headerBytes);
   if (mimeType == null || mimeType.isEmpty) {
