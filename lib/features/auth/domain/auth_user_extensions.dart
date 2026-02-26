@@ -12,8 +12,4 @@ extension AuthUserGuestSetupX on User {
     final firstSignInThreshold = creationTime.add(const Duration(seconds: 1));
     return !lastSignInTime.isAfter(firstSignInThreshold);
   }
-
-  bool requiresGuestNameSetup({required bool hasCompletedProfileSetup}) {
-    return !hasCompletedProfileSetup;
-  }
 }

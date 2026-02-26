@@ -7,6 +7,8 @@ import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/auth/domain/auth_profile_setup_preferences.dart';
 import 'package:yamt/features/auth/domain/auth_user_extensions.dart';
+import 'package:yamt/features/auth/provider/'
+    'auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/provider/auth_repository.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 
@@ -87,6 +89,7 @@ class GuestNameSetupController extends _$GuestNameSetupController {
       return;
     }
     if (!nextState.hasError) {
+      ref.invalidate(authProfileSetupCompletedProvider);
       ref.invalidate(authStateChangesProvider);
     }
     state = nextState;

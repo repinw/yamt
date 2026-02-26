@@ -11,6 +11,8 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/auth/domain/auth_profile_setup_preferences.dart';
+import 'package:yamt/features/auth/provider/'
+    'auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -403,6 +405,47 @@ void main() {
       AppRoutes.guestNameSetup,
     );
   });
+
+  testWidgets(
+    'leaves setup when completion marker changes without new auth event',
+    (tester) async {
+      final authController = StreamController<User?>();
+      final container = _createContainerWithAuth(authController.stream);
+      addTearDown(() {
+        unawaited(authController.close());
+      });
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: container, child: const YAMT()),
+      );
+      await tester.pump();
+
+      authController.add(_authenticatedUser(uid: 'setup-user'));
+      await tester.pump();
+      await _pumpRouterTransition(tester);
+
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.guestNameSetup,
+      );
+
+      await container
+          .read(appPreferencesProvider)
+          .setString(
+            AuthProfileSetupPreferences.keyForUser('setup-user'),
+            AuthProfileSetupPreferences.completedValue,
+          );
+      container.invalidate(authProfileSetupCompletedProvider);
+
+      await tester.pump();
+      await _pumpRouterTransition(tester);
+
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.homeInventory,
+      );
+    },
+  );
 
   testWidgets('switches home tabs and updates route path', (tester) async {
     final user = _authenticatedUser();

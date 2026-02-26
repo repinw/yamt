@@ -34,7 +34,7 @@ final class GuestNameSetupControllerProvider
 }
 
 String _$guestNameSetupControllerHash() =>
-    r'029f5d1b7f4099ff5495209454d4e86913617d5b';
+    r'd3aafe39652cf66552a5f26dcb1d5d09003fe4ca';
 
 abstract class _$GuestNameSetupController extends $AsyncNotifier<void> {
   FutureOr<void> build();
