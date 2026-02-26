@@ -769,6 +769,37 @@ void main() {
     expect(savedItems!.single.discounts, <String, double>{'Loyalty': -0.5});
   });
 
+  testWidgets('unnamed discount row avoids duplicated discounts label', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            discounts: const <String, double>{'': -0.5},
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+    final l10n = AppLocalizations.of(context)!;
+    final duplicatedLabel =
+        '${l10n.inventoryReceiptReviewFieldDiscounts}: '
+        '${l10n.inventoryReceiptReviewFieldDiscounts}';
+
+    expect(
+      find.byKey(const Key('receipt_review_discount_row_0_0')),
+      findsOneWidget,
+    );
+    expect(find.textContaining(duplicatedLabel), findsNothing);
+  });
+
   testWidgets('positive discount input is normalized to negative amount', (
     tester,
   ) async {

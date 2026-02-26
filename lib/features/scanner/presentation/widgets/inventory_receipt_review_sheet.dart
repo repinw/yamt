@@ -222,9 +222,12 @@ class _InventoryReceiptReviewSheetState
         .map((entryWithIndex) {
           final discountIndex = entryWithIndex.$1;
           final discount = entryWithIndex.$2;
-          final discountLabel = discount.key.trim().isEmpty
-              ? l10n.inventoryReceiptReviewFieldDiscounts
-              : discount.key;
+          final discountName = discount.key.trim();
+          final text = discountName.isEmpty
+              ? '${l10n.inventoryReceiptReviewFieldDiscounts} '
+                    '(${currency.format(discount.value)})'
+              : '${l10n.inventoryReceiptReviewFieldDiscounts}: '
+                    '$discountName (${currency.format(discount.value)})';
           return Padding(
             key: Key('receipt_review_discount_row_${itemIndex}_$discountIndex'),
             padding: const EdgeInsets.only(
@@ -240,13 +243,7 @@ class _InventoryReceiptReviewSheetState
                   color: disabledColor,
                 ),
                 const SizedBox(width: AppSpacing.xs),
-                Expanded(
-                  child: Text(
-                    '${l10n.inventoryReceiptReviewFieldDiscounts}: '
-                    '$discountLabel (${currency.format(discount.value)})',
-                    style: discountTextStyle,
-                  ),
-                ),
+                Expanded(child: Text(text, style: discountTextStyle)),
               ],
             ),
           );
