@@ -135,15 +135,28 @@ void main() {
 
   testWidgets('submits guest name to repository', (tester) async {
     final repository = FakeAuthRepository();
-    await tester.pumpWidget(_wrapWithRouter(repository));
+    final preferences = _MemoryAppPreferences();
+    await tester.pumpWidget(
+      _wrapWithRouter(repository, appPreferences: preferences),
+    );
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'Guest Wlad');
+    await tester.tap(find.byType(DropdownButtonFormField<int>).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blue').last);
+    await tester.pumpAndSettle();
+
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
 
     expect(repository.guestNameUpdateCalls, 1);
     expect(repository.lastGuestDisplayName, 'Guest Wlad');
+    expect(
+      preferences.getIntSync('preferred_seed_color'),
+      AppSeedColors.blue.toARGB32(),
+    );
+    expect(preferences.getStringSync('preferred_theme_mode'), 'system');
     expect(find.text('Inventory'), findsNothing);
   });
 
@@ -196,7 +209,7 @@ void main() {
     expect(field.controller?.text, isEmpty);
   });
 
-  testWidgets('changing color selection updates preferred seed color', (
+  testWidgets('changing color selection does not persist before save', (
     tester,
   ) async {
     final repository = FakeAuthRepository();
@@ -211,9 +224,6 @@ void main() {
     await tester.tap(find.text('Blue').last);
     await tester.pumpAndSettle();
 
-    expect(
-      preferences.getIntSync('preferred_seed_color'),
-      AppSeedColors.blue.toARGB32(),
-    );
+    expect(preferences.getIntSync('preferred_seed_color'), isNull);
   });
 }

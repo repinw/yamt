@@ -1,13 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
-import 'package:yamt/features/auth/domain/auth_user_extensions.dart';
 import 'package:yamt/features/auth/provider/auth_error_view_model.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/provider/guest_name_setup_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -21,25 +17,37 @@ class GuestNameSetupPage extends ConsumerStatefulWidget {
 class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
   final _nameController = TextEditingController();
   String? _errorText;
+  late SeedColorController _seedColorController;
+  late ThemeModeController _themeModeController;
+  late Color _initialSeedColor;
+  late ThemeMode _initialThemeMode;
+  late Color _selectedSeedColor;
+  late ThemeMode _selectedThemeMode;
+  bool _didPersistSetup = false;
 
   @override
   void initState() {
     super.initState();
-    final currentUser = ref.read(firebaseAuthProvider).currentUser;
-    if (currentUser == null || currentUser.isAnonymous) {
-      return;
-    }
-    if (!currentUser.isLikelyFirstSignIn) {
-      return;
-    }
-    final currentDisplayName = currentUser.displayName?.trim();
-    if (currentDisplayName != null && currentDisplayName.isNotEmpty) {
-      _nameController.text = currentDisplayName;
+    _seedColorController = ref.read(seedColorControllerProvider.notifier);
+    _themeModeController = ref.read(themeModeControllerProvider.notifier);
+    final defaults = ref
+        .read(guestNameSetupControllerProvider.notifier)
+        .initialFormDefaults();
+    _initialSeedColor = defaults.seedColor;
+    _initialThemeMode = defaults.themeMode;
+    _selectedSeedColor = defaults.seedColor;
+    _selectedThemeMode = defaults.themeMode;
+    if (defaults.prefilledName != null) {
+      _nameController.text = defaults.prefilledName!;
     }
   }
 
   @override
   void dispose() {
+    if (!_didPersistSetup) {
+      _seedColorController.previewSeedColor(_initialSeedColor);
+      _themeModeController.previewThemeMode(_initialThemeMode);
+    }
     _nameController.dispose();
     super.dispose();
   }
@@ -48,8 +56,6 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(guestNameSetupControllerProvider);
-    final selectedSeedColor = ref.watch(seedColorControllerProvider);
-    final selectedThemeMode = ref.watch(themeModeControllerProvider);
 
     ref.listen<AsyncValue<void>>(guestNameSetupControllerProvider, (
       previous,
@@ -97,8 +103,8 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
             ),
             const SizedBox(height: AppSpacing.xl),
             DropdownButtonFormField<int>(
-              key: ValueKey<int>(selectedSeedColor.toARGB32()),
-              initialValue: selectedSeedColor.toARGB32(),
+              key: ValueKey<int>(_selectedSeedColor.toARGB32()),
+              initialValue: _selectedSeedColor.toARGB32(),
               decoration: InputDecoration(labelText: l10n.settingsColorTitle),
               onChanged: state.isLoading
                   ? null
@@ -106,11 +112,10 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
                       if (selectedValue == null) {
                         return;
                       }
-                      unawaited(
-                        ref
-                            .read(seedColorControllerProvider.notifier)
-                            .setSeedColor(Color(selectedValue)),
-                      );
+                      setState(() {
+                        _selectedSeedColor = Color(selectedValue);
+                      });
+                      _seedColorController.previewSeedColor(_selectedSeedColor);
                     },
               items: [
                 for (final color in AppSeedColors.values)
@@ -122,8 +127,8 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
             ),
             const SizedBox(height: AppSpacing.xl),
             DropdownButtonFormField<ThemeMode>(
-              key: ValueKey<ThemeMode>(selectedThemeMode),
-              initialValue: selectedThemeMode,
+              key: ValueKey<ThemeMode>(_selectedThemeMode),
+              initialValue: _selectedThemeMode,
               decoration: InputDecoration(labelText: l10n.settingsThemeTitle),
               onChanged: state.isLoading
                   ? null
@@ -131,11 +136,10 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
                       if (selectedMode == null) {
                         return;
                       }
-                      unawaited(
-                        ref
-                            .read(themeModeControllerProvider.notifier)
-                            .setThemeMode(selectedMode),
-                      );
+                      setState(() {
+                        _selectedThemeMode = selectedMode;
+                      });
+                      _themeModeController.previewThemeMode(_selectedThemeMode);
                     },
               items: [
                 for (final mode in ThemeMode.values)
@@ -176,15 +180,17 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
       return;
     }
 
-    final selectedSeedColor = ref.read(seedColorControllerProvider);
-    final selectedThemeMode = ref.read(themeModeControllerProvider);
     await ref
         .read(guestNameSetupControllerProvider.notifier)
         .saveDisplayName(
           name,
-          seedColor: selectedSeedColor,
-          themeMode: selectedThemeMode,
+          seedColor: _selectedSeedColor,
+          themeMode: _selectedThemeMode,
         );
+    final nextState = ref.read(guestNameSetupControllerProvider);
+    if (!nextState.hasError) {
+      _didPersistSetup = true;
+    }
   }
 
   Widget _colorDropdownItem(AppLocalizations l10n, Color color) {
