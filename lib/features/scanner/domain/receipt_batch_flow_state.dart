@@ -21,6 +21,7 @@ class ReceiptBatchFlowState {
     this.mappedItemsByIndex = const <int, List<FridgeItem>>{},
     this.pendingAutoReviewIndex,
     this.autoReviewDispatched = false,
+    this.activeReviewIndex,
     this.errorCode,
   });
 
@@ -31,9 +32,11 @@ class ReceiptBatchFlowState {
   final Map<int, List<FridgeItem>> mappedItemsByIndex;
   final int? pendingAutoReviewIndex;
   final bool autoReviewDispatched;
+  final int? activeReviewIndex;
   final String? errorCode;
 
   bool get canClose => status == ReceiptBatchFlowStatus.completed;
+  bool get isReviewOpen => activeReviewIndex != null;
 
   List<FridgeItem> mappedItemsForIndex(int index) {
     return mappedItemsByIndex[index] ?? const <FridgeItem>[];
@@ -48,6 +51,8 @@ class ReceiptBatchFlowState {
     int? pendingAutoReviewIndex,
     bool clearPendingAutoReview = false,
     bool? autoReviewDispatched,
+    int? activeReviewIndex,
+    bool clearActiveReviewIndex = false,
     String? errorCode,
     bool clearErrorCode = false,
   }) {
@@ -61,6 +66,9 @@ class ReceiptBatchFlowState {
           ? null
           : (pendingAutoReviewIndex ?? this.pendingAutoReviewIndex),
       autoReviewDispatched: autoReviewDispatched ?? this.autoReviewDispatched,
+      activeReviewIndex: clearActiveReviewIndex
+          ? null
+          : (activeReviewIndex ?? this.activeReviewIndex),
       errorCode: clearErrorCode ? null : (errorCode ?? this.errorCode),
     );
   }

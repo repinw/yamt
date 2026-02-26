@@ -21,6 +21,7 @@ class InventoryReceiptBatchProgressDialog extends ConsumerWidget {
     final progress = batchState.progress;
     final reviewableIndices = batchState.reviewableIndices;
     final reviewedIndices = batchState.reviewedIndices;
+    final activeReviewIndex = batchState.activeReviewIndex;
 
     return AlertDialog(
       title: Text(l10n.inventoryReceiptBatchTitle),
@@ -58,6 +59,7 @@ class InventoryReceiptBatchProgressDialog extends ConsumerWidget {
                       index: index,
                       reviewableIndices: reviewableIndices,
                       reviewedIndices: reviewedIndices,
+                      activeReviewIndex: activeReviewIndex,
                     ),
                   );
                 },
@@ -80,6 +82,7 @@ class InventoryReceiptBatchProgressDialog extends ConsumerWidget {
     required int index,
     required Set<int> reviewableIndices,
     required Set<int> reviewedIndices,
+    required int? activeReviewIndex,
   }) {
     if (!reviewableIndices.contains(index)) {
       return null;
@@ -90,8 +93,9 @@ class InventoryReceiptBatchProgressDialog extends ConsumerWidget {
         style: const TextStyle(fontSize: 12),
       );
     }
+    final isAnyReviewOpen = activeReviewIndex != null;
     return TextButton(
-      onPressed: () => onReviewTap(index),
+      onPressed: isAnyReviewOpen ? null : () => onReviewTap(index),
       child: Text(l10n.inventoryReceiptBatchReviewAction),
     );
   }

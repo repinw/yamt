@@ -224,4 +224,58 @@ void main() {
       expect(state.status, ReceiptBatchFlowStatus.analysisFailed);
     },
   );
+
+  test('startReview/finishReview move review state into controller', () async {
+    final container = ProviderContainer(
+      overrides: [
+        receiptInputRepositoryProvider.overrideWithValue(
+          _FakeReceiptInputRepository(
+            pickFiles: () async => ReceiptInputBatchResult.selected(
+              selections: <ReceiptInputSelection>[_selectionWithName('a.jpg')],
+            ),
+          ),
+        ),
+        receiptAnalysisRepositoryProvider.overrideWithValue(
+          _FakeReceiptAnalysisRepository(
+            onAnalyzeSelection: (_) async =>
+                const ReceiptAnalysisResult.succeeded(
+                  rawResponse: '{"i":[{"n":"A"}]}',
+                  extraction: ReceiptAnalysisExtraction(
+                    root: <String, dynamic>{},
+                    items: <ReceiptAnalysisItem>[
+                      ReceiptAnalysisItem(
+                        name: 'A',
+                        rawPayload: <String, dynamic>{'n': 'A'},
+                      ),
+                    ],
+                  ),
+                ),
+          ),
+        ),
+        receiptToFridgeItemMapperProvider.overrideWithValue(
+          _FakeReceiptToFridgeItemMapper(
+            onMap: (_) => <FridgeItem>[_fridgeItem(id: 'mapped-a')],
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final controller = container.read(
+      receiptBatchFlowControllerProvider.notifier,
+    );
+    await controller.runFileBatch();
+
+    expect(controller.startReview(0), isTrue);
+    expect(controller.startReview(0), isFalse);
+    expect(
+      container.read(receiptBatchFlowControllerProvider).activeReviewIndex,
+      0,
+    );
+
+    controller.finishReview(index: 0, saved: true);
+    final state = container.read(receiptBatchFlowControllerProvider);
+    expect(state.activeReviewIndex, isNull);
+    expect(state.reviewedIndices, <int>{0});
+  });
 }

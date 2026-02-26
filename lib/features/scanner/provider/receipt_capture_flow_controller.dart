@@ -8,6 +8,7 @@ import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_to_fridge_item_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/scanner/domain/receipt_batch_processor.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
@@ -180,115 +181,34 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
   Future<ReceiptBatchRunResult> _runSelectedBatch({
     required List<ReceiptInputSelection> selections,
   }) async {
-    var progress = _queuedBatchProgress(selections);
-
-    final mappedItems = <FridgeItem>[];
-    for (var index = 0; index < selections.length; index++) {
-      progress = _updateBatchItem(
-        progress: progress,
-        index: index,
-        status: ReceiptBatchItemStatus.processing,
-        clearErrorCode: true,
+    final batchProcessor = _batchProcessor();
+    final result = await batchProcessor.processSelections(
+      selections,
+      shouldContinue: () => ref.mounted,
+    );
+    if (!ref.mounted || result.wasCanceled) {
+      return ReceiptBatchRunResult.inputFailed(
+        errorCode: _inputUnexpectedCode(ReceiptInputSource.file),
       );
-
-      final analysis = await _analyzeBatchSelection(selections[index]);
-      if (!ref.mounted) {
-        return ReceiptBatchRunResult.inputFailed(
-          errorCode: _inputUnexpectedCode(ReceiptInputSource.file),
-        );
-      }
-
-      if (analysis.errorCode == null) {
-        mappedItems.addAll(analysis.mappedItems);
-        progress = _updateBatchItem(
-          progress: progress,
-          index: index,
-          status: ReceiptBatchItemStatus.succeeded,
-          mappedItemCount: analysis.mappedItems.length,
-          clearErrorCode: true,
-        );
-      } else {
-        progress = _updateBatchItem(
-          progress: progress,
-          index: index,
-          status: ReceiptBatchItemStatus.failed,
-          errorCode: analysis.errorCode,
-          mappedItemCount: 0,
-        );
-      }
     }
 
     if (ref.mounted) {
       state = const AsyncData(null);
     }
     return ReceiptBatchRunResult.completed(
-      progress: progress,
-      mappedItems: mappedItems,
+      progress: result.progress,
+      mappedItems: result.mappedItems,
     );
   }
 
-  ReceiptBatchProgress _queuedBatchProgress(
-    List<ReceiptInputSelection> selections,
-  ) {
-    return ReceiptBatchProgress(
-      items: selections
-          .map(
-            (selection) => ReceiptBatchItemProgress(
-              fileName: selection.name,
-              status: ReceiptBatchItemStatus.queued,
-            ),
-          )
-          .toList(growable: false),
+  ReceiptBatchProcessor _batchProcessor() {
+    final analysisRepository = ref.read(receiptAnalysisRepositoryProvider);
+    final mapper = ref.read(receiptToFridgeItemMapperProvider);
+    return ReceiptBatchProcessor(
+      analysisRepository: analysisRepository,
+      mapExtraction: mapper.map,
+      loggerName: 'ReceiptCaptureFlowController',
     );
-  }
-
-  ReceiptBatchProgress _updateBatchItem({
-    required ReceiptBatchProgress progress,
-    required int index,
-    required ReceiptBatchItemStatus status,
-    String? errorCode,
-    bool clearErrorCode = false,
-    int? mappedItemCount,
-  }) {
-    final currentItem = progress.items[index];
-    final updatedItem = currentItem.copyWith(
-      status: status,
-      errorCode: errorCode,
-      clearErrorCode: clearErrorCode,
-      mappedItemCount: mappedItemCount,
-    );
-    return progress.updateItem(index, updatedItem);
-  }
-
-  Future<({List<FridgeItem> mappedItems, String? errorCode})>
-  _analyzeBatchSelection(ReceiptInputSelection selection) async {
-    try {
-      final analysisRepository = ref.read(receiptAnalysisRepositoryProvider);
-      final analysisResult = await analysisRepository.analyzeSelection(
-        selection,
-      );
-      return switch (analysisResult) {
-        ReceiptAnalysisSuccess(:final extraction) => (
-          mappedItems: _mapExtraction(extraction),
-          errorCode: null,
-        ),
-        ReceiptAnalysisFailure(:final errorCode) => (
-          mappedItems: const <FridgeItem>[],
-          errorCode: errorCode,
-        ),
-      };
-    } catch (error, stackTrace) {
-      log(
-        'Receipt batch analysis failed for ${selection.name}',
-        name: 'ReceiptCaptureFlowController',
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return (
-        mappedItems: const <FridgeItem>[],
-        errorCode: ReceiptAnalysisErrorCodes.unexpected,
-      );
-    }
   }
 
   String _inputUnexpectedCode(ReceiptInputSource source) {

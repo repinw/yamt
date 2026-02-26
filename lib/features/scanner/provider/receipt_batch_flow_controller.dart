@@ -1,11 +1,9 @@
-import 'dart:developer' show log;
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_to_fridge_item_mapper.dart';
-import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_batch_processor.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
@@ -23,9 +21,33 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
     state = const ReceiptBatchFlowState();
   }
 
-  void markReviewed(int index) {
+  bool startReview(int index) {
+    if (!state.reviewableIndices.contains(index)) {
+      return false;
+    }
+    if (state.isReviewOpen) {
+      return false;
+    }
     state = state.copyWith(
-      reviewedIndices: <int>{...state.reviewedIndices, index},
+      activeReviewIndex: index,
+      pendingAutoReviewIndex: state.pendingAutoReviewIndex == index
+          ? null
+          : state.pendingAutoReviewIndex,
+      clearPendingAutoReview: state.pendingAutoReviewIndex == index,
+    );
+    return true;
+  }
+
+  void finishReview({required int index, required bool saved}) {
+    if (state.activeReviewIndex != index) {
+      return;
+    }
+    final reviewedIndices = saved
+        ? <int>{...state.reviewedIndices, index}
+        : state.reviewedIndices;
+    state = state.copyWith(
+      reviewedIndices: reviewedIndices,
+      clearActiveReviewIndex: true,
     );
   }
 
@@ -59,49 +81,40 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
   }
 
   Future<void> _runSelectedBatch(List<ReceiptInputSelection> selections) async {
-    var progress = _queuedBatchProgress(selections);
-    var mappedItemsByIndex = <int, List<FridgeItem>>{};
-    var reviewableIndices = <int>{};
-
+    var mappedItemsByIndex = const <int, List<FridgeItem>>{};
+    var reviewableIndices = const <int>{};
     state = state.copyWith(
       status: ReceiptBatchFlowStatus.running,
-      progress: progress,
+      progress: const ReceiptBatchProgress(items: <ReceiptBatchItemProgress>[]),
       reviewableIndices: reviewableIndices,
       reviewedIndices: <int>{},
       mappedItemsByIndex: mappedItemsByIndex,
       clearPendingAutoReview: true,
+      clearActiveReviewIndex: true,
       autoReviewDispatched: false,
       clearErrorCode: true,
     );
 
-    for (var index = 0; index < selections.length; index++) {
-      progress = _updateBatchItem(
-        progress: progress,
-        index: index,
-        status: ReceiptBatchItemStatus.processing,
-        clearErrorCode: true,
-      );
-      state = state.copyWith(progress: progress);
+    final batchProcessor = _batchProcessor();
+    final result = await batchProcessor.processSelections(
+      selections,
+      shouldContinue: () => ref.mounted,
+      onProgressChanged: (progress) {
+        if (!ref.mounted) {
+          return;
+        }
+        state = state.copyWith(progress: progress);
+      },
+      onItemSucceeded: (index, mappedItems, progress) {
+        if (!ref.mounted) {
+          return;
+        }
 
-      final analysis = await _analyzeSelection(selections[index]);
-      if (!ref.mounted) {
-        return;
-      }
-
-      if (analysis.errorCode == null) {
         mappedItemsByIndex = <int, List<FridgeItem>>{
           ...mappedItemsByIndex,
-          index: analysis.mappedItems,
+          index: mappedItems,
         };
         reviewableIndices = <int>{...reviewableIndices, index};
-        progress = _updateBatchItem(
-          progress: progress,
-          index: index,
-          status: ReceiptBatchItemStatus.succeeded,
-          mappedItemCount: analysis.mappedItems.length,
-          clearErrorCode: true,
-        );
-
         final shouldDispatchAutoReview = !state.autoReviewDispatched;
         state = state.copyWith(
           progress: progress,
@@ -112,96 +125,41 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
           autoReviewDispatched:
               state.autoReviewDispatched || shouldDispatchAutoReview,
         );
-      } else {
-        progress = _updateBatchItem(
-          progress: progress,
-          index: index,
-          status: ReceiptBatchItemStatus.failed,
-          errorCode: analysis.errorCode,
-          mappedItemCount: 0,
-        );
+      },
+      onItemFailed: (_, progress) {
+        if (!ref.mounted) {
+          return;
+        }
         state = state.copyWith(progress: progress);
-      }
-    }
-
-    final hasMappedItems = mappedItemsByIndex.values
-        .expand((items) => items)
-        .isNotEmpty;
-    if (!hasMappedItems) {
-      state = state.copyWith(status: ReceiptBatchFlowStatus.analysisFailed);
+      },
+    );
+    if (!ref.mounted || result.wasCanceled) {
       return;
     }
 
-    state = state.copyWith(status: ReceiptBatchFlowStatus.completed);
-  }
-
-  ReceiptBatchProgress _queuedBatchProgress(
-    List<ReceiptInputSelection> selections,
-  ) {
-    return ReceiptBatchProgress(
-      items: selections
-          .map(
-            (selection) => ReceiptBatchItemProgress(
-              fileName: selection.name,
-              status: ReceiptBatchItemStatus.queued,
-            ),
-          )
-          .toList(growable: false),
-    );
-  }
-
-  ReceiptBatchProgress _updateBatchItem({
-    required ReceiptBatchProgress progress,
-    required int index,
-    required ReceiptBatchItemStatus status,
-    String? errorCode,
-    bool clearErrorCode = false,
-    int? mappedItemCount,
-  }) {
-    final currentItem = progress.items[index];
-    final updatedItem = currentItem.copyWith(
-      status: status,
-      errorCode: errorCode,
-      clearErrorCode: clearErrorCode,
-      mappedItemCount: mappedItemCount,
-    );
-    return progress.updateItem(index, updatedItem);
-  }
-
-  Future<({List<FridgeItem> mappedItems, String? errorCode})> _analyzeSelection(
-    ReceiptInputSelection selection,
-  ) async {
-    try {
-      final analysisRepository = ref.read(receiptAnalysisRepositoryProvider);
-      final analysisResult = await analysisRepository.analyzeSelection(
-        selection,
+    if (!result.hasMappedItems) {
+      state = state.copyWith(
+        status: ReceiptBatchFlowStatus.analysisFailed,
+        progress: result.progress,
       );
-      return switch (analysisResult) {
-        ReceiptAnalysisSuccess(:final extraction) => (
-          mappedItems: _mapExtraction(extraction),
-          errorCode: null,
-        ),
-        ReceiptAnalysisFailure(:final errorCode) => (
-          mappedItems: const <FridgeItem>[],
-          errorCode: errorCode,
-        ),
-      };
-    } catch (error, stackTrace) {
-      log(
-        'Receipt batch analysis failed for ${selection.name}',
-        name: 'ReceiptBatchFlowController',
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return (
-        mappedItems: const <FridgeItem>[],
-        errorCode: ReceiptAnalysisErrorCodes.unexpected,
-      );
+      return;
     }
+
+    state = state.copyWith(
+      status: ReceiptBatchFlowStatus.completed,
+      progress: result.progress,
+      mappedItemsByIndex: result.mappedItemsByIndex,
+      reviewableIndices: result.mappedItemsByIndex.keys.toSet(),
+    );
   }
 
-  List<FridgeItem> _mapExtraction(ReceiptAnalysisExtraction extraction) {
+  ReceiptBatchProcessor _batchProcessor() {
+    final analysisRepository = ref.read(receiptAnalysisRepositoryProvider);
     final mapper = ref.read(receiptToFridgeItemMapperProvider);
-    return mapper.map(extraction);
+    return ReceiptBatchProcessor(
+      analysisRepository: analysisRepository,
+      mapExtraction: mapper.map,
+      loggerName: 'ReceiptBatchFlowController',
+    );
   }
 }
