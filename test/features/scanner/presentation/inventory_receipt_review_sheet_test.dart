@@ -769,6 +769,50 @@ void main() {
     expect(savedItems!.single.discounts, <String, double>{'Loyalty': -0.5});
   });
 
+  testWidgets('positive discount input is normalized to negative amount', (
+    tester,
+  ) async {
+    List<FridgeItem>? savedItems;
+
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(id: 'food', isDeposit: false, isDiscount: false),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (items) async {
+          savedItems = items;
+        },
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_edit_button_0')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_discount_name_0')),
+      'Coupon',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_discount_amount_0')),
+      '1.50',
+    );
+    await tester.pumpAndSettle();
+
+    final applyButton = find.byKey(
+      const Key('receipt_review_apply_item_button'),
+    );
+    await tester.ensureVisible(applyButton);
+    await tester.tap(applyButton);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('receipt_review_save_button')));
+    await tester.pumpAndSettle();
+
+    expect(savedItems, isNotNull);
+    expect(savedItems!.single.discounts['Coupon'], -1.5);
+  });
+
   testWidgets('clearing discount in editor removes discount row from list', (
     tester,
   ) async {

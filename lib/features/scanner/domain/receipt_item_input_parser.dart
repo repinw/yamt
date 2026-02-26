@@ -74,6 +74,7 @@ class ReceiptItemInputParser {
   /// Parses structured discount rows from the receipt editor.
   ///
   /// Empty rows are ignored. Rows with only one side filled are invalid.
+  /// Positive amounts are normalized to negative values.
   Map<String, double>? parseDiscountEntries(
     List<MapEntry<String, String>> entries, {
     required String locale,
@@ -93,7 +94,7 @@ class ReceiptItemInputParser {
       if (amount == null) {
         return null;
       }
-      parsed[key] = amount;
+      parsed[key] = amount > 0 ? -amount : amount;
     }
     return parsed;
   }
