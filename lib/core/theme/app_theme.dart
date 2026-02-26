@@ -18,6 +18,8 @@ abstract final class AppTheme {
       brightness: brightness,
     );
     final scaffoldBackground = _scaffoldBackground(colorScheme);
+    final cardColor = _cardColor(colorScheme);
+    final cardBorderColor = _cardBorderColor(colorScheme);
 
     return ThemeData(
       colorScheme: colorScheme,
@@ -28,10 +30,11 @@ abstract final class AppTheme {
         foregroundColor: colorScheme.onSurface,
       ),
       cardTheme: CardThemeData(
-        color: colorScheme.surfaceContainerLow,
+        color: cardColor,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
+          side: BorderSide(color: cardBorderColor),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
@@ -68,5 +71,19 @@ abstract final class AppTheme {
       colorScheme.primary.withValues(alpha: tintAlpha),
       colorScheme.surface,
     );
+  }
+
+  static Color _cardColor(ColorScheme colorScheme) {
+    if (colorScheme.brightness == Brightness.light) {
+      return colorScheme.surfaceContainerHigh;
+    }
+    return colorScheme.surfaceContainerLow;
+  }
+
+  static Color _cardBorderColor(ColorScheme colorScheme) {
+    final alpha = colorScheme.brightness == Brightness.light
+        ? AppThemeBackground.lightCardBorderAlpha
+        : AppThemeBackground.darkCardBorderAlpha;
+    return colorScheme.outlineVariant.withValues(alpha: alpha);
   }
 }

@@ -69,6 +69,8 @@ abstract final class AppRadius {
 abstract final class AppThemeBackground {
   static const double lightTintAlpha = 0.04;
   static const double darkTintAlpha = 0.18;
+  static const double lightCardBorderAlpha = 0.28;
+  static const double darkCardBorderAlpha = 0.18;
 }
 
 abstract final class AppSizes {
