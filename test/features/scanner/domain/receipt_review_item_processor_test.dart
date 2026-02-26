@@ -38,6 +38,18 @@ void main() {
     expect(result.items.single.discounts['Rabatt'], -0.5);
   });
 
+  test('merges consecutive discount rows into same previous item', () {
+    final result = processor.process(<FridgeItem>[
+      _item(id: 'item-1', name: 'Gurken', unitPrice: 2.0),
+      _item(id: 'discount-1', name: 'Rabatt A', unitPrice: -0.5),
+      _item(id: 'discount-2', name: 'Rabatt B', unitPrice: -0.2),
+    ]);
+
+    expect(result.items, hasLength(1));
+    expect(result.items.single.discounts['Rabatt A'], -0.5);
+    expect(result.items.single.discounts['Rabatt B'], -0.2);
+  });
+
   test('first discount item stays as standalone row', () {
     final result = processor.process(<FridgeItem>[
       _item(id: 'discount', name: 'Rabatt', unitPrice: -0.5),

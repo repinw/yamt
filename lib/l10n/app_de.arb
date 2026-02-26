@@ -65,7 +65,6 @@
   "inventoryReceiptReviewDiscountNameLabel": "Rabattname",
   "inventoryReceiptReviewDiscountAmountLabel": "Betrag",
   "inventoryReceiptReviewAddDiscountAction": "Rabattzeile hinzufügen",
-  "inventoryReceiptReviewDiscountsHint": "JSON oder Paare: coupon=-1.50",
   "inventoryReceiptReviewFieldReceiptId": "Beleg-ID",
   "inventoryReceiptReviewFieldReceiptDate": "Belegdatum",
   "inventoryReceiptReviewFieldLanguage": "Sprache",

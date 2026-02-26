@@ -425,12 +425,6 @@ abstract class AppLocalizations {
   /// **'Add discount row'**
   String get inventoryReceiptReviewAddDiscountAction;
 
-  /// No description provided for @inventoryReceiptReviewDiscountsHint.
-  ///
-  /// In en, this message translates to:
-  /// **'JSON or pairs: coupon=-1.50'**
-  String get inventoryReceiptReviewDiscountsHint;
-
   /// No description provided for @inventoryReceiptReviewFieldReceiptId.
   ///
   /// In en, this message translates to:

@@ -65,7 +65,6 @@
   "inventoryReceiptReviewDiscountNameLabel": "Discount label",
   "inventoryReceiptReviewDiscountAmountLabel": "Amount",
   "inventoryReceiptReviewAddDiscountAction": "Add discount row",
-  "inventoryReceiptReviewDiscountsHint": "JSON or pairs: coupon=-1.50",
   "inventoryReceiptReviewFieldReceiptId": "Receipt ID",
   "inventoryReceiptReviewFieldReceiptDate": "Receipt date",
   "inventoryReceiptReviewFieldLanguage": "Language",

@@ -56,7 +56,6 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.inventoryReceiptReviewDiscountNameLabel,
     l10n.inventoryReceiptReviewDiscountAmountLabel,
     l10n.inventoryReceiptReviewAddDiscountAction,
-    l10n.inventoryReceiptReviewDiscountsHint,
     l10n.inventoryReceiptReviewFieldReceiptId,
     l10n.inventoryReceiptReviewFieldReceiptDate,
     l10n.inventoryReceiptReviewFieldLanguage,
