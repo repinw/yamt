@@ -47,10 +47,10 @@ class DeviceReceiptAnalysisRepository implements ReceiptAnalysisRepository {
     required ReceiptInputSelection selection,
   }) async {
     try {
-      final inputs = buildReceiptTemplateInputs(selection);
+      final resolvedInputs = await buildReceiptTemplateInputs(selection);
       final responseText = await _templateModelClient.generateContent(
         templateId: templateId,
-        inputs: inputs,
+        inputs: resolvedInputs,
       );
 
       final normalizedResponse = normalizeReceiptAnalysisResponse(responseText);

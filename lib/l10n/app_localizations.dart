@@ -197,6 +197,60 @@ abstract class AppLocalizations {
   /// **'Receipt analysis failed. Please try again.'**
   String get inventoryReceiptAnalysisFailed;
 
+  /// No description provided for @inventoryReceiptBatchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing receipts'**
+  String get inventoryReceiptBatchTitle;
+
+  /// No description provided for @inventoryReceiptBatchProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{processed}/{total}'**
+  String inventoryReceiptBatchProgress(int processed, int total);
+
+  /// No description provided for @inventoryReceiptBatchQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Queued'**
+  String get inventoryReceiptBatchQueued;
+
+  /// No description provided for @inventoryReceiptBatchProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get inventoryReceiptBatchProcessing;
+
+  /// No description provided for @inventoryReceiptBatchSucceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get inventoryReceiptBatchSucceeded;
+
+  /// No description provided for @inventoryReceiptBatchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get inventoryReceiptBatchFailed;
+
+  /// No description provided for @inventoryReceiptBatchReviewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get inventoryReceiptBatchReviewAction;
+
+  /// No description provided for @inventoryReceiptBatchReviewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed'**
+  String get inventoryReceiptBatchReviewed;
+
+  /// No description provided for @inventoryReceiptBatchCloseAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get inventoryReceiptBatchCloseAction;
+
   /// No description provided for @inventoryReceiptReviewTitle.
   ///
   /// In en, this message translates to:

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -91,6 +92,51 @@ void main() {
     expect(capturedInputs?['mimeType'], selection.mimeType);
     expect(capturedInputs?['imageData'], base64Encode(selection.bytes));
   });
+
+  test(
+    'analyzeSelection loads bytes from filePath when selection bytes are empty',
+    () async {
+      final tempDir = await Directory.systemTemp.createTemp(
+        'receipt-analysis-repo-test',
+      );
+      addTearDown(() => tempDir.delete(recursive: true));
+      final file = File('${tempDir.path}/receipt.jpg');
+      final fileBytes = Uint8List.fromList(<int>[0x10, 0x20, 0x30]);
+      await file.writeAsBytes(fileBytes);
+
+      Map<String, Object?>? capturedInputs;
+      final selection = ReceiptInputSelection(
+        source: ReceiptInputSource.file,
+        name: 'receipt.jpg',
+        mimeType: 'image/jpeg',
+        bytes: Uint8List(0),
+        filePath: file.path,
+      );
+
+      final repository = DeviceReceiptAnalysisRepository(
+        templateConfigClient: _FakeTemplateConfigClient(
+          onLoadTemplateId: () async => 'receiptocr',
+        ),
+        templateModelClient: _FakeTemplateModelClient(
+          onGenerateContent: ({required templateId, required inputs}) async {
+            capturedInputs = inputs;
+            return '{"items": []}';
+          },
+        ),
+        parser: _FakeReceiptAnalysisParser(
+          onParse: (_) => const ReceiptAnalysisExtraction(
+            root: <String, dynamic>{},
+            items: <ReceiptAnalysisItem>[],
+          ),
+        ),
+      );
+
+      final result = await repository.analyzeSelection(selection);
+
+      expect(result.status, ReceiptAnalysisStatus.succeeded);
+      expect(capturedInputs?['imageData'], base64Encode(fileBytes));
+    },
+  );
 
   test('analyzeSelection maps empty text to empty_response failure', () async {
     final repository = DeviceReceiptAnalysisRepository(

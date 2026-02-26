@@ -6,6 +6,7 @@ import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/presentation/receipt_batch_flow_runner.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_actions_sheet.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
@@ -35,7 +36,7 @@ class HomeInventoryFabFlow {
           },
           onUploadFileTap: () {
             Navigator.of(sheetContext).pop();
-            unawaited(_runFlow(context, ref, l10n, ReceiptInputSource.file));
+            unawaited(_runBatchFlow(context, ref, l10n));
           },
         );
       },
@@ -72,26 +73,40 @@ class HomeInventoryFabFlow {
     _showSnackBar(context, message);
   }
 
-  static Future<void> _openReviewSheet({
+  static Future<void> _runBatchFlow(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) async {
+    final runner = ReceiptBatchFlowRunner(
+      context: context,
+      ref: ref,
+      l10n: l10n,
+      onItemsSaved: () => ref.invalidate(fridgeItemsControllerProvider),
+    );
+    await runner.run();
+  }
+
+  static Future<bool> _openReviewSheet({
     required BuildContext context,
     required WidgetRef ref,
     required AppLocalizations l10n,
     required ReceiptCaptureFlowController controller,
     required List<FridgeItem> mappedItems,
   }) {
-    return showModalBottomSheet<void>(
+    return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) {
         return InventoryReceiptReviewSheet(
           items: mappedItems,
-          onCancelTap: () => Navigator.of(sheetContext).pop(),
+          onCancelTap: () => Navigator.of(sheetContext).pop(false),
           onSaveTap: (reviewedItems) async {
             final saved = await controller.persistReviewedItems(reviewedItems);
             if (!sheetContext.mounted) {
               return;
             }
-            Navigator.of(sheetContext).pop();
+            Navigator.of(sheetContext).pop(saved);
 
             if (!context.mounted) {
               return;
@@ -106,7 +121,7 @@ class HomeInventoryFabFlow {
           },
         );
       },
-    );
+    ).then((saved) => saved ?? false);
   }
 
   static String? _messageForFlowResult(

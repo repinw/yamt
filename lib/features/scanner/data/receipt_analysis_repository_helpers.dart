@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 
 const String _repositoryLogName = 'DeviceReceiptAnalysisRepository';
+const int _maxReceiptAnalysisBytes = 12 * 1024 * 1024;
 
 abstract final class ReceiptAnalysisRepositoryFailures {
   static const templateConfig = ReceiptAnalysisResult.failed(
@@ -22,15 +24,52 @@ abstract final class ReceiptAnalysisRepositoryFailures {
   );
 }
 
-Map<String, Object?> buildReceiptTemplateInputs(
+Future<Map<String, Object?>> buildReceiptTemplateInputs(
   ReceiptInputSelection selection,
-) {
-  final base64Data = base64Encode(selection.bytes);
+) async {
+  final bytes = await _resolveSelectionBytes(selection);
+  if (bytes.length > _maxReceiptAnalysisBytes) {
+    throw ReceiptInputFileTooLargeException(bytes.length);
+  }
+  final base64Data = base64Encode(bytes);
 
   return <String, Object?>{
     'mimeType': selection.mimeType,
     'imageData': base64Data,
   };
+}
+
+Future<Uint8List> _resolveSelectionBytes(
+  ReceiptInputSelection selection,
+) async {
+  if (selection.hasEmbeddedBytes) {
+    return selection.bytes;
+  }
+
+  final filePath = selection.filePath;
+  if (filePath == null || filePath.isEmpty) {
+    throw const ReceiptInputBytesMissingException(
+      'Receipt input has no bytes and no file path.',
+    );
+  }
+  final file = XFile(filePath);
+  final fileLength = await file.length();
+  if (fileLength > _maxReceiptAnalysisBytes) {
+    throw ReceiptInputFileTooLargeException(fileLength);
+  }
+  return file.readAsBytes();
+}
+
+class ReceiptInputBytesMissingException implements Exception {
+  const ReceiptInputBytesMissingException(this.message);
+
+  final String message;
+}
+
+class ReceiptInputFileTooLargeException implements Exception {
+  const ReceiptInputFileTooLargeException(this.byteLength);
+
+  final int byteLength;
 }
 
 String? normalizeReceiptAnalysisResponse(String? responseText) {

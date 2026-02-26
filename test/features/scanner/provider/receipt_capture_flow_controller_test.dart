@@ -36,6 +36,13 @@ class _FakeReceiptInputRepository implements ReceiptInputRepository {
       const ReceiptInputResult.canceled(),
     );
   }
+
+  @override
+  Future<ReceiptInputBatchResult> pickFromFiles() {
+    return Future<ReceiptInputBatchResult>.value(
+      const ReceiptInputBatchResult.canceled(),
+    );
+  }
 }
 
 class _FakeReceiptAnalysisRepository implements ReceiptAnalysisRepository {
@@ -97,9 +104,13 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
 }
 
 ReceiptInputSelection _selection() {
+  return _selectionWithName('receipt.jpg');
+}
+
+ReceiptInputSelection _selectionWithName(String name) {
   return ReceiptInputSelection(
     source: ReceiptInputSource.file,
-    name: 'receipt.jpg',
+    name: name,
     mimeType: 'image/jpeg',
     bytes: Uint8List.fromList(<int>[1, 2, 3]),
   );

@@ -77,3 +77,119 @@ sealed class ReceiptCaptureFlowResult with _$ReceiptCaptureFlowResult {
 
   bool get isCompleted => status == ReceiptCaptureFlowStatus.completed;
 }
+
+enum ReceiptBatchItemStatus { queued, processing, succeeded, failed }
+
+class ReceiptBatchItemProgress {
+  const ReceiptBatchItemProgress({
+    required this.fileName,
+    required this.status,
+    this.errorCode,
+    this.mappedItemCount = 0,
+  });
+
+  final String fileName;
+  final ReceiptBatchItemStatus status;
+  final String? errorCode;
+  final int mappedItemCount;
+
+  ReceiptBatchItemProgress copyWith({
+    ReceiptBatchItemStatus? status,
+    String? errorCode,
+    int? mappedItemCount,
+    bool clearErrorCode = false,
+  }) {
+    return ReceiptBatchItemProgress(
+      fileName: fileName,
+      status: status ?? this.status,
+      errorCode: clearErrorCode ? null : (errorCode ?? this.errorCode),
+      mappedItemCount: mappedItemCount ?? this.mappedItemCount,
+    );
+  }
+
+  bool get isFinished =>
+      status == ReceiptBatchItemStatus.succeeded ||
+      status == ReceiptBatchItemStatus.failed;
+}
+
+class ReceiptBatchProgress {
+  const ReceiptBatchProgress({required this.items});
+
+  final List<ReceiptBatchItemProgress> items;
+
+  int get totalCount => items.length;
+
+  int get processedCount {
+    return _countWhere((item) => item.isFinished);
+  }
+
+  int get succeededCount {
+    return _countWhere(
+      (item) => item.status == ReceiptBatchItemStatus.succeeded,
+    );
+  }
+
+  int get failedCount {
+    return _countWhere((item) => item.status == ReceiptBatchItemStatus.failed);
+  }
+
+  bool get hasFailures => failedCount > 0;
+
+  bool get hasSuccesses => succeededCount > 0;
+
+  ReceiptBatchProgress updateItem(int index, ReceiptBatchItemProgress item) {
+    final nextItems = List<ReceiptBatchItemProgress>.of(items);
+    nextItems[index] = item;
+    return ReceiptBatchProgress(items: nextItems);
+  }
+
+  int _countWhere(bool Function(ReceiptBatchItemProgress item) predicate) {
+    var count = 0;
+    for (final item in items) {
+      if (predicate(item)) {
+        count += 1;
+      }
+    }
+    return count;
+  }
+}
+
+enum ReceiptBatchRunStatus { completed, inputCanceled, inputFailed }
+
+class ReceiptBatchRunResult {
+  const ReceiptBatchRunResult({
+    required this.status,
+    required this.progress,
+    required this.mappedItems,
+    this.errorCode,
+  });
+
+  const ReceiptBatchRunResult.completed({
+    required ReceiptBatchProgress progress,
+    required List<FridgeItem> mappedItems,
+  }) : this(
+         status: ReceiptBatchRunStatus.completed,
+         progress: progress,
+         mappedItems: mappedItems,
+       );
+
+  const ReceiptBatchRunResult.inputCanceled()
+    : this(
+        status: ReceiptBatchRunStatus.inputCanceled,
+        progress: const ReceiptBatchProgress(items: []),
+        mappedItems: const <FridgeItem>[],
+      );
+
+  const ReceiptBatchRunResult.inputFailed({required String errorCode})
+    : this(
+        status: ReceiptBatchRunStatus.inputFailed,
+        progress: const ReceiptBatchProgress(items: []),
+        mappedItems: const <FridgeItem>[],
+        errorCode: errorCode,
+      );
+
+  final ReceiptBatchRunStatus status;
+  final ReceiptBatchProgress progress;
+  final List<FridgeItem> mappedItems;
+  final String? errorCode;
+}

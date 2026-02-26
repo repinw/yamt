@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 
+const String _missingPath = '/tmp/does-not-exist.jpg';
+
 class _FakeImagePicker extends ImagePicker {
   _FakeImagePicker({this.onPickImage});
 
@@ -34,11 +36,13 @@ class _FakeFilePicker extends FilePicker {
 
   final Future<FilePickerResult?> Function({
     required bool withData,
+    required bool allowMultiple,
     required List<String>? allowedExtensions,
   })
   onPickFiles;
 
   bool? lastWithData;
+  bool? lastAllowMultiple;
 
   @override
   Future<FilePickerResult?> pickFiles({
@@ -56,8 +60,10 @@ class _FakeFilePicker extends FilePicker {
     bool readSequential = false,
   }) async {
     lastWithData = withData;
+    lastAllowMultiple = allowMultiple;
     return onPickFiles(
       withData: withData,
+      allowMultiple: allowMultiple,
       allowedExtensions: allowedExtensions,
     );
   }
@@ -68,15 +74,20 @@ void main() {
     'pickFromFile falls back to octet-stream for unknown file type',
     () async {
       final filePicker = _FakeFilePicker(
-        onPickFiles: ({required withData, required allowedExtensions}) async {
-          return FilePickerResult([
-            PlatformFile(
-              name: 'receipt_upload',
-              size: 4,
-              bytes: Uint8List.fromList(<int>[0x00, 0x11, 0x22, 0x33]),
-            ),
-          ]);
-        },
+        onPickFiles:
+            ({
+              required withData,
+              required allowMultiple,
+              required allowedExtensions,
+            }) async {
+              return FilePickerResult([
+                PlatformFile(
+                  name: 'receipt_upload',
+                  size: 4,
+                  bytes: Uint8List.fromList(<int>[0x00, 0x11, 0x22, 0x33]),
+                ),
+              ]);
+            },
       );
 
       final repository = DeviceReceiptInputRepository(
@@ -90,6 +101,7 @@ void main() {
       expect(result.selection, isNotNull);
       expect(result.selection!.mimeType, 'application/octet-stream');
       expect(filePicker.lastWithData, isFalse);
+      expect(filePicker.lastAllowMultiple, isFalse);
     },
   );
 
@@ -103,9 +115,14 @@ void main() {
       },
     );
     final filePicker = _FakeFilePicker(
-      onPickFiles: ({required withData, required allowedExtensions}) async {
-        return null;
-      },
+      onPickFiles:
+          ({
+            required withData,
+            required allowMultiple,
+            required allowedExtensions,
+          }) async {
+            return null;
+          },
     );
 
     final repository = DeviceReceiptInputRepository(
@@ -133,15 +150,20 @@ void main() {
       await file.writeAsBytes(expectedBytes);
 
       final filePicker = _FakeFilePicker(
-        onPickFiles: ({required withData, required allowedExtensions}) async {
-          return FilePickerResult([
-            PlatformFile(
-              name: 'receipt.pdf',
-              size: expectedBytes.length,
-              path: file.path,
-            ),
-          ]);
-        },
+        onPickFiles:
+            ({
+              required withData,
+              required allowMultiple,
+              required allowedExtensions,
+            }) async {
+              return FilePickerResult([
+                PlatformFile(
+                  name: 'receipt.pdf',
+                  size: expectedBytes.length,
+                  path: file.path,
+                ),
+              ]);
+            },
       );
 
       final repository = DeviceReceiptInputRepository(
@@ -156,6 +178,267 @@ void main() {
       expect(result.selection!.bytes, orderedEquals(expectedBytes));
       expect(result.selection!.mimeType, 'application/pdf');
       expect(filePicker.lastWithData, isFalse);
+      expect(filePicker.lastAllowMultiple, isFalse);
     },
   );
+
+  test('pickFromFile returns failed when selected file is oversized', () async {
+    final filePicker = _FakeFilePicker(
+      onPickFiles:
+          ({
+            required withData,
+            required allowMultiple,
+            required allowedExtensions,
+          }) async {
+            return FilePickerResult([
+              PlatformFile(
+                name: 'huge.pdf',
+                size: 13 * 1024 * 1024,
+                bytes: Uint8List.fromList(<int>[0x01, 0x02]),
+              ),
+            ]);
+          },
+    );
+
+    final repository = DeviceReceiptInputRepository(
+      imagePicker: _FakeImagePicker(),
+      filePicker: filePicker,
+    );
+
+    final result = await repository.pickFromFile();
+
+    expect(result.status, ReceiptInputStatus.failed);
+    expect(result.errorCode, ReceiptInputErrorCodes.filePickFailed);
+  });
+
+  test(
+    'pickFromFiles allows multi-select and returns all selections',
+    () async {
+      final filePicker = _FakeFilePicker(
+        onPickFiles:
+            ({
+              required withData,
+              required allowMultiple,
+              required allowedExtensions,
+            }) async {
+              return FilePickerResult([
+                PlatformFile(
+                  name: 'one.jpg',
+                  size: 3,
+                  bytes: Uint8List.fromList(<int>[0x01, 0x02, 0x03]),
+                ),
+                PlatformFile(
+                  name: 'two.pdf',
+                  size: 4,
+                  bytes: Uint8List.fromList(<int>[0x25, 0x50, 0x44, 0x46]),
+                ),
+              ]);
+            },
+      );
+
+      final repository = DeviceReceiptInputRepository(
+        imagePicker: _FakeImagePicker(),
+        filePicker: filePicker,
+      );
+
+      final result = await repository.pickFromFiles();
+
+      expect(result.status, ReceiptInputBatchStatus.selected);
+      expect(result.selections, hasLength(2));
+      expect(result.selections.first.name, 'one.jpg');
+      expect(result.selections.last.name, 'two.pdf');
+      expect(filePicker.lastAllowMultiple, isTrue);
+      expect(filePicker.lastWithData, isFalse);
+    },
+  );
+
+  test(
+    'pickFromFiles keeps metadata without eagerly loading file path bytes',
+    () async {
+      final filePicker = _FakeFilePicker(
+        onPickFiles:
+            ({
+              required withData,
+              required allowMultiple,
+              required allowedExtensions,
+            }) async {
+              return FilePickerResult([
+                PlatformFile(
+                  name: 'later-read.jpg',
+                  size: 8,
+                  path: _missingPath,
+                ),
+              ]);
+            },
+      );
+
+      final repository = DeviceReceiptInputRepository(
+        imagePicker: _FakeImagePicker(),
+        filePicker: filePicker,
+      );
+
+      final result = await repository.pickFromFiles();
+
+      expect(result.status, ReceiptInputBatchStatus.selected);
+      expect(result.selections, hasLength(1));
+      expect(result.selections.single.name, 'later-read.jpg');
+      expect(result.selections.single.bytes, isEmpty);
+      expect(result.selections.single.filePath, _missingPath);
+    },
+  );
+
+  test('pickFromFiles returns canceled when picker is dismissed', () async {
+    final filePicker = _FakeFilePicker(
+      onPickFiles:
+          ({
+            required withData,
+            required allowMultiple,
+            required allowedExtensions,
+          }) async {
+            return null;
+          },
+    );
+
+    final repository = DeviceReceiptInputRepository(
+      imagePicker: _FakeImagePicker(),
+      filePicker: filePicker,
+    );
+
+    final result = await repository.pickFromFiles();
+
+    expect(result.status, ReceiptInputBatchStatus.canceled);
+    expect(result.selections, isEmpty);
+    expect(filePicker.lastAllowMultiple, isTrue);
+  });
+
+  test(
+    'pickFromFiles returns failed when selected file cannot be read',
+    () async {
+      final filePicker = _FakeFilePicker(
+        onPickFiles:
+            ({
+              required withData,
+              required allowMultiple,
+              required allowedExtensions,
+            }) async {
+              return FilePickerResult([
+                PlatformFile(name: 'broken.pdf', size: 4),
+              ]);
+            },
+      );
+
+      final repository = DeviceReceiptInputRepository(
+        imagePicker: _FakeImagePicker(),
+        filePicker: filePicker,
+      );
+
+      final result = await repository.pickFromFiles();
+
+      expect(result.status, ReceiptInputBatchStatus.failed);
+      expect(result.errorCode, ReceiptInputErrorCodes.filePickFailed);
+    },
+  );
+
+  test(
+    'pickFromFiles skips unreadable files when at least one file is valid',
+    () async {
+      final filePicker = _FakeFilePicker(
+        onPickFiles:
+            ({
+              required withData,
+              required allowMultiple,
+              required allowedExtensions,
+            }) async {
+              return FilePickerResult([
+                PlatformFile(name: 'broken.pdf', size: 4),
+                PlatformFile(
+                  name: 'ok.jpg',
+                  size: 3,
+                  bytes: Uint8List.fromList(<int>[0x01, 0x02, 0x03]),
+                ),
+              ]);
+            },
+      );
+
+      final repository = DeviceReceiptInputRepository(
+        imagePicker: _FakeImagePicker(),
+        filePicker: filePicker,
+      );
+
+      final result = await repository.pickFromFiles();
+
+      expect(result.status, ReceiptInputBatchStatus.selected);
+      expect(result.selections, hasLength(1));
+      expect(result.selections.single.name, 'ok.jpg');
+    },
+  );
+
+  test(
+    'pickFromFiles returns failed when selection count exceeds limit',
+    () async {
+      final files = List<PlatformFile>.generate(
+        21,
+        (index) => PlatformFile(
+          name: 'r$index.jpg',
+          size: 2,
+          bytes: Uint8List.fromList(<int>[0x01, 0x02]),
+        ),
+      );
+      final filePicker = _FakeFilePicker(
+        onPickFiles:
+            ({
+              required withData,
+              required allowMultiple,
+              required allowedExtensions,
+            }) async {
+              return FilePickerResult(files);
+            },
+      );
+
+      final repository = DeviceReceiptInputRepository(
+        imagePicker: _FakeImagePicker(),
+        filePicker: filePicker,
+      );
+
+      final result = await repository.pickFromFiles();
+
+      expect(result.status, ReceiptInputBatchStatus.failed);
+      expect(result.errorCode, ReceiptInputErrorCodes.filePickFailed);
+    },
+  );
+
+  test('pickFromFiles skips oversized files but keeps valid ones', () async {
+    final filePicker = _FakeFilePicker(
+      onPickFiles:
+          ({
+            required withData,
+            required allowMultiple,
+            required allowedExtensions,
+          }) async {
+            return FilePickerResult([
+              PlatformFile(
+                name: 'oversized.jpg',
+                size: 13 * 1024 * 1024,
+                bytes: Uint8List.fromList(<int>[0x01, 0x02]),
+              ),
+              PlatformFile(
+                name: 'ok.jpg',
+                size: 3,
+                bytes: Uint8List.fromList(<int>[0x01, 0x02, 0x03]),
+              ),
+            ]);
+          },
+    );
+
+    final repository = DeviceReceiptInputRepository(
+      imagePicker: _FakeImagePicker(),
+      filePicker: filePicker,
+    );
+
+    final result = await repository.pickFromFiles();
+
+    expect(result.status, ReceiptInputBatchStatus.selected);
+    expect(result.selections, hasLength(1));
+    expect(result.selections.single.name, 'ok.jpg');
+  });
 }

@@ -93,4 +93,62 @@ void main() {
     expect(result.mappedItems, isNull);
     expect(result.isCompleted, isFalse);
   });
+
+  test('batch progress counts succeeded and failed items', () {
+    const progress = ReceiptBatchProgress(
+      items: <ReceiptBatchItemProgress>[
+        ReceiptBatchItemProgress(
+          fileName: 'a.jpg',
+          status: ReceiptBatchItemStatus.succeeded,
+          mappedItemCount: 2,
+        ),
+        ReceiptBatchItemProgress(
+          fileName: 'b.jpg',
+          status: ReceiptBatchItemStatus.failed,
+          errorCode: 'analysis_failed',
+        ),
+        ReceiptBatchItemProgress(
+          fileName: 'c.jpg',
+          status: ReceiptBatchItemStatus.processing,
+        ),
+      ],
+    );
+
+    expect(progress.totalCount, 3);
+    expect(progress.processedCount, 2);
+    expect(progress.succeededCount, 1);
+    expect(progress.failedCount, 1);
+    expect(progress.hasSuccesses, isTrue);
+    expect(progress.hasFailures, isTrue);
+  });
+
+  test('batch run result completed exposes mapped items', () {
+    final mappedItems = <FridgeItem>[_item()];
+    const progress = ReceiptBatchProgress(
+      items: <ReceiptBatchItemProgress>[
+        ReceiptBatchItemProgress(
+          fileName: 'a.jpg',
+          status: ReceiptBatchItemStatus.succeeded,
+        ),
+      ],
+    );
+    final result = ReceiptBatchRunResult.completed(
+      progress: progress,
+      mappedItems: mappedItems,
+    );
+
+    expect(result.status, ReceiptBatchRunStatus.completed);
+    expect(result.progress.totalCount, 1);
+    expect(result.mappedItems, mappedItems);
+    expect(result.errorCode, isNull);
+  });
+
+  test('batch run result inputFailed exposes error code', () {
+    const result = ReceiptBatchRunResult.inputFailed(errorCode: 'input_failed');
+
+    expect(result.status, ReceiptBatchRunStatus.inputFailed);
+    expect(result.errorCode, 'input_failed');
+    expect(result.mappedItems, isEmpty);
+    expect(result.progress.totalCount, 0);
+  });
 }
