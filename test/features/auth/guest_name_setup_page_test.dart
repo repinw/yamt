@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/guest_name_setup_page.dart';
 import 'package:yamt/features/auth/provider/auth_repository.dart';
@@ -69,6 +70,7 @@ Widget _wrapWithRouter(
   FakeAuthRepository repository, {
   String? displayName,
   bool isFirstSignIn = true,
+  _MemoryAppPreferences? appPreferences,
 }) {
   final auth = _MockFirebaseAuth();
   if (displayName == null) {
@@ -102,10 +104,11 @@ Widget _wrapWithRouter(
     ],
   );
 
+  final preferences = appPreferences ?? _MemoryAppPreferences();
   return ProviderScope(
     overrides: [
       authRepositoryProvider.overrideWithValue(repository),
-      appPreferencesProvider.overrideWithValue(_MemoryAppPreferences()),
+      appPreferencesProvider.overrideWithValue(preferences),
       authStateChangesProvider.overrideWith((ref) => const Stream.empty()),
       firebaseAuthProvider.overrideWithValue(auth),
     ],
@@ -191,5 +194,26 @@ void main() {
 
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.controller?.text, isEmpty);
+  });
+
+  testWidgets('changing color selection updates preferred seed color', (
+    tester,
+  ) async {
+    final repository = FakeAuthRepository();
+    final preferences = _MemoryAppPreferences();
+    await tester.pumpWidget(
+      _wrapWithRouter(repository, appPreferences: preferences),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(DropdownButtonFormField<int>).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blue').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      preferences.getIntSync('preferred_seed_color'),
+      AppSeedColors.blue.toARGB32(),
+    );
   });
 }
