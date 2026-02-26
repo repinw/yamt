@@ -258,6 +258,12 @@
   "createAccount": "Create account",
   "authSwitchToRegister": "Don't have an account? Register",
   "authSwitchToLogin": "Already have an account? Login",
+  "authGuestNameSetupTitle": "Set your guest name",
+  "authGuestNameSetupSubtitle":
+      "Choose a display name so your guest session is easier to recognize.",
+  "authGuestNameFieldLabel": "Display name",
+  "authGuestNameSaveAction": "Continue",
+  "authGuestNameRequiredError": "Please enter a display name.",
   "emailLabel": "Email",
   "passwordLabel": "Password",
   "confirmPasswordLabel": "Confirm password",

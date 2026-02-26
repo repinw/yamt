@@ -37,6 +37,11 @@ class _FirebaseGuestErrorRepository implements AuthRepository {
   Future<void> signInAnonymously() {
     throw error;
   }
+
+  @override
+  Future<void> updateCurrentUserDisplayName({
+    required String displayName,
+  }) async {}
 }
 
 class _MockGoogleSignIn extends Mock implements GoogleSignIn {}

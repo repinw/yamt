@@ -16,6 +16,8 @@ abstract interface class AuthRepository {
   });
 
   Future<void> signInAnonymously();
+
+  Future<void> updateCurrentUserDisplayName({required String displayName});
 }
 
 class FirebaseAuthRepository implements AuthRepository {
@@ -45,6 +47,22 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   Future<void> signInAnonymously() async {
     await _auth.signInAnonymously();
+  }
+
+  @override
+  Future<void> updateCurrentUserDisplayName({
+    required String displayName,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(
+        code: 'no-current-user',
+        message: 'No authenticated user found.',
+      );
+    }
+
+    await user.updateDisplayName(displayName);
+    await user.reload();
   }
 }
 

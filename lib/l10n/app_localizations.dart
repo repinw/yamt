@@ -1457,6 +1457,36 @@ abstract class AppLocalizations {
   /// **'Already have an account? Login'**
   String get authSwitchToLogin;
 
+  /// No description provided for @authGuestNameSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your guest name'**
+  String get authGuestNameSetupTitle;
+
+  /// No description provided for @authGuestNameSetupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a display name so your guest session is easier to recognize.'**
+  String get authGuestNameSetupSubtitle;
+
+  /// No description provided for @authGuestNameFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name'**
+  String get authGuestNameFieldLabel;
+
+  /// No description provided for @authGuestNameSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get authGuestNameSaveAction;
+
+  /// No description provided for @authGuestNameRequiredError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a display name.'**
+  String get authGuestNameRequiredError;
+
   /// No description provided for @emailLabel.
   ///
   /// In en, this message translates to:

@@ -9,6 +9,8 @@ class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 class _MockUserCredential extends Mock implements UserCredential {}
 
+class _MockUser extends Mock implements User {}
+
 void main() {
   test('authRepository forwards email sign-in to FirebaseAuth', () async {
     final mockAuth = _MockFirebaseAuth();
@@ -76,7 +78,9 @@ void main() {
     final mockAuth = _MockFirebaseAuth();
     final mockCredential = _MockUserCredential();
 
-    when(() => mockAuth.signInAnonymously()).thenAnswer((_) async => mockCredential);
+    when(
+      () => mockAuth.signInAnonymously(),
+    ).thenAnswer((_) async => mockCredential);
 
     final container = ProviderContainer(
       overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
@@ -88,5 +92,25 @@ void main() {
     await repository.signInAnonymously();
 
     verify(() => mockAuth.signInAnonymously()).called(1);
+  });
+
+  test('authRepository updates current user display name', () async {
+    final mockAuth = _MockFirebaseAuth();
+    final mockUser = _MockUser();
+
+    when(() => mockAuth.currentUser).thenReturn(mockUser);
+    when(() => mockUser.updateDisplayName(any())).thenAnswer((_) async {});
+    when(() => mockUser.reload()).thenAnswer((_) async {});
+
+    final container = ProviderContainer(
+      overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
+    );
+    addTearDown(container.dispose);
+
+    final repository = container.read(authRepositoryProvider);
+    await repository.updateCurrentUserDisplayName(displayName: 'Wlad');
+
+    verify(() => mockUser.updateDisplayName('Wlad')).called(1);
+    verify(() => mockUser.reload()).called(1);
   });
 }
