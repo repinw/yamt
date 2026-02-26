@@ -62,7 +62,7 @@ if not diff_text:
 # --- 3. PROMPT ---
 # Optimierter Prompt für Gemini 3 Context
 prompt = f'''
-Du bist ein strenger Senior Code Reviewer für das Projekt 'mealtrack'.
+Du bist ein strenger Senior Code Reviewer für das Projekt 'yamt'.
 
 KONTEXT:
 - Dateien: {', '.join(files_analyzed)}

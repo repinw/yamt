@@ -17,6 +17,32 @@ void main() {
       expect(light.scaffoldBackgroundColor, isNot(light.colorScheme.surface));
       expect(dark.scaffoldBackgroundColor, isNot(dark.colorScheme.surface));
       expect(
+        light.scaffoldBackgroundColor,
+        equals(
+          Color.alphaBlend(
+            light.colorScheme.primary.withValues(
+              alpha: AppThemeBackground.lightTintAlpha,
+            ),
+            light.colorScheme.surface,
+          ),
+        ),
+      );
+      expect(
+        dark.scaffoldBackgroundColor,
+        equals(
+          Color.alphaBlend(
+            dark.colorScheme.primary.withValues(
+              alpha: AppThemeBackground.darkTintAlpha,
+            ),
+            dark.colorScheme.surface,
+          ),
+        ),
+      );
+      expect(
+        AppThemeBackground.darkTintAlpha,
+        greaterThan(AppThemeBackground.lightTintAlpha),
+      );
+      expect(
         light.appBarTheme.backgroundColor,
         equals(light.scaffoldBackgroundColor),
       );
@@ -31,6 +57,25 @@ void main() {
       expect(dark.cardTheme.elevation, 0);
       expect(light.cardTheme.shape, isA<RoundedRectangleBorder>());
       expect(dark.cardTheme.shape, isA<RoundedRectangleBorder>());
+
+      final lightShape = light.cardTheme.shape! as RoundedRectangleBorder;
+      final darkShape = dark.cardTheme.shape! as RoundedRectangleBorder;
+      expect(
+        lightShape.side.color,
+        equals(
+          light.colorScheme.outlineVariant.withValues(
+            alpha: AppThemeBackground.lightCardBorderAlpha,
+          ),
+        ),
+      );
+      expect(
+        darkShape.side.color,
+        equals(
+          dark.colorScheme.outlineVariant.withValues(
+            alpha: AppThemeBackground.darkCardBorderAlpha,
+          ),
+        ),
+      );
     });
   });
 }
