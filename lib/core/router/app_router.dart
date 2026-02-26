@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/auth/domain/auth_user_extensions.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/guest_name_setup_page.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
@@ -24,9 +25,7 @@ GoRouter appRouter(Ref ref) {
   final isAuthLoading = authState.isLoading;
   final currentUser = authState.asData?.value;
   final isAuthenticated = currentUser != null;
-  final needsGuestNameSetup =
-      currentUser?.isAnonymous == true &&
-      ((currentUser?.displayName ?? '').trim().isEmpty);
+  final needsGuestNameSetup = currentUser?.requiresGuestNameSetup == true;
 
   return GoRouter(
     initialLocation: AppRoutes.root,

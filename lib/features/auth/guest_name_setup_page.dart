@@ -90,6 +90,10 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
   }
 
   Future<void> _submit(AppLocalizations l10n) async {
+    if (ref.read(guestNameSetupControllerProvider).isLoading) {
+      return;
+    }
+
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       setState(() {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +9,21 @@ import 'package:yamt/features/auth/guest_name_setup_page.dart';
 import 'package:yamt/features/auth/provider/auth_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 import '../../helpers/fake_auth_repository.dart';
+
+class _DelayedGuestNameRepository extends FakeAuthRepository {
+  _DelayedGuestNameRepository(this.completer);
+
+  final Completer<void> completer;
+
+  @override
+  Future<void> updateCurrentUserDisplayName({
+    required String displayName,
+  }) async {
+    guestNameUpdateCalls++;
+    lastGuestDisplayName = displayName;
+    await completer.future;
+  }
+}
 
 Widget _wrapWithRouter(FakeAuthRepository repository) {
   final router = GoRouter(
@@ -58,5 +75,26 @@ void main() {
     expect(repository.guestNameUpdateCalls, 1);
     expect(repository.lastGuestDisplayName, 'Guest Wlad');
     expect(find.text('Inventory'), findsNothing);
+  });
+
+  testWidgets('ignores repeated submit while request is loading', (
+    tester,
+  ) async {
+    final completer = Completer<void>();
+    final repository = _DelayedGuestNameRepository(completer);
+    await tester.pumpWidget(_wrapWithRouter(repository));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'Guest Wlad');
+    await tester.tap(find.byType(TextField));
+    await tester.pump();
+
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+
+    expect(repository.guestNameUpdateCalls, 1);
+    completer.complete();
+    await tester.pumpAndSettle();
   });
 }
