@@ -4,7 +4,7 @@ from google import genai
 from github import Auth, Github
 
 # --- CONFIG ---
-MODEL_NAME = 'gemini-3.1-pro-preview'
+MODEL_NAME = 'gemini-3-pro-preview'
 REVIEW_HEADER = f'## 🤖 Gemini Review ({MODEL_NAME})\n'
 REVIEW_MARKER = '## 🤖 Gemini Review ('
 MAX_GITHUB_COMMENT_CHARS = 60000
@@ -62,7 +62,7 @@ if not diff_text:
 # --- 3. PROMPT ---
 # Optimierter Prompt für Gemini 3 Context
 prompt = f'''
-Du bist ein strenger Senior Code Reviewer für das Projekt 'mealtrack'.
+Du bist ein strenger Senior Code Reviewer für das Projekt 'yamt'.
 
 KONTEXT:
 - Dateien: {', '.join(files_analyzed)}

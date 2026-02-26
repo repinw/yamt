@@ -66,6 +66,15 @@ abstract final class AppRadius {
   static const double xl = 24;
 }
 
+abstract final class AppThemeBackground {
+  // Subtle light/dark tinting tuned against Material 3 surface tones.
+  static const double lightTintAlpha = 0.04;
+  static const double darkTintAlpha = 0.18;
+  // Borders stay subtle in dark mode and clearer in light mode.
+  static const double lightCardBorderAlpha = 0.28;
+  static const double darkCardBorderAlpha = 0.18;
+}
+
 abstract final class AppSizes {
   static const double dialogIconContainer = 44;
   static const double actionChevron = 14;
