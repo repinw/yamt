@@ -23,7 +23,8 @@ ReceiptItemEditorFormData _formData({
   String weightText = '250g',
   String brandText = 'Brand',
   String categoryText = 'Category',
-  String discountsText = '',
+  List<MapEntry<String, String>> discountEntries =
+      const <MapEntry<String, String>>[],
   DateTime? receiptDate,
   bool isDeposit = false,
   bool isDiscount = false,
@@ -37,7 +38,7 @@ ReceiptItemEditorFormData _formData({
     weightText: weightText,
     brandText: brandText,
     categoryText: categoryText,
-    discountsText: discountsText,
+    discountEntries: discountEntries,
     receiptDate: receiptDate,
     isDeposit: isDeposit,
     isDiscount: isDiscount,
@@ -58,7 +59,9 @@ void main() {
         weightText: '250g',
         brandText: ' ',
         categoryText: ' Dairy ',
-        discountsText: '{"coupon":"1.00"}',
+        discountEntries: const <MapEntry<String, String>>[
+          MapEntry<String, String>('coupon', '1.00'),
+        ],
         receiptDate: DateTime.parse('2026-01-05'),
         isDeposit: true,
       ),
@@ -103,7 +106,11 @@ void main() {
   test('apply returns invalidDiscounts for invalid discount input', () {
     final result = updater.apply(
       sourceItem: _sourceItem(),
-      formData: _formData(discountsText: 'coupon 1.20'),
+      formData: _formData(
+        discountEntries: const <MapEntry<String, String>>[
+          MapEntry<String, String>('coupon', 'abc'),
+        ],
+      ),
       locale: 'en_US',
       fallbackUnit: null,
     );

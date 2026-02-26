@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 import '../models/receipt_item_editor_draft.dart';
@@ -15,13 +14,17 @@ class ReceiptItemEditorFormSection extends StatelessWidget {
     required this.onSubmit,
     required this.numberValidator,
     required this.weightValidator,
-    required this.discountsValidator,
+    required this.initialDiscountEntries,
+    required this.onDiscountEntriesChanged,
+    required this.discountsErrorText,
   });
 
   final VoidCallback onSubmit;
   final ReceiptItemEditorTextValidator numberValidator;
   final ReceiptItemEditorTextValidator weightValidator;
-  final ReceiptItemEditorTextValidator discountsValidator;
+  final List<MapEntry<String, String>> initialDiscountEntries;
+  final ValueChanged<List<MapEntry<String, String>>> onDiscountEntriesChanged;
+  final String? discountsErrorText;
 
   @override
   Widget build(BuildContext context) {
@@ -34,19 +37,12 @@ class ReceiptItemEditorFormSection extends StatelessWidget {
           fields: ReceiptItemEditorFieldGroups.beforeEntryDate,
           numberValidator: numberValidator,
           weightValidator: weightValidator,
-          discountsValidator: discountsValidator,
           onSubmit: onSubmit,
-        ),
-        _ReceiptEditorDateField(
-          name: ReceiptItemEditorFormFieldName.entryDate,
-          label: l10n.inventoryReceiptReviewFieldEntryDate,
-          noDateLabel: l10n.inventoryReceiptReviewNoDate,
         ),
         _ReceiptEditorTextFieldsGroup(
           fields: ReceiptItemEditorFieldGroups.beforeWeightUnitFallback,
           numberValidator: numberValidator,
           weightValidator: weightValidator,
-          discountsValidator: discountsValidator,
           onSubmit: onSubmit,
         ),
         const _ReceiptEditorWeightUnitField(),
@@ -54,15 +50,13 @@ class ReceiptItemEditorFormSection extends StatelessWidget {
           fields: ReceiptItemEditorFieldGroups.afterWeightUnitFallback,
           numberValidator: numberValidator,
           weightValidator: weightValidator,
-          discountsValidator: discountsValidator,
           onSubmit: onSubmit,
         ),
-        _ReceiptEditorDateField(
-          name: ReceiptItemEditorFormFieldName.receiptDate,
-          label: l10n.inventoryReceiptReviewFieldReceiptDate,
-          noDateLabel: l10n.inventoryReceiptReviewNoDate,
-          allowClear: true,
-          clearButtonKey: const Key('receipt_review_clear_receipt_date_button'),
+        _ReceiptEditorDiscountRowsField(
+          initialEntries: initialDiscountEntries,
+          onChanged: onDiscountEntriesChanged,
+          errorText: discountsErrorText,
+          onSubmit: onSubmit,
         ),
         _ReceiptEditorSwitchField(
           name: ReceiptItemEditorFormFieldName.isDeposit,
@@ -82,14 +76,12 @@ class _ReceiptEditorTextFieldsGroup extends StatelessWidget {
     required this.fields,
     required this.numberValidator,
     required this.weightValidator,
-    required this.discountsValidator,
     required this.onSubmit,
   });
 
   final List<ReceiptItemEditorDraftField> fields;
   final ReceiptItemEditorTextValidator numberValidator;
   final ReceiptItemEditorTextValidator weightValidator;
-  final ReceiptItemEditorTextValidator discountsValidator;
   final VoidCallback onSubmit;
 
   @override
@@ -118,7 +110,6 @@ class _ReceiptEditorTextFieldsGroup extends StatelessWidget {
       ReceiptItemEditorDraftField.quantity ||
       ReceiptItemEditorDraftField.unitPrice => numberValidator,
       ReceiptItemEditorDraftField.weight => weightValidator,
-      ReceiptItemEditorDraftField.discounts => discountsValidator,
       _ => null,
     };
   }
@@ -171,75 +162,188 @@ class _ReceiptEditorTextField extends StatelessWidget {
   }
 }
 
-class _ReceiptEditorDateField extends StatelessWidget {
-  const _ReceiptEditorDateField({
-    required this.name,
-    required this.label,
-    required this.noDateLabel,
-    this.allowClear = false,
-    this.clearButtonKey,
+class _ReceiptEditorDiscountRowsField extends StatefulWidget {
+  const _ReceiptEditorDiscountRowsField({
+    required this.initialEntries,
+    required this.onChanged,
+    required this.errorText,
+    required this.onSubmit,
   });
 
-  final String name;
-  final String label;
-  final String noDateLabel;
-  final bool allowClear;
-  final Key? clearButtonKey;
+  final List<MapEntry<String, String>> initialEntries;
+  final ValueChanged<List<MapEntry<String, String>>> onChanged;
+  final String? errorText;
+  final VoidCallback onSubmit;
+
+  @override
+  State<_ReceiptEditorDiscountRowsField> createState() =>
+      _ReceiptEditorDiscountRowsFieldState();
+}
+
+class _ReceiptEditorDiscountRowsFieldState
+    extends State<_ReceiptEditorDiscountRowsField> {
+  late final List<_DiscountRowControllers> _rows;
+
+  @override
+  void initState() {
+    super.initState();
+    _rows = _buildRows(widget.initialEntries);
+  }
+
+  @override
+  void dispose() {
+    for (final row in _rows) {
+      row.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return FormBuilderField<DateTime?>(
-      name: name,
-      builder: (field) {
-        final formattedDate = _formatDate(context, field.value);
-        final valueText = formattedDate ?? noDateLabel;
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: Theme.of(context).textTheme.bodyMedium),
-              const SizedBox(height: AppSpacing.xxs * 2),
-              Text(valueText),
-              const SizedBox(height: AppSpacing.xs),
-              Row(
-                children: [
-                  TextButton(
-                    onPressed: () => _pickDate(context, field),
-                    child: Text(l10n.inventoryReceiptReviewSelectDateAction),
-                  ),
-                  if (allowClear)
-                    TextButton(
-                      key: clearButtonKey,
-                      onPressed: () => field.didChange(null),
-                      child: Text(l10n.inventoryReceiptReviewClearDateAction),
-                    ),
-                ],
-              ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.inventoryReceiptReviewFieldDiscounts,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
-        );
-      },
+          const SizedBox(height: AppSpacing.xs),
+          for (var index = 0; index < _rows.length; index++)
+            _buildRow(context, l10n, index),
+          TextButton.icon(
+            key: const Key('receipt_review_discount_add_button'),
+            onPressed: _addRow,
+            icon: const Icon(Icons.add),
+            label: Text(l10n.inventoryReceiptReviewAddDiscountAction),
+          ),
+          if (widget.errorText != null) ...[
+            const SizedBox(height: AppSpacing.xxs),
+            Text(
+              widget.errorText!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
-  Future<void> _pickDate(
-    BuildContext context,
-    FormFieldState<DateTime?> field,
-  ) async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: field.value ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+  Widget _buildRow(BuildContext context, AppLocalizations l10n, int index) {
+    final row = _rows[index];
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: TextField(
+              key: Key('receipt_review_discount_name_$index'),
+              controller: row.nameController,
+              textInputAction: TextInputAction.next,
+              onTapOutside: (_) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
+              onChanged: (_) => _notifyRowsChanged(),
+              decoration: InputDecoration(
+                labelText: l10n.inventoryReceiptReviewDiscountNameLabel,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child: TextField(
+              key: Key('receipt_review_discount_amount_$index'),
+              controller: row.amountController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              textInputAction: TextInputAction.done,
+              onTapOutside: (_) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
+              onSubmitted: (_) => widget.onSubmit(),
+              onChanged: (_) => _notifyRowsChanged(),
+              decoration: InputDecoration(
+                labelText: l10n.inventoryReceiptReviewDiscountAmountLabel,
+              ),
+            ),
+          ),
+          IconButton(
+            key: Key('receipt_review_discount_remove_$index'),
+            onPressed: _rows.length > 1 ? () => _removeRow(index) : null,
+            icon: const Icon(Icons.remove_circle_outline),
+          ),
+        ],
+      ),
     );
-    if (!context.mounted || picked == null) {
-      return;
+  }
+
+  void _addRow() {
+    setState(() {
+      _rows.add(_DiscountRowControllers.empty());
+    });
+    _notifyRowsChanged();
+  }
+
+  void _removeRow(int index) {
+    final removed = _rows.removeAt(index);
+    removed.dispose();
+    setState(() {});
+    _notifyRowsChanged();
+  }
+
+  void _notifyRowsChanged() {
+    widget.onChanged(
+      _rows
+          .map(
+            (row) => MapEntry<String, String>(
+              row.nameController.text,
+              row.amountController.text,
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+
+  List<_DiscountRowControllers> _buildRows(
+    List<MapEntry<String, String>> initialEntries,
+  ) {
+    if (initialEntries.isEmpty) {
+      return <_DiscountRowControllers>[_DiscountRowControllers.empty()];
     }
-    field.didChange(DateUtils.dateOnly(picked));
+    return initialEntries
+        .map(
+          (entry) => _DiscountRowControllers(
+            nameController: TextEditingController(text: entry.key),
+            amountController: TextEditingController(text: entry.value),
+          ),
+        )
+        .toList(growable: true);
+  }
+}
+
+class _DiscountRowControllers {
+  const _DiscountRowControllers({
+    required this.nameController,
+    required this.amountController,
+  });
+
+  factory _DiscountRowControllers.empty() {
+    return _DiscountRowControllers(
+      nameController: TextEditingController(),
+      amountController: TextEditingController(),
+    );
+  }
+
+  final TextEditingController nameController;
+  final TextEditingController amountController;
+
+  void dispose() {
+    nameController.dispose();
+    amountController.dispose();
   }
 }
 
@@ -327,12 +431,4 @@ extension on ReceiptWeightUnitFallbackOption {
         l10n.inventoryReceiptReviewWeightUnitPiece,
     };
   }
-}
-
-String? _formatDate(BuildContext context, DateTime? value) {
-  if (value == null) {
-    return null;
-  }
-  final locale = Localizations.localeOf(context).toLanguageTag();
-  return DateFormat.yMMMd(locale).format(value);
 }

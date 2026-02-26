@@ -404,14 +404,26 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryReceiptReviewFieldDiscounts.
   ///
   /// In en, this message translates to:
-  /// **'Discounts (JSON)'**
+  /// **'Discounts'**
   String get inventoryReceiptReviewFieldDiscounts;
 
-  /// No description provided for @inventoryReceiptReviewDiscountsHint.
+  /// No description provided for @inventoryReceiptReviewDiscountNameLabel.
   ///
   /// In en, this message translates to:
-  /// **'JSON or pairs: coupon=-1.50'**
-  String get inventoryReceiptReviewDiscountsHint;
+  /// **'Discount label'**
+  String get inventoryReceiptReviewDiscountNameLabel;
+
+  /// No description provided for @inventoryReceiptReviewDiscountAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get inventoryReceiptReviewDiscountAmountLabel;
+
+  /// No description provided for @inventoryReceiptReviewAddDiscountAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add discount row'**
+  String get inventoryReceiptReviewAddDiscountAction;
 
   /// No description provided for @inventoryReceiptReviewFieldReceiptId.
   ///

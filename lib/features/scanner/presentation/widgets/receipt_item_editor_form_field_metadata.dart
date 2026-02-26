@@ -8,7 +8,6 @@ class ReceiptItemEditorFieldGroups {
   ];
 
   static const beforeWeightUnitFallback = <ReceiptItemEditorDraftField>[
-    ReceiptItemEditorDraftField.storeName,
     ReceiptItemEditorDraftField.quantity,
     ReceiptItemEditorDraftField.unitPrice,
     ReceiptItemEditorDraftField.weight,
@@ -17,13 +16,10 @@ class ReceiptItemEditorFieldGroups {
   static const afterWeightUnitFallback = <ReceiptItemEditorDraftField>[
     ReceiptItemEditorDraftField.brand,
     ReceiptItemEditorDraftField.category,
-    ReceiptItemEditorDraftField.discounts,
   ];
 }
 
 class ReceiptItemEditorFormFieldName {
-  static const entryDate = 'entry_date';
-  static const receiptDate = 'receipt_date';
   static const isDeposit = 'is_deposit';
   static const isDiscount = 'is_discount';
   static const weightUnitFallbackOption = 'weight_unit_fallback_option';
@@ -103,10 +99,8 @@ extension ReceiptItemEditorDraftFieldMetadata on ReceiptItemEditorDraftField {
     };
   }
 
-  String? hintText(AppLocalizations l10n) {
+  String? hintText(AppLocalizations _) {
     return switch (this) {
-      ReceiptItemEditorDraftField.discounts =>
-        l10n.inventoryReceiptReviewDiscountsHint,
       _ => null,
     };
   }

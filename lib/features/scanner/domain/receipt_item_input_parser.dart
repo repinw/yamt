@@ -71,6 +71,34 @@ class ReceiptItemInputParser {
     return _parseDiscountsFromPairs(normalized, locale: locale);
   }
 
+  /// Parses structured discount rows from the receipt editor.
+  ///
+  /// Empty rows are ignored. Rows with only one side filled are invalid.
+  /// Positive amounts are normalized to negative values.
+  Map<String, double>? parseDiscountEntries(
+    List<MapEntry<String, String>> entries, {
+    required String locale,
+  }) {
+    final parsed = <String, double>{};
+    for (final entry in entries) {
+      final key = entry.key.trim();
+      final amountText = entry.value.trim();
+      if (key.isEmpty && amountText.isEmpty) {
+        continue;
+      }
+      if (key.isEmpty || amountText.isEmpty) {
+        return null;
+      }
+
+      final amount = parseDouble(amountText, locale: locale);
+      if (amount == null) {
+        return null;
+      }
+      parsed[key] = amount > 0 ? -amount : amount;
+    }
+    return parsed;
+  }
+
   double? _parseWithLocale(String value, String locale) {
     final normalizedLocale = locale.replaceAll('-', '_');
     try {
