@@ -1,10 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/features/auth/provider/auth_form_controller.dart';
 import 'package:yamt/features/auth/provider/auth_repository.dart';
 import 'package:yamt/features/auth/provider/google_auth_controller.dart';
@@ -14,6 +18,7 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../helpers/fake_auth_repository.dart';
+import '../../../helpers/memory_app_preferences.dart';
 
 class _MockGoogleSignIn extends Mock implements GoogleSignIn {}
 
@@ -32,6 +37,9 @@ class _DelayedGuestNameRepository implements AuthRepository {
 
   final Completer<void> _completer;
   int saveCalls = 0;
+
+  @override
+  String? get currentUserId => 'test-user-id';
 
   @override
   Future<void> updateCurrentUserDisplayName({
@@ -62,6 +70,9 @@ class _DelayedGuestSignInRepository implements AuthRepository {
 
   final Completer<void> _completer;
   int signInCalls = 0;
+
+  @override
+  String? get currentUserId => 'test-user-id';
 
   @override
   Future<void> signInAnonymously() async {
@@ -175,6 +186,7 @@ void main() {
         disposed = true;
         container.dispose();
       }
+
       addTearDown(disposeContainer);
 
       final future = container
@@ -192,16 +204,24 @@ void main() {
     test('saveDisplayName updates repository with trimmed value', () async {
       final fakeRepository = FakeAuthRepository();
       final container = ProviderContainer(
-        overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
+        overrides: [
+          authRepositoryProvider.overrideWithValue(fakeRepository),
+          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+        ],
       );
       addTearDown(container.dispose);
 
       await container
           .read(guestNameSetupControllerProvider.notifier)
-          .saveDisplayName('  Guest Wlad  ');
+          .saveDisplayName(
+            '  Guest Wlad  ',
+            seedColor: AppColors.seed,
+            themeMode: ThemeMode.dark,
+          );
 
       expect(fakeRepository.guestNameUpdateCalls, 1);
       expect(fakeRepository.lastGuestDisplayName, 'Guest Wlad');
+      expect(container.read(themeModeControllerProvider), ThemeMode.dark);
       expect(
         container.read(guestNameSetupControllerProvider).hasError,
         isFalse,
@@ -211,13 +231,20 @@ void main() {
     test('saveDisplayName ignores empty values', () async {
       final fakeRepository = FakeAuthRepository();
       final container = ProviderContainer(
-        overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
+        overrides: [
+          authRepositoryProvider.overrideWithValue(fakeRepository),
+          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+        ],
       );
       addTearDown(container.dispose);
 
       await container
           .read(guestNameSetupControllerProvider.notifier)
-          .saveDisplayName('  ');
+          .saveDisplayName(
+            '  ',
+            seedColor: AppColors.seed,
+            themeMode: ThemeMode.light,
+          );
 
       expect(fakeRepository.guestNameUpdateCalls, 0);
       expect(
@@ -230,7 +257,10 @@ void main() {
       final completer = Completer<void>();
       final repository = _DelayedGuestNameRepository(completer);
       final container = ProviderContainer(
-        overrides: [authRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          authRepositoryProvider.overrideWithValue(repository),
+          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+        ],
       );
       var disposed = false;
       void disposeContainer() {
@@ -240,11 +270,16 @@ void main() {
         disposed = true;
         container.dispose();
       }
+
       addTearDown(disposeContainer);
 
       final future = container
           .read(guestNameSetupControllerProvider.notifier)
-          .saveDisplayName('Guest');
+          .saveDisplayName(
+            'Guest',
+            seedColor: AppColors.seed,
+            themeMode: ThemeMode.system,
+          );
       disposeContainer();
       completer.complete();
 
@@ -466,6 +501,66 @@ void main() {
                 as AuthCredential;
         expect(capturedCredential.providerId, 'google.com');
         expect((capturedCredential as OAuthCredential).idToken, 'id-token-123');
+      },
+    );
+
+    test(
+      'preserves existing display name when linking guest with Google',
+      () async {
+        final mockGoogleSignIn = _MockGoogleSignIn();
+        final mockGoogleAccount = _MockGoogleSignInAccount();
+        final mockFirebaseAuth = _MockFirebaseAuth();
+        final mockFirebaseUser = _MockFirebaseUser();
+        final mockUserCredential = _MockUserCredential();
+        var currentDisplayName = 'Guest Wlad';
+
+        when(
+          () => mockGoogleSignIn.authenticate(),
+        ).thenAnswer((_) async => mockGoogleAccount);
+        when(
+          () => mockGoogleAccount.authentication,
+        ).thenReturn(const GoogleSignInAuthentication(idToken: 'id-token-123'));
+        when(() => mockFirebaseAuth.currentUser).thenReturn(mockFirebaseUser);
+        when(
+          () => mockFirebaseUser.displayName,
+        ).thenAnswer((_) => currentDisplayName);
+        when(() => mockFirebaseUser.linkWithCredential(any())).thenAnswer((
+          _,
+        ) async {
+          currentDisplayName = 'Google Name';
+          return mockUserCredential;
+        });
+        when(() => mockFirebaseUser.updateDisplayName(any())).thenAnswer((
+          invocation,
+        ) async {
+          currentDisplayName = invocation.positionalArguments.first as String;
+        });
+        when(() => mockFirebaseUser.reload()).thenAnswer((_) async {});
+
+        final container = ProviderContainer(
+          overrides: [
+            googleSignInProvider.overrideWith(
+              (ref) => Future<GoogleSignIn>.value(mockGoogleSignIn),
+            ),
+            firebaseAuthProvider.overrideWithValue(mockFirebaseAuth),
+          ],
+        );
+        addTearDown(container.dispose);
+        final subscription = container.listen(
+          googleAuthControllerProvider,
+          (previous, next) {},
+        );
+        addTearDown(subscription.close);
+
+        await container
+            .read(googleAuthControllerProvider.notifier)
+            .linkCurrentUserWithGoogle();
+
+        verify(() => mockFirebaseUser.linkWithCredential(any())).called(1);
+        verify(
+          () => mockFirebaseUser.updateDisplayName('Guest Wlad'),
+        ).called(1);
+        verify(() => mockFirebaseUser.reload()).called(1);
       },
     );
 

@@ -8,7 +8,11 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/router/app_router.dart';
+import 'package:yamt/features/auth/domain/auth_profile_setup_preferences.dart';
+import 'package:yamt/features/auth/provider/'
+    'auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -16,22 +20,48 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 
 import '../../features/calories/support/fake_calories_repositories.dart';
+import '../../helpers/memory_app_preferences.dart';
 
 class _MockUser extends Mock implements User {}
 
+class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+
 const _routerTransitionDuration = Duration(milliseconds: 350);
+
+class _MockUserMetadata extends Mock implements UserMetadata {}
 
 Future<void> _pumpRouterTransition(WidgetTester tester) async {
   await tester.pump();
   await tester.pump(_routerTransitionDuration);
 }
 
-ProviderContainer _createContainerWithAuth(Stream<User?> authStream) {
+UserMetadata _userMetadata({required bool isFirstSignIn}) {
+  final metadata = _MockUserMetadata();
+  final createdAt = DateTime.utc(2026, 1, 1, 9);
+  final lastSignInAt = isFirstSignIn
+      ? createdAt
+      : createdAt.add(const Duration(days: 7));
+  when(() => metadata.creationTime).thenReturn(createdAt);
+  when(() => metadata.lastSignInTime).thenReturn(lastSignInAt);
+  return metadata;
+}
+
+ProviderContainer _createContainerWithAuth(
+  Stream<User?> authStream, {
+  Set<String> completedProfileSetupUserIds = const <String>{},
+}) {
   final calorieLogRepository = FakeCalorieLogRepository();
   final calorieSettingsRepository = FakeCalorieSettingsRepository();
+  final appPreferences = MemoryAppPreferences(
+    completedProfileSetupUserIds: completedProfileSetupUserIds,
+  );
+  final firebaseAuth = _MockFirebaseAuth();
+  when(() => firebaseAuth.currentUser).thenReturn(null);
   final container = ProviderContainer(
     overrides: [
+      appPreferencesProvider.overrideWithValue(appPreferences),
       authStateChangesProvider.overrideWith((ref) => authStream),
+      firebaseAuthProvider.overrideWithValue(firebaseAuth),
       calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(
         calorieSettingsRepository,
@@ -48,21 +78,30 @@ _MockUser _authenticatedUser({
   String uid = 'uid-123',
   String? displayName = 'Jane Doe',
   String? email = 'jane@example.com',
+  bool isFirstSignIn = false,
 }) {
   final user = _MockUser();
+  final metadata = _userMetadata(isFirstSignIn: isFirstSignIn);
   when(() => user.uid).thenReturn(uid);
   when(() => user.isAnonymous).thenReturn(false);
   when(() => user.displayName).thenReturn(displayName);
   when(() => user.email).thenReturn(email);
+  when(() => user.metadata).thenReturn(metadata);
   return user;
 }
 
-_MockUser _guestUser({String uid = 'guest-123', String? displayName}) {
+_MockUser _guestUser({
+  String uid = 'guest-123',
+  String? displayName,
+  bool isFirstSignIn = true,
+}) {
   final user = _MockUser();
+  final metadata = _userMetadata(isFirstSignIn: isFirstSignIn);
   when(() => user.uid).thenReturn(uid);
   when(() => user.isAnonymous).thenReturn(true);
   when(() => user.displayName).thenReturn(displayName);
   when(() => user.email).thenReturn(null);
+  when(() => user.metadata).thenReturn(metadata);
   return user;
 }
 
@@ -149,6 +188,7 @@ void main() {
   testWidgets('redirects authenticated user away from welcome', (tester) async {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
     );
 
     await tester.pumpWidget(
@@ -188,9 +228,30 @@ void main() {
     expect(find.text('Set your guest name'), findsOneWidget);
   });
 
-  testWidgets('named anonymous user is routed to home', (tester) async {
+  testWidgets('named anonymous user without setup marker stays in setup', (
+    tester,
+  ) async {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_guestUser(displayName: 'Guest Name')),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.guestNameSetup,
+    );
+  });
+
+  testWidgets('named anonymous user with setup marker is routed to home', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_guestUser(displayName: 'Guest Name')),
+      completedProfileSetupUserIds: {'guest-123'},
     );
 
     await tester.pumpWidget(
@@ -204,7 +265,80 @@ void main() {
     );
   });
 
-  testWidgets('routes guest setup to home after display name update', (
+  testWidgets('redirects freshly created named user to setup page', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(
+        _authenticatedUser(
+          uid: 'fresh-user',
+          displayName: 'Fresh Google User',
+          isFirstSignIn: true,
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.guestNameSetup,
+    );
+  });
+
+  testWidgets('skips setup for fresh user after setup completion marker', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(
+        _authenticatedUser(
+          uid: 'fresh-user',
+          displayName: 'Fresh Google User',
+          isFirstSignIn: true,
+        ),
+      ),
+      completedProfileSetupUserIds: {'fresh-user'},
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.homeInventory,
+    );
+  });
+
+  testWidgets('redirects returning named user without setup marker to setup', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(
+        _authenticatedUser(
+          uid: 'returning-user',
+          displayName: 'Returning Google User',
+          isFirstSignIn: false,
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.guestNameSetup,
+    );
+  });
+
+  testWidgets('stays on guest setup after name update without setup marker', (
     tester,
   ) async {
     final authController = StreamController<User?>();
@@ -233,14 +367,58 @@ void main() {
 
     expect(
       container.read(appRouterProvider).state.uri.path,
-      AppRoutes.homeInventory,
+      AppRoutes.guestNameSetup,
     );
   });
+
+  testWidgets(
+    'leaves setup when completion marker changes without new auth event',
+    (tester) async {
+      final authController = StreamController<User?>();
+      final container = _createContainerWithAuth(authController.stream);
+      addTearDown(() {
+        unawaited(authController.close());
+      });
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: container, child: const YAMT()),
+      );
+      await tester.pump();
+
+      authController.add(_authenticatedUser(uid: 'setup-user'));
+      await tester.pump();
+      await _pumpRouterTransition(tester);
+
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.guestNameSetup,
+      );
+
+      await container
+          .read(appPreferencesProvider)
+          .setString(
+            AuthProfileSetupPreferences.keyForUser('setup-user'),
+            AuthProfileSetupPreferences.completedValue,
+          );
+      container.invalidate(authProfileSetupCompletedProvider);
+
+      await tester.pump();
+      await _pumpRouterTransition(tester);
+
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.homeInventory,
+      );
+    },
+  );
 
   testWidgets('switches home tabs and updates route path', (tester) async {
     final user = _authenticatedUser();
 
-    final container = _createContainerWithAuth(Stream<User?>.value(user));
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(user),
+      completedProfileSetupUserIds: {'uid-123'},
+    );
 
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
@@ -294,7 +472,10 @@ void main() {
     tester,
   ) async {
     final authController = StreamController<User?>();
-    final container = _createContainerWithAuth(authController.stream);
+    final container = _createContainerWithAuth(
+      authController.stream,
+      completedProfileSetupUserIds: {'uid-123'},
+    );
     addTearDown(() {
       unawaited(authController.close());
     });
@@ -325,6 +506,7 @@ void main() {
   ) async {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
     );
 
     await tester.pumpWidget(
@@ -375,6 +557,7 @@ void main() {
   ) async {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
     );
 
     await tester.pumpWidget(
@@ -400,6 +583,7 @@ void main() {
   testWidgets('barcode scan route is registered on app router', (tester) async {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
     );
 
     await tester.pumpWidget(

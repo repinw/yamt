@@ -27,10 +27,14 @@ class SeedColorController extends _$SeedColorController {
     return AppColors.seed;
   }
 
-  Future<void> setSeedColor(Color color) async {
+  void previewSeedColor(Color color) {
     if (state.toARGB32() == color.toARGB32()) {
       return;
     }
+    state = color;
+  }
+
+  Future<void> setSeedColor(Color color) async {
     state = color;
     await ref
         .read(appPreferencesProvider)

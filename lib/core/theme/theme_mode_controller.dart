@@ -22,10 +22,14 @@ class ThemeModeController extends _$ThemeModeController {
     return ThemeMode.system;
   }
 
-  Future<void> setThemeMode(ThemeMode mode) async {
+  void previewThemeMode(ThemeMode mode) {
     if (state == mode) {
       return;
     }
+    state = mode;
+  }
+
+  Future<void> setThemeMode(ThemeMode mode) async {
     state = mode;
     await ref.read(appPreferencesProvider).setString(_themeModeKey, mode.name);
   }

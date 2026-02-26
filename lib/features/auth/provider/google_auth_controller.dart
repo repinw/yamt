@@ -47,7 +47,17 @@ class GoogleAuthController extends _$GoogleAuthController {
           message: 'No authenticated user to link.',
         );
       }
+      final previousDisplayName = _normalizedDisplayName(user.displayName);
       await user.linkWithCredential(credential);
+      if (previousDisplayName == null) {
+        return;
+      }
+      final linkedDisplayName = _normalizedDisplayName(user.displayName);
+      if (linkedDisplayName == previousDisplayName) {
+        return;
+      }
+      await user.updateDisplayName(previousDisplayName);
+      await user.reload();
     }, true);
   }
 
@@ -112,5 +122,13 @@ class GoogleAuthController extends _$GoogleAuthController {
     }
 
     return GoogleAuthProvider.credential(idToken: idToken);
+  }
+
+  String? _normalizedDisplayName(String? value) {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      return null;
+    }
+    return normalized;
   }
 }

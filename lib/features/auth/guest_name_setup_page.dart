@@ -1,6 +1,10 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/theme/seed_color_controller.dart';
+import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/features/auth/provider/auth_error_view_model.dart';
 import 'package:yamt/features/auth/provider/guest_name_setup_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -13,11 +17,38 @@ class GuestNameSetupPage extends ConsumerStatefulWidget {
 }
 
 class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
+  static const _colorPreviewSize = AppSpacing.xl;
+
   final _nameController = TextEditingController();
   String? _errorText;
+  late SeedColorController _seedColorController;
+  late ThemeModeController _themeModeController;
+  late Color _initialSeedColor;
+  late ThemeMode _initialThemeMode;
+  late Color _selectedSeedColor;
+  late ThemeMode _selectedThemeMode;
+  bool _didPersistSetup = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _seedColorController = ref.read(seedColorControllerProvider.notifier);
+    _themeModeController = ref.read(themeModeControllerProvider.notifier);
+    final defaults = ref
+        .read(guestNameSetupControllerProvider.notifier)
+        .initialFormDefaults();
+    _initialSeedColor = defaults.seedColor;
+    _initialThemeMode = defaults.themeMode;
+    _selectedSeedColor = defaults.seedColor;
+    _selectedThemeMode = defaults.themeMode;
+    if (defaults.prefilledName != null) {
+      _nameController.text = defaults.prefilledName!;
+    }
+  }
 
   @override
   void dispose() {
+    _restorePreviewIfNeeded();
     _nameController.dispose();
     super.dispose();
   }
@@ -72,6 +103,54 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
+            DropdownButtonFormField<int>(
+              key: ValueKey<int>(_selectedSeedColor.toARGB32()),
+              initialValue: _selectedSeedColor.toARGB32(),
+              decoration: InputDecoration(labelText: l10n.settingsColorTitle),
+              onChanged: state.isLoading
+                  ? null
+                  : (selectedValue) {
+                      if (selectedValue == null) {
+                        return;
+                      }
+                      setState(() {
+                        _selectedSeedColor = Color(selectedValue);
+                      });
+                      _seedColorController.previewSeedColor(_selectedSeedColor);
+                    },
+              items: [
+                for (final color in AppSeedColors.values)
+                  DropdownMenuItem(
+                    value: color.toARGB32(),
+                    child: _colorDropdownItem(l10n, color),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            DropdownButtonFormField<ThemeMode>(
+              key: ValueKey<ThemeMode>(_selectedThemeMode),
+              initialValue: _selectedThemeMode,
+              decoration: InputDecoration(labelText: l10n.settingsThemeTitle),
+              onChanged: state.isLoading
+                  ? null
+                  : (selectedMode) {
+                      if (selectedMode == null) {
+                        return;
+                      }
+                      setState(() {
+                        _selectedThemeMode = selectedMode;
+                      });
+                      _themeModeController.previewThemeMode(_selectedThemeMode);
+                    },
+              items: [
+                for (final mode in ThemeMode.values)
+                  DropdownMenuItem(
+                    value: mode,
+                    child: Text(_themeModeLabel(l10n, mode)),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xl),
             FilledButton(
               onPressed: state.isLoading ? null : () => _submit(l10n),
               child: state.isLoading
@@ -104,6 +183,74 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
 
     await ref
         .read(guestNameSetupControllerProvider.notifier)
-        .saveDisplayName(name);
+        .saveDisplayName(
+          name,
+          seedColor: _selectedSeedColor,
+          themeMode: _selectedThemeMode,
+        );
+    final nextState = ref.read(guestNameSetupControllerProvider);
+    if (!nextState.hasError) {
+      _didPersistSetup = true;
+    }
+  }
+
+  Widget _colorDropdownItem(AppLocalizations l10n, Color color) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Container(
+          width: _colorPreviewSize,
+          height: _colorPreviewSize,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(AppSpacing.xs),
+            border: Border.all(color: colorScheme.outlineVariant),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Text(_seedColorLabel(l10n, color)),
+      ],
+    );
+  }
+
+  String _seedColorLabel(AppLocalizations l10n, Color color) {
+    return switch (color.toARGB32()) {
+      int value when value == AppSeedColors.lime.toARGB32() =>
+        l10n.settingsColorLime,
+      int value when value == AppSeedColors.blue.toARGB32() =>
+        l10n.settingsColorBlue,
+      int value when value == AppSeedColors.teal.toARGB32() =>
+        l10n.settingsColorTeal,
+      int value when value == AppSeedColors.pink.toARGB32() =>
+        l10n.settingsColorPink,
+      int value when value == AppSeedColors.orange.toARGB32() =>
+        l10n.settingsColorOrange,
+      _ => l10n.settingsColorLime,
+    };
+  }
+
+  String _themeModeLabel(AppLocalizations l10n, ThemeMode mode) {
+    return switch (mode) {
+      ThemeMode.system => l10n.settingsThemeSystem,
+      ThemeMode.light => l10n.settingsThemeLight,
+      ThemeMode.dark => l10n.settingsThemeDark,
+    };
+  }
+
+  void _restorePreviewIfNeeded() {
+    if (_didPersistSetup) {
+      return;
+    }
+    try {
+      _seedColorController.previewSeedColor(_initialSeedColor);
+      _themeModeController.previewThemeMode(_initialThemeMode);
+    } catch (error, stackTrace) {
+      developer.log(
+        'Guest setup preview restore failed during dispose',
+        name: 'GuestNameSetupPage',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 }

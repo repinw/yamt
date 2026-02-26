@@ -18,6 +18,9 @@ class FakeAuthRepository implements AuthRepository {
   String? lastGuestDisplayName;
 
   @override
+  String? get currentUserId => 'test-user-id';
+
+  @override
   Future<void> signInWithEmailAndPassword({
     required String email,
     required String password,

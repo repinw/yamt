@@ -5,6 +5,8 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 part 'auth_repository.g.dart';
 
 abstract interface class AuthRepository {
+  String? get currentUserId;
+
   Future<void> signInWithEmailAndPassword({
     required String email,
     required String password,
@@ -24,6 +26,9 @@ class FirebaseAuthRepository implements AuthRepository {
   const FirebaseAuthRepository(this._auth);
 
   final FirebaseAuth _auth;
+
+  @override
+  String? get currentUserId => _auth.currentUser?.uid;
 
   @override
   Future<void> signInWithEmailAndPassword({
