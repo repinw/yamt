@@ -80,6 +80,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptBatchFailed => 'Fehlgeschlagen';
 
   @override
+  String get inventoryReceiptBatchReviewAction => 'Prüfen';
+
+  @override
+  String get inventoryReceiptBatchReviewed => 'Geprüft';
+
+  @override
+  String get inventoryReceiptBatchCloseAction => 'Schließen';
+
+  @override
   String get inventoryReceiptReviewTitle => 'Belegpositionen prüfen';
 
   @override

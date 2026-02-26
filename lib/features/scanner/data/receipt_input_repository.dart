@@ -171,13 +171,30 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
     }
 
     final selections = <ReceiptInputSelection>[];
+    final skippedFileNames = <String>[];
     for (final file in result.files) {
       final selection = await _selectionFromFile(file);
       if (selection == null) {
-        throw StateError('Could not load selected file bytes');
+        skippedFileNames.add(file.name);
+        continue;
       }
       selections.add(selection);
     }
+
+    if (skippedFileNames.isNotEmpty) {
+      log(
+        'Skipped unreadable receipt files in batch: '
+        '${skippedFileNames.join(', ')}',
+        name: 'DeviceReceiptInputRepository',
+      );
+    }
+
+    if (selections.isEmpty) {
+      throw const ReceiptInputBatchException(
+        'No selected receipt files could be read.',
+      );
+    }
+
     return selections;
   }
 
@@ -224,6 +241,15 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
 
     return XFile(path).readAsBytes();
   }
+}
+
+class ReceiptInputBatchException implements Exception {
+  const ReceiptInputBatchException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => 'ReceiptInputBatchException: $message';
 }
 
 String _resolvedFileName({

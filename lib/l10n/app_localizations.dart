@@ -233,6 +233,24 @@ abstract class AppLocalizations {
   /// **'Failed'**
   String get inventoryReceiptBatchFailed;
 
+  /// No description provided for @inventoryReceiptBatchReviewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get inventoryReceiptBatchReviewAction;
+
+  /// No description provided for @inventoryReceiptBatchReviewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed'**
+  String get inventoryReceiptBatchReviewed;
+
+  /// No description provided for @inventoryReceiptBatchCloseAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get inventoryReceiptBatchCloseAction;
+
   /// No description provided for @inventoryReceiptReviewTitle.
   ///
   /// In en, this message translates to:

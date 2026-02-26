@@ -82,6 +82,7 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
 
   Future<ReceiptBatchRunResult> runFileBatch({
     void Function(ReceiptBatchProgress progress)? onProgress,
+    void Function(int index, List<FridgeItem> mappedItems)? onItemSucceeded,
   }) async {
     state = const AsyncLoading();
 
@@ -98,6 +99,7 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
         return _runSelectedBatch(
           selections: inputResult.selections,
           onProgress: onProgress,
+          onItemSucceeded: onItemSucceeded,
         );
       case ReceiptInputBatchStatus.canceled:
         _setAndReturn(
@@ -185,6 +187,7 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
   Future<ReceiptBatchRunResult> _runSelectedBatch({
     required List<ReceiptInputSelection> selections,
     void Function(ReceiptBatchProgress progress)? onProgress,
+    void Function(int index, List<FridgeItem> mappedItems)? onItemSucceeded,
   }) async {
     var progress = _queuedBatchProgress(selections);
     onProgress?.call(progress);
@@ -208,6 +211,7 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
 
       if (analysis.errorCode == null) {
         mappedItems.addAll(analysis.mappedItems);
+        onItemSucceeded?.call(index, analysis.mappedItems);
         progress = _updateBatchItem(
           progress: progress,
           index: index,

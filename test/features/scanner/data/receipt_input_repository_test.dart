@@ -272,4 +272,38 @@ void main() {
       expect(result.errorCode, ReceiptInputErrorCodes.filePickFailed);
     },
   );
+
+  test(
+    'pickFromFiles skips unreadable files when at least one file is valid',
+    () async {
+      final filePicker = _FakeFilePicker(
+        onPickFiles:
+            ({
+              required withData,
+              required allowMultiple,
+              required allowedExtensions,
+            }) async {
+              return FilePickerResult([
+                PlatformFile(name: 'broken.pdf', size: 4),
+                PlatformFile(
+                  name: 'ok.jpg',
+                  size: 3,
+                  bytes: Uint8List.fromList(<int>[0x01, 0x02, 0x03]),
+                ),
+              ]);
+            },
+      );
+
+      final repository = DeviceReceiptInputRepository(
+        imagePicker: _FakeImagePicker(),
+        filePicker: filePicker,
+      );
+
+      final result = await repository.pickFromFiles();
+
+      expect(result.status, ReceiptInputBatchStatus.selected);
+      expect(result.selections, hasLength(1));
+      expect(result.selections.single.name, 'ok.jpg');
+    },
+  );
 }

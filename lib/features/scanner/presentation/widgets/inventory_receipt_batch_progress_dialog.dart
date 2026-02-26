@@ -7,9 +7,19 @@ class InventoryReceiptBatchProgressDialog extends StatelessWidget {
   const InventoryReceiptBatchProgressDialog({
     super.key,
     required this.progressListenable,
+    required this.reviewableIndicesListenable,
+    required this.reviewedIndicesListenable,
+    required this.batchCompletedListenable,
+    required this.onReviewTap,
+    required this.onCloseTap,
   });
 
   final ValueListenable<ReceiptBatchProgress> progressListenable;
+  final ValueListenable<Set<int>> reviewableIndicesListenable;
+  final ValueListenable<Set<int>> reviewedIndicesListenable;
+  final ValueListenable<bool> batchCompletedListenable;
+  final Future<void> Function(int index) onReviewTap;
+  final VoidCallback onCloseTap;
 
   @override
   Widget build(BuildContext context) {
@@ -19,45 +29,93 @@ class InventoryReceiptBatchProgressDialog extends StatelessWidget {
       title: Text(l10n.inventoryReceiptBatchTitle),
       content: ValueListenableBuilder<ReceiptBatchProgress>(
         valueListenable: progressListenable,
-        builder: (context, progress, child) {
-          return SizedBox(
-            width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.inventoryReceiptBatchProgress(
-                    progress.processedCount,
-                    progress.totalCount,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: progress.items.length,
-                    itemBuilder: (context, index) {
-                      final item = progress.items[index];
-                      return ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: _statusLeading(item.status),
-                        title: Text(
-                          item.fileName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+        builder: (context, progress, _) {
+          return ValueListenableBuilder<Set<int>>(
+            valueListenable: reviewableIndicesListenable,
+            builder: (context, reviewableIndices, _) {
+              return ValueListenableBuilder<Set<int>>(
+                valueListenable: reviewedIndicesListenable,
+                builder: (context, reviewedIndices, _) {
+                  return SizedBox(
+                    width: double.maxFinite,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.inventoryReceiptBatchProgress(
+                            progress.processedCount,
+                            progress.totalCount,
+                          ),
                         ),
-                        subtitle: Text(_statusLabel(l10n, item.status)),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
+                        const SizedBox(height: 12),
+                        Flexible(
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: progress.items.length,
+                            itemBuilder: (context, index) {
+                              final item = progress.items[index];
+                              return ListTile(
+                                dense: true,
+                                contentPadding: EdgeInsets.zero,
+                                leading: _statusLeading(item.status),
+                                title: Text(
+                                  item.fileName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                subtitle: Text(_statusLabel(l10n, item.status)),
+                                trailing: _buildReviewAction(
+                                  l10n: l10n,
+                                  index: index,
+                                  reviewableIndices: reviewableIndices,
+                                  reviewedIndices: reviewedIndices,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
           );
         },
       ),
+      actions: [
+        ValueListenableBuilder<bool>(
+          valueListenable: batchCompletedListenable,
+          builder: (context, isCompleted, _) {
+            return TextButton(
+              onPressed: isCompleted ? onCloseTap : null,
+              child: Text(l10n.inventoryReceiptBatchCloseAction),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget? _buildReviewAction({
+    required AppLocalizations l10n,
+    required int index,
+    required Set<int> reviewableIndices,
+    required Set<int> reviewedIndices,
+  }) {
+    if (!reviewableIndices.contains(index)) {
+      return null;
+    }
+    if (reviewedIndices.contains(index)) {
+      return Text(
+        l10n.inventoryReceiptBatchReviewed,
+        style: const TextStyle(fontSize: 12),
+      );
+    }
+    return TextButton(
+      onPressed: () => onReviewTap(index),
+      child: Text(l10n.inventoryReceiptBatchReviewAction),
     );
   }
 

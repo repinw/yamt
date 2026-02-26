@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -83,80 +84,182 @@ class HomeInventoryFabFlow {
     final progressListenable = ValueNotifier<ReceiptBatchProgress>(
       const ReceiptBatchProgress(items: <ReceiptBatchItemProgress>[]),
     );
-    final dialogReady = Completer<void>();
-    NavigatorState? dialogNavigator;
-    final progressDialog = showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (sheetContext) {
-        dialogNavigator = Navigator.of(sheetContext);
-        if (!dialogReady.isCompleted) {
-          dialogReady.complete();
-        }
-        return InventoryReceiptBatchProgressDialog(
-          progressListenable: progressListenable,
-        );
-      },
-    );
-    await dialogReady.future;
+    final reviewableIndicesListenable = ValueNotifier<Set<int>>(const <int>{});
+    final reviewedIndicesListenable = ValueNotifier<Set<int>>(const <int>{});
+    final batchCompletedListenable = ValueNotifier<bool>(false);
+    final mappedItemsByIndex = <int, List<FridgeItem>>{};
+    var hasOpenedFirstReview = false;
+    var isReviewOpen = false;
 
-    final result = await controller.runFileBatch(
-      onProgress: (progress) {
-        progressListenable.value = progress;
-      },
-    );
+    Future<void> openReviewForIndex(int index) async {
+      if (isReviewOpen) {
+        return;
+      }
+      final mappedItems = mappedItemsByIndex[index];
+      if (mappedItems == null || mappedItems.isEmpty || !context.mounted) {
+        return;
+      }
 
-    final navigator = dialogNavigator;
-    if (navigator?.mounted ?? false) {
-      navigator!.pop();
+      isReviewOpen = true;
+      final saved = await _openReviewSheet(
+        context: context,
+        ref: ref,
+        l10n: l10n,
+        controller: controller,
+        mappedItems: mappedItems,
+      );
+      isReviewOpen = false;
+
+      if (!context.mounted || !saved) {
+        return;
+      }
+      reviewedIndicesListenable.value = <int>{
+        ...reviewedIndicesListenable.value,
+        index,
+      };
     }
-    await progressDialog;
-    progressListenable.dispose();
+
+    final rootNavigator = Navigator.of(context, rootNavigator: true);
+    var isDialogClosed = false;
+    final progressDialog =
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) {
+            return InventoryReceiptBatchProgressDialog(
+              progressListenable: progressListenable,
+              reviewableIndicesListenable: reviewableIndicesListenable,
+              reviewedIndicesListenable: reviewedIndicesListenable,
+              batchCompletedListenable: batchCompletedListenable,
+              onReviewTap: openReviewForIndex,
+              onCloseTap: () {
+                if (rootNavigator.mounted) {
+                  rootNavigator.pop();
+                }
+              },
+            );
+          },
+        ).whenComplete(() {
+          isDialogClosed = true;
+        });
+
+    Future<void> closeProgressDialog() async {
+      if (!isDialogClosed && rootNavigator.mounted) {
+        rootNavigator.pop();
+      }
+      await progressDialog;
+    }
+
+    void disposeListenables() {
+      progressListenable.dispose();
+      reviewableIndicesListenable.dispose();
+      reviewedIndicesListenable.dispose();
+      batchCompletedListenable.dispose();
+    }
+
+    late final ReceiptBatchRunResult result;
+    try {
+      result = await controller.runFileBatch(
+        onProgress: (progress) {
+          progressListenable.value = progress;
+        },
+        onItemSucceeded: (index, mappedItems) {
+          if (mappedItems.isEmpty) {
+            return;
+          }
+          mappedItemsByIndex[index] = mappedItems;
+          reviewableIndicesListenable.value = <int>{
+            ...reviewableIndicesListenable.value,
+            index,
+          };
+          if (!hasOpenedFirstReview) {
+            hasOpenedFirstReview = true;
+            unawaited(openReviewForIndex(index));
+          }
+        },
+      );
+    } catch (error, stackTrace) {
+      log(
+        'Receipt batch flow failed unexpectedly',
+        name: 'HomeInventoryFabFlow',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      await closeProgressDialog();
+      disposeListenables();
+      if (context.mounted) {
+        _showSnackBar(context, l10n.inventoryReceiptAnalysisFailed);
+      }
+      return;
+    }
 
     if (!context.mounted) {
+      await closeProgressDialog();
+      disposeListenables();
       return;
     }
     if (result.status == ReceiptBatchRunStatus.inputCanceled) {
+      await closeProgressDialog();
+      disposeListenables();
       return;
     }
     if (result.status == ReceiptBatchRunStatus.inputFailed) {
+      await closeProgressDialog();
+      disposeListenables();
+      if (!context.mounted) {
+        return;
+      }
       _showSnackBar(context, l10n.inventoryReceiptSelectionFailed);
       return;
     }
+    final progress = result.progress;
+    final isBatchComplete =
+        progress.totalCount == 0 ||
+        progress.processedCount == progress.totalCount;
+    if (!isBatchComplete) {
+      await closeProgressDialog();
+      disposeListenables();
+      if (!context.mounted) {
+        return;
+      }
+      _showSnackBar(context, l10n.inventoryReceiptAnalysisFailed);
+      return;
+    }
     if (result.mappedItems.isEmpty) {
+      await closeProgressDialog();
+      disposeListenables();
+      if (!context.mounted) {
+        return;
+      }
       _showSnackBar(context, l10n.inventoryReceiptAnalysisFailed);
       return;
     }
 
-    await _openReviewSheet(
-      context: context,
-      ref: ref,
-      l10n: l10n,
-      controller: controller,
-      mappedItems: result.mappedItems,
-    );
+    batchCompletedListenable.value = true;
+    await progressDialog;
+    disposeListenables();
   }
 
-  static Future<void> _openReviewSheet({
+  static Future<bool> _openReviewSheet({
     required BuildContext context,
     required WidgetRef ref,
     required AppLocalizations l10n,
     required ReceiptCaptureFlowController controller,
     required List<FridgeItem> mappedItems,
   }) {
-    return showModalBottomSheet<void>(
+    return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) {
         return InventoryReceiptReviewSheet(
           items: mappedItems,
-          onCancelTap: () => Navigator.of(sheetContext).pop(),
+          onCancelTap: () => Navigator.of(sheetContext).pop(false),
           onSaveTap: (reviewedItems) async {
             final saved = await controller.persistReviewedItems(reviewedItems);
             if (!sheetContext.mounted) {
               return;
             }
-            Navigator.of(sheetContext).pop();
+            Navigator.of(sheetContext).pop(saved);
 
             if (!context.mounted) {
               return;
@@ -171,7 +274,7 @@ class HomeInventoryFabFlow {
           },
         );
       },
-    );
+    ).then((saved) => saved ?? false);
   }
 
   static String? _messageForFlowResult(
