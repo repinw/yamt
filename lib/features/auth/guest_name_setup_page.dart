@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
@@ -44,10 +46,7 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
 
   @override
   void dispose() {
-    if (!_didPersistSetup) {
-      _seedColorController.previewSeedColor(_initialSeedColor);
-      _themeModeController.previewThemeMode(_initialThemeMode);
-    }
+    _restorePreviewIfNeeded();
     _nameController.dispose();
     super.dispose();
   }
@@ -234,5 +233,22 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
       ThemeMode.light => l10n.settingsThemeLight,
       ThemeMode.dark => l10n.settingsThemeDark,
     };
+  }
+
+  void _restorePreviewIfNeeded() {
+    if (_didPersistSetup) {
+      return;
+    }
+    try {
+      _seedColorController.previewSeedColor(_initialSeedColor);
+      _themeModeController.previewThemeMode(_initialThemeMode);
+    } catch (error, stackTrace) {
+      developer.log(
+        'Guest setup preview restore failed during dispose',
+        name: 'GuestNameSetupPage',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 }

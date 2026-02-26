@@ -66,6 +66,13 @@ class _DelayedGuestNameRepository extends FakeAuthRepository {
   }
 }
 
+class _FailingGuestNameRepository extends FakeAuthRepository {
+  @override
+  Future<void> updateCurrentUserDisplayName({required String displayName}) {
+    throw Exception('save failed');
+  }
+}
+
 Widget _wrapWithRouter(
   FakeAuthRepository repository, {
   String? displayName,
@@ -225,5 +232,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(preferences.getIntSync('preferred_seed_color'), isNull);
+  });
+
+  testWidgets('shows snackbar when profile save fails', (tester) async {
+    final repository = _FailingGuestNameRepository();
+    await tester.pumpWidget(_wrapWithRouter(repository));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'Guest Wlad');
+    await tester.tap(find.text('Continue'));
+    await tester.pump();
+
+    expect(find.text('Authentication failed'), findsOneWidget);
   });
 }
