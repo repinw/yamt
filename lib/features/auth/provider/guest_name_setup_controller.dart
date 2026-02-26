@@ -16,11 +16,14 @@ class GuestNameSetupController extends _$GuestNameSetupController {
       return;
     }
 
+    final repository = ref.read(authRepositoryProvider);
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref
-          .read(authRepositoryProvider)
-          .updateCurrentUserDisplayName(displayName: normalized),
+    final nextState = await AsyncValue.guard(
+      () => repository.updateCurrentUserDisplayName(displayName: normalized),
     );
+    if (!ref.mounted) {
+      return;
+    }
+    state = nextState;
   }
 }

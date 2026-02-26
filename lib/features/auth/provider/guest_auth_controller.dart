@@ -11,9 +11,12 @@ class GuestAuthController extends _$GuestAuthController {
   FutureOr<void> build() {}
 
   Future<void> signInAnonymously() async {
+    final repository = ref.read(authRepositoryProvider);
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref.read(authRepositoryProvider).signInAnonymously(),
-    );
+    final nextState = await AsyncValue.guard(repository.signInAnonymously);
+    if (!ref.mounted) {
+      return;
+    }
+    state = nextState;
   }
 }

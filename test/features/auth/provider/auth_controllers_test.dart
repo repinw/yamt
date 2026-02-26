@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,6 +26,66 @@ class _MockUserCredential extends Mock implements UserCredential {}
 class _MockFirebaseUser extends Mock implements User {}
 
 class _FakeAuthCredential extends Fake implements AuthCredential {}
+
+class _DelayedGuestNameRepository implements AuthRepository {
+  _DelayedGuestNameRepository(this._completer);
+
+  final Completer<void> _completer;
+  int saveCalls = 0;
+
+  @override
+  Future<void> updateCurrentUserDisplayName({
+    required String displayName,
+  }) async {
+    saveCalls++;
+    await _completer.future;
+  }
+
+  @override
+  Future<void> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {}
+
+  @override
+  Future<void> signInAnonymously() async {}
+
+  @override
+  Future<void> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {}
+}
+
+class _DelayedGuestSignInRepository implements AuthRepository {
+  _DelayedGuestSignInRepository(this._completer);
+
+  final Completer<void> _completer;
+  int signInCalls = 0;
+
+  @override
+  Future<void> signInAnonymously() async {
+    signInCalls++;
+    await _completer.future;
+  }
+
+  @override
+  Future<void> updateCurrentUserDisplayName({
+    required String displayName,
+  }) async {}
+
+  @override
+  Future<void> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {}
+
+  @override
+  Future<void> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {}
+}
 
 void main() {
   setUpAll(() {
@@ -98,6 +160,32 @@ void main() {
       expect(fakeRepository.guestCalls, 1);
       expect(container.read(guestAuthControllerProvider).hasError, isTrue);
     });
+
+    test('guest sign in does not crash when provider is disposed', () async {
+      final completer = Completer<void>();
+      final repository = _DelayedGuestSignInRepository(completer);
+      final container = ProviderContainer(
+        overrides: [authRepositoryProvider.overrideWithValue(repository)],
+      );
+      var disposed = false;
+      void disposeContainer() {
+        if (disposed) {
+          return;
+        }
+        disposed = true;
+        container.dispose();
+      }
+      addTearDown(disposeContainer);
+
+      final future = container
+          .read(guestAuthControllerProvider.notifier)
+          .signInAnonymously();
+      disposeContainer();
+      completer.complete();
+
+      await future;
+      expect(repository.signInCalls, 1);
+    });
   });
 
   group('GuestNameSetupController', () {
@@ -136,6 +224,32 @@ void main() {
         container.read(guestNameSetupControllerProvider),
         const AsyncData<void>(null),
       );
+    });
+
+    test('saveDisplayName does not crash when provider is disposed', () async {
+      final completer = Completer<void>();
+      final repository = _DelayedGuestNameRepository(completer);
+      final container = ProviderContainer(
+        overrides: [authRepositoryProvider.overrideWithValue(repository)],
+      );
+      var disposed = false;
+      void disposeContainer() {
+        if (disposed) {
+          return;
+        }
+        disposed = true;
+        container.dispose();
+      }
+      addTearDown(disposeContainer);
+
+      final future = container
+          .read(guestNameSetupControllerProvider.notifier)
+          .saveDisplayName('Guest');
+      disposeContainer();
+      completer.complete();
+
+      await future;
+      expect(repository.saveCalls, 1);
     });
   });
 

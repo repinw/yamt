@@ -265,9 +265,8 @@
   "createAccount": "Konto erstellen",
   "authSwitchToRegister": "Noch kein Konto? Registrieren",
   "authSwitchToLogin": "Bereits ein Konto? Login",
-  "authGuestNameSetupTitle": "Gastnamen festlegen",
-  "authGuestNameSetupSubtitle":
-      "Wähle einen Anzeigenamen, damit dein Gastkonto leichter erkennbar ist.",
+  "authGuestNameSetupTitle": "Name festlegen",
+  "authGuestNameSetupSubtitle": "Wie möchtest du genannt werden?",
   "authGuestNameFieldLabel": "Anzeigename",
   "authGuestNameSaveAction": "Weiter",
   "authGuestNameRequiredError": "Bitte einen Anzeigenamen eingeben.",
