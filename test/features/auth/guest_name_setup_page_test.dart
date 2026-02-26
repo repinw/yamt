@@ -15,41 +15,13 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../helpers/fake_auth_repository.dart';
+import '../../helpers/memory_app_preferences.dart';
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 class _MockUser extends Mock implements User {}
 
 class _MockUserMetadata extends Mock implements UserMetadata {}
-
-class _MemoryAppPreferences implements AppPreferences {
-  final Map<String, String> _strings = <String, String>{};
-  final Map<String, int> _ints = <String, int>{};
-
-  @override
-  String? getStringSync(String key) => _strings[key];
-
-  @override
-  int? getIntSync(String key) => _ints[key];
-
-  @override
-  Future<String?> getString(String key) async => _strings[key];
-
-  @override
-  Future<int?> getInt(String key) async => _ints[key];
-
-  @override
-  Future<bool> setString(String key, String value) async {
-    _strings[key] = value;
-    return true;
-  }
-
-  @override
-  Future<bool> setInt(String key, int value) async {
-    _ints[key] = value;
-    return true;
-  }
-}
 
 class _DelayedGuestNameRepository extends FakeAuthRepository {
   _DelayedGuestNameRepository(this.completer);
@@ -77,7 +49,7 @@ Widget _wrapWithRouter(
   FakeAuthRepository repository, {
   String? displayName,
   bool isFirstSignIn = true,
-  _MemoryAppPreferences? appPreferences,
+  MemoryAppPreferences? appPreferences,
 }) {
   final auth = _MockFirebaseAuth();
   if (displayName == null) {
@@ -111,7 +83,7 @@ Widget _wrapWithRouter(
     ],
   );
 
-  final preferences = appPreferences ?? _MemoryAppPreferences();
+  final preferences = appPreferences ?? MemoryAppPreferences();
   return ProviderScope(
     overrides: [
       authRepositoryProvider.overrideWithValue(repository),
@@ -142,7 +114,7 @@ void main() {
 
   testWidgets('submits guest name to repository', (tester) async {
     final repository = FakeAuthRepository();
-    final preferences = _MemoryAppPreferences();
+    final preferences = MemoryAppPreferences();
     await tester.pumpWidget(
       _wrapWithRouter(repository, appPreferences: preferences),
     );
@@ -220,7 +192,7 @@ void main() {
     tester,
   ) async {
     final repository = FakeAuthRepository();
-    final preferences = _MemoryAppPreferences();
+    final preferences = MemoryAppPreferences();
     await tester.pumpWidget(
       _wrapWithRouter(repository, appPreferences: preferences),
     );

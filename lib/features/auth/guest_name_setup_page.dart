@@ -17,6 +17,8 @@ class GuestNameSetupPage extends ConsumerStatefulWidget {
 }
 
 class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
+  static const _colorPreviewSize = AppSpacing.xl;
+
   final _nameController = TextEditingController();
   String? _errorText;
   late SeedColorController _seedColorController;
@@ -197,8 +199,8 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
     return Row(
       children: [
         Container(
-          width: AppSpacing.xl,
-          height: AppSpacing.xl,
+          width: _colorPreviewSize,
+          height: _colorPreviewSize,
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(AppSpacing.xs),

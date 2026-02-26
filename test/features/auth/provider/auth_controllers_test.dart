@@ -18,6 +18,7 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../helpers/fake_auth_repository.dart';
+import '../../../helpers/memory_app_preferences.dart';
 
 class _MockGoogleSignIn extends Mock implements GoogleSignIn {}
 
@@ -30,35 +31,6 @@ class _MockUserCredential extends Mock implements UserCredential {}
 class _MockFirebaseUser extends Mock implements User {}
 
 class _FakeAuthCredential extends Fake implements AuthCredential {}
-
-class _MemoryAppPreferences implements AppPreferences {
-  final Map<String, String> _strings = <String, String>{};
-  final Map<String, int> _ints = <String, int>{};
-
-  @override
-  String? getStringSync(String key) => _strings[key];
-
-  @override
-  int? getIntSync(String key) => _ints[key];
-
-  @override
-  Future<String?> getString(String key) async => _strings[key];
-
-  @override
-  Future<int?> getInt(String key) async => _ints[key];
-
-  @override
-  Future<bool> setString(String key, String value) async {
-    _strings[key] = value;
-    return true;
-  }
-
-  @override
-  Future<bool> setInt(String key, int value) async {
-    _ints[key] = value;
-    return true;
-  }
-}
 
 class _DelayedGuestNameRepository implements AuthRepository {
   _DelayedGuestNameRepository(this._completer);
@@ -234,7 +206,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(fakeRepository),
-          appPreferencesProvider.overrideWithValue(_MemoryAppPreferences()),
+          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
         ],
       );
       addTearDown(container.dispose);
@@ -261,7 +233,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(fakeRepository),
-          appPreferencesProvider.overrideWithValue(_MemoryAppPreferences()),
+          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
         ],
       );
       addTearDown(container.dispose);
@@ -287,7 +259,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(repository),
-          appPreferencesProvider.overrideWithValue(_MemoryAppPreferences()),
+          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
         ],
       );
       var disposed = false;

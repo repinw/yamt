@@ -20,6 +20,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 
 import '../../features/calories/support/fake_calories_repositories.dart';
+import '../../helpers/memory_app_preferences.dart';
 
 class _MockUser extends Mock implements User {}
 
@@ -28,42 +29,6 @@ class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 const _routerTransitionDuration = Duration(milliseconds: 350);
 
 class _MockUserMetadata extends Mock implements UserMetadata {}
-
-class _MemoryAppPreferences implements AppPreferences {
-  _MemoryAppPreferences({Set<String> completedProfileSetupUserIds = const {}}) {
-    for (final userId in completedProfileSetupUserIds) {
-      final key = AuthProfileSetupPreferences.keyForUser(userId);
-      _strings[key] = AuthProfileSetupPreferences.completedValue;
-    }
-  }
-
-  final Map<String, String> _strings = <String, String>{};
-  final Map<String, int> _ints = <String, int>{};
-
-  @override
-  String? getStringSync(String key) => _strings[key];
-
-  @override
-  int? getIntSync(String key) => _ints[key];
-
-  @override
-  Future<String?> getString(String key) async => _strings[key];
-
-  @override
-  Future<int?> getInt(String key) async => _ints[key];
-
-  @override
-  Future<bool> setString(String key, String value) async {
-    _strings[key] = value;
-    return true;
-  }
-
-  @override
-  Future<bool> setInt(String key, int value) async {
-    _ints[key] = value;
-    return true;
-  }
-}
 
 Future<void> _pumpRouterTransition(WidgetTester tester) async {
   await tester.pump();
@@ -87,7 +52,7 @@ ProviderContainer _createContainerWithAuth(
 }) {
   final calorieLogRepository = FakeCalorieLogRepository();
   final calorieSettingsRepository = FakeCalorieSettingsRepository();
-  final appPreferences = _MemoryAppPreferences(
+  final appPreferences = MemoryAppPreferences(
     completedProfileSetupUserIds: completedProfileSetupUserIds,
   );
   final firebaseAuth = _MockFirebaseAuth();
