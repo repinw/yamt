@@ -30,9 +30,6 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
     }
     state = state.copyWith(
       activeReviewIndex: index,
-      pendingAutoReviewIndex: state.pendingAutoReviewIndex == index
-          ? null
-          : state.pendingAutoReviewIndex,
       clearPendingAutoReview: state.pendingAutoReviewIndex == index,
     );
     return true;

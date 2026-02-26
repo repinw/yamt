@@ -8,7 +8,6 @@ import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_to_fridge_item_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
-import 'package:yamt/features/scanner/domain/receipt_batch_processor.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
@@ -81,41 +80,6 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     }
   }
 
-  Future<ReceiptBatchRunResult> runFileBatch() async {
-    state = const AsyncLoading();
-
-    final inputRepository = ref.read(receiptInputRepositoryProvider);
-    final inputResult = await inputRepository.pickFromFiles();
-    if (!ref.mounted) {
-      return ReceiptBatchRunResult.inputFailed(
-        errorCode: _inputUnexpectedCode(ReceiptInputSource.file),
-      );
-    }
-
-    switch (inputResult.status) {
-      case ReceiptInputBatchStatus.selected:
-        return _runSelectedBatch(selections: inputResult.selections);
-      case ReceiptInputBatchStatus.canceled:
-        _setAndReturn(
-          const ReceiptCaptureFlowResult.inputCanceled(
-            source: ReceiptInputSource.file,
-          ),
-        );
-        return const ReceiptBatchRunResult.inputCanceled();
-      case ReceiptInputBatchStatus.failed:
-        final errorCode =
-            inputResult.errorCode ??
-            _inputUnexpectedCode(ReceiptInputSource.file);
-        _setAndReturn(
-          ReceiptCaptureFlowResult.inputFailed(
-            source: ReceiptInputSource.file,
-            errorCode: errorCode,
-          ),
-        );
-        return ReceiptBatchRunResult.inputFailed(errorCode: errorCode);
-    }
-  }
-
   bool _isSourceSupported(ReceiptInputSource source) {
     if (source != ReceiptInputSource.camera) {
       return true;
@@ -176,39 +140,6 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
         ),
       );
     }
-  }
-
-  Future<ReceiptBatchRunResult> _runSelectedBatch({
-    required List<ReceiptInputSelection> selections,
-  }) async {
-    final batchProcessor = _batchProcessor();
-    final result = await batchProcessor.processSelections(
-      selections,
-      shouldContinue: () => ref.mounted,
-    );
-    if (!ref.mounted || result.wasCanceled) {
-      return ReceiptBatchRunResult.inputFailed(
-        errorCode: _inputUnexpectedCode(ReceiptInputSource.file),
-      );
-    }
-
-    if (ref.mounted) {
-      state = const AsyncData(null);
-    }
-    return ReceiptBatchRunResult.completed(
-      progress: result.progress,
-      mappedItems: result.mappedItems,
-    );
-  }
-
-  ReceiptBatchProcessor _batchProcessor() {
-    final analysisRepository = ref.read(receiptAnalysisRepositoryProvider);
-    final mapper = ref.read(receiptToFridgeItemMapperProvider);
-    return ReceiptBatchProcessor(
-      analysisRepository: analysisRepository,
-      mapExtraction: mapper.map,
-      loggerName: 'ReceiptCaptureFlowController',
-    );
   }
 
   String _inputUnexpectedCode(ReceiptInputSource source) {
