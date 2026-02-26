@@ -171,9 +171,7 @@ void main() {
     expect(field.controller?.text, 'Google Name');
   });
 
-  testWidgets('does not prefill name for returning user sign-in', (
-    tester,
-  ) async {
+  testWidgets('prefills name for returning user sign-in', (tester) async {
     final repository = FakeAuthRepository();
     await tester.pumpWidget(
       _wrapWithRouter(
@@ -185,7 +183,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final field = tester.widget<TextField>(find.byType(TextField));
-    expect(field.controller?.text, isEmpty);
+    expect(field.controller?.text, 'Google Name');
   });
 
   testWidgets('changing color selection does not persist before save', (

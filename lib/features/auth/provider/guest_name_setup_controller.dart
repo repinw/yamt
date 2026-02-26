@@ -6,7 +6,6 @@ import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/auth/domain/auth_profile_setup_preferences.dart';
-import 'package:yamt/features/auth/domain/auth_user_extensions.dart';
 import 'package:yamt/features/auth/provider/'
     'auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/provider/auth_repository.dart';
@@ -46,9 +45,7 @@ class GuestNameSetupController extends _$GuestNameSetupController {
       );
     }
 
-    final prefilledName = currentUser.isLikelyFirstSignIn
-        ? currentUser.displayName?.trim()
-        : null;
+    final prefilledName = currentUser.displayName?.trim();
 
     return GuestNameSetupFormDefaults(
       prefilledName: prefilledName?.isEmpty ?? true ? null : prefilledName,
