@@ -1,6 +1,11 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/theme/seed_color_controller.dart';
+import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/features/auth/provider/auth_error_view_model.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/provider/guest_name_setup_controller.dart';
@@ -16,15 +21,22 @@ class GuestNameSetupPage extends ConsumerStatefulWidget {
 class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
   final _nameController = TextEditingController();
   String? _errorText;
+  late int _selectedSeedColorValue;
+  late ThemeMode _selectedThemeMode;
 
   @override
   void initState() {
     super.initState();
-    final currentDisplayName = ref
-        .read(firebaseAuthProvider)
-        .currentUser
-        ?.displayName
-        ?.trim();
+    _selectedSeedColorValue = ref.read(seedColorControllerProvider).toARGB32();
+    _selectedThemeMode = ref.read(themeModeControllerProvider);
+    final currentUser = ref.read(firebaseAuthProvider).currentUser;
+    if (currentUser == null || currentUser.isAnonymous) {
+      return;
+    }
+    if (!_isFirstSignIn(currentUser)) {
+      return;
+    }
+    final currentDisplayName = currentUser.displayName?.trim();
     if (currentDisplayName != null && currentDisplayName.isNotEmpty) {
       _nameController.text = currentDisplayName;
     }
@@ -86,6 +98,60 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
+            DropdownButtonFormField<int>(
+              initialValue: _selectedSeedColorValue,
+              decoration: InputDecoration(labelText: l10n.settingsColorTitle),
+              onChanged: state.isLoading
+                  ? null
+                  : (selectedValue) {
+                      if (selectedValue == null) {
+                        return;
+                      }
+                      setState(() {
+                        _selectedSeedColorValue = selectedValue;
+                      });
+                      unawaited(
+                        ref
+                            .read(seedColorControllerProvider.notifier)
+                            .setSeedColor(Color(selectedValue)),
+                      );
+                    },
+              items: [
+                for (final color in AppSeedColors.values)
+                  DropdownMenuItem(
+                    value: color.toARGB32(),
+                    child: _colorDropdownItem(l10n, color),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            DropdownButtonFormField<ThemeMode>(
+              initialValue: _selectedThemeMode,
+              decoration: InputDecoration(labelText: l10n.settingsThemeTitle),
+              onChanged: state.isLoading
+                  ? null
+                  : (selectedMode) {
+                      if (selectedMode == null) {
+                        return;
+                      }
+                      setState(() {
+                        _selectedThemeMode = selectedMode;
+                      });
+                      unawaited(
+                        ref
+                            .read(themeModeControllerProvider.notifier)
+                            .setThemeMode(selectedMode),
+                      );
+                    },
+              items: [
+                for (final mode in ThemeMode.values)
+                  DropdownMenuItem(
+                    value: mode,
+                    child: Text(_themeModeLabel(l10n, mode)),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xl),
             FilledButton(
               onPressed: state.isLoading ? null : () => _submit(l10n),
               child: state.isLoading
@@ -116,8 +182,61 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
       return;
     }
 
+    final selectedSeedColor = Color(_selectedSeedColorValue);
     await ref
         .read(guestNameSetupControllerProvider.notifier)
-        .saveDisplayName(name);
+        .saveDisplayName(
+          name,
+          seedColor: selectedSeedColor,
+          themeMode: _selectedThemeMode,
+        );
+  }
+
+  Widget _colorDropdownItem(AppLocalizations l10n, Color color) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Container(
+          width: AppSpacing.xl,
+          height: AppSpacing.xl,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(AppSpacing.xs),
+            border: Border.all(color: colorScheme.outlineVariant),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Text(_seedColorLabel(l10n, color)),
+      ],
+    );
+  }
+
+  String _seedColorLabel(AppLocalizations l10n, Color color) {
+    return switch (color.toARGB32()) {
+      0xFF29F006 => l10n.settingsColorLime,
+      0xFF0D47A1 => l10n.settingsColorBlue,
+      0xFF00695C => l10n.settingsColorTeal,
+      0xFFFF006F => l10n.settingsColorPink,
+      0xFFE65100 => l10n.settingsColorOrange,
+      _ => l10n.settingsColorLime,
+    };
+  }
+
+  String _themeModeLabel(AppLocalizations l10n, ThemeMode mode) {
+    return switch (mode) {
+      ThemeMode.system => l10n.settingsThemeSystem,
+      ThemeMode.light => l10n.settingsThemeLight,
+      ThemeMode.dark => l10n.settingsThemeDark,
+    };
+  }
+
+  bool _isFirstSignIn(User user) {
+    final creationTime = user.metadata.creationTime;
+    final lastSignInTime = user.metadata.lastSignInTime;
+    if (creationTime == null || lastSignInTime == null) {
+      return false;
+    }
+    final threshold = creationTime.add(const Duration(seconds: 1));
+    return !lastSignInTime.isAfter(threshold);
   }
 }

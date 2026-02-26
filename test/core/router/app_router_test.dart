@@ -8,7 +8,9 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/router/app_router.dart';
+import 'package:yamt/features/auth/domain/auth_profile_setup_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -19,23 +21,74 @@ import '../../features/calories/support/fake_calories_repositories.dart';
 
 class _MockUser extends Mock implements User {}
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
-
 const _routerTransitionDuration = Duration(milliseconds: 350);
+
+class _MockUserMetadata extends Mock implements UserMetadata {}
+
+class _MemoryAppPreferences implements AppPreferences {
+  _MemoryAppPreferences({Set<String> completedProfileSetupUserIds = const {}}) {
+    for (final userId in completedProfileSetupUserIds) {
+      final key = AuthProfileSetupPreferences.keyForUser(userId);
+      _strings[key] = AuthProfileSetupPreferences.completedValue;
+    }
+  }
+
+  final Map<String, String> _strings = <String, String>{};
+  final Map<String, int> _ints = <String, int>{};
+
+  @override
+  String? getStringSync(String key) => _strings[key];
+
+  @override
+  int? getIntSync(String key) => _ints[key];
+
+  @override
+  Future<String?> getString(String key) async => _strings[key];
+
+  @override
+  Future<int?> getInt(String key) async => _ints[key];
+
+  @override
+  Future<bool> setString(String key, String value) async {
+    _strings[key] = value;
+    return true;
+  }
+
+  @override
+  Future<bool> setInt(String key, int value) async {
+    _ints[key] = value;
+    return true;
+  }
+}
 
 Future<void> _pumpRouterTransition(WidgetTester tester) async {
   await tester.pump();
   await tester.pump(_routerTransitionDuration);
 }
 
-ProviderContainer _createContainerWithAuth(Stream<User?> authStream) {
-  final firebaseAuth = _MockFirebaseAuth();
-  when(() => firebaseAuth.currentUser).thenReturn(null);
+UserMetadata _userMetadata({required bool isFirstSignIn}) {
+  final metadata = _MockUserMetadata();
+  final createdAt = DateTime.utc(2026, 1, 1, 9);
+  final lastSignInAt = isFirstSignIn
+      ? createdAt
+      : createdAt.add(const Duration(days: 7));
+  when(() => metadata.creationTime).thenReturn(createdAt);
+  when(() => metadata.lastSignInTime).thenReturn(lastSignInAt);
+  return metadata;
+}
+
+ProviderContainer _createContainerWithAuth(
+  Stream<User?> authStream, {
+  Set<String> completedProfileSetupUserIds = const <String>{},
+}) {
   final calorieLogRepository = FakeCalorieLogRepository();
   final calorieSettingsRepository = FakeCalorieSettingsRepository();
+  final appPreferences = _MemoryAppPreferences(
+    completedProfileSetupUserIds: completedProfileSetupUserIds,
+  );
   final container = ProviderContainer(
     overrides: [
-      firebaseAuthProvider.overrideWithValue(firebaseAuth),
+      appPreferencesProvider.overrideWithValue(appPreferences),
       authStateChangesProvider.overrideWith((ref) => authStream),
       calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(
@@ -53,21 +106,30 @@ _MockUser _authenticatedUser({
   String uid = 'uid-123',
   String? displayName = 'Jane Doe',
   String? email = 'jane@example.com',
+  bool isFirstSignIn = false,
 }) {
   final user = _MockUser();
+  final metadata = _userMetadata(isFirstSignIn: isFirstSignIn);
   when(() => user.uid).thenReturn(uid);
   when(() => user.isAnonymous).thenReturn(false);
   when(() => user.displayName).thenReturn(displayName);
   when(() => user.email).thenReturn(email);
+  when(() => user.metadata).thenReturn(metadata);
   return user;
 }
 
-_MockUser _guestUser({String uid = 'guest-123', String? displayName}) {
+_MockUser _guestUser({
+  String uid = 'guest-123',
+  String? displayName,
+  bool isFirstSignIn = true,
+}) {
   final user = _MockUser();
+  final metadata = _userMetadata(isFirstSignIn: isFirstSignIn);
   when(() => user.uid).thenReturn(uid);
   when(() => user.isAnonymous).thenReturn(true);
   when(() => user.displayName).thenReturn(displayName);
   when(() => user.email).thenReturn(null);
+  when(() => user.metadata).thenReturn(metadata);
   return user;
 }
 
@@ -196,6 +258,55 @@ void main() {
   testWidgets('named anonymous user is routed to home', (tester) async {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_guestUser(displayName: 'Guest Name')),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.homeInventory,
+    );
+  });
+
+  testWidgets('redirects freshly created named user to setup page', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(
+        _authenticatedUser(
+          uid: 'fresh-user',
+          displayName: 'Fresh Google User',
+          isFirstSignIn: true,
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.guestNameSetup,
+    );
+  });
+
+  testWidgets('skips setup for fresh user after setup completion marker', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(
+        _authenticatedUser(
+          uid: 'fresh-user',
+          displayName: 'Fresh Google User',
+          isFirstSignIn: true,
+        ),
+      ),
+      completedProfileSetupUserIds: {'fresh-user'},
     );
 
     await tester.pumpWidget(

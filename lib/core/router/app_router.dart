@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/features/auth/domain/'
+    'auth_profile_setup_preferences.dart';
 import 'package:yamt/features/auth/domain/auth_user_extensions.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/guest_name_setup_page.dart';
@@ -25,7 +28,16 @@ GoRouter appRouter(Ref ref) {
   final isAuthLoading = authState.isLoading;
   final currentUser = authState.asData?.value;
   final isAuthenticated = currentUser != null;
-  final needsGuestNameSetup = currentUser?.requiresGuestNameSetup == true;
+  final preferences = ref.read(appPreferencesProvider);
+  final hasCompletedProfileSetup = _hasCompletedProfileSetup(
+    preferences: preferences,
+    userId: currentUser?.uid,
+  );
+  final needsGuestNameSetup =
+      currentUser?.requiresGuestNameSetup(
+        hasCompletedProfileSetup: hasCompletedProfileSetup,
+      ) ==
+      true;
 
   return GoRouter(
     initialLocation: AppRoutes.root,
@@ -146,6 +158,18 @@ GoRouter appRouter(Ref ref) {
       ),
     ],
   );
+}
+
+bool _hasCompletedProfileSetup({
+  required AppPreferences preferences,
+  required String? userId,
+}) {
+  if (userId == null) {
+    return false;
+  }
+  final key = AuthProfileSetupPreferences.keyForUser(userId);
+  return preferences.getStringSync(key) ==
+      AuthProfileSetupPreferences.completedValue;
 }
 
 class _AuthLoadingPage extends StatelessWidget {

@@ -22,6 +22,9 @@ class _FirebaseGuestErrorRepository implements AuthRepository {
   final FirebaseAuthException error;
 
   @override
+  String? get currentUserId => 'test-user-id';
+
+  @override
   Future<void> createUserWithEmailAndPassword({
     required String email,
     required String password,

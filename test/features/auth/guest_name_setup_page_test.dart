@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/guest_name_setup_page.dart';
 import 'package:yamt/features/auth/provider/auth_repository.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
@@ -17,6 +18,37 @@ import '../../helpers/fake_auth_repository.dart';
 class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 class _MockUser extends Mock implements User {}
+
+class _MockUserMetadata extends Mock implements UserMetadata {}
+
+class _MemoryAppPreferences implements AppPreferences {
+  final Map<String, String> _strings = <String, String>{};
+  final Map<String, int> _ints = <String, int>{};
+
+  @override
+  String? getStringSync(String key) => _strings[key];
+
+  @override
+  int? getIntSync(String key) => _ints[key];
+
+  @override
+  Future<String?> getString(String key) async => _strings[key];
+
+  @override
+  Future<int?> getInt(String key) async => _ints[key];
+
+  @override
+  Future<bool> setString(String key, String value) async {
+    _strings[key] = value;
+    return true;
+  }
+
+  @override
+  Future<bool> setInt(String key, int value) async {
+    _ints[key] = value;
+    return true;
+  }
+}
 
 class _DelayedGuestNameRepository extends FakeAuthRepository {
   _DelayedGuestNameRepository(this.completer);
@@ -33,13 +65,26 @@ class _DelayedGuestNameRepository extends FakeAuthRepository {
   }
 }
 
-Widget _wrapWithRouter(FakeAuthRepository repository, {String? displayName}) {
+Widget _wrapWithRouter(
+  FakeAuthRepository repository, {
+  String? displayName,
+  bool isFirstSignIn = true,
+}) {
   final auth = _MockFirebaseAuth();
   if (displayName == null) {
     when(() => auth.currentUser).thenReturn(null);
   } else {
     final user = _MockUser();
+    final metadata = _MockUserMetadata();
+    final createdAt = DateTime.utc(2026, 2, 1, 9);
+    final lastSignInAt = isFirstSignIn
+        ? createdAt
+        : createdAt.add(const Duration(days: 2));
     when(() => user.displayName).thenReturn(displayName);
+    when(() => user.isAnonymous).thenReturn(false);
+    when(() => metadata.creationTime).thenReturn(createdAt);
+    when(() => metadata.lastSignInTime).thenReturn(lastSignInAt);
+    when(() => user.metadata).thenReturn(metadata);
     when(() => auth.currentUser).thenReturn(user);
   }
 
@@ -60,6 +105,8 @@ Widget _wrapWithRouter(FakeAuthRepository repository, {String? displayName}) {
   return ProviderScope(
     overrides: [
       authRepositoryProvider.overrideWithValue(repository),
+      appPreferencesProvider.overrideWithValue(_MemoryAppPreferences()),
+      authStateChangesProvider.overrideWith((ref) => const Stream.empty()),
       firebaseAuthProvider.overrideWithValue(auth),
     ],
     child: MaterialApp.router(
@@ -118,16 +165,31 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('prefills text field from current user display name', (
-    tester,
-  ) async {
+  testWidgets('prefills name from current user display name', (tester) async {
     final repository = FakeAuthRepository();
     await tester.pumpWidget(
-      _wrapWithRouter(repository, displayName: 'Guest Existing'),
+      _wrapWithRouter(repository, displayName: 'Google Name'),
     );
     await tester.pumpAndSettle();
 
     final field = tester.widget<TextField>(find.byType(TextField));
-    expect(field.controller?.text, 'Guest Existing');
+    expect(field.controller?.text, 'Google Name');
+  });
+
+  testWidgets('does not prefill name for returning user sign-in', (
+    tester,
+  ) async {
+    final repository = FakeAuthRepository();
+    await tester.pumpWidget(
+      _wrapWithRouter(
+        repository,
+        displayName: 'Google Name',
+        isFirstSignIn: false,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller?.text, isEmpty);
   });
 }
