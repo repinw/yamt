@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_actions_sheet.dart';
@@ -13,6 +14,7 @@ import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_batch_progress_dialog.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_review_sheet.dart';
+import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -80,24 +82,27 @@ class HomeInventoryFabFlow {
     WidgetRef ref,
     AppLocalizations l10n,
   ) async {
-    final controller = ref.read(receiptCaptureFlowControllerProvider.notifier);
-    final progressListenable = ValueNotifier<ReceiptBatchProgress>(
-      const ReceiptBatchProgress(items: <ReceiptBatchItemProgress>[]),
+    final captureController = ref.read(
+      receiptCaptureFlowControllerProvider.notifier,
     );
-    final reviewableIndicesListenable = ValueNotifier<Set<int>>(const <int>{});
-    final reviewedIndicesListenable = ValueNotifier<Set<int>>(const <int>{});
-    final batchCompletedListenable = ValueNotifier<bool>(false);
-    final mappedItemsByIndex = <int, List<FridgeItem>>{};
+    final batchController = ref.read(
+      receiptBatchFlowControllerProvider.notifier,
+    );
+    batchController.reset();
+
     var hasOpenedFirstReview = false;
     var isReviewOpen = false;
     String? feedbackMessage;
+    final container = ProviderScope.containerOf(context, listen: false);
 
     Future<void> openReviewForIndex(int index) async {
       if (isReviewOpen) {
         return;
       }
-      final mappedItems = mappedItemsByIndex[index];
-      if (mappedItems == null || mappedItems.isEmpty || !context.mounted) {
+      final mappedItems = container
+          .read(receiptBatchFlowControllerProvider)
+          .mappedItemsForIndex(index);
+      if (mappedItems.isEmpty || !context.mounted) {
         return;
       }
 
@@ -107,16 +112,13 @@ class HomeInventoryFabFlow {
           context: context,
           ref: ref,
           l10n: l10n,
-          controller: controller,
+          controller: captureController,
           mappedItems: mappedItems,
         );
         if (!context.mounted || !saved) {
           return;
         }
-        reviewedIndicesListenable.value = <int>{
-          ...reviewedIndicesListenable.value,
-          index,
-        };
+        batchController.markReviewed(index);
       } catch (error, stackTrace) {
         log(
           'Receipt review sheet failed unexpectedly',
@@ -137,10 +139,6 @@ class HomeInventoryFabFlow {
           barrierDismissible: false,
           builder: (_) {
             return InventoryReceiptBatchProgressDialog(
-              progressListenable: progressListenable,
-              reviewableIndicesListenable: reviewableIndicesListenable,
-              reviewedIndicesListenable: reviewedIndicesListenable,
-              batchCompletedListenable: batchCompletedListenable,
               onReviewTap: openReviewForIndex,
               onCloseTap: () {
                 if (rootNavigator.mounted) {
@@ -160,45 +158,37 @@ class HomeInventoryFabFlow {
       await progressDialog;
     }
 
-    void disposeListenables() {
-      progressListenable.dispose();
-      reviewableIndicesListenable.dispose();
-      reviewedIndicesListenable.dispose();
-      batchCompletedListenable.dispose();
-    }
+    final subscription = container.listen(receiptBatchFlowControllerProvider, (
+      previous,
+      next,
+    ) {
+      final pendingIndex = next.pendingAutoReviewIndex;
+      if (pendingIndex == null || isReviewOpen || !context.mounted) {
+        return;
+      }
+      batchController.consumePendingAutoReview();
+      if (hasOpenedFirstReview) {
+        return;
+      }
+      hasOpenedFirstReview = true;
+      unawaited(openReviewForIndex(pendingIndex));
+    }, fireImmediately: true);
 
     try {
-      final result = await controller.runFileBatch(
-        onProgress: (progress) {
-          progressListenable.value = progress;
-        },
-        onItemSucceeded: (index, mappedItems) {
-          if (mappedItems.isEmpty) {
-            return;
-          }
-          mappedItemsByIndex[index] = mappedItems;
-          reviewableIndicesListenable.value = <int>{
-            ...reviewableIndicesListenable.value,
-            index,
-          };
-          if (!hasOpenedFirstReview) {
-            hasOpenedFirstReview = true;
-            unawaited(openReviewForIndex(index));
-          }
-        },
-      );
+      await batchController.runFileBatch();
+      final batchState = container.read(receiptBatchFlowControllerProvider);
 
       if (!context.mounted) {
         return;
       }
-      if (result.status == ReceiptBatchRunStatus.inputCanceled) {
+      if (batchState.status == ReceiptBatchFlowStatus.inputCanceled) {
         return;
       }
-      if (result.status == ReceiptBatchRunStatus.inputFailed) {
+      if (batchState.status == ReceiptBatchFlowStatus.inputFailed) {
         feedbackMessage = l10n.inventoryReceiptSelectionFailed;
         return;
       }
-      final progress = result.progress;
+      final progress = batchState.progress;
       final isBatchComplete =
           progress.totalCount == 0 ||
           progress.processedCount == progress.totalCount;
@@ -206,12 +196,18 @@ class HomeInventoryFabFlow {
         feedbackMessage = l10n.inventoryReceiptAnalysisFailed;
         return;
       }
-      if (result.mappedItems.isEmpty) {
+      if (batchState.status != ReceiptBatchFlowStatus.completed) {
+        feedbackMessage = l10n.inventoryReceiptAnalysisFailed;
+        return;
+      }
+      final hasMappedItems = batchState.mappedItemsByIndex.values
+          .expand((items) => items)
+          .isNotEmpty;
+      if (!hasMappedItems) {
         feedbackMessage = l10n.inventoryReceiptAnalysisFailed;
         return;
       }
 
-      batchCompletedListenable.value = true;
       await progressDialog;
     } catch (error, stackTrace) {
       log(
@@ -223,7 +219,8 @@ class HomeInventoryFabFlow {
       feedbackMessage = l10n.inventoryReceiptAnalysisFailed;
     } finally {
       await closeProgressDialog();
-      disposeListenables();
+      subscription.close();
+      batchController.reset();
       if (feedbackMessage != null && context.mounted) {
         _showSnackBar(context, feedbackMessage);
       }

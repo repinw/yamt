@@ -213,19 +213,7 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
     if (bytes == null) {
       return null;
     }
-
-    final fileName = _resolvedFileName(
-      primaryName: file.name,
-      fallbackPath: file.path,
-      fallbackName: _fallbackUploadFileName,
-    );
-    return ReceiptInputSelection(
-      source: ReceiptInputSource.file,
-      name: fileName,
-      mimeType: _detectMimeType(fileName: fileName, bytes: bytes),
-      bytes: bytes,
-      filePath: file.path,
-    );
+    return _buildFileSelection(file: file, bytes: bytes);
   }
 
   ReceiptInputSelection? _selectionMetadataFromFile(PlatformFile file) {
@@ -235,7 +223,13 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
     if (inMemoryBytes == null && !hasLoadablePath) {
       return null;
     }
+    return _buildFileSelection(file: file, bytes: inMemoryBytes);
+  }
 
+  ReceiptInputSelection _buildFileSelection({
+    required PlatformFile file,
+    required Uint8List? bytes,
+  }) {
     final fileName = _resolvedFileName(
       primaryName: file.name,
       fallbackPath: file.path,
@@ -244,9 +238,9 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
     return ReceiptInputSelection(
       source: ReceiptInputSource.file,
       name: fileName,
-      mimeType: _detectMimeType(fileName: fileName, bytes: inMemoryBytes),
-      bytes: inMemoryBytes ?? Uint8List(0),
-      filePath: path,
+      mimeType: _detectMimeType(fileName: fileName, bytes: bytes),
+      bytes: bytes ?? Uint8List(0),
+      filePath: file.path,
     );
   }
 

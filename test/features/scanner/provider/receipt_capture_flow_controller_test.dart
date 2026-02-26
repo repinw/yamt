@@ -329,9 +329,6 @@ void main() {
     'runFileBatch processes selections in order and tracks progress',
     () async {
       final analysisOrder = <String>[];
-      final progressUpdates = <ReceiptBatchProgress>[];
-      final succeededIndices = <int>[];
-      final succeededMappedCount = <int>[];
       final inputRepository = _FakeReceiptInputRepository(
         pickFiles: () async => ReceiptInputBatchResult.selected(
           selections: <ReceiptInputSelection>[
@@ -380,13 +377,7 @@ void main() {
 
       final result = await container
           .read(receiptCaptureFlowControllerProvider.notifier)
-          .runFileBatch(
-            onProgress: progressUpdates.add,
-            onItemSucceeded: (index, mappedItems) {
-              succeededIndices.add(index);
-              succeededMappedCount.add(mappedItems.length);
-            },
-          );
+          .runFileBatch();
 
       expect(result.status, ReceiptBatchRunStatus.completed);
       expect(result.mappedItems, hasLength(1));
@@ -395,15 +386,6 @@ void main() {
       expect(result.progress.succeededCount, 1);
       expect(result.progress.failedCount, 1);
       expect(analysisOrder, <String>['a.jpg', 'b.jpg']);
-      expect(progressUpdates, isNotEmpty);
-      expect(
-        progressUpdates.first.items.every(
-          (item) => item.status == ReceiptBatchItemStatus.queued,
-        ),
-        isTrue,
-      );
-      expect(succeededIndices, <int>[0]);
-      expect(succeededMappedCount, <int>[1]);
     },
   );
 

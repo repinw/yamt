@@ -1,96 +1,77 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
+import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class InventoryReceiptBatchProgressDialog extends StatelessWidget {
+class InventoryReceiptBatchProgressDialog extends ConsumerWidget {
   const InventoryReceiptBatchProgressDialog({
     super.key,
-    required this.progressListenable,
-    required this.reviewableIndicesListenable,
-    required this.reviewedIndicesListenable,
-    required this.batchCompletedListenable,
     required this.onReviewTap,
     required this.onCloseTap,
   });
 
-  final ValueListenable<ReceiptBatchProgress> progressListenable;
-  final ValueListenable<Set<int>> reviewableIndicesListenable;
-  final ValueListenable<Set<int>> reviewedIndicesListenable;
-  final ValueListenable<bool> batchCompletedListenable;
   final Future<void> Function(int index) onReviewTap;
   final VoidCallback onCloseTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final mergedListenable = Listenable.merge(<Listenable>[
-      progressListenable,
-      reviewableIndicesListenable,
-      reviewedIndicesListenable,
-      batchCompletedListenable,
-    ]);
+    final batchState = ref.watch(receiptBatchFlowControllerProvider);
+    final progress = batchState.progress;
+    final reviewableIndices = batchState.reviewableIndices;
+    final reviewedIndices = batchState.reviewedIndices;
 
-    return AnimatedBuilder(
-      animation: mergedListenable,
-      builder: (context, _) {
-        final progress = progressListenable.value;
-        final reviewableIndices = reviewableIndicesListenable.value;
-        final reviewedIndices = reviewedIndicesListenable.value;
-        final isBatchCompleted = batchCompletedListenable.value;
-
-        return AlertDialog(
-          title: Text(l10n.inventoryReceiptBatchTitle),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.inventoryReceiptBatchProgress(
-                    progress.processedCount,
-                    progress.totalCount,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: progress.items.length,
-                    itemBuilder: (context, index) {
-                      final item = progress.items[index];
-                      return ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: _statusLeading(item.status),
-                        title: Text(
-                          item.fileName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(_statusLabel(l10n, item.status)),
-                        trailing: _buildReviewAction(
-                          l10n: l10n,
-                          index: index,
-                          reviewableIndices: reviewableIndices,
-                          reviewedIndices: reviewedIndices,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+    return AlertDialog(
+      title: Text(l10n.inventoryReceiptBatchTitle),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.inventoryReceiptBatchProgress(
+                progress.processedCount,
+                progress.totalCount,
+              ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: isBatchCompleted ? onCloseTap : null,
-              child: Text(l10n.inventoryReceiptBatchCloseAction),
+            const SizedBox(height: 12),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: progress.items.length,
+                itemBuilder: (context, index) {
+                  final item = progress.items[index];
+                  return ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: _statusLeading(item.status),
+                    title: Text(
+                      item.fileName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(_statusLabel(l10n, item.status)),
+                    trailing: _buildReviewAction(
+                      l10n: l10n,
+                      index: index,
+                      reviewableIndices: reviewableIndices,
+                      reviewedIndices: reviewedIndices,
+                    ),
+                  );
+                },
+              ),
             ),
           ],
-        );
-      },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: batchState.canClose ? onCloseTap : null,
+          child: Text(l10n.inventoryReceiptBatchCloseAction),
+        ),
+      ],
     );
   }
 

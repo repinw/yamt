@@ -80,10 +80,7 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     }
   }
 
-  Future<ReceiptBatchRunResult> runFileBatch({
-    void Function(ReceiptBatchProgress progress)? onProgress,
-    void Function(int index, List<FridgeItem> mappedItems)? onItemSucceeded,
-  }) async {
+  Future<ReceiptBatchRunResult> runFileBatch() async {
     state = const AsyncLoading();
 
     final inputRepository = ref.read(receiptInputRepositoryProvider);
@@ -96,11 +93,7 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
 
     switch (inputResult.status) {
       case ReceiptInputBatchStatus.selected:
-        return _runSelectedBatch(
-          selections: inputResult.selections,
-          onProgress: onProgress,
-          onItemSucceeded: onItemSucceeded,
-        );
+        return _runSelectedBatch(selections: inputResult.selections);
       case ReceiptInputBatchStatus.canceled:
         _setAndReturn(
           const ReceiptCaptureFlowResult.inputCanceled(
@@ -186,11 +179,8 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
 
   Future<ReceiptBatchRunResult> _runSelectedBatch({
     required List<ReceiptInputSelection> selections,
-    void Function(ReceiptBatchProgress progress)? onProgress,
-    void Function(int index, List<FridgeItem> mappedItems)? onItemSucceeded,
   }) async {
     var progress = _queuedBatchProgress(selections);
-    onProgress?.call(progress);
 
     final mappedItems = <FridgeItem>[];
     for (var index = 0; index < selections.length; index++) {
@@ -200,7 +190,6 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
         status: ReceiptBatchItemStatus.processing,
         clearErrorCode: true,
       );
-      onProgress?.call(progress);
 
       final analysis = await _analyzeBatchSelection(selections[index]);
       if (!ref.mounted) {
@@ -211,7 +200,6 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
 
       if (analysis.errorCode == null) {
         mappedItems.addAll(analysis.mappedItems);
-        onItemSucceeded?.call(index, analysis.mappedItems);
         progress = _updateBatchItem(
           progress: progress,
           index: index,
@@ -228,7 +216,6 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
           mappedItemCount: 0,
         );
       }
-      onProgress?.call(progress);
     }
 
     if (ref.mounted) {

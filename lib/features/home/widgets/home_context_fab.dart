@@ -10,6 +10,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_quick_add_dialog.dart';
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
+import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
+import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -22,7 +24,11 @@ class HomeContextFab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final flowState = ref.watch(receiptCaptureFlowControllerProvider);
-    final isBusy = currentTab == HomeTabType.inventory && flowState.isLoading;
+    final batchState = ref.watch(receiptBatchFlowControllerProvider);
+    final isBusy =
+        currentTab == HomeTabType.inventory &&
+        (flowState.isLoading ||
+            batchState.status == ReceiptBatchFlowStatus.running);
 
     return FloatingActionButton.small(
       tooltip: _fabTooltip(l10n),
