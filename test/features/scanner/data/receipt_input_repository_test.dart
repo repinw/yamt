@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 
+const String _missingPath = '/tmp/does-not-exist.jpg';
+
 class _FakeImagePicker extends ImagePicker {
   _FakeImagePicker({this.onPickImage});
 
@@ -235,7 +237,7 @@ void main() {
                 PlatformFile(
                   name: 'later-read.jpg',
                   size: 8,
-                  path: '/tmp/does-not-exist.jpg',
+                  path: _missingPath,
                 ),
               ]);
             },
@@ -252,7 +254,7 @@ void main() {
       expect(result.selections, hasLength(1));
       expect(result.selections.single.name, 'later-read.jpg');
       expect(result.selections.single.bytes, isEmpty);
-      expect(result.selections.single.filePath, '/tmp/does-not-exist.jpg');
+      expect(result.selections.single.filePath, _missingPath);
     },
   );
 
