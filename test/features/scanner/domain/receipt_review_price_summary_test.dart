@@ -8,6 +8,7 @@ FridgeItem _item({
   required double unitPrice,
   bool isDeposit = false,
   bool isDiscount = false,
+  Map<String, double> discounts = const <String, double>{},
 }) {
   return FridgeItem(
     id: id,
@@ -17,6 +18,7 @@ FridgeItem _item({
     quantity: quantity,
     initialQuantity: quantity,
     unitPrice: unitPrice,
+    discounts: discounts,
     isDeposit: isDeposit,
     isDiscount: isDiscount,
   );
@@ -43,5 +45,22 @@ void main() {
     expect(summary.totalPrice, 0.0);
     expect(summary.storablePrice, 0.0);
     expect(summary.excludedPrice, 0.0);
+  });
+
+  test('calculate includes merged discounts in totals', () {
+    final summary = calculator.calculate([
+      _item(
+        id: 'food-1',
+        quantity: 2,
+        unitPrice: 1.5,
+        discounts: const <String, double>{'Rabatt': -0.5},
+      ),
+      _item(id: 'food-2', quantity: 1, unitPrice: 2.0),
+      _item(id: 'deposit', quantity: 1, unitPrice: 0.25, isDeposit: true),
+    ]);
+
+    expect(summary.totalPrice, 4.75);
+    expect(summary.storablePrice, 4.5);
+    expect(summary.excludedPrice, 0.25);
   });
 }

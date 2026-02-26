@@ -26,6 +26,23 @@ class InventoryReceiptReviewSheet extends StatefulWidget {
 class _InventoryReceiptReviewSheetState
     extends State<InventoryReceiptReviewSheet> {
   static const _priceSummaryCalculator = ReceiptReviewPriceSummaryCalculator();
+  static const _discountKeywords = <String>{
+    'rabatt',
+    'discount',
+    'coupon',
+    'couponing',
+    'gutschein',
+    'nachlass',
+    'ersparnis',
+  };
+  static const _depositKeywords = <String>{
+    'leergut',
+    'pfand',
+    'deposit',
+    'bottle deposit',
+    'einwegpfand',
+    'mehrwegpfand',
+  };
 
   late final List<FridgeItem> _items;
   var _isSaving = false;
@@ -33,7 +50,7 @@ class _InventoryReceiptReviewSheetState
   @override
   void initState() {
     super.initState();
-    _items = List<FridgeItem>.from(widget.items);
+    _items = _mergeDiscountItemsIntoPreviousStock(widget.items);
   }
 
   bool get _canSave {
@@ -49,6 +66,7 @@ class _InventoryReceiptReviewSheetState
     final locale = Localizations.localeOf(context).toLanguageTag();
     final currency = NumberFormat.currency(locale: locale, symbol: '€');
     final priceSummary = _priceSummaryCalculator.calculate(_items);
+    final receiptMetadata = _deriveReceiptMetadata(_items);
     final saveChild = _isSaving
         ? const SizedBox.square(
             dimension: AppSpacing.xl,
@@ -75,6 +93,11 @@ class _InventoryReceiptReviewSheetState
                 l10n.inventoryReceiptReviewTitle,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            _ReceiptMetadataOverview(
+              storeName: receiptMetadata.storeName,
+              receiptDate: receiptMetadata.receiptDate,
             ),
             const SizedBox(height: AppSpacing.md),
             _PriceOverview(
@@ -126,7 +149,21 @@ class _InventoryReceiptReviewSheetState
         shrinkWrap: true,
         itemCount: _items.length,
         itemBuilder: (context, index) {
-          return _buildItemTile(context, l10n, index, _items[index]);
+          final locale = Localizations.localeOf(context).toLanguageTag();
+          final currency = NumberFormat.currency(locale: locale, symbol: '€');
+          final item = _items[index];
+          return Column(
+            children: [
+              _buildItemTile(context, l10n, index, item),
+              ..._buildDiscountRows(
+                context: context,
+                l10n: l10n,
+                itemIndex: index,
+                item: item,
+                currency: currency,
+              ),
+            ],
+          );
         },
       ),
     );
@@ -147,11 +184,8 @@ class _InventoryReceiptReviewSheetState
     final subtitleStyle = muted
         ? textTheme.bodyMedium?.copyWith(color: disabledColor)
         : textTheme.bodyMedium;
-    final subtitle = _buildItemSubtitle(
-      context: context,
-      l10n: l10n,
-      item: item,
-    );
+    final subtitle = _buildItemSubtitle(context: context, item: item);
+    final canEdit = !item.isDiscount;
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
@@ -168,34 +202,110 @@ class _InventoryReceiptReviewSheetState
                 style: textTheme.labelMedium?.copyWith(color: disabledColor),
               ),
             ),
-          IconButton(
-            key: Key('receipt_review_edit_button_$index'),
-            tooltip: l10n.inventoryReceiptReviewEditAction,
-            onPressed: () => _openItemEditor(index),
-            icon: const Icon(Icons.edit_outlined),
-          ),
+          if (canEdit)
+            IconButton(
+              key: Key('receipt_review_edit_button_$index'),
+              tooltip: l10n.inventoryReceiptReviewEditAction,
+              onPressed: () => _openItemEditor(index),
+              icon: const Icon(Icons.edit_outlined),
+            ),
         ],
       ),
     );
   }
 
-  String _buildItemSubtitle({
+  List<Widget> _buildDiscountRows({
     required BuildContext context,
     required AppLocalizations l10n,
+    required int itemIndex,
+    required FridgeItem item,
+    required NumberFormat currency,
+  }) {
+    if (item.discounts.isEmpty) {
+      return const <Widget>[];
+    }
+
+    final disabledColor = Theme.of(context).disabledColor;
+    final discountTextStyle = Theme.of(
+      context,
+    ).textTheme.bodySmall?.copyWith(color: disabledColor);
+    final entries = item.discounts.entries.toList(growable: false);
+
+    return entries.indexed
+        .map((entryWithIndex) {
+          final discountIndex = entryWithIndex.$1;
+          final discount = entryWithIndex.$2;
+          final discountLabel = discount.key.trim().isEmpty
+              ? l10n.inventoryReceiptReviewFieldDiscounts
+              : discount.key;
+          return Padding(
+            key: Key('receipt_review_discount_row_${itemIndex}_$discountIndex'),
+            padding: const EdgeInsets.only(
+              left: AppSpacing.xl,
+              right: AppSpacing.xs,
+              bottom: AppSpacing.xs,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.subdirectory_arrow_right,
+                  size: 16,
+                  color: disabledColor,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: Text(
+                    '${l10n.inventoryReceiptReviewFieldDiscounts}: '
+                    '$discountLabel (${currency.format(discount.value)})',
+                    style: discountTextStyle,
+                  ),
+                ),
+              ],
+            ),
+          );
+        })
+        .toList(growable: false);
+  }
+
+  _ReceiptMetadata _deriveReceiptMetadata(List<FridgeItem> items) {
+    var storeName = '-';
+    DateTime? receiptDate;
+
+    for (final item in items) {
+      final trimmedStoreName = item.storeName.trim();
+      if (storeName == '-' && trimmedStoreName.isNotEmpty) {
+        storeName = trimmedStoreName;
+      }
+      if (receiptDate == null && item.receiptDate != null) {
+        receiptDate = item.receiptDate;
+      }
+      if (storeName != '-' && receiptDate != null) {
+        break;
+      }
+    }
+
+    return _ReceiptMetadata(storeName: storeName, receiptDate: receiptDate);
+  }
+
+  String _buildItemSubtitle({
+    required BuildContext context,
     required FridgeItem item,
   }) {
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final receiptDate = item.receiptDate;
-    final dateText = receiptDate == null
-        ? l10n.inventoryReceiptReviewNoDate
-        : DateFormat.yMMMd(locale).format(receiptDate);
-    return '${item.quantity}x · ${item.storeName} · $dateText';
+    final currency = NumberFormat.currency(locale: locale, symbol: '€');
+    final linePrice = item.quantity * item.unitPrice;
+    return '${item.quantity}x · ${currency.format(linePrice)}';
   }
 
   Future<void> _openItemEditor(int index) async {
+    if (_items[index].isDiscount) {
+      return;
+    }
+
     final editedItem = await showModalBottomSheet<FridgeItem>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (sheetContext) {
         return InventoryReceiptItemEditorSheet(item: _items[index]);
       },
@@ -223,6 +333,157 @@ class _InventoryReceiptReviewSheetState
     setState(() {
       _isSaving = false;
     });
+  }
+
+  List<FridgeItem> _mergeDiscountItemsIntoPreviousStock(
+    List<FridgeItem> items,
+  ) {
+    final merged = <FridgeItem>[];
+    int? previousSavableIndex;
+
+    for (final item in items) {
+      final normalizedItem = _normalizeDiscountLine(item);
+      final isDiscountLine = normalizedItem.isDiscount;
+
+      if (isDiscountLine && previousSavableIndex != null) {
+        final previousItem = merged[previousSavableIndex];
+        final discountName = _normalizeDiscountName(normalizedItem);
+        final discountAmount =
+            normalizedItem.unitPrice * normalizedItem.quantity;
+        final updatedDiscounts = Map<String, double>.from(
+          previousItem.discounts,
+        );
+        updatedDiscounts[discountName] =
+            (updatedDiscounts[discountName] ?? 0) + discountAmount;
+        merged[previousSavableIndex] = previousItem.copyWith(
+          discounts: updatedDiscounts,
+        );
+        continue;
+      }
+
+      merged.add(normalizedItem);
+      if (normalizedItem.canBeSavedToFridge) {
+        previousSavableIndex = merged.length - 1;
+      }
+    }
+
+    return merged;
+  }
+
+  FridgeItem _normalizeDiscountLine(FridgeItem item) {
+    if (_looksLikeDepositLine(item)) {
+      return item.copyWith(isDeposit: true, isDiscount: false);
+    }
+    if (item.isDiscount) {
+      return item.copyWith(isDeposit: false, isDiscount: true);
+    }
+    if (!_looksLikeDiscountLine(item)) {
+      return item;
+    }
+    return item.copyWith(isDeposit: false, isDiscount: true);
+  }
+
+  bool _looksLikeDiscountLine(FridgeItem item) {
+    if (_looksLikeDepositLine(item)) {
+      return false;
+    }
+    if (item.unitPrice >= 0) {
+      return false;
+    }
+
+    final normalizedName = item.name.trim().toLowerCase();
+    if (normalizedName.isEmpty) {
+      return true;
+    }
+    if (_discountKeywords.any(normalizedName.contains)) {
+      return true;
+    }
+
+    final hasBrand = (item.brand ?? '').trim().isNotEmpty;
+    final hasCategory = (item.category ?? '').trim().isNotEmpty;
+    return !hasBrand && !hasCategory;
+  }
+
+  bool _looksLikeDepositLine(FridgeItem item) {
+    final normalizedName = item.name.trim().toLowerCase();
+    if (normalizedName.isEmpty) {
+      return false;
+    }
+    return _depositKeywords.any(normalizedName.contains);
+  }
+
+  String _normalizeDiscountName(FridgeItem item) {
+    final trimmedName = item.name.trim();
+    return trimmedName;
+  }
+}
+
+class _ReceiptMetadata {
+  const _ReceiptMetadata({required this.storeName, required this.receiptDate});
+
+  final String storeName;
+  final DateTime? receiptDate;
+}
+
+class _ReceiptMetadataOverview extends StatelessWidget {
+  const _ReceiptMetadataOverview({
+    required this.storeName,
+    required this.receiptDate,
+  });
+
+  final String storeName;
+  final DateTime? receiptDate;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final receiptDateText = receiptDate == null
+        ? l10n.inventoryReceiptReviewNoDate
+        : DateFormat.yMMMd(locale).format(receiptDate!);
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _MetadataRow(
+              label: l10n.inventoryReceiptReviewFieldStoreName,
+              value: storeName,
+            ),
+            const SizedBox(height: AppSpacing.xxs * 2),
+            _MetadataRow(
+              label: l10n.inventoryReceiptReviewFieldReceiptDate,
+              value: receiptDateText,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MetadataRow extends StatelessWidget {
+  const _MetadataRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: Text(label)),
+        Text(
+          value,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+      ],
+    );
   }
 }
 

@@ -8,7 +8,6 @@ class ReceiptItemEditorFieldGroups {
   ];
 
   static const beforeWeightUnitFallback = <ReceiptItemEditorDraftField>[
-    ReceiptItemEditorDraftField.storeName,
     ReceiptItemEditorDraftField.quantity,
     ReceiptItemEditorDraftField.unitPrice,
     ReceiptItemEditorDraftField.weight,
@@ -21,8 +20,6 @@ class ReceiptItemEditorFieldGroups {
 }
 
 class ReceiptItemEditorFormFieldName {
-  static const entryDate = 'entry_date';
-  static const receiptDate = 'receipt_date';
   static const isDeposit = 'is_deposit';
   static const isDiscount = 'is_discount';
   static const weightUnitFallbackOption = 'weight_unit_fallback_option';

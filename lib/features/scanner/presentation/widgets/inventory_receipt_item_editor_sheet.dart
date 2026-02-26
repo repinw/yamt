@@ -42,8 +42,6 @@ class _InventoryReceiptItemEditorSheetState
       for (final field in ReceiptItemEditorDraftField.values)
         if (field != ReceiptItemEditorDraftField.discounts)
           field.name: draft.valueFor(field),
-      ReceiptItemEditorFormFieldName.entryDate: item.entryDate,
-      ReceiptItemEditorFormFieldName.receiptDate: item.receiptDate,
       ReceiptItemEditorFormFieldName.isDeposit: item.isDeposit,
       ReceiptItemEditorFormFieldName.isDiscount: item.isDiscount,
       ReceiptItemEditorFormFieldName.weightUnitFallbackOption:
@@ -139,11 +137,7 @@ class _InventoryReceiptItemEditorSheetState
         name: ReceiptItemEditorDraftField.name.name,
         fallback: '',
       ),
-      entryDate: _readFormValue(
-        values: values,
-        name: ReceiptItemEditorFormFieldName.entryDate,
-        fallback: widget.item.entryDate,
-      ),
+      entryDate: widget.item.entryDate,
       storeName: _readFormValue(
         values: values,
         name: ReceiptItemEditorDraftField.storeName.name,
@@ -175,10 +169,7 @@ class _InventoryReceiptItemEditorSheetState
         fallback: '',
       ),
       discountEntries: List<MapEntry<String, String>>.from(_discountEntries),
-      receiptDate: _readNullableDate(
-        values: values,
-        name: ReceiptItemEditorFormFieldName.receiptDate,
-      ),
+      receiptDate: widget.item.receiptDate,
       isDeposit: _readFormValue(
         values: values,
         name: ReceiptItemEditorFormFieldName.isDeposit,
@@ -312,14 +303,6 @@ class _InventoryReceiptItemEditorSheetState
       return value;
     }
     return fallback;
-  }
-
-  DateTime? _readNullableDate({
-    required Map<String, dynamic> values,
-    required String name,
-  }) {
-    final value = values[name];
-    return value is DateTime ? value : null;
   }
 
   String get _locale {

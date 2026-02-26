@@ -21,7 +21,11 @@ class ReceiptReviewPriceSummaryCalculator {
     var excludedPrice = 0.0;
 
     for (final item in items) {
-      final linePrice = item.quantity * item.unitPrice;
+      final discountTotal = item.discounts.values.fold<double>(
+        0.0,
+        (sum, value) => sum + value,
+      );
+      final linePrice = (item.quantity * item.unitPrice) + discountTotal;
       totalPrice += linePrice;
 
       if (item.canBeSavedToFridge) {

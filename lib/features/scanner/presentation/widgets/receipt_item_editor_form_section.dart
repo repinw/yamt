@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 import '../models/receipt_item_editor_draft.dart';
@@ -40,11 +39,6 @@ class ReceiptItemEditorFormSection extends StatelessWidget {
           weightValidator: weightValidator,
           onSubmit: onSubmit,
         ),
-        _ReceiptEditorDateField(
-          name: ReceiptItemEditorFormFieldName.entryDate,
-          label: l10n.inventoryReceiptReviewFieldEntryDate,
-          noDateLabel: l10n.inventoryReceiptReviewNoDate,
-        ),
         _ReceiptEditorTextFieldsGroup(
           fields: ReceiptItemEditorFieldGroups.beforeWeightUnitFallback,
           numberValidator: numberValidator,
@@ -63,13 +57,6 @@ class ReceiptItemEditorFormSection extends StatelessWidget {
           onChanged: onDiscountEntriesChanged,
           errorText: discountsErrorText,
           onSubmit: onSubmit,
-        ),
-        _ReceiptEditorDateField(
-          name: ReceiptItemEditorFormFieldName.receiptDate,
-          label: l10n.inventoryReceiptReviewFieldReceiptDate,
-          noDateLabel: l10n.inventoryReceiptReviewNoDate,
-          allowClear: true,
-          clearButtonKey: const Key('receipt_review_clear_receipt_date_button'),
         ),
         _ReceiptEditorSwitchField(
           name: ReceiptItemEditorFormFieldName.isDeposit,
@@ -360,78 +347,6 @@ class _DiscountRowControllers {
   }
 }
 
-class _ReceiptEditorDateField extends StatelessWidget {
-  const _ReceiptEditorDateField({
-    required this.name,
-    required this.label,
-    required this.noDateLabel,
-    this.allowClear = false,
-    this.clearButtonKey,
-  });
-
-  final String name;
-  final String label;
-  final String noDateLabel;
-  final bool allowClear;
-  final Key? clearButtonKey;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return FormBuilderField<DateTime?>(
-      name: name,
-      builder: (field) {
-        final formattedDate = _formatDate(context, field.value);
-        final valueText = formattedDate ?? noDateLabel;
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: Theme.of(context).textTheme.bodyMedium),
-              const SizedBox(height: AppSpacing.xxs * 2),
-              Text(valueText),
-              const SizedBox(height: AppSpacing.xs),
-              Row(
-                children: [
-                  TextButton(
-                    onPressed: () => _pickDate(context, field),
-                    child: Text(l10n.inventoryReceiptReviewSelectDateAction),
-                  ),
-                  if (allowClear)
-                    TextButton(
-                      key: clearButtonKey,
-                      onPressed: () => field.didChange(null),
-                      child: Text(l10n.inventoryReceiptReviewClearDateAction),
-                    ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _pickDate(
-    BuildContext context,
-    FormFieldState<DateTime?> field,
-  ) async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: field.value ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (!context.mounted || picked == null) {
-      return;
-    }
-    field.didChange(DateUtils.dateOnly(picked));
-  }
-}
-
 class _ReceiptEditorSwitchField extends StatelessWidget {
   const _ReceiptEditorSwitchField({required this.name, required this.title});
 
@@ -516,12 +431,4 @@ extension on ReceiptWeightUnitFallbackOption {
         l10n.inventoryReceiptReviewWeightUnitPiece,
     };
   }
-}
-
-String? _formatDate(BuildContext context, DateTime? value) {
-  if (value == null) {
-    return null;
-  }
-  final locale = Localizations.localeOf(context).toLanguageTag();
-  return DateFormat.yMMMd(locale).format(value);
 }
