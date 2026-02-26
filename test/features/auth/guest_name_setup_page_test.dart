@@ -46,7 +46,7 @@ void main() {
     expect(repository.guestNameUpdateCalls, 0);
   });
 
-  testWidgets('submits guest name and navigates to inventory', (tester) async {
+  testWidgets('submits guest name to repository', (tester) async {
     final repository = FakeAuthRepository();
     await tester.pumpWidget(_wrapWithRouter(repository));
     await tester.pumpAndSettle();
@@ -57,6 +57,6 @@ void main() {
 
     expect(repository.guestNameUpdateCalls, 1);
     expect(repository.lastGuestDisplayName, 'Guest Wlad');
-    expect(find.text('Inventory'), findsOneWidget);
+    expect(find.text('Inventory'), findsNothing);
   });
 }
