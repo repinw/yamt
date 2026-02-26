@@ -21,14 +21,10 @@ class GuestNameSetupPage extends ConsumerStatefulWidget {
 class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
   final _nameController = TextEditingController();
   String? _errorText;
-  late int _selectedSeedColorValue;
-  late ThemeMode _selectedThemeMode;
 
   @override
   void initState() {
     super.initState();
-    _selectedSeedColorValue = ref.read(seedColorControllerProvider).toARGB32();
-    _selectedThemeMode = ref.read(themeModeControllerProvider);
     final currentUser = ref.read(firebaseAuthProvider).currentUser;
     if (currentUser == null || currentUser.isAnonymous) {
       return;
@@ -52,6 +48,8 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(guestNameSetupControllerProvider);
+    final selectedSeedColor = ref.watch(seedColorControllerProvider);
+    final selectedThemeMode = ref.watch(themeModeControllerProvider);
 
     ref.listen<AsyncValue<void>>(guestNameSetupControllerProvider, (
       previous,
@@ -99,7 +97,8 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
             ),
             const SizedBox(height: AppSpacing.xl),
             DropdownButtonFormField<int>(
-              initialValue: _selectedSeedColorValue,
+              key: ValueKey<int>(selectedSeedColor.toARGB32()),
+              initialValue: selectedSeedColor.toARGB32(),
               decoration: InputDecoration(labelText: l10n.settingsColorTitle),
               onChanged: state.isLoading
                   ? null
@@ -107,9 +106,6 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
                       if (selectedValue == null) {
                         return;
                       }
-                      setState(() {
-                        _selectedSeedColorValue = selectedValue;
-                      });
                       unawaited(
                         ref
                             .read(seedColorControllerProvider.notifier)
@@ -126,7 +122,8 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
             ),
             const SizedBox(height: AppSpacing.xl),
             DropdownButtonFormField<ThemeMode>(
-              initialValue: _selectedThemeMode,
+              key: ValueKey<ThemeMode>(selectedThemeMode),
+              initialValue: selectedThemeMode,
               decoration: InputDecoration(labelText: l10n.settingsThemeTitle),
               onChanged: state.isLoading
                   ? null
@@ -134,9 +131,6 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
                       if (selectedMode == null) {
                         return;
                       }
-                      setState(() {
-                        _selectedThemeMode = selectedMode;
-                      });
                       unawaited(
                         ref
                             .read(themeModeControllerProvider.notifier)
@@ -182,13 +176,14 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
       return;
     }
 
-    final selectedSeedColor = Color(_selectedSeedColorValue);
+    final selectedSeedColor = ref.read(seedColorControllerProvider);
+    final selectedThemeMode = ref.read(themeModeControllerProvider);
     await ref
         .read(guestNameSetupControllerProvider.notifier)
         .saveDisplayName(
           name,
           seedColor: selectedSeedColor,
-          themeMode: _selectedThemeMode,
+          themeMode: selectedThemeMode,
         );
   }
 
@@ -213,11 +208,16 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
 
   String _seedColorLabel(AppLocalizations l10n, Color color) {
     return switch (color.toARGB32()) {
-      0xFF29F006 => l10n.settingsColorLime,
-      0xFF0D47A1 => l10n.settingsColorBlue,
-      0xFF00695C => l10n.settingsColorTeal,
-      0xFFFF006F => l10n.settingsColorPink,
-      0xFFE65100 => l10n.settingsColorOrange,
+      int value when value == AppSeedColors.lime.toARGB32() =>
+        l10n.settingsColorLime,
+      int value when value == AppSeedColors.blue.toARGB32() =>
+        l10n.settingsColorBlue,
+      int value when value == AppSeedColors.teal.toARGB32() =>
+        l10n.settingsColorTeal,
+      int value when value == AppSeedColors.pink.toARGB32() =>
+        l10n.settingsColorPink,
+      int value when value == AppSeedColors.orange.toARGB32() =>
+        l10n.settingsColorOrange,
       _ => l10n.settingsColorLime,
     };
   }
