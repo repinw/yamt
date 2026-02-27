@@ -88,6 +88,7 @@ class AuthEmailField extends StatelessWidget {
     required this.validator,
     this.label,
     this.textInputAction = TextInputAction.next,
+    this.onChanged,
     super.key,
   });
 
@@ -95,6 +96,7 @@ class AuthEmailField extends StatelessWidget {
   final StringValidationCallback validator;
   final String? label;
   final TextInputAction textInputAction;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -109,6 +111,7 @@ class AuthEmailField extends StatelessWidget {
         border: const OutlineInputBorder(),
       ),
       validator: (value) => validator(value?.trim()),
+      onChanged: onChanged,
     );
   }
 }
@@ -119,6 +122,7 @@ class AuthPasswordField extends StatelessWidget {
     required this.validator,
     this.label,
     this.textInputAction = TextInputAction.next,
+    this.onChanged,
     super.key,
   });
 
@@ -126,6 +130,7 @@ class AuthPasswordField extends StatelessWidget {
   final StringValidationCallback validator;
   final String? label;
   final TextInputAction textInputAction;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -140,6 +145,7 @@ class AuthPasswordField extends StatelessWidget {
         border: const OutlineInputBorder(),
       ),
       validator: (value) => validator(value?.trim()),
+      onChanged: onChanged,
     );
   }
 }

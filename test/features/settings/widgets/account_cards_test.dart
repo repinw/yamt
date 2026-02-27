@@ -11,7 +11,8 @@ void main() {
   testWidgets('AccountGuestCard renders localized content and handles tap', (
     tester,
   ) async {
-    var tapCount = 0;
+    var googleTapCount = 0;
+    var emailTapCount = 0;
 
     await tester.pumpWidget(
       MaterialApp(
@@ -24,7 +25,8 @@ void main() {
               return AccountGuestCard(
                 l10n: l10n,
                 isActionLoading: false,
-                onLinkWithGoogle: () => tapCount++,
+                onLinkWithGoogle: () => googleTapCount++,
+                onLinkWithEmailPassword: () => emailTapCount++,
               );
             },
           ),
@@ -34,9 +36,15 @@ void main() {
 
     expect(find.text('Guest account'), findsOneWidget);
     expect(find.text('Link with Google'), findsOneWidget);
+    expect(find.text('Link with email & password'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(FilledButton, 'Link with Google'));
-    expect(tapCount, 1);
+    await tester.tap(
+      find.widgetWithText(OutlinedButton, 'Link with email & password'),
+    );
+
+    expect(googleTapCount, 1);
+    expect(emailTapCount, 1);
   });
 
   testWidgets('AccountGuestCard disables action while loading', (tester) async {
@@ -54,6 +62,7 @@ void main() {
                 l10n: l10n,
                 isActionLoading: true,
                 onLinkWithGoogle: () => tapCount++,
+                onLinkWithEmailPassword: () => tapCount++,
               );
             },
           ),
@@ -62,7 +71,11 @@ void main() {
     );
 
     final button = tester.widget<FilledButton>(find.byType(FilledButton));
+    final emailButton = tester.widget<OutlinedButton>(
+      find.byType(OutlinedButton),
+    );
     expect(button.onPressed, isNull);
+    expect(emailButton.onPressed, isNull);
     expect(tapCount, 0);
   });
 

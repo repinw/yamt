@@ -215,4 +215,23 @@ void main() {
 
     expect(find.text('Authentication failed'), findsOneWidget);
   });
+
+  testWidgets('does not access ref after page unmount during submit', (
+    tester,
+  ) async {
+    final completer = Completer<void>();
+    final repository = _DelayedGuestNameRepository(completer);
+    await tester.pumpWidget(_wrapWithRouter(repository));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'Guest Wlad');
+    await tester.tap(find.text('Continue'));
+    await tester.pump();
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    completer.complete();
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+  });
 }

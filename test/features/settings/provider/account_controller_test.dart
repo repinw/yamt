@@ -221,6 +221,113 @@ void main() {
   });
 
   test(
+    'linkGuestWithEmailPassword links guest user and returns true',
+    () async {
+      final auth = _MockFirebaseAuth();
+      final guestUser = _MockUser();
+      final linkedUser = _MockUser();
+      final linkedCredential = _MockUserCredential();
+      when(() => auth.currentUser).thenReturn(guestUser);
+      when(() => guestUser.isAnonymous).thenReturn(true);
+      when(() => linkedUser.isAnonymous).thenReturn(false);
+      when(() => linkedCredential.user).thenReturn(linkedUser);
+      when(
+        () => guestUser.linkWithCredential(any()),
+      ).thenAnswer((_) async => linkedCredential);
+
+      final container = ProviderContainer(
+        overrides: [firebaseAuthProvider.overrideWithValue(auth)],
+      );
+      addTearDown(container.dispose);
+
+      final linked = await container
+          .read(accountControllerProvider.notifier)
+          .linkGuestWithEmailPassword(
+            email: 'jane@example.com',
+            password: 'secret123',
+          );
+
+      expect(linked, isTrue);
+      verify(() => guestUser.linkWithCredential(any())).called(1);
+      expect(
+        container.read(accountControllerProvider),
+        const AsyncData<void>(null),
+      );
+    },
+  );
+
+  test(
+    'linkGuestWithEmailPassword throws when no guest session is active',
+    () async {
+      final auth = _MockFirebaseAuth();
+      when(() => auth.currentUser).thenReturn(null);
+
+      final container = ProviderContainer(
+        overrides: [firebaseAuthProvider.overrideWithValue(auth)],
+      );
+      addTearDown(container.dispose);
+
+      await expectLater(
+        container
+            .read(accountControllerProvider.notifier)
+            .linkGuestWithEmailPassword(
+              email: 'jane@example.com',
+              password: 'x',
+            ),
+        throwsA(
+          isA<FirebaseAuthException>().having(
+            (e) => e.code,
+            'code',
+            'guest-session-required',
+          ),
+        ),
+      );
+      expect(container.read(accountControllerProvider).hasError, isTrue);
+    },
+  );
+
+  test(
+    'linkGuestWithEmailPassword attaches credential to conflict errors',
+    () async {
+      final auth = _MockFirebaseAuth();
+      final guestUser = _MockUser();
+      final capturedCredentials = <AuthCredential>[];
+      when(() => auth.currentUser).thenReturn(guestUser);
+      when(() => guestUser.isAnonymous).thenReturn(true);
+      when(() => guestUser.linkWithCredential(captureAny())).thenAnswer((
+        invocation,
+      ) async {
+        capturedCredentials.add(
+          invocation.positionalArguments.first as AuthCredential,
+        );
+        throw FirebaseAuthException(code: 'email-already-in-use');
+      });
+
+      final container = ProviderContainer(
+        overrides: [firebaseAuthProvider.overrideWithValue(auth)],
+      );
+      addTearDown(container.dispose);
+
+      await expectLater(
+        container
+            .read(accountControllerProvider.notifier)
+            .linkGuestWithEmailPassword(
+              email: 'jane@example.com',
+              password: 'secret123',
+            ),
+        throwsA(
+          isA<FirebaseAuthException>()
+              .having((e) => e.code, 'code', 'email-already-in-use')
+              .having((e) => e.credential, 'credential', isNotNull),
+        ),
+      );
+
+      expect(capturedCredentials, hasLength(1));
+      expect(container.read(accountControllerProvider).hasError, isTrue);
+    },
+  );
+
+  test(
     'overwriteExistingGoogleAccountWithGuest completes happy path',
     () async {
       final auth = _MockFirebaseAuth();

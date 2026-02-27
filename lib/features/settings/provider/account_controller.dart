@@ -94,6 +94,66 @@ class AccountController extends _$AccountController {
     }
   }
 
+  Future<bool> linkGuestWithEmailPassword({
+    required String email,
+    required String password,
+  }) async {
+    if (!ref.mounted) return false;
+    state = const AsyncLoading();
+    final credential = EmailAuthProvider.credential(
+      email: email.trim(),
+      password: password,
+    );
+    try {
+      final auth = ref.read(firebaseAuthProvider);
+      final guestUser = _requireAnonymousCurrentUser(auth);
+      final linkedCredential = await guestUser.linkWithCredential(credential);
+      final linkedUser = linkedCredential.user;
+      final isLinked = linkedUser != null && !linkedUser.isAnonymous;
+      if (!isLinked) {
+        throw FirebaseAuthException(
+          code: 'link-not-completed',
+          message: 'Account linking was not completed. Please try again.',
+        );
+      }
+      if (!ref.mounted) return isLinked;
+      state = const AsyncData(null);
+      return isLinked;
+    } on FirebaseAuthException catch (error, stackTrace) {
+      final normalizedError = _normalizeEmailLinkError(
+        error: error,
+        fallbackCredential: credential,
+      );
+      if (ref.mounted) {
+        state = AsyncError(normalizedError, stackTrace);
+      }
+      throw normalizedError;
+    } catch (error, stackTrace) {
+      if (ref.mounted) {
+        state = AsyncError(error, stackTrace);
+      }
+      rethrow;
+    }
+  }
+
+  FirebaseAuthException _normalizeEmailLinkError({
+    required FirebaseAuthException error,
+    required AuthCredential fallbackCredential,
+  }) {
+    final isConflict =
+        error.code == 'email-already-in-use' ||
+        error.code == 'credential-already-in-use';
+    if (!isConflict || error.credential != null) {
+      return error;
+    }
+
+    return FirebaseAuthException(
+      code: error.code,
+      message: error.message,
+      credential: fallbackCredential,
+    );
+  }
+
   Future<void> overwriteExistingGoogleAccountWithGuest(
     AuthCredential credential,
   ) async {

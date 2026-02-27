@@ -62,7 +62,8 @@ import 'app_localizations_en.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,17 +84,18 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
-    Locale('en')
+    Locale('en'),
   ];
 
   /// No description provided for @welcomeTitle.
@@ -1295,6 +1298,30 @@ abstract class AppLocalizations {
   /// **'Link with Google'**
   String get accountPageLinkGoogle;
 
+  /// No description provided for @accountPageLinkEmailPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Link with email & password'**
+  String get accountPageLinkEmailPassword;
+
+  /// No description provided for @accountPageLinkEmailPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link guest account'**
+  String get accountPageLinkEmailPasswordTitle;
+
+  /// No description provided for @accountPageLinkEmailPasswordDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Create email sign-in credentials for this guest account.'**
+  String get accountPageLinkEmailPasswordDescription;
+
+  /// No description provided for @accountPageLinkEmailPasswordConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Link account'**
+  String get accountPageLinkEmailPasswordConfirmAction;
+
   /// No description provided for @accountPageLinkSuccess.
   ///
   /// In en, this message translates to:
@@ -1310,13 +1337,13 @@ abstract class AppLocalizations {
   /// No description provided for @accountPageLinkConflictTitle.
   ///
   /// In en, this message translates to:
-  /// **'Google account already in use'**
+  /// **'Account already in use'**
   String get accountPageLinkConflictTitle;
 
   /// No description provided for @accountPageLinkConflictDescription.
   ///
   /// In en, this message translates to:
-  /// **'This Google account is already linked to another profile. Choose how to continue.'**
+  /// **'This sign-in credential is already linked to another profile. Choose how to continue.'**
   String get accountPageLinkConflictDescription;
 
   /// No description provided for @accountPageLinkConflictOverwriteAction.
@@ -1328,7 +1355,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountPageLinkConflictOverwriteSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Keep this guest account and replace the old Google-linked account.'**
+  /// **'Keep this guest account and replace the old linked account.'**
   String get accountPageLinkConflictOverwriteSubtitle;
 
   /// No description provided for @accountPageLinkConflictDeleteGuestAction.
@@ -1340,19 +1367,19 @@ abstract class AppLocalizations {
   /// No description provided for @accountPageLinkConflictDeleteGuestSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Delete this guest account and continue with the existing Google account.'**
+  /// **'Delete this guest account and continue with the existing account.'**
   String get accountPageLinkConflictDeleteGuestSubtitle;
 
   /// No description provided for @accountPageLinkConflictOverwriteDone.
   ///
   /// In en, this message translates to:
-  /// **'Google account moved to this guest account.'**
+  /// **'Credential moved to this guest account.'**
   String get accountPageLinkConflictOverwriteDone;
 
   /// No description provided for @accountPageLinkConflictDeleteGuestDone.
   ///
   /// In en, this message translates to:
-  /// **'Guest account deleted. Signed in with Google.'**
+  /// **'Guest account deleted. Signed in with existing account.'**
   String get accountPageLinkConflictDeleteGuestDone;
 
   /// No description provided for @accountPageGuestSessionRequired.
@@ -1650,7 +1677,8 @@ abstract class AppLocalizations {
   String get commonNotImplementedYet;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -1659,25 +1687,26 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['de', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['de', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'de': return AppLocalizationsDe();
-    case 'en': return AppLocalizationsEn();
+    case 'de':
+      return AppLocalizationsDe();
+    case 'en':
+      return AppLocalizationsEn();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
+    'that was used.',
   );
 }

@@ -13,6 +13,7 @@ import 'package:yamt/features/settings/provider/account_controller.dart';
 import 'package:yamt/features/settings/widgets/account_cards.dart';
 import 'package:yamt/features/settings/widgets/account_status_snackbar.dart';
 import 'package:yamt/features/settings/widgets/credential_conflict_dialog.dart';
+import 'package:yamt/features/settings/widgets/link_email_password_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class AccountPage extends ConsumerStatefulWidget {
@@ -120,6 +121,57 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       _logAuthError(error: error, stackTrace: stackTrace);
       _showAuthError(l10n, error);
     }
+  }
+
+  Future<void> _linkGuestWithEmailPassword(AppLocalizations l10n) async {
+    final dialogResult = await _showEmailPasswordDialog(l10n);
+    if (!mounted || dialogResult == null) {
+      return;
+    }
+    if (dialogResult is FirebaseAuthException &&
+        _isCredentialAlreadyInUseError(dialogResult)) {
+      await _handleCredentialAlreadyInUse(l10n, dialogResult);
+      return;
+    }
+    if (dialogResult == true) {
+      showAccountStatusSnackBar(context, message: l10n.accountPageLinkSuccess);
+    }
+  }
+
+  Future<Object?> _showEmailPasswordDialog(AppLocalizations l10n) {
+    final authErrorViewModel = ref.read(authErrorViewModelProvider);
+    return showDialog<Object?>(
+      context: context,
+      builder: (_) => LinkEmailPasswordDialog(
+        l10n: l10n,
+        onSubmitCredentials: ({required email, required password}) async {
+          try {
+            final linked = await ref
+                .read(accountControllerProvider.notifier)
+                .linkGuestWithEmailPassword(email: email, password: password);
+            if (!linked) {
+              throw FirebaseAuthException(
+                code: 'link-not-completed',
+                message: 'Account linking was not completed. Please try again.',
+              );
+            }
+          } catch (error, stackTrace) {
+            _logAuthError(error: error, stackTrace: stackTrace);
+            rethrow;
+          }
+        },
+        shouldBubbleSubmitError: (error) =>
+            error is FirebaseAuthException &&
+            _isCredentialAlreadyInUseError(error),
+        errorMessageFor: (error) =>
+            authErrorViewModel.messageFor(l10n: l10n, error: error),
+      ),
+    );
+  }
+
+  bool _isCredentialAlreadyInUseError(FirebaseAuthException error) {
+    return error.code == 'credential-already-in-use' ||
+        error.code == 'email-already-in-use';
   }
 
   Future<void> _handleCredentialAlreadyInUse(
@@ -240,6 +292,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
             l10n: l10n,
             isActionLoading: isActionLoading,
             onLinkWithGoogle: () => _linkGuestWithGoogle(l10n),
+            onLinkWithEmailPassword: () => _linkGuestWithEmailPassword(l10n),
           ),
         if (user.isAnonymous) const SizedBox(height: AppSpacing.md),
         AccountUserInfoCard(user: user, l10n: l10n),
