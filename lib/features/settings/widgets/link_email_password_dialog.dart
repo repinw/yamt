@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/auth/widgets/register_form.dart';
+import 'package:yamt/features/shared/widgets/email_password_credentials_form.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class EmailPasswordCredentials {
@@ -17,7 +17,7 @@ class LinkEmailPasswordDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final registerFormKey = GlobalKey<RegisterFormState>();
+    final formKey = GlobalKey<EmailPasswordCredentialsFormState>();
 
     return AlertDialog(
       scrollable: true,
@@ -27,8 +27,8 @@ class LinkEmailPasswordDialog extends StatelessWidget {
         children: [
           Text(l10n.accountPageLinkEmailPasswordDescription),
           const SizedBox(height: AppSpacing.md),
-          RegisterForm(
-            key: registerFormKey,
+          EmailPasswordCredentialsForm(
+            key: formKey,
             submitLabel: l10n.accountPageLinkEmailPasswordConfirmAction,
             showSubmitButton: false,
             onSubmitCredentials: ({required email, required password}) async {
@@ -49,7 +49,7 @@ class LinkEmailPasswordDialog extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () {
-            registerFormKey.currentState?.submit();
+            formKey.currentState?.submit();
           },
           child: Text(l10n.accountPageLinkEmailPasswordConfirmAction),
         ),

@@ -57,7 +57,7 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(guestNameSetupControllerProvider);
-    final authErrorViewModel = ref.read(authErrorViewModelProvider);
+    final authErrorViewModel = ref.watch(authErrorViewModelProvider);
 
     ref.listen<AsyncValue<void>>(guestNameSetupControllerProvider, (
       previous,
