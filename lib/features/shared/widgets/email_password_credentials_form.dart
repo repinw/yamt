@@ -12,6 +12,7 @@ class EmailPasswordCredentialsForm extends StatefulWidget {
     this.submitLabel,
     this.showSubmitButton = true,
     this.isLoading = false,
+    this.onInputChanged,
   });
 
   final Future<void> Function({required String email, required String password})
@@ -20,6 +21,7 @@ class EmailPasswordCredentialsForm extends StatefulWidget {
   final String? submitLabel;
   final bool showSubmitButton;
   final bool isLoading;
+  final VoidCallback? onInputChanged;
 
   @override
   State<EmailPasswordCredentialsForm> createState() =>
@@ -32,6 +34,9 @@ class EmailPasswordCredentialsFormState
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  Object? _lastSubmitError;
+
+  Object? get lastSubmitError => _lastSubmitError;
   @override
   void dispose() {
     _emailController.dispose();
@@ -46,14 +51,21 @@ class EmailPasswordCredentialsFormState
     }
     final formState = _formKey.currentState;
     if (formState == null || !formState.validate()) {
+      _lastSubmitError = null;
       return false;
     }
 
-    await widget.onSubmitCredentials(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-    );
-    return true;
+    _lastSubmitError = null;
+    try {
+      await widget.onSubmitCredentials(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      return true;
+    } catch (error) {
+      _lastSubmitError = error;
+      return false;
+    }
   }
 
   void _onSubmitPressed() {
@@ -80,11 +92,13 @@ class EmailPasswordCredentialsFormState
           AuthEmailField(
             controller: _emailController,
             validator: emailValidator,
+            onChanged: (_) => widget.onInputChanged?.call(),
           ),
           const SizedBox(height: AppSpacing.xl),
           AuthPasswordField(
             controller: _passwordController,
             validator: passwordValidator,
+            onChanged: (_) => widget.onInputChanged?.call(),
           ),
           const SizedBox(height: AppSpacing.xl),
           AuthPasswordField(
@@ -92,6 +106,7 @@ class EmailPasswordCredentialsFormState
             label: l10n.confirmPasswordLabel,
             textInputAction: TextInputAction.done,
             validator: confirmPasswordValidator,
+            onChanged: (_) => widget.onInputChanged?.call(),
           ),
           if (widget.showSubmitButton) ...[
             const SizedBox(height: AppSpacing.xxl),

@@ -304,7 +304,7 @@ void main() {
           controller: _FakeAccountController(
             onLinkGuestWithEmailPassword:
                 ({required String email, required String password}) async {
-                  throw FirebaseAuthException(code: 'email-already-in-use');
+                  throw FirebaseAuthException(code: 'weak-password');
                 },
           ),
         ),
@@ -331,13 +331,59 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Link guest account'), findsOneWidget);
-      expect(
-        find.text('An account already exists for this email.'),
-        findsOneWidget,
-      );
+      expect(find.text('The password is too weak.'), findsOneWidget);
       expect(find.text('Account linked successfully.'), findsNothing);
     },
   );
+
+  testWidgets('guest email/password conflict opens account conflict dialog', (
+    tester,
+  ) async {
+    final user = _MockUser();
+    final credential = _FakeCredential();
+    when(() => user.isAnonymous).thenReturn(true);
+    when(() => user.displayName).thenReturn(null);
+    when(() => user.email).thenReturn(null);
+    when(() => user.uid).thenReturn('guest-123');
+
+    await tester.pumpWidget(
+      _wrap(
+        authStream: Stream<User?>.value(user),
+        controller: _FakeAccountController(
+          onLinkGuestWithEmailPassword:
+              ({required String email, required String password}) async {
+                throw FirebaseAuthException(
+                  code: 'email-already-in-use',
+                  credential: credential,
+                );
+              },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Link with email & password'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email'),
+      'a@b.c',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Password'),
+      'secret123',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Confirm password'),
+      'secret123',
+    );
+
+    await tester.tap(find.text('Link account'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Account already in use'), findsOneWidget);
+    expect(find.text('Delete guest and sign in'), findsOneWidget);
+  });
 
   testWidgets(
     'non-firebase guest link error falls back to generic auth error',
@@ -423,7 +469,7 @@ void main() {
 
       await tester.tap(find.text('Link with Google'));
       await tester.pumpAndSettle();
-      expect(find.text('Google account already in use'), findsOneWidget);
+      expect(find.text('Account already in use'), findsOneWidget);
 
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
@@ -465,7 +511,7 @@ void main() {
 
     expect(called, isTrue);
     expect(
-      find.text('Google account moved to this guest account.'),
+      find.text('Credential moved to this guest account.'),
       findsOneWidget,
     );
   });
@@ -502,7 +548,7 @@ void main() {
 
     expect(called, isTrue);
     expect(
-      find.text('Guest account deleted. Signed in with Google.'),
+      find.text('Guest account deleted. Signed in with existing account.'),
       findsOneWidget,
     );
   });

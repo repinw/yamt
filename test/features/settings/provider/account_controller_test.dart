@@ -287,6 +287,47 @@ void main() {
   );
 
   test(
+    'linkGuestWithEmailPassword attaches credential to conflict errors',
+    () async {
+      final auth = _MockFirebaseAuth();
+      final guestUser = _MockUser();
+      final capturedCredentials = <AuthCredential>[];
+      when(() => auth.currentUser).thenReturn(guestUser);
+      when(() => guestUser.isAnonymous).thenReturn(true);
+      when(() => guestUser.linkWithCredential(captureAny())).thenAnswer((
+        invocation,
+      ) async {
+        capturedCredentials.add(
+          invocation.positionalArguments.first as AuthCredential,
+        );
+        throw FirebaseAuthException(code: 'email-already-in-use');
+      });
+
+      final container = ProviderContainer(
+        overrides: [firebaseAuthProvider.overrideWithValue(auth)],
+      );
+      addTearDown(container.dispose);
+
+      await expectLater(
+        container
+            .read(accountControllerProvider.notifier)
+            .linkGuestWithEmailPassword(
+              email: 'jane@example.com',
+              password: 'secret123',
+            ),
+        throwsA(
+          isA<FirebaseAuthException>()
+              .having((e) => e.code, 'code', 'email-already-in-use')
+              .having((e) => e.credential, 'credential', isNotNull),
+        ),
+      );
+
+      expect(capturedCredentials, hasLength(1));
+      expect(container.read(accountControllerProvider).hasError, isTrue);
+    },
+  );
+
+  test(
     'overwriteExistingGoogleAccountWithGuest completes happy path',
     () async {
       final auth = _MockFirebaseAuth();

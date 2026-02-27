@@ -9,12 +9,14 @@ class LinkEmailPasswordDialog extends StatefulWidget {
     required this.l10n,
     required this.onSubmitCredentials,
     required this.errorMessageFor,
+    this.shouldBubbleSubmitError,
   });
 
   final AppLocalizations l10n;
   final Future<void> Function({required String email, required String password})
   onSubmitCredentials;
   final String Function(Object error) errorMessageFor;
+  final bool Function(Object error)? shouldBubbleSubmitError;
 
   @override
   State<LinkEmailPasswordDialog> createState() =>
@@ -35,28 +37,41 @@ class _LinkEmailPasswordDialogState extends State<LinkEmailPasswordDialog> {
       _isSubmitting = true;
     });
 
-    try {
-      final didSubmit =
-          await (_formKey.currentState?.submit() ?? Future.value(false));
-      if (!mounted) {
-        return;
-      }
-      if (!didSubmit) {
+    final didSubmit =
+        await (_formKey.currentState?.submit() ?? Future.value(false));
+    if (!mounted) {
+      return;
+    }
+    if (!didSubmit) {
+      final submitError = _formKey.currentState?.lastSubmitError;
+      if (submitError != null) {
+        final shouldBubble = widget.shouldBubbleSubmitError?.call(submitError);
+        if (shouldBubble ?? false) {
+          Navigator.of(context).pop(submitError);
+          return;
+        }
         setState(() {
+          _submitError = widget.errorMessageFor(submitError);
           _isSubmitting = false;
         });
         return;
       }
-      Navigator.of(context).pop(true);
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
       setState(() {
-        _submitError = widget.errorMessageFor(error);
         _isSubmitting = false;
       });
+      return;
     }
+
+    Navigator.of(context).pop(true);
+  }
+
+  void _clearSubmitError() {
+    if (_submitError == null) {
+      return;
+    }
+    setState(() {
+      _submitError = null;
+    });
   }
 
   @override
@@ -74,6 +89,7 @@ class _LinkEmailPasswordDialogState extends State<LinkEmailPasswordDialog> {
             submitLabel: widget.l10n.accountPageLinkEmailPasswordConfirmAction,
             showSubmitButton: false,
             isLoading: _isSubmitting,
+            onInputChanged: _clearSubmitError,
             onSubmitCredentials: widget.onSubmitCredentials,
           ),
           if (_submitError != null) ...[

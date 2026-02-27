@@ -124,16 +124,23 @@ class _AccountPageState extends ConsumerState<AccountPage> {
   }
 
   Future<void> _linkGuestWithEmailPassword(AppLocalizations l10n) async {
-    final linked = await _showEmailPasswordDialog(l10n);
-    if (!mounted || linked != true) {
+    final dialogResult = await _showEmailPasswordDialog(l10n);
+    if (!mounted || dialogResult == null) {
       return;
     }
-    showAccountStatusSnackBar(context, message: l10n.accountPageLinkSuccess);
+    if (dialogResult is FirebaseAuthException &&
+        _isCredentialAlreadyInUseError(dialogResult)) {
+      await _handleCredentialAlreadyInUse(l10n, dialogResult);
+      return;
+    }
+    if (dialogResult == true) {
+      showAccountStatusSnackBar(context, message: l10n.accountPageLinkSuccess);
+    }
   }
 
-  Future<bool?> _showEmailPasswordDialog(AppLocalizations l10n) {
+  Future<Object?> _showEmailPasswordDialog(AppLocalizations l10n) {
     final authErrorViewModel = ref.read(authErrorViewModelProvider);
-    return showDialog<bool>(
+    return showDialog<Object?>(
       context: context,
       builder: (_) => LinkEmailPasswordDialog(
         l10n: l10n,
@@ -153,10 +160,18 @@ class _AccountPageState extends ConsumerState<AccountPage> {
             rethrow;
           }
         },
+        shouldBubbleSubmitError: (error) =>
+            error is FirebaseAuthException &&
+            _isCredentialAlreadyInUseError(error),
         errorMessageFor: (error) =>
             authErrorViewModel.messageFor(l10n: l10n, error: error),
       ),
     );
+  }
+
+  bool _isCredentialAlreadyInUseError(FirebaseAuthException error) {
+    return error.code == 'credential-already-in-use' ||
+        error.code == 'email-already-in-use';
   }
 
   Future<void> _handleCredentialAlreadyInUse(
