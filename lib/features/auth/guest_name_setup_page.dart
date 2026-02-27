@@ -57,6 +57,7 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(guestNameSetupControllerProvider);
+    final authErrorViewModel = ref.read(authErrorViewModelProvider);
 
     ref.listen<AsyncValue<void>>(guestNameSetupControllerProvider, (
       previous,
@@ -64,12 +65,13 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
     ) {
       next.whenOrNull(
         error: (error, stackTrace) {
-          final message = ref
-              .read(authErrorViewModelProvider)
-              .messageFor(l10n: l10n, error: error);
           if (!context.mounted) {
             return;
           }
+          final message = authErrorViewModel.messageFor(
+            l10n: l10n,
+            error: error,
+          );
           final messenger = ScaffoldMessenger.of(context);
           messenger.hideCurrentSnackBar();
           messenger.showSnackBar(SnackBar(content: Text(message)));
@@ -188,6 +190,9 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
           seedColor: _selectedSeedColor,
           themeMode: _selectedThemeMode,
         );
+    if (!mounted) {
+      return;
+    }
     final nextState = ref.read(guestNameSetupControllerProvider);
     if (!nextState.hasError) {
       _didPersistSetup = true;

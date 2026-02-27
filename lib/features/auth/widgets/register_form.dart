@@ -6,17 +6,32 @@ import 'package:yamt/features/auth/widgets/auth_form_components.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class RegisterForm extends ConsumerStatefulWidget {
-  const RegisterForm({super.key});
+  const RegisterForm({
+    super.key,
+    this.onSubmitCredentials,
+    this.submitLabel,
+    this.showSubmitButton = true,
+  });
+
+  final Future<void> Function({
+    required String email,
+    required String password,
+  })?
+  onSubmitCredentials;
+
+  final String? submitLabel;
+  final bool showSubmitButton;
 
   @override
-  ConsumerState<RegisterForm> createState() => _RegisterFormState();
+  ConsumerState<RegisterForm> createState() => RegisterFormState();
 }
 
-class _RegisterFormState extends ConsumerState<RegisterForm> {
+class RegisterFormState extends ConsumerState<RegisterForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  var _isSubmitting = false;
 
   @override
   void dispose() {
@@ -31,6 +46,26 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     if (formState == null || !formState.validate()) {
       return;
     }
+    final onSubmitCredentials = widget.onSubmitCredentials;
+    if (onSubmitCredentials != null) {
+      setState(() {
+        _isSubmitting = true;
+      });
+      try {
+        await onSubmitCredentials(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isSubmitting = false;
+          });
+        }
+      }
+      return;
+    }
+
     await ref
         .read(authFormControllerProvider.notifier)
         .createUserWithEmailAndPassword(
@@ -39,10 +74,15 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
         );
   }
 
+  Future<void> submit() => _submit();
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isLoading = ref.watch(authFormControllerProvider).isLoading;
+    final controllerLoading = ref.watch(authFormControllerProvider).isLoading;
+    final isLoading = widget.onSubmitCredentials == null
+        ? controllerLoading
+        : _isSubmitting;
     final validators = AuthValidationFactory.fromContext(context);
     final emailValidator = validators.email();
     final passwordValidator = validators.password();
@@ -72,12 +112,14 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
             textInputAction: TextInputAction.done,
             validator: confirmPasswordValidator,
           ),
-          const SizedBox(height: AppSpacing.xxl),
-          AuthSubmitButton(
-            isLoading: isLoading,
-            onPressed: _submit,
-            label: l10n.createAccount,
-          ),
+          if (widget.showSubmitButton) ...[
+            const SizedBox(height: AppSpacing.xxl),
+            AuthSubmitButton(
+              isLoading: isLoading,
+              onPressed: _submit,
+              label: widget.submitLabel ?? l10n.createAccount,
+            ),
+          ],
         ],
       ),
     );

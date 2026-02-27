@@ -267,6 +267,28 @@ void main() {
     expect(find.text('Account linked successfully.'), findsNothing);
   });
 
+  testWidgets('guest email/password link dialog is scrollable', (tester) async {
+    final user = _MockUser();
+    when(() => user.isAnonymous).thenReturn(true);
+    when(() => user.displayName).thenReturn(null);
+    when(() => user.email).thenReturn(null);
+    when(() => user.uid).thenReturn('guest-123');
+
+    await tester.pumpWidget(
+      _wrap(
+        authStream: Stream<User?>.value(user),
+        controller: _FakeAccountController(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Link with email & password'));
+    await tester.pumpAndSettle();
+
+    final dialog = tester.widget<AlertDialog>(find.byType(AlertDialog));
+    expect(dialog.scrollable, isTrue);
+  });
+
   testWidgets(
     'non-firebase guest link error falls back to generic auth error',
     (tester) async {
