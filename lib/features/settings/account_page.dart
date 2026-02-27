@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -29,6 +30,72 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       if (!mounted) return;
       _showAuthError(l10n, error);
     }
+  }
+
+  Future<void> _confirmAndDeleteAccount(AppLocalizations l10n) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.accountPageDeleteDialogTitle),
+          content: Text(l10n.accountPageDeleteDialogMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(l10n.accountPageDeleteDialogConfirmAction),
+            ),
+          ],
+        );
+      },
+    );
+    if (!mounted || shouldDelete != true) {
+      return;
+    }
+
+    try {
+      await ref.read(accountControllerProvider.notifier).deleteCurrentAccount();
+      if (!mounted) {
+        return;
+      }
+      showAccountStatusSnackBar(
+        context,
+        message: l10n.accountPageDeleteSuccess,
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      if (_handleDeleteRecentLoginError(l10n, error)) {
+        return;
+      }
+      _showAuthError(l10n, error);
+    }
+  }
+
+  bool _handleDeleteRecentLoginError(AppLocalizations l10n, Object error) {
+    if (error is! FirebaseAuthException ||
+        error.code != 'requires-recent-login') {
+      return false;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.authErrorRequiresRecentLogin),
+        action: SnackBarAction(
+          label: l10n.accountPageSignOut,
+          onPressed: () {
+            unawaited(_signOut(l10n));
+          },
+        ),
+      ),
+    );
+    return true;
   }
 
   Future<void> _linkGuestWithGoogle(AppLocalizations l10n) async {
@@ -181,6 +248,14 @@ class _AccountPageState extends ConsumerState<AccountPage> {
           onPressed: isActionLoading ? null : () => _signOut(l10n),
           icon: const Icon(Icons.logout),
           label: Text(l10n.accountPageSignOut),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        TextButton.icon(
+          onPressed: isActionLoading
+              ? null
+              : () => _confirmAndDeleteAccount(l10n),
+          icon: const Icon(Icons.delete_outline),
+          label: Text(l10n.accountPageDeleteAction),
         ),
       ],
     );

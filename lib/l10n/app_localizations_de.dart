@@ -651,6 +651,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get accountPageSignOut => 'Abmelden';
 
   @override
+  String get accountPageDeleteAction => 'Konto löschen';
+
+  @override
+  String get accountPageDeleteDialogTitle => 'Konto löschen?';
+
+  @override
+  String get accountPageDeleteDialogMessage => 'Dadurch wird dein Konto dauerhaft gelöscht und kann nicht rückgängig gemacht werden.';
+
+  @override
+  String get accountPageDeleteDialogConfirmAction => 'Löschen';
+
+  @override
+  String get accountPageDeleteSuccess => 'Konto gelöscht.';
+
+  @override
   String get accountPageDisplayName => 'Anzeigename';
 
   @override

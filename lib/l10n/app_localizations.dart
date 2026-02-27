@@ -1367,6 +1367,36 @@ abstract class AppLocalizations {
   /// **'Sign out'**
   String get accountPageSignOut;
 
+  /// No description provided for @accountPageDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get accountPageDeleteAction;
+
+  /// No description provided for @accountPageDeleteDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account?'**
+  String get accountPageDeleteDialogTitle;
+
+  /// No description provided for @accountPageDeleteDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This permanently deletes your account and cannot be undone.'**
+  String get accountPageDeleteDialogMessage;
+
+  /// No description provided for @accountPageDeleteDialogConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get accountPageDeleteDialogConfirmAction;
+
+  /// No description provided for @accountPageDeleteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deleted.'**
+  String get accountPageDeleteSuccess;
+
   /// No description provided for @accountPageDisplayName.
   ///
   /// In en, this message translates to:

@@ -250,6 +250,12 @@
   "accountPageLinkConflictDeleteGuestDone": "Gastkonto gelöscht. Mit Google angemeldet.",
   "accountPageGuestSessionRequired": "Diese Aktion ist nur für Gastkonten verfügbar.",
   "accountPageSignOut": "Abmelden",
+  "accountPageDeleteAction": "Konto löschen",
+  "accountPageDeleteDialogTitle": "Konto löschen?",
+  "accountPageDeleteDialogMessage":
+      "Dadurch wird dein Konto dauerhaft gelöscht und kann nicht rückgängig gemacht werden.",
+  "accountPageDeleteDialogConfirmAction": "Löschen",
+  "accountPageDeleteSuccess": "Konto gelöscht.",
   "accountPageDisplayName": "Anzeigename",
   "accountPageEmail": "E-Mail",
   "accountPageUserId": "Benutzer-ID",
