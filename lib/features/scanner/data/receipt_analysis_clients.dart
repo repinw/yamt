@@ -1,23 +1,22 @@
 // ignore_for_file: experimental_member_use
 
 import 'package:firebase_ai/firebase_ai.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/settings/provider/ai_processing_level_controller.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_contracts.dart';
 
 part 'receipt_analysis_clients.g.dart';
 
-const String _receiptTemplateKey = 'template_id';
-const String _fallbackReceiptTemplateId = 'receiptocr';
+const String _minimalReceiptTemplateId = 'receiptocr-minimal';
+const String _lowReceiptTemplateId = 'receiptocr-low';
+const String _balancedReceiptTemplateId = 'receiptocr-medium';
+const String _highReceiptTemplateId = 'receiptocr-high';
 const String _vertexLocation = 'global';
-const Duration _remoteConfigFetchTimeout = Duration(seconds: 30);
-const Duration _remoteConfigProdFetchInterval = Duration(hours: 1);
 
 @riverpod
 ReceiptTemplateConfigClient receiptTemplateConfigClient(Ref ref) {
-  return FirebaseReceiptTemplateConfigClient(
-    remoteConfig: FirebaseRemoteConfig.instance,
+  return StaticReceiptTemplateConfigClient(
+    level: ref.watch(aiProcessingLevelControllerProvider),
   );
 }
 
@@ -30,56 +29,20 @@ ReceiptTemplateModelClient receiptTemplateModelClient(Ref ref) {
   );
 }
 
-class FirebaseReceiptTemplateConfigClient
-    implements ReceiptTemplateConfigClient {
-  FirebaseReceiptTemplateConfigClient({
-    required FirebaseRemoteConfig remoteConfig,
-  }) : _remoteConfig = remoteConfig;
+class StaticReceiptTemplateConfigClient implements ReceiptTemplateConfigClient {
+  StaticReceiptTemplateConfigClient({required AiProcessingLevel level})
+    : _level = level;
 
-  final FirebaseRemoteConfig _remoteConfig;
-  Future<void>? _initialization;
+  final AiProcessingLevel _level;
 
   @override
   Future<String> loadTemplateId() async {
-    await _ensureInitialized();
-
-    final templateId = _remoteConfig.getString(_receiptTemplateKey);
-    if (templateId.isEmpty) {
-      return _fallbackReceiptTemplateId;
-    }
-    return templateId;
-  }
-
-  Future<void> _ensureInitialized() {
-    final initialization = _initialization;
-    if (initialization != null) {
-      return initialization;
-    }
-
-    final configuredInitialization = _initializeRemoteConfig();
-    _initialization = configuredInitialization;
-    return configuredInitialization;
-  }
-
-  Future<void> _initializeRemoteConfig() async {
-    await _remoteConfig.setConfigSettings(
-      RemoteConfigSettings(
-        fetchTimeout: _remoteConfigFetchTimeout,
-        minimumFetchInterval: _minimumFetchInterval(),
-      ),
-    );
-    await _remoteConfig.setDefaults(const <String, Object>{
-      _receiptTemplateKey: _fallbackReceiptTemplateId,
-    });
-    await _remoteConfig.fetchAndActivate();
-  }
-
-  Duration _minimumFetchInterval() {
-    if (kDebugMode) {
-      return Duration.zero;
-    }
-
-    return _remoteConfigProdFetchInterval;
+    return switch (_level) {
+      AiProcessingLevel.minimal => _minimalReceiptTemplateId,
+      AiProcessingLevel.low => _lowReceiptTemplateId,
+      AiProcessingLevel.balanced => _balancedReceiptTemplateId,
+      AiProcessingLevel.high => _highReceiptTemplateId,
+    };
   }
 }
 

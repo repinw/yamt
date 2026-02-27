@@ -42,8 +42,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryActionUploadFile => 'Upload receipt (image/PDF)';
 
   @override
-  String get inventoryActionCameraUnsupported =>
-      'Camera is not supported on this platform.';
+  String get inventoryActionCameraUnsupported => 'Camera is not supported on this platform.';
 
   @override
   String get inventoryReceiptSelectedCamera => 'Receipt image captured.';
@@ -52,16 +51,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptSelectedFile => 'Receipt file selected.';
 
   @override
-  String get inventoryReceiptSelectionFailed =>
-      'Could not select a receipt. Please try again.';
+  String get inventoryReceiptSelectionFailed => 'Could not select a receipt. Please try again.';
 
   @override
-  String get inventoryReceiptAnalysisSucceeded =>
-      'Receipt analyzed successfully.';
+  String get inventoryReceiptAnalysisSucceeded => 'Receipt analyzed successfully.';
 
   @override
-  String get inventoryReceiptAnalysisFailed =>
-      'Receipt analysis failed. Please try again.';
+  String get inventoryReceiptAnalysisFailed => 'Receipt analysis failed. Please try again.';
 
   @override
   String get inventoryReceiptBatchTitle => 'Processing receipts';
@@ -204,16 +200,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewNoDate => 'No date';
 
   @override
-  String get inventoryReceiptReviewInvalidNumber =>
-      'Please enter valid numbers.';
+  String get inventoryReceiptReviewInvalidNumber => 'Please enter valid numbers.';
 
   @override
-  String get inventoryReceiptReviewInvalidWeightUnit =>
-      'Please add a unit (e.g. g or ml).';
+  String get inventoryReceiptReviewInvalidWeightUnit => 'Please add a unit (e.g. g or ml).';
 
   @override
-  String get inventoryReceiptReviewInvalidDiscounts =>
-      'Use JSON or key=value pairs.';
+  String get inventoryReceiptReviewInvalidDiscounts => 'Use JSON or key=value pairs.';
 
   @override
   String get inventoryReceiptReviewCancelAction => 'Cancel';
@@ -225,8 +218,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptSaveSucceeded => 'Items added to inventory.';
 
   @override
-  String get inventoryReceiptSaveFailed =>
-      'Could not save receipt items. Please try again.';
+  String get inventoryReceiptSaveFailed => 'Could not save receipt items. Please try again.';
 
   @override
   String get inventorySummaryTitle => 'Overview';
@@ -286,12 +278,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemActionFailed => 'Action failed. Please try again.';
 
   @override
-  String get inventoryEmptyState =>
-      'No items in your fridge yet. Scan a receipt to get started.';
+  String get inventoryEmptyState => 'No items in your fridge yet. Scan a receipt to get started.';
 
   @override
-  String get inventoryFilteredEmptyState =>
-      'No items match the selected filters.';
+  String get inventoryFilteredEmptyState => 'No items match the selected filters.';
 
   @override
   String get inventoryLoadFailed => 'Could not load inventory items.';
@@ -300,8 +290,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryRetryAction => 'Retry';
 
   @override
-  String get homeShoppingActionContextPlaceholder =>
-      'Shopping action coming soon.';
+  String get homeShoppingActionContextPlaceholder => 'Shopping action coming soon.';
 
   @override
   String get shoppingListStatsEntries => 'Entries';
@@ -328,8 +317,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingListInvalidNameError => 'Please enter an item name.';
 
   @override
-  String get shoppingListAddFailedError =>
-      'Could not add item. Please try again.';
+  String get shoppingListAddFailedError => 'Could not add item. Please try again.';
 
   @override
   String get shoppingListLoadFailed => 'Could not load shopping list items.';
@@ -352,19 +340,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get shoppingListClearCrossedOffDialogTitle =>
-      'Clear crossed-off items?';
+  String get shoppingListClearCrossedOffDialogTitle => 'Clear crossed-off items?';
 
   @override
-  String get shoppingListClearCrossedOffDialogMessage =>
-      'All crossed-off items will be removed from the shopping list.';
+  String get shoppingListClearCrossedOffDialogMessage => 'All crossed-off items will be removed from the shopping list.';
 
   @override
   String get shoppingListClearCrossedOffConfirmAction => 'Clear';
 
   @override
-  String get homeCaloriesActionContextPlaceholder =>
-      'Calories action coming soon.';
+  String get homeCaloriesActionContextPlaceholder => 'Calories action coming soon.';
 
   @override
   String get caloriesAddOptionManual => 'Manual entry';
@@ -382,15 +367,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesBarcodeResolving => 'Looking up product...';
 
   @override
-  String get caloriesBarcodeLookupFailed =>
-      'Barcode lookup failed. Please try again.';
+  String get caloriesBarcodeLookupFailed => 'Barcode lookup failed. Please try again.';
 
   @override
   String get caloriesBarcodeCandidateTitle => 'Choose product';
 
   @override
-  String get caloriesBarcodeCandidateSubtitle =>
-      'Multiple products were found for this barcode.';
+  String get caloriesBarcodeCandidateSubtitle => 'Multiple products were found for this barcode.';
 
   @override
   String get caloriesBarcodeUnknownBrand => 'Unknown brand';
@@ -399,8 +382,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesBarcodeNotFoundTitle => 'Product not found';
 
   @override
-  String get caloriesBarcodeNotFoundMessage =>
-      'No product was found for this barcode.';
+  String get caloriesBarcodeNotFoundMessage => 'No product was found for this barcode.';
 
   @override
   String get caloriesBarcodeNotFoundManualAction => 'Manual entry';
@@ -409,8 +391,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesBarcodeNotFoundOcrAction => 'Scan nutrition label';
 
   @override
-  String get caloriesOcrFailed =>
-      'Nutrition label scan failed. Please try again.';
+  String get caloriesOcrFailed => 'Nutrition label scan failed. Please try again.';
 
   @override
   String get caloriesLoadFailed => 'Could not load calorie entries.';
@@ -449,8 +430,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesGoalClearAction => 'Clear goal';
 
   @override
-  String get caloriesGoalInvalidValue =>
-      'Please enter a number greater than zero.';
+  String get caloriesGoalInvalidValue => 'Please enter a number greater than zero.';
 
   @override
   String get caloriesGoalSaveFailed => 'Could not save calorie goal.';
@@ -548,12 +528,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesInvalidNumber => 'Please enter valid numbers.';
 
   @override
-  String get caloriesPositiveNumberValidation =>
-      'Please enter a number greater than zero.';
+  String get caloriesPositiveNumberValidation => 'Please enter a number greater than zero.';
 
   @override
-  String get caloriesNonNegativeNumberValidation =>
-      'Please enter a number equal to or greater than zero.';
+  String get caloriesNonNegativeNumberValidation => 'Please enter a number equal to or greater than zero.';
 
   @override
   String get caloriesMealBreakfast => 'Breakfast';
@@ -574,8 +552,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesUnitMilliliter => 'ml';
 
   @override
-  String get homeSettingsActionContextPlaceholder =>
-      'Settings action coming soon.';
+  String get homeSettingsActionContextPlaceholder => 'Settings action coming soon.';
 
   @override
   String get settingsLanguageTitle => 'Language';
@@ -620,6 +597,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAiProcessingSubtitle => 'Control OCR and analysis intensity';
 
   @override
+  String get settingsAiProcessingInfoLabel => 'Processing level info';
+
+  @override
+  String get settingsAiProcessingInfoTitle => 'Processing level';
+
+  @override
+  String get settingsAiProcessingInfoMessage => 'Speed and result quality depend on the selected level.';
+
+  @override
+  String get settingsAiProcessingMinimal => 'Minimal';
+
+  @override
   String get settingsAiProcessingLow => 'Low';
 
   @override
@@ -647,8 +636,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountPageGuestTitle => 'Guest account';
 
   @override
-  String get accountPageGuestDescription =>
-      'Link your guest account with Google to keep access across devices.';
+  String get accountPageGuestDescription => 'Link your guest account with Google to keep access across devices.';
 
   @override
   String get accountPageLinkGoogle => 'Link with Google';
@@ -660,8 +648,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountPageLinkEmailPasswordTitle => 'Link guest account';
 
   @override
-  String get accountPageLinkEmailPasswordDescription =>
-      'Create email sign-in credentials for this guest account.';
+  String get accountPageLinkEmailPasswordDescription => 'Create email sign-in credentials for this guest account.';
 
   @override
   String get accountPageLinkEmailPasswordConfirmAction => 'Link account';
@@ -670,43 +657,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountPageLinkSuccess => 'Account linked successfully.';
 
   @override
-  String get accountPageLinkNotCompleted =>
-      'Account linking was not completed. Please try again.';
+  String get accountPageLinkNotCompleted => 'Account linking was not completed. Please try again.';
 
   @override
   String get accountPageLinkConflictTitle => 'Account already in use';
 
   @override
-  String get accountPageLinkConflictDescription =>
-      'This sign-in credential is already linked to another profile. Choose how to continue.';
+  String get accountPageLinkConflictDescription => 'This sign-in credential is already linked to another profile. Choose how to continue.';
 
   @override
-  String get accountPageLinkConflictOverwriteAction =>
-      'Overwrite with this guest';
+  String get accountPageLinkConflictOverwriteAction => 'Overwrite with this guest';
 
   @override
-  String get accountPageLinkConflictOverwriteSubtitle =>
-      'Keep this guest account and replace the old linked account.';
+  String get accountPageLinkConflictOverwriteSubtitle => 'Keep this guest account and replace the old linked account.';
 
   @override
-  String get accountPageLinkConflictDeleteGuestAction =>
-      'Delete guest and sign in';
+  String get accountPageLinkConflictDeleteGuestAction => 'Delete guest and sign in';
 
   @override
-  String get accountPageLinkConflictDeleteGuestSubtitle =>
-      'Delete this guest account and continue with the existing account.';
+  String get accountPageLinkConflictDeleteGuestSubtitle => 'Delete this guest account and continue with the existing account.';
 
   @override
-  String get accountPageLinkConflictOverwriteDone =>
-      'Credential moved to this guest account.';
+  String get accountPageLinkConflictOverwriteDone => 'Credential moved to this guest account.';
 
   @override
-  String get accountPageLinkConflictDeleteGuestDone =>
-      'Guest account deleted. Signed in with existing account.';
+  String get accountPageLinkConflictDeleteGuestDone => 'Guest account deleted. Signed in with existing account.';
 
   @override
-  String get accountPageGuestSessionRequired =>
-      'This action is only available for guest accounts.';
+  String get accountPageGuestSessionRequired => 'This action is only available for guest accounts.';
 
   @override
   String get accountPageSignOut => 'Sign out';
@@ -718,8 +696,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountPageDeleteDialogTitle => 'Delete account?';
 
   @override
-  String get accountPageDeleteDialogMessage =>
-      'This permanently deletes your account and cannot be undone.';
+  String get accountPageDeleteDialogMessage => 'This permanently deletes your account and cannot be undone.';
 
   @override
   String get accountPageDeleteDialogConfirmAction => 'Delete';
@@ -776,8 +753,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authGuestNameSetupTitle => 'Set your guest name';
 
   @override
-  String get authGuestNameSetupSubtitle =>
-      'Choose a display name so your guest session is easier to recognize.';
+  String get authGuestNameSetupSubtitle => 'Choose a display name so your guest session is easier to recognize.';
 
   @override
   String get authGuestNameFieldLabel => 'Display name';
@@ -819,46 +795,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authErrorInvalidCredential => 'The login credentials are invalid.';
 
   @override
-  String get authErrorEmailAlreadyInUse =>
-      'An account already exists for this email.';
+  String get authErrorEmailAlreadyInUse => 'An account already exists for this email.';
 
   @override
   String get authErrorWeakPassword => 'The password is too weak.';
 
   @override
-  String get authErrorOperationNotAllowed =>
-      'This sign-in method is not enabled.';
+  String get authErrorOperationNotAllowed => 'This sign-in method is not enabled.';
 
   @override
-  String get authErrorTooManyRequests =>
-      'Too many requests. Please try again later.';
+  String get authErrorTooManyRequests => 'Too many requests. Please try again later.';
 
   @override
-  String get authErrorNetworkRequestFailed =>
-      'Network error. Please check your connection.';
+  String get authErrorNetworkRequestFailed => 'Network error. Please check your connection.';
 
   @override
   String get authErrorRequiresRecentLogin => 'Please log in again to continue.';
 
   @override
-  String get authErrorAccountExistsWithDifferentCredential =>
-      'An account already exists with a different sign-in method.';
+  String get authErrorAccountExistsWithDifferentCredential => 'An account already exists with a different sign-in method.';
 
   @override
-  String get authErrorCredentialAlreadyInUse =>
-      'This credential is already used by another account.';
+  String get authErrorCredentialAlreadyInUse => 'This credential is already used by another account.';
 
   @override
-  String get authErrorProviderAlreadyLinked =>
-      'This sign-in provider is already linked to your account.';
+  String get authErrorProviderAlreadyLinked => 'This sign-in provider is already linked to your account.';
 
   @override
-  String get authErrorGoogleSignInCanceled =>
-      'Google sign-in failed. Please try again.';
+  String get authErrorGoogleSignInCanceled => 'Google sign-in failed. Please try again.';
 
   @override
-  String get authErrorGoogleIdTokenMissing =>
-      'Google sign-in did not return a valid token.';
+  String get authErrorGoogleIdTokenMissing => 'Google sign-in did not return a valid token.';
 
   @override
   String get commonNotImplementedYet => 'Not implemented yet';

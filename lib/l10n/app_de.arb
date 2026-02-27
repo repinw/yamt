@@ -232,6 +232,11 @@
   "settingsColorOrange": "Orange",
   "settingsAiProcessingTitle": "KI-Verarbeitung",
   "settingsAiProcessingSubtitle": "OCR- und Analyseintensität steuern",
+  "settingsAiProcessingInfoLabel": "Info zur Verarbeitungsstufe",
+  "settingsAiProcessingInfoTitle": "Verarbeitungsstufe",
+  "settingsAiProcessingInfoMessage":
+      "Geschwindigkeit und Ergebnisqualität hängen von der gewählten Stufe ab.",
+  "settingsAiProcessingMinimal": "Minimal",
   "settingsAiProcessingLow": "Niedrig",
   "settingsAiProcessingBalanced": "Ausgewogen",
   "settingsAiProcessingHigh": "Hoch",

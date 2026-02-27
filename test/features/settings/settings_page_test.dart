@@ -76,7 +76,7 @@ void main() {
     expect(find.byIcon(Icons.palette_outlined), findsOneWidget);
     expect(find.byIcon(Icons.format_paint_outlined), findsOneWidget);
     expect(find.byIcon(Icons.auto_awesome_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.info_outline), findsOneWidget);
+    expect(find.byIcon(Icons.info_outline), findsNWidgets(2));
 
     expect(find.text('Language'), findsOneWidget);
     expect(find.text('Choose app language'), findsOneWidget);
@@ -221,6 +221,7 @@ void main() {
 
     await tester.tap(processingDropdownFinder);
     await tester.pumpAndSettle();
+    expect(find.text('Minimal'), findsOneWidget);
     await tester.tap(find.text('High').last);
     await tester.pumpAndSettle();
 
@@ -229,6 +230,32 @@ void main() {
       AiProcessingLevel.high,
     );
     expect(find.text('High'), findsOneWidget);
+  });
+
+  testWidgets('AI processing info icon opens disclaimer dialog', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: SettingsPage()),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byTooltip('Processing level info'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Processing level'), findsOneWidget);
+    expect(
+      find.text('Speed and result quality depend on the selected level.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('Account tile opens AccountPage', (tester) async {

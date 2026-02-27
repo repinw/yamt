@@ -5,7 +5,7 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 
 part 'ai_processing_level_controller.g.dart';
 
-enum AiProcessingLevel { low, balanced, high }
+enum AiProcessingLevel { minimal, low, balanced, high }
 
 @Riverpod(keepAlive: true)
 class AiProcessingLevelController extends _$AiProcessingLevelController {
@@ -43,6 +43,7 @@ class AiProcessingLevelController extends _$AiProcessingLevelController {
 
   AiProcessingLevel _fromName(String name) {
     return switch (name) {
+      'minimal' => AiProcessingLevel.minimal,
       'low' => AiProcessingLevel.low,
       'high' => AiProcessingLevel.high,
       _ => AiProcessingLevel.balanced,

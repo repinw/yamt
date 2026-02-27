@@ -225,6 +225,11 @@
   "settingsColorOrange": "Orange",
   "settingsAiProcessingTitle": "AI processing",
   "settingsAiProcessingSubtitle": "Control OCR and analysis intensity",
+  "settingsAiProcessingInfoLabel": "Processing level info",
+  "settingsAiProcessingInfoTitle": "Processing level",
+  "settingsAiProcessingInfoMessage":
+      "Speed and result quality depend on the selected level.",
+  "settingsAiProcessingMinimal": "Minimal",
   "settingsAiProcessingLow": "Low",
   "settingsAiProcessingBalanced": "Balanced",
   "settingsAiProcessingHigh": "High",

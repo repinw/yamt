@@ -57,6 +57,26 @@ void main() {
     );
   });
 
+  test('AI processing level restores minimal from persisted value', () {
+    final container = ProviderContainer(
+      overrides: [
+        appPreferencesProvider.overrideWithValue(
+          _FakeAppPreferences(
+            initialValues: <String, Object>{
+              'preferred_ai_processing_level': 'minimal',
+            },
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    expect(
+      container.read(aiProcessingLevelControllerProvider),
+      AiProcessingLevel.minimal,
+    );
+  });
+
   test('AI processing level can be updated and persisted', () async {
     final preferences = _FakeAppPreferences();
     final container = ProviderContainer(
