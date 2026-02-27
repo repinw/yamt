@@ -124,36 +124,38 @@ class _AccountPageState extends ConsumerState<AccountPage> {
   }
 
   Future<void> _linkGuestWithEmailPassword(AppLocalizations l10n) async {
-    final credentials = await _showEmailPasswordDialog(l10n);
-    if (!mounted || credentials == null) return;
-
-    try {
-      final linked = await ref
-          .read(accountControllerProvider.notifier)
-          .linkGuestWithEmailPassword(
-            email: credentials.email,
-            password: credentials.password,
-          );
-      if (!mounted) return;
-      if (linked) {
-        showAccountStatusSnackBar(
-          context,
-          message: l10n.accountPageLinkSuccess,
-        );
-      }
-    } catch (error, stackTrace) {
-      if (!mounted) return;
-      _logAuthError(error: error, stackTrace: stackTrace);
-      _showAuthError(l10n, error);
+    final linked = await _showEmailPasswordDialog(l10n);
+    if (!mounted || linked != true) {
+      return;
     }
+    showAccountStatusSnackBar(context, message: l10n.accountPageLinkSuccess);
   }
 
-  Future<EmailPasswordCredentials?> _showEmailPasswordDialog(
-    AppLocalizations l10n,
-  ) {
-    return showDialog<EmailPasswordCredentials>(
+  Future<bool?> _showEmailPasswordDialog(AppLocalizations l10n) {
+    final authErrorViewModel = ref.read(authErrorViewModelProvider);
+    return showDialog<bool>(
       context: context,
-      builder: (_) => LinkEmailPasswordDialog(l10n: l10n),
+      builder: (_) => LinkEmailPasswordDialog(
+        l10n: l10n,
+        onSubmitCredentials: ({required email, required password}) async {
+          try {
+            final linked = await ref
+                .read(accountControllerProvider.notifier)
+                .linkGuestWithEmailPassword(email: email, password: password);
+            if (!linked) {
+              throw FirebaseAuthException(
+                code: 'link-not-completed',
+                message: 'Account linking was not completed. Please try again.',
+              );
+            }
+          } catch (error, stackTrace) {
+            _logAuthError(error: error, stackTrace: stackTrace);
+            rethrow;
+          }
+        },
+        errorMessageFor: (error) =>
+            authErrorViewModel.messageFor(l10n: l10n, error: error),
+      ),
     );
   }
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/shared/widgets/auth_form_components.dart';
@@ -30,8 +32,6 @@ class EmailPasswordCredentialsFormState
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  var _isSubmitting = false;
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -40,33 +40,30 @@ class EmailPasswordCredentialsFormState
     super.dispose();
   }
 
-  Future<void> submit() async {
+  Future<bool> submit() async {
+    if (widget.isLoading) {
+      return false;
+    }
     final formState = _formKey.currentState;
     if (formState == null || !formState.validate()) {
-      return;
+      return false;
     }
 
-    setState(() {
-      _isSubmitting = true;
-    });
-    try {
-      await widget.onSubmitCredentials(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
-    }
+    await widget.onSubmitCredentials(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
+    return true;
+  }
+
+  void _onSubmitPressed() {
+    unawaited(submit());
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isLoading = widget.isLoading || _isSubmitting;
+    final isLoading = widget.isLoading;
     final validators = AuthValidationFactory.fromContext(context);
     final emailValidator = validators.email();
     final passwordValidator = validators.password();
@@ -100,7 +97,7 @@ class EmailPasswordCredentialsFormState
             const SizedBox(height: AppSpacing.xxl),
             AuthSubmitButton(
               isLoading: isLoading,
-              onPressed: submit,
+              onPressed: _onSubmitPressed,
               label: widget.submitLabel ?? l10n.createAccount,
             ),
           ],

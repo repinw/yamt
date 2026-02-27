@@ -290,6 +290,56 @@ void main() {
   });
 
   testWidgets(
+    'guest email/password link failure keeps dialog open with inline error',
+    (tester) async {
+      final user = _MockUser();
+      when(() => user.isAnonymous).thenReturn(true);
+      when(() => user.displayName).thenReturn(null);
+      when(() => user.email).thenReturn(null);
+      when(() => user.uid).thenReturn('guest-123');
+
+      await tester.pumpWidget(
+        _wrap(
+          authStream: Stream<User?>.value(user),
+          controller: _FakeAccountController(
+            onLinkGuestWithEmailPassword:
+                ({required String email, required String password}) async {
+                  throw FirebaseAuthException(code: 'email-already-in-use');
+                },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Link with email & password'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Email'),
+        'a@b.c',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Password'),
+        'secret123',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Confirm password'),
+        'secret123',
+      );
+
+      await tester.tap(find.text('Link account'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Link guest account'), findsOneWidget);
+      expect(
+        find.text('An account already exists for this email.'),
+        findsOneWidget,
+      );
+      expect(find.text('Account linked successfully.'), findsNothing);
+    },
+  );
+
+  testWidgets(
     'non-firebase guest link error falls back to generic auth error',
     (tester) async {
       final user = _MockUser();
