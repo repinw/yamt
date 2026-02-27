@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -68,8 +69,33 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       if (!mounted) {
         return;
       }
+      if (_handleDeleteRecentLoginError(l10n, error)) {
+        return;
+      }
       _showAuthError(l10n, error);
     }
+  }
+
+  bool _handleDeleteRecentLoginError(AppLocalizations l10n, Object error) {
+    if (error is! FirebaseAuthException ||
+        error.code != 'requires-recent-login') {
+      return false;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.authErrorRequiresRecentLogin),
+        action: SnackBarAction(
+          label: l10n.accountPageSignOut,
+          onPressed: () {
+            unawaited(_signOut(l10n));
+          },
+        ),
+      ),
+    );
+    return true;
   }
 
   Future<void> _linkGuestWithGoogle(AppLocalizations l10n) async {

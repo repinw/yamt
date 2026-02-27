@@ -450,4 +450,45 @@ void main() {
 
     expect(find.text('This sign-in method is not enabled.'), findsOneWidget);
   });
+
+  testWidgets('delete account recent-login error offers sign out action', (
+    tester,
+  ) async {
+    final user = _MockUser();
+    when(() => user.isAnonymous).thenReturn(false);
+    when(() => user.displayName).thenReturn('Jane');
+    when(() => user.email).thenReturn('jane@example.com');
+    when(() => user.uid).thenReturn('uid-123');
+    var signOutCalled = false;
+
+    await tester.pumpWidget(
+      _wrap(
+        authStream: Stream<User?>.value(user),
+        controller: _FakeAccountController(
+          onSignOut: () async => signOutCalled = true,
+          onDeleteCurrentAccount: () async =>
+              throw FirebaseAuthException(code: 'requires-recent-login'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Delete account'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please log in again to continue.'), findsOneWidget);
+
+    final signOutAction = find.descendant(
+      of: find.byType(SnackBar),
+      matching: find.text('Sign out'),
+    );
+    expect(signOutAction, findsOneWidget);
+
+    await tester.tap(signOutAction);
+    await tester.pumpAndSettle();
+
+    expect(signOutCalled, isTrue);
+  });
 }
