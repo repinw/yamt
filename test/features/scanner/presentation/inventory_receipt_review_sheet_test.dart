@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
@@ -226,6 +228,174 @@ void main() {
       find.byKey(const Key('receipt_review_save_button')),
     );
     expect(button.onPressed, isNull);
+  });
+
+  testWidgets('save action shows progress indicator while saving', (
+    tester,
+  ) async {
+    final saveCompleter = Completer<void>();
+
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(id: 'food', isDeposit: false, isDiscount: false),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) => saveCompleter.future,
+      ),
+    );
+
+    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+    final l10n = AppLocalizations.of(context)!;
+
+    await tester.tap(find.byKey(const Key('receipt_review_save_button')));
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.text(l10n.inventoryReceiptReviewSaveAction), findsNothing);
+
+    saveCompleter.complete();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('actions row calls cancel and save callback once each', (
+    tester,
+  ) async {
+    var cancelTapCount = 0;
+    var saveTapCount = 0;
+
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(id: 'food', isDeposit: false, isDiscount: false),
+        ],
+        onCancelTap: () {
+          cancelTapCount++;
+        },
+        onSaveTap: (_) async {
+          saveTapCount++;
+        },
+      ),
+    );
+
+    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+    final l10n = AppLocalizations.of(context)!;
+
+    await tester.tap(find.text(l10n.inventoryReceiptReviewCancelAction));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('receipt_review_save_button')));
+    await tester.pumpAndSettle();
+
+    expect(cancelTapCount, 1);
+    expect(saveTapCount, 1);
+  });
+
+  testWidgets('items section shows empty state when there are no items', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        items: const <FridgeItem>[],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+    final l10n = AppLocalizations.of(context)!;
+
+    expect(find.text(l10n.inventoryReceiptReviewEmpty), findsOneWidget);
+  });
+
+  testWidgets('items section renders all preview rows', (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(
+            id: 'first',
+            name: 'First item',
+            isDeposit: false,
+            isDiscount: false,
+          ),
+          _item(
+            id: 'second',
+            name: 'Second item',
+            isDeposit: false,
+            isDiscount: false,
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    expect(find.text('First item'), findsOneWidget);
+    expect(find.text('Second item'), findsOneWidget);
+    expect(
+      find.byKey(const Key('receipt_review_edit_button_0')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('receipt_review_edit_button_1')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('edit interaction updates the tapped item index only', (
+    tester,
+  ) async {
+    List<FridgeItem>? savedItems;
+
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(
+            id: 'first',
+            name: 'First item',
+            isDeposit: false,
+            isDiscount: false,
+          ),
+          _item(
+            id: 'second',
+            name: 'Second item',
+            isDeposit: false,
+            isDiscount: false,
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (items) async {
+          savedItems = items;
+        },
+      ),
+    );
+
+    final editButton = find.byKey(const Key('receipt_review_edit_button_1'));
+    await tester.ensureVisible(editButton);
+    await tester.tap(editButton);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_field_name')),
+      'Edited second',
+    );
+    await tester.pumpAndSettle();
+
+    final applyButton = find.byKey(
+      const Key('receipt_review_apply_item_button'),
+    );
+    await tester.ensureVisible(applyButton);
+    await tester.tap(applyButton);
+    await tester.pumpAndSettle();
+
+    final saveButton = find.byKey(const Key('receipt_review_save_button'));
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect(savedItems, isNotNull);
+    expect(savedItems, hasLength(2));
+    expect(savedItems![0].name, 'First item');
+    expect(savedItems![1].name, 'Edited second');
   });
 
   testWidgets('invalid item number input shows inline validation', (
