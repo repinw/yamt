@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 class CaloriesMealSectionCard extends StatelessWidget {
   const CaloriesMealSectionCard({
@@ -24,6 +26,9 @@ class CaloriesMealSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final kcalUnit = l10n.caloriesUnitKcal;
+
     return Card(
       key: CaloriesPageKeys.sectionCard(section.mealType.name),
       child: Padding(
@@ -39,7 +44,7 @@ class CaloriesMealSectionCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
-                Text('${section.totalKcal.toStringAsFixed(0)} kcal'),
+                Text('${section.totalKcal.toStringAsFixed(0)} $kcalUnit'),
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -59,13 +64,13 @@ class CaloriesMealSectionCard extends StatelessWidget {
                   title: Text(entry.name),
                   subtitle: Text(
                     '${entry.consumedAmount.toStringAsFixed(0)} '
-                    '${entry.consumedUnit.jsonValue}',
+                    '${entry.consumedUnit.localizedName(l10n)}',
                   ),
                   trailing: Wrap(
                     spacing: AppSpacing.sm,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: <Widget>[
-                      Text('${entry.totalKcal.toStringAsFixed(0)} kcal'),
+                      Text('${entry.totalKcal.toStringAsFixed(0)} $kcalUnit'),
                       IconButton(
                         key: CaloriesPageKeys.entryDeleteButton(entry.id),
                         tooltip: deleteTooltip,

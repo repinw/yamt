@@ -389,6 +389,24 @@ abstract class AppLocalizations {
   /// **'Piece'**
   String get inventoryReceiptReviewWeightUnitPiece;
 
+  /// No description provided for @inventoryUnitGram.
+  ///
+  /// In en, this message translates to:
+  /// **'g'**
+  String get inventoryUnitGram;
+
+  /// No description provided for @inventoryUnitMilliliter.
+  ///
+  /// In en, this message translates to:
+  /// **'ml'**
+  String get inventoryUnitMilliliter;
+
+  /// No description provided for @inventoryUnitPiece.
+  ///
+  /// In en, this message translates to:
+  /// **'pc'**
+  String get inventoryUnitPiece;
+
   /// No description provided for @inventoryReceiptReviewFieldBrand.
   ///
   /// In en, this message translates to:
@@ -1156,6 +1174,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Snack'**
   String get caloriesMealSnack;
+
+  /// No description provided for @caloriesUnitKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal'**
+  String get caloriesUnitKcal;
 
   /// No description provided for @caloriesUnitGram.
   ///
