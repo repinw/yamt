@@ -13,7 +13,7 @@ const _controllerLogName = 'FridgeItemsController';
 @riverpod
 class FridgeItemsController extends _$FridgeItemsController {
   StreamSubscription<List<FridgeItem>>? _itemsSubscription;
-  Future<void> _mutationQueue = Future<void>.value();
+  final _mutationQueue = _SerializedMutationQueue();
 
   @override
   FutureOr<List<FridgeItem>> build() {
@@ -79,27 +79,40 @@ class FridgeItemsController extends _$FridgeItemsController {
   }
 
   Future<bool> deleteItem(String itemId) async {
-    return _runSerializedMutation(() async {
-      final currentItems = await _currentItems();
+    return _runItemsMutation((currentItems) {
       final nextItems = currentItems
           .where((item) => item.id != itemId)
           .toList(growable: false);
       if (nextItems.length == currentItems.length) {
-        return true;
+        return null;
       }
-      return _saveItems(previousItems: currentItems, nextItems: nextItems);
+      return nextItems;
     });
   }
 
   Future<bool> eatItem(String itemId, int amount) {
-    return _runSerializedMutation(
-      () => _reduceItem(itemId: itemId, amount: amount),
+    if (amount < 1) {
+      return Future<bool>.value(false);
+    }
+    return _runItemsMutation(
+      (currentItems) => _buildReducedItems(
+        currentItems: currentItems,
+        itemId: itemId,
+        amount: amount,
+      ),
     );
   }
 
   Future<bool> throwAwayItem(String itemId, int amount) {
-    return _runSerializedMutation(
-      () => _reduceItem(itemId: itemId, amount: amount),
+    if (amount < 1) {
+      return Future<bool>.value(false);
+    }
+    return _runItemsMutation(
+      (currentItems) => _buildReducedItems(
+        currentItems: currentItems,
+        itemId: itemId,
+        amount: amount,
+      ),
     );
   }
 
@@ -115,24 +128,20 @@ class FridgeItemsController extends _$FridgeItemsController {
     return future;
   }
 
-  Future<bool> _reduceItem({
+  List<FridgeItem>? _buildReducedItems({
+    required List<FridgeItem> currentItems,
     required String itemId,
     required int amount,
-  }) async {
-    if (amount < 1) {
-      return false;
-    }
-
-    final currentItems = await _currentItems();
+  }) {
     final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
     if (itemIndex < 0) {
-      return true;
+      return null;
     }
 
     final item = currentItems[itemIndex];
     final maxReducible = _maxReducibleAmount(item);
     if (maxReducible < 1) {
-      return true;
+      return null;
     }
     final reducedAmount = amount > maxReducible ? maxReducible : amount;
 
@@ -147,13 +156,26 @@ class FridgeItemsController extends _$FridgeItemsController {
           currentAmount: safeCurrentAmount,
         ),
       );
-      return _saveItems(previousItems: currentItems, nextItems: nextItems);
+      return nextItems;
     }
 
     final nextQuantity = item.quantity - reducedAmount;
     final safeQuantity = nextQuantity < 0 ? 0 : nextQuantity;
     nextItems[itemIndex] = item.copyWith(quantity: safeQuantity);
-    return _saveItems(previousItems: currentItems, nextItems: nextItems);
+    return nextItems;
+  }
+
+  Future<bool> _runItemsMutation(
+    List<FridgeItem>? Function(List<FridgeItem> currentItems) mutation,
+  ) {
+    return _runSerializedMutation(() async {
+      final currentItems = await _currentItems();
+      final nextItems = mutation(currentItems);
+      if (nextItems == null) {
+        return true;
+      }
+      return _saveItems(previousItems: currentItems, nextItems: nextItems);
+    });
   }
 
   int _maxReducibleAmount(FridgeItem item) {
@@ -216,19 +238,37 @@ class FridgeItemsController extends _$FridgeItemsController {
   }
 
   Future<bool> _runSerializedMutation(Future<bool> Function() mutation) {
-    final result = Completer<bool>();
-    _mutationQueue = _mutationQueue.then((_) async {
-      try {
-        final mutationResult = await mutation();
-        result.complete(mutationResult);
-      } catch (error, stackTrace) {
+    return _mutationQueue.run<bool>(
+      operation: mutation,
+      fallbackValue: false,
+      onError: (error, stackTrace) {
         log(
           'Unexpected inventory mutation error.',
           name: _controllerLogName,
           error: error,
           stackTrace: stackTrace,
         );
-        result.complete(false);
+      },
+    );
+  }
+}
+
+class _SerializedMutationQueue {
+  Future<void> _queue = Future<void>.value();
+
+  Future<T> run<T>({
+    required Future<T> Function() operation,
+    required T fallbackValue,
+    required void Function(Object error, StackTrace stackTrace) onError,
+  }) {
+    final result = Completer<T>();
+    _queue = _queue.then((_) async {
+      try {
+        final value = await operation();
+        result.complete(value);
+      } catch (error, stackTrace) {
+        onError(error, stackTrace);
+        result.complete(fallbackValue);
       }
     });
     return result.future;
