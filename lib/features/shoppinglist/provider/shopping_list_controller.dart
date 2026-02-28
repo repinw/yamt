@@ -15,7 +15,7 @@ class ShoppingListController extends _$ShoppingListController {
   static const _uuid = Uuid();
 
   StreamSubscription<List<ShoppingListItem>>? _itemsSubscription;
-  Future<void> _mutationQueue = Future<void>.value();
+  final _mutationQueue = _SerializedMutationQueue();
 
   @override
   FutureOr<List<ShoppingListItem>> build() {
@@ -49,54 +49,44 @@ class ShoppingListController extends _$ShoppingListController {
       return Future<bool>.value(false);
     }
 
-    return _runSerializedMutation(() {
-      return _mutateItems((previousItems) {
-        return _mergeAddedItem(
-          previousItems: previousItems,
-          input: input,
-          generatedId: _nextId(),
-        );
-      });
+    return _runListMutation((previousItems) {
+      return _mergeAddedItem(
+        previousItems: previousItems,
+        input: input,
+        generatedId: _nextId(),
+      );
     });
   }
 
   Future<bool> removeItem(String itemId) {
-    return _runSerializedMutation(() {
-      return _mutateItems((previousItems) {
-        final nextItems = previousItems
-            .where((item) => item.id != itemId)
-            .toList(growable: false);
-        if (nextItems.length == previousItems.length) {
-          return null;
-        }
-        return nextItems;
-      });
+    return _runListMutation((previousItems) {
+      final nextItems = previousItems
+          .where((item) => item.id != itemId)
+          .toList(growable: false);
+      if (nextItems.length == previousItems.length) {
+        return null;
+      }
+      return nextItems;
     });
   }
 
   Future<bool> incrementQuantity(String itemId) {
-    return _runSerializedMutation(
-      () => _updateQuantity(itemId, (quantity) => quantity + 1),
-    );
+    return _runListMutation(_buildQuantityMutation(itemId, (q) => q + 1));
   }
 
   Future<bool> decrementQuantity(String itemId) {
-    return _runSerializedMutation(
-      () => _updateQuantity(itemId, (quantity) => quantity - 1),
-    );
+    return _runListMutation(_buildQuantityMutation(itemId, (q) => q - 1));
   }
 
   Future<bool> clearCrossedOffItems() {
-    return _runSerializedMutation(() {
-      return _mutateItems((previousItems) {
-        final nextItems = previousItems
-            .where((item) => item.quantity > 0)
-            .toList(growable: false);
-        if (nextItems.length == previousItems.length) {
-          return null;
-        }
-        return nextItems;
-      });
+    return _runListMutation((previousItems) {
+      final nextItems = previousItems
+          .where((item) => item.quantity > 0)
+          .toList(growable: false);
+      if (nextItems.length == previousItems.length) {
+        return null;
+      }
+      return nextItems;
     });
   }
 
@@ -163,11 +153,9 @@ class ShoppingListController extends _$ShoppingListController {
     return nextItems;
   }
 
-  Future<bool> _updateQuantity(
-    String itemId,
-    int Function(int quantity) transform,
-  ) {
-    return _mutateItems((previousItems) {
+  List<ShoppingListItem>? Function(List<ShoppingListItem>)
+  _buildQuantityMutation(String itemId, int Function(int quantity) transform) {
+    return (previousItems) {
       final index = previousItems.indexWhere((item) => item.id == itemId);
       if (index < 0) {
         return null;
@@ -179,7 +167,14 @@ class ShoppingListController extends _$ShoppingListController {
       final safeQuantity = nextQuantity < 0 ? 0 : nextQuantity;
       nextItems[index] = item.copyWith(quantity: safeQuantity);
       return nextItems;
-    });
+    };
+  }
+
+  Future<bool> _runListMutation(
+    List<ShoppingListItem>? Function(List<ShoppingListItem> previousItems)
+    mutation,
+  ) {
+    return _runSerializedMutation(() => _mutateItems(mutation));
   }
 
   Future<bool> _mutateItems(
@@ -278,22 +273,18 @@ class ShoppingListController extends _$ShoppingListController {
   }
 
   Future<bool> _runSerializedMutation(Future<bool> Function() mutation) {
-    final result = Completer<bool>();
-    _mutationQueue = _mutationQueue.then((_) async {
-      try {
-        final mutationResult = await mutation();
-        result.complete(mutationResult);
-      } catch (error, stackTrace) {
+    return _mutationQueue.run<bool>(
+      operation: mutation,
+      fallbackValue: false,
+      onError: (error, stackTrace) {
         log(
           'Unexpected shopping list mutation error.',
           name: _controllerLogName,
           error: error,
           stackTrace: stackTrace,
         );
-        result.complete(false);
-      }
-    });
-    return result.future;
+      },
+    );
   }
 
   String _normalize(String value) {
@@ -321,4 +312,26 @@ class _AddShoppingListItemInput {
   final String normalizedBrand;
   final int quantity;
   final double estimatedUnitPrice;
+}
+
+class _SerializedMutationQueue {
+  Future<void> _queue = Future<void>.value();
+
+  Future<T> run<T>({
+    required Future<T> Function() operation,
+    required T fallbackValue,
+    required void Function(Object error, StackTrace stackTrace) onError,
+  }) {
+    final result = Completer<T>();
+    _queue = _queue.then((_) async {
+      try {
+        final value = await operation();
+        result.complete(value);
+      } catch (error, stackTrace) {
+        onError(error, stackTrace);
+        result.complete(fallbackValue);
+      }
+    });
+    return result.future;
+  }
 }
