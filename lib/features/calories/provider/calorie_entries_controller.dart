@@ -142,10 +142,6 @@ class CalorieEntriesController extends _$CalorieEntriesController {
           _restoreEntries(previousEntries);
           return false;
         }
-        if (onPersisted != null) {
-          await onPersisted();
-        }
-        return true;
       } catch (error, stackTrace) {
         log(
           failureLogMessage,
@@ -156,7 +152,28 @@ class CalorieEntriesController extends _$CalorieEntriesController {
         _restoreEntries(previousEntries);
         return false;
       }
+
+      if (onPersisted != null) {
+        await _runAfterPersistCallback(onPersisted);
+      }
+
+      return true;
     });
+  }
+
+  Future<void> _runAfterPersistCallback(
+    Future<void> Function() callback,
+  ) async {
+    try {
+      await callback();
+    } catch (error, stackTrace) {
+      log(
+        'Post-persist callback failed for calorie entry mutation.',
+        name: _entriesControllerLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   void _restoreEntries(List<CalorieEntry> entries) {
