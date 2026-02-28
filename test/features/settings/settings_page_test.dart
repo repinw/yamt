@@ -9,6 +9,7 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/settings/provider/ai_processing_level_controller.dart';
 import 'package:yamt/features/settings/account_page.dart';
 import 'package:yamt/features/settings/settings_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -74,7 +75,8 @@ void main() {
     expect(find.byIcon(Icons.person_outline), findsOneWidget);
     expect(find.byIcon(Icons.palette_outlined), findsOneWidget);
     expect(find.byIcon(Icons.format_paint_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.info_outline), findsOneWidget);
+    expect(find.byIcon(Icons.auto_awesome_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.info_outline), findsNWidgets(2));
 
     expect(find.text('Language'), findsOneWidget);
     expect(find.text('Choose app language'), findsOneWidget);
@@ -82,6 +84,9 @@ void main() {
     expect(find.text('System'), findsNWidgets(2));
     expect(find.text('Accent color'), findsOneWidget);
     expect(find.text('Lime'), findsNWidgets(2));
+    expect(find.text('AI processing'), findsOneWidget);
+    expect(find.text('Control OCR and analysis intensity'), findsOneWidget);
+    expect(find.text('Balanced'), findsOneWidget);
     expect(find.text('Notifications'), findsOneWidget);
     expect(find.text('Manage reminders and alerts'), findsOneWidget);
     expect(find.text('Account'), findsOneWidget);
@@ -184,6 +189,73 @@ void main() {
 
     expect(container.read(seedColorControllerProvider).toARGB32(), 0xFF00695C);
     expect(find.text('Teal'), findsNWidgets(2));
+  });
+
+  testWidgets('AI processing dropdown updates provider', (tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: SettingsPage()),
+        ),
+      ),
+    );
+
+    final processingDropdownFinder = find.byWidgetPredicate(
+      (widget) => widget is DropdownButton<AiProcessingLevel>,
+    );
+
+    expect(
+      container.read(aiProcessingLevelControllerProvider),
+      AiProcessingLevel.balanced,
+    );
+
+    await tester.tap(processingDropdownFinder);
+    await tester.pumpAndSettle();
+    expect(find.text('Minimal'), findsOneWidget);
+    await tester.tap(find.text('High').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      container.read(aiProcessingLevelControllerProvider),
+      AiProcessingLevel.high,
+    );
+    expect(find.text('High'), findsOneWidget);
+  });
+
+  testWidgets('AI processing info icon opens disclaimer dialog', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: SettingsPage()),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byTooltip('Processing level info'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Processing level'), findsOneWidget);
+    expect(
+      find.text('Speed and result quality depend on the selected level.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('Account tile opens AccountPage', (tester) async {

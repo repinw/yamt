@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
+import 'package:yamt/core/theme/theme_option_labels.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/features/auth/provider/auth_error_view_model.dart';
 import 'package:yamt/features/auth/provider/guest_name_setup_controller.dart';
@@ -148,7 +149,7 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
                 for (final mode in ThemeMode.values)
                   DropdownMenuItem(
                     value: mode,
-                    child: Text(_themeModeLabel(l10n, mode)),
+                    child: Text(localizedThemeModeLabel(l10n, mode)),
                   ),
               ],
             ),
@@ -213,33 +214,9 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
-        Text(_seedColorLabel(l10n, color)),
+        Text(localizedSeedColorLabel(l10n, color)),
       ],
     );
-  }
-
-  String _seedColorLabel(AppLocalizations l10n, Color color) {
-    return switch (color.toARGB32()) {
-      int value when value == AppSeedColors.lime.toARGB32() =>
-        l10n.settingsColorLime,
-      int value when value == AppSeedColors.blue.toARGB32() =>
-        l10n.settingsColorBlue,
-      int value when value == AppSeedColors.teal.toARGB32() =>
-        l10n.settingsColorTeal,
-      int value when value == AppSeedColors.pink.toARGB32() =>
-        l10n.settingsColorPink,
-      int value when value == AppSeedColors.orange.toARGB32() =>
-        l10n.settingsColorOrange,
-      _ => l10n.settingsColorLime,
-    };
-  }
-
-  String _themeModeLabel(AppLocalizations l10n, ThemeMode mode) {
-    return switch (mode) {
-      ThemeMode.system => l10n.settingsThemeSystem,
-      ThemeMode.light => l10n.settingsThemeLight,
-      ThemeMode.dark => l10n.settingsThemeDark,
-    };
   }
 
   void _restorePreviewIfNeeded() {

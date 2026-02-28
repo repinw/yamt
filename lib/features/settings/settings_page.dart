@@ -1,91 +1,126 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/core/config/ai_processing_level.dart';
+import 'package:yamt/core/config/ai_processing_level_controller.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
+import 'package:yamt/core/theme/theme_option_labels.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class SettingsPage extends ConsumerWidget {
+class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
-  void _onNotImplementedTap(BuildContext context, AppLocalizations l10n) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.commonNotImplementedYet)));
-  }
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final tiles = <Widget>[
+      _AccountTile(l10n: l10n),
+      const _ThemeModeTile(),
+      const _SeedColorTile(),
+      const _AiProcessingLevelTile(),
+      _NotImplementedTile(
+        icon: Icons.language_outlined,
+        title: l10n.settingsLanguageTitle,
+        subtitle: l10n.settingsLanguageSubtitle,
+        message: l10n.commonNotImplementedYet,
+      ),
+      _NotImplementedTile(
+        icon: Icons.notifications_outlined,
+        title: l10n.settingsNotificationsTitle,
+        subtitle: l10n.settingsNotificationsSubtitle,
+        message: l10n.commonNotImplementedYet,
+      ),
+      _NotImplementedTile(
+        icon: Icons.info_outline,
+        title: l10n.settingsAboutTitle,
+        subtitle: l10n.settingsAboutSubtitle,
+        message: l10n.commonNotImplementedYet,
+      ),
+    ];
 
-  void _openAccountPage(BuildContext context) {
-    context.push(AppRoutes.homeSettingsAccount);
+    return ListView.separated(
+      padding: AppInsets.listVertical,
+      itemCount: tiles.length,
+      itemBuilder: (context, index) => tiles[index],
+      separatorBuilder: (context, index) => const Divider(height: 1),
+    );
   }
+}
 
-  String _themeModeLabel(AppLocalizations l10n, ThemeMode mode) {
-    return switch (mode) {
-      ThemeMode.system => l10n.settingsThemeSystem,
-      ThemeMode.light => l10n.settingsThemeLight,
-      ThemeMode.dark => l10n.settingsThemeDark,
-    };
+class _AccountTile extends StatelessWidget {
+  const _AccountTile({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.person_outline),
+      title: Text(l10n.settingsAccountTitle),
+      subtitle: Text(l10n.settingsAccountSubtitle),
+      onTap: () => context.push(AppRoutes.homeSettingsAccount),
+    );
   }
+}
 
-  String _seedColorLabel(AppLocalizations l10n, Color color) {
-    return switch (color.toARGB32()) {
-      0xFF29F006 => l10n.settingsColorLime,
-      0xFF0D47A1 => l10n.settingsColorBlue,
-      0xFF00695C => l10n.settingsColorTeal,
-      0xFFFF006F => l10n.settingsColorPink,
-      0xFFE65100 => l10n.settingsColorOrange,
-      _ => l10n.settingsColorLime,
-    };
-  }
+class _ThemeModeTile extends ConsumerWidget {
+  const _ThemeModeTile();
 
-  Widget _themeModeTile(
-    AppLocalizations l10n,
-    ThemeMode themeMode,
-    WidgetRef ref,
-  ) {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final themeMode = ref.watch(themeModeControllerProvider);
+
     return ListTile(
       leading: const Icon(Icons.palette_outlined),
       title: Text(l10n.settingsThemeTitle),
-      subtitle: Text(_themeModeLabel(l10n, themeMode)),
+      subtitle: Text(localizedThemeModeLabel(l10n, themeMode)),
       trailing: DropdownButtonHideUnderline(
         child: DropdownButton<ThemeMode>(
           value: themeMode,
           onChanged: (selectedMode) {
-            if (selectedMode == null) return;
+            if (selectedMode == null) {
+              return;
+            }
             ref
                 .read(themeModeControllerProvider.notifier)
                 .setThemeMode(selectedMode);
           },
           items: [
-            DropdownMenuItem(
-              value: ThemeMode.system,
-              child: Text(l10n.settingsThemeSystem),
-            ),
-            DropdownMenuItem(
-              value: ThemeMode.light,
-              child: Text(l10n.settingsThemeLight),
-            ),
-            DropdownMenuItem(
-              value: ThemeMode.dark,
-              child: Text(l10n.settingsThemeDark),
-            ),
+            for (final mode in ThemeMode.values)
+              DropdownMenuItem<ThemeMode>(
+                value: mode,
+                child: Text(localizedThemeModeLabel(l10n, mode)),
+              ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _colorTile(AppLocalizations l10n, Color seedColor, WidgetRef ref) {
+class _SeedColorTile extends ConsumerWidget {
+  const _SeedColorTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final seedColor = ref.watch(seedColorControllerProvider);
+
     return ListTile(
       leading: const Icon(Icons.format_paint_outlined),
       title: Text(l10n.settingsColorTitle),
-      subtitle: Text(_seedColorLabel(l10n, seedColor)),
+      subtitle: Text(localizedSeedColorLabel(l10n, seedColor)),
       trailing: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           value: seedColor.toARGB32(),
           onChanged: (selectedColorValue) {
-            if (selectedColorValue == null) return;
+            if (selectedColorValue == null) {
+              return;
+            }
             ref
                 .read(seedColorControllerProvider.notifier)
                 .setSeedColor(Color(selectedColorValue));
@@ -94,63 +129,120 @@ class SettingsPage extends ConsumerWidget {
             for (final color in AppSeedColors.values)
               DropdownMenuItem<int>(
                 value: color.toARGB32(),
-                child: Text(_seedColorLabel(l10n, color)),
+                child: Text(localizedSeedColorLabel(l10n, color)),
               ),
           ],
         ),
       ),
     );
   }
+}
 
-  List<Widget> _tiles(
-    AppLocalizations l10n,
-    BuildContext context,
-    ThemeMode themeMode,
-    Color seedColor,
-    WidgetRef ref,
-  ) {
-    return [
-      ListTile(
-        leading: const Icon(Icons.person_outline),
-        title: Text(l10n.settingsAccountTitle),
-        subtitle: Text(l10n.settingsAccountSubtitle),
-        onTap: () => _openAccountPage(context),
-      ),
-      _themeModeTile(l10n, themeMode, ref),
-      _colorTile(l10n, seedColor, ref),
-      ListTile(
-        leading: const Icon(Icons.language_outlined),
-        title: Text(l10n.settingsLanguageTitle),
-        subtitle: Text(l10n.settingsLanguageSubtitle),
-        onTap: () => _onNotImplementedTap(context, l10n),
-      ),
-      ListTile(
-        leading: const Icon(Icons.notifications_outlined),
-        title: Text(l10n.settingsNotificationsTitle),
-        subtitle: Text(l10n.settingsNotificationsSubtitle),
-        onTap: () => _onNotImplementedTap(context, l10n),
-      ),
-      ListTile(
-        leading: const Icon(Icons.info_outline),
-        title: Text(l10n.settingsAboutTitle),
-        subtitle: Text(l10n.settingsAboutSubtitle),
-        onTap: () => _onNotImplementedTap(context, l10n),
-      ),
-    ];
-  }
+class _AiProcessingLevelTile extends ConsumerWidget {
+  const _AiProcessingLevelTile();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final themeMode = ref.watch(themeModeControllerProvider);
-    final seedColor = ref.watch(seedColorControllerProvider);
-    final tiles = _tiles(l10n, context, themeMode, seedColor, ref);
+    final aiProcessingLevel = ref.watch(aiProcessingLevelControllerProvider);
 
-    return ListView.separated(
-      padding: AppInsets.listVertical,
-      itemCount: tiles.length,
-      itemBuilder: (context, index) => tiles[index],
-      separatorBuilder: (context, index) => const Divider(height: 1),
+    return ListTile(
+      leading: const Icon(Icons.auto_awesome_outlined),
+      title: Text(l10n.settingsAiProcessingTitle),
+      subtitle: Text(l10n.settingsAiProcessingSubtitle),
+      trailing: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          IconButton(
+            tooltip: l10n.settingsAiProcessingInfoLabel,
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => _showAiProcessingInfo(context, l10n),
+          ),
+          DropdownButtonHideUnderline(
+            child: DropdownButton<AiProcessingLevel>(
+              value: aiProcessingLevel,
+              onChanged: (selectedLevel) {
+                if (selectedLevel == null) {
+                  return;
+                }
+                ref
+                    .read(aiProcessingLevelControllerProvider.notifier)
+                    .setLevel(selectedLevel);
+              },
+              items: [
+                for (final option in AiProcessingLevel.values)
+                  DropdownMenuItem<AiProcessingLevel>(
+                    value: option,
+                    child: Text(_aiProcessingLevelLabel(l10n, option)),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
+  }
+
+  String _aiProcessingLevelLabel(
+    AppLocalizations l10n,
+    AiProcessingLevel level,
+  ) {
+    return switch (level) {
+      AiProcessingLevel.minimal => l10n.settingsAiProcessingMinimal,
+      AiProcessingLevel.low => l10n.settingsAiProcessingLow,
+      AiProcessingLevel.balanced => l10n.settingsAiProcessingBalanced,
+      AiProcessingLevel.high => l10n.settingsAiProcessingHigh,
+    };
+  }
+
+  Future<void> _showAiProcessingInfo(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
+    final material = MaterialLocalizations.of(context);
+    return showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.settingsAiProcessingInfoTitle),
+          content: Text(l10n.settingsAiProcessingInfoMessage),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: Text(material.okButtonLabel),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _NotImplementedTile extends StatelessWidget {
+  const _NotImplementedTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.message,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      onTap: () => _showNotImplementedSnackBar(context),
+    );
+  }
+
+  void _showNotImplementedSnackBar(BuildContext context) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(SnackBar(content: Text(message)));
   }
 }
