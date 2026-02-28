@@ -15,11 +15,15 @@ class AuthFormController extends _$AuthFormController {
     required String password,
   }) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
+    final result = await AsyncValue.guard(
       () => ref
           .read(authRepositoryProvider)
           .signInWithEmailAndPassword(email: email, password: password),
     );
+    if (!ref.mounted) {
+      return;
+    }
+    state = result;
   }
 
   Future<void> createUserWithEmailAndPassword({
@@ -27,10 +31,14 @@ class AuthFormController extends _$AuthFormController {
     required String password,
   }) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
+    final result = await AsyncValue.guard(
       () => ref
           .read(authRepositoryProvider)
           .createUserWithEmailAndPassword(email: email, password: password),
     );
+    if (!ref.mounted) {
+      return;
+    }
+    state = result;
   }
 }
