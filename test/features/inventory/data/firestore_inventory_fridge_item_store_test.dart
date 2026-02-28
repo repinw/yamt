@@ -124,6 +124,43 @@ void main() {
   });
 
   test(
+    'replaceAll tolerates stale document deleted during delete phase',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      final collection = _inventoryCollection(
+        firestore: firestore,
+        userId: 'user-1',
+      );
+      await collection.doc('a').set(<String, dynamic>{'name': 'Old Milk'});
+      await collection.doc('b').set(<String, dynamic>{'name': 'Bread'});
+
+      final store = FirestoreInventoryFridgeItemStore(
+        firestore: firestore,
+        onBeforeDeleteStaleDocuments: () async {
+          await collection.doc('a').delete();
+        },
+      );
+
+      final replaced = await store.replaceAll(
+        userId: 'user-1',
+        documentsById: <String, Map<String, dynamic>>{
+          'b': <String, dynamic>{'name': 'Bread v2'},
+        },
+      );
+
+      final snapshot = await collection.get();
+      final dataById = <String, Map<String, dynamic>>{
+        for (final doc in snapshot.docs) doc.id: doc.data(),
+      };
+
+      expect(replaced, isTrue);
+      expect(snapshot.docs, hasLength(1));
+      expect(dataById.containsKey('a'), isFalse);
+      expect(dataById['b'], <String, dynamic>{'name': 'Bread v2'});
+    },
+  );
+
+  test(
     'replaceAll supports more than 500 operations via chunked batches',
     () async {
       final firestore = FakeFirebaseFirestore();
