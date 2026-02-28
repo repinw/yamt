@@ -2,6 +2,7 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 import 'package:yamt/core/data/firestore_batch_write.dart';
 
 const String _storeLogName = 'FirestoreInventoryFridgeItemStore';
@@ -49,7 +50,7 @@ class FirestoreInventoryFridgeItemStore implements InventoryFridgeItemStore {
     required FirebaseFirestore firestore,
   }) : _firestore = firestore,
        _onBeforeDeleteStaleDocuments = null;
-
+  @visibleForTesting
   const FirestoreInventoryFridgeItemStore.testing({
     required FirebaseFirestore firestore,
     Future<void> Function()? onBeforeDeleteStaleDocuments,
