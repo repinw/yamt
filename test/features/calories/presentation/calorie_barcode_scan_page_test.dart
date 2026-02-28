@@ -95,6 +95,37 @@ Future<void> _pumpUi(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('ignores queued barcode callback after page disposal', (
+    tester,
+  ) async {
+    final streamController = StreamController<String>();
+    addTearDown(streamController.close);
+
+    final lookupRepository = FakeCalorieProductLookupRepository(
+      onLookupByBarcode: (_) async => const CalorieLookupOutcome.notFound(),
+    );
+    final ocrRepository = FakeCalorieNutritionOcrRepository(
+      onScanNutritionLabel: (_) async {
+        return const CalorieNutritionOcrResult.failed(errorCode: 'unused');
+      },
+    );
+
+    await tester.pumpWidget(
+      _buildHarness(
+        barcodeStream: streamController.stream,
+        lookupRepository: lookupRepository,
+        ocrRepository: ocrRepository,
+      ),
+    );
+    await _pumpUi(tester);
+
+    streamController.add('4006381333931');
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('multiple lookup outcome shows candidate picker bottom sheet', (
     tester,
   ) async {
