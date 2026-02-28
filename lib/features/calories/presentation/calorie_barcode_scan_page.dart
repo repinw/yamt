@@ -119,7 +119,7 @@ class _CalorieBarcodeScanPageState
   }
 
   Future<void> _handleDetectedBarcode(String rawBarcode) async {
-    if (_isResolving) {
+    if (!mounted || _isDisposed || _isResolving) {
       return;
     }
 
