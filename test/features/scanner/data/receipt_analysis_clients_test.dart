@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/config/ai_processing_level.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_clients.dart';
-import 'package:yamt/features/settings/provider/ai_processing_level_controller.dart';
 
 void main() {
   test('minimal processing level uses receiptocr-minimal template', () async {
