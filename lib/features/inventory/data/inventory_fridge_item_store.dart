@@ -47,6 +47,11 @@ abstract interface class InventoryFridgeItemStore {
 class FirestoreInventoryFridgeItemStore implements InventoryFridgeItemStore {
   const FirestoreInventoryFridgeItemStore({
     required FirebaseFirestore firestore,
+  }) : _firestore = firestore,
+       _onBeforeDeleteStaleDocuments = null;
+
+  const FirestoreInventoryFridgeItemStore.testing({
+    required FirebaseFirestore firestore,
     Future<void> Function()? onBeforeDeleteStaleDocuments,
   }) : _firestore = firestore,
        _onBeforeDeleteStaleDocuments = onBeforeDeleteStaleDocuments;
@@ -224,6 +229,8 @@ class FirestoreInventoryFridgeItemStore implements InventoryFridgeItemStore {
       maxChunkSize: _maxStaleDeleteCandidatesPerTransaction,
     )) {
       await _firestore.runTransaction((transaction) async {
+        final deleteReferences = <DocumentReference<Map<String, dynamic>>>[];
+
         for (final candidate in chunk) {
           final latestSnapshot = await transaction.get(candidate.reference);
           if (!latestSnapshot.exists) {
@@ -233,7 +240,11 @@ class FirestoreInventoryFridgeItemStore implements InventoryFridgeItemStore {
           if (!_deepEquals(latestData, candidate.expectedData)) {
             continue;
           }
-          transaction.delete(candidate.reference);
+          deleteReferences.add(candidate.reference);
+        }
+
+        for (final reference in deleteReferences) {
+          transaction.delete(reference);
         }
       });
     }
