@@ -25,11 +25,13 @@ class ReceiptEditorDiscountRowsField extends StatefulWidget {
 class _ReceiptEditorDiscountRowsFieldState
     extends State<ReceiptEditorDiscountRowsField> {
   late final List<_DiscountRowControllers> _rows;
+  late int _nextRowId;
 
   @override
   void initState() {
     super.initState();
     _rows = _buildRows(widget.initialEntries);
+    _nextRowId = _rows.length;
   }
 
   @override
@@ -78,13 +80,14 @@ class _ReceiptEditorDiscountRowsFieldState
     final row = _rows[index];
 
     return Padding(
+      key: ValueKey<int>(row.id),
       padding: const EdgeInsets.only(bottom: AppSpacing.xs),
       child: Row(
         children: [
           Expanded(
             flex: 2,
             child: TextField(
-              key: Key('receipt_review_discount_name_$index'),
+              key: Key('receipt_review_discount_name_${row.id}'),
               controller: row.nameController,
               textInputAction: TextInputAction.next,
               onTapOutside: (_) =>
@@ -98,7 +101,7 @@ class _ReceiptEditorDiscountRowsFieldState
           const SizedBox(width: AppSpacing.xs),
           Expanded(
             child: TextField(
-              key: Key('receipt_review_discount_amount_$index'),
+              key: Key('receipt_review_discount_amount_${row.id}'),
               controller: row.amountController,
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
@@ -114,7 +117,7 @@ class _ReceiptEditorDiscountRowsFieldState
             ),
           ),
           IconButton(
-            key: Key('receipt_review_discount_remove_$index'),
+            key: Key('receipt_review_discount_remove_${row.id}'),
             onPressed: _rows.length > 1 ? () => _removeRow(index) : null,
             icon: const Icon(Icons.remove_circle_outline),
           ),
@@ -125,7 +128,8 @@ class _ReceiptEditorDiscountRowsFieldState
 
   void _addRow() {
     setState(() {
-      _rows.add(_DiscountRowControllers.empty());
+      _rows.add(_DiscountRowControllers.empty(id: _nextRowId));
+      _nextRowId += 1;
     });
     _notifyRowsChanged();
   }
@@ -154,13 +158,16 @@ class _ReceiptEditorDiscountRowsFieldState
     List<MapEntry<String, String>> initialEntries,
   ) {
     if (initialEntries.isEmpty) {
-      return <_DiscountRowControllers>[_DiscountRowControllers.empty()];
+      return <_DiscountRowControllers>[_DiscountRowControllers.empty(id: 0)];
     }
-    return initialEntries
+    return initialEntries.indexed
         .map(
-          (entry) => _DiscountRowControllers(
-            nameController: TextEditingController(text: entry.key),
-            amountController: TextEditingController(text: entry.value),
+          (indexedEntry) => _DiscountRowControllers(
+            id: indexedEntry.$1,
+            nameController: TextEditingController(text: indexedEntry.$2.key),
+            amountController: TextEditingController(
+              text: indexedEntry.$2.value,
+            ),
           ),
         )
         .toList(growable: true);
@@ -169,17 +176,20 @@ class _ReceiptEditorDiscountRowsFieldState
 
 class _DiscountRowControllers {
   const _DiscountRowControllers({
+    required this.id,
     required this.nameController,
     required this.amountController,
   });
 
-  factory _DiscountRowControllers.empty() {
+  factory _DiscountRowControllers.empty({required int id}) {
     return _DiscountRowControllers(
+      id: id,
       nameController: TextEditingController(),
       amountController: TextEditingController(),
     );
   }
 
+  final int id;
   final TextEditingController nameController;
   final TextEditingController amountController;
 
