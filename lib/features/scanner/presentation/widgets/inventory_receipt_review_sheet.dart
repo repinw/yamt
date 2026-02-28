@@ -215,15 +215,8 @@ class _ReceiptItemsSection extends StatelessWidget {
           final item = items[index];
           return Column(
             children: [
-              _buildItemTile(
-                context: context,
-                l10n: l10n,
-                item: item,
-                index: index,
-              ),
-              ..._buildDiscountRows(
-                context: context,
-                l10n: l10n,
+              _ReceiptItemTile(item: item, index: index, onEditTap: onEditTap),
+              _ReceiptItemDiscountRows(
                 item: item,
                 itemIndex: index,
                 currency: currency,
@@ -234,13 +227,22 @@ class _ReceiptItemsSection extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildItemTile({
-    required BuildContext context,
-    required AppLocalizations l10n,
-    required FridgeItem item,
-    required int index,
-  }) {
+class _ReceiptItemTile extends StatelessWidget {
+  const _ReceiptItemTile({
+    required this.item,
+    required this.index,
+    required this.onEditTap,
+  });
+
+  final FridgeItem item;
+  final int index;
+  final ValueChanged<int> onEditTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final textTheme = Theme.of(context).textTheme;
     final disabledColor = Theme.of(context).disabledColor;
     final muted = item.isReviewOnly;
@@ -250,7 +252,7 @@ class _ReceiptItemsSection extends StatelessWidget {
     final subtitleStyle = muted
         ? textTheme.bodyMedium?.copyWith(color: disabledColor)
         : textTheme.bodyMedium;
-    final subtitle = _buildItemSubtitle(context: context, item: item);
+    final subtitle = _buildItemSubtitle(context: context);
     final canEdit = !item.isDiscount;
 
     return ListTile(
@@ -280,15 +282,30 @@ class _ReceiptItemsSection extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildDiscountRows({
-    required BuildContext context,
-    required AppLocalizations l10n,
-    required FridgeItem item,
-    required int itemIndex,
-    required NumberFormat currency,
-  }) {
+  String _buildItemSubtitle({required BuildContext context}) {
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final currency = NumberFormat.currency(locale: locale, symbol: '€');
+    final linePrice = item.quantity * item.unitPrice;
+    return '${item.quantity}x · ${currency.format(linePrice)}';
+  }
+}
+
+class _ReceiptItemDiscountRows extends StatelessWidget {
+  const _ReceiptItemDiscountRows({
+    required this.item,
+    required this.itemIndex,
+    required this.currency,
+  });
+
+  final FridgeItem item;
+  final int itemIndex;
+  final NumberFormat currency;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (item.discounts.isEmpty) {
-      return const <Widget>[];
+      return const SizedBox.shrink();
     }
 
     final disabledColor = Theme.of(context).disabledColor;
@@ -297,47 +314,41 @@ class _ReceiptItemsSection extends StatelessWidget {
     ).textTheme.bodySmall?.copyWith(color: disabledColor);
     final entries = item.discounts.entries.toList(growable: false);
 
-    return entries.indexed
-        .map((entryWithIndex) {
-          final discountIndex = entryWithIndex.$1;
-          final discount = entryWithIndex.$2;
-          final discountName = discount.key.trim();
-          final text = discountName.isEmpty
-              ? '${l10n.inventoryReceiptReviewFieldDiscounts} '
-                    '(${currency.format(discount.value)})'
-              : '${l10n.inventoryReceiptReviewFieldDiscounts}: '
-                    '$discountName (${currency.format(discount.value)})';
-          return Padding(
-            key: Key('receipt_review_discount_row_${itemIndex}_$discountIndex'),
-            padding: const EdgeInsets.only(
-              left: AppSpacing.xl,
-              right: AppSpacing.xs,
-              bottom: AppSpacing.xs,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.subdirectory_arrow_right,
-                  size: 16,
-                  color: disabledColor,
-                ),
-                const SizedBox(width: AppSpacing.xs),
-                Expanded(child: Text(text, style: discountTextStyle)),
-              ],
-            ),
-          );
-        })
-        .toList(growable: false);
-  }
-
-  String _buildItemSubtitle({
-    required BuildContext context,
-    required FridgeItem item,
-  }) {
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final currency = NumberFormat.currency(locale: locale, symbol: '€');
-    final linePrice = item.quantity * item.unitPrice;
-    return '${item.quantity}x · ${currency.format(linePrice)}';
+    return Column(
+      children: entries.indexed
+          .map((entryWithIndex) {
+            final discountIndex = entryWithIndex.$1;
+            final discount = entryWithIndex.$2;
+            final discountName = discount.key.trim();
+            final text = discountName.isEmpty
+                ? '${l10n.inventoryReceiptReviewFieldDiscounts} '
+                      '(${currency.format(discount.value)})'
+                : '${l10n.inventoryReceiptReviewFieldDiscounts}: '
+                      '$discountName (${currency.format(discount.value)})';
+            return Padding(
+              key: Key(
+                'receipt_review_discount_row_${itemIndex}_$discountIndex',
+              ),
+              padding: const EdgeInsets.only(
+                left: AppSpacing.xl,
+                right: AppSpacing.xs,
+                bottom: AppSpacing.xs,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.subdirectory_arrow_right,
+                    size: 16,
+                    color: disabledColor,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(child: Text(text, style: discountTextStyle)),
+                ],
+              ),
+            );
+          })
+          .toList(growable: false),
+    );
   }
 }
 
