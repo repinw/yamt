@@ -10,6 +10,7 @@ import 'package:yamt/features/auth/provider/auth_error_view_model.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart'
     show authStateChangesProvider;
 import 'package:yamt/features/settings/provider/account_controller.dart';
+import 'package:yamt/features/settings/provider/account_page_flow_service.dart';
 import 'package:yamt/features/settings/widgets/account_cards.dart';
 import 'package:yamt/features/settings/widgets/account_status_snackbar.dart';
 import 'package:yamt/features/settings/widgets/credential_conflict_dialog.dart';
@@ -70,19 +71,16 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       if (!mounted) {
         return;
       }
-      if (_handleDeleteRecentLoginError(l10n, error)) {
+      final flowService = ref.read(accountPageFlowServiceProvider);
+      if (flowService.isRequiresRecentLoginError(error)) {
+        _showRecentLoginRequiredSnackBar(l10n);
         return;
       }
       _showAuthError(l10n, error);
     }
   }
 
-  bool _handleDeleteRecentLoginError(AppLocalizations l10n, Object error) {
-    if (error is! FirebaseAuthException ||
-        error.code != 'requires-recent-login') {
-      return false;
-    }
-
+  void _showRecentLoginRequiredSnackBar(AppLocalizations l10n) {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
@@ -96,7 +94,6 @@ class _AccountPageState extends ConsumerState<AccountPage> {
         ),
       ),
     );
-    return true;
   }
 
   Future<void> _linkGuestWithGoogle(AppLocalizations l10n) async {
@@ -128,8 +125,9 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     if (!mounted || dialogResult == null) {
       return;
     }
+    final flowService = ref.read(accountPageFlowServiceProvider);
     if (dialogResult is FirebaseAuthException &&
-        _isCredentialAlreadyInUseError(dialogResult)) {
+        flowService.isCredentialAlreadyInUseError(dialogResult)) {
       await _handleCredentialAlreadyInUse(l10n, dialogResult);
       return;
     }
@@ -140,6 +138,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
 
   Future<Object?> _showEmailPasswordDialog(AppLocalizations l10n) {
     final authErrorViewModel = ref.read(authErrorViewModelProvider);
+    final flowService = ref.read(accountPageFlowServiceProvider);
     return showDialog<Object?>(
       context: context,
       builder: (_) => LinkEmailPasswordDialog(
@@ -162,16 +161,11 @@ class _AccountPageState extends ConsumerState<AccountPage> {
         },
         shouldBubbleSubmitError: (error) =>
             error is FirebaseAuthException &&
-            _isCredentialAlreadyInUseError(error),
+            flowService.isCredentialAlreadyInUseError(error),
         errorMessageFor: (error) =>
             authErrorViewModel.messageFor(l10n: l10n, error: error),
       ),
     );
-  }
-
-  bool _isCredentialAlreadyInUseError(FirebaseAuthException error) {
-    return error.code == 'credential-already-in-use' ||
-        error.code == 'email-already-in-use';
   }
 
   Future<void> _handleCredentialAlreadyInUse(
@@ -210,33 +204,33 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     if (!mounted || action == null) return;
 
     try {
-      switch (action) {
-        case CredentialConflictAction.overwriteWithGuest:
-          await ref
-              .read(accountControllerProvider.notifier)
-              .overwriteExistingGoogleAccountWithGuest(credential);
-          if (!mounted) return;
-          showAccountStatusSnackBar(
-            context,
-            message: l10n.accountPageLinkConflictOverwriteDone,
-          );
-          break;
-        case CredentialConflictAction.deleteGuestAndSignInWithGoogle:
-          await ref
-              .read(accountControllerProvider.notifier)
-              .deleteGuestAndSignInWithGoogleCredential(credential);
-          if (!mounted) return;
-          showAccountStatusSnackBar(
-            context,
-            message: l10n.accountPageLinkConflictDeleteGuestDone,
-          );
-          break;
-      }
+      final (choice, successMessage) = _resolveConflictChoice(l10n, action);
+      await ref
+          .read(accountPageFlowServiceProvider)
+          .resolveCredentialConflict(choice: choice, credential: credential);
+      if (!mounted) return;
+      showAccountStatusSnackBar(context, message: successMessage);
     } catch (error, stackTrace) {
       if (!mounted) return;
       _logAuthError(error: error, stackTrace: stackTrace);
       _showAuthError(l10n, error);
     }
+  }
+
+  (AccountCredentialConflictChoice, String) _resolveConflictChoice(
+    AppLocalizations l10n,
+    CredentialConflictAction action,
+  ) {
+    return switch (action) {
+      CredentialConflictAction.overwriteWithGuest => (
+        AccountCredentialConflictChoice.overwriteWithGuest,
+        l10n.accountPageLinkConflictOverwriteDone,
+      ),
+      CredentialConflictAction.deleteGuestAndSignInWithGoogle => (
+        AccountCredentialConflictChoice.deleteGuestAndSignInWithGoogle,
+        l10n.accountPageLinkConflictDeleteGuestDone,
+      ),
+    };
   }
 
   void _logAuthError({required Object error, required StackTrace stackTrace}) {
