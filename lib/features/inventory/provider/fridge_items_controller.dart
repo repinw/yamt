@@ -40,7 +40,7 @@ List<FridgeItem>? buildReducedItems({
     final safeCurrentAmount = nextCurrentAmount < 0 ? 0 : nextCurrentAmount;
     nextItems[itemIndex] = item.copyWith(
       currentAmount: safeCurrentAmount,
-      quantity: _quantityForCurrentAmount(
+      quantity: quantityForCurrentAmount(
         item: item,
         currentAmount: safeCurrentAmount,
       ),
@@ -63,7 +63,8 @@ int _maxReducibleAmount(FridgeItem item) {
   return quantity > 0 ? quantity : 0;
 }
 
-int _quantityForCurrentAmount({
+@visibleForTesting
+int quantityForCurrentAmount({
   required FridgeItem item,
   required int currentAmount,
 }) {
