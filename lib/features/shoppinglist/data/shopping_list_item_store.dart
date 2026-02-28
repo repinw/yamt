@@ -9,9 +9,7 @@ const String _usersCollection = 'users';
 const String _shoppingListCollection = 'shopping_list_items';
 const int _maxFirestoreBatchOperations = 500;
 const int _maxFirestoreTransactionWrites = 500;
-const int _maxStaleDeleteCandidatesPerTransaction =
-    _maxFirestoreTransactionWrites;
-const DeepCollectionEquality _deepCollectionEquality = DeepCollectionEquality();
+const int _maxStaleDeleteCandidatesPerTransaction = 100;
 
 class ShoppingListItemDocument {
   const ShoppingListItemDocument({required this.id, required this.data});
@@ -128,10 +126,7 @@ class FirestoreShoppingListItemStore implements ShoppingListItemStore {
           continue;
         }
         final latestData = latestSnapshot.data();
-        if (!_deepCollectionEquality.equals(
-          latestData,
-          candidate.expectedData,
-        )) {
+        if (!_deepEquals(latestData, candidate.expectedData)) {
           continue;
         }
         deleteReferences.add(candidate.reference);
@@ -192,10 +187,7 @@ class FirestoreShoppingListItemStore implements ShoppingListItemStore {
             continue;
           }
           final latestData = latestSnapshot.data();
-          if (!_deepCollectionEquality.equals(
-            latestData,
-            candidate.expectedData,
-          )) {
+          if (!_deepEquals(latestData, candidate.expectedData)) {
             continue;
           }
           deleteReferences.add(candidate.reference);
@@ -206,6 +198,10 @@ class FirestoreShoppingListItemStore implements ShoppingListItemStore {
         }
       });
     }
+  }
+
+  bool _deepEquals(Object? left, Object? right) {
+    return const DeepCollectionEquality().equals(left, right);
   }
 
   Future<void> _commitInChunks(

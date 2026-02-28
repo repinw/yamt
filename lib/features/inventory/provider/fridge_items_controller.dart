@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
@@ -13,7 +14,7 @@ const _controllerLogName = 'FridgeItemsController';
 @riverpod
 class FridgeItemsController extends _$FridgeItemsController {
   StreamSubscription<List<FridgeItem>>? _itemsSubscription;
-  final _mutationQueue = _SerializedMutationQueue();
+  final _mutationQueue = SerializedMutationQueue();
 
   @override
   FutureOr<List<FridgeItem>> build() {
@@ -250,27 +251,5 @@ class FridgeItemsController extends _$FridgeItemsController {
         );
       },
     );
-  }
-}
-
-class _SerializedMutationQueue {
-  Future<void> _queue = Future<void>.value();
-
-  Future<T> run<T>({
-    required Future<T> Function() operation,
-    required T fallbackValue,
-    required void Function(Object error, StackTrace stackTrace) onError,
-  }) {
-    final result = Completer<T>();
-    _queue = _queue.then((_) async {
-      try {
-        final value = await operation();
-        result.complete(value);
-      } catch (error, stackTrace) {
-        onError(error, stackTrace);
-        result.complete(fallbackValue);
-      }
-    });
-    return result.future;
   }
 }
