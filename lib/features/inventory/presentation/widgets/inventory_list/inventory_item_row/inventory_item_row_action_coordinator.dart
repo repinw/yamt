@@ -23,11 +23,18 @@ class InventoryItemRowActionCoordinator {
     }
 
     setWorking(true);
-    final success = await action();
+    var success = false;
+    try {
+      success = await action();
+    } finally {
+      if (isMounted()) {
+        setWorking(false);
+      }
+    }
+
     if (!isMounted()) {
       return;
     }
-    setWorking(false);
 
     if (success) {
       if (successMessage != null) {

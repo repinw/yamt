@@ -48,6 +48,19 @@ class InventoryItemRow extends ConsumerStatefulWidget {
 class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   var _isExpanded = false;
   var _isWorking = false;
+  late final InventoryItemRowActionCoordinator _actionCoordinator;
+
+  @override
+  void initState() {
+    super.initState();
+    _actionCoordinator = InventoryItemRowActionCoordinator(
+      isWorking: () => _isWorking,
+      setWorking: _setWorking,
+      isMounted: () => mounted,
+      showSnackBar: _showActionSnackBar,
+      defaultFailureMessage: widget.l10n.inventoryItemActionFailed,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,16 +120,6 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     setState(() {
       _isExpanded = !_isExpanded;
     });
-  }
-
-  InventoryItemRowActionCoordinator get _actionCoordinator {
-    return InventoryItemRowActionCoordinator(
-      isWorking: () => _isWorking,
-      setWorking: _setWorking,
-      isMounted: () => mounted,
-      showSnackBar: _showActionSnackBar,
-      defaultFailureMessage: widget.l10n.inventoryItemActionFailed,
-    );
   }
 
   void _setWorking(bool isWorking) {
