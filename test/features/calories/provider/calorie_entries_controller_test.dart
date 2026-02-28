@@ -24,6 +24,9 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   bool saveShouldFail = false;
   bool deleteShouldFail = false;
   Object? watchError;
+  Object? saveError;
+  Completer<void>? saveBlocker;
+  var saveStarted = false;
 
   @override
   Stream<List<CalorieEntry>> watchEntriesForDay(DateTime day) {
@@ -55,6 +58,13 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 
   @override
   Future<bool> saveEntry(CalorieEntry entry) async {
+    saveStarted = true;
+    if (saveBlocker != null) {
+      await saveBlocker!.future;
+    }
+    if (saveError != null) {
+      throw saveError!;
+    }
     if (saveShouldFail) {
       return false;
     }
@@ -235,6 +245,19 @@ ProviderSubscription<AsyncValue<CalorieGoalSettings>> _keepGoalAlive(
   return container.listen(calorieGoalControllerProvider, (_, _) {});
 }
 
+Future<void> _waitForCondition({
+  required bool Function() condition,
+  Duration timeout = const Duration(seconds: 1),
+}) async {
+  final deadline = DateTime.now().add(timeout);
+  while (!condition()) {
+    if (DateTime.now().isAfter(deadline)) {
+      fail('Condition not met within ${timeout.inMilliseconds}ms.');
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+  }
+}
+
 void main() {
   test('day controller normalizes and navigates date state', () {
     final container = ProviderContainer();
@@ -411,6 +434,74 @@ void main() {
   );
 
   test(
+    'saveEntry updates state optimistically before persist completes',
+    () async {
+      final repository = _FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'b1',
+            loggedAt: DateTime(2026, 2, 25, 8),
+            mealType: MealType.breakfast,
+          ),
+        ],
+      );
+      repository.saveBlocker = Completer<void>();
+      final settingsRepository = _FakeCalorieSettingsRepository();
+      addTearDown(repository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(repository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final entriesSubscription = _keepEntriesAlive(container);
+      addTearDown(entriesSubscription.close);
+
+      container
+          .read(calorieDayControllerProvider.notifier)
+          .setDay(DateTime(2026, 2, 25));
+      await container.read(calorieEntriesControllerProvider.future);
+
+      final newEntry = _entry(
+        'new',
+        loggedAt: DateTime(2026, 2, 25, 10),
+        mealType: MealType.lunch,
+      );
+
+      var mutationCompleted = false;
+      final saveFuture =
+          container
+              .read(calorieEntriesControllerProvider.notifier)
+              .saveEntry(newEntry)
+            ..then((_) => mutationCompleted = true);
+
+      await _waitForCondition(condition: () => repository.saveStarted);
+
+      final optimisticEntries = container
+          .read(calorieEntriesControllerProvider)
+          .asData
+          ?.value;
+      expect(optimisticEntries, hasLength(2));
+      expect(
+        optimisticEntries?.map((entry) => entry.id),
+        containsAll(<String>['b1', 'new']),
+      );
+      expect(mutationCompleted, isFalse);
+
+      repository.saveBlocker?.complete();
+      final saved = await saveFuture;
+
+      expect(saved, isTrue);
+      expect(mutationCompleted, isTrue);
+    },
+  );
+
+  test(
     'saveEntry rolls back optimistic update on repository failure',
     () async {
       final repository = _FakeCalorieLogRepository(
@@ -463,6 +554,55 @@ void main() {
       expect(entries?.single.id, 'b1');
     },
   );
+
+  test('saveEntry rolls back optimistic update when persist throws', () async {
+    final repository = _FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'b1',
+          loggedAt: DateTime(2026, 2, 25, 8),
+          mealType: MealType.breakfast,
+        ),
+      ],
+    );
+    repository.saveError = StateError('write failed');
+    final settingsRepository = _FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(repository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final entriesSubscription = _keepEntriesAlive(container);
+    addTearDown(entriesSubscription.close);
+
+    container
+        .read(calorieDayControllerProvider.notifier)
+        .setDay(DateTime(2026, 2, 25));
+    await container.read(calorieEntriesControllerProvider.future);
+
+    final newEntry = _entry(
+      'new',
+      loggedAt: DateTime(2026, 2, 25, 10),
+      mealType: MealType.lunch,
+    );
+
+    final saved = await container
+        .read(calorieEntriesControllerProvider.notifier)
+        .saveEntry(newEntry);
+
+    expect(saved, isFalse);
+    final entries = container
+        .read(calorieEntriesControllerProvider)
+        .asData
+        ?.value;
+    expect(entries, hasLength(1));
+    expect(entries?.single.id, 'b1');
+  });
 
   test('goal controller setGoal and clearGoal update state', () async {
     final repository = _FakeCalorieLogRepository();

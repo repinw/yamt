@@ -195,10 +195,14 @@ class FakeCalorieSettingsRepository implements CalorieSettingsRepository {
 
 class FakeCalorieProductCacheRepository
     implements CalorieProductCacheRepositoryContract {
-  final Map<String, CalorieProductProfile> global = <String, CalorieProductProfile>{};
+  final Map<String, CalorieProductProfile> global =
+      <String, CalorieProductProfile>{};
   final Map<String, CalorieProductProfile> overrides =
       <String, CalorieProductProfile>{};
   final List<String> savedOverrideReasons = <String>[];
+  var saveUserOverrideCallCount = 0;
+  var saveUserOverrideShouldFail = false;
+  var saveUserOverrideShouldThrow = false;
 
   @override
   Future<CalorieProductProfile?> readGlobalProduct(String barcode) async {
@@ -221,6 +225,13 @@ class FakeCalorieProductCacheRepository
     required CalorieProductProfile profile,
     required String reason,
   }) async {
+    saveUserOverrideCallCount += 1;
+    if (saveUserOverrideShouldThrow) {
+      throw StateError('save override failed');
+    }
+    if (saveUserOverrideShouldFail) {
+      return false;
+    }
     overrides[profile.barcode] = profile;
     savedOverrideReasons.add(reason);
     return true;
@@ -229,9 +240,7 @@ class FakeCalorieProductCacheRepository
 
 class FakeCalorieProductLookupRepository
     implements CalorieProductLookupRepositoryContract {
-  FakeCalorieProductLookupRepository({
-    required this.onLookupByBarcode,
-  });
+  FakeCalorieProductLookupRepository({required this.onLookupByBarcode});
 
   final Future<CalorieLookupOutcome> Function(String barcode) onLookupByBarcode;
   final List<CalorieProductProfile> persistedProfiles =
@@ -251,9 +260,7 @@ class FakeCalorieProductLookupRepository
 
 class FakeCalorieNutritionOcrRepository
     implements CalorieNutritionOcrRepositoryContract {
-  FakeCalorieNutritionOcrRepository({
-    required this.onScanNutritionLabel,
-  });
+  FakeCalorieNutritionOcrRepository({required this.onScanNutritionLabel});
 
   final Future<CalorieNutritionOcrResult> Function(String barcode)
   onScanNutritionLabel;
