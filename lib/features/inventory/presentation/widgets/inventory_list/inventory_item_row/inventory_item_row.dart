@@ -9,6 +9,8 @@ import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_amount_input_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/inventory_item_row_action_coordinator.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_expand_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_main_section.dart';
@@ -48,6 +50,19 @@ class InventoryItemRow extends ConsumerStatefulWidget {
 class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   var _isExpanded = false;
   var _isWorking = false;
+  late final InventoryItemRowActionCoordinator _actionCoordinator;
+
+  @override
+  void initState() {
+    super.initState();
+    _actionCoordinator = InventoryItemRowActionCoordinator(
+      isWorking: () => _isWorking,
+      setWorking: _setWorking,
+      isMounted: () => mounted,
+      showSnackBar: _showActionSnackBar,
+      defaultFailureMessage: widget.l10n.inventoryItemActionFailed,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,8 +124,18 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     });
   }
 
+  void _setWorking(bool isWorking) {
+    setState(() {
+      _isWorking = isWorking;
+    });
+  }
+
   void _onDeletePressed() {
-    unawaited(_runAction(() => widget.onDeletePressed(widget.item.id)));
+    unawaited(
+      _actionCoordinator.runAction(
+        () => widget.onDeletePressed(widget.item.id),
+      ),
+    );
   }
 
   void _onEatPressed() {
@@ -136,7 +161,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   void _onBuyAgainPressed() {
     final controller = ref.read(fridgeItemsControllerProvider.notifier);
     unawaited(
-      _runAction(
+      _actionCoordinator.runAction(
         () => controller.buyAgainItem(widget.item),
         successMessage: widget.l10n.inventoryItemBuyAgainSucceeded,
         failureMessage: widget.l10n.inventoryItemActionFailed,
@@ -172,39 +197,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       return;
     }
 
-    await _runAction(() => action(widget.item.id, amount));
-  }
-
-  Future<void> _runAction(
-    Future<bool> Function() action, {
-    String? successMessage,
-    String? failureMessage,
-  }) async {
-    if (_isWorking) {
-      return;
-    }
-
-    setState(() {
-      _isWorking = true;
-    });
-    final success = await action();
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _isWorking = false;
-    });
-
-    if (success) {
-      if (successMessage != null) {
-        _showActionSnackBar(successMessage);
-      }
-      return;
-    }
-
-    _showActionSnackBar(
-      failureMessage ?? widget.l10n.inventoryItemActionFailed,
-    );
+    await _actionCoordinator.runAction(() => action(widget.item.id, amount));
   }
 
   void _showActionSnackBar(String message) {
