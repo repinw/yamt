@@ -111,6 +111,12 @@ Future<void> _expand(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+BorderSide _receiptTileBorderSide(WidgetTester tester) {
+  final card = tester.widget<Card>(find.byType(Card));
+  final shape = card.shape as RoundedRectangleBorder;
+  return shape.side;
+}
+
 void main() {
   final lightTheme = AppTheme.light(seedColor: AppColors.seed);
   final darkTheme = AppTheme.dark(seedColor: AppColors.seed);
@@ -129,6 +135,36 @@ void main() {
     await _pump(tester, theme: darkTheme);
     expect(find.text('Receipt Feb 20, 2026'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('light theme uses softened border color and width', (
+    tester,
+  ) async {
+    await _pump(tester, theme: lightTheme);
+
+    final side = _receiptTileBorderSide(tester);
+    final expectedColor = Color.alphaBlend(
+      lightTheme.colorScheme.outlineVariant.withValues(alpha: 0.14),
+      lightTheme.colorScheme.surface,
+    );
+
+    expect(side.color, expectedColor);
+    expect(side.width, 0.7);
+  });
+
+  testWidgets('dark theme uses stronger border color and same width', (
+    tester,
+  ) async {
+    await _pump(tester, theme: darkTheme);
+
+    final side = _receiptTileBorderSide(tester);
+    final expectedColor = Color.alphaBlend(
+      darkTheme.colorScheme.outlineVariant.withValues(alpha: 0.24),
+      darkTheme.colorScheme.surface,
+    );
+
+    expect(side.color, expectedColor);
+    expect(side.width, 0.7);
   });
 
   testWidgets('golden: light collapsed', (tester) async {
