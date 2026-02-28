@@ -117,19 +117,10 @@ class FirestoreAtomicReplaceService {
     required List<FirestoreStaleDeleteCandidate> staleDeleteCandidates,
   }) async {
     await _firestore.runTransaction((transaction) async {
-      final deleteReferences = <DocumentReference<Map<String, dynamic>>>[];
-
-      for (final candidate in staleDeleteCandidates) {
-        final latestSnapshot = await transaction.get(candidate.reference);
-        if (!latestSnapshot.exists) {
-          continue;
-        }
-        final latestData = latestSnapshot.data();
-        if (!_deepEquals(latestData, candidate.expectedData)) {
-          continue;
-        }
-        deleteReferences.add(candidate.reference);
-      }
+      final deleteReferences = await _unchangedDeleteReferences(
+        transaction: transaction,
+        staleDeleteCandidates: staleDeleteCandidates,
+      );
 
       for (final entry in documentsById.entries) {
         transaction.set(collection.doc(entry.key), entry.value);
@@ -149,19 +140,10 @@ class FirestoreAtomicReplaceService {
       maxChunkSize: maxStaleDeleteCandidatesPerTransaction,
     )) {
       await _firestore.runTransaction((transaction) async {
-        final deleteReferences = <DocumentReference<Map<String, dynamic>>>[];
-
-        for (final candidate in chunk) {
-          final latestSnapshot = await transaction.get(candidate.reference);
-          if (!latestSnapshot.exists) {
-            continue;
-          }
-          final latestData = latestSnapshot.data();
-          if (!_deepEquals(latestData, candidate.expectedData)) {
-            continue;
-          }
-          deleteReferences.add(candidate.reference);
-        }
+        final deleteReferences = await _unchangedDeleteReferences(
+          transaction: transaction,
+          staleDeleteCandidates: chunk,
+        );
 
         for (final reference in deleteReferences) {
           transaction.delete(reference);
@@ -185,6 +167,26 @@ class FirestoreAtomicReplaceService {
       }
       await batch.commit();
     }
+  }
+
+  Future<List<DocumentReference<Map<String, dynamic>>>>
+  _unchangedDeleteReferences({
+    required Transaction transaction,
+    required List<FirestoreStaleDeleteCandidate> staleDeleteCandidates,
+  }) async {
+    final deleteReferences = <DocumentReference<Map<String, dynamic>>>[];
+    for (final candidate in staleDeleteCandidates) {
+      final latestSnapshot = await transaction.get(candidate.reference);
+      if (!latestSnapshot.exists) {
+        continue;
+      }
+      final latestData = latestSnapshot.data();
+      if (!_deepEquals(latestData, candidate.expectedData)) {
+        continue;
+      }
+      deleteReferences.add(candidate.reference);
+    }
+    return deleteReferences;
   }
 
   bool _deepEquals(Object? left, Object? right) {
