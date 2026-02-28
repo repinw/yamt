@@ -88,23 +88,28 @@ void main() {
     },
   );
 
-  test('runAction resets loading state when action throws', () async {
-    final harness = _CoordinatorHarness();
-    final coordinator = harness.buildCoordinator();
+  test(
+    'runAction resets loading state and shows failure when action throws',
+    () async {
+      final harness = _CoordinatorHarness();
+      final coordinator = harness.buildCoordinator();
 
-    await expectLater(
-      coordinator.runAction(() async {
+      await coordinator.runAction(() async {
         harness.events.add('action');
         throw StateError('boom');
-      }),
-      throwsA(isA<StateError>()),
-    );
+      });
 
-    expect(
-      harness.events,
-      orderedEquals(<String>['setWorking:true', 'action', 'setWorking:false']),
-    );
-  });
+      expect(
+        harness.events,
+        orderedEquals(<String>[
+          'setWorking:true',
+          'action',
+          'setWorking:false',
+          'snack:fallback-failure',
+        ]),
+      );
+    },
+  );
 }
 
 class _CoordinatorHarness {

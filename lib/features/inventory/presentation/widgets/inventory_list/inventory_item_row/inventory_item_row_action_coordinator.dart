@@ -1,3 +1,7 @@
+import 'dart:developer' show log;
+
+const _coordinatorLogName = 'InventoryItemRowActionCoordinator';
+
 class InventoryItemRowActionCoordinator {
   const InventoryItemRowActionCoordinator({
     required this.isWorking,
@@ -18,7 +22,7 @@ class InventoryItemRowActionCoordinator {
     String? successMessage,
     String? failureMessage,
   }) async {
-    if (isWorking()) {
+    if (isWorking() || !isMounted()) {
       return;
     }
 
@@ -26,6 +30,14 @@ class InventoryItemRowActionCoordinator {
     var success = false;
     try {
       success = await action();
+    } catch (error, stackTrace) {
+      log(
+        'Action failed',
+        name: _coordinatorLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      success = false;
     } finally {
       if (isMounted()) {
         setWorking(false);

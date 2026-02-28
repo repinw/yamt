@@ -123,9 +123,6 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   }
 
   void _setWorking(bool isWorking) {
-    if (!mounted) {
-      return;
-    }
     setState(() {
       _isWorking = isWorking;
     });
