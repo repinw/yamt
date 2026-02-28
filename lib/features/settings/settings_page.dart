@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/config/ai_processing_level.dart';
+import 'package:yamt/core/config/ai_processing_level_controller.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_option_labels.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
-import 'package:yamt/features/settings/provider/ai_processing_level_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class SettingsPage extends StatelessWidget {

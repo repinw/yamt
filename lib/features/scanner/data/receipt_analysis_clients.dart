@@ -7,7 +7,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/config/ai_processing_level.dart';
-import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/config/ai_processing_level_controller.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_contracts.dart';
 
 part 'receipt_analysis_clients.g.dart';
@@ -26,11 +26,10 @@ const Duration _remoteConfigProdFetchInterval = Duration(hours: 1);
 
 @riverpod
 ReceiptTemplateConfigClient receiptTemplateConfigClient(Ref ref) {
-  final preferences = ref.watch(appPreferencesProvider);
-  final levelName = preferences.getStringSync(aiProcessingLevelStorageKey);
+  final level = ref.watch(aiProcessingLevelControllerProvider);
   return FirebaseReceiptTemplateConfigClient(
     remoteConfig: FirebaseRemoteConfig.instance,
-    level: aiProcessingLevelFromName(levelName),
+    level: level,
   );
 }
 
