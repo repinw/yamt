@@ -7,6 +7,43 @@ import 'package:yamt/features/shoppinglist/data/shopping_list_item_store.dart';
 const _usersCollection = 'users';
 const _shoppingListCollection = 'shopping_list_items';
 
+class _HookedFakeFirebaseFirestore extends FakeFirebaseFirestore {
+  _HookedFakeFirebaseFirestore({required this.onBeforeRunTransaction});
+
+  final Future<void> Function() onBeforeRunTransaction;
+
+  @override
+  Future<T> runTransaction<T>(
+    TransactionHandler<T> transactionHandler, {
+    Duration timeout = const Duration(seconds: 30),
+    int maxAttempts = 5,
+  }) async {
+    await onBeforeRunTransaction();
+    return super.runTransaction(
+      transactionHandler,
+      timeout: timeout,
+      maxAttempts: maxAttempts,
+    );
+  }
+}
+
+class _ThrowingTransactionFakeFirebaseFirestore extends FakeFirebaseFirestore {
+  @override
+  Future<T> runTransaction<T>(
+    TransactionHandler<T> transactionHandler, {
+    Duration timeout = const Duration(seconds: 30),
+    int maxAttempts = 5,
+  }) {
+    return Future<T>.error(
+      FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'aborted',
+        message: 'transaction failed',
+      ),
+    );
+  }
+}
+
 CollectionReference<Map<String, dynamic>> _shoppingListCollectionRef({
   required FirebaseFirestore firestore,
   required String userId,
@@ -15,6 +52,17 @@ CollectionReference<Map<String, dynamic>> _shoppingListCollectionRef({
       .collection(_usersCollection)
       .doc(userId)
       .collection(_shoppingListCollection);
+}
+
+Future<void> _seedStaleDocuments({
+  required CollectionReference<Map<String, dynamic>> collection,
+  required int count,
+}) async {
+  for (var index = 0; index < count; index++) {
+    await collection.doc('stale-$index').set(<String, dynamic>{
+      'name': 'Item $index',
+    });
+  }
 }
 
 void main() {
@@ -86,22 +134,22 @@ void main() {
   );
 
   test('replaceAll keeps stale document changed during delete phase', () async {
-    final firestore = FakeFirebaseFirestore();
-    final collection = _shoppingListCollectionRef(
+    late final CollectionReference<Map<String, dynamic>> collection;
+    final firestore = _HookedFakeFirebaseFirestore(
+      onBeforeRunTransaction: () async {
+        await collection.doc('a').set(<String, dynamic>{
+          'name': 'Changed elsewhere',
+        });
+      },
+    );
+    collection = _shoppingListCollectionRef(
       firestore: firestore,
       userId: 'user-1',
     );
     await collection.doc('a').set(<String, dynamic>{'name': 'Old Milk'});
     await collection.doc('b').set(<String, dynamic>{'name': 'Bread'});
 
-    final store = FirestoreShoppingListItemStore(
-      firestore: firestore,
-      onBeforeDeleteStaleDocuments: () async {
-        await collection.doc('a').set(<String, dynamic>{
-          'name': 'Changed elsewhere',
-        });
-      },
-    );
+    final store = FirestoreShoppingListItemStore(firestore: firestore);
 
     final replaced = await store.replaceAll(
       userId: 'user-1',
@@ -120,6 +168,42 @@ void main() {
     expect(dataById['a'], <String, dynamic>{'name': 'Changed elsewhere'});
     expect(dataById['b'], <String, dynamic>{'name': 'Bread v2'});
   });
+
+  test(
+    'replaceAll tolerates stale document deleted during delete phase',
+    () async {
+      late final CollectionReference<Map<String, dynamic>> collection;
+      final firestore = _HookedFakeFirebaseFirestore(
+        onBeforeRunTransaction: () async {
+          await collection.doc('a').delete();
+        },
+      );
+      collection = _shoppingListCollectionRef(
+        firestore: firestore,
+        userId: 'user-1',
+      );
+      await collection.doc('a').set(<String, dynamic>{'name': 'Old Milk'});
+      await collection.doc('b').set(<String, dynamic>{'name': 'Bread'});
+
+      final store = FirestoreShoppingListItemStore(firestore: firestore);
+      final replaced = await store.replaceAll(
+        userId: 'user-1',
+        documentsById: <String, Map<String, dynamic>>{
+          'b': <String, dynamic>{'name': 'Bread v2'},
+        },
+      );
+
+      final snapshot = await collection.get();
+      final dataById = <String, Map<String, dynamic>>{
+        for (final doc in snapshot.docs) doc.id: doc.data(),
+      };
+
+      expect(replaced, isTrue);
+      expect(snapshot.docs, hasLength(1));
+      expect(dataById.containsKey('a'), isFalse);
+      expect(dataById['b'], <String, dynamic>{'name': 'Bread v2'});
+    },
+  );
 
   test(
     'replaceAll supports more than 500 operations via chunked batches',
@@ -146,6 +230,38 @@ void main() {
       expect(snapshot.docs, hasLength(501));
       expect(snapshot.docs.any((doc) => doc.id == 'item-0'), isTrue);
       expect(snapshot.docs.any((doc) => doc.id == 'item-500'), isTrue);
+    },
+  );
+
+  test(
+    'replaceAll returns false when stale delete transaction fails',
+    () async {
+      final firestore = _ThrowingTransactionFakeFirebaseFirestore();
+      final collection = _shoppingListCollectionRef(
+        firestore: firestore,
+        userId: 'user-1',
+      );
+      await _seedStaleDocuments(collection: collection, count: 501);
+
+      final store = FirestoreShoppingListItemStore(firestore: firestore);
+      final replaced = await store.replaceAll(
+        userId: 'user-1',
+        documentsById: <String, Map<String, dynamic>>{
+          'keep': <String, dynamic>{'name': 'Keep'},
+        },
+      );
+
+      final snapshot = await collection.get();
+      final staleCount = snapshot.docs
+          .where((doc) => doc.id.startsWith('stale-'))
+          .length;
+      final keepData = snapshot.docs
+          .firstWhere((doc) => doc.id == 'keep')
+          .data();
+
+      expect(replaced, isFalse);
+      expect(staleCount, 501);
+      expect(keepData, <String, dynamic>{'name': 'Keep'});
     },
   );
 }
