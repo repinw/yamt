@@ -149,4 +149,97 @@ void main() {
     expect(dataById['a'], <String, dynamic>{'name': 'Changed elsewhere'});
     expect(dataById['b'], <String, dynamic>{'name': 'Bread v2'});
   });
+
+  test(
+    'deleteStaleDocumentsIfUnchanged skips missing stale documents',
+    () async {
+      final firestore = _HookedFakeFirebaseFirestore();
+      final collection = _itemsCollectionRef(
+        firestore: firestore,
+        userId: 'user-1',
+      );
+      await collection.doc('keep').set(<String, dynamic>{'name': 'Keep'});
+      await collection.doc('missing').set(<String, dynamic>{
+        'name': 'Missing later',
+      });
+
+      final initialSnapshot = await collection.get();
+      final service = FirestoreAtomicReplaceService(firestore: firestore);
+      final staleCandidates = service.buildStaleDeleteCandidates(
+        existingSnapshot: initialSnapshot,
+        documentsById: const <String, Map<String, dynamic>>{},
+      );
+
+      await collection.doc('missing').delete();
+      await service.deleteStaleDocumentsIfUnchanged(
+        staleDeleteCandidates: staleCandidates,
+      );
+
+      final snapshot = await collection.get();
+      final dataById = <String, Map<String, dynamic>>{
+        for (final doc in snapshot.docs) doc.id: doc.data(),
+      };
+
+      expect(dataById.containsKey('keep'), isFalse);
+      expect(dataById.containsKey('missing'), isFalse);
+    },
+  );
+
+  test(
+    'deleteStaleDocumentsIfUnchanged skips changed stale documents',
+    () async {
+      final firestore = _HookedFakeFirebaseFirestore();
+      final collection = _itemsCollectionRef(
+        firestore: firestore,
+        userId: 'user-1',
+      );
+      await collection.doc('stale').set(<String, dynamic>{'name': 'Old'});
+
+      final initialSnapshot = await collection.get();
+      final service = FirestoreAtomicReplaceService(firestore: firestore);
+      final staleCandidates = service.buildStaleDeleteCandidates(
+        existingSnapshot: initialSnapshot,
+        documentsById: const <String, Map<String, dynamic>>{},
+      );
+
+      await collection.doc('stale').set(<String, dynamic>{'name': 'Changed'});
+      await service.deleteStaleDocumentsIfUnchanged(
+        staleDeleteCandidates: staleCandidates,
+      );
+
+      final snapshot = await collection.get();
+      final staleData = snapshot.docs
+          .firstWhere((doc) => doc.id == 'stale')
+          .data();
+
+      expect(staleData, <String, dynamic>{'name': 'Changed'});
+    },
+  );
+
+  test(
+    'deleteStaleDocumentsIfUnchanged deletes unchanged stale documents',
+    () async {
+      final firestore = _HookedFakeFirebaseFirestore();
+      final collection = _itemsCollectionRef(
+        firestore: firestore,
+        userId: 'user-1',
+      );
+      await collection.doc('stale').set(<String, dynamic>{'name': 'Old'});
+
+      final initialSnapshot = await collection.get();
+      final service = FirestoreAtomicReplaceService(firestore: firestore);
+      final staleCandidates = service.buildStaleDeleteCandidates(
+        existingSnapshot: initialSnapshot,
+        documentsById: const <String, Map<String, dynamic>>{},
+      );
+
+      await service.deleteStaleDocumentsIfUnchanged(
+        staleDeleteCandidates: staleCandidates,
+      );
+
+      final snapshot = await collection.get();
+
+      expect(snapshot.docs.any((doc) => doc.id == 'stale'), isFalse);
+    },
+  );
 }

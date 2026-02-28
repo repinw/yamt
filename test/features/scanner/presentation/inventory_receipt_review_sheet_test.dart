@@ -516,6 +516,52 @@ void main() {
     expect(find.text('Use JSON or key=value pairs.'), findsOneWidget);
   });
 
+  testWidgets('discount row keys stay stable after removing first row', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        items: <FridgeItem>[
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            discounts: const <String, double>{
+              'Coupon': -1.20,
+              'Loyalty': -0.50,
+            },
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_edit_button_0')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('receipt_review_discount_name_0')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('receipt_review_discount_name_1')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_discount_remove_0')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('receipt_review_discount_name_0')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const Key('receipt_review_discount_name_1')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('discount lines merge into previous item and remain visible', (
     tester,
   ) async {
