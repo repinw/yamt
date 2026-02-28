@@ -158,6 +158,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewWeightUnitPiece => 'Piece';
 
   @override
+  String get inventoryUnitGram => 'g';
+
+  @override
+  String get inventoryUnitMilliliter => 'ml';
+
+  @override
+  String get inventoryUnitPiece => 'pc';
+
+  @override
   String get inventoryReceiptReviewFieldBrand => 'Brand';
 
   @override

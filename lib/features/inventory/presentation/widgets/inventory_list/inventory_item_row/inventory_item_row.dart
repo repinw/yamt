@@ -19,6 +19,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_snapshot.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'fridge_amount_unit_l10n.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
