@@ -208,6 +208,7 @@
   "caloriesMealLunch": "Lunch",
   "caloriesMealDinner": "Dinner",
   "caloriesMealSnack": "Snack",
+  "caloriesUnitKcal": "kcal",
   "caloriesUnitGram": "g",
   "caloriesUnitMilliliter": "ml",
   "homeSettingsActionContextPlaceholder": "Settings action coming soon.",

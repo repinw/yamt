@@ -215,6 +215,7 @@
   "caloriesMealLunch": "Mittagessen",
   "caloriesMealDinner": "Abendessen",
   "caloriesMealSnack": "Snack",
+  "caloriesUnitKcal": "kcal",
   "caloriesUnitGram": "g",
   "caloriesUnitMilliliter": "ml",
   "homeSettingsActionContextPlaceholder": "Einstellungsaktion folgt bald.",

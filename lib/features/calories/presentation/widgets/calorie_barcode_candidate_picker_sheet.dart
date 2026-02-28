@@ -34,6 +34,7 @@ class CalorieBarcodeCandidatePickerSheet extends StatelessWidget {
               itemBuilder: (context, index) {
                 final candidate = candidates[index];
                 final profile = candidate.profile;
+                final kcalUnit = l10n.caloriesUnitKcal;
                 return ListTile(
                   title: Text(profile.name),
                   subtitle: Text(
@@ -42,7 +43,7 @@ class CalorieBarcodeCandidatePickerSheet extends StatelessWidget {
                         : l10n.caloriesBarcodeUnknownBrand,
                   ),
                   trailing: Text(
-                    '${profile.per100Kcal.toStringAsFixed(0)} kcal',
+                    '${profile.per100Kcal.toStringAsFixed(0)} $kcalUnit',
                   ),
                   onTap: () => onSelect(candidate),
                 );

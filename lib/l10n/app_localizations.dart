@@ -1157,6 +1157,12 @@ abstract class AppLocalizations {
   /// **'Snack'**
   String get caloriesMealSnack;
 
+  /// No description provided for @caloriesUnitKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal'**
+  String get caloriesUnitKcal;
+
   /// No description provided for @caloriesUnitGram.
   ///
   /// In en, this message translates to:

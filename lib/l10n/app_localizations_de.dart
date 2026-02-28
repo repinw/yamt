@@ -546,6 +546,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesMealSnack => 'Snack';
 
   @override
+  String get caloriesUnitKcal => 'kcal';
+
+  @override
   String get caloriesUnitGram => 'g';
 
   @override

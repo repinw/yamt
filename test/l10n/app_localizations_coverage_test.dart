@@ -177,6 +177,7 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.caloriesMealLunch,
     l10n.caloriesMealDinner,
     l10n.caloriesMealSnack,
+    l10n.caloriesUnitKcal,
     l10n.caloriesUnitGram,
     l10n.caloriesUnitMilliliter,
     l10n.homeSettingsActionContextPlaceholder,

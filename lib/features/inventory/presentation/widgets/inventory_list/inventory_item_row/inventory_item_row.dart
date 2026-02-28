@@ -240,9 +240,10 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
 
   String _unitSuffix(FridgeAmountUnit unit) {
     return switch (unit) {
-      FridgeAmountUnit.gram => 'g',
-      FridgeAmountUnit.milliliter => 'ml',
-      FridgeAmountUnit.piece => 'pc',
+      FridgeAmountUnit.gram => widget.l10n.caloriesUnitGram,
+      FridgeAmountUnit.milliliter => widget.l10n.caloriesUnitMilliliter,
+      FridgeAmountUnit.piece =>
+        widget.l10n.inventoryReceiptReviewWeightUnitPiece,
     };
   }
 }
