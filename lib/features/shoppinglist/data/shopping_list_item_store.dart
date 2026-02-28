@@ -27,10 +27,14 @@ abstract interface class ShoppingListItemStore {
 }
 
 class FirestoreShoppingListItemStore implements ShoppingListItemStore {
-  const FirestoreShoppingListItemStore({required FirebaseFirestore firestore})
-    : _firestore = firestore;
+  const FirestoreShoppingListItemStore({
+    required FirebaseFirestore firestore,
+    Future<void> Function()? onBeforeDeleteStaleDocuments,
+  }) : _firestore = firestore,
+       _onBeforeDeleteStaleDocuments = onBeforeDeleteStaleDocuments;
 
   final FirebaseFirestore _firestore;
+  final Future<void> Function()? _onBeforeDeleteStaleDocuments;
 
   @override
   Future<List<ShoppingListItemDocument>> readAll({required String userId}) {
@@ -65,21 +69,18 @@ class FirestoreShoppingListItemStore implements ShoppingListItemStore {
     required String userId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
-    // Intentional tradeoff: read-diff-write without transaction.
-    // Concurrent writers between read and commit can race.
     final collection = _collection(userId);
     final existingSnapshot = await collection.get();
-    final operations = <FirestoreBatchWriteOperation>[
-      ..._upsertOperations(
-        collection: collection,
-        documentsById: documentsById,
-      ),
-      ..._deleteOperations(
+    await _commitInChunks(
+      _upsertOperations(collection: collection, documentsById: documentsById),
+    );
+    await _onBeforeDeleteStaleDocuments?.call();
+    await _deleteStaleDocumentsIfUnchanged(
+      staleDocuments: _staleDocuments(
         existingSnapshot: existingSnapshot,
         documentsById: documentsById,
       ),
-    ];
-    await _commitInChunks(operations);
+    );
   }
 
   List<FirestoreBatchWriteOperation> _upsertOperations({
@@ -96,14 +97,70 @@ class FirestoreShoppingListItemStore implements ShoppingListItemStore {
         .toList(growable: false);
   }
 
-  List<FirestoreBatchWriteOperation> _deleteOperations({
+  Iterable<QueryDocumentSnapshot<Map<String, dynamic>>> _staleDocuments({
     required QuerySnapshot<Map<String, dynamic>> existingSnapshot,
     required Map<String, Map<String, dynamic>> documentsById,
   }) {
-    return existingSnapshot.docs
-        .where((doc) => !documentsById.containsKey(doc.id))
-        .map((doc) => FirestoreBatchWriteOperation.delete(doc.reference))
-        .toList(growable: false);
+    return existingSnapshot.docs.where(
+      (doc) => !documentsById.containsKey(doc.id),
+    );
+  }
+
+  Future<void> _deleteStaleDocumentsIfUnchanged({
+    required Iterable<QueryDocumentSnapshot<Map<String, dynamic>>>
+    staleDocuments,
+  }) async {
+    for (final document in staleDocuments) {
+      final expectedData = Map<String, dynamic>.from(document.data());
+      await _firestore.runTransaction((transaction) async {
+        final latestSnapshot = await transaction.get(document.reference);
+        final latestData = latestSnapshot.data();
+        if (!_deepEquals(latestData, expectedData)) {
+          return;
+        }
+        transaction.delete(document.reference);
+      });
+    }
+  }
+
+  bool _deepEquals(Object? left, Object? right) {
+    if (identical(left, right)) {
+      return true;
+    }
+    if (left is Map && right is Map) {
+      return _mapEquals(left, right);
+    }
+    if (left is List && right is List) {
+      return _listEquals(left, right);
+    }
+    return left == right;
+  }
+
+  bool _mapEquals(Map left, Map right) {
+    if (left.length != right.length) {
+      return false;
+    }
+    for (final entry in left.entries) {
+      if (!right.containsKey(entry.key)) {
+        return false;
+      }
+      if (!_deepEquals(entry.value, right[entry.key])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool _listEquals(List left, List right) {
+    if (left.length != right.length) {
+      return false;
+    }
+    for (var index = 0; index < left.length; index++) {
+      if (!_deepEquals(left[index], right[index])) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<void> _commitInChunks(
