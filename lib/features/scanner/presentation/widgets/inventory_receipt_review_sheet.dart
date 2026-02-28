@@ -54,14 +54,6 @@ class _InventoryReceiptReviewSheetState
     final locale = Localizations.localeOf(context).toLanguageTag();
     final currency = NumberFormat.currency(locale: locale, symbol: '€');
     final priceSummary = _priceSummaryCalculator.calculate(_items);
-    final saveChild = _isSaving
-        ? const SizedBox.square(
-            dimension: AppSpacing.xl,
-            child: CircularProgressIndicator(
-              strokeWidth: AppSizes.progressStrokeWidth,
-            ),
-          )
-        : Text(l10n.inventoryReceiptReviewSaveAction);
 
     return SafeArea(
       child: Padding(
@@ -94,25 +86,13 @@ class _InventoryReceiptReviewSheetState
               currency: currency,
             ),
             const SizedBox(height: AppSpacing.md),
-            _buildItemsList(context, l10n),
+            _ReceiptItemsSection(items: _items, onEditTap: _openItemEditor),
             const SizedBox(height: AppSpacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: widget.onCancelTap,
-                    child: Text(l10n.inventoryReceiptReviewCancelAction),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: FilledButton(
-                    key: const Key('receipt_review_save_button'),
-                    onPressed: _canSave ? _saveReviewedItems : null,
-                    child: saveChild,
-                  ),
-                ),
-              ],
+            _ReceiptReviewActionsRow(
+              isSaving: _isSaving,
+              canSave: _canSave,
+              onCancelTap: widget.onCancelTap,
+              onSaveTap: _saveReviewedItems,
             ),
           ],
         ),
@@ -120,13 +100,109 @@ class _InventoryReceiptReviewSheetState
     );
   }
 
-  Widget _buildItemsList(BuildContext context, AppLocalizations l10n) {
-    if (_items.isEmpty) {
+  Future<void> _openItemEditor(int index) async {
+    if (_items[index].isDiscount) {
+      return;
+    }
+
+    final editedItem = await showModalBottomSheet<FridgeItem>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheetContext) {
+        return InventoryReceiptItemEditorSheet(item: _items[index]);
+      },
+    );
+    if (!mounted || editedItem == null) {
+      return;
+    }
+    setState(() {
+      _items[index] = editedItem;
+    });
+  }
+
+  Future<void> _saveReviewedItems() async {
+    if (!_canSave) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+    await widget.onSaveTap(List<FridgeItem>.from(_items));
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _isSaving = false;
+    });
+  }
+}
+
+class _ReceiptReviewActionsRow extends StatelessWidget {
+  const _ReceiptReviewActionsRow({
+    required this.isSaving,
+    required this.canSave,
+    required this.onCancelTap,
+    required this.onSaveTap,
+  });
+
+  final bool isSaving;
+  final bool canSave;
+  final VoidCallback onCancelTap;
+  final VoidCallback onSaveTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final saveChild = isSaving
+        ? const SizedBox.square(
+            dimension: AppSpacing.xl,
+            child: CircularProgressIndicator(
+              strokeWidth: AppSizes.progressStrokeWidth,
+            ),
+          )
+        : Text(l10n.inventoryReceiptReviewSaveAction);
+
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            onPressed: onCancelTap,
+            child: Text(l10n.inventoryReceiptReviewCancelAction),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: FilledButton(
+            key: const Key('receipt_review_save_button'),
+            onPressed: canSave ? onSaveTap : null,
+            child: saveChild,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ReceiptItemsSection extends StatelessWidget {
+  const _ReceiptItemsSection({required this.items, required this.onEditTap});
+
+  final List<FridgeItem> items;
+  final ValueChanged<int> onEditTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    if (items.isEmpty) {
       return Align(
         alignment: Alignment.centerLeft,
         child: Text(l10n.inventoryReceiptReviewEmpty),
       );
     }
+
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final currency = NumberFormat.currency(locale: locale, symbol: '€');
 
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -134,19 +210,22 @@ class _InventoryReceiptReviewSheetState
       ),
       child: ListView.builder(
         shrinkWrap: true,
-        itemCount: _items.length,
+        itemCount: items.length,
         itemBuilder: (context, index) {
-          final locale = Localizations.localeOf(context).toLanguageTag();
-          final currency = NumberFormat.currency(locale: locale, symbol: '€');
-          final item = _items[index];
+          final item = items[index];
           return Column(
             children: [
-              _buildItemTile(context, l10n, index, item),
+              _buildItemTile(
+                context: context,
+                l10n: l10n,
+                item: item,
+                index: index,
+              ),
               ..._buildDiscountRows(
                 context: context,
                 l10n: l10n,
-                itemIndex: index,
                 item: item,
+                itemIndex: index,
                 currency: currency,
               ),
             ],
@@ -156,12 +235,12 @@ class _InventoryReceiptReviewSheetState
     );
   }
 
-  Widget _buildItemTile(
-    BuildContext context,
-    AppLocalizations l10n,
-    int index,
-    FridgeItem item,
-  ) {
+  Widget _buildItemTile({
+    required BuildContext context,
+    required AppLocalizations l10n,
+    required FridgeItem item,
+    required int index,
+  }) {
     final textTheme = Theme.of(context).textTheme;
     final disabledColor = Theme.of(context).disabledColor;
     final muted = item.isReviewOnly;
@@ -193,7 +272,7 @@ class _InventoryReceiptReviewSheetState
             IconButton(
               key: Key('receipt_review_edit_button_$index'),
               tooltip: l10n.inventoryReceiptReviewEditAction,
-              onPressed: () => _openItemEditor(index),
+              onPressed: () => onEditTap(index),
               icon: const Icon(Icons.edit_outlined),
             ),
         ],
@@ -204,8 +283,8 @@ class _InventoryReceiptReviewSheetState
   List<Widget> _buildDiscountRows({
     required BuildContext context,
     required AppLocalizations l10n,
-    required int itemIndex,
     required FridgeItem item,
+    required int itemIndex,
     required NumberFormat currency,
   }) {
     if (item.discounts.isEmpty) {
@@ -259,44 +338,6 @@ class _InventoryReceiptReviewSheetState
     final currency = NumberFormat.currency(locale: locale, symbol: '€');
     final linePrice = item.quantity * item.unitPrice;
     return '${item.quantity}x · ${currency.format(linePrice)}';
-  }
-
-  Future<void> _openItemEditor(int index) async {
-    if (_items[index].isDiscount) {
-      return;
-    }
-
-    final editedItem = await showModalBottomSheet<FridgeItem>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (sheetContext) {
-        return InventoryReceiptItemEditorSheet(item: _items[index]);
-      },
-    );
-    if (!mounted || editedItem == null) {
-      return;
-    }
-    setState(() {
-      _items[index] = editedItem;
-    });
-  }
-
-  Future<void> _saveReviewedItems() async {
-    if (!_canSave) {
-      return;
-    }
-
-    setState(() {
-      _isSaving = true;
-    });
-    await widget.onSaveTap(List<FridgeItem>.from(_items));
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _isSaving = false;
-    });
   }
 }
 
