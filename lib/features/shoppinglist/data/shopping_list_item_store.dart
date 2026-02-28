@@ -1,18 +1,33 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:yamt/core/data/firestore_batch_write.dart';
 
 const String _storeLogName = 'FirestoreShoppingListItemStore';
 const String _usersCollection = 'users';
 const String _shoppingListCollection = 'shopping_list_items';
 const int _maxFirestoreBatchOperations = 500;
+const int _maxFirestoreTransactionWrites = 500;
+const int _maxStaleDeleteCandidatesPerTransaction =
+    _maxFirestoreTransactionWrites;
+const DeepCollectionEquality _deepCollectionEquality = DeepCollectionEquality();
 
 class ShoppingListItemDocument {
   const ShoppingListItemDocument({required this.id, required this.data});
 
   final String id;
   final Map<String, dynamic> data;
+}
+
+class _StaleDocumentDeleteCandidate {
+  const _StaleDocumentDeleteCandidate({
+    required this.reference,
+    required this.expectedData,
+  });
+
+  final DocumentReference<Map<String, dynamic>> reference;
+  final Map<String, dynamic> expectedData;
 }
 
 abstract interface class ShoppingListItemStore {
@@ -65,21 +80,71 @@ class FirestoreShoppingListItemStore implements ShoppingListItemStore {
     required String userId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
-    // Intentional tradeoff: read-diff-write without transaction.
-    // Concurrent writers between read and commit can race.
     final collection = _collection(userId);
     final existingSnapshot = await collection.get();
-    final operations = <FirestoreBatchWriteOperation>[
-      ..._upsertOperations(
+    final staleDeleteCandidates = _staleDeleteCandidates(
+      existingSnapshot: existingSnapshot,
+      documentsById: documentsById,
+    );
+
+    if (_canRunAtomicReplaceAll(
+      upsertCount: documentsById.length,
+      staleDeleteCount: staleDeleteCandidates.length,
+    )) {
+      await _replaceAllAtomically(
         collection: collection,
         documentsById: documentsById,
-      ),
-      ..._deleteOperations(
-        existingSnapshot: existingSnapshot,
-        documentsById: documentsById,
-      ),
-    ];
-    await _commitInChunks(operations);
+        staleDeleteCandidates: staleDeleteCandidates,
+      );
+      return;
+    }
+
+    await _commitInChunks(
+      _upsertOperations(collection: collection, documentsById: documentsById),
+    );
+    await _deleteStaleDocumentsIfUnchanged(
+      staleDeleteCandidates: staleDeleteCandidates,
+    );
+  }
+
+  bool _canRunAtomicReplaceAll({
+    required int upsertCount,
+    required int staleDeleteCount,
+  }) {
+    return upsertCount + staleDeleteCount <= _maxFirestoreTransactionWrites;
+  }
+
+  Future<void> _replaceAllAtomically({
+    required CollectionReference<Map<String, dynamic>> collection,
+    required Map<String, Map<String, dynamic>> documentsById,
+    required List<_StaleDocumentDeleteCandidate> staleDeleteCandidates,
+  }) async {
+    await _firestore.runTransaction((transaction) async {
+      final deleteReferences = <DocumentReference<Map<String, dynamic>>>[];
+
+      for (final candidate in staleDeleteCandidates) {
+        final latestSnapshot = await transaction.get(candidate.reference);
+        if (!latestSnapshot.exists) {
+          continue;
+        }
+        final latestData = latestSnapshot.data();
+        if (!_deepCollectionEquality.equals(
+          latestData,
+          candidate.expectedData,
+        )) {
+          continue;
+        }
+        deleteReferences.add(candidate.reference);
+      }
+
+      for (final entry in documentsById.entries) {
+        transaction.set(collection.doc(entry.key), entry.value);
+      }
+
+      for (final reference in deleteReferences) {
+        transaction.delete(reference);
+      }
+    });
   }
 
   List<FirestoreBatchWriteOperation> _upsertOperations({
@@ -96,14 +161,51 @@ class FirestoreShoppingListItemStore implements ShoppingListItemStore {
         .toList(growable: false);
   }
 
-  List<FirestoreBatchWriteOperation> _deleteOperations({
+  List<_StaleDocumentDeleteCandidate> _staleDeleteCandidates({
     required QuerySnapshot<Map<String, dynamic>> existingSnapshot,
     required Map<String, Map<String, dynamic>> documentsById,
   }) {
     return existingSnapshot.docs
         .where((doc) => !documentsById.containsKey(doc.id))
-        .map((doc) => FirestoreBatchWriteOperation.delete(doc.reference))
+        .map(
+          (doc) => _StaleDocumentDeleteCandidate(
+            reference: doc.reference,
+            expectedData: Map<String, dynamic>.from(doc.data()),
+          ),
+        )
         .toList(growable: false);
+  }
+
+  Future<void> _deleteStaleDocumentsIfUnchanged({
+    required List<_StaleDocumentDeleteCandidate> staleDeleteCandidates,
+  }) async {
+    for (final chunk in FirestoreBatchChunker.chunk(
+      operations: staleDeleteCandidates,
+      maxChunkSize: _maxStaleDeleteCandidatesPerTransaction,
+    )) {
+      await _firestore.runTransaction((transaction) async {
+        final deleteReferences = <DocumentReference<Map<String, dynamic>>>[];
+
+        for (final candidate in chunk) {
+          final latestSnapshot = await transaction.get(candidate.reference);
+          if (!latestSnapshot.exists) {
+            continue;
+          }
+          final latestData = latestSnapshot.data();
+          if (!_deepCollectionEquality.equals(
+            latestData,
+            candidate.expectedData,
+          )) {
+            continue;
+          }
+          deleteReferences.add(candidate.reference);
+        }
+
+        for (final reference in deleteReferences) {
+          transaction.delete(reference);
+        }
+      });
+    }
   }
 
   Future<void> _commitInChunks(
