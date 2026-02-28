@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
@@ -15,7 +16,7 @@ class ShoppingListController extends _$ShoppingListController {
   static const _uuid = Uuid();
 
   StreamSubscription<List<ShoppingListItem>>? _itemsSubscription;
-  final _mutationQueue = _SerializedMutationQueue();
+  final _mutationQueue = SerializedMutationQueue();
 
   @override
   FutureOr<List<ShoppingListItem>> build() {
@@ -312,26 +313,4 @@ class _AddShoppingListItemInput {
   final String normalizedBrand;
   final int quantity;
   final double estimatedUnitPrice;
-}
-
-class _SerializedMutationQueue {
-  Future<void> _queue = Future<void>.value();
-
-  Future<T> run<T>({
-    required Future<T> Function() operation,
-    required T fallbackValue,
-    required void Function(Object error, StackTrace stackTrace) onError,
-  }) {
-    final result = Completer<T>();
-    _queue = _queue.then((_) async {
-      try {
-        final value = await operation();
-        result.complete(value);
-      } catch (error, stackTrace) {
-        onError(error, stackTrace);
-        result.complete(fallbackValue);
-      }
-    });
-    return result.future;
-  }
 }

@@ -234,6 +234,49 @@ void main() {
   );
 
   test(
+    'replaceAll chunks stale deletes into 100, 100, and 50 transactions',
+    () async {
+      late final CollectionReference<Map<String, dynamic>> collection;
+      final staleCountsBeforeTransaction = <int>[];
+      final firestore = _HookedFakeFirebaseFirestore(
+        onBeforeRunTransaction: () async {
+          final snapshot = await collection.get();
+          final staleCount = snapshot.docs
+              .where((doc) => doc.id.startsWith('stale-'))
+              .length;
+          staleCountsBeforeTransaction.add(staleCount);
+        },
+      );
+      collection = _shoppingListCollectionRef(
+        firestore: firestore,
+        userId: 'user-1',
+      );
+      await _seedStaleDocuments(collection: collection, count: 250);
+
+      final documentsById = <String, Map<String, dynamic>>{
+        for (var index = 0; index < 251; index++)
+          'keep-$index': <String, dynamic>{'name': 'Keep $index'},
+      };
+
+      final store = FirestoreShoppingListItemStore(firestore: firestore);
+      final replaced = await store.replaceAll(
+        userId: 'user-1',
+        documentsById: documentsById,
+      );
+
+      final snapshot = await collection.get();
+      final staleCountAfter = snapshot.docs
+          .where((doc) => doc.id.startsWith('stale-'))
+          .length;
+
+      expect(replaced, isTrue);
+      expect(staleCountsBeforeTransaction, orderedEquals(<int>[250, 150, 50]));
+      expect(staleCountAfter, 0);
+      expect(snapshot.docs, hasLength(251));
+    },
+  );
+
+  test(
     'replaceAll returns false when stale delete transaction fails',
     () async {
       final firestore = _ThrowingTransactionFakeFirebaseFirestore();
