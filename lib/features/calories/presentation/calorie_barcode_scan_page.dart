@@ -43,7 +43,6 @@ class _CalorieBarcodeScanPageState
   final MobileScannerController _scannerController = MobileScannerController();
   StreamSubscription<String>? _testBarcodeSubscription;
   bool _isResolving = false;
-  bool _isDisposed = false;
 
   @override
   void initState() {
@@ -59,7 +58,6 @@ class _CalorieBarcodeScanPageState
 
   @override
   void dispose() {
-    _isDisposed = true;
     _testBarcodeSubscription?.cancel();
     _scannerController.dispose();
     super.dispose();
@@ -119,7 +117,7 @@ class _CalorieBarcodeScanPageState
   }
 
   Future<void> _handleDetectedBarcode(String rawBarcode) async {
-    if (!mounted || _isDisposed || _isResolving) {
+    if (!mounted || _isResolving) {
       return;
     }
 
@@ -150,7 +148,7 @@ class _CalorieBarcodeScanPageState
   }
 
   Future<void> _stopScanner() async {
-    if (_isDisposed) {
+    if (!mounted) {
       return;
     }
     try {
@@ -166,7 +164,7 @@ class _CalorieBarcodeScanPageState
   }
 
   Future<void> _startScanner() async {
-    if (_isDisposed) {
+    if (!mounted) {
       return;
     }
     try {
