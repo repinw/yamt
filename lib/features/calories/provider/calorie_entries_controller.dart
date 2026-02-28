@@ -88,78 +88,82 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     CalorieEntry entry, {
     CalorieScannedSourceRef? scannedSourceRef,
   }) {
+    final selectedDay = ref.read(calorieDayControllerProvider);
+    return _runOptimisticMutation(
+      buildNextEntries: (previousEntries) {
+        return _applySavedEntry(
+          previousEntries: previousEntries,
+          entry: entry,
+          selectedDay: selectedDay,
+        );
+      },
+      persist: () => ref.read(calorieLogRepositoryProvider).saveEntry(entry),
+      failureLogMessage: 'Failed to persist calorie entry ${entry.id}.',
+      onPersisted: scannedSourceRef == null
+          ? null
+          : () => _saveUserProductOverride(
+              entry: entry,
+              scannedSourceRef: scannedSourceRef,
+            ),
+    );
+  }
+
+  Future<bool> deleteEntry(String entryId) {
+    return _runOptimisticMutation(
+      buildNextEntries: (previousEntries) {
+        return previousEntries
+            .where((entry) => entry.id != entryId)
+            .toList(growable: false);
+      },
+      persist: () =>
+          ref.read(calorieLogRepositoryProvider).deleteEntry(entryId),
+      failureLogMessage: 'Failed to delete calorie entry $entryId.',
+    );
+  }
+
+  Future<bool> _runOptimisticMutation({
+    required List<CalorieEntry> Function(List<CalorieEntry> previousEntries)
+    buildNextEntries,
+    required Future<bool> Function() persist,
+    required String failureLogMessage,
+    Future<void> Function()? onPersisted,
+  }) {
     return _runSerializedMutation(() async {
-      final repository = ref.read(calorieLogRepositoryProvider);
-      final selectedDay = ref.read(calorieDayControllerProvider);
       final previousEntries = await _currentEntries();
-      final nextEntries = _applySavedEntry(
-        previousEntries: previousEntries,
-        entry: entry,
-        selectedDay: selectedDay,
-      );
+      final nextEntries = buildNextEntries(previousEntries);
 
       if (!listEquals(previousEntries, nextEntries) && ref.mounted) {
         state = AsyncData(nextEntries);
       }
 
       try {
-        final saved = await repository.saveEntry(entry);
-        if (!saved && ref.mounted) {
-          state = AsyncData(previousEntries);
+        final persisted = await persist();
+        if (!persisted) {
+          _restoreEntries(previousEntries);
+          return false;
         }
-        if (saved && scannedSourceRef != null) {
-          await _saveUserProductOverride(
-            entry: entry,
-            scannedSourceRef: scannedSourceRef,
-          );
+        if (onPersisted != null) {
+          await onPersisted();
         }
-        return saved;
+        return true;
       } catch (error, stackTrace) {
         log(
-          'Failed to persist calorie entry ${entry.id}.',
+          failureLogMessage,
           name: _entriesControllerLogName,
           error: error,
           stackTrace: stackTrace,
         );
-        if (ref.mounted) {
-          state = AsyncData(previousEntries);
-        }
+        _restoreEntries(previousEntries);
         return false;
       }
     });
   }
 
-  Future<bool> deleteEntry(String entryId) {
-    return _runSerializedMutation(() async {
-      final repository = ref.read(calorieLogRepositoryProvider);
-      final previousEntries = await _currentEntries();
-      final nextEntries = previousEntries
-          .where((entry) => entry.id != entryId)
-          .toList(growable: false);
-
-      if (nextEntries.length != previousEntries.length && ref.mounted) {
-        state = AsyncData(nextEntries);
-      }
-
-      try {
-        final deleted = await repository.deleteEntry(entryId);
-        if (!deleted && ref.mounted) {
-          state = AsyncData(previousEntries);
-        }
-        return deleted;
-      } catch (error, stackTrace) {
-        log(
-          'Failed to delete calorie entry $entryId.',
-          name: _entriesControllerLogName,
-          error: error,
-          stackTrace: stackTrace,
-        );
-        if (ref.mounted) {
-          state = AsyncData(previousEntries);
-        }
-        return false;
-      }
-    });
+  void _restoreEntries(List<CalorieEntry> entries) {
+    if (!ref.mounted) {
+      return;
+    }
+    state = AsyncData(entries);
   }
 
   Future<List<CalorieEntry>> _restartSubscription() {
