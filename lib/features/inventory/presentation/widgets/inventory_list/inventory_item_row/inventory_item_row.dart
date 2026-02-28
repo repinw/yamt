@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/fridge_amount_unit_l10n.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_amount_input_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -223,7 +224,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       return _ItemAmountInputConfig(
         maxAmount: maxAmount,
         fieldLabel: widget.l10n.inventoryReceiptReviewFieldWeight,
-        suffixText: _unitSuffix(item.amountUnit!),
+        suffixText: item.amountUnit!.localizedName(widget.l10n),
       );
     }
 
@@ -236,15 +237,6 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       fieldLabel: widget.l10n.inventoryReceiptReviewFieldQuantity,
       suffixText: null,
     );
-  }
-
-  String _unitSuffix(FridgeAmountUnit unit) {
-    return switch (unit) {
-      FridgeAmountUnit.gram => widget.l10n.caloriesUnitGram,
-      FridgeAmountUnit.milliliter => widget.l10n.caloriesUnitMilliliter,
-      FridgeAmountUnit.piece =>
-        widget.l10n.inventoryReceiptReviewWeightUnitPiece,
-    };
   }
 }
 

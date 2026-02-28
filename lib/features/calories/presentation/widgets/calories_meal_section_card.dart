@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -63,7 +64,7 @@ class CaloriesMealSectionCard extends StatelessWidget {
                   title: Text(entry.name),
                   subtitle: Text(
                     '${entry.consumedAmount.toStringAsFixed(0)} '
-                    '${_consumedUnitLabel(l10n, entry.consumedUnit)}',
+                    '${entry.consumedUnit.localizedName(l10n)}',
                   ),
                   trailing: Wrap(
                     spacing: AppSpacing.sm,
@@ -86,12 +87,5 @@ class CaloriesMealSectionCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _consumedUnitLabel(AppLocalizations l10n, ConsumedUnit unit) {
-    return switch (unit) {
-      ConsumedUnit.grams => l10n.caloriesUnitGram,
-      ConsumedUnit.milliliters => l10n.caloriesUnitMilliliter,
-    };
   }
 }
