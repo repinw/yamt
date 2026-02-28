@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
+import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
@@ -10,6 +11,78 @@ import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart
 part 'fridge_items_controller.g.dart';
 
 const _controllerLogName = 'FridgeItemsController';
+
+@visibleForTesting
+List<FridgeItem>? buildReducedItems({
+  required List<FridgeItem> currentItems,
+  required String itemId,
+  required int amount,
+}) {
+  if (amount < 1) {
+    return null;
+  }
+
+  final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
+  if (itemIndex < 0) {
+    return null;
+  }
+
+  final item = currentItems[itemIndex];
+  final maxReducible = _maxReducibleAmount(item);
+  if (maxReducible < 1) {
+    return null;
+  }
+  final reducedAmount = amount > maxReducible ? maxReducible : amount;
+
+  final nextItems = List<FridgeItem>.from(currentItems);
+  if (item.usesAmountProgress) {
+    final nextCurrentAmount = item.currentAmount - reducedAmount;
+    final safeCurrentAmount = nextCurrentAmount < 0 ? 0 : nextCurrentAmount;
+    nextItems[itemIndex] = item.copyWith(
+      currentAmount: safeCurrentAmount,
+      quantity: _quantityForCurrentAmount(
+        item: item,
+        currentAmount: safeCurrentAmount,
+      ),
+    );
+    return nextItems;
+  }
+
+  final nextQuantity = item.quantity - reducedAmount;
+  final safeQuantity = nextQuantity < 0 ? 0 : nextQuantity;
+  nextItems[itemIndex] = item.copyWith(quantity: safeQuantity);
+  return nextItems;
+}
+
+int _maxReducibleAmount(FridgeItem item) {
+  if (item.usesAmountProgress) {
+    final currentAmount = item.currentAmount;
+    return currentAmount > 0 ? currentAmount : 0;
+  }
+  final quantity = item.quantity;
+  return quantity > 0 ? quantity : 0;
+}
+
+int _quantityForCurrentAmount({
+  required FridgeItem item,
+  required int currentAmount,
+}) {
+  final initialAmount = item.initialAmount;
+  final initialQuantity = item.initialQuantity;
+  if (initialAmount < 1 || initialQuantity < 1) {
+    return item.quantity;
+  }
+
+  final ratio = currentAmount / initialAmount;
+  final projectedQuantity = (initialQuantity * ratio).ceil();
+  if (projectedQuantity < 0) {
+    return 0;
+  }
+  if (projectedQuantity > initialQuantity) {
+    return initialQuantity;
+  }
+  return projectedQuantity;
+}
 
 @riverpod
 class FridgeItemsController extends _$FridgeItemsController {
@@ -96,7 +169,7 @@ class FridgeItemsController extends _$FridgeItemsController {
       return Future<bool>.value(false);
     }
     return _runItemsMutation(
-      (currentItems) => _buildReducedItems(
+      (currentItems) => buildReducedItems(
         currentItems: currentItems,
         itemId: itemId,
         amount: amount,
@@ -109,7 +182,7 @@ class FridgeItemsController extends _$FridgeItemsController {
       return Future<bool>.value(false);
     }
     return _runItemsMutation(
-      (currentItems) => _buildReducedItems(
+      (currentItems) => buildReducedItems(
         currentItems: currentItems,
         itemId: itemId,
         amount: amount,
@@ -129,43 +202,6 @@ class FridgeItemsController extends _$FridgeItemsController {
     return future;
   }
 
-  List<FridgeItem>? _buildReducedItems({
-    required List<FridgeItem> currentItems,
-    required String itemId,
-    required int amount,
-  }) {
-    final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
-    if (itemIndex < 0) {
-      return null;
-    }
-
-    final item = currentItems[itemIndex];
-    final maxReducible = _maxReducibleAmount(item);
-    if (maxReducible < 1) {
-      return null;
-    }
-    final reducedAmount = amount > maxReducible ? maxReducible : amount;
-
-    final nextItems = List<FridgeItem>.from(currentItems);
-    if (item.usesAmountProgress) {
-      final nextCurrentAmount = item.currentAmount - reducedAmount;
-      final safeCurrentAmount = nextCurrentAmount < 0 ? 0 : nextCurrentAmount;
-      nextItems[itemIndex] = item.copyWith(
-        currentAmount: safeCurrentAmount,
-        quantity: _quantityForCurrentAmount(
-          item: item,
-          currentAmount: safeCurrentAmount,
-        ),
-      );
-      return nextItems;
-    }
-
-    final nextQuantity = item.quantity - reducedAmount;
-    final safeQuantity = nextQuantity < 0 ? 0 : nextQuantity;
-    nextItems[itemIndex] = item.copyWith(quantity: safeQuantity);
-    return nextItems;
-  }
-
   Future<bool> _runItemsMutation(
     List<FridgeItem>? Function(List<FridgeItem> currentItems) mutation,
   ) {
@@ -177,36 +213,6 @@ class FridgeItemsController extends _$FridgeItemsController {
       }
       return _saveItems(previousItems: currentItems, nextItems: nextItems);
     });
-  }
-
-  int _maxReducibleAmount(FridgeItem item) {
-    if (item.usesAmountProgress) {
-      final currentAmount = item.currentAmount;
-      return currentAmount > 0 ? currentAmount : 0;
-    }
-    final quantity = item.quantity;
-    return quantity > 0 ? quantity : 0;
-  }
-
-  int _quantityForCurrentAmount({
-    required FridgeItem item,
-    required int currentAmount,
-  }) {
-    final initialAmount = item.initialAmount;
-    final initialQuantity = item.initialQuantity;
-    if (initialAmount < 1 || initialQuantity < 1) {
-      return item.quantity;
-    }
-
-    final ratio = currentAmount / initialAmount;
-    final projectedQuantity = (initialQuantity * ratio).ceil();
-    if (projectedQuantity < 0) {
-      return 0;
-    }
-    if (projectedQuantity > initialQuantity) {
-      return initialQuantity;
-    }
-    return projectedQuantity;
   }
 
   Future<bool> _saveItems({
