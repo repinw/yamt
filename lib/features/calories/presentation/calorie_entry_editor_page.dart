@@ -8,6 +8,7 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -324,7 +325,7 @@ class _CalorieEntryEditorPageState
                           .map((unit) {
                             return DropdownMenuItem<ConsumedUnit>(
                               value: unit,
-                              child: Text(_unitLabel(l10n, unit)),
+                              child: Text(unit.localizedName(l10n)),
                             );
                           })
                           .toList(growable: false),
@@ -578,13 +579,6 @@ class _CalorieEntryEditorPageState
       MealType.lunch => l10n.caloriesMealLunch,
       MealType.dinner => l10n.caloriesMealDinner,
       MealType.snack => l10n.caloriesMealSnack,
-    };
-  }
-
-  String _unitLabel(AppLocalizations l10n, ConsumedUnit unit) {
-    return switch (unit) {
-      ConsumedUnit.grams => l10n.caloriesUnitGram,
-      ConsumedUnit.milliliters => l10n.caloriesUnitMilliliter,
     };
   }
 

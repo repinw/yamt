@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 class CaloriesSummaryCard extends StatelessWidget {
   const CaloriesSummaryCard({
@@ -40,7 +41,10 @@ class CaloriesSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
+    final kcalUnit = l10n.caloriesUnitKcal;
+    final gramUnit = l10n.caloriesUnitGram;
 
     return Card(
       key: CaloriesPageKeys.summaryCard,
@@ -53,7 +57,7 @@ class CaloriesSummaryCard extends StatelessWidget {
               children: <Widget>[
                 Expanded(
                   child: Text(
-                    '${consumedKcal.toStringAsFixed(0)} kcal',
+                    '${consumedKcal.toStringAsFixed(0)} $kcalUnit',
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
@@ -78,15 +82,15 @@ class CaloriesSummaryCard extends StatelessWidget {
               children: <Widget>[
                 _StatChip(
                   label: consumedLabel,
-                  value: '${consumedKcal.toStringAsFixed(0)} kcal',
+                  value: '${consumedKcal.toStringAsFixed(0)} $kcalUnit',
                 ),
                 _StatChip(
                   label: goalLabel,
-                  value: '${goalKcal.toStringAsFixed(0)} kcal',
+                  value: '${goalKcal.toStringAsFixed(0)} $kcalUnit',
                 ),
                 _StatChip(
                   label: remainingLabel,
-                  value: '${remainingKcal.toStringAsFixed(0)} kcal',
+                  value: '${remainingKcal.toStringAsFixed(0)} $kcalUnit',
                   valueColor: remainingKcal < 0
                       ? colorScheme.error
                       : colorScheme.onSurface,
@@ -97,15 +101,27 @@ class CaloriesSummaryCard extends StatelessWidget {
             Row(
               children: <Widget>[
                 Expanded(
-                  child: _MacroTile(label: proteinLabel, grams: totalProtein),
+                  child: _MacroTile(
+                    label: proteinLabel,
+                    grams: totalProtein,
+                    unitLabel: gramUnit,
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
-                  child: _MacroTile(label: carbsLabel, grams: totalCarbs),
+                  child: _MacroTile(
+                    label: carbsLabel,
+                    grams: totalCarbs,
+                    unitLabel: gramUnit,
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
-                  child: _MacroTile(label: fatLabel, grams: totalFat),
+                  child: _MacroTile(
+                    label: fatLabel,
+                    grams: totalFat,
+                    unitLabel: gramUnit,
+                  ),
                 ),
               ],
             ),
@@ -155,10 +171,15 @@ class _StatChip extends StatelessWidget {
 }
 
 class _MacroTile extends StatelessWidget {
-  const _MacroTile({required this.label, required this.grams});
+  const _MacroTile({
+    required this.label,
+    required this.grams,
+    required this.unitLabel,
+  });
 
   final String label;
   final double grams;
+  final String unitLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +199,7 @@ class _MacroTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(label, style: Theme.of(context).textTheme.labelMedium),
-            Text('${grams.toStringAsFixed(1)} g'),
+            Text('${grams.toStringAsFixed(1)} $unitLabel'),
           ],
         ),
       ),

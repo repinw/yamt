@@ -158,6 +158,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewWeightUnitPiece => 'Piece';
 
   @override
+  String get inventoryUnitGram => 'g';
+
+  @override
+  String get inventoryUnitMilliliter => 'ml';
+
+  @override
+  String get inventoryUnitPiece => 'pc';
+
+  @override
   String get inventoryReceiptReviewFieldBrand => 'Brand';
 
   @override
@@ -544,6 +553,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesMealSnack => 'Snack';
+
+  @override
+  String get caloriesUnitKcal => 'kcal';
 
   @override
   String get caloriesUnitGram => 'g';
