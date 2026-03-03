@@ -99,7 +99,7 @@ void main() {
     expect(httpClient.getCallCount, 0);
   });
 
-  test('OFF exact hit writes through to global cache', () async {
+  test('OFF exact hit does not write to global cache', () async {
     final cache = FakeCalorieProductCacheRepository();
     final httpClient = _FakeHttpClient(
       onGet: (uri) async {
@@ -131,7 +131,7 @@ void main() {
 
     expect(outcome.status, CalorieLookupStatus.foundSingle);
     expect(outcome.product?.name, 'OFF Milk');
-    expect(cache.global.containsKey('4006381333931'), isTrue);
+    expect(cache.global.containsKey('4006381333931'), isFalse);
   });
 
   test('OFF search returns ranked multiple candidates', () async {

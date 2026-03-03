@@ -34,7 +34,7 @@ final class GuestAuthControllerProvider
 }
 
 String _$guestAuthControllerHash() =>
-    r'41bccfb4f17f82ec68576e910c70a7c5d2b5b659';
+    r'c797018735496b7a742133b1dd02047314da2095';
 
 abstract class _$GuestAuthController extends $AsyncNotifier<void> {
   FutureOr<void> build();

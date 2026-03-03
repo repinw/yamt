@@ -42,7 +42,7 @@ final class ThemeModeControllerProvider
 }
 
 String _$themeModeControllerHash() =>
-    r'66211a8e92ffa8e333793eced94876359860401a';
+    r'9454ebd8108323e24f063252d681335a662d4102';
 
 abstract class _$ThemeModeController extends $Notifier<ThemeMode> {
   ThemeMode build();

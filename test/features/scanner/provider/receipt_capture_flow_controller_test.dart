@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -241,6 +242,66 @@ void main() {
 
     expect(result.status, ReceiptCaptureFlowStatus.analysisFailed);
     expect(result.errorCode, ReceiptAnalysisErrorCodes.aiRequestFailed);
+  });
+
+  test('run reuses in-flight operation for concurrent calls', () async {
+    final selection = _selection();
+    final pickCompleter = Completer<ReceiptInputResult>();
+    final analysisCompleter = Completer<ReceiptAnalysisResult>();
+    var pickCalls = 0;
+    var analysisCalls = 0;
+
+    final inputRepository = _FakeReceiptInputRepository(
+      pickFile: () {
+        pickCalls += 1;
+        return pickCompleter.future;
+      },
+    );
+    final analysisRepository = _FakeReceiptAnalysisRepository(
+      onAnalyzeSelection: (_) {
+        analysisCalls += 1;
+        return analysisCompleter.future;
+      },
+    );
+
+    final container = ProviderContainer(
+      overrides: [
+        receiptCameraSupportedProvider.overrideWith((ref) => true),
+        receiptInputRepositoryProvider.overrideWithValue(inputRepository),
+        receiptAnalysisRepositoryProvider.overrideWithValue(analysisRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = container.listen(
+      receiptCaptureFlowControllerProvider,
+      (previous, next) {},
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+
+    final controller = container.read(
+      receiptCaptureFlowControllerProvider.notifier,
+    );
+    final first = controller.run(source: ReceiptInputSource.file);
+    final second = controller.run(source: ReceiptInputSource.file);
+
+    await Future<void>.delayed(Duration.zero);
+    expect(pickCalls, 1);
+
+    pickCompleter.complete(ReceiptInputResult.selected(selection: selection));
+
+    analysisCompleter.complete(
+      const ReceiptAnalysisResult.failed(
+        errorCode: ReceiptAnalysisErrorCodes.aiRequestFailed,
+      ),
+    );
+
+    final firstResult = await first;
+    final secondResult = await second;
+    expect(firstResult.status, ReceiptCaptureFlowStatus.analysisFailed);
+    expect(secondResult.status, ReceiptCaptureFlowStatus.analysisFailed);
+    expect(pickCalls, 1);
+    expect(analysisCalls, 1);
   });
 
   test(

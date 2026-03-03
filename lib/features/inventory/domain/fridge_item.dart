@@ -1,10 +1,13 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:yamt/features/inventory/domain/food_fingerprint.dart';
 import 'package:yamt/features/inventory/domain/fridge_item_amount_parser.dart';
 export 'package:yamt/features/inventory/domain/fridge_item_amount_parser.dart'
     show FridgeAmountUnit;
 
 part 'fridge_item.freezed.dart';
 part 'fridge_item.g.dart';
+
+enum InventoryBarcodeStatus { resolved, pending, missing }
 
 @freezed
 abstract class FridgeItem with _$FridgeItem {
@@ -22,6 +25,10 @@ abstract class FridgeItem with _$FridgeItem {
     @Default(0) int initialAmount,
     @Default(0) int currentAmount,
     FridgeAmountUnit? amountUnit,
+    String? barcode,
+    String? foodFingerprint,
+    DateTime? barcodeLookupRequestedAt,
+    DateTime? barcodeResolvedAt,
     String? brand,
     String? category,
     @Default(<String, double>{}) Map<String, double> discounts,
@@ -67,6 +74,32 @@ abstract class FridgeItem with _$FridgeItem {
   bool get canBeSavedToFridge => !isReviewOnly;
 
   bool get usesAmountProgress => amountUnit != null && initialAmount > 0;
+
+  String get resolvedFoodFingerprint {
+    final value = foodFingerprint?.trim();
+    if (value != null && value.isNotEmpty) {
+      return value;
+    }
+    return computeFoodFingerprint(name: name, brand: brand);
+  }
+
+  String? get normalizedBarcode {
+    final value = barcode?.trim();
+    if (value == null || value.isEmpty) {
+      return null;
+    }
+    return value;
+  }
+
+  InventoryBarcodeStatus get barcodeStatus {
+    if (normalizedBarcode != null) {
+      return InventoryBarcodeStatus.resolved;
+    }
+    if (barcodeLookupRequestedAt != null) {
+      return InventoryBarcodeStatus.pending;
+    }
+    return InventoryBarcodeStatus.missing;
+  }
 
   bool get isConsumed {
     final progress = _consumptionProgress;

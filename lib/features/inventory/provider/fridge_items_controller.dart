@@ -191,6 +191,49 @@ class FridgeItemsController extends _$FridgeItemsController {
     );
   }
 
+  Future<bool> markBarcodeLookupRequested(String itemId) {
+    return _runItemsMutation((currentItems) {
+      final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
+      if (itemIndex < 0) {
+        return null;
+      }
+
+      final current = currentItems[itemIndex];
+      final now = DateTime.now();
+      final updated = current.copyWith(barcodeLookupRequestedAt: now);
+      final nextItems = List<FridgeItem>.from(currentItems);
+      nextItems[itemIndex] = updated;
+      return nextItems;
+    });
+  }
+
+  Future<bool> setItemBarcode({
+    required String itemId,
+    required String barcode,
+  }) {
+    final normalized = barcode.trim();
+    if (normalized.isEmpty) {
+      return Future<bool>.value(false);
+    }
+
+    return _runItemsMutation((currentItems) {
+      final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
+      if (itemIndex < 0) {
+        return null;
+      }
+
+      final current = currentItems[itemIndex];
+      final now = DateTime.now();
+      final updated = current.copyWith(
+        barcode: normalized,
+        barcodeResolvedAt: now,
+      );
+      final nextItems = List<FridgeItem>.from(currentItems);
+      nextItems[itemIndex] = updated;
+      return nextItems;
+    });
+  }
+
   Future<bool> buyAgainItem(FridgeItem item) {
     return ref.read(shoppingListFacadeProvider).addInventoryItem(item);
   }

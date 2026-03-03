@@ -1,1 +1,64 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"mealtrack-4b239","appId":"1:1081825170446:android:1cdfeec570d1806dfc985f","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"mealtrack-4b239","configurations":{"android":"1:1081825170446:android:1cdfeec570d1806dfc985f","ios":"1:1081825170446:ios:c050f165faab6af0fc985f","macos":"1:1081825170446:ios:c050f165faab6af0fc985f","web":"1:1081825170446:web:1df73194067f1d71fc985f","windows":"1:1081825170446:web:774cdfd8b990040dfc985f"}}}}},"firestore":{"database":"(default)","location":"eur3","rules":"firestore.rules","indexes":"firestore.indexes.json"},"remoteconfig":{"template":"remoteconfig.template.json"},"database":{"rules":"database.rules.json"},"auth":{"providers":{"anonymous":true,"emailPassword":true,"googleSignIn":{"oAuthBrandDisplayName":"YAMT","supportEmail":"repin@mailbox.org"}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "mealtrack-4b239",
+          "appId": "1:1081825170446:android:1cdfeec570d1806dfc985f",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "mealtrack-4b239",
+          "configurations": {
+            "android": "1:1081825170446:android:1cdfeec570d1806dfc985f",
+            "ios": "1:1081825170446:ios:c050f165faab6af0fc985f",
+            "macos": "1:1081825170446:ios:c050f165faab6af0fc985f",
+            "web": "1:1081825170446:web:1df73194067f1d71fc985f",
+            "windows": "1:1081825170446:web:774cdfd8b990040dfc985f"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "codebase": "default",
+      "disallowLegacyRuntimeConfig": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ],
+      "source": "functions"
+    }
+  ],
+  "firestore": {
+    "database": "(default)",
+    "location": "eur3",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "remoteconfig": {
+    "template": "remoteconfig.template.json"
+  },
+  "database": {
+    "rules": "database.rules.json"
+  },
+  "auth": {
+    "providers": {
+      "anonymous": true,
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "YAMT",
+        "supportEmail": "repin@mailbox.org"
+      }
+    }
+  }
+}

@@ -102,6 +102,20 @@
   "inventoryItemBuyAgainSucceeded": "Item added to shopping list.",
   "inventoryItemThrowAwayAction": "Throw away",
   "inventoryItemActionFailed": "Action failed. Please try again.",
+  "inventoryBarcodeStatusPending": "Barcode lookup pending",
+  "inventoryBarcodeStatusMissing": "Barcode missing",
+  "inventoryBarcodeMissingPromptTitle": "Barcode missing",
+  "inventoryBarcodeMissingPromptMessage":
+      "Scan now to log calories immediately, or continue and let AI backfill it.",
+  "inventoryBarcodeMissingPromptScanNow": "Scan barcode now",
+  "inventoryBarcodeMissingPromptLater": "Later",
+  "inventoryBarcodeLookupQueued":
+      "Barcode lookup queued. You can add calories once resolved.",
+  "inventoryBarcodeRetryAction": "Retry barcode lookup",
+  "inventoryBarcodeScanUnsupported":
+      "Barcode scanning is currently supported on Android and iOS.",
+  "inventoryBarcodePortionDialogTitle": "Enter consumed amount",
+  "inventoryBarcodePortionDialogConfirmAction": "Continue",
   "inventoryEmptyState": "No items in your fridge yet. Scan a receipt to get started.",
   "inventoryFilteredEmptyState": "No items match the selected filters.",
   "inventoryLoadFailed": "Could not load inventory items.",

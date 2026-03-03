@@ -1,1 +1,19 @@
-{}
+{
+  "parameters": {
+    "feature_inventory_barcode_markers": {
+      "defaultValue": {
+        "value": "true"
+      }
+    },
+    "feature_inventory_eat_barcode_bridge": {
+      "defaultValue": {
+        "value": "true"
+      }
+    },
+    "feature_inventory_barcode_queue": {
+      "defaultValue": {
+        "value": "true"
+      }
+    }
+  }
+}

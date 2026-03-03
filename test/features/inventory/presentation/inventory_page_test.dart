@@ -4,6 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_barcode_backfill_repository.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_barcode_backfill_repository_contract.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
@@ -11,6 +18,81 @@ import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 import '../../shoppinglist/support/fake_shopping_list_repository.dart';
+
+class _NoopBackfillRepository
+    implements CalorieBarcodeBackfillRepositoryContract {
+  @override
+  Future<bool> enqueueFingerprintLookup({
+    required String fingerprint,
+    required String itemName,
+    String? brand,
+    required String trigger,
+    bool forceRetry = false,
+  }) async {
+    return true;
+  }
+
+  @override
+  Future<CalorieProductProfile?> getResolvedProfileByFingerprint(
+    String fingerprint,
+  ) async {
+    return null;
+  }
+
+  @override
+  Future<bool> submitUserProvidedBarcode({
+    required String fingerprint,
+    required String barcode,
+    required String itemName,
+    String? brand,
+  }) async {
+    return true;
+  }
+}
+
+class _RecordingBackfillRepository
+    implements CalorieBarcodeBackfillRepositoryContract {
+  int enqueueCalls = 0;
+  String? lastFingerprint;
+  String? lastItemName;
+  String? lastBrand;
+  String? lastTrigger;
+  bool lastForceRetry = false;
+
+  @override
+  Future<bool> enqueueFingerprintLookup({
+    required String fingerprint,
+    required String itemName,
+    String? brand,
+    required String trigger,
+    bool forceRetry = false,
+  }) async {
+    enqueueCalls += 1;
+    lastFingerprint = fingerprint;
+    lastItemName = itemName;
+    lastBrand = brand;
+    lastTrigger = trigger;
+    lastForceRetry = forceRetry;
+    return true;
+  }
+
+  @override
+  Future<CalorieProductProfile?> getResolvedProfileByFingerprint(
+    String fingerprint,
+  ) async {
+    return null;
+  }
+
+  @override
+  Future<bool> submitUserProvidedBarcode({
+    required String fingerprint,
+    required String barcode,
+    required String itemName,
+    String? brand,
+  }) async {
+    return true;
+  }
+}
 
 class _FakeFridgeItemRepository implements FridgeItemRepository {
   _FakeFridgeItemRepository({required this.onReadAll});
@@ -119,7 +201,8 @@ ShoppingListItem _shoppingItem(
 
 Widget _buildTestApp(
   FridgeItemRepository repository, {
-  List overrides = const [],
+  List<dynamic> overrides = const <dynamic>[],
+  bool includeDefaultBarcodeFlagsOverride = true,
 }) {
   final router = GoRouter(
     routes: [
@@ -133,6 +216,14 @@ Widget _buildTestApp(
   return ProviderScope(
     overrides: [
       fridgeItemRepositoryProvider.overrideWithValue(repository),
+      if (includeDefaultBarcodeFlagsOverride)
+        barcodeBackfillFeatureFlagsProvider.overrideWithValue(
+          const BarcodeBackfillFeatureFlags(
+            showInventoryBarcodeMarkers: false,
+            enableEatBridge: false,
+            enableQueueBackfill: false,
+          ),
+        ),
       ...overrides,
     ],
     child: MaterialApp.router(
@@ -295,6 +386,88 @@ void main() {
     expect(find.text('500g / 1000g'), findsOneWidget);
   });
 
+  testWidgets('shows barcode missing marker when feature flag is enabled', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item('a', quantity: 2, initialQuantity: 2),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        repository,
+        includeDefaultBarcodeFlagsOverride: false,
+        overrides: <dynamic>[
+          barcodeBackfillFeatureFlagsProvider.overrideWithValue(
+            const BarcodeBackfillFeatureFlags(
+              showInventoryBarcodeMarkers: true,
+              enableEatBridge: false,
+              enableQueueBackfill: false,
+            ),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('No receipt'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Barcode missing'), findsOneWidget);
+  });
+
+  testWidgets('retry barcode button enqueues a manual retry request', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item('a', name: 'Milk', quantity: 2, initialQuantity: 2),
+      ],
+    );
+    final backfillRepository = _RecordingBackfillRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        repository,
+        includeDefaultBarcodeFlagsOverride: false,
+        overrides: <dynamic>[
+          barcodeBackfillFeatureFlagsProvider.overrideWithValue(
+            const BarcodeBackfillFeatureFlags(
+              showInventoryBarcodeMarkers: true,
+              enableEatBridge: false,
+              enableQueueBackfill: true,
+            ),
+          ),
+          calorieBarcodeBackfillRepositoryProvider.overrideWithValue(
+            backfillRepository,
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('No receipt'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Milk'));
+    await tester.pumpAndSettle();
+
+    final retryButtonFinder = find.text('Retry barcode lookup');
+    expect(retryButtonFinder, findsOneWidget);
+    await tester.ensureVisible(retryButtonFinder);
+    await tester.pumpAndSettle();
+
+    await tester.tap(retryButtonFinder);
+    await tester.pumpAndSettle();
+
+    expect(backfillRepository.enqueueCalls, 1);
+    expect(backfillRepository.lastFingerprint, 'milk');
+    expect(backfillRepository.lastItemName, 'Milk');
+    expect(backfillRepository.lastTrigger, 'manual_retry');
+    expect(backfillRepository.lastForceRetry, isTrue);
+  });
+
   testWidgets('eat action opens amount dialog and updates stock', (
     tester,
   ) async {
@@ -366,6 +539,61 @@ void main() {
 
     expect(find.text('Milk'), findsOneWidget);
     expect(find.text('0/1'), findsOneWidget);
+  });
+
+  testWidgets('eat action with missing barcode opens scan-or-later prompt', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item(
+          'a',
+          quantity: 1,
+          initialQuantity: 1,
+          weight: '1000g',
+          initialAmount: 1000,
+          currentAmount: 1000,
+          amountUnit: FridgeAmountUnit.gram,
+        ),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        repository,
+        includeDefaultBarcodeFlagsOverride: false,
+        overrides: <dynamic>[
+          barcodeBackfillFeatureFlagsProvider.overrideWithValue(
+            const BarcodeBackfillFeatureFlags(
+              showInventoryBarcodeMarkers: true,
+              enableEatBridge: true,
+              enableQueueBackfill: true,
+            ),
+          ),
+          calorieBarcodeBackfillRepositoryProvider.overrideWithValue(
+            _NoopBackfillRepository(),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('No receipt'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Eat'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      '100',
+    );
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Scan barcode now'), findsOneWidget);
+    expect(find.text('Later'), findsOneWidget);
   });
 
   testWidgets(

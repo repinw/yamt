@@ -36,6 +36,13 @@ macos/Flutter/GeneratedPluginRegistrant.swift
 windows/flutter/generated_plugin_registrant.cc
 windows/flutter/generated_plugins.cmake
 
+# Node / Firebase Functions
+node_modules/
+**/node_modules/
+functions/.env*
+firebase-debug.log
+firebase-debug.*.log
+
 # Symbolication related
 app.*.symbols
 

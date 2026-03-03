@@ -1,5 +1,6 @@
 // ignore_for_file: experimental_member_use
 
+import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:firebase_ai/firebase_ai.dart';
@@ -23,6 +24,7 @@ const String _highReceiptTemplateKey = 'template_id_high';
 const String _vertexLocation = 'global';
 const Duration _remoteConfigFetchTimeout = Duration(seconds: 30);
 const Duration _remoteConfigProdFetchInterval = Duration(hours: 1);
+const Duration _templateRequestTimeout = Duration(seconds: 200);
 
 @riverpod
 ReceiptTemplateConfigClient receiptTemplateConfigClient(Ref ref) {
@@ -151,7 +153,9 @@ class FirebaseReceiptTemplateModelClient implements ReceiptTemplateModelClient {
     required String templateId,
     required Map<String, Object?> inputs,
   }) async {
-    final response = await _model.generateContent(templateId, inputs: inputs);
+    final response = await _model
+        .generateContent(templateId, inputs: inputs)
+        .timeout(_templateRequestTimeout);
     return response.text;
   }
 }

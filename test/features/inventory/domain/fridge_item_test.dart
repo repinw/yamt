@@ -69,4 +69,29 @@ void main() {
     expect(fullyConsumed.isConsumed, isTrue);
     expect(fullyConsumed.isFullyConsumed, isTrue);
   });
+
+  test('barcode status resolves pending and missing states', () {
+    final missing = _quantityItem(quantity: 1, initialQuantity: 1);
+    final pending = missing.copyWith(
+      barcodeLookupRequestedAt: DateTime.parse('2026-02-20T10:00:00Z'),
+    );
+    final resolved = pending.copyWith(
+      barcode: '4006381333931',
+      barcodeResolvedAt: DateTime.parse('2026-02-20T10:05:00Z'),
+    );
+
+    expect(missing.barcodeStatus, InventoryBarcodeStatus.missing);
+    expect(pending.barcodeStatus, InventoryBarcodeStatus.pending);
+    expect(resolved.barcodeStatus, InventoryBarcodeStatus.resolved);
+  });
+
+  test('resolvedFoodFingerprint falls back to normalized name and brand', () {
+    final item = _quantityItem(quantity: 1, initialQuantity: 1).copyWith(
+      name: 'Organic Milk 3.5%',
+      brand: 'Acme Foods',
+      foodFingerprint: null,
+    );
+
+    expect(item.resolvedFoodFingerprint, 'organic_milk_3_5__acme_foods');
+  });
 }

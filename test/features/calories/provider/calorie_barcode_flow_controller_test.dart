@@ -33,10 +33,7 @@ void main() {
     final lookupRepository = FakeCalorieProductLookupRepository(
       onLookupByBarcode: (barcode) async {
         return CalorieLookupOutcome.foundSingle(
-          product(
-            barcode: barcode,
-            source: CalorieProductSource.globalCatalog,
-          ),
+          product(barcode: barcode, source: CalorieProductSource.globalCatalog),
         );
       },
     );
@@ -56,7 +53,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final notifier = container.read(calorieBarcodeFlowControllerProvider.notifier);
+    final notifier = container.read(
+      calorieBarcodeFlowControllerProvider.notifier,
+    );
     final outcome = await notifier.resolveBarcode('4006381333931');
     final state = container.read(calorieBarcodeFlowControllerProvider);
 

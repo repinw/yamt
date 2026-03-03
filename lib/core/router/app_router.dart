@@ -26,9 +26,7 @@ GoRouter appRouter(Ref ref) {
   final isAuthLoading = authState.isLoading;
   final currentUser = authState.asData?.value;
   final isAuthenticated = currentUser != null;
-  final hasCompletedProfileSetup = ref.watch(
-    authProfileSetupCompletedProvider,
-  );
+  final hasCompletedProfileSetup = ref.watch(authProfileSetupCompletedProvider);
   final needsGuestNameSetup = isAuthenticated && !hasCompletedProfileSetup;
 
   return GoRouter(
@@ -96,6 +94,7 @@ GoRouter appRouter(Ref ref) {
           return CalorieEntryEditorPage(
             prefilledProfile: args?.prefilledProfile,
             scannedSourceRef: args?.scannedSourceRef,
+            inventoryContext: args?.inventoryContext,
           );
         },
       ),
@@ -108,7 +107,14 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.homeCaloriesBarcodeScan,
-        builder: (context, state) => const CalorieBarcodeScanPage(),
+        builder: (context, state) {
+          final args = state.extra is CalorieBarcodeScanArgs
+              ? state.extra! as CalorieBarcodeScanArgs
+              : null;
+          return CalorieBarcodeScanPage(
+            inventoryContext: args?.inventoryContext,
+          );
+        },
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

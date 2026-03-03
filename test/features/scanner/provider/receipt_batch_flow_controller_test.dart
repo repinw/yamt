@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -80,6 +81,49 @@ FridgeItem _fridgeItem({required String id}) {
 }
 
 void main() {
+  test(
+    'runFileBatch reuses in-flight operation for concurrent calls',
+    () async {
+      final pickCompleter = Completer<ReceiptInputBatchResult>();
+      var pickCalls = 0;
+      final container = ProviderContainer(
+        overrides: [
+          receiptInputRepositoryProvider.overrideWithValue(
+            _FakeReceiptInputRepository(
+              pickFiles: () {
+                pickCalls += 1;
+                return pickCompleter.future;
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = container.listen(
+        receiptBatchFlowControllerProvider,
+        (previous, next) {},
+        fireImmediately: true,
+      );
+      addTearDown(subscription.close);
+
+      final controller = container.read(
+        receiptBatchFlowControllerProvider.notifier,
+      );
+      final first = controller.runFileBatch();
+      final second = controller.runFileBatch();
+
+      await Future<void>.delayed(Duration.zero);
+      expect(pickCalls, 1);
+
+      pickCompleter.complete(const ReceiptInputBatchResult.canceled());
+      await Future.wait<void>(<Future<void>>[first, second]);
+
+      final state = container.read(receiptBatchFlowControllerProvider);
+      expect(state.status, ReceiptBatchFlowStatus.inputCanceled);
+      expect(pickCalls, 1);
+    },
+  );
+
   test('runFileBatch sets inputCanceled when picker is dismissed', () async {
     final container = ProviderContainer(
       overrides: [

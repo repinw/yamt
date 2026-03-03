@@ -17,6 +17,8 @@ class InventoryItemRowExpandSection extends StatelessWidget {
     required this.onDeletePressed,
     required this.onThrowAwayPressed,
     required this.onToggleExpanded,
+    required this.retryBarcodeLabel,
+    required this.onRetryBarcodePressed,
   });
 
   final bool isExpanded;
@@ -27,6 +29,8 @@ class InventoryItemRowExpandSection extends StatelessWidget {
   final VoidCallback onDeletePressed;
   final VoidCallback? onThrowAwayPressed;
   final VoidCallback onToggleExpanded;
+  final String retryBarcodeLabel;
+  final VoidCallback? onRetryBarcodePressed;
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +99,8 @@ class InventoryItemRowExpandSection extends StatelessWidget {
                     throwAwayLabel: throwAwayLabel,
                     onDeletePressed: onDeletePressed,
                     onThrowAwayPressed: onThrowAwayPressed,
+                    retryBarcodeLabel: retryBarcodeLabel,
+                    onRetryBarcodePressed: onRetryBarcodePressed,
                   ),
                 )
               : const SizedBox.shrink(),
@@ -112,6 +118,8 @@ class _InventoryItemActionPanel extends StatelessWidget {
     required this.throwAwayLabel,
     required this.onDeletePressed,
     required this.onThrowAwayPressed,
+    required this.retryBarcodeLabel,
+    required this.onRetryBarcodePressed,
   });
 
   final InventoryItemRowViewData viewData;
@@ -120,6 +128,8 @@ class _InventoryItemActionPanel extends StatelessWidget {
   final String throwAwayLabel;
   final VoidCallback onDeletePressed;
   final VoidCallback? onThrowAwayPressed;
+  final String retryBarcodeLabel;
+  final VoidCallback? onRetryBarcodePressed;
 
   @override
   Widget build(BuildContext context) {
@@ -180,6 +190,29 @@ class _InventoryItemActionPanel extends StatelessWidget {
             ),
           ],
         ),
+        if (onRetryBarcodePressed != null) ...[
+          const SizedBox(
+            height: InventoryItemRowConstants.actionContentSpacing,
+          ),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: onRetryBarcodePressed,
+              icon: const Icon(
+                Icons.refresh_rounded,
+                size: InventoryItemRowConstants.actionButtonIconSize,
+              ),
+              label: Text(retryBarcodeLabel),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(
+                  0,
+                  InventoryItemRowConstants.actionButtonHeight,
+                ),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }

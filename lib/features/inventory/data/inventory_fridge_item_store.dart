@@ -7,6 +7,8 @@ import 'package:yamt/core/data/firestore_atomic_replace_service.dart';
 const String _storeLogName = 'FirestoreInventoryFridgeItemStore';
 const String _usersCollection = 'users';
 const String _inventoryItemsCollection = 'inventory_items';
+const String _barcodeEnrichmentRequestsCollection =
+    'barcode_enrichment_requests';
 
 class InventoryFridgeItemDocument {
   const InventoryFridgeItemDocument({required this.id, required this.data});
@@ -28,6 +30,11 @@ abstract interface class InventoryFridgeItemStore {
   Future<bool> upsertAll({
     required String userId,
     required Map<String, Map<String, dynamic>> documentsById,
+  });
+
+  Future<Map<String, String>> readResolvedBarcodes({
+    required String userId,
+    required Iterable<String> fingerprints,
   });
 }
 
@@ -101,6 +108,48 @@ class FirestoreInventoryFridgeItemStore implements InventoryFridgeItemStore {
     }
   }
 
+  @override
+  Future<Map<String, String>> readResolvedBarcodes({
+    required String userId,
+    required Iterable<String> fingerprints,
+  }) async {
+    final normalizedFingerprints = fingerprints
+        .map((value) => value.trim())
+        .where((value) => value.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
+    if (normalizedFingerprints.isEmpty) {
+      return const <String, String>{};
+    }
+
+    final resolved = <String, String>{};
+    for (final fingerprint in normalizedFingerprints) {
+      final snapshot = await _requestDoc(
+        userId: userId,
+        fingerprint: fingerprint,
+      ).get();
+      final data = snapshot.data();
+      if (!snapshot.exists || data == null) {
+        continue;
+      }
+
+      final status = _readString(data['status']);
+      if (status != 'resolved') {
+        continue;
+      }
+
+      final barcode =
+          _readString(data['resolved_barcode']) ??
+          _readString(data['barcode']) ??
+          _readString(data['provided_barcode']);
+      if (barcode == null) {
+        continue;
+      }
+      resolved[fingerprint] = barcode;
+    }
+    return resolved;
+  }
+
   Future<void> _replaceAllUnsafe({
     required String userId,
     required Map<String, Map<String, dynamic>> documentsById,
@@ -144,5 +193,23 @@ class FirestoreInventoryFridgeItemStore implements InventoryFridgeItemStore {
         .collection(_usersCollection)
         .doc(userId)
         .collection(_inventoryItemsCollection);
+  }
+
+  DocumentReference<Map<String, dynamic>> _requestDoc({
+    required String userId,
+    required String fingerprint,
+  }) {
+    return _firestore
+        .collection(_usersCollection)
+        .doc(userId)
+        .collection(_barcodeEnrichmentRequestsCollection)
+        .doc(fingerprint);
+  }
+
+  String? _readString(Object? value) {
+    if (value is String && value.trim().isNotEmpty) {
+      return value.trim();
+    }
+    return null;
   }
 }

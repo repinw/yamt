@@ -21,6 +21,13 @@ const _offBaseUrl = 'world.openfoodfacts.org';
 const _lookupErrorInvalidBarcode = 'invalid_barcode';
 const _lookupErrorRequestFailed = 'off_request_failed';
 const _offLookupTimeout = Duration(seconds: 10);
+const _offUserAgent = 'YAMT/1.0 (repin@mailbox.org)';
+const _offSearchMinInterval = Duration(milliseconds: 6100);
+const _offProductMinInterval = Duration(milliseconds: 700);
+const _offRequestHeaders = <String, String>{
+  'User-Agent': _offUserAgent,
+  'Accept': 'application/json',
+};
 
 @riverpod
 http.Client calorieLookupHttpClient(Ref ref) {
@@ -51,6 +58,10 @@ class OffBackedCalorieProductLookupRepository
   final http.Client _httpClient;
   final Duration _requestTimeout;
   final DateTime Function() _now;
+  Future<void> _offSearchGate = Future<void>.value();
+  Future<void> _offProductGate = Future<void>.value();
+  DateTime _nextOffSearchAllowedAt = DateTime.fromMillisecondsSinceEpoch(0);
+  DateTime _nextOffProductAllowedAt = DateTime.fromMillisecondsSinceEpoch(0);
 
   @override
   Future<CalorieLookupOutcome> lookupByBarcode(String rawBarcode) async {
@@ -78,7 +89,6 @@ class OffBackedCalorieProductLookupRepository
     try {
       final exactMatch = await _fetchByBarcode(barcode);
       if (exactMatch != null) {
-        await persistGlobalProduct(exactMatch);
         return CalorieLookupOutcome.foundSingle(exactMatch);
       }
 
@@ -89,7 +99,6 @@ class OffBackedCalorieProductLookupRepository
 
       if (candidates.length == 1) {
         final profile = candidates.single.profile;
-        await persistGlobalProduct(profile);
         return CalorieLookupOutcome.foundSingle(profile);
       }
 
@@ -108,12 +117,20 @@ class OffBackedCalorieProductLookupRepository
 
   @override
   Future<bool> persistGlobalProduct(CalorieProductProfile profile) {
-    return _cacheRepository.saveGlobalProduct(
-      profile.copyWith(updatedAt: _now()),
+    final now = _now();
+    final overrideProfile = profile.copyWith(
+      source: CalorieProductSource.userOverride,
+      updatedAt: now,
+      createdAt: now,
+    );
+    return _cacheRepository.saveUserOverride(
+      profile: overrideProfile,
+      reason: 'selected_candidate',
     );
   }
 
   Future<CalorieProductProfile?> _fetchByBarcode(String barcode) async {
+    await _waitForOffRateLimit(_OffEndpoint.product);
     final uri = Uri.https(
       _offBaseUrl,
       '/api/v2/product/$barcode.json',
@@ -121,7 +138,9 @@ class OffBackedCalorieProductLookupRepository
         'fields': '_id,code,product_name,brands,nutriments,status',
       },
     );
-    final response = await _httpClient.get(uri).timeout(_requestTimeout);
+    final response = await _httpClient
+        .get(uri, headers: _offRequestHeaders)
+        .timeout(_requestTimeout);
     if (response.statusCode != 200) {
       return null;
     }
@@ -151,6 +170,7 @@ class OffBackedCalorieProductLookupRepository
   Future<List<CalorieProductCandidate>> _searchCandidates(
     String barcode,
   ) async {
+    await _waitForOffRateLimit(_OffEndpoint.search);
     final uri = Uri.https(_offBaseUrl, '/cgi/search.pl', <String, String>{
       'search_terms': barcode,
       'search_simple': '1',
@@ -159,7 +179,9 @@ class OffBackedCalorieProductLookupRepository
       'page_size': '20',
       'fields': '_id,code,product_name,brands,nutriments',
     });
-    final response = await _httpClient.get(uri).timeout(_requestTimeout);
+    final response = await _httpClient
+        .get(uri, headers: _offRequestHeaders)
+        .timeout(_requestTimeout);
     if (response.statusCode != 200) {
       return const <CalorieProductCandidate>[];
     }
@@ -247,9 +269,13 @@ class OffBackedCalorieProductLookupRepository
   }
 
   Map<String, dynamic>? _decodeJsonObject(String body) {
-    final decoded = jsonDecode(body);
-    if (decoded is Map<String, dynamic>) {
-      return decoded;
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) {
+        return decoded;
+      }
+    } on FormatException {
+      return null;
     }
     return null;
   }
@@ -270,4 +296,36 @@ class OffBackedCalorieProductLookupRepository
     }
     return 0;
   }
+
+  Future<void> _waitForOffRateLimit(_OffEndpoint endpoint) {
+    Future<void> waitOperation() async {
+      final now = _now();
+      final nextAllowedAt = endpoint == _OffEndpoint.search
+          ? _nextOffSearchAllowedAt
+          : _nextOffProductAllowedAt;
+      if (nextAllowedAt.isAfter(now)) {
+        await Future<void>.delayed(nextAllowedAt.difference(now));
+      }
+      final requestAt = _now();
+      final next = requestAt.add(
+        endpoint == _OffEndpoint.search
+            ? _offSearchMinInterval
+            : _offProductMinInterval,
+      );
+      if (endpoint == _OffEndpoint.search) {
+        _nextOffSearchAllowedAt = next;
+      } else {
+        _nextOffProductAllowedAt = next;
+      }
+    }
+
+    if (endpoint == _OffEndpoint.search) {
+      _offSearchGate = _offSearchGate.then((_) => waitOperation());
+      return _offSearchGate;
+    }
+    _offProductGate = _offProductGate.then((_) => waitOperation());
+    return _offProductGate;
+  }
 }
+
+enum _OffEndpoint { search, product }

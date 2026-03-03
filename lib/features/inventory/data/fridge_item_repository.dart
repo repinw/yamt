@@ -82,4 +82,12 @@ class _UnavailableInventoryFridgeItemStore implements InventoryFridgeItemStore {
   }) async {
     return false;
   }
+
+  @override
+  Future<Map<String, String>> readResolvedBarcodes({
+    required String userId,
+    required Iterable<String> fingerprints,
+  }) async {
+    return const <String, String>{};
+  }
 }

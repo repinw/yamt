@@ -88,6 +88,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     CalorieEntry entry, {
     CalorieScannedSourceRef? scannedSourceRef,
   }) {
+    final keepAliveLink = ref.keepAlive();
     final selectedDay = ref.read(calorieDayControllerProvider);
     return _runOptimisticMutation(
       buildNextEntries: (previousEntries) {
@@ -105,10 +106,11 @@ class CalorieEntriesController extends _$CalorieEntriesController {
               entry: entry,
               scannedSourceRef: scannedSourceRef,
             ),
-    );
+    ).whenComplete(keepAliveLink.close);
   }
 
   Future<bool> deleteEntry(String entryId) {
+    final keepAliveLink = ref.keepAlive();
     return _runOptimisticMutation(
       buildNextEntries: (previousEntries) {
         return previousEntries
@@ -118,7 +120,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       persist: () =>
           ref.read(calorieLogRepositoryProvider).deleteEntry(entryId),
       failureLogMessage: 'Failed to delete calorie entry $entryId.',
-    );
+    ).whenComplete(keepAliveLink.close);
   }
 
   Future<bool> _runOptimisticMutation({
@@ -238,7 +240,21 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     if (currentData != null) {
       return currentData;
     }
-    return future;
+
+    final selectedDay = ref.read(calorieDayControllerProvider);
+    try {
+      return await ref
+          .read(calorieLogRepositoryProvider)
+          .readEntriesForDay(selectedDay);
+    } catch (error, stackTrace) {
+      log(
+        'Failed to read current calorie entries for mutation fallback.',
+        name: _entriesControllerLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <CalorieEntry>[];
+    }
   }
 
   List<CalorieEntry> _applySavedEntry({
@@ -287,20 +303,29 @@ class CalorieEntriesController extends _$CalorieEntriesController {
   Future<bool> _runSerializedMutation(Future<bool> Function() mutation) {
     final result = Completer<bool>();
 
-    _mutationQueue = _mutationQueue.then((_) async {
-      try {
-        final mutationResult = await mutation();
-        result.complete(mutationResult);
-      } catch (error, stackTrace) {
-        log(
-          'Unexpected calorie mutation error.',
-          name: _entriesControllerLogName,
-          error: error,
-          stackTrace: stackTrace,
-        );
-        result.complete(false);
-      }
-    });
+    _mutationQueue = _mutationQueue
+        .catchError((Object error, StackTrace stackTrace) {
+          log(
+            'Recovering calorie mutation queue from previous failure.',
+            name: _entriesControllerLogName,
+            error: error,
+            stackTrace: stackTrace,
+          );
+        })
+        .then((_) async {
+          try {
+            final mutationResult = await mutation();
+            result.complete(mutationResult);
+          } catch (error, stackTrace) {
+            log(
+              'Unexpected calorie mutation error.',
+              name: _entriesControllerLogName,
+              error: error,
+              stackTrace: stackTrace,
+            );
+            result.complete(false);
+          }
+        });
 
     return result.future;
   }

@@ -56,7 +56,7 @@ final class ReceiptTemplateConfigClientProvider
 }
 
 String _$receiptTemplateConfigClientHash() =>
-    r'136ad034437c6e8bbeaedeed1cc1f1044e4e760d';
+    r'f2b8089e4eb0b9679e812b1c907c3d4a5e943d1c';
 
 @ProviderFor(receiptTemplateModelClient)
 final receiptTemplateModelClientProvider =

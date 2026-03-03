@@ -186,10 +186,10 @@ class FirestoreCalorieProductCacheRepository
     }
     if (value is Map) {
       return value.map(
-        (key, nestedValue) =>
-            MapEntry<String, dynamic>(key.toString(), _normalizeValue(
-              nestedValue,
-            )),
+        (key, nestedValue) => MapEntry<String, dynamic>(
+          key.toString(),
+          _normalizeValue(nestedValue),
+        ),
       );
     }
     if (value is List) {
@@ -217,9 +217,8 @@ CalorieProductCacheRepositoryContract calorieProductCacheRepository(Ref ref) {
 
 class _CurrentCalorieProductCacheUserSession
     implements CalorieProductCacheUserSession {
-  const _CurrentCalorieProductCacheUserSession({
-    required String? currentUserId,
-  }) : _currentUserId = currentUserId;
+  const _CurrentCalorieProductCacheUserSession({required String? currentUserId})
+    : _currentUserId = currentUserId;
 
   final String? _currentUserId;
 
