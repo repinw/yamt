@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
-import 'package:yamt/features/calories/data/calorie_barcode_backfill_repository.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
@@ -188,12 +186,7 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     try {
       final itemRepository = ref.read(fridgeItemRepositoryProvider);
       final storableItems = _storableItems(reviewedItems);
-      final preparedItems = _prepareForBackfill(storableItems);
-      final saved = await itemRepository.appendAll(preparedItems);
-      if (saved) {
-        await _enqueueMissingBarcodeRequests(preparedItems);
-      }
-      return saved;
+      return await itemRepository.appendAll(storableItems);
     } catch (error, stackTrace) {
       log(
         'Receipt flow storage failed unexpectedly',
@@ -209,45 +202,5 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     return items
         .where((item) => item.canBeSavedToFridge)
         .toList(growable: false);
-  }
-
-  List<FridgeItem> _prepareForBackfill(List<FridgeItem> items) {
-    final now = DateTime.now();
-    return items
-        .map((item) {
-          if (item.normalizedBarcode != null) {
-            return item;
-          }
-          return item.copyWith(
-            barcodeLookupRequestedAt: item.barcodeLookupRequestedAt ?? now,
-          );
-        })
-        .toList(growable: false);
-  }
-
-  Future<void> _enqueueMissingBarcodeRequests(List<FridgeItem> items) async {
-    final flags = ref.read(barcodeBackfillFeatureFlagsProvider);
-    if (!flags.enableQueueBackfill) {
-      return;
-    }
-
-    final repository = ref.read(calorieBarcodeBackfillRepositoryProvider);
-    final queuedFingerprints = <String>{};
-    for (final item in items) {
-      if (item.normalizedBarcode != null) {
-        continue;
-      }
-      final fingerprint = item.resolvedFoodFingerprint;
-      if (queuedFingerprints.contains(fingerprint)) {
-        continue;
-      }
-      queuedFingerprints.add(fingerprint);
-      await repository.enqueueFingerprintLookup(
-        fingerprint: fingerprint,
-        itemName: item.name,
-        brand: item.brand,
-        trigger: 'inventory_import',
-      );
-    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart
 
 abstract interface class CalorieBarcodeBackfillRepositoryContract {
   Future<bool> enqueueFingerprintLookup({
+    String? itemId,
     required String fingerprint,
     required String itemName,
     String? brand,

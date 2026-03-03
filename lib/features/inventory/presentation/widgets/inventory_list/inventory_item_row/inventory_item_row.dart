@@ -73,7 +73,6 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     );
     final featureFlags = ref.watch(barcodeBackfillFeatureFlagsProvider);
     final canRetryBarcodeLookup =
-        featureFlags.enableQueueBackfill &&
         widget.item.barcodeStatus != InventoryBarcodeStatus.resolved &&
         !_isWorking;
     final layoutData = _buildLayoutData(
@@ -188,21 +187,16 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     final backfillRepository = ref.read(
       calorieBarcodeBackfillRepositoryProvider,
     );
-    final itemsController = ref.read(fridgeItemsControllerProvider.notifier);
     unawaited(
       _actionCoordinator.runAction(() async {
         final queued = await backfillRepository.enqueueFingerprintLookup(
+          itemId: item.id,
           fingerprint: item.resolvedFoodFingerprint,
           itemName: item.name,
           brand: item.brand,
-          trigger: 'manual_retry',
-          forceRetry: true,
+          trigger: 'manual_search',
         );
-        if (!queued) {
-          return false;
-        }
-        await itemsController.markBarcodeLookupRequested(item.id);
-        return true;
+        return queued;
       }, successMessage: widget.l10n.inventoryBarcodeLookupQueued),
     );
   }

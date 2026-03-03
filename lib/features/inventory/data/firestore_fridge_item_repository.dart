@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:yamt/features/inventory/domain/food_fingerprint.dart';
@@ -86,11 +85,7 @@ class FirestoreFridgeItemRepository implements FridgeItemRepository {
   Stream<List<FridgeItem>> _watchAllForUser(String userId) async* {
     try {
       await for (final documents in _store.watchAll(userId: userId)) {
-        final decodedItems = _decodeDocuments(documents);
-        yield await _hydrateResolvedBarcodesForUser(
-          userId: userId,
-          items: decodedItems,
-        );
+        yield _decodeDocuments(documents);
       }
     } catch (error, stackTrace) {
       log(
@@ -106,11 +101,7 @@ class FirestoreFridgeItemRepository implements FridgeItemRepository {
   Future<List<FridgeItem>> _readAllForUser(String userId) async {
     try {
       final documents = await _store.readAll(userId: userId);
-      final decodedItems = _decodeDocuments(documents);
-      return _hydrateResolvedBarcodesForUser(
-        userId: userId,
-        items: decodedItems,
-      );
+      return _decodeDocuments(documents);
     } catch (error, stackTrace) {
       log(
         'Failed to read inventory items from firestore for user $userId',
@@ -174,73 +165,6 @@ class FirestoreFridgeItemRepository implements FridgeItemRepository {
         brand: item.brand,
       ),
     );
-  }
-
-  Future<List<FridgeItem>> _hydrateResolvedBarcodesForUser({
-    required String userId,
-    required List<FridgeItem> items,
-  }) async {
-    if (items.isEmpty) {
-      return items;
-    }
-
-    final pendingFingerprints = <String>{
-      for (final item in items)
-        if (item.normalizedBarcode == null) item.resolvedFoodFingerprint,
-    };
-    if (pendingFingerprints.isEmpty) {
-      return items;
-    }
-
-    Map<String, String> resolvedByFingerprint;
-    try {
-      resolvedByFingerprint = await _store.readResolvedBarcodes(
-        userId: userId,
-        fingerprints: pendingFingerprints,
-      );
-    } catch (error, stackTrace) {
-      log(
-        'Failed to read resolved barcode requests for user $userId',
-        name: _repositoryLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return items;
-    }
-    if (resolvedByFingerprint.isEmpty) {
-      return items;
-    }
-
-    final now = DateTime.now();
-    final updatedItems = <FridgeItem>[];
-    final hydratedItems = List<FridgeItem>.from(items);
-    for (var index = 0; index < hydratedItems.length; index++) {
-      final item = hydratedItems[index];
-      if (item.normalizedBarcode != null) {
-        continue;
-      }
-
-      final resolvedBarcode =
-          resolvedByFingerprint[item.resolvedFoodFingerprint]?.trim();
-      if (resolvedBarcode == null || resolvedBarcode.isEmpty) {
-        continue;
-      }
-
-      final updated = item.copyWith(
-        barcode: resolvedBarcode,
-        barcodeResolvedAt: item.barcodeResolvedAt ?? now,
-      );
-      hydratedItems[index] = updated;
-      updatedItems.add(updated);
-    }
-    if (updatedItems.isEmpty) {
-      return items;
-    }
-
-    unawaited(
-      _runExclusiveWrite(() => _upsertAllForUser(userId, updatedItems)),
-    );
-    return hydratedItems;
   }
 
   FridgeItem _normalizeItemForPersistence(FridgeItem item) {

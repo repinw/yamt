@@ -111,8 +111,8 @@
   "inventoryBarcodeMissingPromptScanNow": "Jetzt Barcode scannen",
   "inventoryBarcodeMissingPromptLater": "Später",
   "inventoryBarcodeLookupQueued":
-      "Barcode-Abgleich wurde vorgemerkt. Kalorien können nach der Auflösung erfasst werden.",
-  "inventoryBarcodeRetryAction": "Barcode-Abgleich neu starten",
+      "Barcode-Suche wurde ausgeführt. Ergebnis steht direkt im Inventar-Item.",
+  "inventoryBarcodeRetryAction": "Barcode suchen",
   "inventoryBarcodeScanUnsupported":
       "Barcode-Scan wird aktuell auf Android und iOS unterstützt.",
   "inventoryBarcodePortionDialogTitle": "Verzehrte Menge eingeben",

@@ -1,21 +1,33 @@
 import 'dart:developer' show log;
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository_contract.dart';
-import 'package:yamt/features/calories/data/'
-    'calorie_product_cache_repository_contract.dart';
-import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 
 part 'calorie_barcode_backfill_repository.g.dart';
 
 const _backfillLogName = 'CalorieBarcodeBackfillRepository';
-const _usersCollection = 'users';
-const _requestsCollection = 'barcode_enrichment_requests';
-const _fingerprintCatalogCollection = 'food_fingerprint_catalog';
+const _resolveCallableName = 'resolveInventoryItemBarcode';
+const _functionsRegion = 'europe-west1';
+const _useFunctionsEmulator = bool.fromEnvironment(
+  'USE_FUNCTIONS_EMULATOR',
+  defaultValue: false,
+);
+const _functionsEmulatorHostFromDefine = String.fromEnvironment(
+  'FUNCTIONS_EMULATOR_HOST',
+  defaultValue: '',
+);
+const _functionsEmulatorPort = int.fromEnvironment(
+  'FUNCTIONS_EMULATOR_PORT',
+  defaultValue: 5001,
+);
+
+typedef ResolveInventoryItemCallable =
+    Future<Map<String, dynamic>?> Function(Map<String, dynamic> payload);
 
 abstract interface class CalorieBarcodeBackfillUserSession {
   String? get currentUserId;
@@ -25,21 +37,19 @@ class FirestoreCalorieBarcodeBackfillRepository
     implements CalorieBarcodeBackfillRepositoryContract {
   FirestoreCalorieBarcodeBackfillRepository({
     required CalorieBarcodeBackfillUserSession session,
-    required FirebaseFirestore firestore,
-    required CalorieProductCacheRepositoryContract cacheRepository,
-    DateTime Function()? now,
+    FirebaseFunctions? functions,
+    ResolveInventoryItemCallable? resolveInventoryItemCallable,
   }) : _session = session,
-       _firestore = firestore,
-       _cacheRepository = cacheRepository,
-       _now = now ?? DateTime.now;
+       _functions = functions,
+       _resolveInventoryItemCallable = resolveInventoryItemCallable;
 
   final CalorieBarcodeBackfillUserSession _session;
-  final FirebaseFirestore _firestore;
-  final CalorieProductCacheRepositoryContract _cacheRepository;
-  final DateTime Function() _now;
+  final FirebaseFunctions? _functions;
+  final ResolveInventoryItemCallable? _resolveInventoryItemCallable;
 
   @override
   Future<bool> enqueueFingerprintLookup({
+    String? itemId,
     required String fingerprint,
     required String itemName,
     String? brand,
@@ -47,100 +57,64 @@ class FirestoreCalorieBarcodeBackfillRepository
     bool forceRetry = false,
   }) async {
     final userId = _currentUserId();
-    if (userId == null) {
-      return false;
-    }
-
+    final normalizedItemId = itemId?.trim();
     final normalizedFingerprint = fingerprint.trim();
-    if (normalizedFingerprint.isEmpty) {
+    final normalizedName = itemName.trim();
+    if (userId == null ||
+        normalizedItemId == null ||
+        normalizedItemId.isEmpty ||
+        normalizedFingerprint.isEmpty ||
+        normalizedName.isEmpty) {
+      _trace(
+        'Skip barcode lookup due to invalid payload: '
+        'hasUser=${userId != null}, '
+        'hasItemId=${normalizedItemId != null && normalizedItemId.isNotEmpty}, '
+        'hasFingerprint=${normalizedFingerprint.isNotEmpty}, '
+        'hasItemName=${normalizedName.isNotEmpty}.',
+      );
       return false;
     }
 
-    final now = _now();
-    final payload = _buildLookupPayload(
-      userId: userId,
-      fingerprint: normalizedFingerprint,
-      itemName: itemName,
-      brand: brand,
-      trigger: trigger,
-      now: now,
-    );
-
+    final payload = <String, dynamic>{
+      'userId': userId,
+      'itemId': normalizedItemId,
+      'fingerprint': normalizedFingerprint,
+      'itemName': normalizedName,
+      'brand': _normalizeOptionalString(brand),
+      'trigger': trigger.trim(),
+    };
     try {
-      final requestDoc = _requestDoc(userId, normalizedFingerprint);
-      if (!forceRetry) {
-        await requestDoc.set(payload, SetOptions(merge: true));
-        return true;
+      final response = await _invokeResolveCallable(payload);
+      final success = response?['success'];
+      if (success is bool) {
+        return success;
       }
-      await requestDoc.set(<String, dynamic>{
-        ...payload,
-        'force_retry': false,
-      }, SetOptions(merge: true));
-      await requestDoc.set(<String, dynamic>{
-        ...payload,
-        'force_retry': true,
-      }, SetOptions(merge: true));
       return true;
     } catch (error, stackTrace) {
-      log(
-        'Failed to enqueue fingerprint lookup for $normalizedFingerprint.',
-        name: _backfillLogName,
+      if (_useFunctionsEmulator &&
+          error is FirebaseFunctionsException &&
+          error.code == 'unavailable') {
+        _trace(
+          'Functions emulator unreachable at '
+          '${_resolveFunctionsEmulatorHost()}:$_functionsEmulatorPort. '
+          'Android Emulator=10.0.2.2, '
+          'physical device=<PC-LAN-IP>.',
+        );
+      }
+      _trace(
+        'Failed to resolve inventory item barcode for $normalizedItemId.',
         error: error,
         stackTrace: stackTrace,
       );
       return false;
     }
-  }
-
-  Map<String, dynamic> _buildLookupPayload({
-    required String userId,
-    required String fingerprint,
-    required String itemName,
-    required String trigger,
-    required DateTime now,
-    String? brand,
-  }) {
-    return <String, dynamic>{
-      'user_id': userId,
-      'fingerprint': fingerprint,
-      'item_name': itemName.trim(),
-      'brand': _normalizeOptionalString(brand),
-      'trigger': trigger,
-      'status': 'queued',
-      'requested_at': now,
-      'updated_at': now,
-    };
   }
 
   @override
   Future<CalorieProductProfile?> getResolvedProfileByFingerprint(
     String fingerprint,
   ) async {
-    final normalizedFingerprint = fingerprint.trim();
-    if (normalizedFingerprint.isEmpty) {
-      return null;
-    }
-
-    try {
-      final snapshot = await _fingerprintDoc(normalizedFingerprint).get();
-      final data = snapshot.data();
-      if (!snapshot.exists || data == null) {
-        return null;
-      }
-      final barcode = _readString(data['barcode']);
-      if (barcode == null || barcode.isEmpty) {
-        return null;
-      }
-      return _cacheRepository.readGlobalProduct(barcode);
-    } catch (error, stackTrace) {
-      log(
-        'Failed to resolve fingerprint $normalizedFingerprint.',
-        name: _backfillLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return null;
-    }
+    return null;
   }
 
   @override
@@ -150,46 +124,7 @@ class FirestoreCalorieBarcodeBackfillRepository
     required String itemName,
     String? brand,
   }) async {
-    final userId = _currentUserId();
-    if (userId == null) {
-      return false;
-    }
-
-    final normalizedFingerprint = fingerprint.trim();
-    final normalizedBarcode = barcode.trim();
-    if (normalizedFingerprint.isEmpty || normalizedBarcode.isEmpty) {
-      return false;
-    }
-
-    final now = _now();
-    final payload = <String, dynamic>{
-      'user_id': userId,
-      'fingerprint': normalizedFingerprint,
-      'item_name': itemName.trim(),
-      'brand': _normalizeOptionalString(brand),
-      'trigger': 'user_provided_barcode',
-      'status': 'queued',
-      'provided_barcode': normalizedBarcode,
-      'priority': 'high',
-      'requested_at': now,
-      'updated_at': now,
-    };
-
-    try {
-      await _requestDoc(
-        userId,
-        normalizedFingerprint,
-      ).set(payload, SetOptions(merge: true));
-      return true;
-    } catch (error, stackTrace) {
-      log(
-        'Failed to submit user barcode for $normalizedFingerprint.',
-        name: _backfillLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return false;
-    }
+    return true;
   }
 
   String? _currentUserId() {
@@ -200,36 +135,37 @@ class FirestoreCalorieBarcodeBackfillRepository
     return userId;
   }
 
-  DocumentReference<Map<String, dynamic>> _requestDoc(
-    String userId,
-    String fingerprint,
-  ) {
-    return _firestore
-        .collection(_usersCollection)
-        .doc(userId)
-        .collection(_requestsCollection)
-        .doc(fingerprint);
-  }
-
-  DocumentReference<Map<String, dynamic>> _fingerprintDoc(String fingerprint) {
-    return _firestore
-        .collection(_fingerprintCatalogCollection)
-        .doc(fingerprint);
-  }
-
-  String? _readString(Object? value) {
-    if (value is String && value.trim().isNotEmpty) {
-      return value.trim();
-    }
-    return null;
-  }
-
   String? _normalizeOptionalString(String? value) {
     final normalized = value?.trim();
     if (normalized == null || normalized.isEmpty) {
       return null;
     }
     return normalized;
+  }
+
+  Future<Map<String, dynamic>?> _invokeResolveCallable(
+    Map<String, dynamic> payload,
+  ) async {
+    final localCallable = _resolveInventoryItemCallable;
+    if (localCallable != null) {
+      return localCallable(payload);
+    }
+
+    final functions = _functions;
+    if (functions == null) {
+      throw StateError('FirebaseFunctions instance is not configured.');
+    }
+    _trace(
+      'Calling $_resolveCallableName for itemId=${payload['itemId']} '
+      'in region=$_functionsRegion.',
+    );
+    final callable = functions.httpsCallable(_resolveCallableName);
+    final result = await callable.call(payload);
+    final data = result.data;
+    if (data is Map) {
+      return data.cast<String, dynamic>();
+    }
+    return null;
   }
 }
 
@@ -239,16 +175,15 @@ CalorieBarcodeBackfillRepositoryContract calorieBarcodeBackfillRepository(
 ) {
   final authState = ref.watch(authStateChangesProvider);
   final currentUserId = authState.asData?.value?.uid;
-  final firestore = _resolveFirestore();
-  if (firestore == null) {
+  final functions = _resolveFunctions();
+  if (functions == null) {
     return const _UnavailableCalorieBarcodeBackfillRepository();
   }
   return FirestoreCalorieBarcodeBackfillRepository(
     session: _CurrentCalorieBarcodeBackfillUserSession(
       currentUserId: currentUserId,
     ),
-    firestore: firestore,
-    cacheRepository: ref.watch(calorieProductCacheRepositoryProvider),
+    functions: functions,
   );
 }
 
@@ -264,17 +199,45 @@ class _CurrentCalorieBarcodeBackfillUserSession
   String? get currentUserId => _currentUserId;
 }
 
-FirebaseFirestore? _resolveFirestore() {
+FirebaseFunctions? _resolveFunctions() {
   try {
-    return FirebaseFirestore.instance;
+    final functions = FirebaseFunctions.instanceFor(region: _functionsRegion);
+    if (_useFunctionsEmulator) {
+      final host = _resolveFunctionsEmulatorHost();
+      functions.useFunctionsEmulator(host, _functionsEmulatorPort);
+      _trace(
+        'Functions emulator enabled: '
+        '$host:$_functionsEmulatorPort, '
+        'region=$_functionsRegion.',
+      );
+    }
+    return functions;
   } catch (error, stackTrace) {
-    log(
+    _trace(
       'Falling back to unavailable barcode backfill repository.',
-      name: _backfillLogName,
       error: error,
       stackTrace: stackTrace,
     );
     return null;
+  }
+}
+
+String _resolveFunctionsEmulatorHost() {
+  final hostFromDefine = _functionsEmulatorHostFromDefine.trim();
+  if (hostFromDefine.isNotEmpty) {
+    return hostFromDefine;
+  }
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    return '10.0.2.2';
+  }
+  return '127.0.0.1';
+}
+
+void _trace(String message, {Object? error, StackTrace? stackTrace}) {
+  log(message, name: _backfillLogName, error: error, stackTrace: stackTrace);
+  debugPrint('[$_backfillLogName] $message');
+  if (error != null) {
+    debugPrint('[$_backfillLogName] error=$error');
   }
 }
 
@@ -284,6 +247,7 @@ class _UnavailableCalorieBarcodeBackfillRepository
 
   @override
   Future<bool> enqueueFingerprintLookup({
+    String? itemId,
     required String fingerprint,
     required String itemName,
     String? brand,

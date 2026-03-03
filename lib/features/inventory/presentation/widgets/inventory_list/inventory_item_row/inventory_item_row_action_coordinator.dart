@@ -1,5 +1,7 @@
 import 'dart:developer' show log;
 
+import 'package:flutter/foundation.dart';
+
 const _coordinatorLogName = 'InventoryItemRowActionCoordinator';
 
 class InventoryItemRowActionCoordinator {
@@ -37,6 +39,7 @@ class InventoryItemRowActionCoordinator {
         error: error,
         stackTrace: stackTrace,
       );
+      debugPrint('[$_coordinatorLogName] Action failed: $error');
       success = false;
     } finally {
       if (isMounted()) {

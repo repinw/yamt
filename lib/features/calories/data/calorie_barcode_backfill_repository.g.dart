@@ -57,4 +57,4 @@ final class CalorieBarcodeBackfillRepositoryProvider
 }
 
 String _$calorieBarcodeBackfillRepositoryHash() =>
-    r'e663f85d053e7fefa9ea3752e9284aa341d81c92';
+    r'22edfe08f229e8ab50ab452a286756c4beaccf70';

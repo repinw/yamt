@@ -23,6 +23,7 @@ class _NoopBackfillRepository
     implements CalorieBarcodeBackfillRepositoryContract {
   @override
   Future<bool> enqueueFingerprintLookup({
+    String? itemId,
     required String fingerprint,
     required String itemName,
     String? brand,
@@ -53,6 +54,7 @@ class _NoopBackfillRepository
 class _RecordingBackfillRepository
     implements CalorieBarcodeBackfillRepositoryContract {
   int enqueueCalls = 0;
+  String? lastItemId;
   String? lastFingerprint;
   String? lastItemName;
   String? lastBrand;
@@ -61,6 +63,7 @@ class _RecordingBackfillRepository
 
   @override
   Future<bool> enqueueFingerprintLookup({
+    String? itemId,
     required String fingerprint,
     required String itemName,
     String? brand,
@@ -68,6 +71,7 @@ class _RecordingBackfillRepository
     bool forceRetry = false,
   }) async {
     enqueueCalls += 1;
+    lastItemId = itemId;
     lastFingerprint = fingerprint;
     lastItemName = itemName;
     lastBrand = brand;
@@ -418,7 +422,7 @@ void main() {
     expect(find.text('Barcode missing'), findsOneWidget);
   });
 
-  testWidgets('retry barcode button enqueues a manual retry request', (
+  testWidgets('search barcode button triggers direct item lookup', (
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
@@ -438,7 +442,7 @@ void main() {
             const BarcodeBackfillFeatureFlags(
               showInventoryBarcodeMarkers: true,
               enableEatBridge: false,
-              enableQueueBackfill: true,
+              enableQueueBackfill: false,
             ),
           ),
           calorieBarcodeBackfillRepositoryProvider.overrideWithValue(
@@ -453,7 +457,7 @@ void main() {
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
 
-    final retryButtonFinder = find.text('Retry barcode lookup');
+    final retryButtonFinder = find.text('Search barcode');
     expect(retryButtonFinder, findsOneWidget);
     await tester.ensureVisible(retryButtonFinder);
     await tester.pumpAndSettle();
@@ -462,10 +466,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(backfillRepository.enqueueCalls, 1);
+    expect(backfillRepository.lastItemId, 'a');
     expect(backfillRepository.lastFingerprint, 'milk');
     expect(backfillRepository.lastItemName, 'Milk');
-    expect(backfillRepository.lastTrigger, 'manual_retry');
-    expect(backfillRepository.lastForceRetry, isTrue);
+    expect(backfillRepository.lastTrigger, 'manual_search');
+    expect(backfillRepository.lastForceRetry, isFalse);
   });
 
   testWidgets('eat action opens amount dialog and updates stock', (

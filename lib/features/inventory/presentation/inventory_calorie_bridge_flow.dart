@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/features/calories/data/calorie_barcode_backfill_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
@@ -15,7 +14,6 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_barcode_candidate_picker_sheet.dart';
 import 'package:yamt/features/calories/provider/calorie_barcode_flow_controller.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
-import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryCalorieBridgeFlow {
@@ -49,57 +47,6 @@ class InventoryCalorieBridgeFlow {
         barcode: barcode,
         inventoryContext: inventoryContext,
       );
-      return;
-    }
-
-    final backfillRepository = ref.read(
-      calorieBarcodeBackfillRepositoryProvider,
-    );
-    final resolved = await backfillRepository.getResolvedProfileByFingerprint(
-      itemBeforeMutation.resolvedFoodFingerprint,
-    );
-    if (!context.mounted) {
-      return;
-    }
-
-    if (resolved != null) {
-      await ref
-          .read(fridgeItemsControllerProvider.notifier)
-          .setItemBarcode(
-            itemId: itemBeforeMutation.id,
-            barcode: resolved.barcode,
-          );
-      if (!context.mounted) {
-        return;
-      }
-      await _openEditor(
-        context: context,
-        profile: resolved,
-        inventoryContext: inventoryContext,
-        scannedSourceRef: CalorieScannedSourceRef(
-          barcode: resolved.barcode,
-          source: resolved.source,
-          offProductId: resolved.offProductId,
-        ),
-      );
-      return;
-    }
-
-    if (flags.enableQueueBackfill) {
-      await ref
-          .read(fridgeItemsControllerProvider.notifier)
-          .markBarcodeLookupRequested(itemBeforeMutation.id);
-      unawaited(
-        backfillRepository.enqueueFingerprintLookup(
-          fingerprint: itemBeforeMutation.resolvedFoodFingerprint,
-          itemName: itemBeforeMutation.name,
-          brand: itemBeforeMutation.brand,
-          trigger: 'eat_miss',
-        ),
-      );
-    }
-
-    if (!context.mounted) {
       return;
     }
 

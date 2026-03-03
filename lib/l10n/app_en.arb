@@ -110,8 +110,8 @@
   "inventoryBarcodeMissingPromptScanNow": "Scan barcode now",
   "inventoryBarcodeMissingPromptLater": "Later",
   "inventoryBarcodeLookupQueued":
-      "Barcode lookup queued. You can add calories once resolved.",
-  "inventoryBarcodeRetryAction": "Retry barcode lookup",
+      "Barcode search finished. The result is saved on the inventory item.",
+  "inventoryBarcodeRetryAction": "Search barcode",
   "inventoryBarcodeScanUnsupported":
       "Barcode scanning is currently supported on Android and iOS.",
   "inventoryBarcodePortionDialogTitle": "Enter consumed amount",

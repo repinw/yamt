@@ -385,7 +385,7 @@ void main() {
   });
 
   test(
-    'firestore repo hydrates resolved barcode from request status',
+    'firestore repo does not hydrate barcode from request collection',
     () async {
       final sourceItem = _item('a').copyWith(
         foodFingerprint: 'putenherzen__netto',
@@ -410,8 +410,8 @@ void main() {
       final items = await repository.readAll();
 
       expect(items, hasLength(1));
-      expect(items.single.normalizedBarcode, '4316268659758');
-      expect(items.single.barcodeStatus, InventoryBarcodeStatus.resolved);
+      expect(items.single.normalizedBarcode, isNull);
+      expect(items.single.barcodeStatus, InventoryBarcodeStatus.pending);
     },
   );
 }

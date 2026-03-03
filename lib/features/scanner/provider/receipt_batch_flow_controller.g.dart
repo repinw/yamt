@@ -44,7 +44,7 @@ final class ReceiptBatchFlowControllerProvider
 }
 
 String _$receiptBatchFlowControllerHash() =>
-    r'bea7fc0ff090eb8b6a9ee03f1dd50e5e9ff5a9ea';
+    r'a1e0c5ab72ad4ece729b172f9047a187006318f6';
 
 abstract class _$ReceiptBatchFlowController
     extends $Notifier<ReceiptBatchFlowState> {

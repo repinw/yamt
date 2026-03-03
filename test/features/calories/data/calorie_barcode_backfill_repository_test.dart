@@ -1,10 +1,6 @@
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository.dart';
-import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
-
-import '../support/fake_calories_repositories.dart';
 
 class _FakeSession implements CalorieBarcodeBackfillUserSession {
   _FakeSession(this.currentUserId);
@@ -13,84 +9,82 @@ class _FakeSession implements CalorieBarcodeBackfillUserSession {
   final String? currentUserId;
 }
 
-CalorieProductProfile _profile({required String barcode}) {
-  final now = DateTime(2026, 3, 2, 10);
-  return CalorieProductProfile(
-    barcode: barcode,
-    name: 'Milk',
-    per100Kcal: 64,
-    per100Protein: 3.2,
-    per100Carbs: 4.8,
-    per100Fat: 3.5,
-    source: CalorieProductSource.globalCatalog,
-    createdAt: now,
-    updatedAt: now,
-  );
-}
-
 void main() {
-  test('enqueueFingerprintLookup writes user request document', () async {
-    final firestore = FakeFirebaseFirestore();
+  test('enqueueFingerprintLookup requires signed-in user', () async {
+    final repository = FirestoreCalorieBarcodeBackfillRepository(
+      session: _FakeSession(null),
+      resolveInventoryItemCallable: (_) async => <String, dynamic>{
+        'success': true,
+      },
+    );
+
+    final queued = await repository.enqueueFingerprintLookup(
+      itemId: 'item-1',
+      fingerprint: 'milk__acme',
+      itemName: 'Milk',
+      brand: 'Acme',
+      trigger: 'manual_search',
+    );
+
+    expect(queued, isFalse);
+  });
+
+  test('enqueueFingerprintLookup requires itemId', () async {
     final repository = FirestoreCalorieBarcodeBackfillRepository(
       session: _FakeSession('user-1'),
-      firestore: firestore,
-      cacheRepository: FakeCalorieProductCacheRepository(),
+      resolveInventoryItemCallable: (_) async => <String, dynamic>{
+        'success': true,
+      },
     );
 
     final queued = await repository.enqueueFingerprintLookup(
       fingerprint: 'milk__acme',
       itemName: 'Milk',
       brand: 'Acme',
-      trigger: 'eat_miss',
+      trigger: 'manual_search',
     );
 
-    expect(queued, isTrue);
-    final doc = await firestore
-        .collection('users')
-        .doc('user-1')
-        .collection('barcode_enrichment_requests')
-        .doc('milk__acme')
-        .get();
-    expect(doc.exists, isTrue);
-    expect(doc.data()?['trigger'], 'eat_miss');
+    expect(queued, isFalse);
   });
 
-  test('enqueueFingerprintLookup with forceRetry toggles retry flag', () async {
-    final firestore = FakeFirebaseFirestore();
+  test('enqueueFingerprintLookup calls direct resolver callable', () async {
+    Map<String, dynamic>? payload;
     final repository = FirestoreCalorieBarcodeBackfillRepository(
       session: _FakeSession('user-1'),
-      firestore: firestore,
-      cacheRepository: FakeCalorieProductCacheRepository(),
+      resolveInventoryItemCallable: (data) async {
+        payload = Map<String, dynamic>.from(data);
+        return <String, dynamic>{'success': true, 'found': true};
+      },
     );
 
     final queued = await repository.enqueueFingerprintLookup(
+      itemId: 'item-1',
       fingerprint: 'milk__acme',
       itemName: 'Milk',
       brand: 'Acme',
-      trigger: 'manual_retry',
-      forceRetry: true,
+      trigger: 'manual_search',
     );
 
     expect(queued, isTrue);
-    final doc = await firestore
-        .collection('users')
-        .doc('user-1')
-        .collection('barcode_enrichment_requests')
-        .doc('milk__acme')
-        .get();
-    expect(doc.exists, isTrue);
-    expect(doc.data()?['trigger'], 'manual_retry');
-    expect(doc.data()?['force_retry'], isTrue);
+    expect(payload, isNotNull);
+    expect(payload?['itemId'], 'item-1');
+    expect(payload?['fingerprint'], 'milk__acme');
+    expect(payload?['itemName'], 'Milk');
+    expect(payload?['brand'], 'Acme');
+    expect(payload?['trigger'], 'manual_search');
   });
 
-  test('submitUserProvidedBarcode stores high-priority request', () async {
-    final firestore = FakeFirebaseFirestore();
+  test('fallback APIs are no-op in direct mode', () async {
     final repository = FirestoreCalorieBarcodeBackfillRepository(
       session: _FakeSession('user-1'),
-      firestore: firestore,
-      cacheRepository: FakeCalorieProductCacheRepository(),
+      resolveInventoryItemCallable: (_) async => <String, dynamic>{
+        'success': true,
+      },
     );
 
+    final resolved = await repository.getResolvedProfileByFingerprint(
+      'milk__acme',
+    );
     final submitted = await repository.submitUserProvidedBarcode(
       fingerprint: 'milk__acme',
       barcode: '4006381333931',
@@ -98,39 +92,7 @@ void main() {
       brand: 'Acme',
     );
 
+    expect(resolved, isNull);
     expect(submitted, isTrue);
-    final doc = await firestore
-        .collection('users')
-        .doc('user-1')
-        .collection('barcode_enrichment_requests')
-        .doc('milk__acme')
-        .get();
-    expect(doc.data()?['priority'], 'high');
-    expect(doc.data()?['provided_barcode'], '4006381333931');
   });
-
-  test(
-    'getResolvedProfileByFingerprint resolves via mapping + cache',
-    () async {
-      final firestore = FakeFirebaseFirestore();
-      final cache = FakeCalorieProductCacheRepository()
-        ..global['4006381333931'] = _profile(barcode: '4006381333931');
-      await firestore
-          .collection('food_fingerprint_catalog')
-          .doc('milk__acme')
-          .set(<String, dynamic>{'barcode': '4006381333931'});
-      final repository = FirestoreCalorieBarcodeBackfillRepository(
-        session: _FakeSession('user-1'),
-        firestore: firestore,
-        cacheRepository: cache,
-      );
-
-      final profile = await repository.getResolvedProfileByFingerprint(
-        'milk__acme',
-      );
-
-      expect(profile, isNotNull);
-      expect(profile?.barcode, '4006381333931');
-    },
-  );
 }
