@@ -218,11 +218,7 @@ class FirestoreCalorieBarcodeBackfillRepository
     );
     final callable = functions.httpsCallable(_resolveCallableName);
     final result = await callable.call(payload);
-    final data = result.data;
-    if (data is Map) {
-      return data.cast<String, dynamic>();
-    }
-    return null;
+    return _castCallableResponse(result.data);
   }
 
   Future<Map<String, dynamic>?> _invokeBatchResolveCallable(
@@ -239,11 +235,23 @@ class FirestoreCalorieBarcodeBackfillRepository
     );
     final callable = functions.httpsCallable(_enqueueJobsCallableName);
     final result = await callable.call(payload);
-    final data = result.data;
-    if (data is Map) {
-      return data.cast<String, dynamic>();
+    return _castCallableResponse(result.data);
+  }
+
+  Map<String, dynamic>? _castCallableResponse(Object? rawData) {
+    if (rawData is! Map) {
+      return null;
     }
-    return null;
+    try {
+      return Map<String, dynamic>.from(rawData);
+    } catch (error, stackTrace) {
+      _trace(
+        'Callable response map had invalid key/value types.',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
   }
 
   Map<String, dynamic>? _normalizeBatchItemPayload(

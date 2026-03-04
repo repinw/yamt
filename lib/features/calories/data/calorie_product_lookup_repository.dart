@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:developer' show log;
 
@@ -52,16 +53,23 @@ class OffBackedCalorieProductLookupRepository
   }) : _cacheRepository = cacheRepository,
        _httpClient = httpClient,
        _requestTimeout = requestTimeout,
-       _now = now ?? DateTime.now;
+       _now = now ?? DateTime.now {
+    _offSearchLimiter = _OffRateLimiter(
+      minInterval: _offSearchMinInterval,
+      now: _now,
+    );
+    _offProductLimiter = _OffRateLimiter(
+      minInterval: _offProductMinInterval,
+      now: _now,
+    );
+  }
 
   final CalorieProductCacheRepositoryContract _cacheRepository;
   final http.Client _httpClient;
   final Duration _requestTimeout;
   final DateTime Function() _now;
-  Future<void> _offSearchGate = Future<void>.value();
-  Future<void> _offProductGate = Future<void>.value();
-  DateTime _nextOffSearchAllowedAt = DateTime.fromMillisecondsSinceEpoch(0);
-  DateTime _nextOffProductAllowedAt = DateTime.fromMillisecondsSinceEpoch(0);
+  late final _OffRateLimiter _offSearchLimiter;
+  late final _OffRateLimiter _offProductLimiter;
 
   @override
   Future<CalorieLookupOutcome> lookupByBarcode(String rawBarcode) async {
@@ -382,34 +390,65 @@ class OffBackedCalorieProductLookupRepository
   }
 
   Future<void> _waitForOffRateLimit(_OffEndpoint endpoint) {
-    Future<void> waitOperation() async {
-      final now = _now();
-      final nextAllowedAt = endpoint == _OffEndpoint.search
-          ? _nextOffSearchAllowedAt
-          : _nextOffProductAllowedAt;
-      if (nextAllowedAt.isAfter(now)) {
-        await Future<void>.delayed(nextAllowedAt.difference(now));
-      }
-      final requestAt = _now();
-      final next = requestAt.add(
-        endpoint == _OffEndpoint.search
-            ? _offSearchMinInterval
-            : _offProductMinInterval,
-      );
-      if (endpoint == _OffEndpoint.search) {
-        _nextOffSearchAllowedAt = next;
-      } else {
-        _nextOffProductAllowedAt = next;
-      }
-    }
-
     if (endpoint == _OffEndpoint.search) {
-      _offSearchGate = _offSearchGate.then((_) => waitOperation());
-      return _offSearchGate;
+      return _offSearchLimiter.acquire();
     }
-    _offProductGate = _offProductGate.then((_) => waitOperation());
-    return _offProductGate;
+    return _offProductLimiter.acquire();
   }
 }
 
 enum _OffEndpoint { search, product }
+
+class _OffRateLimiter {
+  _OffRateLimiter({
+    required Duration minInterval,
+    required DateTime Function() now,
+  }) : _minInterval = minInterval,
+       _now = now;
+
+  final Duration _minInterval;
+  final DateTime Function() _now;
+  final Queue<Completer<void>> _queue = Queue<Completer<void>>();
+  DateTime _nextAllowedAt = DateTime.fromMillisecondsSinceEpoch(0);
+  bool _isDraining = false;
+
+  Future<void> acquire() {
+    final completer = Completer<void>();
+    _queue.addLast(completer);
+    _ensureDraining();
+    return completer.future;
+  }
+
+  void _ensureDraining() {
+    if (_isDraining) {
+      return;
+    }
+    _isDraining = true;
+    unawaited(_drainQueue());
+  }
+
+  Future<void> _drainQueue() async {
+    while (_queue.isNotEmpty) {
+      final completer = _queue.removeFirst();
+      try {
+        final now = _now();
+        if (_nextAllowedAt.isAfter(now)) {
+          await Future<void>.delayed(_nextAllowedAt.difference(now));
+        }
+        _nextAllowedAt = _now().add(_minInterval);
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
+      } catch (error, stackTrace) {
+        if (!completer.isCompleted) {
+          completer.completeError(error, stackTrace);
+        }
+      }
+    }
+
+    _isDraining = false;
+    if (_queue.isNotEmpty) {
+      _ensureDraining();
+    }
+  }
+}

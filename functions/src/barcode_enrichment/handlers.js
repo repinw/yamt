@@ -8,6 +8,7 @@ const {
   KEYWORD_ALIAS_MIN_SCORE,
   MODEL_NAME,
   MODEL_LOCATION,
+  db,
 } = require("./runtime");
 const { resolveRequestUid } = require("./auth");
 const {
@@ -41,350 +42,416 @@ const {
   resolveAndPersistItem,
   persistItemResolved,
 } = require("./item_resolution");
-const { db } = require("./runtime");
 
-const resolveInventoryItemBarcodeOptions = {
-  region: FUNCTION_REGION,
-  timeoutSeconds: 120,
-  memory: "512MiB",
-  enforceAppCheck: false,
-};
+function createBarcodeHandlers({
+  functionRegion = FUNCTION_REGION,
+  jobCollection = JOB_COLLECTION,
+  workerMaxInstances = WORKER_MAX_INSTANCES,
+  maxJobRetries = MAX_JOB_RETRIES,
+  keywordAliasMinScore = KEYWORD_ALIAS_MIN_SCORE,
+  modelName = MODEL_NAME,
+  modelLocation = MODEL_LOCATION,
+  dbClient = db,
+  loggerValue = logger,
+  httpsErrorClass = HttpsError,
+  resolveRequestUidValue = resolveRequestUid,
+  readStringValue = readString,
+  nowIsoValue = nowIso,
+  computeFoodFingerprintValue = computeFoodFingerprint,
+  normalizeEnqueueItemsValue = normalizeEnqueueItems,
+  buildKeywordsValue = buildKeywords,
+  buildLookupKeywordsValue = buildLookupKeywords,
+  ensureCandidatesContainBarcodeValue = ensureCandidatesContainBarcode,
+  composeJobIdValue = composeJobId,
+  inventoryItemRefValue = inventoryItemRef,
+  normalizeJobValue = normalizeJob,
+  extractErrorMessageValue = extractErrorMessage,
+  extractErrorDetailsValue = extractErrorDetails,
+  isResourceExhaustedErrorValue = isResourceExhaustedError,
+  resolveFromGlobalCatalogValue = resolveFromGlobalCatalog,
+  touchGlobalResolutionValue = touchGlobalResolution,
+  upsertGlobalResolutionValue = upsertGlobalResolution,
+  lockQueuedJobValue = lockQueuedJob,
+  markJobDoneValue = markJobDone,
+  markJobNoResultValue = markJobNoResult,
+  markJobFailedValue = markJobFailed,
+  markJobResourceExhaustedValue = markJobResourceExhausted,
+  resolveAndPersistItemValue = resolveAndPersistItem,
+  persistItemResolvedValue = persistItemResolved,
+} = {}) {
+  const resolveInventoryItemBarcodeOptions = {
+    region: functionRegion,
+    timeoutSeconds: 120,
+    memory: "512MiB",
+    enforceAppCheck: false,
+  };
 
-const enqueueInventoryBarcodeJobsOptions = {
-  region: FUNCTION_REGION,
-  timeoutSeconds: 120,
-  memory: "256MiB",
-  enforceAppCheck: false,
-};
+  const enqueueInventoryBarcodeJobsOptions = {
+    region: functionRegion,
+    timeoutSeconds: 120,
+    memory: "256MiB",
+    enforceAppCheck: false,
+  };
 
-const onBarcodeEnrichmentJobWrittenOptions = {
-  document: `${JOB_COLLECTION}/{jobId}`,
-  region: FUNCTION_REGION,
-  timeoutSeconds: 120,
-  memory: "512MiB",
-  maxInstances: WORKER_MAX_INSTANCES,
-  retry: false,
-};
+  const onBarcodeEnrichmentJobWrittenOptions = {
+    document: `${jobCollection}/{jobId}`,
+    region: functionRegion,
+    timeoutSeconds: 120,
+    memory: "512MiB",
+    maxInstances: workerMaxInstances,
+    retry: false,
+  };
 
-async function resolveInventoryItemBarcodeHandler(request) {
-  const uid = resolveRequestUid(request, "resolveInventoryItemBarcode");
+  async function resolveInventoryItemBarcodeHandler(request) {
+    const uid = resolveRequestUidValue(request, "resolveInventoryItemBarcode");
 
-  const itemId = readString(request.data?.itemId);
-  if (!itemId) {
-    return {
-      success: false,
-      found: false,
-      barcode: null,
-      candidates: [],
-      error: "missing_item_id",
-    };
-  }
-
-  try {
-    const itemRef = inventoryItemRef(uid, itemId);
-    const itemSnapshot = await itemRef.get();
-    if (!itemSnapshot.exists) {
+    const itemId = readStringValue(request.data?.itemId);
+    if (!itemId) {
       return {
         success: false,
         found: false,
         barcode: null,
         candidates: [],
-        error: "item_not_found",
+        error: "missing_item_id",
       };
     }
 
-    const itemData = itemSnapshot.data() ?? {};
-    const itemName = readString(request.data?.itemName) ??
-      readString(itemData.name);
-    if (!itemName) {
-      return {
-        success: false,
-        found: false,
-        barcode: null,
-        candidates: [],
-        error: "missing_item_name",
-      };
-    }
-
-    const brand = readString(request.data?.brand) ??
-      readString(itemData.brand);
-    const storeName = readString(request.data?.storeName) ??
-      readString(itemData.storeName);
-    const weight = readString(request.data?.weight) ??
-      readString(itemData.weight);
-    const fingerprint = readString(request.data?.fingerprint) ??
-      readString(itemData.foodFingerprint) ??
-      computeFoodFingerprint({ name: itemName, brand });
-    const trigger = readString(request.data?.trigger) ?? "manual_search";
-
-    logger.info("Resolving inventory item barcode.", {
-      uid,
-      itemId,
-      fingerprint,
-      trigger,
-      model: MODEL_NAME,
-      location: MODEL_LOCATION,
-      sdk: "@google/genai",
-    });
-
-    const outcome = await resolveAndPersistItem({
-      uid,
-      itemId,
-      itemName,
-      brand,
-      storeName,
-      weight,
-      fingerprint,
-      trigger,
-      itemRef,
-    });
-
-    return {
-      success: true,
-      found: outcome.found,
-      barcode: outcome.barcode,
-      candidates: outcome.candidates,
-      source: outcome.source,
-    };
-  } catch (error) {
-    if (error instanceof HttpsError) {
-      throw error;
-    }
-    logger.error("resolveInventoryItemBarcode failed.", {
-      uid,
-      itemId,
-      error: extractErrorMessage(error),
-      details: extractErrorDetails(error),
-    });
-    return {
-      success: false,
-      found: false,
-      barcode: null,
-      candidates: [],
-      error: extractErrorMessage(error),
-    };
-  }
-}
-
-async function enqueueInventoryBarcodeJobsHandler(request) {
-  const uid = resolveRequestUid(request, "enqueueInventoryBarcodeJobs");
-
-  const trigger = readString(request.data?.trigger) ?? "receipt_upload";
-  const rawItems = Array.isArray(request.data?.items) ?
-    request.data.items :
-    [];
-  const items = normalizeEnqueueItems(rawItems);
-  if (items.length === 0) {
-    return {
-      success: false,
-      queuedCount: 0,
-      jobIds: [],
-      error: "missing_items",
-    };
-  }
-
-  const now = nowIso();
-  const queueBatch = db.batch();
-  const jobIds = [];
-  let resolvedCount = 0;
-
-  for (const item of items) {
-    const searchKeywords = buildKeywords({
-      itemName: item.itemName,
-      brand: item.brand,
-      storeName: item.storeName,
-      weight: item.weight,
-      fingerprint: item.fingerprint,
-    });
-    const lookupKeywords = buildLookupKeywords({
-      itemName: item.itemName,
-      brand: item.brand,
-      weight: item.weight,
-    });
-    const globalMatch = await resolveFromGlobalCatalog({
-      fingerprint: item.fingerprint,
-      itemName: item.itemName,
-      brand: item.brand,
-      weight: item.weight,
-      lookupKeywords,
-    });
-    if (globalMatch?.barcode) {
-      const itemRef = inventoryItemRef(uid, item.itemId);
-      const candidates = ensureCandidatesContainBarcode(
-        globalMatch.barcodeCandidates,
-        globalMatch.barcode,
-      );
-      await persistItemResolved({
-        itemRef,
-        fingerprint: item.fingerprint,
-        requestedAt: now,
-        barcode: globalMatch.barcode,
-        candidates,
-        searchKeywords,
-      });
-      await touchGlobalResolution(globalMatch.matchedFingerprint);
-      if (
-        globalMatch.matchedFingerprint !== item.fingerprint &&
-        globalMatch.matchType === "keyword" &&
-        globalMatch.score >= KEYWORD_ALIAS_MIN_SCORE
-      ) {
-        await upsertGlobalResolution({
-          fingerprint: item.fingerprint,
-          barcode: globalMatch.barcode,
-          candidates,
-          itemName: item.itemName,
-          brand: item.brand,
-          storeName: item.storeName,
-          weight: item.weight,
-          source: "global_keyword_match",
-          keywordMatchScore: globalMatch.score,
-          uid,
-        });
+    try {
+      const itemRef = inventoryItemRefValue(uid, itemId);
+      const itemSnapshot = await itemRef.get();
+      if (!itemSnapshot.exists) {
+        return {
+          success: false,
+          found: false,
+          barcode: null,
+          candidates: [],
+          error: "item_not_found",
+        };
       }
-      resolvedCount += 1;
-      continue;
+
+      const itemData = itemSnapshot.data() ?? {};
+      const itemName = readStringValue(request.data?.itemName) ??
+        readStringValue(itemData.name);
+      if (!itemName) {
+        return {
+          success: false,
+          found: false,
+          barcode: null,
+          candidates: [],
+          error: "missing_item_name",
+        };
+      }
+
+      const brand = readStringValue(request.data?.brand) ??
+        readStringValue(itemData.brand);
+      const storeName = readStringValue(request.data?.storeName) ??
+        readStringValue(itemData.storeName);
+      const weight = readStringValue(request.data?.weight) ??
+        readStringValue(itemData.weight);
+      const fingerprint = readStringValue(request.data?.fingerprint) ??
+        readStringValue(itemData.foodFingerprint) ??
+        computeFoodFingerprintValue({ name: itemName, brand });
+      const trigger = readStringValue(request.data?.trigger) ??
+        "manual_search";
+
+      loggerValue.info("Resolving inventory item barcode.", {
+        uid,
+        itemId,
+        fingerprint,
+        trigger,
+        model: modelName,
+        location: modelLocation,
+        sdk: "@google/genai",
+      });
+
+      const outcome = await resolveAndPersistItemValue({
+        uid,
+        itemId,
+        itemName,
+        brand,
+        storeName,
+        weight,
+        fingerprint,
+        trigger,
+        itemRef,
+      });
+
+      return {
+        success: true,
+        found: outcome.found,
+        barcode: outcome.barcode,
+        candidates: outcome.candidates,
+        source: outcome.source,
+      };
+    } catch (error) {
+      if (error instanceof httpsErrorClass) {
+        throw error;
+      }
+      loggerValue.error("resolveInventoryItemBarcode failed.", {
+        uid,
+        itemId,
+        error: extractErrorMessageValue(error),
+        details: extractErrorDetailsValue(error),
+      });
+      return {
+        success: false,
+        found: false,
+        barcode: null,
+        candidates: [],
+        error: extractErrorMessageValue(error),
+      };
+    }
+  }
+
+  async function enqueueInventoryBarcodeJobsHandler(request) {
+    const uid = resolveRequestUidValue(request, "enqueueInventoryBarcodeJobs");
+
+    const trigger = readStringValue(request.data?.trigger) ?? "receipt_upload";
+    const rawItems = Array.isArray(request.data?.items) ?
+      request.data.items :
+      [];
+    const items = normalizeEnqueueItemsValue(rawItems);
+    if (items.length === 0) {
+      return {
+        success: false,
+        queuedCount: 0,
+        jobIds: [],
+        error: "missing_items",
+      };
     }
 
-    const jobId = composeJobId(uid, item.itemId);
-    const jobRef = db.collection(JOB_COLLECTION).doc(jobId);
-    queueBatch.set(
-      jobRef,
-      {
-        jobId,
-        uid,
-        itemId: item.itemId,
+    const now = nowIsoValue();
+    const queueBatch = dbClient.batch();
+    const jobIds = [];
+    let resolvedCount = 0;
+
+    const preparedItems = items.map((item) => {
+      const searchKeywords = buildKeywordsValue({
         itemName: item.itemName,
         brand: item.brand,
         storeName: item.storeName,
         weight: item.weight,
         fingerprint: item.fingerprint,
-        keywords: searchKeywords,
-        trigger,
-        status: "queued",
-        attempts: 0,
-        maxRetries: MAX_JOB_RETRIES,
-        queuedAt: now,
-        updatedAt: now,
-        startedAt: null,
-        completedAt: null,
-        lastError: null,
-        found: null,
-        barcode: null,
-        candidates: [],
+      });
+      const lookupKeywords = buildLookupKeywordsValue({
+        itemName: item.itemName,
+        brand: item.brand,
+        weight: item.weight,
+      });
+      return {
+        item,
+        searchKeywords,
+        lookupKeywords,
+      };
+    });
+
+    const globalMatches = await Promise.all(preparedItems.map(
+      async (prepared) => {
+        const globalMatch = await resolveFromGlobalCatalogValue({
+          fingerprint: prepared.item.fingerprint,
+          itemName: prepared.item.itemName,
+          brand: prepared.item.brand,
+          weight: prepared.item.weight,
+          lookupKeywords: prepared.lookupKeywords,
+        });
+        return globalMatch;
       },
-      { merge: true },
-    );
-    jobIds.push(jobId);
-  }
+    ));
 
-  if (jobIds.length > 0) {
-    await queueBatch.commit();
-  }
-  logger.info("Enqueued inventory barcode jobs.", {
-    uid,
-    trigger,
-    queuedCount: jobIds.length,
-    resolvedCount,
-  });
+    for (let index = 0; index < preparedItems.length; index += 1) {
+      const prepared = preparedItems[index];
+      const item = prepared.item;
+      const searchKeywords = prepared.searchKeywords;
+      const globalMatch = globalMatches[index];
 
-  return {
-    success: true,
-    queuedCount: jobIds.length,
-    resolvedCount,
-    jobIds,
-  };
-}
+      if (globalMatch?.barcode) {
+        const itemRef = inventoryItemRefValue(uid, item.itemId);
+        const candidates = ensureCandidatesContainBarcodeValue(
+          globalMatch.barcodeCandidates,
+          globalMatch.barcode,
+        );
+        await persistItemResolvedValue({
+          itemRef,
+          fingerprint: item.fingerprint,
+          requestedAt: now,
+          barcode: globalMatch.barcode,
+          candidates,
+          searchKeywords,
+        });
+        await touchGlobalResolutionValue(globalMatch.matchedFingerprint);
+        if (
+          globalMatch.matchedFingerprint !== item.fingerprint &&
+          globalMatch.matchType === "keyword" &&
+          globalMatch.score >= keywordAliasMinScore
+        ) {
+          await upsertGlobalResolutionValue({
+            fingerprint: item.fingerprint,
+            barcode: globalMatch.barcode,
+            candidates,
+            itemName: item.itemName,
+            brand: item.brand,
+            storeName: item.storeName,
+            weight: item.weight,
+            source: "global_keyword_match",
+            keywordMatchScore: globalMatch.score,
+            uid,
+          });
+        }
+        resolvedCount += 1;
+        continue;
+      }
 
-async function onBarcodeEnrichmentJobWrittenHandler(event) {
-  const after = event.data?.after;
-  if (!after?.exists) {
-    return;
-  }
-
-  const lock = await lockQueuedJob(after.ref);
-  if (!lock.shouldProcess) {
-    return;
-  }
-
-  const snapshot = await after.ref.get();
-  if (!snapshot.exists) {
-    return;
-  }
-  const job = normalizeJob(snapshot.data());
-  if (!job) {
-    await markJobFailed({
-      jobRef: after.ref,
-      attempts: lock.attempts,
-      error: "invalid_job_payload",
-    });
-    return;
-  }
-
-  try {
-    const outcome = await resolveAndPersistItem({
-      uid: job.uid,
-      itemId: job.itemId,
-      itemName: job.itemName,
-      brand: job.brand,
-      storeName: job.storeName,
-      weight: job.weight,
-      fingerprint: job.fingerprint,
-      trigger: job.trigger,
-    });
-    if (outcome.found) {
-      await markJobDone({
-        jobRef: after.ref,
-        attempts: lock.attempts,
-        fingerprint: job.fingerprint,
-        found: true,
-        barcode: outcome.barcode,
-        candidates: outcome.candidates,
-        source: outcome.source,
-      });
-    } else {
-      await markJobNoResult({
-        jobRef: after.ref,
-        attempts: lock.attempts,
-        fingerprint: job.fingerprint,
-        candidates: outcome.candidates,
-        source: outcome.source,
-      });
+      const jobId = composeJobIdValue(uid, item.itemId);
+      const jobRef = dbClient.collection(jobCollection).doc(jobId);
+      queueBatch.set(
+        jobRef,
+        {
+          jobId,
+          uid,
+          itemId: item.itemId,
+          itemName: item.itemName,
+          brand: item.brand,
+          storeName: item.storeName,
+          weight: item.weight,
+          fingerprint: item.fingerprint,
+          keywords: searchKeywords,
+          trigger,
+          status: "queued",
+          attempts: 0,
+          maxRetries: maxJobRetries,
+          queuedAt: now,
+          updatedAt: now,
+          startedAt: null,
+          completedAt: null,
+          lastError: null,
+          found: null,
+          barcode: null,
+          candidates: [],
+        },
+        { merge: true },
+      );
+      jobIds.push(jobId);
     }
-  } catch (error) {
-    if (isResourceExhaustedError(error)) {
-      await markJobResourceExhausted({
+
+    if (jobIds.length > 0) {
+      await queueBatch.commit();
+    }
+    loggerValue.info("Enqueued inventory barcode jobs.", {
+      uid,
+      trigger,
+      queuedCount: jobIds.length,
+      resolvedCount,
+    });
+
+    return {
+      success: true,
+      queuedCount: jobIds.length,
+      resolvedCount,
+      jobIds,
+    };
+  }
+
+  async function onBarcodeEnrichmentJobWrittenHandler(event) {
+    const after = event.data?.after;
+    if (!after?.exists) {
+      return;
+    }
+
+    const lock = await lockQueuedJobValue(after.ref);
+    if (!lock.shouldProcess) {
+      return;
+    }
+
+    const snapshot = await after.ref.get();
+    if (!snapshot.exists) {
+      return;
+    }
+    const job = normalizeJobValue(snapshot.data());
+    if (!job) {
+      await markJobFailedValue({
         jobRef: after.ref,
         attempts: lock.attempts,
-        error: extractErrorMessage(error),
-      });
-      logger.warn("Barcode enrichment job throttled (resource exhausted).", {
-        jobId: after.id,
-        attempts: lock.attempts,
-        error: extractErrorMessage(error),
-        details: extractErrorDetails(error),
+        error: "invalid_job_payload",
       });
       return;
     }
 
-    await markJobFailed({
-      jobRef: after.ref,
-      attempts: lock.attempts,
-      error: extractErrorMessage(error),
-    });
-    logger.error("Barcode enrichment job failed.", {
-      jobId: after.id,
-      attempts: lock.attempts,
-      error: extractErrorMessage(error),
-      details: extractErrorDetails(error),
-    });
+    try {
+      const outcome = await resolveAndPersistItemValue({
+        uid: job.uid,
+        itemId: job.itemId,
+        itemName: job.itemName,
+        brand: job.brand,
+        storeName: job.storeName,
+        weight: job.weight,
+        fingerprint: job.fingerprint,
+        trigger: job.trigger,
+      });
+      if (outcome.found) {
+        await markJobDoneValue({
+          jobRef: after.ref,
+          attempts: lock.attempts,
+          fingerprint: job.fingerprint,
+          found: true,
+          barcode: outcome.barcode,
+          candidates: outcome.candidates,
+          source: outcome.source,
+        });
+      } else {
+        await markJobNoResultValue({
+          jobRef: after.ref,
+          attempts: lock.attempts,
+          fingerprint: job.fingerprint,
+          candidates: outcome.candidates,
+          source: outcome.source,
+        });
+      }
+    } catch (error) {
+      if (isResourceExhaustedErrorValue(error)) {
+        await markJobResourceExhaustedValue({
+          jobRef: after.ref,
+          attempts: lock.attempts,
+          error: extractErrorMessageValue(error),
+        });
+        loggerValue.warn(
+          "Barcode enrichment job throttled (resource exhausted).",
+          {
+            jobId: after.id,
+            attempts: lock.attempts,
+            error: extractErrorMessageValue(error),
+            details: extractErrorDetailsValue(error),
+          },
+        );
+        return;
+      }
+
+      await markJobFailedValue({
+        jobRef: after.ref,
+        attempts: lock.attempts,
+        error: extractErrorMessageValue(error),
+      });
+      loggerValue.error("Barcode enrichment job failed.", {
+        jobId: after.id,
+        attempts: lock.attempts,
+        error: extractErrorMessageValue(error),
+        details: extractErrorDetailsValue(error),
+      });
+    }
   }
+
+  return {
+    resolveInventoryItemBarcodeOptions,
+    enqueueInventoryBarcodeJobsOptions,
+    onBarcodeEnrichmentJobWrittenOptions,
+    resolveInventoryItemBarcodeHandler,
+    enqueueInventoryBarcodeJobsHandler,
+    onBarcodeEnrichmentJobWrittenHandler,
+  };
 }
 
+const defaultBarcodeHandlers = createBarcodeHandlers();
+
 module.exports = {
-  resolveInventoryItemBarcodeOptions,
-  enqueueInventoryBarcodeJobsOptions,
-  onBarcodeEnrichmentJobWrittenOptions,
-  resolveInventoryItemBarcodeHandler,
-  enqueueInventoryBarcodeJobsHandler,
-  onBarcodeEnrichmentJobWrittenHandler,
+  createBarcodeHandlers,
+  ...defaultBarcodeHandlers,
 };
