@@ -1,7 +1,7 @@
 const { onCall } = require("firebase-functions/v2/https");
 const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const logger = require("firebase-functions/logger");
-const { GoogleGenAI } = require("@google/genai");
+const { GoogleGenAI, ThinkingLevel } = require("@google/genai");
 const admin = require("firebase-admin");
 const { FieldValue } = require("firebase-admin/firestore");
 
@@ -17,6 +17,7 @@ const GLOBAL_RESOLUTIONS_COLLECTION = "global_food_resolutions";
 const FUNCTION_REGION = "europe-west1";
 const MODEL_NAME = "gemini-3.1-pro-preview";
 const MODEL_LOCATION = "global";
+const MODEL_THINKING_LEVEL = ThinkingLevel.HIGH;
 const MAX_OUTPUT_TOKENS = 2048;
 const MAX_CANDIDATES_PER_ITEM = 5;
 const MAX_ENQUEUE_ITEMS = 40;
@@ -457,6 +458,9 @@ async function resolveCandidates({ itemName, brand, fingerprint }) {
       temperature: 0.1,
       maxOutputTokens: MAX_OUTPUT_TOKENS,
       responseMimeType: "application/json",
+      thinkingConfig: {
+        thinkingLevel: MODEL_THINKING_LEVEL,
+      },
       tools: [{ googleSearch: {} }],
     },
   });
