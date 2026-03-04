@@ -24,6 +24,26 @@ const MAX_ENQUEUE_ITEMS = 40;
 const MAX_JOB_RETRIES = 2;
 const MAX_JOB_ATTEMPTS = MAX_JOB_RETRIES + 1;
 const WORKER_MAX_INSTANCES = 7;
+const MAX_KEYWORD_QUERY_TERMS = 8;
+const KEYWORD_QUERY_LIMIT = 12;
+const KEYWORD_MATCH_MIN_SCORE = 9;
+const KEYWORD_ALIAS_MIN_SCORE = 12;
+const LOOKUP_STOPWORDS = new Set([
+  "unknown",
+  "none",
+  "artikel",
+  "product",
+  "lebensmittel",
+  "sort",
+  "sorte",
+  "vom",
+  "von",
+  "und",
+  "oder",
+  "mit",
+  "ohne",
+  "land",
+]);
 
 const ai = new GoogleGenAI({
   vertexai: true,
@@ -148,7 +168,7 @@ exports.resolveInventoryItemBarcode = onCall(
 exports.enqueueInventoryBarcodeJobs = onCall(
   {
     region: FUNCTION_REGION,
-    timeoutSeconds: 60,
+    timeoutSeconds: 120,
     memory: "256MiB",
     enforceAppCheck: false,
   },
@@ -178,13 +198,70 @@ exports.enqueueInventoryBarcodeJobs = onCall(
     }
 
     const now = nowIso();
-    const batch = db.batch();
+    const queueBatch = db.batch();
     const jobIds = [];
+    let resolvedCount = 0;
 
     for (const item of items) {
+      const searchKeywords = buildKeywords({
+        itemName: item.itemName,
+        brand: item.brand,
+        storeName: item.storeName,
+        weight: item.weight,
+        fingerprint: item.fingerprint,
+      });
+      const lookupKeywords = buildLookupKeywords({
+        itemName: item.itemName,
+        brand: item.brand,
+        weight: item.weight,
+      });
+      const globalMatch = await resolveFromGlobalCatalog({
+        fingerprint: item.fingerprint,
+        itemName: item.itemName,
+        brand: item.brand,
+        weight: item.weight,
+        lookupKeywords,
+      });
+      if (globalMatch?.barcode) {
+        const itemRef = inventoryItemRef(uid, item.itemId);
+        const candidates = ensureCandidatesContainBarcode(
+          globalMatch.barcodeCandidates,
+          globalMatch.barcode,
+        );
+        await persistItemResolved({
+          itemRef,
+          fingerprint: item.fingerprint,
+          requestedAt: now,
+          barcode: globalMatch.barcode,
+          candidates,
+          searchKeywords,
+        });
+        await touchGlobalResolution(globalMatch.matchedFingerprint);
+        if (
+          globalMatch.matchedFingerprint !== item.fingerprint &&
+          globalMatch.matchType === "keyword" &&
+          globalMatch.score >= KEYWORD_ALIAS_MIN_SCORE
+        ) {
+          await upsertGlobalResolution({
+            fingerprint: item.fingerprint,
+            barcode: globalMatch.barcode,
+            candidates,
+            itemName: item.itemName,
+            brand: item.brand,
+            storeName: item.storeName,
+            weight: item.weight,
+            source: "global_keyword_match",
+            keywordMatchScore: globalMatch.score,
+            uid,
+          });
+        }
+        resolvedCount += 1;
+        continue;
+      }
+
       const jobId = composeJobId(uid, item.itemId);
       const jobRef = db.collection(JOB_COLLECTION).doc(jobId);
-      batch.set(
+      queueBatch.set(
         jobRef,
         {
           jobId,
@@ -195,13 +272,7 @@ exports.enqueueInventoryBarcodeJobs = onCall(
           storeName: item.storeName,
           weight: item.weight,
           fingerprint: item.fingerprint,
-          keywords: buildKeywords({
-            itemName: item.itemName,
-            brand: item.brand,
-            storeName: item.storeName,
-            weight: item.weight,
-            fingerprint: item.fingerprint,
-          }),
+          keywords: searchKeywords,
           trigger,
           status: "queued",
           attempts: 0,
@@ -220,16 +291,20 @@ exports.enqueueInventoryBarcodeJobs = onCall(
       jobIds.push(jobId);
     }
 
-    await batch.commit();
+    if (jobIds.length > 0) {
+      await queueBatch.commit();
+    }
     logger.info("Enqueued inventory barcode jobs.", {
       uid,
       trigger,
       queuedCount: jobIds.length,
+      resolvedCount,
     });
 
     return {
       success: true,
       queuedCount: jobIds.length,
+      resolvedCount,
       jobIds,
     };
   },
@@ -340,6 +415,11 @@ async function resolveAndPersistItem({
     weight,
     fingerprint,
   });
+  const lookupKeywords = buildLookupKeywords({
+    itemName,
+    brand,
+    weight,
+  });
 
   await resolvedItemRef.set(
     {
@@ -350,11 +430,16 @@ async function resolveAndPersistItem({
     { merge: true },
   );
 
-  const cachedResolution = await readGlobalResolution(fingerprint);
+  const cachedResolution = await resolveFromGlobalCatalog({
+    fingerprint,
+    itemName,
+    brand,
+    weight,
+    lookupKeywords,
+  });
   if (cachedResolution?.barcode) {
-    const candidates = normalizeCandidates(cachedResolution.barcodeCandidates);
     const mergedCandidates = ensureCandidatesContainBarcode(
-      candidates,
+      cachedResolution.barcodeCandidates,
       cachedResolution.barcode,
     );
     await persistItemResolved({
@@ -365,26 +450,48 @@ async function resolveAndPersistItem({
       candidates: mergedCandidates,
       searchKeywords,
     });
-    await touchGlobalResolution(fingerprint);
+    await touchGlobalResolution(cachedResolution.matchedFingerprint);
+    if (
+      cachedResolution.matchedFingerprint !== fingerprint &&
+      cachedResolution.matchType === "keyword" &&
+      cachedResolution.score >= KEYWORD_ALIAS_MIN_SCORE
+    ) {
+      await upsertGlobalResolution({
+        fingerprint,
+        barcode: cachedResolution.barcode,
+        candidates: mergedCandidates,
+        itemName,
+        brand,
+        storeName,
+        weight,
+        source: "global_keyword_match",
+        keywordMatchScore: cachedResolution.score,
+        uid,
+      });
+    }
     logger.info("Inventory item resolved from global cache.", {
       uid,
       itemId,
       fingerprint,
       barcode: cachedResolution.barcode,
+      matchType: cachedResolution.matchType,
       trigger,
     });
     return {
       found: true,
       barcode: cachedResolution.barcode,
       candidates: mergedCandidates,
-      source: "global_cache",
+      source: cachedResolution.matchType === "keyword" ?
+        "global_keyword_match" :
+        "global_cache",
     };
   }
 
   const candidates = await resolveCandidates({
     itemName,
     brand,
-    fingerprint,
+    storeName,
+    weight,
   });
   const barcode = candidates.length > 0 ? candidates[0] : null;
   if (barcode) {
@@ -443,8 +550,8 @@ async function resolveAndPersistItem({
   };
 }
 
-async function resolveCandidates({ itemName, brand, fingerprint }) {
-  const prompt = buildSinglePrompt({ itemName, brand, fingerprint });
+async function resolveCandidates({ itemName, brand, storeName, weight }) {
+  const prompt = buildSinglePrompt({ itemName, brand, storeName, weight });
   logger.info("Barcode AI request payload.", {
     model: MODEL_NAME,
     location: MODEL_LOCATION,
@@ -485,10 +592,11 @@ async function resolveCandidates({ itemName, brand, fingerprint }) {
   return candidates;
 }
 
-function buildSinglePrompt({ itemName, brand, fingerprint }) {
+function buildSinglePrompt({ itemName, brand, storeName, weight }) {
   const safeItemName = JSON.stringify(itemName);
   const safeBrand = JSON.stringify(brand ?? "unknown");
-  const safeFingerprint = JSON.stringify(fingerprint);
+  const safeStoreName = JSON.stringify(storeName ?? "unknown");
+  const safeWeight = JSON.stringify(weight ?? "unknown");
   return [
     "Du bist ein EAN-Resolver fuer Lebensmittel.",
     "Nutze Websuche aktiv.",
@@ -504,9 +612,10 @@ function buildSinglePrompt({ itemName, brand, fingerprint }) {
     "- Maximal 5 Kandidaten.",
     "- Wenn unsicher: leeres Array.",
     "",
-    `fingerprint: ${safeFingerprint}`,
     `item_name: ${safeItemName}`,
+    `store_name: ${safeStoreName}`,
     `brand: ${safeBrand}`,
+    `weight: ${safeWeight}`,
   ].join("\n");
 }
 
@@ -549,21 +658,228 @@ async function persistItemUnresolved({
   );
 }
 
-async function readGlobalResolution(fingerprint) {
+async function resolveFromGlobalCatalog({
+  fingerprint,
+  itemName,
+  brand,
+  weight,
+  lookupKeywords,
+}) {
+  const exactMatch = await readGlobalResolutionByFingerprint(fingerprint);
+  if (exactMatch?.barcode) {
+    return {
+      matchedFingerprint: fingerprint,
+      barcode: exactMatch.barcode,
+      barcodeCandidates: exactMatch.barcodeCandidates,
+      matchType: "exact",
+      score: 100,
+    };
+  }
+
+  const keywords = (lookupKeywords ?? buildLookupKeywords({
+    itemName,
+    brand,
+    weight,
+  }))
+    .map((keyword) => normalizeForLookup(keyword))
+    .filter((keyword) => keyword && keyword.length >= 3)
+    .slice(0, MAX_KEYWORD_QUERY_TERMS);
+  if (keywords.length === 0) {
+    return null;
+  }
+
+  const keywordSnapshot = await db
+    .collection(GLOBAL_RESOLUTIONS_COLLECTION)
+    .where("keywords", "array-contains-any", keywords)
+    .limit(KEYWORD_QUERY_LIMIT)
+    .get();
+  if (keywordSnapshot.empty) {
+    return null;
+  }
+
+  const rankedMatches = [];
+  for (const doc of keywordSnapshot.docs) {
+    const data = doc.data() ?? {};
+    const source = readString(data.source);
+    if (source === "global_keyword_match") {
+      const keywordMatchScore = readPositiveInt(data.keywordMatchScore);
+      if (keywordMatchScore < KEYWORD_ALIAS_MIN_SCORE) {
+        continue;
+      }
+    }
+    const barcode = normalizeBarcode(data.barcode);
+    if (!barcode) {
+      continue;
+    }
+    const candidates = ensureCandidatesContainBarcode(
+      data.barcodeCandidates,
+      barcode,
+    );
+    const match = scoreKeywordMatch({
+      data,
+      itemName,
+      brand,
+      lookupKeywords: keywords,
+    });
+    if (!isKeywordMatchReliable(match)) {
+      continue;
+    }
+    rankedMatches.push({
+      matchedFingerprint: doc.id,
+      barcode,
+      barcodeCandidates: candidates,
+      matchType: "keyword",
+      score: match.score,
+    });
+  }
+  if (rankedMatches.length === 0) {
+    return null;
+  }
+
+  rankedMatches.sort((left, right) => {
+    const byScore = right.score - left.score;
+    if (byScore !== 0) {
+      return byScore;
+    }
+    const byCandidateCount =
+      right.barcodeCandidates.length - left.barcodeCandidates.length;
+    if (byCandidateCount !== 0) {
+      return byCandidateCount;
+    }
+    return left.matchedFingerprint.localeCompare(right.matchedFingerprint);
+  });
+
+  const bestMatch = rankedMatches[0];
+  return bestMatch;
+}
+
+async function readGlobalResolutionByFingerprint(fingerprint) {
   const snapshot = await globalResolutionRef(fingerprint).get();
   if (!snapshot.exists) {
     return null;
   }
   const data = snapshot.data() ?? {};
+  const source = readString(data.source);
+  if (source === "global_keyword_match") {
+    const keywordMatchScore = readPositiveInt(data.keywordMatchScore);
+    if (keywordMatchScore < KEYWORD_ALIAS_MIN_SCORE) {
+      return null;
+    }
+  }
   const barcode = normalizeBarcode(data.barcode);
-  const barcodeCandidates = normalizeCandidates(data.barcodeCandidates);
   if (!barcode) {
     return null;
   }
   return {
     barcode,
-    barcodeCandidates,
+    barcodeCandidates: ensureCandidatesContainBarcode(
+      data.barcodeCandidates,
+      barcode,
+    ),
   };
+}
+
+function scoreKeywordMatch({
+  data,
+  itemName,
+  brand,
+  lookupKeywords,
+}) {
+  const itemNameNormalized = normalizeForLookup(itemName);
+  const brandNormalized = normalizeForLookup(brand);
+  const nameNormalized = normalizeForLookup(data.itemName) ??
+    normalizeForLookup(data.nameNormalized);
+  const docBrandNormalized = normalizeForLookup(data.brand) ??
+    normalizeForLookup(data.brandNormalized);
+  const hasBrandInput = Boolean(brandNormalized);
+
+  let nameScore = 0;
+  if (itemNameNormalized && nameNormalized) {
+    if (itemNameNormalized === nameNormalized) {
+      nameScore = 10;
+    } else if (
+      nameNormalized.includes(itemNameNormalized) ||
+      itemNameNormalized.includes(nameNormalized)
+    ) {
+      nameScore = 6;
+    }
+  }
+
+  let brandScore = 0;
+  if (brandNormalized && docBrandNormalized) {
+    if (brandNormalized === docBrandNormalized) {
+      brandScore = 4;
+    } else if (
+      docBrandNormalized.includes(brandNormalized) ||
+      brandNormalized.includes(docBrandNormalized)
+    ) {
+      brandScore = 2;
+    }
+  }
+
+  const docKeywords = Array.isArray(data.keywords) ?
+    data.keywords
+      .map((keyword) => normalizeForLookup(keyword))
+      .filter((keyword) => keyword && keyword.length >= 3) :
+    [];
+  const docKeywordSet = new Set(docKeywords);
+  let overlapCount = 0;
+  for (const keyword of lookupKeywords) {
+    if (docKeywordSet.has(keyword)) {
+      overlapCount += 1;
+    }
+  }
+
+  const itemNameTokens = tokenizeForLookup(itemName);
+  let nameTokenOverlap = 0;
+  for (const token of itemNameTokens) {
+    if (docKeywordSet.has(token)) {
+      nameTokenOverlap += 1;
+    }
+  }
+
+  let score = nameScore + brandScore;
+  score += Math.min(overlapCount, 4);
+  score += Math.min(nameTokenOverlap, 4);
+
+  return {
+    score,
+    nameScore,
+    brandScore,
+    overlapCount,
+    nameTokenOverlap,
+    hasBrandInput,
+  };
+}
+
+function isKeywordMatchReliable(match) {
+  if (!match) {
+    return false;
+  }
+  if (match.score < KEYWORD_MATCH_MIN_SCORE) {
+    return false;
+  }
+
+  const strongName = match.nameScore >= 6;
+  const hasNameTokenOverlap = match.nameTokenOverlap >= 1;
+  if (!strongName && !hasNameTokenOverlap) {
+    return false;
+  }
+
+  if (!strongName && match.overlapCount < 2) {
+    return false;
+  }
+
+  if (
+    match.hasBrandInput &&
+    match.brandScore === 0 &&
+    match.nameScore < 10 &&
+    match.overlapCount < 3
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 async function upsertGlobalResolution({
@@ -575,6 +891,7 @@ async function upsertGlobalResolution({
   storeName,
   weight,
   source,
+  keywordMatchScore,
   uid,
 }) {
   const keywords = buildKeywords({
@@ -595,6 +912,9 @@ async function upsertGlobalResolution({
       brandNormalized: normalizeForLookup(brand),
       keywords,
       source,
+      keywordMatchScore: Number.isFinite(Number(keywordMatchScore)) ?
+        Number(keywordMatchScore) :
+        null,
       lastResolvedBy: uid,
       hitCount: FieldValue.increment(1),
       updatedAt: nowIso(),
@@ -604,6 +924,9 @@ async function upsertGlobalResolution({
 }
 
 async function touchGlobalResolution(fingerprint) {
+  if (!fingerprint) {
+    return;
+  }
   await globalResolutionRef(fingerprint).set(
     {
       hitCount: FieldValue.increment(1),
@@ -819,6 +1142,34 @@ function buildKeywords({ itemName, brand, storeName, weight, fingerprint }) {
     }
   }
   return Array.from(keywords).slice(0, 40);
+}
+
+function buildLookupKeywords({ itemName, brand, weight }) {
+  const sources = [itemName, brand, weight];
+  const keywords = new Set();
+  for (const source of sources) {
+    const normalized = normalizeForLookup(source);
+    if (!normalized) {
+      continue;
+    }
+    keywords.add(normalized);
+    for (const token of tokenizeForLookup(normalized)) {
+      keywords.add(token);
+    }
+  }
+  return Array.from(keywords).slice(0, MAX_KEYWORD_QUERY_TERMS);
+}
+
+function tokenizeForLookup(value) {
+  const normalized = normalizeForLookup(value);
+  if (!normalized) {
+    return [];
+  }
+  return normalized
+    .split(" ")
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 3)
+    .filter((token) => !LOOKUP_STOPWORDS.has(token));
 }
 
 function normalizeForLookup(value) {

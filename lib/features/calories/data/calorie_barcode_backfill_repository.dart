@@ -144,6 +144,14 @@ class FirestoreCalorieBarcodeBackfillRepository
     };
     try {
       final response = await _invokeBatchResolveCallable(payload);
+      final queuedCount = _readInt(response?['queuedCount']);
+      final resolvedCount = _readInt(response?['resolvedCount']);
+      if (queuedCount != null || resolvedCount != null) {
+        _trace(
+          'Batch barcode resolution result: '
+          'resolved=${resolvedCount ?? 0}, queued=${queuedCount ?? 0}.',
+        );
+      }
       final success = response?['success'];
       if (success is bool) {
         return success;
@@ -255,6 +263,16 @@ class FirestoreCalorieBarcodeBackfillRepository
       'storeName': _normalizeOptionalString(item.storeName),
       'weight': _normalizeOptionalString(item.weight),
     };
+  }
+
+  int? _readInt(Object? value) {
+    if (value is int) {
+      return value;
+    }
+    if (value is num) {
+      return value.toInt();
+    }
+    return null;
   }
 }
 

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/provider/'
+    'inventory_barcode_image_provider.dart';
 
-class CategoryIcon extends StatelessWidget {
-  const CategoryIcon({super.key, required this.name});
+class CategoryIcon extends ConsumerWidget {
+  const CategoryIcon({super.key, required this.name, required this.barcode});
 
   static const _size = 50.0;
+  static const _imageInset = 2.0;
   static const _fallbackEmoji = '🍽️';
 
   static const Map<String, String> _emojiByCategory = {
@@ -68,6 +72,7 @@ class CategoryIcon extends StatelessWidget {
   };
 
   final String name;
+  final String? barcode;
 
   String _normalize(String value) {
     final lower = value.trim().toLowerCase();
@@ -98,10 +103,22 @@ class CategoryIcon extends StatelessWidget {
     return _backgroundByCategory[key] ?? fallbackColor;
   }
 
+  String? _resolveImageUrl(WidgetRef ref) {
+    final normalizedBarcode = barcode?.trim();
+    if (normalizedBarcode == null || normalizedBarcode.isEmpty) {
+      return null;
+    }
+    final imageAsync = ref.watch(
+      inventoryBarcodeImageUrlProvider(normalizedBarcode),
+    );
+    return imageAsync.asData?.value;
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
     final emoji = _resolveEmoji(name);
+    final imageUrl = _resolveImageUrl(ref);
     final backgroundColor = _resolveBackgroundColor(
       name,
       colors.secondaryContainer.withValues(alpha: 0.75),
@@ -117,7 +134,23 @@ class CategoryIcon extends StatelessWidget {
       child: SizedBox.square(
         dimension: _size,
         child: Center(
-          child: Text(emoji, style: Theme.of(context).textTheme.titleLarge),
+          child: imageUrl == null
+              ? Text(emoji, style: Theme.of(context).textTheme.titleLarge)
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  child: Image.network(
+                    imageUrl,
+                    width: _size - (_imageInset * 2),
+                    height: _size - (_imageInset * 2),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, error, stackTrace) {
+                      return Text(
+                        emoji,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      );
+                    },
+                  ),
+                ),
         ),
       ),
     );

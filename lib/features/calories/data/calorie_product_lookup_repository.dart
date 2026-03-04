@@ -135,7 +135,9 @@ class OffBackedCalorieProductLookupRepository
       _offBaseUrl,
       '/api/v2/product/$barcode.json',
       const <String, String>{
-        'fields': '_id,code,product_name,brands,nutriments,status',
+        'fields':
+            '_id,code,product_name,brands,nutriments,status,'
+            'image_front_small_url,image_front_url,image_url,selected_images',
       },
     );
     final response = await _httpClient
@@ -177,7 +179,9 @@ class OffBackedCalorieProductLookupRepository
       'action': 'process',
       'json': '1',
       'page_size': '20',
-      'fields': '_id,code,product_name,brands,nutriments',
+      'fields':
+          '_id,code,product_name,brands,nutriments,'
+          'image_front_small_url,image_front_url,image_url,selected_images',
     });
     final response = await _httpClient
         .get(uri, headers: _offRequestHeaders)
@@ -230,6 +234,7 @@ class OffBackedCalorieProductLookupRepository
     final name = _readString(product['product_name'])?.trim() ?? '';
     final brand = _readString(product['brands'])?.trim();
     final offProductId = _readString(product['_id']);
+    final imageUrl = _resolveImageUrl(product);
 
     final nutriments = product['nutriments'] is Map<String, dynamic>
         ? product['nutriments'] as Map<String, dynamic>
@@ -263,9 +268,44 @@ class OffBackedCalorieProductLookupRepository
       per100Fat: per100Fat,
       source: source,
       offProductId: offProductId,
+      imageUrl: imageUrl,
       createdAt: now,
       updatedAt: now,
     );
+  }
+
+  String? _resolveImageUrl(Map<String, dynamic> product) {
+    final direct =
+        _readString(product['image_front_small_url']) ??
+        _readString(product['image_front_url']) ??
+        _readString(product['image_url']);
+    if (direct != null && direct.trim().isNotEmpty) {
+      return direct.trim();
+    }
+
+    final selectedImages = product['selected_images'];
+    if (selectedImages is! Map<String, dynamic>) {
+      return null;
+    }
+
+    final front = selectedImages['front'];
+    if (front is! Map<String, dynamic>) {
+      return null;
+    }
+
+    final display = front['display'];
+    if (display is! Map<String, dynamic>) {
+      return null;
+    }
+
+    final values = display.values.whereType<String>();
+    for (final value in values) {
+      final trimmed = value.trim();
+      if (trimmed.isNotEmpty) {
+        return trimmed;
+      }
+    }
+    return null;
   }
 
   Map<String, dynamic>? _decodeJsonObject(String body) {
