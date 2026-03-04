@@ -21,7 +21,7 @@ final class InventoryBarcodeImageUrlProvider
   }) : super(
          retry: null,
          name: r'inventoryBarcodeImageUrlProvider',
-         isAutoDispose: false,
+         isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
@@ -60,7 +60,7 @@ final class InventoryBarcodeImageUrlProvider
 }
 
 String _$inventoryBarcodeImageUrlHash() =>
-    r'917dcbfb86027f4bf8d28d24530ead269cf5e635';
+    r'825aa4fc5b6eb90824e26ca46af2c37e20f741a3';
 
 final class InventoryBarcodeImageUrlFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<String?>, String> {
@@ -70,7 +70,7 @@ final class InventoryBarcodeImageUrlFamily extends $Family
         name: r'inventoryBarcodeImageUrlProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
-        isAutoDispose: false,
+        isAutoDispose: true,
       );
 
   InventoryBarcodeImageUrlProvider call(String rawBarcode) =>

@@ -44,6 +44,32 @@ const LOOKUP_STOPWORDS = new Set([
   "ohne",
   "land",
 ]);
+const LOOKUP_GENERIC_TOKENS = new Set([
+  "lebensmittel",
+  "artikel",
+  "produkt",
+  "food",
+  "milch",
+  "brot",
+  "kaese",
+  "fleisch",
+  "hackfleisch",
+  "filet",
+  "eier",
+  "ei",
+  "wurst",
+  "snack",
+]);
+const LOOKUP_TOKEN_ALIASES = new Map([
+  ["haehn", "haehnchen"],
+  ["haehnch", "haehnchen"],
+  ["huehn", "haehnchen"],
+  ["huhn", "haehnchen"],
+  ["brst", "brust"],
+  ["thunf", "thunfisch"],
+  ["eig", "eigenem"],
+  ["sort", "sortiert"],
+]);
 
 const ai = new GoogleGenAI({
   vertexai: true,
@@ -375,6 +401,21 @@ exports.onBarcodeEnrichmentJobWritten = onDocumentWritten(
         });
       }
     } catch (error) {
+      if (isResourceExhaustedError(error)) {
+        await markJobResourceExhausted({
+          jobRef: after.ref,
+          attempts: lock.attempts,
+          error: extractErrorMessage(error),
+        });
+        logger.warn("Barcode enrichment job throttled (resource exhausted).", {
+          jobId: after.id,
+          attempts: lock.attempts,
+          error: extractErrorMessage(error),
+          details: extractErrorDetails(error),
+        });
+        return;
+      }
+
       await markJobFailed({
         jobRef: after.ref,
         attempts: lock.attempts,
@@ -792,16 +833,48 @@ function scoreKeywordMatch({
   const docBrandNormalized = normalizeForLookup(data.brand) ??
     normalizeForLookup(data.brandNormalized);
   const hasBrandInput = Boolean(brandNormalized);
+  const itemNameTokens = tokenizeForLookup(itemName);
+  const docNameTokens = tokenizeForLookup(nameNormalized);
+  const itemTokenSet = new Set(itemNameTokens);
+  const docTokenSet = new Set(docNameTokens);
+  const tokenIntersectionCount = countSetIntersection(
+    itemTokenSet,
+    docTokenSet,
+  );
+  const itemTokenCoverage = itemTokenSet.size > 0 ?
+    tokenIntersectionCount / itemTokenSet.size :
+    0;
+  const docTokenCoverage = docTokenSet.size > 0 ?
+    tokenIntersectionCount / docTokenSet.size :
+    0;
+  const distinctiveItemTokens = Array.from(itemTokenSet).filter((token) => {
+    return !LOOKUP_GENERIC_TOKENS.has(token);
+  });
+  const distinctiveDocTokens = Array.from(docTokenSet).filter((token) => {
+    return !LOOKUP_GENERIC_TOKENS.has(token);
+  });
+  const distinctiveItemSet = new Set(distinctiveItemTokens);
+  const distinctiveDocSet = new Set(distinctiveDocTokens);
+  const sharedDistinctiveCount = countSetIntersection(
+    distinctiveItemSet,
+    distinctiveDocSet,
+  );
+  const unmatchedDistinctiveItemCount =
+    distinctiveItemTokens.length - sharedDistinctiveCount;
+  const nameJaccard = jaccardScore(itemNameTokens, docNameTokens);
 
   let nameScore = 0;
   if (itemNameNormalized && nameNormalized) {
     if (itemNameNormalized === nameNormalized) {
       nameScore = 10;
-    } else if (
-      nameNormalized.includes(itemNameNormalized) ||
-      itemNameNormalized.includes(nameNormalized)
-    ) {
+    } else if (itemTokenCoverage >= 0.95 && tokenIntersectionCount >= 2) {
+      nameScore = 8;
+    } else if (nameJaccard >= 0.85) {
+      nameScore = 8;
+    } else if (nameJaccard >= 0.6) {
       nameScore = 6;
+    } else if (nameJaccard >= 0.4) {
+      nameScore = 3;
     }
   }
 
@@ -830,7 +903,6 @@ function scoreKeywordMatch({
     }
   }
 
-  const itemNameTokens = tokenizeForLookup(itemName);
   let nameTokenOverlap = 0;
   for (const token of itemNameTokens) {
     if (docKeywordSet.has(token)) {
@@ -841,6 +913,7 @@ function scoreKeywordMatch({
   let score = nameScore + brandScore;
   score += Math.min(overlapCount, 4);
   score += Math.min(nameTokenOverlap, 4);
+  score += Math.min(sharedDistinctiveCount, 2);
 
   return {
     score,
@@ -849,6 +922,16 @@ function scoreKeywordMatch({
     overlapCount,
     nameTokenOverlap,
     hasBrandInput,
+    nameJaccard,
+    tokenIntersectionCount,
+    itemTokenCoverage,
+    docTokenCoverage,
+    sharedDistinctiveCount,
+    unmatchedDistinctiveItemCount,
+    distinctiveItemTokenCount: distinctiveItemTokens.length,
+    distinctiveDocTokenCount: distinctiveDocTokens.length,
+    itemNameTokenCount: itemNameTokens.length,
+    docNameTokenCount: docNameTokens.length,
   };
 }
 
@@ -860,9 +943,34 @@ function isKeywordMatchReliable(match) {
     return false;
   }
 
-  const strongName = match.nameScore >= 6;
+  const strongTokenCoverage = match.itemTokenCoverage >= 0.75;
+  const strongName = match.nameScore >= 6 || strongTokenCoverage;
   const hasNameTokenOverlap = match.nameTokenOverlap >= 1;
   if (!strongName && !hasNameTokenOverlap) {
+    return false;
+  }
+
+  if (
+    match.distinctiveItemTokenCount > 0 &&
+    match.sharedDistinctiveCount === 0 &&
+    match.nameScore < 10
+  ) {
+    return false;
+  }
+
+  if (
+    match.unmatchedDistinctiveItemCount > 0 &&
+    match.itemTokenCoverage < 0.75 &&
+    match.nameScore < 10
+  ) {
+    return false;
+  }
+
+  if (
+    match.nameJaccard < 0.45 &&
+    !strongTokenCoverage &&
+    match.nameScore < 10
+  ) {
     return false;
   }
 
@@ -874,12 +982,51 @@ function isKeywordMatchReliable(match) {
     match.hasBrandInput &&
     match.brandScore === 0 &&
     match.nameScore < 10 &&
+    !strongTokenCoverage &&
     match.overlapCount < 3
   ) {
     return false;
   }
 
   return true;
+}
+
+function jaccardScore(leftTokens, rightTokens) {
+  if (!Array.isArray(leftTokens) || !Array.isArray(rightTokens)) {
+    return 0;
+  }
+  const left = new Set(leftTokens);
+  const right = new Set(rightTokens);
+  if (left.size === 0 || right.size === 0) {
+    return 0;
+  }
+  let intersection = 0;
+  for (const token of left) {
+    if (right.has(token)) {
+      intersection += 1;
+    }
+  }
+  const union = left.size + right.size - intersection;
+  if (union <= 0) {
+    return 0;
+  }
+  return intersection / union;
+}
+
+function countSetIntersection(leftSet, rightSet) {
+  if (!(leftSet instanceof Set) || !(rightSet instanceof Set)) {
+    return 0;
+  }
+  if (leftSet.size === 0 || rightSet.size === 0) {
+    return 0;
+  }
+  let intersection = 0;
+  for (const token of leftSet) {
+    if (rightSet.has(token)) {
+      intersection += 1;
+    }
+  }
+  return intersection;
 }
 
 async function upsertGlobalResolution({
@@ -1050,6 +1197,22 @@ async function markJobFailed({ jobRef, attempts, error }) {
   );
 }
 
+async function markJobResourceExhausted({ jobRef, attempts, error }) {
+  const updatedAt = nowIso();
+  const normalizedAttempts = Math.max(0, attempts - 1);
+  await jobRef.set(
+    {
+      status: "failed",
+      attempts: normalizedAttempts,
+      updatedAt,
+      completedAt: updatedAt,
+      lastError: error,
+      errorCode: "resource_exhausted",
+    },
+    { merge: true },
+  );
+}
+
 function normalizeEnqueueItems(rawItems) {
   const dedupedByItemId = new Map();
   for (const rawItem of rawItems) {
@@ -1165,11 +1328,54 @@ function tokenizeForLookup(value) {
   if (!normalized) {
     return [];
   }
-  return normalized
+  const tokens = normalized
     .split(" ")
     .map((token) => token.trim())
     .filter((token) => token.length >= 3)
     .filter((token) => !LOOKUP_STOPWORDS.has(token));
+
+  const expanded = new Set();
+  for (const token of tokens) {
+    expanded.add(normalizeLookupToken(token));
+    for (const splitToken of splitCompoundLookupToken(token)) {
+      expanded.add(normalizeLookupToken(splitToken));
+    }
+  }
+  return Array.from(expanded).filter((token) => {
+    return token.length >= 3 && !LOOKUP_STOPWORDS.has(token);
+  });
+}
+
+function normalizeLookupToken(token) {
+  const normalized = normalizeForLookup(token);
+  if (!normalized) {
+    return "";
+  }
+  return LOOKUP_TOKEN_ALIASES.get(normalized) ?? normalized;
+}
+
+function splitCompoundLookupToken(token) {
+  const normalized = normalizeForLookup(token);
+  if (!normalized) {
+    return [];
+  }
+
+  if (normalized.includes("haehnchenbrustfilet")) {
+    return ["haehnchen", "brust", "filet"];
+  }
+  if (normalized.includes("haehnchenfilet")) {
+    return ["haehnchen", "filet"];
+  }
+  if (normalized.includes("brustfilet")) {
+    return ["brust", "filet"];
+  }
+  if (normalized.includes("thunfischfilet")) {
+    return ["thunfisch", "filet"];
+  }
+  if (normalized.includes("sonnenblumenkerne")) {
+    return ["sonnenblumen", "kerne"];
+  }
+  return [];
 }
 
 function normalizeForLookup(value) {
@@ -1362,6 +1568,47 @@ function extractErrorDetails(error) {
       null,
     causeMessage: readString(cause?.message),
   };
+}
+
+function isResourceExhaustedError(error) {
+  if (error == null || typeof error !== "object") {
+    return false;
+  }
+
+  const code = Number(error.code);
+  if (Number.isFinite(code) && code === 429) {
+    return true;
+  }
+
+  const status = readString(error.status);
+  if (status && status.toUpperCase().includes("RESOURCE_EXHAUSTED")) {
+    return true;
+  }
+
+  const message = readString(error.message);
+  if (message) {
+    const upper = message.toUpperCase();
+    if (upper.includes("RESOURCE_EXHAUSTED")) {
+      return true;
+    }
+    if (upper.includes("429")) {
+      return true;
+    }
+  }
+
+  const cause = error.cause;
+  const causeMessage = readString(cause?.message);
+  if (causeMessage) {
+    const upperCauseMessage = causeMessage.toUpperCase();
+    if (
+      upperCauseMessage.includes("RESOURCE_EXHAUSTED") ||
+      upperCauseMessage.includes("429")
+    ) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function clipTextForLog(value, maxLength = 4000) {

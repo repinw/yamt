@@ -11,8 +11,9 @@ import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart
 part 'inventory_barcode_image_provider.g.dart';
 
 const _providerLogName = 'InventoryBarcodeImageProvider';
+const _offImageHost = 'world.openfoodfacts.org';
 
-@Riverpod(keepAlive: true)
+@riverpod
 Future<String?> inventoryBarcodeImageUrl(Ref ref, String rawBarcode) async {
   final barcode = normalizeBarcode(rawBarcode);
   if (!isSupportedBarcode(barcode)) {
@@ -29,8 +30,12 @@ Future<String?> inventoryBarcodeImageUrl(Ref ref, String rawBarcode) async {
   final outcome = await lookupRepository.lookupByBarcode(barcode);
   final profile = _pickProfileFromOutcome(outcome);
   final imageUrl = _normalizeImageUrl(profile?.imageUrl);
-  if (profile != null) {
-    await lookupRepository.persistGlobalProduct(profile);
+  if (profile != null && _shouldPersistGlobalProfile(profile, imageUrl)) {
+    await lookupRepository.persistGlobalProduct(
+      imageUrl == profile.imageUrl
+          ? profile
+          : profile.copyWith(imageUrl: imageUrl),
+    );
   }
   return imageUrl;
 }
@@ -52,11 +57,37 @@ Future<String?> _readCachedImageUrl(
 CalorieProductProfile? _pickProfileFromOutcome(CalorieLookupOutcome outcome) {
   return switch (outcome.status) {
     CalorieLookupStatus.foundSingle => outcome.product,
-    CalorieLookupStatus.foundMultiple =>
-      outcome.candidates.isEmpty ? null : outcome.candidates.first.profile,
+    CalorieLookupStatus.foundMultiple => _pickCandidateProfile(
+      outcome.candidates,
+    ),
     CalorieLookupStatus.notFound => null,
     CalorieLookupStatus.failed => null,
   };
+}
+
+CalorieProductProfile? _pickCandidateProfile(
+  List<CalorieProductCandidate> candidates,
+) {
+  if (candidates.isEmpty) {
+    return null;
+  }
+  for (final candidate in candidates) {
+    if (_normalizeImageUrl(candidate.profile.imageUrl) != null) {
+      return candidate.profile;
+    }
+  }
+  return candidates.first.profile;
+}
+
+bool _shouldPersistGlobalProfile(
+  CalorieProductProfile profile,
+  String? normalizedImageUrl,
+) {
+  final source = profile.source;
+  final isOffProfile =
+      source == CalorieProductSource.offBarcode ||
+      source == CalorieProductSource.offSearch;
+  return isOffProfile && normalizedImageUrl != null;
 }
 
 String? _normalizeImageUrl(String? value) {
@@ -66,6 +97,12 @@ String? _normalizeImageUrl(String? value) {
   final trimmed = value.trim();
   if (trimmed.isEmpty) {
     return null;
+  }
+  if (trimmed.startsWith('//')) {
+    return 'https:$trimmed';
+  }
+  if (trimmed.startsWith('/')) {
+    return 'https://$_offImageHost$trimmed';
   }
   if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
     log(

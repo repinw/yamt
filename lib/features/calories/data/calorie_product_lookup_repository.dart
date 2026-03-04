@@ -72,18 +72,29 @@ class OffBackedCalorieProductLookupRepository
       );
     }
 
+    CalorieProductProfile? cachedFallback;
     final override = await _cacheRepository.readUserOverride(barcode);
     if (override != null) {
-      return CalorieLookupOutcome.foundSingle(
-        override.copyWith(source: CalorieProductSource.userOverride),
+      final normalizedOverride = _normalizeCachedProfile(
+        override,
+        source: CalorieProductSource.userOverride,
       );
+      cachedFallback = normalizedOverride;
+      if (_hasUsableImageUrl(normalizedOverride.imageUrl)) {
+        return CalorieLookupOutcome.foundSingle(normalizedOverride);
+      }
     }
 
     final global = await _cacheRepository.readGlobalProduct(barcode);
     if (global != null) {
-      return CalorieLookupOutcome.foundSingle(
-        global.copyWith(source: CalorieProductSource.globalCatalog),
+      final normalizedGlobal = _normalizeCachedProfile(
+        global,
+        source: CalorieProductSource.globalCatalog,
       );
+      cachedFallback ??= normalizedGlobal;
+      if (_hasUsableImageUrl(normalizedGlobal.imageUrl)) {
+        return CalorieLookupOutcome.foundSingle(normalizedGlobal);
+      }
     }
 
     try {
@@ -94,6 +105,9 @@ class OffBackedCalorieProductLookupRepository
 
       final candidates = await _searchCandidates(barcode);
       if (candidates.isEmpty) {
+        if (cachedFallback != null) {
+          return CalorieLookupOutcome.foundSingle(cachedFallback);
+        }
         return const CalorieLookupOutcome.notFound();
       }
 
@@ -104,6 +118,9 @@ class OffBackedCalorieProductLookupRepository
 
       return CalorieLookupOutcome.foundMultiple(candidates);
     } catch (error, stackTrace) {
+      if (cachedFallback != null) {
+        return CalorieLookupOutcome.foundSingle(cachedFallback);
+      }
       final isTimeout = error is TimeoutException;
       final message = isTimeout
           ? 'OFF lookup timed out for barcode $barcode.'
@@ -117,16 +134,11 @@ class OffBackedCalorieProductLookupRepository
 
   @override
   Future<bool> persistGlobalProduct(CalorieProductProfile profile) {
-    final now = _now();
-    final overrideProfile = profile.copyWith(
-      source: CalorieProductSource.userOverride,
-      updatedAt: now,
-      createdAt: now,
+    final globalProfile = profile.copyWith(
+      source: CalorieProductSource.globalCatalog,
+      updatedAt: _now(),
     );
-    return _cacheRepository.saveUserOverride(
-      profile: overrideProfile,
-      reason: 'selected_candidate',
-    );
+    return _cacheRepository.saveGlobalProduct(globalProfile);
   }
 
   Future<CalorieProductProfile?> _fetchByBarcode(String barcode) async {
@@ -279,8 +291,9 @@ class OffBackedCalorieProductLookupRepository
         _readString(product['image_front_small_url']) ??
         _readString(product['image_front_url']) ??
         _readString(product['image_url']);
-    if (direct != null && direct.trim().isNotEmpty) {
-      return direct.trim();
+    final normalizedDirect = _normalizeOffImageUrl(direct);
+    if (normalizedDirect != null) {
+      return normalizedDirect;
     }
 
     final selectedImages = product['selected_images'];
@@ -300,12 +313,43 @@ class OffBackedCalorieProductLookupRepository
 
     final values = display.values.whereType<String>();
     for (final value in values) {
-      final trimmed = value.trim();
-      if (trimmed.isNotEmpty) {
-        return trimmed;
+      final normalized = _normalizeOffImageUrl(value);
+      if (normalized != null) {
+        return normalized;
       }
     }
     return null;
+  }
+
+  bool _hasUsableImageUrl(String? value) {
+    return _normalizeOffImageUrl(value) != null;
+  }
+
+  String? _normalizeOffImageUrl(String? value) {
+    final raw = _readString(value)?.trim();
+    if (raw == null || raw.isEmpty) {
+      return null;
+    }
+    if (raw.startsWith('https://') || raw.startsWith('http://')) {
+      return raw;
+    }
+    if (raw.startsWith('//')) {
+      return 'https:$raw';
+    }
+    if (raw.startsWith('/')) {
+      return 'https://$_offBaseUrl$raw';
+    }
+    return null;
+  }
+
+  CalorieProductProfile _normalizeCachedProfile(
+    CalorieProductProfile profile, {
+    required CalorieProductSource source,
+  }) {
+    return profile.copyWith(
+      source: source,
+      imageUrl: _normalizeOffImageUrl(profile.imageUrl),
+    );
   }
 
   Map<String, dynamic>? _decodeJsonObject(String body) {
