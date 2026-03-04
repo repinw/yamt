@@ -34,6 +34,14 @@ class _NoopBackfillRepository
   }
 
   @override
+  Future<bool> enqueueBatchLookup({
+    required List<BarcodeLookupBatchItem> items,
+    required String trigger,
+  }) async {
+    return true;
+  }
+
+  @override
   Future<CalorieProductProfile?> getResolvedProfileByFingerprint(
     String fingerprint,
   ) async {
@@ -60,6 +68,7 @@ class _RecordingBackfillRepository
   String? lastBrand;
   String? lastTrigger;
   bool lastForceRetry = false;
+  int enqueueBatchCalls = 0;
 
   @override
   Future<bool> enqueueFingerprintLookup({
@@ -77,6 +86,15 @@ class _RecordingBackfillRepository
     lastBrand = brand;
     lastTrigger = trigger;
     lastForceRetry = forceRetry;
+    return true;
+  }
+
+  @override
+  Future<bool> enqueueBatchLookup({
+    required List<BarcodeLookupBatchItem> items,
+    required String trigger,
+  }) async {
+    enqueueBatchCalls += 1;
     return true;
   }
 

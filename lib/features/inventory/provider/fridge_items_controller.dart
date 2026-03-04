@@ -200,7 +200,10 @@ class FridgeItemsController extends _$FridgeItemsController {
 
       final current = currentItems[itemIndex];
       final now = DateTime.now();
-      final updated = current.copyWith(barcodeLookupRequestedAt: now);
+      final updated = current.copyWith(
+        barcodeLookupRequestedAt: now,
+        barcodeCandidates: const <String>[],
+      );
       final nextItems = List<FridgeItem>.from(currentItems);
       nextItems[itemIndex] = updated;
       return nextItems;
@@ -226,6 +229,7 @@ class FridgeItemsController extends _$FridgeItemsController {
       final now = DateTime.now();
       final updated = current.copyWith(
         barcode: normalized,
+        barcodeCandidates: <String>[normalized],
         barcodeResolvedAt: now,
       );
       final nextItems = List<FridgeItem>.from(currentItems);

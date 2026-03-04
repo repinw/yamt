@@ -12,6 +12,7 @@ part 'calorie_barcode_backfill_repository.g.dart';
 
 const _backfillLogName = 'CalorieBarcodeBackfillRepository';
 const _resolveCallableName = 'resolveInventoryItemBarcode';
+const _enqueueJobsCallableName = 'enqueueInventoryBarcodeJobs';
 const _functionsRegion = 'europe-west1';
 const _useFunctionsEmulator = bool.fromEnvironment(
   'USE_FUNCTIONS_EMULATOR',
@@ -111,6 +112,54 @@ class FirestoreCalorieBarcodeBackfillRepository
   }
 
   @override
+  Future<bool> enqueueBatchLookup({
+    required List<BarcodeLookupBatchItem> items,
+    required String trigger,
+  }) async {
+    final userId = _currentUserId();
+    final normalizedTrigger = trigger.trim();
+    if (userId == null || items.isEmpty || normalizedTrigger.isEmpty) {
+      _trace(
+        'Skip batch barcode lookup due to invalid payload: '
+        'hasUser=${userId != null}, '
+        'itemCount=${items.length}, '
+        'hasTrigger=${normalizedTrigger.isNotEmpty}.',
+      );
+      return false;
+    }
+
+    final normalizedItems = items
+        .map(_normalizeBatchItemPayload)
+        .whereType<Map<String, dynamic>>()
+        .toList(growable: false);
+    if (normalizedItems.isEmpty) {
+      _trace('Skip batch barcode lookup because all items were invalid.');
+      return false;
+    }
+
+    final payload = <String, dynamic>{
+      'userId': userId,
+      'trigger': normalizedTrigger,
+      'items': normalizedItems,
+    };
+    try {
+      final response = await _invokeBatchResolveCallable(payload);
+      final success = response?['success'];
+      if (success is bool) {
+        return success;
+      }
+      return true;
+    } catch (error, stackTrace) {
+      _trace(
+        'Failed to resolve barcode batch for ${normalizedItems.length} items.',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
+  @override
   Future<CalorieProductProfile?> getResolvedProfileByFingerprint(
     String fingerprint,
   ) async {
@@ -166,6 +215,46 @@ class FirestoreCalorieBarcodeBackfillRepository
       return data.cast<String, dynamic>();
     }
     return null;
+  }
+
+  Future<Map<String, dynamic>?> _invokeBatchResolveCallable(
+    Map<String, dynamic> payload,
+  ) async {
+    final functions = _functions;
+    if (functions == null) {
+      throw StateError('FirebaseFunctions instance is not configured.');
+    }
+    final itemCount = (payload['items'] as List<dynamic>).length;
+    _trace(
+      'Calling $_enqueueJobsCallableName for itemCount=$itemCount '
+      'in region=$_functionsRegion.',
+    );
+    final callable = functions.httpsCallable(_enqueueJobsCallableName);
+    final result = await callable.call(payload);
+    final data = result.data;
+    if (data is Map) {
+      return data.cast<String, dynamic>();
+    }
+    return null;
+  }
+
+  Map<String, dynamic>? _normalizeBatchItemPayload(
+    BarcodeLookupBatchItem item,
+  ) {
+    final itemId = item.itemId.trim();
+    final fingerprint = item.fingerprint.trim();
+    final itemName = item.itemName.trim();
+    if (itemId.isEmpty || fingerprint.isEmpty || itemName.isEmpty) {
+      return null;
+    }
+    return <String, dynamic>{
+      'itemId': itemId,
+      'fingerprint': fingerprint,
+      'itemName': itemName,
+      'brand': _normalizeOptionalString(item.brand),
+      'storeName': _normalizeOptionalString(item.storeName),
+      'weight': _normalizeOptionalString(item.weight),
+    };
   }
 }
 
@@ -253,6 +342,14 @@ class _UnavailableCalorieBarcodeBackfillRepository
     String? brand,
     required String trigger,
     bool forceRetry = false,
+  }) async {
+    return false;
+  }
+
+  @override
+  Future<bool> enqueueBatchLookup({
+    required List<BarcodeLookupBatchItem> items,
+    required String trigger,
   }) async {
     return false;
   }

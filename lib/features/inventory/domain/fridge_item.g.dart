@@ -22,6 +22,11 @@ _FridgeItem _$FridgeItemFromJson(Map<String, dynamic> json) => _FridgeItem(
     json['amountUnit'],
   ),
   barcode: json['barcode'] as String?,
+  barcodeCandidates:
+      (json['barcodeCandidates'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const <String>[],
   foodFingerprint: json['foodFingerprint'] as String?,
   barcodeLookupRequestedAt: json['barcodeLookupRequestedAt'] == null
       ? null
@@ -59,6 +64,7 @@ Map<String, dynamic> _$FridgeItemToJson(_FridgeItem instance) =>
       'currentAmount': instance.currentAmount,
       'amountUnit': _$FridgeAmountUnitEnumMap[instance.amountUnit],
       'barcode': instance.barcode,
+      'barcodeCandidates': instance.barcodeCandidates,
       'foodFingerprint': instance.foodFingerprint,
       'barcodeLookupRequestedAt': instance.barcodeLookupRequestedAt
           ?.toIso8601String(),

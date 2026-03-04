@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
+import 'package:yamt/features/calories/data/'
+    'calorie_barcode_backfill_repository.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_barcode_backfill_repository_contract.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
@@ -186,7 +190,11 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     try {
       final itemRepository = ref.read(fridgeItemRepositoryProvider);
       final storableItems = _storableItems(reviewedItems);
-      return await itemRepository.appendAll(storableItems);
+      final saved = await itemRepository.appendAll(storableItems);
+      if (saved) {
+        unawaited(_enqueueBatchBarcodeLookup(storableItems));
+      }
+      return saved;
     } catch (error, stackTrace) {
       log(
         'Receipt flow storage failed unexpectedly',
@@ -202,5 +210,40 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     return items
         .where((item) => item.canBeSavedToFridge)
         .toList(growable: false);
+  }
+
+  Future<void> _enqueueBatchBarcodeLookup(List<FridgeItem> items) async {
+    final pendingItems = items
+        .where((item) => item.normalizedBarcode == null)
+        .map(
+          (item) => BarcodeLookupBatchItem(
+            itemId: item.id,
+            fingerprint: item.resolvedFoodFingerprint,
+            itemName: item.name,
+            brand: item.brand,
+            storeName: item.storeName,
+            weight: item.weight,
+          ),
+        )
+        .toList(growable: false);
+    if (pendingItems.isEmpty) {
+      return;
+    }
+
+    final backfillRepository = ref.read(
+      calorieBarcodeBackfillRepositoryProvider,
+    );
+    final queued = await backfillRepository.enqueueBatchLookup(
+      items: pendingItems,
+      trigger: 'receipt_upload',
+    );
+    if (queued) {
+      return;
+    }
+    log(
+      'Receipt barcode batch lookup request failed.',
+      name: 'ReceiptCaptureFlowController',
+      error: StateError('batch_lookup_enqueue_failed'),
+    );
   }
 }

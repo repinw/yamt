@@ -26,6 +26,7 @@ abstract class FridgeItem with _$FridgeItem {
     @Default(0) int currentAmount,
     FridgeAmountUnit? amountUnit,
     String? barcode,
+    @Default(<String>[]) List<String> barcodeCandidates,
     String? foodFingerprint,
     DateTime? barcodeLookupRequestedAt,
     DateTime? barcodeResolvedAt,
