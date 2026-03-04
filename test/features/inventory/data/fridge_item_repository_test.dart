@@ -14,11 +14,15 @@ class _FakeInventoryUserSession implements InventoryUserSession {
 class _FakeInventoryFridgeItemStore implements InventoryFridgeItemStore {
   _FakeInventoryFridgeItemStore({
     Map<String, List<InventoryFridgeItemDocument>>? initialDocumentsByUser,
+    Map<String, Map<String, String>>? initialResolvedBarcodesByUser,
   }) : _documentsByUser =
            initialDocumentsByUser ??
-           <String, List<InventoryFridgeItemDocument>>{};
+           <String, List<InventoryFridgeItemDocument>>{},
+       _resolvedBarcodesByUser =
+           initialResolvedBarcodesByUser ?? <String, Map<String, String>>{};
 
   final Map<String, List<InventoryFridgeItemDocument>> _documentsByUser;
+  final Map<String, Map<String, String>> _resolvedBarcodesByUser;
   final Map<String, StreamController<List<InventoryFridgeItemDocument>>>
   _controllersByUser =
       <String, StreamController<List<InventoryFridgeItemDocument>>>{};
@@ -93,6 +97,27 @@ class _FakeInventoryFridgeItemStore implements InventoryFridgeItemStore {
     } finally {
       _activeUpserts--;
     }
+  }
+
+  @override
+  Future<Map<String, String>> readResolvedBarcodes({
+    required String userId,
+    required Iterable<String> fingerprints,
+  }) async {
+    final resolvedByFingerprint = _resolvedBarcodesByUser[userId];
+    if (resolvedByFingerprint == null || resolvedByFingerprint.isEmpty) {
+      return const <String, String>{};
+    }
+
+    final result = <String, String>{};
+    for (final fingerprint in fingerprints) {
+      final barcode = resolvedByFingerprint[fingerprint];
+      if (barcode == null || barcode.trim().isEmpty) {
+        continue;
+      }
+      result[fingerprint] = barcode.trim();
+    }
+    return result;
   }
 
   Future<void> dispose() async {
@@ -335,4 +360,58 @@ void main() {
 
     expect(saved, isFalse);
   });
+
+  test('firestore repo derives food fingerprint when missing', () async {
+    final sourceItem = _item(
+      'a',
+    ).copyWith(name: 'Organic Milk', brand: 'Acme', foodFingerprint: null);
+    final store = _FakeInventoryFridgeItemStore(
+      initialDocumentsByUser: <String, List<InventoryFridgeItemDocument>>{
+        'user-1': <InventoryFridgeItemDocument>[
+          InventoryFridgeItemDocument(id: 'a', data: sourceItem.toJson()),
+        ],
+      },
+    );
+    addTearDown(store.dispose);
+    final repository = FirestoreFridgeItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      store: store,
+    );
+
+    final items = await repository.readAll();
+
+    expect(items, hasLength(1));
+    expect(items.single.foodFingerprint, 'organic_milk__acme');
+  });
+
+  test(
+    'firestore repo does not hydrate barcode from request collection',
+    () async {
+      final sourceItem = _item('a').copyWith(
+        foodFingerprint: 'putenherzen__netto',
+        barcodeLookupRequestedAt: DateTime.parse('2026-03-03T10:00:00Z'),
+      );
+      final store = _FakeInventoryFridgeItemStore(
+        initialDocumentsByUser: <String, List<InventoryFridgeItemDocument>>{
+          'user-1': <InventoryFridgeItemDocument>[
+            InventoryFridgeItemDocument(id: 'a', data: sourceItem.toJson()),
+          ],
+        },
+        initialResolvedBarcodesByUser: <String, Map<String, String>>{
+          'user-1': <String, String>{'putenherzen__netto': '4316268659758'},
+        },
+      );
+      addTearDown(store.dispose);
+      final repository = FirestoreFridgeItemRepository(
+        session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+        store: store,
+      );
+
+      final items = await repository.readAll();
+
+      expect(items, hasLength(1));
+      expect(items.single.normalizedBarcode, isNull);
+      expect(items.single.barcodeStatus, InventoryBarcodeStatus.pending);
+    },
+  );
 }

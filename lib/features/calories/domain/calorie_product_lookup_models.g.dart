@@ -22,6 +22,7 @@ CalorieProductProfile _$CalorieProductProfileFromJson(
   updatedAt: const FlexibleDateTimeConverter().fromJson(json['updated_at']),
   brand: json['brand'] as String?,
   offProductId: json['off_product_id'] as String?,
+  imageUrl: json['image_url'] as String?,
 );
 
 Map<String, dynamic> _$CalorieProductProfileToJson(
@@ -38,6 +39,7 @@ Map<String, dynamic> _$CalorieProductProfileToJson(
   'per100_fat': const FlexibleDoubleConverter().toJson(instance.per100Fat),
   'source': _$CalorieProductSourceEnumMap[instance.source]!,
   'off_product_id': instance.offProductId,
+  'image_url': instance.imageUrl,
   'created_at': const FlexibleDateTimeConverter().toJson(instance.createdAt),
   'updated_at': const FlexibleDateTimeConverter().toJson(instance.updatedAt),
 };

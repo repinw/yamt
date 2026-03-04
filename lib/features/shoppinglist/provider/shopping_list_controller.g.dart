@@ -35,7 +35,7 @@ final class ShoppingListControllerProvider
 }
 
 String _$shoppingListControllerHash() =>
-    r'67cbd920ab33ea8756add7fb4774c50235617172';
+    r'0f58e45685f554efdb97f5b9ce47456283cb2384';
 
 abstract class _$ShoppingListController
     extends $AsyncNotifier<List<ShoppingListItem>> {

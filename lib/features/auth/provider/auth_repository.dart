@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
@@ -51,7 +53,14 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> signInAnonymously() async {
-    await _auth.signInAnonymously();
+    try {
+      await _auth.signInAnonymously().timeout(const Duration(seconds: 15));
+    } on TimeoutException {
+      throw FirebaseAuthException(
+        code: 'network-request-failed',
+        message: 'Anonymous sign-in timed out after 15 seconds.',
+      );
+    }
   }
 
   @override

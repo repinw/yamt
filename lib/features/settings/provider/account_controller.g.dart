@@ -81,7 +81,7 @@ final class AccountControllerProvider
   AccountController create() => AccountController();
 }
 
-String _$accountControllerHash() => r'ebb4a9b94fadbc9f2c7d91873f76084c39ee9bfe';
+String _$accountControllerHash() => r'5146b77da80fbd4625d833767ad76b57821d5c86';
 
 abstract class _$AccountController extends $AsyncNotifier<void> {
   FutureOr<void> build();

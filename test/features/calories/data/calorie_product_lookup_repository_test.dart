@@ -37,6 +37,7 @@ CalorieProductProfile _profile({
   required String barcode,
   required String name,
   required CalorieProductSource source,
+  String? imageUrl,
 }) {
   final now = DateTime(2026, 2, 25, 10);
   return CalorieProductProfile(
@@ -47,6 +48,7 @@ CalorieProductProfile _profile({
     per100Carbs: 4.8,
     per100Fat: 3.5,
     source: source,
+    imageUrl: imageUrl,
     createdAt: now,
     updatedAt: now,
   );
@@ -59,6 +61,7 @@ void main() {
       barcode: '4006381333931',
       name: 'Override Milk',
       source: CalorieProductSource.userOverride,
+      imageUrl: 'https://images.openfoodfacts.org/override.jpg',
     );
     final httpClient = _FakeHttpClient(
       onGet: (uri) async => throw StateError('Should not hit OFF'),
@@ -76,12 +79,65 @@ void main() {
     expect(httpClient.getCallCount, 0);
   });
 
+  test(
+    'lookupByBarcode refreshes OFF when user override has no image',
+    () async {
+      final cache = FakeCalorieProductCacheRepository();
+      cache.overrides['4006381333931'] = _profile(
+        barcode: '4006381333931',
+        name: 'Override Milk',
+        source: CalorieProductSource.userOverride,
+        imageUrl: null,
+      );
+      final httpClient = _FakeHttpClient(
+        onGet: (uri) async {
+          final payload = <String, Object?>{
+            'status': 1,
+            'product': <String, Object?>{
+              '_id': 'off-override',
+              'code': '4006381333931',
+              'product_name': 'OFF Milk',
+              'brands': 'Brand A',
+              'image_front_url':
+                  '//images.openfoodfacts.org/images/products/400/638/133/3931/'
+                  'front_de.3.400.jpg',
+              'nutriments': <String, Object?>{
+                'energy-kcal_100g': 64,
+                'proteins_100g': 3.2,
+                'carbohydrates_100g': 4.8,
+                'fat_100g': 3.5,
+              },
+            },
+          };
+          return http.Response(jsonEncode(payload), 200);
+        },
+      );
+      final repository = OffBackedCalorieProductLookupRepository(
+        cacheRepository: cache,
+        httpClient: httpClient,
+        now: () => DateTime(2026, 2, 25, 10),
+      );
+
+      final outcome = await repository.lookupByBarcode('4006381333931');
+
+      expect(outcome.status, CalorieLookupStatus.foundSingle);
+      expect(outcome.product?.name, 'OFF Milk');
+      expect(
+        outcome.product?.imageUrl,
+        'https://images.openfoodfacts.org/images/products/400/638/133/3931/'
+        'front_de.3.400.jpg',
+      );
+      expect(httpClient.getCallCount, 1);
+    },
+  );
+
   test('lookupByBarcode falls back to global cache before OFF', () async {
     final cache = FakeCalorieProductCacheRepository();
     cache.global['4006381333931'] = _profile(
       barcode: '4006381333931',
       name: 'Global Milk',
       source: CalorieProductSource.globalCatalog,
+      imageUrl: 'https://images.openfoodfacts.org/image.jpg',
     );
     final httpClient = _FakeHttpClient(
       onGet: (uri) async => throw StateError('Should not hit OFF'),
@@ -99,7 +155,87 @@ void main() {
     expect(httpClient.getCallCount, 0);
   });
 
-  test('OFF exact hit writes through to global cache', () async {
+  test('lookupByBarcode normalizes cached relative image URL', () async {
+    final cache = FakeCalorieProductCacheRepository();
+    cache.global['4006381333931'] = _profile(
+      barcode: '4006381333931',
+      name: 'Global Milk',
+      source: CalorieProductSource.globalCatalog,
+      imageUrl: '/images/products/400/638/133/3931/front_de.3.400.jpg',
+    );
+    final httpClient = _FakeHttpClient(
+      onGet: (uri) async => throw StateError('Should not hit OFF'),
+    );
+    final repository = OffBackedCalorieProductLookupRepository(
+      cacheRepository: cache,
+      httpClient: httpClient,
+      now: () => DateTime(2026, 2, 25, 10),
+    );
+
+    final outcome = await repository.lookupByBarcode('4006381333931');
+
+    expect(outcome.status, CalorieLookupStatus.foundSingle);
+    expect(
+      outcome.product?.imageUrl,
+      'https://world.openfoodfacts.org/images/products/400/638/133/3931/'
+      'front_de.3.400.jpg',
+    );
+    expect(httpClient.getCallCount, 0);
+  });
+
+  test(
+    'lookupByBarcode refreshes OFF when global cache has no image',
+    () async {
+      final cache = FakeCalorieProductCacheRepository();
+      cache.global['4006381333931'] = _profile(
+        barcode: '4006381333931',
+        name: 'Global Milk',
+        source: CalorieProductSource.globalCatalog,
+        imageUrl: null,
+      );
+      final httpClient = _FakeHttpClient(
+        onGet: (uri) async {
+          final payload = <String, Object?>{
+            'status': 1,
+            'product': <String, Object?>{
+              '_id': 'off-1',
+              'code': '4006381333931',
+              'product_name': 'OFF Milk',
+              'brands': 'Brand A',
+              'image_front_url':
+                  '//images.openfoodfacts.org/images/products/400/638/133/3931/'
+                  'front_de.3.400.jpg',
+              'nutriments': <String, Object?>{
+                'energy-kcal_100g': 64,
+                'proteins_100g': 3.2,
+                'carbohydrates_100g': 4.8,
+                'fat_100g': 3.5,
+              },
+            },
+          };
+          return http.Response(jsonEncode(payload), 200);
+        },
+      );
+      final repository = OffBackedCalorieProductLookupRepository(
+        cacheRepository: cache,
+        httpClient: httpClient,
+        now: () => DateTime(2026, 2, 25, 10),
+      );
+
+      final outcome = await repository.lookupByBarcode('4006381333931');
+
+      expect(outcome.status, CalorieLookupStatus.foundSingle);
+      expect(outcome.product?.name, 'OFF Milk');
+      expect(
+        outcome.product?.imageUrl,
+        'https://images.openfoodfacts.org/images/products/400/638/133/3931/'
+        'front_de.3.400.jpg',
+      );
+      expect(httpClient.getCallCount, 1);
+    },
+  );
+
+  test('OFF exact hit does not write to global cache', () async {
     final cache = FakeCalorieProductCacheRepository();
     final httpClient = _FakeHttpClient(
       onGet: (uri) async {
@@ -131,7 +267,7 @@ void main() {
 
     expect(outcome.status, CalorieLookupStatus.foundSingle);
     expect(outcome.product?.name, 'OFF Milk');
-    expect(cache.global.containsKey('4006381333931'), isTrue);
+    expect(cache.global.containsKey('4006381333931'), isFalse);
   });
 
   test('OFF search returns ranked multiple candidates', () async {
@@ -202,5 +338,31 @@ void main() {
     final outcome = await repository.lookupByBarcode('4006381333931');
 
     expect(outcome.status, CalorieLookupStatus.failed);
+  });
+
+  test('persistGlobalProduct writes to global cache', () async {
+    final cache = FakeCalorieProductCacheRepository();
+    final httpClient = _FakeHttpClient(
+      onGet: (uri) async {
+        return http.Response(jsonEncode(<String, Object?>{'status': 0}), 200);
+      },
+    );
+    final repository = OffBackedCalorieProductLookupRepository(
+      cacheRepository: cache,
+      httpClient: httpClient,
+      now: () => DateTime(2026, 2, 25, 10),
+    );
+    final profile = _profile(
+      barcode: '4006381333931',
+      name: 'Global Milk',
+      source: CalorieProductSource.offBarcode,
+      imageUrl: '//images.openfoodfacts.org/image.jpg',
+    );
+
+    final success = await repository.persistGlobalProduct(profile);
+
+    expect(success, isTrue);
+    expect(cache.global.containsKey('4006381333931'), isTrue);
+    expect(cache.overrides.containsKey('4006381333931'), isFalse);
   });
 }

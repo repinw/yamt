@@ -647,6 +647,72 @@ abstract class AppLocalizations {
   /// **'Action failed. Please try again.'**
   String get inventoryItemActionFailed;
 
+  /// No description provided for @inventoryBarcodeStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode lookup pending'**
+  String get inventoryBarcodeStatusPending;
+
+  /// No description provided for @inventoryBarcodeStatusMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode missing'**
+  String get inventoryBarcodeStatusMissing;
+
+  /// No description provided for @inventoryBarcodeMissingPromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode missing'**
+  String get inventoryBarcodeMissingPromptTitle;
+
+  /// No description provided for @inventoryBarcodeMissingPromptMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan now to log calories immediately, or continue and let AI backfill it.'**
+  String get inventoryBarcodeMissingPromptMessage;
+
+  /// No description provided for @inventoryBarcodeMissingPromptScanNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan barcode now'**
+  String get inventoryBarcodeMissingPromptScanNow;
+
+  /// No description provided for @inventoryBarcodeMissingPromptLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get inventoryBarcodeMissingPromptLater;
+
+  /// No description provided for @inventoryBarcodeLookupQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode search finished. The result is saved on the inventory item.'**
+  String get inventoryBarcodeLookupQueued;
+
+  /// No description provided for @inventoryBarcodeRetryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Search barcode'**
+  String get inventoryBarcodeRetryAction;
+
+  /// No description provided for @inventoryBarcodeScanUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode scanning is currently supported on Android and iOS.'**
+  String get inventoryBarcodeScanUnsupported;
+
+  /// No description provided for @inventoryBarcodePortionDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter consumed amount'**
+  String get inventoryBarcodePortionDialogTitle;
+
+  /// No description provided for @inventoryBarcodePortionDialogConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get inventoryBarcodePortionDialogConfirmAction;
+
   /// No description provided for @inventoryEmptyState.
   ///
   /// In en, this message translates to:

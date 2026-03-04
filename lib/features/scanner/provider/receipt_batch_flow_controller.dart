@@ -12,6 +12,8 @@ part 'receipt_batch_flow_controller.g.dart';
 
 @riverpod
 class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
+  Future<void>? _activeBatchRun;
+
   @override
   ReceiptBatchFlowState build() {
     return const ReceiptBatchFlowState();
@@ -56,6 +58,24 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
   }
 
   Future<void> runFileBatch() async {
+    final inFlight = _activeBatchRun;
+    if (inFlight != null) {
+      await inFlight;
+      return;
+    }
+
+    final operation = _runFileBatchInternal();
+    _activeBatchRun = operation;
+    try {
+      await operation;
+    } finally {
+      if (identical(_activeBatchRun, operation)) {
+        _activeBatchRun = null;
+      }
+    }
+  }
+
+  Future<void> _runFileBatchInternal() async {
     state = const ReceiptBatchFlowState(status: ReceiptBatchFlowStatus.running);
 
     final inputRepository = ref.read(receiptInputRepositoryProvider);

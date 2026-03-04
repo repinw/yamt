@@ -34,7 +34,7 @@ final class FridgeItemsControllerProvider
 }
 
 String _$fridgeItemsControllerHash() =>
-    r'f7fdc73b0235f1edba26dee7551dd0f8ad9c548b';
+    r'bf9d7b71076462dae5731913edf7847f4c4d683d';
 
 abstract class _$FridgeItemsController
     extends $AsyncNotifier<List<FridgeItem>> {

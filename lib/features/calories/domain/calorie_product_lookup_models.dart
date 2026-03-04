@@ -31,6 +31,7 @@ class CalorieProductProfile {
     required this.updatedAt,
     this.brand,
     this.offProductId,
+    this.imageUrl,
   });
 
   final String barcode;
@@ -46,6 +47,7 @@ class CalorieProductProfile {
   final double per100Fat;
   final CalorieProductSource source;
   final String? offProductId;
+  final String? imageUrl;
   @FlexibleDateTimeConverter()
   final DateTime createdAt;
   @FlexibleDateTimeConverter()
@@ -67,6 +69,7 @@ class CalorieProductProfile {
     double? per100Fat,
     CalorieProductSource? source,
     String? offProductId,
+    String? imageUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -80,6 +83,7 @@ class CalorieProductProfile {
       per100Fat: per100Fat ?? this.per100Fat,
       source: source ?? this.source,
       offProductId: offProductId ?? this.offProductId,
+      imageUrl: imageUrl ?? this.imageUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -90,6 +94,7 @@ class CalorieProductProfile {
     required String barcode,
     required CalorieProductSource source,
     required String? offProductId,
+    required String? imageUrl,
     required DateTime now,
   }) {
     return CalorieProductProfile(
@@ -102,6 +107,7 @@ class CalorieProductProfile {
       per100Fat: entry.per100Fat,
       source: source,
       offProductId: offProductId,
+      imageUrl: imageUrl,
       createdAt: now,
       updatedAt: now,
     );

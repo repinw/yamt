@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
+import 'package:yamt/features/calories/data/'
+    'calorie_barcode_backfill_repository.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_barcode_backfill_repository_contract.dart';
 import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
@@ -16,12 +20,33 @@ part 'receipt_capture_flow_controller.g.dart';
 
 @riverpod
 class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
+  Future<ReceiptCaptureFlowResult>? _activeRun;
+
   @override
   FutureOr<ReceiptCaptureFlowResult?> build() {
     return null;
   }
 
   Future<ReceiptCaptureFlowResult> run({
+    required ReceiptInputSource source,
+  }) async {
+    final inFlight = _activeRun;
+    if (inFlight != null) {
+      return inFlight;
+    }
+
+    final operation = _runInternal(source: source);
+    _activeRun = operation;
+    try {
+      return await operation;
+    } finally {
+      if (identical(_activeRun, operation)) {
+        _activeRun = null;
+      }
+    }
+  }
+
+  Future<ReceiptCaptureFlowResult> _runInternal({
     required ReceiptInputSource source,
   }) async {
     if (!_isSourceSupported(source)) {
@@ -166,6 +191,9 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
       final itemRepository = ref.read(fridgeItemRepositoryProvider);
       final storableItems = _storableItems(reviewedItems);
       final saved = await itemRepository.appendAll(storableItems);
+      if (saved) {
+        unawaited(_enqueueBatchBarcodeLookup(storableItems));
+      }
       return saved;
     } catch (error, stackTrace) {
       log(
@@ -182,5 +210,40 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     return items
         .where((item) => item.canBeSavedToFridge)
         .toList(growable: false);
+  }
+
+  Future<void> _enqueueBatchBarcodeLookup(List<FridgeItem> items) async {
+    final pendingItems = items
+        .where((item) => item.normalizedBarcode == null)
+        .map(
+          (item) => BarcodeLookupBatchItem(
+            itemId: item.id,
+            fingerprint: item.resolvedFoodFingerprint,
+            itemName: item.name,
+            brand: item.brand,
+            storeName: item.storeName,
+            weight: item.weight,
+          ),
+        )
+        .toList(growable: false);
+    if (pendingItems.isEmpty) {
+      return;
+    }
+
+    final backfillRepository = ref.read(
+      calorieBarcodeBackfillRepositoryProvider,
+    );
+    final queued = await backfillRepository.enqueueBatchLookup(
+      items: pendingItems,
+      trigger: 'receipt_upload',
+    );
+    if (queued) {
+      return;
+    }
+    log(
+      'Receipt barcode batch lookup request failed.',
+      name: 'ReceiptCaptureFlowController',
+      error: StateError('batch_lookup_enqueue_failed'),
+    );
   }
 }

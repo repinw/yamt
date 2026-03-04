@@ -750,4 +750,49 @@ void main() {
       );
     },
   );
+
+  test('markBarcodeLookupRequested sets pending timestamp', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[_item('a')],
+    );
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+
+    await container.read(fridgeItemsControllerProvider.future);
+    final updated = await container
+        .read(fridgeItemsControllerProvider.notifier)
+        .markBarcodeLookupRequested('a');
+
+    expect(updated, isTrue);
+    expect(repository.savedItems, hasLength(1));
+    expect(repository.savedItems.single.barcodeLookupRequestedAt, isNotNull);
+  });
+
+  test('setItemBarcode stores barcode and resolved timestamp', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[_item('a')],
+    );
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [fridgeItemRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+
+    await container.read(fridgeItemsControllerProvider.future);
+    final updated = await container
+        .read(fridgeItemsControllerProvider.notifier)
+        .setItemBarcode(itemId: 'a', barcode: '4006381333931');
+
+    expect(updated, isTrue);
+    expect(repository.savedItems, hasLength(1));
+    expect(repository.savedItems.single.barcode, '4006381333931');
+    expect(repository.savedItems.single.barcodeResolvedAt, isNotNull);
+  });
 }

@@ -1,7 +1,10 @@
 import 'dart:developer' as developer;
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_calorie_bridge_flow.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
@@ -24,7 +27,13 @@ class InventoryPage extends ConsumerWidget {
       data: (items) => InventoryList(
         items: items,
         onDeleteItem: controller.deleteItem,
-        onEatItem: controller.eatItem,
+        onEatItem: (itemId, amount) => _eatItemWithCalorieBridge(
+          context: context,
+          ref: ref,
+          itemId: itemId,
+          amount: amount,
+          itemsSnapshot: items,
+        ),
         onThrowAwayItem: controller.throwAwayItem,
       ),
       loading: () => const _InventoryLoadingView(),
@@ -58,6 +67,39 @@ class InventoryPage extends ConsumerWidget {
       error: nextError.error,
       stackTrace: nextError.stackTrace,
     );
+  }
+
+  Future<bool> _eatItemWithCalorieBridge({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String itemId,
+    required int amount,
+    required List<FridgeItem> itemsSnapshot,
+  }) async {
+    FridgeItem? selectedItem;
+    for (final item in itemsSnapshot) {
+      if (item.id == itemId) {
+        selectedItem = item;
+        break;
+      }
+    }
+
+    final saved = await ref
+        .read(fridgeItemsControllerProvider.notifier)
+        .eatItem(itemId, amount);
+    if (!saved || selectedItem == null || !context.mounted) {
+      return saved;
+    }
+
+    unawaited(
+      InventoryCalorieBridgeFlow.onEatCompleted(
+        context: context,
+        ref: ref,
+        itemBeforeMutation: selectedItem,
+        consumedAmount: amount,
+      ),
+    );
+    return true;
   }
 }
 

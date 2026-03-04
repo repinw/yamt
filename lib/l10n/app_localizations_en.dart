@@ -287,6 +287,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemActionFailed => 'Action failed. Please try again.';
 
   @override
+  String get inventoryBarcodeStatusPending => 'Barcode lookup pending';
+
+  @override
+  String get inventoryBarcodeStatusMissing => 'Barcode missing';
+
+  @override
+  String get inventoryBarcodeMissingPromptTitle => 'Barcode missing';
+
+  @override
+  String get inventoryBarcodeMissingPromptMessage => 'Scan now to log calories immediately, or continue and let AI backfill it.';
+
+  @override
+  String get inventoryBarcodeMissingPromptScanNow => 'Scan barcode now';
+
+  @override
+  String get inventoryBarcodeMissingPromptLater => 'Later';
+
+  @override
+  String get inventoryBarcodeLookupQueued => 'Barcode search finished. The result is saved on the inventory item.';
+
+  @override
+  String get inventoryBarcodeRetryAction => 'Search barcode';
+
+  @override
+  String get inventoryBarcodeScanUnsupported => 'Barcode scanning is currently supported on Android and iOS.';
+
+  @override
+  String get inventoryBarcodePortionDialogTitle => 'Enter consumed amount';
+
+  @override
+  String get inventoryBarcodePortionDialogConfirmAction => 'Continue';
+
+  @override
   String get inventoryEmptyState => 'No items in your fridge yet. Scan a receipt to get started.';
 
   @override

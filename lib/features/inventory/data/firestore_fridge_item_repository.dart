@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'dart:developer' show log;
 
+import 'package:yamt/features/inventory/domain/food_fingerprint.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 
 import 'fridge_item_repository_contract.dart';
@@ -61,8 +61,11 @@ class FirestoreFridgeItemRepository implements FridgeItemRepository {
       return Future<bool>.value(true);
     }
 
+    final normalizedItems = items
+        .map(_normalizeItemForPersistence)
+        .toList(growable: false);
     final documentsById = <String, Map<String, dynamic>>{
-      for (final item in items) item.id: item.toJson(),
+      for (final item in normalizedItems) item.id: item.toJson(),
     };
     return _store.upsertAll(userId: userId, documentsById: documentsById);
   }
@@ -117,7 +120,7 @@ class FirestoreFridgeItemRepository implements FridgeItemRepository {
     for (var index = 0; index < documents.length; index++) {
       final json = _normalizeDocumentJson(documents[index]);
       try {
-        items.add(FridgeItem.fromJson(json));
+        items.add(_normalizeLoadedItem(FridgeItem.fromJson(json)));
       } catch (error, stackTrace) {
         log(
           'Skipping corrupted firestore fridge item at index $index',
@@ -142,10 +145,40 @@ class FirestoreFridgeItemRepository implements FridgeItemRepository {
   }
 
   Future<bool> _replaceAllForUser(String userId, List<FridgeItem> items) {
+    final normalizedItems = items
+        .map(_normalizeItemForPersistence)
+        .toList(growable: false);
     final documentsById = <String, Map<String, dynamic>>{
-      for (final item in items) item.id: item.toJson(),
+      for (final item in normalizedItems) item.id: item.toJson(),
     };
     return _store.replaceAll(userId: userId, documentsById: documentsById);
+  }
+
+  FridgeItem _normalizeLoadedItem(FridgeItem item) {
+    final fingerprint = item.foodFingerprint?.trim();
+    if (fingerprint != null && fingerprint.isNotEmpty) {
+      return item;
+    }
+    return item.copyWith(
+      foodFingerprint: computeFoodFingerprint(
+        name: item.name,
+        brand: item.brand,
+      ),
+    );
+  }
+
+  FridgeItem _normalizeItemForPersistence(FridgeItem item) {
+    final barcode = item.normalizedBarcode;
+    final fingerprint = item.foodFingerprint?.trim();
+    return item.copyWith(
+      barcode: barcode,
+      foodFingerprint: (fingerprint == null || fingerprint.isEmpty)
+          ? computeFoodFingerprint(name: item.name, brand: item.brand)
+          : fingerprint,
+      barcodeResolvedAt: barcode == null
+          ? null
+          : (item.barcodeResolvedAt ?? DateTime.now()),
+    );
   }
 
   Future<T> _runExclusiveWrite<T>(Future<T> Function() operation) {

@@ -6,6 +6,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
     function isOptionalString(data, key) {
       return !(key in data) || data[key] == null || data[key] is string;
     }
@@ -48,29 +52,38 @@ service cloud.firestore {
 
     match /calorie_product_catalog/{barcode} {
       allow read: if isSignedIn();
-      allow create, update: if isSignedIn()
-        && request.resource.data.keys().hasOnly([
-          'barcode',
-          'name',
-          'brand',
-          'per100_kcal',
-          'per100_protein',
-          'per100_carbs',
-          'per100_fat',
-          'source',
-          'off_product_id',
-          'created_at',
-          'updated_at',
-        ])
-        && request.resource.data.barcode == barcode
-        && isValidCalorieProductCore(request.resource.data);
-      allow delete: if false;
+      allow create, update, delete: if false;
+    }
+
+    match /food_fingerprint_catalog/{fingerprint} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if false;
+    }
+
+    match /barcode_enrichment_jobs/{fingerprint} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if false;
+    }
+
+    match /users/{uid}/inventory_items/{itemId} {
+      allow read, create, update, delete: if isOwner(uid);
+    }
+
+    match /users/{uid}/shopping_list_items/{itemId} {
+      allow read, create, update, delete: if isOwner(uid);
+    }
+
+    match /users/{uid}/calorie_entries/{entryId} {
+      allow read, create, update, delete: if isOwner(uid);
+    }
+
+    match /users/{uid}/calorie_settings/{settingsId} {
+      allow read, create, update, delete: if isOwner(uid);
     }
 
     match /users/{uid}/calorie_product_overrides/{barcode} {
-      allow read: if isSignedIn() && request.auth.uid == uid;
-      allow create, update: if isSignedIn()
-        && request.auth.uid == uid
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid)
         && request.resource.data.keys().hasOnly([
           'barcode',
           'name',
@@ -91,7 +104,40 @@ service cloud.firestore {
         && request.resource.data.reason is string
         && request.resource.data.source == 'user_override'
         && isValidCalorieProductCore(request.resource.data);
-      allow delete: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if isOwner(uid);
+    }
+
+    match /users/{uid}/barcode_enrichment_requests/{fingerprint} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly([
+          'user_id',
+          'fingerprint',
+          'item_name',
+          'brand',
+          'trigger',
+          'status',
+          'requested_at',
+          'updated_at',
+          'priority',
+          'provided_barcode',
+          'force_retry',
+        ])
+        && request.resource.data.user_id == uid
+        && request.resource.data.fingerprint == fingerprint
+        && request.resource.data.item_name is string
+        && isOptionalString(request.resource.data, 'brand')
+        && request.resource.data.trigger is string
+        && request.resource.data.status is string
+        && request.resource.data.requested_at is timestamp
+        && request.resource.data.updated_at is timestamp
+        && (!( 'priority' in request.resource.data) ||
+            request.resource.data.priority is string)
+        && (!( 'provided_barcode' in request.resource.data) ||
+            request.resource.data.provided_barcode is string)
+        && (!( 'force_retry' in request.resource.data) ||
+            request.resource.data.force_retry is bool);
+      allow delete: if false;
     }
 
     // TODO: Replace this generic owner-based rule once all collection

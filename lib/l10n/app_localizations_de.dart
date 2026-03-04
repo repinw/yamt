@@ -287,6 +287,39 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemActionFailed => 'Aktion fehlgeschlagen. Bitte erneut versuchen.';
 
   @override
+  String get inventoryBarcodeStatusPending => 'Barcode-Abgleich läuft';
+
+  @override
+  String get inventoryBarcodeStatusMissing => 'Barcode fehlt';
+
+  @override
+  String get inventoryBarcodeMissingPromptTitle => 'Barcode fehlt';
+
+  @override
+  String get inventoryBarcodeMissingPromptMessage => 'Jetzt scannen für sofortiges Kalorien-Logging oder später per KI ergänzen lassen.';
+
+  @override
+  String get inventoryBarcodeMissingPromptScanNow => 'Jetzt Barcode scannen';
+
+  @override
+  String get inventoryBarcodeMissingPromptLater => 'Später';
+
+  @override
+  String get inventoryBarcodeLookupQueued => 'Barcode-Suche wurde ausgeführt. Ergebnis steht direkt im Inventar-Item.';
+
+  @override
+  String get inventoryBarcodeRetryAction => 'Barcode suchen';
+
+  @override
+  String get inventoryBarcodeScanUnsupported => 'Barcode-Scan wird aktuell auf Android und iOS unterstützt.';
+
+  @override
+  String get inventoryBarcodePortionDialogTitle => 'Verzehrte Menge eingeben';
+
+  @override
+  String get inventoryBarcodePortionDialogConfirmAction => 'Weiter';
+
+  @override
   String get inventoryEmptyState => 'Noch keine Vorratsartikel vorhanden. Scanne einen Beleg, um zu starten.';
 
   @override

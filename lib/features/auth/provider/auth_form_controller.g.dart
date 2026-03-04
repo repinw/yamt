@@ -34,7 +34,7 @@ final class AuthFormControllerProvider
 }
 
 String _$authFormControllerHash() =>
-    r'040a1e62855e8d5d21d965286bec4b4980050522';
+    r'914e87fc88695b251717d7c12c77bd7dc26bdbfb';
 
 abstract class _$AuthFormController extends $AsyncNotifier<void> {
   FutureOr<void> build();

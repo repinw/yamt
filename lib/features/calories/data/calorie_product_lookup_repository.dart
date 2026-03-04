@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:developer' show log;
 
@@ -21,6 +22,13 @@ const _offBaseUrl = 'world.openfoodfacts.org';
 const _lookupErrorInvalidBarcode = 'invalid_barcode';
 const _lookupErrorRequestFailed = 'off_request_failed';
 const _offLookupTimeout = Duration(seconds: 10);
+const _offUserAgent = 'YAMT/1.0 (repin@mailbox.org)';
+const _offSearchMinInterval = Duration(milliseconds: 6100);
+const _offProductMinInterval = Duration(milliseconds: 700);
+const _offRequestHeaders = <String, String>{
+  'User-Agent': _offUserAgent,
+  'Accept': 'application/json',
+};
 
 @riverpod
 http.Client calorieLookupHttpClient(Ref ref) {
@@ -45,12 +53,23 @@ class OffBackedCalorieProductLookupRepository
   }) : _cacheRepository = cacheRepository,
        _httpClient = httpClient,
        _requestTimeout = requestTimeout,
-       _now = now ?? DateTime.now;
+       _now = now ?? DateTime.now {
+    _offSearchLimiter = _OffRateLimiter(
+      minInterval: _offSearchMinInterval,
+      now: _now,
+    );
+    _offProductLimiter = _OffRateLimiter(
+      minInterval: _offProductMinInterval,
+      now: _now,
+    );
+  }
 
   final CalorieProductCacheRepositoryContract _cacheRepository;
   final http.Client _httpClient;
   final Duration _requestTimeout;
   final DateTime Function() _now;
+  late final _OffRateLimiter _offSearchLimiter;
+  late final _OffRateLimiter _offProductLimiter;
 
   @override
   Future<CalorieLookupOutcome> lookupByBarcode(String rawBarcode) async {
@@ -61,40 +80,55 @@ class OffBackedCalorieProductLookupRepository
       );
     }
 
+    CalorieProductProfile? cachedFallback;
     final override = await _cacheRepository.readUserOverride(barcode);
     if (override != null) {
-      return CalorieLookupOutcome.foundSingle(
-        override.copyWith(source: CalorieProductSource.userOverride),
+      final normalizedOverride = _normalizeCachedProfile(
+        override,
+        source: CalorieProductSource.userOverride,
       );
+      cachedFallback = normalizedOverride;
+      if (_hasUsableImageUrl(normalizedOverride.imageUrl)) {
+        return CalorieLookupOutcome.foundSingle(normalizedOverride);
+      }
     }
 
     final global = await _cacheRepository.readGlobalProduct(barcode);
     if (global != null) {
-      return CalorieLookupOutcome.foundSingle(
-        global.copyWith(source: CalorieProductSource.globalCatalog),
+      final normalizedGlobal = _normalizeCachedProfile(
+        global,
+        source: CalorieProductSource.globalCatalog,
       );
+      cachedFallback ??= normalizedGlobal;
+      if (_hasUsableImageUrl(normalizedGlobal.imageUrl)) {
+        return CalorieLookupOutcome.foundSingle(normalizedGlobal);
+      }
     }
 
     try {
       final exactMatch = await _fetchByBarcode(barcode);
       if (exactMatch != null) {
-        await persistGlobalProduct(exactMatch);
         return CalorieLookupOutcome.foundSingle(exactMatch);
       }
 
       final candidates = await _searchCandidates(barcode);
       if (candidates.isEmpty) {
+        if (cachedFallback != null) {
+          return CalorieLookupOutcome.foundSingle(cachedFallback);
+        }
         return const CalorieLookupOutcome.notFound();
       }
 
       if (candidates.length == 1) {
         final profile = candidates.single.profile;
-        await persistGlobalProduct(profile);
         return CalorieLookupOutcome.foundSingle(profile);
       }
 
       return CalorieLookupOutcome.foundMultiple(candidates);
     } catch (error, stackTrace) {
+      if (cachedFallback != null) {
+        return CalorieLookupOutcome.foundSingle(cachedFallback);
+      }
       final isTimeout = error is TimeoutException;
       final message = isTimeout
           ? 'OFF lookup timed out for barcode $barcode.'
@@ -108,20 +142,27 @@ class OffBackedCalorieProductLookupRepository
 
   @override
   Future<bool> persistGlobalProduct(CalorieProductProfile profile) {
-    return _cacheRepository.saveGlobalProduct(
-      profile.copyWith(updatedAt: _now()),
+    final globalProfile = profile.copyWith(
+      source: CalorieProductSource.globalCatalog,
+      updatedAt: _now(),
     );
+    return _cacheRepository.saveGlobalProduct(globalProfile);
   }
 
   Future<CalorieProductProfile?> _fetchByBarcode(String barcode) async {
+    await _waitForOffRateLimit(_OffEndpoint.product);
     final uri = Uri.https(
       _offBaseUrl,
       '/api/v2/product/$barcode.json',
       const <String, String>{
-        'fields': '_id,code,product_name,brands,nutriments,status',
+        'fields':
+            '_id,code,product_name,brands,nutriments,status,'
+            'image_front_small_url,image_front_url,image_url,selected_images',
       },
     );
-    final response = await _httpClient.get(uri).timeout(_requestTimeout);
+    final response = await _httpClient
+        .get(uri, headers: _offRequestHeaders)
+        .timeout(_requestTimeout);
     if (response.statusCode != 200) {
       return null;
     }
@@ -151,15 +192,20 @@ class OffBackedCalorieProductLookupRepository
   Future<List<CalorieProductCandidate>> _searchCandidates(
     String barcode,
   ) async {
+    await _waitForOffRateLimit(_OffEndpoint.search);
     final uri = Uri.https(_offBaseUrl, '/cgi/search.pl', <String, String>{
       'search_terms': barcode,
       'search_simple': '1',
       'action': 'process',
       'json': '1',
       'page_size': '20',
-      'fields': '_id,code,product_name,brands,nutriments',
+      'fields':
+          '_id,code,product_name,brands,nutriments,'
+          'image_front_small_url,image_front_url,image_url,selected_images',
     });
-    final response = await _httpClient.get(uri).timeout(_requestTimeout);
+    final response = await _httpClient
+        .get(uri, headers: _offRequestHeaders)
+        .timeout(_requestTimeout);
     if (response.statusCode != 200) {
       return const <CalorieProductCandidate>[];
     }
@@ -208,6 +254,7 @@ class OffBackedCalorieProductLookupRepository
     final name = _readString(product['product_name'])?.trim() ?? '';
     final brand = _readString(product['brands'])?.trim();
     final offProductId = _readString(product['_id']);
+    final imageUrl = _resolveImageUrl(product);
 
     final nutriments = product['nutriments'] is Map<String, dynamic>
         ? product['nutriments'] as Map<String, dynamic>
@@ -241,15 +288,86 @@ class OffBackedCalorieProductLookupRepository
       per100Fat: per100Fat,
       source: source,
       offProductId: offProductId,
+      imageUrl: imageUrl,
       createdAt: now,
       updatedAt: now,
     );
   }
 
+  String? _resolveImageUrl(Map<String, dynamic> product) {
+    final direct =
+        _readString(product['image_front_small_url']) ??
+        _readString(product['image_front_url']) ??
+        _readString(product['image_url']);
+    final normalizedDirect = _normalizeOffImageUrl(direct);
+    if (normalizedDirect != null) {
+      return normalizedDirect;
+    }
+
+    final selectedImages = product['selected_images'];
+    if (selectedImages is! Map<String, dynamic>) {
+      return null;
+    }
+
+    final front = selectedImages['front'];
+    if (front is! Map<String, dynamic>) {
+      return null;
+    }
+
+    final display = front['display'];
+    if (display is! Map<String, dynamic>) {
+      return null;
+    }
+
+    final values = display.values.whereType<String>();
+    for (final value in values) {
+      final normalized = _normalizeOffImageUrl(value);
+      if (normalized != null) {
+        return normalized;
+      }
+    }
+    return null;
+  }
+
+  bool _hasUsableImageUrl(String? value) {
+    return _normalizeOffImageUrl(value) != null;
+  }
+
+  String? _normalizeOffImageUrl(String? value) {
+    final raw = _readString(value)?.trim();
+    if (raw == null || raw.isEmpty) {
+      return null;
+    }
+    if (raw.startsWith('https://') || raw.startsWith('http://')) {
+      return raw;
+    }
+    if (raw.startsWith('//')) {
+      return 'https:$raw';
+    }
+    if (raw.startsWith('/')) {
+      return 'https://$_offBaseUrl$raw';
+    }
+    return null;
+  }
+
+  CalorieProductProfile _normalizeCachedProfile(
+    CalorieProductProfile profile, {
+    required CalorieProductSource source,
+  }) {
+    return profile.copyWith(
+      source: source,
+      imageUrl: _normalizeOffImageUrl(profile.imageUrl),
+    );
+  }
+
   Map<String, dynamic>? _decodeJsonObject(String body) {
-    final decoded = jsonDecode(body);
-    if (decoded is Map<String, dynamic>) {
-      return decoded;
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) {
+        return decoded;
+      }
+    } on FormatException {
+      return null;
     }
     return null;
   }
@@ -269,5 +387,68 @@ class OffBackedCalorieProductLookupRepository
       return double.tryParse(value.replaceAll(',', '.').trim()) ?? 0;
     }
     return 0;
+  }
+
+  Future<void> _waitForOffRateLimit(_OffEndpoint endpoint) {
+    if (endpoint == _OffEndpoint.search) {
+      return _offSearchLimiter.acquire();
+    }
+    return _offProductLimiter.acquire();
+  }
+}
+
+enum _OffEndpoint { search, product }
+
+class _OffRateLimiter {
+  _OffRateLimiter({
+    required Duration minInterval,
+    required DateTime Function() now,
+  }) : _minInterval = minInterval,
+       _now = now;
+
+  final Duration _minInterval;
+  final DateTime Function() _now;
+  final Queue<Completer<void>> _queue = Queue<Completer<void>>();
+  DateTime _nextAllowedAt = DateTime.fromMillisecondsSinceEpoch(0);
+  bool _isDraining = false;
+
+  Future<void> acquire() {
+    final completer = Completer<void>();
+    _queue.addLast(completer);
+    _ensureDraining();
+    return completer.future;
+  }
+
+  void _ensureDraining() {
+    if (_isDraining) {
+      return;
+    }
+    _isDraining = true;
+    unawaited(_drainQueue());
+  }
+
+  Future<void> _drainQueue() async {
+    while (_queue.isNotEmpty) {
+      final completer = _queue.removeFirst();
+      try {
+        final now = _now();
+        if (_nextAllowedAt.isAfter(now)) {
+          await Future<void>.delayed(_nextAllowedAt.difference(now));
+        }
+        _nextAllowedAt = _now().add(_minInterval);
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
+      } catch (error, stackTrace) {
+        if (!completer.isCompleted) {
+          completer.completeError(error, stackTrace);
+        }
+      }
+    }
+
+    _isDraining = false;
+    if (_queue.isNotEmpty) {
+      _ensureDraining();
+    }
   }
 }

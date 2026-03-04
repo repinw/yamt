@@ -9,6 +9,8 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
+import 'package:yamt/features/calories/presentation/models/'
+    'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -19,11 +21,13 @@ class CalorieEntryEditorPage extends ConsumerStatefulWidget {
     this.entryId,
     this.prefilledProfile,
     this.scannedSourceRef,
+    this.inventoryContext,
   });
 
   final String? entryId;
   final CalorieProductProfile? prefilledProfile;
   final CalorieScannedSourceRef? scannedSourceRef;
+  final CalorieInventoryCreateContext? inventoryContext;
 
   @override
   ConsumerState<CalorieEntryEditorPage> createState() {
@@ -65,7 +69,14 @@ class _CalorieEntryEditorPageState
     final oldBarcode = oldWidget.prefilledProfile?.barcode;
     final nextBarcode = widget.prefilledProfile?.barcode;
     final didPrefillChange = oldBarcode != nextBarcode;
-    if (!didEntryIdChange && !didPrefillChange) {
+    final didInventoryContextChange =
+        oldWidget.inventoryContext?.inventoryItemId !=
+            widget.inventoryContext?.inventoryItemId ||
+        oldWidget.inventoryContext?.consumedAmount !=
+            widget.inventoryContext?.consumedAmount ||
+        oldWidget.inventoryContext?.consumedUnit !=
+            widget.inventoryContext?.consumedUnit;
+    if (!didEntryIdChange && !didPrefillChange && !didInventoryContextChange) {
       return;
     }
     _entrySubscription?.close();
@@ -178,22 +189,27 @@ class _CalorieEntryEditorPageState
     }
 
     final prefill = widget.prefilledProfile;
+    final inventoryContext = widget.inventoryContext;
     final prefillKey = prefill == null
         ? '__new_entry__'
-        : '__new_entry__${prefill.barcode}_${prefill.source.jsonValue}';
+        : '__new_entry__${prefill.barcode}_${prefill.source.jsonValue}_'
+              '${inventoryContext?.inventoryItemId ?? ''}'
+              '${inventoryContext?.consumedAmount ?? 100}'
+              '${inventoryContext?.consumedUnit.jsonValue ?? 'g'}';
     if (_initializedEntryId == prefillKey) {
       return false;
     }
 
     _nameController.text = prefill?.name ?? '';
     _brandController.text = prefill?.brand ?? '';
-    _amountController.text = _formatDouble(100);
+    final consumedAmount = inventoryContext?.consumedAmount ?? 100;
+    _amountController.text = _formatDouble(consumedAmount);
     _per100KcalController.text = _formatDouble(prefill?.per100Kcal ?? 0);
     _per100ProteinController.text = _formatDouble(prefill?.per100Protein ?? 0);
     _per100CarbsController.text = _formatDouble(prefill?.per100Carbs ?? 0);
     _per100FatController.text = _formatDouble(prefill?.per100Fat ?? 0);
     _mealType = MealType.defaultForDateTime(DateTime.now());
-    _consumedUnit = ConsumedUnit.grams;
+    _consumedUnit = inventoryContext?.consumedUnit ?? ConsumedUnit.grams;
     _loggedAt = DateTime.now();
     _initializedEntryId = prefillKey;
     return true;

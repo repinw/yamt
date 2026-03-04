@@ -27,6 +27,9 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   Object? saveError;
   Completer<void>? saveBlocker;
   var saveStarted = false;
+  Duration initialEmissionDelay = Duration.zero;
+
+  List<CalorieEntry> get entries => List<CalorieEntry>.unmodifiable(_entries);
 
   @override
   Stream<List<CalorieEntry>> watchEntriesForDay(DateTime day) {
@@ -39,13 +42,25 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
     final key = _dayKey(normalizedDay);
 
     return Stream<List<CalorieEntry>>.multi((controller) {
-      controller.add(_entriesForDay(normalizedDay));
+      Timer? initialEmissionTimer;
+      void emitInitial() {
+        if (!controller.isClosed) {
+          controller.add(_entriesForDay(normalizedDay));
+        }
+      }
+
+      if (initialEmissionDelay == Duration.zero) {
+        emitInitial();
+      } else {
+        initialEmissionTimer = Timer(initialEmissionDelay, emitInitial);
+      }
       final streamSubscription = _controllerFor(key).stream.listen(
         controller.add,
         onError: controller.addError,
         onDone: controller.close,
       );
       controller.onCancel = () {
+        initialEmissionTimer?.cancel();
         unawaited(streamSubscription.cancel());
       };
     });
@@ -498,6 +513,47 @@ void main() {
 
       expect(saved, isTrue);
       expect(mutationCompleted, isTrue);
+    },
+  );
+
+  test(
+    'saveEntry completes without listener before initial stream emission',
+    () async {
+      final repository = _FakeCalorieLogRepository();
+      repository.initialEmissionDelay = const Duration(seconds: 2);
+      final settingsRepository = _FakeCalorieSettingsRepository();
+      addTearDown(repository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(repository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final saved = await container
+          .read(calorieEntriesControllerProvider.notifier)
+          .saveEntry(
+            _entry(
+              'new',
+              loggedAt: DateTime(2026, 2, 25, 10),
+              mealType: MealType.lunch,
+            ),
+          )
+          .timeout(
+            const Duration(milliseconds: 300),
+            onTimeout: () {
+              fail('saveEntry timed out without active listeners.');
+            },
+          );
+
+      expect(saved, isTrue);
+      expect(repository.entries, hasLength(1));
+      expect(repository.entries.single.id, 'new');
     },
   );
 

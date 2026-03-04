@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/calories/data/calorie_barcode_backfill_repository.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -69,9 +71,14 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     final isAlreadyInShoppingList = ref.watch(
       isInventoryItemInActiveShoppingListProvider(widget.item),
     );
+    final featureFlags = ref.watch(barcodeBackfillFeatureFlagsProvider);
+    final canRetryBarcodeLookup =
+        widget.item.barcodeStatus != InventoryBarcodeStatus.resolved &&
+        !_isWorking;
     final layoutData = _buildLayoutData(
       context,
       isAlreadyInShoppingList: isAlreadyInShoppingList,
+      showBarcodeMarkers: featureFlags.showInventoryBarcodeMarkers,
     );
     final onPrimaryActionPressed = _buildPrimaryActionPressed(layoutData);
 
@@ -85,6 +92,10 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       onPrimaryActionPressed: onPrimaryActionPressed,
       onThrowAwayPressed: layoutData.isAdjustActionEnabled
           ? _onThrowAwayPressed
+          : null,
+      retryBarcodeLabel: widget.l10n.inventoryBarcodeRetryAction,
+      onRetryBarcodePressed: canRetryBarcodeLookup
+          ? _onRetryBarcodePressed
           : null,
     );
   }
@@ -104,6 +115,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   _InventoryItemRowLayoutData _buildLayoutData(
     BuildContext context, {
     required bool isAlreadyInShoppingList,
+    required bool showBarcodeMarkers,
   }) {
     final item = widget.item;
     final hasAdjustableAmount = _buildInputConfig(item) != null;
@@ -115,6 +127,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       hasAdjustableAmount: hasAdjustableAmount,
       isWorking: _isWorking,
       isAlreadyInShoppingList: isAlreadyInShoppingList,
+      showBarcodeMarkers: showBarcodeMarkers,
     );
   }
 
@@ -166,6 +179,25 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
         successMessage: widget.l10n.inventoryItemBuyAgainSucceeded,
         failureMessage: widget.l10n.inventoryItemActionFailed,
       ),
+    );
+  }
+
+  void _onRetryBarcodePressed() {
+    final item = widget.item;
+    final backfillRepository = ref.read(
+      calorieBarcodeBackfillRepositoryProvider,
+    );
+    unawaited(
+      _actionCoordinator.runAction(() async {
+        final queued = await backfillRepository.enqueueFingerprintLookup(
+          itemId: item.id,
+          fingerprint: item.resolvedFoodFingerprint,
+          itemName: item.name,
+          brand: item.brand,
+          trigger: 'manual_search',
+        );
+        return queued;
+      }, successMessage: widget.l10n.inventoryBarcodeLookupQueued),
     );
   }
 
@@ -264,6 +296,7 @@ class _InventoryItemRowLayoutData {
     required bool hasAdjustableAmount,
     required bool isWorking,
     required bool isAlreadyInShoppingList,
+    required bool showBarcodeMarkers,
   }) {
     final colors = Theme.of(context).colorScheme;
     final isBuyAgainPrimaryAction = item.isFullyConsumed;
@@ -280,6 +313,14 @@ class _InventoryItemRowLayoutData {
             ? !isAlreadyInShoppingList
             : isAdjustActionEnabled);
 
+    final marker = showBarcodeMarkers
+        ? _barcodeStatusMarker(
+            l10n: l10n,
+            colorScheme: colors,
+            status: item.barcodeStatus,
+          )
+        : null;
+
     return _InventoryItemRowLayoutData(
       colorScheme: colors,
       snapshot: InventoryItemRowSnapshot.fromFridgeItem(item),
@@ -293,8 +334,8 @@ class _InventoryItemRowLayoutData {
             Theme.of(context).textTheme.titleMedium ?? const TextStyle(),
         hasBrand: hasBrand,
         brand: brand,
-        statusText: null,
-        statusColor: null,
+        statusText: marker?.text,
+        statusColor: marker?.color,
         remainingRatio: progress.remainingRatio,
         remainingLabel: progress.remainingLabel,
         segmentedByUnits: progress.segmentedByUnits,
@@ -333,6 +374,24 @@ class _InventoryItemRowLayoutData {
   final bool isAdjustActionEnabled;
 }
 
+({String text, Color color})? _barcodeStatusMarker({
+  required AppLocalizations l10n,
+  required ColorScheme colorScheme,
+  required InventoryBarcodeStatus status,
+}) {
+  return switch (status) {
+    InventoryBarcodeStatus.resolved => null,
+    InventoryBarcodeStatus.pending => (
+      text: l10n.inventoryBarcodeStatusPending,
+      color: colorScheme.tertiary,
+    ),
+    InventoryBarcodeStatus.missing => (
+      text: l10n.inventoryBarcodeStatusMissing,
+      color: colorScheme.error,
+    ),
+  };
+}
+
 class _InventoryItemRowCard extends StatelessWidget {
   const _InventoryItemRowCard({
     required this.layoutData,
@@ -343,6 +402,8 @@ class _InventoryItemRowCard extends StatelessWidget {
     required this.onDeletePressed,
     required this.onPrimaryActionPressed,
     required this.onThrowAwayPressed,
+    required this.retryBarcodeLabel,
+    required this.onRetryBarcodePressed,
   });
 
   final _InventoryItemRowLayoutData layoutData;
@@ -353,6 +414,8 @@ class _InventoryItemRowCard extends StatelessWidget {
   final VoidCallback onDeletePressed;
   final VoidCallback? onPrimaryActionPressed;
   final VoidCallback? onThrowAwayPressed;
+  final String retryBarcodeLabel;
+  final VoidCallback? onRetryBarcodePressed;
 
   @override
   Widget build(BuildContext context) {
@@ -370,6 +433,8 @@ class _InventoryItemRowCard extends StatelessWidget {
           onDeletePressed: onDeletePressed,
           onPrimaryActionPressed: onPrimaryActionPressed,
           onThrowAwayPressed: onThrowAwayPressed,
+          retryBarcodeLabel: retryBarcodeLabel,
+          onRetryBarcodePressed: onRetryBarcodePressed,
         ),
       ),
     );
@@ -386,6 +451,8 @@ class _InventoryItemRowBody extends StatelessWidget {
     required this.onDeletePressed,
     required this.onPrimaryActionPressed,
     required this.onThrowAwayPressed,
+    required this.retryBarcodeLabel,
+    required this.onRetryBarcodePressed,
   });
 
   final _InventoryItemRowLayoutData layoutData;
@@ -396,6 +463,8 @@ class _InventoryItemRowBody extends StatelessWidget {
   final VoidCallback onDeletePressed;
   final VoidCallback? onPrimaryActionPressed;
   final VoidCallback? onThrowAwayPressed;
+  final String retryBarcodeLabel;
+  final VoidCallback? onRetryBarcodePressed;
 
   @override
   Widget build(BuildContext context) {
@@ -419,6 +488,8 @@ class _InventoryItemRowBody extends StatelessWidget {
             onDeletePressed: onDeletePressed,
             onThrowAwayPressed: onThrowAwayPressed,
             onToggleExpanded: onToggleExpanded,
+            retryBarcodeLabel: retryBarcodeLabel,
+            onRetryBarcodePressed: onRetryBarcodePressed,
           ),
         ],
       ),

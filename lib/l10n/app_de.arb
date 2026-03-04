@@ -103,6 +103,20 @@
       "Artikel zur Einkaufsliste hinzugefügt.",
   "inventoryItemThrowAwayAction": "Wegwerfen",
   "inventoryItemActionFailed": "Aktion fehlgeschlagen. Bitte erneut versuchen.",
+  "inventoryBarcodeStatusPending": "Barcode-Abgleich läuft",
+  "inventoryBarcodeStatusMissing": "Barcode fehlt",
+  "inventoryBarcodeMissingPromptTitle": "Barcode fehlt",
+  "inventoryBarcodeMissingPromptMessage":
+      "Jetzt scannen für sofortiges Kalorien-Logging oder später per KI ergänzen lassen.",
+  "inventoryBarcodeMissingPromptScanNow": "Jetzt Barcode scannen",
+  "inventoryBarcodeMissingPromptLater": "Später",
+  "inventoryBarcodeLookupQueued":
+      "Barcode-Suche wurde ausgeführt. Ergebnis steht direkt im Inventar-Item.",
+  "inventoryBarcodeRetryAction": "Barcode suchen",
+  "inventoryBarcodeScanUnsupported":
+      "Barcode-Scan wird aktuell auf Android und iOS unterstützt.",
+  "inventoryBarcodePortionDialogTitle": "Verzehrte Menge eingeben",
+  "inventoryBarcodePortionDialogConfirmAction": "Weiter",
   "inventoryEmptyState": "Noch keine Vorratsartikel vorhanden. Scanne einen Beleg, um zu starten.",
   "inventoryFilteredEmptyState":
       "Keine Artikel entsprechen den ausgewählten Filtern.",

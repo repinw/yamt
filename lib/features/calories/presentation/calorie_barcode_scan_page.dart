@@ -18,6 +18,9 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_barcode_flow_controller.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_barcode_backfill_repository.dart';
+import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class CalorieBarcodeScanPage extends ConsumerStatefulWidget {
@@ -25,10 +28,12 @@ class CalorieBarcodeScanPage extends ConsumerStatefulWidget {
     super.key,
     this.barcodeStreamForTesting,
     this.showScannerPreview = true,
+    this.inventoryContext,
   });
 
   final Stream<String>? barcodeStreamForTesting;
   final bool showScannerPreview;
+  final CalorieInventoryCreateContext? inventoryContext;
 
   @override
   ConsumerState<CalorieBarcodeScanPage> createState() {
@@ -189,6 +194,10 @@ class _CalorieBarcodeScanPageState
         if (product == null) {
           return;
         }
+        await _syncInventoryBarcodeIfNeeded(
+          profile: product,
+          scannedBarcode: scannedBarcode,
+        );
         await _openEditor(
           profile: product,
           scannedSourceRef: CalorieScannedSourceRef(
@@ -209,6 +218,10 @@ class _CalorieBarcodeScanPageState
         if (!mounted) {
           return;
         }
+        await _syncInventoryBarcodeIfNeeded(
+          profile: selected.profile,
+          scannedBarcode: scannedBarcode,
+        );
         await _openEditor(
           profile: selected.profile,
           scannedSourceRef: CalorieScannedSourceRef(
@@ -252,7 +265,13 @@ class _CalorieBarcodeScanPageState
 
     switch (action) {
       case _CalorieNotFoundAction.manual:
-        await context.push(AppRoutes.homeCaloriesEntryCreate);
+        await context.push(
+          AppRoutes.homeCaloriesEntryCreate,
+          extra: CalorieEntryCreateArgs(
+            prefilledProfile: null,
+            inventoryContext: widget.inventoryContext,
+          ),
+        );
         return;
       case _CalorieNotFoundAction.ocr:
         final ocrResult = await ref
@@ -322,8 +341,41 @@ class _CalorieBarcodeScanPageState
       extra: CalorieEntryCreateArgs(
         prefilledProfile: profile,
         scannedSourceRef: scannedSourceRef,
+        inventoryContext: widget.inventoryContext,
       ),
     );
+  }
+
+  Future<void> _syncInventoryBarcodeIfNeeded({
+    required CalorieProductProfile profile,
+    required String scannedBarcode,
+  }) async {
+    final inventoryContext = widget.inventoryContext;
+    if (inventoryContext == null) {
+      return;
+    }
+
+    final resolvedBarcode = scannedBarcode.trim().isEmpty
+        ? profile.barcode
+        : scannedBarcode;
+    if (resolvedBarcode.trim().isEmpty) {
+      return;
+    }
+
+    await ref
+        .read(fridgeItemsControllerProvider.notifier)
+        .setItemBarcode(
+          itemId: inventoryContext.inventoryItemId,
+          barcode: resolvedBarcode,
+        );
+    await ref
+        .read(calorieBarcodeBackfillRepositoryProvider)
+        .submitUserProvidedBarcode(
+          fingerprint: inventoryContext.foodFingerprint,
+          barcode: resolvedBarcode,
+          itemName: inventoryContext.itemName,
+          brand: inventoryContext.itemBrand,
+        );
   }
 
   void _showSnackBar(String message) {
