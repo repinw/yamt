@@ -165,3 +165,50 @@ test("onBarcodeEnrichmentJobWrittenHandler marks job failed on resolver error", 
   assert.equal(markJobFailedCalls[0].error, "message=vertex_500");
   assert.equal(markResourceExhaustedCalls, 0);
 });
+
+test("resolveInventoryItemBarcodeHandler rejects overloaded queue", async () => {
+  class TestHttpsError extends Error {
+    constructor(code, message, details) {
+      super(message);
+      this.code = code;
+      this.details = details;
+    }
+  }
+
+  const handlers = createBarcodeHandlers({
+    httpsErrorClass: TestHttpsError,
+    resolveRequestUidValue: () => "uid-1",
+    readStringValue: readString,
+    inventoryItemRefValue: () => ({
+      async get() {
+        return {
+          exists: true,
+          data() {
+            return { name: "Milk" };
+          },
+        };
+      },
+    }),
+    acquireRateLimitSlotValue: async () => {
+      const error = new Error("queue_full");
+      error.name = "RateLimitQueueFullError";
+      error.waitMs = 80 * 1000;
+      throw error;
+    },
+    loggerValue: createNoopLogger(),
+  });
+
+  await assert.rejects(
+    handlers.resolveInventoryItemBarcodeHandler({
+      data: {
+        itemId: "item-1",
+      },
+    }),
+    (error) => {
+      assert.equal(error.code, "resource-exhausted");
+      assert.equal(error.message, "barcode_lookup_queue_busy");
+      assert.equal(error.details?.retryAfterSeconds, 80);
+      return true;
+    },
+  );
+});

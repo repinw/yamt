@@ -10,6 +10,7 @@ const {
 const { resolveRequestUid } = require("../barcode_enrichment/auth");
 const {
   readString,
+  readPositiveIntFromEnv,
   normalizeBarcode,
   extractErrorMessage,
   extractErrorDetails,
@@ -50,19 +51,6 @@ const LOOKUP_ERROR_REQUEST_FAILED = "off_request_failed";
 
 const CACHE_STATUS_FOUND = "found";
 const CACHE_STATUS_NOT_FOUND = "not_found";
-
-function readPositiveIntFromEnv(key, fallback) {
-  const raw = process.env[key];
-  if (typeof raw !== "string" || raw.trim().length === 0) {
-    return fallback;
-  }
-
-  const parsed = Number(raw);
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    return fallback;
-  }
-  return Math.floor(parsed);
-}
 
 function createOffLookupHandlers({
   functionRegion = FUNCTION_REGION,

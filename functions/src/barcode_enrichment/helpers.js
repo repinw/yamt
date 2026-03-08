@@ -24,6 +24,38 @@ function readPositiveInt(value) {
   return Math.floor(parsed);
 }
 
+function readPositiveIntFromEnv(key, fallback) {
+  const raw = process.env[key];
+  if (typeof raw !== "string" || raw.trim().length === 0) {
+    return fallback;
+  }
+
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return Math.floor(parsed);
+}
+
+function readBoolean(value) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "number") {
+    return value !== 0;
+  }
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true" || normalized === "1" || normalized === "yes") {
+      return true;
+    }
+    if (normalized === "false" || normalized === "0" || normalized === "no") {
+      return false;
+    }
+  }
+  return false;
+}
+
 function nowIso() {
   return new Date().toISOString();
 }
@@ -428,6 +460,8 @@ function clipTextForLog(value, maxLength = 4000) {
 module.exports = {
   readString,
   readPositiveInt,
+  readPositiveIntFromEnv,
+  readBoolean,
   nowIso,
   normalizeBarcode,
   normalizeCandidates,

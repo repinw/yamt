@@ -48,6 +48,7 @@ const {
 
 const AI_RATE_LIMIT_COLLECTION = "ai_rate_limits";
 const AI_BARCODE_ENRICHMENT_GATE_DOC = "barcode_enrichment";
+const MAX_CALLABLE_RATE_LIMIT_WAIT_MS = 70 * 1000;
 
 function createBarcodeHandlers({
   functionRegion = FUNCTION_REGION,
@@ -57,6 +58,7 @@ function createBarcodeHandlers({
   vertexRateLimitCollection = AI_RATE_LIMIT_COLLECTION,
   vertexRateLimitDocId = AI_BARCODE_ENRICHMENT_GATE_DOC,
   vertexMinIntervalMs = VERTEX_ENRICHMENT_MIN_INTERVAL_MS,
+  maxCallableRateLimitWaitMs = MAX_CALLABLE_RATE_LIMIT_WAIT_MS,
   vertexResourceExhaustedCooldownMs = VERTEX_RESOURCE_EXHAUSTED_COOLDOWN_MS,
   keywordAliasMinScore = KEYWORD_ALIAS_MIN_SCORE,
   modelName = MODEL_NAME,
@@ -186,6 +188,7 @@ function createBarcodeHandlers({
         collection: vertexRateLimitCollection,
         documentId: vertexRateLimitDocId,
         minIntervalMs: vertexMinIntervalMs,
+        maxWaitMs: maxCallableRateLimitWaitMs,
         nowMs: nowMsValue(),
       });
       await waitUntilValue(scheduledAtMs, nowMsValue);
@@ -211,6 +214,24 @@ function createBarcodeHandlers({
         source: outcome.source,
       };
     } catch (error) {
+      if (isRateLimitQueueFullError(error)) {
+        const waitMs = toNonNegativeInt(error.waitMs);
+        const retryAfterSeconds = Math.max(1, Math.ceil(waitMs / 1000));
+        loggerValue.warn("Barcode callable throttled due to queue depth.", {
+          uid,
+          itemId,
+          waitMs,
+          retryAfterSeconds,
+          maxCallableRateLimitWaitMs,
+        });
+        throw new httpsErrorClass(
+          "resource-exhausted",
+          "barcode_lookup_queue_busy",
+          {
+            retryAfterSeconds,
+          },
+        );
+      }
       if (error instanceof httpsErrorClass) {
         throw error;
       }
@@ -515,6 +536,7 @@ const defaultBarcodeHandlers = createBarcodeHandlers();
 module.exports = {
   createBarcodeHandlers,
   acquireRateLimitSlot,
+  isRateLimitQueueFullError,
   applyRateLimitCooldown,
   waitUntil,
   ...defaultBarcodeHandlers,
@@ -525,14 +547,24 @@ async function acquireRateLimitSlot({
   collection,
   documentId,
   minIntervalMs,
+  maxWaitMs,
   nowMs,
 }) {
   const gateRef = dbClient.collection(collection).doc(documentId);
-  return dbClient.runTransaction(async (transaction) => {
+  const slot = await dbClient.runTransaction(async (transaction) => {
     const snapshot = await transaction.get(gateRef);
     const data = snapshot.exists ? snapshot.data() ?? {} : {};
     const nextAllowedAtMs = readTimestampMs(data.next_allowed_at) ?? 0;
     const reservedAtMs = Math.max(nowMs, nextAllowedAtMs);
+    const waitMs = Math.max(0, reservedAtMs - nowMs);
+    if (shouldRejectRateLimitReservation({ waitMs, maxWaitMs })) {
+      return {
+        allowed: false,
+        reservedAtMs,
+        waitMs,
+      };
+    }
+
     const nextAtMs = reservedAtMs + minIntervalMs;
 
     transaction.set(
@@ -544,8 +576,23 @@ async function acquireRateLimitSlot({
       { merge: true },
     );
 
-    return reservedAtMs;
+    return {
+      allowed: true,
+      reservedAtMs,
+      waitMs,
+    };
   });
+
+  if (typeof slot === "number") {
+    return slot;
+  }
+  if (!slot?.allowed) {
+    throw new RateLimitQueueFullError({
+      waitMs: slot?.waitMs,
+      retryAtMs: slot?.reservedAtMs,
+    });
+  }
+  return slot.reservedAtMs;
 }
 
 async function applyRateLimitCooldown({
@@ -606,4 +653,38 @@ function delay(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+}
+
+function shouldRejectRateLimitReservation({ waitMs, maxWaitMs }) {
+  if (!Number.isFinite(Number(maxWaitMs))) {
+    return false;
+  }
+  const normalizedMaxWaitMs = Math.max(0, Number(maxWaitMs));
+  return waitMs > normalizedMaxWaitMs;
+}
+
+function toNonNegativeInt(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 0;
+  }
+  return Math.floor(parsed);
+}
+
+class RateLimitQueueFullError extends Error {
+  constructor({ waitMs, retryAtMs }) {
+    super("rate_limit_queue_full");
+    this.name = "RateLimitQueueFullError";
+    this.waitMs = toNonNegativeInt(waitMs);
+    this.retryAtMs = toNonNegativeInt(retryAtMs);
+  }
+}
+
+function isRateLimitQueueFullError(error) {
+  return (
+    error instanceof RateLimitQueueFullError ||
+    (error &&
+      typeof error === "object" &&
+      error.name === "RateLimitQueueFullError")
+  );
 }
