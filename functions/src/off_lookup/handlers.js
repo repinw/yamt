@@ -16,6 +16,11 @@ const {
   extractErrorMessage,
   extractErrorDetails,
 } = require("../barcode_enrichment/helpers");
+const {
+  readTimestampMs,
+  acquireRateLimitSlot,
+  waitUntil,
+} = require("../shared/rate_limit");
 
 const OFF_BASE_HOST = "world.openfoodfacts.org";
 const OFF_BASE_URL = `https://${OFF_BASE_HOST}`;
@@ -294,48 +299,16 @@ async function acquireOffProductSlot({
   minIntervalMs,
   nowMs,
 }) {
-  return acquireRateLimitSlot({
+  const slot = await acquireRateLimitSlot({
     dbClient,
     collection,
     documentId,
     minIntervalMs,
     nowMs,
+    serializeTimestampValue: Timestamp.fromMillis,
+    serverTimestampValue: FieldValue.serverTimestamp(),
   });
-}
-
-async function acquireRateLimitSlot({
-  dbClient,
-  collection,
-  documentId,
-  minIntervalMs,
-  nowMs,
-}) {
-  const gateRef = dbClient.collection(collection).doc(documentId);
-  const slotMs = await dbClient.runTransaction(async (transaction) => {
-    const snapshot = await transaction.get(gateRef);
-    const data = snapshot.exists ? snapshot.data() ?? {} : {};
-
-    const nextAllowedAtMs = readTimestampMs(data.next_allowed_at) ?? 0;
-    const reservedAtMs = Math.max(nowMs, nextAllowedAtMs);
-    const nextAtMs = reservedAtMs + minIntervalMs;
-
-    transaction.set(gateRef, {
-      next_allowed_at: Timestamp.fromMillis(nextAtMs),
-      updated_at: FieldValue.serverTimestamp(),
-    }, { merge: true });
-
-    return reservedAtMs;
-  });
-
-  return slotMs;
-}
-
-async function waitUntil(targetMs, nowMsValue) {
-  const waitMs = targetMs - nowMsValue();
-  if (waitMs <= 0) {
-    return;
-  }
-  await delay(waitMs);
+  return slot.reservedAtMs;
 }
 
 function delay(ms) {
@@ -591,26 +564,6 @@ function normalizeStringKeyMap(value) {
     normalized[String(key)] = nestedValue;
   }
   return normalized;
-}
-
-function readTimestampMs(value) {
-  if (!value) {
-    return null;
-  }
-
-  if (typeof value.toMillis === "function") {
-    return value.toMillis();
-  }
-
-  if (value instanceof Date) {
-    return value.getTime();
-  }
-
-  if (Number.isFinite(Number(value))) {
-    return Number(value);
-  }
-
-  return null;
 }
 
 function readDouble(value) {

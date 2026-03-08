@@ -5,6 +5,20 @@ import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 
 part 'receipt_to_fridge_item_mapper.g.dart';
 
+final _namePackWithUnitPattern = RegExp(
+  r'(?:^|\b)(\d{1,3})\s*[x\u00D7]\s*(\d+(?:[.,]\d+)?)\s*'
+  r'(kg|g|mg|ml|cl|dl|l)\b',
+  caseSensitive: false,
+);
+final _nameValueWithUnitPattern = RegExp(
+  r'(?:^|\b)(\d+(?:[.,]\d+)?)\s*(kg|g|mg|ml|cl|dl|l)\b',
+  caseSensitive: false,
+);
+final _namePiecePattern = RegExp(
+  r'(?:^|\b)(\d{1,3})\s*(stk|st\.?|stueck|stück|pc|piece|pieces)\b',
+  caseSensitive: false,
+);
+
 @riverpod
 ReceiptToFridgeItemMapper receiptToFridgeItemMapper(Ref ref) {
   return const DefaultReceiptToFridgeItemMapper();
@@ -53,12 +67,12 @@ class DefaultReceiptToFridgeItemMapper implements ReceiptToFridgeItemMapper {
             rootStore,
           );
 
-          final parsedQuantity = _parseNum(
-            payload['q'] ?? payload['quantity'],
+          final normalizedQuantityAndWeight = _resolveQuantityAndWeight(
+            payload: payload,
+            itemName: name,
             language: language,
           );
-          final quantity = parsedQuantity?.toInt() ?? 1;
-          final safeQuantity = quantity > 0 ? quantity : 1;
+          final safeQuantity = normalizedQuantityAndWeight.quantity;
 
           final totalPrice =
               _parseNum(
@@ -76,7 +90,7 @@ class DefaultReceiptToFridgeItemMapper implements ReceiptToFridgeItemMapper {
               _boolValue(payload['id']) ??
               _boolValue(payload['isDiscount']) ??
               false;
-          final weight = _firstNonBlankString(payload['w'], payload['weight']);
+          final weight = normalizedQuantityAndWeight.weight;
 
           return FridgeItem(
             id: _buildItemId(now, index),
@@ -232,4 +246,90 @@ Map<String, double> _parseDiscounts(Object? value, String? language) {
   }
 
   return parsed;
+}
+
+({int quantity, String? weight}) _resolveQuantityAndWeight({
+  required Map<String, dynamic> payload,
+  required String? itemName,
+  required String? language,
+}) {
+  final parsedQuantity = _parseNum(
+    payload['q'] ?? payload['quantity'],
+    language: language,
+  );
+  final quantity = parsedQuantity?.toInt() ?? 1;
+  final safeQuantity = quantity > 0 ? quantity : 1;
+
+  final explicitWeight = _firstNonBlankString(payload['w'], payload['weight']);
+  if (explicitWeight != null) {
+    return (quantity: safeQuantity, weight: explicitWeight);
+  }
+
+  return (quantity: safeQuantity, weight: _reparseWeightFromName(itemName));
+}
+
+String? _reparseWeightFromName(String? itemName) {
+  final normalizedName = _firstNonBlankString(itemName);
+  if (normalizedName == null) {
+    return null;
+  }
+
+  final packWithUnit = _namePackWithUnitPattern.firstMatch(normalizedName);
+  if (packWithUnit != null) {
+    final packCount = packWithUnit.group(1);
+    final unitValue = _normalizeNumberToken(packWithUnit.group(2));
+    final unit = _normalizeMassVolumeUnit(packWithUnit.group(3));
+    if (packCount != null && unitValue != null && unit != null) {
+      return '${packCount}x$unitValue$unit';
+    }
+  }
+
+  final pieceValue = _namePiecePattern.firstMatch(normalizedName)?.group(1);
+  if (pieceValue != null) {
+    return '${pieceValue}st';
+  }
+
+  final valueWithUnit = _nameValueWithUnitPattern.firstMatch(normalizedName);
+  if (valueWithUnit != null) {
+    final unitValue = _normalizeNumberToken(valueWithUnit.group(1));
+    final unit = _normalizeMassVolumeUnit(valueWithUnit.group(2));
+    if (unitValue != null && unit != null) {
+      return '$unitValue$unit';
+    }
+  }
+
+  return null;
+}
+
+String? _normalizeNumberToken(String? raw) {
+  if (raw == null) {
+    return null;
+  }
+  final trimmed = raw.trim();
+  if (trimmed.isEmpty) {
+    return null;
+  }
+  return trimmed.replaceAll(',', '.');
+}
+
+String? _normalizeMassVolumeUnit(String? raw) {
+  if (raw == null) {
+    return null;
+  }
+  final normalized = raw.trim().toLowerCase();
+  if (normalized.isEmpty) {
+    return null;
+  }
+
+  switch (normalized) {
+    case 'kg':
+    case 'g':
+    case 'mg':
+    case 'ml':
+    case 'cl':
+    case 'dl':
+    case 'l':
+      return normalized;
+  }
+  return null;
 }

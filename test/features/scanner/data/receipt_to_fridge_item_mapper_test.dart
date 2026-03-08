@@ -120,6 +120,53 @@ void main() {
     expect(item.receiptDate, DateTime.parse('2026-02-10T08:00:00.000Z'));
   });
 
+  test('reparses piece amount from name when weight is missing', () {
+    final extraction = ReceiptAnalysisExtraction(
+      root: const <String, dynamic>{},
+      items: const <ReceiptAnalysisItem>[
+        ReceiptAnalysisItem(
+          name: 'bunte eier bh 10st',
+          rawPayload: <String, dynamic>{'n': 'bunte eier bh 10st', 'p': '2,49'},
+        ),
+      ],
+    );
+
+    final item = mapper.map(extraction).single;
+
+    expect(item.quantity, 1);
+    expect(item.initialQuantity, 1);
+    expect(item.weight, '10st');
+    expect(item.initialAmount, 10);
+    expect(item.currentAmount, 10);
+    expect(item.amountUnit, FridgeAmountUnit.piece);
+  });
+
+  test('keeps explicit weight from payload instead of name reparse', () {
+    final extraction = ReceiptAnalysisExtraction(
+      root: const <String, dynamic>{},
+      items: const <ReceiptAnalysisItem>[
+        ReceiptAnalysisItem(
+          name: 'bunte eier bh 10st',
+          rawPayload: <String, dynamic>{
+            'n': 'bunte eier bh 10st',
+            'q': '2',
+            'w': '6st',
+            'p': '5,00',
+          },
+        ),
+      ],
+    );
+
+    final item = mapper.map(extraction).single;
+
+    expect(item.quantity, 2);
+    expect(item.initialQuantity, 2);
+    expect(item.weight, '6st');
+    expect(item.initialAmount, 12);
+    expect(item.currentAmount, 12);
+    expect(item.amountUnit, FridgeAmountUnit.piece);
+  });
+
   test('maps real Kaufland-style AI payload correctly', () {
     const parser = JsonReceiptAnalysisParser();
     const rawResponse = '''

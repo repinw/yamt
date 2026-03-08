@@ -45,6 +45,11 @@ const {
   resolveAndPersistItem,
   persistItemResolved,
 } = require("./item_resolution");
+const {
+  acquireRateLimitSlot: acquireRateLimitSlotShared,
+  applyRateLimitCooldown: applyRateLimitCooldownShared,
+  waitUntil,
+} = require("../shared/rate_limit");
 
 const AI_RATE_LIMIT_COLLECTION = "ai_rate_limits";
 const AI_BARCODE_ENRICHMENT_GATE_DOC = "barcode_enrichment";
@@ -550,42 +555,15 @@ async function acquireRateLimitSlot({
   maxWaitMs,
   nowMs,
 }) {
-  const gateRef = dbClient.collection(collection).doc(documentId);
-  const slot = await dbClient.runTransaction(async (transaction) => {
-    const snapshot = await transaction.get(gateRef);
-    const data = snapshot.exists ? snapshot.data() ?? {} : {};
-    const nextAllowedAtMs = readTimestampMs(data.next_allowed_at) ?? 0;
-    const reservedAtMs = Math.max(nowMs, nextAllowedAtMs);
-    const waitMs = Math.max(0, reservedAtMs - nowMs);
-    if (shouldRejectRateLimitReservation({ waitMs, maxWaitMs })) {
-      return {
-        allowed: false,
-        reservedAtMs,
-        waitMs,
-      };
-    }
-
-    const nextAtMs = reservedAtMs + minIntervalMs;
-
-    transaction.set(
-      gateRef,
-      {
-        next_allowed_at: new Date(nextAtMs),
-        updated_at: FieldValue.serverTimestamp(),
-      },
-      { merge: true },
-    );
-
-    return {
-      allowed: true,
-      reservedAtMs,
-      waitMs,
-    };
+  const slot = await acquireRateLimitSlotShared({
+    dbClient,
+    collection,
+    documentId,
+    minIntervalMs,
+    maxWaitMs,
+    nowMs,
+    serverTimestampValue: FieldValue.serverTimestamp(),
   });
-
-  if (typeof slot === "number") {
-    return slot;
-  }
   if (!slot?.allowed) {
     throw new RateLimitQueueFullError({
       waitMs: slot?.waitMs,
@@ -602,65 +580,14 @@ async function applyRateLimitCooldown({
   cooldownMs,
   nowMs,
 }) {
-  const gateRef = dbClient.collection(collection).doc(documentId);
-  await dbClient.runTransaction(async (transaction) => {
-    const snapshot = await transaction.get(gateRef);
-    const data = snapshot.exists ? snapshot.data() ?? {} : {};
-    const currentNextAllowedAtMs = readTimestampMs(data.next_allowed_at) ?? 0;
-    const cooldownUntilMs = nowMs + cooldownMs;
-    const nextAllowedAtMs = Math.max(currentNextAllowedAtMs, cooldownUntilMs);
-
-    transaction.set(
-      gateRef,
-      {
-        next_allowed_at: new Date(nextAllowedAtMs),
-        updated_at: FieldValue.serverTimestamp(),
-      },
-      { merge: true },
-    );
+  await applyRateLimitCooldownShared({
+    dbClient,
+    collection,
+    documentId,
+    cooldownMs,
+    nowMs,
+    serverTimestampValue: FieldValue.serverTimestamp(),
   });
-}
-
-async function waitUntil(targetMs, nowMsValue) {
-  const waitMs = targetMs - nowMsValue();
-  if (waitMs <= 0) {
-    return;
-  }
-  await delay(waitMs);
-}
-
-function readTimestampMs(value) {
-  if (value && typeof value.toDate === "function") {
-    const date = value.toDate();
-    if (date instanceof Date) {
-      return date.getTime();
-    }
-  }
-  if (value instanceof Date) {
-    return value.getTime();
-  }
-  const raw = readString(value);
-  if (raw) {
-    const parsed = Date.parse(raw);
-    if (Number.isFinite(parsed)) {
-      return parsed;
-    }
-  }
-  return null;
-}
-
-function delay(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
-function shouldRejectRateLimitReservation({ waitMs, maxWaitMs }) {
-  if (!Number.isFinite(Number(maxWaitMs))) {
-    return false;
-  }
-  const normalizedMaxWaitMs = Math.max(0, Number(maxWaitMs));
-  return waitMs > normalizedMaxWaitMs;
 }
 
 function toNonNegativeInt(value) {
