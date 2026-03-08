@@ -25,7 +25,7 @@ const _lookupErrorUnavailable = 'off_lookup_unavailable';
 const _lookupErrorUnauthenticated = 'unauthenticated';
 const _functionsRegion = 'europe-west1';
 const _lookupCallableName = 'resolveOffProductByBarcode';
-const _lookupCallableTimeout = Duration(seconds: 20);
+const _lookupCallableTimeout = Duration(seconds: 60);
 const _useFunctionsEmulator = bool.fromEnvironment(
   'USE_FUNCTIONS_EMULATOR',
   defaultValue: false,

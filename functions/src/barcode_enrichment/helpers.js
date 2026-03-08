@@ -37,6 +37,15 @@ function readPositiveIntFromEnv(key, fallback) {
   return Math.floor(parsed);
 }
 
+function readStringFromEnv(key, fallback) {
+  const raw = process.env[key];
+  if (typeof raw !== "string") {
+    return fallback;
+  }
+  const normalized = readString(raw);
+  return normalized ?? fallback;
+}
+
 function readBoolean(value) {
   if (typeof value === "boolean") {
     return value;
@@ -461,6 +470,7 @@ module.exports = {
   readString,
   readPositiveInt,
   readPositiveIntFromEnv,
+  readStringFromEnv,
   readBoolean,
   nowIso,
   normalizeBarcode,

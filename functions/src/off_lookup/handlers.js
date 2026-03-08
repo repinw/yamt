@@ -11,6 +11,7 @@ const { resolveRequestUid } = require("../barcode_enrichment/auth");
 const {
   readString,
   readPositiveIntFromEnv,
+  readStringFromEnv,
   normalizeBarcode,
   extractErrorMessage,
   extractErrorDetails,
@@ -41,7 +42,11 @@ const OFF_FOUND_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const OFF_NOT_FOUND_TTL_MS = 12 * 60 * 60 * 1000;
 
 const OFF_CALLABLE_NAME = "resolveOffProductByBarcode";
-const OFF_USER_AGENT = "YAMT/1.0 (repin@mailbox.org)";
+// Include a contact in OFF_USER_AGENT to match OFF API usage guidelines.
+const OFF_USER_AGENT = readStringFromEnv(
+  "OFF_USER_AGENT",
+  "YAMT/1.0 (repin@mailbox.org)",
+);
 const OFF_FIELDS =
   "_id,code,product_name,brands,nutriments,status," +
   "image_front_small_url,image_front_url,image_url,selected_images";

@@ -215,15 +215,11 @@ class FirestoreCalorieProductCacheRepository
     }
 
     final product = raw['product'];
-    if (product is! Map) {
+    if (product is! Map<String, dynamic>) {
       return null;
     }
 
-    final normalized = _normalizeFirestoreJson(
-      product.map(
-        (key, value) => MapEntry<String, dynamic>(key.toString(), value),
-      ),
-    );
+    final normalized = _normalizeFirestoreJson(product);
 
     final barcode = normalized['barcode'];
     if (barcode is! String || barcode.isEmpty) {
