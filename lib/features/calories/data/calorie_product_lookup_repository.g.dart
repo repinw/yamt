@@ -9,47 +9,101 @@ part of 'calorie_product_lookup_repository.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(calorieLookupHttpClient)
-final calorieLookupHttpClientProvider = CalorieLookupHttpClientProvider._();
+@ProviderFor(calorieLookupFunctions)
+final calorieLookupFunctionsProvider = CalorieLookupFunctionsProvider._();
 
-final class CalorieLookupHttpClientProvider
-    extends $FunctionalProvider<http.Client, http.Client, http.Client>
-    with $Provider<http.Client> {
-  CalorieLookupHttpClientProvider._()
+final class CalorieLookupFunctionsProvider
+    extends
+        $FunctionalProvider<
+          FirebaseFunctions?,
+          FirebaseFunctions?,
+          FirebaseFunctions?
+        >
+    with $Provider<FirebaseFunctions?> {
+  CalorieLookupFunctionsProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'calorieLookupHttpClientProvider',
+        name: r'calorieLookupFunctionsProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$calorieLookupHttpClientHash();
+  String debugGetCreateSourceHash() => _$calorieLookupFunctionsHash();
 
   @$internal
   @override
-  $ProviderElement<http.Client> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+  $ProviderElement<FirebaseFunctions?> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
 
   @override
-  http.Client create(Ref ref) {
-    return calorieLookupHttpClient(ref);
+  FirebaseFunctions? create(Ref ref) {
+    return calorieLookupFunctions(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(http.Client value) {
+  Override overrideWithValue(FirebaseFunctions? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<http.Client>(value),
+      providerOverride: $SyncValueProvider<FirebaseFunctions?>(value),
     );
   }
 }
 
-String _$calorieLookupHttpClientHash() =>
-    r'f9322c6cdffb5563c1264d7616410abaddb538d6';
+String _$calorieLookupFunctionsHash() =>
+    r'33b92a7e259965f8b10febe5e7ff1f1821f762d4';
+
+@ProviderFor(calorieOffLookupClient)
+final calorieOffLookupClientProvider = CalorieOffLookupClientProvider._();
+
+final class CalorieOffLookupClientProvider
+    extends
+        $FunctionalProvider<
+          CalorieOffLookupClient,
+          CalorieOffLookupClient,
+          CalorieOffLookupClient
+        >
+    with $Provider<CalorieOffLookupClient> {
+  CalorieOffLookupClientProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'calorieOffLookupClientProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$calorieOffLookupClientHash();
+
+  @$internal
+  @override
+  $ProviderElement<CalorieOffLookupClient> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  CalorieOffLookupClient create(Ref ref) {
+    return calorieOffLookupClient(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(CalorieOffLookupClient value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<CalorieOffLookupClient>(value),
+    );
+  }
+}
+
+String _$calorieOffLookupClientHash() =>
+    r'680a8e0cd2949828be397c20397e8d1a61e0c05b';
 
 @ProviderFor(calorieProductLookupRepository)
 final calorieProductLookupRepositoryProvider =
@@ -99,4 +153,4 @@ final class CalorieProductLookupRepositoryProvider
 }
 
 String _$calorieProductLookupRepositoryHash() =>
-    r'8766fa000ecca01ba11f0c1e8b01ea9aebe15808';
+    r'fb51fd161d574814f2779ea8f2b5dd5cdd27875e';

@@ -104,6 +104,7 @@
   "inventoryItemThrowAwayAction": "Wegwerfen",
   "inventoryItemActionFailed": "Aktion fehlgeschlagen. Bitte erneut versuchen.",
   "inventoryBarcodeStatusPending": "Barcode-Abgleich läuft",
+  "inventoryBarcodeStatusUncertain": "Nicht sicher",
   "inventoryBarcodeStatusMissing": "Barcode fehlt",
   "inventoryBarcodeMissingPromptTitle": "Barcode fehlt",
   "inventoryBarcodeMissingPromptMessage":

@@ -16,6 +16,7 @@ const {
   ensureCandidatesContainBarcode,
   tokenizeForLookup,
   readPositiveInt,
+  readBoolean,
   readString,
   nowIso,
   globalResolutionRef,
@@ -34,6 +35,7 @@ async function resolveFromGlobalCatalog({
       matchedFingerprint: fingerprint,
       barcode: exactMatch.barcode,
       barcodeCandidates: exactMatch.barcodeCandidates,
+      barcodeLookupUncertain: exactMatch.barcodeLookupUncertain,
       matchType: "exact",
       score: 100,
     };
@@ -91,6 +93,7 @@ async function resolveFromGlobalCatalog({
       matchedFingerprint: doc.id,
       barcode,
       barcodeCandidates: candidates,
+      barcodeLookupUncertain: readBoolean(data.barcodeLookupUncertain),
       matchType: "keyword",
       score: match.score,
     });
@@ -138,6 +141,7 @@ async function readGlobalResolutionByFingerprint(fingerprint) {
       data.barcodeCandidates,
       barcode,
     ),
+    barcodeLookupUncertain: readBoolean(data.barcodeLookupUncertain),
   };
 }
 
@@ -346,6 +350,7 @@ async function upsertGlobalResolution({
   fingerprint,
   barcode,
   candidates,
+  barcodeLookupUncertain,
   itemName,
   brand,
   storeName,
@@ -366,6 +371,7 @@ async function upsertGlobalResolution({
       fingerprint,
       barcode,
       barcodeCandidates: ensureCandidatesContainBarcode(candidates, barcode),
+      barcodeLookupUncertain: readBoolean(barcodeLookupUncertain),
       itemName,
       brand: brand ?? null,
       nameNormalized: normalizeForLookup(itemName),

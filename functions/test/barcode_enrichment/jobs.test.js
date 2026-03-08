@@ -102,3 +102,79 @@ test("lockQueuedJob stops when max attempts is exceeded", async () => {
   assert.equal(memory.state.data.status, "failed");
   assert.equal(memory.state.data.lastError, "max_attempts_exceeded");
 });
+
+test("lockQueuedJob skips jobs that are not in queued state", async () => {
+  const memory = createMemoryJobRef({
+    status: "backoff_wait",
+    attempts: 1,
+  });
+  const service = createJobService({
+    dbClient: createTransactionalDb(memory),
+  });
+
+  const result = await service.lockQueuedJob(memory.ref);
+
+  assert.equal(result.shouldProcess, false);
+  assert.equal(result.attempts, 1);
+  assert.equal(memory.state.data.status, "backoff_wait");
+  assert.equal(memory.state.data.attempts, 1);
+});
+
+test("markJobResourceExhausted marks job as backoff_wait", async () => {
+  const memory = createMemoryJobRef({
+    status: "running",
+    attempts: 1,
+    resourceExhaustedCount: 0,
+  });
+  const service = createJobService({
+    dbClient: createTransactionalDb(memory),
+    nowIsoValue: () => "2026-03-04T10:00:00.000Z",
+    nowMsValue: () => Date.parse("2026-03-04T10:00:00.000Z"),
+    randomValue: () => 0,
+    resourceExhaustedBaseDelayMs: 60 * 1000,
+    resourceExhaustedMaxDelayMs: 30 * 60 * 1000,
+    maxResourceExhaustedRetries: 8,
+  });
+
+  await service.markJobResourceExhausted({
+    jobRef: memory.ref,
+    attempts: 1,
+    error: "resource_exhausted_429",
+  });
+
+  assert.equal(memory.state.data.status, "backoff_wait");
+  assert.equal(memory.state.data.attempts, 0);
+  assert.equal(memory.state.data.errorCode, "resource_exhausted");
+  assert.equal(memory.state.data.resourceExhaustedCount, 1);
+  assert.equal(typeof memory.state.data.nextAttemptAt, "string");
+  assert.equal(
+    memory.state.data.nextAttemptAt,
+    "2026-03-04T10:01:00.000Z",
+  );
+});
+
+test("markJobResourceExhausted fails after max resource retries", async () => {
+  const memory = createMemoryJobRef({
+    status: "running",
+    attempts: 2,
+    resourceExhaustedCount: 2,
+  });
+  const service = createJobService({
+    dbClient: createTransactionalDb(memory),
+    nowIsoValue: () => "2026-03-04T10:00:00.000Z",
+    nowMsValue: () => Date.parse("2026-03-04T10:00:00.000Z"),
+    maxResourceExhaustedRetries: 2,
+  });
+
+  await service.markJobResourceExhausted({
+    jobRef: memory.ref,
+    attempts: 2,
+    error: "resource_exhausted_429",
+  });
+
+  assert.equal(memory.state.data.status, "failed");
+  assert.equal(memory.state.data.errorCode, "resource_exhausted");
+  assert.equal(memory.state.data.resourceExhaustedCount, 3);
+  assert.equal(memory.state.data.attempts, 1);
+  assert.equal(memory.state.data.nextAttemptAt, null);
+});

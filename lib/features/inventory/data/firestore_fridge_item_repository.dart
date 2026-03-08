@@ -172,6 +172,9 @@ class FirestoreFridgeItemRepository implements FridgeItemRepository {
     final fingerprint = item.foodFingerprint?.trim();
     return item.copyWith(
       barcode: barcode,
+      barcodeLookupUncertain: barcode == null
+          ? false
+          : item.barcodeLookupUncertain,
       foodFingerprint: (fingerprint == null || fingerprint.isEmpty)
           ? computeFoodFingerprint(name: item.name, brand: item.brand)
           : fingerprint,

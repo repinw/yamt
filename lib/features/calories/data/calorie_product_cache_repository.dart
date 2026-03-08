@@ -13,6 +13,8 @@ const _cacheLogName = 'FirestoreCalorieProductCacheRepository';
 const _usersCollection = 'users';
 const _globalCatalogCollection = 'calorie_product_catalog';
 const _userOverridesCollection = 'calorie_product_overrides';
+const _offProductsCollection = 'off_products';
+const _offCacheStatusFound = 'found';
 
 abstract interface class CalorieProductCacheUserSession {
   String? get currentUserId;
@@ -57,10 +59,15 @@ class FirestoreCalorieProductCacheRepository
   Future<CalorieProductProfile?> readGlobalProduct(String barcode) async {
     try {
       final snapshot = await _globalDoc(barcode).get();
-      if (!snapshot.exists) {
+      if (snapshot.exists) {
+        return _decodeDocument(snapshot, fallbackBarcode: barcode);
+      }
+
+      final offSnapshot = await _offProductsDoc(barcode).get();
+      if (!offSnapshot.exists) {
         return null;
       }
-      return _decodeDocument(snapshot, fallbackBarcode: barcode);
+      return _decodeOffCacheDocument(offSnapshot, fallbackBarcode: barcode);
     } catch (error, stackTrace) {
       log(
         'Failed to read global calorie product for $barcode.',
@@ -78,6 +85,21 @@ class FirestoreCalorieProductCacheRepository
       final normalized = profile.copyWith(updatedAt: DateTime.now());
       await _globalDoc(normalized.barcode).set(normalized.toJson());
       return true;
+    } on FirebaseException catch (error) {
+      if (error.code == 'permission-denied') {
+        log(
+          'Skipping global calorie product write for ${profile.barcode}: '
+          'permission denied by Firestore rules.',
+          name: _cacheLogName,
+        );
+        return false;
+      }
+      log(
+        'Failed to save global calorie product ${profile.barcode}.',
+        name: _cacheLogName,
+        error: error,
+      );
+      return false;
     } catch (error, stackTrace) {
       log(
         'Failed to save global calorie product ${profile.barcode}.',
@@ -146,6 +168,10 @@ class FirestoreCalorieProductCacheRepository
         .doc(barcode);
   }
 
+  DocumentReference<Map<String, dynamic>> _offProductsDoc(String barcode) {
+    return _firestore.collection(_offProductsCollection).doc(barcode);
+  }
+
   CalorieProductProfile? _decodeDocument(
     DocumentSnapshot<Map<String, dynamic>> snapshot, {
     required String fallbackBarcode,
@@ -166,6 +192,45 @@ class FirestoreCalorieProductCacheRepository
     } catch (error, stackTrace) {
       log(
         'Malformed calorie product cache document ${snapshot.id}.',
+        name: _cacheLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
+  }
+
+  CalorieProductProfile? _decodeOffCacheDocument(
+    DocumentSnapshot<Map<String, dynamic>> snapshot, {
+    required String fallbackBarcode,
+  }) {
+    final raw = snapshot.data();
+    if (raw == null) {
+      return null;
+    }
+
+    final status = raw['status'];
+    if (status is! String || status != _offCacheStatusFound) {
+      return null;
+    }
+
+    final product = raw['product'];
+    if (product is! Map<String, dynamic>) {
+      return null;
+    }
+
+    final normalized = _normalizeFirestoreJson(product);
+
+    final barcode = normalized['barcode'];
+    if (barcode is! String || barcode.isEmpty) {
+      normalized['barcode'] = fallbackBarcode;
+    }
+
+    try {
+      return CalorieProductProfile.fromJson(normalized);
+    } catch (error, stackTrace) {
+      log(
+        'Malformed OFF product cache document ${snapshot.id}.',
         name: _cacheLogName,
         error: error,
         stackTrace: stackTrace,

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -12,9 +13,14 @@ part 'inventory_barcode_image_provider.g.dart';
 
 const _providerLogName = 'InventoryBarcodeImageProvider';
 const _offImageHost = 'world.openfoodfacts.org';
+const _providerCacheTtl = Duration(minutes: 10);
 
 @riverpod
 Future<String?> inventoryBarcodeImageUrl(Ref ref, String rawBarcode) async {
+  final link = ref.keepAlive();
+  final disposeTimer = Timer(_providerCacheTtl, link.close);
+  ref.onDispose(disposeTimer.cancel);
+
   final barcode = normalizeBarcode(rawBarcode);
   if (!isSupportedBarcode(barcode)) {
     return null;
@@ -30,13 +36,6 @@ Future<String?> inventoryBarcodeImageUrl(Ref ref, String rawBarcode) async {
   final outcome = await lookupRepository.lookupByBarcode(barcode);
   final profile = _pickProfileFromOutcome(outcome);
   final imageUrl = _normalizeImageUrl(profile?.imageUrl);
-  if (profile != null && _shouldPersistGlobalProfile(profile, imageUrl)) {
-    await lookupRepository.persistGlobalProduct(
-      imageUrl == profile.imageUrl
-          ? profile
-          : profile.copyWith(imageUrl: imageUrl),
-    );
-  }
   return imageUrl;
 }
 
@@ -77,17 +76,6 @@ CalorieProductProfile? _pickCandidateProfile(
     }
   }
   return candidates.first.profile;
-}
-
-bool _shouldPersistGlobalProfile(
-  CalorieProductProfile profile,
-  String? normalizedImageUrl,
-) {
-  final source = profile.source;
-  final isOffProfile =
-      source == CalorieProductSource.offBarcode ||
-      source == CalorieProductSource.offSearch;
-  return isOffProfile && normalizedImageUrl != null;
 }
 
 String? _normalizeImageUrl(String? value) {

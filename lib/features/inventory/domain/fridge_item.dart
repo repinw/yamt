@@ -7,7 +7,7 @@ export 'package:yamt/features/inventory/domain/fridge_item_amount_parser.dart'
 part 'fridge_item.freezed.dart';
 part 'fridge_item.g.dart';
 
-enum InventoryBarcodeStatus { resolved, pending, missing }
+enum InventoryBarcodeStatus { resolved, uncertain, pending, missing }
 
 @freezed
 abstract class FridgeItem with _$FridgeItem {
@@ -30,6 +30,7 @@ abstract class FridgeItem with _$FridgeItem {
     String? foodFingerprint,
     DateTime? barcodeLookupRequestedAt,
     DateTime? barcodeResolvedAt,
+    @Default(false) bool barcodeLookupUncertain,
     String? brand,
     String? category,
     @Default(<String, double>{}) Map<String, double> discounts,
@@ -94,6 +95,9 @@ abstract class FridgeItem with _$FridgeItem {
 
   InventoryBarcodeStatus get barcodeStatus {
     if (normalizedBarcode != null) {
+      if (barcodeLookupUncertain) {
+        return InventoryBarcodeStatus.uncertain;
+      }
       return InventoryBarcodeStatus.resolved;
     }
     if (barcodeLookupRequestedAt != null) {

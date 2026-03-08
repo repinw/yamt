@@ -60,7 +60,7 @@ final class InventoryBarcodeImageUrlProvider
 }
 
 String _$inventoryBarcodeImageUrlHash() =>
-    r'825aa4fc5b6eb90824e26ca46af2c37e20f741a3';
+    r'c162cba972193153a881c6535ef1b6aeb479e183';
 
 final class InventoryBarcodeImageUrlFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<String?>, String> {

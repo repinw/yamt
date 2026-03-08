@@ -69,4 +69,52 @@ void main() {
     expect(loaded, isNotNull);
     expect(loaded?.barcode, '4006381333931');
   });
+
+  test('read global product falls back to off_products cache', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreCalorieProductCacheRepository(
+      session: _FakeSession('user-1'),
+      firestore: firestore,
+    );
+
+    final profile = _profile(
+      barcode: '4006381333931',
+      source: CalorieProductSource.offBarcode,
+    );
+
+    await firestore.collection('off_products').doc(profile.barcode).set({
+      'barcode': profile.barcode,
+      'status': 'found',
+      'product': profile.toJson(),
+      'source': 'open_food_facts',
+      'fetched_at': DateTime(2026, 3, 4, 14, 0),
+      'updated_at': DateTime(2026, 3, 4, 14, 0),
+      'expires_at': DateTime(2026, 3, 5, 14, 0),
+    });
+
+    final loaded = await repository.readGlobalProduct(profile.barcode);
+
+    expect(loaded, isNotNull);
+    expect(loaded?.barcode, profile.barcode);
+    expect(loaded?.name, profile.name);
+  });
+
+  test('read global product ignores malformed off_products document', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreCalorieProductCacheRepository(
+      session: _FakeSession('user-1'),
+      firestore: firestore,
+    );
+
+    await firestore.collection('off_products').doc('4006381333931').set({
+      'barcode': '4006381333931',
+      'status': 'found',
+      'product': 'corrupted_payload',
+      'source': 'open_food_facts',
+    });
+
+    final loaded = await repository.readGlobalProduct('4006381333931');
+
+    expect(loaded, isNull);
+  });
 }

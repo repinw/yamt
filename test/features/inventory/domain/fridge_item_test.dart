@@ -75,6 +75,11 @@ void main() {
     final pending = missing.copyWith(
       barcodeLookupRequestedAt: DateTime.parse('2026-02-20T10:00:00Z'),
     );
+    final uncertain = pending.copyWith(
+      barcode: '4006381333931',
+      barcodeResolvedAt: DateTime.parse('2026-02-20T10:05:00Z'),
+      barcodeLookupUncertain: true,
+    );
     final resolved = pending.copyWith(
       barcode: '4006381333931',
       barcodeResolvedAt: DateTime.parse('2026-02-20T10:05:00Z'),
@@ -82,6 +87,7 @@ void main() {
 
     expect(missing.barcodeStatus, InventoryBarcodeStatus.missing);
     expect(pending.barcodeStatus, InventoryBarcodeStatus.pending);
+    expect(uncertain.barcodeStatus, InventoryBarcodeStatus.uncertain);
     expect(resolved.barcodeStatus, InventoryBarcodeStatus.resolved);
   });
 

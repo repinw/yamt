@@ -86,3 +86,43 @@ test("resolveAndPersistItem propagates timeout-like errors", async () => {
     /timeout/,
   );
 });
+
+test("resolveAndPersistItem persists uncertain AI barcode flag", async () => {
+  const memory = createMemoryItemRef();
+  const upsertCalls = [];
+  const service = createItemResolutionService({
+    nowIsoValue: () => "2026-03-04T10:00:00.000Z",
+    buildKeywordsValue: () => ["keyword"],
+    buildLookupKeywordsValue: () => ["lookup"],
+    resolveFromGlobalCatalogValue: async () => null,
+    resolveCandidatesValue: async () => ({
+      candidates: ["4006381333931"],
+      uncertain: true,
+    }),
+    upsertGlobalResolutionValue: async (payload) => {
+      upsertCalls.push(payload);
+    },
+    loggerValue: createNoopLogger(),
+  });
+
+  const result = await service.resolveAndPersistItem({
+    uid: "uid-1",
+    itemId: "item-1",
+    itemName: "Bunte Eier",
+    brand: "Vom Land",
+    storeName: "Kaufland",
+    weight: "10 Stk",
+    fingerprint: "bunte_eier__vom_land",
+    trigger: "manual_search",
+    itemRef: memory.ref,
+  });
+
+  assert.equal(result.found, true);
+  assert.equal(result.barcode, "4006381333931");
+  assert.equal(result.uncertain, true);
+  assert.equal(upsertCalls.length, 1);
+  assert.equal(upsertCalls[0].barcodeLookupUncertain, true);
+
+  const resolvedWrite = memory.writes[memory.writes.length - 1];
+  assert.equal(resolvedWrite.data.barcodeLookupUncertain, true);
+});

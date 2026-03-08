@@ -90,6 +90,7 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.inventoryItemThrowAwayAction,
     l10n.inventoryItemActionFailed,
     l10n.inventoryBarcodeStatusPending,
+    l10n.inventoryBarcodeStatusUncertain,
     l10n.inventoryBarcodeStatusMissing,
     l10n.inventoryBarcodeMissingPromptTitle,
     l10n.inventoryBarcodeMissingPromptMessage,

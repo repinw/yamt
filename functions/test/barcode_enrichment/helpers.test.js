@@ -66,6 +66,18 @@ test("parseResponseAsJson reads direct JSON field", () => {
   });
 });
 
+test("parseResponseAsJson keeps uncertainty from direct JSON field", () => {
+  const parsed = parseResponseAsJson({
+    ean_candidates: ["4316268648998"],
+    is_uncertain: true,
+  });
+
+  assert.deepEqual(parsed, {
+    ean_candidates: ["4316268648998"],
+    is_uncertain: true,
+  });
+});
+
 test("parseResponseAsJson extracts JSON from text response", () => {
   const parsed = parseResponseAsJson({
     text:

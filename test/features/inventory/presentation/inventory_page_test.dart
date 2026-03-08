@@ -440,6 +440,42 @@ void main() {
     expect(find.text('Barcode missing'), findsOneWidget);
   });
 
+  testWidgets('shows barcode uncertainty marker when flag is set', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <FridgeItem>[
+        _item('a', quantity: 2, initialQuantity: 2).copyWith(
+          barcode: '4006381333931',
+          barcodeResolvedAt: DateTime.parse('2026-02-20T10:05:00Z'),
+          barcodeLookupUncertain: true,
+        ),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        repository,
+        includeDefaultBarcodeFlagsOverride: false,
+        overrides: <dynamic>[
+          barcodeBackfillFeatureFlagsProvider.overrideWithValue(
+            const BarcodeBackfillFeatureFlags(
+              showInventoryBarcodeMarkers: true,
+              enableEatBridge: false,
+              enableQueueBackfill: false,
+            ),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('No receipt'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Not sure'), findsOneWidget);
+  });
+
   testWidgets('search barcode button triggers direct item lookup', (
     tester,
   ) async {

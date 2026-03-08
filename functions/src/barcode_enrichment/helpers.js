@@ -24,6 +24,47 @@ function readPositiveInt(value) {
   return Math.floor(parsed);
 }
 
+function readPositiveIntFromEnv(key, fallback) {
+  const raw = process.env[key];
+  if (typeof raw !== "string" || raw.trim().length === 0) {
+    return fallback;
+  }
+
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return Math.floor(parsed);
+}
+
+function readStringFromEnv(key, fallback) {
+  const raw = process.env[key];
+  if (typeof raw !== "string") {
+    return fallback;
+  }
+  const normalized = readString(raw);
+  return normalized ?? fallback;
+}
+
+function readBoolean(value) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "number") {
+    return value !== 0;
+  }
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true" || normalized === "1" || normalized === "yes") {
+      return true;
+    }
+    if (normalized === "false" || normalized === "0" || normalized === "no") {
+      return false;
+    }
+  }
+  return false;
+}
+
 function nowIso() {
   return new Date().toISOString();
 }
@@ -298,7 +339,13 @@ function extractTextResponse(response) {
 function parseResponseAsJson(response) {
   const directCandidates = response?.ean_candidates;
   if (Array.isArray(directCandidates)) {
-    return { ean_candidates: directCandidates };
+    const payload = {
+      ean_candidates: directCandidates,
+    };
+    if (Object.prototype.hasOwnProperty.call(response, "is_uncertain")) {
+      payload.is_uncertain = response.is_uncertain;
+    }
+    return payload;
   }
 
   const text = extractTextResponse(response);
@@ -422,6 +469,9 @@ function clipTextForLog(value, maxLength = 4000) {
 module.exports = {
   readString,
   readPositiveInt,
+  readPositiveIntFromEnv,
+  readStringFromEnv,
+  readBoolean,
   nowIso,
   normalizeBarcode,
   normalizeCandidates,
