@@ -5,13 +5,15 @@ import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 
 part 'receipt_to_fridge_item_mapper.g.dart';
 
+const _nameNumberTokenPattern = r'(?:\d+(?:[.,]\d+)?|[.,]\d+)';
+
 final _namePackWithUnitPattern = RegExp(
-  r'(?:^|\b)(\d{1,3})\s*[x\u00D7]\s*(\d+(?:[.,]\d+)?)\s*'
-  r'(kg|g|mg|ml|cl|dl|l)\b',
+  '(?:^|\\b)(\\d{1,3})\\s*[x\\u00D7]\\s*($_nameNumberTokenPattern)\\s*'
+  '(kg|g|mg|ml|cl|dl|l)\\b',
   caseSensitive: false,
 );
 final _nameValueWithUnitPattern = RegExp(
-  r'(?:^|\b)(\d+(?:[.,]\d+)?)\s*(kg|g|mg|ml|cl|dl|l)\b',
+  '(?:^|\\b)($_nameNumberTokenPattern)\\s*(kg|g|mg|ml|cl|dl|l)\\b',
   caseSensitive: false,
 );
 final _namePiecePattern = RegExp(
@@ -309,7 +311,12 @@ String? _normalizeNumberToken(String? raw) {
   if (trimmed.isEmpty) {
     return null;
   }
-  return trimmed.replaceAll(',', '.');
+
+  final normalized = trimmed.replaceAll(',', '.');
+  if (normalized.startsWith('.')) {
+    return '0$normalized';
+  }
+  return normalized;
 }
 
 String? _normalizeMassVolumeUnit(String? raw) {

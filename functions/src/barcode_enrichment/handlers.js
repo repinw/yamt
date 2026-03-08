@@ -487,14 +487,20 @@ function createBarcodeHandlers({
         });
       }
     } catch (error) {
-      if (isResourceExhaustedErrorValue(error)) {
-        await applyRateLimitCooldownValue({
-          dbClient,
-          collection: vertexRateLimitCollection,
-          documentId: vertexRateLimitDocId,
-          cooldownMs: vertexResourceExhaustedCooldownMs,
-          nowMs: nowMsValue(),
-        });
+      const isResourceExhausted = isResourceExhaustedErrorValue(error);
+      const isRateLimitBackoffError = isRateLimitQueueFullError(error) ||
+        isRateLimitWaitTimeoutError(error);
+
+      if (isResourceExhausted || isRateLimitBackoffError) {
+        if (isResourceExhausted) {
+          await applyRateLimitCooldownValue({
+            dbClient,
+            collection: vertexRateLimitCollection,
+            documentId: vertexRateLimitDocId,
+            cooldownMs: vertexResourceExhaustedCooldownMs,
+            nowMs: nowMsValue(),
+          });
+        }
         await markJobResourceExhaustedValue({
           jobRef: after.ref,
           attempts: lock.attempts,
@@ -505,6 +511,9 @@ function createBarcodeHandlers({
           {
             jobId: after.id,
             attempts: lock.attempts,
+            reason: isResourceExhausted ?
+              "resource_exhausted" :
+              "rate_limit_backoff",
             error: extractErrorMessageValue(error),
             details: extractErrorDetailsValue(error),
           },
@@ -613,5 +622,32 @@ function isRateLimitQueueFullError(error) {
     (error &&
       typeof error === "object" &&
       error.name === "RateLimitQueueFullError")
+  );
+}
+
+function isRateLimitWaitTimeoutError(error) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const name = readString(error.name)?.toLowerCase() ?? "";
+  if (name === "ratelimitwaittimeouterror") {
+    return true;
+  }
+
+  const code = readString(error.code)?.toLowerCase() ?? "";
+  if (code === "rate_limit_wait_timeout") {
+    return true;
+  }
+
+  if (name !== "timeouterror") {
+    return false;
+  }
+
+  const message = readString(error.message)?.toLowerCase() ?? "";
+  return (
+    message.includes("rate_limit_wait_timeout") ||
+    message.includes("rate limit wait timeout") ||
+    (message.includes("rate limit") && message.includes("timeout"))
   );
 }

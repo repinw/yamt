@@ -212,3 +212,128 @@ test("resolveInventoryItemBarcodeHandler rejects overloaded queue", async () => 
     },
   );
 });
+
+test("worker routes queue-full errors to resource-exhausted backoff path", async () => {
+  const markJobFailedCalls = [];
+  const markJobResourceExhaustedCalls = [];
+  let cooldownCalls = 0;
+
+  const handlers = createBarcodeHandlers({
+    lockQueuedJobValue: async () => ({ shouldProcess: true, attempts: 2 }),
+    normalizeJobValue: () => ({
+      uid: "uid-1",
+      itemId: "item-1",
+      itemName: "Bunte Eier",
+      fingerprint: "bunte_eier__vom_land",
+      trigger: "receipt_upload",
+      brand: "Vom Land",
+      storeName: "Kaufland",
+      weight: "10 Stk",
+    }),
+    acquireRateLimitSlotValue: async () => {
+      const error = new Error("queue_full");
+      error.name = "RateLimitQueueFullError";
+      error.waitMs = 30 * 1000;
+      throw error;
+    },
+    isResourceExhaustedErrorValue: () => false,
+    applyRateLimitCooldownValue: async () => {
+      cooldownCalls += 1;
+    },
+    extractErrorMessageValue: (error) => `message=${error.message}`,
+    extractErrorDetailsValue: () => null,
+    markJobResourceExhaustedValue: async (payload) => {
+      markJobResourceExhaustedCalls.push(payload);
+    },
+    markJobFailedValue: async (payload) => {
+      markJobFailedCalls.push(payload);
+    },
+    loggerValue: createNoopLogger(),
+  });
+
+  const ref = {
+    async get() {
+      return {
+        exists: true,
+        data() {
+          return { any: "payload" };
+        },
+      };
+    },
+  };
+
+  await handlers.onBarcodeEnrichmentJobWrittenHandler({
+    data: {
+      after: {
+        exists: true,
+        ref,
+        id: "job-queue-full",
+      },
+    },
+  });
+
+  assert.equal(markJobResourceExhaustedCalls.length, 1);
+  assert.equal(markJobResourceExhaustedCalls[0].attempts, 2);
+  assert.equal(markJobFailedCalls.length, 0);
+  assert.equal(cooldownCalls, 0);
+});
+
+test("worker routes rate-limit wait timeout to resource-exhausted backoff path", async () => {
+  const markJobFailedCalls = [];
+  const markJobResourceExhaustedCalls = [];
+
+  const handlers = createBarcodeHandlers({
+    lockQueuedJobValue: async () => ({ shouldProcess: true, attempts: 3 }),
+    normalizeJobValue: () => ({
+      uid: "uid-1",
+      itemId: "item-1",
+      itemName: "Bunte Eier",
+      fingerprint: "bunte_eier__vom_land",
+      trigger: "receipt_upload",
+      brand: "Vom Land",
+      storeName: "Kaufland",
+      weight: "10 Stk",
+    }),
+    acquireRateLimitSlotValue: async () => Date.now(),
+    waitUntilValue: async () => {
+      const error = new Error("rate_limit_wait_timeout");
+      error.name = "RateLimitWaitTimeoutError";
+      throw error;
+    },
+    isResourceExhaustedErrorValue: () => false,
+    extractErrorMessageValue: (error) => `message=${error.message}`,
+    extractErrorDetailsValue: () => null,
+    markJobResourceExhaustedValue: async (payload) => {
+      markJobResourceExhaustedCalls.push(payload);
+    },
+    markJobFailedValue: async (payload) => {
+      markJobFailedCalls.push(payload);
+    },
+    loggerValue: createNoopLogger(),
+  });
+
+  const ref = {
+    async get() {
+      return {
+        exists: true,
+        data() {
+          return { any: "payload" };
+        },
+      };
+    },
+  };
+
+  await handlers.onBarcodeEnrichmentJobWrittenHandler({
+    data: {
+      after: {
+        exists: true,
+        ref,
+        id: "job-rate-limit-timeout",
+      },
+    },
+  });
+
+  assert.equal(markJobResourceExhaustedCalls.length, 1);
+  assert.equal(markJobResourceExhaustedCalls[0].attempts, 3);
+  assert.equal(markJobFailedCalls.length, 0);
+});

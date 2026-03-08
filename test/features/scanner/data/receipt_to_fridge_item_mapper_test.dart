@@ -167,6 +167,82 @@ void main() {
     expect(item.amountUnit, FridgeAmountUnit.piece);
   });
 
+  test('reparses leading-decimal pack values from name', () {
+    final extraction = ReceiptAnalysisExtraction(
+      root: const <String, dynamic>{},
+      items: const <ReceiptAnalysisItem>[
+        ReceiptAnalysisItem(
+          name: 'Nuesse 2x ,5kg',
+          rawPayload: <String, dynamic>{'n': 'Nuesse 2x ,5kg', 'p': '3,99'},
+        ),
+      ],
+    );
+
+    final item = mapper.map(extraction).single;
+
+    expect(item.weight, '2x0.5kg');
+    expect(item.initialAmount, 1000);
+    expect(item.currentAmount, 1000);
+    expect(item.amountUnit, FridgeAmountUnit.gram);
+  });
+
+  test('reparses pack values with unexpected spaces from name', () {
+    final extraction = ReceiptAnalysisExtraction(
+      root: const <String, dynamic>{},
+      items: const <ReceiptAnalysisItem>[
+        ReceiptAnalysisItem(
+          name: 'Hafer 10 x500 g',
+          rawPayload: <String, dynamic>{'n': 'Hafer 10 x500 g', 'p': '4,99'},
+        ),
+      ],
+    );
+
+    final item = mapper.map(extraction).single;
+
+    expect(item.weight, '10x500g');
+    expect(item.initialAmount, 5000);
+    expect(item.currentAmount, 5000);
+    expect(item.amountUnit, FridgeAmountUnit.gram);
+  });
+
+  test('reparses multipack volume from name', () {
+    final extraction = ReceiptAnalysisExtraction(
+      root: const <String, dynamic>{},
+      items: const <ReceiptAnalysisItem>[
+        ReceiptAnalysisItem(
+          name: 'Wasser 6x 1.5l',
+          rawPayload: <String, dynamic>{'n': 'Wasser 6x 1.5l', 'p': '5,99'},
+        ),
+      ],
+    );
+
+    final item = mapper.map(extraction).single;
+
+    expect(item.weight, '6x1.5l');
+    expect(item.initialAmount, 9000);
+    expect(item.currentAmount, 9000);
+    expect(item.amountUnit, FridgeAmountUnit.milliliter);
+  });
+
+  test('reparses single volume from name', () {
+    final extraction = ReceiptAnalysisExtraction(
+      root: const <String, dynamic>{},
+      items: const <ReceiptAnalysisItem>[
+        ReceiptAnalysisItem(
+          name: 'Saft 500ml',
+          rawPayload: <String, dynamic>{'n': 'Saft 500ml', 'p': '1,59'},
+        ),
+      ],
+    );
+
+    final item = mapper.map(extraction).single;
+
+    expect(item.weight, '500ml');
+    expect(item.initialAmount, 500);
+    expect(item.currentAmount, 500);
+    expect(item.amountUnit, FridgeAmountUnit.milliliter);
+  });
+
   test('maps real Kaufland-style AI payload correctly', () {
     const parser = JsonReceiptAnalysisParser();
     const rawResponse = '''

@@ -485,14 +485,14 @@ function buildProfileFromOffProduct({ barcode, product, nowMs }) {
     nutriments.fat_100g ?? nutriments.fat_100ml,
   );
 
-  if (name.isEmpty && per100Kcal <= 0 && imageUrl == null) {
+  if (name.length === 0 && per100Kcal <= 0 && imageUrl == null) {
     return null;
   }
 
   const nowIso = new Date(nowMs).toISOString();
   return {
     barcode,
-    name: name.isEmpty ? barcode : name,
+    name: name.length === 0 ? barcode : name,
     brand: brand && brand.length > 0 ? brand : null,
     per100_kcal: per100Kcal,
     per100_protein: per100Protein,
@@ -588,5 +588,6 @@ module.exports = {
   ...defaultOffLookupHandlers,
   CACHE_STATUS_FOUND,
   CACHE_STATUS_NOT_FOUND,
+  buildProfileFromOffProduct,
   isRetriableOffRequestError,
 };

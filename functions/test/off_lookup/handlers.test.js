@@ -5,6 +5,7 @@ const {
   createOffLookupHandlers,
   CACHE_STATUS_FOUND,
   CACHE_STATUS_NOT_FOUND,
+  buildProfileFromOffProduct,
   isRetriableOffRequestError,
 } = require("../../src/off_lookup/handlers");
 
@@ -185,6 +186,37 @@ test("resolveOffProductByBarcode falls back to stale cache on fetch error", asyn
   assert.equal(result.fromCache, true);
   assert.equal(result.stale, true);
   assert.equal(result.product?.name, "Stale Cached Milk");
+});
+
+test("buildProfileFromOffProduct uses barcode when name is missing", () => {
+  const barcode = "4006381333931";
+  const profile = buildProfileFromOffProduct({
+    barcode,
+    product: {
+      brands: "Test Brand",
+      nutriments: {
+        "energy-kcal_100g": 120,
+      },
+    },
+    nowMs: Date.parse("2026-03-08T12:00:00.000Z"),
+  });
+
+  assert.equal(profile?.barcode, barcode);
+  assert.equal(profile?.name, barcode);
+  assert.equal(profile?.per100_kcal, 120);
+});
+
+test("buildProfileFromOffProduct returns null when no name, kcal, or image", () => {
+  const profile = buildProfileFromOffProduct({
+    barcode: "4006381333931",
+    product: {
+      brands: "Test Brand",
+      nutriments: {},
+    },
+    nowMs: Date.parse("2026-03-08T12:00:00.000Z"),
+  });
+
+  assert.equal(profile, null);
 });
 
 test("isRetriableOffRequestError detects retryable errors", () => {
