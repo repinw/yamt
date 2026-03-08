@@ -298,7 +298,13 @@ function extractTextResponse(response) {
 function parseResponseAsJson(response) {
   const directCandidates = response?.ean_candidates;
   if (Array.isArray(directCandidates)) {
-    return { ean_candidates: directCandidates };
+    const payload = {
+      ean_candidates: directCandidates,
+    };
+    if (Object.prototype.hasOwnProperty.call(response, "is_uncertain")) {
+      payload.is_uncertain = response.is_uncertain;
+    }
+    return payload;
   }
 
   const text = extractTextResponse(response);

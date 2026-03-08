@@ -110,6 +110,9 @@ test("onBarcodeEnrichmentJobWrittenHandler marks job failed on resolver error", 
   let markResourceExhaustedCalls = 0;
 
   const handlers = createBarcodeHandlers({
+    acquireRateLimitSlotValue: async () => 0,
+    waitUntilValue: async () => {},
+    applyRateLimitCooldownValue: async () => {},
     lockQueuedJobValue: async () => ({ shouldProcess: true, attempts: 1 }),
     normalizeJobValue: () => ({
       uid: "uid-1",

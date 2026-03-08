@@ -20,8 +20,22 @@ const OFF_BASE_URL = `https://${OFF_BASE_HOST}`;
 const OFF_CACHE_COLLECTION = "off_products";
 const OFF_RATE_LIMIT_COLLECTION = "off_rate_limits";
 const OFF_PRODUCT_GATE_DOC = "product_lookup";
-const OFF_PRODUCT_MIN_INTERVAL_MS = 700;
-const OFF_REQUEST_TIMEOUT_MS = 10000;
+const OFF_PRODUCT_MIN_INTERVAL_MS = readPositiveIntFromEnv(
+  "OFF_PRODUCT_MIN_INTERVAL_MS",
+  700,
+);
+const OFF_REQUEST_TIMEOUT_MS = readPositiveIntFromEnv(
+  "OFF_REQUEST_TIMEOUT_MS",
+  12000,
+);
+const OFF_RETRY_REQUEST_TIMEOUT_MS = readPositiveIntFromEnv(
+  "OFF_RETRY_REQUEST_TIMEOUT_MS",
+  5000,
+);
+const OFF_RETRY_DELAY_MS = readPositiveIntFromEnv(
+  "OFF_RETRY_DELAY_MS",
+  300,
+);
 const OFF_FOUND_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const OFF_NOT_FOUND_TTL_MS = 12 * 60 * 60 * 1000;
 
@@ -36,6 +50,19 @@ const LOOKUP_ERROR_REQUEST_FAILED = "off_request_failed";
 
 const CACHE_STATUS_FOUND = "found";
 const CACHE_STATUS_NOT_FOUND = "not_found";
+
+function readPositiveIntFromEnv(key, fallback) {
+  const raw = process.env[key];
+  if (typeof raw !== "string" || raw.trim().length === 0) {
+    return fallback;
+  }
+
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return Math.floor(parsed);
+}
 
 function createOffLookupHandlers({
   functionRegion = FUNCTION_REGION,
@@ -325,6 +352,24 @@ function delay(ms) {
 }
 
 async function fetchOffProduct({ barcode, timeoutMs }) {
+  try {
+    return await fetchOffProductOnce({
+      barcode,
+      timeoutMs,
+    });
+  } catch (error) {
+    if (!isRetriableOffRequestError(error)) {
+      throw error;
+    }
+    await delay(OFF_RETRY_DELAY_MS);
+    return fetchOffProductOnce({
+      barcode,
+      timeoutMs: OFF_RETRY_REQUEST_TIMEOUT_MS,
+    });
+  }
+}
+
+async function fetchOffProductOnce({ barcode, timeoutMs }) {
   const url = new URL(`${OFF_BASE_URL}/api/v2/product/${barcode}.json`);
   url.searchParams.set("fields", OFF_FIELDS);
 
@@ -377,6 +422,55 @@ async function fetchOffProduct({ barcode, timeoutMs }) {
     status: CACHE_STATUS_FOUND,
     product: profile,
   };
+}
+
+function isRetriableOffRequestError(error) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const errorCode = Number(error.code);
+  if (Number.isFinite(errorCode) && errorCode === 20) {
+    return true;
+  }
+
+  const errorName = readString(error.name)?.toLowerCase();
+  if (errorName === "aborterror") {
+    return true;
+  }
+
+  const errorMessage = readString(error.message)?.toLowerCase() ?? "";
+  if (errorMessage.includes("off_http_429")) {
+    return true;
+  }
+  if (/off_http_5\d\d/.test(errorMessage)) {
+    return true;
+  }
+  if (isTransientNetworkText(errorMessage)) {
+    return true;
+  }
+
+  const causeMessage = readString(error?.cause?.message)?.toLowerCase() ?? "";
+  if (isTransientNetworkText(causeMessage)) {
+    return true;
+  }
+
+  return false;
+}
+
+function isTransientNetworkText(message) {
+  if (!message) {
+    return false;
+  }
+  return (
+    message.includes("aborted") ||
+    message.includes("connection closed") ||
+    message.includes("timed out") ||
+    message.includes("timeout") ||
+    message.includes("econnreset") ||
+    message.includes("fetch failed") ||
+    message.includes("socket")
+  );
 }
 
 async function fetchJsonWithTimeout({ url, timeoutMs, headers }) {
@@ -548,4 +642,5 @@ module.exports = {
   ...defaultOffLookupHandlers,
   CACHE_STATUS_FOUND,
   CACHE_STATUS_NOT_FOUND,
+  isRetriableOffRequestError,
 };

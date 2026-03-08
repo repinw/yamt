@@ -34,6 +34,7 @@ _FridgeItem _$FridgeItemFromJson(Map<String, dynamic> json) => _FridgeItem(
   barcodeResolvedAt: json['barcodeResolvedAt'] == null
       ? null
       : DateTime.parse(json['barcodeResolvedAt'] as String),
+  barcodeLookupUncertain: json['barcodeLookupUncertain'] as bool? ?? false,
   brand: json['brand'] as String?,
   category: json['category'] as String?,
   discounts:
@@ -69,6 +70,7 @@ Map<String, dynamic> _$FridgeItemToJson(_FridgeItem instance) =>
       'barcodeLookupRequestedAt': instance.barcodeLookupRequestedAt
           ?.toIso8601String(),
       'barcodeResolvedAt': instance.barcodeResolvedAt?.toIso8601String(),
+      'barcodeLookupUncertain': instance.barcodeLookupUncertain,
       'brand': instance.brand,
       'category': instance.category,
       'discounts': instance.discounts,

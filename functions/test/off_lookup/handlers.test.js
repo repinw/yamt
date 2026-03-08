@@ -5,6 +5,7 @@ const {
   createOffLookupHandlers,
   CACHE_STATUS_FOUND,
   CACHE_STATUS_NOT_FOUND,
+  isRetriableOffRequestError,
 } = require("../../src/off_lookup/handlers");
 
 function createNoopLogger() {
@@ -184,4 +185,54 @@ test("resolveOffProductByBarcode falls back to stale cache on fetch error", asyn
   assert.equal(result.fromCache, true);
   assert.equal(result.stale, true);
   assert.equal(result.product?.name, "Stale Cached Milk");
+});
+
+test("isRetriableOffRequestError detects retryable errors", () => {
+  assert.equal(
+    isRetriableOffRequestError({
+      name: "AbortError",
+      message: "This operation was aborted",
+    }),
+    true,
+  );
+  assert.equal(
+    isRetriableOffRequestError({
+      code: 20,
+      message: "This operation was aborted",
+    }),
+    true,
+  );
+  assert.equal(
+    isRetriableOffRequestError({
+      message: "off_http_429",
+    }),
+    true,
+  );
+  assert.equal(
+    isRetriableOffRequestError({
+      message: "off_http_503",
+    }),
+    true,
+  );
+  assert.equal(
+    isRetriableOffRequestError({
+      message: "Connection closed before full header was received",
+    }),
+    true,
+  );
+});
+
+test("isRetriableOffRequestError skips non-retryable errors", () => {
+  assert.equal(
+    isRetriableOffRequestError({
+      message: "off_http_403",
+    }),
+    false,
+  );
+  assert.equal(
+    isRetriableOffRequestError({
+      message: "invalid_barcode",
+    }),
+    false,
+  );
 });

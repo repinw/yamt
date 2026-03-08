@@ -653,6 +653,12 @@ abstract class AppLocalizations {
   /// **'Barcode lookup pending'**
   String get inventoryBarcodeStatusPending;
 
+  /// No description provided for @inventoryBarcodeStatusUncertain.
+  ///
+  /// In en, this message translates to:
+  /// **'Not sure'**
+  String get inventoryBarcodeStatusUncertain;
+
   /// No description provided for @inventoryBarcodeStatusMissing.
   ///
   /// In en, this message translates to:

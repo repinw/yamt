@@ -203,6 +203,7 @@ class FridgeItemsController extends _$FridgeItemsController {
       final updated = current.copyWith(
         barcodeLookupRequestedAt: now,
         barcodeCandidates: const <String>[],
+        barcodeLookupUncertain: false,
       );
       final nextItems = List<FridgeItem>.from(currentItems);
       nextItems[itemIndex] = updated;
@@ -231,6 +232,7 @@ class FridgeItemsController extends _$FridgeItemsController {
         barcode: normalized,
         barcodeCandidates: <String>[normalized],
         barcodeResolvedAt: now,
+        barcodeLookupUncertain: false,
       );
       final nextItems = List<FridgeItem>.from(currentItems);
       nextItems[itemIndex] = updated;

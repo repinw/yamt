@@ -41,6 +41,7 @@ async function resolveCandidates({ itemName, brand, storeName, weight }) {
     parsed.ean_candidates :
     [];
   const candidates = normalizeCandidates(rawCandidates);
+  const uncertain = readBoolean(parsed?.is_uncertain);
   const selectedBarcode = candidates.length > 0 ? candidates[0] : null;
 
   logger.info("Barcode AI response payload.", {
@@ -49,11 +50,15 @@ async function resolveCandidates({ itemName, brand, storeName, weight }) {
     responseText: clipTextForLog(extractTextResponse(response)),
     rawCandidates,
     candidates,
+    uncertain,
     selectedBarcode,
     found: selectedBarcode !== null,
   });
 
-  return candidates;
+  return {
+    candidates,
+    uncertain,
+  };
 }
 
 function buildSinglePrompt({ itemName, brand, storeName, weight }) {
@@ -68,19 +73,43 @@ function buildSinglePrompt({ itemName, brand, storeName, weight }) {
     "",
     "Antwortformat:",
     "{",
-    '  "ean_candidates": ["digits_only"]',
+    '  "ean_candidates": ["digits_only"],',
+    '  "is_uncertain": true',
     "}",
     "",
     "Regeln:",
     "- Nur Ziffern mit 8 bis 14 Stellen.",
     "- Maximal 5 Kandidaten.",
-    "- Wenn unsicher: leeres Array.",
+    "- Wenn sicher: is_uncertain=false.",
+    "- Wenn unsicher: gib den wahrscheinlichsten Kandidaten trotzdem als",
+    "  ersten Treffer und setze is_uncertain=true.",
+    "- Wenn kein vernuenftiger Kandidat moeglich: leeres Array und",
+    "  is_uncertain=true.",
     "",
     `item_name: ${safeItemName}`,
     `store_name: ${safeStoreName}`,
     `brand: ${safeBrand}`,
     `weight: ${safeWeight}`,
   ].join("\n");
+}
+
+function readBoolean(value) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "number") {
+    return value !== 0;
+  }
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true" || normalized === "1" || normalized === "yes") {
+      return true;
+    }
+    if (normalized === "false" || normalized === "0" || normalized === "no") {
+      return false;
+    }
+  }
+  return false;
 }
 
 module.exports = {

@@ -103,6 +103,7 @@
   "inventoryItemThrowAwayAction": "Throw away",
   "inventoryItemActionFailed": "Action failed. Please try again.",
   "inventoryBarcodeStatusPending": "Barcode lookup pending",
+  "inventoryBarcodeStatusUncertain": "Not sure",
   "inventoryBarcodeStatusMissing": "Barcode missing",
   "inventoryBarcodeMissingPromptTitle": "Barcode missing",
   "inventoryBarcodeMissingPromptMessage":

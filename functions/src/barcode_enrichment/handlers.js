@@ -5,9 +5,12 @@ const {
   JOB_COLLECTION,
   WORKER_MAX_INSTANCES,
   MAX_JOB_RETRIES,
+  VERTEX_ENRICHMENT_MIN_INTERVAL_MS,
+  VERTEX_RESOURCE_EXHAUSTED_COOLDOWN_MS,
   KEYWORD_ALIAS_MIN_SCORE,
   MODEL_NAME,
   MODEL_LOCATION,
+  FieldValue,
   db,
 } = require("./runtime");
 const { resolveRequestUid } = require("./auth");
@@ -43,11 +46,18 @@ const {
   persistItemResolved,
 } = require("./item_resolution");
 
+const AI_RATE_LIMIT_COLLECTION = "ai_rate_limits";
+const AI_BARCODE_ENRICHMENT_GATE_DOC = "barcode_enrichment";
+
 function createBarcodeHandlers({
   functionRegion = FUNCTION_REGION,
   jobCollection = JOB_COLLECTION,
   workerMaxInstances = WORKER_MAX_INSTANCES,
   maxJobRetries = MAX_JOB_RETRIES,
+  vertexRateLimitCollection = AI_RATE_LIMIT_COLLECTION,
+  vertexRateLimitDocId = AI_BARCODE_ENRICHMENT_GATE_DOC,
+  vertexMinIntervalMs = VERTEX_ENRICHMENT_MIN_INTERVAL_MS,
+  vertexResourceExhaustedCooldownMs = VERTEX_RESOURCE_EXHAUSTED_COOLDOWN_MS,
   keywordAliasMinScore = KEYWORD_ALIAS_MIN_SCORE,
   modelName = MODEL_NAME,
   modelLocation = MODEL_LOCATION,
@@ -57,6 +67,7 @@ function createBarcodeHandlers({
   resolveRequestUidValue = resolveRequestUid,
   readStringValue = readString,
   nowIsoValue = nowIso,
+  nowMsValue = () => Date.now(),
   computeFoodFingerprintValue = computeFoodFingerprint,
   normalizeEnqueueItemsValue = normalizeEnqueueItems,
   buildKeywordsValue = buildKeywords,
@@ -78,6 +89,9 @@ function createBarcodeHandlers({
   markJobResourceExhaustedValue = markJobResourceExhausted,
   resolveAndPersistItemValue = resolveAndPersistItem,
   persistItemResolvedValue = persistItemResolved,
+  acquireRateLimitSlotValue = acquireRateLimitSlot,
+  applyRateLimitCooldownValue = applyRateLimitCooldown,
+  waitUntilValue = waitUntil,
 } = {}) {
   const resolveInventoryItemBarcodeOptions = {
     region: functionRegion,
@@ -112,6 +126,7 @@ function createBarcodeHandlers({
         found: false,
         barcode: null,
         candidates: [],
+        uncertain: false,
         error: "missing_item_id",
       };
     }
@@ -125,6 +140,7 @@ function createBarcodeHandlers({
           found: false,
           barcode: null,
           candidates: [],
+          uncertain: false,
           error: "item_not_found",
         };
       }
@@ -138,6 +154,7 @@ function createBarcodeHandlers({
           found: false,
           barcode: null,
           candidates: [],
+          uncertain: false,
           error: "missing_item_name",
         };
       }
@@ -164,6 +181,15 @@ function createBarcodeHandlers({
         sdk: "@google/genai",
       });
 
+      const scheduledAtMs = await acquireRateLimitSlotValue({
+        dbClient,
+        collection: vertexRateLimitCollection,
+        documentId: vertexRateLimitDocId,
+        minIntervalMs: vertexMinIntervalMs,
+        nowMs: nowMsValue(),
+      });
+      await waitUntilValue(scheduledAtMs, nowMsValue);
+
       const outcome = await resolveAndPersistItemValue({
         uid,
         itemId,
@@ -181,11 +207,21 @@ function createBarcodeHandlers({
         found: outcome.found,
         barcode: outcome.barcode,
         candidates: outcome.candidates,
+        uncertain: Boolean(outcome.uncertain),
         source: outcome.source,
       };
     } catch (error) {
       if (error instanceof httpsErrorClass) {
         throw error;
+      }
+      if (isResourceExhaustedErrorValue(error)) {
+        await applyRateLimitCooldownValue({
+          dbClient,
+          collection: vertexRateLimitCollection,
+          documentId: vertexRateLimitDocId,
+          cooldownMs: vertexResourceExhaustedCooldownMs,
+          nowMs: nowMsValue(),
+        });
       }
       loggerValue.error("resolveInventoryItemBarcode failed.", {
         uid,
@@ -198,6 +234,7 @@ function createBarcodeHandlers({
         found: false,
         barcode: null,
         candidates: [],
+        uncertain: false,
         error: extractErrorMessageValue(error),
       };
     }
@@ -270,12 +307,16 @@ function createBarcodeHandlers({
           globalMatch.barcodeCandidates,
           globalMatch.barcode,
         );
+        const barcodeLookupUncertain = Boolean(
+          globalMatch.barcodeLookupUncertain,
+        );
         await persistItemResolvedValue({
           itemRef,
           fingerprint: item.fingerprint,
           requestedAt: now,
           barcode: globalMatch.barcode,
           candidates,
+          barcodeLookupUncertain,
           searchKeywords,
         });
         await touchGlobalResolutionValue(globalMatch.matchedFingerprint);
@@ -294,6 +335,7 @@ function createBarcodeHandlers({
             weight: item.weight,
             source: "global_keyword_match",
             keywordMatchScore: globalMatch.score,
+            barcodeLookupUncertain,
             uid,
           });
         }
@@ -318,10 +360,12 @@ function createBarcodeHandlers({
           trigger,
           status: "queued",
           attempts: 0,
+          resourceExhaustedCount: 0,
           maxRetries: maxJobRetries,
           queuedAt: now,
           updatedAt: now,
           startedAt: null,
+          nextAttemptAt: null,
           completedAt: null,
           lastError: null,
           found: null,
@@ -377,6 +421,15 @@ function createBarcodeHandlers({
     }
 
     try {
+      const scheduledAtMs = await acquireRateLimitSlotValue({
+        dbClient,
+        collection: vertexRateLimitCollection,
+        documentId: vertexRateLimitDocId,
+        minIntervalMs: vertexMinIntervalMs,
+        nowMs: nowMsValue(),
+      });
+      await waitUntilValue(scheduledAtMs, nowMsValue);
+
       const outcome = await resolveAndPersistItemValue({
         uid: job.uid,
         itemId: job.itemId,
@@ -395,6 +448,7 @@ function createBarcodeHandlers({
           found: true,
           barcode: outcome.barcode,
           candidates: outcome.candidates,
+          barcodeLookupUncertain: outcome.uncertain,
           source: outcome.source,
         });
       } else {
@@ -408,6 +462,13 @@ function createBarcodeHandlers({
       }
     } catch (error) {
       if (isResourceExhaustedErrorValue(error)) {
+        await applyRateLimitCooldownValue({
+          dbClient,
+          collection: vertexRateLimitCollection,
+          documentId: vertexRateLimitDocId,
+          cooldownMs: vertexResourceExhaustedCooldownMs,
+          nowMs: nowMsValue(),
+        });
         await markJobResourceExhaustedValue({
           jobRef: after.ref,
           attempts: lock.attempts,
@@ -453,5 +514,96 @@ const defaultBarcodeHandlers = createBarcodeHandlers();
 
 module.exports = {
   createBarcodeHandlers,
+  acquireRateLimitSlot,
+  applyRateLimitCooldown,
+  waitUntil,
   ...defaultBarcodeHandlers,
 };
+
+async function acquireRateLimitSlot({
+  dbClient,
+  collection,
+  documentId,
+  minIntervalMs,
+  nowMs,
+}) {
+  const gateRef = dbClient.collection(collection).doc(documentId);
+  return dbClient.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(gateRef);
+    const data = snapshot.exists ? snapshot.data() ?? {} : {};
+    const nextAllowedAtMs = readTimestampMs(data.next_allowed_at) ?? 0;
+    const reservedAtMs = Math.max(nowMs, nextAllowedAtMs);
+    const nextAtMs = reservedAtMs + minIntervalMs;
+
+    transaction.set(
+      gateRef,
+      {
+        next_allowed_at: new Date(nextAtMs),
+        updated_at: FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    return reservedAtMs;
+  });
+}
+
+async function applyRateLimitCooldown({
+  dbClient,
+  collection,
+  documentId,
+  cooldownMs,
+  nowMs,
+}) {
+  const gateRef = dbClient.collection(collection).doc(documentId);
+  await dbClient.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(gateRef);
+    const data = snapshot.exists ? snapshot.data() ?? {} : {};
+    const currentNextAllowedAtMs = readTimestampMs(data.next_allowed_at) ?? 0;
+    const cooldownUntilMs = nowMs + cooldownMs;
+    const nextAllowedAtMs = Math.max(currentNextAllowedAtMs, cooldownUntilMs);
+
+    transaction.set(
+      gateRef,
+      {
+        next_allowed_at: new Date(nextAllowedAtMs),
+        updated_at: FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+  });
+}
+
+async function waitUntil(targetMs, nowMsValue) {
+  const waitMs = targetMs - nowMsValue();
+  if (waitMs <= 0) {
+    return;
+  }
+  await delay(waitMs);
+}
+
+function readTimestampMs(value) {
+  if (value && typeof value.toDate === "function") {
+    const date = value.toDate();
+    if (date instanceof Date) {
+      return date.getTime();
+    }
+  }
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+  const raw = readString(value);
+  if (raw) {
+    const parsed = Date.parse(raw);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+  return null;
+}
+
+function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}

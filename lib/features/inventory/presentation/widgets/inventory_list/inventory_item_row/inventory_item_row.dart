@@ -381,6 +381,10 @@ class _InventoryItemRowLayoutData {
 }) {
   return switch (status) {
     InventoryBarcodeStatus.resolved => null,
+    InventoryBarcodeStatus.uncertain => (
+      text: l10n.inventoryBarcodeStatusUncertain,
+      color: colorScheme.secondary,
+    ),
     InventoryBarcodeStatus.pending => (
       text: l10n.inventoryBarcodeStatusPending,
       color: colorScheme.tertiary,

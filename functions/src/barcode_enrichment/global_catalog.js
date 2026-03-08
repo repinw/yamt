@@ -34,6 +34,7 @@ async function resolveFromGlobalCatalog({
       matchedFingerprint: fingerprint,
       barcode: exactMatch.barcode,
       barcodeCandidates: exactMatch.barcodeCandidates,
+      barcodeLookupUncertain: exactMatch.barcodeLookupUncertain,
       matchType: "exact",
       score: 100,
     };
@@ -91,6 +92,7 @@ async function resolveFromGlobalCatalog({
       matchedFingerprint: doc.id,
       barcode,
       barcodeCandidates: candidates,
+      barcodeLookupUncertain: readBoolean(data.barcodeLookupUncertain),
       matchType: "keyword",
       score: match.score,
     });
@@ -138,6 +140,7 @@ async function readGlobalResolutionByFingerprint(fingerprint) {
       data.barcodeCandidates,
       barcode,
     ),
+    barcodeLookupUncertain: readBoolean(data.barcodeLookupUncertain),
   };
 }
 
@@ -346,6 +349,7 @@ async function upsertGlobalResolution({
   fingerprint,
   barcode,
   candidates,
+  barcodeLookupUncertain,
   itemName,
   brand,
   storeName,
@@ -366,6 +370,7 @@ async function upsertGlobalResolution({
       fingerprint,
       barcode,
       barcodeCandidates: ensureCandidatesContainBarcode(candidates, barcode),
+      barcodeLookupUncertain: readBoolean(barcodeLookupUncertain),
       itemName,
       brand: brand ?? null,
       nameNormalized: normalizeForLookup(itemName),
@@ -381,6 +386,25 @@ async function upsertGlobalResolution({
     },
     { merge: true },
   );
+}
+
+function readBoolean(value) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "number") {
+    return value !== 0;
+  }
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true" || normalized === "1" || normalized === "yes") {
+      return true;
+    }
+    if (normalized === "false" || normalized === "0" || normalized === "no") {
+      return false;
+    }
+  }
+  return false;
 }
 
 async function touchGlobalResolution(fingerprint) {

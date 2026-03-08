@@ -55,7 +55,7 @@ final class CalorieLookupFunctionsProvider
 }
 
 String _$calorieLookupFunctionsHash() =>
-    r'436ada1c3fed44d41942d7d329137259e9faf7a0';
+    r'33b92a7e259965f8b10febe5e7ff1f1821f762d4';
 
 @ProviderFor(calorieOffLookupClient)
 final calorieOffLookupClientProvider = CalorieOffLookupClientProvider._();

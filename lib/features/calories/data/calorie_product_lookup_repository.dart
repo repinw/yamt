@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository.dart';
@@ -20,14 +22,37 @@ const _offBaseUrl = 'world.openfoodfacts.org';
 const _lookupErrorInvalidBarcode = 'invalid_barcode';
 const _lookupErrorRequestFailed = 'off_request_failed';
 const _lookupErrorUnavailable = 'off_lookup_unavailable';
+const _lookupErrorUnauthenticated = 'unauthenticated';
 const _functionsRegion = 'europe-west1';
 const _lookupCallableName = 'resolveOffProductByBarcode';
 const _lookupCallableTimeout = Duration(seconds: 20);
+const _useFunctionsEmulator = bool.fromEnvironment(
+  'USE_FUNCTIONS_EMULATOR',
+  defaultValue: false,
+);
+const _functionsEmulatorHostFromDefine = String.fromEnvironment(
+  'FUNCTIONS_EMULATOR_HOST',
+  defaultValue: '',
+);
+const _functionsEmulatorPort = int.fromEnvironment(
+  'FUNCTIONS_EMULATOR_PORT',
+  defaultValue: 5001,
+);
 
 @riverpod
 FirebaseFunctions? calorieLookupFunctions(Ref ref) {
   try {
-    return FirebaseFunctions.instanceFor(region: _functionsRegion);
+    final functions = FirebaseFunctions.instanceFor(region: _functionsRegion);
+    if (_useFunctionsEmulator) {
+      final host = _resolveFunctionsEmulatorHost();
+      functions.useFunctionsEmulator(host, _functionsEmulatorPort);
+      log(
+        'Functions emulator enabled for calorie lookup: '
+        '$host:$_functionsEmulatorPort (region=$_functionsRegion).',
+        name: _lookupLogName,
+      );
+    }
+    return functions;
   } catch (error, stackTrace) {
     log(
       'FirebaseFunctions not available for calorie lookup.',
@@ -92,6 +117,17 @@ class FirebaseCallableCalorieOffLookupClient implements CalorieOffLookupClient {
 
   @override
   Future<CalorieOffLookupResult> lookupByBarcode(String barcode) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      log(
+        'Skipping callable OFF lookup without authenticated Firebase user.',
+        name: _lookupLogName,
+      );
+      return const CalorieOffLookupResult.failed(
+        errorCode: _lookupErrorUnauthenticated,
+      );
+    }
+
     try {
       final callable = _functions.httpsCallable(
         _lookupCallableName,
@@ -305,4 +341,15 @@ class OffBackedCalorieProductLookupRepository
       imageUrl: _normalizeOffImageUrl(profile.imageUrl),
     );
   }
+}
+
+String _resolveFunctionsEmulatorHost() {
+  final hostFromDefine = _functionsEmulatorHostFromDefine.trim();
+  if (hostFromDefine.isNotEmpty) {
+    return hostFromDefine;
+  }
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    return '10.0.2.2';
+  }
+  return '127.0.0.1';
 }

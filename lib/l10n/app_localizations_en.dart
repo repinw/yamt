@@ -290,6 +290,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryBarcodeStatusPending => 'Barcode lookup pending';
 
   @override
+  String get inventoryBarcodeStatusUncertain => 'Not sure';
+
+  @override
   String get inventoryBarcodeStatusMissing => 'Barcode missing';
 
   @override

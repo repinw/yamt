@@ -28,4 +28,6 @@ test("buildSinglePrompt asks for JSON and active web search", () => {
   assert.match(prompt, /Nutze Websuche aktiv\./);
   assert.match(prompt, /Gib nur JSON zurueck\./);
   assert.match(prompt, /"ean_candidates"/);
+  assert.match(prompt, /"is_uncertain"/);
+  assert.match(prompt, /wahrscheinlichsten Kandidaten/);
 });

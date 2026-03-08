@@ -290,6 +290,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryBarcodeStatusPending => 'Barcode-Abgleich läuft';
 
   @override
+  String get inventoryBarcodeStatusUncertain => 'Nicht sicher';
+
+  @override
   String get inventoryBarcodeStatusMissing => 'Barcode fehlt';
 
   @override

@@ -81,12 +81,16 @@ function createItemResolutionService({
         cachedResolution.barcodeCandidates,
         cachedResolution.barcode,
       );
+      const barcodeLookupUncertain = readBoolean(
+        cachedResolution.barcodeLookupUncertain,
+      );
       await persistItemResolved({
         itemRef: resolvedItemRef,
         fingerprint,
         requestedAt,
         barcode: cachedResolution.barcode,
         candidates: mergedCandidates,
+        barcodeLookupUncertain,
         searchKeywords,
       });
       await touchGlobalResolutionValue(cachedResolution.matchedFingerprint);
@@ -105,6 +109,7 @@ function createItemResolutionService({
           weight,
           source: "global_keyword_match",
           keywordMatchScore: cachedResolution.score,
+          barcodeLookupUncertain,
           uid,
         });
       }
@@ -120,17 +125,22 @@ function createItemResolutionService({
         found: true,
         barcode: cachedResolution.barcode,
         candidates: mergedCandidates,
+        uncertain: barcodeLookupUncertain,
         source: cachedResolution.matchType === "keyword" ?
           "global_keyword_match" :
           "global_cache",
       };
     }
 
-    const candidates = await resolveCandidatesValue({
+    const rawAiResolution = await resolveCandidatesValue({
       itemName,
       brand,
       storeName,
       weight,
+    });
+    const { candidates, uncertain } = normalizeAiResolution({
+      rawAiResolution,
+      normalizeCandidatesValue,
     });
     const barcode = candidates.length > 0 ? candidates[0] : null;
     if (barcode) {
@@ -140,6 +150,7 @@ function createItemResolutionService({
         requestedAt,
         barcode,
         candidates,
+        barcodeLookupUncertain: uncertain,
         searchKeywords,
       });
       await upsertGlobalResolutionValue({
@@ -151,6 +162,7 @@ function createItemResolutionService({
         storeName,
         weight,
         source: "ai_single",
+        barcodeLookupUncertain: uncertain,
         uid,
       });
       loggerValue.info("Inventory item barcode resolved.", {
@@ -158,12 +170,14 @@ function createItemResolutionService({
         itemId,
         fingerprint,
         barcode,
+        uncertain,
         trigger,
       });
       return {
         found: true,
         barcode,
         candidates,
+        uncertain,
         source: "ai_single",
       };
     }
@@ -185,6 +199,7 @@ function createItemResolutionService({
       found: false,
       barcode: null,
       candidates,
+      uncertain,
       source: "ai_single",
     };
   }
@@ -195,6 +210,7 @@ function createItemResolutionService({
     requestedAt,
     barcode,
     candidates,
+    barcodeLookupUncertain,
     searchKeywords,
   }) {
     await itemRef.set(
@@ -205,6 +221,7 @@ function createItemResolutionService({
           barcode,
         ),
         barcodeResolvedAt: nowIsoValue(),
+        barcodeLookupUncertain: readBoolean(barcodeLookupUncertain),
         barcodeLookupRequestedAt: requestedAt,
         foodFingerprint: fingerprint,
         searchKeywords,
@@ -223,6 +240,7 @@ function createItemResolutionService({
     await itemRef.set(
       {
         barcodeCandidates: normalizeCandidatesValue(candidates),
+        barcodeLookupUncertain: false,
         barcodeLookupRequestedAt: requestedAt,
         foodFingerprint: fingerprint,
         searchKeywords,
@@ -239,6 +257,46 @@ function createItemResolutionService({
 }
 
 const defaultItemResolutionService = createItemResolutionService();
+
+function normalizeAiResolution({ rawAiResolution, normalizeCandidatesValue }) {
+  if (Array.isArray(rawAiResolution)) {
+    return {
+      candidates: normalizeCandidatesValue(rawAiResolution),
+      uncertain: false,
+    };
+  }
+
+  if (!rawAiResolution || typeof rawAiResolution !== "object") {
+    return {
+      candidates: [],
+      uncertain: false,
+    };
+  }
+
+  return {
+    candidates: normalizeCandidatesValue(rawAiResolution.candidates),
+    uncertain: readBoolean(rawAiResolution.uncertain),
+  };
+}
+
+function readBoolean(value) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "number") {
+    return value !== 0;
+  }
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true" || normalized === "1" || normalized === "yes") {
+      return true;
+    }
+    if (normalized === "false" || normalized === "0" || normalized === "no") {
+      return false;
+    }
+  }
+  return false;
+}
 
 module.exports = {
   createItemResolutionService,
