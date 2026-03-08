@@ -98,4 +98,23 @@ void main() {
     expect(loaded?.barcode, profile.barcode);
     expect(loaded?.name, profile.name);
   });
+
+  test('read global product ignores malformed off_products document', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreCalorieProductCacheRepository(
+      session: _FakeSession('user-1'),
+      firestore: firestore,
+    );
+
+    await firestore.collection('off_products').doc('4006381333931').set({
+      'barcode': '4006381333931',
+      'status': 'found',
+      'product': 'corrupted_payload',
+      'source': 'open_food_facts',
+    });
+
+    final loaded = await repository.readGlobalProduct('4006381333931');
+
+    expect(loaded, isNull);
+  });
 }

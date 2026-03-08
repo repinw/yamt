@@ -21,7 +21,6 @@ function createJobService({
   nowIsoValue = nowIso,
   nowMsValue = () => Date.now(),
   randomValue = Math.random,
-  waitValue = delay,
   normalizeCandidatesValue = normalizeCandidates,
   readPositiveIntValue = readPositiveInt,
   readStringValue = readString,
@@ -204,17 +203,6 @@ function createJobService({
       },
       { merge: true },
     );
-
-    await waitValue(backoffDelayMs);
-
-    await jobRef.set(
-      {
-        status: "queued",
-        updatedAt: nowIsoValue(),
-        nextAttemptAt: null,
-      },
-      { merge: true },
-    );
   }
 
   return {
@@ -249,9 +237,3 @@ module.exports = {
   computeResourceExhaustedBackoffDelayMs,
   ...defaultJobService,
 };
-
-function delay(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}

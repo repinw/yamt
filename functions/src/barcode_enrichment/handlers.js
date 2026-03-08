@@ -16,6 +16,7 @@ const {
 const { resolveRequestUid } = require("./auth");
 const {
   readString,
+  readPositiveIntFromEnv,
   nowIso,
   computeFoodFingerprint,
   normalizeEnqueueItems,
@@ -46,6 +47,7 @@ const {
   persistItemResolved,
 } = require("./item_resolution");
 const {
+  readTimestampMs,
   acquireRateLimitSlot: acquireRateLimitSlotShared,
   applyRateLimitCooldown: applyRateLimitCooldownShared,
   waitUntil,
@@ -54,6 +56,14 @@ const {
 const AI_RATE_LIMIT_COLLECTION = "ai_rate_limits";
 const AI_BARCODE_ENRICHMENT_GATE_DOC = "barcode_enrichment";
 const MAX_CALLABLE_RATE_LIMIT_WAIT_MS = 70 * 1000;
+const JOB_RECOVERY_BATCH_SIZE = readPositiveIntFromEnv(
+  "BARCODE_JOB_RECOVERY_BATCH_SIZE",
+  100,
+);
+const RUNNING_JOB_STALE_MS = readPositiveIntFromEnv(
+  "BARCODE_JOB_RUNNING_STALE_MS",
+  10 * 60 * 1000,
+);
 
 function createBarcodeHandlers({
   functionRegion = FUNCTION_REGION,
@@ -65,6 +75,8 @@ function createBarcodeHandlers({
   vertexMinIntervalMs = VERTEX_ENRICHMENT_MIN_INTERVAL_MS,
   maxCallableRateLimitWaitMs = MAX_CALLABLE_RATE_LIMIT_WAIT_MS,
   vertexResourceExhaustedCooldownMs = VERTEX_RESOURCE_EXHAUSTED_COOLDOWN_MS,
+  jobRecoveryBatchSize = JOB_RECOVERY_BATCH_SIZE,
+  runningJobStaleMs = RUNNING_JOB_STALE_MS,
   keywordAliasMinScore = KEYWORD_ALIAS_MIN_SCORE,
   modelName = MODEL_NAME,
   modelLocation = MODEL_LOCATION,
@@ -99,6 +111,8 @@ function createBarcodeHandlers({
   acquireRateLimitSlotValue = acquireRateLimitSlot,
   applyRateLimitCooldownValue = applyRateLimitCooldown,
   waitUntilValue = waitUntil,
+  recoverBackoffWaitJobsValue = recoverBackoffWaitJobs,
+  recoverStaleRunningJobsValue = recoverStaleRunningJobs,
 } = {}) {
   const resolveInventoryItemBarcodeOptions = {
     region: functionRegion,
@@ -121,6 +135,14 @@ function createBarcodeHandlers({
     memory: "512MiB",
     maxInstances: workerMaxInstances,
     retry: false,
+  };
+
+  const recoverBarcodeEnrichmentJobsOptions = {
+    region: functionRegion,
+    schedule: "every 1 minutes",
+    timeZone: "Etc/UTC",
+    timeoutSeconds: 120,
+    memory: "256MiB",
   };
 
   async function resolveInventoryItemBarcodeHandler(request) {
@@ -535,13 +557,51 @@ function createBarcodeHandlers({
     }
   }
 
+  async function recoverBarcodeEnrichmentJobsHandler() {
+    const nowMs = nowMsValue();
+    const nowIsoTimestamp = new Date(nowMs).toISOString();
+    const staleBeforeMs = nowMs - Math.max(1, runningJobStaleMs);
+
+    const recoveredBackoffWaitCount = await recoverBackoffWaitJobsValue({
+      dbClient,
+      jobCollection,
+      nowIsoTimestamp,
+      nowMs,
+      batchSize: jobRecoveryBatchSize,
+    });
+    const recoveredRunningCount = await recoverStaleRunningJobsValue({
+      dbClient,
+      jobCollection,
+      nowIsoTimestamp,
+      staleBeforeMs,
+      batchSize: jobRecoveryBatchSize,
+    });
+    const recoveredTotal = recoveredBackoffWaitCount + recoveredRunningCount;
+    if (recoveredTotal > 0) {
+      loggerValue.info("Recovered barcode enrichment jobs.", {
+        recoveredBackoffWaitCount,
+        recoveredRunningCount,
+        recoveredTotal,
+        staleBefore: new Date(staleBeforeMs).toISOString(),
+      });
+    }
+
+    return {
+      success: true,
+      recoveredBackoffWaitCount,
+      recoveredRunningCount,
+    };
+  }
+
   return {
     resolveInventoryItemBarcodeOptions,
     enqueueInventoryBarcodeJobsOptions,
     onBarcodeEnrichmentJobWrittenOptions,
+    recoverBarcodeEnrichmentJobsOptions,
     resolveInventoryItemBarcodeHandler,
     enqueueInventoryBarcodeJobsHandler,
     onBarcodeEnrichmentJobWrittenHandler,
+    recoverBarcodeEnrichmentJobsHandler,
   };
 }
 
@@ -597,6 +657,84 @@ async function applyRateLimitCooldown({
     nowMs,
     serverTimestampValue: FieldValue.serverTimestamp(),
   });
+}
+
+async function recoverBackoffWaitJobs({
+  dbClient,
+  jobCollection,
+  nowIsoTimestamp,
+  nowMs,
+  batchSize,
+}) {
+  const snapshot = await dbClient
+    .collection(jobCollection)
+    .where("status", "==", "backoff_wait")
+    .limit(batchSize)
+    .get();
+
+  const dueDocs = snapshot.docs.filter((doc) => {
+    const data = doc.data() ?? {};
+    const nextAttemptAtMs = readTimestampMs(data.nextAttemptAt);
+    return Number.isFinite(nextAttemptAtMs) && nextAttemptAtMs <= nowMs;
+  });
+  if (dueDocs.length === 0) {
+    return 0;
+  }
+
+  const batch = dbClient.batch();
+  for (const doc of dueDocs) {
+    batch.set(
+      doc.ref,
+      {
+        status: "queued",
+        updatedAt: nowIsoTimestamp,
+        nextAttemptAt: null,
+      },
+      { merge: true },
+    );
+  }
+  await batch.commit();
+  return dueDocs.length;
+}
+
+async function recoverStaleRunningJobs({
+  dbClient,
+  jobCollection,
+  nowIsoTimestamp,
+  staleBeforeMs,
+  batchSize,
+}) {
+  const snapshot = await dbClient
+    .collection(jobCollection)
+    .where("status", "==", "running")
+    .limit(batchSize)
+    .get();
+
+  const staleDocs = snapshot.docs.filter((doc) => {
+    const data = doc.data() ?? {};
+    const startedAtMs = readTimestampMs(data.startedAt);
+    return Number.isFinite(startedAtMs) && startedAtMs <= staleBeforeMs;
+  });
+  if (staleDocs.length === 0) {
+    return 0;
+  }
+
+  const batch = dbClient.batch();
+  for (const doc of staleDocs) {
+    batch.set(
+      doc.ref,
+      {
+        status: "queued",
+        updatedAt: nowIsoTimestamp,
+        startedAt: null,
+        nextAttemptAt: null,
+        lastError: "recovered_stuck_running",
+      },
+      { merge: true },
+    );
+  }
+  await batch.commit();
+  return staleDocs.length;
 }
 
 function toNonNegativeInt(value) {

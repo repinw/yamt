@@ -120,13 +120,12 @@ test("lockQueuedJob skips jobs that are not in queued state", async () => {
   assert.equal(memory.state.data.attempts, 1);
 });
 
-test("markJobResourceExhausted requeues job with exponential backoff", async () => {
+test("markJobResourceExhausted marks job as backoff_wait", async () => {
   const memory = createMemoryJobRef({
     status: "running",
     attempts: 1,
     resourceExhaustedCount: 0,
   });
-  let waitedMs = 0;
   const service = createJobService({
     dbClient: createTransactionalDb(memory),
     nowIsoValue: () => "2026-03-04T10:00:00.000Z",
@@ -135,9 +134,6 @@ test("markJobResourceExhausted requeues job with exponential backoff", async () 
     resourceExhaustedBaseDelayMs: 60 * 1000,
     resourceExhaustedMaxDelayMs: 30 * 60 * 1000,
     maxResourceExhaustedRetries: 8,
-    waitValue: async (delayMs) => {
-      waitedMs = delayMs;
-    },
   });
 
   await service.markJobResourceExhausted({
@@ -146,12 +142,15 @@ test("markJobResourceExhausted requeues job with exponential backoff", async () 
     error: "resource_exhausted_429",
   });
 
-  assert.equal(memory.state.data.status, "queued");
+  assert.equal(memory.state.data.status, "backoff_wait");
   assert.equal(memory.state.data.attempts, 0);
   assert.equal(memory.state.data.errorCode, "resource_exhausted");
   assert.equal(memory.state.data.resourceExhaustedCount, 1);
-  assert.equal(memory.state.data.nextAttemptAt, null);
-  assert.equal(waitedMs, 60 * 1000);
+  assert.equal(typeof memory.state.data.nextAttemptAt, "string");
+  assert.equal(
+    memory.state.data.nextAttemptAt,
+    "2026-03-04T10:01:00.000Z",
+  );
 });
 
 test("markJobResourceExhausted fails after max resource retries", async () => {
@@ -165,7 +164,6 @@ test("markJobResourceExhausted fails after max resource retries", async () => {
     nowIsoValue: () => "2026-03-04T10:00:00.000Z",
     nowMsValue: () => Date.parse("2026-03-04T10:00:00.000Z"),
     maxResourceExhaustedRetries: 2,
-    waitValue: async () => {},
   });
 
   await service.markJobResourceExhausted({
