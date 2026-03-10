@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row.dart';
+import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryItemRowListEntry extends StatelessWidget {
@@ -13,6 +14,8 @@ class InventoryItemRowListEntry extends StatelessWidget {
     required this.bottomSpacing,
     required this.l10n,
     required this.currency,
+    required this.showBarcodeMarkers,
+    required this.activeShoppingListItemKeys,
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
@@ -23,12 +26,19 @@ class InventoryItemRowListEntry extends StatelessWidget {
   final double bottomSpacing;
   final AppLocalizations l10n;
   final NumberFormat currency;
+  final bool showBarcodeMarkers;
+  final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
   final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
 
   @override
   Widget build(BuildContext context) {
+    final isAlreadyInShoppingList = isInventoryItemInActiveShoppingList(
+      item: item,
+      activeItemKeys: activeShoppingListItemKeys,
+    );
+
     return Padding(
       padding: EdgeInsets.only(bottom: bottomSpacing),
       child: RepaintBoundary(
@@ -37,6 +47,8 @@ class InventoryItemRowListEntry extends StatelessWidget {
           item: item,
           l10n: l10n,
           currency: currency,
+          showBarcodeMarkers: showBarcodeMarkers,
+          isAlreadyInShoppingList: isAlreadyInShoppingList,
           onDeletePressed: onDeleteItem,
           onEatPressed: onEatItem,
           onThrowAwayPressed: onThrowAwayItem,

@@ -47,15 +47,13 @@ final activeShoppingListItemKeysProvider =
 
 final isInventoryItemInActiveShoppingListProvider =
     Provider.family<bool, FridgeItem>((ref, item) {
-      if (!item.isFullyConsumed) {
-        return false;
-      }
-      final key = inventoryItemMatchKey(item);
-      if (key == null) {
-        return false;
-      }
       return ref.watch(
-        activeShoppingListItemKeysProvider.select((keys) => keys.contains(key)),
+        activeShoppingListItemKeysProvider.select(
+          (keys) => isInventoryItemInActiveShoppingList(
+            item: item,
+            activeItemKeys: keys,
+          ),
+        ),
       );
     });
 
@@ -81,11 +79,10 @@ class ShoppingListFacade {
     required FridgeItem item,
     required Set<ShoppingListItemMatchKey> activeItemKeys,
   }) {
-    final key = inventoryItemMatchKey(item);
-    if (key == null) {
-      return false;
-    }
-    return activeItemKeys.contains(key);
+    return isInventoryItemInActiveShoppingList(
+      item: item,
+      activeItemKeys: activeItemKeys,
+    );
   }
 }
 
@@ -118,4 +115,20 @@ ShoppingListItemMatchKey? inventoryItemMatchKey(FridgeItem item) {
   }
   final normalizedBrand = normalizeShoppingListValue(item.brand ?? '');
   return (normalizedName: normalizedName, normalizedBrand: normalizedBrand);
+}
+
+bool isInventoryItemInActiveShoppingList({
+  required FridgeItem item,
+  required Set<ShoppingListItemMatchKey> activeItemKeys,
+}) {
+  if (!item.isFullyConsumed) {
+    return false;
+  }
+
+  final key = inventoryItemMatchKey(item);
+  if (key == null) {
+    return false;
+  }
+
+  return activeItemKeys.contains(key);
 }

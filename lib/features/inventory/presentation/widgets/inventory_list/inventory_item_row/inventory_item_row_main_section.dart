@@ -61,18 +61,11 @@ class _InventoryItemRowInfoColumn extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Text(
-                item.name,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: viewData.nameTextStyle,
-              ),
-            ),
-          ],
+        Text(
+          item.name,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: viewData.nameTextStyle,
         ),
         if (viewData.hasBrand) ...[
           const SizedBox(height: AppSpacing.xxs),

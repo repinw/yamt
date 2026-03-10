@@ -108,17 +108,26 @@ class CategoryIcon extends ConsumerWidget {
     if (normalizedBarcode == null || normalizedBarcode.isEmpty) {
       return null;
     }
-    final imageAsync = ref.watch(
-      inventoryBarcodeImageUrlProvider(normalizedBarcode),
+    return ref.watch(
+      inventoryBarcodeImageUrlProvider(
+        normalizedBarcode,
+      ).select((imageAsync) => imageAsync.asData?.value),
     );
-    return imageAsync.asData?.value;
+  }
+
+  int _resolveImageCacheDimension(BuildContext context) {
+    final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
+    final imageSize = (_size - (_imageInset * 2)) * devicePixelRatio;
+    return imageSize.ceil();
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final emojiTextStyle = Theme.of(context).textTheme.titleLarge;
     final emoji = _resolveEmoji(name);
     final imageUrl = _resolveImageUrl(ref);
+    final imageCacheDimension = _resolveImageCacheDimension(context);
     final backgroundColor = _resolveBackgroundColor(
       name,
       colors.secondaryContainer.withValues(alpha: 0.75),
@@ -135,19 +144,21 @@ class CategoryIcon extends ConsumerWidget {
         dimension: _size,
         child: Center(
           child: imageUrl == null
-              ? Text(emoji, style: Theme.of(context).textTheme.titleLarge)
+              ? Text(emoji, style: emojiTextStyle)
               : ClipRRect(
                   borderRadius: BorderRadius.circular(AppRadius.md),
+                  clipBehavior: Clip.hardEdge,
                   child: Image.network(
                     imageUrl,
                     width: _size - (_imageInset * 2),
                     height: _size - (_imageInset * 2),
                     fit: BoxFit.cover,
+                    cacheWidth: imageCacheDimension,
+                    cacheHeight: imageCacheDimension,
+                    filterQuality: FilterQuality.low,
+                    gaplessPlayback: true,
                     errorBuilder: (_, error, stackTrace) {
-                      return Text(
-                        emoji,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      );
+                      return Text(emoji, style: emojiTextStyle);
                     },
                   ),
                 ),

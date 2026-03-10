@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/data/calorie_barcode_backfill_repository.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
@@ -24,7 +23,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
 import 'package:yamt/features/inventory/presentation/'
     'fridge_amount_unit_l10n.dart';
-import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryItemRow extends ConsumerStatefulWidget {
@@ -33,6 +31,8 @@ class InventoryItemRow extends ConsumerStatefulWidget {
     required this.item,
     required this.l10n,
     required this.currency,
+    required this.showBarcodeMarkers,
+    required this.isAlreadyInShoppingList,
     required this.onDeletePressed,
     required this.onEatPressed,
     required this.onThrowAwayPressed,
@@ -41,6 +41,8 @@ class InventoryItemRow extends ConsumerStatefulWidget {
   final FridgeItem item;
   final AppLocalizations l10n;
   final NumberFormat currency;
+  final bool showBarcodeMarkers;
+  final bool isAlreadyInShoppingList;
   final Future<bool> Function(String itemId) onDeletePressed;
   final Future<bool> Function(String itemId, int amount) onEatPressed;
   final Future<bool> Function(String itemId, int amount) onThrowAwayPressed;
@@ -68,17 +70,13 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
 
   @override
   Widget build(BuildContext context) {
-    final isAlreadyInShoppingList = ref.watch(
-      isInventoryItemInActiveShoppingListProvider(widget.item),
-    );
-    final featureFlags = ref.watch(barcodeBackfillFeatureFlagsProvider);
     final canRetryBarcodeLookup =
         widget.item.barcodeStatus != InventoryBarcodeStatus.resolved &&
         !_isWorking;
     final layoutData = _buildLayoutData(
       context,
-      isAlreadyInShoppingList: isAlreadyInShoppingList,
-      showBarcodeMarkers: featureFlags.showInventoryBarcodeMarkers,
+      isAlreadyInShoppingList: widget.isAlreadyInShoppingList,
+      showBarcodeMarkers: widget.showBarcodeMarkers,
     );
     final onPrimaryActionPressed = _buildPrimaryActionPressed(layoutData);
 
