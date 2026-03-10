@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 
+const _maxSegmentCount = 12;
+
 class RemainingProgressBar extends StatelessWidget {
   const RemainingProgressBar({
     super.key,
@@ -30,6 +32,7 @@ class RemainingProgressBar extends StatelessWidget {
     );
     final resolvedFillColor = fillColor ?? colorScheme.primary;
     final percentage = (safeRatio * 100).round();
+    final useSegmentedBar = segmentedByUnits && totalUnits <= _maxSegmentCount;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,7 +40,7 @@ class RemainingProgressBar extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: segmentedByUnits
+              child: useSegmentedBar
                   ? _buildSegmentedBar(
                       trackColor: trackColor,
                       fillColor: resolvedFillColor,

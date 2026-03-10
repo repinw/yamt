@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -16,9 +18,10 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
+import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class InventoryList extends StatefulWidget {
+class InventoryList extends ConsumerStatefulWidget {
   const InventoryList({
     super.key,
     required this.items,
@@ -33,10 +36,10 @@ class InventoryList extends StatefulWidget {
   final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
 
   @override
-  State<InventoryList> createState() => _InventoryListState();
+  ConsumerState<InventoryList> createState() => _InventoryListState();
 }
 
-class _InventoryListState extends State<InventoryList> {
+class _InventoryListState extends ConsumerState<InventoryList> {
   var _mode = InventoryListMode.byReceipt;
   var _consumptionFilter = const InventoryConsumptionFilter();
 
@@ -45,9 +48,15 @@ class _InventoryListState extends State<InventoryList> {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final currency = NumberFormat.currency(locale: locale, symbol: '€');
-    final dateFormat = DateFormat.yMMMd(locale);
+    final showBarcodeMarkers = ref.watch(
+      barcodeBackfillFeatureFlagsProvider.select(
+        (flags) => flags.showInventoryBarcodeMarkers,
+      ),
+    );
+    final activeShoppingListItemKeys = ref.watch(
+      activeShoppingListItemKeysProvider,
+    );
     final filteredItems = _consumptionFilter.apply(widget.items);
-    final groups = groupInventoryItemsByReceipt(filteredItems);
     final hasSourceItems = widget.items.isNotEmpty;
     final hasFilteredItems = filteredItems.isNotEmpty;
 
@@ -117,9 +126,11 @@ class _InventoryListState extends State<InventoryList> {
           )
         else if (_mode == InventoryListMode.byReceipt)
           InventoryReceiptGroupsSliver(
-            groups: groups,
+            groups: groupInventoryItemsByReceipt(filteredItems),
             currency: currency,
-            dateFormat: dateFormat,
+            dateFormat: DateFormat.yMMMd(locale),
+            showBarcodeMarkers: showBarcodeMarkers,
+            activeShoppingListItemKeys: activeShoppingListItemKeys,
             onDeleteItem: widget.onDeleteItem,
             onEatItem: widget.onEatItem,
             onThrowAwayItem: widget.onThrowAwayItem,
@@ -129,6 +140,8 @@ class _InventoryListState extends State<InventoryList> {
             items: filteredItems,
             l10n: l10n,
             currency: currency,
+            showBarcodeMarkers: showBarcodeMarkers,
+            activeShoppingListItemKeys: activeShoppingListItemKeys,
             onDeleteItem: widget.onDeleteItem,
             onEatItem: widget.onEatItem,
             onThrowAwayItem: widget.onThrowAwayItem,

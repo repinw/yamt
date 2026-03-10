@@ -6,6 +6,7 @@ import 'package:yamt/features/inventory/presentation/models/'
     'inventory_sorted_items_cache.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
+import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryAllItemsSliver extends StatefulWidget {
@@ -14,6 +15,8 @@ class InventoryAllItemsSliver extends StatefulWidget {
     required this.items,
     required this.l10n,
     required this.currency,
+    required this.showBarcodeMarkers,
+    required this.activeShoppingListItemKeys,
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
@@ -22,6 +25,8 @@ class InventoryAllItemsSliver extends StatefulWidget {
   final List<FridgeItem> items;
   final AppLocalizations l10n;
   final NumberFormat currency;
+  final bool showBarcodeMarkers;
+  final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
   final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
@@ -33,22 +38,27 @@ class InventoryAllItemsSliver extends StatefulWidget {
 
 class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
   late InventorySortedItemsCache _sortedItemsCache;
+  late List<FridgeItem> _sortedItems;
 
   @override
   void initState() {
     super.initState();
     _sortedItemsCache = InventorySortedItemsCache.fromItems(widget.items);
+    _sortedItems = _sortedItemsCache.materialize(widget.items);
   }
 
   @override
   void didUpdateWidget(covariant InventoryAllItemsSliver oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (identical(oldWidget.items, widget.items)) {
+      return;
+    }
     _sortedItemsCache = _sortedItemsCache.update(widget.items);
+    _sortedItems = _sortedItemsCache.materialize(widget.items);
   }
 
   @override
   Widget build(BuildContext context) {
-    final sortedItems = _sortedItemsCache.materialize(widget.items);
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.xl,
@@ -57,15 +67,17 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
         AppSpacing.xxxxl + AppSpacing.xxxxl,
       ),
       sliver: SliverList.builder(
-        itemCount: sortedItems.length,
+        itemCount: _sortedItems.length,
         itemBuilder: (context, index) {
-          final item = sortedItems[index];
+          final item = _sortedItems[index];
           return InventoryItemRowListEntry(
             item: item,
             keyPrefix: 'inventory_item_row',
             bottomSpacing: AppSpacing.sm,
             l10n: widget.l10n,
             currency: widget.currency,
+            showBarcodeMarkers: widget.showBarcodeMarkers,
+            activeShoppingListItemKeys: widget.activeShoppingListItemKeys,
             onDeleteItem: widget.onDeleteItem,
             onEatItem: widget.onEatItem,
             onThrowAwayItem: widget.onThrowAwayItem,

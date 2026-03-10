@@ -5,6 +5,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
+import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _receiptGroupBorderAlphaLight = 0.14;
@@ -12,12 +13,14 @@ const _receiptGroupBorderAlphaDark = 0.24;
 const _receiptGroupBorderWidth = 0.7;
 const _receiptGroupElevation = 0.0;
 
-class ReceiptGroupTile extends StatelessWidget {
+class ReceiptGroupTile extends StatefulWidget {
   const ReceiptGroupTile({
     super.key,
     required this.group,
     required this.currency,
     required this.dateFormat,
+    required this.showBarcodeMarkers,
+    required this.activeShoppingListItemKeys,
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
@@ -26,17 +29,48 @@ class ReceiptGroupTile extends StatelessWidget {
   final InventoryReceiptGroup group;
   final NumberFormat currency;
   final DateFormat dateFormat;
+  final bool showBarcodeMarkers;
+  final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
   final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
+
+  @override
+  State<ReceiptGroupTile> createState() => _ReceiptGroupTileState();
+}
+
+class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
+  var _isExpanded = false;
+  var _didRestoreExpansionState = false;
+
+  String get _storageKey => 'receipt_group_${widget.group.key}';
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didRestoreExpansionState) {
+      return;
+    }
+    _didRestoreExpansionState = true;
+
+    final restoredState = PageStorage.maybeOf(
+      context,
+    )?.readState(context, identifier: _storageKey);
+    if (restoredState is bool) {
+      _isExpanded = restoredState;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final borderColor = _resolveBorderColor(colors);
-    final title = group.title(l10n: l10n, dateFormat: dateFormat);
-    final subtitle = group.subtitle(l10n: l10n, currency: currency);
+    final title = widget.group.title(l10n: l10n, dateFormat: widget.dateFormat);
+    final subtitle = widget.group.subtitle(
+      l10n: l10n,
+      currency: widget.currency,
+    );
 
     return Card(
       margin: EdgeInsets.zero,
@@ -49,8 +83,9 @@ class ReceiptGroupTile extends StatelessWidget {
         side: BorderSide(color: borderColor, width: _receiptGroupBorderWidth),
       ),
       child: ExpansionTile(
-        key: PageStorageKey<String>('receipt_group_${group.key}'),
-        initiallyExpanded: false,
+        key: PageStorageKey<String>(_storageKey),
+        initiallyExpanded: _isExpanded,
+        onExpansionChanged: _onExpansionChanged,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
@@ -69,22 +104,39 @@ class ReceiptGroupTile extends StatelessWidget {
         ),
         title: Text(title, style: Theme.of(context).textTheme.titleSmall),
         subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-        children: group.items
-            .map((item) {
-              return InventoryItemRowListEntry(
-                item: item,
-                keyPrefix: 'receipt_item_row',
-                bottomSpacing: AppSpacing.sm,
-                l10n: l10n,
-                currency: currency,
-                onDeleteItem: onDeleteItem,
-                onEatItem: onEatItem,
-                onThrowAwayItem: onThrowAwayItem,
-              );
-            })
-            .toList(growable: false),
+        // Build children only for expanded groups to reduce scroll jank.
+        children: _isExpanded
+            ? widget.group.items
+                  .map((item) {
+                    return InventoryItemRowListEntry(
+                      item: item,
+                      keyPrefix: 'receipt_item_row',
+                      bottomSpacing: AppSpacing.sm,
+                      l10n: l10n,
+                      currency: widget.currency,
+                      showBarcodeMarkers: widget.showBarcodeMarkers,
+                      activeShoppingListItemKeys:
+                          widget.activeShoppingListItemKeys,
+                      onDeleteItem: widget.onDeleteItem,
+                      onEatItem: widget.onEatItem,
+                      onThrowAwayItem: widget.onThrowAwayItem,
+                    );
+                  })
+                  .toList(growable: false)
+            : const <Widget>[],
       ),
     );
+  }
+
+  void _onExpansionChanged(bool isExpanded) {
+    if (_isExpanded != isExpanded) {
+      setState(() {
+        _isExpanded = isExpanded;
+      });
+    }
+    PageStorage.maybeOf(
+      context,
+    )?.writeState(context, isExpanded, identifier: _storageKey);
   }
 
   Color _resolveBorderColor(ColorScheme colors) {

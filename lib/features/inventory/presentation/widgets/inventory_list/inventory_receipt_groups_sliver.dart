@@ -5,6 +5,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
+import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 
 class InventoryReceiptGroupsSliver extends StatelessWidget {
   const InventoryReceiptGroupsSliver({
@@ -12,6 +13,8 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
     required this.groups,
     required this.currency,
     required this.dateFormat,
+    required this.showBarcodeMarkers,
+    required this.activeShoppingListItemKeys,
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
@@ -20,6 +23,8 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
   final List<InventoryReceiptGroup> groups;
   final NumberFormat currency;
   final DateFormat dateFormat;
+  final bool showBarcodeMarkers;
+  final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
   final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
@@ -43,6 +48,8 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
               group: group,
               currency: currency,
               dateFormat: dateFormat,
+              showBarcodeMarkers: showBarcodeMarkers,
+              activeShoppingListItemKeys: activeShoppingListItemKeys,
               onDeleteItem: onDeleteItem,
               onEatItem: onEatItem,
               onThrowAwayItem: onThrowAwayItem,

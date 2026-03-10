@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
@@ -11,6 +12,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
+import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 FridgeItem _item(
@@ -78,6 +80,8 @@ Widget _buildHarness({
                 group: group,
                 currency: NumberFormat.currency(locale: localeTag, symbol: '€'),
                 dateFormat: DateFormat.yMMMd(localeTag),
+                showBarcodeMarkers: false,
+                activeShoppingListItemKeys: const <ShoppingListItemMatchKey>{},
                 onDeleteItem: onDeleteItem ?? (_) async => true,
                 onEatItem: onEatItem ?? (itemId, amount) async => true,
                 onThrowAwayItem:
@@ -91,6 +95,15 @@ Widget _buildHarness({
   );
 
   return ProviderScope(
+    overrides: [
+      barcodeBackfillFeatureFlagsProvider.overrideWithValue(
+        const BarcodeBackfillFeatureFlags(
+          showInventoryBarcodeMarkers: false,
+          enableEatBridge: true,
+          enableQueueBackfill: true,
+        ),
+      ),
+    ],
     child: MaterialApp.router(
       routerConfig: router,
       theme: theme,

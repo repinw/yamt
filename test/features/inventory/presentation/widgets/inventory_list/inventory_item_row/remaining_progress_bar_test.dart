@@ -39,4 +39,14 @@ void main() {
 
     expect(find.byType(LinearProgressIndicator), findsNWidgets(2));
   });
+
+  testWidgets('falls back to a single bar for large unit counts', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildWidget(segmentedByUnits: true, totalUnits: 20, remainingUnits: 10),
+    );
+
+    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+  });
 }
