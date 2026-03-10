@@ -9,6 +9,8 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row_list_entry.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
@@ -63,33 +65,37 @@ InventoryReceiptGroup _group() {
 Widget _buildHarness({
   required ThemeData theme,
   required InventoryReceiptGroup group,
+  PageStorageBucket? bucket,
+  bool showTile = true,
   Future<bool> Function(String itemId)? onDeleteItem,
   Future<bool> Function(String itemId, int amount)? onEatItem,
   Future<bool> Function(String itemId, int amount)? onThrowAwayItem,
 }) {
   final localeTag = const Locale('en').toLanguageTag();
+  final tile = ReceiptGroupTile(
+    group: group,
+    currency: NumberFormat.currency(locale: localeTag, symbol: '€'),
+    dateFormat: DateFormat.yMMMd(localeTag),
+    showBarcodeMarkers: false,
+    activeShoppingListItemKeys: const <ShoppingListItemMatchKey>{},
+    onDeleteItem: onDeleteItem ?? (_) async => true,
+    onEatItem: onEatItem ?? (itemId, amount) async => true,
+    onThrowAwayItem: onThrowAwayItem ?? (itemId, amount) async => true,
+  );
+  final body = Center(
+    child: SizedBox(
+      width: 360,
+      child: showTile ? tile : const SizedBox.shrink(),
+    ),
+  );
+  final scaffoldBody = bucket == null
+      ? body
+      : PageStorage(bucket: bucket, child: body);
   final router = GoRouter(
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => Scaffold(
-          body: Center(
-            child: SizedBox(
-              width: 360,
-              child: ReceiptGroupTile(
-                group: group,
-                currency: NumberFormat.currency(locale: localeTag, symbol: '€'),
-                dateFormat: DateFormat.yMMMd(localeTag),
-                showBarcodeMarkers: false,
-                activeShoppingListItemKeys: const <ShoppingListItemMatchKey>{},
-                onDeleteItem: onDeleteItem ?? (_) async => true,
-                onEatItem: onEatItem ?? (itemId, amount) async => true,
-                onThrowAwayItem:
-                    onThrowAwayItem ?? (itemId, amount) async => true,
-              ),
-            ),
-          ),
-        ),
+        builder: (context, state) => Scaffold(body: scaffoldBody),
       ),
     ],
   );
@@ -223,6 +229,53 @@ void main() {
 
     expect(find.text('Milk'), findsOneWidget);
     expect(find.text('Bread'), findsOneWidget);
+  });
+
+  testWidgets('collapsed tile does not build receipt row entries', (
+    tester,
+  ) async {
+    await _pump(tester, theme: lightTheme);
+
+    expect(find.byType(InventoryItemRowListEntry), findsNothing);
+  });
+
+  testWidgets('expanding tile lazily builds receipt row entries', (
+    tester,
+  ) async {
+    await _pump(tester, theme: lightTheme);
+
+    await _expand(tester);
+
+    expect(find.byType(InventoryItemRowListEntry), findsNWidgets(2));
+  });
+
+  testWidgets('restores expansion state from PageStorage', (tester) async {
+    final bucket = PageStorageBucket();
+
+    await tester.pumpWidget(
+      _buildHarness(theme: lightTheme, group: _group(), bucket: bucket),
+    );
+    await tester.pumpAndSettle();
+
+    await _expand(tester);
+    expect(find.byType(InventoryItemRowListEntry), findsNWidgets(2));
+
+    await tester.pumpWidget(
+      _buildHarness(
+        theme: lightTheme,
+        group: _group(),
+        bucket: bucket,
+        showTile: false,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.pumpWidget(
+      _buildHarness(theme: lightTheme, group: _group(), bucket: bucket),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(InventoryItemRowListEntry), findsNWidgets(2));
   });
 
   testWidgets('triggers onDeleteItem when delete button is pressed', (

@@ -83,7 +83,7 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
         side: BorderSide(color: borderColor, width: _receiptGroupBorderWidth),
       ),
       child: ExpansionTile(
-        key: PageStorageKey<String>(_storageKey),
+        key: ValueKey<String>(_storageKey),
         initiallyExpanded: _isExpanded,
         onExpansionChanged: _onExpansionChanged,
         shape: RoundedRectangleBorder(
