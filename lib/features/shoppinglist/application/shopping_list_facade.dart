@@ -79,11 +79,10 @@ class ShoppingListFacade {
     required FridgeItem item,
     required Set<ShoppingListItemMatchKey> activeItemKeys,
   }) {
-    final key = inventoryItemMatchKey(item);
-    if (key == null) {
-      return false;
-    }
-    return activeItemKeys.contains(key);
+    return isInventoryItemInActiveShoppingList(
+      item: item,
+      activeItemKeys: activeItemKeys,
+    );
   }
 }
 

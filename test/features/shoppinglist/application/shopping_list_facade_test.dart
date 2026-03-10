@@ -106,6 +106,86 @@ void main() {
   });
 
   test(
+    'isInventoryItemInActiveShoppingList returns true for consumed match',
+    () {
+      final activeKeys = <ShoppingListItemMatchKey>{
+        (normalizedName: 'milk', normalizedBrand: 'acme'),
+      };
+
+      final result = isInventoryItemInActiveShoppingList(
+        item: _inventoryItem(
+          id: 'i1',
+          name: 'Milk',
+          brand: 'Acme',
+          quantity: 0,
+        ),
+        activeItemKeys: activeKeys,
+      );
+
+      expect(result, isTrue);
+    },
+  );
+
+  test(
+    'isInventoryItemInActiveShoppingList returns false for missing match',
+    () {
+      final activeKeys = <ShoppingListItemMatchKey>{
+        (normalizedName: 'milk', normalizedBrand: 'acme'),
+      };
+
+      final result = isInventoryItemInActiveShoppingList(
+        item: _inventoryItem(
+          id: 'i2',
+          name: 'Bread',
+          brand: 'Acme',
+          quantity: 0,
+        ),
+        activeItemKeys: activeKeys,
+      );
+
+      expect(result, isFalse);
+    },
+  );
+
+  test(
+    'isInventoryItemInActiveShoppingList returns false for unconsumed items',
+    () {
+      final activeKeys = <ShoppingListItemMatchKey>{
+        (normalizedName: 'milk', normalizedBrand: 'acme'),
+      };
+
+      final result = isInventoryItemInActiveShoppingList(
+        item: _inventoryItem(
+          id: 'i3',
+          name: 'Milk',
+          brand: 'Acme',
+          quantity: 1,
+          initialQuantity: 2,
+        ),
+        activeItemKeys: activeKeys,
+      );
+
+      expect(result, isFalse);
+    },
+  );
+
+  test(
+    'isInventoryItemInActiveShoppingList returns false without a match key',
+    () {
+      final activeKeys = <ShoppingListItemMatchKey>{
+        (normalizedName: 'milk', normalizedBrand: 'acme'),
+      };
+
+      final result = isInventoryItemInActiveShoppingList(
+        item: _inventoryItem(id: 'i4', name: '   ', brand: 'Acme'),
+        activeItemKeys: activeKeys,
+      );
+
+      expect(result, isFalse);
+    },
+  );
+
+  test(
     'addInventoryItem uses fallback quantity one for non-positive values',
     () async {
       ({String name, String? brand, int quantity, double estimatedUnitPrice})?
