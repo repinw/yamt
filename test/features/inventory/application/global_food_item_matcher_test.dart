@@ -14,6 +14,12 @@ class _FakeGlobalFoodItemRepository implements GlobalFoodItemRepository {
   _FakeGlobalFoodItemRepository(this.items);
 
   final List<GlobalFoodItem> items;
+  int readAllCalls = 0;
+  int searchCalls = 0;
+  String? lastNormalizedName;
+  String? lastBarcode;
+  String? lastFoodFingerprint;
+  List<String> lastSearchTokens = const <String>[];
 
   @override
   Stream<List<GlobalFoodItem>> watchAll() async* {
@@ -21,7 +27,38 @@ class _FakeGlobalFoodItemRepository implements GlobalFoodItemRepository {
   }
 
   @override
-  Future<List<GlobalFoodItem>> readAll() async => items;
+  Future<List<GlobalFoodItem>> readAll() async {
+    readAllCalls += 1;
+    return items;
+  }
+
+  @override
+  Future<List<GlobalFoodItem>> searchCandidates({
+    String? normalizedName,
+    String? barcode,
+    String? foodFingerprint,
+    List<String> searchTokens = const <String>[],
+    int limit = 20,
+  }) async {
+    searchCalls += 1;
+    lastNormalizedName = normalizedName;
+    lastBarcode = barcode;
+    lastFoodFingerprint = foodFingerprint;
+    lastSearchTokens = List<String>.from(searchTokens);
+
+    return items
+        .where(
+          (item) =>
+              (normalizedName != null &&
+                  item.normalizedName == normalizedName) ||
+              (barcode != null && item.normalizedBarcode == barcode) ||
+              (foodFingerprint != null &&
+                  item.resolvedFoodFingerprint == foodFingerprint) ||
+              item.searchTokens.any(searchTokens.contains),
+        )
+        .take(limit)
+        .toList(growable: false);
+  }
 
   @override
   Future<bool> saveAll(List<GlobalFoodItem> items) async => true;
@@ -34,6 +71,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   _FakeInventoryItemRepository(this.items);
 
   final List<InventoryItem> items;
+  int readAllCalls = 0;
 
   @override
   Stream<List<InventoryItem>> watchAll() async* {
@@ -41,7 +79,10 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<List<InventoryItem>> readAll() async => items;
+  Future<List<InventoryItem>> readAll() async {
+    readAllCalls += 1;
+    return items;
+  }
 
   @override
   Future<bool> saveAll(List<InventoryItem> items) async => true;
@@ -154,17 +195,16 @@ CalorieProductProfile _calorieProfile({
 
 void main() {
   test('findCandidates prefers exact fingerprint matches', () async {
-    final matcher = GlobalFoodItemMatcher(
-      repository: _FakeGlobalFoodItemRepository(<GlobalFoodItem>[
-        _globalFood(
-          id: 'milk',
-          name: 'Milk',
-          brand: 'Acme',
-          foodFingerprint: 'milk__acme',
-        ),
-        _globalFood(id: 'bread', name: 'Bread', brand: 'Acme'),
-      ]),
-    );
+    final repository = _FakeGlobalFoodItemRepository(<GlobalFoodItem>[
+      _globalFood(
+        id: 'milk',
+        name: 'Milk',
+        brand: 'Acme',
+        foodFingerprint: 'milk__acme',
+      ),
+      _globalFood(id: 'bread', name: 'Bread', brand: 'Acme'),
+    ]);
+    final matcher = GlobalFoodItemMatcher(repository: repository);
 
     final candidates = await matcher.findCandidates(
       _inventoryItem(
@@ -180,7 +220,54 @@ void main() {
     expect(candidates.first.reason, GlobalFoodMatchReason.fingerprintExact);
     expect(matcher.defaultSelectionFor(candidates), 'milk');
     expect(matcher.defaultSelectionNeedsReviewFor(candidates), isFalse);
+    expect(repository.searchCalls, 1);
+    expect(repository.readAllCalls, 0);
+    expect(repository.lastNormalizedName, 'milk');
+    expect(repository.lastFoodFingerprint, 'milk__acme');
+    expect(repository.lastSearchTokens, contains('milk'));
   });
+
+  test(
+    'findCandidates does not query inventory when search returns nothing',
+    () async {
+      final repository = _FakeGlobalFoodItemRepository(
+        const <GlobalFoodItem>[],
+      );
+      final inventoryRepository = _FakeInventoryItemRepository(<InventoryItem>[
+        _inventoryItem(id: 'known', name: 'Milk'),
+      ]);
+      final matcher = GlobalFoodItemMatcher(
+        repository: repository,
+        inventoryRepository: inventoryRepository,
+      );
+
+      final candidates = await matcher.findCandidates(
+        _inventoryItem(id: 'item-1', name: 'Milk', brand: 'Acme'),
+      );
+
+      expect(candidates, isEmpty);
+      expect(repository.searchCalls, 1);
+      expect(inventoryRepository.readAllCalls, 0);
+    },
+  );
+
+  test(
+    'findCandidates skips repository queries for empty search input',
+    () async {
+      final repository = _FakeGlobalFoodItemRepository(<GlobalFoodItem>[
+        _globalFood(id: 'milk', name: 'Milk', brand: 'Acme'),
+      ]);
+      final matcher = GlobalFoodItemMatcher(repository: repository);
+
+      final candidates = await matcher.findCandidates(
+        _inventoryItem(id: 'item-1', name: ' '),
+      );
+
+      expect(candidates, isEmpty);
+      expect(repository.searchCalls, 0);
+      expect(repository.readAllCalls, 0);
+    },
+  );
 
   test(
     'findCandidates enriches products from existing inventory items',

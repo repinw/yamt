@@ -13,6 +13,7 @@ class _FakeGlobalFoodItemStore implements GlobalFoodItemStore {
       StreamController<List<GlobalFoodItemDocument>>.broadcast();
 
   bool upsertAllShouldFail = false;
+  bool searchShouldThrow = false;
   Duration upsertDelay = Duration.zero;
   int _activeUpserts = 0;
   int maxConcurrentUpserts = 0;
@@ -20,6 +21,38 @@ class _FakeGlobalFoodItemStore implements GlobalFoodItemStore {
   @override
   Future<List<GlobalFoodItemDocument>> readAll() async {
     return _copyDocuments();
+  }
+
+  @override
+  Future<List<GlobalFoodItemDocument>> searchCandidates({
+    String? normalizedName,
+    String? barcode,
+    String? foodFingerprint,
+    List<String> searchTokens = const <String>[],
+    int limit = 20,
+  }) async {
+    if (searchShouldThrow) {
+      throw StateError('search failed');
+    }
+
+    final normalizedTokenSet = searchTokens
+        .map((token) => token.trim())
+        .toSet();
+    return _copyDocuments()
+        .where(
+          (document) =>
+              (normalizedName != null &&
+                  document.data['normalized_name'] == normalizedName) ||
+              (barcode != null && document.data['barcode'] == barcode) ||
+              (foodFingerprint != null &&
+                  document.data['food_fingerprint'] == foodFingerprint) ||
+              _matchesAnyToken(
+                document: document,
+                searchTokens: normalizedTokenSet,
+              ),
+        )
+        .take(limit)
+        .toList(growable: false);
   }
 
   @override
@@ -106,6 +139,20 @@ class _FakeGlobalFoodItemStore implements GlobalFoodItemStore {
     }
     _controller.add(_copyDocuments());
   }
+
+  bool _matchesAnyToken({
+    required GlobalFoodItemDocument document,
+    required Set<String> searchTokens,
+  }) {
+    final rawTokens = document.data['search_tokens'];
+    if (rawTokens is! List) {
+      return false;
+    }
+    return rawTokens
+        .whereType<String>()
+        .map((token) => token.trim())
+        .any(searchTokens.contains);
+  }
 }
 
 GlobalFoodItem _item(String id) {
@@ -175,6 +222,41 @@ void main() {
 
     expect(result, everyElement(isTrue));
     expect(store.maxConcurrentUpserts, 1);
+  });
+
+  test('searchCandidates returns normalized matching items', () async {
+    final store = _FakeGlobalFoodItemStore(
+      initialDocuments: <GlobalFoodItemDocument>[
+        GlobalFoodItemDocument(
+          id: 'milk',
+          data: _item('milk').copyWith(normalizedName: 'whole milk').toJson(),
+        ),
+      ],
+    );
+    addTearDown(store.dispose);
+    final repository = FirestoreGlobalFoodItemRepository(store: store);
+
+    final items = await repository.searchCandidates(
+      normalizedName: 'whole milk',
+      searchTokens: const <String>['milk'],
+    );
+
+    expect(items, hasLength(1));
+    expect(items.single.id, 'milk');
+    expect(items.single.normalizedName, 'whole milk');
+  });
+
+  test('searchCandidates returns empty list when store search fails', () async {
+    final store = _FakeGlobalFoodItemStore()..searchShouldThrow = true;
+    addTearDown(store.dispose);
+    final repository = FirestoreGlobalFoodItemRepository(store: store);
+
+    final items = await repository.searchCandidates(
+      normalizedName: 'milk',
+      searchTokens: const <String>['milk'],
+    );
+
+    expect(items, isEmpty);
   });
 
   test('saveAll rejects client-side replace-all writes', () async {

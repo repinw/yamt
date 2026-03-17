@@ -42,6 +42,17 @@ class _UnavailableGlobalFoodItemStore implements GlobalFoodItemStore {
   }
 
   @override
+  Future<List<GlobalFoodItemDocument>> searchCandidates({
+    String? normalizedName,
+    String? barcode,
+    String? foodFingerprint,
+    List<String> searchTokens = const <String>[],
+    int limit = 20,
+  }) async {
+    return const <GlobalFoodItemDocument>[];
+  }
+
+  @override
   Stream<List<GlobalFoodItemDocument>> watchAll() {
     return const Stream<List<GlobalFoodItemDocument>>.empty();
   }

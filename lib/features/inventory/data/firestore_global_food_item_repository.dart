@@ -48,6 +48,43 @@ class FirestoreGlobalFoodItemRepository implements GlobalFoodItemRepository {
   }
 
   @override
+  Future<List<GlobalFoodItem>> searchCandidates({
+    String? normalizedName,
+    String? barcode,
+    String? foodFingerprint,
+    List<String> searchTokens = const <String>[],
+    int limit = 20,
+  }) async {
+    final hasQuery =
+        (normalizedName?.trim().isNotEmpty ?? false) ||
+        (barcode?.trim().isNotEmpty ?? false) ||
+        (foodFingerprint?.trim().isNotEmpty ?? false) ||
+        searchTokens.any((token) => token.trim().isNotEmpty);
+    if (!hasQuery) {
+      return const <GlobalFoodItem>[];
+    }
+
+    try {
+      final documents = await _store.searchCandidates(
+        normalizedName: normalizedName,
+        barcode: barcode,
+        foodFingerprint: foodFingerprint,
+        searchTokens: searchTokens,
+        limit: limit,
+      );
+      return _decodeDocuments(documents);
+    } catch (error, stackTrace) {
+      log(
+        'Failed to search global food items.',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <GlobalFoodItem>[];
+    }
+  }
+
+  @override
   Future<bool> saveAll(List<GlobalFoodItem> items) {
     return Future<bool>.error(
       UnsupportedError(

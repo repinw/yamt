@@ -73,6 +73,17 @@ class _RecordingGlobalFoodItemRepository implements GlobalFoodItemRepository {
   }
 
   @override
+  Future<List<GlobalFoodItem>> searchCandidates({
+    String? normalizedName,
+    String? barcode,
+    String? foodFingerprint,
+    List<String> searchTokens = const <String>[],
+    int limit = 20,
+  }) async {
+    return const <GlobalFoodItem>[];
+  }
+
+  @override
   Future<bool> saveAll(List<GlobalFoodItem> items) async => true;
 
   @override
@@ -113,6 +124,17 @@ class _NoopGlobalFoodItemRepository implements GlobalFoodItemRepository {
 
   @override
   Future<List<GlobalFoodItem>> readAll() async {
+    return const <GlobalFoodItem>[];
+  }
+
+  @override
+  Future<List<GlobalFoodItem>> searchCandidates({
+    String? normalizedName,
+    String? barcode,
+    String? foodFingerprint,
+    List<String> searchTokens = const <String>[],
+    int limit = 20,
+  }) async {
     return const <GlobalFoodItem>[];
   }
 

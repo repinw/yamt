@@ -6,6 +6,14 @@ abstract interface class GlobalFoodItemRepository {
 
   Future<List<GlobalFoodItem>> readAll();
 
+  Future<List<GlobalFoodItem>> searchCandidates({
+    String? normalizedName,
+    String? barcode,
+    String? foodFingerprint,
+    List<String> searchTokens = const <String>[],
+    int limit = 20,
+  });
+
   /// Client-side replace-all is intentionally unsupported for global data.
   Future<bool> saveAll(List<GlobalFoodItem> items);
 

@@ -13,6 +13,9 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 part 'global_food_item_matcher.g.dart';
 
+const int _globalFoodCandidateQueryLimit = 20;
+const int _globalFoodQueryTokenLimit = 10;
+
 @riverpod
 GlobalFoodItemMatcher globalFoodItemMatcher(Ref ref) {
   final repository = ref.watch(globalFoodItemRepositoryProvider);
@@ -42,13 +45,24 @@ class GlobalFoodItemMatcher {
   Future<List<GlobalFoodMatchCandidate>> findCandidates(
     InventoryItem item,
   ) async {
-    final results = await Future.wait([
-      _repository.readAll(),
-      _inventoryRepository?.readAll() ??
-          Future<List<InventoryItem>>.value(const <InventoryItem>[]),
-    ]);
-    final products = results[0] as List<GlobalFoodItem>;
-    final inventoryItems = results[1] as List<InventoryItem>;
+    final query = _buildQuery(item);
+    if (query == null) {
+      return const <GlobalFoodMatchCandidate>[];
+    }
+
+    final products = await _repository.searchCandidates(
+      normalizedName: query.normalizedName,
+      barcode: query.barcode,
+      foodFingerprint: query.foodFingerprint,
+      searchTokens: query.searchTokens,
+      limit: _globalFoodCandidateQueryLimit,
+    );
+    if (products.isEmpty) {
+      return const <GlobalFoodMatchCandidate>[];
+    }
+
+    final inventoryItems =
+        await _inventoryRepository?.readAll() ?? const <InventoryItem>[];
     final enrichedProducts = await _enrichProducts(
       products: products,
       inventoryItems: inventoryItems,
@@ -62,6 +76,29 @@ class GlobalFoodItemMatcher {
             .toList(growable: false)
           ..sort((left, right) => right.score.compareTo(left.score));
     return matches.take(5).toList(growable: false);
+  }
+
+  _GlobalFoodMatcherQuery? _buildQuery(InventoryItem item) {
+    final normalizedName = normalizeGlobalFoodText(item.name);
+    final searchTokens = _querySearchTokensFor(item);
+    final barcode = item.normalizedBarcode;
+    final foodFingerprint = _queryFoodFingerprintFor(item);
+
+    final hasQuery =
+        normalizedName.isNotEmpty ||
+        searchTokens.isNotEmpty ||
+        barcode != null ||
+        foodFingerprint != null;
+    if (!hasQuery) {
+      return null;
+    }
+
+    return _GlobalFoodMatcherQuery(
+      normalizedName: normalizedName.isEmpty ? null : normalizedName,
+      barcode: barcode,
+      foodFingerprint: foodFingerprint,
+      searchTokens: searchTokens,
+    );
   }
 
   String? defaultSelectionFor(List<GlobalFoodMatchCandidate> candidates) {
@@ -142,6 +179,30 @@ class GlobalFoodItemMatcher {
       score: score,
       reason: reason,
     );
+  }
+
+  List<String> _querySearchTokensFor(InventoryItem item) {
+    final tokens = buildGlobalFoodSearchTokens(
+      name: item.name,
+      brand: item.brand,
+      category: item.category,
+    ).toSet().toList(growable: false);
+    tokens.sort((left, right) {
+      final lengthCompare = right.length.compareTo(left.length);
+      if (lengthCompare != 0) {
+        return lengthCompare;
+      }
+      return left.compareTo(right);
+    });
+    return tokens.take(_globalFoodQueryTokenLimit).toList(growable: false);
+  }
+
+  String? _queryFoodFingerprintFor(InventoryItem item) {
+    final fingerprint = item.resolvedFoodFingerprint.trim();
+    if (fingerprint.isEmpty || fingerprint == 'unknown_food') {
+      return null;
+    }
+    return fingerprint;
   }
 
   Future<Map<String, GlobalFoodItem>> _enrichProducts({
@@ -270,4 +331,18 @@ class GlobalFoodItemMatcher {
       per100Fat: profile.per100Fat,
     );
   }
+}
+
+class _GlobalFoodMatcherQuery {
+  const _GlobalFoodMatcherQuery({
+    required this.normalizedName,
+    required this.barcode,
+    required this.foodFingerprint,
+    required this.searchTokens,
+  });
+
+  final String? normalizedName;
+  final String? barcode;
+  final String? foodFingerprint;
+  final List<String> searchTokens;
 }

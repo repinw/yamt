@@ -14,6 +14,65 @@ service cloud.firestore {
       return !(key in data) || data[key] == null || data[key] is string;
     }
 
+    function isOptionalMap(data, key) {
+      return !(key in data) || data[key] == null || data[key] is map;
+    }
+
+    function isAllowedGlobalFoodStatus(status) {
+      return status in ['active', 'candidate', 'merged'];
+    }
+
+    function isValidGlobalFoodItem(data, itemId) {
+      return data.keys().hasOnly([
+          'id',
+          'food_fingerprint',
+          'name',
+          'brand',
+          'category',
+          'barcode',
+          'image_url',
+          'nutrition',
+          'normalized_name',
+          'normalized_brand',
+          'search_tokens',
+          'status',
+          'merged_into_id',
+          'created_at',
+          'updated_at',
+        ])
+        && data.keys().hasAll([
+          'id',
+          'food_fingerprint',
+          'name',
+          'normalized_name',
+          'search_tokens',
+          'status',
+          'created_at',
+          'updated_at',
+        ])
+        && data.id == itemId
+        && data.id is string
+        && data.food_fingerprint is string
+        && data.food_fingerprint.size() > 0
+        && data.name is string
+        && data.name.size() > 0
+        && data.normalized_name is string
+        && data.normalized_name.size() > 0
+        && data.search_tokens is list
+        && data.search_tokens.size() > 0
+        && data.status is string
+        && isAllowedGlobalFoodStatus(data.status)
+        && data.created_at is string
+        && data.updated_at is string
+        && isOptionalString(data, 'brand')
+        && isOptionalString(data, 'category')
+        && isOptionalString(data, 'barcode')
+        && isOptionalString(data, 'image_url')
+        && isOptionalString(data, 'normalized_brand')
+        && isOptionalString(data, 'merged_into_id')
+        && isOptionalMap(data, 'nutrition');
+    }
+
     function isAllowedCalorieSource(source) {
       return source in [
         'user_override',
@@ -72,7 +131,8 @@ service cloud.firestore {
 
     match /global_food_items/{itemId} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn();
+      allow create: if isSignedIn()
+        && isValidGlobalFoodItem(request.resource.data, itemId);
       allow update, delete: if false;
     }
 
