@@ -1,4 +1,4 @@
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 enum ReceiptWeightUnitFallbackOption {
   auto,
@@ -6,20 +6,22 @@ enum ReceiptWeightUnitFallbackOption {
   milliliter,
   piece;
 
-  FridgeAmountUnit? resolve({required FridgeAmountUnit? autoFallback}) {
+  InventoryAmountUnit? resolve({required InventoryAmountUnit? autoFallback}) {
     return switch (this) {
       ReceiptWeightUnitFallbackOption.auto => autoFallback,
-      ReceiptWeightUnitFallbackOption.gram => FridgeAmountUnit.gram,
-      ReceiptWeightUnitFallbackOption.milliliter => FridgeAmountUnit.milliliter,
-      ReceiptWeightUnitFallbackOption.piece => FridgeAmountUnit.piece,
+      ReceiptWeightUnitFallbackOption.gram => InventoryAmountUnit.gram,
+      ReceiptWeightUnitFallbackOption.milliliter =>
+        InventoryAmountUnit.milliliter,
+      ReceiptWeightUnitFallbackOption.piece => InventoryAmountUnit.piece,
     };
   }
 
-  static ReceiptWeightUnitFallbackOption fromUnit(FridgeAmountUnit? unit) {
+  static ReceiptWeightUnitFallbackOption fromUnit(InventoryAmountUnit? unit) {
     return switch (unit) {
-      FridgeAmountUnit.gram => ReceiptWeightUnitFallbackOption.gram,
-      FridgeAmountUnit.milliliter => ReceiptWeightUnitFallbackOption.milliliter,
-      FridgeAmountUnit.piece => ReceiptWeightUnitFallbackOption.piece,
+      InventoryAmountUnit.gram => ReceiptWeightUnitFallbackOption.gram,
+      InventoryAmountUnit.milliliter =>
+        ReceiptWeightUnitFallbackOption.milliliter,
+      InventoryAmountUnit.piece => ReceiptWeightUnitFallbackOption.piece,
       null => ReceiptWeightUnitFallbackOption.auto,
     };
   }

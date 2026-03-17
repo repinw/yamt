@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/app_theme.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -17,7 +17,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-FridgeItem _item(
+InventoryItem _item(
   String id, {
   required String name,
   required String storeName,
@@ -26,7 +26,7 @@ FridgeItem _item(
   int quantity = 1,
   double unitPrice = 1.0,
 }) {
-  return FridgeItem(
+  return InventoryItem.create(
     id: id,
     name: name,
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
@@ -40,7 +40,7 @@ FridgeItem _item(
 }
 
 InventoryReceiptGroup _group() {
-  return InventoryReceiptGroup.fromItems('receipt:abc123', <FridgeItem>[
+  return InventoryReceiptGroup.fromItems('receipt:abc123', <InventoryItem>[
     _item(
       'a',
       name: 'Milk',

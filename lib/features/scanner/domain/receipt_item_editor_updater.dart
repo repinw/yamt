@@ -1,4 +1,4 @@
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_item_input_parser.dart';
 
 enum ReceiptItemEditorApplyError {
@@ -44,7 +44,7 @@ sealed class ReceiptItemEditorApplyResult {
 final class ReceiptItemEditorApplySuccess extends ReceiptItemEditorApplyResult {
   const ReceiptItemEditorApplySuccess(this.item);
 
-  final FridgeItem item;
+  final InventoryItem item;
 }
 
 final class ReceiptItemEditorApplyFailure extends ReceiptItemEditorApplyResult {
@@ -61,10 +61,10 @@ class ReceiptItemEditorUpdater {
   final ReceiptItemInputParser _inputParser;
 
   ReceiptItemEditorApplyResult apply({
-    required FridgeItem sourceItem,
+    required InventoryItem sourceItem,
     required ReceiptItemEditorFormData formData,
     required String locale,
-    required FridgeAmountUnit? fallbackUnit,
+    required InventoryAmountUnit? fallbackUnit,
   }) {
     final parsedNumbers = _inputParser.parseNumbers(
       quantityText: formData.quantityText,

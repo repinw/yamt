@@ -254,19 +254,19 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryReceiptReviewTitle.
   ///
   /// In en, this message translates to:
-  /// **'Review receipt items'**
+  /// **'Review receipt'**
   String get inventoryReceiptReviewTitle;
 
   /// No description provided for @inventoryReceiptReviewPriceTitle.
   ///
   /// In en, this message translates to:
-  /// **'Price overview'**
+  /// **'Total amount'**
   String get inventoryReceiptReviewPriceTitle;
 
   /// No description provided for @inventoryReceiptReviewPriceTotal.
   ///
   /// In en, this message translates to:
-  /// **'Total receipt'**
+  /// **'According to detected receipt'**
   String get inventoryReceiptReviewPriceTotal;
 
   /// No description provided for @inventoryReceiptReviewPriceSavable.
@@ -509,6 +509,72 @@ abstract class AppLocalizations {
   /// **'Use JSON or key=value pairs.'**
   String get inventoryReceiptReviewInvalidDiscounts;
 
+  /// No description provided for @inventoryReceiptReviewDetectedItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Detected items'**
+  String get inventoryReceiptReviewDetectedItems;
+
+  /// No description provided for @inventoryReceiptReviewOriginalReceiptAction.
+  ///
+  /// In en, this message translates to:
+  /// **'View original receipt'**
+  String get inventoryReceiptReviewOriginalReceiptAction;
+
+  /// No description provided for @inventoryReceiptReviewOriginalReceiptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Original receipt preview'**
+  String get inventoryReceiptReviewOriginalReceiptTitle;
+
+  /// No description provided for @inventoryReceiptReviewOriginalReceiptUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'(The receipt photo would appear here)'**
+  String get inventoryReceiptReviewOriginalReceiptUnavailable;
+
+  /// No description provided for @inventoryReceiptReviewReadAsPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Read as'**
+  String get inventoryReceiptReviewReadAsPrefix;
+
+  /// No description provided for @inventoryReceiptReviewDetermineAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Determine'**
+  String get inventoryReceiptReviewDetermineAction;
+
+  /// No description provided for @inventoryReceiptReviewProductSelectionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Select product'**
+  String get inventoryReceiptReviewProductSelectionLabel;
+
+  /// No description provided for @inventoryReceiptReviewCreateNewProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new product'**
+  String get inventoryReceiptReviewCreateNewProduct;
+
+  /// No description provided for @inventoryReceiptReviewMissingProductAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add missing item'**
+  String get inventoryReceiptReviewMissingProductAction;
+
+  /// No description provided for @inventoryReceiptReviewMissingProductHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan barcode or search manually'**
+  String get inventoryReceiptReviewMissingProductHint;
+
+  /// No description provided for @inventoryReceiptReviewSwitchAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch'**
+  String get inventoryReceiptReviewSwitchAction;
+
   /// No description provided for @inventoryReceiptReviewCancelAction.
   ///
   /// In en, this message translates to:
@@ -518,7 +584,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryReceiptReviewSaveAction.
   ///
   /// In en, this message translates to:
-  /// **'Save to inventory'**
+  /// **'Save'**
   String get inventoryReceiptReviewSaveAction;
 
   /// No description provided for @inventoryReceiptSaveSucceeded.

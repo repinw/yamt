@@ -1,14 +1,19 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_review_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-FridgeItem _item({
+InventoryItem _item({
   required String id,
   required bool isDeposit,
   required bool isDiscount,
@@ -20,7 +25,7 @@ FridgeItem _item({
   double unitPrice = 1.0,
   Map<String, double> discounts = const <String, double>{},
 }) {
-  return FridgeItem(
+  return InventoryItem.create(
     id: id,
     name: name ?? 'Item $id',
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
@@ -36,22 +41,128 @@ FridgeItem _item({
 }
 
 Widget _wrap({
-  required List<FridgeItem> items,
+  List<InventoryItem>? items,
+  List<ReceiptReviewItemDraft>? drafts,
   required VoidCallback onCancelTap,
-  required Future<void> Function(List<FridgeItem> items) onSaveTap,
+  required Future<void> Function(List<InventoryItem> items) onSaveTap,
+  Uint8List? receiptPreviewBytes,
 }) {
+  assert((items == null) != (drafts == null));
+
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: InventoryReceiptReviewSheet(
-        items: items,
+        items:
+            drafts ??
+            items!
+                .map((item) => ReceiptReviewItemDraft(item: item))
+                .toList(growable: false),
+        receiptPreviewBytes: receiptPreviewBytes,
         onCancelTap: onCancelTap,
-        onSaveTap: onSaveTap,
+        onSaveTap: (drafts) {
+          return onSaveTap(
+            drafts.map((draft) => draft.item).toList(growable: false),
+          );
+        },
       ),
     ),
   );
 }
+
+GlobalFoodMatchCandidate _candidate({
+  required String id,
+  required String name,
+  String? brand,
+}) {
+  return GlobalFoodMatchCandidate(
+    item: GlobalFoodItem.create(
+      id: id,
+      name: name,
+      now: DateTime.parse('2026-02-19T10:00:00Z'),
+      brand: brand,
+      nutrition: const GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Kcal: 120,
+      ),
+    ),
+    score: 0.9,
+    reason: GlobalFoodMatchReason.nameBrandStrong,
+  );
+}
+
+final Uint8List _receiptPreviewPng = Uint8List.fromList(const <int>[
+  0x89,
+  0x50,
+  0x4E,
+  0x47,
+  0x0D,
+  0x0A,
+  0x1A,
+  0x0A,
+  0x00,
+  0x00,
+  0x00,
+  0x0D,
+  0x49,
+  0x48,
+  0x44,
+  0x52,
+  0x00,
+  0x00,
+  0x00,
+  0x01,
+  0x00,
+  0x00,
+  0x00,
+  0x01,
+  0x08,
+  0x06,
+  0x00,
+  0x00,
+  0x00,
+  0x1F,
+  0x15,
+  0xC4,
+  0x89,
+  0x00,
+  0x00,
+  0x00,
+  0x0D,
+  0x49,
+  0x44,
+  0x41,
+  0x54,
+  0x78,
+  0x9C,
+  0x63,
+  0xF8,
+  0xCF,
+  0xC0,
+  0x00,
+  0x00,
+  0x03,
+  0x01,
+  0x01,
+  0x00,
+  0x18,
+  0xDD,
+  0x8D,
+  0xB1,
+  0x00,
+  0x00,
+  0x00,
+  0x00,
+  0x49,
+  0x45,
+  0x4E,
+  0x44,
+  0xAE,
+  0x42,
+  0x60,
+  0x82,
+]);
 
 void main() {
   testWidgets('price overview shows total, savable and excluded sums', (
@@ -59,7 +170,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'food', isDeposit: false, isDiscount: false),
           _item(id: 'deposit', isDeposit: true, isDiscount: false),
         ],
@@ -68,13 +179,118 @@ void main() {
       ),
     );
 
-    expect(find.text('Price overview'), findsOneWidget);
-    expect(find.text('Total receipt'), findsOneWidget);
-    expect(find.text('Saved to inventory'), findsOneWidget);
-    expect(find.text('Excluded lines'), findsOneWidget);
+    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+    final l10n = AppLocalizations.of(context)!;
+
+    await tester.scrollUntilVisible(
+      find.text(l10n.inventoryReceiptReviewPriceTitle),
+      200,
+    );
+
+    expect(find.text(l10n.inventoryReceiptReviewPriceTitle), findsOneWidget);
+    expect(find.text(l10n.inventoryReceiptReviewPriceTotal), findsOneWidget);
+    expect(find.text(l10n.inventoryReceiptReviewPriceSavable), findsOneWidget);
+    expect(find.text(l10n.inventoryReceiptReviewPriceExcluded), findsOneWidget);
   });
 
-  testWidgets('item preview shows line price instead of store/date', (
+  testWidgets('preview button opens receipt image dialog', (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        items: <InventoryItem>[
+          _item(id: 'food', isDeposit: false, isDiscount: false),
+        ],
+        receiptPreviewBytes: _receiptPreviewPng,
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    expect(
+      find.byKey(const Key('receipt_review_preview_button')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_preview_button')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(InteractiveViewer), findsOneWidget);
+  });
+
+  testWidgets('switch action opens candidate sheet and updates pill', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'KÄSE SCHEIBEN 150G',
+            ),
+            candidates: <GlobalFoodMatchCandidate>[
+              _candidate(id: 'gouda', name: 'Gouda', brand: 'Milbona'),
+              _candidate(id: 'edamer', name: 'Edamer', brand: 'Milbona'),
+            ],
+            ocrName: 'KÄSE SCHEIBEN 150G',
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_switch_button_0')));
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+    final l10n = AppLocalizations.of(context)!;
+
+    expect(
+      find.text(l10n.inventoryReceiptReviewProductSelectionLabel),
+      findsOneWidget,
+    );
+    expect(find.text('Gouda'), findsOneWidget);
+
+    await tester.tap(find.text('Gouda').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Gouda'), findsOneWidget);
+  });
+
+  testWidgets('suggested candidate already shows nutrition chips', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'KÄSE SCHEIBEN 150G',
+            ),
+            candidates: <GlobalFoodMatchCandidate>[
+              _candidate(id: 'gouda', name: 'Gouda', brand: 'Milbona'),
+              _candidate(id: 'edamer', name: 'Edamer', brand: 'Milbona'),
+            ],
+            selectedGlobalFoodItemId: 'gouda',
+            selectionNeedsReview: true,
+            ocrName: 'KÄSE SCHEIBEN 150G',
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    expect(find.text('Gouda'), findsOneWidget);
+    expect(find.textContaining('120 kcal'), findsOneWidget);
+  });
+
+  testWidgets('item preview shows unit price and quantity pill', (
     tester,
   ) async {
     final receiptDate = DateTime.parse('2026-01-05');
@@ -83,7 +299,7 @@ void main() {
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(
             id: 'food',
             isDeposit: false,
@@ -101,10 +317,10 @@ void main() {
     final context = tester.element(find.byType(InventoryReceiptReviewSheet));
     final locale = Localizations.localeOf(context).toLanguageTag();
     final currency = NumberFormat.currency(locale: locale, symbol: '€');
-    final expectedPrice = currency.format(quantity * unitPrice);
-    final expectedSubtitle = '${quantity}x · $expectedPrice';
+    final expectedUnitPrice = currency.format(unitPrice);
 
-    expect(find.text(expectedSubtitle), findsOneWidget);
+    expect(find.text(expectedUnitPrice), findsOneWidget);
+    expect(find.text('${quantity}x'), findsOneWidget);
   });
 
   testWidgets('receipt metadata is shown above price overview', (tester) async {
@@ -113,7 +329,7 @@ void main() {
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(
             id: 'food',
             isDeposit: false,
@@ -129,11 +345,12 @@ void main() {
 
     final context = tester.element(find.byType(InventoryReceiptReviewSheet));
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final expectedDate = DateFormat.yMMMd(locale).format(receiptDate);
+    final l10n = AppLocalizations.of(context)!;
+    final expectedDate = DateFormat.yMd(locale).format(receiptDate);
 
     final storeFinder = find.text(storeName);
     final dateFinder = find.text(expectedDate);
-    final priceTitleFinder = find.text('Price overview');
+    final priceTitleFinder = find.text(l10n.inventoryReceiptReviewPriceTitle);
 
     expect(storeFinder, findsOneWidget);
     expect(dateFinder, findsOneWidget);
@@ -147,12 +364,12 @@ void main() {
   testWidgets(
     'edited item keeps receipt date and hides store/date editor fields',
     (tester) async {
-      List<FridgeItem>? savedItems;
+      List<InventoryItem>? savedItems;
       final receiptDate = DateTime.parse('2026-01-05');
 
       await tester.pumpWidget(
         _wrap(
-          items: <FridgeItem>[
+          items: <InventoryItem>[
             _item(
               id: 'food',
               isDeposit: false,
@@ -216,7 +433,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'deposit', isDeposit: true, isDiscount: false),
         ],
         onCancelTap: () {},
@@ -237,7 +454,7 @@ void main() {
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'food', isDeposit: false, isDiscount: false),
         ],
         onCancelTap: () {},
@@ -258,20 +475,15 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('actions row calls cancel and save callback once each', (
-    tester,
-  ) async {
-    var cancelTapCount = 0;
+  testWidgets('header keeps only save action visible', (tester) async {
     var saveTapCount = 0;
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'food', isDeposit: false, isDiscount: false),
         ],
-        onCancelTap: () {
-          cancelTapCount++;
-        },
+        onCancelTap: () {},
         onSaveTap: (_) async {
           saveTapCount++;
         },
@@ -281,12 +493,10 @@ void main() {
     final context = tester.element(find.byType(InventoryReceiptReviewSheet));
     final l10n = AppLocalizations.of(context)!;
 
-    await tester.tap(find.text(l10n.inventoryReceiptReviewCancelAction));
-    await tester.pump();
+    expect(find.text(l10n.inventoryReceiptReviewCancelAction), findsNothing);
     await tester.tap(find.byKey(const Key('receipt_review_save_button')));
     await tester.pumpAndSettle();
 
-    expect(cancelTapCount, 1);
     expect(saveTapCount, 1);
   });
 
@@ -295,7 +505,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _wrap(
-        items: const <FridgeItem>[],
+        items: const <InventoryItem>[],
         onCancelTap: () {},
         onSaveTap: (_) async {},
       ),
@@ -310,7 +520,7 @@ void main() {
   testWidgets('items section renders all preview rows', (tester) async {
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(
             id: 'first',
             name: 'First item',
@@ -344,11 +554,11 @@ void main() {
   testWidgets('edit interaction updates the tapped item index only', (
     tester,
   ) async {
-    List<FridgeItem>? savedItems;
+    List<InventoryItem>? savedItems;
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(
             id: 'first',
             name: 'First item',
@@ -370,8 +580,14 @@ void main() {
     );
 
     final editButton = find.byKey(const Key('receipt_review_edit_button_1'));
-    await tester.ensureVisible(editButton);
-    await tester.tap(editButton);
+    await tester.scrollUntilVisible(
+      editButton,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -120));
+    await tester.pumpAndSettle();
+    await tester.tap(editButton.hitTestable());
     await tester.pumpAndSettle();
 
     await tester.enterText(
@@ -403,7 +619,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'food', isDeposit: false, isDiscount: false),
         ],
         onCancelTap: () {},
@@ -435,7 +651,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'food', isDeposit: false, isDiscount: false),
         ],
         onCancelTap: () {},
@@ -472,7 +688,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'food', isDeposit: false, isDiscount: false),
         ],
         onCancelTap: () {},
@@ -507,11 +723,11 @@ void main() {
   });
 
   testWidgets('clearing prefilled brand persists as null', (tester) async {
-    List<FridgeItem>? savedItems;
+    List<InventoryItem>? savedItems;
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(
             id: 'food',
             isDeposit: false,
@@ -556,7 +772,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'food', isDeposit: false, isDiscount: false),
         ],
         onCancelTap: () {},
@@ -584,11 +800,11 @@ void main() {
   });
 
   testWidgets('editor submits on keyboard done action', (tester) async {
-    List<FridgeItem>? savedItems;
+    List<InventoryItem>? savedItems;
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'food', isDeposit: false, isDiscount: false),
         ],
         onCancelTap: () {},
@@ -623,7 +839,7 @@ void main() {
   testWidgets('weight without unit shows inline validation', (tester) async {
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'food', isDeposit: false, isDiscount: false),
         ],
         onCancelTap: () {},
@@ -655,7 +871,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'food', isDeposit: false, isDiscount: false),
         ],
         onCancelTap: () {},
@@ -691,7 +907,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(
             id: 'food',
             isDeposit: false,
@@ -735,11 +951,11 @@ void main() {
   testWidgets('discount lines merge into previous item and remain visible', (
     tester,
   ) async {
-    List<FridgeItem>? savedItems;
+    List<InventoryItem>? savedItems;
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'food', isDeposit: false, isDiscount: false),
           _item(
             id: 'discount',
@@ -778,11 +994,11 @@ void main() {
   testWidgets('rabatt row without isDiscount flag merges into previous item', (
     tester,
   ) async {
-    List<FridgeItem>? savedItems;
+    List<InventoryItem>? savedItems;
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(
             id: 'mandarine',
             name: 'Mandarinen',
@@ -836,11 +1052,11 @@ void main() {
   });
 
   testWidgets('rabatt row merges even when mapped as deposit', (tester) async {
-    List<FridgeItem>? savedItems;
+    List<InventoryItem>? savedItems;
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(
             id: 'mandarine',
             name: 'Mandarinen',
@@ -886,11 +1102,11 @@ void main() {
   testWidgets('leergut row does not merge into previous item discount list', (
     tester,
   ) async {
-    List<FridgeItem>? savedItems;
+    List<InventoryItem>? savedItems;
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(
             id: 'mandarine',
             name: 'Mandarinen',
@@ -938,11 +1154,11 @@ void main() {
   testWidgets('added discount entries appear as gray rows below item', (
     tester,
   ) async {
-    List<FridgeItem>? savedItems;
+    List<InventoryItem>? savedItems;
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'food', isDeposit: false, isDiscount: false),
         ],
         onCancelTap: () {},
@@ -990,7 +1206,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(
             id: 'food',
             isDeposit: false,
@@ -1019,11 +1235,11 @@ void main() {
   testWidgets('positive discount input is normalized to negative amount', (
     tester,
   ) async {
-    List<FridgeItem>? savedItems;
+    List<InventoryItem>? savedItems;
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'food', isDeposit: false, isDiscount: false),
         ],
         onCancelTap: () {},
@@ -1063,11 +1279,11 @@ void main() {
   testWidgets('clearing discount in editor removes discount row from list', (
     tester,
   ) async {
-    List<FridgeItem>? savedItems;
+    List<InventoryItem>? savedItems;
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(
             id: 'gurke',
             name: 'Gurken',
@@ -1125,7 +1341,7 @@ void main() {
     (tester) async {
       await tester.pumpWidget(
         _wrap(
-          items: <FridgeItem>[
+          items: <InventoryItem>[
             _item(
               id: 'mandarine',
               name: 'Mandarinen',
@@ -1180,11 +1396,11 @@ void main() {
   testWidgets('weight without suffix saves when gram fallback is selected', (
     tester,
   ) async {
-    List<FridgeItem>? savedItems;
+    List<InventoryItem>? savedItems;
 
     await tester.pumpWidget(
       _wrap(
-        items: <FridgeItem>[
+        items: <InventoryItem>[
           _item(id: 'food', isDeposit: false, isDiscount: false),
         ],
         onCancelTap: () {},
@@ -1230,6 +1446,6 @@ void main() {
     expect(savedItems, hasLength(1));
     expect(savedItems!.single.initialAmount, 500);
     expect(savedItems!.single.currentAmount, 500);
-    expect(savedItems!.single.amountUnit, FridgeAmountUnit.gram);
+    expect(savedItems!.single.amountUnit, InventoryAmountUnit.gram);
   });
 }

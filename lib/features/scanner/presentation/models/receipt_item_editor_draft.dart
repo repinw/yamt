@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 enum ReceiptItemEditorDraftField {
   name,
@@ -25,7 +25,7 @@ class ReceiptItemEditorDraft {
     required this.discountsText,
   });
 
-  factory ReceiptItemEditorDraft.fromItem(FridgeItem item) {
+  factory ReceiptItemEditorDraft.fromItem(InventoryItem item) {
     return ReceiptItemEditorDraft(
       name: item.name,
       storeName: item.storeName,

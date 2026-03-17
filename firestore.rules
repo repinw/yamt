@@ -70,6 +70,12 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    match /global_food_items/{itemId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if false;
+    }
+
     match /users/{uid}/inventory_items/{itemId} {
       allow read, create, update, delete: if isOwner(uid);
     }

@@ -3,8 +3,8 @@ import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_batch_progress_dialog.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
@@ -95,17 +95,17 @@ class ReceiptBatchFlowRunner {
       return;
     }
 
-    final mappedItems = ref
+    final reviewDrafts = ref
         .read(receiptBatchFlowControllerProvider)
-        .mappedItemsForIndex(index);
-    if (mappedItems.isEmpty) {
+        .reviewDraftsForIndex(index);
+    if (reviewDrafts.isEmpty) {
       _batchController.finishReview(index: index, saved: false);
       return;
     }
 
     var saved = false;
     try {
-      saved = await _openReviewSheet(mappedItems: mappedItems);
+      saved = await _openReviewSheet(reviewDrafts: reviewDrafts);
     } catch (error, stackTrace) {
       log(
         'Receipt review sheet failed unexpectedly',
@@ -160,24 +160,26 @@ class ReceiptBatchFlowRunner {
     final isBatchComplete =
         progress.totalCount == 0 ||
         progress.processedCount == progress.totalCount;
-    final hasMappedItems = batchState.mappedItemsByIndex.values.any(
+    final hasReviewDrafts = batchState.reviewDraftsByIndex.values.any(
       (items) => items.isNotEmpty,
     );
     if (!isBatchComplete ||
         batchState.status != ReceiptBatchFlowStatus.completed ||
-        !hasMappedItems) {
+        !hasReviewDrafts) {
       return l10n.inventoryReceiptAnalysisFailed;
     }
     return null;
   }
 
-  Future<bool> _openReviewSheet({required List<FridgeItem> mappedItems}) {
+  Future<bool> _openReviewSheet({
+    required List<ReceiptReviewItemDraft> reviewDrafts,
+  }) {
     return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) {
         return InventoryReceiptReviewSheet(
-          items: mappedItems,
+          items: reviewDrafts,
           onCancelTap: () => Navigator.of(sheetContext).pop(false),
           onSaveTap: (reviewedItems) async {
             final saved = await _captureController.persistReviewedItems(

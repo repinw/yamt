@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/data/calorie_barcode_backfill_repository.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
-import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_amount_input_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -22,7 +22,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
 import 'package:yamt/features/inventory/presentation/'
-    'fridge_amount_unit_l10n.dart';
+    'inventory_amount_unit_l10n.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryItemRow extends ConsumerStatefulWidget {
@@ -38,7 +38,7 @@ class InventoryItemRow extends ConsumerStatefulWidget {
     required this.onThrowAwayPressed,
   });
 
-  final FridgeItem item;
+  final InventoryItem item;
   final AppLocalizations l10n;
   final NumberFormat currency;
   final bool showBarcodeMarkers;
@@ -170,7 +170,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   }
 
   void _onBuyAgainPressed() {
-    final controller = ref.read(fridgeItemsControllerProvider.notifier);
+    final controller = ref.read(inventoryItemsControllerProvider.notifier);
     unawaited(
       _actionCoordinator.runAction(
         () => controller.buyAgainItem(widget.item),
@@ -239,7 +239,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     messenger.showSnackBar(SnackBar(content: Text(message)));
   }
 
-  _ItemAmountInputConfig? _buildInputConfig(FridgeItem item) {
+  _ItemAmountInputConfig? _buildInputConfig(InventoryItem item) {
     if (item.usesAmountProgress) {
       final maxAmount = item.currentAmount > 0 ? item.currentAmount : 0;
       if (maxAmount < 1 || item.amountUnit == null) {
@@ -288,7 +288,7 @@ class _InventoryItemRowLayoutData {
 
   factory _InventoryItemRowLayoutData.fromItem({
     required BuildContext context,
-    required FridgeItem item,
+    required InventoryItem item,
     required AppLocalizations l10n,
     required NumberFormat currency,
     required bool hasAdjustableAmount,
@@ -321,7 +321,7 @@ class _InventoryItemRowLayoutData {
 
     return _InventoryItemRowLayoutData(
       colorScheme: colors,
-      snapshot: InventoryItemRowSnapshot.fromFridgeItem(item),
+      snapshot: InventoryItemRowSnapshot.fromItem(item),
       viewData: InventoryItemRowViewData(
         rowBorderColor: colors.outlineVariant,
         expandHintColor: colors.onSurfaceVariant,

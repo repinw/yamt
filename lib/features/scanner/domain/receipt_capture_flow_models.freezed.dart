@@ -159,10 +159,10 @@ return analysisFailed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ReceiptInputSource source,  ReceiptAnalysisExtraction extraction,  List<FridgeItem> mappedItems)?  completed,TResult Function( ReceiptInputSource source)?  inputCanceled,TResult Function( ReceiptInputSource source,  String errorCode)?  inputUnsupported,TResult Function( ReceiptInputSource source,  String errorCode)?  inputFailed,TResult Function( ReceiptInputSource source,  String errorCode)?  analysisFailed,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ReceiptInputSource source,  ReceiptAnalysisExtraction extraction,  List<ReceiptReviewItemDraft> reviewDrafts,  Uint8List? receiptPreviewBytes)?  completed,TResult Function( ReceiptInputSource source)?  inputCanceled,TResult Function( ReceiptInputSource source,  String errorCode)?  inputUnsupported,TResult Function( ReceiptInputSource source,  String errorCode)?  inputFailed,TResult Function( ReceiptInputSource source,  String errorCode)?  analysisFailed,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case ReceiptCaptureFlowCompleted() when completed != null:
-return completed(_that.source,_that.extraction,_that.mappedItems);case ReceiptCaptureFlowInputCanceled() when inputCanceled != null:
+return completed(_that.source,_that.extraction,_that.reviewDrafts,_that.receiptPreviewBytes);case ReceiptCaptureFlowInputCanceled() when inputCanceled != null:
 return inputCanceled(_that.source);case ReceiptCaptureFlowInputUnsupported() when inputUnsupported != null:
 return inputUnsupported(_that.source,_that.errorCode);case ReceiptCaptureFlowInputFailed() when inputFailed != null:
 return inputFailed(_that.source,_that.errorCode);case ReceiptCaptureFlowAnalysisFailed() when analysisFailed != null:
@@ -184,10 +184,10 @@ return analysisFailed(_that.source,_that.errorCode);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ReceiptInputSource source,  ReceiptAnalysisExtraction extraction,  List<FridgeItem> mappedItems)  completed,required TResult Function( ReceiptInputSource source)  inputCanceled,required TResult Function( ReceiptInputSource source,  String errorCode)  inputUnsupported,required TResult Function( ReceiptInputSource source,  String errorCode)  inputFailed,required TResult Function( ReceiptInputSource source,  String errorCode)  analysisFailed,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ReceiptInputSource source,  ReceiptAnalysisExtraction extraction,  List<ReceiptReviewItemDraft> reviewDrafts,  Uint8List? receiptPreviewBytes)  completed,required TResult Function( ReceiptInputSource source)  inputCanceled,required TResult Function( ReceiptInputSource source,  String errorCode)  inputUnsupported,required TResult Function( ReceiptInputSource source,  String errorCode)  inputFailed,required TResult Function( ReceiptInputSource source,  String errorCode)  analysisFailed,}) {final _that = this;
 switch (_that) {
 case ReceiptCaptureFlowCompleted():
-return completed(_that.source,_that.extraction,_that.mappedItems);case ReceiptCaptureFlowInputCanceled():
+return completed(_that.source,_that.extraction,_that.reviewDrafts,_that.receiptPreviewBytes);case ReceiptCaptureFlowInputCanceled():
 return inputCanceled(_that.source);case ReceiptCaptureFlowInputUnsupported():
 return inputUnsupported(_that.source,_that.errorCode);case ReceiptCaptureFlowInputFailed():
 return inputFailed(_that.source,_that.errorCode);case ReceiptCaptureFlowAnalysisFailed():
@@ -205,10 +205,10 @@ return analysisFailed(_that.source,_that.errorCode);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ReceiptInputSource source,  ReceiptAnalysisExtraction extraction,  List<FridgeItem> mappedItems)?  completed,TResult? Function( ReceiptInputSource source)?  inputCanceled,TResult? Function( ReceiptInputSource source,  String errorCode)?  inputUnsupported,TResult? Function( ReceiptInputSource source,  String errorCode)?  inputFailed,TResult? Function( ReceiptInputSource source,  String errorCode)?  analysisFailed,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ReceiptInputSource source,  ReceiptAnalysisExtraction extraction,  List<ReceiptReviewItemDraft> reviewDrafts,  Uint8List? receiptPreviewBytes)?  completed,TResult? Function( ReceiptInputSource source)?  inputCanceled,TResult? Function( ReceiptInputSource source,  String errorCode)?  inputUnsupported,TResult? Function( ReceiptInputSource source,  String errorCode)?  inputFailed,TResult? Function( ReceiptInputSource source,  String errorCode)?  analysisFailed,}) {final _that = this;
 switch (_that) {
 case ReceiptCaptureFlowCompleted() when completed != null:
-return completed(_that.source,_that.extraction,_that.mappedItems);case ReceiptCaptureFlowInputCanceled() when inputCanceled != null:
+return completed(_that.source,_that.extraction,_that.reviewDrafts,_that.receiptPreviewBytes);case ReceiptCaptureFlowInputCanceled() when inputCanceled != null:
 return inputCanceled(_that.source);case ReceiptCaptureFlowInputUnsupported() when inputUnsupported != null:
 return inputUnsupported(_that.source,_that.errorCode);case ReceiptCaptureFlowInputFailed() when inputFailed != null:
 return inputFailed(_that.source,_that.errorCode);case ReceiptCaptureFlowAnalysisFailed() when analysisFailed != null:
@@ -224,18 +224,19 @@ return analysisFailed(_that.source,_that.errorCode);case _:
 
 
 class ReceiptCaptureFlowCompleted extends ReceiptCaptureFlowResult {
-  const ReceiptCaptureFlowCompleted({required this.source, required this.extraction, required final  List<FridgeItem> mappedItems}): _mappedItems = mappedItems,super._();
+  const ReceiptCaptureFlowCompleted({required this.source, required this.extraction, required final  List<ReceiptReviewItemDraft> reviewDrafts, this.receiptPreviewBytes}): _reviewDrafts = reviewDrafts,super._();
   
 
 @override final  ReceiptInputSource source;
  final  ReceiptAnalysisExtraction extraction;
- final  List<FridgeItem> _mappedItems;
- List<FridgeItem> get mappedItems {
-  if (_mappedItems is EqualUnmodifiableListView) return _mappedItems;
+ final  List<ReceiptReviewItemDraft> _reviewDrafts;
+ List<ReceiptReviewItemDraft> get reviewDrafts {
+  if (_reviewDrafts is EqualUnmodifiableListView) return _reviewDrafts;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_mappedItems);
+  return EqualUnmodifiableListView(_reviewDrafts);
 }
 
+ final  Uint8List? receiptPreviewBytes;
 
 /// Create a copy of ReceiptCaptureFlowResult
 /// with the given fields replaced by the non-null parameter values.
@@ -247,16 +248,16 @@ $ReceiptCaptureFlowCompletedCopyWith<ReceiptCaptureFlowCompleted> get copyWith =
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReceiptCaptureFlowCompleted&&(identical(other.source, source) || other.source == source)&&(identical(other.extraction, extraction) || other.extraction == extraction)&&const DeepCollectionEquality().equals(other._mappedItems, _mappedItems));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReceiptCaptureFlowCompleted&&(identical(other.source, source) || other.source == source)&&(identical(other.extraction, extraction) || other.extraction == extraction)&&const DeepCollectionEquality().equals(other._reviewDrafts, _reviewDrafts)&&const DeepCollectionEquality().equals(other.receiptPreviewBytes, receiptPreviewBytes));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,source,extraction,const DeepCollectionEquality().hash(_mappedItems));
+int get hashCode => Object.hash(runtimeType,source,extraction,const DeepCollectionEquality().hash(_reviewDrafts),const DeepCollectionEquality().hash(receiptPreviewBytes));
 
 @override
 String toString() {
-  return 'ReceiptCaptureFlowResult.completed(source: $source, extraction: $extraction, mappedItems: $mappedItems)';
+  return 'ReceiptCaptureFlowResult.completed(source: $source, extraction: $extraction, reviewDrafts: $reviewDrafts, receiptPreviewBytes: $receiptPreviewBytes)';
 }
 
 
@@ -267,7 +268,7 @@ abstract mixin class $ReceiptCaptureFlowCompletedCopyWith<$Res> implements $Rece
   factory $ReceiptCaptureFlowCompletedCopyWith(ReceiptCaptureFlowCompleted value, $Res Function(ReceiptCaptureFlowCompleted) _then) = _$ReceiptCaptureFlowCompletedCopyWithImpl;
 @override @useResult
 $Res call({
- ReceiptInputSource source, ReceiptAnalysisExtraction extraction, List<FridgeItem> mappedItems
+ ReceiptInputSource source, ReceiptAnalysisExtraction extraction, List<ReceiptReviewItemDraft> reviewDrafts, Uint8List? receiptPreviewBytes
 });
 
 
@@ -284,12 +285,13 @@ class _$ReceiptCaptureFlowCompletedCopyWithImpl<$Res>
 
 /// Create a copy of ReceiptCaptureFlowResult
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? source = null,Object? extraction = null,Object? mappedItems = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? source = null,Object? extraction = null,Object? reviewDrafts = null,Object? receiptPreviewBytes = freezed,}) {
   return _then(ReceiptCaptureFlowCompleted(
 source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
 as ReceiptInputSource,extraction: null == extraction ? _self.extraction : extraction // ignore: cast_nullable_to_non_nullable
-as ReceiptAnalysisExtraction,mappedItems: null == mappedItems ? _self._mappedItems : mappedItems // ignore: cast_nullable_to_non_nullable
-as List<FridgeItem>,
+as ReceiptAnalysisExtraction,reviewDrafts: null == reviewDrafts ? _self._reviewDrafts : reviewDrafts // ignore: cast_nullable_to_non_nullable
+as List<ReceiptReviewItemDraft>,receiptPreviewBytes: freezed == receiptPreviewBytes ? _self.receiptPreviewBytes : receiptPreviewBytes // ignore: cast_nullable_to_non_nullable
+as Uint8List?,
   ));
 }
 

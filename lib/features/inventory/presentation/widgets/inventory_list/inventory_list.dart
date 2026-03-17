@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_consumption_filter.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -30,7 +30,7 @@ class InventoryList extends ConsumerStatefulWidget {
     required this.onThrowAwayItem,
   });
 
-  final List<FridgeItem> items;
+  final List<InventoryItem> items;
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
   final Future<bool> Function(String itemId, int amount) onThrowAwayItem;

@@ -1,4 +1,4 @@
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 class InventoryItemProgress {
   const InventoryItemProgress({
@@ -19,14 +19,14 @@ class InventoryItemProgress {
 class InventoryItemProgressCalculator {
   const InventoryItemProgressCalculator();
 
-  InventoryItemProgress fromItem(FridgeItem item) {
+  InventoryItemProgress fromItem(InventoryItem item) {
     if (item.usesAmountProgress) {
       return _fromAmount(item);
     }
     return _fromQuantity(item);
   }
 
-  InventoryItemProgress _fromAmount(FridgeItem item) {
+  InventoryItemProgress _fromAmount(InventoryItem item) {
     final unit = item.amountUnit!;
     final initialAmount = item.initialAmount;
     final totalUnits = _safeTotalUnits(item.initialQuantity);
@@ -44,7 +44,7 @@ class InventoryItemProgressCalculator {
     );
   }
 
-  InventoryItemProgress _fromQuantity(FridgeItem item) {
+  InventoryItemProgress _fromQuantity(InventoryItem item) {
     final totalUnits = _safeTotalUnits(item.initialQuantity);
     final remainingUnits = item.quantity.clamp(0, totalUnits);
 
@@ -64,16 +64,16 @@ class InventoryItemProgressCalculator {
     return initialQuantity;
   }
 
-  String _formatAmount(int value, FridgeAmountUnit unit) {
+  String _formatAmount(int value, InventoryAmountUnit unit) {
     final safeValue = value < 0 ? 0 : value;
     return '$safeValue${_unitSuffix(unit)}';
   }
 
-  String _unitSuffix(FridgeAmountUnit unit) {
+  String _unitSuffix(InventoryAmountUnit unit) {
     return switch (unit) {
-      FridgeAmountUnit.gram => 'g',
-      FridgeAmountUnit.milliliter => 'ml',
-      FridgeAmountUnit.piece => 'pc',
+      InventoryAmountUnit.gram => 'g',
+      InventoryAmountUnit.milliliter => 'ml',
+      InventoryAmountUnit.piece => 'pc',
     };
   }
 }

@@ -89,13 +89,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptBatchCloseAction => 'Close';
 
   @override
-  String get inventoryReceiptReviewTitle => 'Review receipt items';
+  String get inventoryReceiptReviewTitle => 'Review receipt';
 
   @override
-  String get inventoryReceiptReviewPriceTitle => 'Price overview';
+  String get inventoryReceiptReviewPriceTitle => 'Total amount';
 
   @override
-  String get inventoryReceiptReviewPriceTotal => 'Total receipt';
+  String get inventoryReceiptReviewPriceTotal => 'According to detected receipt';
 
   @override
   String get inventoryReceiptReviewPriceSavable => 'Saved to inventory';
@@ -218,10 +218,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewInvalidDiscounts => 'Use JSON or key=value pairs.';
 
   @override
+  String get inventoryReceiptReviewDetectedItems => 'Detected items';
+
+  @override
+  String get inventoryReceiptReviewOriginalReceiptAction => 'View original receipt';
+
+  @override
+  String get inventoryReceiptReviewOriginalReceiptTitle => 'Original receipt preview';
+
+  @override
+  String get inventoryReceiptReviewOriginalReceiptUnavailable => '(The receipt photo would appear here)';
+
+  @override
+  String get inventoryReceiptReviewReadAsPrefix => 'Read as';
+
+  @override
+  String get inventoryReceiptReviewDetermineAction => 'Determine';
+
+  @override
+  String get inventoryReceiptReviewProductSelectionLabel => 'Select product';
+
+  @override
+  String get inventoryReceiptReviewCreateNewProduct => 'Create new product';
+
+  @override
+  String get inventoryReceiptReviewMissingProductAction => 'Add missing item';
+
+  @override
+  String get inventoryReceiptReviewMissingProductHint => 'Scan barcode or search manually';
+
+  @override
+  String get inventoryReceiptReviewSwitchAction => 'Switch';
+
+  @override
   String get inventoryReceiptReviewCancelAction => 'Cancel';
 
   @override
-  String get inventoryReceiptReviewSaveAction => 'Save to inventory';
+  String get inventoryReceiptReviewSaveAction => 'Save';
 
   @override
   String get inventoryReceiptSaveSucceeded => 'Items added to inventory.';

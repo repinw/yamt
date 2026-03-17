@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
-FridgeItem _inventoryItem({
+InventoryItem _inventoryItem({
   required String id,
   required String name,
   String? brand,
@@ -11,7 +11,7 @@ FridgeItem _inventoryItem({
   int initialQuantity = 1,
   double unitPrice = 1.0,
 }) {
-  return FridgeItem(
+  return InventoryItem.create(
     id: id,
     name: name,
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),

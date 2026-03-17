@@ -1,7 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 part 'receipt_capture_flow_models.freezed.dart';
 
@@ -20,7 +22,8 @@ sealed class ReceiptCaptureFlowResult with _$ReceiptCaptureFlowResult {
   const factory ReceiptCaptureFlowResult.completed({
     required ReceiptInputSource source,
     required ReceiptAnalysisExtraction extraction,
-    required List<FridgeItem> mappedItems,
+    required List<ReceiptReviewItemDraft> reviewDrafts,
+    Uint8List? receiptPreviewBytes,
   }) = ReceiptCaptureFlowCompleted;
 
   const factory ReceiptCaptureFlowResult.inputCanceled({
@@ -67,8 +70,17 @@ sealed class ReceiptCaptureFlowResult with _$ReceiptCaptureFlowResult {
     ReceiptCaptureFlowAnalysisFailed() => null,
   };
 
-  List<FridgeItem>? get mappedItems => switch (this) {
-    ReceiptCaptureFlowCompleted(:final mappedItems) => mappedItems,
+  List<ReceiptReviewItemDraft>? get reviewDrafts => switch (this) {
+    ReceiptCaptureFlowCompleted(:final reviewDrafts) => reviewDrafts,
+    ReceiptCaptureFlowInputCanceled() ||
+    ReceiptCaptureFlowInputUnsupported() ||
+    ReceiptCaptureFlowInputFailed() ||
+    ReceiptCaptureFlowAnalysisFailed() => null,
+  };
+
+  Uint8List? get receiptPreviewBytes => switch (this) {
+    ReceiptCaptureFlowCompleted(:final receiptPreviewBytes) =>
+      receiptPreviewBytes,
     ReceiptCaptureFlowInputCanceled() ||
     ReceiptCaptureFlowInputUnsupported() ||
     ReceiptCaptureFlowInputFailed() ||
@@ -85,25 +97,25 @@ class ReceiptBatchItemProgress {
     required this.fileName,
     required this.status,
     this.errorCode,
-    this.mappedItemCount = 0,
+    this.reviewDraftCount = 0,
   });
 
   final String fileName;
   final ReceiptBatchItemStatus status;
   final String? errorCode;
-  final int mappedItemCount;
+  final int reviewDraftCount;
 
   ReceiptBatchItemProgress copyWith({
     ReceiptBatchItemStatus? status,
     String? errorCode,
-    int? mappedItemCount,
+    int? reviewDraftCount,
     bool clearErrorCode = false,
   }) {
     return ReceiptBatchItemProgress(
       fileName: fileName,
       status: status ?? this.status,
       errorCode: clearErrorCode ? null : (errorCode ?? this.errorCode),
-      mappedItemCount: mappedItemCount ?? this.mappedItemCount,
+      reviewDraftCount: reviewDraftCount ?? this.reviewDraftCount,
     );
   }
 
@@ -160,36 +172,36 @@ class ReceiptBatchRunResult {
   const ReceiptBatchRunResult({
     required this.status,
     required this.progress,
-    required this.mappedItems,
+    required this.reviewDrafts,
     this.errorCode,
   });
 
   const ReceiptBatchRunResult.completed({
     required ReceiptBatchProgress progress,
-    required List<FridgeItem> mappedItems,
+    required List<ReceiptReviewItemDraft> reviewDrafts,
   }) : this(
          status: ReceiptBatchRunStatus.completed,
          progress: progress,
-         mappedItems: mappedItems,
+         reviewDrafts: reviewDrafts,
        );
 
   const ReceiptBatchRunResult.inputCanceled()
     : this(
         status: ReceiptBatchRunStatus.inputCanceled,
         progress: const ReceiptBatchProgress(items: []),
-        mappedItems: const <FridgeItem>[],
+        reviewDrafts: const <ReceiptReviewItemDraft>[],
       );
 
   const ReceiptBatchRunResult.inputFailed({required String errorCode})
     : this(
         status: ReceiptBatchRunStatus.inputFailed,
         progress: const ReceiptBatchProgress(items: []),
-        mappedItems: const <FridgeItem>[],
+        reviewDrafts: const <ReceiptReviewItemDraft>[],
         errorCode: errorCode,
       );
 
   final ReceiptBatchRunStatus status;
   final ReceiptBatchProgress progress;
-  final List<FridgeItem> mappedItems;
+  final List<ReceiptReviewItemDraft> reviewDrafts;
   final String? errorCode;
 }

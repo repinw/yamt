@@ -1,4 +1,4 @@
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 class InventoryConsumptionFilter {
   const InventoryConsumptionFilter({
@@ -29,11 +29,11 @@ class InventoryConsumptionFilter {
     );
   }
 
-  List<FridgeItem> apply(List<FridgeItem> source) {
+  List<InventoryItem> apply(List<InventoryItem> source) {
     return source.where(matches).toList(growable: false);
   }
 
-  bool matches(FridgeItem item) {
+  bool matches(InventoryItem item) {
     if (item.isConsumed) {
       return showConsumed;
     }

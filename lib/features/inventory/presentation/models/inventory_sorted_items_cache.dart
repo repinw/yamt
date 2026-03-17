@@ -1,4 +1,4 @@
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 class InventorySortedItemsCache {
   const InventorySortedItemsCache({
@@ -6,7 +6,7 @@ class InventorySortedItemsCache {
     required this.sortedItemIds,
   });
 
-  factory InventorySortedItemsCache.fromItems(List<FridgeItem> items) {
+  factory InventorySortedItemsCache.fromItems(List<InventoryItem> items) {
     return InventorySortedItemsCache(
       signature: inventorySortSignature(items),
       sortedItemIds: sortedInventoryItemIds(items),
@@ -16,7 +16,7 @@ class InventorySortedItemsCache {
   final String signature;
   final List<String> sortedItemIds;
 
-  InventorySortedItemsCache update(List<FridgeItem> items) {
+  InventorySortedItemsCache update(List<InventoryItem> items) {
     final nextSignature = inventorySortSignature(items);
     if (nextSignature == signature) {
       return this;
@@ -24,8 +24,10 @@ class InventorySortedItemsCache {
     return InventorySortedItemsCache.fromItems(items);
   }
 
-  List<FridgeItem> materialize(List<FridgeItem> items) {
-    final byId = <String, FridgeItem>{for (final item in items) item.id: item};
+  List<InventoryItem> materialize(List<InventoryItem> items) {
+    final byId = <String, InventoryItem>{
+      for (final item in items) item.id: item,
+    };
     final hasConsistentIds = byId.length == sortedItemIds.length;
     assert(
       hasConsistentIds,
@@ -39,19 +41,19 @@ class InventorySortedItemsCache {
   }
 }
 
-List<FridgeItem> sortInventoryItems(List<FridgeItem> source) {
-  final sorted = List<FridgeItem>.from(source)
+List<InventoryItem> sortInventoryItems(List<InventoryItem> source) {
+  final sorted = List<InventoryItem>.from(source)
     ..sort(compareInventoryItemSortOrder);
   return sorted;
 }
 
-List<String> sortedInventoryItemIds(List<FridgeItem> source) {
+List<String> sortedInventoryItemIds(List<InventoryItem> source) {
   return sortInventoryItems(
     source,
   ).map((item) => item.id).toList(growable: false);
 }
 
-int compareInventoryItemSortOrder(FridgeItem a, FridgeItem b) {
+int compareInventoryItemSortOrder(InventoryItem a, InventoryItem b) {
   final nameCompare = a.name.toLowerCase().compareTo(b.name.toLowerCase());
   if (nameCompare != 0) {
     return nameCompare;
@@ -65,7 +67,7 @@ int compareInventoryItemSortOrder(FridgeItem a, FridgeItem b) {
   return a.id.compareTo(b.id);
 }
 
-String inventorySortSignature(List<FridgeItem> items) {
+String inventorySortSignature(List<InventoryItem> items) {
   final buffer = StringBuffer()..write(items.length);
 
   for (final item in items) {

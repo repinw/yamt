@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/data/inventory_fridge_item_store.dart';
+import 'package:yamt/features/inventory/data/inventory_item_store.dart';
 
 const _usersCollection = 'users';
 const _inventoryItemsCollection = 'inventory_items';
@@ -28,7 +28,7 @@ Future<void> _seedStaleDocuments({
 }
 
 void main() {
-  test('readAll maps documents to InventoryFridgeItemDocument', () async {
+  test('readAll maps documents to InventoryItemDocument', () async {
     final firestore = FakeFirebaseFirestore();
     final collection = _inventoryCollection(
       firestore: firestore,
@@ -37,7 +37,7 @@ void main() {
     await collection.doc('a').set(<String, dynamic>{'name': 'Milk'});
     await collection.doc('b').set(<String, dynamic>{'name': 'Bread'});
 
-    final store = FirestoreInventoryFridgeItemStore(firestore: firestore);
+    final store = FirestoreInventoryItemStore(firestore: firestore);
     final documents = await store.readAll(userId: 'user-1');
     final mappedById = <String, Map<String, dynamic>>{
       for (final document in documents) document.id: document.data,
@@ -54,7 +54,7 @@ void main() {
       firestore: firestore,
       userId: 'user-1',
     );
-    final store = FirestoreInventoryFridgeItemStore(firestore: firestore);
+    final store = FirestoreInventoryItemStore(firestore: firestore);
 
     final nextEmission = store.watchAll(userId: 'user-1').skip(1).first;
     await collection.doc('a').set(<String, dynamic>{'name': 'Milk'});
@@ -76,7 +76,7 @@ void main() {
       await collection.doc('a').set(<String, dynamic>{'name': 'Old Milk'});
       await collection.doc('b').set(<String, dynamic>{'name': 'Bread'});
 
-      final store = FirestoreInventoryFridgeItemStore(firestore: firestore);
+      final store = FirestoreInventoryItemStore(firestore: firestore);
       final replaced = await store.replaceAll(
         userId: 'user-1',
         documentsById: <String, Map<String, dynamic>>{
@@ -107,7 +107,7 @@ void main() {
     await collection.doc('a').set(<String, dynamic>{'name': 'Old Milk'});
     await collection.doc('b').set(<String, dynamic>{'name': 'Bread'});
 
-    final store = FirestoreInventoryFridgeItemStore.testing(
+    final store = FirestoreInventoryItemStore.testing(
       firestore: firestore,
       onBeforeDeleteStaleDocuments: () async {
         await collection.doc('a').set(<String, dynamic>{
@@ -145,7 +145,7 @@ void main() {
       await collection.doc('a').set(<String, dynamic>{'name': 'Old Milk'});
       await collection.doc('b').set(<String, dynamic>{'name': 'Bread'});
 
-      final store = FirestoreInventoryFridgeItemStore.testing(
+      final store = FirestoreInventoryItemStore.testing(
         firestore: firestore,
         onBeforeDeleteStaleDocuments: () async {
           await collection.doc('a').delete();
@@ -181,7 +181,7 @@ void main() {
       );
       await _seedStaleDocuments(collection: collection, count: 501);
 
-      final store = FirestoreInventoryFridgeItemStore.testing(
+      final store = FirestoreInventoryItemStore.testing(
         firestore: firestore,
         onBeforeDeleteStaleDocuments: () async {
           await collection.doc('stale-250').set(<String, dynamic>{
@@ -221,7 +221,7 @@ void main() {
       );
       await _seedStaleDocuments(collection: collection, count: 501);
 
-      final store = FirestoreInventoryFridgeItemStore.testing(
+      final store = FirestoreInventoryItemStore.testing(
         firestore: firestore,
         onBeforeDeleteStaleDocuments: () async {
           await collection.doc('stale-250').delete();
@@ -261,7 +261,7 @@ void main() {
           'item-$index': <String, dynamic>{'index': index},
       };
 
-      final store = FirestoreInventoryFridgeItemStore(firestore: firestore);
+      final store = FirestoreInventoryItemStore(firestore: firestore);
       final replaced = await store.replaceAll(
         userId: 'user-1',
         documentsById: documentsById,

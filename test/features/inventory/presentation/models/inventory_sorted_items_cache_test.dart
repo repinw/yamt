@@ -1,14 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_sorted_items_cache.dart';
 
-FridgeItem _item({
+InventoryItem _item({
   required String id,
   required String name,
   required String entryDate,
 }) {
-  return FridgeItem(
+  return InventoryItem.create(
     id: id,
     name: name,
     entryDate: DateTime.parse(entryDate),
@@ -21,29 +21,29 @@ FridgeItem _item({
 
 void main() {
   test('update returns same instance for unchanged signature', () {
-    final items = <FridgeItem>[
+    final items = <InventoryItem>[
       _item(id: 'a', name: 'Apple', entryDate: '2026-02-20T08:00:00Z'),
       _item(id: 'b', name: 'Banana', entryDate: '2026-02-21T08:00:00Z'),
     ];
     final cache = InventorySortedItemsCache.fromItems(items);
 
-    final next = cache.update(List<FridgeItem>.from(items));
+    final next = cache.update(List<InventoryItem>.from(items));
     expect(identical(next, cache), isTrue);
   });
 
   test('update returns new instance for cache misses', () {
-    final base = <FridgeItem>[
+    final base = <InventoryItem>[
       _item(id: 'a', name: 'Apple', entryDate: '2026-02-20T08:00:00Z'),
       _item(id: 'b', name: 'Banana', entryDate: '2026-02-21T08:00:00Z'),
     ];
     final cache = InventorySortedItemsCache.fromItems(base);
 
-    final added = cache.update(<FridgeItem>[
+    final added = cache.update(<InventoryItem>[
       ...base,
       _item(id: 'c', name: 'Cherry', entryDate: '2026-02-22T08:00:00Z'),
     ]);
-    final removed = cache.update(<FridgeItem>[base.first]);
-    final changed = cache.update(<FridgeItem>[
+    final removed = cache.update(<InventoryItem>[base.first]);
+    final changed = cache.update(<InventoryItem>[
       base.first.copyWith(name: 'Apricot'),
       base.last,
     ]);
@@ -57,9 +57,9 @@ void main() {
     final a = _item(id: 'a', name: 'Banana', entryDate: '2026-02-20T08:00:00Z');
     final b = _item(id: 'b', name: 'Apple', entryDate: '2026-02-20T08:00:00Z');
     final c = _item(id: 'c', name: 'Apple', entryDate: '2026-02-21T08:00:00Z');
-    final cache = InventorySortedItemsCache.fromItems(<FridgeItem>[a, b, c]);
+    final cache = InventorySortedItemsCache.fromItems(<InventoryItem>[a, b, c]);
 
-    final materialized = cache.materialize(<FridgeItem>[c, a, b]);
+    final materialized = cache.materialize(<InventoryItem>[c, a, b]);
     expect(materialized.map((item) => item.id), <String>['c', 'b', 'a']);
   });
 
@@ -85,7 +85,7 @@ void main() {
       entryDate: '2026-02-22T08:00:00Z',
     );
 
-    final sorted = sortInventoryItems(<FridgeItem>[
+    final sorted = sortInventoryItems(<InventoryItem>[
       banana,
       olderAppleB,
       newerApple,

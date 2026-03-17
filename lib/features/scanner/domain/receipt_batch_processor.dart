@@ -1,29 +1,31 @@
 import 'dart:developer' show log;
 
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_contracts.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 typedef ReceiptExtractionMapper =
-    List<FridgeItem> Function(ReceiptAnalysisExtraction extraction);
+    Future<List<ReceiptReviewItemDraft>> Function(
+      ReceiptAnalysisExtraction extraction,
+    );
 
 class ReceiptBatchProcessResult {
   const ReceiptBatchProcessResult({
     required this.progress,
-    required this.mappedItemsByIndex,
+    required this.reviewDraftsByIndex,
     required this.wasCanceled,
   });
 
   final ReceiptBatchProgress progress;
-  final Map<int, List<FridgeItem>> mappedItemsByIndex;
+  final Map<int, List<ReceiptReviewItemDraft>> reviewDraftsByIndex;
   final bool wasCanceled;
 
-  bool get hasMappedItems =>
-      mappedItemsByIndex.values.any((items) => items.isNotEmpty);
+  bool get hasReviewDrafts =>
+      reviewDraftsByIndex.values.any((items) => items.isNotEmpty);
 
-  List<FridgeItem> get mappedItems => mappedItemsByIndex.values
+  List<ReceiptReviewItemDraft> get reviewDrafts => reviewDraftsByIndex.values
       .expand((items) => items)
       .toList(growable: false);
 }
@@ -46,21 +48,21 @@ class ReceiptBatchProcessor {
     void Function(ReceiptBatchProgress progress)? onProgressChanged,
     void Function(
       int index,
-      List<FridgeItem> mappedItems,
+      List<ReceiptReviewItemDraft> reviewDrafts,
       ReceiptBatchProgress progress,
     )?
     onItemSucceeded,
     void Function(int index, ReceiptBatchProgress progress)? onItemFailed,
   }) async {
     var progress = _queuedBatchProgress(selections);
-    var mappedItemsByIndex = <int, List<FridgeItem>>{};
+    var reviewDraftsByIndex = <int, List<ReceiptReviewItemDraft>>{};
     onProgressChanged?.call(progress);
 
     for (var index = 0; index < selections.length; index++) {
       if (!shouldContinue()) {
         return ReceiptBatchProcessResult(
           progress: progress,
-          mappedItemsByIndex: mappedItemsByIndex,
+          reviewDraftsByIndex: reviewDraftsByIndex,
           wasCanceled: true,
         );
       }
@@ -78,31 +80,31 @@ class ReceiptBatchProcessor {
       if (!shouldContinue()) {
         return ReceiptBatchProcessResult(
           progress: progress,
-          mappedItemsByIndex: mappedItemsByIndex,
+          reviewDraftsByIndex: reviewDraftsByIndex,
           wasCanceled: true,
         );
       }
 
       if (analysis.errorCode == null) {
-        mappedItemsByIndex = <int, List<FridgeItem>>{
-          ...mappedItemsByIndex,
-          index: analysis.mappedItems,
+        reviewDraftsByIndex = <int, List<ReceiptReviewItemDraft>>{
+          ...reviewDraftsByIndex,
+          index: analysis.reviewDrafts,
         };
         progress = _updateBatchItem(
           progress: progress,
           index: index,
           status: ReceiptBatchItemStatus.succeeded,
-          mappedItemCount: analysis.mappedItems.length,
+          reviewDraftCount: analysis.reviewDrafts.length,
           clearErrorCode: true,
         );
-        onItemSucceeded?.call(index, analysis.mappedItems, progress);
+        onItemSucceeded?.call(index, analysis.reviewDrafts, progress);
       } else {
         progress = _updateBatchItem(
           progress: progress,
           index: index,
           status: ReceiptBatchItemStatus.failed,
           errorCode: analysis.errorCode,
-          mappedItemCount: 0,
+          reviewDraftCount: 0,
         );
         onItemFailed?.call(index, progress);
       }
@@ -110,25 +112,24 @@ class ReceiptBatchProcessor {
 
     return ReceiptBatchProcessResult(
       progress: progress,
-      mappedItemsByIndex: mappedItemsByIndex,
+      reviewDraftsByIndex: reviewDraftsByIndex,
       wasCanceled: false,
     );
   }
 
-  Future<({List<FridgeItem> mappedItems, String? errorCode})> _analyzeSelection(
-    ReceiptInputSelection selection,
-  ) async {
+  Future<({List<ReceiptReviewItemDraft> reviewDrafts, String? errorCode})>
+  _analyzeSelection(ReceiptInputSelection selection) async {
     try {
       final analysisResult = await _analysisRepository.analyzeSelection(
         selection,
       );
       return switch (analysisResult) {
         ReceiptAnalysisSuccess(:final extraction) => (
-          mappedItems: _mapExtraction(extraction),
+          reviewDrafts: await _mapExtraction(extraction),
           errorCode: null,
         ),
         ReceiptAnalysisFailure(:final errorCode) => (
-          mappedItems: const <FridgeItem>[],
+          reviewDrafts: const <ReceiptReviewItemDraft>[],
           errorCode: errorCode,
         ),
       };
@@ -140,7 +141,7 @@ class ReceiptBatchProcessor {
         stackTrace: stackTrace,
       );
       return (
-        mappedItems: const <FridgeItem>[],
+        reviewDrafts: const <ReceiptReviewItemDraft>[],
         errorCode: ReceiptAnalysisErrorCodes.unexpected,
       );
     }
@@ -167,14 +168,14 @@ class ReceiptBatchProcessor {
     required ReceiptBatchItemStatus status,
     String? errorCode,
     bool clearErrorCode = false,
-    int? mappedItemCount,
+    int? reviewDraftCount,
   }) {
     final currentItem = progress.items[index];
     final updatedItem = currentItem.copyWith(
       status: status,
       errorCode: errorCode,
       clearErrorCode: clearErrorCode,
-      mappedItemCount: mappedItemCount,
+      reviewDraftCount: reviewDraftCount,
     );
     return progress.updateItem(index, updatedItem);
   }

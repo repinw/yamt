@@ -3,14 +3,21 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/application/'
+    'receipt_review_resolution_service.dart';
+import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
-import 'package:yamt/features/scanner/data/receipt_to_fridge_item_mapper.dart';
+import 'package:yamt/features/scanner/data/receipt_to_review_item_draft_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_contracts.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 
 class _FakeReceiptInputRepository implements ReceiptInputRepository {
@@ -48,15 +55,74 @@ class _FakeReceiptAnalysisRepository implements ReceiptAnalysisRepository {
   }
 }
 
-class _FakeReceiptToFridgeItemMapper implements ReceiptToFridgeItemMapper {
-  _FakeReceiptToFridgeItemMapper({required this.onMap});
+class _FakeReceiptReviewResolutionService
+    extends ReceiptReviewResolutionService {
+  _FakeReceiptReviewResolutionService({required this.onPrepareDrafts})
+    : super(
+        mapper: _UnsupportedMapper(),
+        matcher: _UnsupportedMatcher(),
+        globalFoodItemRepository: _UnsupportedGlobalRepository(),
+        inventoryItemRepository: _UnsupportedInventoryRepository(),
+      );
 
-  final List<FridgeItem> Function(ReceiptAnalysisExtraction extraction) onMap;
+  final FutureOr<List<ReceiptReviewItemDraft>> Function(
+    ReceiptAnalysisExtraction extraction,
+  )
+  onPrepareDrafts;
 
   @override
-  List<FridgeItem> map(ReceiptAnalysisExtraction extraction) {
-    return onMap(extraction);
+  Future<List<ReceiptReviewItemDraft>> prepareDrafts(
+    ReceiptAnalysisExtraction extraction,
+  ) async {
+    return onPrepareDrafts(extraction);
   }
+}
+
+class _UnsupportedMapper implements ReceiptToReviewItemDraftMapper {
+  @override
+  List<ReceiptReviewItemDraft> map(ReceiptAnalysisExtraction extraction) {
+    throw UnimplementedError();
+  }
+}
+
+class _UnsupportedMatcher extends GlobalFoodItemMatcher {
+  _UnsupportedMatcher() : super(repository: _UnsupportedGlobalRepository());
+}
+
+class _UnsupportedGlobalRepository implements GlobalFoodItemRepository {
+  @override
+  Stream<List<GlobalFoodItem>> watchAll() async* {
+    yield const <GlobalFoodItem>[];
+  }
+
+  @override
+  Future<List<GlobalFoodItem>> readAll() async {
+    return const <GlobalFoodItem>[];
+  }
+
+  @override
+  Future<bool> saveAll(List<GlobalFoodItem> items) async => true;
+
+  @override
+  Future<bool> appendAll(List<GlobalFoodItem> items) async => true;
+}
+
+class _UnsupportedInventoryRepository implements InventoryItemRepository {
+  @override
+  Stream<List<InventoryItem>> watchAll() async* {
+    yield const <InventoryItem>[];
+  }
+
+  @override
+  Future<List<InventoryItem>> readAll() async {
+    return const <InventoryItem>[];
+  }
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async => true;
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async => true;
 }
 
 ReceiptInputSelection _selectionWithName(String name) {
@@ -68,15 +134,17 @@ ReceiptInputSelection _selectionWithName(String name) {
   );
 }
 
-FridgeItem _fridgeItem({required String id}) {
-  return FridgeItem(
-    id: id,
-    name: 'Milk',
-    entryDate: DateTime.parse('2026-02-24T10:00:00Z'),
-    storeName: 'Store',
-    quantity: 1,
-    initialQuantity: 1,
-    unitPrice: 1.99,
+ReceiptReviewItemDraft _reviewDraft({required String id}) {
+  return ReceiptReviewItemDraft(
+    item: InventoryItem.create(
+      id: id,
+      name: 'Milk',
+      entryDate: DateTime.parse('2026-02-24T10:00:00Z'),
+      storeName: 'Store',
+      quantity: 1,
+      initialQuantity: 1,
+      unitPrice: 1.99,
+    ),
   );
 }
 
@@ -185,9 +253,11 @@ void main() {
               },
             ),
           ),
-          receiptToFridgeItemMapperProvider.overrideWithValue(
-            _FakeReceiptToFridgeItemMapper(
-              onMap: (_) => <FridgeItem>[_fridgeItem(id: 'mapped-a')],
+          receiptReviewResolutionServiceProvider.overrideWithValue(
+            _FakeReceiptReviewResolutionService(
+              onPrepareDrafts: (_) async => <ReceiptReviewItemDraft>[
+                _reviewDraft(id: 'mapped-a'),
+              ],
             ),
           ),
         ],
@@ -206,7 +276,7 @@ void main() {
       expect(state.progress.failedCount, 1);
       expect(state.reviewableIndices, <int>{0});
       expect(state.pendingAutoReviewIndex, 0);
-      expect(state.mappedItemsForIndex(0), hasLength(1));
+      expect(state.reviewDraftsForIndex(0), hasLength(1));
       expect(analysisOrder, <String>['a.jpg', 'b.jpg']);
     },
   );
@@ -296,9 +366,11 @@ void main() {
                 ),
           ),
         ),
-        receiptToFridgeItemMapperProvider.overrideWithValue(
-          _FakeReceiptToFridgeItemMapper(
-            onMap: (_) => <FridgeItem>[_fridgeItem(id: 'mapped-a')],
+        receiptReviewResolutionServiceProvider.overrideWithValue(
+          _FakeReceiptReviewResolutionService(
+            onPrepareDrafts: (_) async => <ReceiptReviewItemDraft>[
+              _reviewDraft(id: 'mapped-a'),
+            ],
           ),
         ),
       ],

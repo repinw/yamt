@@ -63,8 +63,10 @@ function createItemResolutionService({
 
     await resolvedItemRef.set(
       {
-        foodFingerprint: fingerprint,
-        barcodeLookupRequestedAt: requestedAt,
+        barcode_lookup_requested_at: requestedAt,
+        product_snapshot: {
+          food_fingerprint: fingerprint,
+        },
         searchKeywords,
       },
       { merge: true },
@@ -216,15 +218,17 @@ function createItemResolutionService({
   }) {
     await itemRef.set(
       {
-        barcode,
-        barcodeCandidates: ensureCandidatesContainBarcodeValue(
+        barcode_candidates: ensureCandidatesContainBarcodeValue(
           candidates,
           barcode,
         ),
-        barcodeResolvedAt: nowIsoValue(),
-        barcodeLookupUncertain: readBoolean(barcodeLookupUncertain),
-        barcodeLookupRequestedAt: requestedAt,
-        foodFingerprint: fingerprint,
+        barcode_resolved_at: nowIsoValue(),
+        barcode_lookup_uncertain: readBoolean(barcodeLookupUncertain),
+        barcode_lookup_requested_at: requestedAt,
+        product_snapshot: {
+          barcode,
+          food_fingerprint: fingerprint,
+        },
         searchKeywords,
       },
       { merge: true },
@@ -240,10 +244,12 @@ function createItemResolutionService({
   }) {
     await itemRef.set(
       {
-        barcodeCandidates: normalizeCandidatesValue(candidates),
-        barcodeLookupUncertain: false,
-        barcodeLookupRequestedAt: requestedAt,
-        foodFingerprint: fingerprint,
+        barcode_candidates: normalizeCandidatesValue(candidates),
+        barcode_lookup_uncertain: false,
+        barcode_lookup_requested_at: requestedAt,
+        product_snapshot: {
+          food_fingerprint: fingerprint,
+        },
         searchKeywords,
       },
       { merge: true },

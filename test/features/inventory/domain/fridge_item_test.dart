@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
-FridgeItem _quantityItem({
+InventoryItem _quantityItem({
   required int quantity,
   required int initialQuantity,
 }) {
-  return FridgeItem(
+  return InventoryItem.create(
     id: 'item-1',
     name: 'Milk',
     entryDate: DateTime.parse('2026-02-20T08:00:00Z'),
@@ -16,11 +16,11 @@ FridgeItem _quantityItem({
   );
 }
 
-FridgeItem _amountItem({
+InventoryItem _amountItem({
   required int currentAmount,
   required int initialAmount,
 }) {
-  return FridgeItem(
+  return InventoryItem.create(
     id: 'item-2',
     name: 'Juice',
     entryDate: DateTime.parse('2026-02-20T08:00:00Z'),
@@ -30,7 +30,7 @@ FridgeItem _amountItem({
     unitPrice: 1.0,
     initialAmount: initialAmount,
     currentAmount: currentAmount,
-    amountUnit: FridgeAmountUnit.milliliter,
+    amountUnit: InventoryAmountUnit.milliliter,
   );
 }
 

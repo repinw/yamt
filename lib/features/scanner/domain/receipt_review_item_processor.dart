@@ -1,13 +1,16 @@
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 class ReceiptReviewMetadata {
   const ReceiptReviewMetadata({
     required this.storeName,
     required this.receiptDate,
+    required this.receiptTimeText,
   });
 
   final String storeName;
   final DateTime? receiptDate;
+  final String? receiptTimeText;
 }
 
 class ReceiptReviewProcessingResult {
@@ -16,7 +19,7 @@ class ReceiptReviewProcessingResult {
     required this.metadata,
   });
 
-  final List<FridgeItem> items;
+  final List<ReceiptReviewItemDraft> items;
   final ReceiptReviewMetadata metadata;
 }
 
@@ -30,7 +33,7 @@ class ReceiptReviewItemProcessor {
   final Set<String> _discountKeywords;
   final Set<String> _depositKeywords;
 
-  ReceiptReviewProcessingResult process(List<FridgeItem> items) {
+  ReceiptReviewProcessingResult process(List<ReceiptReviewItemDraft> items) {
     final mergedItems = _mergeDiscountItems(items);
     final metadata = _deriveReceiptMetadata(mergedItems);
     return ReceiptReviewProcessingResult(
@@ -39,30 +42,32 @@ class ReceiptReviewItemProcessor {
     );
   }
 
-  List<FridgeItem> _mergeDiscountItems(List<FridgeItem> items) {
-    final merged = <FridgeItem>[];
+  List<ReceiptReviewItemDraft> _mergeDiscountItems(
+    List<ReceiptReviewItemDraft> items,
+  ) {
+    final merged = <ReceiptReviewItemDraft>[];
     int? previousSavableIndex;
 
-    for (final item in items) {
-      final normalizedItem = _normalizeDiscountLine(item);
-      if (normalizedItem.isDiscount && previousSavableIndex != null) {
-        final previousItem = merged[previousSavableIndex];
+    for (final draft in items) {
+      final normalizedDraft = _normalizeDiscountLine(draft);
+      if (normalizedDraft.item.isDiscount && previousSavableIndex != null) {
+        final previousDraft = merged[previousSavableIndex];
         final discountAmount =
-            normalizedItem.unitPrice * normalizedItem.quantity;
+            normalizedDraft.item.unitPrice * normalizedDraft.item.quantity;
         final updatedDiscounts = Map<String, double>.from(
-          previousItem.discounts,
+          previousDraft.item.discounts,
         );
-        final discountName = _normalizeDiscountName(normalizedItem);
+        final discountName = _normalizeDiscountName(normalizedDraft);
         updatedDiscounts[discountName] =
             (updatedDiscounts[discountName] ?? 0) + discountAmount;
-        merged[previousSavableIndex] = previousItem.copyWith(
-          discounts: updatedDiscounts,
+        merged[previousSavableIndex] = previousDraft.copyWith(
+          item: previousDraft.item.copyWith(discounts: updatedDiscounts),
         );
         continue;
       }
 
-      merged.add(normalizedItem);
-      if (normalizedItem.canBeSavedToFridge) {
+      merged.add(normalizedDraft);
+      if (normalizedDraft.canBeSavedToInventory) {
         previousSavableIndex = merged.length - 1;
       }
     }
@@ -70,20 +75,27 @@ class ReceiptReviewItemProcessor {
     return merged;
   }
 
-  FridgeItem _normalizeDiscountLine(FridgeItem item) {
+  ReceiptReviewItemDraft _normalizeDiscountLine(ReceiptReviewItemDraft draft) {
+    final item = draft.item;
     if (_looksLikeDepositLine(item)) {
-      return item.copyWith(isDeposit: true, isDiscount: false);
+      return draft.copyWith(
+        item: item.copyWith(isDeposit: true, isDiscount: false),
+      );
     }
     if (item.isDiscount) {
-      return item.copyWith(isDeposit: false, isDiscount: true);
+      return draft.copyWith(
+        item: item.copyWith(isDeposit: false, isDiscount: true),
+      );
     }
     if (!_looksLikeDiscountLine(item)) {
-      return item;
+      return draft;
     }
-    return item.copyWith(isDeposit: false, isDiscount: true);
+    return draft.copyWith(
+      item: item.copyWith(isDeposit: false, isDiscount: true),
+    );
   }
 
-  bool _looksLikeDiscountLine(FridgeItem item) {
+  bool _looksLikeDiscountLine(InventoryItem item) {
     if (_looksLikeDepositLine(item) || item.unitPrice >= 0) {
       return false;
     }
@@ -101,7 +113,7 @@ class ReceiptReviewItemProcessor {
     return !hasBrand && !hasCategory;
   }
 
-  bool _looksLikeDepositLine(FridgeItem item) {
+  bool _looksLikeDepositLine(InventoryItem item) {
     final normalizedName = item.name.trim().toLowerCase();
     if (normalizedName.isEmpty) {
       return false;
@@ -109,11 +121,15 @@ class ReceiptReviewItemProcessor {
     return _depositKeywords.any(normalizedName.contains);
   }
 
-  ReceiptReviewMetadata _deriveReceiptMetadata(List<FridgeItem> items) {
+  ReceiptReviewMetadata _deriveReceiptMetadata(
+    List<ReceiptReviewItemDraft> items,
+  ) {
     var storeName = '-';
     DateTime? receiptDate;
+    String? receiptTimeText;
 
-    for (final item in items) {
+    for (final draft in items) {
+      final item = draft.item;
       final trimmedStoreName = item.storeName.trim();
       if (storeName == '-' && trimmedStoreName.isNotEmpty) {
         storeName = trimmedStoreName;
@@ -121,7 +137,8 @@ class ReceiptReviewItemProcessor {
       if (receiptDate == null && item.receiptDate != null) {
         receiptDate = item.receiptDate;
       }
-      if (storeName != '-' && receiptDate != null) {
+      receiptTimeText ??= _normalizeReceiptTimeText(draft.receiptTimeText);
+      if (storeName != '-' && receiptDate != null && receiptTimeText != null) {
         break;
       }
     }
@@ -129,11 +146,20 @@ class ReceiptReviewItemProcessor {
     return ReceiptReviewMetadata(
       storeName: storeName,
       receiptDate: receiptDate,
+      receiptTimeText: receiptTimeText,
     );
   }
 
-  String _normalizeDiscountName(FridgeItem item) {
-    return item.name.trim();
+  String _normalizeDiscountName(ReceiptReviewItemDraft draft) {
+    return draft.item.name.trim();
+  }
+
+  String? _normalizeReceiptTimeText(String? value) {
+    final trimmed = value?.trim();
+    if (trimmed == null || trimmed.isEmpty) {
+      return null;
+    }
+    return trimmed;
   }
 }
 

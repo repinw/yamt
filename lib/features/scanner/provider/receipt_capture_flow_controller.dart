@@ -5,15 +5,16 @@ import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository_contract.dart';
-import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
+import 'package:yamt/features/inventory/application/'
+    'receipt_review_resolution_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
-import 'package:yamt/features/scanner/data/receipt_to_fridge_item_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 
 part 'receipt_capture_flow_controller.g.dart';
@@ -141,7 +142,8 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
           ReceiptCaptureFlowResult.completed(
             source: source,
             extraction: extraction,
-            mappedItems: _mapExtraction(extraction),
+            reviewDrafts: await _prepareReviewDrafts(extraction),
+            receiptPreviewBytes: selection.bytes,
           ),
         ),
         ReceiptAnalysisFailure(:final errorCode) => _setAndReturn(
@@ -181,20 +183,27 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     return result;
   }
 
-  List<FridgeItem> _mapExtraction(ReceiptAnalysisExtraction extraction) {
-    final mapper = ref.read(receiptToFridgeItemMapperProvider);
-    return mapper.map(extraction);
+  Future<List<ReceiptReviewItemDraft>> _prepareReviewDrafts(
+    ReceiptAnalysisExtraction extraction,
+  ) {
+    final resolutionService = ref.read(receiptReviewResolutionServiceProvider);
+    return resolutionService.prepareDrafts(extraction);
   }
 
-  Future<bool> persistReviewedItems(List<FridgeItem> reviewedItems) async {
+  Future<bool> persistReviewedItems(
+    List<ReceiptReviewItemDraft> reviewedItems,
+  ) async {
     try {
-      final itemRepository = ref.read(fridgeItemRepositoryProvider);
-      final storableItems = _storableItems(reviewedItems);
-      final saved = await itemRepository.appendAll(storableItems);
-      if (saved) {
-        unawaited(_enqueueBatchBarcodeLookup(storableItems));
+      final resolutionService = ref.read(
+        receiptReviewResolutionServiceProvider,
+      );
+      final result = await resolutionService.persistReviewedItems(
+        reviewedItems,
+      );
+      if (result.saved) {
+        unawaited(_enqueueBatchBarcodeLookup(result.inventoryItems));
       }
-      return saved;
+      return result.saved;
     } catch (error, stackTrace) {
       log(
         'Receipt flow storage failed unexpectedly',
@@ -206,13 +215,7 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     }
   }
 
-  List<FridgeItem> _storableItems(List<FridgeItem> items) {
-    return items
-        .where((item) => item.canBeSavedToFridge)
-        .toList(growable: false);
-  }
-
-  Future<void> _enqueueBatchBarcodeLookup(List<FridgeItem> items) async {
+  Future<void> _enqueueBatchBarcodeLookup(List<InventoryItem> items) async {
     final pendingItems = items
         .where((item) => item.normalizedBarcode == null)
         .map(

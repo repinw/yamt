@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventorySectionHeader extends StatelessWidget {
@@ -58,7 +58,7 @@ class InventorySummaryCard extends StatelessWidget {
     required this.currency,
   });
 
-  final List<FridgeItem> items;
+  final List<InventoryItem> items;
   final NumberFormat currency;
 
   @override

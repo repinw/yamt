@@ -14,17 +14,21 @@ const _guestAuthLogName = 'GuestAuthController';
 @riverpod
 class GuestAuthController extends _$GuestAuthController {
   int _operationId = 0;
+  Timer? _loadingTimeout;
 
   @override
-  FutureOr<void> build() {}
+  FutureOr<void> build() {
+    ref.onDispose(_cancelLoadingTimeout);
+  }
 
   Future<void> signInAnonymously() async {
     final operationId = ++_operationId;
     final repository = ref.read(authRepositoryProvider);
     _trace('Starting anonymous sign-in.');
     state = const AsyncLoading();
-    unawaited(_guardLoadingTimeout(operationId));
+    _startLoadingTimeout(operationId);
     final nextState = await AsyncValue.guard(repository.signInAnonymously);
+    _cancelLoadingTimeout();
     if (operationId != _operationId) {
       return;
     }
@@ -45,22 +49,29 @@ class GuestAuthController extends _$GuestAuthController {
     state = nextState;
   }
 
-  Future<void> _guardLoadingTimeout(int operationId) async {
-    await Future<void>.delayed(const Duration(seconds: 20));
-    if (!ref.mounted) {
-      return;
-    }
-    if (operationId != _operationId || !state.isLoading) {
-      return;
-    }
-    _trace('Anonymous sign-in forced timeout guard triggered.');
-    state = AsyncError<void>(
-      FirebaseAuthException(
-        code: 'network-request-failed',
-        message: 'Anonymous sign-in exceeded timeout guard.',
-      ),
-      StackTrace.current,
-    );
+  void _startLoadingTimeout(int operationId) {
+    _cancelLoadingTimeout();
+    _loadingTimeout = Timer(const Duration(seconds: 20), () {
+      if (!ref.mounted) {
+        return;
+      }
+      if (operationId != _operationId || !state.isLoading) {
+        return;
+      }
+      _trace('Anonymous sign-in forced timeout guard triggered.');
+      state = AsyncError<void>(
+        FirebaseAuthException(
+          code: 'network-request-failed',
+          message: 'Anonymous sign-in exceeded timeout guard.',
+        ),
+        StackTrace.current,
+      );
+    });
+  }
+
+  void _cancelLoadingTimeout() {
+    _loadingTimeout?.cancel();
+    _loadingTimeout = null;
   }
 }
 

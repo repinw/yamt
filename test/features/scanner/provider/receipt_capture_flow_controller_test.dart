@@ -3,15 +3,21 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
+import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/application/'
+    'receipt_review_resolution_service.dart';
+import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
-import 'package:yamt/features/scanner/data/receipt_to_fridge_item_mapper.dart';
+import 'package:yamt/features/scanner/data/receipt_to_review_item_draft_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_contracts.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 
@@ -60,46 +66,91 @@ class _FakeReceiptAnalysisRepository implements ReceiptAnalysisRepository {
   }
 }
 
-class _FakeReceiptToFridgeItemMapper implements ReceiptToFridgeItemMapper {
-  _FakeReceiptToFridgeItemMapper({required this.onMap});
+class _FakeReceiptReviewResolutionService
+    extends ReceiptReviewResolutionService {
+  _FakeReceiptReviewResolutionService({
+    required this.onPrepareDrafts,
+    required this.onPersistReviewedItems,
+  }) : super(
+         mapper: _UnsupportedReceiptToReviewItemDraftMapper(),
+         matcher: _UnsupportedGlobalFoodItemMatcher(),
+         globalFoodItemRepository: _UnsupportedGlobalFoodItemRepository(),
+         inventoryItemRepository: _UnsupportedInventoryItemRepository(),
+       );
 
-  final List<FridgeItem> Function(ReceiptAnalysisExtraction extraction) onMap;
+  final FutureOr<List<ReceiptReviewItemDraft>> Function(
+    ReceiptAnalysisExtraction extraction,
+  )
+  onPrepareDrafts;
+  final FutureOr<ReceiptReviewPersistResult> Function(
+    List<ReceiptReviewItemDraft> reviewedItems,
+  )
+  onPersistReviewedItems;
 
   @override
-  List<FridgeItem> map(ReceiptAnalysisExtraction extraction) {
-    return onMap(extraction);
+  Future<List<ReceiptReviewItemDraft>> prepareDrafts(
+    ReceiptAnalysisExtraction extraction,
+  ) async {
+    return onPrepareDrafts(extraction);
+  }
+
+  @override
+  Future<ReceiptReviewPersistResult> persistReviewedItems(
+    List<ReceiptReviewItemDraft> reviewedItems,
+  ) async {
+    return onPersistReviewedItems(reviewedItems);
   }
 }
 
-class _FakeFridgeItemRepository implements FridgeItemRepository {
-  _FakeFridgeItemRepository({this.onAppendAll});
-
-  final Future<bool> Function(List<FridgeItem> items)? onAppendAll;
-
-  List<FridgeItem> appendedItems = const <FridgeItem>[];
-
+class _UnsupportedReceiptToReviewItemDraftMapper
+    implements ReceiptToReviewItemDraftMapper {
   @override
-  Stream<List<FridgeItem>> watchAll() async* {
-    yield const <FridgeItem>[];
+  List<ReceiptReviewItemDraft> map(ReceiptAnalysisExtraction extraction) {
+    throw UnimplementedError();
+  }
+}
+
+class _UnsupportedGlobalFoodItemMatcher extends GlobalFoodItemMatcher {
+  _UnsupportedGlobalFoodItemMatcher()
+    : super(repository: _UnsupportedGlobalFoodItemRepository());
+}
+
+class _UnsupportedGlobalFoodItemRepository implements GlobalFoodItemRepository {
+  @override
+  Stream<List<GlobalFoodItem>> watchAll() async* {
+    yield const <GlobalFoodItem>[];
   }
 
   @override
-  Future<bool> appendAll(List<FridgeItem> items) async {
-    appendedItems = items;
-    final callback = onAppendAll;
-    if (callback != null) {
-      return callback(items);
-    }
+  Future<List<GlobalFoodItem>> readAll() async {
+    return const <GlobalFoodItem>[];
+  }
+
+  @override
+  Future<bool> saveAll(List<GlobalFoodItem> items) async => true;
+
+  @override
+  Future<bool> appendAll(List<GlobalFoodItem> items) async => true;
+}
+
+class _UnsupportedInventoryItemRepository implements InventoryItemRepository {
+  @override
+  Stream<List<InventoryItem>> watchAll() async* {
+    yield const <InventoryItem>[];
+  }
+
+  @override
+  Future<List<InventoryItem>> readAll() async {
+    return const <InventoryItem>[];
+  }
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async {
     return true;
   }
 
   @override
-  Future<List<FridgeItem>> readAll() async {
-    return const <FridgeItem>[];
-  }
-
-  @override
-  Future<bool> saveAll(List<FridgeItem> items) async {
+  Future<bool> appendAll(List<InventoryItem> items) async {
     return true;
   }
 }
@@ -117,12 +168,12 @@ ReceiptInputSelection _selectionWithName(String name) {
   );
 }
 
-FridgeItem _fridgeItem({
+InventoryItem _inventoryItem({
   required String id,
   required bool isDeposit,
   required bool isDiscount,
 }) {
-  return FridgeItem(
+  return InventoryItem.create(
     id: id,
     name: 'Milk',
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
@@ -132,6 +183,16 @@ FridgeItem _fridgeItem({
     unitPrice: 1.99,
     isDeposit: isDeposit,
     isDiscount: isDiscount,
+  );
+}
+
+ReceiptReviewItemDraft _draft({
+  required String id,
+  required bool isDeposit,
+  required bool isDiscount,
+}) {
+  return ReceiptReviewItemDraft(
+    item: _inventoryItem(id: id, isDeposit: isDeposit, isDiscount: isDiscount),
   );
 }
 
@@ -308,11 +369,15 @@ void main() {
     'successful analysis maps to completed status with extraction',
     () async {
       final selection = _selection();
-      final mapper = _FakeReceiptToFridgeItemMapper(
-        onMap: (_) => <FridgeItem>[
-          _fridgeItem(id: 'food', isDeposit: false, isDiscount: false),
-          _fridgeItem(id: 'deposit', isDeposit: true, isDiscount: false),
+      final resolutionService = _FakeReceiptReviewResolutionService(
+        onPrepareDrafts: (_) async => <ReceiptReviewItemDraft>[
+          _draft(id: 'food', isDeposit: false, isDiscount: false),
+          _draft(id: 'deposit', isDeposit: true, isDiscount: false),
         ],
+        onPersistReviewedItems: (_) async => const ReceiptReviewPersistResult(
+          saved: true,
+          inventoryItems: <InventoryItem>[],
+        ),
       );
       final inputRepository = _FakeReceiptInputRepository(
         pickFile: () async => ReceiptInputResult.selected(selection: selection),
@@ -338,7 +403,9 @@ void main() {
           receiptAnalysisRepositoryProvider.overrideWithValue(
             analysisRepository,
           ),
-          receiptToFridgeItemMapperProvider.overrideWithValue(mapper),
+          receiptReviewResolutionServiceProvider.overrideWithValue(
+            resolutionService,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -350,8 +417,8 @@ void main() {
       expect(result.status, ReceiptCaptureFlowStatus.completed);
       expect(result.extraction, isNotNull);
       expect(result.extraction!.items.single.name, 'Milk');
-      expect(result.mappedItems, hasLength(2));
-      expect(result.mappedItems!.first.id, 'food');
+      expect(result.reviewDrafts, hasLength(2));
+      expect(result.reviewDrafts!.first.item.id, 'food');
       expect(
         container.read(receiptCaptureFlowControllerProvider).value,
         result,
@@ -360,10 +427,22 @@ void main() {
   );
 
   test('persistReviewedItems saves only non-review-only items', () async {
-    final fridgeRepository = _FakeFridgeItemRepository();
+    List<ReceiptReviewItemDraft>? persistedItems;
+    final resolutionService = _FakeReceiptReviewResolutionService(
+      onPrepareDrafts: (_) async => const <ReceiptReviewItemDraft>[],
+      onPersistReviewedItems: (reviewedItems) async {
+        persistedItems = reviewedItems;
+        return ReceiptReviewPersistResult(
+          saved: true,
+          inventoryItems: <InventoryItem>[reviewedItems.first.item],
+        );
+      },
+    );
     final container = ProviderContainer(
       overrides: [
-        fridgeItemRepositoryProvider.overrideWithValue(fridgeRepository),
+        receiptReviewResolutionServiceProvider.overrideWithValue(
+          resolutionService,
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -371,26 +450,33 @@ void main() {
     final controller = container.read(
       receiptCaptureFlowControllerProvider.notifier,
     );
-    final saved = await controller.persistReviewedItems(<FridgeItem>[
-      _fridgeItem(id: 'food', isDeposit: false, isDiscount: false),
-      _fridgeItem(id: 'deposit', isDeposit: true, isDiscount: false),
-      _fridgeItem(id: 'discount', isDeposit: false, isDiscount: true),
-    ]);
+    final saved = await controller
+        .persistReviewedItems(<ReceiptReviewItemDraft>[
+          _draft(id: 'food', isDeposit: false, isDiscount: false),
+          _draft(id: 'deposit', isDeposit: true, isDiscount: false),
+          _draft(id: 'discount', isDeposit: false, isDiscount: true),
+        ]);
 
     expect(saved, isTrue);
-    expect(fridgeRepository.appendedItems, hasLength(1));
-    expect(fridgeRepository.appendedItems.single.id, 'food');
+    expect(persistedItems, hasLength(3));
+    expect(persistedItems!.first.item.id, 'food');
   });
 
   test(
     'persistReviewedItems returns false when repository save fails',
     () async {
-      final fridgeRepository = _FakeFridgeItemRepository(
-        onAppendAll: (_) async => false,
+      final resolutionService = _FakeReceiptReviewResolutionService(
+        onPrepareDrafts: (_) async => const <ReceiptReviewItemDraft>[],
+        onPersistReviewedItems: (_) async => const ReceiptReviewPersistResult(
+          saved: false,
+          inventoryItems: <InventoryItem>[],
+        ),
       );
       final container = ProviderContainer(
         overrides: [
-          fridgeItemRepositoryProvider.overrideWithValue(fridgeRepository),
+          receiptReviewResolutionServiceProvider.overrideWithValue(
+            resolutionService,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -398,9 +484,11 @@ void main() {
       final controller = container.read(
         receiptCaptureFlowControllerProvider.notifier,
       );
-      final saved = await controller.persistReviewedItems(<FridgeItem>[
-        _fridgeItem(id: 'food', isDeposit: false, isDiscount: false),
-      ]);
+      final saved = await controller.persistReviewedItems(
+        <ReceiptReviewItemDraft>[
+          _draft(id: 'food', isDeposit: false, isDiscount: false),
+        ],
+      );
 
       expect(saved, isFalse);
     },

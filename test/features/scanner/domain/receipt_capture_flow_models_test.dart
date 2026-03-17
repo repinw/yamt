@@ -1,16 +1,21 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
-FridgeItem _item() {
-  return FridgeItem(
-    id: 'food-1',
-    name: 'Milk',
-    entryDate: DateTime.parse('2026-02-20T10:00:00Z'),
-    storeName: 'Store',
-    quantity: 1,
+ReceiptReviewItemDraft _draft() {
+  return ReceiptReviewItemDraft(
+    item: InventoryItem.create(
+      id: 'food-1',
+      name: 'Milk',
+      entryDate: DateTime.parse('2026-02-20T10:00:00Z'),
+      storeName: 'Store',
+      quantity: 1,
+    ),
   );
 }
 
@@ -29,17 +34,20 @@ ReceiptAnalysisExtraction _extraction() {
 void main() {
   test('completed result exposes extraction and mapped items', () {
     final extraction = _extraction();
-    final mappedItems = <FridgeItem>[_item()];
+    final reviewDrafts = <ReceiptReviewItemDraft>[_draft()];
+    final previewBytes = Uint8List.fromList(const <int>[1, 2, 3]);
     final result = ReceiptCaptureFlowResult.completed(
       source: ReceiptInputSource.file,
       extraction: extraction,
-      mappedItems: mappedItems,
+      reviewDrafts: reviewDrafts,
+      receiptPreviewBytes: previewBytes,
     );
 
     expect(result.status, ReceiptCaptureFlowStatus.completed);
     expect(result.errorCode, isNull);
     expect(result.extraction, same(extraction));
-    expect(result.mappedItems, equals(mappedItems));
+    expect(result.reviewDrafts, equals(reviewDrafts));
+    expect(result.receiptPreviewBytes, previewBytes);
     expect(result.isCompleted, isTrue);
   });
 
@@ -51,7 +59,8 @@ void main() {
     expect(result.status, ReceiptCaptureFlowStatus.inputCanceled);
     expect(result.errorCode, isNull);
     expect(result.extraction, isNull);
-    expect(result.mappedItems, isNull);
+    expect(result.reviewDrafts, isNull);
+    expect(result.receiptPreviewBytes, isNull);
     expect(result.isCompleted, isFalse);
   });
 
@@ -64,7 +73,7 @@ void main() {
     expect(result.status, ReceiptCaptureFlowStatus.inputUnsupported);
     expect(result.errorCode, 'unsupported');
     expect(result.extraction, isNull);
-    expect(result.mappedItems, isNull);
+    expect(result.reviewDrafts, isNull);
     expect(result.isCompleted, isFalse);
   });
 
@@ -77,7 +86,7 @@ void main() {
     expect(result.status, ReceiptCaptureFlowStatus.inputFailed);
     expect(result.errorCode, 'input_failed');
     expect(result.extraction, isNull);
-    expect(result.mappedItems, isNull);
+    expect(result.reviewDrafts, isNull);
     expect(result.isCompleted, isFalse);
   });
 
@@ -90,7 +99,7 @@ void main() {
     expect(result.status, ReceiptCaptureFlowStatus.analysisFailed);
     expect(result.errorCode, 'analysis_failed');
     expect(result.extraction, isNull);
-    expect(result.mappedItems, isNull);
+    expect(result.reviewDrafts, isNull);
     expect(result.isCompleted, isFalse);
   });
 
@@ -100,7 +109,7 @@ void main() {
         ReceiptBatchItemProgress(
           fileName: 'a.jpg',
           status: ReceiptBatchItemStatus.succeeded,
-          mappedItemCount: 2,
+          reviewDraftCount: 2,
         ),
         ReceiptBatchItemProgress(
           fileName: 'b.jpg',
@@ -123,7 +132,7 @@ void main() {
   });
 
   test('batch run result completed exposes mapped items', () {
-    final mappedItems = <FridgeItem>[_item()];
+    final reviewDrafts = <ReceiptReviewItemDraft>[_draft()];
     const progress = ReceiptBatchProgress(
       items: <ReceiptBatchItemProgress>[
         ReceiptBatchItemProgress(
@@ -134,12 +143,13 @@ void main() {
     );
     final result = ReceiptBatchRunResult.completed(
       progress: progress,
-      mappedItems: mappedItems,
+      reviewDrafts: reviewDrafts,
     );
 
     expect(result.status, ReceiptBatchRunStatus.completed);
     expect(result.progress.totalCount, 1);
-    expect(result.mappedItems, mappedItems);
+    expect(result.reviewDrafts, reviewDrafts);
+    expect(result.reviewDrafts, reviewDrafts);
     expect(result.errorCode, isNull);
   });
 
@@ -148,7 +158,7 @@ void main() {
 
     expect(result.status, ReceiptBatchRunStatus.inputFailed);
     expect(result.errorCode, 'input_failed');
-    expect(result.mappedItems, isEmpty);
+    expect(result.reviewDrafts, isEmpty);
     expect(result.progress.totalCount, 0);
   });
 }

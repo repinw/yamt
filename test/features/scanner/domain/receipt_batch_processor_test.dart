@@ -1,11 +1,12 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_contracts.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_processor.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 class _FakeReceiptAnalysisRepository implements ReceiptAnalysisRepository {
   _FakeReceiptAnalysisRepository({required this.onAnalyzeSelection});
@@ -45,15 +46,17 @@ ReceiptAnalysisResult _successResult(String name) {
   );
 }
 
-FridgeItem _mappedItem(String id) {
-  return FridgeItem(
-    id: id,
-    name: id,
-    entryDate: DateTime.parse('2026-02-26T12:00:00Z'),
-    storeName: 'Store',
-    quantity: 1,
-    initialQuantity: 1,
-    unitPrice: 1.0,
+ReceiptReviewItemDraft _mappedItem(String id) {
+  return ReceiptReviewItemDraft(
+    item: InventoryItem.create(
+      id: id,
+      name: id,
+      entryDate: DateTime.parse('2026-02-26T12:00:00Z'),
+      storeName: 'Store',
+      quantity: 1,
+      initialQuantity: 1,
+      unitPrice: 1.0,
+    ),
   );
 }
 
@@ -71,7 +74,7 @@ void main() {
       );
       final processor = ReceiptBatchProcessor(
         analysisRepository: repository,
-        mapExtraction: (extraction) => <FridgeItem>[
+        mapExtraction: (extraction) async => <ReceiptReviewItemDraft>[
           _mappedItem(extraction.items.first.name),
         ],
         loggerName: 'ReceiptBatchProcessorTest',
@@ -94,7 +97,7 @@ void main() {
       expect(result.progress.processedCount, 1);
       expect(result.progress.succeededCount, 1);
       expect(result.progress.failedCount, 0);
-      expect(result.mappedItemsByIndex.keys, <int>[0]);
+      expect(result.reviewDraftsByIndex.keys, <int>[0]);
     },
   );
 
@@ -116,7 +119,7 @@ void main() {
     );
     final processor = ReceiptBatchProcessor(
       analysisRepository: repository,
-      mapExtraction: (extraction) => <FridgeItem>[
+      mapExtraction: (extraction) async => <ReceiptReviewItemDraft>[
         _mappedItem(extraction.items.first.name),
       ],
       loggerName: 'ReceiptBatchProcessorTest',

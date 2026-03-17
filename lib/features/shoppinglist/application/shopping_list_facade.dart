@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 
@@ -46,7 +46,7 @@ final activeShoppingListItemKeysProvider =
     });
 
 final isInventoryItemInActiveShoppingListProvider =
-    Provider.family<bool, FridgeItem>((ref, item) {
+    Provider.family<bool, InventoryItem>((ref, item) {
       return ref.watch(
         activeShoppingListItemKeysProvider.select(
           (keys) => isInventoryItemInActiveShoppingList(
@@ -63,7 +63,7 @@ class ShoppingListFacade {
 
   final ShoppingListAddItem _addItem;
 
-  Future<bool> addInventoryItem(FridgeItem item) {
+  Future<bool> addInventoryItem(InventoryItem item) {
     final quantity = normalizeInventoryQuantityForShopping(
       item.initialQuantity,
     );
@@ -76,7 +76,7 @@ class ShoppingListFacade {
   }
 
   bool isInventoryItemInActiveList({
-    required FridgeItem item,
+    required InventoryItem item,
     required Set<ShoppingListItemMatchKey> activeItemKeys,
   }) {
     return isInventoryItemInActiveShoppingList(
@@ -108,7 +108,7 @@ Set<ShoppingListItemMatchKey> computeActiveShoppingListItemKeys(
       .toSet();
 }
 
-ShoppingListItemMatchKey? inventoryItemMatchKey(FridgeItem item) {
+ShoppingListItemMatchKey? inventoryItemMatchKey(InventoryItem item) {
   final normalizedName = normalizeShoppingListValue(item.name);
   if (normalizedName.isEmpty) {
     return null;
@@ -118,7 +118,7 @@ ShoppingListItemMatchKey? inventoryItemMatchKey(FridgeItem item) {
 }
 
 bool isInventoryItemInActiveShoppingList({
-  required FridgeItem item,
+  required InventoryItem item,
   required Set<ShoppingListItemMatchKey> activeItemKeys,
 }) {
   if (!item.isFullyConsumed) {
