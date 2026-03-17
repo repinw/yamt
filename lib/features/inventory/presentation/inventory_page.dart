@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
-import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -17,11 +17,11 @@ class InventoryPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(fridgeItemsControllerProvider, _logLoadErrorOnce);
+    ref.listen(inventoryItemsControllerProvider, _logLoadErrorOnce);
 
     final l10n = AppLocalizations.of(context)!;
-    final controller = ref.read(fridgeItemsControllerProvider.notifier);
-    final itemsAsync = ref.watch(fridgeItemsControllerProvider);
+    final controller = ref.read(inventoryItemsControllerProvider.notifier);
+    final itemsAsync = ref.watch(inventoryItemsControllerProvider);
 
     return itemsAsync.when(
       data: (items) => InventoryList(
@@ -46,8 +46,8 @@ class InventoryPage extends ConsumerWidget {
   }
 
   void _logLoadErrorOnce(
-    AsyncValue<List<FridgeItem>>? previous,
-    AsyncValue<List<FridgeItem>> next,
+    AsyncValue<List<InventoryItem>>? previous,
+    AsyncValue<List<InventoryItem>> next,
   ) {
     final nextError = next.asError;
     if (nextError == null) {
@@ -74,9 +74,9 @@ class InventoryPage extends ConsumerWidget {
     required WidgetRef ref,
     required String itemId,
     required int amount,
-    required List<FridgeItem> itemsSnapshot,
+    required List<InventoryItem> itemsSnapshot,
   }) async {
-    FridgeItem? selectedItem;
+    InventoryItem? selectedItem;
     for (final item in itemsSnapshot) {
       if (item.id == itemId) {
         selectedItem = item;
@@ -85,7 +85,7 @@ class InventoryPage extends ConsumerWidget {
     }
 
     final saved = await ref
-        .read(fridgeItemsControllerProvider.notifier)
+        .read(inventoryItemsControllerProvider.notifier)
         .eatItem(itemId, amount);
     if (!saved || selectedItem == null || !context.mounted) {
       return saved;

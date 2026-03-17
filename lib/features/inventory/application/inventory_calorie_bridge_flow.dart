@@ -13,7 +13,7 @@ import 'package:yamt/features/calories/presentation/models/calorie_entry_create_
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_barcode_candidate_picker_sheet.dart';
 import 'package:yamt/features/calories/provider/calorie_barcode_flow_controller.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryCalorieBridgeFlow {
@@ -22,7 +22,7 @@ class InventoryCalorieBridgeFlow {
   static Future<void> onEatCompleted({
     required BuildContext context,
     required WidgetRef ref,
-    required FridgeItem itemBeforeMutation,
+    required InventoryItem itemBeforeMutation,
     required int consumedAmount,
   }) async {
     final flags = ref.read(barcodeBackfillFeatureFlagsProvider);
@@ -163,21 +163,21 @@ class InventoryCalorieBridgeFlow {
 
   static Future<CalorieInventoryCreateContext?> _buildInventoryContext({
     required BuildContext context,
-    required FridgeItem item,
+    required InventoryItem item,
     required int consumedAmount,
   }) async {
     final unit = item.amountUnit;
     if (item.usesAmountProgress &&
         unit != null &&
-        (unit == FridgeAmountUnit.gram ||
-            unit == FridgeAmountUnit.milliliter)) {
+        (unit == InventoryAmountUnit.gram ||
+            unit == InventoryAmountUnit.milliliter)) {
       return CalorieInventoryCreateContext(
         inventoryItemId: item.id,
         foodFingerprint: item.resolvedFoodFingerprint,
         itemName: item.name,
         itemBrand: item.brand,
         consumedAmount: consumedAmount.toDouble(),
-        consumedUnit: unit == FridgeAmountUnit.gram
+        consumedUnit: unit == InventoryAmountUnit.gram
             ? ConsumedUnit.grams
             : ConsumedUnit.milliliters,
       );

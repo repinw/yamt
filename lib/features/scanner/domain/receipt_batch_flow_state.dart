@@ -1,5 +1,5 @@
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 enum ReceiptBatchFlowStatus {
   idle,
@@ -18,7 +18,7 @@ class ReceiptBatchFlowState {
     ),
     this.reviewableIndices = const <int>{},
     this.reviewedIndices = const <int>{},
-    this.mappedItemsByIndex = const <int, List<FridgeItem>>{},
+    this.reviewDraftsByIndex = const <int, List<ReceiptReviewItemDraft>>{},
     this.pendingAutoReviewIndex,
     this.autoReviewDispatched = false,
     this.activeReviewIndex,
@@ -29,7 +29,7 @@ class ReceiptBatchFlowState {
   final ReceiptBatchProgress progress;
   final Set<int> reviewableIndices;
   final Set<int> reviewedIndices;
-  final Map<int, List<FridgeItem>> mappedItemsByIndex;
+  final Map<int, List<ReceiptReviewItemDraft>> reviewDraftsByIndex;
   final int? pendingAutoReviewIndex;
   final bool autoReviewDispatched;
   final int? activeReviewIndex;
@@ -38,8 +38,8 @@ class ReceiptBatchFlowState {
   bool get canClose => status == ReceiptBatchFlowStatus.completed;
   bool get isReviewOpen => activeReviewIndex != null;
 
-  List<FridgeItem> mappedItemsForIndex(int index) {
-    return mappedItemsByIndex[index] ?? const <FridgeItem>[];
+  List<ReceiptReviewItemDraft> reviewDraftsForIndex(int index) {
+    return reviewDraftsByIndex[index] ?? const <ReceiptReviewItemDraft>[];
   }
 
   ReceiptBatchFlowState copyWith({
@@ -47,7 +47,7 @@ class ReceiptBatchFlowState {
     ReceiptBatchProgress? progress,
     Set<int>? reviewableIndices,
     Set<int>? reviewedIndices,
-    Map<int, List<FridgeItem>>? mappedItemsByIndex,
+    Map<int, List<ReceiptReviewItemDraft>>? reviewDraftsByIndex,
     Object? pendingAutoReviewIndex = _keepFieldValue,
     bool? autoReviewDispatched,
     Object? activeReviewIndex = _keepFieldValue,
@@ -58,7 +58,7 @@ class ReceiptBatchFlowState {
       progress: progress ?? this.progress,
       reviewableIndices: reviewableIndices ?? this.reviewableIndices,
       reviewedIndices: reviewedIndices ?? this.reviewedIndices,
-      mappedItemsByIndex: mappedItemsByIndex ?? this.mappedItemsByIndex,
+      reviewDraftsByIndex: reviewDraftsByIndex ?? this.reviewDraftsByIndex,
       pendingAutoReviewIndex: pendingAutoReviewIndex == _keepFieldValue
           ? this.pendingAutoReviewIndex
           : pendingAutoReviewIndex as int?,

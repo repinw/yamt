@@ -8,11 +8,11 @@ import 'package:yamt/features/calories/data/'
 import 'package:yamt/features/calories/data/calorie_product_lookup_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_barcode_utils.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
+import 'package:yamt/features/inventory/domain/product_image_url.dart';
 
 part 'inventory_barcode_image_provider.g.dart';
 
 const _providerLogName = 'InventoryBarcodeImageProvider';
-const _offImageHost = 'world.openfoodfacts.org';
 const _providerCacheTtl = Duration(minutes: 10);
 
 @riverpod
@@ -79,25 +79,12 @@ CalorieProductProfile? _pickCandidateProfile(
 }
 
 String? _normalizeImageUrl(String? value) {
-  if (value == null) {
-    return null;
-  }
-  final trimmed = value.trim();
-  if (trimmed.isEmpty) {
-    return null;
-  }
-  if (trimmed.startsWith('//')) {
-    return 'https:$trimmed';
-  }
-  if (trimmed.startsWith('/')) {
-    return 'https://$_offImageHost$trimmed';
-  }
-  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+  final normalized = normalizeProductImageUrl(value);
+  if (value != null && value.trim().isNotEmpty && normalized == null) {
     log(
       'Ignoring non-http image URL from cache/lookup.',
       name: _providerLogName,
     );
-    return null;
   }
-  return trimmed;
+  return normalized;
 }

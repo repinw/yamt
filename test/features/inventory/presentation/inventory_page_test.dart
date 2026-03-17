@@ -11,8 +11,8 @@ import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository_contract.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
-import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
@@ -116,18 +116,18 @@ class _RecordingBackfillRepository
   }
 }
 
-class _FakeFridgeItemRepository implements FridgeItemRepository {
+class _FakeFridgeItemRepository implements InventoryItemRepository {
   _FakeFridgeItemRepository({required this.onReadAll});
 
-  final Future<List<FridgeItem>> Function() onReadAll;
-  final StreamController<List<FridgeItem>> _watchController =
-      StreamController<List<FridgeItem>>.broadcast();
-  List<FridgeItem> _items = const <FridgeItem>[];
+  final Future<List<InventoryItem>> Function() onReadAll;
+  final StreamController<List<InventoryItem>> _watchController =
+      StreamController<List<InventoryItem>>.broadcast();
+  List<InventoryItem> _items = const <InventoryItem>[];
   bool _isInitialized = false;
 
   @override
-  Stream<List<FridgeItem>> watchAll() {
-    return Stream<List<FridgeItem>>.multi((controller) {
+  Stream<List<InventoryItem>> watchAll() {
+    return Stream<List<InventoryItem>>.multi((controller) {
       final watchSubscription = _watchController.stream.listen(
         controller.add,
         onError: controller.addError,
@@ -141,20 +141,20 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
   }
 
   @override
-  Future<List<FridgeItem>> readAll() {
+  Future<List<InventoryItem>> readAll() {
     return _loadItems();
   }
 
   @override
-  Future<bool> saveAll(List<FridgeItem> items) async {
-    _items = List<FridgeItem>.from(items);
+  Future<bool> saveAll(List<InventoryItem> items) async {
+    _items = List<InventoryItem>.from(items);
     _isInitialized = true;
     _watchController.add(_items);
     return true;
   }
 
   @override
-  Future<bool> appendAll(List<FridgeItem> items) async {
+  Future<bool> appendAll(List<InventoryItem> items) async {
     return true;
   }
 
@@ -162,16 +162,16 @@ class _FakeFridgeItemRepository implements FridgeItemRepository {
     return _watchController.close();
   }
 
-  Future<List<FridgeItem>> _loadItems() async {
+  Future<List<InventoryItem>> _loadItems() async {
     if (!_isInitialized) {
-      _items = List<FridgeItem>.from(await onReadAll());
+      _items = List<InventoryItem>.from(await onReadAll());
       _isInitialized = true;
     }
-    return List<FridgeItem>.from(_items);
+    return List<InventoryItem>.from(_items);
   }
 }
 
-FridgeItem _item(
+InventoryItem _item(
   String id, {
   String? brand,
   String? name,
@@ -182,9 +182,9 @@ FridgeItem _item(
   String? weight,
   int initialAmount = 0,
   int currentAmount = 0,
-  FridgeAmountUnit? amountUnit,
+  InventoryAmountUnit? amountUnit,
 }) {
-  return FridgeItem(
+  return InventoryItem.create(
     id: id,
     name: name ?? 'Milk',
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
@@ -222,7 +222,7 @@ ShoppingListItem _shoppingItem(
 }
 
 Widget _buildTestApp(
-  FridgeItemRepository repository, {
+  InventoryItemRepository repository, {
   List<dynamic> overrides = const <dynamic>[],
   bool includeDefaultBarcodeFlagsOverride = true,
 }) {
@@ -237,7 +237,7 @@ Widget _buildTestApp(
 
   return ProviderScope(
     overrides: [
-      fridgeItemRepositoryProvider.overrideWithValue(repository),
+      inventoryItemRepositoryProvider.overrideWithValue(repository),
       if (includeDefaultBarcodeFlagsOverride)
         barcodeBackfillFeatureFlagsProvider.overrideWithValue(
           const BarcodeBackfillFeatureFlags(
@@ -260,7 +260,7 @@ Widget _buildTestApp(
 void main() {
   testWidgets('shows empty state when repository has no items', (tester) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => const <FridgeItem>[],
+      onReadAll: () async => const <InventoryItem>[],
     );
     addTearDown(repository.dispose);
 
@@ -277,7 +277,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[_item('a', brand: 'Acme')],
+      onReadAll: () async => <InventoryItem>[_item('a', brand: 'Acme')],
     );
     addTearDown(repository.dispose);
 
@@ -303,7 +303,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item('a', name: 'Milk', receiptId: 'abc123999'),
         _item('b', name: 'Bread', receiptId: 'abc123999'),
       ],
@@ -326,7 +326,7 @@ void main() {
 
   testWidgets('all items mode shows consolidated rows', (tester) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item('a', name: 'Milk', receiptId: 'abc123999'),
         _item('b', name: 'Bread', receiptId: 'abc123999'),
       ],
@@ -352,7 +352,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item('a', name: 'Apple', quantity: 0, initialQuantity: 2),
         _item('b', name: 'Banana', quantity: 2, initialQuantity: 2),
       ],
@@ -385,7 +385,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item(
           'a',
           initialQuantity: 2,
@@ -393,7 +393,7 @@ void main() {
           weight: '500g',
           initialAmount: 1000,
           currentAmount: 500,
-          amountUnit: FridgeAmountUnit.gram,
+          amountUnit: InventoryAmountUnit.gram,
         ),
       ],
     );
@@ -412,7 +412,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item('a', quantity: 2, initialQuantity: 2),
       ],
     );
@@ -444,7 +444,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item('a', quantity: 2, initialQuantity: 2).copyWith(
           barcode: '4006381333931',
           barcodeResolvedAt: DateTime.parse('2026-02-20T10:05:00Z'),
@@ -480,7 +480,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item('a', name: 'Milk', quantity: 2, initialQuantity: 2),
       ],
     );
@@ -531,7 +531,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item('a', quantity: 3, initialQuantity: 3),
       ],
     );
@@ -568,7 +568,7 @@ void main() {
 
   testWidgets('eat action depletes item but keeps it visible', (tester) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item('a', quantity: 1, initialQuantity: 1),
       ],
     );
@@ -604,7 +604,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item(
           'a',
           quantity: 1,
@@ -612,7 +612,7 @@ void main() {
           weight: '1000g',
           initialAmount: 1000,
           currentAmount: 1000,
-          amountUnit: FridgeAmountUnit.gram,
+          amountUnit: InventoryAmountUnit.gram,
         ),
       ],
     );
@@ -659,7 +659,7 @@ void main() {
     'fully consumed item shows buy-again action and success feedback',
     (tester) async {
       final repository = _FakeFridgeItemRepository(
-        onReadAll: () async => <FridgeItem>[
+        onReadAll: () async => <InventoryItem>[
           _item(
             'a',
             name: 'Milk',
@@ -707,7 +707,7 @@ void main() {
     'buy-again falls back to quantity one when initial quantity is zero',
     (tester) async {
       final repository = _FakeFridgeItemRepository(
-        onReadAll: () async => <FridgeItem>[
+        onReadAll: () async => <InventoryItem>[
           _item('a', name: 'Milk', quantity: 0, initialQuantity: 0),
         ],
       );
@@ -741,7 +741,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item('a', name: 'Milk', quantity: 0, initialQuantity: 1),
       ],
     );
@@ -773,7 +773,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item(
           'a',
           name: 'Milk',
@@ -817,7 +817,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item('a', name: 'Milk', quantity: 0, initialQuantity: 1),
       ],
     );
@@ -851,7 +851,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item('a', quantity: 3, initialQuantity: 3),
       ],
     );
@@ -886,7 +886,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <FridgeItem>[
+      onReadAll: () async => <InventoryItem>[
         _item('a', quantity: 3, initialQuantity: 3),
       ],
     );

@@ -1,9 +1,12 @@
 import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
+import 'package:yamt/features/scanner/domain/'
+    'receipt_item_quantity_normalizer.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
-part 'receipt_to_fridge_item_mapper.g.dart';
+part 'receipt_to_review_item_draft_mapper.g.dart';
 
 const _nameNumberTokenPattern = r'(?:\d+(?:[.,]\d+)?|[.,]\d+)';
 
@@ -22,22 +25,23 @@ final _namePiecePattern = RegExp(
 );
 
 @riverpod
-ReceiptToFridgeItemMapper receiptToFridgeItemMapper(Ref ref) {
-  return const DefaultReceiptToFridgeItemMapper();
+ReceiptToReviewItemDraftMapper receiptToReviewItemDraftMapper(Ref ref) {
+  return const DefaultReceiptToReviewItemDraftMapper();
 }
 
-abstract interface class ReceiptToFridgeItemMapper {
-  List<FridgeItem> map(ReceiptAnalysisExtraction extraction);
+abstract interface class ReceiptToReviewItemDraftMapper {
+  List<ReceiptReviewItemDraft> map(ReceiptAnalysisExtraction extraction);
 }
 
-class DefaultReceiptToFridgeItemMapper implements ReceiptToFridgeItemMapper {
-  const DefaultReceiptToFridgeItemMapper({DateTime Function()? now})
+class DefaultReceiptToReviewItemDraftMapper
+    implements ReceiptToReviewItemDraftMapper {
+  const DefaultReceiptToReviewItemDraftMapper({DateTime Function()? now})
     : _now = now ?? DateTime.now;
 
   final DateTime Function() _now;
 
   @override
-  List<FridgeItem> map(ReceiptAnalysisExtraction extraction) {
+  List<ReceiptReviewItemDraft> map(ReceiptAnalysisExtraction extraction) {
     final now = _now();
     final root = extraction.root;
     final rootStore = _firstNonBlankString(root['s'], root['storeName']);
@@ -45,6 +49,7 @@ class DefaultReceiptToFridgeItemMapper implements ReceiptToFridgeItemMapper {
     final rootReceiptDate = _parseDate(
       _firstNonBlankString(root['rd'], root['receiptDate']),
     );
+    final rootReceiptTime = _firstNonBlankString(root['t'], root['time']);
     final receiptId = _buildReceiptId(now);
 
     return extraction.items.indexed
@@ -69,21 +74,11 @@ class DefaultReceiptToFridgeItemMapper implements ReceiptToFridgeItemMapper {
             rootStore,
           );
 
-          final normalizedQuantityAndWeight = _resolveQuantityAndWeight(
+          final quantityAndWeight = _resolveQuantityAndWeight(
             payload: payload,
             itemName: name,
             language: language,
           );
-          final safeQuantity = normalizedQuantityAndWeight.quantity;
-
-          final totalPrice =
-              _parseNum(
-                payload['p'] ?? payload['totalPrice'] ?? payload['price'],
-                language: language,
-              ) ??
-              0.0;
-          final unitPrice = safeQuantity > 0 ? totalPrice / safeQuantity : 0.0;
-
           final isFood =
               _boolValue(payload['if']) ??
               _boolValue(payload['isFood']) ??
@@ -92,15 +87,27 @@ class DefaultReceiptToFridgeItemMapper implements ReceiptToFridgeItemMapper {
               _boolValue(payload['id']) ??
               _boolValue(payload['isDiscount']) ??
               false;
-          final weight = normalizedQuantityAndWeight.weight;
+          final safeQuantities = normalizeReceiptItemQuantities(
+            quantity: quantityAndWeight.quantity,
+            canBeSavedToInventory: isFood && !isDiscount,
+          );
+          final safeQuantity = safeQuantities.quantity;
+          final totalPrice =
+              _parseNum(
+                payload['p'] ?? payload['totalPrice'] ?? payload['price'],
+                language: language,
+              ) ??
+              0.0;
+          final unitPrice = safeQuantity > 0 ? totalPrice / safeQuantity : 0.0;
+          final weight = quantityAndWeight.weight;
 
-          return FridgeItem(
+          final inventoryItem = InventoryItem.create(
             id: _buildItemId(now, index),
             name: name ?? 'Unknown',
             entryDate: now,
             storeName: storeName ?? 'Unknown',
             quantity: safeQuantity,
-            initialQuantity: safeQuantity,
+            initialQuantity: safeQuantities.initialQuantity,
             unitPrice: unitPrice,
             weight: weight,
             brand: _firstNonBlankString(payload['b'], payload['brand']),
@@ -119,6 +126,15 @@ class DefaultReceiptToFridgeItemMapper implements ReceiptToFridgeItemMapper {
             isDeposit: !isFood,
             isDiscount: isDiscount,
           ).withDerivedAmount(weight: weight, quantity: safeQuantity);
+          return ReceiptReviewItemDraft(
+            item: inventoryItem,
+            ocrName: name,
+            receiptTimeText: _firstNonBlankString(
+              payload['t'],
+              payload['time'],
+              rootReceiptTime,
+            ),
+          );
         })
         .toList(growable: false);
   }
@@ -189,22 +205,18 @@ double? _parseNum(Object? value, {required String? language}) {
   if (value is! String) {
     return null;
   }
-
   final normalized = value.trim();
   if (normalized.isEmpty) {
     return null;
   }
-
   final dotParsed = double.tryParse(normalized);
   if (dotParsed != null) {
     return dotParsed;
   }
-
   final commaToDot = double.tryParse(normalized.replaceAll(',', '.'));
   if (commaToDot != null) {
     return commaToDot;
   }
-
   try {
     return NumberFormat.decimalPattern(language).parse(normalized).toDouble();
   } catch (_) {
@@ -216,7 +228,6 @@ Map<String, double> _parseDiscounts(Object? value, String? language) {
   if (value == null) {
     return const <String, double>{};
   }
-
   if (value is Map<String, dynamic>) {
     final parsed = <String, double>{};
     for (final entry in value.entries) {
@@ -228,17 +239,14 @@ Map<String, double> _parseDiscounts(Object? value, String? language) {
     }
     return parsed;
   }
-
   if (value is! List<dynamic>) {
     return const <String, double>{};
   }
-
   final parsed = <String, double>{};
   for (final raw in value) {
     if (raw is! Map<String, dynamic>) {
       continue;
     }
-
     final name = _stringValue(raw['n']) ?? _stringValue(raw['name']);
     final amount = _parseNum(raw['a'] ?? raw['amount'], language: language);
     if (name == null || name.trim().isEmpty || amount == null) {
@@ -246,7 +254,6 @@ Map<String, double> _parseDiscounts(Object? value, String? language) {
     }
     parsed[name.trim()] = amount;
   }
-
   return parsed;
 }
 
@@ -259,84 +266,43 @@ Map<String, double> _parseDiscounts(Object? value, String? language) {
     payload['q'] ?? payload['quantity'],
     language: language,
   );
-  final quantity = parsedQuantity?.toInt() ?? 1;
-  final safeQuantity = quantity > 0 ? quantity : 1;
+  final parsedWeight = _firstNonBlankString(payload['w'], payload['weight']);
 
-  final explicitWeight = _firstNonBlankString(payload['w'], payload['weight']);
-  if (explicitWeight != null) {
-    return (quantity: safeQuantity, weight: explicitWeight);
-  }
+  final inferred = _inferQuantityAndWeightFromName(itemName);
+  final quantity = parsedQuantity?.round() ?? inferred.quantity ?? 1;
+  final safeQuantity = quantity < 0 ? 0 : quantity;
 
-  return (quantity: safeQuantity, weight: _reparseWeightFromName(itemName));
+  return (quantity: safeQuantity, weight: parsedWeight ?? inferred.weight);
 }
 
-String? _reparseWeightFromName(String? itemName) {
-  final normalizedName = _firstNonBlankString(itemName);
-  if (normalizedName == null) {
-    return null;
+({int? quantity, String? weight}) _inferQuantityAndWeightFromName(
+  String? itemName,
+) {
+  final normalizedName = itemName?.trim();
+  if (normalizedName == null || normalizedName.isEmpty) {
+    return (quantity: null, weight: null);
   }
 
   final packWithUnit = _namePackWithUnitPattern.firstMatch(normalizedName);
   if (packWithUnit != null) {
-    final packCount = packWithUnit.group(1);
-    final unitValue = _normalizeNumberToken(packWithUnit.group(2));
-    final unit = _normalizeMassVolumeUnit(packWithUnit.group(3));
-    if (packCount != null && unitValue != null && unit != null) {
-      return '${packCount}x$unitValue$unit';
-    }
+    return (
+      quantity: int.tryParse(packWithUnit.group(1)!),
+      weight: '${packWithUnit.group(2)}${packWithUnit.group(3)}',
+    );
   }
 
-  final pieceValue = _namePiecePattern.firstMatch(normalizedName)?.group(1);
-  if (pieceValue != null) {
-    return '${pieceValue}st';
+  final pieceMatch = _namePiecePattern.firstMatch(normalizedName);
+  if (pieceMatch != null) {
+    return (quantity: int.tryParse(pieceMatch.group(1)!), weight: null);
   }
 
   final valueWithUnit = _nameValueWithUnitPattern.firstMatch(normalizedName);
   if (valueWithUnit != null) {
-    final unitValue = _normalizeNumberToken(valueWithUnit.group(1));
-    final unit = _normalizeMassVolumeUnit(valueWithUnit.group(2));
-    if (unitValue != null && unit != null) {
-      return '$unitValue$unit';
-    }
+    return (
+      quantity: 1,
+      weight: '${valueWithUnit.group(1)}${valueWithUnit.group(2)}',
+    );
   }
 
-  return null;
-}
-
-String? _normalizeNumberToken(String? raw) {
-  if (raw == null) {
-    return null;
-  }
-  final trimmed = raw.trim();
-  if (trimmed.isEmpty) {
-    return null;
-  }
-
-  final normalized = trimmed.replaceAll(',', '.');
-  if (normalized.startsWith('.')) {
-    return '0$normalized';
-  }
-  return normalized;
-}
-
-String? _normalizeMassVolumeUnit(String? raw) {
-  if (raw == null) {
-    return null;
-  }
-  final normalized = raw.trim().toLowerCase();
-  if (normalized.isEmpty) {
-    return null;
-  }
-
-  switch (normalized) {
-    case 'kg':
-    case 'g':
-    case 'mg':
-    case 'ml':
-    case 'cl':
-    case 'dl':
-    case 'l':
-      return normalized;
-  }
-  return null;
+  return (quantity: null, weight: null);
 }

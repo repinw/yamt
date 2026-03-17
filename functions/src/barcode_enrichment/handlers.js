@@ -175,8 +175,9 @@ function createBarcodeHandlers({
       }
 
       const itemData = itemSnapshot.data() ?? {};
+      const productSnapshot = itemData.product_snapshot ?? {};
       const itemName = readStringValue(request.data?.itemName) ??
-        readStringValue(itemData.name);
+        readStringValue(productSnapshot.name);
       if (!itemName) {
         return {
           success: false,
@@ -189,13 +190,13 @@ function createBarcodeHandlers({
       }
 
       const brand = readStringValue(request.data?.brand) ??
-        readStringValue(itemData.brand);
+        readStringValue(productSnapshot.brand);
       const storeName = readStringValue(request.data?.storeName) ??
-        readStringValue(itemData.storeName);
+        readStringValue(itemData.store_name);
       const weight = readStringValue(request.data?.weight) ??
         readStringValue(itemData.weight);
       const fingerprint = readStringValue(request.data?.fingerprint) ??
-        readStringValue(itemData.foodFingerprint) ??
+        readStringValue(productSnapshot.food_fingerprint) ??
         computeFoodFingerprintValue({ name: itemName, brand });
       const trigger = readStringValue(request.data?.trigger) ??
         "manual_search";

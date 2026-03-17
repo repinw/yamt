@@ -1,5 +1,5 @@
 import 'package:intl/intl.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryReceiptGroup {
@@ -12,8 +12,11 @@ class InventoryReceiptGroup {
     required this.totalValue,
   });
 
-  factory InventoryReceiptGroup.fromItems(String key, List<FridgeItem> items) {
-    final sortedItems = List<FridgeItem>.from(items)
+  factory InventoryReceiptGroup.fromItems(
+    String key,
+    List<InventoryItem> items,
+  ) {
+    final sortedItems = List<InventoryItem>.from(items)
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     DateTime? latestReceiptDate;
@@ -54,7 +57,7 @@ class InventoryReceiptGroup {
   final String? receiptId;
   final DateTime? receiptDate;
   final String storeName;
-  final List<FridgeItem> items;
+  final List<InventoryItem> items;
   final double totalValue;
 
   bool get hasReceipt {
@@ -97,13 +100,13 @@ class InventoryReceiptGroup {
 }
 
 List<InventoryReceiptGroup> groupInventoryItemsByReceipt(
-  List<FridgeItem> source,
+  List<InventoryItem> source,
 ) {
-  final grouped = <String, List<FridgeItem>>{};
+  final grouped = <String, List<InventoryItem>>{};
 
   for (final item in source) {
     final key = _groupKey(item);
-    grouped.putIfAbsent(key, () => <FridgeItem>[]).add(item);
+    grouped.putIfAbsent(key, () => <InventoryItem>[]).add(item);
   }
 
   final groups = grouped.entries
@@ -139,7 +142,7 @@ int _compareGroups(InventoryReceiptGroup a, InventoryReceiptGroup b) {
   return a.storeName.toLowerCase().compareTo(b.storeName.toLowerCase());
 }
 
-String _groupKey(FridgeItem item) {
+String _groupKey(InventoryItem item) {
   final receiptId = item.receiptId?.trim();
   if (receiptId != null && receiptId.isNotEmpty) {
     return 'receipt:$receiptId';

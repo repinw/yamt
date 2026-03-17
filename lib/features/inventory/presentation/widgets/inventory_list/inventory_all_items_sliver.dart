@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_sorted_items_cache.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -22,7 +22,7 @@ class InventoryAllItemsSliver extends StatefulWidget {
     required this.onThrowAwayItem,
   });
 
-  final List<FridgeItem> items;
+  final List<InventoryItem> items;
   final AppLocalizations l10n;
   final NumberFormat currency;
   final bool showBarcodeMarkers;
@@ -38,7 +38,7 @@ class InventoryAllItemsSliver extends StatefulWidget {
 
 class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
   late InventorySortedItemsCache _sortedItemsCache;
-  late List<FridgeItem> _sortedItems;
+  late List<InventoryItem> _sortedItems;
 
   @override
   void initState() {

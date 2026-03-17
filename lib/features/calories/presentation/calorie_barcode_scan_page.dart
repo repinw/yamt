@@ -20,7 +20,7 @@ import 'package:yamt/features/calories/provider/'
     'calorie_barcode_flow_controller.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository.dart';
-import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class CalorieBarcodeScanPage extends ConsumerStatefulWidget {
@@ -363,7 +363,7 @@ class _CalorieBarcodeScanPageState
     }
 
     await ref
-        .read(fridgeItemsControllerProvider.notifier)
+        .read(inventoryItemsControllerProvider.notifier)
         .setItemBarcode(
           itemId: inventoryContext.inventoryItemId,
           barcode: resolvedBarcode,

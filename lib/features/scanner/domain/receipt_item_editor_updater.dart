@@ -1,5 +1,7 @@
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_item_input_parser.dart';
+import 'package:yamt/features/scanner/domain/'
+    'receipt_item_quantity_normalizer.dart';
 
 enum ReceiptItemEditorApplyError {
   invalidNumber,
@@ -44,7 +46,7 @@ sealed class ReceiptItemEditorApplyResult {
 final class ReceiptItemEditorApplySuccess extends ReceiptItemEditorApplyResult {
   const ReceiptItemEditorApplySuccess(this.item);
 
-  final FridgeItem item;
+  final InventoryItem item;
 }
 
 final class ReceiptItemEditorApplyFailure extends ReceiptItemEditorApplyResult {
@@ -61,10 +63,10 @@ class ReceiptItemEditorUpdater {
   final ReceiptItemInputParser _inputParser;
 
   ReceiptItemEditorApplyResult apply({
-    required FridgeItem sourceItem,
+    required InventoryItem sourceItem,
     required ReceiptItemEditorFormData formData,
     required String locale,
-    required FridgeAmountUnit? fallbackUnit,
+    required InventoryAmountUnit? fallbackUnit,
   }) {
     final parsedNumbers = _inputParser.parseNumbers(
       quantityText: formData.quantityText,
@@ -89,8 +91,10 @@ class ReceiptItemEditorUpdater {
 
     final quantity = parsedNumbers.quantity;
     final unitPrice = parsedNumbers.unitPrice;
-    final safeInitialQuantity = quantity < 1 ? 1 : quantity;
-    final safeQuantity = quantity < 0 ? 0 : quantity;
+    final safeQuantities = normalizeReceiptItemQuantities(
+      quantity: quantity,
+      canBeSavedToInventory: !(formData.isDeposit || formData.isDiscount),
+    );
     final weight = _nullableText(formData.weightText);
 
     final updated = sourceItem
@@ -101,7 +105,7 @@ class ReceiptItemEditorUpdater {
             formData.storeName,
             fallback: sourceItem.storeName,
           ),
-          initialQuantity: safeInitialQuantity,
+          initialQuantity: safeQuantities.initialQuantity,
           unitPrice: unitPrice < 0 ? 0 : unitPrice,
           brand: _nullableText(formData.brandText),
           category: _nullableText(formData.categoryText),
@@ -112,7 +116,7 @@ class ReceiptItemEditorUpdater {
         )
         .withDerivedAmount(
           weight: weight,
-          quantity: safeQuantity,
+          quantity: safeQuantities.quantity,
           fallbackUnit: fallbackUnit,
         );
 

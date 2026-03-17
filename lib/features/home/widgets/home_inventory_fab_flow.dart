@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
-import 'package:yamt/features/inventory/provider/fridge_items_controller.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/receipt_batch_flow_runner.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_actions_sheet.dart';
@@ -61,7 +62,8 @@ class HomeInventoryFabFlow {
         ref: ref,
         l10n: l10n,
         controller: controller,
-        mappedItems: result.mappedItems ?? const <FridgeItem>[],
+        reviewDrafts: result.reviewDrafts ?? const <ReceiptReviewItemDraft>[],
+        receiptPreviewBytes: result.receiptPreviewBytes,
       );
       return;
     }
@@ -82,7 +84,7 @@ class HomeInventoryFabFlow {
       context: context,
       ref: ref,
       l10n: l10n,
-      onItemsSaved: () => ref.invalidate(fridgeItemsControllerProvider),
+      onItemsSaved: () => ref.invalidate(inventoryItemsControllerProvider),
     );
     await runner.run();
   }
@@ -92,14 +94,16 @@ class HomeInventoryFabFlow {
     required WidgetRef ref,
     required AppLocalizations l10n,
     required ReceiptCaptureFlowController controller,
-    required List<FridgeItem> mappedItems,
+    required List<ReceiptReviewItemDraft> reviewDrafts,
+    required Uint8List? receiptPreviewBytes,
   }) {
     return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) {
         return InventoryReceiptReviewSheet(
-          items: mappedItems,
+          items: reviewDrafts,
+          receiptPreviewBytes: receiptPreviewBytes,
           onCancelTap: () => Navigator.of(sheetContext).pop(false),
           onSaveTap: (reviewedItems) async {
             final saved = await controller.persistReviewedItems(reviewedItems);
@@ -113,7 +117,7 @@ class HomeInventoryFabFlow {
             }
 
             if (saved) {
-              ref.invalidate(fridgeItemsControllerProvider);
+              ref.invalidate(inventoryItemsControllerProvider);
               _showSnackBar(context, l10n.inventoryReceiptSaveSucceeded);
               return;
             }

@@ -1,4 +1,4 @@
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 class ReceiptReviewPriceSummary {
   const ReceiptReviewPriceSummary({
@@ -15,12 +15,13 @@ class ReceiptReviewPriceSummary {
 class ReceiptReviewPriceSummaryCalculator {
   const ReceiptReviewPriceSummaryCalculator();
 
-  ReceiptReviewPriceSummary calculate(Iterable<FridgeItem> items) {
+  ReceiptReviewPriceSummary calculate(Iterable<ReceiptReviewItemDraft> items) {
     var totalPrice = 0.0;
     var storablePrice = 0.0;
     var excludedPrice = 0.0;
 
-    for (final item in items) {
+    for (final draft in items) {
+      final item = draft.item;
       final discountTotal = item.discounts.values.fold<double>(
         0.0,
         (sum, value) => sum + value,
@@ -28,7 +29,7 @@ class ReceiptReviewPriceSummaryCalculator {
       final linePrice = (item.quantity * item.unitPrice) + discountTotal;
       totalPrice += linePrice;
 
-      if (item.canBeSavedToFridge) {
+      if (draft.canBeSavedToInventory) {
         storablePrice += linePrice;
       } else {
         excludedPrice += linePrice;

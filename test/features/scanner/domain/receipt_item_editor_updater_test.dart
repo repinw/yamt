@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_item_editor_updater.dart';
 
-FridgeItem _sourceItem() {
-  return FridgeItem(
+InventoryItem _sourceItem() {
+  return InventoryItem.create(
     id: 'item-1',
     name: 'Original',
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
@@ -81,10 +81,10 @@ void main() {
     expect(updated.weight, '250g');
     expect(updated.initialAmount, 500);
     expect(updated.currentAmount, 500);
-    expect(updated.amountUnit, FridgeAmountUnit.gram);
+    expect(updated.amountUnit, InventoryAmountUnit.gram);
     expect(updated.brand, isNull);
     expect(updated.category, 'Dairy');
-    expect(updated.discounts, <String, double>{'coupon': 1.0});
+    expect(updated.discounts, <String, double>{'coupon': -1.0});
     expect(updated.receiptDate, DateTime.parse('2026-01-05'));
     expect(updated.isDeposit, isTrue);
     expect(updated.isDiscount, isFalse);
@@ -138,13 +138,47 @@ void main() {
       sourceItem: _sourceItem(),
       formData: _formData(weightText: '500'),
       locale: 'en_US',
-      fallbackUnit: FridgeAmountUnit.gram,
+      fallbackUnit: InventoryAmountUnit.gram,
     );
 
     expect(result, isA<ReceiptItemEditorApplySuccess>());
     final updated = (result as ReceiptItemEditorApplySuccess).item;
     expect(updated.initialAmount, 500);
     expect(updated.currentAmount, 500);
-    expect(updated.amountUnit, FridgeAmountUnit.gram);
+    expect(updated.amountUnit, InventoryAmountUnit.gram);
+  });
+
+  test('apply normalizes savable zero quantity to one', () {
+    final result = updater.apply(
+      sourceItem: _sourceItem(),
+      formData: _formData(quantityText: '0', weightText: '250g'),
+      locale: 'en_US',
+      fallbackUnit: null,
+    );
+
+    expect(result, isA<ReceiptItemEditorApplySuccess>());
+    final updated = (result as ReceiptItemEditorApplySuccess).item;
+    expect(updated.quantity, 1);
+    expect(updated.initialQuantity, 1);
+    expect(updated.initialAmount, 250);
+  });
+
+  test('apply keeps review-only zero quantity at zero', () {
+    final result = updater.apply(
+      sourceItem: _sourceItem(),
+      formData: _formData(
+        quantityText: '0',
+        weightText: '250g',
+        isDeposit: true,
+      ),
+      locale: 'en_US',
+      fallbackUnit: null,
+    );
+
+    expect(result, isA<ReceiptItemEditorApplySuccess>());
+    final updated = (result as ReceiptItemEditorApplySuccess).item;
+    expect(updated.quantity, 0);
+    expect(updated.initialQuantity, 0);
+    expect(updated.initialAmount, 0);
   });
 }

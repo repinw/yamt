@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
@@ -21,7 +21,7 @@ class InventoryItemRowListEntry extends StatelessWidget {
     required this.onThrowAwayItem,
   });
 
-  final FridgeItem item;
+  final InventoryItem item;
   final String keyPrefix;
   final double bottomSpacing;
   final AppLocalizations l10n;

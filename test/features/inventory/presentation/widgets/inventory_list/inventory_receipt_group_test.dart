@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/l10n/app_localizations_en.dart';
 
-FridgeItem _item(
+InventoryItem _item(
   String id, {
   required String store,
   String? receiptId,
@@ -15,7 +15,7 @@ FridgeItem _item(
   int quantity = 1,
   double unitPrice = 1.0,
 }) {
-  return FridgeItem(
+  return InventoryItem.create(
     id: id,
     name: name,
     entryDate: DateTime.parse('2026-02-20T08:00:00Z'),
@@ -34,7 +34,7 @@ void main() {
   });
 
   test('groups receipt items by receipt id and fallback store key', () {
-    final groups = groupInventoryItemsByReceipt(<FridgeItem>[
+    final groups = groupInventoryItemsByReceipt(<InventoryItem>[
       _item('a', store: 'Kaufland', receiptId: 'r-1'),
       _item('b', store: 'Aldi', receiptId: 'r-1'),
       _item('c', store: 'Rewe'),
@@ -51,7 +51,7 @@ void main() {
   test(
     'sorts receipt groups before non-receipt and by newest receipt date',
     () {
-      final groups = groupInventoryItemsByReceipt(<FridgeItem>[
+      final groups = groupInventoryItemsByReceipt(<InventoryItem>[
         _item(
           'a',
           store: 'Store A',
@@ -79,7 +79,7 @@ void main() {
     final l10n = AppLocalizationsEn();
     final dateFormat = DateFormat.yMMMd('en');
     final currency = NumberFormat.currency(locale: 'en', symbol: '€');
-    final groups = groupInventoryItemsByReceipt(<FridgeItem>[
+    final groups = groupInventoryItemsByReceipt(<InventoryItem>[
       _item(
         'a',
         store: 'Kaufland',
@@ -111,7 +111,7 @@ void main() {
   test('title falls back to shortened receipt id without receipt date', () {
     final l10n = AppLocalizationsEn();
     final dateFormat = DateFormat.yMMMd('en');
-    final groups = groupInventoryItemsByReceipt(<FridgeItem>[
+    final groups = groupInventoryItemsByReceipt(<InventoryItem>[
       _item('a', store: 'Store', receiptId: 'abc123999'),
     ]);
 

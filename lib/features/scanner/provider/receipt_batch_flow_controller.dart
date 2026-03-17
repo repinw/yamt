@@ -1,12 +1,13 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/application/'
+    'receipt_review_resolution_service.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
-import 'package:yamt/features/scanner/data/receipt_to_fridge_item_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_processor.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 part 'receipt_batch_flow_controller.g.dart';
 
@@ -100,14 +101,14 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
   }
 
   Future<void> _runSelectedBatch(List<ReceiptInputSelection> selections) async {
-    var mappedItemsByIndex = const <int, List<FridgeItem>>{};
+    var reviewDraftsByIndex = const <int, List<ReceiptReviewItemDraft>>{};
     var reviewableIndices = const <int>{};
     state = state.copyWith(
       status: ReceiptBatchFlowStatus.running,
       progress: const ReceiptBatchProgress(items: <ReceiptBatchItemProgress>[]),
       reviewableIndices: reviewableIndices,
       reviewedIndices: <int>{},
-      mappedItemsByIndex: mappedItemsByIndex,
+      reviewDraftsByIndex: reviewDraftsByIndex,
       pendingAutoReviewIndex: null,
       activeReviewIndex: null,
       autoReviewDispatched: false,
@@ -124,20 +125,20 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
         }
         state = state.copyWith(progress: progress);
       },
-      onItemSucceeded: (index, mappedItems, progress) {
+      onItemSucceeded: (index, reviewDrafts, progress) {
         if (!ref.mounted) {
           return;
         }
 
-        mappedItemsByIndex = <int, List<FridgeItem>>{
-          ...mappedItemsByIndex,
-          index: mappedItems,
+        reviewDraftsByIndex = <int, List<ReceiptReviewItemDraft>>{
+          ...reviewDraftsByIndex,
+          index: reviewDrafts,
         };
         reviewableIndices = <int>{...reviewableIndices, index};
         final shouldDispatchAutoReview = !state.autoReviewDispatched;
         state = state.copyWith(
           progress: progress,
-          mappedItemsByIndex: mappedItemsByIndex,
+          reviewDraftsByIndex: reviewDraftsByIndex,
           reviewableIndices: reviewableIndices,
           pendingAutoReviewIndex: shouldDispatchAutoReview ? index : null,
           autoReviewDispatched:
@@ -155,7 +156,7 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
       return;
     }
 
-    if (!result.hasMappedItems) {
+    if (!result.hasReviewDrafts) {
       state = state.copyWith(
         status: ReceiptBatchFlowStatus.analysisFailed,
         progress: result.progress,
@@ -166,17 +167,17 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
     state = state.copyWith(
       status: ReceiptBatchFlowStatus.completed,
       progress: result.progress,
-      mappedItemsByIndex: result.mappedItemsByIndex,
-      reviewableIndices: result.mappedItemsByIndex.keys.toSet(),
+      reviewDraftsByIndex: result.reviewDraftsByIndex,
+      reviewableIndices: result.reviewDraftsByIndex.keys.toSet(),
     );
   }
 
   ReceiptBatchProcessor _batchProcessor() {
     final analysisRepository = ref.read(receiptAnalysisRepositoryProvider);
-    final mapper = ref.read(receiptToFridgeItemMapperProvider);
+    final resolutionService = ref.read(receiptReviewResolutionServiceProvider);
     return ReceiptBatchProcessor(
       analysisRepository: analysisRepository,
-      mapExtraction: mapper.map,
+      mapExtraction: resolutionService.prepareDrafts,
       loggerName: 'ReceiptBatchFlowController',
     );
   }

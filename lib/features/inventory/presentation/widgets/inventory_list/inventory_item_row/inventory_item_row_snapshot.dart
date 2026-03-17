@@ -1,4 +1,4 @@
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 class InventoryItemRowSnapshot {
   const InventoryItemRowSnapshot({
@@ -10,7 +10,7 @@ class InventoryItemRowSnapshot {
     required this.quantity,
   });
 
-  factory InventoryItemRowSnapshot.fromFridgeItem(FridgeItem item) {
+  factory InventoryItemRowSnapshot.fromItem(InventoryItem item) {
     return InventoryItemRowSnapshot(
       itemId: item.id,
       name: item.name,

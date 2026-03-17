@@ -1,17 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_progress.dart';
 
-FridgeItem _item({
+InventoryItem _item({
   int initialQuantity = 1,
   int quantity = 1,
   String? weight,
   int initialAmount = 0,
   int currentAmount = 0,
-  FridgeAmountUnit? amountUnit,
+  InventoryAmountUnit? amountUnit,
 }) {
-  return FridgeItem(
+  return InventoryItem.create(
     id: 'item-1',
     name: 'Milk',
     entryDate: DateTime.parse('2026-02-20T08:00:00Z'),
@@ -36,7 +36,7 @@ void main() {
       weight: '500g',
       initialAmount: 1000,
       currentAmount: 250,
-      amountUnit: FridgeAmountUnit.gram,
+      amountUnit: InventoryAmountUnit.gram,
     );
 
     final progress = calculator.fromItem(item);
@@ -54,7 +54,7 @@ void main() {
       quantity: 9,
       initialAmount: 1000,
       currentAmount: 3000,
-      amountUnit: FridgeAmountUnit.milliliter,
+      amountUnit: InventoryAmountUnit.milliliter,
     );
 
     final progress = calculator.fromItem(item);

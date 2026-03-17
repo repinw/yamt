@@ -4,17 +4,17 @@ import 'dart:developer' show log;
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
-import 'package:yamt/features/inventory/data/fridge_item_repository.dart';
-import 'package:yamt/features/inventory/domain/fridge_item.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 
-part 'fridge_items_controller.g.dart';
+part 'inventory_items_controller.g.dart';
 
-const _controllerLogName = 'FridgeItemsController';
+const _controllerLogName = 'InventoryItemsController';
 
 @visibleForTesting
-List<FridgeItem>? buildReducedItems({
-  required List<FridgeItem> currentItems,
+List<InventoryItem>? buildReducedItems({
+  required List<InventoryItem> currentItems,
   required String itemId,
   required int amount,
 }) {
@@ -34,7 +34,7 @@ List<FridgeItem>? buildReducedItems({
   }
   final reducedAmount = amount > maxReducible ? maxReducible : amount;
 
-  final nextItems = List<FridgeItem>.from(currentItems);
+  final nextItems = List<InventoryItem>.from(currentItems);
   if (item.usesAmountProgress) {
     final nextCurrentAmount = item.currentAmount - reducedAmount;
     final safeCurrentAmount = nextCurrentAmount < 0 ? 0 : nextCurrentAmount;
@@ -54,7 +54,7 @@ List<FridgeItem>? buildReducedItems({
   return nextItems;
 }
 
-int _maxReducibleAmount(FridgeItem item) {
+int _maxReducibleAmount(InventoryItem item) {
   if (item.usesAmountProgress) {
     final currentAmount = item.currentAmount;
     return currentAmount > 0 ? currentAmount : 0;
@@ -65,7 +65,7 @@ int _maxReducibleAmount(FridgeItem item) {
 
 @visibleForTesting
 int quantityForCurrentAmount({
-  required FridgeItem item,
+  required InventoryItem item,
   required int currentAmount,
 }) {
   final initialAmount = item.initialAmount;
@@ -86,14 +86,13 @@ int quantityForCurrentAmount({
 }
 
 @riverpod
-class FridgeItemsController extends _$FridgeItemsController {
-  StreamSubscription<List<FridgeItem>>? _itemsSubscription;
+class InventoryItemsController extends _$InventoryItemsController {
+  StreamSubscription<List<InventoryItem>>? _itemsSubscription;
   final _mutationQueue = SerializedMutationQueue();
 
   @override
-  FutureOr<List<FridgeItem>> build() {
-    // Reconnect stream when repository instance changes (for auth changes).
-    ref.watch(fridgeItemRepositoryProvider);
+  FutureOr<List<InventoryItem>> build() {
+    ref.watch(inventoryItemRepositoryProvider);
     ref.onDispose(_disposeRealtimeSubscription);
     return _restartRealtimeSubscription();
   }
@@ -107,9 +106,9 @@ class FridgeItemsController extends _$FridgeItemsController {
     state = nextState;
   }
 
-  Future<List<FridgeItem>> _restartRealtimeSubscription() {
-    final initialItems = Completer<List<FridgeItem>>();
-    final repository = ref.read(fridgeItemRepositoryProvider);
+  Future<List<InventoryItem>> _restartRealtimeSubscription() {
+    final initialItems = Completer<List<InventoryItem>>();
+    final repository = ref.read(inventoryItemRepositoryProvider);
     _disposeRealtimeSubscription();
 
     _itemsSubscription = repository.watchAll().listen(
@@ -139,7 +138,7 @@ class FridgeItemsController extends _$FridgeItemsController {
     }
   }
 
-  void _onRealtimeItems(List<FridgeItem> items) {
+  void _onRealtimeItems(List<InventoryItem> items) {
     if (!ref.mounted) {
       return;
     }
@@ -153,7 +152,7 @@ class FridgeItemsController extends _$FridgeItemsController {
     state = AsyncError(error, stackTrace);
   }
 
-  Future<bool> deleteItem(String itemId) async {
+  Future<bool> deleteItem(String itemId) {
     return _runItemsMutation((currentItems) {
       final nextItems = currentItems
           .where((item) => item.id != itemId)
@@ -205,7 +204,7 @@ class FridgeItemsController extends _$FridgeItemsController {
         barcodeCandidates: const <String>[],
         barcodeLookupUncertain: false,
       );
-      final nextItems = List<FridgeItem>.from(currentItems);
+      final nextItems = List<InventoryItem>.from(currentItems);
       nextItems[itemIndex] = updated;
       return nextItems;
     });
@@ -234,17 +233,17 @@ class FridgeItemsController extends _$FridgeItemsController {
         barcodeResolvedAt: now,
         barcodeLookupUncertain: false,
       );
-      final nextItems = List<FridgeItem>.from(currentItems);
+      final nextItems = List<InventoryItem>.from(currentItems);
       nextItems[itemIndex] = updated;
       return nextItems;
     });
   }
 
-  Future<bool> buyAgainItem(FridgeItem item) {
+  Future<bool> buyAgainItem(InventoryItem item) {
     return ref.read(shoppingListFacadeProvider).addInventoryItem(item);
   }
 
-  Future<List<FridgeItem>> _currentItems() async {
+  Future<List<InventoryItem>> _currentItems() async {
     final currentData = state.asData?.value;
     if (currentData != null) {
       return currentData;
@@ -253,7 +252,7 @@ class FridgeItemsController extends _$FridgeItemsController {
   }
 
   Future<bool> _runItemsMutation(
-    List<FridgeItem>? Function(List<FridgeItem> currentItems) mutation,
+    List<InventoryItem>? Function(List<InventoryItem> currentItems) mutation,
   ) {
     return _runSerializedMutation(() async {
       final currentItems = await _currentItems();
@@ -266,14 +265,14 @@ class FridgeItemsController extends _$FridgeItemsController {
   }
 
   Future<bool> _saveItems({
-    required List<FridgeItem> previousItems,
-    required List<FridgeItem> nextItems,
+    required List<InventoryItem> previousItems,
+    required List<InventoryItem> nextItems,
   }) async {
     if (ref.mounted) {
       state = AsyncData(nextItems);
     }
 
-    final repository = ref.read(fridgeItemRepositoryProvider);
+    final repository = ref.read(inventoryItemRepositoryProvider);
     try {
       final saved = await repository.saveAll(nextItems);
       if (!saved && ref.mounted) {
