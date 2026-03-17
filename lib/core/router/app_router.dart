@@ -15,6 +15,8 @@ import 'package:yamt/features/calories/presentation/models/'
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
+import 'package:yamt/features/scanner/presentation/'
+    'inventory_receipt_review_page.dart';
 import 'package:yamt/features/settings/account_page.dart';
 import 'package:yamt/features/settings/settings_page.dart';
 
@@ -114,6 +116,19 @@ GoRouter appRouter(Ref ref) {
           return CalorieBarcodeScanPage(
             inventoryContext: args?.inventoryContext,
           );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.homeInventoryReceiptReview,
+        builder: (context, state) {
+          final args = state.extra;
+          if (args is! InventoryReceiptReviewPageArgs) {
+            throw ArgumentError(
+              'Inventory receipt review route requires '
+              'InventoryReceiptReviewPageArgs.',
+            );
+          }
+          return InventoryReceiptReviewPage(args: args);
         },
       ),
       StatefulShellRoute.indexedStack(
