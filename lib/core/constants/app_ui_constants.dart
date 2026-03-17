@@ -83,6 +83,13 @@ abstract final class AppSizes {
   static const double progressStrokeWidth = 2;
 }
 
+abstract final class AppReceiptReviewUi {
+  static const double panelRadius = 18;
+  static const double chipRadius = 8;
+  static const double buttonRadius = 10;
+  static const double headerButtonRadius = 20;
+}
+
 abstract final class AppBrandBadge {
   static const EdgeInsets padding = EdgeInsets.symmetric(
     horizontal: AppSpacing.xs - AppSpacing.xxs,

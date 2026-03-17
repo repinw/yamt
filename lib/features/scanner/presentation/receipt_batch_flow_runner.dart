@@ -3,12 +3,14 @@ import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/presentation/'
+    'inventory_receipt_review_page.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_batch_progress_dialog.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
-    'inventory_receipt_review_sheet.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -105,10 +107,10 @@ class ReceiptBatchFlowRunner {
 
     var saved = false;
     try {
-      saved = await _openReviewSheet(reviewDrafts: reviewDrafts);
+      saved = await _openReviewPage(reviewDrafts: reviewDrafts);
     } catch (error, stackTrace) {
       log(
-        'Receipt review sheet failed unexpectedly',
+        'Receipt review page failed unexpectedly',
         name: 'ReceiptBatchFlowRunner',
         error: error,
         stackTrace: stackTrace,
@@ -171,39 +173,38 @@ class ReceiptBatchFlowRunner {
     return null;
   }
 
-  Future<bool> _openReviewSheet({
+  Future<bool> _openReviewPage({
     required List<ReceiptReviewItemDraft> reviewDrafts,
-  }) {
-    return showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return InventoryReceiptReviewSheet(
-          items: reviewDrafts,
-          onCancelTap: () => Navigator.of(sheetContext).pop(false),
-          onSaveTap: (reviewedItems) async {
-            final saved = await _captureController.persistReviewedItems(
-              reviewedItems,
-            );
-            if (!sheetContext.mounted) {
-              return;
-            }
-            Navigator.of(sheetContext).pop(saved);
+  }) async {
+    if (!_rootNavigator.mounted) {
+      return false;
+    }
 
-            if (!context.mounted) {
-              return;
-            }
+    final saved = await _rootNavigator.context.push<bool>(
+      AppRoutes.homeInventoryReceiptReview,
+      extra: InventoryReceiptReviewPageArgs(
+        items: reviewDrafts,
+        onSaveTap: (reviewedItems) async {
+          final saved = await _captureController.persistReviewedItems(
+            reviewedItems,
+          );
+          if (!context.mounted) {
+            return false;
+          }
 
-            if (saved) {
-              onItemsSaved();
-              _showSnackBar(l10n.inventoryReceiptSaveSucceeded);
-              return;
-            }
-            _showSnackBar(l10n.inventoryReceiptSaveFailed);
-          },
-        );
-      },
-    ).then((saved) => saved ?? false);
+          if (saved) {
+            onItemsSaved();
+            _showSnackBar(l10n.inventoryReceiptSaveSucceeded);
+            return true;
+          }
+
+          _showSnackBar(l10n.inventoryReceiptSaveFailed);
+          return false;
+        },
+      ),
+    );
+
+    return saved ?? false;
   }
 
   void _showSnackBar(String message) {

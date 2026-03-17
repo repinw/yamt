@@ -3,15 +3,17 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/presentation/'
+    'inventory_receipt_review_page.dart';
 import 'package:yamt/features/scanner/presentation/receipt_batch_flow_runner.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_actions_sheet.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
-    'inventory_receipt_review_sheet.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -57,7 +59,7 @@ class HomeInventoryFabFlow {
     }
 
     if (result.status == ReceiptCaptureFlowStatus.completed) {
-      await _openReviewSheet(
+      await _openReviewPage(
         context: context,
         ref: ref,
         l10n: l10n,
@@ -89,43 +91,38 @@ class HomeInventoryFabFlow {
     await runner.run();
   }
 
-  static Future<bool> _openReviewSheet({
+  static Future<bool> _openReviewPage({
     required BuildContext context,
     required WidgetRef ref,
     required AppLocalizations l10n,
     required ReceiptCaptureFlowController controller,
     required List<ReceiptReviewItemDraft> reviewDrafts,
     required Uint8List? receiptPreviewBytes,
-  }) {
-    return showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return InventoryReceiptReviewSheet(
-          items: reviewDrafts,
-          receiptPreviewBytes: receiptPreviewBytes,
-          onCancelTap: () => Navigator.of(sheetContext).pop(false),
-          onSaveTap: (reviewedItems) async {
-            final saved = await controller.persistReviewedItems(reviewedItems);
-            if (!sheetContext.mounted) {
-              return;
-            }
-            Navigator.of(sheetContext).pop(saved);
+  }) async {
+    final saved = await context.push<bool>(
+      AppRoutes.homeInventoryReceiptReview,
+      extra: InventoryReceiptReviewPageArgs(
+        items: reviewDrafts,
+        receiptPreviewBytes: receiptPreviewBytes,
+        onSaveTap: (reviewedItems) async {
+          final saved = await controller.persistReviewedItems(reviewedItems);
+          if (!context.mounted) {
+            return false;
+          }
 
-            if (!context.mounted) {
-              return;
-            }
+          if (saved) {
+            ref.invalidate(inventoryItemsControllerProvider);
+            _showSnackBar(context, l10n.inventoryReceiptSaveSucceeded);
+            return true;
+          }
 
-            if (saved) {
-              ref.invalidate(inventoryItemsControllerProvider);
-              _showSnackBar(context, l10n.inventoryReceiptSaveSucceeded);
-              return;
-            }
-            _showSnackBar(context, l10n.inventoryReceiptSaveFailed);
-          },
-        );
-      },
-    ).then((saved) => saved ?? false);
+          _showSnackBar(context, l10n.inventoryReceiptSaveFailed);
+          return false;
+        },
+      ),
+    );
+
+    return saved ?? false;
   }
 
   static String? _messageForFlowResult(
