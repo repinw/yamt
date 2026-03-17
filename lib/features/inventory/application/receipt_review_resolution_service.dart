@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -9,6 +10,8 @@ import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 part 'receipt_review_resolution_service.g.dart';
+
+const Uuid _globalFoodItemUuid = Uuid();
 
 class ReceiptReviewPersistResult {
   const ReceiptReviewPersistResult({
@@ -31,20 +34,24 @@ ReceiptReviewResolutionService receiptReviewResolutionService(Ref ref) {
 }
 
 class ReceiptReviewResolutionService {
-  const ReceiptReviewResolutionService({
+  ReceiptReviewResolutionService({
     required ReceiptToReviewItemDraftMapper mapper,
     required GlobalFoodItemMatcher matcher,
     required GlobalFoodItemRepository globalFoodItemRepository,
     required InventoryItemRepository inventoryItemRepository,
+    String Function()? globalFoodItemIdGenerator,
   }) : _mapper = mapper,
        _matcher = matcher,
        _globalFoodItemRepository = globalFoodItemRepository,
-       _inventoryItemRepository = inventoryItemRepository;
+       _inventoryItemRepository = inventoryItemRepository,
+       _globalFoodItemIdGenerator =
+           globalFoodItemIdGenerator ?? _defaultGlobalFoodItemId;
 
   final ReceiptToReviewItemDraftMapper _mapper;
   final GlobalFoodItemMatcher _matcher;
   final GlobalFoodItemRepository _globalFoodItemRepository;
   final InventoryItemRepository _inventoryItemRepository;
+  final String Function() _globalFoodItemIdGenerator;
 
   Future<List<ReceiptReviewItemDraft>> prepareDrafts(
     ReceiptAnalysisExtraction extraction,
@@ -82,8 +89,7 @@ class ReceiptReviewResolutionService {
     final globalItemsToSave = <GlobalFoodItem>[];
     final inventoryItemsToSave = <InventoryItem>[];
 
-    for (var index = 0; index < reviewedItems.length; index++) {
-      final draft = reviewedItems[index];
+    for (final draft in reviewedItems) {
       if (!draft.canBeSavedToInventory) {
         continue;
       }
@@ -96,7 +102,6 @@ class ReceiptReviewResolutionService {
           ? selectedCandidate.item
           : _buildProductFromDraft(
               draft: draft,
-              index: index,
               now: now,
               status: selectedCandidate == null
                   ? GlobalFoodItemStatus.active
@@ -137,13 +142,11 @@ class ReceiptReviewResolutionService {
 
   GlobalFoodItem _buildProductFromDraft({
     required ReceiptReviewItemDraft draft,
-    required int index,
     required DateTime now,
     required GlobalFoodItemStatus status,
   }) {
-    final suffix = now.microsecondsSinceEpoch + index;
     return GlobalFoodItem.create(
-      id: 'global-food-$suffix',
+      id: _globalFoodItemIdGenerator(),
       name: draft.item.name,
       now: now,
       brand: draft.item.brand,
@@ -155,4 +158,8 @@ class ReceiptReviewResolutionService {
       status: status,
     );
   }
+}
+
+String _defaultGlobalFoodItemId() {
+  return 'global-food-${_globalFoodItemUuid.v4()}';
 }

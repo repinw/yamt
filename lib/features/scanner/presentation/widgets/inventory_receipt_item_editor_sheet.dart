@@ -4,6 +4,8 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_item_editor_updater.dart';
 import 'package:yamt/features/scanner/domain/receipt_item_input_parser.dart';
+import 'package:yamt/features/scanner/domain/'
+    'receipt_item_quantity_normalizer.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 import '../models/receipt_item_editor_draft.dart';
 import 'receipt_item_editor_action_row.dart';
@@ -210,10 +212,14 @@ class _InventoryReceiptItemEditorSheetState
       return null;
     }
 
+    final safeQuantities = normalizeReceiptItemQuantities(
+      quantity: quantity,
+      canBeSavedToInventory: !_isReviewOnlySelection(),
+    );
     final fallbackOption = _currentWeightFallbackOption();
     final updated = widget.item.withDerivedAmount(
       weight: weightText,
-      quantity: quantity < 0 ? 0 : quantity,
+      quantity: safeQuantities.quantity,
       fallbackUnit: fallbackOption.resolve(
         autoFallback: widget.item.amountUnit,
       ),
@@ -307,6 +313,19 @@ class _InventoryReceiptItemEditorSheetState
 
   String get _locale {
     return Localizations.localeOf(context).toString();
+  }
+
+  bool _isReviewOnlySelection() {
+    return _readFormValue(
+          values: _currentValues,
+          name: ReceiptItemEditorFormFieldName.isDeposit,
+          fallback: widget.item.isDeposit,
+        ) ||
+        _readFormValue(
+          values: _currentValues,
+          name: ReceiptItemEditorFormFieldName.isDiscount,
+          fallback: widget.item.isDiscount,
+        );
   }
 
   List<MapEntry<String, String>> _toDiscountEntries(

@@ -6,6 +6,7 @@ abstract interface class GlobalFoodItemRepository {
 
   Future<List<GlobalFoodItem>> readAll();
 
+  /// Client-side replace-all is intentionally unsupported for global data.
   Future<bool> saveAll(List<GlobalFoodItem> items);
 
   Future<bool> appendAll(List<GlobalFoodItem> items);

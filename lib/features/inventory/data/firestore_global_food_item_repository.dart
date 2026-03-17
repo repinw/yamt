@@ -49,12 +49,11 @@ class FirestoreGlobalFoodItemRepository implements GlobalFoodItemRepository {
 
   @override
   Future<bool> saveAll(List<GlobalFoodItem> items) {
-    return _runExclusiveWrite(() {
-      final documentsById = <String, Map<String, dynamic>>{
-        for (final item in items) item.id: _normalizeItem(item).toJson(),
-      };
-      return _store.replaceAll(documentsById: documentsById);
-    });
+    return Future<bool>.error(
+      UnsupportedError(
+        'Global food items do not support client-side replace-all writes.',
+      ),
+    );
   }
 
   @override
@@ -94,19 +93,33 @@ class FirestoreGlobalFoodItemRepository implements GlobalFoodItemRepository {
   }
 
   GlobalFoodItem _normalizeItem(GlobalFoodItem item) {
-    final normalizedName = normalizeGlobalFoodText(item.name);
-    final normalizedBrand = normalizeGlobalFoodText(item.brand ?? '');
+    final name = item.name.trim();
+    final brand = _normalizeOptionalText(item.brand);
+    final category = _normalizeOptionalText(item.category);
+    final normalizedName = normalizeGlobalFoodText(name);
+    final normalizedBrand = normalizeGlobalFoodText(brand ?? '');
     return item.copyWith(
+      name: name,
+      brand: brand,
+      category: category,
       foodFingerprint: item.resolvedFoodFingerprint,
       normalizedName: normalizedName,
       normalizedBrand: normalizedBrand.isEmpty ? null : normalizedBrand,
       searchTokens: buildGlobalFoodSearchTokens(
-        name: item.name,
-        brand: item.brand,
-        category: item.category,
+        name: name,
+        brand: brand,
+        category: category,
       ),
       barcode: item.normalizedBarcode,
     );
+  }
+
+  String? _normalizeOptionalText(String? value) {
+    final trimmed = value?.trim();
+    if (trimmed == null || trimmed.isEmpty) {
+      return null;
+    }
+    return trimmed;
   }
 
   Future<T> _runExclusiveWrite<T>(Future<T> Function() operation) {

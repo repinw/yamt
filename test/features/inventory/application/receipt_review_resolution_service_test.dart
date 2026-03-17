@@ -248,6 +248,7 @@ void main() {
         ),
         globalFoodItemRepository: globalRepository,
         inventoryItemRepository: inventoryRepository,
+        globalFoodItemIdGenerator: () => 'global-food-fixed',
       );
 
       final result = await service.persistReviewedItems(
@@ -294,6 +295,7 @@ void main() {
         ),
         globalFoodItemRepository: globalRepository,
         inventoryItemRepository: inventoryRepository,
+        globalFoodItemIdGenerator: () => 'global-food-fixed',
       );
 
       final result = await service.persistReviewedItems(
@@ -314,6 +316,7 @@ void main() {
 
       expect(result.saved, isTrue);
       expect(globalRepository.appendedItems, hasLength(1));
+      expect(globalRepository.appendedItems.single.id, 'global-food-fixed');
       expect(
         globalRepository.appendedItems.single.status,
         GlobalFoodItemStatus.candidate,

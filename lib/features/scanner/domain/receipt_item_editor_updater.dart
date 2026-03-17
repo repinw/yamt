@@ -1,5 +1,7 @@
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_item_input_parser.dart';
+import 'package:yamt/features/scanner/domain/'
+    'receipt_item_quantity_normalizer.dart';
 
 enum ReceiptItemEditorApplyError {
   invalidNumber,
@@ -89,8 +91,10 @@ class ReceiptItemEditorUpdater {
 
     final quantity = parsedNumbers.quantity;
     final unitPrice = parsedNumbers.unitPrice;
-    final safeInitialQuantity = quantity < 1 ? 1 : quantity;
-    final safeQuantity = quantity < 0 ? 0 : quantity;
+    final safeQuantities = normalizeReceiptItemQuantities(
+      quantity: quantity,
+      canBeSavedToInventory: !(formData.isDeposit || formData.isDiscount),
+    );
     final weight = _nullableText(formData.weightText);
 
     final updated = sourceItem
@@ -101,7 +105,7 @@ class ReceiptItemEditorUpdater {
             formData.storeName,
             fallback: sourceItem.storeName,
           ),
-          initialQuantity: safeInitialQuantity,
+          initialQuantity: safeQuantities.initialQuantity,
           unitPrice: unitPrice < 0 ? 0 : unitPrice,
           brand: _nullableText(formData.brandText),
           category: _nullableText(formData.categoryText),
@@ -112,7 +116,7 @@ class ReceiptItemEditorUpdater {
         )
         .withDerivedAmount(
           weight: weight,
-          quantity: safeQuantity,
+          quantity: safeQuantities.quantity,
           fallbackUnit: fallbackUnit,
         );
 

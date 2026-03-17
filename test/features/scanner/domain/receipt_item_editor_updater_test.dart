@@ -147,4 +147,38 @@ void main() {
     expect(updated.currentAmount, 500);
     expect(updated.amountUnit, InventoryAmountUnit.gram);
   });
+
+  test('apply normalizes savable zero quantity to one', () {
+    final result = updater.apply(
+      sourceItem: _sourceItem(),
+      formData: _formData(quantityText: '0', weightText: '250g'),
+      locale: 'en_US',
+      fallbackUnit: null,
+    );
+
+    expect(result, isA<ReceiptItemEditorApplySuccess>());
+    final updated = (result as ReceiptItemEditorApplySuccess).item;
+    expect(updated.quantity, 1);
+    expect(updated.initialQuantity, 1);
+    expect(updated.initialAmount, 250);
+  });
+
+  test('apply keeps review-only zero quantity at zero', () {
+    final result = updater.apply(
+      sourceItem: _sourceItem(),
+      formData: _formData(
+        quantityText: '0',
+        weightText: '250g',
+        isDeposit: true,
+      ),
+      locale: 'en_US',
+      fallbackUnit: null,
+    );
+
+    expect(result, isA<ReceiptItemEditorApplySuccess>());
+    final updated = (result as ReceiptItemEditorApplySuccess).item;
+    expect(updated.quantity, 0);
+    expect(updated.initialQuantity, 0);
+    expect(updated.initialAmount, 0);
+  });
 }

@@ -97,6 +97,30 @@ void main() {
     expect(draft.canBeSavedToInventory, isFalse);
   });
 
+  test('normalizes savable zero quantity to one', () {
+    final extraction = ReceiptAnalysisExtraction(
+      root: const <String, dynamic>{},
+      items: const <ReceiptAnalysisItem>[
+        ReceiptAnalysisItem(
+          name: 'Milk',
+          rawPayload: <String, dynamic>{
+            'name': 'Milk',
+            'quantity': 0,
+            'totalPrice': 2.49,
+            'isFood': true,
+            'isDiscount': false,
+          },
+        ),
+      ],
+    );
+
+    final item = mapper.map(extraction).single.item;
+
+    expect(item.quantity, 1);
+    expect(item.initialQuantity, 1);
+    expect(item.unitPrice, 2.49);
+  });
+
   test('reparses piece amount from name when weight is missing', () {
     final extraction = ReceiptAnalysisExtraction(
       root: const <String, dynamic>{},

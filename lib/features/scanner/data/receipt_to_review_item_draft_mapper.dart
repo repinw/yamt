@@ -2,6 +2,8 @@ import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
+import 'package:yamt/features/scanner/domain/'
+    'receipt_item_quantity_normalizer.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 part 'receipt_to_review_item_draft_mapper.g.dart';
@@ -77,15 +79,6 @@ class DefaultReceiptToReviewItemDraftMapper
             itemName: name,
             language: language,
           );
-          final safeQuantity = quantityAndWeight.quantity;
-          final totalPrice =
-              _parseNum(
-                payload['p'] ?? payload['totalPrice'] ?? payload['price'],
-                language: language,
-              ) ??
-              0.0;
-          final unitPrice = safeQuantity > 0 ? totalPrice / safeQuantity : 0.0;
-
           final isFood =
               _boolValue(payload['if']) ??
               _boolValue(payload['isFood']) ??
@@ -94,6 +87,18 @@ class DefaultReceiptToReviewItemDraftMapper
               _boolValue(payload['id']) ??
               _boolValue(payload['isDiscount']) ??
               false;
+          final safeQuantities = normalizeReceiptItemQuantities(
+            quantity: quantityAndWeight.quantity,
+            canBeSavedToInventory: isFood && !isDiscount,
+          );
+          final safeQuantity = safeQuantities.quantity;
+          final totalPrice =
+              _parseNum(
+                payload['p'] ?? payload['totalPrice'] ?? payload['price'],
+                language: language,
+              ) ??
+              0.0;
+          final unitPrice = safeQuantity > 0 ? totalPrice / safeQuantity : 0.0;
           final weight = quantityAndWeight.weight;
 
           final inventoryItem = InventoryItem.create(
@@ -102,7 +107,7 @@ class DefaultReceiptToReviewItemDraftMapper
             entryDate: now,
             storeName: storeName ?? 'Unknown',
             quantity: safeQuantity,
-            initialQuantity: safeQuantity,
+            initialQuantity: safeQuantities.initialQuantity,
             unitPrice: unitPrice,
             weight: weight,
             brand: _firstNonBlankString(payload['b'], payload['brand']),
