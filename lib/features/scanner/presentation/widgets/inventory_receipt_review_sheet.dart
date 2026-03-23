@@ -56,7 +56,7 @@ class _InventoryReceiptReviewSheetState
   late final List<ReceiptReviewItemDraft> _items;
   late final ReceiptReviewMetadata _receiptMetadata;
   var _isSaving = false;
-  int? _candidateLoadingIndex;
+  String? _candidateLoadingItemId;
 
   @override
   void initState() {
@@ -166,7 +166,7 @@ class _InventoryReceiptReviewSheetState
             currency: currency,
             onEditTap: _openItemEditor,
             onSwitchTap: _openCandidatePicker,
-            isActionLoading: _candidateLoadingIndex == entry.$1,
+            isActionLoading: _candidateLoadingItemId == entry.$2.item.id,
           ),
           const SizedBox(height: 12),
         ],
@@ -202,11 +202,12 @@ class _InventoryReceiptReviewSheetState
   }
 
   Future<void> _openCandidatePicker(int index) async {
-    if (_candidateLoadingIndex != null) {
+    if (_candidateLoadingItemId != null) {
       return;
     }
+    final itemId = _items[index].item.id;
 
-    final draft = await _prepareDraftForCandidateSelection(index);
+    final draft = await _prepareDraftForCandidateSelection(itemId);
     if (!mounted || draft == null || !draft.canBeSavedToInventory) {
       return;
     }
@@ -231,15 +232,22 @@ class _InventoryReceiptReviewSheetState
         if (candidateId == null) {
           return;
         }
-        _replaceItem(index, _items[index].selectCandidate(candidateId));
+        _replaceDraftByItemId(
+          itemId,
+          (draft) => draft.selectCandidate(candidateId),
+        );
       case ReceiptCandidatePickerSelectionKind.manualEntry:
-        await _openManualProductEntry(index);
+        await _openManualProductEntry(itemId);
       case ReceiptCandidatePickerSelectionKind.aiEnrichment:
-        _replaceItem(index, _items[index].markForAiEnrichment());
+        _replaceDraftByItemId(itemId, (draft) => draft.markForAiEnrichment());
     }
   }
 
-  Future<void> _openManualProductEntry(int index) async {
+  Future<void> _openManualProductEntry(String itemId) async {
+    final index = _indexForItemId(itemId);
+    if (index < 0) {
+      return;
+    }
     final updatedItem = await showModalBottomSheet<InventoryItem>(
       context: context,
       isScrollControlled: true,
@@ -252,15 +260,19 @@ class _InventoryReceiptReviewSheetState
       return;
     }
 
-    _replaceItem(
-      index,
-      _items[index].copyWith(item: updatedItem).selectNewItem(),
+    _replaceDraftByItemId(
+      itemId,
+      (draft) => draft.copyWith(item: updatedItem).selectNewItem(),
     );
   }
 
   Future<ReceiptReviewItemDraft?> _prepareDraftForCandidateSelection(
-    int index,
+    String itemId,
   ) async {
+    final index = _indexForItemId(itemId);
+    if (index < 0) {
+      return null;
+    }
     final draft = _items[index];
     if (!draft.canBeSavedToInventory) {
       return null;
@@ -270,13 +282,17 @@ class _InventoryReceiptReviewSheetState
     }
 
     setState(() {
-      _candidateLoadingIndex = index;
+      _candidateLoadingItemId = itemId;
     });
 
     try {
       final matcher = ref.read(globalFoodItemMatcherProvider);
       final candidates = await matcher.findCandidates(draft.item);
       if (!mounted) {
+        return null;
+      }
+      final currentIndex = _indexForItemId(itemId);
+      if (currentIndex < 0) {
         return null;
       }
 
@@ -288,16 +304,31 @@ class _InventoryReceiptReviewSheetState
         ),
       );
       setState(() {
-        _items[index] = updatedDraft;
+        _items[currentIndex] = updatedDraft;
       });
       return updatedDraft;
     } finally {
       if (mounted) {
         setState(() {
-          _candidateLoadingIndex = null;
+          _candidateLoadingItemId = null;
         });
       }
     }
+  }
+
+  int _indexForItemId(String itemId) {
+    return _items.indexWhere((draft) => draft.item.id == itemId);
+  }
+
+  void _replaceDraftByItemId(
+    String itemId,
+    ReceiptReviewItemDraft Function(ReceiptReviewItemDraft draft) transform,
+  ) {
+    final index = _indexForItemId(itemId);
+    if (index < 0) {
+      return;
+    }
+    _replaceItem(index, transform(_items[index]));
   }
 
   Future<void> _openReceiptPreview() async {

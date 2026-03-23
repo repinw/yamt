@@ -152,6 +152,25 @@ class _RecordingOffProductSearchRepository
   }
 }
 
+class _CompletingOffProductSearchRepository
+    implements OffProductSearchRepository {
+  _CompletingOffProductSearchRepository();
+
+  final Completer<List<OffProductSearchResult>> completer =
+      Completer<List<OffProductSearchResult>>();
+
+  @override
+  Future<List<OffProductSearchResult>> search({
+    required String query,
+    String? store,
+    String? brand,
+    String? weight,
+    int limit = 15,
+  }) {
+    return completer.future;
+  }
+}
+
 GlobalFoodMatchCandidate _candidate({
   required String id,
   required String name,
@@ -408,6 +427,67 @@ void main() {
     expect(find.text('110 ml'), findsAtLeastNWidgets(1));
     expect(find.textContaining('215 kcal'), findsAtLeastNWidgets(1));
     expect(externalRepository.lastQuery, 'Waffelh Edb/Nuss');
+  });
+
+  testWidgets('determine loading is tracked by item id', (tester) async {
+    final externalRepository = _CompletingOffProductSearchRepository();
+    final matcher = GlobalFoodItemMatcher(
+      repository: const _StaticGlobalFoodItemRepository(<GlobalFoodItem>[]),
+      inventoryRepository: const _StaticInventoryItemRepository(),
+      offProductSearchRepository: externalRepository,
+    );
+
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'first',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'First Product',
+            ),
+          ),
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'second',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'Second Product',
+            ),
+          ),
+        ],
+        overrides: <Override>[
+          globalFoodItemMatcherProvider.overrideWithValue(matcher),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_determine_button_1')),
+    );
+    await tester.pump();
+
+    final firstButton = tester.widget<TextButton>(
+      find.descendant(
+        of: find.byKey(const Key('receipt_review_determine_button_0')),
+        matching: find.byType(TextButton),
+      ),
+    );
+    final secondButton = tester.widget<TextButton>(
+      find.descendant(
+        of: find.byKey(const Key('receipt_review_determine_button_1')),
+        matching: find.byType(TextButton),
+      ),
+    );
+
+    expect(firstButton.onPressed, isNotNull);
+    expect(secondButton.onPressed, isNull);
+
+    externalRepository.completer.complete(const <OffProductSearchResult>[]);
+    await tester.pumpAndSettle();
   });
 
   testWidgets('manual fallback saves entered barcode and nutrition', (
