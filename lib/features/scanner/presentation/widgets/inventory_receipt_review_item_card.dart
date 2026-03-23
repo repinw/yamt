@@ -45,8 +45,8 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
   final ReceiptReviewItemDraft draft;
   final int index;
   final NumberFormat currency;
-  final ValueChanged<int> onEditTap;
-  final ValueChanged<int> onSwitchTap;
+  final ValueChanged<String> onEditTap;
+  final ValueChanged<String> onSwitchTap;
   final bool isActionLoading;
 
   @override
@@ -70,7 +70,7 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         key: Key('receipt_review_edit_button_$index'),
-        onTap: item.isDiscount ? null : () => onEditTap(index),
+        onTap: item.isDiscount ? null : () => onEditTap(item.id),
         borderRadius: BorderRadius.circular(18),
         child: Ink(
           decoration: _itemCardDecoration(
@@ -115,6 +115,7 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
                       const SizedBox(height: 16),
                       _ReceiptItemFooter(
                         item: item,
+                        itemId: item.id,
                         index: index,
                         viewData: viewData,
                         onSwitchTap: onSwitchTap,
@@ -218,6 +219,7 @@ class _ReceiptItemTopRow extends StatelessWidget {
 class _ReceiptItemFooter extends StatelessWidget {
   const _ReceiptItemFooter({
     required this.item,
+    required this.itemId,
     required this.index,
     required this.viewData,
     required this.onSwitchTap,
@@ -225,9 +227,10 @@ class _ReceiptItemFooter extends StatelessWidget {
   });
 
   final InventoryItem item;
+  final String itemId;
   final int index;
   final _ReceiptItemCardViewData viewData;
-  final ValueChanged<int> onSwitchTap;
+  final ValueChanged<String> onSwitchTap;
   final bool isActionLoading;
 
   @override
@@ -261,17 +264,17 @@ class _ReceiptItemFooter extends StatelessWidget {
             visualState: viewData.visualState,
             label: viewData.actionLabel!,
             isLoading: isActionLoading,
-            onPressed: () => _handleAction(index),
+            onPressed: _handleAction,
           ),
       ],
     );
   }
 
-  void _handleAction(int index) {
+  void _handleAction() {
     if (isActionLoading) {
       return;
     }
-    onSwitchTap(index);
+    onSwitchTap(itemId);
   }
 }
 

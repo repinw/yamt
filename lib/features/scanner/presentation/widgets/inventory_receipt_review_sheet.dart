@@ -182,8 +182,9 @@ class _InventoryReceiptReviewSheetState
     );
   }
 
-  Future<void> _openItemEditor(int index) async {
-    if (_items[index].item.isDiscount) {
+  Future<void> _openItemEditor(String itemId) async {
+    final index = _indexForItemId(itemId);
+    if (index < 0 || _items[index].item.isDiscount) {
       return;
     }
 
@@ -198,14 +199,13 @@ class _InventoryReceiptReviewSheetState
     if (!mounted || editedItem == null) {
       return;
     }
-    _replaceItem(index, _items[index].copyWith(item: editedItem));
+    _replaceDraftByItemId(itemId, (draft) => draft.copyWith(item: editedItem));
   }
 
-  Future<void> _openCandidatePicker(int index) async {
+  Future<void> _openCandidatePicker(String itemId) async {
     if (_candidateLoadingItemId != null) {
       return;
     }
-    final itemId = _items[index].item.id;
 
     final draft = await _prepareDraftForCandidateSelection(itemId);
     if (!mounted || draft == null || !draft.canBeSavedToInventory) {
@@ -328,7 +328,9 @@ class _InventoryReceiptReviewSheetState
     if (index < 0) {
       return;
     }
-    _replaceItem(index, transform(_items[index]));
+    setState(() {
+      _items[index] = transform(_items[index]);
+    });
   }
 
   Future<void> _openReceiptPreview() async {
@@ -360,12 +362,6 @@ class _InventoryReceiptReviewSheetState
     }
     setState(() {
       _isSaving = false;
-    });
-  }
-
-  void _replaceItem(int index, ReceiptReviewItemDraft updatedItem) {
-    setState(() {
-      _items[index] = updatedItem;
     });
   }
 

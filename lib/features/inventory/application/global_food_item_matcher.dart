@@ -14,9 +14,11 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 part 'global_food_item_matcher.g.dart';
+part 'global_food_candidate_enricher.dart';
+part 'global_food_local_candidate_matcher.dart';
+part 'off_product_candidate_source.dart';
 
 const int _globalFoodCandidateQueryLimit = 20;
-const int _globalFoodQueryTokenLimit = 10;
 
 @Riverpod(keepAlive: true)
 GlobalFoodItemMatcher globalFoodItemMatcher(Ref ref) {
@@ -33,398 +35,192 @@ GlobalFoodItemMatcher globalFoodItemMatcher(Ref ref) {
 }
 
 class GlobalFoodItemMatcher {
-  const GlobalFoodItemMatcher({
+  GlobalFoodItemMatcher({
     required GlobalFoodItemRepository repository,
     InventoryItemRepository? inventoryRepository,
     CalorieProductCacheRepositoryContract? calorieProductCacheRepository,
     OffProductSearchRepository? offProductSearchRepository,
   }) : _repository = repository,
-       _inventoryRepository = inventoryRepository,
-       _calorieProductCacheRepository = calorieProductCacheRepository,
-       _offProductSearchRepository = offProductSearchRepository;
+       _candidateEnricher = _GlobalFoodCandidateEnricher(
+         inventoryRepository: inventoryRepository,
+         calorieProductCacheRepository: calorieProductCacheRepository,
+       ),
+       _localCandidateMatcher = const _GlobalFoodLocalCandidateMatcher(),
+       _externalCandidateSource = _OffProductCandidateSource(
+         repository: offProductSearchRepository,
+       );
 
   final GlobalFoodItemRepository _repository;
-  final InventoryItemRepository? _inventoryRepository;
-  final CalorieProductCacheRepositoryContract? _calorieProductCacheRepository;
-  final OffProductSearchRepository? _offProductSearchRepository;
+  final _GlobalFoodCandidateEnricher _candidateEnricher;
+  final _GlobalFoodLocalCandidateMatcher _localCandidateMatcher;
+  final _OffProductCandidateSource _externalCandidateSource;
 
   Future<List<GlobalFoodMatchCandidate>> findCandidates(
     InventoryItem item,
   ) async {
-    final localMatchInput = _buildLocalMatchInput(item);
-    final query = _buildQuery(item, localMatchInput);
-    if (query == null) {
-      return const <GlobalFoodMatchCandidate>[];
-    }
-
-    final results = await Future.wait<Object>(<Future<Object>>[
-      _repository.searchCandidates(
-        normalizedName: query.normalizedName,
-        barcode: query.barcode,
-        foodFingerprint: query.foodFingerprint,
-        searchTokens: query.searchTokens,
-        limit: _globalFoodCandidateQueryLimit,
-      ),
-      _searchExternalCandidates(item),
-    ]);
-    final products = results[0] as List<GlobalFoodItem>;
-    final externalResults = results[1] as List<OffProductSearchResult>;
-    if (products.isEmpty && externalResults.isEmpty) {
-      return const <GlobalFoodMatchCandidate>[];
-    }
-
-    final externalProducts = externalResults
-        .map(_externalProductFromSearchResult)
-        .toList(growable: false);
-    final allProducts = <GlobalFoodItem>[...products, ...externalProducts];
-
-    final inventoryItems =
-        await _inventoryRepository?.readAll() ?? const <InventoryItem>[];
-    final enrichedProducts = await _enrichProducts(
-      products: allProducts,
-      inventoryItems: inventoryItems,
-    );
-    final localMatches =
-        products
-            .map(
-              (product) => _scoreCandidate(
-                localMatchInput,
-                enrichedProducts[product.id]!,
-              ),
-            )
-            .whereType<GlobalFoodMatchCandidate>()
-            .toList(growable: false)
-          ..sort((left, right) => right.score.compareTo(left.score));
-    final externalMatches =
-        externalResults
-            .map((result) {
-              final product = enrichedProducts[_externalProductIdFor(result)];
-              if (product == null) {
-                return null;
-              }
-              return GlobalFoodMatchCandidate(
-                item: product,
-                score: _scoreExternalCandidate(result.score),
-                reason: GlobalFoodMatchReason.externalSearch,
-                requiresPersistence: true,
-              );
-            })
-            .whereType<GlobalFoodMatchCandidate>()
-            .toList(growable: false)
-          ..sort((left, right) => right.score.compareTo(left.score));
-    final dedupedLocalMatches = _dedupeCandidates(localMatches)
-      ..sort((left, right) => right.score.compareTo(left.score));
-    final dedupedExternalMatches = _dedupeCandidates(externalMatches)
-      ..sort((left, right) => right.score.compareTo(left.score));
-    final matches = _mergeLocalAndExternalCandidates(
-      localMatches: dedupedLocalMatches,
-      externalMatches: dedupedExternalMatches,
-    );
-    return matches.take(5).toList(growable: false);
+    final matchesByItemId = await findCandidatesByItemId(<InventoryItem>[item]);
+    return matchesByItemId[item.id] ?? const <GlobalFoodMatchCandidate>[];
   }
 
-  _GlobalFoodMatcherQuery? _buildQuery(
-    InventoryItem item,
-    _LocalMatchInput localMatchInput,
-  ) {
-    final normalizedName = localMatchInput.normalizedName;
-    final searchTokens = localMatchInput.nameTokens;
-    final barcode = item.normalizedBarcode;
-    final foodFingerprint = localMatchInput.foodFingerprint;
-
-    final hasQuery =
-        normalizedName.isNotEmpty ||
-        searchTokens.isNotEmpty ||
-        barcode != null ||
-        foodFingerprint != null;
-    if (!hasQuery) {
-      return null;
+  Future<Map<String, List<GlobalFoodMatchCandidate>>> findCandidatesByItemId(
+    Iterable<InventoryItem> items,
+  ) async {
+    final preparedSearches = [
+      for (final item in items)
+        _PreparedCandidateSearch(
+          item: item,
+          localInput: _localCandidateMatcher.buildLocalMatchInput(item),
+        ),
+    ];
+    if (preparedSearches.isEmpty) {
+      return const <String, List<GlobalFoodMatchCandidate>>{};
     }
 
-    return _GlobalFoodMatcherQuery(
-      normalizedName: normalizedName.isEmpty ? null : normalizedName,
-      barcode: barcode,
-      foodFingerprint: foodFingerprint,
-      searchTokens: searchTokens,
+    final searchableItems = preparedSearches
+        .where((search) => search.query != null)
+        .toList(growable: false);
+    if (searchableItems.isEmpty) {
+      return {
+        for (final search in preparedSearches)
+          search.item.id: const <GlobalFoodMatchCandidate>[],
+      };
+    }
+
+    final localProductsByItemId = await _waitForMappedFutures({
+      for (final search in searchableItems)
+        search.item.id: _searchLocalProducts(search.query!),
+    });
+    final externalResultsByItemId = await _waitForMappedFutures({
+      for (final search in searchableItems)
+        search.item.id: _externalCandidateSource.search(search.item),
+    });
+    final enrichedProducts = await _buildEnrichedProducts(
+      localProductsByItemId: localProductsByItemId,
+      externalResultsByItemId: externalResultsByItemId,
     );
+
+    return {
+      for (final search in preparedSearches)
+        search.item.id: _buildMatchesForSearch(
+          search: search,
+          localProducts:
+              localProductsByItemId[search.item.id] ?? const <GlobalFoodItem>[],
+          externalResults:
+              externalResultsByItemId[search.item.id] ??
+              const <OffProductSearchResult>[],
+          enrichedProducts: enrichedProducts,
+        ),
+    };
   }
 
   String? defaultSelectionFor(List<GlobalFoodMatchCandidate> candidates) {
-    if (candidates.isEmpty) {
-      return null;
-    }
-    final best = candidates.first;
-    return switch (best.reason) {
-      GlobalFoodMatchReason.fingerprintExact => best.item.id,
-      GlobalFoodMatchReason.nameBrandStrong =>
-        _hasConfidentLead(candidates) ? best.item.id : null,
-      GlobalFoodMatchReason.nameExact =>
-        candidates.length == 1 ? best.item.id : null,
-      GlobalFoodMatchReason.nameTokenMatch ||
-      GlobalFoodMatchReason.externalSearch => null,
-    };
+    return _localCandidateMatcher.defaultSelectionFor(candidates);
   }
 
   bool defaultSelectionNeedsReviewFor(
     List<GlobalFoodMatchCandidate> candidates,
   ) {
-    if (candidates.isEmpty) {
-      return false;
-    }
-    return defaultSelectionFor(candidates) == null;
+    return _localCandidateMatcher.defaultSelectionNeedsReviewFor(candidates);
   }
 
-  GlobalFoodMatchCandidate? _scoreCandidate(
-    _LocalMatchInput item,
-    GlobalFoodItem product,
+  Future<List<GlobalFoodItem>> _searchLocalProducts(
+    _GlobalFoodMatcherQuery query,
   ) {
-    if (product.status == GlobalFoodItemStatus.merged) {
-      return null;
-    }
-
-    var score = 0.0;
-    var reason = GlobalFoodMatchReason.nameTokenMatch;
-    final itemFingerprint = item.foodFingerprint;
-    if (product.resolvedFoodFingerprint == itemFingerprint) {
-      score += 100;
-      reason = GlobalFoodMatchReason.fingerprintExact;
-    }
-
-    final itemName = item.normalizedName;
-    final isExactNameMatch =
-        product.normalizedName == itemName && itemName.isNotEmpty;
-    if (isExactNameMatch) {
-      score += 45;
-      if (reason != GlobalFoodMatchReason.fingerprintExact) {
-        reason = GlobalFoodMatchReason.nameExact;
-      }
-    }
-
-    final itemBrand = item.normalizedBrand;
-    final productBrand = product.normalizedBrand ?? '';
-    if (itemBrand.isNotEmpty && productBrand == itemBrand) {
-      score += 25;
-    }
-
-    final itemCategory = item.normalizedCategory;
-    final productCategory = normalizeGlobalFoodText(product.category ?? '');
-    if (itemCategory.isNotEmpty && productCategory == itemCategory) {
-      score += 8;
-    }
-
-    final overlap = product.searchTokens
-        .where(item.nameTokenSet.contains)
-        .length;
-    if (overlap > 0) {
-      score += overlap * 6;
-    }
-
-    if (score < 12) {
-      return null;
-    }
-    if (reason != GlobalFoodMatchReason.fingerprintExact &&
-        isExactNameMatch &&
-        itemBrand.isNotEmpty &&
-        productBrand == itemBrand) {
-      reason = GlobalFoodMatchReason.nameBrandStrong;
-    }
-
-    return GlobalFoodMatchCandidate(
-      item: product,
-      score: score,
-      reason: reason,
-    );
-  }
-
-  _LocalMatchInput _buildLocalMatchInput(InventoryItem item) {
-    final normalizedName = normalizeGlobalFoodText(item.name);
-    final normalizedBrand = normalizeGlobalFoodText(item.brand ?? '');
-    final normalizedCategory = normalizeGlobalFoodText(item.category ?? '');
-    final foodFingerprint = _queryFoodFingerprintFor(item);
-    final tokens = _queryNameTokensFor(item.name);
-    return _LocalMatchInput(
-      normalizedName: normalizedName,
-      normalizedBrand: normalizedBrand,
-      normalizedCategory: normalizedCategory,
-      foodFingerprint: foodFingerprint,
-      nameTokens: tokens,
-      nameTokenSet: tokens.toSet(),
-    );
-  }
-
-  List<String> _queryNameTokensFor(String name) {
-    final tokens = buildGlobalFoodSearchTokens(
-      name: name,
-    ).toSet().toList(growable: false);
-    tokens.sort((left, right) {
-      final lengthCompare = right.length.compareTo(left.length);
-      if (lengthCompare != 0) {
-        return lengthCompare;
-      }
-      return left.compareTo(right);
-    });
-    return tokens.take(_globalFoodQueryTokenLimit).toList(growable: false);
-  }
-
-  bool _hasConfidentLead(List<GlobalFoodMatchCandidate> candidates) {
-    if (candidates.length < 2) {
-      return true;
-    }
-    return candidates.first.score - candidates[1].score >= 8;
-  }
-
-  String? _queryFoodFingerprintFor(InventoryItem item) {
-    final fingerprint = item.resolvedFoodFingerprint.trim();
-    if (fingerprint.isEmpty || fingerprint == 'unknown_food') {
-      return null;
-    }
-    return fingerprint;
-  }
-
-  Future<Map<String, GlobalFoodItem>> _enrichProducts({
-    required List<GlobalFoodItem> products,
-    required List<InventoryItem> inventoryItems,
-  }) async {
-    final samplesByGlobalId = <String, InventoryItem>{};
-    final samplesByFingerprint = <String, InventoryItem>{};
-
-    for (final item in inventoryItems) {
-      if (!_hasCandidateEnrichment(item)) {
-        continue;
-      }
-
-      if (!samplesByGlobalId.containsKey(item.globalFoodItemId)) {
-        samplesByGlobalId[item.globalFoodItemId] = item;
-      }
-
-      final fingerprint = item.resolvedFoodFingerprint;
-      if (!samplesByFingerprint.containsKey(fingerprint)) {
-        samplesByFingerprint[fingerprint] = item;
-      }
-    }
-
-    final inventoryEnriched = {
-      for (final product in products)
-        product.id: _applyInventorySample(
-          product: product,
-          sample:
-              samplesByGlobalId[product.id] ??
-              samplesByFingerprint[product.resolvedFoodFingerprint],
-        ),
-    };
-
-    final barcodes = inventoryEnriched.values
-        .map((product) => product.normalizedBarcode)
-        .whereType<String>()
-        .where((barcode) => barcode.isNotEmpty)
-        .toSet()
-        .toList(growable: false);
-    if (barcodes.isEmpty || _calorieProductCacheRepository == null) {
-      return inventoryEnriched;
-    }
-
-    final calorieProfiles = await Future.wait(
-      barcodes.map(_readCalorieProfileForBarcode),
-    );
-    final profileByBarcode = <String, CalorieProductProfile>{};
-    for (final entry in calorieProfiles) {
-      if (entry == null) {
-        continue;
-      }
-      profileByBarcode[entry.barcode] = entry;
-    }
-
-    return {
-      for (final product in inventoryEnriched.values)
-        product.id: _applyCalorieProfile(
-          product: product,
-          profile: product.normalizedBarcode == null
-              ? null
-              : profileByBarcode[product.normalizedBarcode!],
-        ),
-    };
-  }
-
-  Future<List<OffProductSearchResult>> _searchExternalCandidates(
-    InventoryItem item,
-  ) async {
-    final repository = _offProductSearchRepository;
-    if (repository == null) {
-      return const <OffProductSearchResult>[];
-    }
-
-    final query = item.name.trim();
-    if (query.isEmpty) {
-      return const <OffProductSearchResult>[];
-    }
-
-    final rawBrand = item.brand?.trim();
-    final normalizedBrandStore = _normalizeSupportedExternalStore(rawBrand);
-    final store = _resolveExternalStore(
-      storeName: item.storeName,
-      brandStore: normalizedBrandStore,
-    );
-    final isNettoSearch = store == 'Netto';
-    final effectiveBrand = isNettoSearch && normalizedBrandStore == store
-        ? null
-        : rawBrand;
-    return repository.search(
-      query: query,
-      store: store,
-      brand: isNettoSearch ? effectiveBrand : null,
-      weight: isNettoSearch ? item.weight?.trim() : null,
+    return _repository.searchCandidates(
+      normalizedName: query.normalizedName,
+      barcode: query.barcode,
+      foodFingerprint: query.foodFingerprint,
+      searchTokens: query.searchTokens,
       limit: _globalFoodCandidateQueryLimit,
     );
   }
 
-  String? _resolveExternalStore({
-    required String storeName,
-    required String? brandStore,
-  }) {
-    final normalizedStore = _normalizeSupportedExternalStore(storeName);
-    if (normalizedStore != null) {
-      return normalizedStore;
+  Future<Map<String, GlobalFoodItem>> _buildEnrichedProducts({
+    required Map<String, List<GlobalFoodItem>> localProductsByItemId,
+    required Map<String, List<OffProductSearchResult>> externalResultsByItemId,
+  }) async {
+    final productsById = <String, GlobalFoodItem>{};
+    for (final products in localProductsByItemId.values) {
+      for (final product in products) {
+        productsById[product.id] = product;
+      }
     }
-    return brandStore;
-  }
+    for (final results in externalResultsByItemId.values) {
+      for (final result in results) {
+        final product = _externalCandidateSource.productFrom(result);
+        productsById[product.id] = product;
+      }
+    }
+    if (productsById.isEmpty) {
+      return const <String, GlobalFoodItem>{};
+    }
 
-  String? _normalizeSupportedExternalStore(String? rawValue) {
-    final normalized = normalizeStoreName(rawValue);
-    return switch (normalized) {
-      'Aldi' => 'Aldi',
-      'Netto' => 'Netto',
-      _ => null,
-    };
-  }
-
-  GlobalFoodItem _externalProductFromSearchResult(
-    OffProductSearchResult result,
-  ) {
-    return GlobalFoodItem.create(
-      id: _externalProductIdFor(result),
-      name: result.name,
-      now: DateTime.now(),
-      brand: result.brand,
-      barcode: result.code,
-      imageUrl: result.imageUrl,
-      packageWeight: result.packageWeight,
-      nutrition: result.nutrition,
+    final inventoryItems = await _candidateEnricher.loadInventoryItems();
+    return _candidateEnricher.enrichProducts(
+      products: productsById.values,
+      inventoryItems: inventoryItems,
     );
   }
 
-  String _externalProductIdFor(OffProductSearchResult result) {
-    final code = result.code.trim();
-    if (code.isNotEmpty) {
-      return 'off-$code';
+  List<GlobalFoodMatchCandidate> _buildMatchesForSearch({
+    required _PreparedCandidateSearch search,
+    required List<GlobalFoodItem> localProducts,
+    required List<OffProductSearchResult> externalResults,
+    required Map<String, GlobalFoodItem> enrichedProducts,
+  }) {
+    if (search.query == null) {
+      return const <GlobalFoodMatchCandidate>[];
     }
 
-    final normalizedName = normalizeGlobalFoodText(result.name);
-    final normalizedBrand = normalizeGlobalFoodText(result.brand ?? '');
-    final composite = [
-      normalizedName,
-      normalizedBrand,
-    ].where((value) => value.isNotEmpty).join('-');
-    return 'off-${composite.isEmpty ? 'product' : composite}';
+    final localMatches = _dedupeCandidates(
+      _localCandidateMatcher.scoreCandidates(
+        search.localInput,
+        localProducts.map((product) => enrichedProducts[product.id] ?? product),
+      ),
+    )..sort((left, right) => right.score.compareTo(left.score));
+    final externalMatches = _dedupeCandidates(
+      _buildExternalMatches(
+        externalResults: externalResults,
+        enrichedProducts: enrichedProducts,
+      ),
+    )..sort((left, right) => right.score.compareTo(left.score));
+    return _mergeLocalAndExternalCandidates(
+      localMatches: localMatches,
+      externalMatches: externalMatches,
+    ).take(5).toList(growable: false);
+  }
+
+  List<GlobalFoodMatchCandidate> _buildExternalMatches({
+    required List<OffProductSearchResult> externalResults,
+    required Map<String, GlobalFoodItem> enrichedProducts,
+  }) {
+    return externalResults
+        .map((result) {
+          final product =
+              enrichedProducts[_externalCandidateSource.productIdFor(result)];
+          if (product == null) {
+            return null;
+          }
+          return GlobalFoodMatchCandidate(
+            item: product,
+            score: _scoreExternalCandidate(result.score),
+            reason: GlobalFoodMatchReason.externalSearch,
+            requiresPersistence: true,
+          );
+        })
+        .whereType<GlobalFoodMatchCandidate>()
+        .toList(growable: false);
+  }
+
+  Future<Map<String, T>> _waitForMappedFutures<T>(
+    Map<String, Future<T>> futuresByKey,
+  ) async {
+    final entries = await Future.wait(
+      futuresByKey.entries.map((entry) async {
+        return MapEntry<String, T>(entry.key, await entry.value);
+      }),
+    );
+    return Map<String, T>.fromEntries(entries);
   }
 
   double _scoreExternalCandidate(double rawScore) {
@@ -484,99 +280,13 @@ class GlobalFoodItemMatcher {
     return 'name:${candidate.item.normalizedName}'
         '|brand:${candidate.item.normalizedBrand ?? ''}';
   }
-
-  bool _hasCandidateEnrichment(InventoryItem item) {
-    return item.normalizedBarcode != null ||
-        item.imageUrl != null ||
-        item.nutrition != null;
-  }
-
-  GlobalFoodItem _applyInventorySample({
-    required GlobalFoodItem product,
-    required InventoryItem? sample,
-  }) {
-    if (sample == null) {
-      return product;
-    }
-
-    return product.copyWith(
-      barcode: product.normalizedBarcode ?? sample.normalizedBarcode,
-      imageUrl: product.imageUrl ?? sample.imageUrl,
-      nutrition: product.nutrition ?? sample.nutrition,
-    );
-  }
-
-  Future<CalorieProductProfile?> _readCalorieProfileForBarcode(
-    String barcode,
-  ) async {
-    final repository = _calorieProductCacheRepository;
-    if (repository == null) {
-      return null;
-    }
-    return await repository.readUserOverride(barcode) ??
-        await repository.readGlobalProduct(barcode);
-  }
-
-  GlobalFoodItem _applyCalorieProfile({
-    required GlobalFoodItem product,
-    required CalorieProductProfile? profile,
-  }) {
-    if (profile == null) {
-      return product;
-    }
-
-    return product.copyWith(
-      imageUrl: product.imageUrl ?? profile.imageUrl,
-      nutrition: product.nutrition ?? _nutritionFromProfile(profile),
-    );
-  }
-
-  GlobalFoodNutrition _nutritionFromProfile(CalorieProductProfile profile) {
-    final allZero =
-        profile.per100Kcal == 0 &&
-        profile.per100Protein == 0 &&
-        profile.per100Carbs == 0 &&
-        profile.per100Fat == 0;
-    return GlobalFoodNutrition(
-      qualityStatus: allZero
-          ? GlobalFoodNutritionQualityStatus.unverified
-          : GlobalFoodNutritionQualityStatus.verified,
-      per100Kcal: profile.per100Kcal,
-      per100Protein: profile.per100Protein,
-      per100Carbs: profile.per100Carbs,
-      per100Fat: profile.per100Fat,
-    );
-  }
 }
 
-class _GlobalFoodMatcherQuery {
-  const _GlobalFoodMatcherQuery({
-    required this.normalizedName,
-    required this.barcode,
-    required this.foodFingerprint,
-    required this.searchTokens,
-  });
+class _PreparedCandidateSearch {
+  _PreparedCandidateSearch({required this.item, required this.localInput})
+    : query = _GlobalFoodLocalCandidateMatcher.buildQuery(localInput);
 
-  final String? normalizedName;
-  final String? barcode;
-  final String? foodFingerprint;
-  final List<String> searchTokens;
-}
-
-class _LocalMatchInput {
-  const _LocalMatchInput({
-    required this.normalizedName,
-    required this.normalizedBrand,
-    required this.normalizedCategory,
-    required this.foodFingerprint,
-    required this.nameTokens,
-    required this.nameTokenSet,
-  });
-
-  final String normalizedName;
-  final String normalizedBrand;
-  final String normalizedCategory;
-  final String? foodFingerprint;
-  final List<String> nameTokens;
-  final Set<String> nameTokenSet;
+  final InventoryItem item;
+  final _LocalMatchInput localInput;
+  final _GlobalFoodMatcherQuery? query;
 }

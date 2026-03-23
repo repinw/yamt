@@ -6,6 +6,7 @@ import 'package:yamt/features/inventory/application/global_food_item_matcher.dar
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/data/receipt_to_review_item_draft_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
@@ -62,29 +63,30 @@ class ReceiptReviewResolutionService {
     ReceiptAnalysisExtraction extraction,
   ) async {
     final baseDrafts = _mapper.map(extraction);
-    final resolvedDrafts = <ReceiptReviewItemDraft>[];
+    final candidatesByItemId = await _matcher.findCandidatesByItemId(
+      baseDrafts
+          .where((draft) => draft.canBeSavedToInventory)
+          .map((draft) => draft.item),
+    );
 
-    for (final draft in baseDrafts) {
-      if (!draft.canBeSavedToInventory) {
-        resolvedDrafts.add(draft);
-        continue;
-      }
+    return baseDrafts
+        .map((draft) {
+          if (!draft.canBeSavedToInventory) {
+            return draft;
+          }
 
-      final candidates = await _matcher.findCandidates(draft.item);
-      final selectedId = _matcher.defaultSelectionFor(candidates);
-      final selectionNeedsReview = _matcher.defaultSelectionNeedsReviewFor(
-        candidates,
-      );
-      resolvedDrafts.add(
-        draft.copyWith(
-          candidates: candidates,
-          selectedGlobalFoodItemId: selectedId,
-          selectionNeedsReview: selectionNeedsReview,
-        ),
-      );
-    }
-
-    return resolvedDrafts;
+          final candidates =
+              candidatesByItemId[draft.item.id] ??
+              const <GlobalFoodMatchCandidate>[];
+          return draft.copyWith(
+            candidates: candidates,
+            selectedGlobalFoodItemId: _matcher.defaultSelectionFor(candidates),
+            selectionNeedsReview: _matcher.defaultSelectionNeedsReviewFor(
+              candidates,
+            ),
+          );
+        })
+        .toList(growable: false);
   }
 
   Future<ReceiptReviewPersistResult> persistReviewedItems(

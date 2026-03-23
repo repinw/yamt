@@ -677,4 +677,32 @@ void main() {
       expect(externalRepository.lastWeight, '800g');
     },
   );
+
+  test(
+    'findCandidatesByItemId loads enrichment data once for a batch',
+    () async {
+      final repository = _FakeGlobalFoodItemRepository(<GlobalFoodItem>[
+        _globalFood(id: 'milk', name: 'Milk'),
+        _globalFood(id: 'bread', name: 'Bread'),
+      ]);
+      final inventoryRepository = _FakeInventoryItemRepository(
+        const <InventoryItem>[],
+      );
+      final matcher = GlobalFoodItemMatcher(
+        repository: repository,
+        inventoryRepository: inventoryRepository,
+        offProductSearchRepository: _FakeOffProductSearchRepository(
+          const <OffProductSearchResult>[],
+        ),
+      );
+
+      final results = await matcher.findCandidatesByItemId(<InventoryItem>[
+        _inventoryItem(id: 'item-1', name: 'Milk'),
+        _inventoryItem(id: 'item-2', name: 'Bread'),
+      ]);
+
+      expect(results.keys, containsAll(<String>['item-1', 'item-2']));
+      expect(inventoryRepository.readAllCalls, 1);
+    },
+  );
 }

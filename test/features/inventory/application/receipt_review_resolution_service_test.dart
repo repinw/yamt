@@ -32,12 +32,25 @@ class _FakeMatcher extends GlobalFoodItemMatcher {
   final Map<String, List<GlobalFoodMatchCandidate>> candidatesByItemId;
   final Map<String, String?> defaultSelections;
   final Map<String, bool> defaultSelectionsNeedingReview;
+  int batchSearchCalls = 0;
 
   @override
   Future<List<GlobalFoodMatchCandidate>> findCandidates(
     InventoryItem item,
   ) async {
     return candidatesByItemId[item.id] ?? const <GlobalFoodMatchCandidate>[];
+  }
+
+  @override
+  Future<Map<String, List<GlobalFoodMatchCandidate>>> findCandidatesByItemId(
+    Iterable<InventoryItem> items,
+  ) async {
+    batchSearchCalls += 1;
+    return {
+      for (final item in items)
+        item.id:
+            candidatesByItemId[item.id] ?? const <GlobalFoodMatchCandidate>[],
+    };
   }
 
   @override
@@ -193,20 +206,21 @@ void main() {
     final draft = ReceiptReviewItemDraft(
       item: _item(id: 'draft-1', name: 'Milk', brand: 'Acme'),
     );
+    final matcher = _FakeMatcher(
+      candidatesByItemId: <String, List<GlobalFoodMatchCandidate>>{
+        'draft-1': <GlobalFoodMatchCandidate>[
+          GlobalFoodMatchCandidate(
+            item: product,
+            score: 100,
+            reason: GlobalFoodMatchReason.fingerprintExact,
+          ),
+        ],
+      },
+      defaultSelections: <String, String?>{'milk': 'milk'},
+    );
     final service = ReceiptReviewResolutionService(
       mapper: _FakeMapper(<ReceiptReviewItemDraft>[draft]),
-      matcher: _FakeMatcher(
-        candidatesByItemId: <String, List<GlobalFoodMatchCandidate>>{
-          'draft-1': <GlobalFoodMatchCandidate>[
-            GlobalFoodMatchCandidate(
-              item: product,
-              score: 100,
-              reason: GlobalFoodMatchReason.fingerprintExact,
-            ),
-          ],
-        },
-        defaultSelections: <String, String?>{'milk': 'milk'},
-      ),
+      matcher: matcher,
       globalFoodItemRepository: _RecordingGlobalFoodItemRepository(),
       inventoryItemRepository: _RecordingInventoryItemRepository(),
     );
@@ -222,6 +236,7 @@ void main() {
     expect(prepared.single.candidates.single.item.id, 'milk');
     expect(prepared.single.selectedGlobalFoodItemId, 'milk');
     expect(prepared.single.selectionNeedsReview, isFalse);
+    expect(matcher.batchSearchCalls, 1);
   });
 
   test(
