@@ -31,6 +31,7 @@ service cloud.firestore {
           'category',
           'barcode',
           'image_url',
+          'package_weight',
           'nutrition',
           'normalized_name',
           'normalized_brand',
@@ -68,6 +69,7 @@ service cloud.firestore {
         && isOptionalString(data, 'category')
         && isOptionalString(data, 'barcode')
         && isOptionalString(data, 'image_url')
+        && isOptionalString(data, 'package_weight')
         && isOptionalString(data, 'normalized_brand')
         && isOptionalString(data, 'merged_into_id')
         && isOptionalMap(data, 'nutrition');
@@ -131,9 +133,9 @@ service cloud.firestore {
 
     match /global_food_items/{itemId} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn()
+      allow create, update: if isSignedIn()
         && isValidGlobalFoodItem(request.resource.data, itemId);
-      allow update, delete: if false;
+      allow delete: if false;
     }
 
     match /users/{uid}/inventory_items/{itemId} {

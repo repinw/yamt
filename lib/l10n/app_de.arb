@@ -85,10 +85,25 @@
   "inventoryReceiptReviewOriginalReceiptUnavailable": "(Hier würde das Foto angezeigt werden)",
   "inventoryReceiptReviewReadAsPrefix": "Gelesen als",
   "inventoryReceiptReviewDetermineAction": "Ermitteln",
+  "inventoryReceiptReviewCandidatesAction": "Kandidaten",
   "inventoryReceiptReviewProductSelectionLabel": "Produkt auswählen",
   "inventoryReceiptReviewCreateNewProduct": "Neues Produkt anlegen",
   "inventoryReceiptReviewMissingProductAction": "Fehlenden Artikel hinzufügen",
   "inventoryReceiptReviewMissingProductHint": "Barcode scannen oder manuell suchen",
+  "inventoryReceiptReviewManualDataAction":
+      "Barcode und Nährwerte eintragen",
+  "inventoryReceiptReviewManualDataTitle":
+      "Barcode und Nährwerte eintragen",
+  "inventoryReceiptReviewManualDataHint":
+      "Wenn du den Artikel kennst, kannst du Barcode und Nährwerte direkt eintragen.",
+  "inventoryReceiptReviewManualDataSaveAction": "Übernehmen",
+  "inventoryReceiptReviewManualDataBarcodeLabel": "Barcode",
+  "inventoryReceiptReviewManualDataRequired":
+      "Bitte mindestens einen Barcode oder Nährwerte angeben.",
+  "inventoryReceiptReviewRequestEnrichmentAction":
+      "Später per KI ermitteln lassen",
+  "inventoryReceiptReviewRequestEnrichmentHint":
+      "Speichert den Artikel jetzt und markiert ihn für spätere KI-Anreicherung.",
   "inventoryReceiptReviewSwitchAction": "Wechseln",
   "inventoryReceiptReviewCancelAction": "Abbrechen",
   "inventoryReceiptReviewSaveAction": "Speichern",

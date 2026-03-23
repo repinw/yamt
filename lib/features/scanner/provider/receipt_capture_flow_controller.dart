@@ -200,8 +200,8 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
       final result = await resolutionService.persistReviewedItems(
         reviewedItems,
       );
-      if (result.saved) {
-        unawaited(_enqueueBatchBarcodeLookup(result.inventoryItems));
+      if (result.saved && result.itemsNeedingEnrichment.isNotEmpty) {
+        unawaited(_enqueueBatchBarcodeLookup(result.itemsNeedingEnrichment));
       }
       return result.saved;
     } catch (error, stackTrace) {

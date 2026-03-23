@@ -26,7 +26,7 @@ final class GlobalFoodItemMatcherProvider
         argument: null,
         retry: null,
         name: r'globalFoodItemMatcherProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -55,4 +55,4 @@ final class GlobalFoodItemMatcherProvider
 }
 
 String _$globalFoodItemMatcherHash() =>
-    r'e0bc5552b08e3c36cefb464b9cf6b739908cd510';
+    r'47a496ea2ffb13cad77e541c5f1f8aecf0f86d4b';

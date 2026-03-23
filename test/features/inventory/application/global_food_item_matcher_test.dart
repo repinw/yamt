@@ -5,6 +5,7 @@ import 'package:yamt/features/calories/data/'
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
+import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -122,6 +123,31 @@ class _FakeCalorieProductCacheRepository
   }) async => true;
 }
 
+class _FakeOffProductSearchRepository implements OffProductSearchRepository {
+  _FakeOffProductSearchRepository(this.results);
+
+  final List<OffProductSearchResult> results;
+  String? lastQuery;
+  String? lastStore;
+  String? lastBrand;
+  String? lastWeight;
+
+  @override
+  Future<List<OffProductSearchResult>> search({
+    required String query,
+    String? store,
+    String? brand,
+    String? weight,
+    int limit = 15,
+  }) async {
+    lastQuery = query;
+    lastStore = store;
+    lastBrand = brand;
+    lastWeight = weight;
+    return results.take(limit).toList(growable: false);
+  }
+}
+
 GlobalFoodItem _globalFood({
   required String id,
   required String name,
@@ -151,6 +177,8 @@ InventoryItem _inventoryItem({
   required String id,
   required String name,
   String? brand,
+  String storeName = 'Store',
+  String? weight,
   String? globalFoodItemId,
   String? barcode,
   String? imageUrl,
@@ -160,9 +188,10 @@ InventoryItem _inventoryItem({
     id: id,
     name: name,
     entryDate: DateTime.parse('2026-03-01T12:00:00Z'),
-    storeName: 'Store',
+    storeName: storeName,
     quantity: 1,
     brand: brand,
+    weight: weight,
     barcode: barcode,
     imageUrl: imageUrl,
     foodFingerprint: foodFingerprint,
@@ -225,6 +254,7 @@ void main() {
     expect(repository.lastNormalizedName, 'milk');
     expect(repository.lastFoodFingerprint, 'milk__acme');
     expect(repository.lastSearchTokens, contains('milk'));
+    expect(repository.lastSearchTokens, isNot(contains('acme')));
   });
 
   test(
@@ -372,7 +402,7 @@ void main() {
   });
 
   test(
-    'default selection keeps best candidate but marks review for ambiguity',
+    'default selection stays empty for token-only Firebase matches',
     () async {
       final matcher = GlobalFoodItemMatcher(
         repository: _FakeGlobalFoodItemRepository(<GlobalFoodItem>[
@@ -394,8 +424,257 @@ void main() {
       );
 
       expect(candidates, isNotEmpty);
-      expect(matcher.defaultSelectionFor(candidates), isNotNull);
+      expect(matcher.defaultSelectionFor(candidates), isNull);
       expect(matcher.defaultSelectionNeedsReviewFor(candidates), isTrue);
+    },
+  );
+
+  test(
+    'default selection auto-selects unique exact Firebase name match',
+    () async {
+      final matcher = GlobalFoodItemMatcher(
+        repository: _FakeGlobalFoodItemRepository(<GlobalFoodItem>[
+          _globalFood(id: 'gouda', name: 'Gouda in Scheiben'),
+        ]),
+      );
+
+      final candidates = await matcher.findCandidates(
+        _inventoryItem(id: 'item-1', name: 'Gouda in Scheiben'),
+      );
+
+      expect(candidates, hasLength(1));
+      expect(
+        candidates.first.reason,
+        isIn(<GlobalFoodMatchReason>[
+          GlobalFoodMatchReason.fingerprintExact,
+          GlobalFoodMatchReason.nameExact,
+        ]),
+      );
+      expect(matcher.defaultSelectionFor(candidates), 'gouda');
+      expect(matcher.defaultSelectionNeedsReviewFor(candidates), isFalse);
+    },
+  );
+
+  test('findCandidates does not surface brand-only Firebase hits', () async {
+    final matcher = GlobalFoodItemMatcher(
+      repository: _FakeGlobalFoodItemRepository(<GlobalFoodItem>[
+        _globalFood(id: 'bread', name: 'Eiweissbrot', brand: 'Kornmark'),
+      ]),
+    );
+
+    final candidates = await matcher.findCandidates(
+      _inventoryItem(id: 'item-1', name: 'Tomatensauce', brand: 'Kornmark'),
+    );
+
+    expect(candidates, isEmpty);
+  });
+
+  test(
+    'findCandidates includes external OFF search results for review',
+    () async {
+      final externalRepository =
+          _FakeOffProductSearchRepository(<OffProductSearchResult>[
+            const OffProductSearchResult(
+              code: '4061458029995',
+              name: 'Waffelhoernchen Haselnuss-Vanille',
+              brand: 'Aldi, Froneri, Mucci',
+              packageWeight: '110 ml',
+              imageUrl:
+                  'https://images.openfoodfacts.org/images/products/'
+                  '406/145/802/9995/front_de.3.400.jpg',
+              nutrition: GlobalFoodNutrition(
+                qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+                per100Kcal: 215,
+                per100Protein: 4.2,
+                per100Carbs: 24.8,
+                per100Fat: 9.6,
+                per100Salt: 0.4,
+              ),
+              score: 34,
+            ),
+          ]);
+      final matcher = GlobalFoodItemMatcher(
+        repository: _FakeGlobalFoodItemRepository(const <GlobalFoodItem>[]),
+        offProductSearchRepository: externalRepository,
+      );
+
+      final candidates = await matcher.findCandidates(
+        _inventoryItem(
+          id: 'item-1',
+          name: 'Waffelh Edb/Nuss',
+          storeName: 'Aldi Süd',
+        ),
+      );
+
+      expect(candidates, isNotEmpty);
+      expect(candidates.first.item.id, 'off-4061458029995');
+      expect(candidates.first.reason, GlobalFoodMatchReason.externalSearch);
+      expect(candidates.first.requiresPersistence, isTrue);
+      expect(candidates.first.item.normalizedBarcode, '4061458029995');
+      expect(
+        candidates.first.item.imageUrl,
+        'https://images.openfoodfacts.org/images/products/'
+        '406/145/802/9995/front_de.3.400.jpg',
+      );
+      expect(candidates.first.item.packageWeight, '110 ml');
+      expect(candidates.first.item.nutrition, isNotNull);
+      expect(candidates.first.item.nutrition!.per100Kcal, 215);
+      expect(matcher.defaultSelectionNeedsReviewFor(candidates), isTrue);
+      expect(externalRepository.lastQuery, 'Waffelh Edb/Nuss');
+      expect(externalRepository.lastStore, 'Aldi');
+      expect(externalRepository.lastBrand, isNull);
+      expect(externalRepository.lastWeight, isNull);
+    },
+  );
+
+  test('findCandidates keeps Firebase matches before OFF candidates', () async {
+    final repository = _FakeGlobalFoodItemRepository(<GlobalFoodItem>[
+      _globalFood(
+        id: 'firebase-1',
+        name: 'Lasagne Bolognese',
+        brand: 'Cucina',
+        barcode: '4099365169629',
+      ),
+    ]);
+    final externalRepository =
+        _FakeOffProductSearchRepository(const <OffProductSearchResult>[
+          OffProductSearchResult(
+            code: '4099365169629',
+            name: 'Lasagne Bolognese',
+            brand: 'Aldi, Condeli, Cucina',
+            score: 99,
+          ),
+        ]);
+    final matcher = GlobalFoodItemMatcher(
+      repository: repository,
+      offProductSearchRepository: externalRepository,
+    );
+
+    final candidates = await matcher.findCandidates(
+      _inventoryItem(
+        id: 'item-1',
+        name: 'Lasagne Bolognese',
+        brand: 'Cucina',
+        storeName: 'Aldi Süd',
+      ),
+    );
+
+    expect(candidates, hasLength(1));
+    expect(candidates.first.item.id, 'firebase-1');
+    expect(
+      candidates.first.reason,
+      isNot(GlobalFoodMatchReason.externalSearch),
+    );
+  });
+
+  test(
+    'findCandidates forwards Netto brand and weight to OFF search',
+    () async {
+      final externalRepository = _FakeOffProductSearchRepository(
+        const <OffProductSearchResult>[],
+      );
+      final matcher = GlobalFoodItemMatcher(
+        repository: _FakeGlobalFoodItemRepository(const <GlobalFoodItem>[]),
+        offProductSearchRepository: externalRepository,
+      );
+
+      await matcher.findCandidates(
+        _inventoryItem(
+          id: 'item-1',
+          name: 'Lasagne Bolognese',
+          brand: 'Cucina',
+          storeName: 'Netto Marken-Discount',
+          weight: '1000 g',
+        ),
+      );
+
+      expect(externalRepository.lastQuery, 'Lasagne Bolognese');
+      expect(externalRepository.lastStore, 'Netto');
+      expect(externalRepository.lastBrand, 'Cucina');
+      expect(externalRepository.lastWeight, '1000 g');
+    },
+  );
+
+  test(
+    'findCandidates derives Aldi store from brand when store is unknown',
+    () async {
+      final externalRepository = _FakeOffProductSearchRepository(
+        const <OffProductSearchResult>[],
+      );
+      final matcher = GlobalFoodItemMatcher(
+        repository: _FakeGlobalFoodItemRepository(const <GlobalFoodItem>[]),
+        offProductSearchRepository: externalRepository,
+      );
+
+      await matcher.findCandidates(
+        _inventoryItem(
+          id: 'item-1',
+          name: 'TK Snack-Sortiment',
+          brand: 'Aldi Süd',
+          storeName: 'Unknown',
+        ),
+      );
+
+      expect(externalRepository.lastQuery, 'TK Snack-Sortiment');
+      expect(externalRepository.lastStore, 'Aldi');
+      expect(externalRepository.lastBrand, isNull);
+      expect(externalRepository.lastWeight, isNull);
+    },
+  );
+
+  test(
+    'findCandidates ignores Netto brand when it repeats the store',
+    () async {
+      final externalRepository = _FakeOffProductSearchRepository(
+        const <OffProductSearchResult>[],
+      );
+      final matcher = GlobalFoodItemMatcher(
+        repository: _FakeGlobalFoodItemRepository(const <GlobalFoodItem>[]),
+        offProductSearchRepository: externalRepository,
+      );
+
+      await matcher.findCandidates(
+        _inventoryItem(
+          id: 'item-1',
+          name: 'R-Hackfleisc',
+          brand: 'Netto Marken-Discount',
+          storeName: 'Netto',
+          weight: '800g',
+        ),
+      );
+
+      expect(externalRepository.lastQuery, 'R-Hackfleisc');
+      expect(externalRepository.lastStore, 'Netto');
+      expect(externalRepository.lastBrand, isNull);
+      expect(externalRepository.lastWeight, '800g');
+    },
+  );
+
+  test(
+    'findCandidates derives Netto store from brand when store is unknown',
+    () async {
+      final externalRepository = _FakeOffProductSearchRepository(
+        const <OffProductSearchResult>[],
+      );
+      final matcher = GlobalFoodItemMatcher(
+        repository: _FakeGlobalFoodItemRepository(const <GlobalFoodItem>[]),
+        offProductSearchRepository: externalRepository,
+      );
+
+      await matcher.findCandidates(
+        _inventoryItem(
+          id: 'item-1',
+          name: 'R-Hackfleisc',
+          brand: 'Netto Marken-Discount',
+          storeName: 'Unknown',
+          weight: '800g',
+        ),
+      );
+
+      expect(externalRepository.lastQuery, 'R-Hackfleisc');
+      expect(externalRepository.lastStore, 'Netto');
+      expect(externalRepository.lastBrand, isNull);
+      expect(externalRepository.lastWeight, '800g');
     },
   );
 }

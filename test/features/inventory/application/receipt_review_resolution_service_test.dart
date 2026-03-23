@@ -5,6 +5,7 @@ import 'package:yamt/features/inventory/data/global_food_item_repository_contrac
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/data/receipt_to_review_item_draft_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
@@ -60,6 +61,9 @@ class _FakeMatcher extends GlobalFoodItemMatcher {
 }
 
 class _RecordingGlobalFoodItemRepository implements GlobalFoodItemRepository {
+  _RecordingGlobalFoodItemRepository({this.appendResult = true});
+
+  final bool appendResult;
   List<GlobalFoodItem> appendedItems = const <GlobalFoodItem>[];
 
   @override
@@ -89,7 +93,7 @@ class _RecordingGlobalFoodItemRepository implements GlobalFoodItemRepository {
   @override
   Future<bool> appendAll(List<GlobalFoodItem> items) async {
     appendedItems = List<GlobalFoodItem>.from(items);
-    return true;
+    return appendResult;
   }
 }
 
@@ -166,13 +170,19 @@ GlobalFoodItem _product({
   required String id,
   required String name,
   String? brand,
+  String? barcode,
+  String? imageUrl,
+  GlobalFoodNutrition? nutrition,
   GlobalFoodItemStatus status = GlobalFoodItemStatus.active,
 }) {
   return GlobalFoodItem.create(
     id: id,
     name: name,
     brand: brand,
+    barcode: barcode,
+    imageUrl: imageUrl,
     now: DateTime.parse('2026-03-01T10:00:00Z'),
+    nutrition: nutrition,
     status: status,
   );
 }
@@ -354,6 +364,158 @@ void main() {
     },
   );
 
+  test(
+    'persistReviewedItems saves unchanged external candidate before inventory',
+    () async {
+      final selected = _product(
+        id: 'off-4061458029995',
+        name: 'Waffelhoernchen Haselnuss-Vanille',
+        brand: 'Aldi, Froneri, Mucci',
+        barcode: '4061458029995',
+      );
+      final globalRepository = _RecordingGlobalFoodItemRepository();
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      final service = ReceiptReviewResolutionService(
+        mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
+        matcher: _FakeMatcher(
+          candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
+          defaultSelections: const <String, String?>{},
+        ),
+        globalFoodItemRepository: globalRepository,
+        inventoryItemRepository: inventoryRepository,
+      );
+
+      final result = await service.persistReviewedItems(
+        <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'draft-1',
+              name: selected.name,
+            ).copyWith(productSnapshot: selected.toProductSnapshot()),
+            candidates: <GlobalFoodMatchCandidate>[
+              GlobalFoodMatchCandidate(
+                item: selected,
+                score: 77,
+                reason: GlobalFoodMatchReason.externalSearch,
+                requiresPersistence: true,
+              ),
+            ],
+            selectedGlobalFoodItemId: 'off-4061458029995',
+          ),
+        ],
+      );
+
+      expect(result.saved, isTrue);
+      expect(globalRepository.appendedItems, hasLength(1));
+      expect(globalRepository.appendedItems.single.id, 'off-4061458029995');
+      expect(
+        inventoryRepository.appendedItems.single.globalFoodItemId,
+        'off-4061458029995',
+      );
+      expect(
+        inventoryRepository.appendedItems.single.productSnapshot.barcode,
+        '4061458029995',
+      );
+    },
+  );
+
+  test('persistReviewedItems carries barcode and image from selected OFF '
+      'candidate into inventory snapshot', () async {
+    final selected = _product(
+      id: 'off-4061458029995',
+      name: 'Waffelhoernchen Haselnuss-Vanille',
+      brand: 'Aldi, Froneri, Mucci',
+      barcode: '4061458029995',
+      imageUrl: 'https://example.com/waffel.png',
+      nutrition: const GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Kcal: 215,
+      ),
+    );
+    final globalRepository = _RecordingGlobalFoodItemRepository();
+    final inventoryRepository = _RecordingInventoryItemRepository();
+    final service = ReceiptReviewResolutionService(
+      mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
+      matcher: _FakeMatcher(
+        candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
+        defaultSelections: const <String, String?>{},
+      ),
+      globalFoodItemRepository: globalRepository,
+      inventoryItemRepository: inventoryRepository,
+      globalFoodItemIdGenerator: () => 'global-food-fixed',
+    );
+
+    final result = await service.persistReviewedItems(<ReceiptReviewItemDraft>[
+      ReceiptReviewItemDraft(
+        item: _item(id: 'draft-1', name: 'Waffelh Edb/Nuss', brand: 'Mucci'),
+        candidates: <GlobalFoodMatchCandidate>[
+          GlobalFoodMatchCandidate(
+            item: selected,
+            score: 77,
+            reason: GlobalFoodMatchReason.externalSearch,
+            requiresPersistence: true,
+          ),
+        ],
+        selectedGlobalFoodItemId: 'off-4061458029995',
+      ),
+    ]);
+
+    expect(result.saved, isTrue);
+    expect(globalRepository.appendedItems, hasLength(1));
+    expect(globalRepository.appendedItems.single.id, 'global-food-fixed');
+    expect(globalRepository.appendedItems.single.barcode, '4061458029995');
+    expect(
+      globalRepository.appendedItems.single.imageUrl,
+      'https://example.com/waffel.png',
+    );
+    expect(inventoryRepository.appendedItems, hasLength(1));
+    expect(
+      inventoryRepository.appendedItems.single.productSnapshot.barcode,
+      '4061458029995',
+    );
+    expect(
+      inventoryRepository.appendedItems.single.productSnapshot.imageUrl,
+      'https://example.com/waffel.png',
+    );
+    expect(
+      inventoryRepository.appendedItems.single.productSnapshot.nutrition,
+      isNotNull,
+    );
+  });
+
+  test(
+    'persistReviewedItems returns items needing enrichment when flagged',
+    () async {
+      final globalRepository = _RecordingGlobalFoodItemRepository();
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      final service = ReceiptReviewResolutionService(
+        mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
+        matcher: _FakeMatcher(
+          candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
+          defaultSelections: const <String, String?>{},
+        ),
+        globalFoodItemRepository: globalRepository,
+        inventoryItemRepository: inventoryRepository,
+        globalFoodItemIdGenerator: () => 'global-food-fixed',
+      );
+
+      final result = await service
+          .persistReviewedItems(<ReceiptReviewItemDraft>[
+            ReceiptReviewItemDraft(
+              item: _item(id: 'draft-1', name: 'Unknown Product'),
+            ).markForAiEnrichment(),
+          ]);
+
+      expect(result.saved, isTrue);
+      expect(result.itemsNeedingEnrichment, hasLength(1));
+      expect(result.itemsNeedingEnrichment.single.name, 'Unknown Product');
+      expect(
+        globalRepository.appendedItems.single.status,
+        GlobalFoodItemStatus.candidate,
+      );
+    },
+  );
+
   test('persistReviewedItems skips review-only drafts', () async {
     final globalRepository = _RecordingGlobalFoodItemRepository();
     final inventoryRepository = _RecordingInventoryItemRepository();
@@ -378,4 +540,66 @@ void main() {
     expect(globalRepository.appendedItems, isEmpty);
     expect(inventoryRepository.appendedItems, isEmpty);
   });
+
+  test(
+    'persistReviewedItems still saves inventory when global upsert fails',
+    () async {
+      final selected = _product(
+        id: 'off-4043362046206',
+        name: 'Rinderhack',
+        brand: 'Gut Ponholz',
+        barcode: '4043362046206',
+      );
+      final globalRepository = _RecordingGlobalFoodItemRepository(
+        appendResult: false,
+      );
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      final service = ReceiptReviewResolutionService(
+        mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
+        matcher: _FakeMatcher(
+          candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
+          defaultSelections: const <String, String?>{},
+        ),
+        globalFoodItemRepository: globalRepository,
+        inventoryItemRepository: inventoryRepository,
+      );
+
+      final result = await service.persistReviewedItems(
+        <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'draft-1',
+              name: selected.name,
+              brand: selected.brand,
+            ).copyWith(productSnapshot: selected.toProductSnapshot()),
+            candidates: <GlobalFoodMatchCandidate>[
+              GlobalFoodMatchCandidate(
+                item: selected,
+                score: 94,
+                reason: GlobalFoodMatchReason.externalSearch,
+                requiresPersistence: true,
+              ),
+            ],
+            selectedGlobalFoodItemId: 'off-4043362046206',
+          ),
+        ],
+      );
+
+      expect(result.saved, isTrue);
+      expect(globalRepository.appendedItems, hasLength(1));
+      expect(inventoryRepository.appendedItems, hasLength(1));
+      expect(
+        inventoryRepository.appendedItems.single.globalFoodItemId,
+        'pending-${selected.resolvedFoodFingerprint}',
+      );
+      expect(
+        inventoryRepository.appendedItems.single.productSnapshot.name,
+        'Rinderhack',
+      );
+      expect(
+        inventoryRepository.appendedItems.single.productSnapshot.barcode,
+        '4043362046206',
+      );
+    },
+  );
 }

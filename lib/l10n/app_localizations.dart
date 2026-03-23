@@ -545,6 +545,12 @@ abstract class AppLocalizations {
   /// **'Determine'**
   String get inventoryReceiptReviewDetermineAction;
 
+  /// No description provided for @inventoryReceiptReviewCandidatesAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Candidates'**
+  String get inventoryReceiptReviewCandidatesAction;
+
   /// No description provided for @inventoryReceiptReviewProductSelectionLabel.
   ///
   /// In en, this message translates to:
@@ -568,6 +574,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scan barcode or search manually'**
   String get inventoryReceiptReviewMissingProductHint;
+
+  /// No description provided for @inventoryReceiptReviewManualDataAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter barcode and nutrition'**
+  String get inventoryReceiptReviewManualDataAction;
+
+  /// No description provided for @inventoryReceiptReviewManualDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter barcode and nutrition'**
+  String get inventoryReceiptReviewManualDataTitle;
+
+  /// No description provided for @inventoryReceiptReviewManualDataHint.
+  ///
+  /// In en, this message translates to:
+  /// **'If you know the product, you can enter barcode and nutrition directly.'**
+  String get inventoryReceiptReviewManualDataHint;
+
+  /// No description provided for @inventoryReceiptReviewManualDataSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get inventoryReceiptReviewManualDataSaveAction;
+
+  /// No description provided for @inventoryReceiptReviewManualDataBarcodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode'**
+  String get inventoryReceiptReviewManualDataBarcodeLabel;
+
+  /// No description provided for @inventoryReceiptReviewManualDataRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter at least a barcode or nutrition values.'**
+  String get inventoryReceiptReviewManualDataRequired;
+
+  /// No description provided for @inventoryReceiptReviewRequestEnrichmentAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Let AI enrich it later'**
+  String get inventoryReceiptReviewRequestEnrichmentAction;
+
+  /// No description provided for @inventoryReceiptReviewRequestEnrichmentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Saves the item now and marks it for later AI enrichment.'**
+  String get inventoryReceiptReviewRequestEnrichmentHint;
 
   /// No description provided for @inventoryReceiptReviewSwitchAction.
   ///

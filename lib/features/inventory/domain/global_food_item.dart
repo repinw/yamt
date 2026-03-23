@@ -19,6 +19,7 @@ class GlobalFoodItem {
     this.category,
     this.barcode,
     this.imageUrl,
+    this.packageWeight,
     this.nutrition,
     this.normalizedBrand,
     this.mergedIntoId,
@@ -32,6 +33,7 @@ class GlobalFoodItem {
     String? category,
     String? barcode,
     String? imageUrl,
+    String? packageWeight,
     String? foodFingerprint,
     GlobalFoodNutrition? nutrition,
     GlobalFoodItemStatus status = GlobalFoodItemStatus.active,
@@ -55,6 +57,7 @@ class GlobalFoodItem {
       category: _normalizeOptional(category),
       barcode: _normalizeOptional(barcode),
       imageUrl: _normalizeOptional(imageUrl),
+      packageWeight: _normalizeOptional(packageWeight),
       nutrition: nutrition,
       normalizedBrand: normalizeGlobalFoodText(brand ?? ''),
     );
@@ -81,6 +84,9 @@ class GlobalFoodItem {
       category: _normalizeOptional(json['category']),
       barcode: _normalizeOptional(json['barcode']),
       imageUrl: _normalizeOptional(json['image_url']),
+      packageWeight:
+          _normalizeOptional(json['package_weight']) ??
+          _normalizeOptional(json['weight']),
       nutrition: _readNutrition(json['nutrition']),
       normalizedBrand:
           _normalizeOptional(json['normalized_brand']) ??
@@ -96,6 +102,7 @@ class GlobalFoodItem {
   final String? category;
   final String? barcode;
   final String? imageUrl;
+  final String? packageWeight;
   final GlobalFoodNutrition? nutrition;
   final String normalizedName;
   final String? normalizedBrand;
@@ -114,6 +121,7 @@ class GlobalFoodItem {
       'category': category,
       'barcode': barcode,
       'image_url': imageUrl,
+      'package_weight': packageWeight,
       'nutrition': nutrition?.toJson(),
       'normalized_name': normalizedName,
       'normalized_brand': normalizedBrand,
@@ -133,6 +141,7 @@ class GlobalFoodItem {
     Object? category = _keepValue,
     Object? barcode = _keepValue,
     Object? imageUrl = _keepValue,
+    Object? packageWeight = _keepValue,
     Object? nutrition = _keepValue,
     String? normalizedName,
     Object? normalizedBrand = _keepValue,
@@ -150,6 +159,9 @@ class GlobalFoodItem {
       category: category == _keepValue ? this.category : category as String?,
       barcode: barcode == _keepValue ? this.barcode : barcode as String?,
       imageUrl: imageUrl == _keepValue ? this.imageUrl : imageUrl as String?,
+      packageWeight: packageWeight == _keepValue
+          ? this.packageWeight
+          : packageWeight as String?,
       nutrition: nutrition == _keepValue
           ? this.nutrition
           : nutrition as GlobalFoodNutrition?,
@@ -200,6 +212,7 @@ class GlobalFoodItem {
             other.category == category &&
             other.barcode == barcode &&
             other.imageUrl == imageUrl &&
+            other.packageWeight == packageWeight &&
             other.nutrition == nutrition &&
             other.normalizedName == normalizedName &&
             other.normalizedBrand == normalizedBrand &&
@@ -223,6 +236,7 @@ class GlobalFoodItem {
       category,
       barcode,
       imageUrl,
+      packageWeight,
       nutrition,
       normalizedName,
       normalizedBrand,

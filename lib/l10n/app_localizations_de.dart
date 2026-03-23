@@ -236,6 +236,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewDetermineAction => 'Ermitteln';
 
   @override
+  String get inventoryReceiptReviewCandidatesAction => 'Kandidaten';
+
+  @override
   String get inventoryReceiptReviewProductSelectionLabel => 'Produkt auswählen';
 
   @override
@@ -246,6 +249,30 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryReceiptReviewMissingProductHint => 'Barcode scannen oder manuell suchen';
+
+  @override
+  String get inventoryReceiptReviewManualDataAction => 'Barcode und Nährwerte eintragen';
+
+  @override
+  String get inventoryReceiptReviewManualDataTitle => 'Barcode und Nährwerte eintragen';
+
+  @override
+  String get inventoryReceiptReviewManualDataHint => 'Wenn du den Artikel kennst, kannst du Barcode und Nährwerte direkt eintragen.';
+
+  @override
+  String get inventoryReceiptReviewManualDataSaveAction => 'Übernehmen';
+
+  @override
+  String get inventoryReceiptReviewManualDataBarcodeLabel => 'Barcode';
+
+  @override
+  String get inventoryReceiptReviewManualDataRequired => 'Bitte mindestens einen Barcode oder Nährwerte angeben.';
+
+  @override
+  String get inventoryReceiptReviewRequestEnrichmentAction => 'Später per KI ermitteln lassen';
+
+  @override
+  String get inventoryReceiptReviewRequestEnrichmentHint => 'Speichert den Artikel jetzt und markiert ihn für spätere KI-Anreicherung.';
 
   @override
   String get inventoryReceiptReviewSwitchAction => 'Wechseln';

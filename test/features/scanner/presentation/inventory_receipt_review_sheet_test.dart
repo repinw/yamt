@@ -3,7 +3,13 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:riverpod/src/framework.dart' show Override;
+import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
+import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -21,6 +27,7 @@ InventoryItem _item({
   DateTime? receiptDate,
   String storeName = 'Store',
   String? brand,
+  String? weight,
   int quantity = 1,
   double unitPrice = 1.0,
   Map<String, double> discounts = const <String, double>{},
@@ -33,6 +40,7 @@ InventoryItem _item({
     quantity: quantity,
     unitPrice: unitPrice,
     brand: brand,
+    weight: weight,
     discounts: discounts,
     isDeposit: isDeposit,
     isDiscount: isDiscount,
@@ -46,35 +54,109 @@ Widget _wrap({
   required VoidCallback onCancelTap,
   required Future<void> Function(List<InventoryItem> items) onSaveTap,
   Uint8List? receiptPreviewBytes,
+  List<Override> overrides = const <Override>[],
 }) {
   assert((items == null) != (drafts == null));
 
-  return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: Scaffold(
-      body: InventoryReceiptReviewSheet(
-        items:
-            drafts ??
-            items!
-                .map((item) => ReceiptReviewItemDraft(item: item))
-                .toList(growable: false),
-        receiptPreviewBytes: receiptPreviewBytes,
-        onCancelTap: onCancelTap,
-        onSaveTap: (drafts) {
-          return onSaveTap(
-            drafts.map((draft) => draft.item).toList(growable: false),
-          );
-        },
+  return ProviderScope(
+    overrides: overrides,
+    child: MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: InventoryReceiptReviewSheet(
+          items:
+              drafts ??
+              items!
+                  .map((item) => ReceiptReviewItemDraft(item: item))
+                  .toList(growable: false),
+          receiptPreviewBytes: receiptPreviewBytes,
+          onCancelTap: onCancelTap,
+          onSaveTap: (drafts) {
+            return onSaveTap(
+              drafts.map((draft) => draft.item).toList(growable: false),
+            );
+          },
+        ),
       ),
     ),
   );
+}
+
+class _StaticGlobalFoodItemRepository implements GlobalFoodItemRepository {
+  const _StaticGlobalFoodItemRepository(this.items);
+
+  final List<GlobalFoodItem> items;
+
+  @override
+  Stream<List<GlobalFoodItem>> watchAll() async* {
+    yield items;
+  }
+
+  @override
+  Future<List<GlobalFoodItem>> readAll() async => items;
+
+  @override
+  Future<List<GlobalFoodItem>> searchCandidates({
+    String? normalizedName,
+    String? barcode,
+    String? foodFingerprint,
+    List<String> searchTokens = const <String>[],
+    int limit = 20,
+  }) async {
+    return const <GlobalFoodItem>[];
+  }
+
+  @override
+  Future<bool> saveAll(List<GlobalFoodItem> items) async => true;
+
+  @override
+  Future<bool> appendAll(List<GlobalFoodItem> items) async => true;
+}
+
+class _StaticInventoryItemRepository implements InventoryItemRepository {
+  const _StaticInventoryItemRepository();
+
+  @override
+  Stream<List<InventoryItem>> watchAll() async* {
+    yield const <InventoryItem>[];
+  }
+
+  @override
+  Future<List<InventoryItem>> readAll() async => const <InventoryItem>[];
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async => true;
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async => true;
+}
+
+class _RecordingOffProductSearchRepository
+    implements OffProductSearchRepository {
+  _RecordingOffProductSearchRepository(this.results);
+
+  final List<OffProductSearchResult> results;
+  String? lastQuery;
+
+  @override
+  Future<List<OffProductSearchResult>> search({
+    required String query,
+    String? store,
+    String? brand,
+    String? weight,
+    int limit = 15,
+  }) async {
+    lastQuery = query;
+    return results.take(limit).toList(growable: false);
+  }
 }
 
 GlobalFoodMatchCandidate _candidate({
   required String id,
   required String name,
   String? brand,
+  String? packageWeight,
 }) {
   return GlobalFoodMatchCandidate(
     item: GlobalFoodItem.create(
@@ -82,6 +164,7 @@ GlobalFoodMatchCandidate _candidate({
       name: name,
       now: DateTime.parse('2026-02-19T10:00:00Z'),
       brand: brand,
+      packageWeight: packageWeight,
       nutrition: const GlobalFoodNutrition(
         qualityStatus: GlobalFoodNutritionQualityStatus.verified,
         per100Kcal: 120,
@@ -259,6 +342,141 @@ void main() {
     expect(find.text('Gouda'), findsOneWidget);
   });
 
+  testWidgets('determine action fetches candidates and opens candidate sheet', (
+    tester,
+  ) async {
+    final externalRepository =
+        _RecordingOffProductSearchRepository(<OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4061458029995',
+            name: 'Waffelhoernchen Haselnuss-Vanille',
+            brand: 'Aldi, Froneri, Mucci',
+            packageWeight: '110 ml',
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 215,
+              per100Protein: 4.2,
+              per100Carbs: 24.8,
+              per100Fat: 9.6,
+              per100Salt: 0.4,
+            ),
+            score: 34,
+          ),
+        ]);
+    final matcher = GlobalFoodItemMatcher(
+      repository: const _StaticGlobalFoodItemRepository(<GlobalFoodItem>[]),
+      inventoryRepository: const _StaticInventoryItemRepository(),
+      offProductSearchRepository: externalRepository,
+    );
+
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'Waffelh Edb/Nuss',
+            ),
+          ),
+        ],
+        overrides: <Override>[
+          globalFoodItemMatcherProvider.overrideWithValue(matcher),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_determine_button_0')),
+    );
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+    final l10n = AppLocalizations.of(context)!;
+
+    expect(
+      find.text(l10n.inventoryReceiptReviewProductSelectionLabel),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Waffelhoernchen Haselnuss-Vanille'),
+      findsAtLeastNWidgets(1),
+    );
+    expect(find.text('110 ml'), findsAtLeastNWidgets(1));
+    expect(find.textContaining('215 kcal'), findsAtLeastNWidgets(1));
+    expect(externalRepository.lastQuery, 'Waffelh Edb/Nuss');
+  });
+
+  testWidgets('manual fallback saves entered barcode and nutrition', (
+    tester,
+  ) async {
+    List<InventoryItem>? savedItems;
+    final matcher = GlobalFoodItemMatcher(
+      repository: const _StaticGlobalFoodItemRepository(<GlobalFoodItem>[]),
+      inventoryRepository: const _StaticInventoryItemRepository(),
+      offProductSearchRepository: _RecordingOffProductSearchRepository(
+        const <OffProductSearchResult>[],
+      ),
+    );
+
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'Mystery Product',
+            ),
+          ),
+        ],
+        overrides: <Override>[
+          globalFoodItemMatcherProvider.overrideWithValue(matcher),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (items) async {
+          savedItems = items;
+        },
+      ),
+    );
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_determine_button_0')),
+    );
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+    final l10n = AppLocalizations.of(context)!;
+    await tester.tap(find.text(l10n.inventoryReceiptReviewManualDataAction));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_barcode_field')),
+      '4006381333931',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_kcal_field')),
+      '120',
+    );
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_save_button')),
+    );
+    await tester.pumpAndSettle();
+
+    final saveButton = find.byKey(const Key('receipt_review_save_button'));
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect(savedItems, isNotNull);
+    expect(savedItems!.single.barcode, '4006381333931');
+    expect(savedItems!.single.nutrition?.per100Kcal, 120);
+  });
+
   testWidgets('suggested candidate already shows nutrition chips', (
     tester,
   ) async {
@@ -290,12 +508,13 @@ void main() {
     expect(find.textContaining('120 kcal'), findsOneWidget);
   });
 
-  testWidgets('item preview shows unit price and quantity pill', (
+  testWidgets('item preview shows unit price, quantity, and weight pills', (
     tester,
   ) async {
     final receiptDate = DateTime.parse('2026-01-05');
     const quantity = 3;
     const unitPrice = 1.5;
+    const weight = '800g';
 
     await tester.pumpWidget(
       _wrap(
@@ -305,6 +524,7 @@ void main() {
             isDeposit: false,
             isDiscount: false,
             quantity: quantity,
+            weight: weight,
             unitPrice: unitPrice,
             receiptDate: receiptDate,
           ),
@@ -321,6 +541,42 @@ void main() {
 
     expect(find.text(expectedUnitPrice), findsOneWidget);
     expect(find.text('${quantity}x'), findsOneWidget);
+    expect(find.text(weight), findsOneWidget);
+  });
+
+  testWidgets('selected OFF candidate weight overrides OCR weight pill', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'R-Hackfleisc',
+              weight: '500g',
+            ),
+            candidates: <GlobalFoodMatchCandidate>[
+              _candidate(
+                id: 'off-4043362046206',
+                name: 'Rinderhack',
+                brand: 'Gut Ponholz',
+                packageWeight: '800g',
+              ),
+            ],
+            selectedGlobalFoodItemId: 'off-4043362046206',
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    expect(find.text('1x'), findsOneWidget);
+    expect(find.text('800g'), findsOneWidget);
+    expect(find.text('500g'), findsNothing);
   });
 
   testWidgets('receipt metadata is shown above price overview', (tester) async {

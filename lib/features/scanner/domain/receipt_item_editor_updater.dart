@@ -1,3 +1,4 @@
+import 'package:yamt/core/utils/store_name_normalizer.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_item_input_parser.dart';
 import 'package:yamt/features/scanner/domain/'
@@ -96,15 +97,17 @@ class ReceiptItemEditorUpdater {
       canBeSavedToInventory: !(formData.isDeposit || formData.isDiscount),
     );
     final weight = _nullableText(formData.weightText);
+    final storeName =
+        normalizeStoreName(
+          _requiredText(formData.storeName, fallback: sourceItem.storeName),
+        ) ??
+        sourceItem.storeName;
 
     final updated = sourceItem
         .copyWith(
           name: _requiredText(formData.name, fallback: sourceItem.name),
           entryDate: formData.entryDate,
-          storeName: _requiredText(
-            formData.storeName,
-            fallback: sourceItem.storeName,
-          ),
+          storeName: storeName,
           initialQuantity: safeQuantities.initialQuantity,
           unitPrice: unitPrice < 0 ? 0 : unitPrice,
           brand: _nullableText(formData.brandText),

@@ -3,6 +3,11 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_barcode_backfill_repository.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_barcode_backfill_repository_contract.dart';
+import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/application/'
     'receipt_review_resolution_service.dart';
@@ -162,6 +167,51 @@ class _UnsupportedInventoryItemRepository implements InventoryItemRepository {
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
+    return true;
+  }
+}
+
+class _RecordingCalorieBarcodeBackfillRepository
+    implements CalorieBarcodeBackfillRepositoryContract {
+  List<BarcodeLookupBatchItem> enqueuedItems = const <BarcodeLookupBatchItem>[];
+  String? lastTrigger;
+
+  @override
+  Future<bool> enqueueFingerprintLookup({
+    String? itemId,
+    required String fingerprint,
+    required String itemName,
+    String? brand,
+    required String trigger,
+    bool forceRetry = false,
+  }) async {
+    return true;
+  }
+
+  @override
+  Future<bool> enqueueBatchLookup({
+    required List<BarcodeLookupBatchItem> items,
+    required String trigger,
+  }) async {
+    enqueuedItems = List<BarcodeLookupBatchItem>.from(items);
+    lastTrigger = trigger;
+    return true;
+  }
+
+  @override
+  Future<CalorieProductProfile?> getResolvedProfileByFingerprint(
+    String fingerprint,
+  ) async {
+    return null;
+  }
+
+  @override
+  Future<bool> submitUserProvidedBarcode({
+    required String fingerprint,
+    required String barcode,
+    required String itemName,
+    String? brand,
+  }) async {
     return true;
   }
 }
@@ -502,6 +552,57 @@ void main() {
       );
 
       expect(saved, isFalse);
+    },
+  );
+
+  test(
+    'persistReviewedItems enqueues only items marked for enrichment',
+    () async {
+      final backfillRepository = _RecordingCalorieBarcodeBackfillRepository();
+      final flaggedItem = _inventoryItem(
+        id: 'food',
+        isDeposit: false,
+        isDiscount: false,
+      );
+      final unflaggedItem = _inventoryItem(
+        id: 'other',
+        isDeposit: false,
+        isDiscount: false,
+      );
+      final resolutionService = _FakeReceiptReviewResolutionService(
+        onPrepareDrafts: (_) async => const <ReceiptReviewItemDraft>[],
+        onPersistReviewedItems: (_) async => ReceiptReviewPersistResult(
+          saved: true,
+          inventoryItems: <InventoryItem>[flaggedItem, unflaggedItem],
+          itemsNeedingEnrichment: <InventoryItem>[flaggedItem],
+        ),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          receiptReviewResolutionServiceProvider.overrideWithValue(
+            resolutionService,
+          ),
+          calorieBarcodeBackfillRepositoryProvider.overrideWithValue(
+            backfillRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final controller = container.read(
+        receiptCaptureFlowControllerProvider.notifier,
+      );
+      final saved = await controller.persistReviewedItems(
+        <ReceiptReviewItemDraft>[
+          _draft(id: 'food', isDeposit: false, isDiscount: false),
+        ],
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(saved, isTrue);
+      expect(backfillRepository.enqueuedItems, hasLength(1));
+      expect(backfillRepository.enqueuedItems.single.itemId, 'food');
+      expect(backfillRepository.lastTrigger, 'receipt_upload');
     },
   );
 }
