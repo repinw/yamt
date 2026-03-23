@@ -92,6 +92,9 @@ class _FakeGlobalFoodItemStore implements GlobalFoodItemStore {
         for (final document in _copyDocuments()) document.id: document,
       };
       for (final entry in documentsById.entries) {
+        if (mergedById.containsKey(entry.key)) {
+          continue;
+        }
         mergedById[entry.key] = GlobalFoodItemDocument(
           id: entry.key,
           data: Map<String, dynamic>.from(entry.value),
@@ -208,6 +211,30 @@ void main() {
     expect(items.single.barcode, '123456');
     expect(items.single.searchTokens, containsAll(<String>['whole', 'milk']));
     expect(items.single.foodFingerprint, items.single.resolvedFoodFingerprint);
+  });
+
+  test('appendAll does not overwrite existing global food items', () async {
+    final existing = _item('milk').copyWith(
+      name: 'Existing Milk',
+      normalizedName: 'existing milk',
+      searchTokens: const <String>['existing', 'milk'],
+      barcode: '999',
+    );
+    final store = _FakeGlobalFoodItemStore(
+      initialDocuments: <GlobalFoodItemDocument>[
+        GlobalFoodItemDocument(id: 'milk', data: existing.toJson()),
+      ],
+    );
+    addTearDown(store.dispose);
+    final repository = FirestoreGlobalFoodItemRepository(store: store);
+
+    final saved = await repository.appendAll(<GlobalFoodItem>[_item('milk')]);
+    final items = await repository.readAll();
+
+    expect(saved, isTrue);
+    expect(items, hasLength(1));
+    expect(items.single.name, 'Existing Milk');
+    expect(items.single.barcode, '999');
   });
 
   test('appendAll serializes concurrent writes', () async {

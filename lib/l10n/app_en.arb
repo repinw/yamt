@@ -85,10 +85,25 @@
   "inventoryReceiptReviewOriginalReceiptUnavailable": "(The receipt photo would appear here)",
   "inventoryReceiptReviewReadAsPrefix": "Read as",
   "inventoryReceiptReviewDetermineAction": "Determine",
+  "inventoryReceiptReviewCandidatesAction": "Candidates",
   "inventoryReceiptReviewProductSelectionLabel": "Select product",
   "inventoryReceiptReviewCreateNewProduct": "Create new product",
   "inventoryReceiptReviewMissingProductAction": "Add missing item",
   "inventoryReceiptReviewMissingProductHint": "Scan barcode or search manually",
+  "inventoryReceiptReviewManualDataAction":
+      "Enter barcode and nutrition",
+  "inventoryReceiptReviewManualDataTitle":
+      "Enter barcode and nutrition",
+  "inventoryReceiptReviewManualDataHint":
+      "If you know the product, you can enter barcode and nutrition directly.",
+  "inventoryReceiptReviewManualDataSaveAction": "Apply",
+  "inventoryReceiptReviewManualDataBarcodeLabel": "Barcode",
+  "inventoryReceiptReviewManualDataRequired":
+      "Please enter at least a barcode or nutrition values.",
+  "inventoryReceiptReviewRequestEnrichmentAction":
+      "Let AI enrich it later",
+  "inventoryReceiptReviewRequestEnrichmentHint":
+      "Saves the item now and marks it for later AI enrichment.",
   "inventoryReceiptReviewSwitchAction": "Switch",
   "inventoryReceiptReviewCancelAction": "Cancel",
   "inventoryReceiptReviewSaveAction": "Save",

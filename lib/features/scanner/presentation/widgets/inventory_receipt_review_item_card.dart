@@ -39,13 +39,15 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
     required this.currency,
     required this.onEditTap,
     required this.onSwitchTap,
+    this.isActionLoading = false,
   });
 
   final ReceiptReviewItemDraft draft;
   final int index;
   final NumberFormat currency;
-  final ValueChanged<int> onEditTap;
-  final ValueChanged<int> onSwitchTap;
+  final ValueChanged<String> onEditTap;
+  final ValueChanged<String> onSwitchTap;
+  final bool isActionLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +70,7 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         key: Key('receipt_review_edit_button_$index'),
-        onTap: item.isDiscount ? null : () => onEditTap(index),
+        onTap: item.isDiscount ? null : () => onEditTap(item.id),
         borderRadius: BorderRadius.circular(18),
         child: Ink(
           decoration: _itemCardDecoration(
@@ -113,10 +115,11 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
                       const SizedBox(height: 16),
                       _ReceiptItemFooter(
                         item: item,
+                        itemId: item.id,
                         index: index,
                         viewData: viewData,
-                        onEditTap: onEditTap,
                         onSwitchTap: onSwitchTap,
+                        isActionLoading: isActionLoading,
                       ),
                     ],
                   ),
@@ -216,21 +219,27 @@ class _ReceiptItemTopRow extends StatelessWidget {
 class _ReceiptItemFooter extends StatelessWidget {
   const _ReceiptItemFooter({
     required this.item,
+    required this.itemId,
     required this.index,
     required this.viewData,
-    required this.onEditTap,
     required this.onSwitchTap,
+    required this.isActionLoading,
   });
 
   final InventoryItem item;
+  final String itemId;
   final int index;
   final _ReceiptItemCardViewData viewData;
-  final ValueChanged<int> onEditTap;
-  final ValueChanged<int> onSwitchTap;
+  final ValueChanged<String> onSwitchTap;
+  final bool isActionLoading;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final displayedWeight =
+        viewData.display.packageWeight?.trim().isNotEmpty == true
+        ? viewData.display.packageWeight!.trim()
+        : item.weight?.trim();
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -242,6 +251,8 @@ class _ReceiptItemFooter extends StatelessWidget {
             runSpacing: AppSpacing.xs,
             children: [
               _QuantityPill(label: '${item.quantity}x'),
+              if (displayedWeight case final weight? when weight.isNotEmpty)
+                _QuantityPill(label: weight),
               if (viewData.isMuted)
                 _StatusPill(label: l10n.inventoryReceiptReviewExcludedTag),
             ],
@@ -252,18 +263,18 @@ class _ReceiptItemFooter extends StatelessWidget {
             key: viewData.actionButtonKey(index),
             visualState: viewData.visualState,
             label: viewData.actionLabel!,
-            onPressed: () => _handleAction(index),
+            isLoading: isActionLoading,
+            onPressed: _handleAction,
           ),
       ],
     );
   }
 
-  void _handleAction(int index) {
-    if (viewData.opensEditorForAction) {
-      onEditTap(index);
+  void _handleAction() {
+    if (isActionLoading) {
       return;
     }
-    onSwitchTap(index);
+    onSwitchTap(itemId);
   }
 }
 
@@ -408,6 +419,7 @@ class _ReceiptDisplayData {
     required this.brand,
     required this.barcode,
     required this.imageUrl,
+    required this.packageWeight,
     required this.nutrition,
   });
 
@@ -419,6 +431,7 @@ class _ReceiptDisplayData {
         brand: selectedCandidate.item.brand,
         barcode: selectedCandidate.item.normalizedBarcode,
         imageUrl: selectedCandidate.item.imageUrl,
+        packageWeight: selectedCandidate.item.packageWeight,
         nutrition: selectedCandidate.item.nutrition,
       );
     }
@@ -428,6 +441,7 @@ class _ReceiptDisplayData {
       brand: draft.item.brand,
       barcode: draft.item.normalizedBarcode,
       imageUrl: draft.item.imageUrl,
+      packageWeight: null,
       nutrition: draft.item.nutrition,
     );
   }
@@ -436,6 +450,7 @@ class _ReceiptDisplayData {
   final String? brand;
   final String? barcode;
   final String? imageUrl;
+  final String? packageWeight;
   final GlobalFoodNutrition? nutrition;
 }
 
@@ -455,13 +470,20 @@ String? _ocrHintForDraft({
 
 /// Compact nutrition badges shown for a selected or suggested product.
 class InventoryReceiptNutritionChips extends StatelessWidget {
-  const InventoryReceiptNutritionChips({super.key, required this.nutrition});
+  const InventoryReceiptNutritionChips({
+    super.key,
+    required this.nutrition,
+    this.leadingLabel,
+  });
 
   final GlobalFoodNutrition nutrition;
+  final String? leadingLabel;
 
   @override
   Widget build(BuildContext context) {
     final chips = <Widget>[
+      if (leadingLabel case final String label when label.trim().isNotEmpty)
+        _NutritionChip(label: label.trim()),
       if (nutrition.per100Kcal != null)
         _NutritionChip(
           label: '${nutrition.per100Kcal!.round()} kcal',
@@ -605,11 +627,11 @@ String? _actionLabelFor({
   if (!draft.canBeSavedToInventory) {
     return null;
   }
-  if (visualState == _ReceiptItemVisualState.newProduct) {
-    return l10n.inventoryReceiptReviewDetermineAction;
-  }
-  if (draft.hasCandidates && draft.candidates.length > 1) {
+  if (draft.hasCandidates) {
     return l10n.inventoryReceiptReviewSwitchAction;
+  }
+  if (visualState == _ReceiptItemVisualState.newProduct) {
+    return l10n.inventoryReceiptReviewCandidatesAction;
   }
   return null;
 }
@@ -620,11 +642,13 @@ class _ReceiptItemActionButton extends StatelessWidget {
     required this.visualState,
     required this.label,
     required this.onPressed,
+    required this.isLoading,
   });
 
   final _ReceiptItemVisualState visualState;
   final String label;
   final VoidCallback onPressed;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -632,7 +656,7 @@ class _ReceiptItemActionButton extends StatelessWidget {
     final isDetermine = visualState == _ReceiptItemVisualState.newProduct;
 
     return TextButton.icon(
-      onPressed: onPressed,
+      onPressed: isLoading ? null : onPressed,
       style: TextButton.styleFrom(
         backgroundColor: isDetermine ? colors.primaryContainer : colors.surface,
         foregroundColor: isDetermine
@@ -646,7 +670,17 @@ class _ReceiptItemActionButton extends StatelessWidget {
               : BorderSide(color: colors.outlineVariant),
         ),
       ),
-      icon: Icon(isDetermine ? Icons.search : Icons.swap_horiz, size: 16),
+      icon: isLoading
+          ? SizedBox.square(
+              dimension: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: isDetermine
+                    ? colors.onPrimaryContainer
+                    : colors.onSurfaceVariant,
+              ),
+            )
+          : Icon(isDetermine ? Icons.search : Icons.swap_horiz, size: 16),
       label: Text(
         label,
         style: Theme.of(

@@ -90,6 +90,19 @@ void main() {
     expect(updated.isDiscount, isFalse);
   });
 
+  test('apply normalizes Aldi store variants', () {
+    final result = updater.apply(
+      sourceItem: _sourceItem(),
+      formData: _formData(storeName: ' ALDI Süd '),
+      locale: 'en_US',
+      fallbackUnit: null,
+    );
+
+    expect(result, isA<ReceiptItemEditorApplySuccess>());
+    final updated = (result as ReceiptItemEditorApplySuccess).item;
+    expect(updated.storeName, 'Aldi');
+  });
+
   test('apply returns invalidNumber for invalid number input', () {
     final result = updater.apply(
       sourceItem: _sourceItem(),

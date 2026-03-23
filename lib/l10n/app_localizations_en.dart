@@ -236,6 +236,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewDetermineAction => 'Determine';
 
   @override
+  String get inventoryReceiptReviewCandidatesAction => 'Candidates';
+
+  @override
   String get inventoryReceiptReviewProductSelectionLabel => 'Select product';
 
   @override
@@ -246,6 +249,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryReceiptReviewMissingProductHint => 'Scan barcode or search manually';
+
+  @override
+  String get inventoryReceiptReviewManualDataAction => 'Enter barcode and nutrition';
+
+  @override
+  String get inventoryReceiptReviewManualDataTitle => 'Enter barcode and nutrition';
+
+  @override
+  String get inventoryReceiptReviewManualDataHint => 'If you know the product, you can enter barcode and nutrition directly.';
+
+  @override
+  String get inventoryReceiptReviewManualDataSaveAction => 'Apply';
+
+  @override
+  String get inventoryReceiptReviewManualDataBarcodeLabel => 'Barcode';
+
+  @override
+  String get inventoryReceiptReviewManualDataRequired => 'Please enter at least a barcode or nutrition values.';
+
+  @override
+  String get inventoryReceiptReviewRequestEnrichmentAction => 'Let AI enrich it later';
+
+  @override
+  String get inventoryReceiptReviewRequestEnrichmentHint => 'Saves the item now and marks it for later AI enrichment.';
 
   @override
   String get inventoryReceiptReviewSwitchAction => 'Switch';

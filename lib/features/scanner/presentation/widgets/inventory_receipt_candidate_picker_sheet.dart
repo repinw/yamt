@@ -7,17 +7,38 @@ import 'package:yamt/features/scanner/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Bottom sheet that lets the user choose a matching global food item.
-class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
-  const InventoryReceiptCandidatePickerSheet({
-    super.key,
-    required this.draft,
-    required this.selectedValue,
-    required this.newProductSelectionId,
+enum ReceiptCandidatePickerSelectionKind {
+  candidate,
+  manualEntry,
+  aiEnrichment,
+}
+
+class ReceiptCandidatePickerSelection {
+  const ReceiptCandidatePickerSelection._({
+    required this.kind,
+    this.candidateId,
   });
 
+  const ReceiptCandidatePickerSelection.candidate(String candidateId)
+    : this._(
+        kind: ReceiptCandidatePickerSelectionKind.candidate,
+        candidateId: candidateId,
+      );
+
+  const ReceiptCandidatePickerSelection.manualEntry()
+    : this._(kind: ReceiptCandidatePickerSelectionKind.manualEntry);
+
+  const ReceiptCandidatePickerSelection.aiEnrichment()
+    : this._(kind: ReceiptCandidatePickerSelectionKind.aiEnrichment);
+
+  final ReceiptCandidatePickerSelectionKind kind;
+  final String? candidateId;
+}
+
+class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
+  const InventoryReceiptCandidatePickerSheet({super.key, required this.draft});
+
   final ReceiptReviewItemDraft draft;
-  final String selectedValue;
-  final String newProductSelectionId;
 
   @override
   Widget build(BuildContext context) {
@@ -47,19 +68,41 @@ class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
                   for (final candidate in draft.candidates) ...[
                     _CandidatePickerTile(
                       candidate: candidate,
-                      isSelected: selectedValue == candidate.item.id,
-                      onTap: () => Navigator.of(context).pop(candidate.item.id),
+                      isSelected:
+                          draft.selectedGlobalFoodItemId == candidate.item.id,
+                      onTap: () => Navigator.of(context).pop(
+                        ReceiptCandidatePickerSelection.candidate(
+                          candidate.item.id,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                   ],
                   const SizedBox(height: AppSpacing.md),
-                  _NewProductSelectionTile(
-                    isSelected: selectedValue == newProductSelectionId,
+                  _FallbackSelectionTile(
+                    icon: Icons.edit_note,
+                    isSelected:
+                        draft.selectedGlobalFoodItemId == null &&
+                        !draft.requestAiEnrichment,
                     onTap: () {
-                      Navigator.of(context).pop(newProductSelectionId);
+                      Navigator.of(context).pop(
+                        const ReceiptCandidatePickerSelection.manualEntry(),
+                      );
                     },
-                    title: l10n.inventoryReceiptReviewMissingProductAction,
-                    subtitle: l10n.inventoryReceiptReviewMissingProductHint,
+                    title: l10n.inventoryReceiptReviewManualDataAction,
+                    subtitle: l10n.inventoryReceiptReviewManualDataHint,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  _FallbackSelectionTile(
+                    icon: Icons.auto_awesome,
+                    isSelected: draft.requestAiEnrichment,
+                    onTap: () {
+                      Navigator.of(context).pop(
+                        const ReceiptCandidatePickerSelection.aiEnrichment(),
+                      );
+                    },
+                    title: l10n.inventoryReceiptReviewRequestEnrichmentAction,
+                    subtitle: l10n.inventoryReceiptReviewRequestEnrichmentHint,
                   ),
                 ],
               ),
@@ -187,6 +230,7 @@ class _CandidatePickerTile extends StatelessWidget {
                     if (item.nutrition?.hasAnyNutritionValue ?? false) ...[
                       const SizedBox(height: AppSpacing.xs),
                       InventoryReceiptNutritionChips(
+                        leadingLabel: item.packageWeight,
                         nutrition: item.nutrition!,
                       ),
                     ],
@@ -205,18 +249,20 @@ class _CandidatePickerTile extends StatelessWidget {
   }
 }
 
-class _NewProductSelectionTile extends StatelessWidget {
-  const _NewProductSelectionTile({
+class _FallbackSelectionTile extends StatelessWidget {
+  const _FallbackSelectionTile({
     required this.isSelected,
     required this.onTap,
     required this.title,
     required this.subtitle,
+    required this.icon,
   });
 
   final bool isSelected;
   final VoidCallback onTap;
   final String title;
   final String subtitle;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -252,10 +298,7 @@ class _NewProductSelectionTile extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(8),
-                      child: Icon(
-                        Icons.camera_alt_outlined,
-                        color: colors.onPrimaryContainer,
-                      ),
+                      child: Icon(icon, color: colors.onPrimaryContainer),
                     ),
                   ),
                   const SizedBox(width: 16),

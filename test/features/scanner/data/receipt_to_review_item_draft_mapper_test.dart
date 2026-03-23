@@ -60,6 +60,26 @@ void main() {
     expect(drafts.single.canBeSavedToInventory, isTrue);
   });
 
+  test('normalizes Aldi store variants during mapping', () {
+    final extraction = ReceiptAnalysisExtraction(
+      root: <String, dynamic>{'s': 'Aldi Süd'},
+      items: const <ReceiptAnalysisItem>[
+        ReceiptAnalysisItem(
+          name: 'Lasagne',
+          rawPayload: <String, dynamic>{
+            'n': 'Lasagne Bolognese',
+            'storeName': 'ALDI SUED',
+            'if': true,
+          },
+        ),
+      ],
+    );
+
+    final drafts = mapper.map(extraction);
+
+    expect(drafts.single.item.storeName, 'Aldi');
+  });
+
   test('keeps non-food discount lines as review-only drafts', () {
     final extraction = ReceiptAnalysisExtraction(
       root: const <String, dynamic>{},

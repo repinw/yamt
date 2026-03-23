@@ -8,6 +8,7 @@ class ReceiptReviewItemDraft {
     this.candidates = const <GlobalFoodMatchCandidate>[],
     this.selectedGlobalFoodItemId,
     this.selectionNeedsReview = false,
+    this.requestAiEnrichment = false,
     this.ocrName,
     this.receiptTimeText,
   });
@@ -16,6 +17,7 @@ class ReceiptReviewItemDraft {
   final List<GlobalFoodMatchCandidate> candidates;
   final String? selectedGlobalFoodItemId;
   final bool selectionNeedsReview;
+  final bool requestAiEnrichment;
   final String? ocrName;
   final String? receiptTimeText;
 
@@ -24,6 +26,7 @@ class ReceiptReviewItemDraft {
     List<GlobalFoodMatchCandidate>? candidates,
     Object? selectedGlobalFoodItemId = _keepValue,
     bool? selectionNeedsReview,
+    bool? requestAiEnrichment,
     Object? ocrName = _keepValue,
     Object? receiptTimeText = _keepValue,
   }) {
@@ -34,6 +37,7 @@ class ReceiptReviewItemDraft {
           ? this.selectedGlobalFoodItemId
           : selectedGlobalFoodItemId as String?,
       selectionNeedsReview: selectionNeedsReview ?? this.selectionNeedsReview,
+      requestAiEnrichment: requestAiEnrichment ?? this.requestAiEnrichment,
       ocrName: ocrName == _keepValue ? this.ocrName : ocrName as String?,
       receiptTimeText: receiptTimeText == _keepValue
           ? this.receiptTimeText
@@ -45,6 +49,7 @@ class ReceiptReviewItemDraft {
     return copyWith(
       selectedGlobalFoodItemId: globalFoodItemId,
       selectionNeedsReview: false,
+      requestAiEnrichment: false,
     );
   }
 
@@ -52,6 +57,15 @@ class ReceiptReviewItemDraft {
     return copyWith(
       selectedGlobalFoodItemId: null,
       selectionNeedsReview: false,
+      requestAiEnrichment: false,
+    );
+  }
+
+  ReceiptReviewItemDraft markForAiEnrichment() {
+    return copyWith(
+      selectedGlobalFoodItemId: null,
+      selectionNeedsReview: false,
+      requestAiEnrichment: true,
     );
   }
 
@@ -91,6 +105,7 @@ class ReceiptReviewItemDraft {
             ) &&
             other.selectedGlobalFoodItemId == selectedGlobalFoodItemId &&
             other.selectionNeedsReview == selectionNeedsReview &&
+            other.requestAiEnrichment == requestAiEnrichment &&
             other.ocrName == ocrName &&
             other.receiptTimeText == receiptTimeText;
   }
@@ -102,6 +117,7 @@ class ReceiptReviewItemDraft {
       const ListEquality<GlobalFoodMatchCandidate>().hash(candidates),
       selectedGlobalFoodItemId,
       selectionNeedsReview,
+      requestAiEnrichment,
       ocrName,
       receiptTimeText,
     );

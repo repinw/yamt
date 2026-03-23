@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/utils/store_name_normalizer.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/'
@@ -44,7 +45,9 @@ class DefaultReceiptToReviewItemDraftMapper
   List<ReceiptReviewItemDraft> map(ReceiptAnalysisExtraction extraction) {
     final now = _now();
     final root = extraction.root;
-    final rootStore = _firstNonBlankString(root['s'], root['storeName']);
+    final rootStore = normalizeStoreName(
+      _firstNonBlankString(root['s'], root['storeName']),
+    );
     final rootLanguage = _firstNonBlankString(root['l'], root['language']);
     final rootReceiptDate = _parseDate(
       _firstNonBlankString(root['rd'], root['receiptDate']),
@@ -68,10 +71,8 @@ class DefaultReceiptToReviewItemDraftMapper
             payload['name'],
             item.name,
           );
-          final storeName = _firstNonBlankString(
-            payload['s'],
-            payload['storeName'],
-            rootStore,
+          final storeName = normalizeStoreName(
+            _firstNonBlankString(payload['s'], payload['storeName'], rootStore),
           );
 
           final quantityAndWeight = _resolveQuantityAndWeight(

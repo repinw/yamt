@@ -158,10 +158,7 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     try {
-      await _atomicReplaceService.upsertAll(
-        collection: _collection(),
-        documentsById: documentsById,
-      );
+      await _createMissingDocuments(documentsById);
       return true;
     } catch (error, stackTrace) {
       log(
@@ -176,6 +173,21 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
 
   CollectionReference<Map<String, dynamic>> _collection() {
     return _firestore.collection(_globalFoodItemsCollection);
+  }
+
+  Future<void> _createMissingDocuments(
+    Map<String, Map<String, dynamic>> documentsById,
+  ) async {
+    for (final entry in documentsById.entries) {
+      await _firestore.runTransaction((transaction) async {
+        final reference = _collection().doc(entry.key);
+        final snapshot = await transaction.get(reference);
+        if (snapshot.exists) {
+          return;
+        }
+        transaction.set(reference, entry.value);
+      });
+    }
   }
 
   List<GlobalFoodItemDocument> _mapSnapshot(
