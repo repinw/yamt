@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/product_image_url.dart';
-import 'package:yamt/features/inventory/provider/'
-    'inventory_barcode_image_provider.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -293,7 +290,6 @@ class _ReceiptItemLeading extends StatelessWidget {
       children: [
         InventoryReceiptSelectionThumbnail(
           imageUrl: display.imageUrl,
-          barcode: display.barcode,
           icon: Icons.inventory_2_outlined,
           backgroundColor: colors.surfaceContainerHighest,
           foregroundColor: colors.onSurfaceVariant,
@@ -417,7 +413,6 @@ class _ReceiptDisplayData {
   const _ReceiptDisplayData({
     required this.name,
     required this.brand,
-    required this.barcode,
     required this.imageUrl,
     required this.packageWeight,
     required this.nutrition,
@@ -429,7 +424,6 @@ class _ReceiptDisplayData {
       return _ReceiptDisplayData(
         name: selectedCandidate.item.name,
         brand: selectedCandidate.item.brand,
-        barcode: selectedCandidate.item.normalizedBarcode,
         imageUrl: selectedCandidate.item.imageUrl,
         packageWeight: selectedCandidate.item.packageWeight,
         nutrition: selectedCandidate.item.nutrition,
@@ -439,7 +433,6 @@ class _ReceiptDisplayData {
     return _ReceiptDisplayData(
       name: draft.item.name,
       brand: draft.item.brand,
-      barcode: draft.item.normalizedBarcode,
       imageUrl: draft.item.imageUrl,
       packageWeight: null,
       nutrition: draft.item.nutrition,
@@ -448,7 +441,6 @@ class _ReceiptDisplayData {
 
   final String name;
   final String? brand;
-  final String? barcode;
   final String? imageUrl;
   final String? packageWeight;
   final GlobalFoodNutrition? nutrition;
@@ -752,12 +744,11 @@ class _ReceiptItemDiscountRows extends StatelessWidget {
   }
 }
 
-/// Thumbnail that resolves a product image directly or via barcode lookup.
-class InventoryReceiptSelectionThumbnail extends ConsumerWidget {
+/// Thumbnail that only shows the image already present on the selected product.
+class InventoryReceiptSelectionThumbnail extends StatelessWidget {
   const InventoryReceiptSelectionThumbnail({
     super.key,
     required this.imageUrl,
-    this.barcode,
     this.icon = Icons.inventory_2_outlined,
     this.backgroundColor,
     this.foregroundColor,
@@ -765,16 +756,15 @@ class InventoryReceiptSelectionThumbnail extends ConsumerWidget {
   });
 
   final String? imageUrl;
-  final String? barcode;
   final IconData icon;
   final Color? backgroundColor;
   final Color? foregroundColor;
   final double dimension;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final normalizedImageUrl = _resolveImageUrl(ref);
+    final normalizedImageUrl = normalizeProductImageUrl(imageUrl);
     final hasImage =
         normalizedImageUrl != null && normalizedImageUrl.isNotEmpty;
     final effectiveBackground =
@@ -810,24 +800,5 @@ class InventoryReceiptSelectionThumbnail extends ConsumerWidget {
               ),
       ),
     );
-  }
-
-  String? _resolveImageUrl(WidgetRef ref) {
-    final directImageUrl = normalizeProductImageUrl(imageUrl);
-    if (directImageUrl != null && directImageUrl.isNotEmpty) {
-      return directImageUrl;
-    }
-
-    final normalizedBarcode = barcode?.trim();
-    if (normalizedBarcode == null || normalizedBarcode.isEmpty) {
-      return null;
-    }
-
-    final resolvedByBarcode = ref.watch(
-      inventoryBarcodeImageUrlProvider(
-        normalizedBarcode,
-      ).select((asyncValue) => asyncValue.asData?.value),
-    );
-    return normalizeProductImageUrl(resolvedByBarcode);
   }
 }

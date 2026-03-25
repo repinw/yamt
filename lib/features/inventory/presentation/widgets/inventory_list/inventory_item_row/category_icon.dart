@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/domain/product_image_url.dart';
 import 'package:yamt/features/inventory/provider/'
     'inventory_barcode_image_provider.dart';
 
 class CategoryIcon extends ConsumerWidget {
-  const CategoryIcon({super.key, required this.name, required this.barcode});
+  const CategoryIcon({
+    super.key,
+    required this.name,
+    required this.barcode,
+    this.imageUrl,
+  });
 
   static const _size = 50.0;
   static const _imageInset = 2.0;
@@ -73,6 +79,7 @@ class CategoryIcon extends ConsumerWidget {
 
   final String name;
   final String? barcode;
+  final String? imageUrl;
 
   String _normalize(String value) {
     final lower = value.trim().toLowerCase();
@@ -104,15 +111,21 @@ class CategoryIcon extends ConsumerWidget {
   }
 
   String? _resolveImageUrl(WidgetRef ref) {
+    final directImageUrl = normalizeProductImageUrl(imageUrl);
+    if (directImageUrl != null && directImageUrl.isNotEmpty) {
+      return directImageUrl;
+    }
+
     final normalizedBarcode = barcode?.trim();
     if (normalizedBarcode == null || normalizedBarcode.isEmpty) {
       return null;
     }
-    return ref.watch(
+    final resolvedByBarcode = ref.watch(
       inventoryBarcodeImageUrlProvider(
         normalizedBarcode,
       ).select((imageAsync) => imageAsync.asData?.value),
     );
+    return normalizeProductImageUrl(resolvedByBarcode);
   }
 
   int _resolveImageCacheDimension(BuildContext context) {

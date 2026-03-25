@@ -204,7 +204,6 @@ class _CandidatePickerTile extends StatelessWidget {
             children: [
               InventoryReceiptSelectionThumbnail(
                 imageUrl: item.imageUrl,
-                barcode: item.normalizedBarcode,
                 icon: Icons.inventory_2_outlined,
                 dimension: 44,
               ),

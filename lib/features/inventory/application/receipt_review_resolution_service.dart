@@ -2,11 +2,16 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_product_cache_repository.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_product_cache_repository_contract.dart';
+import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
-import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/data/receipt_to_review_item_draft_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
@@ -36,6 +41,9 @@ ReceiptReviewResolutionService receiptReviewResolutionService(Ref ref) {
     matcher: ref.watch(globalFoodItemMatcherProvider),
     globalFoodItemRepository: ref.watch(globalFoodItemRepositoryProvider),
     inventoryItemRepository: ref.watch(inventoryItemRepositoryProvider),
+    calorieProductCacheRepository: ref.watch(
+      calorieProductCacheRepositoryProvider,
+    ),
   );
 }
 
@@ -45,11 +53,13 @@ class ReceiptReviewResolutionService {
     required GlobalFoodItemMatcher matcher,
     required GlobalFoodItemRepository globalFoodItemRepository,
     required InventoryItemRepository inventoryItemRepository,
+    CalorieProductCacheRepositoryContract? calorieProductCacheRepository,
     String Function()? globalFoodItemIdGenerator,
   }) : _mapper = mapper,
        _matcher = matcher,
        _globalFoodItemRepository = globalFoodItemRepository,
        _inventoryItemRepository = inventoryItemRepository,
+       _calorieProductCacheRepository = calorieProductCacheRepository,
        _globalFoodItemIdGenerator =
            globalFoodItemIdGenerator ?? _defaultGlobalFoodItemId;
 
@@ -57,36 +67,20 @@ class ReceiptReviewResolutionService {
   final GlobalFoodItemMatcher _matcher;
   final GlobalFoodItemRepository _globalFoodItemRepository;
   final InventoryItemRepository _inventoryItemRepository;
+  final CalorieProductCacheRepositoryContract? _calorieProductCacheRepository;
   final String Function() _globalFoodItemIdGenerator;
 
   Future<List<ReceiptReviewItemDraft>> prepareDrafts(
     ReceiptAnalysisExtraction extraction,
   ) async {
     final baseDrafts = _mapper.map(extraction);
-    final candidatesByItemId = await _matcher.findCandidatesByItemId(
-      baseDrafts
-          .where((draft) => draft.canBeSavedToInventory)
-          .map((draft) => draft.item),
-    );
+    final resolvedDrafts = <ReceiptReviewItemDraft>[];
 
-    return baseDrafts
-        .map((draft) {
-          if (!draft.canBeSavedToInventory) {
-            return draft;
-          }
+    for (final draft in baseDrafts) {
+      resolvedDrafts.add(await _prepareDraft(draft));
+    }
 
-          final candidates =
-              candidatesByItemId[draft.item.id] ??
-              const <GlobalFoodMatchCandidate>[];
-          return draft.copyWith(
-            candidates: candidates,
-            selectedGlobalFoodItemId: _matcher.defaultSelectionFor(candidates),
-            selectionNeedsReview: _matcher.defaultSelectionNeedsReviewFor(
-              candidates,
-            ),
-          );
-        })
-        .toList(growable: false);
+    return resolvedDrafts;
   }
 
   Future<ReceiptReviewPersistResult> persistReviewedItems(
@@ -102,13 +96,13 @@ class ReceiptReviewResolutionService {
       }
 
       final selectedCandidate = draft.selectedCandidate;
-      final shouldReuseSelected =
-          selectedCandidate != null && !draft.differsFromSelectedCandidate;
+      final shouldReuseSelected = _shouldReuseSelectedCandidate(draft);
+      final reusedCandidate = shouldReuseSelected ? selectedCandidate : null;
       final shouldPersistSelectedCandidate =
-          shouldReuseSelected && selectedCandidate.requiresPersistence;
+          reusedCandidate?.requiresPersistence ?? false;
 
-      final resolvedProduct = shouldReuseSelected
-          ? selectedCandidate.item
+      final resolvedProduct = reusedCandidate != null
+          ? reusedCandidate.item
           : _buildProductFromDraft(
               draft: draft,
               now: now,
@@ -164,6 +158,9 @@ class ReceiptReviewResolutionService {
     final inventorySaved = await _inventoryItemRepository.appendAll(
       inventoryItemsToSave,
     );
+    if (inventorySaved) {
+      await _persistCalorieProfiles(inventoryItemsToSave, now: now);
+    }
     return ReceiptReviewPersistResult(
       saved: inventorySaved,
       inventoryItems: inventorySaved
@@ -213,6 +210,122 @@ class ReceiptReviewResolutionService {
       foodFingerprint: resolvedProduct.resolvedFoodFingerprint,
       nutrition: resolvedProduct.nutrition,
     );
+  }
+
+  Future<ReceiptReviewItemDraft> _prepareDraft(
+    ReceiptReviewItemDraft draft,
+  ) async {
+    if (!draft.canBeSavedToInventory) {
+      return draft;
+    }
+
+    final candidates = await _matcher.findCandidates(draft.item);
+    return draft.copyWith(
+      candidates: candidates,
+      selectedGlobalFoodItemId: _matcher.defaultSelectionFor(candidates),
+      selectionNeedsReview: _matcher.defaultSelectionNeedsReviewFor(candidates),
+    );
+  }
+
+  bool _shouldReuseSelectedCandidate(ReceiptReviewItemDraft draft) {
+    final selectedCandidate = draft.selectedCandidate;
+    if (selectedCandidate == null) {
+      return false;
+    }
+    return selectedCandidate.requiresPersistence ||
+        !draft.differsFromSelectedCandidate;
+  }
+
+  Future<void> _persistCalorieProfiles(
+    List<InventoryItem> items, {
+    required DateTime now,
+  }) async {
+    final cacheRepository = _calorieProductCacheRepository;
+    if (cacheRepository == null) {
+      return;
+    }
+
+    final profilesByBarcode = <String, CalorieProductProfile>{};
+    for (final item in items) {
+      final profile = _buildCalorieProfile(item, now: now);
+      if (profile == null) {
+        continue;
+      }
+      profilesByBarcode[profile.barcode] = profile;
+    }
+
+    for (final profile in profilesByBarcode.values) {
+      final saved = await cacheRepository.saveUserOverride(
+        profile: _buildUserOverrideProfile(profile),
+        reason: 'receipt_review_selection',
+      );
+      if (!saved) {
+        log(
+          'Failed to persist calorie override for ${profile.barcode}.',
+          name: _resolutionLogName,
+        );
+      }
+    }
+  }
+
+  CalorieProductProfile? _buildCalorieProfile(
+    InventoryItem item, {
+    required DateTime now,
+  }) {
+    final barcode = item.normalizedBarcode;
+    final nutrition = item.nutrition;
+    if (barcode == null || !_hasPersistableNutrition(nutrition)) {
+      return null;
+    }
+
+    return CalorieProductProfile(
+      barcode: barcode,
+      name: item.name,
+      brand: item.brand,
+      per100Kcal: nutrition?.per100Kcal ?? 0,
+      per100Protein: nutrition?.per100Protein ?? 0,
+      per100Carbs: nutrition?.per100Carbs ?? 0,
+      per100Fat: nutrition?.per100Fat ?? 0,
+      source: CalorieProductSource.globalCatalog,
+      offProductId: _offProductIdForItem(item.globalFoodItemId),
+      imageUrl: item.imageUrl,
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+
+  CalorieProductProfile _buildUserOverrideProfile(
+    CalorieProductProfile profile,
+  ) {
+    return CalorieProductProfile(
+      barcode: profile.barcode,
+      name: profile.name,
+      brand: profile.brand,
+      per100Kcal: profile.per100Kcal,
+      per100Protein: profile.per100Protein,
+      per100Carbs: profile.per100Carbs,
+      per100Fat: profile.per100Fat,
+      source: profile.source,
+      offProductId: profile.offProductId,
+      imageUrl: null,
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
+    );
+  }
+
+  bool _hasPersistableNutrition(GlobalFoodNutrition? nutrition) {
+    return nutrition != null && nutrition.hasAnyNutritionValue;
+  }
+
+  String? _offProductIdForItem(String? globalFoodItemId) {
+    final normalizedGlobalId = globalFoodItemId?.trim();
+    if (normalizedGlobalId == null || normalizedGlobalId.isEmpty) {
+      return null;
+    }
+    if (normalizedGlobalId.startsWith('off-')) {
+      return normalizedGlobalId;
+    }
+    return null;
   }
 }
 

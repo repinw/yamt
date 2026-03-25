@@ -1,4 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_product_cache_repository_contract.dart';
+import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/application/receipt_review_resolution_service.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
@@ -32,25 +35,14 @@ class _FakeMatcher extends GlobalFoodItemMatcher {
   final Map<String, List<GlobalFoodMatchCandidate>> candidatesByItemId;
   final Map<String, String?> defaultSelections;
   final Map<String, bool> defaultSelectionsNeedingReview;
-  int batchSearchCalls = 0;
+  final List<String> searchedItemIds = <String>[];
 
   @override
   Future<List<GlobalFoodMatchCandidate>> findCandidates(
     InventoryItem item,
   ) async {
+    searchedItemIds.add(item.id);
     return candidatesByItemId[item.id] ?? const <GlobalFoodMatchCandidate>[];
-  }
-
-  @override
-  Future<Map<String, List<GlobalFoodMatchCandidate>>> findCandidatesByItemId(
-    Iterable<InventoryItem> items,
-  ) async {
-    batchSearchCalls += 1;
-    return {
-      for (final item in items)
-        item.id:
-            candidatesByItemId[item.id] ?? const <GlobalFoodMatchCandidate>[],
-    };
   }
 
   @override
@@ -129,6 +121,38 @@ class _RecordingInventoryItemRepository implements InventoryItemRepository {
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
     appendedItems = List<InventoryItem>.from(items);
+    return true;
+  }
+}
+
+class _RecordingCalorieProductCacheRepository
+    implements CalorieProductCacheRepositoryContract {
+  final List<CalorieProductProfile> savedUserOverrides =
+      <CalorieProductProfile>[];
+  final List<String> savedOverrideReasons = <String>[];
+
+  @override
+  Future<CalorieProductProfile?> readGlobalProduct(String barcode) async {
+    return null;
+  }
+
+  @override
+  Future<CalorieProductProfile?> readUserOverride(String barcode) async {
+    return null;
+  }
+
+  @override
+  Future<bool> saveGlobalProduct(CalorieProductProfile profile) async {
+    return true;
+  }
+
+  @override
+  Future<bool> saveUserOverride({
+    required CalorieProductProfile profile,
+    required String reason,
+  }) async {
+    savedUserOverrides.add(profile);
+    savedOverrideReasons.add(reason);
     return true;
   }
 }
@@ -236,7 +260,7 @@ void main() {
     expect(prepared.single.candidates.single.item.id, 'milk');
     expect(prepared.single.selectedGlobalFoodItemId, 'milk');
     expect(prepared.single.selectionNeedsReview, isFalse);
-    expect(matcher.batchSearchCalls, 1);
+    expect(matcher.searchedItemIds, <String>['draft-1']);
   });
 
   test(
@@ -280,6 +304,34 @@ void main() {
       expect(prepared.single.selectionNeedsReview, isTrue);
     },
   );
+
+  test('prepareDrafts skips matcher lookup for review-only drafts', () async {
+    final matcher = _FakeMatcher(
+      candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
+      defaultSelections: const <String, String?>{},
+    );
+    final service = ReceiptReviewResolutionService(
+      mapper: _FakeMapper(<ReceiptReviewItemDraft>[
+        ReceiptReviewItemDraft(
+          item: _item(id: 'deposit-1', name: 'Deposit', isDeposit: true),
+        ),
+      ]),
+      matcher: matcher,
+      globalFoodItemRepository: _RecordingGlobalFoodItemRepository(),
+      inventoryItemRepository: _RecordingInventoryItemRepository(),
+    );
+
+    final prepared = await service.prepareDrafts(
+      const ReceiptAnalysisExtraction(
+        root: <String, dynamic>{},
+        items: <ReceiptAnalysisItem>[],
+      ),
+    );
+
+    expect(prepared, hasLength(1));
+    expect(prepared.single.candidates, isEmpty);
+    expect(matcher.searchedItemIds, isEmpty);
+  });
 
   test(
     'persistReviewedItems reuses selected candidate when unchanged',
@@ -449,6 +501,7 @@ void main() {
     );
     final globalRepository = _RecordingGlobalFoodItemRepository();
     final inventoryRepository = _RecordingInventoryItemRepository();
+    final calorieCacheRepository = _RecordingCalorieProductCacheRepository();
     final service = ReceiptReviewResolutionService(
       mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
       matcher: _FakeMatcher(
@@ -457,6 +510,7 @@ void main() {
       ),
       globalFoodItemRepository: globalRepository,
       inventoryItemRepository: inventoryRepository,
+      calorieProductCacheRepository: calorieCacheRepository,
       globalFoodItemIdGenerator: () => 'global-food-fixed',
     );
 
@@ -477,7 +531,7 @@ void main() {
 
     expect(result.saved, isTrue);
     expect(globalRepository.appendedItems, hasLength(1));
-    expect(globalRepository.appendedItems.single.id, 'global-food-fixed');
+    expect(globalRepository.appendedItems.single.id, 'off-4061458029995');
     expect(globalRepository.appendedItems.single.barcode, '4061458029995');
     expect(
       globalRepository.appendedItems.single.imageUrl,
@@ -495,6 +549,17 @@ void main() {
     expect(
       inventoryRepository.appendedItems.single.productSnapshot.nutrition,
       isNotNull,
+    );
+    expect(calorieCacheRepository.savedUserOverrides, hasLength(1));
+    expect(
+      calorieCacheRepository.savedUserOverrides.single.barcode,
+      '4061458029995',
+    );
+    expect(calorieCacheRepository.savedUserOverrides.single.per100Kcal, 215);
+    expect(calorieCacheRepository.savedUserOverrides.single.imageUrl, isNull);
+    expect(
+      calorieCacheRepository.savedOverrideReasons.single,
+      'receipt_review_selection',
     );
   });
 

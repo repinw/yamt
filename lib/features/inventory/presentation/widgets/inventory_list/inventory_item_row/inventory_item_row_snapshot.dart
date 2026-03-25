@@ -6,6 +6,7 @@ class InventoryItemRowSnapshot {
     required this.name,
     required this.category,
     required this.barcode,
+    required this.imageUrl,
     required this.initialQuantity,
     required this.quantity,
   });
@@ -16,6 +17,7 @@ class InventoryItemRowSnapshot {
       name: item.name,
       category: item.category,
       barcode: item.normalizedBarcode,
+      imageUrl: item.imageUrl,
       initialQuantity: item.initialQuantity,
       quantity: item.quantity,
     );
@@ -25,6 +27,7 @@ class InventoryItemRowSnapshot {
   final String name;
   final String? category;
   final String? barcode;
+  final String? imageUrl;
   final int initialQuantity;
   final int quantity;
 }

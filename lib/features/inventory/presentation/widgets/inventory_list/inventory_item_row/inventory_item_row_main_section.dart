@@ -32,7 +32,11 @@ class InventoryItemRowMainSection extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        CategoryIcon(name: item.category ?? item.name, barcode: item.barcode),
+        CategoryIcon(
+          name: item.category ?? item.name,
+          barcode: item.barcode,
+          imageUrl: item.imageUrl,
+        ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: _InventoryItemRowInfoColumn(item: item, viewData: viewData),

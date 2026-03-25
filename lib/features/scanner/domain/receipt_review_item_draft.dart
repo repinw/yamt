@@ -90,6 +90,9 @@ class ReceiptReviewItemDraft {
     if (candidate == null) {
       return true;
     }
+    if (candidate.requiresPersistence) {
+      return false;
+    }
     final selectedSnapshot = candidate.item.toProductSnapshot();
     return selectedSnapshot != item.productSnapshot;
   }

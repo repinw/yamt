@@ -39,6 +39,21 @@ class InventoryCalorieBridgeFlow {
       return;
     }
 
+    final localProfile = _buildProfileFromInventoryItem(itemBeforeMutation);
+    if (localProfile != null) {
+      await _openEditor(
+        context: context,
+        profile: localProfile,
+        inventoryContext: inventoryContext,
+        scannedSourceRef: CalorieScannedSourceRef(
+          barcode: localProfile.barcode,
+          source: localProfile.source,
+          offProductId: localProfile.offProductId,
+        ),
+      );
+      return;
+    }
+
     final barcode = itemBeforeMutation.normalizedBarcode;
     if (barcode != null) {
       await _openEditorFromBarcode(
@@ -78,6 +93,42 @@ class InventoryCalorieBridgeFlow {
         );
         return;
     }
+  }
+
+  static CalorieProductProfile? _buildProfileFromInventoryItem(
+    InventoryItem item,
+  ) {
+    final barcode = item.normalizedBarcode;
+    final nutrition = item.nutrition;
+    if (barcode == null || nutrition?.hasAnyNutritionValue != true) {
+      return null;
+    }
+
+    return CalorieProductProfile(
+      barcode: barcode,
+      name: item.name,
+      brand: item.brand,
+      per100Kcal: nutrition?.per100Kcal ?? 0,
+      per100Protein: nutrition?.per100Protein ?? 0,
+      per100Carbs: nutrition?.per100Carbs ?? 0,
+      per100Fat: nutrition?.per100Fat ?? 0,
+      source: CalorieProductSource.userOverride,
+      offProductId: _resolveOffProductId(item.globalFoodItemId),
+      imageUrl: item.imageUrl,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  static String? _resolveOffProductId(String? globalFoodItemId) {
+    final normalizedId = globalFoodItemId?.trim();
+    if (normalizedId == null || normalizedId.isEmpty) {
+      return null;
+    }
+    if (normalizedId.startsWith('off-')) {
+      return normalizedId;
+    }
+    return null;
   }
 
   static Future<void> _openEditorFromBarcode({
