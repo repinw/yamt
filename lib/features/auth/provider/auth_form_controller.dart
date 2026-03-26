@@ -29,13 +29,25 @@ class AuthFormController extends _$AuthFormController {
   Future<void> createUserWithEmailAndPassword({
     required String email,
     required String password,
+    String? displayName,
   }) async {
     state = const AsyncLoading();
-    final result = await AsyncValue.guard(
-      () => ref
-          .read(authRepositoryProvider)
-          .createUserWithEmailAndPassword(email: email, password: password),
-    );
+    final result = await AsyncValue.guard(() async {
+      final repository = ref.read(authRepositoryProvider);
+      await repository.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final normalizedDisplayName = displayName?.trim();
+      if (normalizedDisplayName == null || normalizedDisplayName.isEmpty) {
+        return;
+      }
+
+      await repository.updateCurrentUserDisplayName(
+        displayName: normalizedDisplayName,
+      );
+    });
     if (!ref.mounted) {
       return;
     }

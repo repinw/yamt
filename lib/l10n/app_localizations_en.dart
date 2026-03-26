@@ -834,6 +834,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appSubtitle => 'Yet Another Meal Tracker';
 
   @override
+  String get commonOr => 'Or';
+
+  @override
   String get login => 'Login';
 
   @override
@@ -850,6 +853,45 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createAccount => 'Create account';
+
+  @override
+  String get authBrandTitle => 'Yamt';
+
+  @override
+  String get authBrandSubtitle => 'Yet Enother Meal Tracker';
+
+  @override
+  String get authRegisterTitle => 'Register';
+
+  @override
+  String get authRegisterSubtitle => 'Create your account and get started.';
+
+  @override
+  String get authContinueAsGuest => 'Continue as Guest';
+
+  @override
+  String get authFooterNoAccountPrefix => 'Don\'t have an account?';
+
+  @override
+  String get authFooterHasAccountPrefix => 'Already have an account?';
+
+  @override
+  String get authSwitchRegisterAction => 'Register now';
+
+  @override
+  String get authSwitchLoginAction => 'Login';
+
+  @override
+  String get authForgotPassword => 'Forgot?';
+
+  @override
+  String get authEmailPlaceholderLogin => 'alex@example.com';
+
+  @override
+  String get authEmailPlaceholderRegister => 'first.last@example.com';
+
+  @override
+  String get authDisplayNamePlaceholder => 'E.g. Julianne Vane';
 
   @override
   String get authSwitchToRegister => 'Don\'t have an account? Register';

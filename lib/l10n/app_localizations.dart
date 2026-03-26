@@ -1733,6 +1733,12 @@ abstract class AppLocalizations {
   /// **'Yet Another Meal Tracker'**
   String get appSubtitle;
 
+  /// No description provided for @commonOr.
+  ///
+  /// In en, this message translates to:
+  /// **'Or'**
+  String get commonOr;
+
   /// No description provided for @login.
   ///
   /// In en, this message translates to:
@@ -1768,6 +1774,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create account'**
   String get createAccount;
+
+  /// No description provided for @authBrandTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Yamt'**
+  String get authBrandTitle;
+
+  /// No description provided for @authBrandSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Yet Enother Meal Tracker'**
+  String get authBrandSubtitle;
+
+  /// No description provided for @authRegisterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Register'**
+  String get authRegisterTitle;
+
+  /// No description provided for @authRegisterSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your account and get started.'**
+  String get authRegisterSubtitle;
+
+  /// No description provided for @authContinueAsGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue as Guest'**
+  String get authContinueAsGuest;
+
+  /// No description provided for @authFooterNoAccountPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account?'**
+  String get authFooterNoAccountPrefix;
+
+  /// No description provided for @authFooterHasAccountPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get authFooterHasAccountPrefix;
+
+  /// No description provided for @authSwitchRegisterAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Register now'**
+  String get authSwitchRegisterAction;
+
+  /// No description provided for @authSwitchLoginAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get authSwitchLoginAction;
+
+  /// No description provided for @authForgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot?'**
+  String get authForgotPassword;
+
+  /// No description provided for @authEmailPlaceholderLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'alex@example.com'**
+  String get authEmailPlaceholderLogin;
+
+  /// No description provided for @authEmailPlaceholderRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'first.last@example.com'**
+  String get authEmailPlaceholderRegister;
+
+  /// No description provided for @authDisplayNamePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g. Julianne Vane'**
+  String get authDisplayNamePlaceholder;
 
   /// No description provided for @authSwitchToRegister.
   ///

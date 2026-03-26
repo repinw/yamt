@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -24,6 +25,7 @@ class _FakeInventoryItemStore implements InventoryItemStore {
 
   bool replaceAllShouldFail = false;
   bool upsertAllShouldFail = false;
+  Object? watchAllError;
   Duration upsertDelay = Duration.zero;
   int _activeUpserts = 0;
   int maxConcurrentUpserts = 0;
@@ -37,6 +39,10 @@ class _FakeInventoryItemStore implements InventoryItemStore {
   Stream<List<InventoryItemDocument>> watchAll({
     required String userId,
   }) async* {
+    final error = watchAllError;
+    if (error != null) {
+      throw error;
+    }
     yield _copyDocuments(userId);
     yield* _controllerFor(userId).stream;
   }
@@ -242,5 +248,22 @@ void main() {
     final saved = await repository.saveAll(<InventoryItem>[_item('a')]);
 
     expect(saved, isFalse);
+  });
+
+  test('watchAll returns empty list on firestore permission denied', () async {
+    final store = _FakeInventoryItemStore()
+      ..watchAllError = FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'permission-denied',
+      );
+    addTearDown(store.dispose);
+    final repository = FirestoreInventoryItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      store: store,
+    );
+
+    final items = await repository.watchAll().first;
+
+    expect(items, isEmpty);
   });
 }

@@ -206,6 +206,27 @@ void main() {
       expect(container.read(authFormControllerProvider).hasError, isTrue);
     });
 
+    test('register updates display name when provided', () async {
+      final fakeRepository = FakeAuthRepository();
+      final container = ProviderContainer(
+        overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(authFormControllerProvider.notifier)
+          .createUserWithEmailAndPassword(
+            email: 'demo@test.com',
+            password: 'secret',
+            displayName: 'Guest Wlad',
+          );
+
+      expect(fakeRepository.registerCalls, 1);
+      expect(fakeRepository.guestNameUpdateCalls, 1);
+      expect(fakeRepository.lastGuestDisplayName, 'Guest Wlad');
+      expect(container.read(authFormControllerProvider).hasError, isFalse);
+    });
+
     test('email sign in does not crash when provider is disposed', () async {
       final completer = Completer<void>();
       final repository = _DelayedEmailSignInRepository(completer);

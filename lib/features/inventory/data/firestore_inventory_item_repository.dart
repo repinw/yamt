@@ -1,5 +1,6 @@
 import 'dart:developer' show log;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 import 'inventory_item_repository_contract.dart';
@@ -72,6 +73,25 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
       await for (final documents in _store.watchAll(userId: userId)) {
         yield _decodeDocuments(documents);
       }
+    } on FirebaseException catch (error, stackTrace) {
+      if (_isPermissionDenied(error)) {
+        log(
+          'Skipping inventory watch for user $userId: '
+          'permission denied by Firestore rules.',
+          name: _repositoryLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+        yield const <InventoryItem>[];
+        return;
+      }
+      log(
+        'Failed to watch inventory items from firestore for user $userId.',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      yield const <InventoryItem>[];
     } catch (error, stackTrace) {
       log(
         'Failed to watch inventory items from firestore for user $userId.',
@@ -79,7 +99,7 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
         error: error,
         stackTrace: stackTrace,
       );
-      rethrow;
+      yield const <InventoryItem>[];
     }
   }
 
@@ -158,5 +178,9 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
       onError: (Object error, StackTrace stackTrace) {},
     );
     return queuedOperation;
+  }
+
+  bool _isPermissionDenied(FirebaseException error) {
+    return error.code == 'permission-denied';
   }
 }
