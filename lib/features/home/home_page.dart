@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/home/home_tab_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
+import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const _inventoryBranchIndex = 0;
+const _diaryBranchIndex = 1;
+const _settingsBranchIndex = 2;
+
+/// Shell page that hosts the main app tabs and shared home chrome.
 class HomePage extends ConsumerWidget {
   const HomePage({super.key, required this.navigationShell});
 
@@ -19,10 +27,9 @@ class HomePage extends ConsumerWidget {
 
   HomeTabType _currentTab() {
     return switch (navigationShell.currentIndex) {
-      0 => HomeTabType.inventory,
-      1 => HomeTabType.shopping,
-      2 => HomeTabType.calories,
-      3 => HomeTabType.settings,
+      _inventoryBranchIndex => HomeTabType.inventory,
+      _diaryBranchIndex => HomeTabType.diary,
+      _settingsBranchIndex => HomeTabType.settings,
       _ => HomeTabType.inventory, // coverage:ignore-line
     };
   }
@@ -30,48 +37,95 @@ class HomePage extends ConsumerWidget {
   String _titleForTab(AppLocalizations l10n) {
     switch (_currentTab()) {
       case HomeTabType.inventory:
-        return l10n.homeInventory;
-      case HomeTabType.shopping:
-        return l10n.homeShopping;
-      case HomeTabType.calories:
+        return l10n.inventoryPageTitle;
+      case HomeTabType.diary:
         return l10n.homeCalories;
       case HomeTabType.settings:
         return l10n.homeSettings;
     }
   }
 
+  List<HomeNavEntry> _navEntries(BuildContext context, AppLocalizations l10n) {
+    final currentTab = _currentTab();
+
+    return [
+      HomeNavEntry(
+        item: HomeNavItem(
+          icon: Icons.inventory_2_rounded,
+          label: l10n.homeInventory,
+        ),
+        isSelected: currentTab == HomeTabType.inventory,
+        onTap: () => _onTabTapped(_inventoryBranchIndex),
+      ),
+      HomeNavEntry(
+        item: HomeNavItem(
+          icon: Icons.bar_chart_rounded,
+          label: l10n.homeCalories,
+        ),
+        isSelected: currentTab == HomeTabType.diary,
+        onTap: () => _onTabTapped(_diaryBranchIndex),
+      ),
+      HomeNavEntry(
+        item: HomeNavItem(
+          icon: Icons.insights_rounded,
+          label: l10n.homeStatistics,
+        ),
+        isSelected: false,
+        onTap: () => _showSnackBar(context, l10n.commonNotImplementedYet),
+      ),
+      HomeNavEntry(
+        item: HomeNavItem(icon: Icons.person_rounded, label: l10n.homeSettings),
+        isSelected: currentTab == HomeTabType.settings,
+        onTap: () => _onTabTapped(_settingsBranchIndex),
+      ),
+    ];
+  }
+
+  List<Widget> _buildActions(BuildContext context, AppLocalizations l10n) {
+    if (_currentTab() != HomeTabType.inventory) {
+      return const <Widget>[];
+    }
+
+    return [
+      IconButton(
+        tooltip: l10n.commonNotImplementedYet,
+        onPressed: () => _showSnackBar(context, l10n.commonNotImplementedYet),
+        icon: const Icon(Icons.assignment_outlined),
+      ),
+      IconButton(
+        tooltip: l10n.homeShopping,
+        onPressed: () => context.push(AppRoutes.homeShopping),
+        icon: const Icon(Icons.shopping_cart_rounded),
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final currentTab = _currentTab();
 
     return Scaffold(
-      appBar: AppBar(title: Text(_titleForTab(l10n))),
+      extendBody: true,
+      appBar: HomeTopBar(
+        title: _titleForTab(l10n),
+        titleColor: currentTab == HomeTabType.inventory
+            ? AppInventoryEditorial.primary
+            : null,
+        actions: _buildActions(context, l10n),
+      ),
       body: navigationShell,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: HomeContextFab(currentTab: _currentTab()),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: navigationShell.currentIndex,
-        onTap: _onTabTapped,
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.inventory_2_outlined),
-            label: l10n.homeInventory,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.shopping_cart_outlined),
-            label: l10n.homeShopping,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.local_fire_department_outlined),
-            label: l10n.homeCalories,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.settings),
-            label: l10n.homeSettings,
-          ),
-        ],
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: HomeContextFab(currentTab: currentTab),
+      bottomNavigationBar: HomeBottomNavBar(
+        entries: _navEntries(context, l10n),
       ),
     );
+  }
+
+  void _showSnackBar(BuildContext context, String message) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(SnackBar(content: Text(message)));
   }
 }

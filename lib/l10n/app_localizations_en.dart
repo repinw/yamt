@@ -21,7 +21,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeShopping => 'Shopping';
 
   @override
-  String get homeCalories => 'Calories';
+  String get homeStatistics => 'Statistics';
+
+  @override
+  String get homeCalories => 'Diary';
 
   @override
   String get homeSettings => 'Settings';
@@ -34,6 +37,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryFabTooltip => 'Receipt actions';
+
+  @override
+  String get inventoryPageTitle => 'My inventory';
 
   @override
   String get inventoryActionScanCamera => 'Scan receipt (camera)';
@@ -308,7 +314,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryListModeByReceipt => 'By receipt';
 
   @override
-  String get inventoryListModeAllItems => 'All items';
+  String get inventoryListModeAllItems => 'All foods';
+
+  @override
+  String get inventoryRecentSectionTitle => 'Recently added';
+
+  @override
+  String get inventoryFilterAction => 'Filter items';
+
+  @override
+  String get inventoryFiltersTitle => 'Filter items';
+
+  @override
+  String get inventoryNutritionCaloriesShortLabel => 'Kcal';
+
+  @override
+  String get inventoryNutritionCarbsShortLabel => 'Carbs';
 
   @override
   String get inventoryFilterConsumed => 'Consumed';
@@ -332,6 +353,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemDeleteAction => 'Delete';
 
   @override
+  String get inventoryItemDeletedMessage => 'Item deleted.';
+
+  @override
   String get inventoryItemEatAction => 'Eat';
 
   @override
@@ -342,6 +366,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryItemThrowAwayAction => 'Throw away';
+
+  @override
+  String get inventoryItemSwapCandidateAction => 'Swap candidate';
 
   @override
   String get inventoryItemActionFailed => 'Action failed. Please try again.';
@@ -967,6 +994,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authErrorGoogleIdTokenMissing => 'Google sign-in did not return a valid token.';
+
+  @override
+  String get commonUndoAction => 'Undo';
 
   @override
   String get commonNotImplementedYet => 'Not implemented yet';

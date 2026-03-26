@@ -7,6 +7,9 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 
+const _inventoryReceiptGroupsBottomPadding =
+    AppSpacing.xxxxl * 4 + AppSpacing.xxxl;
+
 class InventoryReceiptGroupsSliver extends StatelessWidget {
   const InventoryReceiptGroupsSliver({
     super.key,
@@ -36,14 +39,14 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
         AppSpacing.xl,
         AppSpacing.md,
         AppSpacing.xl,
-        AppSpacing.xxxxl + AppSpacing.xxxxl,
+        _inventoryReceiptGroupsBottomPadding,
       ),
       sliver: SliverList.builder(
         itemCount: groups.length,
         itemBuilder: (context, index) {
           final group = groups[index];
           return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+            padding: const EdgeInsets.only(bottom: AppSpacing.xxxl),
             child: ReceiptGroupTile(
               group: group,
               currency: currency,

@@ -131,6 +131,10 @@ GoRouter appRouter(Ref ref) {
           return InventoryReceiptReviewPage(args: args);
         },
       ),
+      GoRoute(
+        path: AppRoutes.homeShopping,
+        builder: (context, state) => const ShoppingListPage(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             HomePage(navigationShell: navigationShell),
@@ -140,14 +144,6 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: AppRoutes.homeInventory,
                 builder: (context, state) => const InventoryPage(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.homeShopping,
-                builder: (context, state) => const ShoppingListPage(),
               ),
             ],
           ),

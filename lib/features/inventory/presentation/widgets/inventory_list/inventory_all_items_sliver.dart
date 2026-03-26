@@ -9,6 +9,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const _inventoryListBottomPadding = AppSpacing.xxxxl * 4 + AppSpacing.xxxl;
+
 class InventoryAllItemsSliver extends StatefulWidget {
   const InventoryAllItemsSliver({
     super.key,
@@ -64,7 +66,7 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
         AppSpacing.xl,
         AppSpacing.md,
         AppSpacing.xl,
-        AppSpacing.xxxxl + AppSpacing.xxxxl,
+        _inventoryListBottomPadding,
       ),
       sliver: SliverList.builder(
         itemCount: _sortedItems.length,

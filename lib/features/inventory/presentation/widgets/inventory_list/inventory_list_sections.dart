@@ -1,201 +1,120 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class InventorySectionHeader extends StatelessWidget {
-  const InventorySectionHeader({super.key, required this.itemCount});
+class InventoryModeToolbar extends StatelessWidget {
+  const InventoryModeToolbar({super.key, required this.modeToggle});
 
-  final int itemCount;
+  final Widget modeToggle;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final l10n = AppLocalizations.of(context)!;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(
+          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xs),
+        child: modeToggle,
+      ),
+    );
+  }
+}
+
+class InventorySectionHeader extends StatelessWidget {
+  const InventorySectionHeader({super.key, required this.title, this.trailing});
+
+  final String title;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.inventoryListSectionTitle.toUpperCase(),
-                style: textTheme.labelSmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                l10n.inventoryListSectionTitle,
-                style: textTheme.headlineSmall,
-              ),
-            ],
-          ),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: colors.primaryContainer,
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.xs,
-            ),
-            child: Text(
-              itemCount.toString(),
-              style: textTheme.labelLarge?.copyWith(
-                color: colors.onPrimaryContainer,
-              ),
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: colors.onSurface,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
+        ...?(trailing == null ? null : <Widget>[trailing!]),
       ],
     );
   }
 }
 
-class InventoryControlsCard extends StatelessWidget {
-  const InventoryControlsCard({
+class InventoryFilterButton extends StatelessWidget {
+  const InventoryFilterButton({super.key, required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return IconButton(
+      onPressed: onPressed,
+      tooltip: l10n.inventoryFilterAction,
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
+      icon: const Icon(Icons.filter_list_rounded, size: 18),
+    );
+  }
+}
+
+class InventoryFiltersSheet extends StatelessWidget {
+  const InventoryFiltersSheet({
     super.key,
-    required this.itemCount,
-    required this.modeToggle,
+    required this.title,
     required this.consumptionToggle,
   });
 
-  final int itemCount;
-  final Widget modeToggle;
+  final String title;
   final Widget consumptionToggle;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final cardRadius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
 
-    return ClipRRect(
-      borderRadius: cardRadius,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: AppInventoryEditorial.glassBlur,
-          sigmaY: AppInventoryEditorial.glassBlur,
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.lg,
+          AppSpacing.xl,
+          AppSpacing.xxxl,
         ),
         child: DecoratedBox(
-          decoration: AppInventoryEditorialSurfaces.glassCardDecoration(
+          decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
             colors,
-            borderRadius: cardRadius,
+            borderRadius: BorderRadius.circular(
+              AppInventoryEditorial.cardRadius,
+            ),
           ),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xxxl,
-              AppSpacing.xxl,
-              AppSpacing.xxxl,
-              AppSpacing.xxxl,
-            ),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                InventorySectionHeader(itemCount: itemCount),
-                const SizedBox(height: AppSpacing.xxl),
-                modeToggle,
-                const SizedBox(height: AppSpacing.md),
+                Text(title, style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: AppSpacing.lg),
                 consumptionToggle,
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class InventorySummaryCard extends StatelessWidget {
-  const InventorySummaryCard({
-    super.key,
-    required this.items,
-    required this.currency,
-  });
-
-  final List<InventoryItem> items;
-  final NumberFormat currency;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final l10n = AppLocalizations.of(context)!;
-    final cardRadius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
-    final totalEntries = items.length;
-    final totalQuantity = items.fold<int>(0, (sum, item) {
-      return sum + item.quantity;
-    });
-    final totalValue = items.fold<double>(0, (sum, item) {
-      return sum + (item.quantity * item.unitPrice);
-    });
-    final onHero = colors.onPrimary;
-    final mutedOnHero = onHero.withValues(alpha: 0.8);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: AppInventoryEditorialSurfaces.soulGradient(colors),
-        borderRadius: cardRadius,
-        boxShadow: [
-          AppInventoryEditorialSurfaces.ambientBoxShadow(
-            colors,
-            blurRadius: 48,
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xxxl,
-          AppSpacing.xxxl,
-          AppSpacing.xxxxl,
-          AppSpacing.xxxl,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.inventorySummaryTitle.toUpperCase(),
-              style: textTheme.labelSmall?.copyWith(color: mutedOnHero),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              totalEntries.toString(),
-              style: textTheme.displaySmall?.copyWith(color: onHero),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              l10n.inventoryListSectionTitle,
-              style: textTheme.headlineSmall?.copyWith(
-                color: onHero,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xxl),
-            Wrap(
-              spacing: AppSpacing.md,
-              runSpacing: AppSpacing.md,
-              children: [
-                _InventoryMetricCard(
-                  label: l10n.inventorySummaryQuantity,
-                  value: totalQuantity.toString(),
-                  foregroundColor: onHero,
-                ),
-                _InventoryMetricCard(
-                  label: l10n.inventorySummaryEstimatedValue,
-                  value: currency.format(totalValue),
-                  foregroundColor: onHero,
-                ),
-              ],
-            ),
-          ],
         ),
       ),
     );
@@ -246,53 +165,6 @@ class InventoryEmptyState extends StatelessWidget {
               emptyStateMessage,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _InventoryMetricCard extends StatelessWidget {
-  const _InventoryMetricCard({
-    required this.label,
-    required this.value,
-    required this.foregroundColor,
-  });
-
-  final String label;
-  final String value;
-  final Color foregroundColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label.toUpperCase(),
-              style: textTheme.labelSmall?.copyWith(
-                color: foregroundColor.withValues(alpha: 0.78),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              value,
-              style: textTheme.titleLarge?.copyWith(color: foregroundColor),
             ),
           ],
         ),

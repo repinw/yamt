@@ -21,7 +21,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeShopping => 'Einkauf';
 
   @override
-  String get homeCalories => 'Kalorien';
+  String get homeStatistics => 'Statistik';
+
+  @override
+  String get homeCalories => 'Tagebuch';
 
   @override
   String get homeSettings => 'Einstellungen';
@@ -34,6 +37,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryFabTooltip => 'Belegaktionen';
+
+  @override
+  String get inventoryPageTitle => 'Mein Vorrat';
 
   @override
   String get inventoryActionScanCamera => 'Beleg scannen (Kamera)';
@@ -308,7 +314,22 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryListModeByReceipt => 'Nach Beleg';
 
   @override
-  String get inventoryListModeAllItems => 'Alle Artikel';
+  String get inventoryListModeAllItems => 'Alle Lebensmittel';
+
+  @override
+  String get inventoryRecentSectionTitle => 'Kürzlich hinzugefügt';
+
+  @override
+  String get inventoryFilterAction => 'Artikel filtern';
+
+  @override
+  String get inventoryFiltersTitle => 'Artikel filtern';
+
+  @override
+  String get inventoryNutritionCaloriesShortLabel => 'Kcal';
+
+  @override
+  String get inventoryNutritionCarbsShortLabel => 'KH';
 
   @override
   String get inventoryFilterConsumed => 'Verbraucht';
@@ -332,6 +353,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemDeleteAction => 'Löschen';
 
   @override
+  String get inventoryItemDeletedMessage => 'Artikel gelöscht.';
+
+  @override
   String get inventoryItemEatAction => 'Essen';
 
   @override
@@ -342,6 +366,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryItemThrowAwayAction => 'Wegwerfen';
+
+  @override
+  String get inventoryItemSwapCandidateAction => 'Kandidat tauschen';
 
   @override
   String get inventoryItemActionFailed => 'Aktion fehlgeschlagen. Bitte erneut versuchen.';
@@ -967,6 +994,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get authErrorGoogleIdTokenMissing => 'Google-Anmeldung hat kein gültiges Token geliefert.';
+
+  @override
+  String get commonUndoAction => 'Rückgängig machen';
 
   @override
   String get commonNotImplementedYet => 'Noch nicht implementiert';

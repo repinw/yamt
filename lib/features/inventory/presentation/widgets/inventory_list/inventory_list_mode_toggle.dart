@@ -26,20 +26,12 @@ class InventoryListModeToggle extends StatelessWidget {
       style: inventorySegmentedButtonStyle(context),
       segments: [
         ButtonSegment<InventoryListMode>(
-          value: InventoryListMode.byReceipt,
-          icon: const Icon(
-            Icons.receipt_long_outlined,
-            size: AppSizes.actionChevron,
-          ),
-          label: Text(l10n.inventoryListModeByReceipt),
+          value: InventoryListMode.allItems,
+          label: Text(l10n.inventoryListModeAllItems),
         ),
         ButtonSegment<InventoryListMode>(
-          value: InventoryListMode.allItems,
-          icon: const Icon(
-            Icons.view_list_outlined,
-            size: AppSizes.actionChevron,
-          ),
-          label: Text(l10n.inventoryListModeAllItems),
+          value: InventoryListMode.byReceipt,
+          label: Text(l10n.inventoryListModeByReceipt),
         ),
       ],
       selected: <InventoryListMode>{mode},

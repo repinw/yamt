@@ -119,10 +119,16 @@ abstract class AppLocalizations {
   /// **'Shopping'**
   String get homeShopping;
 
+  /// No description provided for @homeStatistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get homeStatistics;
+
   /// No description provided for @homeCalories.
   ///
   /// In en, this message translates to:
-  /// **'Calories'**
+  /// **'Diary'**
   String get homeCalories;
 
   /// No description provided for @homeSettings.
@@ -148,6 +154,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Receipt actions'**
   String get inventoryFabTooltip;
+
+  /// No description provided for @inventoryPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My inventory'**
+  String get inventoryPageTitle;
 
   /// No description provided for @inventoryActionScanCamera.
   ///
@@ -692,8 +704,38 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryListModeAllItems.
   ///
   /// In en, this message translates to:
-  /// **'All items'**
+  /// **'All foods'**
   String get inventoryListModeAllItems;
+
+  /// No description provided for @inventoryRecentSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently added'**
+  String get inventoryRecentSectionTitle;
+
+  /// No description provided for @inventoryFilterAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter items'**
+  String get inventoryFilterAction;
+
+  /// No description provided for @inventoryFiltersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter items'**
+  String get inventoryFiltersTitle;
+
+  /// No description provided for @inventoryNutritionCaloriesShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Kcal'**
+  String get inventoryNutritionCaloriesShortLabel;
+
+  /// No description provided for @inventoryNutritionCarbsShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs'**
+  String get inventoryNutritionCarbsShortLabel;
 
   /// No description provided for @inventoryFilterConsumed.
   ///
@@ -737,6 +779,12 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get inventoryItemDeleteAction;
 
+  /// No description provided for @inventoryItemDeletedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Item deleted.'**
+  String get inventoryItemDeletedMessage;
+
   /// No description provided for @inventoryItemEatAction.
   ///
   /// In en, this message translates to:
@@ -760,6 +808,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Throw away'**
   String get inventoryItemThrowAwayAction;
+
+  /// No description provided for @inventoryItemSwapCandidateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap candidate'**
+  String get inventoryItemSwapCandidateAction;
 
   /// No description provided for @inventoryItemActionFailed.
   ///
@@ -2002,6 +2056,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Google sign-in did not return a valid token.'**
   String get authErrorGoogleIdTokenMissing;
+
+  /// No description provided for @commonUndoAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get commonUndoAction;
 
   /// No description provided for @commonNotImplementedYet.
   ///

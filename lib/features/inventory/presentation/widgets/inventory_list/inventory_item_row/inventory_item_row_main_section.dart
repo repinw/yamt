@@ -30,7 +30,7 @@ class InventoryItemRowMainSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         CategoryIcon(
           name: item.category ?? item.name,
@@ -65,26 +65,20 @@ class _InventoryItemRowInfoColumn extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (viewData.hasBrand) ...[
+          BrandBadge(brand: viewData.brand),
+          const SizedBox(height: AppSpacing.xxs),
+        ],
         Text(
           item.name,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: viewData.nameTextStyle,
         ),
-        if (viewData.hasBrand) ...[
-          const SizedBox(height: AppSpacing.xxs),
-          BrandBadge(brand: viewData.brand),
-        ],
-        const SizedBox(height: AppSpacing.xxs * 2),
+        const SizedBox(height: AppSpacing.xxs),
         if (viewData.statusText != null && viewData.statusColor != null)
-          Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.xs),
-            child: StatusLine(
-              text: viewData.statusText!,
-              color: viewData.statusColor!,
-            ),
-          ),
-        const SizedBox(height: AppSpacing.sm),
+          StatusLine(text: viewData.statusText!, color: viewData.statusColor!),
+        const SizedBox(height: AppSpacing.xs),
         RemainingProgressBar(
           ratio: viewData.remainingRatio,
           stockLabel: viewData.remainingLabel,
@@ -110,26 +104,37 @@ class _InventoryItemPrimaryActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final usesSoulGradient =
-        viewData.isPrimaryActionEnabled && !viewData.isBuyAgainPrimaryAction;
+        viewData.isPrimaryActionEnabled && viewData.showPrimaryActionText;
+    final backgroundColor = usesSoulGradient
+        ? null
+        : viewData.isPrimaryActionEnabled
+        ? viewData.eatActionBackgroundColor
+        : viewData.disabledActionBackgroundColor;
+    final borderColor = usesSoulGradient
+        ? Colors.transparent
+        : viewData.isPrimaryActionEnabled
+        ? viewData.eatActionBorderColor
+        : viewData.disabledActionBorderColor;
+    final foregroundColor = usesSoulGradient
+        ? colors.onPrimary
+        : viewData.isPrimaryActionEnabled
+        ? viewData.eatActionIconColor
+        : viewData.disabledActionIconColor;
+    final buttonWidth = viewData.showPrimaryActionText
+        ? InventoryItemRowConstants.primaryActionWidth
+        : AppInventoryEditorial.actionTileSize;
+    final buttonHeight = viewData.showPrimaryActionText
+        ? InventoryItemRowConstants.primaryActionHeight
+        : AppInventoryEditorial.actionTileSize;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: usesSoulGradient
-            ? null
-            : viewData.isPrimaryActionEnabled
-            ? viewData.eatActionBackgroundColor
-            : viewData.disabledActionBackgroundColor,
+        color: backgroundColor,
         gradient: usesSoulGradient
             ? AppInventoryEditorialSurfaces.soulGradient(colors)
             : null,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(
-          color: usesSoulGradient
-              ? Colors.transparent
-              : viewData.isPrimaryActionEnabled
-              ? viewData.eatActionBorderColor
-              : viewData.disabledActionBorderColor,
-        ),
+        border: Border.all(color: borderColor),
         boxShadow: [
           AppInventoryEditorialSurfaces.ambientBoxShadow(
             colors,
@@ -137,22 +142,33 @@ class _InventoryItemPrimaryActionButton extends StatelessWidget {
           ),
         ],
       ),
-      child: SizedBox.square(
-        dimension: AppInventoryEditorial.actionTileSize,
+      child: SizedBox(
+        width: buttonWidth,
+        height: buttonHeight,
         child: IconButton(
           visualDensity: VisualDensity.compact,
           splashRadius: AppSpacing.xxl,
           tooltip: viewData.primaryActionTooltip,
           onPressed: onPrimaryActionPressed,
-          icon: Icon(
-            viewData.primaryActionIcon,
-            size: InventoryItemRowConstants.actionIconSize,
+          icon: viewData.showPrimaryActionText
+              ? Text(
+                  viewData.primaryActionLabel,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: foregroundColor,
+                    fontSize: 12,
+                  ),
+                )
+              : Icon(
+                  viewData.primaryActionIcon,
+                  size: InventoryItemRowConstants.actionIconSize,
+                ),
+          color: foregroundColor,
+          padding: EdgeInsets.symmetric(
+            horizontal: viewData.showPrimaryActionText
+                ? AppSpacing.sm
+                : AppSpacing.xs,
           ),
-          color: usesSoulGradient
-              ? colors.onPrimary
-              : viewData.isPrimaryActionEnabled
-              ? viewData.eatActionIconColor
-              : viewData.disabledActionIconColor,
         ),
       ),
     );

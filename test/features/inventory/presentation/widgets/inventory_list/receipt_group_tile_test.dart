@@ -128,28 +128,9 @@ Future<void> _pump(WidgetTester tester, {required ThemeData theme}) async {
   await tester.pumpAndSettle();
 }
 
-Future<void> _expand(WidgetTester tester) async {
+Future<void> _toggleExpansion(WidgetTester tester) async {
   await tester.tap(find.text('Receipt Feb 20, 2026'));
   await tester.pumpAndSettle();
-}
-
-BorderSide _receiptTileBorderSide(WidgetTester tester) {
-  final decoratedBox = tester
-      .widgetList<DecoratedBox>(
-        find.descendant(
-          of: find.byType(ReceiptGroupTile),
-          matching: find.byType(DecoratedBox),
-        ),
-      )
-      .firstWhere((widget) {
-        final decoration = widget.decoration;
-        return decoration is BoxDecoration &&
-            decoration.border is Border &&
-            decoration.boxShadow?.isNotEmpty == true;
-      });
-  final decoration = decoratedBox.decoration as BoxDecoration;
-  final border = decoration.border! as Border;
-  return border.top;
 }
 
 void main() {
@@ -165,41 +146,28 @@ void main() {
   ) async {
     await _pump(tester, theme: lightTheme);
     expect(find.text('Receipt Feb 20, 2026'), findsOneWidget);
+    expect(find.text('Milk'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     await _pump(tester, theme: darkTheme);
     expect(find.text('Receipt Feb 20, 2026'), findsOneWidget);
+    expect(find.text('Milk'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('light theme uses ghost border color and width', (tester) async {
+  testWidgets('light theme shows item count pill', (tester) async {
     await _pump(tester, theme: lightTheme);
-
-    final side = _receiptTileBorderSide(tester);
-    final expectedColor = AppInventoryEditorialSurfaces.ghostBorder(
-      lightTheme.colorScheme,
-    );
-
-    expect(side.color, expectedColor);
-    expect(side.width, 1);
+    expect(find.text('2 ITEMS'), findsOneWidget);
   });
 
-  testWidgets('dark theme uses ghost border color and same width', (
-    tester,
-  ) async {
+  testWidgets('dark theme shows item count pill', (tester) async {
     await _pump(tester, theme: darkTheme);
-
-    final side = _receiptTileBorderSide(tester);
-    final expectedColor = AppInventoryEditorialSurfaces.ghostBorder(
-      darkTheme.colorScheme,
-    );
-
-    expect(side.color, expectedColor);
-    expect(side.width, 1);
+    expect(find.text('2 ITEMS'), findsOneWidget);
   });
 
   testWidgets('golden: light collapsed', (tester) async {
     await _pump(tester, theme: lightTheme);
+    await _toggleExpansion(tester);
     await expectLater(
       find.byType(Scaffold),
       matchesGoldenFile('goldens/receipt_group_tile_light_collapsed.png'),
@@ -208,7 +176,6 @@ void main() {
 
   testWidgets('golden: light expanded', (tester) async {
     await _pump(tester, theme: lightTheme);
-    await _expand(tester);
     await expectLater(
       find.byType(Scaffold),
       matchesGoldenFile('goldens/receipt_group_tile_light_expanded.png'),
@@ -217,6 +184,7 @@ void main() {
 
   testWidgets('golden: dark collapsed', (tester) async {
     await _pump(tester, theme: darkTheme);
+    await _toggleExpansion(tester);
     await expectLater(
       find.byType(Scaffold),
       matchesGoldenFile('goldens/receipt_group_tile_dark_collapsed.png'),
@@ -225,7 +193,6 @@ void main() {
 
   testWidgets('golden: dark expanded', (tester) async {
     await _pump(tester, theme: darkTheme);
-    await _expand(tester);
     await expectLater(
       find.byType(Scaffold),
       matchesGoldenFile('goldens/receipt_group_tile_dark_expanded.png'),
@@ -234,10 +201,6 @@ void main() {
 
   testWidgets('expanded tile shows receipt item rows', (tester) async {
     await _pump(tester, theme: lightTheme);
-    expect(find.text('Milk'), findsNothing);
-    expect(find.text('Bread'), findsNothing);
-
-    await _expand(tester);
 
     expect(find.text('Milk'), findsOneWidget);
     expect(find.text('Bread'), findsOneWidget);
@@ -247,6 +210,7 @@ void main() {
     tester,
   ) async {
     await _pump(tester, theme: lightTheme);
+    await _toggleExpansion(tester);
 
     expect(find.byType(InventoryItemRowListEntry), findsNothing);
   });
@@ -255,8 +219,9 @@ void main() {
     tester,
   ) async {
     await _pump(tester, theme: lightTheme);
+    await _toggleExpansion(tester);
 
-    await _expand(tester);
+    await _toggleExpansion(tester);
 
     expect(find.byType(InventoryItemRowListEntry), findsNWidgets(2));
   });
@@ -269,8 +234,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await _expand(tester);
-    expect(find.byType(InventoryItemRowListEntry), findsNWidgets(2));
+    await _toggleExpansion(tester);
+    expect(find.byType(InventoryItemRowListEntry), findsNothing);
 
     await tester.pumpWidget(
       _buildHarness(
@@ -287,7 +252,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(InventoryItemRowListEntry), findsNWidgets(2));
+    expect(find.byType(InventoryItemRowListEntry), findsNothing);
   });
 
   testWidgets('triggers onDeleteItem when delete button is pressed', (
@@ -306,7 +271,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await _expand(tester);
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete'));
@@ -333,7 +297,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await _expand(tester);
     await tester.tap(find.byTooltip('Eat').first);
     await tester.pumpAndSettle();
     await tester.enterText(
@@ -368,7 +331,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await _expand(tester);
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Throw away').first);

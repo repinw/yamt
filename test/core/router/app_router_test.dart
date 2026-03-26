@@ -412,7 +412,9 @@ void main() {
     },
   );
 
-  testWidgets('switches home tabs and updates route path', (tester) async {
+  testWidgets('navigates between home destinations and updates route path', (
+    tester,
+  ) async {
     final user = _authenticatedUser();
 
     final container = _createContainerWithAuth(
@@ -427,37 +429,34 @@ void main() {
 
     final router = container.read(appRouterProvider);
     expect(router.state.uri.path, AppRoutes.homeInventory);
-    expect(
-      find.descendant(
-        of: find.byType(AppBar),
-        matching: find.text('Inventory'),
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('My inventory'), findsOneWidget);
+    expect(find.text('STATISTICS'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+    await tester.tap(find.byIcon(Icons.insights_rounded).hitTestable());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(router.state.uri.path, AppRoutes.homeInventory);
+    expect(find.text('Not implemented yet'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.shopping_cart_rounded).hitTestable());
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeShopping);
-    expect(
-      find.descendant(of: find.byType(AppBar), matching: find.text('Shopping')),
-      findsOneWidget,
-    );
+    expect(find.text('Shopping'), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.local_fire_department_outlined));
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded).hitTestable());
+    await _pumpRouterTransition(tester);
+    expect(router.state.uri.path, AppRoutes.homeInventory);
+
+    router.go(AppRoutes.homeCalories);
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeCalories);
-    expect(
-      find.descendant(of: find.byType(AppBar), matching: find.text('Calories')),
-      findsOneWidget,
-    );
+    expect(find.text('Diary'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.settings));
+    router.go(AppRoutes.homeSettings);
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeSettings);
-    expect(
-      find.descendant(of: find.byType(AppBar), matching: find.text('Settings')),
-      findsOneWidget,
-    );
+    expect(find.text('Settings'), findsOneWidget);
     expect(find.text('Language'), findsOneWidget);
     expect(find.text('Notifications'), findsOneWidget);
     expect(find.text('About'), findsOneWidget);

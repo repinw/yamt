@@ -7,14 +7,12 @@ import 'package:yamt/features/home/home_tab_page.dart';
 import 'package:yamt/features/home/widgets/home_inventory_fab_flow.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_add_options_sheet.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/'
-    'shopping_quick_add_dialog.dart';
-import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Floating action button whose action depends on the active home tab.
 class HomeContextFab extends ConsumerWidget {
   const HomeContextFab({super.key, required this.currentTab});
 
@@ -23,6 +21,7 @@ class HomeContextFab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
     final flowState = ref.watch(receiptCaptureFlowControllerProvider);
     final batchState = ref.watch(receiptBatchFlowControllerProvider);
     final isBusy =
@@ -30,20 +29,43 @@ class HomeContextFab extends ConsumerWidget {
         (flowState.isLoading ||
             batchState.status == ReceiptBatchFlowStatus.running);
 
-    return FloatingActionButton.small(
-      tooltip: _fabTooltip(l10n),
-      onPressed: isBusy ? null : () => _onPressed(context, ref, l10n),
-      child: _fabChild(isBusy),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: AppInventoryEditorialSurfaces.soulGradient(colors),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        boxShadow: [
+          AppInventoryEditorialSurfaces.ambientBoxShadow(
+            colors,
+            blurRadius: 28,
+            offset: const Offset(0, 16),
+          ),
+        ],
+      ),
+      child: SizedBox.square(
+        dimension: 64,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            onTap: isBusy ? null : () => _onPressed(context, ref, l10n),
+            child: Tooltip(
+              message: _fabTooltip(l10n),
+              child: Center(child: _fabChild(isBusy)),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
   Widget _fabChild(bool isBusy) {
     if (!isBusy) {
-      return const Icon(Icons.add);
+      return const Icon(Icons.add, color: Colors.white, size: 36);
     }
     return const SizedBox.square(
       dimension: AppSizes.inlineProgressIndicator,
       child: CircularProgressIndicator(
+        color: Colors.white,
         strokeWidth: AppSizes.progressStrokeWidth,
       ),
     );
@@ -52,8 +74,7 @@ class HomeContextFab extends ConsumerWidget {
   String _fabTooltip(AppLocalizations l10n) {
     return switch (currentTab) {
       HomeTabType.inventory => l10n.inventoryFabTooltip,
-      HomeTabType.shopping => l10n.shoppingListAddAction,
-      HomeTabType.calories => l10n.caloriesFabTooltip,
+      HomeTabType.diary => l10n.caloriesFabTooltip,
       HomeTabType.settings => l10n.homeQuickActionTooltip,
     };
   }
@@ -71,31 +92,13 @@ class HomeContextFab extends ConsumerWidget {
           l10n: l10n,
         );
         return;
-      case HomeTabType.shopping:
-        await _openShoppingAddDialog(context, ref, l10n);
-        return;
-      case HomeTabType.calories:
+      case HomeTabType.diary:
         await _openCaloriesAddOptions(context);
         return;
       case HomeTabType.settings:
         _showSnackBar(context, l10n.homeSettingsActionContextPlaceholder);
         return;
     }
-  }
-
-  Future<void> _openShoppingAddDialog(
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations l10n,
-  ) {
-    return showShoppingQuickAddDialog(
-      context: context,
-      l10n: l10n,
-      onSubmit: ({required name, required brand}) async {
-        final controller = ref.read(shoppingListControllerProvider.notifier);
-        return controller.addItem(name: name, brand: brand);
-      },
-    );
   }
 
   void _showSnackBar(BuildContext context, String message) {
