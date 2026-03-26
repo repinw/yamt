@@ -9,6 +9,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:yamt/features/auth/provider/auth_repository.dart';
 import 'package:yamt/features/auth/provider/google_auth_controller.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/auth/auth_ui_constants.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
 import 'package:yamt/features/auth/widgets/login_form.dart';
 import 'package:yamt/features/auth/widgets/register_form.dart';
@@ -59,13 +60,20 @@ Widget _wrapWithApp(Widget child) {
   );
 }
 
+Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('LoginForm shows validation errors for empty fields', (
     tester,
   ) async {
     await tester.pumpWidget(_wrapWithApp(const LoginForm()));
 
-    await tester.tap(find.text('Login'));
+    await tester.tap(find.byKey(const Key('auth_login_submit_button')));
     await tester.pumpAndSettle();
 
     expect(find.text('The field is required'), findsNWidgets(2));
@@ -86,18 +94,83 @@ void main() {
     );
 
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Email'),
+      find.byKey(const Key('auth_email_field')),
       'user@example.com',
     );
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Password'),
+      find.byKey(const Key('auth_password_field')),
       'secret123',
     );
 
-    await tester.tap(find.text('Login'));
+    await tester.tap(find.byKey(const Key('auth_login_submit_button')));
     await tester.pumpAndSettle();
 
     expect(fakeRepository.signInCalls, 1);
+  });
+
+  testWidgets('LoginForm shows email and password only as placeholders', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_wrapWithApp(const LoginForm()));
+
+    expect(find.text('Email'), findsOneWidget);
+    expect(find.text('Password'), findsOneWidget);
+    expect(find.byIcon(Icons.mail_outline_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+  });
+
+  testWidgets('LoginForm places forgot password below the password field', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_wrapWithApp(const LoginForm()));
+
+    final forgotButton = find.byKey(const Key('auth_forgot_password_button'));
+    final passwordField = find.byKey(const Key('auth_password_field'));
+
+    expect(forgotButton, findsOneWidget);
+    expect(passwordField, findsOneWidget);
+    expect(
+      tester.getTopLeft(forgotButton).dy,
+      greaterThanOrEqualTo(tester.getBottomLeft(passwordField).dy),
+    );
+    expect(
+      tester.getTopLeft(forgotButton).dx,
+      greaterThan(tester.getCenter(passwordField).dx),
+    );
+  });
+
+  testWidgets('LoginForm toggles password visibility', (tester) async {
+    await tester.pumpWidget(_wrapWithApp(const LoginForm()));
+
+    final passwordField = find.byKey(const Key('auth_password_field'));
+    final editablePassword = find.descendant(
+      of: passwordField,
+      matching: find.byType(EditableText),
+    );
+
+    expect(tester.widget<EditableText>(editablePassword).obscureText, isTrue);
+    expect(find.byIcon(Icons.visibility_outlined), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.visibility_outlined));
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<EditableText>(editablePassword).obscureText, isFalse);
+    expect(find.byIcon(Icons.visibility_off_outlined), findsOneWidget);
+  });
+
+  testWidgets('RegisterForm shows placeholders and icons like the login form', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_wrapWithApp(const RegisterForm()));
+
+    expect(find.text('Display name'), findsOneWidget);
+    expect(find.text('Email'), findsOneWidget);
+    expect(find.text('Password'), findsOneWidget);
+    expect(find.text('Confirm password'), findsOneWidget);
+    expect(find.byIcon(Icons.person_outline_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.mail_outline_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.lock_outline_rounded), findsNWidgets(2));
+    expect(find.byIcon(Icons.visibility_outlined), findsNWidgets(2));
   });
 
   testWidgets(
@@ -106,19 +179,23 @@ void main() {
       await tester.pumpWidget(_wrapWithApp(const RegisterForm()));
 
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'Email'),
+        find.byKey(const Key('auth_display_name_field')),
+        'Julianne Vane',
+      );
+      await tester.enterText(
+        find.byKey(const Key('auth_email_field')),
         'user@example.com',
       );
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'Password'),
+        find.byKey(const Key('auth_password_field')),
         'secret123',
       );
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'Confirm password'),
+        find.byKey(const Key('auth_confirm_password_field')),
         'different-secret',
       );
 
-      await tester.tap(find.text('Create account'));
+      await tester.tap(find.byKey(const Key('auth_register_submit_button')));
       await tester.pumpAndSettle();
 
       expect(find.text('Passwords do not match'), findsOneWidget);
@@ -140,22 +217,28 @@ void main() {
     );
 
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Email'),
+      find.byKey(const Key('auth_display_name_field')),
+      'Julianne Vane',
+    );
+    await tester.enterText(
+      find.byKey(const Key('auth_email_field')),
       'user@example.com',
     );
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Password'),
+      find.byKey(const Key('auth_password_field')),
       'secret123',
     );
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Confirm password'),
+      find.byKey(const Key('auth_confirm_password_field')),
       'secret123',
     );
 
-    await tester.tap(find.text('Create account'));
+    await tester.tap(find.byKey(const Key('auth_register_submit_button')));
     await tester.pumpAndSettle();
 
     expect(fakeRepository.registerCalls, 1);
+    expect(fakeRepository.guestNameUpdateCalls, 1);
+    expect(fakeRepository.lastGuestDisplayName, 'Julianne Vane');
   });
 
   testWidgets('WelcomePage guest button triggers guest sign in', (
@@ -179,10 +262,7 @@ void main() {
       ),
     );
 
-    await tester.ensureVisible(find.text('Login as guest'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Login as guest'));
-    await tester.pumpAndSettle();
+    await _tapVisible(tester, find.byKey(const Key('auth_guest_button')));
 
     expect(fakeRepository.guestCalls, 1);
   });
@@ -208,10 +288,7 @@ void main() {
       ),
     );
 
-    await tester.ensureVisible(find.text('Login as guest'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Login as guest'));
-    await tester.pumpAndSettle();
+    await _tapVisible(tester, find.byKey(const Key('auth_guest_button')));
 
     expect(fakeRepository.guestCalls, 1);
     expect(find.text('Authentication failed'), findsOneWidget);
@@ -235,16 +312,69 @@ void main() {
       ),
     );
 
-    expect(find.text('Create account'), findsOneWidget);
-    expect(find.text('Register with Google'), findsOneWidget);
-
-    await tester.tap(find.text("Already have an account? Login"));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Login'), findsOneWidget);
+    expect(find.byType(LoginForm), findsOneWidget);
+    expect(find.text('Yamt'), findsOneWidget);
+    expect(find.text('Yet Another Meal Tracker'), findsOneWidget);
     expect(find.text('Login with Google'), findsOneWidget);
-    expect(find.text("Don't have an account? Register"), findsOneWidget);
+
+    await _tapVisible(
+      tester,
+      find.byKey(const Key('auth_switch_to_register_button')),
+    );
+
+    expect(find.byType(RegisterForm), findsOneWidget);
+    expect(find.text('Register'), findsOneWidget);
+    expect(find.text('Register with Google'), findsOneWidget);
+    expect(
+      find.byKey(const Key('auth_switch_to_login_button')),
+      findsOneWidget,
+    );
   });
+
+  testWidgets(
+    'WelcomePage scales header on compact displays and stays scrollable',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(320, 560));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authStateChangesProvider.overrideWith(
+              (ref) => const Stream<User?>.empty(),
+            ),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: MediaQuery(
+              data: const MediaQueryData(
+                size: Size(320, 560),
+                padding: EdgeInsets.only(top: 44, bottom: 16),
+                viewPadding: EdgeInsets.only(top: 44, bottom: 16),
+              ),
+              child: const WelcomePage(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final badgeFinder = find.byKey(const Key('auth_header_badge'));
+
+      expect(badgeFinder, findsOneWidget);
+      expect(tester.getTopLeft(badgeFinder).dy, greaterThanOrEqualTo(44));
+      expect(
+        tester.getSize(badgeFinder).height,
+        lessThan(AppAuthUi.heroBadgeSize),
+      );
+
+      await tester.ensureVisible(find.byKey(const Key('auth_guest_button')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('auth_guest_button')), findsOneWidget);
+    },
+  );
 
   testWidgets('WelcomePage shows auth form error from login submit', (
     tester,
@@ -268,19 +398,16 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Already have an account? Login'));
-    await tester.pumpAndSettle();
-
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Email'),
+      find.byKey(const Key('auth_email_field')),
       'user@example.com',
     );
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Password'),
+      find.byKey(const Key('auth_password_field')),
       'secret123',
     );
 
-    await tester.tap(find.text('Login'));
+    await tester.tap(find.byKey(const Key('auth_login_submit_button')));
     await tester.pumpAndSettle();
 
     expect(fakeRepository.signInCalls, 1);
@@ -313,10 +440,7 @@ void main() {
       ),
     );
 
-    await tester.ensureVisible(find.text('Login as guest'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Login as guest'));
-    await tester.pumpAndSettle();
+    await _tapVisible(tester, find.byKey(const Key('auth_guest_button')));
 
     expect(find.text('This sign-in method is not enabled.'), findsOneWidget);
   });
@@ -351,10 +475,7 @@ void main() {
         ),
       );
 
-      await tester.ensureVisible(find.text('Register with Google'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Register with Google'));
-      await tester.pumpAndSettle();
+      await _tapVisible(tester, find.byKey(const Key('auth_google_button')));
 
       expect(find.text(googleErrorMessage), findsOneWidget);
     },
@@ -388,7 +509,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Register with Google'));
+      await tester.ensureVisible(find.byKey(const Key('auth_google_button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('auth_google_button')));
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsWidgets);

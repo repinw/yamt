@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/auth/provider/auth_repository.dart';
 
 part 'auth_form_controller.g.dart';
+
+const _authFormControllerLogName = 'AuthFormController';
 
 @riverpod
 class AuthFormController extends _$AuthFormController {
@@ -29,16 +32,39 @@ class AuthFormController extends _$AuthFormController {
   Future<void> createUserWithEmailAndPassword({
     required String email,
     required String password,
+    String? displayName,
   }) async {
     state = const AsyncLoading();
+    final repository = ref.read(authRepositoryProvider);
+    final normalizedDisplayName = displayName?.trim();
     final result = await AsyncValue.guard(
-      () => ref
-          .read(authRepositoryProvider)
-          .createUserWithEmailAndPassword(email: email, password: password),
+      () => repository.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      ),
     );
     if (!ref.mounted) {
       return;
     }
     state = result;
+
+    if (result.hasError ||
+        normalizedDisplayName == null ||
+        normalizedDisplayName.isEmpty) {
+      return;
+    }
+
+    try {
+      await repository.updateCurrentUserDisplayName(
+        displayName: normalizedDisplayName,
+      );
+    } catch (error, stackTrace) {
+      log(
+        'User registration succeeded, but display name update failed.',
+        name: _authFormControllerLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 }

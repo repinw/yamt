@@ -834,6 +834,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get appSubtitle => 'Yet Another Meal Tracker';
 
   @override
+  String get commonOr => 'Oder';
+
+  @override
   String get login => 'Login';
 
   @override
@@ -850,6 +853,36 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get createAccount => 'Konto erstellen';
+
+  @override
+  String get authBrandTitle => 'Yamt';
+
+  @override
+  String get authBrandSubtitle => 'Yet Another Meal Tracker';
+
+  @override
+  String get authRegisterTitle => 'Registrieren';
+
+  @override
+  String get authRegisterSubtitle => 'Erstelle dein Konto und lege direkt los.';
+
+  @override
+  String get authContinueAsGuest => 'Als Gast fortfahren';
+
+  @override
+  String get authFooterNoAccountPrefix => 'Noch kein Konto?';
+
+  @override
+  String get authFooterHasAccountPrefix => 'Bereits ein Konto?';
+
+  @override
+  String get authSwitchRegisterAction => 'Jetzt registrieren';
+
+  @override
+  String get authSwitchLoginAction => 'Login';
+
+  @override
+  String get authForgotPassword => 'Passwort vergessen?';
 
   @override
   String get authSwitchToRegister => 'Noch kein Konto? Registrieren';
