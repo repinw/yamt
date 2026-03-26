@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class InventoryItemRowViewData {
   const InventoryItemRowViewData({
     required this.rowBorderColor,
-    required this.expandHintColor,
+    required this.expandedRowBorderColor,
     required this.unitPriceLabel,
     required this.nameTextStyle,
     required this.hasBrand,
@@ -15,6 +15,8 @@ class InventoryItemRowViewData {
     required this.segmentedByUnits,
     required this.isPrimaryActionEnabled,
     required this.isBuyAgainPrimaryAction,
+    required this.showPrimaryActionText,
+    required this.primaryActionLabel,
     required this.eatActionBackgroundColor,
     required this.disabledActionBackgroundColor,
     required this.eatActionBorderColor,
@@ -23,10 +25,11 @@ class InventoryItemRowViewData {
     required this.primaryActionIcon,
     required this.eatActionIconColor,
     required this.disabledActionIconColor,
+    required this.nutritionMetrics,
   });
 
   final Color rowBorderColor;
-  final Color expandHintColor;
+  final Color expandedRowBorderColor;
   final String unitPriceLabel;
   final TextStyle nameTextStyle;
   final bool hasBrand;
@@ -38,6 +41,8 @@ class InventoryItemRowViewData {
   final bool segmentedByUnits;
   final bool isPrimaryActionEnabled;
   final bool isBuyAgainPrimaryAction;
+  final bool showPrimaryActionText;
+  final String primaryActionLabel;
   final Color eatActionBackgroundColor;
   final Color disabledActionBackgroundColor;
   final Color eatActionBorderColor;
@@ -46,4 +51,12 @@ class InventoryItemRowViewData {
   final IconData primaryActionIcon;
   final Color eatActionIconColor;
   final Color disabledActionIconColor;
+  final List<InventoryNutritionMetric> nutritionMetrics;
+}
+
+class InventoryNutritionMetric {
+  const InventoryNutritionMetric({required this.label, required this.value});
+
+  final String label;
+  final String value;
 }

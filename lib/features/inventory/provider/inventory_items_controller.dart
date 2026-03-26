@@ -85,10 +85,18 @@ int quantityForCurrentAmount({
   return projectedQuantity;
 }
 
+class _PendingDeletedInventoryItem {
+  const _PendingDeletedInventoryItem({required this.item, required this.index});
+
+  final InventoryItem item;
+  final int index;
+}
+
 @riverpod
 class InventoryItemsController extends _$InventoryItemsController {
   StreamSubscription<List<InventoryItem>>? _itemsSubscription;
   final _mutationQueue = SerializedMutationQueue();
+  _PendingDeletedInventoryItem? _pendingDeletedItem;
 
   @override
   FutureOr<List<InventoryItem>> build() {
@@ -153,14 +161,59 @@ class InventoryItemsController extends _$InventoryItemsController {
   }
 
   Future<bool> deleteItem(String itemId) {
-    return _runItemsMutation((currentItems) {
-      final nextItems = currentItems
-          .where((item) => item.id != itemId)
-          .toList(growable: false);
-      if (nextItems.length == currentItems.length) {
-        return null;
+    return _runSerializedMutation(() async {
+      final currentItems = await _currentItems();
+      final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
+      if (itemIndex < 0) {
+        return false;
       }
-      return nextItems;
+
+      final nextItems = List<InventoryItem>.from(currentItems)
+        ..removeAt(itemIndex);
+      final saved = await _saveItems(
+        previousItems: currentItems,
+        nextItems: nextItems,
+      );
+      if (saved) {
+        _pendingDeletedItem = _PendingDeletedInventoryItem(
+          item: currentItems[itemIndex],
+          index: itemIndex,
+        );
+      }
+      return saved;
+    });
+  }
+
+  Future<bool> undoLastDeletedItem() {
+    return _runSerializedMutation(() async {
+      final pendingDeletedItem = _pendingDeletedItem;
+      if (pendingDeletedItem == null) {
+        return false;
+      }
+
+      final currentItems = await _currentItems();
+      final itemAlreadyPresent = currentItems.any(
+        (item) => item.id == pendingDeletedItem.item.id,
+      );
+      if (itemAlreadyPresent) {
+        _pendingDeletedItem = null;
+        return true;
+      }
+
+      final insertIndex = _safeInsertIndex(
+        index: pendingDeletedItem.index,
+        maxLength: currentItems.length,
+      );
+      final nextItems = List<InventoryItem>.from(currentItems)
+        ..insert(insertIndex, pendingDeletedItem.item);
+      final saved = await _saveItems(
+        previousItems: currentItems,
+        nextItems: nextItems,
+      );
+      if (saved) {
+        _pendingDeletedItem = null;
+      }
+      return saved;
     });
   }
 
@@ -307,4 +360,14 @@ class InventoryItemsController extends _$InventoryItemsController {
       },
     );
   }
+}
+
+int _safeInsertIndex({required int index, required int maxLength}) {
+  if (index < 0) {
+    return 0;
+  }
+  if (index > maxLength) {
+    return maxLength;
+  }
+  return index;
 }

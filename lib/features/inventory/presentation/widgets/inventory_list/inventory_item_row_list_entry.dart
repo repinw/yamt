@@ -44,6 +44,7 @@ class InventoryItemRowListEntry extends StatelessWidget {
       child: RepaintBoundary(
         child: InventoryItemRow(
           key: ValueKey<String>('${keyPrefix}_${item.id}'),
+          expansionStorageKey: '${keyPrefix}_${item.id}',
           item: item,
           l10n: l10n,
           currency: currency,

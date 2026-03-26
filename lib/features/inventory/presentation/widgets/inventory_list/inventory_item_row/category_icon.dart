@@ -147,43 +147,29 @@ class CategoryIcon extends ConsumerWidget {
     );
     final borderRadius = BorderRadius.circular(AppRadius.xl);
 
-    return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
-        colors,
-        borderRadius: borderRadius,
-        blurRadius: 24,
-        shadowOffset: const Offset(0, 12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(_imageInset),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            color: backgroundColor,
-          ),
-          child: SizedBox.square(
-            dimension: _size - (_imageInset * 2),
-            child: Center(
-              child: imageUrl == null
-                  ? Text(emoji, style: emojiTextStyle)
-                  : ClipRRect(
-                      borderRadius: BorderRadius.circular(AppRadius.lg),
-                      clipBehavior: Clip.hardEdge,
-                      child: Image.network(
-                        imageUrl,
-                        width: _size - (_imageInset * 2),
-                        height: _size - (_imageInset * 2),
-                        fit: BoxFit.cover,
-                        cacheWidth: imageCacheDimension,
-                        cacheHeight: imageCacheDimension,
-                        filterQuality: FilterQuality.low,
-                        gaplessPlayback: true,
-                        errorBuilder: (_, error, stackTrace) {
-                          return Text(emoji, style: emojiTextStyle);
-                        },
-                      ),
-                    ),
-            ),
+    return ClipRRect(
+      borderRadius: borderRadius,
+      clipBehavior: Clip.hardEdge,
+      child: DecoratedBox(
+        decoration: BoxDecoration(color: backgroundColor),
+        child: SizedBox.square(
+          dimension: _size,
+          child: Center(
+            child: imageUrl == null
+                ? Text(emoji, style: emojiTextStyle)
+                : Image.network(
+                    imageUrl,
+                    width: _size,
+                    height: _size,
+                    fit: BoxFit.cover,
+                    cacheWidth: imageCacheDimension,
+                    cacheHeight: imageCacheDimension,
+                    filterQuality: FilterQuality.low,
+                    gaplessPlayback: true,
+                    errorBuilder: (_, error, stackTrace) {
+                      return Text(emoji, style: emojiTextStyle);
+                    },
+                  ),
           ),
         ),
       ),

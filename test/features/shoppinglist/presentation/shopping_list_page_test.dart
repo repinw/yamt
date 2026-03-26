@@ -16,7 +16,7 @@ Widget _wrap(ProviderContainer container) {
       locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const Scaffold(body: ShoppingListPage()),
+      home: const ShoppingListPage(),
     ),
   );
 }
@@ -52,6 +52,12 @@ void main() {
     await tester.pumpWidget(_wrap(container));
     await tester.pumpAndSettle();
 
+    expect(find.byType(AppBar), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
+    expect(
+      find.descendant(of: find.byType(AppBar), matching: find.text('Shopping')),
+      findsOneWidget,
+    );
     expect(find.text('Your shopping list is empty.'), findsOneWidget);
   });
 

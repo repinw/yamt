@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-enum HomeTabType { inventory, shopping, calories, settings }
+enum HomeTabType { inventory, calories, settings }
 
 class HomeTabPage extends StatelessWidget {
   const HomeTabPage({super.key, required this.tab});
@@ -12,8 +12,6 @@ class HomeTabPage extends StatelessWidget {
     switch (tab) {
       case HomeTabType.inventory:
         return l10n.homeInventory;
-      case HomeTabType.shopping:
-        return l10n.homeShopping;
       case HomeTabType.calories:
         return l10n.homeCalories;
       case HomeTabType.settings:

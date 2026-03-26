@@ -26,7 +26,8 @@ class InventoryPage extends ConsumerWidget {
     return itemsAsync.when(
       data: (items) => InventoryList(
         items: items,
-        onDeleteItem: controller.deleteItem,
+        onDeleteItem: (itemId) =>
+            _deleteItemWithUndo(context: context, ref: ref, itemId: itemId),
         onEatItem: (itemId, amount) => _eatItemWithCalorieBridge(
           context: context,
           ref: ref,
@@ -43,6 +44,34 @@ class InventoryPage extends ConsumerWidget {
         retryLabel: l10n.inventoryRetryAction,
       ),
     );
+  }
+
+  Future<bool> _deleteItemWithUndo({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String itemId,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = ref.read(inventoryItemsControllerProvider.notifier);
+    final deleted = await controller.deleteItem(itemId);
+    if (!deleted || !context.mounted) {
+      return deleted;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.inventoryItemDeletedMessage),
+        action: SnackBarAction(
+          label: l10n.commonUndoAction,
+          onPressed: () {
+            unawaited(_undoDelete(context: context, ref: ref));
+          },
+        ),
+      ),
+    );
+    return true;
   }
 
   void _logLoadErrorOnce(
@@ -100,6 +129,25 @@ class InventoryPage extends ConsumerWidget {
       ),
     );
     return true;
+  }
+
+  Future<void> _undoDelete({
+    required BuildContext context,
+    required WidgetRef ref,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    final restored = await ref
+        .read(inventoryItemsControllerProvider.notifier)
+        .undoLastDeletedItem();
+    if (!context.mounted) {
+      return;
+    }
+    if (restored) {
+      return;
+    }
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.inventoryItemActionFailed)));
   }
 }
 

@@ -397,6 +397,54 @@ void main() {
     );
   });
 
+  test('undoLastDeletedItem restores deleted item at original index', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _item('a'),
+        _item('b'),
+        _item('c'),
+      ],
+    );
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final deleted = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .deleteItem('b');
+    await _waitForItems(
+      container,
+      (items) => items.length == 2 && items[0].id == 'a' && items[1].id == 'c',
+    );
+
+    final restored = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .undoLastDeletedItem();
+    await _waitForItems(
+      container,
+      (items) =>
+          items.length == 3 &&
+          items[0].id == 'a' &&
+          items[1].id == 'b' &&
+          items[2].id == 'c',
+    );
+
+    expect(deleted, isTrue);
+    expect(restored, isTrue);
+    expect(repository.savedItems.map((item) => item.id).toList(), <String>[
+      'a',
+      'b',
+      'c',
+    ]);
+  });
+
   test(
     'deleteItem applies optimistic update and rolls back on save failure',
     () async {

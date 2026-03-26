@@ -301,19 +301,14 @@ void main() {
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
 
-    expect(find.text('No receipt'), findsOneWidget);
-    expect(find.textContaining('Store'), findsOneWidget);
-    expect(find.text('OVERVIEW'), findsOneWidget);
-    expect(find.text('Items'), findsAtLeastNWidgets(1));
-    expect(find.text('TOTAL QUANTITY'), findsOneWidget);
-    expect(find.text('ESTIMATED VALUE'), findsOneWidget);
+    expect(find.text('By receipt'), findsOneWidget);
+    expect(find.text('All foods'), findsOneWidget);
+    expect(find.text('Milk'), findsOneWidget);
 
-    await _tapVisible(tester, find.text('No receipt'));
     await _scrollUntilVisible(tester, find.text('Milk'));
 
     expect(find.text('Milk'), findsOneWidget);
     expect(find.text('ACME'), findsOneWidget);
-    expect(find.textContaining('Store'), findsOneWidget);
   });
 
   testWidgets('groups items under one receipt and expands on tap', (
@@ -330,12 +325,9 @@ void main() {
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
 
-    expect(find.text('Receipt #abc123'), findsOneWidget);
-    expect(find.text('Milk'), findsNothing);
-    expect(find.text('Bread'), findsNothing);
+    await _tapVisible(tester, find.text('By receipt'));
 
-    await _tapVisible(tester, find.text('Receipt #abc123'));
-    await _scrollUntilVisible(tester, find.text('Milk'));
+    expect(find.text('Receipt #abc123'), findsOneWidget);
 
     expect(find.text('Milk'), findsOneWidget);
     expect(find.text('Bread'), findsOneWidget);
@@ -352,13 +344,6 @@ void main() {
 
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
-
-    expect(find.text('Receipt #abc123'), findsOneWidget);
-    expect(find.text('Milk'), findsNothing);
-    expect(find.text('Bread'), findsNothing);
-
-    await _tapVisible(tester, find.text('All items'));
-    await _scrollUntilVisible(tester, find.text('Milk'));
 
     expect(find.text('Receipt #abc123'), findsNothing);
     expect(find.text('Milk'), findsOneWidget);
@@ -379,18 +364,19 @@ void main() {
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
 
-    await _tapVisible(tester, find.text('All items'));
     await _scrollUntilVisible(tester, find.text('Banana'));
 
     expect(find.text('Apple'), findsOneWidget);
     expect(find.text('Banana'), findsOneWidget);
 
+    await _tapVisible(tester, find.byTooltip('Filter items'));
     await _tapVisible(tester, find.text('Consumed'));
     await _scrollUntilVisible(tester, find.text('Banana'));
 
     expect(find.text('Apple'), findsNothing);
     expect(find.text('Banana'), findsOneWidget);
 
+    await _tapVisible(tester, find.byTooltip('Filter items'));
     await _tapVisible(tester, find.text('Consumed'));
     await _scrollUntilVisible(tester, find.text('Banana'));
 
@@ -419,7 +405,6 @@ void main() {
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
 
-    await _tapVisible(tester, find.text('No receipt'));
     await _scrollUntilVisible(tester, find.text('500g / 1000g'));
 
     expect(find.text('500g / 1000g'), findsOneWidget);
@@ -451,7 +436,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await _tapVisible(tester, find.text('No receipt'));
     await _scrollUntilVisible(tester, find.text('Barcode missing'));
 
     expect(find.text('Barcode missing'), findsOneWidget);
@@ -487,7 +471,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await _tapVisible(tester, find.text('No receipt'));
     await _scrollUntilVisible(tester, find.text('Not sure'));
 
     expect(find.text('Not sure'), findsOneWidget);
@@ -523,10 +506,9 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await _tapVisible(tester, find.text('No receipt'));
     await _tapVisible(tester, find.text('Milk'));
 
-    final retryButtonFinder = find.text('Search barcode');
+    final retryButtonFinder = find.text('Swap candidate');
     expect(retryButtonFinder, findsOneWidget);
     await _tapVisible(tester, retryButtonFinder);
 
@@ -536,6 +518,55 @@ void main() {
     expect(backfillRepository.lastItemName, 'Milk');
     expect(backfillRepository.lastTrigger, 'manual_search');
     expect(backfillRepository.lastForceRetry, isFalse);
+  });
+
+  testWidgets('edit action currently shows not-implemented feedback', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _item('a', name: 'Milk', quantity: 2, initialQuantity: 2),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildTestApp(repository));
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Milk'));
+    await tester.pumpAndSettle();
+    await _tapVisible(tester, find.text('Edit'));
+
+    expect(find.text('Not implemented yet'), findsOneWidget);
+  });
+
+  testWidgets('delete action shows undo snackbar and restores item', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _item('a', name: 'Milk'),
+        _item('b', name: 'Bread'),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildTestApp(repository));
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Milk'));
+    await _tapVisible(tester, find.text('Delete'));
+
+    expect(find.text('Item deleted.'), findsOneWidget);
+    expect(find.text('Undo'), findsOneWidget);
+    expect(find.text('Milk'), findsNothing);
+    expect(find.text('Bread'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Milk'), findsOneWidget);
+    expect(find.text('Bread'), findsOneWidget);
   });
 
   testWidgets('eat action opens amount dialog and updates stock', (
@@ -551,7 +582,6 @@ void main() {
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
 
-    await _tapVisible(tester, find.text('No receipt'));
     await _scrollUntilVisible(tester, find.text('3/3'));
 
     expect(find.text('3/3'), findsOneWidget);
@@ -587,7 +617,6 @@ void main() {
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
 
-    await _tapVisible(tester, find.text('All items'));
     await _scrollUntilVisible(tester, find.text('1/1'));
 
     expect(find.text('1/1'), findsOneWidget);
@@ -646,7 +675,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await _tapVisible(tester, find.text('No receipt'));
 
     await _tapVisible(tester, find.byTooltip('Eat'));
     await tester.enterText(
@@ -692,8 +720,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await _tapVisible(tester, find.text('All items'));
-
       expect(find.byTooltip('Buy again'), findsOneWidget);
       expect(find.byTooltip('Eat'), findsNothing);
 
@@ -733,7 +759,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await _tapVisible(tester, find.text('All items'));
       await tester.tap(find.byTooltip('Buy again'));
       await tester.pumpAndSettle();
 
@@ -764,8 +789,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-
-    await _tapVisible(tester, find.text('All items'));
 
     await tester.tap(find.byTooltip('Buy again'));
     await tester.pumpAndSettle();
@@ -805,8 +828,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await _tapVisible(tester, find.text('All items'));
-
     final buyAgainButton = find.ancestor(
       of: find.byIcon(Icons.shopping_cart_checkout_rounded),
       matching: find.byType(IconButton),
@@ -839,7 +860,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await _tapVisible(tester, find.text('All items'));
     await tester.tap(find.byTooltip('Buy again'));
     await tester.pump();
 
@@ -861,8 +881,6 @@ void main() {
 
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
-
-    await _tapVisible(tester, find.text('No receipt'));
 
     await _tapVisible(tester, find.byTooltip('Eat'));
 
@@ -894,8 +912,6 @@ void main() {
 
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
-
-    await _tapVisible(tester, find.text('No receipt'));
 
     await _tapVisible(tester, find.text('Milk'));
 

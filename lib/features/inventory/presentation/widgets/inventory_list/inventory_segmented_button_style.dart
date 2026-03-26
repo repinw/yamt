@@ -7,7 +7,7 @@ ButtonStyle inventorySegmentedButtonStyle(BuildContext context) {
 
   return ButtonStyle(
     padding: const WidgetStatePropertyAll(
-      EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
+      EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
     ),
     textStyle: WidgetStatePropertyAll(
       textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
@@ -16,24 +16,26 @@ ButtonStyle inventorySegmentedButtonStyle(BuildContext context) {
       if (states.contains(WidgetState.selected)) {
         return BorderSide.none;
       }
-      return BorderSide(
-        color: AppInventoryEditorialSurfaces.ghostBorder(colors),
-      );
+      return BorderSide.none;
     }),
     backgroundColor: WidgetStateProperty.resolveWith((states) {
       if (states.contains(WidgetState.selected)) {
-        return colors.surfaceBright;
+        return colors.surfaceContainerLowest;
       }
-      return colors.surfaceContainerLow;
+      return Colors.transparent;
     }),
     foregroundColor: WidgetStateProperty.resolveWith((states) {
       if (states.contains(WidgetState.selected)) {
-        return colors.onSurface;
+        return colors.primary;
       }
       return colors.onSurfaceVariant;
     }),
     shape: WidgetStatePropertyAll(
-      RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.xl)),
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+    ),
+    elevation: const WidgetStatePropertyAll(0),
+    overlayColor: WidgetStatePropertyAll(
+      colors.surfaceContainerHigh.withValues(alpha: 0.16),
     ),
   );
 }

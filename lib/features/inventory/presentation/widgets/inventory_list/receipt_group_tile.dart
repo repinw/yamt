@@ -35,7 +35,7 @@ class ReceiptGroupTile extends StatefulWidget {
 }
 
 class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
-  var _isExpanded = false;
+  var _isExpanded = true;
   var _didRestoreExpansionState = false;
 
   String get _storageKey => 'receipt_group_${widget.group.key}';
@@ -61,86 +61,88 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final title = widget.group.title(l10n: l10n, dateFormat: widget.dateFormat);
-    final subtitle = widget.group.subtitle(
-      l10n: l10n,
-      currency: widget.currency,
-    );
-    final radius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
 
-    return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.sectionCardDecoration(
-        colors,
-        borderRadius: radius,
-      ),
-      child: ClipRRect(
-        borderRadius: radius,
-        child: Theme(
-          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            key: ValueKey<String>(_storageKey),
-            initiallyExpanded: _isExpanded,
-            onExpansionChanged: _onExpansionChanged,
-            backgroundColor: Colors.transparent,
-            collapsedBackgroundColor: Colors.transparent,
-            shape: RoundedRectangleBorder(borderRadius: radius),
-            collapsedShape: RoundedRectangleBorder(borderRadius: radius),
-            tilePadding: const EdgeInsets.fromLTRB(
-              AppSpacing.xxl,
-              AppSpacing.xl,
-              AppSpacing.xxl,
-              AppSpacing.md,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: _toggleExpanded,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: colors.surfaceContainerHigh.withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.xs,
+                    ),
+                    child: Text(
+                      '${widget.group.items.length} '
+                              '${l10n.inventoryReceiptGroupItems}'
+                          .toUpperCase(),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            childrenPadding: const EdgeInsets.fromLTRB(
-              AppSpacing.xxl,
-              0,
-              AppSpacing.xxl,
-              AppSpacing.xxl,
-            ),
-            iconColor: colors.primary,
-            collapsedIconColor: colors.onSurfaceVariant,
-            title: Text(title, style: Theme.of(context).textTheme.titleMedium),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.xs),
-              child: Text(
-                subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-            children: _isExpanded
-                ? widget.group.items
-                      .map((item) {
-                        return InventoryItemRowListEntry(
-                          item: item,
-                          keyPrefix: 'receipt_item_row',
-                          bottomSpacing: AppSpacing.xl,
-                          l10n: l10n,
-                          currency: widget.currency,
-                          showBarcodeMarkers: widget.showBarcodeMarkers,
-                          activeShoppingListItemKeys:
-                              widget.activeShoppingListItemKeys,
-                          onDeleteItem: widget.onDeleteItem,
-                          onEatItem: widget.onEatItem,
-                          onThrowAwayItem: widget.onThrowAwayItem,
-                        );
-                      })
-                      .toList(growable: false)
-                : const <Widget>[],
           ),
         ),
-      ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.topCenter,
+          child: _isExpanded
+              ? Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.lg),
+                  child: Column(
+                    children: widget.group.items
+                        .map((item) {
+                          return InventoryItemRowListEntry(
+                            item: item,
+                            keyPrefix: 'receipt_item_row',
+                            bottomSpacing: AppSpacing.xl,
+                            l10n: l10n,
+                            currency: widget.currency,
+                            showBarcodeMarkers: widget.showBarcodeMarkers,
+                            activeShoppingListItemKeys:
+                                widget.activeShoppingListItemKeys,
+                            onDeleteItem: widget.onDeleteItem,
+                            onEatItem: widget.onEatItem,
+                            onThrowAwayItem: widget.onThrowAwayItem,
+                          );
+                        })
+                        .toList(growable: false),
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
     );
   }
 
-  void _onExpansionChanged(bool isExpanded) {
-    if (_isExpanded != isExpanded) {
-      setState(() {
-        _isExpanded = isExpanded;
-      });
-    }
+  void _toggleExpanded() {
+    setState(() {
+      _isExpanded = !_isExpanded;
+    });
     PageStorage.maybeOf(
       context,
-    )?.writeState(context, isExpanded, identifier: _storageKey);
+    )?.writeState(context, _isExpanded, identifier: _storageKey);
   }
 }

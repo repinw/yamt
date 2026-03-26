@@ -40,7 +40,7 @@ class InventoryList extends ConsumerStatefulWidget {
 }
 
 class _InventoryListState extends ConsumerState<InventoryList> {
-  var _mode = InventoryListMode.byReceipt;
+  var _mode = InventoryListMode.allItems;
   var _consumptionFilter = const InventoryConsumptionFilter();
 
   @override
@@ -59,6 +59,11 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     final filteredItems = _consumptionFilter.apply(widget.items);
     final hasSourceItems = widget.items.isNotEmpty;
     final hasFilteredItems = filteredItems.isNotEmpty;
+    final modeToggle = InventoryListModeToggle(
+      mode: _mode,
+      l10n: l10n,
+      onModeChanged: _onModeChanged,
+    );
 
     return CustomScrollView(
       slivers: [
@@ -67,16 +72,13 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             AppSpacing.xl,
             AppSpacing.lg,
             AppSpacing.xl,
-            0,
+            AppSpacing.lg,
           ),
           sliver: SliverToBoxAdapter(
-            child: InventorySummaryCard(
-              items: filteredItems,
-              currency: currency,
-            ),
+            child: InventoryModeToolbar(modeToggle: modeToggle),
           ),
         ),
-        if (hasSourceItems)
+        if (hasSourceItems && _mode == InventoryListMode.allItems)
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.xl,
@@ -85,19 +87,14 @@ class _InventoryListState extends ConsumerState<InventoryList> {
               AppSpacing.sm,
             ),
             sliver: SliverToBoxAdapter(
-              child: InventoryControlsCard(
-                itemCount: filteredItems.length,
-                modeToggle: InventoryListModeToggle(
-                  mode: _mode,
-                  l10n: l10n,
-                  onModeChanged: _onModeChanged,
-                ),
-                consumptionToggle: InventoryConsumptionFilterToggle(
-                  showConsumed: _consumptionFilter.showConsumed,
-                  showNotConsumed: _consumptionFilter.showNotConsumed,
-                  l10n: l10n,
-                  onShowConsumedChanged: _onShowConsumedChanged,
-                  onShowNotConsumedChanged: _onShowNotConsumedChanged,
+              child: InventorySectionHeader(
+                title: l10n.inventoryRecentSectionTitle,
+                trailing: InventoryFilterButton(
+                  onPressed: () => _showFiltersSheet(
+                    context,
+                    title: l10n.inventoryFiltersTitle,
+                    l10n: l10n,
+                  ),
                 ),
               ),
             ),
@@ -150,6 +147,35 @@ class _InventoryListState extends ConsumerState<InventoryList> {
         showNotConsumed,
       );
     });
+  }
+
+  Future<void> _showFiltersSheet(
+    BuildContext context, {
+    required String title,
+    required AppLocalizations l10n,
+  }) {
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return InventoryFiltersSheet(
+          title: title,
+          consumptionToggle: InventoryConsumptionFilterToggle(
+            showConsumed: _consumptionFilter.showConsumed,
+            showNotConsumed: _consumptionFilter.showNotConsumed,
+            l10n: l10n,
+            onShowConsumedChanged: (showConsumed) {
+              _onShowConsumedChanged(showConsumed);
+              Navigator.of(context).pop();
+            },
+            onShowNotConsumedChanged: (showNotConsumed) {
+              _onShowNotConsumedChanged(showNotConsumed);
+              Navigator.of(context).pop();
+            },
+          ),
+        );
+      },
+    );
   }
 
   SliverFillRemaining _buildEmptyStateSliver({String? message}) {
