@@ -297,16 +297,17 @@ class AuthSubmitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final gradientEnd = Color.alphaBlend(
+      colors.primaryContainer.withValues(alpha: 0.24),
+      colors.primary,
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppInventoryEditorial.primary,
-            AppInventoryEditorial.primaryDim,
-          ],
+          colors: [colors.primary, gradientEnd],
         ),
         borderRadius: BorderRadius.circular(AppAuthUi.buttonRadius),
         boxShadow: [

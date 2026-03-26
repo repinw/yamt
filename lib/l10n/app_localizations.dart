@@ -1784,7 +1784,7 @@ abstract class AppLocalizations {
   /// No description provided for @authBrandSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Yet Enother Meal Tracker'**
+  /// **'Yet Another Meal Tracker'**
   String get authBrandSubtitle;
 
   /// No description provided for @authRegisterTitle.
@@ -1834,24 +1834,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Forgot?'**
   String get authForgotPassword;
-
-  /// No description provided for @authEmailPlaceholderLogin.
-  ///
-  /// In en, this message translates to:
-  /// **'alex@example.com'**
-  String get authEmailPlaceholderLogin;
-
-  /// No description provided for @authEmailPlaceholderRegister.
-  ///
-  /// In en, this message translates to:
-  /// **'first.last@example.com'**
-  String get authEmailPlaceholderRegister;
-
-  /// No description provided for @authDisplayNamePlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'E.g. Julianne Vane'**
-  String get authDisplayNamePlaceholder;
 
   /// No description provided for @authSwitchToRegister.
   ///

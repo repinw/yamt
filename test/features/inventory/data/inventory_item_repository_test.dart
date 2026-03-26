@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -266,4 +267,43 @@ void main() {
 
     expect(items, isEmpty);
   });
+
+  test('watchAll rethrows non-permission firestore errors', () async {
+    final store = _FakeInventoryItemStore()
+      ..watchAllError = FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'unavailable',
+      );
+    addTearDown(store.dispose);
+    final repository = FirestoreInventoryItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      store: store,
+    );
+
+    expect(
+      repository.watchAll().first,
+      throwsA(
+        isA<FirebaseException>().having(
+          (error) => error.code,
+          'code',
+          'unavailable',
+        ),
+      ),
+    );
+  });
+
+  test(
+    'watchAll rethrows generic stream errors like socket exceptions',
+    () async {
+      final store = _FakeInventoryItemStore()
+        ..watchAllError = const SocketException('network down');
+      addTearDown(store.dispose);
+      final repository = FirestoreInventoryItemRepository(
+        session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+        store: store,
+      );
+
+      expect(repository.watchAll().first, throwsA(isA<SocketException>()));
+    },
+  );
 }

@@ -858,7 +858,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authBrandTitle => 'Yamt';
 
   @override
-  String get authBrandSubtitle => 'Yet Enother Meal Tracker';
+  String get authBrandSubtitle => 'Yet Another Meal Tracker';
 
   @override
   String get authRegisterTitle => 'Register';
@@ -883,15 +883,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authForgotPassword => 'Forgot?';
-
-  @override
-  String get authEmailPlaceholderLogin => 'alex@example.com';
-
-  @override
-  String get authEmailPlaceholderRegister => 'first.last@example.com';
-
-  @override
-  String get authDisplayNamePlaceholder => 'E.g. Julianne Vane';
 
   @override
   String get authSwitchToRegister => 'Don\'t have an account? Register';

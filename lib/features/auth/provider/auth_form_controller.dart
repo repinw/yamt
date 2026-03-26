@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/auth/provider/auth_repository.dart';
 
 part 'auth_form_controller.g.dart';
+
+const _authFormControllerLogName = 'AuthFormController';
 
 @riverpod
 class AuthFormController extends _$AuthFormController {
@@ -32,25 +35,36 @@ class AuthFormController extends _$AuthFormController {
     String? displayName,
   }) async {
     state = const AsyncLoading();
-    final result = await AsyncValue.guard(() async {
-      final repository = ref.read(authRepositoryProvider);
-      await repository.createUserWithEmailAndPassword(
+    final repository = ref.read(authRepositoryProvider);
+    final normalizedDisplayName = displayName?.trim();
+    final result = await AsyncValue.guard(
+      () => repository.createUserWithEmailAndPassword(
         email: email,
         password: password,
-      );
-
-      final normalizedDisplayName = displayName?.trim();
-      if (normalizedDisplayName == null || normalizedDisplayName.isEmpty) {
-        return;
-      }
-
-      await repository.updateCurrentUserDisplayName(
-        displayName: normalizedDisplayName,
-      );
-    });
+      ),
+    );
     if (!ref.mounted) {
       return;
     }
     state = result;
+
+    if (result.hasError ||
+        normalizedDisplayName == null ||
+        normalizedDisplayName.isEmpty) {
+      return;
+    }
+
+    try {
+      await repository.updateCurrentUserDisplayName(
+        displayName: normalizedDisplayName,
+      );
+    } catch (error, stackTrace) {
+      log(
+        'User registration succeeded, but display name update failed.',
+        name: _authFormControllerLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 }

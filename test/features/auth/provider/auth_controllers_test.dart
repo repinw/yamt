@@ -164,6 +164,39 @@ class _DelayedEmailRegisterRepository implements AuthRepository {
   }) async {}
 }
 
+class _FailingDisplayNameUpdateRepository implements AuthRepository {
+  int registerCalls = 0;
+  int updateCalls = 0;
+
+  @override
+  String? get currentUserId => 'test-user-id';
+
+  @override
+  Future<void> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    registerCalls++;
+  }
+
+  @override
+  Future<void> updateCurrentUserDisplayName({
+    required String displayName,
+  }) async {
+    updateCalls++;
+    throw StateError('display name update failed');
+  }
+
+  @override
+  Future<void> signInAnonymously() async {}
+
+  @override
+  Future<void> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {}
+}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(_FakeAuthCredential());
@@ -226,6 +259,32 @@ void main() {
       expect(fakeRepository.lastGuestDisplayName, 'Guest Wlad');
       expect(container.read(authFormControllerProvider).hasError, isFalse);
     });
+
+    test(
+      'register keeps AsyncData state when display name update fails afterwards',
+      () async {
+        final repository = _FailingDisplayNameUpdateRepository();
+        final container = ProviderContainer(
+          overrides: [authRepositoryProvider.overrideWithValue(repository)],
+        );
+        addTearDown(container.dispose);
+
+        await container
+            .read(authFormControllerProvider.notifier)
+            .createUserWithEmailAndPassword(
+              email: 'demo@test.com',
+              password: 'secret',
+              displayName: 'Guest Wlad',
+            );
+
+        expect(repository.registerCalls, 1);
+        expect(repository.updateCalls, 1);
+        expect(
+          container.read(authFormControllerProvider),
+          const AsyncData<void>(null),
+        );
+      },
+    );
 
     test('email sign in does not crash when provider is disposed', () async {
       final completer = Completer<void>();

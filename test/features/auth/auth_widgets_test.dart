@@ -314,7 +314,7 @@ void main() {
 
     expect(find.byType(LoginForm), findsOneWidget);
     expect(find.text('Yamt'), findsOneWidget);
-    expect(find.text('Yet Enother Meal Tracker'), findsOneWidget);
+    expect(find.text('Yet Another Meal Tracker'), findsOneWidget);
     expect(find.text('Login with Google'), findsOneWidget);
 
     await _tapVisible(

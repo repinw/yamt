@@ -91,7 +91,7 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
         error: error,
         stackTrace: stackTrace,
       );
-      yield const <InventoryItem>[];
+      rethrow;
     } catch (error, stackTrace) {
       log(
         'Failed to watch inventory items from firestore for user $userId.',
@@ -99,7 +99,7 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
         error: error,
         stackTrace: stackTrace,
       );
-      yield const <InventoryItem>[];
+      rethrow;
     }
   }
 
