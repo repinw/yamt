@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-enum HomeTabType { inventory, calories, settings }
+/// Tabs shown in the shared home shell.
+enum HomeTabType { inventory, diary, settings }
 
+/// Placeholder page used for simple home tab content.
 class HomeTabPage extends StatelessWidget {
   const HomeTabPage({super.key, required this.tab});
 
@@ -12,7 +14,7 @@ class HomeTabPage extends StatelessWidget {
     switch (tab) {
       case HomeTabType.inventory:
         return l10n.homeInventory;
-      case HomeTabType.calories:
+      case HomeTabType.diary:
         return l10n.homeCalories;
       case HomeTabType.settings:
         return l10n.homeSettings;

@@ -12,6 +12,7 @@ import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dar
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Floating action button whose action depends on the active home tab.
 class HomeContextFab extends ConsumerWidget {
   const HomeContextFab({super.key, required this.currentTab});
 
@@ -73,7 +74,7 @@ class HomeContextFab extends ConsumerWidget {
   String _fabTooltip(AppLocalizations l10n) {
     return switch (currentTab) {
       HomeTabType.inventory => l10n.inventoryFabTooltip,
-      HomeTabType.calories => l10n.caloriesFabTooltip,
+      HomeTabType.diary => l10n.caloriesFabTooltip,
       HomeTabType.settings => l10n.homeQuickActionTooltip,
     };
   }
@@ -91,7 +92,7 @@ class HomeContextFab extends ConsumerWidget {
           l10n: l10n,
         );
         return;
-      case HomeTabType.calories:
+      case HomeTabType.diary:
         await _openCaloriesAddOptions(context);
         return;
       case HomeTabType.settings:

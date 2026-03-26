@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,8 +5,14 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/home/home_tab_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
+import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const _inventoryBranchIndex = 0;
+const _diaryBranchIndex = 1;
+const _settingsBranchIndex = 2;
+
+/// Shell page that hosts the main app tabs and shared home chrome.
 class HomePage extends ConsumerWidget {
   const HomePage({super.key, required this.navigationShell});
 
@@ -23,9 +27,9 @@ class HomePage extends ConsumerWidget {
 
   HomeTabType _currentTab() {
     return switch (navigationShell.currentIndex) {
-      0 => HomeTabType.inventory,
-      1 => HomeTabType.calories,
-      2 => HomeTabType.settings,
+      _inventoryBranchIndex => HomeTabType.inventory,
+      _diaryBranchIndex => HomeTabType.diary,
+      _settingsBranchIndex => HomeTabType.settings,
       _ => HomeTabType.inventory, // coverage:ignore-line
     };
   }
@@ -34,48 +38,45 @@ class HomePage extends ConsumerWidget {
     switch (_currentTab()) {
       case HomeTabType.inventory:
         return l10n.inventoryPageTitle;
-      case HomeTabType.calories:
+      case HomeTabType.diary:
         return l10n.homeCalories;
       case HomeTabType.settings:
         return l10n.homeSettings;
     }
   }
 
-  List<_HomeNavEntry> _navEntries(BuildContext context, AppLocalizations l10n) {
+  List<HomeNavEntry> _navEntries(BuildContext context, AppLocalizations l10n) {
     final currentTab = _currentTab();
 
     return [
-      _HomeNavEntry(
-        item: _HomeNavItem(
+      HomeNavEntry(
+        item: HomeNavItem(
           icon: Icons.inventory_2_rounded,
           label: l10n.homeInventory,
         ),
         isSelected: currentTab == HomeTabType.inventory,
-        onTap: () => _onTabTapped(0),
+        onTap: () => _onTabTapped(_inventoryBranchIndex),
       ),
-      _HomeNavEntry(
-        item: _HomeNavItem(
+      HomeNavEntry(
+        item: HomeNavItem(
           icon: Icons.bar_chart_rounded,
           label: l10n.homeCalories,
         ),
-        isSelected: currentTab == HomeTabType.calories,
-        onTap: () => _onTabTapped(1),
+        isSelected: currentTab == HomeTabType.diary,
+        onTap: () => _onTabTapped(_diaryBranchIndex),
       ),
-      _HomeNavEntry(
-        item: _HomeNavItem(
+      HomeNavEntry(
+        item: HomeNavItem(
           icon: Icons.insights_rounded,
           label: l10n.homeStatistics,
         ),
         isSelected: false,
         onTap: () => _showSnackBar(context, l10n.commonNotImplementedYet),
       ),
-      _HomeNavEntry(
-        item: _HomeNavItem(
-          icon: Icons.person_rounded,
-          label: l10n.homeSettings,
-        ),
+      HomeNavEntry(
+        item: HomeNavItem(icon: Icons.person_rounded, label: l10n.homeSettings),
         isSelected: currentTab == HomeTabType.settings,
-        onTap: () => _onTabTapped(2),
+        onTap: () => _onTabTapped(_settingsBranchIndex),
       ),
     ];
   }
@@ -106,7 +107,7 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       extendBody: true,
-      appBar: _HomeTopBar(
+      appBar: HomeTopBar(
         title: _titleForTab(l10n),
         titleColor: currentTab == HomeTabType.inventory
             ? AppInventoryEditorial.primary
@@ -116,7 +117,7 @@ class HomePage extends ConsumerWidget {
       body: navigationShell,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: HomeContextFab(currentTab: currentTab),
-      bottomNavigationBar: _HomeBottomNavBar(
+      bottomNavigationBar: HomeBottomNavBar(
         entries: _navEntries(context, l10n),
       ),
     );
@@ -127,216 +128,4 @@ class HomePage extends ConsumerWidget {
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(message)));
   }
-}
-
-class _HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
-  const _HomeTopBar({
-    required this.title,
-    required this.actions,
-    this.titleColor,
-  });
-
-  final String title;
-  final List<Widget> actions;
-  final Color? titleColor;
-
-  @override
-  Size get preferredSize => const Size.fromHeight(76);
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final borderColor = AppInventoryEditorialSurfaces.ghostBorder(
-      colors,
-    ).withValues(alpha: 0.1);
-
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: AppInventoryEditorial.glassBlur,
-          sigmaY: AppInventoryEditorial.glassBlur,
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: colors.surface.withValues(alpha: 0.4),
-            border: Border(bottom: BorderSide(color: borderColor)),
-          ),
-          child: SafeArea(
-            bottom: false,
-            child: SizedBox(
-              height: preferredSize.height,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(
-                              color: titleColor ?? colors.onSurface,
-                              fontWeight: FontWeight.w800,
-                            ),
-                      ),
-                    ),
-                    ...actions,
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _HomeBottomNavBar extends StatelessWidget {
-  const _HomeBottomNavBar({required this.entries});
-
-  final List<_HomeNavEntry> entries;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final radius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
-
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          0,
-          AppSpacing.xl,
-          AppSpacing.xl,
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            boxShadow: [
-              AppInventoryEditorialSurfaces.ambientBoxShadow(
-                colors,
-                blurRadius: 30,
-                offset: const Offset(0, -10),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: radius,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: AppInventoryEditorial.glassBlur,
-                sigmaY: AppInventoryEditorial.glassBlur,
-              ),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainerLow.withValues(alpha: 0.7),
-                  borderRadius: radius,
-                  border: Border.all(
-                    color: AppInventoryEditorialSurfaces.ghostBorder(
-                      colors,
-                    ).withValues(alpha: 0.65),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.sm,
-                    AppSpacing.sm,
-                    AppSpacing.sm,
-                    AppSpacing.md,
-                  ),
-                  child: Row(
-                    children: [
-                      for (final entry in entries)
-                        Expanded(
-                          child: _HomeBottomNavItemButton(
-                            item: entry.item,
-                            isSelected: entry.isSelected,
-                            onTap: entry.onTap,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _HomeBottomNavItemButton extends StatelessWidget {
-  const _HomeBottomNavItemButton({
-    required this.item,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final _HomeNavItem item;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final foregroundColor = isSelected
-        ? colors.primary
-        : colors.onSurfaceVariant;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xs,
-          vertical: AppSpacing.sm,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected ? colors.primaryContainer : Colors.transparent,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(item.icon, color: foregroundColor, size: 22),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              item.label.toUpperCase(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: foregroundColor,
-                fontSize: 10,
-                letterSpacing: 1,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _HomeNavItem {
-  const _HomeNavItem({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-}
-
-class _HomeNavEntry {
-  const _HomeNavEntry({
-    required this.item,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final _HomeNavItem item;
-  final bool isSelected;
-  final VoidCallback onTap;
 }
