@@ -24,13 +24,10 @@ class RemainingProgressBar extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final safeRatio = ratio.clamp(0.0, 1.0);
     final trackColor = colorScheme.surfaceContainerHighest;
-    final consumedRatio = (1 - safeRatio).clamp(0.0, 1.0);
-    final fillColor = Color.lerp(
-      colorScheme.primary,
-      colorScheme.error,
-      consumedRatio,
-    );
-    final resolvedFillColor = fillColor ?? colorScheme.primary;
+    final isLowStock = safeRatio < 0.1;
+    final resolvedFillColor = isLowStock
+        ? AppInventoryEditorial.warning
+        : colorScheme.primary;
     final percentage = (safeRatio * 100).round();
     final useSegmentedBar = segmentedByUnits && totalUnits <= _maxSegmentCount;
 
@@ -87,7 +84,7 @@ class RemainingProgressBar extends StatelessWidget {
       borderRadius: BorderRadius.circular(999),
       child: LinearProgressIndicator(
         value: safeRatio,
-        minHeight: 10,
+        minHeight: AppInventoryEditorial.progressHeight,
         backgroundColor: trackColor,
         valueColor: AlwaysStoppedAnimation<Color>(fillColor),
       ),
@@ -118,7 +115,7 @@ class RemainingProgressBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
               child: LinearProgressIndicator(
                 value: fillValue,
-                minHeight: 10,
+                minHeight: AppInventoryEditorial.progressHeight,
                 backgroundColor: trackColor,
                 valueColor: AlwaysStoppedAnimation<Color>(fillColor),
               ),

@@ -133,12 +133,16 @@ class _InventoryErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final cardRadius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
 
     return Center(
       child: Padding(
         padding: AppInsets.pageLarge,
-        child: Card(
-          margin: EdgeInsets.zero,
+        child: DecoratedBox(
+          decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+            colors,
+            borderRadius: cardRadius,
+          ),
           child: Padding(
             padding: AppInsets.card,
             child: Column(

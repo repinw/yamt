@@ -1,22 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-BoxDecoration _metadataCardDecoration(ColorScheme colors) {
-  return BoxDecoration(
-    color: colors.surface,
-    borderRadius: BorderRadius.circular(AppReceiptReviewUi.panelRadius),
-    border: Border.all(color: colors.outlineVariant),
-    boxShadow: <BoxShadow>[
-      BoxShadow(
-        color: colors.shadow.withValues(alpha: 0.08),
-        blurRadius: 10,
-        offset: const Offset(0, 2),
-      ),
-    ],
-  );
-}
 
 /// Metadata card that shows store, receipt date, and receipt time.
 class InventoryReceiptReviewMetadataOverview extends StatelessWidget {
@@ -45,7 +31,7 @@ class InventoryReceiptReviewMetadataOverview extends StatelessWidget {
     };
 
     return DecoratedBox(
-      decoration: _metadataCardDecoration(colors),
+      decoration: AppReceiptReviewSurfaces.panelDecoration(colors),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(

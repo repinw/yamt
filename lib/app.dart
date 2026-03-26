@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
+import 'package:yamt/core/widgets/app_background.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 import 'package:yamt/core/router/app_router.dart';
 
@@ -21,6 +22,7 @@ class YAMT extends ConsumerWidget {
       theme: AppTheme.light(seedColor: seedColor),
       darkTheme: AppTheme.dark(seedColor: seedColor),
       themeMode: themeMode,
+      builder: (context, child) => AppBackground(child: child),
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

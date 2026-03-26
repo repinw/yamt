@@ -62,7 +62,7 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.xl,
-        AppSpacing.sm,
+        AppSpacing.md,
         AppSpacing.xl,
         AppSpacing.xxxxl + AppSpacing.xxxxl,
       ),
@@ -73,7 +73,7 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
           return InventoryItemRowListEntry(
             item: item,
             keyPrefix: 'inventory_item_row',
-            bottomSpacing: AppSpacing.sm,
+            bottomSpacing: AppSpacing.xl,
             l10n: widget.l10n,
             currency: widget.currency,
             showBarcodeMarkers: widget.showBarcodeMarkers,

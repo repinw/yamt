@@ -7,6 +7,8 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/data/calorie_barcode_backfill_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_amount_input_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -323,13 +325,14 @@ class _InventoryItemRowLayoutData {
       colorScheme: colors,
       snapshot: InventoryItemRowSnapshot.fromItem(item),
       viewData: InventoryItemRowViewData(
-        rowBorderColor: colors.outlineVariant,
+        rowBorderColor: AppInventoryEditorialSurfaces.ghostBorder(colors),
         expandHintColor: colors.onSurfaceVariant,
         unitPriceLabel:
             '${l10n.inventoryReceiptReviewFieldUnitPrice}: '
             '${currency.format(item.unitPrice)}',
         nameTextStyle:
-            Theme.of(context).textTheme.titleMedium ?? const TextStyle(),
+            (Theme.of(context).textTheme.titleMedium ?? const TextStyle())
+                .copyWith(color: colors.onSurface, fontWeight: FontWeight.w700),
         hasBrand: hasBrand,
         brand: brand,
         statusText: marker?.text,
@@ -342,11 +345,15 @@ class _InventoryItemRowLayoutData {
         eatActionBackgroundColor: isBuyAgainPrimaryAction
             ? buyAgainActionColors.backgroundColor
             : eatActionColors.backgroundColor,
-        disabledActionBackgroundColor: colors.surfaceContainerHighest,
+        disabledActionBackgroundColor: AppInventoryEditorialSurfaces.section(
+          colors,
+        ),
         eatActionBorderColor: isBuyAgainPrimaryAction
             ? buyAgainActionColors.borderColor
             : eatActionColors.borderColor,
-        disabledActionBorderColor: colors.outlineVariant.withValues(alpha: 0.5),
+        disabledActionBorderColor: AppInventoryEditorialSurfaces.ghostBorder(
+          colors,
+        ),
         primaryActionTooltip: isBuyAgainPrimaryAction
             ? l10n.inventoryItemBuyAgainAction
             : l10n.inventoryItemEatAction,
@@ -421,22 +428,35 @@ class _InventoryItemRowCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      child: InkWell(
-        onTap: onToggleExpanded,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        child: _InventoryItemRowBody(
-          layoutData: layoutData,
-          isExpanded: isExpanded,
-          deleteLabel: deleteLabel,
-          throwAwayLabel: throwAwayLabel,
-          onToggleExpanded: onToggleExpanded,
-          onDeletePressed: onDeletePressed,
-          onPrimaryActionPressed: onPrimaryActionPressed,
-          onThrowAwayPressed: onThrowAwayPressed,
-          retryBarcodeLabel: retryBarcodeLabel,
-          onRetryBarcodePressed: onRetryBarcodePressed,
+    final radius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
+    final colors = layoutData.colorScheme;
+
+    return DecoratedBox(
+      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+        colors,
+        borderRadius: radius,
+        blurRadius: 30,
+        shadowOffset: const Offset(0, 16),
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onToggleExpanded,
+            child: _InventoryItemRowBody(
+              layoutData: layoutData,
+              isExpanded: isExpanded,
+              deleteLabel: deleteLabel,
+              throwAwayLabel: throwAwayLabel,
+              onToggleExpanded: onToggleExpanded,
+              onDeletePressed: onDeletePressed,
+              onPrimaryActionPressed: onPrimaryActionPressed,
+              onThrowAwayPressed: onThrowAwayPressed,
+              retryBarcodeLabel: retryBarcodeLabel,
+              onRetryBarcodePressed: onRetryBarcodePressed,
+            ),
+          ),
         ),
       ),
     );

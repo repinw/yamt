@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 
 class BrandBadge extends StatelessWidget {
   const BrandBadge({super.key, required this.brand});
@@ -14,7 +16,10 @@ class BrandBadge extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppBrandBadge.borderRadius),
-        border: Border.all(color: colorScheme.outlineVariant),
+        color: colorScheme.surfaceContainerHigh,
+        border: Border.all(
+          color: AppInventoryEditorialSurfaces.ghostBorder(colorScheme),
+        ),
       ),
       child: Padding(
         padding: AppBrandBadge.padding,

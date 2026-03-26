@@ -30,7 +30,7 @@ class InventoryItemRowMainSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CategoryIcon(
           name: item.category ?? item.name,
@@ -108,20 +108,37 @@ class _InventoryItemPrimaryActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final usesSoulGradient =
+        viewData.isPrimaryActionEnabled && !viewData.isBuyAgainPrimaryAction;
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: viewData.isPrimaryActionEnabled
+        color: usesSoulGradient
+            ? null
+            : viewData.isPrimaryActionEnabled
             ? viewData.eatActionBackgroundColor
             : viewData.disabledActionBackgroundColor,
-        borderRadius: BorderRadius.circular(AppRadius.md),
+        gradient: usesSoulGradient
+            ? AppInventoryEditorialSurfaces.soulGradient(colors)
+            : null,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
-          color: viewData.isPrimaryActionEnabled
+          color: usesSoulGradient
+              ? Colors.transparent
+              : viewData.isPrimaryActionEnabled
               ? viewData.eatActionBorderColor
               : viewData.disabledActionBorderColor,
         ),
+        boxShadow: [
+          AppInventoryEditorialSurfaces.ambientBoxShadow(
+            colors,
+            blurRadius: 24,
+          ),
+        ],
       ),
       child: SizedBox.square(
-        dimension: AppSizes.dialogIconContainer,
+        dimension: AppInventoryEditorial.actionTileSize,
         child: IconButton(
           visualDensity: VisualDensity.compact,
           splashRadius: AppSpacing.xxl,
@@ -131,7 +148,9 @@ class _InventoryItemPrimaryActionButton extends StatelessWidget {
             viewData.primaryActionIcon,
             size: InventoryItemRowConstants.actionIconSize,
           ),
-          color: viewData.isPrimaryActionEnabled
+          color: usesSoulGradient
+              ? colors.onPrimary
+              : viewData.isPrimaryActionEnabled
               ? viewData.eatActionIconColor
               : viewData.disabledActionIconColor,
         ),

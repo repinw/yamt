@@ -4,28 +4,10 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/product_image_url.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-BoxDecoration _itemCardDecoration(
-  BuildContext context, {
-  Color? backgroundColor,
-}) {
-  final colors = Theme.of(context).colorScheme;
-
-  return BoxDecoration(
-    color: backgroundColor ?? colors.surface,
-    borderRadius: BorderRadius.circular(AppReceiptReviewUi.panelRadius),
-    border: Border.all(color: colors.outlineVariant),
-    boxShadow: <BoxShadow>[
-      BoxShadow(
-        color: colors.shadow.withValues(alpha: 0.08),
-        blurRadius: 10,
-        offset: const Offset(0, 2),
-      ),
-    ],
-  );
-}
 
 /// Receipt review list row that shows one mapped or unresolved item.
 class InventoryReceiptReviewItemCard extends StatelessWidget {
@@ -70,8 +52,8 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
         onTap: item.isDiscount ? null : () => onEditTap(item.id),
         borderRadius: BorderRadius.circular(18),
         child: Ink(
-          decoration: _itemCardDecoration(
-            context,
+          decoration: AppReceiptReviewSurfaces.panelDecoration(
+            colors,
             backgroundColor: muted
                 ? colors.surfaceContainerLow
                 : colors.surface,

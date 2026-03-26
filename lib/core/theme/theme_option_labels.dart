@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 String localizedThemeModeLabel(AppLocalizations l10n, ThemeMode mode) {

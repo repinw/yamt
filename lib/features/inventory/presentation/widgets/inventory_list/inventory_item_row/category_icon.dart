@@ -13,8 +13,8 @@ class CategoryIcon extends ConsumerWidget {
     this.imageUrl,
   });
 
-  static const _size = 50.0;
-  static const _imageInset = 2.0;
+  static const _size = AppInventoryEditorial.categoryTileSize;
+  static const _imageInset = 4.0;
   static const _fallbackEmoji = '🍽️';
 
   static const Map<String, String> _emojiByCategory = {
@@ -145,36 +145,46 @@ class CategoryIcon extends ConsumerWidget {
       name,
       colors.secondaryContainer.withValues(alpha: 0.75),
     );
-    final borderColor = colors.outlineVariant.withValues(alpha: 0.35);
+    final borderRadius = BorderRadius.circular(AppRadius.xl);
 
     return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        color: backgroundColor,
-        border: Border.all(color: borderColor),
+      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+        colors,
+        borderRadius: borderRadius,
+        blurRadius: 24,
+        shadowOffset: const Offset(0, 12),
       ),
-      child: SizedBox.square(
-        dimension: _size,
-        child: Center(
-          child: imageUrl == null
-              ? Text(emoji, style: emojiTextStyle)
-              : ClipRRect(
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                  clipBehavior: Clip.hardEdge,
-                  child: Image.network(
-                    imageUrl,
-                    width: _size - (_imageInset * 2),
-                    height: _size - (_imageInset * 2),
-                    fit: BoxFit.cover,
-                    cacheWidth: imageCacheDimension,
-                    cacheHeight: imageCacheDimension,
-                    filterQuality: FilterQuality.low,
-                    gaplessPlayback: true,
-                    errorBuilder: (_, error, stackTrace) {
-                      return Text(emoji, style: emojiTextStyle);
-                    },
-                  ),
-                ),
+      child: Padding(
+        padding: const EdgeInsets.all(_imageInset),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            color: backgroundColor,
+          ),
+          child: SizedBox.square(
+            dimension: _size - (_imageInset * 2),
+            child: Center(
+              child: imageUrl == null
+                  ? Text(emoji, style: emojiTextStyle)
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                      clipBehavior: Clip.hardEdge,
+                      child: Image.network(
+                        imageUrl,
+                        width: _size - (_imageInset * 2),
+                        height: _size - (_imageInset * 2),
+                        fit: BoxFit.cover,
+                        cacheWidth: imageCacheDimension,
+                        cacheHeight: imageCacheDimension,
+                        filterQuality: FilterQuality.low,
+                        gaplessPlayback: true,
+                        errorBuilder: (_, error, stackTrace) {
+                          return Text(emoji, style: emojiTextStyle);
+                        },
+                      ),
+                    ),
+            ),
+          ),
         ),
       ),
     );

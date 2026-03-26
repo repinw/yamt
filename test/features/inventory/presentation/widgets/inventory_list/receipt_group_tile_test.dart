@@ -82,10 +82,13 @@ Widget _buildHarness({
     onEatItem: onEatItem ?? (itemId, amount) async => true,
     onThrowAwayItem: onThrowAwayItem ?? (itemId, amount) async => true,
   );
-  final body = Center(
-    child: SizedBox(
-      width: 360,
-      child: showTile ? tile : const SizedBox.shrink(),
+  final body = SingleChildScrollView(
+    padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+    child: Center(
+      child: SizedBox(
+        width: 360,
+        child: showTile ? tile : const SizedBox.shrink(),
+      ),
     ),
   );
   final scaffoldBody = bucket == null
@@ -131,9 +134,22 @@ Future<void> _expand(WidgetTester tester) async {
 }
 
 BorderSide _receiptTileBorderSide(WidgetTester tester) {
-  final card = tester.widget<Card>(find.byType(Card));
-  final shape = card.shape as RoundedRectangleBorder;
-  return shape.side;
+  final decoratedBox = tester
+      .widgetList<DecoratedBox>(
+        find.descendant(
+          of: find.byType(ReceiptGroupTile),
+          matching: find.byType(DecoratedBox),
+        ),
+      )
+      .firstWhere((widget) {
+        final decoration = widget.decoration;
+        return decoration is BoxDecoration &&
+            decoration.border is Border &&
+            decoration.boxShadow?.isNotEmpty == true;
+      });
+  final decoration = decoratedBox.decoration as BoxDecoration;
+  final border = decoration.border! as Border;
+  return border.top;
 }
 
 void main() {
@@ -156,34 +172,30 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('light theme uses softened border color and width', (
-    tester,
-  ) async {
+  testWidgets('light theme uses ghost border color and width', (tester) async {
     await _pump(tester, theme: lightTheme);
 
     final side = _receiptTileBorderSide(tester);
-    final expectedColor = Color.alphaBlend(
-      lightTheme.colorScheme.outlineVariant.withValues(alpha: 0.14),
-      lightTheme.colorScheme.surface,
+    final expectedColor = AppInventoryEditorialSurfaces.ghostBorder(
+      lightTheme.colorScheme,
     );
 
     expect(side.color, expectedColor);
-    expect(side.width, 0.7);
+    expect(side.width, 1);
   });
 
-  testWidgets('dark theme uses stronger border color and same width', (
+  testWidgets('dark theme uses ghost border color and same width', (
     tester,
   ) async {
     await _pump(tester, theme: darkTheme);
 
     final side = _receiptTileBorderSide(tester);
-    final expectedColor = Color.alphaBlend(
-      darkTheme.colorScheme.outlineVariant.withValues(alpha: 0.24),
-      darkTheme.colorScheme.surface,
+    final expectedColor = AppInventoryEditorialSurfaces.ghostBorder(
+      darkTheme.colorScheme,
     );
 
     expect(side.color, expectedColor);
-    expect(side.width, 0.7);
+    expect(side.width, 1);
   });
 
   testWidgets('golden: light collapsed', (tester) async {

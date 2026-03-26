@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_segmented_button_style.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 enum _InventoryConsumptionFilter { consumed, notConsumed }
@@ -27,6 +29,7 @@ class InventoryConsumptionFilterToggle extends StatelessWidget {
       multiSelectionEnabled: true,
       emptySelectionAllowed: false,
       showSelectedIcon: false,
+      style: inventorySegmentedButtonStyle(context),
       selected: <_InventoryConsumptionFilter>{
         if (showConsumed) _InventoryConsumptionFilter.consumed,
         if (showNotConsumed) _InventoryConsumptionFilter.notConsumed,

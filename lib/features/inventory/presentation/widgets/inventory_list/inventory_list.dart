@@ -7,17 +7,17 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_consumption_filter.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_consumption_filter_toggle.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_all_items_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_list_mode_toggle.dart';
+    'inventory_consumption_filter_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_receipt_groups_sliver.dart';
+    'inventory_list_mode_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_receipt_groups_sliver.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -63,7 +63,12 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     return CustomScrollView(
       slivers: [
         SliverPadding(
-          padding: AppInsets.page,
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.lg,
+            AppSpacing.xl,
+            0,
+          ),
           sliver: SliverToBoxAdapter(
             child: InventorySummaryCard(
               items: filteredItems,
@@ -72,58 +77,35 @@ class _InventoryListState extends ConsumerState<InventoryList> {
           ),
         ),
         if (hasSourceItems)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,
-                AppSpacing.sm,
-                AppSpacing.xl,
-                AppSpacing.sm,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  InventoryListModeToggle(
-                    mode: _mode,
-                    l10n: l10n,
-                    onModeChanged: _onModeChanged,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  InventoryConsumptionFilterToggle(
-                    showConsumed: _consumptionFilter.showConsumed,
-                    showNotConsumed: _consumptionFilter.showNotConsumed,
-                    l10n: l10n,
-                    onShowConsumedChanged: _onShowConsumedChanged,
-                    onShowNotConsumedChanged: _onShowNotConsumedChanged,
-                  ),
-                ],
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl,
+              AppSpacing.lg,
+              AppSpacing.xl,
+              AppSpacing.sm,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: InventoryControlsCard(
+                itemCount: filteredItems.length,
+                modeToggle: InventoryListModeToggle(
+                  mode: _mode,
+                  l10n: l10n,
+                  onModeChanged: _onModeChanged,
+                ),
+                consumptionToggle: InventoryConsumptionFilterToggle(
+                  showConsumed: _consumptionFilter.showConsumed,
+                  showNotConsumed: _consumptionFilter.showNotConsumed,
+                  l10n: l10n,
+                  onShowConsumedChanged: _onShowConsumedChanged,
+                  onShowNotConsumedChanged: _onShowNotConsumedChanged,
+                ),
               ),
             ),
           ),
-        SliverToBoxAdapter(
-          child: Divider(
-            height: 1,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          ),
-        ),
         if (!hasSourceItems)
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Padding(
-              padding: AppInsets.pageLarge,
-              child: const InventoryEmptyState(),
-            ),
-          )
+          _buildEmptyStateSliver()
         else if (!hasFilteredItems)
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Padding(
-              padding: AppInsets.pageLarge,
-              child: InventoryEmptyState(
-                message: l10n.inventoryFilteredEmptyState,
-              ),
-            ),
-          )
+          _buildEmptyStateSliver(message: l10n.inventoryFilteredEmptyState)
         else if (_mode == InventoryListMode.byReceipt)
           InventoryReceiptGroupsSliver(
             groups: groupInventoryItemsByReceipt(filteredItems),
@@ -168,5 +150,15 @@ class _InventoryListState extends ConsumerState<InventoryList> {
         showNotConsumed,
       );
     });
+  }
+
+  SliverFillRemaining _buildEmptyStateSliver({String? message}) {
+    return SliverFillRemaining(
+      hasScrollBody: false,
+      child: Padding(
+        padding: AppInsets.pageLarge,
+        child: InventoryEmptyState(message: message),
+      ),
+    );
   }
 }

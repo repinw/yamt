@@ -13,11 +13,11 @@ void main() {
       dark = AppTheme.dark(seedColor: AppColors.seed);
     });
 
-    test('light and dark themes tint scaffold background from surface', () {
-      expect(light.scaffoldBackgroundColor, isNot(light.colorScheme.surface));
-      expect(dark.scaffoldBackgroundColor, isNot(dark.colorScheme.surface));
+    test('light and dark themes keep scaffold transparent and tint canvas', () {
+      expect(light.scaffoldBackgroundColor, Colors.transparent);
+      expect(dark.scaffoldBackgroundColor, Colors.transparent);
       expect(
-        light.scaffoldBackgroundColor,
+        light.canvasColor,
         equals(
           Color.alphaBlend(
             light.colorScheme.primary.withValues(
@@ -28,7 +28,7 @@ void main() {
         ),
       );
       expect(
-        dark.scaffoldBackgroundColor,
+        dark.canvasColor,
         equals(
           Color.alphaBlend(
             dark.colorScheme.primary.withValues(
@@ -42,14 +42,8 @@ void main() {
         AppThemeBackground.darkTintAlpha,
         greaterThan(AppThemeBackground.lightTintAlpha),
       );
-      expect(
-        light.appBarTheme.backgroundColor,
-        equals(light.scaffoldBackgroundColor),
-      );
-      expect(
-        dark.appBarTheme.backgroundColor,
-        equals(dark.scaffoldBackgroundColor),
-      );
+      expect(light.appBarTheme.backgroundColor, Colors.transparent);
+      expect(dark.appBarTheme.backgroundColor, Colors.transparent);
     });
 
     test('theme card style is unified for light and dark', () {

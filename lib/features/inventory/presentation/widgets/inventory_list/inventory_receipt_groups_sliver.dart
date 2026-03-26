@@ -34,7 +34,7 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.xl,
-        AppSpacing.sm,
+        AppSpacing.md,
         AppSpacing.xl,
         AppSpacing.xxxxl + AppSpacing.xxxxl,
       ),
@@ -43,7 +43,7 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
         itemBuilder: (context, index) {
           final group = groups[index];
           return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            padding: const EdgeInsets.only(bottom: AppSpacing.xl),
             child: ReceiptGroupTile(
               group: group,
               currency: currency,

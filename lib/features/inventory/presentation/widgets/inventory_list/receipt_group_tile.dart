@@ -8,11 +8,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-const _receiptGroupBorderAlphaLight = 0.14;
-const _receiptGroupBorderAlphaDark = 0.24;
-const _receiptGroupBorderWidth = 0.7;
-const _receiptGroupElevation = 0.0;
-
 class ReceiptGroupTile extends StatefulWidget {
   const ReceiptGroupTile({
     super.key,
@@ -65,65 +60,75 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
-    final borderColor = _resolveBorderColor(colors);
     final title = widget.group.title(l10n: l10n, dateFormat: widget.dateFormat);
     final subtitle = widget.group.subtitle(
       l10n: l10n,
       currency: widget.currency,
     );
+    final radius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
 
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: _receiptGroupElevation,
-      surfaceTintColor: Colors.transparent,
-      color: colors.surfaceContainerLow,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        side: BorderSide(color: borderColor, width: _receiptGroupBorderWidth),
+    return DecoratedBox(
+      decoration: AppInventoryEditorialSurfaces.sectionCardDecoration(
+        colors,
+        borderRadius: radius,
       ),
-      child: ExpansionTile(
-        key: ValueKey<String>(_storageKey),
-        initiallyExpanded: _isExpanded,
-        onExpansionChanged: _onExpansionChanged,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            key: ValueKey<String>(_storageKey),
+            initiallyExpanded: _isExpanded,
+            onExpansionChanged: _onExpansionChanged,
+            backgroundColor: Colors.transparent,
+            collapsedBackgroundColor: Colors.transparent,
+            shape: RoundedRectangleBorder(borderRadius: radius),
+            collapsedShape: RoundedRectangleBorder(borderRadius: radius),
+            tilePadding: const EdgeInsets.fromLTRB(
+              AppSpacing.xxl,
+              AppSpacing.xl,
+              AppSpacing.xxl,
+              AppSpacing.md,
+            ),
+            childrenPadding: const EdgeInsets.fromLTRB(
+              AppSpacing.xxl,
+              0,
+              AppSpacing.xxl,
+              AppSpacing.xxl,
+            ),
+            iconColor: colors.primary,
+            collapsedIconColor: colors.onSurfaceVariant,
+            title: Text(title, style: Theme.of(context).textTheme.titleMedium),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.xs),
+              child: Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+            children: _isExpanded
+                ? widget.group.items
+                      .map((item) {
+                        return InventoryItemRowListEntry(
+                          item: item,
+                          keyPrefix: 'receipt_item_row',
+                          bottomSpacing: AppSpacing.xl,
+                          l10n: l10n,
+                          currency: widget.currency,
+                          showBarcodeMarkers: widget.showBarcodeMarkers,
+                          activeShoppingListItemKeys:
+                              widget.activeShoppingListItemKeys,
+                          onDeleteItem: widget.onDeleteItem,
+                          onEatItem: widget.onEatItem,
+                          onThrowAwayItem: widget.onThrowAwayItem,
+                        );
+                      })
+                      .toList(growable: false)
+                : const <Widget>[],
+          ),
         ),
-        collapsedShape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-        tilePadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.xxs,
-        ),
-        childrenPadding: const EdgeInsets.fromLTRB(
-          AppSpacing.md,
-          0,
-          AppSpacing.md,
-          AppSpacing.md,
-        ),
-        title: Text(title, style: Theme.of(context).textTheme.titleSmall),
-        subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-        // Build children only for expanded groups to reduce scroll jank.
-        children: _isExpanded
-            ? widget.group.items
-                  .map((item) {
-                    return InventoryItemRowListEntry(
-                      item: item,
-                      keyPrefix: 'receipt_item_row',
-                      bottomSpacing: AppSpacing.sm,
-                      l10n: l10n,
-                      currency: widget.currency,
-                      showBarcodeMarkers: widget.showBarcodeMarkers,
-                      activeShoppingListItemKeys:
-                          widget.activeShoppingListItemKeys,
-                      onDeleteItem: widget.onDeleteItem,
-                      onEatItem: widget.onEatItem,
-                      onThrowAwayItem: widget.onThrowAwayItem,
-                    );
-                  })
-                  .toList(growable: false)
-            : const <Widget>[],
       ),
     );
   }
@@ -137,16 +142,5 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
     PageStorage.maybeOf(
       context,
     )?.writeState(context, isExpanded, identifier: _storageKey);
-  }
-
-  Color _resolveBorderColor(ColorScheme colors) {
-    final alpha = colors.brightness == Brightness.dark
-        ? _receiptGroupBorderAlphaDark
-        : _receiptGroupBorderAlphaLight;
-
-    return Color.alphaBlend(
-      colors.outlineVariant.withValues(alpha: alpha),
-      colors.surface,
-    );
   }
 }

@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 part 'seed_color_controller.g.dart';
 

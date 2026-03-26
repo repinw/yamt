@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -40,46 +41,59 @@ class InventoryItemRowExpandSection extends StatelessWidget {
         const SizedBox(
           height: InventoryItemRowConstants.expandSectionTopSpacing,
         ),
-        SizedBox(
-          width: double.infinity,
-          height: InventoryItemRowConstants.expandIndicatorHeight,
-          child: DecoratedBox(
+        InkWell(
+          onTap: onToggleExpanded,
+          borderRadius: BorderRadius.circular(
+            InventoryItemRowConstants.expandToggleRadius,
+          ),
+          child: AnimatedContainer(
+            duration: InventoryItemRowConstants.expandArrowDuration,
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.xs,
+            ),
             decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  color: viewData.rowBorderColor.withValues(alpha: 0.6),
-                ),
+              color: isExpanded
+                  ? colorScheme.surfaceContainerHigh
+                  : colorScheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(
+                InventoryItemRowConstants.expandToggleRadius,
+              ),
+              border: Border.all(
+                color: AppInventoryEditorialSurfaces.ghostBorder(colorScheme),
               ),
             ),
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: InkWell(
-                onTap: onToggleExpanded,
-                borderRadius: BorderRadius.circular(
-                  InventoryItemRowConstants.expandToggleRadius,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: InventoryItemRowConstants.expandIndicatorTopPadding,
-                  ),
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween<double>(end: isExpanded ? math.pi : 0),
-                    duration: InventoryItemRowConstants.expandArrowDuration,
-                    curve: Curves.easeOutCubic,
-                    child: Transform.scale(
-                      scaleX: InventoryItemRowConstants.expandArrowScaleX,
-                      child: Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        size: InventoryItemRowConstants.expandArrowSize,
-                        color: viewData.expandHintColor,
-                      ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: viewData.expandHintColor.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(
+                      InventoryItemRowConstants.expandToggleRadius,
                     ),
-                    builder: (context, angle, child) {
-                      return Transform.rotate(angle: angle, child: child);
-                    },
                   ),
+                  child: const SizedBox(width: 18, height: 4),
                 ),
-              ),
+                const SizedBox(width: AppSpacing.xs),
+                TweenAnimationBuilder<double>(
+                  tween: Tween<double>(end: isExpanded ? math.pi : 0),
+                  duration: InventoryItemRowConstants.expandArrowDuration,
+                  curve: Curves.easeOutCubic,
+                  child: Transform.scale(
+                    scaleX: InventoryItemRowConstants.expandArrowScaleX,
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: InventoryItemRowConstants.expandArrowSize,
+                      color: viewData.expandHintColor,
+                    ),
+                  ),
+                  builder: (context, angle, child) {
+                    return Transform.rotate(angle: angle, child: child);
+                  },
+                ),
+              ],
             ),
           ),
         ),
@@ -133,86 +147,120 @@ class _InventoryItemActionPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final actionShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadius.xl),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          viewData.unitPriceLabel,
-          style: TextStyle(
-            fontSize: InventoryItemRowConstants.actionMetadataFontSize,
-            fontWeight: FontWeight.w600,
-            color: colorScheme.onSurfaceVariant,
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: AppInventoryEditorialSurfaces.section(colorScheme),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(
+              color: AppInventoryEditorialSurfaces.ghostBorder(colorScheme),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  viewData.unitPriceLabel,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(
+                  height: InventoryItemRowConstants.actionContentSpacing,
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: onDeletePressed,
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          size: InventoryItemRowConstants.actionButtonIconSize,
+                        ),
+                        label: Text(deleteLabel),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: colorScheme.error,
+                          backgroundColor: colorScheme.errorContainer
+                              .withValues(alpha: 0.22),
+                          side: BorderSide(
+                            color: colorScheme.error.withValues(alpha: 0.18),
+                          ),
+                          minimumSize: const Size(
+                            0,
+                            InventoryItemRowConstants.actionButtonHeight,
+                          ),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          shape: actionShape,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: InventoryItemRowConstants.actionButtonSpacing,
+                    ),
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: onThrowAwayPressed,
+                        icon: const Icon(
+                          Icons.delete_sweep_outlined,
+                          size: InventoryItemRowConstants.actionButtonIconSize,
+                        ),
+                        label: Text(throwAwayLabel),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: colorScheme.tertiaryContainer,
+                          foregroundColor: colorScheme.onTertiaryContainer,
+                          minimumSize: const Size(
+                            0,
+                            InventoryItemRowConstants.actionButtonHeight,
+                          ),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          shape: actionShape,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (onRetryBarcodePressed != null) ...[
+                  const SizedBox(
+                    height: InventoryItemRowConstants.actionContentSpacing,
+                  ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: onRetryBarcodePressed,
+                      icon: const Icon(
+                        Icons.refresh_rounded,
+                        size: InventoryItemRowConstants.actionButtonIconSize,
+                      ),
+                      label: Text(retryBarcodeLabel),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colorScheme.primary,
+                        side: BorderSide(
+                          color: AppInventoryEditorialSurfaces.ghostBorder(
+                            colorScheme,
+                          ),
+                        ),
+                        minimumSize: const Size(
+                          0,
+                          InventoryItemRowConstants.actionButtonHeight,
+                        ),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        shape: actionShape,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
-        const SizedBox(height: InventoryItemRowConstants.actionContentSpacing),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: onDeletePressed,
-                icon: const Icon(
-                  Icons.delete_outline,
-                  size: InventoryItemRowConstants.actionButtonIconSize,
-                ),
-                label: Text(deleteLabel),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: colorScheme.error,
-                  side: BorderSide(
-                    color: colorScheme.error.withValues(alpha: 0.45),
-                  ),
-                  minimumSize: const Size(
-                    0,
-                    InventoryItemRowConstants.actionButtonHeight,
-                  ),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-              ),
-            ),
-            const SizedBox(
-              width: InventoryItemRowConstants.actionButtonSpacing,
-            ),
-            Expanded(
-              child: FilledButton.tonalIcon(
-                onPressed: onThrowAwayPressed,
-                icon: const Icon(
-                  Icons.delete_sweep_outlined,
-                  size: InventoryItemRowConstants.actionButtonIconSize,
-                ),
-                label: Text(throwAwayLabel),
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size(
-                    0,
-                    InventoryItemRowConstants.actionButtonHeight,
-                  ),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-              ),
-            ),
-          ],
-        ),
-        if (onRetryBarcodePressed != null) ...[
-          const SizedBox(
-            height: InventoryItemRowConstants.actionContentSpacing,
-          ),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: onRetryBarcodePressed,
-              icon: const Icon(
-                Icons.refresh_rounded,
-                size: InventoryItemRowConstants.actionButtonIconSize,
-              ),
-              label: Text(retryBarcodeLabel),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(
-                  0,
-                  InventoryItemRowConstants.actionButtonHeight,
-                ),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
-          ),
-        ],
       ],
     );
   }

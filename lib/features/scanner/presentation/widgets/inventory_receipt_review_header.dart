@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Header row for the receipt review sheet with title and save action.
