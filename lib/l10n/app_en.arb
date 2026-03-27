@@ -222,6 +222,23 @@
   "caloriesProteinLabel": "Protein",
   "caloriesCarbsLabel": "Carbs",
   "caloriesFatLabel": "Fat",
+  "caloriesWeekBufferTitle": "Weekly buffer",
+  "caloriesWeekBufferRemaining": "{kcal} kcal left this week",
+  "@caloriesWeekBufferRemaining": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesWeekBufferOverspent": "{kcal} kcal over this week",
+  "@caloriesWeekBufferOverspent": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
   "caloriesSectionEmptyState": "No entries yet.",
   "caloriesDeleteEntryAction": "Delete entry",
   "caloriesDeleteEntryDialogTitle": "Delete entry?",

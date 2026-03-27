@@ -341,7 +341,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       barcode: scannedSourceRef.barcode,
       source: scannedSourceRef.source,
       offProductId: scannedSourceRef.offProductId,
-      imageUrl: null,
+      imageUrl: entry.imageUrl,
       now: now,
     );
     final saved = await cacheRepository.saveUserOverride(

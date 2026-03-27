@@ -586,6 +586,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesFatLabel => 'Fat';
 
   @override
+  String get caloriesWeekBufferTitle => 'Weekly buffer';
+
+  @override
+  String caloriesWeekBufferRemaining(int kcal) {
+    return '$kcal kcal left this week';
+  }
+
+  @override
+  String caloriesWeekBufferOverspent(int kcal) {
+    return '$kcal kcal over this week';
+  }
+
+  @override
   String get caloriesSectionEmptyState => 'No entries yet.';
 
   @override

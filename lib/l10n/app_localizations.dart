@@ -1241,6 +1241,24 @@ abstract class AppLocalizations {
   /// **'Fat'**
   String get caloriesFatLabel;
 
+  /// No description provided for @caloriesWeekBufferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly buffer'**
+  String get caloriesWeekBufferTitle;
+
+  /// No description provided for @caloriesWeekBufferRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal left this week'**
+  String caloriesWeekBufferRemaining(int kcal);
+
+  /// No description provided for @caloriesWeekBufferOverspent.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal over this week'**
+  String caloriesWeekBufferOverspent(int kcal);
+
   /// No description provided for @caloriesSectionEmptyState.
   ///
   /// In en, this message translates to:

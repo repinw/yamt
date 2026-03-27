@@ -228,6 +228,23 @@
   "caloriesProteinLabel": "Eiweiß",
   "caloriesCarbsLabel": "Kohlenhydrate",
   "caloriesFatLabel": "Fett",
+  "caloriesWeekBufferTitle": "Wochenpuffer",
+  "caloriesWeekBufferRemaining": "{kcal} kcal für diese Woche übrig",
+  "@caloriesWeekBufferRemaining": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesWeekBufferOverspent": "{kcal} kcal diese Woche drüber",
+  "@caloriesWeekBufferOverspent": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
   "caloriesSectionEmptyState": "Noch keine Einträge.",
   "caloriesDeleteEntryAction": "Eintrag löschen",
   "caloriesDeleteEntryDialogTitle": "Eintrag löschen?",

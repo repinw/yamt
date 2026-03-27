@@ -10,11 +10,13 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     required this.actions,
     this.titleColor,
+    this.titleIcon,
   });
 
   final String title;
   final List<Widget> actions;
   final Color? titleColor;
+  final IconData? titleIcon;
 
   @override
   Size get preferredSize => const Size.fromHeight(76);
@@ -46,13 +48,27 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        title,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(
-                              color: titleColor ?? colors.onSurface,
-                              fontWeight: FontWeight.w800,
+                      child: Row(
+                        children: [
+                          if (titleIcon != null) ...[
+                            Icon(
+                              titleIcon,
+                              color: titleColor ?? colors.primary,
+                              size: 22,
                             ),
+                            const SizedBox(width: AppSpacing.sm),
+                          ],
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(
+                                    color: titleColor ?? colors.onSurface,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     ...actions,

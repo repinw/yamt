@@ -12,11 +12,16 @@ import 'package:yamt/features/calories/provider/calorie_entries_controller.dart'
 
 import '../support/fake_calories_repositories.dart';
 
-CalorieEntry _entry({required String id, required DateTime loggedAt}) {
+CalorieEntry _entry({
+  required String id,
+  required DateTime loggedAt,
+  String? imageUrl,
+}) {
   return CalorieEntry.create(
     id: id,
     userId: 'user-1',
     name: 'Yogurt',
+    imageUrl: imageUrl,
     mealType: MealType.breakfast,
     consumedAmount: 100,
     consumedUnit: ConsumedUnit.grams,
@@ -67,6 +72,47 @@ void main() {
       contains('user_edit_after_scan'),
     );
     expect(cacheRepository.saveUserOverrideCallCount, 1);
+    expect(cacheRepository.overrides['4006381333931']?.imageUrl, isNull);
+  });
+
+  test('saveEntry forwards imageUrl into saved user override', () async {
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    final cacheRepository = FakeCalorieProductCacheRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+        calorieProductCacheRepositoryProvider.overrideWithValue(
+          cacheRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final saved = await container
+        .read(calorieEntriesControllerProvider.notifier)
+        .saveEntry(
+          _entry(
+            id: 'entry-2',
+            loggedAt: DateTime(2026, 2, 25, 11),
+            imageUrl: 'https://images.example.com/yogurt.jpg',
+          ),
+          scannedSourceRef: const CalorieScannedSourceRef(
+            barcode: '4006381333931',
+            source: CalorieProductSource.offBarcode,
+            offProductId: 'off-123',
+          ),
+        );
+
+    expect(saved, isTrue);
+    expect(
+      cacheRepository.overrides['4006381333931']?.imageUrl,
+      'https://images.example.com/yogurt.jpg',
+    );
   });
 
   test(

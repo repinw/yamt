@@ -55,4 +55,4 @@ final class GlobalFoodItemMatcherProvider
 }
 
 String _$globalFoodItemMatcherHash() =>
-    r'47a496ea2ffb13cad77e541c5f1f8aecf0f86d4b';
+    r'763d52c79115024459dc7d33e0f8b18bdaaba56a';

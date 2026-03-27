@@ -1,4 +1,5 @@
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 
 class CalorieInventoryCreateContext {
@@ -24,11 +25,13 @@ class CalorieEntryCreateArgs {
     required this.prefilledProfile,
     this.scannedSourceRef,
     this.inventoryContext,
+    this.preselectedMealType,
   });
 
   final CalorieProductProfile? prefilledProfile;
   final CalorieScannedSourceRef? scannedSourceRef;
   final CalorieInventoryCreateContext? inventoryContext;
+  final MealType? preselectedMealType;
 }
 
 class CalorieBarcodeScanArgs {

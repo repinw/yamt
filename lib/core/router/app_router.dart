@@ -97,6 +97,7 @@ GoRouter appRouter(Ref ref) {
             prefilledProfile: args?.prefilledProfile,
             scannedSourceRef: args?.scannedSourceRef,
             inventoryContext: args?.inventoryContext,
+            preselectedMealType: args?.preselectedMealType,
           );
         },
       ),

@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/calories/presentation/widgets/calorie_goal_dialog.dart';
+import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
+import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/home/home_tab_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
@@ -11,6 +15,9 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _inventoryBranchIndex = 0;
 const _diaryBranchIndex = 1;
 const _settingsBranchIndex = 2;
+const _fallbackDiaryGoalKcal = 2500.0;
+
+enum _DiaryAppBarAction { today, setGoal }
 
 /// Shell page that hosts the main app tabs and shared home chrome.
 class HomePage extends ConsumerWidget {
@@ -81,23 +88,56 @@ class HomePage extends ConsumerWidget {
     ];
   }
 
-  List<Widget> _buildActions(BuildContext context, AppLocalizations l10n) {
-    if (_currentTab() != HomeTabType.inventory) {
-      return const <Widget>[];
+  List<Widget> _buildActions(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) {
+    switch (_currentTab()) {
+      case HomeTabType.inventory:
+        return [
+          IconButton(
+            tooltip: l10n.commonNotImplementedYet,
+            onPressed: () =>
+                _showSnackBar(context, l10n.commonNotImplementedYet),
+            icon: const Icon(Icons.assignment_outlined),
+          ),
+          IconButton(
+            tooltip: l10n.homeShopping,
+            onPressed: () => context.push(AppRoutes.homeShopping),
+            icon: const Icon(Icons.shopping_cart_rounded),
+          ),
+        ];
+      case HomeTabType.diary:
+        return [
+          PopupMenuButton<_DiaryAppBarAction>(
+            key: CaloriesPageKeys.appBarMenuButton,
+            tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+            onSelected: (action) => _onDiaryActionSelected(
+              action: action,
+              context: context,
+              ref: ref,
+              l10n: l10n,
+            ),
+            itemBuilder: (context) {
+              return <PopupMenuEntry<_DiaryAppBarAction>>[
+                PopupMenuItem<_DiaryAppBarAction>(
+                  key: CaloriesPageKeys.appBarMenuTodayAction,
+                  value: _DiaryAppBarAction.today,
+                  child: Text(l10n.caloriesTodayAction),
+                ),
+                PopupMenuItem<_DiaryAppBarAction>(
+                  key: CaloriesPageKeys.appBarMenuSetGoalAction,
+                  value: _DiaryAppBarAction.setGoal,
+                  child: Text(l10n.caloriesSetGoalAction),
+                ),
+              ];
+            },
+          ),
+        ];
+      case HomeTabType.settings:
+        return const <Widget>[];
     }
-
-    return [
-      IconButton(
-        tooltip: l10n.commonNotImplementedYet,
-        onPressed: () => _showSnackBar(context, l10n.commonNotImplementedYet),
-        icon: const Icon(Icons.assignment_outlined),
-      ),
-      IconButton(
-        tooltip: l10n.homeShopping,
-        onPressed: () => context.push(AppRoutes.homeShopping),
-        icon: const Icon(Icons.shopping_cart_rounded),
-      ),
-    ];
   }
 
   @override
@@ -109,10 +149,12 @@ class HomePage extends ConsumerWidget {
       extendBody: true,
       appBar: HomeTopBar(
         title: _titleForTab(l10n),
-        titleColor: currentTab == HomeTabType.inventory
+        titleColor:
+            currentTab == HomeTabType.inventory ||
+                currentTab == HomeTabType.diary
             ? AppInventoryEditorial.primary
             : null,
-        actions: _buildActions(context, l10n),
+        actions: _buildActions(context, ref, l10n),
       ),
       body: navigationShell,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -127,5 +169,35 @@ class HomePage extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _onDiaryActionSelected({
+    required _DiaryAppBarAction action,
+    required BuildContext context,
+    required WidgetRef ref,
+    required AppLocalizations l10n,
+  }) async {
+    switch (action) {
+      case _DiaryAppBarAction.today:
+        ref.read(calorieDayControllerProvider.notifier).goToToday();
+        return;
+      case _DiaryAppBarAction.setGoal:
+        final currentGoal =
+            ref
+                .read(calorieGoalControllerProvider)
+                .asData
+                ?.value
+                .dailyKcalGoal ??
+            _fallbackDiaryGoalKcal;
+        await showCalorieGoalDialog(
+          context: context,
+          currentGoal: currentGoal,
+          onSaveGoal: ref.read(calorieGoalControllerProvider.notifier).setGoal,
+          onClearGoal: ref
+              .read(calorieGoalControllerProvider.notifier)
+              .clearGoal,
+        );
+        return;
+    }
   }
 }
