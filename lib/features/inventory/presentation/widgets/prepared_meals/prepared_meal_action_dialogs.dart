@@ -5,6 +5,8 @@ import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const _defaultPreparedMealPortions = 1;
+
 class PreparedMealEatDialogResult {
   const PreparedMealEatDialogResult({
     required this.portions,
@@ -20,7 +22,9 @@ Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
   PreparedMeal meal,
 ) {
   final l10n = AppLocalizations.of(context)!;
-  final portionsController = TextEditingController(text: '1');
+  final portionsController = TextEditingController(
+    text: _defaultPreparedMealPortions.toString(),
+  );
   var selectedMealType = MealType.defaultForDateTime(DateTime.now());
 
   return showDialog<PreparedMealEatDialogResult>(
@@ -105,7 +109,9 @@ Future<int?> showPreparedMealPortionDialog({
   required String title,
 }) {
   final l10n = AppLocalizations.of(context)!;
-  final controller = TextEditingController(text: '1');
+  final controller = TextEditingController(
+    text: _defaultPreparedMealPortions.toString(),
+  );
 
   return showDialog<int>(
     context: context,

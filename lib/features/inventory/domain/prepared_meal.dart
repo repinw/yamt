@@ -2,9 +2,13 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
+part 'prepared_meal.g.dart';
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PreparedMeal {
   const PreparedMeal({
     required this.id,
@@ -21,52 +25,35 @@ class PreparedMeal {
     required this.components,
   });
 
-  factory PreparedMeal.fromJson(Map<String, dynamic> json) {
-    return PreparedMeal(
-      id: _readTrimmedString(json['id']) ?? '',
-      name: _readTrimmedString(json['name']) ?? '',
-      imageBase64: _readTrimmedString(json['image_base64']),
-      totalPortions: _readInt(json['total_portions']) ?? 0,
-      remainingPortions: _readInt(json['remaining_portions']) ?? 0,
-      totalKcal: _readDouble(json['total_kcal']) ?? 0,
-      totalProtein: _readDouble(json['total_protein']) ?? 0,
-      totalCarbs: _readDouble(json['total_carbs']) ?? 0,
-      totalFat: _readDouble(json['total_fat']) ?? 0,
-      createdAt: _readDateTime(json['created_at']) ?? DateTime.now(),
-      updatedAt: _readDateTime(json['updated_at']) ?? DateTime.now(),
-      components: _readComponents(json['components']),
-    );
-  }
+  factory PreparedMeal.fromJson(Map<String, dynamic> json) =>
+      _$PreparedMealFromJson(json);
 
+  @JsonKey(fromJson: _readRequiredString)
   final String id;
+  @JsonKey(fromJson: _readRequiredString)
   final String name;
+  @JsonKey(fromJson: _readTrimmedNullableString)
   final String? imageBase64;
+  @JsonKey(fromJson: _readIntOrZero)
   final int totalPortions;
+  @JsonKey(fromJson: _readIntOrZero)
   final int remainingPortions;
+  @JsonKey(fromJson: _readDoubleOrZero)
   final double totalKcal;
+  @JsonKey(fromJson: _readDoubleOrZero)
   final double totalProtein;
+  @JsonKey(fromJson: _readDoubleOrZero)
   final double totalCarbs;
+  @JsonKey(fromJson: _readDoubleOrZero)
   final double totalFat;
+  @JsonKey(fromJson: _readDateTimeOrNow)
   final DateTime createdAt;
+  @JsonKey(fromJson: _readDateTimeOrNow)
   final DateTime updatedAt;
+  @JsonKey(defaultValue: <PreparedMealComponent>[])
   final List<PreparedMealComponent> components;
 
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'id': id,
-      'name': name,
-      'image_base64': imageBase64,
-      'total_portions': totalPortions,
-      'remaining_portions': remainingPortions,
-      'total_kcal': totalKcal,
-      'total_protein': totalProtein,
-      'total_carbs': totalCarbs,
-      'total_fat': totalFat,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
-      'components': components.map((component) => component.toJson()).toList(),
-    };
-  }
+  Map<String, dynamic> toJson() => _$PreparedMealToJson(this);
 
   PreparedMeal copyWith({
     String? id,
@@ -161,6 +148,7 @@ class PreparedMeal {
   }
 }
 
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PreparedMealComponent {
   const PreparedMealComponent({
     required this.inventoryItemId,
@@ -176,51 +164,32 @@ class PreparedMealComponent {
     required this.sourceItemSnapshot,
   });
 
-  factory PreparedMealComponent.fromJson(Map<String, dynamic> json) {
-    return PreparedMealComponent(
-      inventoryItemId: _readTrimmedString(json['inventory_item_id']) ?? '',
-      name: _readTrimmedString(json['name']) ?? '',
-      brand: _readTrimmedString(json['brand']),
-      imageUrl: _readTrimmedString(json['image_url']),
-      usedAmount: _readInt(json['used_amount']) ?? 0,
-      usedUnit: _readAmountUnit(json['used_unit']) ?? InventoryAmountUnit.piece,
-      totalKcal: _readDouble(json['total_kcal']) ?? 0,
-      totalProtein: _readDouble(json['total_protein']) ?? 0,
-      totalCarbs: _readDouble(json['total_carbs']) ?? 0,
-      totalFat: _readDouble(json['total_fat']) ?? 0,
-      sourceItemSnapshot: InventoryItem.fromJson(
-        _readMap(json['source_item_snapshot']),
-      ),
-    );
-  }
+  factory PreparedMealComponent.fromJson(Map<String, dynamic> json) =>
+      _$PreparedMealComponentFromJson(json);
 
+  @JsonKey(fromJson: _readRequiredString)
   final String inventoryItemId;
+  @JsonKey(fromJson: _readRequiredString)
   final String name;
+  @JsonKey(fromJson: _readTrimmedNullableString)
   final String? brand;
+  @JsonKey(fromJson: _readTrimmedNullableString)
   final String? imageUrl;
+  @JsonKey(fromJson: _readIntOrZero)
   final int usedAmount;
+  @JsonKey(fromJson: _readAmountUnitOrPiece, toJson: _writeAmountUnit)
   final InventoryAmountUnit usedUnit;
+  @JsonKey(fromJson: _readDoubleOrZero)
   final double totalKcal;
+  @JsonKey(fromJson: _readDoubleOrZero)
   final double totalProtein;
+  @JsonKey(fromJson: _readDoubleOrZero)
   final double totalCarbs;
+  @JsonKey(fromJson: _readDoubleOrZero)
   final double totalFat;
   final InventoryItem sourceItemSnapshot;
 
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'inventory_item_id': inventoryItemId,
-      'name': name,
-      'brand': brand,
-      'image_url': imageUrl,
-      'used_amount': usedAmount,
-      'used_unit': usedUnit.code,
-      'total_kcal': totalKcal,
-      'total_protein': totalProtein,
-      'total_carbs': totalCarbs,
-      'total_fat': totalFat,
-      'source_item_snapshot': sourceItemSnapshot.toJson(),
-    };
-  }
+  Map<String, dynamic> toJson() => _$PreparedMealComponentToJson(this);
 
   PreparedMealComponent copyWith({
     String? inventoryItemId,
@@ -292,67 +261,45 @@ class PreparedMealComponent {
   }
 }
 
-List<PreparedMealComponent> _readComponents(Object? value) {
-  if (value is! List) {
-    return const <PreparedMealComponent>[];
-  }
-  return value
-      .whereType<Map>()
-      .map(
-        (entry) => PreparedMealComponent.fromJson(
-          entry.map(
-            (key, nestedValue) =>
-                MapEntry<String, dynamic>(key.toString(), nestedValue),
-          ),
-        ),
-      )
-      .toList(growable: false);
-}
-
-Map<String, dynamic> _readMap(Object? value) {
-  if (value is Map<String, dynamic>) {
-    return value;
-  }
-  if (value is Map) {
-    return value.map(
-      (key, nestedValue) =>
-          MapEntry<String, dynamic>(key.toString(), nestedValue),
-    );
-  }
-  return const <String, dynamic>{};
-}
-
-DateTime? _readDateTime(Object? value) {
+DateTime _readDateTimeOrNow(Object? value) {
   if (value is DateTime) {
     return value;
   }
   if (value is String) {
-    return DateTime.tryParse(value.trim());
+    final parsed = DateTime.tryParse(value.trim());
+    if (parsed != null) {
+      return parsed;
+    }
   }
-  return null;
+  return DateTime.now();
 }
 
-int? _readInt(Object? value) {
+int _readIntOrZero(Object? value) {
   if (value is int) {
     return value;
   }
   if (value is num) {
     return value.toInt();
   }
-  return null;
+  return 0;
 }
 
-double? _readDouble(Object? value) {
+double _readDoubleOrZero(Object? value) {
   if (value is num) {
     return value.toDouble();
   }
   if (value is String) {
-    return double.tryParse(value.trim());
+    final normalized = value.replaceAll(',', '.').trim();
+    return double.tryParse(normalized) ?? 0;
   }
-  return null;
+  return 0;
 }
 
-String? _readTrimmedString(Object? value) {
+String _readRequiredString(Object? value) {
+  return _readTrimmedNullableString(value) ?? '';
+}
+
+String? _readTrimmedNullableString(Object? value) {
   if (value is! String) {
     return null;
   }
@@ -360,14 +307,16 @@ String? _readTrimmedString(Object? value) {
   return trimmed.isEmpty ? null : trimmed;
 }
 
-InventoryAmountUnit? _readAmountUnit(Object? value) {
+InventoryAmountUnit _readAmountUnitOrPiece(Object? value) {
   final raw = value is String ? value.trim() : '';
   for (final unit in InventoryAmountUnit.values) {
     if (unit.code == raw) {
       return unit;
     }
   }
-  return null;
+  return InventoryAmountUnit.piece;
 }
+
+String _writeAmountUnit(InventoryAmountUnit value) => value.code;
 
 const Object _keepValue = Object();

@@ -52,6 +52,52 @@ void main() {
       );
     },
   );
+
+  test(
+    'optimizePreparedMealImageBytes surfaces isolate runner failures',
+    () async {
+      final originalImage = _createNoisyImage(width: 256, height: 256);
+      final originalBytes = Uint8List.fromList(img.encodeBmp(originalImage));
+
+      await expectLater(
+        () => optimizePreparedMealImageBytes(
+          originalBytes,
+          maxBytes: 1,
+          optimizationRunner: (_) async => throw StateError('isolate-boom'),
+        ),
+        throwsA(
+          isA<PreparedMealImagePickerException>().having(
+            (error) => error.code,
+            'code',
+            PreparedMealImagePickerErrorCodes.imageOptimizationFailed,
+          ),
+        ),
+      );
+    },
+  );
+
+  test(
+    'optimizePreparedMealImageBytes rejects invalid isolate payloads',
+    () async {
+      final originalImage = _createNoisyImage(width: 256, height: 256);
+      final originalBytes = Uint8List.fromList(img.encodeBmp(originalImage));
+
+      await expectLater(
+        () => optimizePreparedMealImageBytes(
+          originalBytes,
+          maxBytes: 1,
+          optimizationRunner: (_) async => <String, Object?>{},
+        ),
+        throwsA(
+          isA<PreparedMealImagePickerException>().having(
+            (error) => error.code,
+            'code',
+            PreparedMealImagePickerErrorCodes.imageOptimizationFailed,
+          ),
+        ),
+      );
+    },
+  );
 }
 
 img.Image _createNoisyImage({required int width, required int height}) {

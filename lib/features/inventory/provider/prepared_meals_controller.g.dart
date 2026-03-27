@@ -35,7 +35,7 @@ final class PreparedMealsControllerProvider
 }
 
 String _$preparedMealsControllerHash() =>
-    r'a4bf9b3b426bb1c8eb8d21b179952efcc016d4ec';
+    r'56a158e2267acac4ad000e36016b1f13bb8c0043';
 
 abstract class _$PreparedMealsController
     extends $AsyncNotifier<List<PreparedMeal>> {

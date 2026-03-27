@@ -4,9 +4,9 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/inventory/application/'
+    'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -264,24 +264,16 @@ class PreparedMealsController extends _$PreparedMealsController {
         return false;
       }
 
-      final entry = _buildBundleEntry(
-        meal: meal,
-        consumedPortions: consumedPortions,
-        mealType: mealType,
-      );
-      log(
-        'Built bundle calorie entry entryId=${entry.id} mealId=$mealId '
-        'components=${entry.bundleComponents.length} '
-        'loggedAt=${entry.loggedAt.toIso8601String()} '
-        'totalKcal=${entry.totalKcal.toStringAsFixed(1)}.',
-        name: _preparedMealsControllerLogName,
-      );
       final calorieSaved = await ref
-          .read(calorieLogRepositoryProvider)
-          .saveEntry(entry);
+          .read(preparedMealCalorieLogBridgeProvider)
+          .logConsumedPreparedMeal(
+            meal: meal,
+            consumedPortions: consumedPortions,
+            mealType: mealType,
+          );
       log(
-        'Bundle calorie entry save completed entryId=${entry.id} '
-        'mealId=$mealId saved=$calorieSaved.',
+        'Bundle calorie entry save completed mealId=$mealId '
+        'saved=$calorieSaved consumedPortions=$consumedPortions.',
         name: _preparedMealsControllerLogName,
       );
       if (calorieSaved) {
@@ -718,60 +710,6 @@ List<PreparedMeal> _applyPortionReduction({
     updatedAt: DateTime.now(),
   );
   return nextMeals;
-}
-
-CalorieEntry _buildBundleEntry({
-  required PreparedMeal meal,
-  required int consumedPortions,
-  required MealType mealType,
-}) {
-  final portionRatio = consumedPortions / meal.totalPortions;
-  final components = meal.components
-      .map(
-        (component) => CalorieEntryBundleComponent(
-          name: component.name,
-          brand: component.brand,
-          imageUrl: component.imageUrl,
-          amountLabel: _formatMealComponentAmountLabel(
-            amount: (component.usedAmount * portionRatio).toStringAsFixed(1),
-            unit: component.usedUnit,
-          ),
-          totalKcal: component.totalKcal * portionRatio,
-          totalProtein: component.totalProtein * portionRatio,
-          totalCarbs: component.totalCarbs * portionRatio,
-          totalFat: component.totalFat * portionRatio,
-        ),
-      )
-      .toList(growable: false);
-
-  return CalorieEntry.bundle(
-    id: PreparedMealsController._uuid.v4(),
-    userId: '',
-    name: meal.name,
-    imageBase64: meal.imageBase64,
-    mealType: mealType,
-    totalKcal: meal.totalKcal * portionRatio,
-    totalProtein: meal.totalProtein * portionRatio,
-    totalCarbs: meal.totalCarbs * portionRatio,
-    totalFat: meal.totalFat * portionRatio,
-    bundleSourcePreparedMealId: meal.id,
-    bundleConsumedPortions: consumedPortions,
-    bundleTotalPortions: meal.totalPortions,
-    bundleComponents: components,
-    loggedAt: DateTime.now(),
-    createdAt: DateTime.now(),
-    updatedAt: DateTime.now(),
-  );
-}
-
-String _formatMealComponentAmountLabel({
-  required String amount,
-  required InventoryAmountUnit unit,
-}) {
-  final normalizedAmount = amount.endsWith('.0')
-      ? amount.substring(0, amount.length - 2)
-      : amount;
-  return '$normalizedAmount ${unit.code}';
 }
 
 List<InventoryItem> _restoreItemsFromMeal({

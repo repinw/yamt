@@ -28,9 +28,14 @@ class PreparedMealImagePickerException implements Exception {
 
 abstract final class PreparedMealImagePickerErrorCodes {
   static const imageTooLarge = 'prepared_meal_image_too_large';
+  static const imageOptimizationFailed =
+      'prepared_meal_image_optimization_failed';
   static const cameraPickFailed = 'prepared_meal_camera_pick_failed';
   static const filePickFailed = 'prepared_meal_file_pick_failed';
 }
+
+typedef PreparedMealImageOptimizationRunner =
+    Future<Map<String, Object?>> Function(Map<String, Object> message);
 
 abstract interface class PreparedMealImagePicker {
   Future<Uint8List?> pickFromCamera();
@@ -159,18 +164,34 @@ class DevicePreparedMealImagePicker implements PreparedMealImagePicker {
 Future<Uint8List> optimizePreparedMealImageBytes(
   Uint8List bytes, {
   int maxBytes = _maxPreparedMealImageBytes,
+  PreparedMealImageOptimizationRunner optimizationRunner =
+      _runPreparedMealImageOptimizationInIsolate,
 }) async {
   if (bytes.length <= maxBytes) {
     return bytes;
   }
 
-  final result = await compute(
-    _optimizePreparedMealImageBytesInIsolate,
-    <String, Object>{
-      'bytes': TransferableTypedData.fromList([bytes]),
-      'maxBytes': maxBytes,
-    },
-  );
+  final message = <String, Object>{
+    'bytes': TransferableTypedData.fromList([bytes]),
+    'maxBytes': maxBytes,
+  };
+  late final Map<String, Object?> result;
+  try {
+    result = await optimizationRunner(message);
+  } on PreparedMealImagePickerException {
+    rethrow;
+  } catch (error, stackTrace) {
+    log(
+      'Prepared meal image optimization isolate failed.',
+      name: 'PreparedMealImagePicker',
+      error: error,
+      stackTrace: stackTrace,
+    );
+    throw const PreparedMealImagePickerException(
+      PreparedMealImagePickerErrorCodes.imageOptimizationFailed,
+    );
+  }
+
   final errorCode = result['errorCode'] as String?;
   if (errorCode != null) {
     throw PreparedMealImagePickerException(errorCode);
@@ -179,11 +200,17 @@ Future<Uint8List> optimizePreparedMealImageBytes(
   final optimizedBytes = result['bytes'] as TransferableTypedData?;
   if (optimizedBytes == null) {
     throw const PreparedMealImagePickerException(
-      PreparedMealImagePickerErrorCodes.imageTooLarge,
+      PreparedMealImagePickerErrorCodes.imageOptimizationFailed,
     );
   }
 
   return optimizedBytes.materialize().asUint8List();
+}
+
+Future<Map<String, Object?>> _runPreparedMealImageOptimizationInIsolate(
+  Map<String, Object> message,
+) {
+  return compute(_optimizePreparedMealImageBytesInIsolate, message);
 }
 
 @pragma('vm:entry-point')
