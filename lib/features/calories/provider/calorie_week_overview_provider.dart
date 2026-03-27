@@ -12,6 +12,28 @@ part 'calorie_week_overview_provider.g.dart';
 
 const _weekOverviewLogName = 'CalorieWeekOverviewProvider';
 
+class CalorieWeekConsumptionDaySnapshot {
+  const CalorieWeekConsumptionDaySnapshot({
+    required this.date,
+    required this.totalKcal,
+    required this.entryCount,
+  });
+
+  final DateTime date;
+  final double totalKcal;
+  final int entryCount;
+}
+
+class CalorieWeekConsumptionSnapshot {
+  const CalorieWeekConsumptionSnapshot({
+    required this.days,
+    required this.totalConsumedKcal,
+  });
+
+  final List<CalorieWeekConsumptionDaySnapshot> days;
+  final double totalConsumedKcal;
+}
+
 /// Aggregate data for one visible day in the diary week strip.
 class CalorieWeekDayOverview {
   const CalorieWeekDayOverview({
@@ -49,18 +71,17 @@ class CalorieWeekOverview {
 }
 
 @riverpod
-Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
-  final goalState = ref.watch(calorieGoalControllerProvider);
+Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshot(
+  Ref ref,
+) async {
   final repository = ref.watch(calorieLogRepositoryProvider);
-  final goalKcal =
-      goalState.asData?.value.dailyKcalGoal ?? defaultDailyCalorieGoalKcal;
   final days = buildDiaryVisibleDays();
 
   final entriesByDay = await Future.wait(
     days.map((day) => _readEntriesForDaySafely(repository, day)),
   );
 
-  final overviews = <CalorieWeekDayOverview>[];
+  final snapshots = <CalorieWeekConsumptionDaySnapshot>[];
   var totalConsumedKcal = 0.0;
   for (var index = 0; index < days.length; index += 1) {
     final entries = entriesByDay[index];
@@ -69,22 +90,45 @@ Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
       (sum, entry) => sum + entry.totalKcal,
     );
     totalConsumedKcal += totalKcal;
-    overviews.add(
-      CalorieWeekDayOverview(
+    snapshots.add(
+      CalorieWeekConsumptionDaySnapshot(
         date: days[index],
         totalKcal: totalKcal,
-        goalKcal: goalKcal,
         entryCount: entries.length,
       ),
     );
   }
 
+  return CalorieWeekConsumptionSnapshot(
+    days: List<CalorieWeekConsumptionDaySnapshot>.unmodifiable(snapshots),
+    totalConsumedKcal: totalConsumedKcal,
+  );
+}
+
+@riverpod
+Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
+  final snapshot = await ref.watch(
+    calorieWeekConsumptionSnapshotProvider.future,
+  );
+  final goalState = ref.watch(calorieGoalControllerProvider);
+  final goalKcal =
+      goalState.asData?.value.dailyKcalGoal ?? defaultDailyCalorieGoalKcal;
+  final overviews = snapshot.days
+      .map(
+        (day) => CalorieWeekDayOverview(
+          date: day.date,
+          totalKcal: day.totalKcal,
+          goalKcal: goalKcal,
+          entryCount: day.entryCount,
+        ),
+      )
+      .toList(growable: false);
   final totalGoalKcal = goalKcal * overviews.length;
   return CalorieWeekOverview(
     days: List<CalorieWeekDayOverview>.unmodifiable(overviews),
-    totalConsumedKcal: totalConsumedKcal,
+    totalConsumedKcal: snapshot.totalConsumedKcal,
     totalGoalKcal: totalGoalKcal,
-    remainingKcal: totalGoalKcal - totalConsumedKcal,
+    remainingKcal: totalGoalKcal - snapshot.totalConsumedKcal,
   );
 }
 

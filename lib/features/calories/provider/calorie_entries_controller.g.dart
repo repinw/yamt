@@ -35,7 +35,7 @@ final class CalorieEntriesControllerProvider
 }
 
 String _$calorieEntriesControllerHash() =>
-    r'de2db01c5f675d3162ee32376f8e1b8956ae12b8';
+    r'1a26c07f57f7b8b2750d072a99d053b5ab7ee533';
 
 abstract class _$CalorieEntriesController
     extends $AsyncNotifier<List<CalorieEntry>> {

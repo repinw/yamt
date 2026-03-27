@@ -99,7 +99,7 @@ class CaloriesMealSectionCard extends StatelessWidget {
                 kcalUnit: kcalUnit,
                 bundleSummary: bundleSummary,
                 onTap: () => onTapEntry(entry),
-                onDelete: entry.isBundle ? null : () => onDeleteEntry(entry),
+                onDelete: () => onDeleteEntry(entry),
               ),
             );
           }),

@@ -538,6 +538,7 @@ class _CalorieEntryEditorPageState
 
     final trimmedName = _nameController.text.trim();
     final trimmedBrand = _brandController.text.trim();
+    final inventoryContext = widget.inventoryContext;
     final now = DateTime.now();
     final entry = initialEntry == null
         ? CalorieEntry.create(
@@ -553,6 +554,9 @@ class _CalorieEntryEditorPageState
             per100Protein: per100Protein,
             per100Carbs: per100Carbs,
             per100Fat: per100Fat,
+            sourceInventoryItemId: inventoryContext?.inventoryItemId,
+            sourceInventoryAmountToRestore:
+                inventoryContext?.inventoryAmountToRestore,
             loggedAt: _loggedAt,
             createdAt: now,
             updatedAt: now,

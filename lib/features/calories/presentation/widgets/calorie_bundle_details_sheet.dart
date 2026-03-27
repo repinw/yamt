@@ -26,6 +26,7 @@ class _CalorieBundleDetailsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
+    final maxSheetHeight = MediaQuery.sizeOf(context).height * 0.8;
 
     return SafeArea(
       top: false,
@@ -36,64 +37,73 @@ class _CalorieBundleDetailsSheet extends StatelessWidget {
           AppSpacing.xl,
           AppSpacing.xxxl,
         ),
-        child: DecoratedBox(
-          decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
-            colors,
-            borderRadius: BorderRadius.circular(
-              AppInventoryEditorial.cardRadius,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: maxSheetHeight),
+          child: DecoratedBox(
+            decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+              colors,
+              borderRadius: BorderRadius.circular(
+                AppInventoryEditorial.cardRadius,
+              ),
             ),
-          ),
-          child: Padding(
-            padding: AppInsets.card,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  entry.name,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  l10n.caloriesBundlePortions(
-                    entry.bundleConsumedPortions ?? 0,
-                    entry.bundleTotalPortions ?? 0,
-                  ),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  '${entry.totalKcal.toStringAsFixed(0)} ${l10n.caloriesUnitKcal}',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Text(
-                  l10n.preparedMealIngredientsTitle,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                ...entry.bundleComponents.indexed.map((indexedComponent) {
-                  final index = indexedComponent.$1;
-                  final component = indexedComponent.$2;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: _BundleComponentTile(
-                      entryId: entry.id,
-                      index: index,
-                      component: component,
-                      kcalUnit: l10n.caloriesUnitKcal,
+            child: Padding(
+              padding: AppInsets.card,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    entry.name,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
                     ),
-                  );
-                }),
-              ],
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    l10n.caloriesBundlePortions(
+                      entry.bundleConsumedPortions ?? 0,
+                      entry.bundleTotalPortions ?? 0,
+                    ),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    '${entry.totalKcal.toStringAsFixed(0)} '
+                    '${l10n.caloriesUnitKcal}',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    l10n.preparedMealIngredientsTitle,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Flexible(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: entry.bundleComponents.length,
+                      itemBuilder: (context, index) {
+                        final component = entry.bundleComponents[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                          child: _BundleComponentTile(
+                            entryId: entry.id,
+                            index: index,
+                            component: component,
+                            kcalUnit: l10n.caloriesUnitKcal,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

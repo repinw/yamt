@@ -103,65 +103,70 @@ class PreparedMealsController extends _$PreparedMealsController {
       );
     }
 
-    return _mutationQueue.run<PreparedMealCreationResult>(
-      operation: () async {
-        final currentMeals = await _currentMeals();
-        final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
-        final currentItems = await inventoryRepository.readAll();
-
-        try {
-          final creationResult = _buildMealCreationResult(
-            currentItems: currentItems,
-            name: trimmedName,
-            imageBase64: imageBase64,
-            totalPortions: totalPortions,
-            inputs: items,
-          );
-
-          final inventorySaved = await inventoryRepository.saveAll(
-            creationResult.nextItems,
-          );
-          if (!inventorySaved) {
-            return const PreparedMealCreationResult.failure(
-              PreparedMealCreationFailureReason.inventorySaveFailed,
+    final keepAliveLink = ref.keepAlive();
+    return _mutationQueue
+        .run<PreparedMealCreationResult>(
+          operation: () async {
+            final currentMeals = await _currentMeals();
+            final inventoryRepository = ref.read(
+              inventoryItemRepositoryProvider,
             );
-          }
+            final currentItems = await inventoryRepository.readAll();
 
-          final nextMeals = List<PreparedMeal>.from(currentMeals)
-            ..add(creationResult.preparedMeal);
-          final mealsSaved = await _saveMeals(
-            previousMeals: currentMeals,
-            nextMeals: nextMeals,
-          );
-          if (mealsSaved) {
-            return PreparedMealCreationResult.success(
-              creationResult.preparedMeal.id,
-            );
-          }
+            try {
+              final creationResult = _buildMealCreationResult(
+                currentItems: currentItems,
+                name: trimmedName,
+                imageBase64: imageBase64,
+                totalPortions: totalPortions,
+                inputs: items,
+              );
 
-          await _restoreInventory(
-            inventoryRepository: inventoryRepository,
-            previousItems: currentItems,
-          );
-          return const PreparedMealCreationResult.failure(
+              final inventorySaved = await inventoryRepository.saveAll(
+                creationResult.nextItems,
+              );
+              if (!inventorySaved) {
+                return const PreparedMealCreationResult.failure(
+                  PreparedMealCreationFailureReason.inventorySaveFailed,
+                );
+              }
+
+              final nextMeals = List<PreparedMeal>.from(currentMeals)
+                ..add(creationResult.preparedMeal);
+              final mealsSaved = await _saveMeals(
+                previousMeals: currentMeals,
+                nextMeals: nextMeals,
+              );
+              if (mealsSaved) {
+                return PreparedMealCreationResult.success(
+                  creationResult.preparedMeal.id,
+                );
+              }
+
+              await _restoreInventory(
+                inventoryRepository: inventoryRepository,
+                previousItems: currentItems,
+              );
+              return const PreparedMealCreationResult.failure(
+                PreparedMealCreationFailureReason.mealSaveFailed,
+              );
+            } on _PreparedMealCreationException catch (error) {
+              return PreparedMealCreationResult.failure(error.reason);
+            }
+          },
+          fallbackValue: const PreparedMealCreationResult.failure(
             PreparedMealCreationFailureReason.mealSaveFailed,
-          );
-        } on _PreparedMealCreationException catch (error) {
-          return PreparedMealCreationResult.failure(error.reason);
-        }
-      },
-      fallbackValue: const PreparedMealCreationResult.failure(
-        PreparedMealCreationFailureReason.mealSaveFailed,
-      ),
-      onError: (error, stackTrace) {
-        log(
-          'Unexpected prepared meal creation error.',
-          name: _preparedMealsControllerLogName,
-          error: error,
-          stackTrace: stackTrace,
-        );
-      },
-    );
+          ),
+          onError: (error, stackTrace) {
+            log(
+              'Unexpected prepared meal creation error.',
+              name: _preparedMealsControllerLogName,
+              error: error,
+              stackTrace: stackTrace,
+            );
+          },
+        )
+        .whenComplete(keepAliveLink.close);
   }
 
   Future<bool> updatePreparedMealDetails({
@@ -175,6 +180,7 @@ class PreparedMealsController extends _$PreparedMealsController {
       return Future<bool>.value(false);
     }
 
+    final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(() async {
       final currentMeals = await _currentMeals();
       final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
@@ -202,7 +208,7 @@ class PreparedMealsController extends _$PreparedMealsController {
             )
           : currentMeal.copyWith(name: trimmedName, updatedAt: DateTime.now());
       return _saveMeals(previousMeals: currentMeals, nextMeals: nextMeals);
-    });
+    }).whenComplete(keepAliveLink.close);
   }
 
   Future<bool> consumePreparedMeal({
@@ -224,6 +230,7 @@ class PreparedMealsController extends _$PreparedMealsController {
       return Future<bool>.value(false);
     }
 
+    final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(() async {
       final currentMeals = await _currentMeals();
       log(
@@ -302,7 +309,7 @@ class PreparedMealsController extends _$PreparedMealsController {
         name: _preparedMealsControllerLogName,
       );
       return false;
-    });
+    }).whenComplete(keepAliveLink.close);
   }
 
   Future<bool> throwAwayPreparedMeal({
@@ -313,6 +320,7 @@ class PreparedMealsController extends _$PreparedMealsController {
       return Future<bool>.value(false);
     }
 
+    final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(() async {
       final currentMeals = await _currentMeals();
       final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
@@ -331,10 +339,42 @@ class PreparedMealsController extends _$PreparedMealsController {
         consumedPortions: discardedPortions,
       );
       return _saveMeals(previousMeals: currentMeals, nextMeals: nextMeals);
-    });
+    }).whenComplete(keepAliveLink.close);
+  }
+
+  Future<bool> restorePreparedMealPortions({
+    required String mealId,
+    required int portions,
+  }) {
+    if (portions < 1) {
+      return Future<bool>.value(false);
+    }
+
+    final keepAliveLink = ref.keepAlive();
+    return _runSerializedMutation(() async {
+      final currentMeals = await _currentMeals();
+      final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
+      if (mealIndex < 0) {
+        return false;
+      }
+
+      final meal = currentMeals[mealIndex];
+      final nextRemainingPortions = meal.remainingPortions + portions;
+      if (nextRemainingPortions > meal.totalPortions) {
+        return false;
+      }
+
+      final nextMeals = List<PreparedMeal>.from(currentMeals);
+      nextMeals[mealIndex] = meal.copyWith(
+        remainingPortions: nextRemainingPortions,
+        updatedAt: DateTime.now(),
+      );
+      return _saveMeals(previousMeals: currentMeals, nextMeals: nextMeals);
+    }).whenComplete(keepAliveLink.close);
   }
 
   Future<bool> unbundlePreparedMeal(String mealId) {
+    final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(() async {
       final currentMeals = await _currentMeals();
       final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
@@ -370,7 +410,7 @@ class PreparedMealsController extends _$PreparedMealsController {
         previousItems: currentItems,
       );
       return false;
-    });
+    }).whenComplete(keepAliveLink.close);
   }
 
   Future<List<PreparedMeal>> _restartSubscription() {

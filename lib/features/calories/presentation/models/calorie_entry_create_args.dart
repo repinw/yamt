@@ -6,6 +6,7 @@ class CalorieInventoryCreateContext {
   const CalorieInventoryCreateContext({
     required this.inventoryItemId,
     required this.foodFingerprint,
+    required this.inventoryAmountToRestore,
     required this.itemName,
     required this.itemBrand,
     required this.consumedAmount,
@@ -14,6 +15,7 @@ class CalorieInventoryCreateContext {
 
   final String inventoryItemId;
   final String foodFingerprint;
+  final int inventoryAmountToRestore;
   final String itemName;
   final String? itemBrand;
   final double consumedAmount;

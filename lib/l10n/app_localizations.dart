@@ -1148,7 +1148,7 @@ abstract class AppLocalizations {
   /// No description provided for @preparedMealUnbundleAction.
   ///
   /// In en, this message translates to:
-  /// **'Unbundle'**
+  /// **'Return to inventory'**
   String get preparedMealUnbundleAction;
 
   /// No description provided for @preparedMealEatTitle.
@@ -1600,6 +1600,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete'**
   String get caloriesDeleteEntryConfirmAction;
+
+  /// No description provided for @caloriesReturnPreparedMealDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Return meal to inventory?'**
+  String get caloriesReturnPreparedMealDialogTitle;
+
+  /// No description provided for @caloriesReturnPreparedMealDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Return \"{name}\" to inventory and remove it from the diary?'**
+  String caloriesReturnPreparedMealDialogMessage(String name);
+
+  /// No description provided for @caloriesReturnPreparedMealConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to inventory'**
+  String get caloriesReturnPreparedMealConfirmAction;
+
+  /// No description provided for @caloriesReturnPreparedMealFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The meal could not be returned to inventory.'**
+  String get caloriesReturnPreparedMealFailed;
+
+  /// No description provided for @caloriesDeleteRestoreInventoryQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the food back to inventory?'**
+  String get caloriesDeleteRestoreInventoryQuestion;
+
+  /// No description provided for @caloriesDeleteRestoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The food could not be added back to inventory.'**
+  String get caloriesDeleteRestoreFailed;
 
   /// No description provided for @caloriesDeleteFailed.
   ///

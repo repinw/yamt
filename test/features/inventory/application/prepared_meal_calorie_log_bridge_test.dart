@@ -134,4 +134,55 @@ void main() {
       expect(entry.bundleComponents.last.totalProtein, closeTo(5, 0.0001));
     },
   );
+
+  test(
+    'bridge still copies diary images after provider invalidation',
+    () async {
+      final calorieLogRepository = FakeCalorieLogRepository();
+      final localImageStore = FakeLocalImageStore();
+      addTearDown(calorieLogRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          localImageStoreProvider.overrideWithValue(localImageStore),
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final meal = PreparedMeal(
+        id: 'meal-2',
+        name: 'Soup',
+        totalPortions: 2,
+        remainingPortions: 2,
+        totalKcal: 300,
+        totalProtein: 20,
+        totalCarbs: 30,
+        totalFat: 10,
+        createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+        updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+        components: const <PreparedMealComponent>[],
+      );
+      await localImageStore.saveBytes(
+        imageRef: preparedMealImageRef(meal.id),
+        bytes: Uint8List.fromList(<int>[9, 8, 7]),
+      );
+
+      final bridge = container.read(preparedMealCalorieLogBridgeProvider);
+      container.invalidate(preparedMealCalorieLogBridgeProvider);
+
+      final saved = await bridge.logConsumedPreparedMeal(
+        meal: meal,
+        consumedPortions: 1,
+        mealType: MealType.dinner,
+      );
+
+      expect(saved, isTrue);
+      final entry = calorieLogRepository.entries.single;
+      expect(
+        await localImageStore.readBytes(calorieEntryImageRef(entry.id)),
+        Uint8List.fromList(<int>[9, 8, 7]),
+      );
+    },
+  );
 }

@@ -102,6 +102,8 @@ class CalorieEntry {
     this.brand,
     this.imageUrl,
     this.imageBase64,
+    this.sourceInventoryItemId,
+    this.sourceInventoryAmountToRestore,
     this.bundleSourcePreparedMealId,
     this.bundleConsumedPortions,
     this.bundleTotalPortions,
@@ -125,6 +127,8 @@ class CalorieEntry {
     String? brand,
     String? imageUrl,
     String? imageBase64,
+    String? sourceInventoryItemId,
+    int? sourceInventoryAmountToRestore,
   }) {
     final now = DateTime.now();
     final factor = consumedAmount / 100;
@@ -150,6 +154,8 @@ class CalorieEntry {
       brand: brand,
       imageUrl: imageUrl,
       imageBase64: imageBase64,
+      sourceInventoryItemId: sourceInventoryItemId,
+      sourceInventoryAmountToRestore: sourceInventoryAmountToRestore,
     );
   }
 
@@ -214,6 +220,8 @@ class CalorieEntry {
   final String? imageUrl;
   @JsonKey(includeFromJson: false, includeToJson: false)
   final String? imageBase64;
+  final String? sourceInventoryItemId;
+  final int? sourceInventoryAmountToRestore;
   final String? bundleSourcePreparedMealId;
   final int? bundleConsumedPortions;
   final int? bundleTotalPortions;
@@ -277,6 +285,16 @@ class CalorieEntry {
         bundleComponents.isNotEmpty;
   }
 
+  bool get canRestoreToInventory {
+    return (sourceInventoryItemId?.trim().isNotEmpty ?? false) &&
+        (sourceInventoryAmountToRestore ?? 0) > 0;
+  }
+
+  bool get canReturnPreparedMealToInventory {
+    return (bundleSourcePreparedMealId?.trim().isNotEmpty ?? false) &&
+        (bundleConsumedPortions ?? 0) > 0;
+  }
+
   Uint8List? get imageBytes {
     final raw = imageBase64?.trim();
     if (raw == null || raw.isEmpty) {
@@ -296,6 +314,8 @@ class CalorieEntry {
     String? brand,
     String? imageUrl,
     Object? imageBase64 = _keepValue,
+    Object? sourceInventoryItemId = _keepValue,
+    Object? sourceInventoryAmountToRestore = _keepValue,
     Object? bundleSourcePreparedMealId = _keepValue,
     Object? bundleConsumedPortions = _keepValue,
     Object? bundleTotalPortions = _keepValue,
@@ -324,6 +344,13 @@ class CalorieEntry {
       imageBase64: imageBase64 == _keepValue
           ? this.imageBase64
           : imageBase64 as String?,
+      sourceInventoryItemId: sourceInventoryItemId == _keepValue
+          ? this.sourceInventoryItemId
+          : sourceInventoryItemId as String?,
+      sourceInventoryAmountToRestore:
+          sourceInventoryAmountToRestore == _keepValue
+          ? this.sourceInventoryAmountToRestore
+          : sourceInventoryAmountToRestore as int?,
       bundleSourcePreparedMealId: bundleSourcePreparedMealId == _keepValue
           ? this.bundleSourcePreparedMealId
           : bundleSourcePreparedMealId as String?,

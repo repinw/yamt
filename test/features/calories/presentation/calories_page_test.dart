@@ -18,6 +18,8 @@ import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../support/fake_calories_repositories.dart';
@@ -29,6 +31,8 @@ CalorieEntry _entry(
   required MealType mealType,
   String name = 'Skyr',
   String? imageUrl,
+  String? sourceInventoryItemId,
+  int? sourceInventoryAmountToRestore,
 }) {
   return CalorieEntry.create(
     id: id,
@@ -42,6 +46,8 @@ CalorieEntry _entry(
     per100Protein: 10,
     per100Carbs: 5,
     per100Fat: 1,
+    sourceInventoryItemId: sourceInventoryItemId,
+    sourceInventoryAmountToRestore: sourceInventoryAmountToRestore,
     loggedAt: loggedAt,
     createdAt: loggedAt,
     updatedAt: loggedAt,
@@ -53,6 +59,7 @@ CalorieEntry _bundleEntry(
   required DateTime loggedAt,
   required MealType mealType,
   String? imageBase64,
+  List<CalorieEntryBundleComponent>? bundleComponents,
 }) {
   return CalorieEntry.bundle(
     id: id,
@@ -67,18 +74,20 @@ CalorieEntry _bundleEntry(
     bundleSourcePreparedMealId: 'prepared-1',
     bundleConsumedPortions: 2,
     bundleTotalPortions: 4,
-    bundleComponents: const [
-      CalorieEntryBundleComponent(
-        name: 'Beans',
-        amountLabel: '150 g',
-        brand: 'Acme',
-        imageUrl: 'https://images.example.com/beans.jpg',
-        totalKcal: 120,
-        totalProtein: 8,
-        totalCarbs: 18,
-        totalFat: 1,
-      ),
-    ],
+    bundleComponents:
+        bundleComponents ??
+        const [
+          CalorieEntryBundleComponent(
+            name: 'Beans',
+            amountLabel: '150 g',
+            brand: 'Acme',
+            imageUrl: 'https://images.example.com/beans.jpg',
+            totalKcal: 120,
+            totalProtein: 8,
+            totalCarbs: 18,
+            totalFat: 1,
+          ),
+        ],
     loggedAt: loggedAt,
     createdAt: loggedAt,
     updatedAt: loggedAt,
@@ -127,6 +136,19 @@ Widget _buildHarness({
       supportedLocales: AppLocalizations.supportedLocales,
     ),
   );
+}
+
+class _FakePreparedMealRepository implements PreparedMealRepository {
+  @override
+  Future<List<PreparedMeal>> readAll() async => const <PreparedMeal>[];
+
+  @override
+  Future<bool> saveAll(List<PreparedMeal> meals) async => true;
+
+  @override
+  Stream<List<PreparedMeal>> watchAll() {
+    return Stream<List<PreparedMeal>>.value(const <PreparedMeal>[]);
+  }
 }
 
 Finder get _pageScrollable => find.byType(Scrollable).first;
@@ -225,6 +247,98 @@ void main() {
     expect(
       logRepository.entries.where((entry) => entry.id == 'delete-me'),
       isEmpty,
+    );
+  });
+
+  testWidgets('delete dialog asks about returning inventory food', (
+    tester,
+  ) async {
+    final today = DateTime.now();
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'inventory-delete',
+          loggedAt: DateTime(today.year, today.month, today.day, 8),
+          mealType: MealType.breakfast,
+          name: 'Inventory Milk',
+          sourceInventoryItemId: 'inventory-1',
+          sourceInventoryAmountToRestore: 250,
+        ),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.entryTile('inventory-delete')),
+    );
+    await tester.longPress(
+      find.byKey(CaloriesPageKeys.entryTile('inventory-delete')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Add the food back to inventory?'), findsOneWidget);
+    expect(
+      find.byKey(CaloriesPageKeys.deleteRestoreCheckbox('inventory-delete')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('bundle delete dialog returns meal to inventory', (tester) async {
+    final today = DateTime.now();
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _bundleEntry(
+          'bundle-delete',
+          loggedAt: DateTime(today.year, today.month, today.day, 12),
+          mealType: MealType.lunch,
+        ),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        overrides: [
+          preparedMealRepositoryProvider.overrideWithValue(
+            _FakePreparedMealRepository(),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.entryTile('bundle-delete')),
+    );
+    await tester.longPress(
+      find.byKey(CaloriesPageKeys.entryTile('bundle-delete')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Return meal to inventory?'), findsOneWidget);
+    expect(
+      find.text('Return "Chili" to inventory and remove it from the diary?'),
+      findsOneWidget,
+    );
+    expect(
+      find.widgetWithText(TextButton, 'Return to inventory'),
+      findsOneWidget,
     );
   });
 
@@ -434,6 +548,62 @@ void main() {
       expect(imageWidget.image, isA<MemoryImage>());
     },
   );
+
+  testWidgets('bundle details sheet does not overflow on small screens', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 520);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final today = DateTime.now();
+    final components = List<CalorieEntryBundleComponent>.generate(
+      8,
+      (index) => CalorieEntryBundleComponent(
+        name: 'Ingredient $index',
+        amountLabel: '${100 + index * 10} g',
+        brand: 'Brand $index',
+        imageUrl: 'https://images.example.com/item_$index.jpg',
+        totalKcal: 50 + index.toDouble(),
+        totalProtein: 5,
+        totalCarbs: 6,
+        totalFat: 2,
+      ),
+    );
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _bundleEntry(
+          'overflow-bundle-entry',
+          loggedAt: DateTime(today.year, today.month, today.day, 12),
+          mealType: MealType.lunch,
+          bundleComponents: components,
+        ),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.entryTile('overflow-bundle-entry')),
+    );
+    await tester.tap(
+      find.byKey(CaloriesPageKeys.entryTile('overflow-bundle-entry')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('renders empty state text for meal sections without entries', (
     tester,

@@ -28,11 +28,12 @@ abstract interface class PreparedMealCalorieLogBridge {
 
 @riverpod
 PreparedMealCalorieLogBridge preparedMealCalorieLogBridge(Ref ref) {
+  final container = ref.container;
   return _RepositoryPreparedMealCalorieLogBridge(
     calorieLogRepository: ref.read(calorieLogRepositoryProvider),
     localImageStore: ref.read(localImageStoreProvider),
     invalidateLocalImage: (imageRef) {
-      ref.invalidate(localImageBytesProvider(imageRef));
+      container.invalidate(localImageBytesProvider(imageRef));
     },
     now: DateTime.now,
   );

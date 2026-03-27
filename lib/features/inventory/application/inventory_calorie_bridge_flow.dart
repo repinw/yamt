@@ -225,6 +225,7 @@ class InventoryCalorieBridgeFlow {
       return CalorieInventoryCreateContext(
         inventoryItemId: item.id,
         foodFingerprint: item.resolvedFoodFingerprint,
+        inventoryAmountToRestore: consumedAmount,
         itemName: item.name,
         itemBrand: item.brand,
         consumedAmount: consumedAmount.toDouble(),
@@ -241,6 +242,7 @@ class InventoryCalorieBridgeFlow {
     return CalorieInventoryCreateContext(
       inventoryItemId: item.id,
       foodFingerprint: item.resolvedFoodFingerprint,
+      inventoryAmountToRestore: consumedAmount,
       itemName: item.name,
       itemBrand: item.brand,
       consumedAmount: portion.amount,

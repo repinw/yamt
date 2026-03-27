@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -144,4 +146,125 @@ void main() {
     expect(overview.totalGoalKcal, 14000);
     expect(overview.remainingKcal, 13400);
   });
+
+  test(
+    'calorieWeekOverview does not reload seven days when goal resolves later',
+    () async {
+      final today = normalizeDiaryDay(DateTime.now());
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'today',
+            loggedAt: today.add(const Duration(hours: 8)),
+            totalKcal: 600,
+          ),
+        ],
+      );
+      var readCount = 0;
+      logRepository.onReadEntriesForDay = (day) async {
+        readCount += 1;
+        return logRepository.entries
+            .where((entry) {
+              final loggedAt = entry.loggedAt;
+              return loggedAt.year == day.year &&
+                  loggedAt.month == day.month &&
+                  loggedAt.day == day.day;
+            })
+            .toList(growable: false);
+      };
+
+      final settingsRepository = _DelayedCalorieSettingsRepository();
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final subscription = container.listen(
+        calorieWeekOverviewProvider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      addTearDown(subscription.close);
+
+      final initialOverview = await container.read(
+        calorieWeekOverviewProvider.future,
+      );
+
+      expect(initialOverview.totalConsumedKcal, 600);
+      expect(initialOverview.totalGoalKcal, 17500);
+      expect(readCount, diaryVisibleDayCount);
+
+      final updatedOverview = Completer<CalorieWeekOverview>();
+      final updatedSubscription = container.listen(
+        calorieWeekOverviewProvider,
+        (_, next) {
+          final overview = next.asData?.value;
+          if (overview == null || updatedOverview.isCompleted) {
+            return;
+          }
+          if (overview.totalGoalKcal == 12600) {
+            updatedOverview.complete(overview);
+          }
+        },
+      );
+      addTearDown(updatedSubscription.close);
+
+      settingsRepository.emit(
+        CalorieGoalSettings(dailyKcalGoal: 1800, updatedAt: today),
+      );
+
+      final overview = await updatedOverview.future;
+      expect(overview.totalGoalKcal, 12600);
+      expect(readCount, diaryVisibleDayCount);
+    },
+  );
+}
+
+class _DelayedCalorieSettingsRepository implements CalorieSettingsRepository {
+  final _controller = StreamController<CalorieGoalSettings>.broadcast();
+
+  CalorieGoalSettings _settings = const CalorieGoalSettings.empty();
+
+  @override
+  Stream<CalorieGoalSettings> watchSettings() => _controller.stream;
+
+  @override
+  Future<CalorieGoalSettings> readSettings() async => _settings;
+
+  @override
+  Future<bool> saveSettings(CalorieGoalSettings settings) async {
+    _settings = settings;
+    _controller.add(settings);
+    return true;
+  }
+
+  @override
+  Future<bool> setDailyGoal(double dailyKcalGoal) {
+    return saveSettings(
+      CalorieGoalSettings(
+        dailyKcalGoal: dailyKcalGoal,
+        updatedAt: DateTime.now(),
+      ),
+    );
+  }
+
+  @override
+  Future<bool> clearDailyGoal() {
+    return saveSettings(const CalorieGoalSettings.empty());
+  }
+
+  void emit(CalorieGoalSettings settings) {
+    _settings = settings;
+    _controller.add(settings);
+  }
+
+  Future<void> dispose() => _controller.close();
 }

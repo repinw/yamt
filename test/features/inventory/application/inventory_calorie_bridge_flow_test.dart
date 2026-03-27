@@ -138,6 +138,7 @@ void main() {
     expect(openedArgs?.prefilledProfile?.per100Carbs, 24.8);
     expect(openedArgs?.prefilledProfile?.per100Fat, 9.6);
     expect(openedArgs?.inventoryContext?.inventoryItemId, 'inventory-1');
+    expect(openedArgs?.inventoryContext?.inventoryAmountToRestore, 250);
     expect(openedArgs?.inventoryContext?.consumedAmount, 250);
     expect(openedArgs?.inventoryContext?.consumedUnit, ConsumedUnit.grams);
     expect(openedArgs?.scannedSourceRef?.barcode, '4061458029995');

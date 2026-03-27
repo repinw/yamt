@@ -65,6 +65,8 @@ void main() {
       brand: 'Bio',
       imageUrl: 'https://images.example.com/apple.jpg',
       imageBase64: base64Encode(<int>[4, 5, 6]),
+      sourceInventoryItemId: 'inventory-1',
+      sourceInventoryAmountToRestore: 150,
       mealType: MealType.snack,
       consumedAmount: 150,
       consumedUnit: ConsumedUnit.grams,
@@ -85,6 +87,11 @@ void main() {
     expect(decoded.brand, original.brand);
     expect(decoded.imageUrl, original.imageUrl);
     expect(decoded.imageBase64, isNull);
+    expect(decoded.sourceInventoryItemId, original.sourceInventoryItemId);
+    expect(
+      decoded.sourceInventoryAmountToRestore,
+      original.sourceInventoryAmountToRestore,
+    );
     expect(decoded.mealType, original.mealType);
     expect(decoded.consumedAmount, original.consumedAmount);
     expect(decoded.consumedUnit, original.consumedUnit);

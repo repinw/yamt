@@ -63,6 +63,7 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   _FakePreparedMealRepository({
     required List<PreparedMeal> initialMeals,
     this.throwOnSave = false,
+    this.saveDelay = Duration.zero,
   }) : _meals = List<PreparedMeal>.from(initialMeals);
 
   final StreamController<List<PreparedMeal>> _controller =
@@ -70,6 +71,7 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   List<PreparedMeal> _meals;
   List<PreparedMeal> savedMeals = const <PreparedMeal>[];
   bool throwOnSave;
+  final Duration saveDelay;
 
   @override
   Stream<List<PreparedMeal>> watchAll() {
@@ -89,6 +91,9 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
 
   @override
   Future<bool> saveAll(List<PreparedMeal> meals) async {
+    if (saveDelay > Duration.zero) {
+      await Future<void>.delayed(saveDelay);
+    }
     if (throwOnSave) {
       throw Exception('prepared-meal-save-failed');
     }
@@ -333,6 +338,53 @@ void main() {
   );
 
   test(
+    'consumePreparedMeal stays alive without active listener during async save',
+    () async {
+      final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: [item],
+      );
+      final preparedMealRepository = _FakePreparedMealRepository(
+        initialMeals: [_meal(id: 'meal-1', name: 'Lunch box', item: item)],
+        saveDelay: const Duration(milliseconds: 20),
+      );
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(inventoryRepository.dispose);
+      addTearDown(preparedMealRepository.dispose);
+      addTearDown(calorieLogRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(
+            inventoryRepository,
+          ),
+          preparedMealRepositoryProvider.overrideWithValue(
+            preparedMealRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(preparedMealsControllerProvider.future);
+      final consumeFuture = container
+          .read(preparedMealsControllerProvider.notifier)
+          .consumePreparedMeal(
+            mealId: 'meal-1',
+            consumedPortions: 1,
+            mealType: MealType.lunch,
+          );
+
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+
+      final saved = await consumeFuture;
+      expect(saved, isTrue);
+      expect(preparedMealRepository.savedMeals.single.remainingPortions, 3);
+      expect(calorieLogRepository.entries.single.isBundle, isTrue);
+    },
+  );
+
+  test(
     'consumePreparedMeal removes meal when remaining portions hit zero',
     () async {
       final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
@@ -434,6 +486,52 @@ void main() {
         container.read(preparedMealsControllerProvider).asData?.value,
         isEmpty,
       );
+    },
+  );
+
+  test(
+    'restorePreparedMealPortions increases remaining portions again',
+    () async {
+      final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: [item],
+      );
+      final preparedMealRepository = _FakePreparedMealRepository(
+        initialMeals: [
+          _meal(
+            id: 'meal-1',
+            name: 'Lunch box',
+            item: item,
+          ).copyWith(remainingPortions: 1),
+        ],
+      );
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(inventoryRepository.dispose);
+      addTearDown(preparedMealRepository.dispose);
+      addTearDown(calorieLogRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(
+            inventoryRepository,
+          ),
+          preparedMealRepositoryProvider.overrideWithValue(
+            preparedMealRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+
+      await container.read(preparedMealsControllerProvider.future);
+      final restored = await container
+          .read(preparedMealsControllerProvider.notifier)
+          .restorePreparedMealPortions(mealId: 'meal-1', portions: 1);
+
+      expect(restored, isTrue);
+      expect(preparedMealRepository.savedMeals.single.remainingPortions, 2);
     },
   );
 
