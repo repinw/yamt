@@ -516,6 +516,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealUpdatedMessage => 'Prepared meal updated.';
 
   @override
+  String get preparedMealInsufficientAmountMessage => 'At least one selected ingredient is no longer available in a sufficient amount.';
+
+  @override
+  String get preparedMealMissingNutritionMessage => 'At least one selected ingredient is missing complete nutrition values.';
+
+  @override
+  String get preparedMealItemUnavailableMessage => 'At least one selected ingredient is no longer available in inventory.';
+
+  @override
   String get preparedMealActionFailed => 'Prepared meal action failed. Please try again.';
 
   @override

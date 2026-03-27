@@ -206,6 +206,12 @@
   },
   "preparedMealCreatedMessage": "Prepared meal created.",
   "preparedMealUpdatedMessage": "Prepared meal updated.",
+  "preparedMealInsufficientAmountMessage":
+      "At least one selected ingredient is no longer available in a sufficient amount.",
+  "preparedMealMissingNutritionMessage":
+      "At least one selected ingredient is missing complete nutrition values.",
+  "preparedMealItemUnavailableMessage":
+      "At least one selected ingredient is no longer available in inventory.",
   "preparedMealActionFailed":
       "Prepared meal action failed. Please try again.",
   "preparedMealIngredientsCount": "{count} ingredients",

@@ -33,6 +33,25 @@ void main() {
 
     expect(identical(optimizedBytes, originalBytes), isTrue);
   });
+
+  test(
+    'optimizePreparedMealImageBytes throws when image cannot fit into max size',
+    () async {
+      final originalImage = _createNoisyImage(width: 128, height: 128);
+      final originalBytes = Uint8List.fromList(img.encodeBmp(originalImage));
+
+      await expectLater(
+        () => optimizePreparedMealImageBytes(originalBytes, maxBytes: 1),
+        throwsA(
+          isA<PreparedMealImagePickerException>().having(
+            (error) => error.code,
+            'code',
+            PreparedMealImagePickerErrorCodes.imageTooLarge,
+          ),
+        ),
+      );
+    },
+  );
 }
 
 img.Image _createNoisyImage({required int width, required int height}) {

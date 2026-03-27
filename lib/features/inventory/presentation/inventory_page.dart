@@ -8,6 +8,8 @@ import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_prepared_meal_creation_coordinator.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_selection_controller.dart';
@@ -16,8 +18,6 @@ import 'package:yamt/features/inventory/provider/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
-import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
-    'prepared_meal_creation_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _deleteUndoSnackBarDuration = Duration(seconds: 4);
@@ -121,56 +121,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     if (previous == next || next < 1) {
       return;
     }
-
-    final items = ref.read(inventoryItemsControllerProvider).asData?.value;
-    if (items == null || !mounted) {
-      return;
-    }
-
-    final selectionState = ref.read(preparedMealSelectionControllerProvider);
-    final selectedItems = items
-        .where((item) => selectionState.selectedItemIds.contains(item.id))
-        .toList(growable: false);
-    if (selectedItems.length < 2) {
-      return;
-    }
-
-    final result = await showPreparedMealCreationSheet(
-      context: context,
-      items: selectedItems,
-    );
-    if (!mounted || result == null) {
-      return;
-    }
-
-    final saved = await ref
-        .read(preparedMealsControllerProvider.notifier)
-        .createPreparedMeal(
-          name: result.name,
-          imageBase64: result.imageBase64,
-          totalPortions: result.totalPortions,
-          items: result.items,
-        );
-    if (!mounted) {
-      return;
-    }
-
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          saved
-              ? AppLocalizations.of(context)!.preparedMealCreatedMessage
-              : AppLocalizations.of(context)!.preparedMealActionFailed,
-        ),
-      ),
-    );
-    if (!saved) {
-      return;
-    }
-
-    ref.read(preparedMealSelectionControllerProvider.notifier).clearSelection();
+    await runPreparedMealCreationFlow(context: context, ref: ref);
   }
 
   Future<bool> _savePreparedMealTemplate({

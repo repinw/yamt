@@ -1097,6 +1097,24 @@ abstract class AppLocalizations {
   /// **'Prepared meal updated.'**
   String get preparedMealUpdatedMessage;
 
+  /// No description provided for @preparedMealInsufficientAmountMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'At least one selected ingredient is no longer available in a sufficient amount.'**
+  String get preparedMealInsufficientAmountMessage;
+
+  /// No description provided for @preparedMealMissingNutritionMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'At least one selected ingredient is missing complete nutrition values.'**
+  String get preparedMealMissingNutritionMessage;
+
+  /// No description provided for @preparedMealItemUnavailableMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'At least one selected ingredient is no longer available in inventory.'**
+  String get preparedMealItemUnavailableMessage;
+
   /// No description provided for @preparedMealActionFailed.
   ///
   /// In en, this message translates to:

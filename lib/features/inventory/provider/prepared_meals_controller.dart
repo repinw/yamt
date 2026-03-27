@@ -17,6 +17,37 @@ part 'prepared_meals_controller.g.dart';
 
 const _preparedMealsControllerLogName = 'PreparedMealsController';
 
+enum PreparedMealCreationFailureReason {
+  invalidInput,
+  itemUnavailable,
+  insufficientAmount,
+  missingNutrition,
+  inventorySaveFailed,
+  mealSaveFailed,
+}
+
+class PreparedMealCreationResult {
+  const PreparedMealCreationResult._({
+    required this.isSuccess,
+    this.failureReason,
+  });
+
+  const PreparedMealCreationResult.success() : this._(isSuccess: true);
+
+  const PreparedMealCreationResult.failure(
+    PreparedMealCreationFailureReason reason,
+  ) : this._(isSuccess: false, failureReason: reason);
+
+  final bool isSuccess;
+  final PreparedMealCreationFailureReason? failureReason;
+}
+
+class _PreparedMealCreationException implements Exception {
+  const _PreparedMealCreationException(this.reason);
+
+  final PreparedMealCreationFailureReason reason;
+}
+
 class PreparedMealItemInput {
   const PreparedMealItemInput({
     required this.itemId,
@@ -52,7 +83,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     state = next;
   }
 
-  Future<bool> createPreparedMeal({
+  Future<PreparedMealCreationResult> createPreparedMeal({
     required String name,
     String? imageBase64,
     required int totalPortions,
@@ -60,47 +91,70 @@ class PreparedMealsController extends _$PreparedMealsController {
   }) {
     final trimmedName = name.trim();
     if (trimmedName.isEmpty || totalPortions < 1 || items.isEmpty) {
-      return Future<bool>.value(false);
+      return Future<PreparedMealCreationResult>.value(
+        const PreparedMealCreationResult.failure(
+          PreparedMealCreationFailureReason.invalidInput,
+        ),
+      );
     }
 
-    return _runSerializedMutation(() async {
-      final currentMeals = await _currentMeals();
-      final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
-      final currentItems = await inventoryRepository.readAll();
-      final creationResult = _buildMealCreationResult(
-        currentItems: currentItems,
-        name: trimmedName,
-        imageBase64: imageBase64,
-        totalPortions: totalPortions,
-        inputs: items,
-      );
-      if (creationResult == null) {
-        return false;
-      }
+    return _mutationQueue.run<PreparedMealCreationResult>(
+      operation: () async {
+        final currentMeals = await _currentMeals();
+        final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
+        final currentItems = await inventoryRepository.readAll();
 
-      final inventorySaved = await inventoryRepository.saveAll(
-        creationResult.nextItems,
-      );
-      if (!inventorySaved) {
-        return false;
-      }
+        try {
+          final creationResult = _buildMealCreationResult(
+            currentItems: currentItems,
+            name: trimmedName,
+            imageBase64: imageBase64,
+            totalPortions: totalPortions,
+            inputs: items,
+          );
 
-      final nextMeals = List<PreparedMeal>.from(currentMeals)
-        ..add(creationResult.preparedMeal);
-      final mealsSaved = await _saveMeals(
-        previousMeals: currentMeals,
-        nextMeals: nextMeals,
-      );
-      if (mealsSaved) {
-        return true;
-      }
+          final inventorySaved = await inventoryRepository.saveAll(
+            creationResult.nextItems,
+          );
+          if (!inventorySaved) {
+            return const PreparedMealCreationResult.failure(
+              PreparedMealCreationFailureReason.inventorySaveFailed,
+            );
+          }
 
-      await _restoreInventory(
-        inventoryRepository: inventoryRepository,
-        previousItems: currentItems,
-      );
-      return false;
-    });
+          final nextMeals = List<PreparedMeal>.from(currentMeals)
+            ..add(creationResult.preparedMeal);
+          final mealsSaved = await _saveMeals(
+            previousMeals: currentMeals,
+            nextMeals: nextMeals,
+          );
+          if (mealsSaved) {
+            return const PreparedMealCreationResult.success();
+          }
+
+          await _restoreInventory(
+            inventoryRepository: inventoryRepository,
+            previousItems: currentItems,
+          );
+          return const PreparedMealCreationResult.failure(
+            PreparedMealCreationFailureReason.mealSaveFailed,
+          );
+        } on _PreparedMealCreationException catch (error) {
+          return PreparedMealCreationResult.failure(error.reason);
+        }
+      },
+      fallbackValue: const PreparedMealCreationResult.failure(
+        PreparedMealCreationFailureReason.mealSaveFailed,
+      ),
+      onError: (error, stackTrace) {
+        log(
+          'Unexpected prepared meal creation error.',
+          name: _preparedMealsControllerLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+      },
+    );
   }
 
   Future<bool> updatePreparedMealDetails({
@@ -452,7 +506,7 @@ class _PreparedMealCreationResult {
   final PreparedMeal preparedMeal;
 }
 
-_PreparedMealCreationResult? _buildMealCreationResult({
+_PreparedMealCreationResult _buildMealCreationResult({
   required List<InventoryItem> currentItems,
   required String name,
   required String? imageBase64,
@@ -465,23 +519,31 @@ _PreparedMealCreationResult? _buildMealCreationResult({
 
   for (final input in inputs) {
     if (input.usedAmount < 1) {
-      return null;
+      throw const _PreparedMealCreationException(
+        PreparedMealCreationFailureReason.invalidInput,
+      );
     }
 
     final itemIndex = nextItems.indexWhere((item) => item.id == input.itemId);
     if (itemIndex < 0) {
-      return null;
+      throw const _PreparedMealCreationException(
+        PreparedMealCreationFailureReason.itemUnavailable,
+      );
     }
 
     final currentItem = nextItems[itemIndex];
     final availableAmount = _availableAmount(currentItem);
     if (input.usedAmount > availableAmount) {
-      return null;
+      throw const _PreparedMealCreationException(
+        PreparedMealCreationFailureReason.insufficientAmount,
+      );
     }
 
     final resolvedNutrition = input.manualNutrition ?? currentItem.nutrition;
     if (!_hasCompleteNutrition(resolvedNutrition)) {
-      return null;
+      throw const _PreparedMealCreationException(
+        PreparedMealCreationFailureReason.missingNutrition,
+      );
     }
 
     final sourceItemSnapshot = input.manualNutrition == null
@@ -493,7 +555,9 @@ _PreparedMealCreationResult? _buildMealCreationResult({
       amount: input.usedAmount,
     );
     if (nextItem == null) {
-      return null;
+      throw const _PreparedMealCreationException(
+        PreparedMealCreationFailureReason.insufficientAmount,
+      );
     }
 
     nextItems[itemIndex] = nextItem;

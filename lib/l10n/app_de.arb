@@ -211,6 +211,12 @@
   },
   "preparedMealCreatedMessage": "Mahlzeit wurde erstellt.",
   "preparedMealUpdatedMessage": "Mahlzeit wurde aktualisiert.",
+  "preparedMealInsufficientAmountMessage":
+      "Mindestens eine ausgewählte Zutat ist nicht mehr in ausreichender Menge verfügbar.",
+  "preparedMealMissingNutritionMessage":
+      "Mindestens einer ausgewählten Zutat fehlen vollständige Nährwerte.",
+  "preparedMealItemUnavailableMessage":
+      "Mindestens eine ausgewählte Zutat ist nicht mehr im Inventar verfügbar.",
   "preparedMealActionFailed":
       "Mahlzeit-Aktion fehlgeschlagen. Bitte versuche es erneut.",
   "preparedMealIngredientsCount": "{count} Zutaten",
