@@ -148,6 +148,14 @@ service cloud.firestore {
       allow read, create, update, delete: if isOwner(uid);
     }
 
+    match /users/{uid}/prepared_meals/{mealId} {
+      allow read, create, update, delete: if isOwner(uid);
+    }
+
+    match /users/{uid}/prepared_meal_templates/{templateId} {
+      allow read, create, update, delete: if isOwner(uid);
+    }
+
     match /users/{uid}/calorie_entries/{entryId} {
       allow read, create, update, delete: if isOwner(uid);
     }

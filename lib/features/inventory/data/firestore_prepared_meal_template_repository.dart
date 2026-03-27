@@ -1,0 +1,151 @@
+import 'dart:developer' show log;
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+
+import 'inventory_user_session.dart';
+import 'prepared_meal_template_repository_contract.dart';
+import 'prepared_meal_template_store.dart';
+
+const String _repositoryLogName = 'FirestorePreparedMealTemplateRepository';
+
+class FirestorePreparedMealTemplateRepository
+    implements PreparedMealTemplateRepository {
+  FirestorePreparedMealTemplateRepository({
+    required InventoryUserSession session,
+    required PreparedMealTemplateStore store,
+  }) : _session = session,
+       _store = store;
+
+  final InventoryUserSession _session;
+  final PreparedMealTemplateStore _store;
+  Future<void> _writeBarrier = Future<void>.value();
+
+  @override
+  Stream<List<PreparedMeal>> watchAll() {
+    final userId = _currentUserId();
+    if (userId == null) {
+      return Stream<List<PreparedMeal>>.value(const <PreparedMeal>[]);
+    }
+    return _watchAllForUser(userId);
+  }
+
+  @override
+  Future<List<PreparedMeal>> readAll() async {
+    final userId = _currentUserId();
+    if (userId == null) {
+      return const <PreparedMeal>[];
+    }
+    return _readAllForUser(userId);
+  }
+
+  @override
+  Future<bool> saveAll(List<PreparedMeal> templates) {
+    final userId = _currentUserId();
+    if (userId == null) {
+      return Future<bool>.value(false);
+    }
+    return _runExclusiveWrite(() => _replaceAllForUser(userId, templates));
+  }
+
+  String? _currentUserId() {
+    final userId = _session.currentUserId;
+    if (userId != null && userId.isNotEmpty) {
+      return userId;
+    }
+    log(
+      'No signed-in user for prepared meal template repository.',
+      name: _repositoryLogName,
+    );
+    return null;
+  }
+
+  Stream<List<PreparedMeal>> _watchAllForUser(String userId) async* {
+    try {
+      await for (final documents in _store.watchAll(userId: userId)) {
+        yield _decodeDocuments(documents);
+      }
+    } on FirebaseException catch (error, stackTrace) {
+      if (error.code == 'permission-denied') {
+        log(
+          'Skipping prepared meal template watch for user $userId: '
+          'permission denied.',
+          name: _repositoryLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+        yield const <PreparedMeal>[];
+        return;
+      }
+      log(
+        'Failed to watch prepared meal templates for user $userId.',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    } catch (error, stackTrace) {
+      log(
+        'Failed to watch prepared meal templates for user $userId.',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  Future<List<PreparedMeal>> _readAllForUser(String userId) async {
+    try {
+      final documents = await _store.readAll(userId: userId);
+      return _decodeDocuments(documents);
+    } catch (error, stackTrace) {
+      log(
+        'Failed to read prepared meal templates for user $userId.',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <PreparedMeal>[];
+    }
+  }
+
+  Future<bool> _replaceAllForUser(String userId, List<PreparedMeal> templates) {
+    final documentsById = <String, Map<String, dynamic>>{
+      for (final template in templates) template.id: template.toJson(),
+    };
+    return _store.replaceAll(userId: userId, documentsById: documentsById);
+  }
+
+  List<PreparedMeal> _decodeDocuments(
+    List<PreparedMealTemplateDocument> documents,
+  ) {
+    final templates = <PreparedMeal>[];
+    for (var index = 0; index < documents.length; index += 1) {
+      final json = Map<String, dynamic>.from(documents[index].data);
+      if ((json['id'] as String?)?.trim().isEmpty ?? true) {
+        json['id'] = documents[index].id;
+      }
+      try {
+        templates.add(PreparedMeal.fromJson(json));
+      } catch (error, stackTrace) {
+        log(
+          'Skipping corrupted prepared meal template at index $index.',
+          name: _repositoryLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+      }
+    }
+    return templates;
+  }
+
+  Future<T> _runExclusiveWrite<T>(Future<T> Function() operation) {
+    final queuedOperation = _writeBarrier.then((_) => operation());
+    _writeBarrier = queuedOperation.then<void>(
+      (_) {},
+      onError: (Object error, StackTrace stackTrace) {},
+    );
+    return queuedOperation;
+  }
+}

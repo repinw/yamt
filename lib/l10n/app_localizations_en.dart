@@ -422,6 +422,154 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryRetryAction => 'Retry';
 
   @override
+  String get preparedMealSectionTitle => 'Prepared meals';
+
+  @override
+  String get preparedMealCreateTitle => 'Create prepared meal';
+
+  @override
+  String get preparedMealEditTitle => 'Edit prepared meal';
+
+  @override
+  String get preparedMealNameLabel => 'Meal name';
+
+  @override
+  String get preparedMealClearNameAction => 'Clear name';
+
+  @override
+  String get preparedMealInvalidName => 'Please enter a meal name.';
+
+  @override
+  String get preparedMealPortionsLabel => 'Portions';
+
+  @override
+  String get preparedMealInvalidPortions => 'Please enter at least one portion.';
+
+  @override
+  String get preparedMealImageLabel => 'Cover image';
+
+  @override
+  String get preparedMealAddImageAction => 'Add image';
+
+  @override
+  String get preparedMealChangeImageAction => 'Change image';
+
+  @override
+  String get preparedMealRemoveImageAction => 'Remove image';
+
+  @override
+  String get preparedMealImageHint => 'Add a photo for this meal or use the default cover.';
+
+  @override
+  String get preparedMealImageCameraAction => 'Take photo';
+
+  @override
+  String get preparedMealImagePickFailed => 'Could not pick the meal image.';
+
+  @override
+  String get preparedMealImageTooLarge => 'The selected image is too large.';
+
+  @override
+  String get preparedMealIngredientsTitle => 'Ingredients';
+
+  @override
+  String get preparedMealCreateAction => 'Create meal';
+
+  @override
+  String get preparedMealBindAction => 'Bind meal';
+
+  @override
+  String get preparedMealUsedAmountLabel => 'Used amount';
+
+  @override
+  String preparedMealAvailableAmount(int amount, String unit) {
+    return 'Available: $amount $unit';
+  }
+
+  @override
+  String get preparedMealInvalidIngredientAmount => 'Please enter a valid ingredient amount.';
+
+  @override
+  String get preparedMealNutritionPerPieceHint => 'Add nutrition values per used piece.';
+
+  @override
+  String get preparedMealNutritionPerHundredHint => 'Add nutrition values per 100 g/ml.';
+
+  @override
+  String get preparedMealNutritionModePerHundred => '100 g/ml';
+
+  @override
+  String get preparedMealNutritionModePerPortion => 'Portion';
+
+  @override
+  String get preparedMealNutritionModeTotal => 'Total';
+
+  @override
+  String preparedMealSelectionCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get preparedMealCreatedMessage => 'Prepared meal created.';
+
+  @override
+  String get preparedMealUpdatedMessage => 'Prepared meal updated.';
+
+  @override
+  String get preparedMealActionFailed => 'Prepared meal action failed. Please try again.';
+
+  @override
+  String preparedMealIngredientsCount(int count) {
+    return '$count ingredients';
+  }
+
+  @override
+  String preparedMealPortionsRemaining(int remaining, int total) {
+    return '$remaining/$total portions';
+  }
+
+  @override
+  String get preparedMealUnbundleAction => 'Unbundle';
+
+  @override
+  String get preparedMealEatTitle => 'Eat prepared meal';
+
+  @override
+  String get preparedMealThrowAwayTitle => 'Throw away portions';
+
+  @override
+  String get preparedMealPortionsToUseLabel => 'Portions to use';
+
+  @override
+  String get preparedMealConfirmAction => 'Confirm';
+
+  @override
+  String get preparedMealSaveTemplateAction => 'Save as template';
+
+  @override
+  String get preparedMealTemplateSavedMessage => 'Template saved.';
+
+  @override
+  String get preparedMealTemplatesPageTitle => 'Templates';
+
+  @override
+  String get preparedMealTemplatesEmptyState => 'No templates saved yet.';
+
+  @override
+  String get preparedMealTemplatesLoadFailed => 'Could not load templates.';
+
+  @override
+  String get preparedMealTemplateDeleteAction => 'Delete template';
+
+  @override
+  String get preparedMealTemplateDeletedMessage => 'Template deleted.';
+
+  @override
+  String preparedMealTemplatePortions(int count) {
+    return '$count portions';
+  }
+
+  @override
   String get homeShoppingActionContextPlaceholder => 'Shopping action coming soon.';
 
   @override
@@ -722,6 +870,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesUnitMilliliter => 'ml';
+
+  @override
+  String caloriesBundlePortions(int consumed, int total) {
+    return '$consumed/$total portions';
+  }
 
   @override
   String get homeSettingsActionContextPlaceholder => 'Settings action coming soon.';

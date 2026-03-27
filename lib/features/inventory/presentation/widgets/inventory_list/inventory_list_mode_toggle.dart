@@ -12,11 +12,13 @@ class InventoryListModeToggle extends StatelessWidget {
     required this.mode,
     required this.l10n,
     required this.onModeChanged,
+    this.enabled = true,
   });
 
   final InventoryListMode mode;
   final AppLocalizations l10n;
   final ValueChanged<InventoryListMode> onModeChanged;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -35,12 +37,14 @@ class InventoryListModeToggle extends StatelessWidget {
         ),
       ],
       selected: <InventoryListMode>{mode},
-      onSelectionChanged: (selection) {
-        if (selection.isEmpty) {
-          return;
-        }
-        onModeChanged(selection.first);
-      },
+      onSelectionChanged: enabled
+          ? (selection) {
+              if (selection.isEmpty) {
+                return;
+              }
+              onModeChanged(selection.first);
+            }
+          : null,
     );
   }
 }

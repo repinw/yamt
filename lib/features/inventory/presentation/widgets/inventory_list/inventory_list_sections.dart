@@ -55,16 +55,21 @@ class InventorySectionHeader extends StatelessWidget {
 }
 
 class InventoryFilterButton extends StatelessWidget {
-  const InventoryFilterButton({super.key, required this.onPressed});
+  const InventoryFilterButton({
+    super.key,
+    required this.onPressed,
+    this.enabled = true,
+  });
 
   final VoidCallback onPressed;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     return IconButton(
-      onPressed: onPressed,
+      onPressed: enabled ? onPressed : null,
       tooltip: l10n.inventoryFilterAction,
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.zero,

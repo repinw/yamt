@@ -917,6 +917,282 @@ abstract class AppLocalizations {
   /// **'Retry'**
   String get inventoryRetryAction;
 
+  /// No description provided for @preparedMealSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepared meals'**
+  String get preparedMealSectionTitle;
+
+  /// No description provided for @preparedMealCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create prepared meal'**
+  String get preparedMealCreateTitle;
+
+  /// No description provided for @preparedMealEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit prepared meal'**
+  String get preparedMealEditTitle;
+
+  /// No description provided for @preparedMealNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal name'**
+  String get preparedMealNameLabel;
+
+  /// No description provided for @preparedMealClearNameAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear name'**
+  String get preparedMealClearNameAction;
+
+  /// No description provided for @preparedMealInvalidName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a meal name.'**
+  String get preparedMealInvalidName;
+
+  /// No description provided for @preparedMealPortionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Portions'**
+  String get preparedMealPortionsLabel;
+
+  /// No description provided for @preparedMealInvalidPortions.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter at least one portion.'**
+  String get preparedMealInvalidPortions;
+
+  /// No description provided for @preparedMealImageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover image'**
+  String get preparedMealImageLabel;
+
+  /// No description provided for @preparedMealAddImageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add image'**
+  String get preparedMealAddImageAction;
+
+  /// No description provided for @preparedMealChangeImageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Change image'**
+  String get preparedMealChangeImageAction;
+
+  /// No description provided for @preparedMealRemoveImageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove image'**
+  String get preparedMealRemoveImageAction;
+
+  /// No description provided for @preparedMealImageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a photo for this meal or use the default cover.'**
+  String get preparedMealImageHint;
+
+  /// No description provided for @preparedMealImageCameraAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get preparedMealImageCameraAction;
+
+  /// No description provided for @preparedMealImagePickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not pick the meal image.'**
+  String get preparedMealImagePickFailed;
+
+  /// No description provided for @preparedMealImageTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected image is too large.'**
+  String get preparedMealImageTooLarge;
+
+  /// No description provided for @preparedMealIngredientsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients'**
+  String get preparedMealIngredientsTitle;
+
+  /// No description provided for @preparedMealCreateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create meal'**
+  String get preparedMealCreateAction;
+
+  /// No description provided for @preparedMealBindAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Bind meal'**
+  String get preparedMealBindAction;
+
+  /// No description provided for @preparedMealUsedAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Used amount'**
+  String get preparedMealUsedAmountLabel;
+
+  /// No description provided for @preparedMealAvailableAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Available: {amount} {unit}'**
+  String preparedMealAvailableAmount(int amount, String unit);
+
+  /// No description provided for @preparedMealInvalidIngredientAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid ingredient amount.'**
+  String get preparedMealInvalidIngredientAmount;
+
+  /// No description provided for @preparedMealNutritionPerPieceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add nutrition values per used piece.'**
+  String get preparedMealNutritionPerPieceHint;
+
+  /// No description provided for @preparedMealNutritionPerHundredHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add nutrition values per 100 g/ml.'**
+  String get preparedMealNutritionPerHundredHint;
+
+  /// No description provided for @preparedMealNutritionModePerHundred.
+  ///
+  /// In en, this message translates to:
+  /// **'100 g/ml'**
+  String get preparedMealNutritionModePerHundred;
+
+  /// No description provided for @preparedMealNutritionModePerPortion.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion'**
+  String get preparedMealNutritionModePerPortion;
+
+  /// No description provided for @preparedMealNutritionModeTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get preparedMealNutritionModeTotal;
+
+  /// No description provided for @preparedMealSelectionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String preparedMealSelectionCount(int count);
+
+  /// No description provided for @preparedMealCreatedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepared meal created.'**
+  String get preparedMealCreatedMessage;
+
+  /// No description provided for @preparedMealUpdatedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepared meal updated.'**
+  String get preparedMealUpdatedMessage;
+
+  /// No description provided for @preparedMealActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepared meal action failed. Please try again.'**
+  String get preparedMealActionFailed;
+
+  /// No description provided for @preparedMealIngredientsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ingredients'**
+  String preparedMealIngredientsCount(int count);
+
+  /// No description provided for @preparedMealPortionsRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{remaining}/{total} portions'**
+  String preparedMealPortionsRemaining(int remaining, int total);
+
+  /// No description provided for @preparedMealUnbundleAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Unbundle'**
+  String get preparedMealUnbundleAction;
+
+  /// No description provided for @preparedMealEatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat prepared meal'**
+  String get preparedMealEatTitle;
+
+  /// No description provided for @preparedMealThrowAwayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Throw away portions'**
+  String get preparedMealThrowAwayTitle;
+
+  /// No description provided for @preparedMealPortionsToUseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Portions to use'**
+  String get preparedMealPortionsToUseLabel;
+
+  /// No description provided for @preparedMealConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get preparedMealConfirmAction;
+
+  /// No description provided for @preparedMealSaveTemplateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as template'**
+  String get preparedMealSaveTemplateAction;
+
+  /// No description provided for @preparedMealTemplateSavedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Template saved.'**
+  String get preparedMealTemplateSavedMessage;
+
+  /// No description provided for @preparedMealTemplatesPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Templates'**
+  String get preparedMealTemplatesPageTitle;
+
+  /// No description provided for @preparedMealTemplatesEmptyState.
+  ///
+  /// In en, this message translates to:
+  /// **'No templates saved yet.'**
+  String get preparedMealTemplatesEmptyState;
+
+  /// No description provided for @preparedMealTemplatesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load templates.'**
+  String get preparedMealTemplatesLoadFailed;
+
+  /// No description provided for @preparedMealTemplateDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete template'**
+  String get preparedMealTemplateDeleteAction;
+
+  /// No description provided for @preparedMealTemplateDeletedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Template deleted.'**
+  String get preparedMealTemplateDeletedMessage;
+
+  /// No description provided for @preparedMealTemplatePortions.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} portions'**
+  String preparedMealTemplatePortions(int count);
+
   /// No description provided for @homeShoppingActionContextPlaceholder.
   ///
   /// In en, this message translates to:
@@ -1504,6 +1780,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'ml'**
   String get caloriesUnitMilliliter;
+
+  /// No description provided for @caloriesBundlePortions.
+  ///
+  /// In en, this message translates to:
+  /// **'{consumed}/{total} portions'**
+  String caloriesBundlePortions(int consumed, int total);
 
   /// No description provided for @homeSettingsActionContextPlaceholder.
   ///

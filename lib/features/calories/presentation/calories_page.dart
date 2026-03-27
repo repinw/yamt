@@ -11,6 +11,8 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_bundle_details_sheet.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calories_day_navigation_card.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_meal_section_card.dart';
@@ -101,6 +103,10 @@ class CaloriesPage extends ConsumerWidget {
                     preselectedMealType: section.mealType,
                   ),
                   onTapEntry: (entry) {
+                    if (entry.isBundle) {
+                      showCalorieBundleDetailsSheet(context, entry: entry);
+                      return;
+                    }
                     context.push(AppRoutes.homeCaloriesEntryEditPath(entry.id));
                   },
                   onDeleteEntry: (entry) =>

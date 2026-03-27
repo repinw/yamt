@@ -1,0 +1,58 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'prepared_meal_image_picker.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(preparedMealImagePicker)
+final preparedMealImagePickerProvider = PreparedMealImagePickerProvider._();
+
+final class PreparedMealImagePickerProvider
+    extends
+        $FunctionalProvider<
+          PreparedMealImagePicker,
+          PreparedMealImagePicker,
+          PreparedMealImagePicker
+        >
+    with $Provider<PreparedMealImagePicker> {
+  PreparedMealImagePickerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'preparedMealImagePickerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$preparedMealImagePickerHash();
+
+  @$internal
+  @override
+  $ProviderElement<PreparedMealImagePicker> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  PreparedMealImagePicker create(Ref ref) {
+    return preparedMealImagePicker(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PreparedMealImagePicker value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PreparedMealImagePicker>(value),
+    );
+  }
+}
+
+String _$preparedMealImagePickerHash() =>
+    r'2e80c88448a9c1d4b776d8e13c0a50fccbbc84c5';

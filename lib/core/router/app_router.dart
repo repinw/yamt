@@ -14,6 +14,8 @@ import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'prepared_meal_templates_page.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:yamt/features/scanner/presentation/'
     'inventory_receipt_review_page.dart';
@@ -131,6 +133,10 @@ GoRouter appRouter(Ref ref) {
           }
           return InventoryReceiptReviewPage(args: args);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.homeInventoryTemplates,
+        builder: (context, state) => const PreparedMealTemplatesPage(),
       ),
       GoRoute(
         path: AppRoutes.homeShopping,

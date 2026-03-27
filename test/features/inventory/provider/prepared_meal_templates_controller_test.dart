@@ -1,0 +1,213 @@
+import 'dart:convert';
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/provider/'
+    'prepared_meal_templates_controller.dart';
+
+class _FakePreparedMealTemplateRepository
+    implements PreparedMealTemplateRepository {
+  _FakePreparedMealTemplateRepository({
+    required List<PreparedMeal> initialTemplates,
+  }) : _templates = List<PreparedMeal>.from(initialTemplates);
+
+  final StreamController<List<PreparedMeal>> _controller =
+      StreamController<List<PreparedMeal>>.broadcast();
+  List<PreparedMeal> _templates;
+  List<PreparedMeal> savedTemplates = const <PreparedMeal>[];
+
+  @override
+  Stream<List<PreparedMeal>> watchAll() {
+    return Stream<List<PreparedMeal>>.multi((controller) {
+      controller.add(List<PreparedMeal>.from(_templates));
+      final subscription = _controller.stream.listen(controller.add);
+      controller.onCancel = () {
+        unawaited(subscription.cancel());
+      };
+    });
+  }
+
+  @override
+  Future<List<PreparedMeal>> readAll() async {
+    return List<PreparedMeal>.from(_templates);
+  }
+
+  @override
+  Future<bool> saveAll(List<PreparedMeal> templates) async {
+    _templates = List<PreparedMeal>.from(templates);
+    savedTemplates = List<PreparedMeal>.from(templates);
+    _controller.add(List<PreparedMeal>.from(_templates));
+    return true;
+  }
+
+  Future<void> dispose() => _controller.close();
+}
+
+class _SilentPreparedMealTemplateRepository
+    implements PreparedMealTemplateRepository {
+  _SilentPreparedMealTemplateRepository({
+    required List<PreparedMeal> initialTemplates,
+  }) : _templates = List<PreparedMeal>.from(initialTemplates);
+
+  List<PreparedMeal> _templates;
+  List<PreparedMeal> savedTemplates = const <PreparedMeal>[];
+
+  @override
+  Stream<List<PreparedMeal>> watchAll() {
+    return const Stream<List<PreparedMeal>>.empty();
+  }
+
+  @override
+  Future<List<PreparedMeal>> readAll() async {
+    return List<PreparedMeal>.from(_templates);
+  }
+
+  @override
+  Future<bool> saveAll(List<PreparedMeal> templates) async {
+    _templates = List<PreparedMeal>.from(templates);
+    savedTemplates = List<PreparedMeal>.from(templates);
+    return true;
+  }
+}
+
+PreparedMeal _templateMeal({required String id, required String name}) {
+  final sourceItem = InventoryItem.create(
+    id: 'rice',
+    name: 'Rice',
+    entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
+    storeName: 'Store',
+    quantity: 1,
+    initialQuantity: 1,
+    initialAmount: 300,
+    currentAmount: 300,
+    amountUnit: InventoryAmountUnit.gram,
+    nutrition: const GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+      per100Kcal: 200,
+      per100Protein: 10,
+      per100Carbs: 20,
+      per100Fat: 5,
+    ),
+  );
+
+  return PreparedMeal(
+    id: id,
+    name: name,
+    imageBase64: base64Encode(<int>[1, 2, 3]),
+    totalPortions: 4,
+    remainingPortions: 2,
+    totalKcal: 400,
+    totalProtein: 20,
+    totalCarbs: 40,
+    totalFat: 10,
+    createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+    updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+    components: [
+      PreparedMealComponent(
+        inventoryItemId: sourceItem.id,
+        name: sourceItem.name,
+        brand: sourceItem.brand,
+        imageUrl: sourceItem.imageUrl,
+        usedAmount: 200,
+        usedUnit: InventoryAmountUnit.gram,
+        totalKcal: 400,
+        totalProtein: 20,
+        totalCarbs: 40,
+        totalFat: 10,
+        sourceItemSnapshot: sourceItem,
+      ),
+    ],
+  );
+}
+
+ProviderSubscription<AsyncValue<List<PreparedMeal>>> _keepControllerAlive(
+  ProviderContainer container,
+) {
+  return container.listen(
+    preparedMealTemplatesControllerProvider,
+    (previous, next) {},
+  );
+}
+
+void main() {
+  test('saveTemplateFromMeal stores a normalized meal template', () async {
+    final repository = _FakePreparedMealTemplateRepository(
+      initialTemplates: const <PreparedMeal>[],
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(preparedMealTemplatesControllerProvider.future);
+    final saved = await container
+        .read(preparedMealTemplatesControllerProvider.notifier)
+        .saveTemplateFromMeal(_templateMeal(id: 'meal-1', name: 'Lunch Box'));
+
+    expect(saved, isTrue);
+    expect(repository.savedTemplates, hasLength(1));
+    expect(repository.savedTemplates.single.name, 'Lunch Box');
+    expect(repository.savedTemplates.single.imageBase64, isNotNull);
+    expect(repository.savedTemplates.single.remainingPortions, 4);
+    expect(repository.savedTemplates.single.id, isNot('meal-1'));
+  });
+
+  test('deleteTemplate removes the selected template', () async {
+    final repository = _FakePreparedMealTemplateRepository(
+      initialTemplates: <PreparedMeal>[
+        _templateMeal(id: 'template-1', name: 'Lunch Box'),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(preparedMealTemplatesControllerProvider.future);
+    final deleted = await container
+        .read(preparedMealTemplatesControllerProvider.notifier)
+        .deleteTemplate('template-1');
+
+    expect(deleted, isTrue);
+    expect(repository.savedTemplates, isEmpty);
+  });
+
+  test('saveTemplateFromMeal works before the template watch emits', () async {
+    final repository = _SilentPreparedMealTemplateRepository(
+      initialTemplates: const <PreparedMeal>[],
+    );
+
+    final container = ProviderContainer(
+      overrides: [
+        preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final saved = await container
+        .read(preparedMealTemplatesControllerProvider.notifier)
+        .saveTemplateFromMeal(_templateMeal(id: 'meal-1', name: 'Lunch Box'))
+        .timeout(const Duration(milliseconds: 200));
+
+    expect(saved, isTrue);
+    expect(repository.savedTemplates, hasLength(1));
+    expect(repository.savedTemplates.single.name, 'Lunch Box');
+  });
+}

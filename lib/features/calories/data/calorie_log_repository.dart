@@ -39,11 +39,26 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
         .where('logged_at', isGreaterThanOrEqualTo: bounds.startInclusive)
         .where('logged_at', isLessThan: bounds.endExclusive)
         .orderBy('logged_at');
+    final dayLabel = _formatDebugDay(day);
+
+    log(
+      'Starting calorie entry watch user=$userId day=$dayLabel '
+      'rangeStart=${bounds.startInclusive.toIso8601String()} '
+      'rangeEnd=${bounds.endExclusive.toIso8601String()}.',
+      name: _repositoryLogName,
+    );
 
     return Stream<List<CalorieEntry>>.multi((controller) {
       final subscription = query.snapshots().listen(
         (snapshot) {
-          controller.add(_decodeSnapshot(snapshot));
+          final entries = _decodeSnapshot(snapshot);
+          log(
+            'Calorie watch snapshot user=$userId day=$dayLabel '
+            'docs=${snapshot.docs.length} decoded=${entries.length} '
+            'bundles=${_bundleCount(entries)}.',
+            name: _repositoryLogName,
+          );
+          controller.add(entries);
         },
         onError: (Object error, StackTrace stackTrace) {
           log(
@@ -71,12 +86,26 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
 
     try {
       final bounds = _dayBoundsLocal(day);
+      final dayLabel = _formatDebugDay(day);
+      log(
+        'Reading calorie entries user=$userId day=$dayLabel '
+        'rangeStart=${bounds.startInclusive.toIso8601String()} '
+        'rangeEnd=${bounds.endExclusive.toIso8601String()}.',
+        name: _repositoryLogName,
+      );
       final snapshot = await _collection(userId)
           .where('logged_at', isGreaterThanOrEqualTo: bounds.startInclusive)
           .where('logged_at', isLessThan: bounds.endExclusive)
           .orderBy('logged_at')
           .get();
-      return _decodeSnapshot(snapshot);
+      final entries = _decodeSnapshot(snapshot);
+      log(
+        'Calorie entries read completed user=$userId day=$dayLabel '
+        'docs=${snapshot.docs.length} decoded=${entries.length} '
+        'bundles=${_bundleCount(entries)}.',
+        name: _repositoryLogName,
+      );
+      return entries;
     } catch (error, stackTrace) {
       log(
         'Failed to read calories for user $userId',
@@ -96,6 +125,13 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
     }
 
     try {
+      log(
+        'Saving calorie entry id=${entry.id} user=$userId '
+        'isBundle=${entry.isBundle} mealType=${entry.mealType.name} '
+        'loggedAt=${entry.loggedAt.toIso8601String()} '
+        'bundleComponents=${entry.bundleComponents.length}.',
+        name: _repositoryLogName,
+      );
       final normalizedEntry = entry.copyWith(
         imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
         userId: userId,
@@ -104,6 +140,12 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
       await _collection(
         userId,
       ).doc(normalizedEntry.id).set(normalizedEntry.toJson());
+      log(
+        'Saved calorie entry id=${normalizedEntry.id} user=$userId '
+        'isBundle=${normalizedEntry.isBundle} '
+        'sourceMealId=${normalizedEntry.bundleSourcePreparedMealId}.',
+        name: _repositoryLogName,
+      );
       return true;
     } catch (error, stackTrace) {
       log(
@@ -203,9 +245,19 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
       normalizedData['id'] = doc.id;
     }
     final entry = CalorieEntry.fromJson(normalizedData);
-    return entry.copyWith(
+    final normalizedEntry = entry.copyWith(
       imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
     );
+    if (normalizedEntry.isBundle) {
+      log(
+        'Decoded bundle calorie entry docId=${doc.id} '
+        'sourceMealId=${normalizedEntry.bundleSourcePreparedMealId} '
+        'components=${normalizedEntry.bundleComponents.length} '
+        'loggedAt=${normalizedEntry.loggedAt.toIso8601String()}.',
+        name: _repositoryLogName,
+      );
+    }
+    return normalizedEntry;
   }
 
   Map<String, dynamic> _normalizeFirestoreJson(Map<String, dynamic> rawData) {
@@ -241,6 +293,17 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
     final start = DateTime(day.year, day.month, day.day);
     final end = start.add(const Duration(days: 1));
     return (startInclusive: start, endExclusive: end);
+  }
+
+  int _bundleCount(List<CalorieEntry> entries) {
+    return entries.where((entry) => entry.isBundle).length;
+  }
+
+  String _formatDebugDay(DateTime day) {
+    final year = day.year.toString().padLeft(4, '0');
+    final month = day.month.toString().padLeft(2, '0');
+    final dayOfMonth = day.day.toString().padLeft(2, '0');
+    return '$year-$month-$dayOfMonth';
   }
 }
 

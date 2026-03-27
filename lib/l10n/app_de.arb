@@ -158,6 +158,100 @@
       "Keine Artikel entsprechen den ausgewählten Filtern.",
   "inventoryLoadFailed": "Vorratsartikel konnten nicht geladen werden.",
   "inventoryRetryAction": "Erneut versuchen",
+  "preparedMealSectionTitle": "Mahlzeiten",
+  "preparedMealCreateTitle": "Mahlzeit erstellen",
+  "preparedMealEditTitle": "Mahlzeit bearbeiten",
+  "preparedMealNameLabel": "Mahlzeitname",
+  "preparedMealClearNameAction": "Namen leeren",
+  "preparedMealInvalidName": "Bitte gib einen Mahlzeitnamen ein.",
+  "preparedMealPortionsLabel": "Portionen",
+  "preparedMealInvalidPortions":
+      "Bitte gib mindestens eine Portion ein.",
+  "preparedMealImageLabel": "Titelbild",
+  "preparedMealAddImageAction": "Bild hinzufügen",
+  "preparedMealChangeImageAction": "Bild ändern",
+  "preparedMealRemoveImageAction": "Bild entfernen",
+  "preparedMealImageHint":
+      "Füge ein Foto für diese Mahlzeit hinzu oder nutze das Standard-Cover.",
+  "preparedMealImageCameraAction": "Foto aufnehmen",
+  "preparedMealImagePickFailed":
+      "Das Mahlzeitenbild konnte nicht ausgewählt werden.",
+  "preparedMealImageTooLarge": "Das ausgewählte Bild ist zu groß.",
+  "preparedMealIngredientsTitle": "Zutaten",
+  "preparedMealCreateAction": "Mahlzeit erstellen",
+  "preparedMealBindAction": "Als Mahlzeit binden",
+  "preparedMealUsedAmountLabel": "Verwendete Menge",
+  "preparedMealAvailableAmount": "Verfügbar: {amount} {unit}",
+  "@preparedMealAvailableAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealInvalidIngredientAmount":
+      "Bitte gib eine gültige Zutatenmenge ein.",
+  "preparedMealNutritionPerPieceHint":
+      "Bitte Nährwerte pro verwendetem Stück eintragen.",
+  "preparedMealNutritionPerHundredHint":
+      "Bitte Nährwerte pro 100 g/ml eintragen.",
+  "preparedMealNutritionModePerHundred": "100 g/ml",
+  "preparedMealNutritionModePerPortion": "Portion",
+  "preparedMealNutritionModeTotal": "Gesamt",
+  "preparedMealSelectionCount": "{count} ausgewählt",
+  "@preparedMealSelectionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealCreatedMessage": "Mahlzeit wurde erstellt.",
+  "preparedMealUpdatedMessage": "Mahlzeit wurde aktualisiert.",
+  "preparedMealActionFailed":
+      "Mahlzeit-Aktion fehlgeschlagen. Bitte versuche es erneut.",
+  "preparedMealIngredientsCount": "{count} Zutaten",
+  "@preparedMealIngredientsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealPortionsRemaining": "{remaining}/{total} Portionen",
+  "@preparedMealPortionsRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealUnbundleAction": "Auflösen",
+  "preparedMealEatTitle": "Mahlzeit essen",
+  "preparedMealThrowAwayTitle": "Portionen wegwerfen",
+  "preparedMealPortionsToUseLabel": "Portionen verwenden",
+  "preparedMealConfirmAction": "Bestätigen",
+  "preparedMealSaveTemplateAction": "Als Vorlage speichern",
+  "preparedMealTemplateSavedMessage": "Vorlage gespeichert.",
+  "preparedMealTemplatesPageTitle": "Vorlagen",
+  "preparedMealTemplatesEmptyState": "Noch keine Vorlagen gespeichert.",
+  "preparedMealTemplatesLoadFailed": "Vorlagen konnten nicht geladen werden.",
+  "preparedMealTemplateDeleteAction": "Vorlage löschen",
+  "preparedMealTemplateDeletedMessage": "Vorlage gelöscht.",
+  "preparedMealTemplatePortions": "{count} Portionen",
+  "@preparedMealTemplatePortions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "homeShoppingActionContextPlaceholder": "Einkaufsaktion folgt bald.",
   "shoppingListStatsEntries": "Positionen",
   "shoppingListStatsQuantity": "Gesamtmenge",
@@ -297,6 +391,17 @@
   "caloriesUnitKcal": "kcal",
   "caloriesUnitGram": "g",
   "caloriesUnitMilliliter": "ml",
+  "caloriesBundlePortions": "{consumed}/{total} Portionen",
+  "@caloriesBundlePortions": {
+    "placeholders": {
+      "consumed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "homeSettingsActionContextPlaceholder": "Einstellungsaktion folgt bald.",
   "settingsLanguageTitle": "Sprache",
   "settingsLanguageSubtitle": "App-Sprache auswählen",

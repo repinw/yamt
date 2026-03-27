@@ -22,6 +22,10 @@ class InventoryAllItemsSliver extends StatefulWidget {
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
+    required this.isSelectionMode,
+    required this.selectedItemIds,
+    required this.onItemLongPress,
+    required this.onSelectionToggle,
   });
 
   final List<InventoryItem> items;
@@ -32,6 +36,10 @@ class InventoryAllItemsSliver extends StatefulWidget {
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
   final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
+  final bool isSelectionMode;
+  final Set<String> selectedItemIds;
+  final ValueChanged<String> onItemLongPress;
+  final ValueChanged<String> onSelectionToggle;
 
   @override
   State<InventoryAllItemsSliver> createState() =>
@@ -83,6 +91,10 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
             onDeleteItem: widget.onDeleteItem,
             onEatItem: widget.onEatItem,
             onThrowAwayItem: widget.onThrowAwayItem,
+            isSelectionMode: widget.isSelectionMode,
+            isSelected: widget.selectedItemIds.contains(item.id),
+            onItemLongPress: () => widget.onItemLongPress(item.id),
+            onSelectionToggle: () => widget.onSelectionToggle(item.id),
           );
         },
       ),

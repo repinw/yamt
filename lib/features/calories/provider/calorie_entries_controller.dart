@@ -72,10 +72,21 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     ref.watch(calorieLogRepositoryProvider);
     ref.watch(calorieDayControllerProvider);
     ref.onDispose(_disposeSubscription);
+    final selectedDay = ref.read(calorieDayControllerProvider);
+    log(
+      'Building calorie entries controller day='
+      '${_formatDebugDay(selectedDay)}.',
+      name: _entriesControllerLogName,
+    );
     return _restartSubscription();
   }
 
   Future<void> refresh() async {
+    final selectedDay = ref.read(calorieDayControllerProvider);
+    log(
+      'Refreshing calorie entries day=${_formatDebugDay(selectedDay)}.',
+      name: _entriesControllerLogName,
+    );
     state = const AsyncLoading();
     final next = await AsyncValue.guard(_restartSubscription);
     if (!ref.mounted) {
@@ -190,12 +201,22 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     final repository = ref.read(calorieLogRepositoryProvider);
     final selectedDay = ref.read(calorieDayControllerProvider);
     _disposeSubscription();
+    log(
+      'Restarting calorie entries subscription '
+      'day=${_formatDebugDay(selectedDay)}.',
+      name: _entriesControllerLogName,
+    );
 
     _entriesSubscription = repository
         .watchEntriesForDay(selectedDay)
         .listen(
           (entries) {
             if (!initialEntries.isCompleted) {
+              _logEntriesSnapshot(
+                message: 'Received initial calorie entries snapshot.',
+                day: selectedDay,
+                entries: entries,
+              );
               initialEntries.complete(entries);
               return;
             }
@@ -225,10 +246,23 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     if (!ref.mounted) {
       return;
     }
+    final selectedDay = ref.read(calorieDayControllerProvider);
+    _logEntriesSnapshot(
+      message: 'Received realtime calorie entries snapshot.',
+      day: selectedDay,
+      entries: entries,
+    );
     state = AsyncData(entries);
   }
 
   void _onRealtimeError(Object error, StackTrace stackTrace) {
+    final selectedDay = ref.read(calorieDayControllerProvider);
+    log(
+      'Calorie entries realtime error day=${_formatDebugDay(selectedDay)}.',
+      name: _entriesControllerLogName,
+      error: error,
+      stackTrace: stackTrace,
+    );
     if (!ref.mounted) {
       return;
     }
@@ -243,9 +277,20 @@ class CalorieEntriesController extends _$CalorieEntriesController {
 
     final selectedDay = ref.read(calorieDayControllerProvider);
     try {
-      return await ref
+      log(
+        'Falling back to repository read for current entries '
+        'day=${_formatDebugDay(selectedDay)}.',
+        name: _entriesControllerLogName,
+      );
+      final entries = await ref
           .read(calorieLogRepositoryProvider)
           .readEntriesForDay(selectedDay);
+      _logEntriesSnapshot(
+        message: 'Repository fallback read completed.',
+        day: selectedDay,
+        entries: entries,
+      );
+      return entries;
     } catch (error, stackTrace) {
       log(
         'Failed to read current calorie entries for mutation fallback.',
@@ -436,4 +481,27 @@ AsyncValue<CalorieDayViewData> calorieDayViewData(Ref ref) {
     ),
     sections: sections,
   );
+}
+
+void _logEntriesSnapshot({
+  required String message,
+  required DateTime day,
+  required List<CalorieEntry> entries,
+}) {
+  log(
+    '$message day=${_formatDebugDay(day)} '
+    'entries=${entries.length} bundles=${_bundleCount(entries)}.',
+    name: _entriesControllerLogName,
+  );
+}
+
+int _bundleCount(List<CalorieEntry> entries) {
+  return entries.where((entry) => entry.isBundle).length;
+}
+
+String _formatDebugDay(DateTime day) {
+  final year = day.year.toString().padLeft(4, '0');
+  final month = day.month.toString().padLeft(2, '0');
+  final dayOfMonth = day.day.toString().padLeft(2, '0');
+  return '$year-$month-$dayOfMonth';
 }

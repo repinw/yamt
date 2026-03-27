@@ -1,0 +1,159 @@
+import 'dart:developer' as developer;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meal_templates/'
+    'prepared_meal_template_card.dart';
+import 'package:yamt/features/inventory/provider/'
+    'prepared_meal_templates_controller.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+class PreparedMealTemplatesPage extends ConsumerWidget {
+  const PreparedMealTemplatesPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(preparedMealTemplatesControllerProvider, _logLoadErrorOnce);
+
+    final l10n = AppLocalizations.of(context)!;
+    final templatesController = ref.read(
+      preparedMealTemplatesControllerProvider.notifier,
+    );
+    final templatesAsync = ref.watch(preparedMealTemplatesControllerProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.preparedMealTemplatesPageTitle)),
+      body: templatesAsync.when(
+        data: (templates) {
+          if (templates.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: AppInsets.pageLarge,
+                child: Text(
+                  l10n.preparedMealTemplatesEmptyState,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl,
+              AppSpacing.lg,
+              AppSpacing.xl,
+              AppSpacing.xxl,
+            ),
+            itemCount: templates.length,
+            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.lg),
+            itemBuilder: (context, index) {
+              final template = templates[index];
+              return PreparedMealTemplateCard(
+                template: template,
+                onDeletePressed: (templateId) => _deleteTemplate(
+                  context: context,
+                  ref: ref,
+                  templateId: templateId,
+                ),
+              );
+            },
+          );
+        },
+        loading: () => const Center(
+          child: SizedBox.square(
+            dimension: AppSizes.inlineProgressIndicator,
+            child: CircularProgressIndicator(
+              strokeWidth: AppSizes.progressStrokeWidth,
+            ),
+          ),
+        ),
+        error: (error, stackTrace) {
+          return Center(
+            child: Padding(
+              padding: AppInsets.pageLarge,
+              child: Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: AppInsets.card,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Icon(
+                        Icons.wifi_tethering_error_rounded,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        l10n.preparedMealTemplatesLoadFailed,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      FilledButton.icon(
+                        onPressed: templatesController.refresh,
+                        icon: const Icon(Icons.refresh),
+                        label: Text(l10n.inventoryRetryAction),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _logLoadErrorOnce(
+    AsyncValue<List<PreparedMeal>>? previous,
+    AsyncValue<List<PreparedMeal>> next,
+  ) {
+    final nextError = next.asError;
+    if (nextError == null) {
+      return;
+    }
+
+    final previousError = previous?.asError;
+    final unchangedError = identical(previousError?.error, nextError.error);
+    final unchangedStack = previousError?.stackTrace == nextError.stackTrace;
+    if (unchangedError && unchangedStack) {
+      return;
+    }
+
+    developer.log(
+      'Failed to load prepared meal templates.',
+      name: 'PreparedMealTemplatesPage',
+      error: nextError.error,
+      stackTrace: nextError.stackTrace,
+    );
+  }
+
+  Future<bool> _deleteTemplate({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String templateId,
+  }) async {
+    final deleted = await ref
+        .read(preparedMealTemplatesControllerProvider.notifier)
+        .deleteTemplate(templateId);
+    if (!context.mounted) {
+      return deleted;
+    }
+    if (!deleted) {
+      return false;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context)!.preparedMealTemplateDeletedMessage,
+        ),
+      ),
+    );
+    return true;
+  }
+}

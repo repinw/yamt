@@ -35,7 +35,7 @@ final class CalorieEntriesControllerProvider
 }
 
 String _$calorieEntriesControllerHash() =>
-    r'72d32f6e0d42a0c6985dd4635fcb4227216a285a';
+    r'9ef7c040b15daae615d8f4340bb156df3eae5e57';
 
 abstract class _$CalorieEntriesController
     extends $AsyncNotifier<List<CalorieEntry>> {
@@ -180,4 +180,4 @@ final class CalorieDayViewDataProvider
 }
 
 String _$calorieDayViewDataHash() =>
-    r'feaf87025937e751c701d580ac44b5cba2cafd78';
+    r'64f327517b8f61de783a1f912f084b341e25be29';

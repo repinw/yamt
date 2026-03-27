@@ -19,6 +19,10 @@ class InventoryItemRowListEntry extends StatelessWidget {
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
+    this.isSelectionMode = false,
+    this.isSelected = false,
+    this.onItemLongPress,
+    this.onSelectionToggle,
   });
 
   final InventoryItem item;
@@ -31,6 +35,10 @@ class InventoryItemRowListEntry extends StatelessWidget {
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
   final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
+  final bool isSelectionMode;
+  final bool isSelected;
+  final VoidCallback? onItemLongPress;
+  final VoidCallback? onSelectionToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +46,9 @@ class InventoryItemRowListEntry extends StatelessWidget {
       item: item,
       activeItemKeys: activeShoppingListItemKeys,
     );
+    final canStartSelection = item.usesAmountProgress
+        ? item.currentAmount > 0
+        : item.quantity > 0;
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomSpacing),
@@ -53,6 +64,10 @@ class InventoryItemRowListEntry extends StatelessWidget {
           onDeletePressed: onDeleteItem,
           onEatPressed: onEatItem,
           onThrowAwayPressed: onThrowAwayItem,
+          isSelectionMode: isSelectionMode,
+          isSelected: isSelected,
+          onStartSelection: canStartSelection ? onItemLongPress : null,
+          onSelectionToggle: onSelectionToggle,
         ),
       ),
     );

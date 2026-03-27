@@ -21,6 +21,10 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
+    required this.isSelectionMode,
+    required this.selectedItemIds,
+    required this.onItemLongPress,
+    required this.onSelectionToggle,
   });
 
   final List<InventoryReceiptGroup> groups;
@@ -31,6 +35,10 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
   final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
+  final bool isSelectionMode;
+  final Set<String> selectedItemIds;
+  final ValueChanged<String> onItemLongPress;
+  final ValueChanged<String> onSelectionToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +64,10 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
               onDeleteItem: onDeleteItem,
               onEatItem: onEatItem,
               onThrowAwayItem: onThrowAwayItem,
+              isSelectionMode: isSelectionMode,
+              selectedItemIds: selectedItemIds,
+              onItemLongPress: onItemLongPress,
+              onSelectionToggle: onSelectionToggle,
             ),
           );
         },

@@ -16,6 +16,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_expand_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_nutrition_strip.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_main_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_progress.dart';
@@ -39,6 +41,10 @@ class InventoryItemRow extends ConsumerStatefulWidget {
     required this.onDeletePressed,
     required this.onEatPressed,
     required this.onThrowAwayPressed,
+    this.isSelectionMode = false,
+    this.isSelected = false,
+    this.onStartSelection,
+    this.onSelectionToggle,
   });
 
   final String expansionStorageKey;
@@ -50,6 +56,10 @@ class InventoryItemRow extends ConsumerStatefulWidget {
   final Future<bool> Function(String itemId) onDeletePressed;
   final Future<bool> Function(String itemId, int amount) onEatPressed;
   final Future<bool> Function(String itemId, int amount) onThrowAwayPressed;
+  final bool isSelectionMode;
+  final bool isSelected;
+  final VoidCallback? onStartSelection;
+  final VoidCallback? onSelectionToggle;
 
   @override
   ConsumerState<InventoryItemRow> createState() => _InventoryItemRowState();
@@ -95,17 +105,22 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       context,
       isAlreadyInShoppingList: widget.isAlreadyInShoppingList,
       showBarcodeMarkers: widget.showBarcodeMarkers,
+      isSelectionMode: widget.isSelectionMode,
     );
     final onPrimaryActionPressed = _buildPrimaryActionPressed(layoutData);
 
     return _InventoryItemRowCard(
       layoutData: layoutData,
-      isExpanded: _isExpanded,
+      isExpanded: widget.isSelectionMode ? false : _isExpanded,
+      isSelectionMode: widget.isSelectionMode,
+      isSelected: widget.isSelected,
       deleteLabel: widget.l10n.inventoryItemDeleteAction,
       editLabel: widget.l10n.inventoryReceiptReviewEditAction,
       swapCandidateLabel: widget.l10n.inventoryItemSwapCandidateAction,
       throwAwayLabel: widget.l10n.inventoryItemThrowAwayAction,
-      onToggleExpanded: _toggleExpanded,
+      onToggleExpanded: widget.isSelectionMode
+          ? (widget.onSelectionToggle ?? () {})
+          : _toggleExpanded,
       onDeletePressed: _isWorking ? () {} : _onDeletePressed,
       onEditPressed: _isWorking ? () {} : _onEditPressed,
       onPrimaryActionPressed: onPrimaryActionPressed,
@@ -113,6 +128,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       onThrowAwayPressed: layoutData.isAdjustActionEnabled
           ? _onThrowAwayPressed
           : null,
+      onStartSelection: widget.onStartSelection,
     );
   }
 
@@ -132,6 +148,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     BuildContext context, {
     required bool isAlreadyInShoppingList,
     required bool showBarcodeMarkers,
+    required bool isSelectionMode,
   }) {
     final item = widget.item;
     final hasAdjustableAmount = _buildInputConfig(item) != null;
@@ -144,6 +161,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       isWorking: _isWorking,
       isAlreadyInShoppingList: isAlreadyInShoppingList,
       showBarcodeMarkers: showBarcodeMarkers,
+      isSelectionMode: isSelectionMode,
     );
   }
 
@@ -328,6 +346,7 @@ class _InventoryItemRowLayoutData {
     required bool isWorking,
     required bool isAlreadyInShoppingList,
     required bool showBarcodeMarkers,
+    required bool isSelectionMode,
   }) {
     final colors = Theme.of(context).colorScheme;
     final isBuyAgainPrimaryAction = item.isFullyConsumed;
@@ -337,8 +356,10 @@ class _InventoryItemRowLayoutData {
     final progress = const InventoryItemProgressCalculator().fromItem(item);
     final brand = item.brand?.trim() ?? '';
     final hasBrand = brand.isNotEmpty;
-    final isAdjustActionEnabled = !isWorking && hasAdjustableAmount;
+    final isAdjustActionEnabled =
+        !isSelectionMode && !isWorking && hasAdjustableAmount;
     final isPrimaryActionEnabled =
+        !isSelectionMode &&
         !isWorking &&
         (isBuyAgainPrimaryAction
             ? !isAlreadyInShoppingList
@@ -436,24 +457,19 @@ List<InventoryNutritionMetric> _buildNutritionMetrics(
     if (nutrition.per100Carbs != null)
       InventoryNutritionMetric(
         label: l10n.inventoryNutritionCarbsShortLabel,
-        value: '${_formatNutritionValue(nutrition.per100Carbs!)}g',
+        value: '${formatInventoryNutritionValue(nutrition.per100Carbs!)}g',
       ),
     if (nutrition.per100Protein != null)
       InventoryNutritionMetric(
         label: l10n.caloriesProteinLabel,
-        value: '${_formatNutritionValue(nutrition.per100Protein!)}g',
+        value: '${formatInventoryNutritionValue(nutrition.per100Protein!)}g',
       ),
     if (nutrition.per100Fat != null)
       InventoryNutritionMetric(
         label: l10n.caloriesFatLabel,
-        value: '${_formatNutritionValue(nutrition.per100Fat!)}g',
+        value: '${formatInventoryNutritionValue(nutrition.per100Fat!)}g',
       ),
   ];
-}
-
-String _formatNutritionValue(double value) {
-  final hasFraction = value % 1 != 0;
-  return hasFraction ? value.toStringAsFixed(1) : value.toStringAsFixed(0);
 }
 
 ({String text, Color color})? _barcodeStatusMarker({
@@ -482,6 +498,8 @@ class _InventoryItemRowCard extends StatelessWidget {
   const _InventoryItemRowCard({
     required this.layoutData,
     required this.isExpanded,
+    required this.isSelectionMode,
+    required this.isSelected,
     required this.deleteLabel,
     required this.editLabel,
     required this.swapCandidateLabel,
@@ -492,10 +510,13 @@ class _InventoryItemRowCard extends StatelessWidget {
     required this.onPrimaryActionPressed,
     required this.onSwapCandidatePressed,
     required this.onThrowAwayPressed,
+    required this.onStartSelection,
   });
 
   final _InventoryItemRowLayoutData layoutData;
   final bool isExpanded;
+  final bool isSelectionMode;
+  final bool isSelected;
   final String deleteLabel;
   final String editLabel;
   final String swapCandidateLabel;
@@ -506,6 +527,7 @@ class _InventoryItemRowCard extends StatelessWidget {
   final VoidCallback? onPrimaryActionPressed;
   final VoidCallback onSwapCandidatePressed;
   final VoidCallback? onThrowAwayPressed;
+  final VoidCallback? onStartSelection;
 
   @override
   Widget build(BuildContext context) {
@@ -537,9 +559,12 @@ class _InventoryItemRowCard extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: onToggleExpanded,
+            onLongPress: isSelectionMode ? null : onStartSelection,
             child: _InventoryItemRowBody(
               layoutData: layoutData,
               isExpanded: isExpanded,
+              isSelectionMode: isSelectionMode,
+              isSelected: isSelected,
               deleteLabel: deleteLabel,
               editLabel: editLabel,
               swapCandidateLabel: swapCandidateLabel,
@@ -562,6 +587,8 @@ class _InventoryItemRowBody extends StatelessWidget {
   const _InventoryItemRowBody({
     required this.layoutData,
     required this.isExpanded,
+    required this.isSelectionMode,
+    required this.isSelected,
     required this.deleteLabel,
     required this.editLabel,
     required this.swapCandidateLabel,
@@ -576,6 +603,8 @@ class _InventoryItemRowBody extends StatelessWidget {
 
   final _InventoryItemRowLayoutData layoutData;
   final bool isExpanded;
+  final bool isSelectionMode;
+  final bool isSelected;
   final String deleteLabel;
   final String editLabel;
   final String swapCandidateLabel;
@@ -598,6 +627,8 @@ class _InventoryItemRowBody extends StatelessWidget {
             item: layoutData.snapshot,
             viewData: layoutData.viewData,
             onPrimaryActionPressed: onPrimaryActionPressed,
+            showSelectionCheckbox: isSelectionMode,
+            isSelected: isSelected,
           ),
           const SizedBox(height: AppSpacing.xs),
           InventoryItemRowExpandSection(

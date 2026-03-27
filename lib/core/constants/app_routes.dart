@@ -5,6 +5,7 @@ abstract final class AppRoutes {
   static const guestNameSetup = '/welcome/guest-name';
   static const home = '/home';
   static const homeInventory = '/home/inventory';
+  static const homeInventoryTemplates = '/home/inventory/templates';
   static const homeInventoryReceiptReview = '/home/inventory/receipt-review';
   static const homeShopping = '/home/shopping';
   static const homeCalories = '/home/calories';
