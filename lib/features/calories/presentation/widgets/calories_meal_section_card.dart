@@ -12,7 +12,6 @@ class CaloriesMealSectionCard extends StatelessWidget {
     required this.section,
     required this.title,
     required this.emptyMessage,
-    required this.deleteTooltip,
     required this.onTapEntry,
     required this.onDeleteEntry,
     required this.onAddEntry,
@@ -21,7 +20,6 @@ class CaloriesMealSectionCard extends StatelessWidget {
   final CalorieMealSection section;
   final String title;
   final String emptyMessage;
-  final String deleteTooltip;
   final ValueChanged<CalorieEntry> onTapEntry;
   final ValueChanged<CalorieEntry> onDeleteEntry;
   final VoidCallback onAddEntry;
@@ -78,8 +76,10 @@ class CaloriesMealSectionCard extends StatelessWidget {
             ),
           ],
         ),
-        if (section.entries.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.md),
+        if (section.entries.isEmpty)
+          _MealSectionEmptyState(message: emptyMessage)
+        else
           ...section.entries.map((entry) {
             return Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -91,8 +91,31 @@ class CaloriesMealSectionCard extends StatelessWidget {
               ),
             );
           }),
-        ],
       ],
+    );
+  }
+}
+
+class _MealSectionEmptyState extends StatelessWidget {
+  const _MealSectionEmptyState({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      child: Text(
+        message,
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+      ),
     );
   }
 }

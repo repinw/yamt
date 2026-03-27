@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
@@ -94,7 +95,6 @@ class CaloriesPage extends ConsumerWidget {
                   section: section,
                   title: _mealLabel(l10n, section.mealType),
                   emptyMessage: l10n.caloriesSectionEmptyState,
-                  deleteTooltip: l10n.caloriesDeleteEntryAction,
                   onAddEntry: () => _openCreateEntry(
                     context,
                     preselectedMealType: section.mealType,
@@ -247,53 +247,34 @@ void _openCreateEntry(
 }
 
 CalorieWeekOverview _fallbackWeekOverview({required double goalKcal}) {
-  final today = _normalizeDay(DateTime.now());
-  final startOfWindow = today.subtract(const Duration(days: 6));
+  final visibleDays = buildDiaryVisibleDays();
   return CalorieWeekOverview(
-    days: List<CalorieWeekDayOverview>.unmodifiable([
-      for (var index = 0; index < 7; index += 1)
-        CalorieWeekDayOverview(
-          date: startOfWindow.add(Duration(days: index)),
+    days: List<CalorieWeekDayOverview>.unmodifiable(
+      visibleDays.map(
+        (day) => CalorieWeekDayOverview(
+          date: day,
           totalKcal: 0,
           goalKcal: goalKcal,
           entryCount: 0,
         ),
-    ]),
+      ),
+    ),
     totalConsumedKcal: 0,
-    totalGoalKcal: goalKcal * 7,
-    remainingKcal: goalKcal * 7,
+    totalGoalKcal: goalKcal * visibleDays.length,
+    remainingKcal: goalKcal * visibleDays.length,
   );
 }
 
 void _goToPreviousVisibleDay(WidgetRef ref) {
   final controller = ref.read(calorieDayControllerProvider.notifier);
   final selectedDay = ref.read(calorieDayControllerProvider);
-  final today = _normalizeDay(DateTime.now());
-  final earliestVisibleDay = today.subtract(const Duration(days: 6));
-  final previousDay = _normalizeDay(
-    selectedDay.subtract(const Duration(days: 1)),
-  );
-  if (previousDay.isBefore(earliestVisibleDay)) {
-    controller.setDay(earliestVisibleDay);
-    return;
-  }
-  controller.setDay(previousDay);
+  controller.setDay(previousDiaryVisibleDay(selectedDay));
 }
 
 void _goToNextVisibleDay(WidgetRef ref) {
   final controller = ref.read(calorieDayControllerProvider.notifier);
   final selectedDay = ref.read(calorieDayControllerProvider);
-  final today = _normalizeDay(DateTime.now());
-  final nextDay = _normalizeDay(selectedDay.add(const Duration(days: 1)));
-  if (nextDay.isAfter(today)) {
-    controller.setDay(today);
-    return;
-  }
-  controller.setDay(nextDay);
-}
-
-DateTime _normalizeDay(DateTime day) {
-  return DateTime(day.year, day.month, day.day);
+  controller.setDay(nextDiaryVisibleDay(selectedDay));
 }
 
 class _CaloriesWeekBufferCard extends StatelessWidget {

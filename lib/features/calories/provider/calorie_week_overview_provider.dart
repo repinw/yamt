@@ -1,11 +1,11 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 part 'calorie_week_overview_provider.g.dart';
 
 const _fallbackDailyGoalKcal = 2500.0;
-const _daysPerWeek = 7;
 
 /// Aggregate data for one visible day in the diary week strip.
 class CalorieWeekDayOverview {
@@ -49,12 +49,7 @@ Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
   final repository = ref.watch(calorieLogRepositoryProvider);
   final goalKcal =
       goalState.asData?.value.dailyKcalGoal ?? _fallbackDailyGoalKcal;
-  final today = _normalizeDay(DateTime.now());
-  final startOfWindow = today.subtract(const Duration(days: _daysPerWeek - 1));
-  final days = <DateTime>[
-    for (var index = 0; index < _daysPerWeek; index += 1)
-      startOfWindow.add(Duration(days: index)),
-  ];
+  final days = buildDiaryVisibleDays();
 
   final entriesByDay = await Future.wait(
     days.map(repository.readEntriesForDay),
@@ -86,9 +81,4 @@ Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
     totalGoalKcal: totalGoalKcal,
     remainingKcal: totalGoalKcal - totalConsumedKcal,
   );
-}
-
-DateTime _normalizeDay(DateTime day) {
-  final normalizedDay = DateTime(day.year, day.month, day.day);
-  return normalizedDay;
 }

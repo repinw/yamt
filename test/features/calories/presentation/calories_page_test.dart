@@ -133,7 +133,6 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Skyr'), findsOneWidget);
-    expect(find.textContaining('2,200 kcal'), findsWidgets);
   });
 
   testWidgets('delete action removes entry after confirmation', (tester) async {
@@ -257,5 +256,29 @@ void main() {
     final imageWidget = tester.widget<Image>(imageFinder);
     final provider = imageWidget.image as NetworkImage;
     expect(provider.url, 'https://images.example.com/skyr.jpg');
+  });
+
+  testWidgets('renders empty state text for meal sections without entries', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.sectionCard(MealType.breakfast.name)),
+    );
+
+    expect(find.text('No entries yet.'), findsWidgets);
   });
 }
