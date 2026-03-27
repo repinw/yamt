@@ -4,7 +4,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_product_snapshot.dart';
 
 export 'package:yamt/features/inventory/domain/inventory_amount_parser.dart'
-    show InventoryAmountUnit;
+    show InventoryAmountUnit, InventoryAmountUnitCode;
 
 enum InventoryBarcodeStatus { resolved, uncertain, pending, missing }
 

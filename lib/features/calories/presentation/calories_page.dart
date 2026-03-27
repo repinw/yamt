@@ -8,6 +8,7 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -96,7 +97,7 @@ class CaloriesPage extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: AppSpacing.xl),
                 child: CaloriesMealSectionCard(
                   section: section,
-                  title: _mealLabel(l10n, section.mealType),
+                  title: section.mealType.localizedName(l10n),
                   emptyMessage: l10n.caloriesSectionEmptyState,
                   onAddEntry: () => _openCreateEntry(
                     context,
@@ -186,15 +187,6 @@ class CaloriesPage extends ConsumerWidget {
       error: nextError.error,
       stackTrace: nextError.stackTrace,
     );
-  }
-
-  String _mealLabel(AppLocalizations l10n, MealType mealType) {
-    return switch (mealType) {
-      MealType.breakfast => l10n.caloriesMealBreakfast,
-      MealType.lunch => l10n.caloriesMealLunch,
-      MealType.dinner => l10n.caloriesMealDinner,
-      MealType.snack => l10n.caloriesMealSnack,
-    };
   }
 
   Future<void> _deleteEntry({

@@ -3,6 +3,8 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_component_avatar.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -96,13 +98,13 @@ class PreparedMealTemplateCard extends StatelessWidget {
               children: template.components
                   .map((component) {
                     return Chip(
-                      avatar: _TemplateIngredientAvatar(
+                      avatar: PreparedMealComponentAvatar(
                         label: component.name,
                         imageUrl: component.imageUrl,
                       ),
                       label: Text(
                         '${component.name} • ${component.usedAmount} '
-                        '${_amountUnitCode(component.usedUnit)}',
+                        '${component.usedUnit.code}',
                       ),
                     );
                   })
@@ -113,39 +115,4 @@ class PreparedMealTemplateCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class _TemplateIngredientAvatar extends StatelessWidget {
-  const _TemplateIngredientAvatar({
-    required this.label,
-    required this.imageUrl,
-  });
-
-  final String label;
-  final String? imageUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    if (imageUrl != null && imageUrl!.trim().isNotEmpty) {
-      return CircleAvatar(
-        backgroundImage: NetworkImage(imageUrl!),
-        backgroundColor: Colors.transparent,
-      );
-    }
-
-    final trimmed = label.trim();
-    final initial = trimmed.isEmpty ? '?' : trimmed.substring(0, 1);
-    return CircleAvatar(
-      backgroundColor: AppInventoryEditorial.primary.withValues(alpha: 0.12),
-      child: Text(initial.toUpperCase()),
-    );
-  }
-}
-
-String _amountUnitCode(InventoryAmountUnit unit) {
-  return switch (unit) {
-    InventoryAmountUnit.gram => 'g',
-    InventoryAmountUnit.milliliter => 'ml',
-    InventoryAmountUnit.piece => 'pc',
-  };
 }

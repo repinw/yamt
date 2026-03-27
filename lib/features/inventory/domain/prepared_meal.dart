@@ -213,7 +213,7 @@ class PreparedMealComponent {
       'brand': brand,
       'image_url': imageUrl,
       'used_amount': usedAmount,
-      'used_unit': _amountUnitCode(usedUnit),
+      'used_unit': usedUnit.code,
       'total_kcal': totalKcal,
       'total_protein': totalProtein,
       'total_carbs': totalCarbs,
@@ -363,7 +363,7 @@ String? _readTrimmedString(Object? value) {
 InventoryAmountUnit? _readAmountUnit(Object? value) {
   final raw = value is String ? value.trim() : '';
   for (final unit in InventoryAmountUnit.values) {
-    if (_amountUnitCode(unit) == raw) {
+    if (unit.code == raw) {
       return unit;
     }
   }
@@ -371,11 +371,3 @@ InventoryAmountUnit? _readAmountUnit(Object? value) {
 }
 
 const Object _keepValue = Object();
-
-String _amountUnitCode(InventoryAmountUnit unit) {
-  return switch (unit) {
-    InventoryAmountUnit.gram => 'g',
-    InventoryAmountUnit.milliliter => 'ml',
-    InventoryAmountUnit.piece => 'pc',
-  };
-}

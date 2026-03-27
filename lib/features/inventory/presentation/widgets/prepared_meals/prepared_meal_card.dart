@@ -5,7 +5,6 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/domain/product_image_url.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -13,11 +12,17 @@ import 'package:yamt/features/inventory/presentation/widgets/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_nutrition_strip.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_segmented_button_frame.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_segmented_button_style.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_action_dialogs.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_component_avatar.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_edit_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -185,14 +190,16 @@ class _PreparedMealCardState extends State<PreparedMealCard> {
                               children: [
                                 if (nutritionMetrics.isNotEmpty) ...[
                                   if (availableNutritionModes.length > 1) ...[
-                                    _PreparedMealNutritionModeToggle(
-                                      selectedMode: selectedNutritionMode,
-                                      availableModes: availableNutritionModes,
-                                      onModeChanged: (mode) {
-                                        setState(() {
-                                          _nutritionMode = mode;
-                                        });
-                                      },
+                                    InventorySegmentedButtonFrame(
+                                      child: _PreparedMealNutritionModeToggle(
+                                        selectedMode: selectedNutritionMode,
+                                        availableModes: availableNutritionModes,
+                                        onModeChanged: (mode) {
+                                          setState(() {
+                                            _nutritionMode = mode;
+                                          });
+                                        },
+                                      ),
                                     ),
                                     const SizedBox(height: AppSpacing.sm),
                                   ],
@@ -211,7 +218,7 @@ class _PreparedMealCardState extends State<PreparedMealCard> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        _PreparedMealIngredientAvatar(
+                                        PreparedMealComponentAvatar(
                                           key: Key(
                                             'prepared_meal_ingredient_avatar_'
                                             '${component.inventoryItemId}',
@@ -224,7 +231,7 @@ class _PreparedMealCardState extends State<PreparedMealCard> {
                                         const SizedBox(width: AppSpacing.sm),
                                         Text(
                                           '${component.usedAmount} '
-                                          '${_amountUnitCode(component.usedUnit)}',
+                                          '${component.usedUnit.code}',
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodySmall
@@ -340,7 +347,7 @@ class _PreparedMealCardState extends State<PreparedMealCard> {
 
   Future<void> _runEatFlow() async {
     final l10n = AppLocalizations.of(context)!;
-    final result = await _showEatDialog(context, widget.meal);
+    final result = await showPreparedMealEatDialog(context, widget.meal);
     if (!mounted || result == null) {
       return;
     }
@@ -369,7 +376,7 @@ class _PreparedMealCardState extends State<PreparedMealCard> {
   }
 
   Future<void> _runThrowAwayFlow() async {
-    final portions = await _showPortionDialog(
+    final portions = await showPreparedMealPortionDialog(
       context: context,
       meal: widget.meal,
       title: AppLocalizations.of(context)!.preparedMealThrowAwayTitle,
@@ -441,69 +448,6 @@ class _PreparedMealNutritionModeToggle extends StatelessWidget {
         }
         onModeChanged(selection.first);
       },
-    );
-  }
-}
-
-class _PreparedMealIngredientAvatar extends StatelessWidget {
-  const _PreparedMealIngredientAvatar({
-    super.key,
-    required this.label,
-    required this.imageUrl,
-  });
-
-  final String label;
-  final String? imageUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    final normalizedImageUrl = normalizeProductImageUrl(imageUrl);
-    if (normalizedImageUrl != null) {
-      return SizedBox.square(
-        dimension: 24,
-        child: ClipOval(
-          child: Image.network(
-            normalizedImageUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) {
-              return _PreparedMealIngredientAvatarFallback(label: label);
-            },
-          ),
-        ),
-      );
-    }
-
-    return _PreparedMealIngredientAvatarFallback(label: label);
-  }
-}
-
-class _PreparedMealIngredientAvatarFallback extends StatelessWidget {
-  const _PreparedMealIngredientAvatarFallback({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final trimmed = label.trim();
-    final initial = trimmed.isEmpty ? '?' : trimmed.substring(0, 1);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: AppInventoryEditorial.primary.withValues(alpha: 0.12),
-      ),
-      child: SizedBox.square(
-        dimension: 24,
-        child: Center(
-          child: Text(
-            initial.toUpperCase(),
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppInventoryEditorial.primary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -626,162 +570,4 @@ class _PreparedMealPrimaryActionButton extends StatelessWidget {
       disabledForegroundColor: colors.onSurfaceVariant,
     );
   }
-}
-
-class _PreparedMealEatDialogResult {
-  const _PreparedMealEatDialogResult({
-    required this.portions,
-    required this.mealType,
-  });
-
-  final int portions;
-  final MealType mealType;
-}
-
-Future<_PreparedMealEatDialogResult?> _showEatDialog(
-  BuildContext context,
-  PreparedMeal meal,
-) {
-  final l10n = AppLocalizations.of(context)!;
-  final portionsController = TextEditingController(text: '1');
-  var selectedMealType = MealType.defaultForDateTime(DateTime.now());
-
-  return showDialog<_PreparedMealEatDialogResult>(
-    context: context,
-    builder: (dialogContext) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: Text(l10n.preparedMealEatTitle),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: portionsController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: l10n.preparedMealPortionsToUseLabel,
-                    helperText: l10n.preparedMealPortionsRemaining(
-                      meal.remainingPortions,
-                      meal.totalPortions,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                DropdownButtonFormField<MealType>(
-                  initialValue: selectedMealType,
-                  decoration: InputDecoration(
-                    labelText: l10n.caloriesEntryMealLabel,
-                  ),
-                  items: MealType.sectionOrder
-                      .map((mealType) {
-                        return DropdownMenuItem<MealType>(
-                          value: mealType,
-                          child: Text(_mealLabel(l10n, mealType)),
-                        );
-                      })
-                      .toList(growable: false),
-                  onChanged: (value) {
-                    if (value == null) {
-                      return;
-                    }
-                    setState(() {
-                      selectedMealType = value;
-                    });
-                  },
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: Text(l10n.inventoryReceiptReviewCancelAction),
-              ),
-              TextButton(
-                onPressed: () {
-                  final portions = int.tryParse(portionsController.text.trim());
-                  if (portions == null ||
-                      portions < 1 ||
-                      portions > meal.remainingPortions) {
-                    return;
-                  }
-                  Navigator.of(dialogContext).pop(
-                    _PreparedMealEatDialogResult(
-                      portions: portions,
-                      mealType: selectedMealType,
-                    ),
-                  );
-                },
-                child: Text(l10n.inventoryItemEatAction),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  ).whenComplete(portionsController.dispose);
-}
-
-Future<int?> _showPortionDialog({
-  required BuildContext context,
-  required PreparedMeal meal,
-  required String title,
-}) {
-  final l10n = AppLocalizations.of(context)!;
-  final controller = TextEditingController(text: '1');
-
-  return showDialog<int>(
-    context: context,
-    builder: (dialogContext) {
-      return AlertDialog(
-        title: Text(title),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            labelText: l10n.preparedMealPortionsToUseLabel,
-            helperText: l10n.preparedMealPortionsRemaining(
-              meal.remainingPortions,
-              meal.totalPortions,
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l10n.inventoryReceiptReviewCancelAction),
-          ),
-          TextButton(
-            onPressed: () {
-              final portions = int.tryParse(controller.text.trim());
-              if (portions == null ||
-                  portions < 1 ||
-                  portions > meal.remainingPortions) {
-                return;
-              }
-              Navigator.of(dialogContext).pop(portions);
-            },
-            child: Text(l10n.preparedMealConfirmAction),
-          ),
-        ],
-      );
-    },
-  ).whenComplete(controller.dispose);
-}
-
-String _mealLabel(AppLocalizations l10n, MealType mealType) {
-  return switch (mealType) {
-    MealType.breakfast => l10n.caloriesMealBreakfast,
-    MealType.lunch => l10n.caloriesMealLunch,
-    MealType.dinner => l10n.caloriesMealDinner,
-    MealType.snack => l10n.caloriesMealSnack,
-  };
-}
-
-String _amountUnitCode(InventoryAmountUnit unit) {
-  return switch (unit) {
-    InventoryAmountUnit.gram => 'g',
-    InventoryAmountUnit.milliliter => 'ml',
-    InventoryAmountUnit.piece => 'pc',
-  };
 }

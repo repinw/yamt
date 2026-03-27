@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_segmented_button_frame.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryModeToolbar extends StatelessWidget {
@@ -9,21 +11,7 @@ class InventoryModeToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(
-          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xs),
-        child: modeToggle,
-      ),
-    );
+    return InventorySegmentedButtonFrame(child: modeToggle);
   }
 }
 

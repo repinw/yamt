@@ -707,15 +707,7 @@ String _formatMealComponentAmountLabel({
   final normalizedAmount = amount.endsWith('.0')
       ? amount.substring(0, amount.length - 2)
       : amount;
-  return '$normalizedAmount ${_amountUnitCode(unit)}';
-}
-
-String _amountUnitCode(InventoryAmountUnit unit) {
-  return switch (unit) {
-    InventoryAmountUnit.gram => 'g',
-    InventoryAmountUnit.milliliter => 'ml',
-    InventoryAmountUnit.piece => 'pc',
-  };
+  return '$normalizedAmount ${unit.code}';
 }
 
 List<InventoryItem> _restoreItemsFromMeal({
