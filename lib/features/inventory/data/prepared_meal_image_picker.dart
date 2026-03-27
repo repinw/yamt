@@ -1,4 +1,5 @@
 import 'dart:developer' show log;
+import 'dart:isolate';
 import 'dart:math' as math;
 
 import 'package:file_picker/file_picker.dart';
@@ -159,6 +160,56 @@ Future<Uint8List> optimizePreparedMealImageBytes(
   Uint8List bytes, {
   int maxBytes = _maxPreparedMealImageBytes,
 }) async {
+  if (bytes.length <= maxBytes) {
+    return bytes;
+  }
+
+  final result = await compute(
+    _optimizePreparedMealImageBytesInIsolate,
+    <String, Object>{
+      'bytes': TransferableTypedData.fromList([bytes]),
+      'maxBytes': maxBytes,
+    },
+  );
+  final errorCode = result['errorCode'] as String?;
+  if (errorCode != null) {
+    throw PreparedMealImagePickerException(errorCode);
+  }
+
+  final optimizedBytes = result['bytes'] as TransferableTypedData?;
+  if (optimizedBytes == null) {
+    throw const PreparedMealImagePickerException(
+      PreparedMealImagePickerErrorCodes.imageTooLarge,
+    );
+  }
+
+  return optimizedBytes.materialize().asUint8List();
+}
+
+@pragma('vm:entry-point')
+Map<String, Object?> _optimizePreparedMealImageBytesInIsolate(
+  Map<String, Object> message,
+) {
+  try {
+    final transferableBytes = message['bytes'] as TransferableTypedData;
+    final maxBytes = message['maxBytes'] as int;
+    final bytes = transferableBytes.materialize().asUint8List();
+    final optimizedBytes = _optimizePreparedMealImageBytesSync(
+      bytes,
+      maxBytes: maxBytes,
+    );
+    return <String, Object?>{
+      'bytes': TransferableTypedData.fromList([optimizedBytes]),
+    };
+  } on PreparedMealImagePickerException catch (error) {
+    return <String, Object?>{'errorCode': error.code};
+  }
+}
+
+Uint8List _optimizePreparedMealImageBytesSync(
+  Uint8List bytes, {
+  required int maxBytes,
+}) {
   if (bytes.length <= maxBytes) {
     return bytes;
   }
