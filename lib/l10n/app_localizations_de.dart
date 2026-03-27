@@ -422,6 +422,169 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryRetryAction => 'Erneut versuchen';
 
   @override
+  String get preparedMealSectionTitle => 'Mahlzeiten';
+
+  @override
+  String get preparedMealCreateTitle => 'Mahlzeit erstellen';
+
+  @override
+  String get preparedMealEditTitle => 'Mahlzeit bearbeiten';
+
+  @override
+  String get preparedMealNameLabel => 'Mahlzeitname';
+
+  @override
+  String get preparedMealClearNameAction => 'Namen leeren';
+
+  @override
+  String get preparedMealInvalidName => 'Bitte gib einen Mahlzeitnamen ein.';
+
+  @override
+  String get preparedMealPortionsLabel => 'Portionen';
+
+  @override
+  String get preparedMealInvalidPortions => 'Bitte gib mindestens eine Portion ein.';
+
+  @override
+  String get preparedMealFixFormErrorsMessage => 'Bitte prüfe die markierten Felder.';
+
+  @override
+  String get preparedMealInvalidPortionsRange => 'Bitte gib eine gültige Portionsanzahl im verfügbaren Bereich ein.';
+
+  @override
+  String get preparedMealImageLabel => 'Titelbild';
+
+  @override
+  String get preparedMealAddImageAction => 'Bild hinzufügen';
+
+  @override
+  String get preparedMealChangeImageAction => 'Bild ändern';
+
+  @override
+  String get preparedMealRemoveImageAction => 'Bild entfernen';
+
+  @override
+  String get preparedMealImageHint => 'Füge ein Foto für diese Mahlzeit hinzu oder nutze das Standard-Cover.';
+
+  @override
+  String get preparedMealImageCameraAction => 'Foto aufnehmen';
+
+  @override
+  String get preparedMealImagePickFailed => 'Das Mahlzeitenbild konnte nicht ausgewählt werden.';
+
+  @override
+  String get preparedMealImageTooLarge => 'Das ausgewählte Bild ist zu groß.';
+
+  @override
+  String get preparedMealIngredientsTitle => 'Zutaten';
+
+  @override
+  String get preparedMealCreateAction => 'Mahlzeit erstellen';
+
+  @override
+  String get preparedMealBindAction => 'Als Mahlzeit binden';
+
+  @override
+  String get preparedMealUsedAmountLabel => 'Verwendete Menge';
+
+  @override
+  String preparedMealAvailableAmount(int amount, String unit) {
+    return 'Verfügbar: $amount $unit';
+  }
+
+  @override
+  String get preparedMealInvalidIngredientAmount => 'Bitte gib eine gültige Zutatenmenge ein.';
+
+  @override
+  String get preparedMealNutritionPerPieceHint => 'Bitte Nährwerte pro verwendetem Stück eintragen.';
+
+  @override
+  String get preparedMealNutritionPerHundredHint => 'Bitte Nährwerte pro 100 g/ml eintragen.';
+
+  @override
+  String get preparedMealNutritionModePerHundred => '100 g/ml';
+
+  @override
+  String get preparedMealNutritionModePerPortion => 'Portion';
+
+  @override
+  String get preparedMealNutritionModeTotal => 'Gesamt';
+
+  @override
+  String preparedMealSelectionCount(int count) {
+    return '$count ausgewählt';
+  }
+
+  @override
+  String get preparedMealCreatedMessage => 'Mahlzeit wurde erstellt.';
+
+  @override
+  String get preparedMealUpdatedMessage => 'Mahlzeit wurde aktualisiert.';
+
+  @override
+  String get preparedMealInsufficientAmountMessage => 'Mindestens eine ausgewählte Zutat ist nicht mehr in ausreichender Menge verfügbar.';
+
+  @override
+  String get preparedMealMissingNutritionMessage => 'Mindestens einer ausgewählten Zutat fehlen vollständige Nährwerte.';
+
+  @override
+  String get preparedMealItemUnavailableMessage => 'Mindestens eine ausgewählte Zutat ist nicht mehr im Inventar verfügbar.';
+
+  @override
+  String get preparedMealActionFailed => 'Mahlzeit-Aktion fehlgeschlagen. Bitte versuche es erneut.';
+
+  @override
+  String preparedMealIngredientsCount(int count) {
+    return '$count Zutaten';
+  }
+
+  @override
+  String preparedMealPortionsRemaining(int remaining, int total) {
+    return '$remaining/$total Portionen';
+  }
+
+  @override
+  String get preparedMealUnbundleAction => 'Auflösen';
+
+  @override
+  String get preparedMealEatTitle => 'Mahlzeit essen';
+
+  @override
+  String get preparedMealThrowAwayTitle => 'Portionen wegwerfen';
+
+  @override
+  String get preparedMealPortionsToUseLabel => 'Portionen verwenden';
+
+  @override
+  String get preparedMealConfirmAction => 'Bestätigen';
+
+  @override
+  String get preparedMealSaveTemplateAction => 'Als Vorlage speichern';
+
+  @override
+  String get preparedMealTemplateSavedMessage => 'Vorlage gespeichert.';
+
+  @override
+  String get preparedMealTemplatesPageTitle => 'Vorlagen';
+
+  @override
+  String get preparedMealTemplatesEmptyState => 'Noch keine Vorlagen gespeichert.';
+
+  @override
+  String get preparedMealTemplatesLoadFailed => 'Vorlagen konnten nicht geladen werden.';
+
+  @override
+  String get preparedMealTemplateDeleteAction => 'Vorlage löschen';
+
+  @override
+  String get preparedMealTemplateDeletedMessage => 'Vorlage gelöscht.';
+
+  @override
+  String preparedMealTemplatePortions(int count) {
+    return '$count Portionen';
+  }
+
+  @override
   String get homeShoppingActionContextPlaceholder => 'Einkaufsaktion folgt bald.';
 
   @override
@@ -722,6 +885,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesUnitMilliliter => 'ml';
+
+  @override
+  String caloriesBundlePortions(int consumed, int total) {
+    return '$consumed/$total Portionen';
+  }
 
   @override
   String get homeSettingsActionContextPlaceholder => 'Einstellungsaktion folgt bald.';

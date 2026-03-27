@@ -156,6 +156,107 @@
   "inventoryFilteredEmptyState": "No items match the selected filters.",
   "inventoryLoadFailed": "Could not load inventory items.",
   "inventoryRetryAction": "Retry",
+  "preparedMealSectionTitle": "Prepared meals",
+  "preparedMealCreateTitle": "Create prepared meal",
+  "preparedMealEditTitle": "Edit prepared meal",
+  "preparedMealNameLabel": "Meal name",
+  "preparedMealClearNameAction": "Clear name",
+  "preparedMealInvalidName": "Please enter a meal name.",
+  "preparedMealPortionsLabel": "Portions",
+  "preparedMealInvalidPortions": "Please enter at least one portion.",
+  "preparedMealFixFormErrorsMessage":
+      "Please check the highlighted fields.",
+  "preparedMealInvalidPortionsRange":
+      "Please enter a valid portion count within the available range.",
+  "preparedMealImageLabel": "Cover image",
+  "preparedMealAddImageAction": "Add image",
+  "preparedMealChangeImageAction": "Change image",
+  "preparedMealRemoveImageAction": "Remove image",
+  "preparedMealImageHint": "Add a photo for this meal or use the default cover.",
+  "preparedMealImageCameraAction": "Take photo",
+  "preparedMealImagePickFailed": "Could not pick the meal image.",
+  "preparedMealImageTooLarge": "The selected image is too large.",
+  "preparedMealIngredientsTitle": "Ingredients",
+  "preparedMealCreateAction": "Create meal",
+  "preparedMealBindAction": "Bind meal",
+  "preparedMealUsedAmountLabel": "Used amount",
+  "preparedMealAvailableAmount": "Available: {amount} {unit}",
+  "@preparedMealAvailableAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealInvalidIngredientAmount":
+      "Please enter a valid ingredient amount.",
+  "preparedMealNutritionPerPieceHint":
+      "Add nutrition values per used piece.",
+  "preparedMealNutritionPerHundredHint":
+      "Add nutrition values per 100 g/ml.",
+  "preparedMealNutritionModePerHundred": "100 g/ml",
+  "preparedMealNutritionModePerPortion": "Portion",
+  "preparedMealNutritionModeTotal": "Total",
+  "preparedMealSelectionCount": "{count} selected",
+  "@preparedMealSelectionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealCreatedMessage": "Prepared meal created.",
+  "preparedMealUpdatedMessage": "Prepared meal updated.",
+  "preparedMealInsufficientAmountMessage":
+      "At least one selected ingredient is no longer available in a sufficient amount.",
+  "preparedMealMissingNutritionMessage":
+      "At least one selected ingredient is missing complete nutrition values.",
+  "preparedMealItemUnavailableMessage":
+      "At least one selected ingredient is no longer available in inventory.",
+  "preparedMealActionFailed":
+      "Prepared meal action failed. Please try again.",
+  "preparedMealIngredientsCount": "{count} ingredients",
+  "@preparedMealIngredientsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealPortionsRemaining": "{remaining}/{total} portions",
+  "@preparedMealPortionsRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealUnbundleAction": "Unbundle",
+  "preparedMealEatTitle": "Eat prepared meal",
+  "preparedMealThrowAwayTitle": "Throw away portions",
+  "preparedMealPortionsToUseLabel": "Portions to use",
+  "preparedMealConfirmAction": "Confirm",
+  "preparedMealSaveTemplateAction": "Save as template",
+  "preparedMealTemplateSavedMessage": "Template saved.",
+  "preparedMealTemplatesPageTitle": "Templates",
+  "preparedMealTemplatesEmptyState": "No templates saved yet.",
+  "preparedMealTemplatesLoadFailed": "Could not load templates.",
+  "preparedMealTemplateDeleteAction": "Delete template",
+  "preparedMealTemplateDeletedMessage": "Template deleted.",
+  "preparedMealTemplatePortions": "{count} portions",
+  "@preparedMealTemplatePortions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "homeShoppingActionContextPlaceholder": "Shopping action coming soon.",
   "shoppingListStatsEntries": "Entries",
   "shoppingListStatsQuantity": "Total quantity",
@@ -289,6 +390,17 @@
   "caloriesUnitKcal": "kcal",
   "caloriesUnitGram": "g",
   "caloriesUnitMilliliter": "ml",
+  "caloriesBundlePortions": "{consumed}/{total} portions",
+  "@caloriesBundlePortions": {
+    "placeholders": {
+      "consumed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "homeSettingsActionContextPlaceholder": "Settings action coming soon.",
   "settingsLanguageTitle": "Language",
   "settingsLanguageSubtitle": "Choose app language",

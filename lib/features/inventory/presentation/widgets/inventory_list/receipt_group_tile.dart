@@ -19,6 +19,10 @@ class ReceiptGroupTile extends StatefulWidget {
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
+    this.isSelectionMode = false,
+    this.selectedItemIds = const <String>{},
+    this.onItemLongPress = _noopItemSelection,
+    this.onSelectionToggle = _noopItemSelection,
   });
 
   final InventoryReceiptGroup group;
@@ -29,6 +33,10 @@ class ReceiptGroupTile extends StatefulWidget {
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
   final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
+  final bool isSelectionMode;
+  final Set<String> selectedItemIds;
+  final ValueChanged<String> onItemLongPress;
+  final ValueChanged<String> onSelectionToggle;
 
   @override
   State<ReceiptGroupTile> createState() => _ReceiptGroupTileState();
@@ -126,6 +134,14 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
                             onDeleteItem: widget.onDeleteItem,
                             onEatItem: widget.onEatItem,
                             onThrowAwayItem: widget.onThrowAwayItem,
+                            isSelectionMode: widget.isSelectionMode,
+                            isSelected: widget.selectedItemIds.contains(
+                              item.id,
+                            ),
+                            onItemLongPress: () =>
+                                widget.onItemLongPress(item.id),
+                            onSelectionToggle: () =>
+                                widget.onSelectionToggle(item.id),
                           );
                         })
                         .toList(growable: false),
@@ -138,6 +154,9 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
   }
 
   void _toggleExpanded() {
+    if (widget.isSelectionMode) {
+      return;
+    }
     setState(() {
       _isExpanded = !_isExpanded;
     });
@@ -146,3 +165,5 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
     )?.writeState(context, _isExpanded, identifier: _storageKey);
   }
 }
+
+void _noopItemSelection(String _) {}

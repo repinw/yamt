@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_segmented_button_frame.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryModeToolbar extends StatelessWidget {
@@ -9,21 +11,7 @@ class InventoryModeToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(
-          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xs),
-        child: modeToggle,
-      ),
-    );
+    return InventorySegmentedButtonFrame(child: modeToggle);
   }
 }
 
@@ -55,16 +43,21 @@ class InventorySectionHeader extends StatelessWidget {
 }
 
 class InventoryFilterButton extends StatelessWidget {
-  const InventoryFilterButton({super.key, required this.onPressed});
+  const InventoryFilterButton({
+    super.key,
+    required this.onPressed,
+    this.enabled = true,
+  });
 
   final VoidCallback onPressed;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     return IconButton(
-      onPressed: onPressed,
+      onPressed: enabled ? onPressed : null,
       tooltip: l10n.inventoryFilterAction,
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.zero,

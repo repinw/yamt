@@ -10,6 +10,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_snapshot.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/remaining_progress_bar.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -21,17 +23,31 @@ class InventoryItemRowMainSection extends StatelessWidget {
     required this.item,
     required this.viewData,
     required this.onPrimaryActionPressed,
+    required this.showSelectionCheckbox,
+    required this.isSelected,
   });
 
   final InventoryItemRowSnapshot item;
   final InventoryItemRowViewData viewData;
   final VoidCallback? onPrimaryActionPressed;
+  final bool showSelectionCheckbox;
+  final bool isSelected;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        if (showSelectionCheckbox) ...[
+          IgnorePointer(
+            child: Checkbox(
+              value: isSelected,
+              onChanged: (_) {},
+              visualDensity: VisualDensity.compact,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+        ],
         CategoryIcon(
           name: item.category ?? item.name,
           barcode: item.barcode,
@@ -41,11 +57,13 @@ class InventoryItemRowMainSection extends StatelessWidget {
         Expanded(
           child: _InventoryItemRowInfoColumn(item: item, viewData: viewData),
         ),
-        const SizedBox(width: AppSpacing.md),
-        _InventoryItemPrimaryActionButton(
-          viewData: viewData,
-          onPrimaryActionPressed: onPrimaryActionPressed,
-        ),
+        if (!showSelectionCheckbox) ...[
+          const SizedBox(width: AppSpacing.md),
+          _InventoryItemPrimaryActionButton(
+            viewData: viewData,
+            onPrimaryActionPressed: onPrimaryActionPressed,
+          ),
+        ],
       ],
     );
   }
@@ -102,24 +120,6 @@ class _InventoryItemPrimaryActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final usesSoulGradient =
-        viewData.isPrimaryActionEnabled && viewData.showPrimaryActionText;
-    final backgroundColor = usesSoulGradient
-        ? null
-        : viewData.isPrimaryActionEnabled
-        ? viewData.eatActionBackgroundColor
-        : viewData.disabledActionBackgroundColor;
-    final borderColor = usesSoulGradient
-        ? Colors.transparent
-        : viewData.isPrimaryActionEnabled
-        ? viewData.eatActionBorderColor
-        : viewData.disabledActionBorderColor;
-    final foregroundColor = usesSoulGradient
-        ? colors.onPrimary
-        : viewData.isPrimaryActionEnabled
-        ? viewData.eatActionIconColor
-        : viewData.disabledActionIconColor;
     final buttonWidth = viewData.showPrimaryActionText
         ? InventoryItemRowConstants.primaryActionWidth
         : AppInventoryEditorial.actionTileSize;
@@ -127,50 +127,21 @@ class _InventoryItemPrimaryActionButton extends StatelessWidget {
         ? InventoryItemRowConstants.primaryActionHeight
         : AppInventoryEditorial.actionTileSize;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        gradient: usesSoulGradient
-            ? AppInventoryEditorialSurfaces.soulGradient(colors)
-            : null,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: borderColor),
-        boxShadow: [
-          AppInventoryEditorialSurfaces.ambientBoxShadow(
-            colors,
-            blurRadius: 24,
-          ),
-        ],
-      ),
-      child: SizedBox(
-        width: buttonWidth,
-        height: buttonHeight,
-        child: IconButton(
-          visualDensity: VisualDensity.compact,
-          splashRadius: AppSpacing.xxl,
-          tooltip: viewData.primaryActionTooltip,
-          onPressed: onPrimaryActionPressed,
-          icon: viewData.showPrimaryActionText
-              ? Text(
-                  viewData.primaryActionLabel,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: foregroundColor,
-                    fontSize: 12,
-                  ),
-                )
-              : Icon(
-                  viewData.primaryActionIcon,
-                  size: InventoryItemRowConstants.actionIconSize,
-                ),
-          color: foregroundColor,
-          padding: EdgeInsets.symmetric(
-            horizontal: viewData.showPrimaryActionText
-                ? AppSpacing.sm
-                : AppSpacing.xs,
-          ),
-        ),
-      ),
+    return InventoryPrimaryActionButton(
+      tooltip: viewData.primaryActionTooltip,
+      onPressed: onPrimaryActionPressed,
+      showText: viewData.showPrimaryActionText,
+      label: viewData.primaryActionLabel,
+      width: buttonWidth,
+      height: buttonHeight,
+      enabledBackgroundColor: viewData.eatActionBackgroundColor,
+      disabledBackgroundColor: viewData.disabledActionBackgroundColor,
+      enabledBorderColor: viewData.eatActionBorderColor,
+      disabledBorderColor: viewData.disabledActionBorderColor,
+      enabledForegroundColor: viewData.eatActionIconColor,
+      disabledForegroundColor: viewData.disabledActionIconColor,
+      icon: viewData.primaryActionIcon,
+      iconSize: InventoryItemRowConstants.actionIconSize,
     );
   }
 }

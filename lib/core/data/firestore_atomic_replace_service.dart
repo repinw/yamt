@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:yamt/core/data/firestore_batch_write.dart';
@@ -5,6 +7,7 @@ import 'package:yamt/core/data/firestore_batch_write.dart';
 const int defaultMaxFirestoreBatchOperations = 500;
 const int defaultMaxFirestoreTransactionWrites = 500;
 const int defaultMaxStaleDeleteCandidatesPerTransaction = 100;
+const String _atomicReplaceLogName = 'FirestoreAtomicReplaceService';
 
 /// Stores the original document state for stale-delete safety checks.
 class FirestoreStaleDeleteCandidate {
@@ -37,29 +40,64 @@ class FirestoreAtomicReplaceService {
     required Map<String, Map<String, dynamic>> documentsById,
     Future<void> Function()? onBeforeDeleteStaleDocuments,
   }) async {
+    final stopwatch = Stopwatch()..start();
+    log(
+      'replaceAll started path=${collection.path} '
+      'documents=${documentsById.length}.',
+      name: _atomicReplaceLogName,
+    );
     final existingSnapshot = await collection.get();
+    log(
+      'replaceAll fetched existing snapshot path=${collection.path} '
+      'existing=${existingSnapshot.docs.length} '
+      'elapsedMs=${stopwatch.elapsedMilliseconds}.',
+      name: _atomicReplaceLogName,
+    );
     final staleDeleteCandidates = buildStaleDeleteCandidates(
       existingSnapshot: existingSnapshot,
       documentsById: documentsById,
     );
-
-    if (canRunAtomicReplaceAll(
+    final canRunAtomic = canRunAtomicReplaceAll(
       upsertCount: documentsById.length,
       staleDeleteCount: staleDeleteCandidates.length,
-    )) {
+    );
+    log(
+      'replaceAll computed stale deletes path=${collection.path} '
+      'staleDeletes=${staleDeleteCandidates.length} '
+      'canRunAtomic=$canRunAtomic '
+      'elapsedMs=${stopwatch.elapsedMilliseconds}.',
+      name: _atomicReplaceLogName,
+    );
+
+    if (canRunAtomic) {
       await onBeforeDeleteStaleDocuments?.call();
       await replaceAllAtomically(
         collection: collection,
         documentsById: documentsById,
         staleDeleteCandidates: staleDeleteCandidates,
       );
+      log(
+        'replaceAll completed atomically path=${collection.path} '
+        'elapsedMs=${stopwatch.elapsedMilliseconds}.',
+        name: _atomicReplaceLogName,
+      );
       return;
     }
 
     await upsertAll(collection: collection, documentsById: documentsById);
+    log(
+      'replaceAll upserts completed path=${collection.path} '
+      'elapsedMs=${stopwatch.elapsedMilliseconds}.',
+      name: _atomicReplaceLogName,
+    );
     await onBeforeDeleteStaleDocuments?.call();
     await deleteStaleDocumentsIfUnchanged(
       staleDeleteCandidates: staleDeleteCandidates,
+    );
+    log(
+      'replaceAll completed with fallback path=${collection.path} '
+      'elapsedMs=${stopwatch.elapsedMilliseconds}.',
+      name: _atomicReplaceLogName,
     );
   }
 
@@ -116,6 +154,12 @@ class FirestoreAtomicReplaceService {
     required Map<String, Map<String, dynamic>> documentsById,
     required List<FirestoreStaleDeleteCandidate> staleDeleteCandidates,
   }) async {
+    log(
+      'replaceAllAtomically started path=${collection.path} '
+      'upserts=${documentsById.length} '
+      'staleDeletes=${staleDeleteCandidates.length}.',
+      name: _atomicReplaceLogName,
+    );
     await _firestore.runTransaction((transaction) async {
       final deleteReferences = await _unchangedDeleteReferences(
         transaction: transaction,
@@ -130,11 +174,22 @@ class FirestoreAtomicReplaceService {
         transaction.delete(reference);
       }
     });
+    log(
+      'replaceAllAtomically finished path=${collection.path} '
+      'upserts=${documentsById.length} '
+      'staleDeletes=${staleDeleteCandidates.length}.',
+      name: _atomicReplaceLogName,
+    );
   }
 
   Future<void> deleteStaleDocumentsIfUnchanged({
     required List<FirestoreStaleDeleteCandidate> staleDeleteCandidates,
   }) async {
+    log(
+      'deleteStaleDocumentsIfUnchanged started '
+      'staleDeletes=${staleDeleteCandidates.length}.',
+      name: _atomicReplaceLogName,
+    );
     for (final chunk in FirestoreBatchChunker.chunk(
       operations: staleDeleteCandidates,
       maxChunkSize: maxStaleDeleteCandidatesPerTransaction,
@@ -150,6 +205,11 @@ class FirestoreAtomicReplaceService {
         }
       });
     }
+    log(
+      'deleteStaleDocumentsIfUnchanged finished '
+      'staleDeletes=${staleDeleteCandidates.length}.',
+      name: _atomicReplaceLogName,
+    );
   }
 
   Future<void> commitInChunks({
@@ -157,6 +217,11 @@ class FirestoreAtomicReplaceService {
     int? maxChunkSize,
   }) async {
     final chunkSize = maxChunkSize ?? maxFirestoreBatchOperations;
+    log(
+      'commitInChunks started operations=${operations.length} '
+      'chunkSize=$chunkSize.',
+      name: _atomicReplaceLogName,
+    );
     for (final chunk in FirestoreBatchChunker.chunk(
       operations: operations,
       maxChunkSize: chunkSize,
@@ -167,6 +232,11 @@ class FirestoreAtomicReplaceService {
       }
       await batch.commit();
     }
+    log(
+      'commitInChunks finished operations=${operations.length} '
+      'chunkSize=$chunkSize.',
+      name: _atomicReplaceLogName,
+    );
   }
 
   Future<List<DocumentReference<Map<String, dynamic>>>>

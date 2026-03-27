@@ -1,51 +1,242 @@
-import 'dart:developer' as developer;
 import 'dart:async';
+import 'dart:convert';
+import 'dart:developer' as developer;
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/data/local_image_store.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_prepared_meal_creation_coordinator.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/provider/'
+    'prepared_meal_selection_controller.dart';
+import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/provider/'
+    'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _deleteUndoSnackBarDuration = Duration(seconds: 4);
 
-class InventoryPage extends ConsumerWidget {
+class InventoryPage extends ConsumerStatefulWidget {
   const InventoryPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<InventoryPage> createState() => _InventoryPageState();
+}
+
+class _InventoryPageState extends ConsumerState<InventoryPage> {
+  @override
+  Widget build(BuildContext context) {
     ref.listen(inventoryItemsControllerProvider, _logLoadErrorOnce);
+    ref.listen(
+      preparedMealSelectionControllerProvider.select(
+        (state) => state.bindRequestToken,
+      ),
+      _onCreatePreparedMealRequested,
+    );
 
     final l10n = AppLocalizations.of(context)!;
     final controller = ref.read(inventoryItemsControllerProvider.notifier);
     final itemsAsync = ref.watch(inventoryItemsControllerProvider);
+    final mealsController = ref.read(preparedMealsControllerProvider.notifier);
+    final mealsAsync = ref.watch(preparedMealsControllerProvider);
+    final selectionState = ref.watch(preparedMealSelectionControllerProvider);
 
-    return itemsAsync.when(
-      data: (items) => InventoryList(
-        items: items,
-        onDeleteItem: (itemId) =>
-            _deleteItemWithUndo(context: context, ref: ref, itemId: itemId),
-        onEatItem: (itemId, amount) => _eatItemWithCalorieBridge(
-          context: context,
-          ref: ref,
-          itemId: itemId,
-          amount: amount,
-          itemsSnapshot: items,
-        ),
-        onThrowAwayItem: controller.throwAwayItem,
-      ),
-      loading: () => const _InventoryLoadingView(),
-      error: (error, stackTrace) => _InventoryErrorView(
-        onRetry: controller.refresh,
+    if (itemsAsync.isLoading || mealsAsync.isLoading) {
+      return const _InventoryLoadingView();
+    }
+
+    final itemsError = itemsAsync.asError;
+    final mealsError = mealsAsync.asError;
+    if (itemsError != null || mealsError != null) {
+      return _InventoryErrorView(
+        onRetry: () async {
+          await controller.refresh();
+          await mealsController.refresh();
+        },
         message: l10n.inventoryLoadFailed,
         retryLabel: l10n.inventoryRetryAction,
+      );
+    }
+
+    final items = itemsAsync.value ?? const <InventoryItem>[];
+    final meals = mealsAsync.value ?? const <PreparedMeal>[];
+
+    return InventoryList(
+      items: items,
+      preparedMeals: meals,
+      onDeleteItem: (itemId) =>
+          _deleteItemWithUndo(context: context, ref: ref, itemId: itemId),
+      onEatItem: (itemId, amount) => _eatItemWithCalorieBridge(
+        context: context,
+        ref: ref,
+        itemId: itemId,
+        amount: amount,
+        itemsSnapshot: items,
+      ),
+      onThrowAwayItem: controller.throwAwayItem,
+      onEatPreparedMeal: (mealId, portions, mealType) => ref
+          .read(preparedMealsControllerProvider.notifier)
+          .consumePreparedMeal(
+            mealId: mealId,
+            consumedPortions: portions,
+            mealType: mealType,
+          ),
+      onThrowAwayPreparedMeal: (mealId, portions) => ref
+          .read(preparedMealsControllerProvider.notifier)
+          .throwAwayPreparedMeal(mealId: mealId, discardedPortions: portions),
+      onUnbundlePreparedMeal: ref
+          .read(preparedMealsControllerProvider.notifier)
+          .unbundlePreparedMeal,
+      onEditPreparedMeal: (mealId, name, imageChanged, imageBytes) =>
+          _updatePreparedMeal(
+            context: context,
+            ref: ref,
+            mealId: mealId,
+            name: name,
+            imageChanged: imageChanged,
+            imageBytes: imageBytes,
+          ),
+      onSavePreparedMealTemplate: (meal) =>
+          _savePreparedMealTemplate(context: context, ref: ref, meal: meal),
+      isSelectionMode: selectionState.isSelectionMode,
+      selectedItemIds: selectionState.selectedItemIds,
+      onItemLongPress: (itemId) {
+        ref
+            .read(preparedMealSelectionControllerProvider.notifier)
+            .enterSelection(itemId);
+      },
+      onSelectionToggle: (itemId) {
+        ref
+            .read(preparedMealSelectionControllerProvider.notifier)
+            .toggleSelection(itemId);
+      },
+    );
+  }
+
+  Future<void> _onCreatePreparedMealRequested(int? previous, int next) async {
+    if (previous == next || next < 1) {
+      return;
+    }
+    await runPreparedMealCreationFlow(context: context, ref: ref);
+  }
+
+  Future<bool> _savePreparedMealTemplate({
+    required BuildContext context,
+    required WidgetRef ref,
+    required PreparedMeal meal,
+  }) async {
+    final result = await ref
+        .read(preparedMealTemplatesControllerProvider.notifier)
+        .saveTemplateFromMeal(meal);
+    if (!result.isSuccess || !context.mounted) {
+      return result.isSuccess;
+    }
+
+    final templateId = result.templateId;
+    if (templateId != null) {
+      await _copyLocalImage(
+        ref: ref,
+        sourceRef: preparedMealImageRef(meal.id),
+        targetRef: preparedMealTemplateImageRef(templateId),
+        fallbackImageBase64: meal.imageBase64,
+      );
+      if (!context.mounted) {
+        return true;
+      }
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context)!.preparedMealTemplateSavedMessage,
+        ),
       ),
     );
+    return true;
+  }
+
+  Future<bool> _updatePreparedMeal({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String mealId,
+    required String name,
+    required bool imageChanged,
+    required Uint8List? imageBytes,
+  }) async {
+    final encodedImage = imageChanged && imageBytes != null
+        ? base64Encode(imageBytes)
+        : null;
+    final saved = await ref
+        .read(preparedMealsControllerProvider.notifier)
+        .updatePreparedMealDetails(
+          mealId: mealId,
+          name: name,
+          imageChanged: imageChanged,
+          imageBase64: encodedImage,
+        );
+    if (!saved || !context.mounted) {
+      return saved;
+    }
+
+    if (imageChanged) {
+      final imageRef = preparedMealImageRef(mealId);
+      if (imageBytes == null) {
+        await ref.read(localImageStoreProvider).deleteImage(imageRef);
+      } else {
+        await ref
+            .read(localImageStoreProvider)
+            .saveBytes(imageRef: imageRef, bytes: imageBytes);
+      }
+      ref.invalidate(localImageBytesProvider(imageRef));
+      if (!context.mounted) {
+        return true;
+      }
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.preparedMealUpdatedMessage),
+      ),
+    );
+    return true;
+  }
+
+  Future<void> _copyLocalImage({
+    required WidgetRef ref,
+    required LocalImageRef sourceRef,
+    required LocalImageRef targetRef,
+    required String? fallbackImageBase64,
+  }) async {
+    final store = ref.read(localImageStoreProvider);
+    final sourceBytes = await store.readBytes(sourceRef);
+    if (sourceBytes != null) {
+      await store.copyImage(sourceRef: sourceRef, targetRef: targetRef);
+      ref.invalidate(localImageBytesProvider(targetRef));
+      return;
+    }
+
+    final rawBase64 = fallbackImageBase64?.trim();
+    if (rawBase64 == null || rawBase64.isEmpty) {
+      return;
+    }
+
+    final bytes = base64Decode(rawBase64);
+    await store.saveBytes(imageRef: targetRef, bytes: bytes);
+    ref.invalidate(localImageBytesProvider(targetRef));
   }
 
   Future<bool> _deleteItemWithUndo({
@@ -102,6 +293,28 @@ class InventoryPage extends ConsumerWidget {
     );
   }
 
+  Future<void> _undoDelete({
+    required BuildContext context,
+    required WidgetRef ref,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final restored = await ref
+        .read(inventoryItemsControllerProvider.notifier)
+        .undoLastDeletedItem();
+    if (!context.mounted) {
+      return;
+    }
+    if (restored) {
+      messenger.hideCurrentSnackBar();
+      return;
+    }
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.inventoryItemActionFailed)),
+    );
+  }
+
   Future<bool> _eatItemWithCalorieBridge({
     required BuildContext context,
     required WidgetRef ref,
@@ -134,28 +347,6 @@ class InventoryPage extends ConsumerWidget {
     );
     return true;
   }
-
-  Future<void> _undoDelete({
-    required BuildContext context,
-    required WidgetRef ref,
-  }) async {
-    final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    final restored = await ref
-        .read(inventoryItemsControllerProvider.notifier)
-        .undoLastDeletedItem();
-    if (!context.mounted) {
-      return;
-    }
-    if (restored) {
-      messenger.hideCurrentSnackBar();
-      return;
-    }
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(content: Text(l10n.inventoryItemActionFailed)),
-    );
-  }
 }
 
 class _InventoryLoadingView extends StatelessWidget {
@@ -181,7 +372,7 @@ class _InventoryErrorView extends StatelessWidget {
     required this.retryLabel,
   });
 
-  final VoidCallback onRetry;
+  final Future<void> Function() onRetry;
   final String message;
   final String retryLabel;
 

@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
@@ -22,6 +25,61 @@ enum ConsumedUnit {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class CalorieEntryBundleComponent {
+  const CalorieEntryBundleComponent({
+    required this.name,
+    required this.amountLabel,
+    required this.totalKcal,
+    required this.totalProtein,
+    required this.totalCarbs,
+    required this.totalFat,
+    this.brand,
+    this.imageUrl,
+  });
+
+  final String name;
+  final String amountLabel;
+  final String? brand;
+  final String? imageUrl;
+  @FlexibleDoubleConverter()
+  final double totalKcal;
+  @FlexibleDoubleConverter()
+  final double totalProtein;
+  @FlexibleDoubleConverter()
+  final double totalCarbs;
+  @FlexibleDoubleConverter()
+  final double totalFat;
+
+  factory CalorieEntryBundleComponent.fromJson(Map<String, dynamic> json) {
+    return _$CalorieEntryBundleComponentFromJson(json);
+  }
+
+  Map<String, dynamic> toJson() => _$CalorieEntryBundleComponentToJson(this);
+
+  CalorieEntryBundleComponent copyWith({
+    String? name,
+    String? amountLabel,
+    String? brand,
+    String? imageUrl,
+    double? totalKcal,
+    double? totalProtein,
+    double? totalCarbs,
+    double? totalFat,
+  }) {
+    return CalorieEntryBundleComponent(
+      name: name ?? this.name,
+      amountLabel: amountLabel ?? this.amountLabel,
+      brand: brand ?? this.brand,
+      imageUrl: imageUrl ?? this.imageUrl,
+      totalKcal: totalKcal ?? this.totalKcal,
+      totalProtein: totalProtein ?? this.totalProtein,
+      totalCarbs: totalCarbs ?? this.totalCarbs,
+      totalFat: totalFat ?? this.totalFat,
+    );
+  }
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CalorieEntry {
   const CalorieEntry({
     required this.id,
@@ -43,13 +101,124 @@ class CalorieEntry {
     required this.updatedAt,
     this.brand,
     this.imageUrl,
+    this.imageBase64,
+    this.bundleSourcePreparedMealId,
+    this.bundleConsumedPortions,
+    this.bundleTotalPortions,
+    this.bundleComponents = const <CalorieEntryBundleComponent>[],
   });
+
+  factory CalorieEntry.create({
+    required String id,
+    required String userId,
+    required String name,
+    required MealType mealType,
+    required double consumedAmount,
+    required ConsumedUnit consumedUnit,
+    required double per100Kcal,
+    required double per100Protein,
+    required double per100Carbs,
+    required double per100Fat,
+    DateTime? loggedAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? brand,
+    String? imageUrl,
+    String? imageBase64,
+  }) {
+    final now = DateTime.now();
+    final factor = consumedAmount / 100;
+
+    return CalorieEntry(
+      id: id,
+      userId: userId,
+      name: name,
+      mealType: mealType,
+      consumedAmount: consumedAmount,
+      consumedUnit: consumedUnit,
+      per100Kcal: per100Kcal,
+      per100Protein: per100Protein,
+      per100Carbs: per100Carbs,
+      per100Fat: per100Fat,
+      totalKcal: per100Kcal * factor,
+      totalProtein: per100Protein * factor,
+      totalCarbs: per100Carbs * factor,
+      totalFat: per100Fat * factor,
+      loggedAt: loggedAt ?? now,
+      createdAt: createdAt ?? now,
+      updatedAt: updatedAt ?? now,
+      brand: brand,
+      imageUrl: imageUrl,
+      imageBase64: imageBase64,
+    );
+  }
+
+  factory CalorieEntry.bundle({
+    required String id,
+    required String userId,
+    required String name,
+    required MealType mealType,
+    required double totalKcal,
+    required double totalProtein,
+    required double totalCarbs,
+    required double totalFat,
+    required String bundleSourcePreparedMealId,
+    required int bundleConsumedPortions,
+    required int bundleTotalPortions,
+    required List<CalorieEntryBundleComponent> bundleComponents,
+    DateTime? loggedAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? brand,
+    String? imageUrl,
+    String? imageBase64,
+  }) {
+    final now = DateTime.now();
+
+    return CalorieEntry(
+      id: id,
+      userId: userId,
+      name: name,
+      brand: brand,
+      imageUrl: imageUrl,
+      imageBase64: imageBase64,
+      mealType: mealType,
+      consumedAmount: 100,
+      consumedUnit: ConsumedUnit.grams,
+      per100Kcal: totalKcal,
+      per100Protein: totalProtein,
+      per100Carbs: totalCarbs,
+      per100Fat: totalFat,
+      totalKcal: totalKcal,
+      totalProtein: totalProtein,
+      totalCarbs: totalCarbs,
+      totalFat: totalFat,
+      loggedAt: loggedAt ?? now,
+      createdAt: createdAt ?? now,
+      updatedAt: updatedAt ?? now,
+      bundleSourcePreparedMealId: bundleSourcePreparedMealId,
+      bundleConsumedPortions: bundleConsumedPortions,
+      bundleTotalPortions: bundleTotalPortions,
+      bundleComponents: bundleComponents,
+    );
+  }
+
+  factory CalorieEntry.fromJson(Map<String, dynamic> json) {
+    return _$CalorieEntryFromJson(json);
+  }
 
   final String id;
   final String userId;
   final String name;
   final String? brand;
   final String? imageUrl;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final String? imageBase64;
+  final String? bundleSourcePreparedMealId;
+  final int? bundleConsumedPortions;
+  final int? bundleTotalPortions;
+  @JsonKey(defaultValue: <CalorieEntryBundleComponent>[])
+  final List<CalorieEntryBundleComponent> bundleComponents;
   @JsonKey(defaultValue: MealType.snack, unknownEnumValue: MealType.snack)
   final MealType mealType;
   @FlexibleDoubleConverter()
@@ -82,53 +251,6 @@ class CalorieEntry {
   @FlexibleDateTimeConverter()
   final DateTime updatedAt;
 
-  factory CalorieEntry.create({
-    required String id,
-    required String userId,
-    required String name,
-    required MealType mealType,
-    required double consumedAmount,
-    required ConsumedUnit consumedUnit,
-    required double per100Kcal,
-    required double per100Protein,
-    required double per100Carbs,
-    required double per100Fat,
-    DateTime? loggedAt,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    String? brand,
-    String? imageUrl,
-  }) {
-    final now = DateTime.now();
-    final factor = consumedAmount / 100;
-
-    return CalorieEntry(
-      id: id,
-      userId: userId,
-      name: name,
-      mealType: mealType,
-      consumedAmount: consumedAmount,
-      consumedUnit: consumedUnit,
-      per100Kcal: per100Kcal,
-      per100Protein: per100Protein,
-      per100Carbs: per100Carbs,
-      per100Fat: per100Fat,
-      totalKcal: per100Kcal * factor,
-      totalProtein: per100Protein * factor,
-      totalCarbs: per100Carbs * factor,
-      totalFat: per100Fat * factor,
-      loggedAt: loggedAt ?? now,
-      createdAt: createdAt ?? now,
-      updatedAt: updatedAt ?? now,
-      brand: brand,
-      imageUrl: imageUrl,
-    );
-  }
-
-  factory CalorieEntry.fromJson(Map<String, dynamic> json) {
-    return _$CalorieEntryFromJson(json);
-  }
-
   Map<String, dynamic> toJson() => _$CalorieEntryToJson(this);
 
   bool get isValid {
@@ -150,12 +272,34 @@ class CalorieEntry {
     return true;
   }
 
+  bool get isBundle {
+    return (bundleSourcePreparedMealId?.trim().isNotEmpty ?? false) &&
+        bundleComponents.isNotEmpty;
+  }
+
+  Uint8List? get imageBytes {
+    final raw = imageBase64?.trim();
+    if (raw == null || raw.isEmpty) {
+      return null;
+    }
+    try {
+      return base64Decode(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+
   CalorieEntry copyWith({
     String? id,
     String? userId,
     String? name,
     String? brand,
     String? imageUrl,
+    Object? imageBase64 = _keepValue,
+    Object? bundleSourcePreparedMealId = _keepValue,
+    Object? bundleConsumedPortions = _keepValue,
+    Object? bundleTotalPortions = _keepValue,
+    List<CalorieEntryBundleComponent>? bundleComponents,
     MealType? mealType,
     double? consumedAmount,
     ConsumedUnit? consumedUnit,
@@ -177,6 +321,19 @@ class CalorieEntry {
       name: name ?? this.name,
       brand: brand ?? this.brand,
       imageUrl: imageUrl ?? this.imageUrl,
+      imageBase64: imageBase64 == _keepValue
+          ? this.imageBase64
+          : imageBase64 as String?,
+      bundleSourcePreparedMealId: bundleSourcePreparedMealId == _keepValue
+          ? this.bundleSourcePreparedMealId
+          : bundleSourcePreparedMealId as String?,
+      bundleConsumedPortions: bundleConsumedPortions == _keepValue
+          ? this.bundleConsumedPortions
+          : bundleConsumedPortions as int?,
+      bundleTotalPortions: bundleTotalPortions == _keepValue
+          ? this.bundleTotalPortions
+          : bundleTotalPortions as int?,
+      bundleComponents: bundleComponents ?? this.bundleComponents,
       mealType: mealType ?? this.mealType,
       consumedAmount: consumedAmount ?? this.consumedAmount,
       consumedUnit: consumedUnit ?? this.consumedUnit,
@@ -195,6 +352,10 @@ class CalorieEntry {
   }
 
   CalorieEntry recalculateTotals({DateTime? updatedAt}) {
+    if (isBundle) {
+      return copyWith(updatedAt: updatedAt ?? DateTime.now());
+    }
+
     final factor = consumedAmount / 100;
     return copyWith(
       totalKcal: per100Kcal * factor,
@@ -205,3 +366,5 @@ class CalorieEntry {
     );
   }
 }
+
+const Object _keepValue = Object();

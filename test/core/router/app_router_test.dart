@@ -467,6 +467,30 @@ void main() {
     expect(find.text('Sign out'), findsOneWidget);
   });
 
+  testWidgets('inventory clipboard button opens templates page', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    final router = container.read(appRouterProvider);
+    expect(router.state.uri.path, AppRoutes.homeInventory);
+
+    await tester.tap(find.byIcon(Icons.bookmarks_rounded).hitTestable());
+    await _pumpRouterTransition(tester);
+
+    expect(router.state.uri.path, AppRoutes.homeInventoryTemplates);
+    expect(find.text('Templates'), findsOneWidget);
+    expect(find.byType(BackButton), findsOneWidget);
+  });
+
   testWidgets('redirects to welcome after logout from a home route', (
     tester,
   ) async {

@@ -33,6 +33,10 @@ abstract final class CaloriesPageKeys {
     return Key('calories_entry_image_$entryId');
   }
 
+  static Key bundleComponentImage(String entryId, int index) {
+    return Key('calories_bundle_component_image_${entryId}_$index');
+  }
+
   static Key sectionAddButton(String mealType) {
     return Key('calories_section_add_$mealType');
   }

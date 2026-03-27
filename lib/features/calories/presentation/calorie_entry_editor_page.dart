@@ -9,6 +9,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
+import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
@@ -309,7 +310,7 @@ class _CalorieEntryEditorPageState
                     .map((mealType) {
                       return DropdownMenuItem<MealType>(
                         value: mealType,
-                        child: Text(_mealLabel(l10n, mealType)),
+                        child: Text(mealType.localizedName(l10n)),
                       );
                     })
                     .toList(growable: false),
@@ -597,15 +598,6 @@ class _CalorieEntryEditorPageState
     }
 
     _showFailureSnackBar(messenger, l10n.caloriesSaveFailed);
-  }
-
-  String _mealLabel(AppLocalizations l10n, MealType mealType) {
-    return switch (mealType) {
-      MealType.breakfast => l10n.caloriesMealBreakfast,
-      MealType.lunch => l10n.caloriesMealLunch,
-      MealType.dinner => l10n.caloriesMealDinner,
-      MealType.snack => l10n.caloriesMealSnack,
-    };
   }
 
   String? _positiveNumberValidator(String? value) {

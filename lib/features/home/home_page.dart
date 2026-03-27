@@ -11,6 +11,8 @@ import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/home/home_tab_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
+import 'package:yamt/features/inventory/provider/'
+    'prepared_meal_selection_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBranchIndex = 0;
@@ -41,7 +43,15 @@ class HomePage extends ConsumerWidget {
     };
   }
 
-  String _titleForTab(AppLocalizations l10n) {
+  String _titleForTab(
+    AppLocalizations l10n,
+    PreparedMealSelectionState selectionState,
+  ) {
+    if (_currentTab() == HomeTabType.inventory &&
+        selectionState.isSelectionMode) {
+      return l10n.preparedMealSelectionCount(selectionState.selectedCount);
+    }
+
     switch (_currentTab()) {
       case HomeTabType.inventory:
         return l10n.inventoryPageTitle;
@@ -92,7 +102,33 @@ class HomePage extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
+    PreparedMealSelectionState selectionState,
   ) {
+    if (_currentTab() == HomeTabType.inventory &&
+        selectionState.isSelectionMode) {
+      return [
+        TextButton(
+          onPressed: () {
+            ref
+                .read(preparedMealSelectionControllerProvider.notifier)
+                .clearSelection();
+          },
+          child: Text(l10n.inventoryReceiptReviewCancelAction),
+        ),
+        FilledButton.tonalIcon(
+          onPressed: selectionState.selectedCount >= 2
+              ? () {
+                  ref
+                      .read(preparedMealSelectionControllerProvider.notifier)
+                      .requestCreateMeal();
+                }
+              : null,
+          icon: const Icon(Icons.restaurant_menu_rounded),
+          label: Text(l10n.preparedMealBindAction),
+        ),
+      ];
+    }
+
     switch (_currentTab()) {
       case HomeTabType.inventory:
         return [
@@ -101,6 +137,17 @@ class HomePage extends ConsumerWidget {
             onPressed: () =>
                 _showSnackBar(context, l10n.commonNotImplementedYet),
             icon: const Icon(Icons.assignment_outlined),
+          ),
+          IconButton.filledTonal(
+            tooltip: l10n.preparedMealTemplatesPageTitle,
+            onPressed: () => context.push(AppRoutes.homeInventoryTemplates),
+            icon: const Icon(Icons.bookmarks_rounded),
+            style: IconButton.styleFrom(
+              backgroundColor: AppInventoryEditorial.primary.withValues(
+                alpha: 0.12,
+              ),
+              foregroundColor: AppInventoryEditorial.primary,
+            ),
           ),
           IconButton(
             tooltip: l10n.homeShopping,
@@ -144,17 +191,18 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final currentTab = _currentTab();
+    final selectionState = ref.watch(preparedMealSelectionControllerProvider);
 
     return Scaffold(
       extendBody: true,
       appBar: HomeTopBar(
-        title: _titleForTab(l10n),
+        title: _titleForTab(l10n, selectionState),
         titleColor:
             currentTab == HomeTabType.inventory ||
                 currentTab == HomeTabType.diary
             ? AppInventoryEditorial.primary
             : null,
-        actions: _buildActions(context, ref, l10n),
+        actions: _buildActions(context, ref, l10n, selectionState),
       ),
       body: navigationShell,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/local_image_store.dart';
+import 'package:yamt/features/calories/data/calorie_entry_image_ref.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -11,6 +14,8 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+
+import '../../../support/fake_local_image_store.dart';
 
 class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   _FakeCalorieLogRepository({List<CalorieEntry>? initialEntries})
@@ -25,6 +30,7 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   bool deleteShouldFail = false;
   Object? watchError;
   Object? saveError;
+  Future<List<CalorieEntry>> Function(DateTime day)? onReadEntriesForDay;
   Completer<void>? saveBlocker;
   var saveStarted = false;
   Duration initialEmissionDelay = Duration.zero;
@@ -68,7 +74,12 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 
   @override
   Future<List<CalorieEntry>> readEntriesForDay(DateTime day) {
-    return Future<List<CalorieEntry>>.value(_entriesForDay(_normalize(day)));
+    final normalizedDay = _normalize(day);
+    final customReader = onReadEntriesForDay;
+    if (customReader != null) {
+      return customReader(normalizedDay);
+    }
+    return Future<List<CalorieEntry>>.value(_entriesForDay(normalizedDay));
   }
 
   @override
@@ -145,6 +156,15 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
       return;
     }
     controller.add(_entriesForDay(day));
+  }
+
+  void emitRealtimeError(DateTime day, Object error) {
+    final key = _dayKey(_normalize(day));
+    final controller = _controllersByDay[key];
+    if (controller == null || controller.isClosed) {
+      return;
+    }
+    controller.addError(error);
   }
 
   StreamController<List<CalorieEntry>> _controllerFor(String key) {
@@ -659,6 +679,123 @@ void main() {
     expect(entries, hasLength(1));
     expect(entries?.single.id, 'b1');
   });
+
+  test(
+    'deleteEntry removes the local image after a successful delete',
+    () async {
+      final repository = _FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'delete-me',
+            loggedAt: DateTime(2026, 2, 25, 8),
+            mealType: MealType.breakfast,
+          ),
+        ],
+      );
+      final settingsRepository = _FakeCalorieSettingsRepository();
+      final localImageStore = FakeLocalImageStore();
+      addTearDown(repository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      await localImageStore.saveBytes(
+        imageRef: calorieEntryImageRef('delete-me'),
+        bytes: Uint8List.fromList(<int>[1, 2, 3]),
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(repository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          localImageStoreProvider.overrideWithValue(localImageStore),
+        ],
+      );
+      addTearDown(container.dispose);
+      final entriesSubscription = _keepEntriesAlive(container);
+      addTearDown(entriesSubscription.close);
+
+      container
+          .read(calorieDayControllerProvider.notifier)
+          .setDay(DateTime(2026, 2, 25));
+      await container.read(calorieEntriesControllerProvider.future);
+
+      final deleted = await container
+          .read(calorieEntriesControllerProvider.notifier)
+          .deleteEntry('delete-me');
+
+      expect(deleted, isTrue);
+      expect(
+        await localImageStore.readBytes(calorieEntryImageRef('delete-me')),
+        isNull,
+      );
+    },
+  );
+
+  test(
+    'saveEntry falls back to repository read after realtime stream error',
+    () async {
+      final repository = _FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'b1',
+            loggedAt: DateTime(2026, 2, 25, 8),
+            mealType: MealType.breakfast,
+          ),
+        ],
+      );
+      final settingsRepository = _FakeCalorieSettingsRepository();
+      addTearDown(repository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(repository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final entriesSubscription = _keepEntriesAlive(container);
+      addTearDown(entriesSubscription.close);
+
+      container
+          .read(calorieDayControllerProvider.notifier)
+          .setDay(DateTime(2026, 2, 25));
+      await container.read(calorieEntriesControllerProvider.future);
+
+      repository.emitRealtimeError(
+        DateTime(2026, 2, 25),
+        StateError('stream disconnected'),
+      );
+      await _waitForCondition(
+        condition: () =>
+            container.read(calorieEntriesControllerProvider).hasError,
+      );
+
+      final saved = await container
+          .read(calorieEntriesControllerProvider.notifier)
+          .saveEntry(
+            _entry(
+              'new',
+              loggedAt: DateTime(2026, 2, 25, 10),
+              mealType: MealType.lunch,
+            ),
+          );
+
+      expect(saved, isTrue);
+      final entries = container
+          .read(calorieEntriesControllerProvider)
+          .asData
+          ?.value;
+      expect(entries, hasLength(2));
+      expect(
+        entries?.map((entry) => entry.id),
+        containsAll(<String>['b1', 'new']),
+      );
+    },
+  );
 
   test('goal controller setGoal and clearGoal update state', () async {
     final repository = _FakeCalorieLogRepository();
