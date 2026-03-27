@@ -42,12 +42,14 @@ class CalorieEntry {
     required this.createdAt,
     required this.updatedAt,
     this.brand,
+    this.imageUrl,
   });
 
   final String id;
   final String userId;
   final String name;
   final String? brand;
+  final String? imageUrl;
   @JsonKey(defaultValue: MealType.snack, unknownEnumValue: MealType.snack)
   final MealType mealType;
   @FlexibleDoubleConverter()
@@ -95,6 +97,7 @@ class CalorieEntry {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? brand,
+    String? imageUrl,
   }) {
     final now = DateTime.now();
     final factor = consumedAmount / 100;
@@ -118,6 +121,7 @@ class CalorieEntry {
       createdAt: createdAt ?? now,
       updatedAt: updatedAt ?? now,
       brand: brand,
+      imageUrl: imageUrl,
     );
   }
 
@@ -151,6 +155,7 @@ class CalorieEntry {
     String? userId,
     String? name,
     String? brand,
+    String? imageUrl,
     MealType? mealType,
     double? consumedAmount,
     ConsumedUnit? consumedUnit,
@@ -171,6 +176,7 @@ class CalorieEntry {
       userId: userId ?? this.userId,
       name: name ?? this.name,
       brand: brand ?? this.brand,
+      imageUrl: imageUrl ?? this.imageUrl,
       mealType: mealType ?? this.mealType,
       consumedAmount: consumedAmount ?? this.consumedAmount,
       consumedUnit: consumedUnit ?? this.consumedUnit,

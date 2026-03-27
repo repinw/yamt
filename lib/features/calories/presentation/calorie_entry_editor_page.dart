@@ -22,12 +22,14 @@ class CalorieEntryEditorPage extends ConsumerStatefulWidget {
     this.prefilledProfile,
     this.scannedSourceRef,
     this.inventoryContext,
+    this.preselectedMealType,
   });
 
   final String? entryId;
   final CalorieProductProfile? prefilledProfile;
   final CalorieScannedSourceRef? scannedSourceRef;
   final CalorieInventoryCreateContext? inventoryContext;
+  final MealType? preselectedMealType;
 
   @override
   ConsumerState<CalorieEntryEditorPage> createState() {
@@ -76,7 +78,12 @@ class _CalorieEntryEditorPageState
             widget.inventoryContext?.consumedAmount ||
         oldWidget.inventoryContext?.consumedUnit !=
             widget.inventoryContext?.consumedUnit;
-    if (!didEntryIdChange && !didPrefillChange && !didInventoryContextChange) {
+    final didMealPrefillChange =
+        oldWidget.preselectedMealType != widget.preselectedMealType;
+    if (!didEntryIdChange &&
+        !didPrefillChange &&
+        !didInventoryContextChange &&
+        !didMealPrefillChange) {
       return;
     }
     _entrySubscription?.close();
@@ -208,7 +215,9 @@ class _CalorieEntryEditorPageState
     _per100ProteinController.text = _formatDouble(prefill?.per100Protein ?? 0);
     _per100CarbsController.text = _formatDouble(prefill?.per100Carbs ?? 0);
     _per100FatController.text = _formatDouble(prefill?.per100Fat ?? 0);
-    _mealType = MealType.defaultForDateTime(DateTime.now());
+    _mealType =
+        widget.preselectedMealType ??
+        MealType.defaultForDateTime(DateTime.now());
     _consumedUnit = inventoryContext?.consumedUnit ?? ConsumedUnit.grams;
     _loggedAt = DateTime.now();
     _initializedEntryId = prefillKey;
@@ -535,6 +544,7 @@ class _CalorieEntryEditorPageState
             userId: user.uid,
             name: trimmedName,
             brand: trimmedBrand.isEmpty ? null : trimmedBrand,
+            imageUrl: widget.prefilledProfile?.imageUrl,
             mealType: _mealType,
             consumedAmount: amount,
             consumedUnit: _consumedUnit,

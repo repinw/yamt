@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository.dart';
+import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
 import 'package:yamt/features/calories/data/'
@@ -18,7 +19,6 @@ import 'package:yamt/features/calories/domain/'
 part 'calorie_product_lookup_repository.g.dart';
 
 const _lookupLogName = 'CalorieProductLookupRepository';
-const _offBaseUrl = 'world.openfoodfacts.org';
 const _lookupErrorInvalidBarcode = 'invalid_barcode';
 const _lookupErrorRequestFailed = 'off_request_failed';
 const _lookupErrorUnavailable = 'off_lookup_unavailable';
@@ -312,24 +312,7 @@ class OffBackedCalorieProductLookupRepository
   }
 
   bool _hasUsableImageUrl(String? value) {
-    return _normalizeOffImageUrl(value) != null;
-  }
-
-  String? _normalizeOffImageUrl(String? value) {
-    final raw = value?.trim();
-    if (raw == null || raw.isEmpty) {
-      return null;
-    }
-    if (raw.startsWith('https://') || raw.startsWith('http://')) {
-      return raw;
-    }
-    if (raw.startsWith('//')) {
-      return 'https:$raw';
-    }
-    if (raw.startsWith('/')) {
-      return 'https://$_offBaseUrl$raw';
-    }
-    return null;
+    return normalizeCalorieProductImageUrl(value) != null;
   }
 
   CalorieProductProfile _normalizeCachedProfile(
@@ -338,7 +321,7 @@ class OffBackedCalorieProductLookupRepository
   }) {
     return profile.copyWith(
       source: source,
-      imageUrl: _normalizeOffImageUrl(profile.imageUrl),
+      imageUrl: normalizeCalorieProductImageUrl(profile.imageUrl),
     );
   }
 }

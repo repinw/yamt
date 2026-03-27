@@ -9,8 +9,12 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
+import 'package:yamt/features/calories/presentation/models/'
+    'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -40,9 +44,11 @@ Widget _buildHarness({
   required FakeCalorieLogRepository logRepository,
   required FakeCalorieSettingsRepository settingsRepository,
   required String initialLocation,
+  Object? createExtra,
 }) {
   final router = GoRouter(
     initialLocation: initialLocation,
+    initialExtra: createExtra,
     routes: <RouteBase>[
       GoRoute(
         path: '/',
@@ -50,7 +56,17 @@ Widget _buildHarness({
       ),
       GoRoute(
         path: AppRoutes.homeCaloriesEntryCreate,
-        builder: (context, state) => const CalorieEntryEditorPage(),
+        builder: (context, state) {
+          final args = state.extra is CalorieEntryCreateArgs
+              ? state.extra! as CalorieEntryCreateArgs
+              : null;
+          return CalorieEntryEditorPage(
+            prefilledProfile: args?.prefilledProfile,
+            scannedSourceRef: args?.scannedSourceRef,
+            inventoryContext: args?.inventoryContext,
+            preselectedMealType: args?.preselectedMealType,
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.homeCaloriesEntryEdit,
@@ -263,5 +279,49 @@ void main() {
       findsOneWidget,
     );
     expect(logRepository.entries, isEmpty);
+  });
+
+  testWidgets('create flow keeps imageUrl from prefilled profile', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.homeCaloriesEntryCreate,
+        createExtra: CalorieEntryCreateArgs(
+          prefilledProfile: CalorieProductProfile(
+            barcode: '4006381333931',
+            name: 'Greek Yogurt',
+            brand: 'Test Brand',
+            per100Kcal: 95,
+            per100Protein: 9.8,
+            per100Carbs: 4.1,
+            per100Fat: 0.5,
+            source: CalorieProductSource.offBarcode,
+            offProductId: 'off-123',
+            imageUrl: 'https://images.example.com/yogurt.jpg',
+            createdAt: DateTime(2026, 2, 25, 8),
+            updatedAt: DateTime(2026, 2, 25, 8),
+          ),
+          preselectedMealType: MealType.breakfast,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
+    await tester.pumpAndSettle();
+
+    expect(logRepository.entries, hasLength(1));
+    expect(
+      logRepository.entries.single.imageUrl,
+      'https://images.example.com/yogurt.jpg',
+    );
   });
 }

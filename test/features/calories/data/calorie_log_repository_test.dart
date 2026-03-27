@@ -17,11 +17,13 @@ CalorieEntry _entry(
   String id, {
   required DateTime loggedAt,
   String name = 'Yogurt',
+  String? imageUrl,
 }) {
   return CalorieEntry.create(
     id: id,
     userId: 'user-1',
     name: name,
+    imageUrl: imageUrl,
     mealType: MealType.breakfast,
     consumedAmount: 200,
     consumedUnit: ConsumedUnit.grams,
@@ -71,6 +73,29 @@ void main() {
     expect(loaded?.id, entry.id);
     expect(deleted, isTrue);
     expect(afterDelete, isNull);
+  });
+
+  test('saveEntry normalizes imageUrl when loading entry back', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreCalorieLogRepository(
+      session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
+      firestore: firestore,
+    );
+
+    final entry = _entry(
+      'entry-image',
+      loggedAt: DateTime(2026, 2, 25, 9),
+      imageUrl: '/images/products/400/638/133/3931/front_de.3.400.jpg',
+    );
+
+    await repository.saveEntry(entry);
+    final loaded = await repository.getById(entry.id);
+
+    expect(
+      loaded?.imageUrl,
+      'https://world.openfoodfacts.org'
+      '/images/products/400/638/133/3931/front_de.3.400.jpg',
+    );
   });
 
   test('returns safe defaults when no user is signed in', () async {

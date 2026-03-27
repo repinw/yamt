@@ -1,9 +1,16 @@
 import 'package:flutter/widgets.dart';
 
 abstract final class CaloriesPageKeys {
+  static const appBarMenuButton = Key('calories_app_bar_menu_button');
+  static const appBarMenuTodayAction = Key('calories_app_bar_today_action');
+  static const appBarMenuSetGoalAction = Key(
+    'calories_app_bar_set_goal_action',
+  );
   static const dayBackButton = Key('calories_day_back_button');
   static const dayTodayButton = Key('calories_day_today_button');
   static const dayForwardButton = Key('calories_day_forward_button');
+  static const weekStrip = Key('calories_week_strip');
+  static const weekBufferCard = Key('calories_week_buffer_card');
   static const summaryCard = Key('calories_summary_card');
   static const setGoalButton = Key('calories_set_goal_button');
   static const retryButton = Key('calories_retry_button');
@@ -20,6 +27,14 @@ abstract final class CaloriesPageKeys {
 
   static Key entryDeleteButton(String entryId) {
     return Key('calories_entry_delete_$entryId');
+  }
+
+  static Key entryImage(String entryId) {
+    return Key('calories_entry_image_$entryId');
+  }
+
+  static Key sectionAddButton(String mealType) {
+    return Key('calories_section_add_$mealType');
   }
 }
 

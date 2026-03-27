@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
@@ -14,7 +15,6 @@ import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 part 'calorie_entries_controller.g.dart';
 
 const _entriesControllerLogName = 'CalorieEntriesController';
-const _defaultDailyGoalKcal = 2500.0;
 
 class CalorieDaySummary {
   const CalorieDaySummary({
@@ -341,7 +341,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       barcode: scannedSourceRef.barcode,
       source: scannedSourceRef.source,
       offProductId: scannedSourceRef.offProductId,
-      imageUrl: null,
+      imageUrl: entry.imageUrl,
       now: now,
     );
     final saved = await cacheRepository.saveUserOverride(
@@ -371,7 +371,7 @@ AsyncValue<CalorieDayViewData> calorieDayViewData(Ref ref) {
 
   return entriesState.whenData((entries) {
     final goalKcal =
-        goalState.asData?.value.dailyKcalGoal ?? _defaultDailyGoalKcal;
+        goalState.asData?.value.dailyKcalGoal ?? defaultDailyCalorieGoalKcal;
     final aggregate = _aggregate(entries);
     final remaining = goalKcal - aggregate.summary.totalKcal;
     final progress = goalKcal <= 0

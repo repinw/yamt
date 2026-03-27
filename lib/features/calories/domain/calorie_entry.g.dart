@@ -41,6 +41,7 @@ CalorieEntry _$CalorieEntryFromJson(Map<String, dynamic> json) => CalorieEntry(
   createdAt: const FlexibleDateTimeConverter().fromJson(json['created_at']),
   updatedAt: const FlexibleDateTimeConverter().fromJson(json['updated_at']),
   brand: json['brand'] as String?,
+  imageUrl: json['image_url'] as String?,
 );
 
 Map<String, dynamic> _$CalorieEntryToJson(
@@ -50,6 +51,7 @@ Map<String, dynamic> _$CalorieEntryToJson(
   'user_id': instance.userId,
   'name': instance.name,
   'brand': instance.brand,
+  'image_url': instance.imageUrl,
   'meal_type': _$MealTypeEnumMap[instance.mealType]!,
   'consumed_amount': const FlexibleDoubleConverter().toJson(
     instance.consumedAmount,

@@ -61,6 +61,7 @@ void main() {
       userId: 'user-1',
       name: 'Apple',
       brand: 'Bio',
+      imageUrl: 'https://images.example.com/apple.jpg',
       mealType: MealType.snack,
       consumedAmount: 150,
       consumedUnit: ConsumedUnit.grams,
@@ -79,6 +80,7 @@ void main() {
     expect(decoded.userId, original.userId);
     expect(decoded.name, original.name);
     expect(decoded.brand, original.brand);
+    expect(decoded.imageUrl, original.imageUrl);
     expect(decoded.mealType, original.mealType);
     expect(decoded.consumedAmount, original.consumedAmount);
     expect(decoded.consumedUnit, original.consumedUnit);

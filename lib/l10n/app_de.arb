@@ -222,12 +222,31 @@
       "Bitte eine Zahl größer als null eingeben.",
   "caloriesGoalSaveFailed":
       "Kalorienziel konnte nicht gespeichert werden.",
+  "caloriesGoalClearFailed":
+      "Kalorienziel konnte nicht gelöscht werden.",
   "caloriesConsumedLabel": "Verbraucht",
   "caloriesGoalLabel": "Ziel",
   "caloriesRemainingLabel": "Verbleibend",
   "caloriesProteinLabel": "Eiweiß",
   "caloriesCarbsLabel": "Kohlenhydrate",
   "caloriesFatLabel": "Fett",
+  "caloriesWeekBufferTitle": "Wochenpuffer",
+  "caloriesWeekBufferRemaining": "{kcal} kcal für diese Woche übrig",
+  "@caloriesWeekBufferRemaining": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesWeekBufferOverspent": "{kcal} kcal diese Woche drüber",
+  "@caloriesWeekBufferOverspent": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
   "caloriesSectionEmptyState": "Noch keine Einträge.",
   "caloriesDeleteEntryAction": "Eintrag löschen",
   "caloriesDeleteEntryDialogTitle": "Eintrag löschen?",
@@ -268,6 +287,13 @@
   "caloriesMealLunch": "Mittagessen",
   "caloriesMealDinner": "Abendessen",
   "caloriesMealSnack": "Snack",
+  "caloriesWeekdayShortMonday": "Mo",
+  "caloriesWeekdayShortTuesday": "Di",
+  "caloriesWeekdayShortWednesday": "Mi",
+  "caloriesWeekdayShortThursday": "Do",
+  "caloriesWeekdayShortFriday": "Fr",
+  "caloriesWeekdayShortSaturday": "Sa",
+  "caloriesWeekdayShortSunday": "So",
   "caloriesUnitKcal": "kcal",
   "caloriesUnitGram": "g",
   "caloriesUnitMilliliter": "ml",

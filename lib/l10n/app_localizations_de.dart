@@ -568,6 +568,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesGoalSaveFailed => 'Kalorienziel konnte nicht gespeichert werden.';
 
   @override
+  String get caloriesGoalClearFailed => 'Kalorienziel konnte nicht gelöscht werden.';
+
+  @override
   String get caloriesConsumedLabel => 'Verbraucht';
 
   @override
@@ -584,6 +587,19 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesFatLabel => 'Fett';
+
+  @override
+  String get caloriesWeekBufferTitle => 'Wochenpuffer';
+
+  @override
+  String caloriesWeekBufferRemaining(int kcal) {
+    return '$kcal kcal für diese Woche übrig';
+  }
+
+  @override
+  String caloriesWeekBufferOverspent(int kcal) {
+    return '$kcal kcal diese Woche drüber';
+  }
 
   @override
   String get caloriesSectionEmptyState => 'Noch keine Einträge.';
@@ -676,6 +692,27 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesMealSnack => 'Snack';
+
+  @override
+  String get caloriesWeekdayShortMonday => 'Mo';
+
+  @override
+  String get caloriesWeekdayShortTuesday => 'Di';
+
+  @override
+  String get caloriesWeekdayShortWednesday => 'Mi';
+
+  @override
+  String get caloriesWeekdayShortThursday => 'Do';
+
+  @override
+  String get caloriesWeekdayShortFriday => 'Fr';
+
+  @override
+  String get caloriesWeekdayShortSaturday => 'Sa';
+
+  @override
+  String get caloriesWeekdayShortSunday => 'So';
 
   @override
   String get caloriesUnitKcal => 'kcal';

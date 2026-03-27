@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
+import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 
 part 'calorie_log_repository.g.dart';
@@ -96,6 +97,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
 
     try {
       final normalizedEntry = entry.copyWith(
+        imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
         userId: userId,
         updatedAt: DateTime.now(),
       );
@@ -200,7 +202,10 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
     if (id is! String || id.trim().isEmpty) {
       normalizedData['id'] = doc.id;
     }
-    return CalorieEntry.fromJson(normalizedData);
+    final entry = CalorieEntry.fromJson(normalizedData);
+    return entry.copyWith(
+      imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
+    );
   }
 
   Map<String, dynamic> _normalizeFirestoreJson(Map<String, dynamic> rawData) {
