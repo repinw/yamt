@@ -212,6 +212,7 @@ class CalorieEntry {
   final String name;
   final String? brand;
   final String? imageUrl;
+  @JsonKey(includeFromJson: false, includeToJson: false)
   final String? imageBase64;
   final String? bundleSourcePreparedMealId;
   final int? bundleConsumedPortions;

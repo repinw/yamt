@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
@@ -29,16 +30,19 @@ enum PreparedMealCreationFailureReason {
 class PreparedMealCreationResult {
   const PreparedMealCreationResult._({
     required this.isSuccess,
+    this.preparedMealId,
     this.failureReason,
   });
 
-  const PreparedMealCreationResult.success() : this._(isSuccess: true);
+  const PreparedMealCreationResult.success(String preparedMealId)
+    : this._(isSuccess: true, preparedMealId: preparedMealId);
 
   const PreparedMealCreationResult.failure(
     PreparedMealCreationFailureReason reason,
   ) : this._(isSuccess: false, failureReason: reason);
 
   final bool isSuccess;
+  final String? preparedMealId;
   final PreparedMealCreationFailureReason? failureReason;
 }
 
@@ -129,7 +133,9 @@ class PreparedMealsController extends _$PreparedMealsController {
             nextMeals: nextMeals,
           );
           if (mealsSaved) {
-            return const PreparedMealCreationResult.success();
+            return PreparedMealCreationResult.success(
+              creationResult.preparedMeal.id,
+            );
           }
 
           await _restoreInventory(
@@ -160,6 +166,7 @@ class PreparedMealsController extends _$PreparedMealsController {
   Future<bool> updatePreparedMealDetails({
     required String mealId,
     required String name,
+    bool imageChanged = false,
     String? imageBase64,
   }) {
     final trimmedName = name.trim();
@@ -175,20 +182,24 @@ class PreparedMealsController extends _$PreparedMealsController {
       }
 
       final currentMeal = currentMeals[mealIndex];
-      final normalizedImageBase64 = _normalizeOptionalImageBase64(imageBase64);
+      final normalizedImageBase64 = imageChanged
+          ? _normalizeOptionalImageBase64(imageBase64)
+          : currentMeal.imageBase64;
       final isUnchanged =
           currentMeal.name == trimmedName &&
-          currentMeal.imageBase64 == normalizedImageBase64;
+          (!imageChanged || currentMeal.imageBase64 == normalizedImageBase64);
       if (isUnchanged) {
         return true;
       }
 
       final nextMeals = List<PreparedMeal>.from(currentMeals);
-      nextMeals[mealIndex] = currentMeal.copyWith(
-        name: trimmedName,
-        imageBase64: normalizedImageBase64,
-        updatedAt: DateTime.now(),
-      );
+      nextMeals[mealIndex] = imageChanged
+          ? currentMeal.copyWith(
+              name: trimmedName,
+              imageBase64: normalizedImageBase64,
+              updatedAt: DateTime.now(),
+            )
+          : currentMeal.copyWith(name: trimmedName, updatedAt: DateTime.now());
       return _saveMeals(previousMeals: currentMeals, nextMeals: nextMeals);
     });
   }
@@ -441,6 +452,12 @@ class PreparedMealsController extends _$PreparedMealsController {
       if (!saved && ref.mounted) {
         state = AsyncData(previousMeals);
       }
+      if (saved) {
+        await _deleteImagesForRemovedMeals(
+          previousMeals: previousMeals,
+          nextMeals: nextMeals,
+        );
+      }
       return saved;
     } catch (error, stackTrace) {
       log(
@@ -485,6 +502,23 @@ class PreparedMealsController extends _$PreparedMealsController {
         );
       },
     );
+  }
+
+  Future<void> _deleteImagesForRemovedMeals({
+    required List<PreparedMeal> previousMeals,
+    required List<PreparedMeal> nextMeals,
+  }) async {
+    final nextIds = nextMeals.map((meal) => meal.id).toSet();
+    final removedIds = previousMeals
+        .map((meal) => meal.id)
+        .where((mealId) => !nextIds.contains(mealId));
+    final store = ref.read(localImageStoreProvider);
+
+    for (final mealId in removedIds) {
+      final imageRef = LocalImageRef.preparedMeal(mealId);
+      await store.deleteImage(imageRef);
+      ref.invalidate(localImageBytesProvider(imageRef));
+    }
   }
 }
 

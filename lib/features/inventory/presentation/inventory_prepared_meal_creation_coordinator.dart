@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_selection_controller.dart';
@@ -37,7 +40,9 @@ Future<void> runPreparedMealCreationFlow({
       .read(preparedMealsControllerProvider.notifier)
       .createPreparedMeal(
         name: sheetResult.name,
-        imageBase64: sheetResult.imageBase64,
+        imageBase64: sheetResult.imageBytes == null
+            ? null
+            : base64Encode(sheetResult.imageBytes!),
         totalPortions: sheetResult.totalPortions,
         items: sheetResult.items,
       );
@@ -54,6 +59,16 @@ Future<void> runPreparedMealCreationFlow({
 
   if (!creationResult.isSuccess) {
     return;
+  }
+
+  final createdMealId = creationResult.preparedMealId;
+  final imageBytes = sheetResult.imageBytes;
+  if (createdMealId != null && imageBytes != null) {
+    final imageRef = LocalImageRef.preparedMeal(createdMealId);
+    await ref
+        .read(localImageStoreProvider)
+        .saveBytes(imageRef: imageRef, bytes: imageBytes);
+    ref.invalidate(localImageBytesProvider(imageRef));
   }
 
   ref.read(preparedMealSelectionControllerProvider.notifier).clearSelection();

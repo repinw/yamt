@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -54,7 +56,12 @@ class InventoryList extends ConsumerStatefulWidget {
   final Future<bool> Function(String mealId, int portions)
   onThrowAwayPreparedMeal;
   final Future<bool> Function(String mealId) onUnbundlePreparedMeal;
-  final Future<bool> Function(String mealId, String name, String? imageBase64)
+  final Future<bool> Function(
+    String mealId,
+    String name,
+    bool imageChanged,
+    Uint8List? imageBytes,
+  )
   onEditPreparedMeal;
   final Future<bool> Function(PreparedMeal meal) onSavePreparedMealTemplate;
   final bool isSelectionMode;

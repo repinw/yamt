@@ -32,7 +32,11 @@ class PreparedMeal {
   final String id;
   @JsonKey(fromJson: _readRequiredString)
   final String name;
-  @JsonKey(fromJson: _readTrimmedNullableString)
+  @JsonKey(
+    includeFromJson: false,
+    includeToJson: false,
+    fromJson: _readTrimmedNullableString,
+  )
   final String? imageBase64;
   @JsonKey(fromJson: _readIntOrZero)
   final int totalPortions;

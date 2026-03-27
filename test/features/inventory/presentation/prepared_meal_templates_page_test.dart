@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -11,6 +13,8 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/'
     'prepared_meal_templates_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../../support/fake_local_image_store.dart';
 
 class _FakePreparedMealTemplateRepository
     implements PreparedMealTemplateRepository {
@@ -134,7 +138,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Lunch Box'), findsNothing);
-    expect(find.text('Template deleted.'), findsOneWidget);
     expect(repository.savedTemplates, isEmpty);
+  });
+
+  testWidgets('renders template cover image from local device store', (
+    tester,
+  ) async {
+    final repository = _FakePreparedMealTemplateRepository(
+      initialTemplates: <PreparedMeal>[
+        _template(id: 'template-1', name: 'Lunch Box').copyWith(
+          imageBase64: null,
+        ),
+      ],
+    );
+    final localImageStore = FakeLocalImageStore();
+    addTearDown(repository.dispose);
+
+    await localImageStore.saveBytes(
+      imageRef: const LocalImageRef.preparedMealTemplate('template-1'),
+      bytes: Uint8List.fromList(<int>[1, 2, 3]),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+          localImageStoreProvider.overrideWithValue(localImageStore),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const PreparedMealTemplatesPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final imageWidget = tester.widget<Image>(find.byType(Image).first);
+    expect(imageWidget.image, isA<MemoryImage>());
   });
 }

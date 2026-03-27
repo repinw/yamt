@@ -57,9 +57,9 @@ void main() {
 
     final roundtrip = PreparedMeal.fromJson(meal.toJson());
 
-    expect(roundtrip, meal);
-    expect(roundtrip.imageBase64, imageBase64);
-    expect(roundtrip.imageBytes, hasLength(4));
+    expect(roundtrip, meal.copyWith(imageBase64: null));
+    expect(roundtrip.imageBase64, isNull);
+    expect(meal.imageBytes, hasLength(4));
     expect(roundtrip.components.single.sourceItemSnapshot, sourceItem);
   });
 }

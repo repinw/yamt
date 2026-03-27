@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -18,6 +20,7 @@ import 'package:yamt/features/calories/provider/calorie_week_overview_provider.d
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../support/fake_calories_repositories.dart';
+import '../../../support/fake_local_image_store.dart';
 
 CalorieEntry _entry(
   String id, {
@@ -381,6 +384,55 @@ void main() {
     final imageWidget = tester.widget<Image>(imageFinder);
     expect(imageWidget.image, isA<MemoryImage>());
   });
+
+  testWidgets(
+    'renders prepared meal image from local device storage for bundle entry',
+    (tester) async {
+      final today = DateTime.now();
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _bundleEntry(
+            'bundle-local-image-entry',
+            loggedAt: DateTime(today.year, today.month, today.day, 12),
+            mealType: MealType.lunch,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository();
+      final localImageStore = FakeLocalImageStore();
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      await localImageStore.saveBytes(
+        imageRef: const LocalImageRef.calorieEntry('bundle-local-image-entry'),
+        bytes: Uint8List.fromList(<int>[1, 2, 3]),
+      );
+
+      await tester.pumpWidget(
+        _buildHarness(
+          logRepository: logRepository,
+          settingsRepository: settingsRepository,
+          overrides: [
+            localImageStoreProvider.overrideWithValue(localImageStore),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await _scrollUntilVisible(
+        tester,
+        find.byKey(CaloriesPageKeys.entryTile('bundle-local-image-entry')),
+      );
+
+      final imageFinder = find.byKey(
+        CaloriesPageKeys.entryImage('bundle-local-image-entry'),
+      );
+      expect(imageFinder, findsOneWidget);
+
+      final imageWidget = tester.widget<Image>(imageFinder);
+      expect(imageWidget.image, isA<MemoryImage>());
+    },
+  );
 
   testWidgets('renders empty state text for meal sections without entries', (
     tester,

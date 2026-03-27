@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
@@ -11,6 +13,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
+import '../../../support/fake_local_image_store.dart';
 
 InventoryItem _item({required String id, required String name}) {
   return InventoryItem.create(
@@ -39,10 +42,12 @@ void main() {
     'bridge writes prepared meal bundles with precise portion snapshots',
     () async {
       final calorieLogRepository = FakeCalorieLogRepository();
+      final localImageStore = FakeLocalImageStore();
       addTearDown(calorieLogRepository.dispose);
 
       final container = ProviderContainer(
         overrides: [
+          localImageStoreProvider.overrideWithValue(localImageStore),
           calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
         ],
       );
@@ -91,6 +96,10 @@ void main() {
           ),
         ],
       );
+      await localImageStore.saveBytes(
+        imageRef: const LocalImageRef.preparedMeal('meal-1'),
+        bytes: Uint8List.fromList(<int>[1, 2, 3]),
+      );
 
       final saved = await container
           .read(preparedMealCalorieLogBridgeProvider)
@@ -106,6 +115,10 @@ void main() {
       final entry = calorieLogRepository.entries.single;
       expect(entry.isBundle, isTrue);
       expect(entry.imageBase64, meal.imageBase64);
+      expect(
+        await localImageStore.readBytes(LocalImageRef.calorieEntry(entry.id)),
+        isNotNull,
+      );
       expect(entry.bundleConsumedPortions, 1);
       expect(entry.bundleTotalPortions, 3);
       expect(entry.totalKcal, closeTo(170, 0.0001));

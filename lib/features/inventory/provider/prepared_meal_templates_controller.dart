@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/inventory/data/'
@@ -12,6 +13,21 @@ part 'prepared_meal_templates_controller.g.dart';
 
 const _preparedMealTemplatesControllerLogName =
     'PreparedMealTemplatesController';
+
+class PreparedMealTemplateSaveResult {
+  const PreparedMealTemplateSaveResult._({
+    required this.isSuccess,
+    this.templateId,
+  });
+
+  const PreparedMealTemplateSaveResult.success(String templateId)
+    : this._(isSuccess: true, templateId: templateId);
+
+  const PreparedMealTemplateSaveResult.failure() : this._(isSuccess: false);
+
+  final bool isSuccess;
+  final String? templateId;
+}
 
 @riverpod
 class PreparedMealTemplatesController
@@ -37,24 +53,45 @@ class PreparedMealTemplatesController
     state = next;
   }
 
-  Future<bool> saveTemplateFromMeal(PreparedMeal meal) {
+  Future<PreparedMealTemplateSaveResult> saveTemplateFromMeal(
+    PreparedMeal meal,
+  ) {
     if (meal.name.trim().isEmpty ||
         meal.components.isEmpty ||
         meal.totalPortions < 1) {
-      return Future<bool>.value(false);
+      return Future<PreparedMealTemplateSaveResult>.value(
+        const PreparedMealTemplateSaveResult.failure(),
+      );
     }
 
     final keepAliveLink = ref.keepAlive();
-    return _runSerializedMutation(() async {
-      final currentTemplates = await _currentTemplates();
-      final template = _buildTemplateFromMeal(meal);
-      final nextTemplates = List<PreparedMeal>.from(currentTemplates)
-        ..add(template);
-      return _saveTemplates(
-        previousTemplates: currentTemplates,
-        nextTemplates: nextTemplates,
-      );
-    }).whenComplete(keepAliveLink.close);
+    return _mutationQueue
+        .run<PreparedMealTemplateSaveResult>(
+          operation: () async {
+            final currentTemplates = await _currentTemplates();
+            final template = _buildTemplateFromMeal(meal);
+            final nextTemplates = List<PreparedMeal>.from(currentTemplates)
+              ..add(template);
+            final saved = await _saveTemplates(
+              previousTemplates: currentTemplates,
+              nextTemplates: nextTemplates,
+            );
+            if (!saved) {
+              return const PreparedMealTemplateSaveResult.failure();
+            }
+            return PreparedMealTemplateSaveResult.success(template.id);
+          },
+          fallbackValue: const PreparedMealTemplateSaveResult.failure(),
+          onError: (error, stackTrace) {
+            log(
+              'Unexpected prepared meal template save error.',
+              name: _preparedMealTemplatesControllerLogName,
+              error: error,
+              stackTrace: stackTrace,
+            );
+          },
+        )
+        .whenComplete(keepAliveLink.close);
   }
 
   Future<bool> deleteTemplate(String templateId) {
@@ -153,6 +190,12 @@ class PreparedMealTemplatesController
       if (!saved && ref.mounted) {
         state = AsyncData(_sortTemplates(previousTemplates));
       }
+      if (saved) {
+        await _deleteImagesForRemovedTemplates(
+          previousTemplates: previousTemplates,
+          nextTemplates: sortedTemplates,
+        );
+      }
       return saved;
     } catch (error, stackTrace) {
       log(
@@ -181,6 +224,23 @@ class PreparedMealTemplatesController
         );
       },
     );
+  }
+
+  Future<void> _deleteImagesForRemovedTemplates({
+    required List<PreparedMeal> previousTemplates,
+    required List<PreparedMeal> nextTemplates,
+  }) async {
+    final nextIds = nextTemplates.map((template) => template.id).toSet();
+    final removedIds = previousTemplates
+        .map((template) => template.id)
+        .where((templateId) => !nextIds.contains(templateId));
+    final store = ref.read(localImageStoreProvider);
+
+    for (final templateId in removedIds) {
+      final imageRef = LocalImageRef.preparedMealTemplate(templateId);
+      await store.deleteImage(imageRef);
+      ref.invalidate(localImageBytesProvider(imageRef));
+    }
   }
 }
 

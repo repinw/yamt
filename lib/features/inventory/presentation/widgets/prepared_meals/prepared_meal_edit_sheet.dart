@@ -1,8 +1,8 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -13,11 +13,13 @@ import 'package:yamt/l10n/app_localizations.dart';
 class PreparedMealEditSheetResult {
   const PreparedMealEditSheetResult({
     required this.name,
-    required this.imageBase64,
+    required this.imageChanged,
+    required this.imageBytes,
   });
 
   final String name;
-  final String? imageBase64;
+  final bool imageChanged;
+  final Uint8List? imageBytes;
 }
 
 Future<PreparedMealEditSheetResult?> showPreparedMealEditSheet({
@@ -46,6 +48,7 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   Uint8List? _imageBytes;
+  var _imageChanged = false;
   var _isPickingImage = false;
 
   @override
@@ -53,7 +56,6 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet> {
     super.initState();
     _nameController = TextEditingController(text: widget.meal.name);
     _nameController.addListener(_onNameChanged);
-    _imageBytes = widget.meal.imageBytes;
   }
 
   @override
@@ -68,6 +70,15 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
+    final storedImageBytes = ref
+        .watch(
+          localImageBytesProvider(LocalImageRef.preparedMeal(widget.meal.id)),
+        )
+        .asData
+        ?.value;
+    final previewImageBytes = _imageChanged
+        ? _imageBytes
+        : storedImageBytes ?? widget.meal.imageBytes;
 
     return SafeArea(
       top: false,
@@ -131,7 +142,7 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet> {
                       children: [
                         PreparedMealCover(
                           label: _nameController.text,
-                          imageBytes: _imageBytes,
+                          imageBytes: previewImageBytes,
                           size: 88,
                           borderRadius: BorderRadius.circular(AppRadius.xl),
                         ),
@@ -168,12 +179,12 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet> {
                                       Icons.add_photo_alternate_outlined,
                                     ),
                                     label: Text(
-                                      _imageBytes == null
+                                      previewImageBytes == null
                                           ? l10n.preparedMealAddImageAction
                                           : l10n.preparedMealChangeImageAction,
                                     ),
                                   ),
-                                  if (_imageBytes != null)
+                                  if (previewImageBytes != null)
                                     TextButton.icon(
                                       onPressed: _isPickingImage
                                           ? null
@@ -248,6 +259,7 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet> {
       }
       setState(() {
         _imageBytes = imageBytes;
+        _imageChanged = true;
       });
     } on PreparedMealImagePickerException catch (error) {
       if (!mounted) {
@@ -266,6 +278,7 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet> {
   void _clearImage() {
     setState(() {
       _imageBytes = null;
+      _imageChanged = true;
     });
   }
 
@@ -278,7 +291,10 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet> {
     Navigator.of(context).pop(
       PreparedMealEditSheetResult(
         name: _nameController.text.trim(),
-        imageBase64: _imageBytes == null ? null : base64Encode(_imageBytes!),
+        imageChanged: _imageChanged,
+        imageBytes: _imageBytes == null
+            ? null
+            : Uint8List.fromList(_imageBytes!),
       ),
     );
   }

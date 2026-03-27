@@ -39,7 +39,7 @@ void main() {
     expect(roundtrip.isBundle, isTrue);
     expect(roundtrip.bundleConsumedPortions, 2);
     expect(roundtrip.bundleComponents.single.amountLabel, '150 g');
-    expect(roundtrip.imageBase64, base64Encode(<int>[1, 2, 3]));
+    expect(roundtrip.imageBase64, isNull);
     expect(roundtrip.totalKcal, 420);
   });
 

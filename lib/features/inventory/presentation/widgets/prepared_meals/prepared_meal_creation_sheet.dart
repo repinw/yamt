@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -16,13 +15,13 @@ import 'package:yamt/l10n/app_localizations.dart';
 class PreparedMealCreationSheetResult {
   const PreparedMealCreationSheetResult({
     required this.name,
-    required this.imageBase64,
+    required this.imageBytes,
     required this.totalPortions,
     required this.items,
   });
 
   final String name;
-  final String? imageBase64;
+  final Uint8List? imageBytes;
   final int totalPortions;
   final List<PreparedMealItemInput> items;
 }
@@ -324,7 +323,9 @@ class _PreparedMealCreationSheetState
     Navigator.of(context).pop(
       PreparedMealCreationSheetResult(
         name: _nameController.text.trim(),
-        imageBase64: _imageBytes == null ? null : base64Encode(_imageBytes!),
+        imageBytes: _imageBytes == null
+            ? null
+            : Uint8List.fromList(_imageBytes!),
         totalPortions: portions,
         items: inputs,
       ),

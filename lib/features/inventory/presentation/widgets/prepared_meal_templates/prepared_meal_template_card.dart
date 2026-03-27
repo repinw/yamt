@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -8,7 +10,7 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class PreparedMealTemplateCard extends StatelessWidget {
+class PreparedMealTemplateCard extends ConsumerWidget {
   const PreparedMealTemplateCard({
     super.key,
     required this.template,
@@ -19,9 +21,17 @@ class PreparedMealTemplateCard extends StatelessWidget {
   final Future<bool> Function(String templateId) onDeletePressed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final storedImageBytes = ref
+        .watch(
+          localImageBytesProvider(
+            LocalImageRef.preparedMealTemplate(template.id),
+          ),
+        )
+        .asData
+        ?.value;
     final metadata =
         '${l10n.preparedMealIngredientsCount(template.components.length)} • '
         '${l10n.preparedMealTemplatePortions(template.totalPortions)}';
@@ -41,7 +51,7 @@ class PreparedMealTemplateCard extends StatelessWidget {
               children: [
                 PreparedMealCover(
                   label: template.name,
-                  imageBytes: template.imageBytes,
+                  imageBytes: storedImageBytes ?? template.imageBytes,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(

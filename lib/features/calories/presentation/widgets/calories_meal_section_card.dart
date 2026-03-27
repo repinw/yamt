@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
@@ -233,7 +235,7 @@ class _DiaryMealEntryCard extends StatelessWidget {
   }
 }
 
-class _MealThumb extends StatelessWidget {
+class _MealThumb extends ConsumerWidget {
   const _MealThumb({
     required this.entryId,
     required this.label,
@@ -247,7 +249,12 @@ class _MealThumb extends StatelessWidget {
   final String? imageUrl;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final storedImageBytes = ref
+        .watch(localImageBytesProvider(LocalImageRef.calorieEntry(entryId)))
+        .asData
+        ?.value;
+    final resolvedImageBytes = storedImageBytes ?? imageBytes;
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -264,9 +271,9 @@ class _MealThumb extends StatelessWidget {
         dimension: 48,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          child: imageBytes != null
+          child: resolvedImageBytes != null
               ? Image.memory(
-                  imageBytes!,
+                  resolvedImageBytes,
                   key: CaloriesPageKeys.entryImage(entryId),
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) {

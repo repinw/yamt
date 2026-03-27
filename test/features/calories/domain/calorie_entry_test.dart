@@ -84,7 +84,7 @@ void main() {
     expect(decoded.name, original.name);
     expect(decoded.brand, original.brand);
     expect(decoded.imageUrl, original.imageUrl);
-    expect(decoded.imageBase64, original.imageBase64);
+    expect(decoded.imageBase64, isNull);
     expect(decoded.mealType, original.mealType);
     expect(decoded.consumedAmount, original.consumedAmount);
     expect(decoded.consumedUnit, original.consumedUnit);

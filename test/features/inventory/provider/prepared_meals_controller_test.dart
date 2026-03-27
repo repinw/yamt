@@ -470,6 +470,7 @@ void main() {
         .updatePreparedMealDetails(
           mealId: existingMeal.id,
           name: 'Updated lunch box',
+          imageChanged: true,
           imageBase64: base64Encode(<int>[9, 8, 7]),
         );
 

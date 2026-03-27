@@ -155,7 +155,8 @@ void main() {
         .read(preparedMealTemplatesControllerProvider.notifier)
         .saveTemplateFromMeal(_templateMeal(id: 'meal-1', name: 'Lunch Box'));
 
-    expect(saved, isTrue);
+    expect(saved.isSuccess, isTrue);
+    expect(saved.templateId, isNotNull);
     expect(repository.savedTemplates, hasLength(1));
     expect(repository.savedTemplates.single.name, 'Lunch Box');
     expect(repository.savedTemplates.single.imageBase64, isNotNull);
@@ -206,7 +207,7 @@ void main() {
         .saveTemplateFromMeal(_templateMeal(id: 'meal-1', name: 'Lunch Box'))
         .timeout(const Duration(milliseconds: 200));
 
-    expect(saved, isTrue);
+    expect(saved.isSuccess, isTrue);
     expect(repository.savedTemplates, hasLength(1));
     expect(repository.savedTemplates.single.name, 'Lunch Box');
   });

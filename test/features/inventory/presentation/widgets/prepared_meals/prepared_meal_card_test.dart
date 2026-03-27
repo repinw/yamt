@@ -1,13 +1,18 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../../../../support/fake_local_image_store.dart';
 
 PreparedMeal _meal() {
   final sourceItem = InventoryItem.create(
@@ -65,18 +70,21 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: PreparedMealCard(
-            meal: _meal(),
-            onEatPressed: (mealId, portions, mealType) async => true,
-            onThrowAwayPressed: (mealId, portions) async => true,
-            onUnbundlePressed: (mealId) async => true,
-            onEditPressed: (mealId, name, imageBase64) async => true,
-            onSaveTemplatePressed: (meal) async => true,
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: PreparedMealCard(
+              meal: _meal(),
+              onEatPressed: (mealId, portions, mealType) async => true,
+              onThrowAwayPressed: (mealId, portions) async => true,
+              onUnbundlePressed: (mealId) async => true,
+              onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                  true,
+              onSaveTemplatePressed: (meal) async => true,
+            ),
           ),
         ),
       ),
@@ -95,18 +103,21 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: PreparedMealCard(
-            meal: _meal(),
-            onEatPressed: (mealId, portions, mealType) async => true,
-            onThrowAwayPressed: (mealId, portions) async => true,
-            onUnbundlePressed: (mealId) async => true,
-            onEditPressed: (mealId, name, imageBase64) async => true,
-            onSaveTemplatePressed: (meal) async => true,
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: PreparedMealCard(
+              meal: _meal(),
+              onEatPressed: (mealId, portions, mealType) async => true,
+              onThrowAwayPressed: (mealId, portions) async => true,
+              onUnbundlePressed: (mealId) async => true,
+              onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                  true,
+              onSaveTemplatePressed: (meal) async => true,
+            ),
           ),
         ),
       ),
@@ -127,22 +138,63 @@ void main() {
     expect(find.text('Save as template'), findsOneWidget);
   });
 
+  testWidgets('PreparedMealCard renders cover image from local device store', (
+    tester,
+  ) async {
+    final localImageStore = FakeLocalImageStore();
+    await localImageStore.saveBytes(
+      imageRef: const LocalImageRef.preparedMeal('meal-1'),
+      bytes: Uint8List.fromList(<int>[1, 2, 3]),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          localImageStoreProvider.overrideWithValue(localImageStore),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: PreparedMealCard(
+              meal: _meal().copyWith(imageBase64: null),
+              onEatPressed: (mealId, portions, mealType) async => true,
+              onThrowAwayPressed: (mealId, portions) async => true,
+              onUnbundlePressed: (mealId) async => true,
+              onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                  true,
+              onSaveTemplatePressed: (meal) async => true,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final imageWidget = tester.widget<Image>(find.byType(Image).first);
+    expect(imageWidget.image, isA<MemoryImage>());
+  });
+
   testWidgets('PreparedMealCard shows nutrition toggle and updates values', (
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: PreparedMealCard(
-            meal: _meal(),
-            onEatPressed: (mealId, portions, mealType) async => true,
-            onThrowAwayPressed: (mealId, portions) async => true,
-            onUnbundlePressed: (mealId) async => true,
-            onEditPressed: (mealId, name, imageBase64) async => true,
-            onSaveTemplatePressed: (meal) async => true,
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: PreparedMealCard(
+              meal: _meal(),
+              onEatPressed: (mealId, portions, mealType) async => true,
+              onThrowAwayPressed: (mealId, portions) async => true,
+              onUnbundlePressed: (mealId) async => true,
+              onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                  true,
+              onSaveTemplatePressed: (meal) async => true,
+            ),
           ),
         ),
       ),
@@ -219,18 +271,21 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: PreparedMealCard(
-            meal: meal,
-            onEatPressed: (mealId, portions, mealType) async => true,
-            onThrowAwayPressed: (mealId, portions) async => true,
-            onUnbundlePressed: (mealId) async => true,
-            onEditPressed: (mealId, name, imageBase64) async => true,
-            onSaveTemplatePressed: (meal) async => true,
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: PreparedMealCard(
+              meal: meal,
+              onEatPressed: (mealId, portions, mealType) async => true,
+              onThrowAwayPressed: (mealId, portions) async => true,
+              onUnbundlePressed: (mealId) async => true,
+              onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                  true,
+              onSaveTemplatePressed: (meal) async => true,
+            ),
           ),
         ),
       ),

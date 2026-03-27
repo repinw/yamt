@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -131,6 +132,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       persist: () =>
           ref.read(calorieLogRepositoryProvider).deleteEntry(entryId),
       failureLogMessage: 'Failed to delete calorie entry $entryId.',
+      onPersisted: () => _deleteLocalEntryImage(entryId),
     ).whenComplete(keepAliveLink.close);
   }
 
@@ -400,6 +402,12 @@ class CalorieEntriesController extends _$CalorieEntriesController {
         name: _entriesControllerLogName,
       );
     }
+  }
+
+  Future<void> _deleteLocalEntryImage(String entryId) async {
+    final imageRef = LocalImageRef.calorieEntry(entryId);
+    await ref.read(localImageStoreProvider).deleteImage(imageRef);
+    ref.invalidate(localImageBytesProvider(imageRef));
   }
 }
 

@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
@@ -27,6 +28,10 @@ abstract interface class PreparedMealCalorieLogBridge {
 PreparedMealCalorieLogBridge preparedMealCalorieLogBridge(Ref ref) {
   return _RepositoryPreparedMealCalorieLogBridge(
     calorieLogRepository: ref.read(calorieLogRepositoryProvider),
+    localImageStore: ref.read(localImageStoreProvider),
+    invalidateLocalImage: (imageRef) {
+      ref.invalidate(localImageBytesProvider(imageRef));
+    },
     now: DateTime.now,
   );
 }
@@ -35,13 +40,19 @@ class _RepositoryPreparedMealCalorieLogBridge
     implements PreparedMealCalorieLogBridge {
   _RepositoryPreparedMealCalorieLogBridge({
     required CalorieLogRepositoryContract calorieLogRepository,
+    required LocalImageStore localImageStore,
+    required void Function(LocalImageRef imageRef) invalidateLocalImage,
     required DateTime Function() now,
   }) : _calorieLogRepository = calorieLogRepository,
+       _localImageStore = localImageStore,
+       _invalidateLocalImage = invalidateLocalImage,
        _now = now;
 
   static const _uuid = Uuid();
 
   final CalorieLogRepositoryContract _calorieLogRepository;
+  final LocalImageStore _localImageStore;
+  final void Function(LocalImageRef imageRef) _invalidateLocalImage;
   final DateTime Function() _now;
 
   @override
@@ -85,7 +96,26 @@ class _RepositoryPreparedMealCalorieLogBridge
       'components=${entry.bundleComponents.length}.',
       name: _bridgeLogName,
     );
-    return _calorieLogRepository.saveEntry(entry);
+    return _saveEntryWithLocalImage(meal: meal, entry: entry);
+  }
+
+  Future<bool> _saveEntryWithLocalImage({
+    required PreparedMeal meal,
+    required CalorieEntry entry,
+  }) async {
+    final saved = await _calorieLogRepository.saveEntry(entry);
+    if (!saved) {
+      return false;
+    }
+
+    final sourceRef = LocalImageRef.preparedMeal(meal.id);
+    final targetRef = LocalImageRef.calorieEntry(entry.id);
+    await _localImageStore.copyImage(
+      sourceRef: sourceRef,
+      targetRef: targetRef,
+    );
+    _invalidateLocalImage(targetRef);
+    return true;
   }
 }
 

@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer' as developer;
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
@@ -93,13 +96,15 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       onUnbundlePreparedMeal: ref
           .read(preparedMealsControllerProvider.notifier)
           .unbundlePreparedMeal,
-      onEditPreparedMeal: (mealId, name, imageBase64) => _updatePreparedMeal(
-        context: context,
-        ref: ref,
-        mealId: mealId,
-        name: name,
-        imageBase64: imageBase64,
-      ),
+      onEditPreparedMeal: (mealId, name, imageChanged, imageBytes) =>
+          _updatePreparedMeal(
+            context: context,
+            ref: ref,
+            mealId: mealId,
+            name: name,
+            imageChanged: imageChanged,
+            imageBytes: imageBytes,
+          ),
       onSavePreparedMealTemplate: (meal) =>
           _savePreparedMealTemplate(context: context, ref: ref, meal: meal),
       isSelectionMode: selectionState.isSelectionMode,
@@ -129,11 +134,24 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     required WidgetRef ref,
     required PreparedMeal meal,
   }) async {
-    final saved = await ref
+    final result = await ref
         .read(preparedMealTemplatesControllerProvider.notifier)
         .saveTemplateFromMeal(meal);
-    if (!saved || !context.mounted) {
-      return saved;
+    if (!result.isSuccess || !context.mounted) {
+      return result.isSuccess;
+    }
+
+    final templateId = result.templateId;
+    if (templateId != null) {
+      await _copyLocalImage(
+        ref: ref,
+        sourceRef: LocalImageRef.preparedMeal(meal.id),
+        targetRef: LocalImageRef.preparedMealTemplate(templateId),
+        fallbackImageBase64: meal.imageBase64,
+      );
+      if (!context.mounted) {
+        return true;
+      }
     }
 
     final messenger = ScaffoldMessenger.of(context);
@@ -153,17 +171,37 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     required WidgetRef ref,
     required String mealId,
     required String name,
-    required String? imageBase64,
+    required bool imageChanged,
+    required Uint8List? imageBytes,
   }) async {
+    final encodedImage = imageChanged && imageBytes != null
+        ? base64Encode(imageBytes)
+        : null;
     final saved = await ref
         .read(preparedMealsControllerProvider.notifier)
         .updatePreparedMealDetails(
           mealId: mealId,
           name: name,
-          imageBase64: imageBase64,
+          imageChanged: imageChanged,
+          imageBase64: encodedImage,
         );
     if (!saved || !context.mounted) {
       return saved;
+    }
+
+    if (imageChanged) {
+      final imageRef = LocalImageRef.preparedMeal(mealId);
+      if (imageBytes == null) {
+        await ref.read(localImageStoreProvider).deleteImage(imageRef);
+      } else {
+        await ref
+            .read(localImageStoreProvider)
+            .saveBytes(imageRef: imageRef, bytes: imageBytes);
+      }
+      ref.invalidate(localImageBytesProvider(imageRef));
+      if (!context.mounted) {
+        return true;
+      }
     }
 
     final messenger = ScaffoldMessenger.of(context);
@@ -174,6 +212,30 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       ),
     );
     return true;
+  }
+
+  Future<void> _copyLocalImage({
+    required WidgetRef ref,
+    required LocalImageRef sourceRef,
+    required LocalImageRef targetRef,
+    required String? fallbackImageBase64,
+  }) async {
+    final store = ref.read(localImageStoreProvider);
+    final sourceBytes = await store.readBytes(sourceRef);
+    if (sourceBytes != null) {
+      await store.copyImage(sourceRef: sourceRef, targetRef: targetRef);
+      ref.invalidate(localImageBytesProvider(targetRef));
+      return;
+    }
+
+    final rawBase64 = fallbackImageBase64?.trim();
+    if (rawBase64 == null || rawBase64.isEmpty) {
+      return;
+    }
+
+    final bytes = base64Decode(rawBase64);
+    await store.saveBytes(imageRef: targetRef, bytes: bytes);
+    ref.invalidate(localImageBytesProvider(targetRef));
   }
 
   Future<bool> _deleteItemWithUndo({

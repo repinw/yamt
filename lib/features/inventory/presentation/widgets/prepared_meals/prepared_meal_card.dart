@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -29,7 +32,7 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class PreparedMealCard extends StatefulWidget {
+class PreparedMealCard extends ConsumerStatefulWidget {
   const PreparedMealCard({
     super.key,
     required this.meal,
@@ -46,16 +49,21 @@ class PreparedMealCard extends StatefulWidget {
   onEatPressed;
   final Future<bool> Function(String mealId, int portions) onThrowAwayPressed;
   final Future<bool> Function(String mealId) onUnbundlePressed;
-  final Future<bool> Function(String mealId, String name, String? imageBase64)
+  final Future<bool> Function(
+    String mealId,
+    String name,
+    bool imageChanged,
+    Uint8List? imageBytes,
+  )
   onEditPressed;
   final Future<bool> Function(PreparedMeal meal) onSaveTemplatePressed;
   final bool enabled;
 
   @override
-  State<PreparedMealCard> createState() => _PreparedMealCardState();
+  ConsumerState<PreparedMealCard> createState() => _PreparedMealCardState();
 }
 
-class _PreparedMealCardState extends State<PreparedMealCard> {
+class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
   var _isExpanded = false;
   var _isWorking = false;
   var _nutritionMode = _PreparedMealNutritionMode.perHundred;
@@ -66,6 +74,10 @@ class _PreparedMealCardState extends State<PreparedMealCard> {
     final l10n = AppLocalizations.of(context)!;
     final meal = widget.meal;
     final canEat = widget.enabled && !_isWorking && meal.remainingPortions > 0;
+    final storedImageBytes = ref
+        .watch(localImageBytesProvider(LocalImageRef.preparedMeal(meal.id)))
+        .asData
+        ?.value;
     final eatActionColors = AppInventoryEatActionColors.fromColorScheme(colors);
     final availableNutritionModes = _availableNutritionModes(meal);
     final selectedNutritionMode =
@@ -99,7 +111,7 @@ class _PreparedMealCardState extends State<PreparedMealCard> {
                     children: [
                       PreparedMealCover(
                         label: meal.name,
-                        imageBytes: meal.imageBytes,
+                        imageBytes: storedImageBytes ?? meal.imageBytes,
                       ),
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
@@ -369,8 +381,12 @@ class _PreparedMealCardState extends State<PreparedMealCard> {
     }
 
     await _runAction(
-      () =>
-          widget.onEditPressed(widget.meal.id, result.name, result.imageBase64),
+      () => widget.onEditPressed(
+        widget.meal.id,
+        result.name,
+        result.imageChanged,
+        result.imageBytes,
+      ),
       failureMessage: AppLocalizations.of(context)!.preparedMealActionFailed,
     );
   }
