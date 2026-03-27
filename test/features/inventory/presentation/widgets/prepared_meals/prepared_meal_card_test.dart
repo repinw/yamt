@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/data/local_image_store.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -143,7 +144,7 @@ void main() {
   ) async {
     final localImageStore = FakeLocalImageStore();
     await localImageStore.saveBytes(
-      imageRef: const LocalImageRef.preparedMeal('meal-1'),
+      imageRef: preparedMealImageRef('meal-1'),
       bytes: Uint8List.fromList(<int>[1, 2, 3]),
     );
 

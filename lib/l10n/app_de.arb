@@ -167,6 +167,10 @@
   "preparedMealPortionsLabel": "Portionen",
   "preparedMealInvalidPortions":
       "Bitte gib mindestens eine Portion ein.",
+  "preparedMealFixFormErrorsMessage":
+      "Bitte prüfe die markierten Felder.",
+  "preparedMealInvalidPortionsRange":
+      "Bitte gib eine gültige Portionsanzahl im verfügbaren Bereich ein.",
   "preparedMealImageLabel": "Titelbild",
   "preparedMealAddImageAction": "Bild hinzufügen",
   "preparedMealChangeImageAction": "Bild ändern",

@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/calories/data/calorie_entry_image_ref.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -404,7 +405,7 @@ void main() {
       addTearDown(settingsRepository.dispose);
 
       await localImageStore.saveBytes(
-        imageRef: const LocalImageRef.calorieEntry('bundle-local-image-entry'),
+        imageRef: calorieEntryImageRef('bundle-local-image-entry'),
         bytes: Uint8List.fromList(<int>[1, 2, 3]),
       );
 

@@ -965,6 +965,18 @@ abstract class AppLocalizations {
   /// **'Please enter at least one portion.'**
   String get preparedMealInvalidPortions;
 
+  /// No description provided for @preparedMealFixFormErrorsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check the highlighted fields.'**
+  String get preparedMealFixFormErrorsMessage;
+
+  /// No description provided for @preparedMealInvalidPortionsRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid portion count within the available range.'**
+  String get preparedMealInvalidPortionsRange;
+
   /// No description provided for @preparedMealImageLabel.
   ///
   /// In en, this message translates to:

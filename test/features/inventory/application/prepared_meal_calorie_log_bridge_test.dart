@@ -4,10 +4,12 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/data/local_image_store.dart';
+import 'package:yamt/features/calories/data/calorie_entry_image_ref.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -97,7 +99,7 @@ void main() {
         ],
       );
       await localImageStore.saveBytes(
-        imageRef: const LocalImageRef.preparedMeal('meal-1'),
+        imageRef: preparedMealImageRef('meal-1'),
         bytes: Uint8List.fromList(<int>[1, 2, 3]),
       );
 
@@ -116,7 +118,7 @@ void main() {
       expect(entry.isBundle, isTrue);
       expect(entry.imageBase64, meal.imageBase64);
       expect(
-        await localImageStore.readBytes(LocalImageRef.calorieEntry(entry.id)),
+        await localImageStore.readBytes(calorieEntryImageRef(entry.id)),
         isNotNull,
       );
       expect(entry.bundleConsumedPortions, 1);

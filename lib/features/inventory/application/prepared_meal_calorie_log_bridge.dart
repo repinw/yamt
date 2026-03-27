@@ -3,12 +3,14 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/features/calories/data/calorie_entry_image_ref.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart'
     show InventoryAmountUnit, InventoryAmountUnitCode;
+import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 part 'prepared_meal_calorie_log_bridge.g.dart';
@@ -108,8 +110,8 @@ class _RepositoryPreparedMealCalorieLogBridge
       return false;
     }
 
-    final sourceRef = LocalImageRef.preparedMeal(meal.id);
-    final targetRef = LocalImageRef.calorieEntry(entry.id);
+    final sourceRef = preparedMealImageRef(meal.id);
+    final targetRef = calorieEntryImageRef(entry.id);
     await _localImageStore.copyImage(
       sourceRef: sourceRef,
       targetRef: targetRef,

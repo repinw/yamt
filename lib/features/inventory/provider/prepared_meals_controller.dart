@@ -9,6 +9,7 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -515,7 +516,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     final store = ref.read(localImageStoreProvider);
 
     for (final mealId in removedIds) {
-      final imageRef = LocalImageRef.preparedMeal(mealId);
+      final imageRef = preparedMealImageRef(mealId);
       await store.deleteImage(imageRef);
       ref.invalidate(localImageBytesProvider(imageRef));
     }

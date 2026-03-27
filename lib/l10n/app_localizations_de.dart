@@ -446,6 +446,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealInvalidPortions => 'Bitte gib mindestens eine Portion ein.';
 
   @override
+  String get preparedMealFixFormErrorsMessage => 'Bitte prüfe die markierten Felder.';
+
+  @override
+  String get preparedMealInvalidPortionsRange => 'Bitte gib eine gültige Portionsanzahl im verfügbaren Bereich ein.';
+
+  @override
   String get preparedMealImageLabel => 'Titelbild';
 
   @override

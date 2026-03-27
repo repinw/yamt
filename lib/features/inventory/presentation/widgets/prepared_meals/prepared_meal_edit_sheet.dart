@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -72,7 +73,7 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet> {
     final colors = Theme.of(context).colorScheme;
     final storedImageBytes = ref
         .watch(
-          localImageBytesProvider(LocalImageRef.preparedMeal(widget.meal.id)),
+          localImageBytesProvider(preparedMealImageRef(widget.meal.id)),
         )
         .asData
         ?.value;

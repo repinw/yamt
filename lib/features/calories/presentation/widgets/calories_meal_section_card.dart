@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/calories/data/calorie_entry_image_ref.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
@@ -251,7 +252,7 @@ class _MealThumb extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final storedImageBytes = ref
-        .watch(localImageBytesProvider(LocalImageRef.calorieEntry(entryId)))
+        .watch(localImageBytesProvider(calorieEntryImageRef(entryId)))
         .asData
         ?.value;
     final resolvedImageBytes = storedImageBytes ?? imageBytes;

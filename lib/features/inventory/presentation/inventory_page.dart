@@ -9,6 +9,7 @@ import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -145,8 +146,8 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     if (templateId != null) {
       await _copyLocalImage(
         ref: ref,
-        sourceRef: LocalImageRef.preparedMeal(meal.id),
-        targetRef: LocalImageRef.preparedMealTemplate(templateId),
+        sourceRef: preparedMealImageRef(meal.id),
+        targetRef: preparedMealTemplateImageRef(templateId),
         fallbackImageBase64: meal.imageBase64,
       );
       if (!context.mounted) {
@@ -190,7 +191,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     }
 
     if (imageChanged) {
-      final imageRef = LocalImageRef.preparedMeal(mealId);
+      final imageRef = preparedMealImageRef(mealId);
       if (imageBytes == null) {
         await ref.read(localImageStoreProvider).deleteImage(imageRef);
       } else {

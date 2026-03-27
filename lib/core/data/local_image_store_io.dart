@@ -102,7 +102,7 @@ class _IoLocalImageStore implements LocalImageStore {
   Future<File> _resolveFile(LocalImageRef imageRef) async {
     final rootDirectory = await _resolveRootDirectory();
     final folder = Directory(
-      '${rootDirectory.path}/${imageRef.entityType.storageFolder}',
+      '${rootDirectory.path}/${imageRef.storageFolder}',
     );
     if (!await folder.exists()) {
       await folder.create(recursive: true);

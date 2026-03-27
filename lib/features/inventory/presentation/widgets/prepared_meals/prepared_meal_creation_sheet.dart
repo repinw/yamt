@@ -273,13 +273,20 @@ class _PreparedMealCreationSheetState
   }
 
   void _submit() {
+    final l10n = AppLocalizations.of(context)!;
     final formState = _formKey.currentState;
-    if (formState == null || !formState.validate()) {
+    if (formState == null) {
+      _showSubmitError(l10n.preparedMealActionFailed);
+      return;
+    }
+    if (!formState.validate()) {
+      _showSubmitError(l10n.preparedMealFixFormErrorsMessage);
       return;
     }
 
     final portions = int.tryParse(_portionsController.text.trim());
     if (portions == null || portions < 1) {
+      _showSubmitError(l10n.preparedMealInvalidPortions);
       return;
     }
 
@@ -287,6 +294,7 @@ class _PreparedMealCreationSheetState
     for (final draft in _drafts) {
       final amount = int.tryParse(draft.amountController.text.trim());
       if (amount == null || amount < 1 || amount > draft.maxAmount) {
+        _showSubmitError(l10n.preparedMealInvalidIngredientAmount);
         return;
       }
 
@@ -300,6 +308,7 @@ class _PreparedMealCreationSheetState
             per100Protein == null ||
             per100Carbs == null ||
             per100Fat == null) {
+          _showSubmitError(l10n.caloriesNonNegativeNumberValidation);
           return;
         }
         manualNutrition = GlobalFoodNutrition(
@@ -330,6 +339,12 @@ class _PreparedMealCreationSheetState
         items: inputs,
       ),
     );
+  }
+
+  void _showSubmitError(String message) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(SnackBar(content: Text(message)));
   }
 
   double? _parseDouble(String rawValue) {

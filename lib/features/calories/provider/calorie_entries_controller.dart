@@ -4,6 +4,7 @@ import 'dart:developer' show log;
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/local_image_store.dart';
+import 'package:yamt/features/calories/data/calorie_entry_image_ref.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -405,7 +406,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
   }
 
   Future<void> _deleteLocalEntryImage(String entryId) async {
-    final imageRef = LocalImageRef.calorieEntry(entryId);
+    final imageRef = calorieEntryImageRef(entryId);
     await ref.read(localImageStoreProvider).deleteImage(imageRef);
     ref.invalidate(localImageBytesProvider(imageRef));
   }

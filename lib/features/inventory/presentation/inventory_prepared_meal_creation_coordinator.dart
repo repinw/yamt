@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/data/local_image_store.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_selection_controller.dart';
@@ -64,7 +65,7 @@ Future<void> runPreparedMealCreationFlow({
   final createdMealId = creationResult.preparedMealId;
   final imageBytes = sheetResult.imageBytes;
   if (createdMealId != null && imageBytes != null) {
-    final imageRef = LocalImageRef.preparedMeal(createdMealId);
+    final imageRef = preparedMealImageRef(createdMealId);
     await ref
         .read(localImageStoreProvider)
         .saveBytes(imageRef: imageRef, bytes: imageBytes);

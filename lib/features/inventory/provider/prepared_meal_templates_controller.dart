@@ -6,6 +6,8 @@ import 'package:yamt/core/data/local_image_store.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/inventory/data/'
+    'prepared_meal_image_refs.dart';
+import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
@@ -237,7 +239,7 @@ class PreparedMealTemplatesController
     final store = ref.read(localImageStoreProvider);
 
     for (final templateId in removedIds) {
-      final imageRef = LocalImageRef.preparedMealTemplate(templateId);
+      final imageRef = preparedMealTemplateImageRef(templateId);
       await store.deleteImage(imageRef);
       ref.invalidate(localImageBytesProvider(imageRef));
     }

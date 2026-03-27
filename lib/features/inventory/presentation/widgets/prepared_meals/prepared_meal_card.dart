@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
@@ -75,7 +76,7 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
     final meal = widget.meal;
     final canEat = widget.enabled && !_isWorking && meal.remainingPortions > 0;
     final storedImageBytes = ref
-        .watch(localImageBytesProvider(LocalImageRef.preparedMeal(meal.id)))
+        .watch(localImageBytesProvider(preparedMealImageRef(meal.id)))
         .asData
         ?.value;
     final eatActionColors = AppInventoryEatActionColors.fromColorScheme(colors);

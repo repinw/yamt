@@ -164,6 +164,10 @@
   "preparedMealInvalidName": "Please enter a meal name.",
   "preparedMealPortionsLabel": "Portions",
   "preparedMealInvalidPortions": "Please enter at least one portion.",
+  "preparedMealFixFormErrorsMessage":
+      "Please check the highlighted fields.",
+  "preparedMealInvalidPortionsRange":
+      "Please enter a valid portion count within the available range.",
   "preparedMealImageLabel": "Cover image",
   "preparedMealAddImageAction": "Add image",
   "preparedMealChangeImageAction": "Change image",

@@ -31,7 +31,7 @@ Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
     context: context,
     builder: (dialogContext) {
       return StatefulBuilder(
-        builder: (context, setState) {
+        builder: (dialogChildContext, setState) {
           return AlertDialog(
             title: Text(l10n.preparedMealEatTitle),
             content: Column(
@@ -84,6 +84,10 @@ Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
                   if (portions == null ||
                       portions < 1 ||
                       portions > meal.remainingPortions) {
+                    _showInvalidPortionsSnackBar(
+                      scaffoldContext: context,
+                      message: l10n.preparedMealInvalidPortionsRange,
+                    );
                     return;
                   }
                   Navigator.of(dialogContext).pop(
@@ -140,6 +144,10 @@ Future<int?> showPreparedMealPortionDialog({
               if (portions == null ||
                   portions < 1 ||
                   portions > meal.remainingPortions) {
+                _showInvalidPortionsSnackBar(
+                  scaffoldContext: context,
+                  message: l10n.preparedMealInvalidPortionsRange,
+                );
                 return;
               }
               Navigator.of(dialogContext).pop(portions);
@@ -150,4 +158,13 @@ Future<int?> showPreparedMealPortionDialog({
       );
     },
   ).whenComplete(controller.dispose);
+}
+
+void _showInvalidPortionsSnackBar({
+  required BuildContext scaffoldContext,
+  required String message,
+}) {
+  final messenger = ScaffoldMessenger.of(scaffoldContext);
+  messenger.hideCurrentSnackBar();
+  messenger.showSnackBar(SnackBar(content: Text(message)));
 }
