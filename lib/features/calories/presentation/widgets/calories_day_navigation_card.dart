@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/calories/presentation/calorie_weekday_l10n.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 class CaloriesDayNavigationCard extends StatelessWidget {
   const CaloriesDayNavigationCard({
@@ -67,8 +68,8 @@ class _DiaryDayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final label = DateFormat.E(locale).format(day.date).replaceAll('.', '');
+    final l10n = AppLocalizations.of(context)!;
+    final label = localizedDiaryWeekdayLabel(l10n, day.date);
     final labelColor = isToday
         ? colorScheme.primary
         : colorScheme.onSurfaceVariant;

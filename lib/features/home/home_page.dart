@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/calorie_goal_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
@@ -15,7 +16,6 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _inventoryBranchIndex = 0;
 const _diaryBranchIndex = 1;
 const _settingsBranchIndex = 2;
-const _fallbackDiaryGoalKcal = 2500.0;
 
 enum _DiaryAppBarAction { today, setGoal }
 
@@ -188,7 +188,7 @@ class HomePage extends ConsumerWidget {
                 .asData
                 ?.value
                 .dailyKcalGoal ??
-            _fallbackDiaryGoalKcal;
+            defaultDailyCalorieGoalKcal;
         await showCalorieGoalDialog(
           context: context,
           currentGoal: currentGoal,

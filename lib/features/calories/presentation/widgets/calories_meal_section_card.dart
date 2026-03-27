@@ -215,8 +215,6 @@ class _MealThumb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final normalizedImageUrl = _normalizeImageUrl(imageUrl);
-
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -233,10 +231,10 @@ class _MealThumb extends StatelessWidget {
         dimension: 48,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          child: normalizedImageUrl == null
+          child: imageUrl == null
               ? _MealThumbFallback(label: label)
               : Image.network(
-                  normalizedImageUrl,
+                  imageUrl!,
                   key: CaloriesPageKeys.entryImage(entryId),
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) {
@@ -269,29 +267,4 @@ class _MealThumbFallback extends StatelessWidget {
       ),
     );
   }
-}
-
-String? _normalizeImageUrl(String? value) {
-  if (value == null) {
-    return null;
-  }
-
-  final trimmed = value.trim();
-  if (trimmed.isEmpty) {
-    return null;
-  }
-  if (trimmed.startsWith('//')) {
-    return 'https:$trimmed';
-  }
-  if (trimmed.startsWith('/')) {
-    return 'https://world.openfoodfacts.org$trimmed';
-  }
-
-  final uri = Uri.tryParse(trimmed);
-  final scheme = uri?.scheme.toLowerCase();
-  if (scheme == 'http' || scheme == 'https') {
-    return trimmed;
-  }
-
-  return null;
 }

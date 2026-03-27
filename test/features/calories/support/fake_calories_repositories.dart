@@ -22,6 +22,7 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 
   bool saveShouldFail = false;
   bool deleteShouldFail = false;
+  Future<List<CalorieEntry>> Function(DateTime day)? onReadEntriesForDay;
 
   List<CalorieEntry> get entries => List<CalorieEntry>.unmodifiable(_entries);
 
@@ -45,7 +46,12 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 
   @override
   Future<List<CalorieEntry>> readEntriesForDay(DateTime day) async {
-    return _entriesForDay(_normalize(day));
+    final normalizedDay = _normalize(day);
+    final customReader = onReadEntriesForDay;
+    if (customReader != null) {
+      return customReader(normalizedDay);
+    }
+    return _entriesForDay(normalizedDay);
   }
 
   @override

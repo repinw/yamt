@@ -84,4 +84,64 @@ void main() {
     expect(overview.totalGoalKcal, 14000);
     expect(overview.remainingKcal, 13000);
   });
+
+  test('calorieWeekOverview keeps working when one day read throws', () async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final failingDay = today.subtract(const Duration(days: 2));
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'today',
+          loggedAt: today.add(const Duration(hours: 8)),
+          totalKcal: 600,
+        ),
+        _entry(
+          'failing-day',
+          loggedAt: failingDay.add(const Duration(hours: 12)),
+          totalKcal: 900,
+        ),
+      ],
+    );
+    logRepository.onReadEntriesForDay = (day) async {
+      if (day == failingDay) {
+        throw StateError('day read failed');
+      }
+      return logRepository.entries
+          .where((entry) {
+            final loggedAt = entry.loggedAt;
+            return loggedAt.year == day.year &&
+                loggedAt.month == day.month &&
+                loggedAt.day == day.day;
+          })
+          .toList(growable: false);
+    };
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings(
+        dailyKcalGoal: 2000,
+        updatedAt: today,
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+    final overview = await container.read(calorieWeekOverviewProvider.future);
+
+    expect(overview.days, hasLength(diaryVisibleDayCount));
+    expect(
+      overview.days.firstWhere((day) => day.date == failingDay).totalKcal,
+      0,
+    );
+    expect(overview.totalConsumedKcal, 600);
+    expect(overview.totalGoalKcal, 14000);
+    expect(overview.remainingKcal, 13400);
+  });
 }

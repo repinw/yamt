@@ -3,6 +3,8 @@ import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 
 part 'calorie_goal_settings.g.dart';
 
+const defaultDailyCalorieGoalKcal = 2500.0;
+
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CalorieGoalSettings {
   const CalorieGoalSettings({

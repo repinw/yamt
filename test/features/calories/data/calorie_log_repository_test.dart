@@ -75,7 +75,7 @@ void main() {
     expect(afterDelete, isNull);
   });
 
-  test('saveEntry keeps imageUrl when loading entry back', () async {
+  test('saveEntry normalizes imageUrl when loading entry back', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
       session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
@@ -85,13 +85,17 @@ void main() {
     final entry = _entry(
       'entry-image',
       loggedAt: DateTime(2026, 2, 25, 9),
-      imageUrl: 'https://images.example.com/yogurt.jpg',
+      imageUrl: '/images/products/400/638/133/3931/front_de.3.400.jpg',
     );
 
     await repository.saveEntry(entry);
     final loaded = await repository.getById(entry.id);
 
-    expect(loaded?.imageUrl, entry.imageUrl);
+    expect(
+      loaded?.imageUrl,
+      'https://world.openfoodfacts.org'
+      '/images/products/400/638/133/3931/front_de.3.400.jpg',
+    );
   });
 
   test('returns safe defaults when no user is signed in', () async {

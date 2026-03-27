@@ -222,6 +222,8 @@
       "Bitte eine Zahl größer als null eingeben.",
   "caloriesGoalSaveFailed":
       "Kalorienziel konnte nicht gespeichert werden.",
+  "caloriesGoalClearFailed":
+      "Kalorienziel konnte nicht gelöscht werden.",
   "caloriesConsumedLabel": "Verbraucht",
   "caloriesGoalLabel": "Ziel",
   "caloriesRemainingLabel": "Verbleibend",
@@ -285,6 +287,13 @@
   "caloriesMealLunch": "Mittagessen",
   "caloriesMealDinner": "Abendessen",
   "caloriesMealSnack": "Snack",
+  "caloriesWeekdayShortMonday": "Mo",
+  "caloriesWeekdayShortTuesday": "Di",
+  "caloriesWeekdayShortWednesday": "Mi",
+  "caloriesWeekdayShortThursday": "Do",
+  "caloriesWeekdayShortFriday": "Fr",
+  "caloriesWeekdayShortSaturday": "Sa",
+  "caloriesWeekdayShortSunday": "So",
   "caloriesUnitKcal": "kcal",
   "caloriesUnitGram": "g",
   "caloriesUnitMilliliter": "ml",

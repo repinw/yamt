@@ -12,6 +12,7 @@ import 'package:yamt/features/calories/presentation/calories_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
+import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../support/fake_calories_repositories.dart';
@@ -44,6 +45,7 @@ CalorieEntry _entry(
 Widget _buildHarness({
   required FakeCalorieLogRepository logRepository,
   required FakeCalorieSettingsRepository settingsRepository,
+  List<dynamic> overrides = const <dynamic>[],
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeCalories,
@@ -73,6 +75,7 @@ Widget _buildHarness({
     overrides: [
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      ...overrides,
     ],
     child: MaterialApp.router(
       locale: const Locale('en'),
@@ -280,5 +283,45 @@ void main() {
     );
 
     expect(find.text('No entries yet.'), findsWidgets);
+  });
+
+  testWidgets('falls back to zeroed week overview when provider errors', (
+    tester,
+  ) async {
+    final today = DateTime.now();
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'b-1',
+          loggedAt: DateTime(today.year, today.month, today.day, 8),
+          mealType: MealType.breakfast,
+        ),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings(
+        dailyKcalGoal: 2200,
+        updatedAt: DateTime(today.year, today.month, today.day, 9),
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        overrides: <dynamic>[
+          calorieWeekOverviewProvider.overrideWith(
+            (ref) async => throw StateError('week overview failed'),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CaloriesPageKeys.weekStrip), findsOneWidget);
+    expect(find.byKey(CaloriesPageKeys.weekBufferCard), findsOneWidget);
+    expect(find.byKey(CaloriesPageKeys.summaryCard), findsOneWidget);
   });
 }

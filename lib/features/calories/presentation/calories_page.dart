@@ -41,9 +41,10 @@ class CaloriesPage extends ConsumerWidget {
 
     return dayViewState.when(
       data: (viewData) {
-        final weekOverview =
-            weekOverviewState.asData?.value ??
-            _fallbackWeekOverview(goalKcal: viewData.goalKcal);
+        final weekOverview = resolveDisplayedWeekOverview(
+          weekOverviewState,
+          goalKcal: viewData.goalKcal,
+        );
 
         return ListView(
           padding: const EdgeInsets.fromLTRB(
@@ -231,6 +232,13 @@ class CaloriesPage extends ConsumerWidget {
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(l10n.caloriesDeleteFailed)));
   }
+}
+
+CalorieWeekOverview resolveDisplayedWeekOverview(
+  AsyncValue<CalorieWeekOverview> weekOverviewState, {
+  required double goalKcal,
+}) {
+  return weekOverviewState.value ?? _fallbackWeekOverview(goalKcal: goalKcal);
 }
 
 void _openCreateEntry(

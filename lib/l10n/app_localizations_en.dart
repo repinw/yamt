@@ -568,6 +568,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesGoalSaveFailed => 'Could not save calorie goal.';
 
   @override
+  String get caloriesGoalClearFailed => 'Could not clear calorie goal.';
+
+  @override
   String get caloriesConsumedLabel => 'Consumed';
 
   @override
@@ -689,6 +692,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesMealSnack => 'Snack';
+
+  @override
+  String get caloriesWeekdayShortMonday => 'Mon';
+
+  @override
+  String get caloriesWeekdayShortTuesday => 'Tue';
+
+  @override
+  String get caloriesWeekdayShortWednesday => 'Wed';
+
+  @override
+  String get caloriesWeekdayShortThursday => 'Thu';
+
+  @override
+  String get caloriesWeekdayShortFriday => 'Fri';
+
+  @override
+  String get caloriesWeekdayShortSaturday => 'Sat';
+
+  @override
+  String get caloriesWeekdayShortSunday => 'Sun';
 
   @override
   String get caloriesUnitKcal => 'kcal';

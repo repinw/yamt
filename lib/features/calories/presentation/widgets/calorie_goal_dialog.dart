@@ -98,7 +98,7 @@ Future<void> showCalorieGoalDialog({
         return;
       }
       messenger.showSnackBar(
-        SnackBar(content: Text(l10n.caloriesGoalSaveFailed)),
+        SnackBar(content: Text(l10n.caloriesGoalClearFailed)),
       );
   }
 

@@ -1,11 +1,16 @@
+import 'dart:developer' show log;
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 part 'calorie_week_overview_provider.g.dart';
 
-const _fallbackDailyGoalKcal = 2500.0;
+const _weekOverviewLogName = 'CalorieWeekOverviewProvider';
 
 /// Aggregate data for one visible day in the diary week strip.
 class CalorieWeekDayOverview {
@@ -48,11 +53,11 @@ Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
   final goalState = ref.watch(calorieGoalControllerProvider);
   final repository = ref.watch(calorieLogRepositoryProvider);
   final goalKcal =
-      goalState.asData?.value.dailyKcalGoal ?? _fallbackDailyGoalKcal;
+      goalState.asData?.value.dailyKcalGoal ?? defaultDailyCalorieGoalKcal;
   final days = buildDiaryVisibleDays();
 
   final entriesByDay = await Future.wait(
-    days.map(repository.readEntriesForDay),
+    days.map((day) => _readEntriesForDaySafely(repository, day)),
   );
 
   final overviews = <CalorieWeekDayOverview>[];
@@ -81,4 +86,21 @@ Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
     totalGoalKcal: totalGoalKcal,
     remainingKcal: totalGoalKcal - totalConsumedKcal,
   );
+}
+
+Future<List<CalorieEntry>> _readEntriesForDaySafely(
+  CalorieLogRepositoryContract repository,
+  DateTime day,
+) async {
+  try {
+    return await repository.readEntriesForDay(day);
+  } catch (error, stackTrace) {
+    log(
+      'Failed to load calorie entries for week overview on $day.',
+      name: _weekOverviewLogName,
+      error: error,
+      stackTrace: stackTrace,
+    );
+    return const <CalorieEntry>[];
+  }
 }

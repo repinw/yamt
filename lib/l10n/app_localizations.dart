@@ -1205,6 +1205,12 @@ abstract class AppLocalizations {
   /// **'Could not save calorie goal.'**
   String get caloriesGoalSaveFailed;
 
+  /// No description provided for @caloriesGoalClearFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not clear calorie goal.'**
+  String get caloriesGoalClearFailed;
+
   /// No description provided for @caloriesConsumedLabel.
   ///
   /// In en, this message translates to:
@@ -1438,6 +1444,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Snack'**
   String get caloriesMealSnack;
+
+  /// No description provided for @caloriesWeekdayShortMonday.
+  ///
+  /// In en, this message translates to:
+  /// **'Mon'**
+  String get caloriesWeekdayShortMonday;
+
+  /// No description provided for @caloriesWeekdayShortTuesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Tue'**
+  String get caloriesWeekdayShortTuesday;
+
+  /// No description provided for @caloriesWeekdayShortWednesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Wed'**
+  String get caloriesWeekdayShortWednesday;
+
+  /// No description provided for @caloriesWeekdayShortThursday.
+  ///
+  /// In en, this message translates to:
+  /// **'Thu'**
+  String get caloriesWeekdayShortThursday;
+
+  /// No description provided for @caloriesWeekdayShortFriday.
+  ///
+  /// In en, this message translates to:
+  /// **'Fri'**
+  String get caloriesWeekdayShortFriday;
+
+  /// No description provided for @caloriesWeekdayShortSaturday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sat'**
+  String get caloriesWeekdayShortSaturday;
+
+  /// No description provided for @caloriesWeekdayShortSunday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get caloriesWeekdayShortSunday;
 
   /// No description provided for @caloriesUnitKcal.
   ///
