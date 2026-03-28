@@ -108,6 +108,7 @@ service cloud.firestore {
         && data.source is string
         && isAllowedCalorieSource(data.source)
         && isOptionalString(data, 'brand')
+        && isOptionalString(data, 'image_url')
         && isOptionalString(data, 'off_product_id');
     }
 
@@ -171,6 +172,7 @@ service cloud.firestore {
           'barcode',
           'name',
           'brand',
+          'image_url',
           'per100_kcal',
           'per100_protein',
           'per100_carbs',

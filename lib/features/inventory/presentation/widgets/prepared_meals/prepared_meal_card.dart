@@ -3,10 +3,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
@@ -70,15 +70,29 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
   var _nutritionMode = _PreparedMealNutritionMode.perHundred;
 
   @override
+  void didUpdateWidget(covariant PreparedMealCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_isWorking) {
+      return;
+    }
+
+    if (_mealAdvanced(oldWidget.meal, widget.meal)) {
+      setState(() {
+        _isWorking = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final meal = widget.meal;
     final canEat = widget.enabled && !_isWorking && meal.remainingPortions > 0;
-    final storedImageBytes = ref
-        .watch(localImageBytesProvider(preparedMealImageRef(meal.id)))
-        .asData
-        ?.value;
+    final imageRef = maybeLocalImageAssetRef(meal.imageAssetId);
+    final storedImageBytes = imageRef == null
+        ? null
+        : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
     final eatActionColors = AppInventoryEatActionColors.fromColorScheme(colors);
     final availableNutritionModes = _availableNutritionModes(meal);
     final selectedNutritionMode =
@@ -112,7 +126,7 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
                     children: [
                       PreparedMealCover(
                         label: meal.name,
-                        imageBytes: storedImageBytes ?? meal.imageBytes,
+                        imageBytes: storedImageBytes,
                       ),
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
@@ -428,6 +442,13 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(failureMessage)));
+  }
+
+  bool _mealAdvanced(PreparedMeal previous, PreparedMeal next) {
+    return previous.remainingPortions != next.remainingPortions ||
+        previous.name != next.name ||
+        previous.imageAssetId != next.imageAssetId ||
+        previous.updatedAt != next.updatedAt;
   }
 }
 

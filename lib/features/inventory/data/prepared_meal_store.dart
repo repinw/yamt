@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -52,24 +51,10 @@ class FirestorePreparedMealStore implements PreparedMealStore {
     required String userId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
-    final stopwatch = Stopwatch()..start();
-    final approximatePayloadBytes = _estimatePayloadBytes(documentsById);
-    log(
-      'Starting prepared meal replaceAll user=$userId '
-      'documents=${documentsById.length} '
-      'approxPayloadBytes=$approximatePayloadBytes.',
-      name: _storeLogName,
-    );
     try {
       await _atomicReplaceService.replaceAll(
         collection: _collection(userId),
         documentsById: documentsById,
-      );
-      log(
-        'Prepared meal replaceAll completed user=$userId '
-        'documents=${documentsById.length} '
-        'elapsedMs=${stopwatch.elapsedMilliseconds}.',
-        name: _storeLogName,
       );
       return true;
     } catch (error, stackTrace) {
@@ -101,17 +86,5 @@ class FirestorePreparedMealStore implements PreparedMealStore {
           ),
         )
         .toList(growable: false);
-  }
-
-  int _estimatePayloadBytes(Map<String, Map<String, dynamic>> documentsById) {
-    var total = 0;
-    for (final entry in documentsById.entries) {
-      try {
-        total += utf8.encode(jsonEncode(entry.value)).length;
-      } catch (_) {
-        total += entry.key.length;
-      }
-    }
-    return total;
   }
 }

@@ -3,8 +3,6 @@ import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/data/local_image_store.dart';
-import 'package:yamt/features/calories/data/calorie_entry_image_ref.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -74,21 +72,10 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     ref.watch(calorieLogRepositoryProvider);
     ref.watch(calorieDayControllerProvider);
     ref.onDispose(_disposeSubscription);
-    final selectedDay = ref.read(calorieDayControllerProvider);
-    log(
-      'Building calorie entries controller day='
-      '${_formatDebugDay(selectedDay)}.',
-      name: _entriesControllerLogName,
-    );
     return _restartSubscription();
   }
 
   Future<void> refresh() async {
-    final selectedDay = ref.read(calorieDayControllerProvider);
-    log(
-      'Refreshing calorie entries day=${_formatDebugDay(selectedDay)}.',
-      name: _entriesControllerLogName,
-    );
     state = const AsyncLoading();
     final next = await AsyncValue.guard(_restartSubscription);
     if (!ref.mounted) {
@@ -133,7 +120,6 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       persist: () =>
           ref.read(calorieLogRepositoryProvider).deleteEntry(entryId),
       failureLogMessage: 'Failed to delete calorie entry $entryId.',
-      onPersisted: () => _deleteLocalEntryImage(entryId),
     ).whenComplete(keepAliveLink.close);
   }
 
@@ -204,22 +190,12 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     final repository = ref.read(calorieLogRepositoryProvider);
     final selectedDay = ref.read(calorieDayControllerProvider);
     _disposeSubscription();
-    log(
-      'Restarting calorie entries subscription '
-      'day=${_formatDebugDay(selectedDay)}.',
-      name: _entriesControllerLogName,
-    );
 
     _entriesSubscription = repository
         .watchEntriesForDay(selectedDay)
         .listen(
           (entries) {
             if (!initialEntries.isCompleted) {
-              _logEntriesSnapshot(
-                message: 'Received initial calorie entries snapshot.',
-                day: selectedDay,
-                entries: entries,
-              );
               initialEntries.complete(entries);
               return;
             }
@@ -249,19 +225,12 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     if (!ref.mounted) {
       return;
     }
-    final selectedDay = ref.read(calorieDayControllerProvider);
-    _logEntriesSnapshot(
-      message: 'Received realtime calorie entries snapshot.',
-      day: selectedDay,
-      entries: entries,
-    );
     state = AsyncData(entries);
   }
 
   void _onRealtimeError(Object error, StackTrace stackTrace) {
-    final selectedDay = ref.read(calorieDayControllerProvider);
     log(
-      'Calorie entries realtime error day=${_formatDebugDay(selectedDay)}.',
+      'Calorie entries realtime error.',
       name: _entriesControllerLogName,
       error: error,
       stackTrace: stackTrace,
@@ -280,19 +249,9 @@ class CalorieEntriesController extends _$CalorieEntriesController {
 
     final selectedDay = ref.read(calorieDayControllerProvider);
     try {
-      log(
-        'Falling back to repository read for current entries '
-        'day=${_formatDebugDay(selectedDay)}.',
-        name: _entriesControllerLogName,
-      );
       final entries = await ref
           .read(calorieLogRepositoryProvider)
           .readEntriesForDay(selectedDay);
-      _logEntriesSnapshot(
-        message: 'Repository fallback read completed.',
-        day: selectedDay,
-        entries: entries,
-      );
       return entries;
     } catch (error, stackTrace) {
       log(
@@ -404,12 +363,6 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       );
     }
   }
-
-  Future<void> _deleteLocalEntryImage(String entryId) async {
-    final imageRef = calorieEntryImageRef(entryId);
-    await ref.read(localImageStoreProvider).deleteImage(imageRef);
-    ref.invalidate(localImageBytesProvider(imageRef));
-  }
 }
 
 @riverpod
@@ -418,29 +371,27 @@ Future<CalorieEntry?> calorieEntryById(Ref ref, String entryId) async {
 }
 
 @riverpod
-AsyncValue<CalorieDayViewData> calorieDayViewData(Ref ref) {
+CalorieDayViewData calorieDayViewData(Ref ref) {
   final selectedDay = ref.watch(calorieDayControllerProvider);
   final entriesState = ref.watch(calorieEntriesControllerProvider);
   final goalState = ref.watch(calorieGoalControllerProvider);
+  final entries = entriesState.value ?? const <CalorieEntry>[];
+  final goalKcal =
+      goalState.asData?.value.dailyKcalGoal ?? defaultDailyCalorieGoalKcal;
+  final aggregate = _aggregate(entries);
+  final remaining = goalKcal - aggregate.summary.totalKcal;
+  final progress = goalKcal <= 0
+      ? 0.0
+      : (aggregate.summary.totalKcal / goalKcal).clamp(0.0, 1.0).toDouble();
 
-  return entriesState.whenData((entries) {
-    final goalKcal =
-        goalState.asData?.value.dailyKcalGoal ?? defaultDailyCalorieGoalKcal;
-    final aggregate = _aggregate(entries);
-    final remaining = goalKcal - aggregate.summary.totalKcal;
-    final progress = goalKcal <= 0
-        ? 0.0
-        : (aggregate.summary.totalKcal / goalKcal).clamp(0.0, 1.0).toDouble();
-
-    return CalorieDayViewData(
-      selectedDay: selectedDay,
-      summary: aggregate.summary,
-      sections: aggregate.sections,
-      goalKcal: goalKcal,
-      remainingKcal: remaining,
-      progress: progress,
-    );
-  });
+  return CalorieDayViewData(
+    selectedDay: selectedDay,
+    summary: aggregate.summary,
+    sections: aggregate.sections,
+    goalKcal: goalKcal,
+    remainingKcal: remaining,
+    progress: progress,
+  );
 }
 
 ({CalorieDaySummary summary, List<CalorieMealSection> sections}) _aggregate(
@@ -490,27 +441,4 @@ AsyncValue<CalorieDayViewData> calorieDayViewData(Ref ref) {
     ),
     sections: sections,
   );
-}
-
-void _logEntriesSnapshot({
-  required String message,
-  required DateTime day,
-  required List<CalorieEntry> entries,
-}) {
-  log(
-    '$message day=${_formatDebugDay(day)} '
-    'entries=${entries.length} bundles=${_bundleCount(entries)}.',
-    name: _entriesControllerLogName,
-  );
-}
-
-int _bundleCount(List<CalorieEntry> entries) {
-  return entries.where((entry) => entry.isBundle).length;
-}
-
-String _formatDebugDay(DateTime day) {
-  final year = day.year.toString().padLeft(4, '0');
-  final month = day.month.toString().padLeft(2, '0');
-  final dayOfMonth = day.day.toString().padLeft(2, '0');
-  return '$year-$month-$dayOfMonth';
 }

@@ -70,6 +70,7 @@ CalorieEntry _$CalorieEntryFromJson(Map<String, dynamic> json) => CalorieEntry(
   updatedAt: const FlexibleDateTimeConverter().fromJson(json['updated_at']),
   brand: json['brand'] as String?,
   imageUrl: json['image_url'] as String?,
+  imageAssetId: json['image_asset_id'] as String?,
   sourceInventoryItemId: json['source_inventory_item_id'] as String?,
   sourceInventoryAmountToRestore:
       (json['source_inventory_amount_to_restore'] as num?)?.toInt(),
@@ -94,6 +95,7 @@ Map<String, dynamic> _$CalorieEntryToJson(
   'name': instance.name,
   'brand': instance.brand,
   'image_url': instance.imageUrl,
+  'image_asset_id': instance.imageAssetId,
   'source_inventory_item_id': instance.sourceInventoryItemId,
   'source_inventory_amount_to_restore': instance.sourceInventoryAmountToRestore,
   'bundle_source_prepared_meal_id': instance.bundleSourcePreparedMealId,

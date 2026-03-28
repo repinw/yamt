@@ -1,13 +1,12 @@
-import 'dart:convert';
 import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -78,7 +77,7 @@ PreparedMeal _template({required String id, required String name}) {
   return PreparedMeal(
     id: id,
     name: name,
-    imageBase64: base64Encode(<int>[1, 2, 3]),
+    imageAssetId: 'asset-$id',
     totalPortions: 4,
     remainingPortions: 4,
     totalKcal: 400,
@@ -114,12 +113,19 @@ void main() {
         _template(id: 'template-1', name: 'Lunch Box'),
       ],
     );
+    final localImageStore = FakeLocalImageStore();
     addTearDown(repository.dispose);
+
+    await localImageStore.saveBytes(
+      imageRef: localImageAssetRef('asset-template-1'),
+      bytes: Uint8List.fromList(<int>[1, 2, 3]),
+    );
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+          localImageStoreProvider.overrideWithValue(localImageStore),
         ],
         child: MaterialApp(
           locale: const Locale('en'),
@@ -147,16 +153,14 @@ void main() {
   ) async {
     final repository = _FakePreparedMealTemplateRepository(
       initialTemplates: <PreparedMeal>[
-        _template(id: 'template-1', name: 'Lunch Box').copyWith(
-          imageBase64: null,
-        ),
+        _template(id: 'template-1', name: 'Lunch Box'),
       ],
     );
     final localImageStore = FakeLocalImageStore();
     addTearDown(repository.dispose);
 
     await localImageStore.saveBytes(
-      imageRef: preparedMealTemplateImageRef('template-1'),
+      imageRef: localImageAssetRef('asset-template-1'),
       bytes: Uint8List.fromList(<int>[1, 2, 3]),
     );
 

@@ -2,9 +2,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -71,15 +71,11 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
-    final storedImageBytes = ref
-        .watch(
-          localImageBytesProvider(preparedMealImageRef(widget.meal.id)),
-        )
-        .asData
-        ?.value;
-    final previewImageBytes = _imageChanged
-        ? _imageBytes
-        : storedImageBytes ?? widget.meal.imageBytes;
+    final imageRef = maybeLocalImageAssetRef(widget.meal.imageAssetId);
+    final storedImageBytes = imageRef == null
+        ? null
+        : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
+    final previewImageBytes = _imageChanged ? _imageBytes : storedImageBytes;
 
     return SafeArea(
       top: false,

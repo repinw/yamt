@@ -1,15 +1,18 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/local_image_asset_ref.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_edit_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../../../../support/fake_local_image_store.dart';
 
 PreparedMeal _meal() {
   final sourceItem = InventoryItem.create(
@@ -27,7 +30,7 @@ PreparedMeal _meal() {
   return PreparedMeal(
     id: 'meal-1',
     name: 'Rice bowl',
-    imageBase64: base64Encode(<int>[1, 2, 3]),
+    imageAssetId: 'asset-meal-1',
     totalPortions: 2,
     remainingPortions: 2,
     totalKcal: 400,
@@ -138,9 +141,16 @@ void main() {
   });
 
   testWidgets('can remove image and returns changed state', (tester) async {
+    final localImageStore = FakeLocalImageStore();
+    await localImageStore.saveBytes(
+      imageRef: localImageAssetRef('asset-meal-1'),
+      bytes: Uint8List.fromList(<int>[1, 2, 3]),
+    );
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          localImageStoreProvider.overrideWithValue(localImageStore),
           preparedMealImagePickerProvider.overrideWithValue(
             _FakePreparedMealImagePicker(),
           ),

@@ -1,15 +1,15 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
+import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -25,6 +25,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _deleteUndoSnackBarDuration = Duration(seconds: 4);
+const _preparedMealImageAssetUuid = Uuid();
 
 class InventoryPage extends ConsumerStatefulWidget {
   const InventoryPage({super.key});
@@ -142,19 +143,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       return result.isSuccess;
     }
 
-    final templateId = result.templateId;
-    if (templateId != null) {
-      await _copyLocalImage(
-        ref: ref,
-        sourceRef: preparedMealImageRef(meal.id),
-        targetRef: preparedMealTemplateImageRef(templateId),
-        fallbackImageBase64: meal.imageBase64,
-      );
-      if (!context.mounted) {
-        return true;
-      }
-    }
-
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
@@ -175,34 +163,25 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     required bool imageChanged,
     required Uint8List? imageBytes,
   }) async {
-    final encodedImage = imageChanged && imageBytes != null
-        ? base64Encode(imageBytes)
-        : null;
+    String? imageAssetId;
+    if (imageChanged && imageBytes != null) {
+      imageAssetId = _preparedMealImageAssetUuid.v4();
+      final imageRef = localImageAssetRef(imageAssetId);
+      await ref
+          .read(localImageStoreProvider)
+          .saveBytes(imageRef: imageRef, bytes: imageBytes);
+      ref.invalidate(localImageBytesProvider(imageRef));
+    }
     final saved = await ref
         .read(preparedMealsControllerProvider.notifier)
         .updatePreparedMealDetails(
           mealId: mealId,
           name: name,
           imageChanged: imageChanged,
-          imageBase64: encodedImage,
+          imageAssetId: imageAssetId,
         );
     if (!saved || !context.mounted) {
       return saved;
-    }
-
-    if (imageChanged) {
-      final imageRef = preparedMealImageRef(mealId);
-      if (imageBytes == null) {
-        await ref.read(localImageStoreProvider).deleteImage(imageRef);
-      } else {
-        await ref
-            .read(localImageStoreProvider)
-            .saveBytes(imageRef: imageRef, bytes: imageBytes);
-      }
-      ref.invalidate(localImageBytesProvider(imageRef));
-      if (!context.mounted) {
-        return true;
-      }
     }
 
     final messenger = ScaffoldMessenger.of(context);
@@ -213,30 +192,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       ),
     );
     return true;
-  }
-
-  Future<void> _copyLocalImage({
-    required WidgetRef ref,
-    required LocalImageRef sourceRef,
-    required LocalImageRef targetRef,
-    required String? fallbackImageBase64,
-  }) async {
-    final store = ref.read(localImageStoreProvider);
-    final sourceBytes = await store.readBytes(sourceRef);
-    if (sourceBytes != null) {
-      await store.copyImage(sourceRef: sourceRef, targetRef: targetRef);
-      ref.invalidate(localImageBytesProvider(targetRef));
-      return;
-    }
-
-    final rawBase64 = fallbackImageBase64?.trim();
-    if (rawBase64 == null || rawBase64.isEmpty) {
-      return;
-    }
-
-    final bytes = base64Decode(rawBase64);
-    await store.saveBytes(imageRef: targetRef, bytes: bytes);
-    ref.invalidate(localImageBytesProvider(targetRef));
   }
 
   Future<bool> _deleteItemWithUndo({

@@ -1,10 +1,7 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/core/data/local_image_store.dart';
-import 'package:yamt/features/calories/data/calorie_entry_image_ref.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -14,8 +11,6 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
-
-import '../../../support/fake_local_image_store.dart';
 
 class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   _FakeCalorieLogRepository({List<CalorieEntry>? initialEntries})
@@ -416,25 +411,25 @@ void main() {
     await container.read(calorieEntriesControllerProvider.future);
     await container.read(calorieGoalControllerProvider.future);
 
-    final viewData = container.read(calorieDayViewDataProvider).asData?.value;
+    final viewData = container.read(calorieDayViewDataProvider);
 
     expect(viewData, isNotNull);
-    expect(viewData?.summary.entryCount, 2);
-    expect(viewData?.summary.totalKcal, closeTo(400, 0.001));
-    expect(viewData?.goalKcal, 2200);
-    expect(viewData?.remainingKcal, closeTo(1800, 0.001));
+    expect(viewData.summary.entryCount, 2);
+    expect(viewData.summary.totalKcal, closeTo(400, 0.001));
+    expect(viewData.goalKcal, 2200);
+    expect(viewData.remainingKcal, closeTo(1800, 0.001));
 
-    final breakfastSection = viewData?.sections.firstWhere(
+    final breakfastSection = viewData.sections.firstWhere(
       (section) => section.mealType == MealType.breakfast,
     );
-    final lunchSection = viewData?.sections.firstWhere(
+    final lunchSection = viewData.sections.firstWhere(
       (section) => section.mealType == MealType.lunch,
     );
 
-    expect(breakfastSection?.entries, hasLength(1));
-    expect(breakfastSection?.totalKcal, closeTo(100, 0.001));
-    expect(lunchSection?.entries, hasLength(1));
-    expect(lunchSection?.totalKcal, closeTo(300, 0.001));
+    expect(breakfastSection.entries, hasLength(1));
+    expect(breakfastSection.totalKcal, closeTo(100, 0.001));
+    expect(lunchSection.entries, hasLength(1));
+    expect(lunchSection.totalKcal, closeTo(300, 0.001));
   });
 
   test(
@@ -680,57 +675,46 @@ void main() {
     expect(entries?.single.id, 'b1');
   });
 
-  test(
-    'deleteEntry removes the local image after a successful delete',
-    () async {
-      final repository = _FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          _entry(
-            'delete-me',
-            loggedAt: DateTime(2026, 2, 25, 8),
-            mealType: MealType.breakfast,
-          ),
-        ],
-      );
-      final settingsRepository = _FakeCalorieSettingsRepository();
-      final localImageStore = FakeLocalImageStore();
-      addTearDown(repository.dispose);
-      addTearDown(settingsRepository.dispose);
+  test('deleteEntry removes the entry from the optimistic state', () async {
+    final repository = _FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'delete-me',
+          loggedAt: DateTime(2026, 2, 25, 8),
+          mealType: MealType.breakfast,
+        ),
+      ],
+    );
+    final settingsRepository = _FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    addTearDown(settingsRepository.dispose);
 
-      await localImageStore.saveBytes(
-        imageRef: calorieEntryImageRef('delete-me'),
-        bytes: Uint8List.fromList(<int>[1, 2, 3]),
-      );
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(repository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final entriesSubscription = _keepEntriesAlive(container);
+    addTearDown(entriesSubscription.close);
 
-      final container = ProviderContainer(
-        overrides: [
-          calorieLogRepositoryProvider.overrideWithValue(repository),
-          calorieSettingsRepositoryProvider.overrideWithValue(
-            settingsRepository,
-          ),
-          localImageStoreProvider.overrideWithValue(localImageStore),
-        ],
-      );
-      addTearDown(container.dispose);
-      final entriesSubscription = _keepEntriesAlive(container);
-      addTearDown(entriesSubscription.close);
+    container
+        .read(calorieDayControllerProvider.notifier)
+        .setDay(DateTime(2026, 2, 25));
+    await container.read(calorieEntriesControllerProvider.future);
 
-      container
-          .read(calorieDayControllerProvider.notifier)
-          .setDay(DateTime(2026, 2, 25));
-      await container.read(calorieEntriesControllerProvider.future);
+    final deleted = await container
+        .read(calorieEntriesControllerProvider.notifier)
+        .deleteEntry('delete-me');
 
-      final deleted = await container
-          .read(calorieEntriesControllerProvider.notifier)
-          .deleteEntry('delete-me');
-
-      expect(deleted, isTrue);
-      expect(
-        await localImageStore.readBytes(calorieEntryImageRef('delete-me')),
-        isNull,
-      );
-    },
-  );
+    expect(deleted, isTrue);
+    final entries = container
+        .read(calorieEntriesControllerProvider)
+        .asData
+        ?.value;
+    expect(entries, isEmpty);
+  });
 
   test(
     'saveEntry falls back to repository read after realtime stream error',

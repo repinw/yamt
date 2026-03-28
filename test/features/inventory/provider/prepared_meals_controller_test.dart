@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -145,7 +144,7 @@ PreparedMeal _meal({
   return PreparedMeal(
     id: id,
     name: name,
-    imageBase64: base64Encode(<int>[1, 2, 3]),
+    imageAssetId: 'asset-$id',
     totalPortions: 4,
     remainingPortions: 4,
     totalKcal: 400,
@@ -210,7 +209,7 @@ void main() {
           .read(preparedMealsControllerProvider.notifier)
           .createPreparedMeal(
             name: 'Rice & Beans',
-            imageBase64: base64Encode(<int>[1, 2, 3]),
+            imageAssetId: 'asset-created-meal',
             totalPortions: 2,
             items: const [
               PreparedMealItemInput(itemId: 'rice', usedAmount: 200),
@@ -223,7 +222,10 @@ void main() {
       expect(inventoryRepository.savedItems[1].currentAmount, 150);
       expect(preparedMealRepository.savedMeals, hasLength(1));
       expect(preparedMealRepository.savedMeals.single.totalPortions, 2);
-      expect(preparedMealRepository.savedMeals.single.imageBase64, isNotNull);
+      expect(
+        preparedMealRepository.savedMeals.single.imageAssetId,
+        'asset-created-meal',
+      );
       expect(preparedMealRepository.savedMeals.single.components, hasLength(2));
     },
   );
@@ -331,7 +333,7 @@ void main() {
       expect(saved, isTrue);
       expect(preparedMealRepository.savedMeals.single.remainingPortions, 2);
       expect(calorieLogRepository.entries.single.isBundle, isTrue);
-      expect(calorieLogRepository.entries.single.imageBase64, isNotNull);
+      expect(calorieLogRepository.entries.single.imageAssetId, isNotNull);
       expect(calorieLogRepository.entries.single.bundleConsumedPortions, 2);
       expect(calorieLogRepository.entries.single.totalKcal, 200);
     },
@@ -569,14 +571,14 @@ void main() {
           mealId: existingMeal.id,
           name: 'Updated lunch box',
           imageChanged: true,
-          imageBase64: base64Encode(<int>[9, 8, 7]),
+          imageAssetId: 'asset-updated-meal',
         );
 
     expect(saved, isTrue);
     expect(preparedMealRepository.savedMeals.single.name, 'Updated lunch box');
     expect(
-      preparedMealRepository.savedMeals.single.imageBase64,
-      base64Encode(<int>[9, 8, 7]),
+      preparedMealRepository.savedMeals.single.imageAssetId,
+      'asset-updated-meal',
     );
     expect(
       preparedMealRepository.savedMeals.single.updatedAt,

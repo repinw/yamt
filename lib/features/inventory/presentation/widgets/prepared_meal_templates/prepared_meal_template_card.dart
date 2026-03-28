@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -25,14 +25,10 @@ class PreparedMealTemplateCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    final storedImageBytes = ref
-        .watch(
-          localImageBytesProvider(
-            preparedMealTemplateImageRef(template.id),
-          ),
-        )
-        .asData
-        ?.value;
+    final imageRef = maybeLocalImageAssetRef(template.imageAssetId);
+    final storedImageBytes = imageRef == null
+        ? null
+        : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
     final metadata =
         '${l10n.preparedMealIngredientsCount(template.components.length)} • '
         '${l10n.preparedMealTemplatePortions(template.totalPortions)}';
@@ -52,7 +48,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
               children: [
                 PreparedMealCover(
                   label: template.name,
-                  imageBytes: storedImageBytes ?? template.imageBytes,
+                  imageBytes: storedImageBytes,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(

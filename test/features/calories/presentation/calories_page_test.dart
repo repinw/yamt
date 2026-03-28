@@ -1,13 +1,12 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/features/calories/data/calorie_entry_image_ref.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -58,14 +57,14 @@ CalorieEntry _bundleEntry(
   String id, {
   required DateTime loggedAt,
   required MealType mealType,
-  String? imageBase64,
+  String? imageAssetId,
   List<CalorieEntryBundleComponent>? bundleComponents,
 }) {
   return CalorieEntry.bundle(
     id: id,
     userId: 'user-1',
     name: 'Chili',
-    imageBase64: imageBase64,
+    imageAssetId: imageAssetId,
     mealType: mealType,
     totalKcal: 420,
     totalProtein: 28,
@@ -460,45 +459,55 @@ void main() {
     expect(provider.url, 'https://images.example.com/beans.jpg');
   });
 
-  testWidgets('renders prepared meal image when bundle entry has imageBase64', (
-    tester,
-  ) async {
-    final today = DateTime.now();
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _bundleEntry(
-          'bundle-image-entry',
-          loggedAt: DateTime(today.year, today.month, today.day, 12),
-          mealType: MealType.lunch,
-          imageBase64: base64Encode(<int>[1, 2, 3]),
+  testWidgets(
+    'renders prepared meal image when bundle entry has imageAssetId',
+    (tester) async {
+      final today = DateTime.now();
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _bundleEntry(
+            'bundle-image-entry',
+            loggedAt: DateTime(today.year, today.month, today.day, 12),
+            mealType: MealType.lunch,
+            imageAssetId: 'asset-bundle-image-entry',
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository();
+      final localImageStore = FakeLocalImageStore();
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      await localImageStore.saveBytes(
+        imageRef: localImageAssetRef('asset-bundle-image-entry'),
+        bytes: Uint8List.fromList(<int>[1, 2, 3]),
+      );
+
+      await tester.pumpWidget(
+        _buildHarness(
+          logRepository: logRepository,
+          settingsRepository: settingsRepository,
+          overrides: [
+            localImageStoreProvider.overrideWithValue(localImageStore),
+          ],
         ),
-      ],
-    );
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
+      );
+      await tester.pumpAndSettle();
 
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-      ),
-    );
-    await tester.pumpAndSettle();
+      await _scrollUntilVisible(
+        tester,
+        find.byKey(CaloriesPageKeys.entryTile('bundle-image-entry')),
+      );
 
-    await _scrollUntilVisible(
-      tester,
-      find.byKey(CaloriesPageKeys.entryTile('bundle-image-entry')),
-    );
+      final imageFinder = find.byKey(
+        CaloriesPageKeys.entryImage('bundle-image-entry'),
+      );
+      expect(imageFinder, findsOneWidget);
 
-    final imageFinder = find.byKey(
-      CaloriesPageKeys.entryImage('bundle-image-entry'),
-    );
-    expect(imageFinder, findsOneWidget);
-
-    final imageWidget = tester.widget<Image>(imageFinder);
-    expect(imageWidget.image, isA<MemoryImage>());
-  });
+      final imageWidget = tester.widget<Image>(imageFinder);
+      expect(imageWidget.image, isA<MemoryImage>());
+    },
+  );
 
   testWidgets(
     'renders prepared meal image from local device storage for bundle entry',
@@ -510,6 +519,7 @@ void main() {
             'bundle-local-image-entry',
             loggedAt: DateTime(today.year, today.month, today.day, 12),
             mealType: MealType.lunch,
+            imageAssetId: 'asset-bundle-local-image-entry',
           ),
         ],
       );
@@ -519,7 +529,7 @@ void main() {
       addTearDown(settingsRepository.dispose);
 
       await localImageStore.saveBytes(
-        imageRef: calorieEntryImageRef('bundle-local-image-entry'),
+        imageRef: localImageAssetRef('asset-bundle-local-image-entry'),
         bytes: Uint8List.fromList(<int>[1, 2, 3]),
       );
 

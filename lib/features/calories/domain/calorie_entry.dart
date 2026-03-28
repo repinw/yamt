@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
@@ -101,7 +98,7 @@ class CalorieEntry {
     required this.updatedAt,
     this.brand,
     this.imageUrl,
-    this.imageBase64,
+    this.imageAssetId,
     this.sourceInventoryItemId,
     this.sourceInventoryAmountToRestore,
     this.bundleSourcePreparedMealId,
@@ -126,7 +123,7 @@ class CalorieEntry {
     DateTime? updatedAt,
     String? brand,
     String? imageUrl,
-    String? imageBase64,
+    String? imageAssetId,
     String? sourceInventoryItemId,
     int? sourceInventoryAmountToRestore,
   }) {
@@ -153,7 +150,7 @@ class CalorieEntry {
       updatedAt: updatedAt ?? now,
       brand: brand,
       imageUrl: imageUrl,
-      imageBase64: imageBase64,
+      imageAssetId: imageAssetId,
       sourceInventoryItemId: sourceInventoryItemId,
       sourceInventoryAmountToRestore: sourceInventoryAmountToRestore,
     );
@@ -177,7 +174,7 @@ class CalorieEntry {
     DateTime? updatedAt,
     String? brand,
     String? imageUrl,
-    String? imageBase64,
+    String? imageAssetId,
   }) {
     final now = DateTime.now();
 
@@ -187,7 +184,7 @@ class CalorieEntry {
       name: name,
       brand: brand,
       imageUrl: imageUrl,
-      imageBase64: imageBase64,
+      imageAssetId: imageAssetId,
       mealType: mealType,
       consumedAmount: 100,
       consumedUnit: ConsumedUnit.grams,
@@ -218,8 +215,7 @@ class CalorieEntry {
   final String name;
   final String? brand;
   final String? imageUrl;
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  final String? imageBase64;
+  final String? imageAssetId;
   final String? sourceInventoryItemId;
   final int? sourceInventoryAmountToRestore;
   final String? bundleSourcePreparedMealId;
@@ -295,25 +291,13 @@ class CalorieEntry {
         (bundleConsumedPortions ?? 0) > 0;
   }
 
-  Uint8List? get imageBytes {
-    final raw = imageBase64?.trim();
-    if (raw == null || raw.isEmpty) {
-      return null;
-    }
-    try {
-      return base64Decode(raw);
-    } catch (_) {
-      return null;
-    }
-  }
-
   CalorieEntry copyWith({
     String? id,
     String? userId,
     String? name,
     String? brand,
     String? imageUrl,
-    Object? imageBase64 = _keepValue,
+    Object? imageAssetId = _keepValue,
     Object? sourceInventoryItemId = _keepValue,
     Object? sourceInventoryAmountToRestore = _keepValue,
     Object? bundleSourcePreparedMealId = _keepValue,
@@ -341,9 +325,9 @@ class CalorieEntry {
       name: name ?? this.name,
       brand: brand ?? this.brand,
       imageUrl: imageUrl ?? this.imageUrl,
-      imageBase64: imageBase64 == _keepValue
-          ? this.imageBase64
-          : imageBase64 as String?,
+      imageAssetId: imageAssetId == _keepValue
+          ? this.imageAssetId
+          : imageAssetId as String?,
       sourceInventoryItemId: sourceInventoryItemId == _keepValue
           ? this.sourceInventoryItemId
           : sourceInventoryItemId as String?,

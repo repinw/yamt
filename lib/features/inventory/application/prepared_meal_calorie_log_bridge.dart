@@ -1,21 +1,13 @@
-import 'dart:developer' show log;
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/data/local_image_store.dart';
 import 'package:uuid/uuid.dart';
-import 'package:yamt/features/calories/data/calorie_entry_image_ref.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart'
     show InventoryAmountUnit, InventoryAmountUnitCode;
-import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 part 'prepared_meal_calorie_log_bridge.g.dart';
-
-const _bridgeLogName = 'PreparedMealCalorieLogBridge';
 
 /// Bridges prepared-meal consumption into the calorie diary domain.
 abstract interface class PreparedMealCalorieLogBridge {
@@ -28,12 +20,11 @@ abstract interface class PreparedMealCalorieLogBridge {
 
 @riverpod
 PreparedMealCalorieLogBridge preparedMealCalorieLogBridge(Ref ref) {
-  final container = ref.container;
   return _RepositoryPreparedMealCalorieLogBridge(
-    calorieLogRepository: ref.read(calorieLogRepositoryProvider),
-    localImageStore: ref.read(localImageStoreProvider),
-    invalidateLocalImage: (imageRef) {
-      container.invalidate(localImageBytesProvider(imageRef));
+    saveEntry: (entry) {
+      return ref.read(calorieEntriesControllerProvider.notifier).saveEntry(
+        entry,
+      );
     },
     now: DateTime.now,
   );
@@ -42,20 +33,14 @@ PreparedMealCalorieLogBridge preparedMealCalorieLogBridge(Ref ref) {
 class _RepositoryPreparedMealCalorieLogBridge
     implements PreparedMealCalorieLogBridge {
   _RepositoryPreparedMealCalorieLogBridge({
-    required CalorieLogRepositoryContract calorieLogRepository,
-    required LocalImageStore localImageStore,
-    required void Function(LocalImageRef imageRef) invalidateLocalImage,
+    required Future<bool> Function(CalorieEntry entry) saveEntry,
     required DateTime Function() now,
-  }) : _calorieLogRepository = calorieLogRepository,
-       _localImageStore = localImageStore,
-       _invalidateLocalImage = invalidateLocalImage,
+  }) : _saveEntry = saveEntry,
        _now = now;
 
   static const _uuid = Uuid();
 
-  final CalorieLogRepositoryContract _calorieLogRepository;
-  final LocalImageStore _localImageStore;
-  final void Function(LocalImageRef imageRef) _invalidateLocalImage;
+  final Future<bool> Function(CalorieEntry entry) _saveEntry;
   final DateTime Function() _now;
 
   @override
@@ -74,7 +59,7 @@ class _RepositoryPreparedMealCalorieLogBridge
       id: _uuid.v4(),
       userId: '',
       name: meal.name,
-      imageBase64: meal.imageBase64,
+      imageAssetId: meal.imageAssetId,
       mealType: mealType,
       totalKcal: meal.totalKcal * portionRatio,
       totalProtein: meal.totalProtein * portionRatio,
@@ -92,33 +77,7 @@ class _RepositoryPreparedMealCalorieLogBridge
       updatedAt: now,
     );
 
-    log(
-      'Writing prepared meal bundle mealId=${meal.id} '
-      'consumedPortions=$consumedPortions '
-      'portionRatio=${portionRatio.toStringAsFixed(4)} '
-      'components=${entry.bundleComponents.length}.',
-      name: _bridgeLogName,
-    );
-    return _saveEntryWithLocalImage(meal: meal, entry: entry);
-  }
-
-  Future<bool> _saveEntryWithLocalImage({
-    required PreparedMeal meal,
-    required CalorieEntry entry,
-  }) async {
-    final saved = await _calorieLogRepository.saveEntry(entry);
-    if (!saved) {
-      return false;
-    }
-
-    final sourceRef = preparedMealImageRef(meal.id);
-    final targetRef = calorieEntryImageRef(entry.id);
-    await _localImageStore.copyImage(
-      sourceRef: sourceRef,
-      targetRef: targetRef,
-    );
-    _invalidateLocalImage(targetRef);
-    return true;
+    return _saveEntry(entry);
   }
 }
 
