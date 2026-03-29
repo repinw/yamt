@@ -619,6 +619,75 @@ void main() {
     );
   });
 
+  test(
+    'stagePendingConsumption updates visible stock without saving',
+    () async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <InventoryItem>[
+          _item('a').copyWith(quantity: 3),
+        ],
+      );
+      addTearDown(repository.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final controllerSubscription = _keepControllerAlive(container);
+      addTearDown(controllerSubscription.close);
+
+      await container.read(inventoryItemsControllerProvider.future);
+      final pendingConsumption = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .stagePendingConsumption('a', 2);
+
+      expect(pendingConsumption, isNotNull);
+      expect(pendingConsumption?.amount, 2);
+      expect(
+        container.read(inventoryItemsControllerProvider).value?.single.quantity,
+        1,
+      );
+      expect(repository.savedItems, isEmpty);
+    },
+  );
+
+  test(
+    'discardPendingConsumption restores visible stock without saving',
+    () async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <InventoryItem>[
+          _item('a').copyWith(quantity: 3),
+        ],
+      );
+      addTearDown(repository.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final controllerSubscription = _keepControllerAlive(container);
+      addTearDown(controllerSubscription.close);
+
+      await container.read(inventoryItemsControllerProvider.future);
+      final pendingConsumption = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .stagePendingConsumption('a', 2);
+
+      final discarded = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .discardPendingConsumption(pendingConsumption!.id);
+
+      expect(discarded, isTrue);
+      expect(
+        container.read(inventoryItemsControllerProvider).value?.single.quantity,
+        3,
+      );
+      expect(repository.savedItems, isEmpty);
+    },
+  );
+
   test('eatItem rolls back quantity change when save throws', () async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[_item('a').copyWith(quantity: 3)],

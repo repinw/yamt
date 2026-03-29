@@ -49,6 +49,7 @@ class _EatButton extends ConsumerWidget {
           ref: ref,
           itemBeforeMutation: item,
           consumedAmount: 250,
+          pendingConsumptionId: 'pending-1',
         );
       },
       child: const Text('eat'),

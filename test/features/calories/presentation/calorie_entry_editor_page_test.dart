@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -16,11 +19,105 @@ import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.da
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../support/fake_calories_repositories.dart';
 
 class _MockUser extends Mock implements User {}
+
+class _FakeInventoryItemRepository implements InventoryItemRepository {
+  _FakeInventoryItemRepository({required List<InventoryItem> initialItems})
+    : _items = List<InventoryItem>.from(initialItems);
+
+  final StreamController<List<InventoryItem>> _controller =
+      StreamController<List<InventoryItem>>.broadcast();
+  List<InventoryItem> _items;
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async => true;
+
+  @override
+  Future<List<InventoryItem>> readAll() async {
+    return List<InventoryItem>.from(_items);
+  }
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async {
+    _items = List<InventoryItem>.from(items);
+    _controller.add(List<InventoryItem>.from(_items));
+    return true;
+  }
+
+  @override
+  Stream<List<InventoryItem>> watchAll() {
+    return Stream<List<InventoryItem>>.multi((controller) {
+      controller.add(List<InventoryItem>.from(_items));
+      final subscription = _controller.stream.listen(controller.add);
+      controller.onCancel = () {
+        unawaited(subscription.cancel());
+      };
+    });
+  }
+
+  Future<void> dispose() => _controller.close();
+}
+
+class _RecordingInventorySaveFlow
+    implements InventoryBackedCalorieEntrySaveFlow {
+  CalorieEntry? entry;
+  String? pendingConsumptionId;
+
+  @override
+  Future<bool> saveEntry({
+    required CalorieEntry entry,
+    required String pendingConsumptionId,
+  }) async {
+    this.entry = entry;
+    this.pendingConsumptionId = pendingConsumptionId;
+    return true;
+  }
+}
+
+class _AutoOpenCreateRoutePage extends StatefulWidget {
+  const _AutoOpenCreateRoutePage({this.extra});
+
+  final Object? extra;
+
+  @override
+  State<_AutoOpenCreateRoutePage> createState() =>
+      _AutoOpenCreateRoutePageState();
+}
+
+class _AutoOpenCreateRoutePageState extends State<_AutoOpenCreateRoutePage> {
+  var _didOpenRoute = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didOpenRoute) {
+      return;
+    }
+    _didOpenRoute = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      GoRouter.of(
+        context,
+      ).push(AppRoutes.homeCaloriesEntryCreate, extra: widget.extra);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(body: SizedBox.shrink());
+  }
+}
 
 CalorieEntry _entry(String id) {
   return CalorieEntry.create(
@@ -40,11 +137,25 @@ CalorieEntry _entry(String id) {
   );
 }
 
+InventoryItem _inventoryItem({int quantity = 3}) {
+  return InventoryItem.create(
+    id: 'inventory-1',
+    name: 'Milk',
+    entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
+    storeName: 'Store',
+    quantity: quantity,
+    initialQuantity: 3,
+  );
+}
+
 Widget _buildHarness({
   required FakeCalorieLogRepository logRepository,
   required FakeCalorieSettingsRepository settingsRepository,
   required String initialLocation,
   Object? createExtra,
+  ProviderContainer? container,
+  List<Override> additionalOverrides = const <Override>[],
+  bool openCreateFromRoot = false,
 }) {
   final router = GoRouter(
     initialLocation: initialLocation,
@@ -52,7 +163,12 @@ Widget _buildHarness({
     routes: <RouteBase>[
       GoRoute(
         path: '/',
-        builder: (context, state) => const Scaffold(body: Text('Root')),
+        builder: (context, state) {
+          if (openCreateFromRoot) {
+            return _AutoOpenCreateRoutePage(extra: createExtra);
+          }
+          return const Scaffold(body: Text('Root'));
+        },
       ),
       GoRoute(
         path: AppRoutes.homeCaloriesEntryCreate,
@@ -82,18 +198,25 @@ Widget _buildHarness({
   final user = _MockUser();
   when(() => user.uid).thenReturn('user-1');
 
+  final app = MaterialApp.router(
+    locale: const Locale('en'),
+    routerConfig: router,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+  );
+
+  if (container != null) {
+    return UncontrolledProviderScope(container: container, child: app);
+  }
+
   return ProviderScope(
     overrides: [
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      ...additionalOverrides,
     ],
-    child: MaterialApp.router(
-      locale: const Locale('en'),
-      routerConfig: router,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-    ),
+    child: app,
   );
 }
 
@@ -324,4 +447,151 @@ void main() {
       'https://images.example.com/yogurt.jpg',
     );
   });
+
+  testWidgets('back navigation rolls back pending inventory consumption', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    final inventoryRepository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[_inventoryItem()],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+    addTearDown(inventoryRepository.dispose);
+
+    final user = _MockUser();
+    when(() => user.uid).thenReturn('user-1');
+
+    final container = ProviderContainer(
+      overrides: [
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(user),
+        ),
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+        inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final inventorySubscription = container.listen(
+      inventoryItemsControllerProvider,
+      (_, _) {},
+    );
+    addTearDown(inventorySubscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final pendingConsumption = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .stagePendingConsumption('inventory-1', 2);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.root,
+        createExtra: CalorieEntryCreateArgs(
+          prefilledProfile: null,
+          inventoryContext: CalorieInventoryCreateContext(
+            inventoryItemId: 'inventory-1',
+            foodFingerprint: 'milk',
+            pendingConsumptionId: pendingConsumption!.id,
+            inventoryAmountToRestore: 2,
+            itemName: 'Milk',
+            itemBrand: null,
+            consumedAmount: 100,
+            consumedUnit: ConsumedUnit.grams,
+          ),
+        ),
+        container: container,
+        openCreateFromRoot: true,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      container.read(inventoryItemsControllerProvider).value?.single.quantity,
+      1,
+    );
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    expect(
+      container.read(inventoryItemsControllerProvider).value?.single.quantity,
+      3,
+    );
+    expect(
+      container
+          .read(inventoryItemsControllerProvider.notifier)
+          .hasPendingConsumption(pendingConsumption.id),
+      isFalse,
+    );
+  });
+
+  testWidgets(
+    'create flow delegates inventory-backed save when pending exists',
+    (tester) async {
+      final logRepository = FakeCalorieLogRepository();
+      final settingsRepository = FakeCalorieSettingsRepository();
+      final saveFlow = _RecordingInventorySaveFlow();
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          logRepository: logRepository,
+          settingsRepository: settingsRepository,
+          initialLocation: AppRoutes.homeCaloriesEntryCreate,
+          createExtra: CalorieEntryCreateArgs(
+            prefilledProfile: null,
+            inventoryContext: const CalorieInventoryCreateContext(
+              inventoryItemId: 'inventory-1',
+              foodFingerprint: 'milk',
+              pendingConsumptionId: 'pending-1',
+              inventoryAmountToRestore: 2,
+              itemName: 'Milk',
+              itemBrand: null,
+              consumedAmount: 100,
+              consumedUnit: ConsumedUnit.grams,
+            ),
+          ),
+          additionalOverrides: [
+            inventoryBackedCalorieEntrySaveFlowProvider.overrideWithValue(
+              saveFlow,
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(CalorieEntryEditorKeys.nameField),
+        'Greek Yogurt',
+      );
+      await tester.enterText(
+        find.byKey(CalorieEntryEditorKeys.per100KcalField),
+        '95',
+      );
+      await tester.enterText(
+        find.byKey(CalorieEntryEditorKeys.per100ProteinField),
+        '9.8',
+      );
+      await tester.enterText(
+        find.byKey(CalorieEntryEditorKeys.per100CarbsField),
+        '4.1',
+      );
+      await tester.enterText(
+        find.byKey(CalorieEntryEditorKeys.per100FatField),
+        '0.5',
+      );
+
+      await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
+      await tester.pumpAndSettle();
+
+      expect(saveFlow.pendingConsumptionId, 'pending-1');
+      expect(saveFlow.entry?.sourceInventoryItemId, 'inventory-1');
+      expect(logRepository.entries, isEmpty);
+    },
+  );
 }

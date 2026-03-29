@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
@@ -277,6 +278,13 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     required int amount,
     required List<InventoryItem> itemsSnapshot,
   }) async {
+    final flags = ref.read(barcodeBackfillFeatureFlagsProvider);
+    if (!flags.enableEatBridge) {
+      return ref
+          .read(inventoryItemsControllerProvider.notifier)
+          .eatItem(itemId, amount);
+    }
+
     InventoryItem? selectedItem;
     for (final item in itemsSnapshot) {
       if (item.id == itemId) {
@@ -284,12 +292,15 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         break;
       }
     }
+    if (selectedItem == null) {
+      return false;
+    }
 
-    final saved = await ref
+    final pendingConsumption = await ref
         .read(inventoryItemsControllerProvider.notifier)
-        .eatItem(itemId, amount);
-    if (!saved || selectedItem == null || !context.mounted) {
-      return saved;
+        .stagePendingConsumption(itemId, amount);
+    if (pendingConsumption == null || !context.mounted) {
+      return false;
     }
 
     unawaited(
@@ -297,7 +308,8 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         context: context,
         ref: ref,
         itemBeforeMutation: selectedItem,
-        consumedAmount: amount,
+        consumedAmount: pendingConsumption.amount,
+        pendingConsumptionId: pendingConsumption.id,
       ),
     );
     return true;

@@ -1,0 +1,157 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
+import 'package:yamt/features/calories/data/'
+    'inventory_calorie_entry_commit_store.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+
+class _FakeInventoryItemRepository implements InventoryItemRepository {
+  _FakeInventoryItemRepository({required List<InventoryItem> initialItems})
+    : _items = List<InventoryItem>.from(initialItems);
+
+  final StreamController<List<InventoryItem>> _controller =
+      StreamController<List<InventoryItem>>.broadcast();
+  List<InventoryItem> _items;
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async {
+    return true;
+  }
+
+  @override
+  Future<List<InventoryItem>> readAll() async {
+    return List<InventoryItem>.from(_items);
+  }
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async {
+    _items = List<InventoryItem>.from(items);
+    _controller.add(List<InventoryItem>.from(_items));
+    return true;
+  }
+
+  @override
+  Stream<List<InventoryItem>> watchAll() {
+    return Stream<List<InventoryItem>>.multi((controller) {
+      controller.add(List<InventoryItem>.from(_items));
+      final subscription = _controller.stream.listen(controller.add);
+      controller.onCancel = () {
+        unawaited(subscription.cancel());
+      };
+    });
+  }
+
+  Future<void> dispose() => _controller.close();
+}
+
+class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
+  PendingInventoryConsumption? pendingConsumption;
+  CalorieEntry? entry;
+
+  @override
+  Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
+    required CalorieEntry entry,
+    required PendingInventoryConsumption pendingConsumption,
+  }) async {
+    this.entry = entry;
+    this.pendingConsumption = pendingConsumption;
+    return InventoryCalorieEntryCommitResult(
+      committedItem: _inventoryItem().copyWith(quantity: 1),
+    );
+  }
+}
+
+InventoryItem _inventoryItem() {
+  return InventoryItem.create(
+    id: 'inventory-1',
+    name: 'Milk',
+    entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
+    storeName: 'Store',
+    quantity: 3,
+    initialQuantity: 3,
+  );
+}
+
+CalorieEntry _entry() {
+  return CalorieEntry.create(
+    id: 'entry-1',
+    userId: 'user-1',
+    name: 'Milk',
+    mealType: MealType.breakfast,
+    consumedAmount: 100,
+    consumedUnit: ConsumedUnit.grams,
+    per100Kcal: 60,
+    per100Protein: 3.2,
+    per100Carbs: 4.8,
+    per100Fat: 1.5,
+    sourceInventoryItemId: 'inventory-1',
+    sourceInventoryAmountToRestore: 2,
+    loggedAt: DateTime(2026, 3, 27, 8),
+    createdAt: DateTime(2026, 3, 27, 8),
+    updatedAt: DateTime(2026, 3, 27, 8),
+  );
+}
+
+ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepInventoryAlive(
+  ProviderContainer container,
+) {
+  return container.listen(inventoryItemsControllerProvider, (_, _) {});
+}
+
+void main() {
+  test(
+    'save flow commits pending inventory consumption and finalizes state',
+    () async {
+      final repository = _FakeInventoryItemRepository(
+        initialItems: <InventoryItem>[_inventoryItem()],
+      );
+      final commitStore = _RecordingCommitStore();
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+          inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
+            commitStore,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final inventorySubscription = _keepInventoryAlive(container);
+      addTearDown(inventorySubscription.close);
+
+      await container.read(inventoryItemsControllerProvider.future);
+      final pendingConsumption = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .stagePendingConsumption('inventory-1', 2);
+
+      final saved = await container
+          .read(inventoryBackedCalorieEntrySaveFlowProvider)
+          .saveEntry(
+            entry: _entry(),
+            pendingConsumptionId: pendingConsumption!.id,
+          );
+
+      expect(saved, isTrue);
+      expect(commitStore.entry?.id, 'entry-1');
+      expect(commitStore.pendingConsumption?.amount, 2);
+      expect(
+        container.read(inventoryItemsControllerProvider).value?.single.quantity,
+        1,
+      );
+      expect(
+        container
+            .read(inventoryItemsControllerProvider.notifier)
+            .hasPendingConsumption(pendingConsumption.id),
+        isFalse,
+      );
+    },
+  );
+}

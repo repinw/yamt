@@ -87,6 +87,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
   Future<bool> saveEntry(
     CalorieEntry entry, {
     CalorieScannedSourceRef? scannedSourceRef,
+    Future<bool> Function(CalorieEntry entry)? persistEntry,
   }) {
     final keepAliveLink = ref.keepAlive();
     final selectedDay = ref.read(calorieDayControllerProvider);
@@ -98,7 +99,9 @@ class CalorieEntriesController extends _$CalorieEntriesController {
           selectedDay: selectedDay,
         );
       },
-      persist: () => ref.read(calorieLogRepositoryProvider).saveEntry(entry),
+      persist: () =>
+          persistEntry?.call(entry) ??
+          ref.read(calorieLogRepositoryProvider).saveEntry(entry),
       failureLogMessage: 'Failed to persist calorie entry ${entry.id}.',
       onPersisted: scannedSourceRef == null
           ? null
