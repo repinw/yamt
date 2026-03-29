@@ -45,7 +45,7 @@ abstract interface class CalorieNutritionTemplateModelClient {
 @riverpod
 CalorieNutritionOcrRepositoryContract calorieNutritionOcrRepository(Ref ref) {
   final imagePicker = ref.watch(calorieNutritionImagePickerProvider);
-  return FirebaseCalorieNutritionOcrRepository(
+  return _FirebaseCalorieNutritionOcrRepository(
     imagePicker: imagePicker,
     configClient: ref.watch(calorieNutritionTemplateConfigClientProvider),
     modelClient: ref.watch(calorieNutritionTemplateModelClientProvider),
@@ -61,7 +61,7 @@ ImagePicker calorieNutritionImagePicker(Ref ref) {
 CalorieNutritionTemplateConfigClient calorieNutritionTemplateConfigClient(
   Ref ref,
 ) {
-  return FirebaseCalorieNutritionTemplateConfigClient(
+  return _FirebaseCalorieNutritionTemplateConfigClient(
     remoteConfig: FirebaseRemoteConfig.instance,
   );
 }
@@ -70,16 +70,16 @@ CalorieNutritionTemplateConfigClient calorieNutritionTemplateConfigClient(
 CalorieNutritionTemplateModelClient calorieNutritionTemplateModelClient(
   Ref ref,
 ) {
-  return FirebaseCalorieNutritionTemplateModelClient(
+  return _FirebaseCalorieNutritionTemplateModelClient(
     model: FirebaseAI.vertexAI(
       location: _vertexLocation,
     ).templateGenerativeModel(),
   );
 }
 
-class FirebaseCalorieNutritionTemplateConfigClient
+class _FirebaseCalorieNutritionTemplateConfigClient
     implements CalorieNutritionTemplateConfigClient {
-  FirebaseCalorieNutritionTemplateConfigClient({
+  _FirebaseCalorieNutritionTemplateConfigClient({
     required FirebaseRemoteConfig remoteConfig,
   }) : _remoteConfig = remoteConfig;
 
@@ -114,9 +114,9 @@ class FirebaseCalorieNutritionTemplateConfigClient
   }
 }
 
-class FirebaseCalorieNutritionTemplateModelClient
+class _FirebaseCalorieNutritionTemplateModelClient
     implements CalorieNutritionTemplateModelClient {
-  FirebaseCalorieNutritionTemplateModelClient({
+  _FirebaseCalorieNutritionTemplateModelClient({
     required TemplateGenerativeModel model,
   }) : _model = model;
 
@@ -132,9 +132,9 @@ class FirebaseCalorieNutritionTemplateModelClient
   }
 }
 
-class FirebaseCalorieNutritionOcrRepository
+class _FirebaseCalorieNutritionOcrRepository
     implements CalorieNutritionOcrRepositoryContract {
-  FirebaseCalorieNutritionOcrRepository({
+  _FirebaseCalorieNutritionOcrRepository({
     required ImagePicker imagePicker,
     required CalorieNutritionTemplateConfigClient configClient,
     required CalorieNutritionTemplateModelClient modelClient,

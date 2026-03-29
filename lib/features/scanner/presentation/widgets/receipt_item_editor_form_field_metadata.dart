@@ -98,10 +98,4 @@ extension ReceiptItemEditorDraftFieldMetadata on ReceiptItemEditorDraftField {
         l10n.inventoryReceiptReviewFieldDiscounts,
     };
   }
-
-  String? hintText(AppLocalizations _) {
-    return switch (this) {
-      _ => null,
-    };
-  }
 }

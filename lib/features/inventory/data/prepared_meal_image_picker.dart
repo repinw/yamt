@@ -36,9 +36,6 @@ abstract final class PreparedMealImagePickerErrorCodes {
   static const filePickFailed = 'prepared_meal_file_pick_failed';
 }
 
-typedef PreparedMealImageOptimizationRunner =
-    Future<Map<String, Object?>> Function(Map<String, Object> message);
-
 abstract interface class PreparedMealImagePicker {
   Future<Uint8List?> pickFromCamera();
 
@@ -49,14 +46,14 @@ abstract interface class PreparedMealImagePicker {
 
 @riverpod
 PreparedMealImagePicker preparedMealImagePicker(Ref ref) {
-  return DevicePreparedMealImagePicker(
+  return _DevicePreparedMealImagePicker(
     imagePicker: ImagePicker(),
     filePicker: FilePicker.platform,
   );
 }
 
-class DevicePreparedMealImagePicker implements PreparedMealImagePicker {
-  DevicePreparedMealImagePicker({
+class _DevicePreparedMealImagePicker implements PreparedMealImagePicker {
+  _DevicePreparedMealImagePicker({
     required ImagePicker imagePicker,
     required FilePicker filePicker,
   }) : _imagePicker = imagePicker,
@@ -154,7 +151,8 @@ Future<Uint8List> optimizePreparedMealImageBytes(
   int maxBytes = _maxPreparedMealImageBytes,
   int maxWidth = _normalizedImageMaxWidth,
   int maxHeight = _normalizedImageMaxHeight,
-  PreparedMealImageOptimizationRunner optimizationRunner =
+  Future<Map<String, Object?>> Function(Map<String, Object> message)
+      optimizationRunner =
       _runPreparedMealImageOptimizationInIsolate,
 }) async {
   final message = <String, Object>{

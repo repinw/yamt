@@ -96,7 +96,6 @@ class _ReceiptEditorTextFieldsGroup extends StatelessWidget {
             field: field,
             label: field.labelText(l10n),
             keyboardType: field.keyboardType,
-            hintText: field.hintText(l10n),
             validator: _validatorFor(field),
             onSubmitted: onSubmit,
           ),
@@ -121,7 +120,6 @@ class _ReceiptEditorTextField extends StatelessWidget {
     required this.field,
     required this.label,
     required this.keyboardType,
-    required this.hintText,
     required this.validator,
     required this.onSubmitted,
   });
@@ -129,7 +127,6 @@ class _ReceiptEditorTextField extends StatelessWidget {
   final ReceiptItemEditorDraftField field;
   final String label;
   final TextInputType? keyboardType;
-  final String? hintText;
   final ReceiptItemEditorTextValidator? validator;
   final VoidCallback onSubmitted;
 
@@ -147,7 +144,7 @@ class _ReceiptEditorTextField extends StatelessWidget {
         onSubmitted: (_) => onSubmitted(),
         onChanged: (_) => _revalidateLinkedFields(context),
         validator: validator,
-        decoration: InputDecoration(labelText: label, hintText: hintText),
+        decoration: InputDecoration(labelText: label),
       ),
     );
   }

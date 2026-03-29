@@ -64,7 +64,7 @@ class ShoppingListFacade {
   final ShoppingListAddItem _addItem;
 
   Future<bool> addInventoryItem(InventoryItem item) {
-    final quantity = normalizeInventoryQuantityForShopping(
+    final quantity = _normalizeInventoryQuantityForShopping(
       item.initialQuantity,
     );
     return _addItem(
@@ -86,7 +86,7 @@ class ShoppingListFacade {
   }
 }
 
-int normalizeInventoryQuantityForShopping(int initialQuantity) {
+int _normalizeInventoryQuantityForShopping(int initialQuantity) {
   return initialQuantity > 0 ? initialQuantity : 1;
 }
 
@@ -108,7 +108,7 @@ Set<ShoppingListItemMatchKey> computeActiveShoppingListItemKeys(
       .toSet();
 }
 
-ShoppingListItemMatchKey? inventoryItemMatchKey(InventoryItem item) {
+ShoppingListItemMatchKey? _inventoryItemMatchKey(InventoryItem item) {
   final normalizedName = normalizeShoppingListValue(item.name);
   if (normalizedName.isEmpty) {
     return null;
@@ -125,7 +125,7 @@ bool isInventoryItemInActiveShoppingList({
     return false;
   }
 
-  final key = inventoryItemMatchKey(item);
+  final key = _inventoryItemMatchKey(item);
   if (key == null) {
     return false;
   }
