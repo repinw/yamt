@@ -1,7 +1,6 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:meta/meta.dart';
 import 'package:yamt/core/data/firestore_atomic_replace_service.dart';
 
 const String _storeLogName = 'FirestoreGlobalFoodItemStore';
@@ -38,18 +37,9 @@ abstract interface class GlobalFoodItemStore {
 
 class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
   const FirestoreGlobalFoodItemStore({required FirebaseFirestore firestore})
-    : _firestore = firestore,
-      _onBeforeDeleteStaleDocuments = null;
-
-  @visibleForTesting
-  const FirestoreGlobalFoodItemStore.testing({
-    required FirebaseFirestore firestore,
-    Future<void> Function()? onBeforeDeleteStaleDocuments,
-  }) : _firestore = firestore,
-       _onBeforeDeleteStaleDocuments = onBeforeDeleteStaleDocuments;
+    : _firestore = firestore;
 
   final FirebaseFirestore _firestore;
-  final Future<void> Function()? _onBeforeDeleteStaleDocuments;
 
   FirestoreAtomicReplaceService get _atomicReplaceService {
     return FirestoreAtomicReplaceService(firestore: _firestore);
@@ -139,7 +129,6 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
       await _atomicReplaceService.replaceAll(
         collection: _collection(),
         documentsById: documentsById,
-        onBeforeDeleteStaleDocuments: _onBeforeDeleteStaleDocuments,
       );
       return true;
     } catch (error, stackTrace) {

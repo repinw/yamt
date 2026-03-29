@@ -24,15 +24,8 @@ import 'package:yamt/features/inventory/provider/inventory_items_controller.dart
 import 'package:yamt/l10n/app_localizations.dart';
 
 class CalorieBarcodeScanPage extends ConsumerStatefulWidget {
-  const CalorieBarcodeScanPage({
-    super.key,
-    this.barcodeStreamForTesting,
-    this.showScannerPreview = true,
-    this.inventoryContext,
-  });
+  const CalorieBarcodeScanPage({super.key, this.inventoryContext});
 
-  final Stream<String>? barcodeStreamForTesting;
-  final bool showScannerPreview;
   final CalorieInventoryCreateContext? inventoryContext;
 
   @override
@@ -46,24 +39,10 @@ class _CalorieBarcodeScanPageState
   static const _logName = 'CalorieBarcodeScanPage';
 
   final MobileScannerController _scannerController = MobileScannerController();
-  StreamSubscription<String>? _testBarcodeSubscription;
   bool _isResolving = false;
 
   @override
-  void initState() {
-    super.initState();
-    final stream = widget.barcodeStreamForTesting;
-    if (stream == null) {
-      return;
-    }
-    _testBarcodeSubscription = stream.listen((barcode) {
-      _handleDetectedBarcode(barcode);
-    });
-  }
-
-  @override
   void dispose() {
-    _testBarcodeSubscription?.cancel();
     _scannerController.dispose();
     super.dispose();
   }
@@ -78,14 +57,11 @@ class _CalorieBarcodeScanPageState
         body: Stack(
           fit: StackFit.expand,
           children: <Widget>[
-            if (widget.showScannerPreview)
-              MobileScanner(
-                key: CalorieBarcodeScanKeys.scannerView,
-                controller: _scannerController,
-                onDetect: _onDetect,
-              )
-            else
-              const SizedBox.expand(key: CalorieBarcodeScanKeys.scannerView),
+            MobileScanner(
+              key: CalorieBarcodeScanKeys.scannerView,
+              controller: _scannerController,
+              onDetect: _onDetect,
+            ),
             if (_isResolving)
               ColoredBox(
                 color: Colors.black45,
