@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
@@ -190,6 +191,11 @@ class CalorieGoalCalculatorFormState {
       return fixed;
     }
     return fixed.replaceFirst(RegExp(r'\.?0+$'), '');
+  }
+
+  @visibleForTesting
+  static double? parsePositiveDoubleForTesting(String rawValue) {
+    return _parsePositiveDouble(rawValue);
   }
 
   static double? _parsePositiveDouble(String rawValue) {

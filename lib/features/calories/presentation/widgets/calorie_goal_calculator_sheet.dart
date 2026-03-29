@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_calculator_components.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/'
@@ -251,14 +251,14 @@ class _CalorieGoalCalculatorSheetState
 
     switch (step) {
       case _CalculatorOnboardingStep.sex:
-        return _SexSegmentedControl(
+        return CalorieGoalCalculatorSexSegmentedControl(
           selectedSex: state.sex,
           onSelected: (sex) {
             ref.read(formProvider.notifier).updateSex(sex);
           },
         );
       case _CalculatorOnboardingStep.weight:
-        return _NumberField(
+        return CalorieGoalCalculatorNumberField(
           fieldKey: CalorieGoalCalculatorSheetKeys.weightField,
           controller: _weightController,
           label: l10n.caloriesCalculatorWeightLabel,
@@ -267,7 +267,7 @@ class _CalorieGoalCalculatorSheetState
           onChanged: ref.read(formProvider.notifier).updateWeightKg,
         );
       case _CalculatorOnboardingStep.height:
-        return _NumberField(
+        return CalorieGoalCalculatorNumberField(
           fieldKey: CalorieGoalCalculatorSheetKeys.heightField,
           controller: _heightController,
           label: l10n.caloriesCalculatorHeightLabel,
@@ -276,7 +276,7 @@ class _CalorieGoalCalculatorSheetState
           onChanged: ref.read(formProvider.notifier).updateHeightCm,
         );
       case _CalculatorOnboardingStep.age:
-        return _NumberField(
+        return CalorieGoalCalculatorNumberField(
           fieldKey: CalorieGoalCalculatorSheetKeys.ageField,
           controller: _ageController,
           label: l10n.caloriesCalculatorAgeLabel,
@@ -286,7 +286,7 @@ class _CalorieGoalCalculatorSheetState
           onChanged: ref.read(formProvider.notifier).updateAgeYears,
         );
       case _CalculatorOnboardingStep.activityLevel:
-        return _NumberField(
+        return CalorieGoalCalculatorNumberField(
           fieldKey: CalorieGoalCalculatorSheetKeys.activityLevelField,
           controller: _activityLevelController,
           label: l10n.caloriesCalculatorActivityLevelLabel,
@@ -296,7 +296,7 @@ class _CalorieGoalCalculatorSheetState
           onChanged: ref.read(formProvider.notifier).updateActivityLevel,
         );
       case _CalculatorOnboardingStep.goalMode:
-        return _GoalModeSegmentedControl(
+        return CalorieGoalCalculatorGoalModeSegmentedControl(
           selectedGoalMode: state.goalMode,
           onSelected: (goalMode) {
             ref.read(formProvider.notifier).updateGoalMode(goalMode);
@@ -304,7 +304,7 @@ class _CalorieGoalCalculatorSheetState
           },
         );
       case _CalculatorOnboardingStep.goalSpeed:
-        return _NumberField(
+        return CalorieGoalCalculatorNumberField(
           fieldKey: CalorieGoalCalculatorSheetKeys.goalSpeedField,
           controller: _goalSpeedController,
           label: l10n.caloriesCalculatorGoalSpeedLabel,
@@ -318,10 +318,10 @@ class _CalorieGoalCalculatorSheetState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (state.calculation != null)
-              _CalculationResultsCard(calculation: state.calculation!),
+              CalorieGoalCalculatorResultsCard(calculation: state.calculation!),
             if (state.calculation?.wasClampedToMinimum ?? false) ...[
               const SizedBox(height: AppSpacing.md),
-              _WarningCard(
+              CalorieGoalCalculatorWarningCard(
                 message: l10n.caloriesCalculatorMinimumGoalWarning(1200),
               ),
             ],
@@ -503,242 +503,6 @@ class _StepPanel extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         child,
       ],
-    );
-  }
-}
-
-class _NumberField extends StatelessWidget {
-  const _NumberField({
-    required this.fieldKey,
-    required this.controller,
-    required this.label,
-    required this.onChanged,
-    this.autofocus = false,
-    this.hintText,
-    this.errorText,
-    this.keyboardType,
-  });
-
-  final Key fieldKey;
-  final TextEditingController controller;
-  final String label;
-  final String? hintText;
-  final String? errorText;
-  final bool autofocus;
-  final ValueChanged<String> onChanged;
-  final TextInputType? keyboardType;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      key: fieldKey,
-      controller: controller,
-      autofocus: autofocus,
-      keyboardType:
-          keyboardType ?? const TextInputType.numberWithOptions(decimal: true),
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hintText,
-        errorText: errorText,
-      ),
-    );
-  }
-}
-
-class _SexSegmentedControl extends StatelessWidget {
-  const _SexSegmentedControl({
-    required this.selectedSex,
-    required this.onSelected,
-  });
-
-  final CalorieCalculatorSex selectedSex;
-  final ValueChanged<CalorieCalculatorSex> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return SegmentedButton<CalorieCalculatorSex>(
-      key: CalorieGoalCalculatorSheetKeys.sexSegment,
-      showSelectedIcon: false,
-      segments: <ButtonSegment<CalorieCalculatorSex>>[
-        ButtonSegment<CalorieCalculatorSex>(
-          value: CalorieCalculatorSex.male,
-          label: Text(l10n.caloriesCalculatorSexMale),
-        ),
-        ButtonSegment<CalorieCalculatorSex>(
-          value: CalorieCalculatorSex.female,
-          label: Text(l10n.caloriesCalculatorSexFemale),
-        ),
-      ],
-      selected: <CalorieCalculatorSex>{selectedSex},
-      onSelectionChanged: (selection) {
-        final nextValue = selection.firstOrNull;
-        if (nextValue != null) {
-          onSelected(nextValue);
-        }
-      },
-    );
-  }
-}
-
-class _GoalModeSegmentedControl extends StatelessWidget {
-  const _GoalModeSegmentedControl({
-    required this.selectedGoalMode,
-    required this.onSelected,
-  });
-
-  final CalorieGoalMode selectedGoalMode;
-  final ValueChanged<CalorieGoalMode> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return SegmentedButton<CalorieGoalMode>(
-      key: CalorieGoalCalculatorSheetKeys.goalModeSegment,
-      showSelectedIcon: false,
-      segments: <ButtonSegment<CalorieGoalMode>>[
-        ButtonSegment<CalorieGoalMode>(
-          value: CalorieGoalMode.lose,
-          label: Text(l10n.caloriesCalculatorGoalModeLose),
-        ),
-        ButtonSegment<CalorieGoalMode>(
-          value: CalorieGoalMode.maintain,
-          label: Text(l10n.caloriesCalculatorGoalModeMaintain),
-        ),
-        ButtonSegment<CalorieGoalMode>(
-          value: CalorieGoalMode.gain,
-          label: Text(l10n.caloriesCalculatorGoalModeGain),
-        ),
-      ],
-      selected: <CalorieGoalMode>{selectedGoalMode},
-      onSelectionChanged: (selection) {
-        final nextValue = selection.firstOrNull;
-        if (nextValue != null) {
-          onSelected(nextValue);
-        }
-      },
-    );
-  }
-}
-
-class _CalculationResultsCard extends StatelessWidget {
-  const _CalculationResultsCard({required this.calculation});
-
-  final CalorieGoalCalculationResult calculation;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final numberFormat = NumberFormat.decimalPattern(locale);
-    final kcalUnit = l10n.caloriesUnitKcal;
-
-    return DecoratedBox(
-      key: CalorieGoalCalculatorSheetKeys.resultsCard,
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
-        colors,
-        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
-      ),
-      child: Padding(
-        padding: AppInsets.card,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _SectionTitle(label: l10n.caloriesCalculatorResultsTitle),
-            const SizedBox(height: AppSpacing.md),
-            _ResultRow(
-              label: l10n.caloriesCalculatorBmrLabel,
-              value:
-                  '${numberFormat.format(calculation.bmrKcal.round())} $kcalUnit',
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            _ResultRow(
-              label: l10n.caloriesCalculatorTdeeLabel,
-              value:
-                  '${numberFormat.format(calculation.tdeeKcal.round())} '
-                  '$kcalUnit',
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            _ResultRow(
-              label: l10n.caloriesCalculatorDailyGoalLabel,
-              value:
-                  '${numberFormat.format(calculation.finalGoalKcal.round())} '
-                  '$kcalUnit',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ResultRow extends StatelessWidget {
-  const _ResultRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-        ),
-        Text(
-          value,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800),
-        ),
-      ],
-    );
-  }
-}
-
-class _WarningCard extends StatelessWidget {
-  const _WarningCard({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return DecoratedBox(
-      key: CalorieGoalCalculatorSheetKeys.warningCard,
-      decoration: BoxDecoration(
-        color: colors.errorContainer,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-      ),
-      child: Padding(
-        padding: AppInsets.card,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(Icons.warning_amber_rounded, color: colors.onErrorContainer),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                message,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colors.onErrorContainer,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
