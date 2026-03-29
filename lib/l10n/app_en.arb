@@ -257,7 +257,6 @@
       }
     }
   },
-  "homeShoppingActionContextPlaceholder": "Shopping action coming soon.",
   "shoppingListStatsEntries": "Entries",
   "shoppingListStatsQuantity": "Total quantity",
   "shoppingListStatsEstimatedTotal": "Estimated total",
@@ -284,7 +283,6 @@
   "shoppingListClearCrossedOffDialogMessage":
       "All crossed-off items will be removed from the shopping list.",
   "shoppingListClearCrossedOffConfirmAction": "Clear",
-  "homeCaloriesActionContextPlaceholder": "Calories action coming soon.",
   "caloriesAddOptionManual": "Manual entry",
   "caloriesAddOptionBarcode": "Scan barcode",
   "caloriesFabTooltip": "Add calorie entry",
@@ -534,7 +532,6 @@
   "accountPageNotSet": "Not set",
   "settingsAboutTitle": "About",
   "settingsAboutSubtitle": "App version and information",
-  "appSubtitle": "Yet Another Meal Tracker",
   "commonOr": "Or",
   "login": "Login",
   "register": "Register",
@@ -552,8 +549,6 @@
   "authSwitchRegisterAction": "Register now",
   "authSwitchLoginAction": "Login",
   "authForgotPassword": "Forgot?",
-  "authSwitchToRegister": "Don't have an account? Register",
-  "authSwitchToLogin": "Already have an account? Login",
   "authGuestNameSetupTitle": "Set your guest name",
   "authGuestNameSetupSubtitle":
       "Choose a display name so your guest session is easier to recognize.",

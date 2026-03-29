@@ -1223,12 +1223,6 @@ abstract class AppLocalizations {
   /// **'{count} portions'**
   String preparedMealTemplatePortions(int count);
 
-  /// No description provided for @homeShoppingActionContextPlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Shopping action coming soon.'**
-  String get homeShoppingActionContextPlaceholder;
-
   /// No description provided for @shoppingListStatsEntries.
   ///
   /// In en, this message translates to:
@@ -1336,12 +1330,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear'**
   String get shoppingListClearCrossedOffConfirmAction;
-
-  /// No description provided for @homeCaloriesActionContextPlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Calories action coming soon.'**
-  String get homeCaloriesActionContextPlaceholder;
 
   /// No description provided for @caloriesAddOptionManual.
   ///
@@ -2411,12 +2399,6 @@ abstract class AppLocalizations {
   /// **'App version and information'**
   String get settingsAboutSubtitle;
 
-  /// No description provided for @appSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Yet Another Meal Tracker'**
-  String get appSubtitle;
-
   /// No description provided for @commonOr.
   ///
   /// In en, this message translates to:
@@ -2518,18 +2500,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Forgot?'**
   String get authForgotPassword;
-
-  /// No description provided for @authSwitchToRegister.
-  ///
-  /// In en, this message translates to:
-  /// **'Don\'t have an account? Register'**
-  String get authSwitchToRegister;
-
-  /// No description provided for @authSwitchToLogin.
-  ///
-  /// In en, this message translates to:
-  /// **'Already have an account? Login'**
-  String get authSwitchToLogin;
 
   /// No description provided for @authGuestNameSetupTitle.
   ///

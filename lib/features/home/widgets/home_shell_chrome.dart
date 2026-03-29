@@ -3,6 +3,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 
+/// Tabs shown in the shared home shell.
+enum HomeTabType { inventory, diary, settings }
+
 /// Top app bar used by the home shell pages.
 class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   const HomeTopBar({

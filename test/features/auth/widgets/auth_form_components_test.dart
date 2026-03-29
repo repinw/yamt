@@ -17,7 +17,7 @@ void main() {
     await tester.pumpWidget(_testHarness(const SizedBox(key: Key('root'))));
     final context = tester.element(find.byKey(const Key('root')));
 
-    final validator = buildEmailValidator(context);
+    final validator = AuthValidationFactory.fromContext(context).email();
 
     expect(validator('invalid'), isNotNull);
     expect(validator('valid@example.com'), isNull);
@@ -27,7 +27,9 @@ void main() {
     await tester.pumpWidget(_testHarness(const SizedBox(key: Key('root'))));
     final context = tester.element(find.byKey(const Key('root')));
 
-    final validator = buildPasswordValidator(context, minLength: 6);
+    final validator = AuthValidationFactory.fromContext(
+      context,
+    ).password(minLength: 6);
 
     expect(validator('12345'), isNotNull);
     expect(validator('123456'), isNull);
@@ -39,9 +41,9 @@ void main() {
     final passwordController = TextEditingController(text: 'secret123');
     addTearDown(passwordController.dispose);
 
-    final validator = buildConfirmPasswordValidator(
-      passwordController,
-      context,
+    final validator = AuthValidationFactory.fromContext(context)
+        .confirmPassword(
+      passwordController: passwordController,
       mismatchMessage: 'no match',
     );
 
@@ -60,7 +62,7 @@ void main() {
     );
     final context = tester.element(find.byKey(const Key('root')));
 
-    final validator = buildEmailValidator(context);
+    final validator = AuthValidationFactory.fromContext(context).email();
 
     expect(validator('not-an-email'), isNotNull);
   });
@@ -76,7 +78,7 @@ void main() {
     );
     final context = tester.element(find.byKey(const Key('root')));
 
-    final validator = buildEmailValidator(context);
+    final validator = AuthValidationFactory.fromContext(context).email();
 
     expect(validator('not-an-email'), isNotNull);
     expect(validator('valid@example.com'), isNull);

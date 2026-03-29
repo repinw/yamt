@@ -585,9 +585,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get homeShoppingActionContextPlaceholder => 'Shopping action coming soon.';
-
-  @override
   String get shoppingListStatsEntries => 'Entries';
 
   @override
@@ -642,9 +639,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shoppingListClearCrossedOffConfirmAction => 'Clear';
-
-  @override
-  String get homeCaloriesActionContextPlaceholder => 'Calories action coming soon.';
 
   @override
   String get caloriesAddOptionManual => 'Manual entry';
@@ -1195,9 +1189,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAboutSubtitle => 'App version and information';
 
   @override
-  String get appSubtitle => 'Yet Another Meal Tracker';
-
-  @override
   String get commonOr => 'Or';
 
   @override
@@ -1247,12 +1238,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authForgotPassword => 'Forgot?';
-
-  @override
-  String get authSwitchToRegister => 'Don\'t have an account? Register';
-
-  @override
-  String get authSwitchToLogin => 'Already have an account? Login';
 
   @override
   String get authGuestNameSetupTitle => 'Set your guest name';

@@ -59,30 +59,6 @@ class AuthValidationFactory {
   }
 }
 
-StringValidationCallback buildEmailValidator(BuildContext context) {
-  return AuthValidationFactory.fromContext(context).email();
-}
-
-StringValidationCallback buildPasswordValidator(
-  BuildContext context, {
-  int minLength = 6,
-}) {
-  return AuthValidationFactory.fromContext(
-    context,
-  ).password(minLength: minLength);
-}
-
-StringValidationCallback buildConfirmPasswordValidator(
-  TextEditingController passwordController,
-  BuildContext context, {
-  required String mismatchMessage,
-}) {
-  return AuthValidationFactory.fromContext(context).confirmPassword(
-    passwordController: passwordController,
-    mismatchMessage: mismatchMessage,
-  );
-}
-
 class AuthTextField extends StatelessWidget {
   const AuthTextField({
     required this.controller,
