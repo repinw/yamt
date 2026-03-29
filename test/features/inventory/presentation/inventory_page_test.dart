@@ -14,6 +14,7 @@ import 'package:yamt/features/calories/domain/'
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -168,6 +169,40 @@ class _FakeFridgeItemRepository implements InventoryItemRepository {
       _isInitialized = true;
     }
     return List<InventoryItem>.from(_items);
+  }
+}
+
+class _DelayedStageInventoryItemsController extends InventoryItemsController {
+  _DelayedStageInventoryItemsController({
+    required List<InventoryItem> initialItems,
+    required Future<void> Function() waitForStage,
+  }) : _initialItems = initialItems,
+       _waitForStage = waitForStage;
+
+  final List<InventoryItem> _initialItems;
+  final Future<void> Function() _waitForStage;
+  final List<String> discardedPendingIds = <String>[];
+
+  @override
+  FutureOr<List<InventoryItem>> build() => _initialItems;
+
+  @override
+  Future<PendingInventoryConsumption?> stagePendingConsumption(
+    String itemId,
+    int amount,
+  ) async {
+    await _waitForStage();
+    return PendingInventoryConsumption(
+      id: 'pending-delayed',
+      itemId: itemId,
+      amount: amount,
+    );
+  }
+
+  @override
+  Future<bool> discardPendingConsumption(String draftId) async {
+    discardedPendingIds.add(draftId);
+    return true;
   }
 }
 
@@ -662,6 +697,59 @@ void main() {
 
     expect(find.text('Milk'), findsOneWidget);
     expect(find.text('0/1'), findsOneWidget);
+  });
+
+  testWidgets('unmount during staged eat discards pending consumption', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => const <InventoryItem>[],
+    );
+    final stageCompleter = Completer<void>();
+    final controller = _DelayedStageInventoryItemsController(
+      initialItems: <InventoryItem>[
+        _item('a', quantity: 3, initialQuantity: 3),
+      ],
+      waitForStage: () => stageCompleter.future,
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        repository,
+        includeDefaultBarcodeFlagsOverride: false,
+        overrides: <dynamic>[
+          inventoryItemsControllerProvider.overrideWith(() => controller),
+          barcodeBackfillFeatureFlagsProvider.overrideWithValue(
+            const BarcodeBackfillFeatureFlags(
+              showInventoryBarcodeMarkers: false,
+              enableEatBridge: true,
+              enableQueueBackfill: true,
+            ),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.byTooltip('Eat'));
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      '1',
+    );
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+    );
+    await tester.pump();
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+
+    stageCompleter.complete();
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(controller.discardedPendingIds, <String>['pending-delayed']);
   });
 
   testWidgets('eat action with missing barcode opens scan-or-later prompt', (

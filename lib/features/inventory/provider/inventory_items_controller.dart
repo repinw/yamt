@@ -435,7 +435,9 @@ class InventoryItemsController extends _$InventoryItemsController {
 
   Future<bool> finalizeCommittedPendingConsumption({
     required String draftId,
-    required InventoryItem committedItem,
+    required String itemId,
+    required int quantity,
+    required int currentAmount,
   }) {
     return _runSerializedTask<bool>(
       operation: () async {
@@ -444,17 +446,24 @@ class InventoryItemsController extends _$InventoryItemsController {
           return false;
         }
 
-        final currentItems = await _currentPersistedItems();
-        final nextItems = List<InventoryItem>.from(currentItems);
-        final itemIndex = nextItems.indexWhere(
-          (item) => item.id == committedItem.id,
-        );
-        if (itemIndex < 0) {
-          nextItems.add(committedItem);
-        } else {
-          nextItems[itemIndex] = committedItem;
+        final currentItems = _persistedItems;
+        if (currentItems == null) {
+          _publishVisibleItems();
+          return false;
         }
 
+        final nextItems = List<InventoryItem>.from(currentItems);
+        final itemIndex = nextItems.indexWhere((item) => item.id == itemId);
+        if (itemIndex < 0) {
+          _publishVisibleItems();
+          return false;
+        }
+
+        final currentItem = nextItems[itemIndex];
+        nextItems[itemIndex] = currentItem.copyWith(
+          quantity: quantity,
+          currentAmount: currentAmount,
+        );
         _persistedItems = nextItems;
         _publishVisibleItems();
         return true;

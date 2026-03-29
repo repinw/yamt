@@ -36,9 +36,15 @@ abstract interface class InventoryCalorieEntryCommitStore {
 }
 
 class InventoryCalorieEntryCommitResult {
-  const InventoryCalorieEntryCommitResult({required this.committedItem});
+  const InventoryCalorieEntryCommitResult({
+    required this.itemId,
+    required this.quantity,
+    required this.currentAmount,
+  });
 
-  final InventoryItem committedItem;
+  final String itemId;
+  final int quantity;
+  final int currentAmount;
 }
 
 class FirestoreInventoryCalorieEntryCommitStore
@@ -74,11 +80,7 @@ class FirestoreInventoryCalorieEntryCommitStore
 
         final rawItem = Map<String, dynamic>.from(
           inventorySnapshot.data() ?? const <String, dynamic>{},
-        );
-        final id = rawItem['id'];
-        if (id is! String || id.trim().isEmpty) {
-          rawItem['id'] = inventorySnapshot.id;
-        }
+        )..['id'] = inventorySnapshot.id;
 
         final currentItem = InventoryItem.fromJson(rawItem);
         final committedItem = _buildCommittedItem(
@@ -99,9 +101,13 @@ class FirestoreInventoryCalorieEntryCommitStore
           _calorieEntriesCollectionRef(userId).doc(normalizedEntry.id),
           normalizedEntry.toJson(),
         );
-        transaction.set(inventoryRef, committedItem.toJson());
+        transaction.update(inventoryRef, _buildInventoryUpdate(committedItem));
 
-        return InventoryCalorieEntryCommitResult(committedItem: committedItem);
+        return InventoryCalorieEntryCommitResult(
+          itemId: committedItem.id,
+          quantity: committedItem.quantity,
+          currentAmount: committedItem.currentAmount,
+        );
       });
     } catch (error, stackTrace) {
       log(
@@ -222,4 +228,11 @@ int _quantityForCurrentAmount({
     return initialQuantity;
   }
   return projectedQuantity;
+}
+
+Map<String, dynamic> _buildInventoryUpdate(InventoryItem item) {
+  return <String, dynamic>{
+    'quantity': item.quantity,
+    'current_amount': item.currentAmount,
+  };
 }

@@ -62,8 +62,10 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
   }) async {
     this.entry = entry;
     this.pendingConsumption = pendingConsumption;
-    return InventoryCalorieEntryCommitResult(
-      committedItem: _inventoryItem().copyWith(quantity: 1),
+    return const InventoryCalorieEntryCommitResult(
+      itemId: 'inventory-1',
+      quantity: 1,
+      currentAmount: 0,
     );
   }
 }

@@ -279,10 +279,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     required List<InventoryItem> itemsSnapshot,
   }) async {
     final flags = ref.read(barcodeBackfillFeatureFlagsProvider);
+    final inventoryController = ref.read(
+      inventoryItemsControllerProvider.notifier,
+    );
     if (!flags.enableEatBridge) {
-      return ref
-          .read(inventoryItemsControllerProvider.notifier)
-          .eatItem(itemId, amount);
+      return inventoryController.eatItem(itemId, amount);
     }
 
     InventoryItem? selectedItem;
@@ -296,10 +297,16 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       return false;
     }
 
-    final pendingConsumption = await ref
-        .read(inventoryItemsControllerProvider.notifier)
+    final pendingConsumption = await inventoryController
         .stagePendingConsumption(itemId, amount);
-    if (pendingConsumption == null || !context.mounted) {
+    if (pendingConsumption == null) {
+      return false;
+    }
+
+    if (!context.mounted) {
+      unawaited(
+        inventoryController.discardPendingConsumption(pendingConsumption.id),
+      );
       return false;
     }
 

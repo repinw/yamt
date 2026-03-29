@@ -55,13 +55,14 @@ class _ProviderBackedInventoryCalorieEntrySaveFlow
     final finalized = await _inventoryController
         .finalizeCommittedPendingConsumption(
           draftId: pendingConsumptionId,
-          committedItem: commitResult.committedItem,
+          itemId: commitResult.itemId,
+          quantity: commitResult.quantity,
+          currentAmount: commitResult.currentAmount,
         );
     if (finalized) {
       return true;
     }
 
-    await _inventoryController.discardPendingConsumption(pendingConsumptionId);
     await _inventoryController.refresh();
     return true;
   }

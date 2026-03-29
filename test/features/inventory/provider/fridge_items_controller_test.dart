@@ -688,6 +688,63 @@ void main() {
     },
   );
 
+  test(
+    'finalizeCommittedPendingConsumption preserves latest realtime item data',
+    () async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <InventoryItem>[
+          _item('a').copyWith(quantity: 3, initialQuantity: 3),
+        ],
+      );
+      addTearDown(repository.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final controllerSubscription = _keepControllerAlive(container);
+      addTearDown(controllerSubscription.close);
+
+      await container.read(inventoryItemsControllerProvider.future);
+      final pendingConsumption = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .stagePendingConsumption('a', 2);
+
+      repository.emitWatchItems(<InventoryItem>[
+        _item(
+          'a',
+        ).copyWith(quantity: 7, initialQuantity: 7, brand: 'Fresh brand'),
+      ]);
+      await _waitForItems(
+        container,
+        (items) =>
+            items.length == 1 &&
+            items.single.quantity == 5 &&
+            items.single.brand == 'Fresh brand',
+      );
+
+      final finalized = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .finalizeCommittedPendingConsumption(
+            draftId: pendingConsumption!.id,
+            itemId: 'a',
+            quantity: 5,
+            currentAmount: 0,
+          );
+
+      expect(finalized, isTrue);
+      expect(
+        container.read(inventoryItemsControllerProvider).value?.single.quantity,
+        5,
+      );
+      expect(
+        container.read(inventoryItemsControllerProvider).value?.single.brand,
+        'Fresh brand',
+      );
+    },
+  );
+
   test('eatItem rolls back quantity change when save throws', () async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[_item('a').copyWith(quantity: 3)],

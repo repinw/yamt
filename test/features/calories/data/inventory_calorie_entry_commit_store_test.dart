@@ -94,7 +94,9 @@ void main() {
       );
 
       expect(result, isNotNull);
-      expect(result?.committedItem.currentAmount, 500);
+      expect(result?.itemId, 'inventory-1');
+      expect(result?.quantity, 1);
+      expect(result?.currentAmount, 500);
 
       final savedEntrySnapshot = await _entryCollection(
         firestore: firestore,
@@ -152,6 +154,40 @@ void main() {
         _withDocumentId(savedItemSnapshot),
       );
       expect(savedItem.currentAmount, 100);
+    },
+  );
+
+  test(
+    'commitEntryAndInventory preserves unknown inventory document fields',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      final itemJson = _inventoryItem().toJson()
+        ..['custom_server_flag'] = true
+        ..['notes'] = 'keep me';
+      await _inventoryCollection(
+        firestore: firestore,
+      ).doc('inventory-1').set(itemJson);
+
+      final store = FirestoreInventoryCalorieEntryCommitStore(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
+
+      await store.commitEntryAndInventory(
+        entry: _entry(),
+        pendingConsumption: const PendingInventoryConsumption(
+          id: 'pending-1',
+          itemId: 'inventory-1',
+          amount: 250,
+        ),
+      );
+
+      final savedItemSnapshot = await _inventoryCollection(
+        firestore: firestore,
+      ).doc('inventory-1').get();
+      expect(savedItemSnapshot.data()?['custom_server_flag'], isTrue);
+      expect(savedItemSnapshot.data()?['notes'], 'keep me');
+      expect(savedItemSnapshot.data()?['current_amount'], 500);
     },
   );
 }
