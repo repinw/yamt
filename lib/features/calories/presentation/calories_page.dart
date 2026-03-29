@@ -21,23 +21,48 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_state_views.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calories_summary_card.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class CaloriesPage extends ConsumerWidget {
+class CaloriesPage extends ConsumerStatefulWidget {
   const CaloriesPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CaloriesPage> createState() => _CaloriesPageState();
+}
+
+class _CaloriesPageState extends ConsumerState<CaloriesPage> {
+  CalorieDayViewData? _lastResolvedDayView;
+
+  @override
+  Widget build(BuildContext context) {
     ref.listen(calorieEntriesControllerProvider, _logEntriesLoadErrorOnce);
+    ref.listen(calorieDayViewDataProvider, _cacheResolvedDayView);
 
     final l10n = AppLocalizations.of(context)!;
     final dayController = ref.read(calorieDayControllerProvider.notifier);
-    final dayView = ref.watch(calorieDayViewDataProvider);
+    final selectedDay = ref.watch(calorieDayControllerProvider);
+    final dayViewState = ref.watch(calorieDayViewDataProvider);
     final weekOverviewState = ref.watch(calorieWeekOverviewProvider);
+    final dayView = dayViewState.value ?? _lastResolvedDayView;
+    if (dayView == null) {
+      if (dayViewState.hasError) {
+        return CaloriesErrorView(
+          onRetry: () {
+            ref.read(calorieEntriesControllerProvider.notifier).refresh();
+          },
+          message: l10n.caloriesLoadFailed,
+          retryLabel: l10n.caloriesRetryAction,
+        );
+      }
+      return const CaloriesLoadingView();
+    }
+
     final weekOverview = resolveDisplayedWeekOverview(
       weekOverviewState,
       goalKcal: dayView.goalKcal,
@@ -53,11 +78,17 @@ class CaloriesPage extends ConsumerWidget {
       children: <Widget>[
         CaloriesDayNavigationCard(
           days: weekOverview.days,
-          selectedDay: dayView.selectedDay,
+          selectedDay: selectedDay,
           onSelectDay: dayController.setDay,
           onPreviousDay: () => _goToPreviousVisibleDay(ref),
           onNextDay: () => _goToNextVisibleDay(ref),
         ),
+        if (dayViewState.isLoading) ...const <Widget>[
+          SizedBox(height: AppSpacing.md),
+          LinearProgressIndicator(
+            key: CaloriesPageKeys.reloadProgressIndicator,
+          ),
+        ],
         const SizedBox(height: AppSpacing.lg),
         CaloriesSummaryCard(
           consumedKcal: dayView.summary.totalKcal,
@@ -111,6 +142,17 @@ class CaloriesPage extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  void _cacheResolvedDayView(
+    AsyncValue<CalorieDayViewData>? previous,
+    AsyncValue<CalorieDayViewData> next,
+  ) {
+    final nextValue = next.value;
+    if (nextValue == null) {
+      return;
+    }
+    _lastResolvedDayView = nextValue;
   }
 
   void _logEntriesLoadErrorOnce(

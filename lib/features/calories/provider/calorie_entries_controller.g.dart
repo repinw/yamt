@@ -138,11 +138,11 @@ final calorieDayViewDataProvider = CalorieDayViewDataProvider._();
 final class CalorieDayViewDataProvider
     extends
         $FunctionalProvider<
-          CalorieDayViewData,
-          CalorieDayViewData,
-          CalorieDayViewData
+          AsyncValue<CalorieDayViewData>,
+          AsyncValue<CalorieDayViewData>,
+          AsyncValue<CalorieDayViewData>
         >
-    with $Provider<CalorieDayViewData> {
+    with $Provider<AsyncValue<CalorieDayViewData>> {
   CalorieDayViewDataProvider._()
     : super(
         from: null,
@@ -159,23 +159,25 @@ final class CalorieDayViewDataProvider
 
   @$internal
   @override
-  $ProviderElement<CalorieDayViewData> $createElement(
+  $ProviderElement<AsyncValue<CalorieDayViewData>> $createElement(
     $ProviderPointer pointer,
   ) => $ProviderElement(pointer);
 
   @override
-  CalorieDayViewData create(Ref ref) {
+  AsyncValue<CalorieDayViewData> create(Ref ref) {
     return calorieDayViewData(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(CalorieDayViewData value) {
+  Override overrideWithValue(AsyncValue<CalorieDayViewData> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<CalorieDayViewData>(value),
+      providerOverride: $SyncValueProvider<AsyncValue<CalorieDayViewData>>(
+        value,
+      ),
     );
   }
 }
 
 String _$calorieDayViewDataHash() =>
-    r'638ae1a62191f3004509661ac10a5431571aabd2';
+    r'926dc09b60ec7013052f1e6d1803ef3128283143';

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
 import 'shopping_list_item_store.dart';
@@ -52,6 +53,10 @@ class FirestoreShoppingListRepository implements ShoppingListRepository {
     if (userId != null && userId.isNotEmpty) {
       return userId;
     }
+    log(
+      'No signed-in user for shopping list repository.',
+      name: _repositoryLogName,
+    );
     return null;
   }
 
@@ -60,6 +65,25 @@ class FirestoreShoppingListRepository implements ShoppingListRepository {
       await for (final documents in _store.watchAll(userId: userId)) {
         yield _decodeDocuments(documents);
       }
+    } on FirebaseException catch (error, stackTrace) {
+      if (_isPermissionDenied(error)) {
+        log(
+          'Skipping shopping list watch for user $userId: '
+          'permission denied by Firestore rules.',
+          name: _repositoryLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+        yield const <ShoppingListItem>[];
+        return;
+      }
+      log(
+        'Failed to watch shopping list items for user $userId',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
     } catch (error, stackTrace) {
       log(
         'Failed to watch shopping list items for user $userId',
@@ -121,5 +145,9 @@ class FirestoreShoppingListRepository implements ShoppingListRepository {
       onError: (Object error, StackTrace stackTrace) {},
     );
     return queuedOperation;
+  }
+
+  bool _isPermissionDenied(FirebaseException error) {
+    return error.code == 'permission-denied';
   }
 }

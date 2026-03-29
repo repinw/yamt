@@ -411,9 +411,10 @@ void main() {
     await container.read(calorieEntriesControllerProvider.future);
     await container.read(calorieGoalControllerProvider.future);
 
-    final viewData = container.read(calorieDayViewDataProvider);
+    final viewDataState = container.read(calorieDayViewDataProvider);
+    final viewData = viewDataState.requireValue;
 
-    expect(viewData, isNotNull);
+    expect(viewDataState.hasValue, isTrue);
     expect(viewData.summary.entryCount, 2);
     expect(viewData.summary.totalKcal, closeTo(400, 0.001));
     expect(viewData.goalKcal, 2200);
@@ -430,6 +431,61 @@ void main() {
     expect(breakfastSection.totalKcal, closeTo(100, 0.001));
     expect(lunchSection.entries, hasLength(1));
     expect(lunchSection.totalKcal, closeTo(300, 0.001));
+  });
+
+  test('calorieDayViewData stays loading while entries are loading', () {
+    final repository = _FakeCalorieLogRepository();
+    repository.initialEmissionDelay = const Duration(seconds: 1);
+    final settingsRepository = _FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(repository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final entriesSubscription = _keepEntriesAlive(container);
+    addTearDown(entriesSubscription.close);
+
+    container
+        .read(calorieDayControllerProvider.notifier)
+        .setDay(DateTime(2026, 2, 25));
+
+    final viewDataState = container.read(calorieDayViewDataProvider);
+
+    expect(viewDataState.isLoading, isTrue);
+    expect(viewDataState.hasValue, isFalse);
+  });
+
+  test('calorieDayViewData returns AsyncError when entries fail', () async {
+    final repository = _FakeCalorieLogRepository();
+    repository.watchError = StateError('permission denied');
+    final settingsRepository = _FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(repository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final entriesSubscription = _keepEntriesAlive(container);
+    addTearDown(entriesSubscription.close);
+
+    await expectLater(
+      container.read(calorieEntriesControllerProvider.future),
+      throwsA(isA<StateError>()),
+    );
+
+    final viewDataState = container.read(calorieDayViewDataProvider);
+
+    expect(viewDataState.hasError, isTrue);
+    expect(viewDataState.asError?.error, isA<StateError>());
   });
 
   test(

@@ -16,6 +16,7 @@ import 'package:yamt/features/calories/presentation/calories_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
+import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -137,6 +138,42 @@ Widget _buildHarness({
   );
 }
 
+Widget _buildHarnessWithContainer({required ProviderContainer container}) {
+  final router = GoRouter(
+    initialLocation: AppRoutes.homeCalories,
+    routes: <RouteBase>[
+      GoRoute(
+        path: AppRoutes.homeCalories,
+        builder: (context, state) => const Scaffold(body: CaloriesPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.homeCaloriesEntryCreate,
+        builder: (context, state) {
+          final args = state.extra is CalorieEntryCreateArgs
+              ? state.extra! as CalorieEntryCreateArgs
+              : null;
+          final mealType = args?.preselectedMealType?.name ?? 'none';
+          return Scaffold(body: Text('Create:$mealType'));
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.homeCaloriesEntryEdit,
+        builder: (context, state) => const Scaffold(body: Text('Edit')),
+      ),
+    ],
+  );
+
+  return UncontrolledProviderScope(
+    container: container,
+    child: MaterialApp.router(
+      locale: const Locale('en'),
+      routerConfig: router,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+    ),
+  );
+}
+
 class _FakePreparedMealRepository implements PreparedMealRepository {
   @override
   Future<List<PreparedMeal>> readAll() async => const <PreparedMeal>[];
@@ -158,6 +195,69 @@ Future<void> _scrollUntilVisible(WidgetTester tester, Finder finder) async {
 }
 
 void main() {
+  testWidgets('shows loading indicator while entries are loading', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository()
+      ..initialEmissionDelay = const Duration(seconds: 1);
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+      ),
+    );
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byKey(CaloriesPageKeys.summaryCard), findsNothing);
+  });
+
+  testWidgets('shows error state and retries loading entries', (tester) async {
+    final today = DateTime.now();
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'retry-entry',
+          loggedAt: DateTime(today.year, today.month, today.day, 8),
+          mealType: MealType.breakfast,
+          name: 'Retry entry',
+        ),
+      ],
+    )..watchError = StateError('permission denied');
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Could not load calorie entries.'), findsOneWidget);
+    expect(find.byKey(CaloriesPageKeys.retryButton), findsOneWidget);
+
+    logRepository.watchError = null;
+    await tester.tap(find.byKey(CaloriesPageKeys.retryButton));
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CaloriesPageKeys.summaryCard), findsOneWidget);
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.entryTile('retry-entry')),
+    );
+    expect(
+      find.byKey(CaloriesPageKeys.entryTile('retry-entry')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('renders redesigned diary summary and meal sections', (
     tester,
   ) async {
@@ -200,6 +300,77 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Skyr'), findsOneWidget);
+  });
+
+  testWidgets('keeps diary visible while switching days', (tester) async {
+    final today = DateTime.now();
+    final currentDay = DateTime(today.year, today.month, today.day);
+    final previousDay = currentDay.subtract(const Duration(days: 1));
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'today-entry',
+          loggedAt: DateTime(
+            currentDay.year,
+            currentDay.month,
+            currentDay.day,
+            8,
+          ),
+          mealType: MealType.breakfast,
+          name: 'Today entry',
+        ),
+        _entry(
+          'previous-entry',
+          loggedAt: DateTime(
+            previousDay.year,
+            previousDay.month,
+            previousDay.day,
+            8,
+          ),
+          mealType: MealType.breakfast,
+          name: 'Previous entry',
+        ),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository();
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      ],
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(_buildHarnessWithContainer(container: container));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CaloriesPageKeys.summaryCard), findsOneWidget);
+    expect(find.byKey(CaloriesPageKeys.weekStrip), findsOneWidget);
+
+    logRepository.initialEmissionDelay = const Duration(seconds: 1);
+    container.read(calorieDayControllerProvider.notifier).setDay(previousDay);
+    await tester.pump();
+
+    expect(find.byKey(CaloriesPageKeys.summaryCard), findsOneWidget);
+    expect(find.byKey(CaloriesPageKeys.weekStrip), findsOneWidget);
+    expect(
+      find.byKey(CaloriesPageKeys.reloadProgressIndicator),
+      findsOneWidget,
+    );
+
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.entryTile('previous-entry')),
+    );
+    expect(
+      find.byKey(CaloriesPageKeys.entryTile('previous-entry')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('delete action removes entry after confirmation', (tester) async {

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/shoppinglist/data/'
     'firestore_shopping_list_repository.dart';
@@ -94,6 +95,14 @@ class _FakeShoppingListItemStore implements ShoppingListItemStore {
         )
         .toList(growable: false);
     _emit(userId);
+  }
+
+  void emitError(String userId, Object error) {
+    final controller = _controllersByUser[userId];
+    if (controller == null || controller.isClosed) {
+      return;
+    }
+    controller.addError(error);
   }
 
   Future<void> dispose() async {
@@ -252,6 +261,49 @@ void main() {
       containsAll(<String>['a', 'b']),
     );
   });
+
+  test(
+    'repository watchAll emits empty list when realtime watch is denied',
+    () async {
+      final store = _FakeShoppingListItemStore(
+        initialDocumentsByUser: <String, List<ShoppingListItemDocument>>{
+          'user-1': <ShoppingListItemDocument>[
+            ShoppingListItemDocument(id: 'a', data: _item('a').toJson()),
+          ],
+        },
+      );
+      addTearDown(store.dispose);
+      final repository = FirestoreShoppingListRepository(
+        session: _FakeShoppingListUserSession(currentUserId: 'user-1'),
+        store: store,
+      );
+
+      final emitted = <List<ShoppingListItem>>[];
+      final errors = <Object>[];
+      final sub = repository.watchAll().listen(
+        emitted.add,
+        onError: errors.add,
+      );
+      addTearDown(() {
+        unawaited(sub.cancel());
+      });
+
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+      store.emitError(
+        'user-1',
+        FirebaseException(
+          plugin: 'cloud_firestore',
+          code: 'permission-denied',
+          message: 'The caller does not have permission.',
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+
+      expect(errors, isEmpty);
+      expect(emitted, isNotEmpty);
+      expect(emitted.last, isEmpty);
+    },
+  );
 
   test('repository serializes concurrent saveAll writes', () async {
     final store = _FakeShoppingListItemStore();

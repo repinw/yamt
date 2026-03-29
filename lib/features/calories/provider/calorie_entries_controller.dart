@@ -371,13 +371,26 @@ Future<CalorieEntry?> calorieEntryById(Ref ref, String entryId) async {
 }
 
 @riverpod
-CalorieDayViewData calorieDayViewData(Ref ref) {
+AsyncValue<CalorieDayViewData> calorieDayViewData(Ref ref) {
   final selectedDay = ref.watch(calorieDayControllerProvider);
   final entriesState = ref.watch(calorieEntriesControllerProvider);
   final goalState = ref.watch(calorieGoalControllerProvider);
-  final entries = entriesState.value ?? const <CalorieEntry>[];
   final goalKcal =
       goalState.asData?.value.dailyKcalGoal ?? defaultDailyCalorieGoalKcal;
+  return entriesState.whenData(
+    (entries) => _buildCalorieDayViewData(
+      selectedDay: selectedDay,
+      entries: entries,
+      goalKcal: goalKcal,
+    ),
+  );
+}
+
+CalorieDayViewData _buildCalorieDayViewData({
+  required DateTime selectedDay,
+  required List<CalorieEntry> entries,
+  required double goalKcal,
+}) {
   final aggregate = _aggregate(entries);
   final remaining = goalKcal - aggregate.summary.totalKcal;
   final progress = goalKcal <= 0

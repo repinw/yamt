@@ -12,6 +12,9 @@ abstract final class CaloriesPageKeys {
   static const weekStrip = Key('calories_week_strip');
   static const weekBufferCard = Key('calories_week_buffer_card');
   static const summaryCard = Key('calories_summary_card');
+  static const reloadProgressIndicator = Key(
+    'calories_reload_progress_indicator',
+  );
   static const setGoalButton = Key('calories_set_goal_button');
   static const retryButton = Key('calories_retry_button');
   static const addOptionsManualButton = Key('calories_add_options_manual');

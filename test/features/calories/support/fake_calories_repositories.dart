@@ -20,25 +20,43 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   final Map<String, StreamController<List<CalorieEntry>>> _controllersByDay =
       <String, StreamController<List<CalorieEntry>>>{};
 
+  Object? watchError;
   bool saveShouldFail = false;
   bool deleteShouldFail = false;
+  Duration initialEmissionDelay = Duration.zero;
   Future<List<CalorieEntry>> Function(DateTime day)? onReadEntriesForDay;
 
   List<CalorieEntry> get entries => List<CalorieEntry>.unmodifiable(_entries);
 
   @override
   Stream<List<CalorieEntry>> watchEntriesForDay(DateTime day) {
+    if (watchError != null) {
+      return Stream<List<CalorieEntry>>.error(watchError!);
+    }
+
     final normalizedDay = _normalize(day);
     final key = _dayKey(normalizedDay);
 
     return Stream<List<CalorieEntry>>.multi((controller) {
-      controller.add(_entriesForDay(normalizedDay));
+      Timer? initialEmissionTimer;
+      void emitInitial() {
+        if (!controller.isClosed) {
+          controller.add(_entriesForDay(normalizedDay));
+        }
+      }
+
+      if (initialEmissionDelay == Duration.zero) {
+        emitInitial();
+      } else {
+        initialEmissionTimer = Timer(initialEmissionDelay, emitInitial);
+      }
       final streamSubscription = _controllerFor(key).stream.listen(
         controller.add,
         onError: controller.addError,
         onDone: controller.close,
       );
       controller.onCancel = () {
+        initialEmissionTimer?.cancel();
         unawaited(streamSubscription.cancel());
       };
     });
