@@ -6,11 +6,6 @@ import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
-typedef ReceiptExtractionMapper =
-    Future<List<ReceiptReviewItemDraft>> Function(
-      ReceiptAnalysisExtraction extraction,
-    );
-
 class ReceiptBatchProcessResult {
   const ReceiptBatchProcessResult({
     required this.progress,
@@ -33,13 +28,19 @@ class ReceiptBatchProcessResult {
 class ReceiptBatchProcessor {
   const ReceiptBatchProcessor({
     required ReceiptAnalysisRepository analysisRepository,
-    required ReceiptExtractionMapper mapExtraction,
+    required Future<List<ReceiptReviewItemDraft>> Function(
+      ReceiptAnalysisExtraction extraction,
+    )
+    mapExtraction,
     required this.loggerName,
   }) : _analysisRepository = analysisRepository,
        _mapExtraction = mapExtraction;
 
   final ReceiptAnalysisRepository _analysisRepository;
-  final ReceiptExtractionMapper _mapExtraction;
+  final Future<List<ReceiptReviewItemDraft>> Function(
+    ReceiptAnalysisExtraction extraction,
+  )
+  _mapExtraction;
   final String loggerName;
 
   Future<ReceiptBatchProcessResult> processSelections(

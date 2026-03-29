@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class ShoppingQuickAddDialogKeys {
-  const ShoppingQuickAddDialogKeys._();
+class _ShoppingQuickAddDialogKeys {
+  const _ShoppingQuickAddDialogKeys._();
 
   static const nameField = Key('shopping_quick_add_name_field');
   static const brandField = Key('shopping_quick_add_brand_field');
@@ -12,13 +12,11 @@ class ShoppingQuickAddDialogKeys {
   static const submitErrorText = Key('shopping_quick_add_submit_error_text');
 }
 
-typedef ShoppingQuickAddSubmit =
-    Future<bool> Function({required String name, required String brand});
-
 Future<void> showShoppingQuickAddDialog({
   required BuildContext context,
   required AppLocalizations l10n,
-  required ShoppingQuickAddSubmit onSubmit,
+  required Future<bool> Function({required String name, required String brand})
+  onSubmit,
 }) {
   return showDialog<void>(
     context: context,
@@ -32,7 +30,8 @@ class _ShoppingQuickAddDialog extends StatefulWidget {
   const _ShoppingQuickAddDialog({required this.l10n, required this.onSubmit});
 
   final AppLocalizations l10n;
-  final ShoppingQuickAddSubmit onSubmit;
+  final Future<bool> Function({required String name, required String brand})
+  onSubmit;
 
   @override
   State<_ShoppingQuickAddDialog> createState() =>
@@ -96,7 +95,7 @@ class _ShoppingQuickAddDialogState extends State<_ShoppingQuickAddDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextFormField(
-              key: ShoppingQuickAddDialogKeys.nameField,
+              key: _ShoppingQuickAddDialogKeys.nameField,
               controller: _nameController,
               autofocus: true,
               enabled: !_isSubmitting,
@@ -114,7 +113,7 @@ class _ShoppingQuickAddDialogState extends State<_ShoppingQuickAddDialog> {
             ),
             const SizedBox(height: AppSpacing.sm),
             TextFormField(
-              key: ShoppingQuickAddDialogKeys.brandField,
+              key: _ShoppingQuickAddDialogKeys.brandField,
               controller: _brandController,
               enabled: !_isSubmitting,
               textInputAction: TextInputAction.done,
@@ -129,7 +128,7 @@ class _ShoppingQuickAddDialogState extends State<_ShoppingQuickAddDialog> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   _submitErrorText!,
-                  key: ShoppingQuickAddDialogKeys.submitErrorText,
+                  key: _ShoppingQuickAddDialogKeys.submitErrorText,
                   style: TextStyle(color: colors.error),
                 ),
               ),
@@ -139,12 +138,12 @@ class _ShoppingQuickAddDialogState extends State<_ShoppingQuickAddDialog> {
       ),
       actions: [
         TextButton(
-          key: ShoppingQuickAddDialogKeys.cancelButton,
+          key: _ShoppingQuickAddDialogKeys.cancelButton,
           onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
           child: Text(widget.l10n.inventoryReceiptReviewCancelAction),
         ),
         FilledButton(
-          key: ShoppingQuickAddDialogKeys.confirmButton,
+          key: _ShoppingQuickAddDialogKeys.confirmButton,
           onPressed: _isSubmitting ? null : _submit,
           child: _isSubmitting
               ? const SizedBox.square(

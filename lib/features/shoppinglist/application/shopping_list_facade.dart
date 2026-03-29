@@ -3,14 +3,6 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 
-typedef ShoppingListAddItem =
-    Future<bool> Function({
-      required String name,
-      String? brand,
-      int quantity,
-      double estimatedUnitPrice,
-    });
-
 typedef ShoppingListItemMatchKey = ({
   String normalizedName,
   String normalizedBrand,
@@ -58,10 +50,23 @@ final isInventoryItemInActiveShoppingListProvider =
     });
 
 class ShoppingListFacade {
-  const ShoppingListFacade({required ShoppingListAddItem addItem})
-    : _addItem = addItem;
+  const ShoppingListFacade({
+    required Future<bool> Function({
+      required String name,
+      String? brand,
+      int quantity,
+      double estimatedUnitPrice,
+    })
+    addItem,
+  }) : _addItem = addItem;
 
-  final ShoppingListAddItem _addItem;
+  final Future<bool> Function({
+    required String name,
+    String? brand,
+    int quantity,
+    double estimatedUnitPrice,
+  })
+  _addItem;
 
   Future<bool> addInventoryItem(InventoryItem item) {
     final quantity = _normalizeInventoryQuantityForShopping(
