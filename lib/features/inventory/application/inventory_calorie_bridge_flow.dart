@@ -14,6 +14,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_barcode_candidate_picker_sheet.dart';
 import 'package:yamt/features/calories/provider/calorie_barcode_flow_controller.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryCalorieBridgeFlow {
@@ -24,6 +25,7 @@ class InventoryCalorieBridgeFlow {
     required WidgetRef ref,
     required InventoryItem itemBeforeMutation,
     required int consumedAmount,
+    required String pendingConsumptionId,
   }) async {
     final flags = ref.read(barcodeBackfillFeatureFlagsProvider);
     if (!flags.enableEatBridge) {
@@ -33,9 +35,14 @@ class InventoryCalorieBridgeFlow {
     final inventoryContext = await _buildInventoryContext(
       context: context,
       item: itemBeforeMutation,
+      pendingConsumptionId: pendingConsumptionId,
       consumedAmount: consumedAmount,
     );
     if (!context.mounted || inventoryContext == null) {
+      await _discardPendingConsumption(
+        ref: ref,
+        pendingConsumptionId: pendingConsumptionId,
+      );
       return;
     }
 
@@ -56,17 +63,27 @@ class InventoryCalorieBridgeFlow {
 
     final barcode = itemBeforeMutation.normalizedBarcode;
     if (barcode != null) {
-      await _openEditorFromBarcode(
+      final openedEditor = await _openEditorFromBarcode(
         context: context,
         ref: ref,
         barcode: barcode,
         inventoryContext: inventoryContext,
       );
+      if (!openedEditor) {
+        await _discardPendingConsumption(
+          ref: ref,
+          pendingConsumptionId: pendingConsumptionId,
+        );
+      }
       return;
     }
 
     final action = await _showMissingBarcodeActionSheet(context: context);
     if (!context.mounted || action == null) {
+      await _discardPendingConsumption(
+        ref: ref,
+        pendingConsumptionId: pendingConsumptionId,
+      );
       return;
     }
 
@@ -79,6 +96,10 @@ class InventoryCalorieBridgeFlow {
               context,
             )!.inventoryBarcodeScanUnsupported,
           );
+          await _discardPendingConsumption(
+            ref: ref,
+            pendingConsumptionId: pendingConsumptionId,
+          );
           return;
         }
         await context.push(
@@ -90,6 +111,10 @@ class InventoryCalorieBridgeFlow {
         _showSnackBar(
           context: context,
           message: AppLocalizations.of(context)!.inventoryBarcodeLookupQueued,
+        );
+        await _discardPendingConsumption(
+          ref: ref,
+          pendingConsumptionId: pendingConsumptionId,
         );
         return;
     }
@@ -131,7 +156,7 @@ class InventoryCalorieBridgeFlow {
     return null;
   }
 
-  static Future<void> _openEditorFromBarcode({
+  static Future<bool> _openEditorFromBarcode({
     required BuildContext context,
     required WidgetRef ref,
     required String barcode,
@@ -141,14 +166,14 @@ class InventoryCalorieBridgeFlow {
         .read(calorieBarcodeFlowControllerProvider.notifier)
         .resolveBarcode(barcode);
     if (!context.mounted) {
-      return;
+      return false;
     }
 
     switch (outcome.status) {
       case CalorieLookupStatus.foundSingle:
         final profile = outcome.product;
         if (profile == null) {
-          return;
+          return false;
         }
         await _openEditor(
           context: context,
@@ -160,20 +185,20 @@ class InventoryCalorieBridgeFlow {
             offProductId: profile.offProductId,
           ),
         );
-        return;
+        return true;
       case CalorieLookupStatus.foundMultiple:
         final selected = await _pickCandidate(
           context: context,
           candidates: outcome.candidates,
         );
         if (selected == null || !context.mounted) {
-          return;
+          return false;
         }
         await ref
             .read(calorieBarcodeFlowControllerProvider.notifier)
             .persistSelectedCandidate(selected.profile);
         if (!context.mounted) {
-          return;
+          return false;
         }
         await _openEditor(
           context: context,
@@ -185,14 +210,14 @@ class InventoryCalorieBridgeFlow {
             offProductId: selected.profile.offProductId,
           ),
         );
-        return;
+        return true;
       case CalorieLookupStatus.notFound:
       case CalorieLookupStatus.failed:
         _showSnackBar(
           context: context,
           message: AppLocalizations.of(context)!.caloriesBarcodeLookupFailed,
         );
-        return;
+        return false;
     }
   }
 
@@ -215,6 +240,7 @@ class InventoryCalorieBridgeFlow {
   static Future<CalorieInventoryCreateContext?> _buildInventoryContext({
     required BuildContext context,
     required InventoryItem item,
+    required String pendingConsumptionId,
     required int consumedAmount,
   }) async {
     final unit = item.amountUnit;
@@ -225,6 +251,7 @@ class InventoryCalorieBridgeFlow {
       return CalorieInventoryCreateContext(
         inventoryItemId: item.id,
         foodFingerprint: item.resolvedFoodFingerprint,
+        pendingConsumptionId: pendingConsumptionId,
         inventoryAmountToRestore: consumedAmount,
         itemName: item.name,
         itemBrand: item.brand,
@@ -242,6 +269,7 @@ class InventoryCalorieBridgeFlow {
     return CalorieInventoryCreateContext(
       inventoryItemId: item.id,
       foodFingerprint: item.resolvedFoodFingerprint,
+      pendingConsumptionId: pendingConsumptionId,
       inventoryAmountToRestore: consumedAmount,
       itemName: item.name,
       itemBrand: item.brand,
@@ -406,6 +434,15 @@ class InventoryCalorieBridgeFlow {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  static Future<void> _discardPendingConsumption({
+    required WidgetRef ref,
+    required String pendingConsumptionId,
+  }) {
+    return ref
+        .read(inventoryItemsControllerProvider.notifier)
+        .discardPendingConsumption(pendingConsumptionId);
   }
 }
 

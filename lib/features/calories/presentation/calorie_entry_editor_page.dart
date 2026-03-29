@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
@@ -14,6 +18,7 @@ import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class CalorieEntryEditorPage extends ConsumerStatefulWidget {
@@ -57,6 +62,7 @@ class _CalorieEntryEditorPageState
   String? _initializedEntryId;
   ProviderSubscription<AsyncValue<CalorieEntry?>>? _entrySubscription;
   bool _isSaving = false;
+  bool _didCommitPendingConsumption = false;
 
   @override
   void initState() {
@@ -75,6 +81,8 @@ class _CalorieEntryEditorPageState
     final didInventoryContextChange =
         oldWidget.inventoryContext?.inventoryItemId !=
             widget.inventoryContext?.inventoryItemId ||
+        oldWidget.inventoryContext?.pendingConsumptionId !=
+            widget.inventoryContext?.pendingConsumptionId ||
         oldWidget.inventoryContext?.consumedAmount !=
             widget.inventoryContext?.consumedAmount ||
         oldWidget.inventoryContext?.consumedUnit !=
@@ -91,6 +99,7 @@ class _CalorieEntryEditorPageState
     _entrySubscription = null;
     _initializeForCreate();
     _subscribeToEntry();
+    _didCommitPendingConsumption = false;
     if (mounted) {
       setState(() {});
     }
@@ -202,6 +211,7 @@ class _CalorieEntryEditorPageState
         ? '__new_entry__'
         : '__new_entry__${prefill.barcode}_${prefill.source.jsonValue}_'
               '${inventoryContext?.inventoryItemId ?? ''}'
+              '${inventoryContext?.pendingConsumptionId ?? ''}'
               '${inventoryContext?.consumedAmount ?? 100}'
               '${inventoryContext?.consumedUnit.jsonValue ?? 'g'}';
     if (_initializedEntryId == prefillKey) {
@@ -248,7 +258,7 @@ class _CalorieEntryEditorPageState
     );
   }
 
-  Scaffold _buildEditorScaffold(
+  Widget _buildEditorScaffold(
     BuildContext context, {
     required User user,
     required CalorieEntry? initialEntry,
@@ -256,206 +266,212 @@ class _CalorieEntryEditorPageState
     final l10n = AppLocalizations.of(context)!;
     final isEditing = initialEntry != null;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          isEditing ? l10n.caloriesEditEntryTitle : l10n.caloriesAddEntryTitle,
-        ),
-        actions: <Widget>[
-          TextButton(
-            key: CalorieEntryEditorKeys.saveButton,
-            onPressed: _isSaving
-                ? null
-                : () => _save(context, user: user, initialEntry: initialEntry),
-            child: Text(l10n.caloriesSaveEntryAction),
+    return PopScope<void>(
+      onPopInvokedWithResult: _onPopInvokedWithResult,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            isEditing
+                ? l10n.caloriesEditEntryTitle
+                : l10n.caloriesAddEntryTitle,
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: AppInsets.page,
-            children: <Widget>[
-              TextFormField(
-                key: CalorieEntryEditorKeys.nameField,
-                controller: _nameController,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: l10n.caloriesEntryNameLabel,
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return l10n.caloriesRequiredField;
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: AppSpacing.md),
-              TextFormField(
-                controller: _brandController,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: l10n.caloriesEntryBrandLabel,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              DropdownButtonFormField<MealType>(
-                key: CalorieEntryEditorKeys.mealField,
-                initialValue: _mealType,
-                decoration: InputDecoration(
-                  labelText: l10n.caloriesEntryMealLabel,
-                ),
-                items: MealType.sectionOrder
-                    .map((mealType) {
-                      return DropdownMenuItem<MealType>(
-                        value: mealType,
-                        child: Text(mealType.localizedName(l10n)),
-                      );
-                    })
-                    .toList(growable: false),
-                onChanged: (value) {
-                  if (value == null) {
-                    return;
-                  }
-                  setState(() {
-                    _mealType = value;
-                  });
-                },
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: TextFormField(
-                      key: CalorieEntryEditorKeys.amountField,
-                      controller: _amountController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      decoration: InputDecoration(
-                        labelText: l10n.caloriesEntryAmountLabel,
-                      ),
-                      validator: _positiveNumberValidator,
-                    ),
+          actions: <Widget>[
+            TextButton(
+              key: CalorieEntryEditorKeys.saveButton,
+              onPressed: _isSaving
+                  ? null
+                  : () =>
+                        _save(context, user: user, initialEntry: initialEntry),
+              child: Text(l10n.caloriesSaveEntryAction),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: AppInsets.page,
+              children: <Widget>[
+                TextFormField(
+                  key: CalorieEntryEditorKeys.nameField,
+                  controller: _nameController,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: l10n.caloriesEntryNameLabel,
                   ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: DropdownButtonFormField<ConsumedUnit>(
-                      key: CalorieEntryEditorKeys.unitField,
-                      initialValue: _consumedUnit,
-                      decoration: InputDecoration(
-                        labelText: l10n.caloriesEntryUnitLabel,
-                      ),
-                      items: ConsumedUnit.values
-                          .map((unit) {
-                            return DropdownMenuItem<ConsumedUnit>(
-                              value: unit,
-                              child: Text(unit.localizedName(l10n)),
-                            );
-                          })
-                          .toList(growable: false),
-                      onChanged: (value) {
-                        if (value == null) {
-                          return;
-                        }
-                        setState(() {
-                          _consumedUnit = value;
-                        });
-                      },
-                    ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return l10n.caloriesRequiredField;
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+                TextFormField(
+                  controller: _brandController,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: l10n.caloriesEntryBrandLabel,
                   ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Text(
-                l10n.caloriesPer100SectionTitle,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              TextFormField(
-                key: CalorieEntryEditorKeys.per100KcalField,
-                controller: _per100KcalController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
                 ),
-                decoration: InputDecoration(
-                  labelText: l10n.caloriesPer100KcalLabel,
+                const SizedBox(height: AppSpacing.md),
+                DropdownButtonFormField<MealType>(
+                  key: CalorieEntryEditorKeys.mealField,
+                  initialValue: _mealType,
+                  decoration: InputDecoration(
+                    labelText: l10n.caloriesEntryMealLabel,
+                  ),
+                  items: MealType.sectionOrder
+                      .map((mealType) {
+                        return DropdownMenuItem<MealType>(
+                          value: mealType,
+                          child: Text(mealType.localizedName(l10n)),
+                        );
+                      })
+                      .toList(growable: false),
+                  onChanged: (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    setState(() {
+                      _mealType = value;
+                    });
+                  },
                 ),
-                validator: _positiveNumberValidator,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              TextFormField(
-                key: CalorieEntryEditorKeys.per100ProteinField,
-                controller: _per100ProteinController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: l10n.caloriesPer100ProteinLabel,
-                ),
-                validator: _nonNegativeNumberValidator,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              TextFormField(
-                key: CalorieEntryEditorKeys.per100CarbsField,
-                controller: _per100CarbsController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: l10n.caloriesPer100CarbsLabel,
-                ),
-                validator: _nonNegativeNumberValidator,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              TextFormField(
-                key: CalorieEntryEditorKeys.per100FatField,
-                controller: _per100FatController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: l10n.caloriesPer100FatLabel,
-                ),
-                validator: _nonNegativeNumberValidator,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Text(
-                l10n.caloriesEntryDateTimeLabel,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: CalorieEntryEditorKeys.dateButton,
-                      onPressed: () => _pickDate(context),
-                      icon: const Icon(Icons.calendar_today_outlined),
-                      label: Text(
-                        MaterialLocalizations.of(
-                          context,
-                        ).formatMediumDate(_loggedAt),
+                const SizedBox(height: AppSpacing.md),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: TextFormField(
+                        key: CalorieEntryEditorKeys.amountField,
+                        controller: _amountController,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: l10n.caloriesEntryAmountLabel,
+                        ),
+                        validator: _positiveNumberValidator,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: CalorieEntryEditorKeys.timeButton,
-                      onPressed: () => _pickTime(context),
-                      icon: const Icon(Icons.access_time_outlined),
-                      label: Text(
-                        MaterialLocalizations.of(
-                          context,
-                        ).formatTimeOfDay(TimeOfDay.fromDateTime(_loggedAt)),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: DropdownButtonFormField<ConsumedUnit>(
+                        key: CalorieEntryEditorKeys.unitField,
+                        initialValue: _consumedUnit,
+                        decoration: InputDecoration(
+                          labelText: l10n.caloriesEntryUnitLabel,
+                        ),
+                        items: ConsumedUnit.values
+                            .map((unit) {
+                              return DropdownMenuItem<ConsumedUnit>(
+                                value: unit,
+                                child: Text(unit.localizedName(l10n)),
+                              );
+                            })
+                            .toList(growable: false),
+                        onChanged: (value) {
+                          if (value == null) {
+                            return;
+                          }
+                          setState(() {
+                            _consumedUnit = value;
+                          });
+                        },
                       ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  l10n.caloriesPer100SectionTitle,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                TextFormField(
+                  key: CalorieEntryEditorKeys.per100KcalField,
+                  controller: _per100KcalController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
                   ),
-                ],
-              ),
-            ],
+                  decoration: InputDecoration(
+                    labelText: l10n.caloriesPer100KcalLabel,
+                  ),
+                  validator: _positiveNumberValidator,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                TextFormField(
+                  key: CalorieEntryEditorKeys.per100ProteinField,
+                  controller: _per100ProteinController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: l10n.caloriesPer100ProteinLabel,
+                  ),
+                  validator: _nonNegativeNumberValidator,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                TextFormField(
+                  key: CalorieEntryEditorKeys.per100CarbsField,
+                  controller: _per100CarbsController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: l10n.caloriesPer100CarbsLabel,
+                  ),
+                  validator: _nonNegativeNumberValidator,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                TextFormField(
+                  key: CalorieEntryEditorKeys.per100FatField,
+                  controller: _per100FatController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: l10n.caloriesPer100FatLabel,
+                  ),
+                  validator: _nonNegativeNumberValidator,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  l10n.caloriesEntryDateTimeLabel,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        key: CalorieEntryEditorKeys.dateButton,
+                        onPressed: () => _pickDate(context),
+                        icon: const Icon(Icons.calendar_today_outlined),
+                        label: Text(
+                          MaterialLocalizations.of(
+                            context,
+                          ).formatMediumDate(_loggedAt),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        key: CalorieEntryEditorKeys.timeButton,
+                        onPressed: () => _pickTime(context),
+                        icon: const Icon(Icons.access_time_outlined),
+                        label: Text(
+                          MaterialLocalizations.of(
+                            context,
+                          ).formatTimeOfDay(TimeOfDay.fromDateTime(_loggedAt)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -539,6 +555,7 @@ class _CalorieEntryEditorPageState
     final trimmedName = _nameController.text.trim();
     final trimmedBrand = _brandController.text.trim();
     final inventoryContext = widget.inventoryContext;
+    final pendingConsumptionId = inventoryContext?.pendingConsumptionId;
     final now = DateTime.now();
     final entry = initialEntry == null
         ? CalorieEntry.create(
@@ -577,6 +594,17 @@ class _CalorieEntryEditorPageState
               )
               .recalculateTotals(updatedAt: now);
 
+    final persistEntry = initialEntry == null && pendingConsumptionId != null
+        ? (CalorieEntry entry) {
+            return ref
+                .read(inventoryBackedCalorieEntrySaveFlowProvider)
+                .saveEntry(
+                  entry: entry,
+                  pendingConsumptionId: pendingConsumptionId,
+                );
+          }
+        : null;
+
     final saved = await ref
         .read(calorieEntriesControllerProvider.notifier)
         .saveEntry(
@@ -584,6 +612,7 @@ class _CalorieEntryEditorPageState
           scannedSourceRef: initialEntry == null
               ? widget.scannedSourceRef
               : null,
+          persistEntry: persistEntry,
         );
 
     if (!mounted) {
@@ -595,6 +624,7 @@ class _CalorieEntryEditorPageState
     });
 
     if (saved) {
+      _didCommitPendingConsumption = true;
       if (router.canPop()) {
         router.pop();
       }
@@ -640,5 +670,22 @@ class _CalorieEntryEditorPageState
   void _showFailureSnackBar(ScaffoldMessengerState messenger, String message) {
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _onPopInvokedWithResult(bool didPop, Object? result) {
+    if (!didPop || _didCommitPendingConsumption) {
+      return;
+    }
+
+    final pendingConsumptionId = widget.inventoryContext?.pendingConsumptionId;
+    if (widget.entryId != null || pendingConsumptionId == null) {
+      return;
+    }
+
+    unawaited(
+      ref
+          .read(inventoryItemsControllerProvider.notifier)
+          .discardPendingConsumption(pendingConsumptionId),
+    );
   }
 }

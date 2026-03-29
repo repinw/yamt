@@ -71,44 +71,47 @@ class _CalorieBarcodeScanPageState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.caloriesBarcodeScannerTitle)),
-      body: Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          if (widget.showScannerPreview)
-            MobileScanner(
-              key: CalorieBarcodeScanKeys.scannerView,
-              controller: _scannerController,
-              onDetect: _onDetect,
-            )
-          else
-            const SizedBox.expand(key: CalorieBarcodeScanKeys.scannerView),
-          if (_isResolving)
-            ColoredBox(
-              color: Colors.black45,
-              child: Center(
-                child: Card(
-                  child: Padding(
-                    padding: AppInsets.card,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        const SizedBox.square(
-                          dimension: AppSizes.inlineProgressIndicator,
-                          child: CircularProgressIndicator(
-                            strokeWidth: AppSizes.progressStrokeWidth,
+    return PopScope<void>(
+      onPopInvokedWithResult: _onPopInvokedWithResult,
+      child: Scaffold(
+        appBar: AppBar(title: Text(l10n.caloriesBarcodeScannerTitle)),
+        body: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            if (widget.showScannerPreview)
+              MobileScanner(
+                key: CalorieBarcodeScanKeys.scannerView,
+                controller: _scannerController,
+                onDetect: _onDetect,
+              )
+            else
+              const SizedBox.expand(key: CalorieBarcodeScanKeys.scannerView),
+            if (_isResolving)
+              ColoredBox(
+                color: Colors.black45,
+                child: Center(
+                  child: Card(
+                    child: Padding(
+                      padding: AppInsets.card,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          const SizedBox.square(
+                            dimension: AppSizes.inlineProgressIndicator,
+                            child: CircularProgressIndicator(
+                              strokeWidth: AppSizes.progressStrokeWidth,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        Text(l10n.caloriesBarcodeResolving),
-                      ],
+                          const SizedBox(height: AppSpacing.md),
+                          Text(l10n.caloriesBarcodeResolving),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -265,13 +268,7 @@ class _CalorieBarcodeScanPageState
 
     switch (action) {
       case _CalorieNotFoundAction.manual:
-        await context.push(
-          AppRoutes.homeCaloriesEntryCreate,
-          extra: CalorieEntryCreateArgs(
-            prefilledProfile: null,
-            inventoryContext: widget.inventoryContext,
-          ),
-        );
+        await _openManualEditor();
         return;
       case _CalorieNotFoundAction.ocr:
         final ocrResult = await ref
@@ -332,17 +329,60 @@ class _CalorieBarcodeScanPageState
     );
   }
 
+  Future<void> _openManualEditor() async {
+    await context.push(
+      AppRoutes.homeCaloriesEntryCreate,
+      extra: CalorieEntryCreateArgs(
+        prefilledProfile: null,
+        inventoryContext: widget.inventoryContext,
+      ),
+    );
+    await _closeIfPendingResolved();
+  }
+
   Future<void> _openEditor({
     required CalorieProductProfile profile,
     required CalorieScannedSourceRef scannedSourceRef,
-  }) {
-    return context.push(
+  }) async {
+    await context.push(
       AppRoutes.homeCaloriesEntryCreate,
       extra: CalorieEntryCreateArgs(
         prefilledProfile: profile,
         scannedSourceRef: scannedSourceRef,
         inventoryContext: widget.inventoryContext,
       ),
+    );
+    await _closeIfPendingResolved();
+  }
+
+  Future<void> _closeIfPendingResolved() async {
+    final pendingConsumptionId = widget.inventoryContext?.pendingConsumptionId;
+    if (pendingConsumptionId == null || !mounted) {
+      return;
+    }
+
+    final hasPendingConsumption = ref
+        .read(inventoryItemsControllerProvider.notifier)
+        .hasPendingConsumption(pendingConsumptionId);
+    if (!hasPendingConsumption && context.canPop()) {
+      context.pop();
+    }
+  }
+
+  void _onPopInvokedWithResult(bool didPop, Object? result) {
+    if (!didPop) {
+      return;
+    }
+
+    final pendingConsumptionId = widget.inventoryContext?.pendingConsumptionId;
+    if (pendingConsumptionId == null) {
+      return;
+    }
+
+    unawaited(
+      ref
+          .read(inventoryItemsControllerProvider.notifier)
+          .discardPendingConsumption(pendingConsumptionId),
     );
   }
 

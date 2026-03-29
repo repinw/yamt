@@ -138,11 +138,27 @@ class _PendingDeletedInventoryItem {
   final int index;
 }
 
+class PendingInventoryConsumption {
+  const PendingInventoryConsumption({
+    required this.id,
+    required this.itemId,
+    required this.amount,
+  });
+
+  final String id;
+  final String itemId;
+  final int amount;
+}
+
 @riverpod
 class InventoryItemsController extends _$InventoryItemsController {
   StreamSubscription<List<InventoryItem>>? _itemsSubscription;
   final _mutationQueue = SerializedMutationQueue();
   _PendingDeletedInventoryItem? _pendingDeletedItem;
+  final Map<String, PendingInventoryConsumption> _pendingConsumptionsById =
+      <String, PendingInventoryConsumption>{};
+  List<InventoryItem>? _persistedItems;
+  int _pendingConsumptionDraftCounter = 0;
 
   @override
   FutureOr<List<InventoryItem>> build() {
@@ -167,8 +183,10 @@ class InventoryItemsController extends _$InventoryItemsController {
 
     _itemsSubscription = repository.watchAll().listen(
       (items) {
+        _persistedItems = items;
+        final visibleItems = _buildVisibleItems(items);
         if (!initialItems.isCompleted) {
-          initialItems.complete(items);
+          initialItems.complete(visibleItems);
           return;
         }
         _onRealtimeItems(items);
@@ -196,7 +214,8 @@ class InventoryItemsController extends _$InventoryItemsController {
     if (!ref.mounted) {
       return;
     }
-    state = AsyncData(items);
+    _persistedItems = items;
+    state = AsyncData(_buildVisibleItems(items));
   }
 
   void _onRealtimeError(Object error, StackTrace stackTrace) {
@@ -208,7 +227,7 @@ class InventoryItemsController extends _$InventoryItemsController {
 
   Future<bool> deleteItem(String itemId) {
     return _runSerializedMutation(() async {
-      final currentItems = await _currentItems();
+      final currentItems = await _currentPersistedItems();
       final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
       if (itemIndex < 0) {
         return false;
@@ -237,7 +256,7 @@ class InventoryItemsController extends _$InventoryItemsController {
         return false;
       }
 
-      final currentItems = await _currentItems();
+      final currentItems = await _currentPersistedItems();
       final itemAlreadyPresent = currentItems.any(
         (item) => item.id == pendingDeletedItem.item.id,
       );
@@ -294,7 +313,7 @@ class InventoryItemsController extends _$InventoryItemsController {
       return Future<bool>.value(false);
     }
     return _runSerializedMutation(() async {
-      final currentItems = await _currentItems();
+      final currentItems = await _currentPersistedItems();
       final nextItems = buildRestoredItems(
         currentItems: currentItems,
         itemId: itemId,
@@ -360,19 +379,104 @@ class InventoryItemsController extends _$InventoryItemsController {
     return ref.read(shoppingListFacadeProvider).addInventoryItem(item);
   }
 
-  Future<List<InventoryItem>> _currentItems() async {
-    final currentData = state.asData?.value;
-    if (currentData != null) {
-      return currentData;
+  Future<PendingInventoryConsumption?> stagePendingConsumption(
+    String itemId,
+    int amount,
+  ) {
+    if (amount < 1) {
+      return Future<PendingInventoryConsumption?>.value(null);
     }
-    return future;
+    return _runSerializedTask<PendingInventoryConsumption?>(
+      operation: () async {
+        final visibleItems = await _currentVisibleItems();
+        final effectiveAmount = _resolveEffectiveConsumptionAmount(
+          currentItems: visibleItems,
+          itemId: itemId,
+          requestedAmount: amount,
+        );
+        if (effectiveAmount == null) {
+          return null;
+        }
+
+        final draft = PendingInventoryConsumption(
+          id: _nextPendingConsumptionId(),
+          itemId: itemId,
+          amount: effectiveAmount,
+        );
+        _pendingConsumptionsById[draft.id] = draft;
+        _publishVisibleItems();
+        return draft;
+      },
+      fallbackValue: null,
+    );
+  }
+
+  PendingInventoryConsumption? pendingConsumptionById(String draftId) {
+    return _pendingConsumptionsById[draftId];
+  }
+
+  bool hasPendingConsumption(String draftId) {
+    return _pendingConsumptionsById.containsKey(draftId);
+  }
+
+  Future<bool> discardPendingConsumption(String draftId) {
+    return _runSerializedTask<bool>(
+      operation: () async {
+        final removed = _pendingConsumptionsById.remove(draftId);
+        if (removed == null) {
+          return false;
+        }
+        _publishVisibleItems();
+        return true;
+      },
+      fallbackValue: false,
+    );
+  }
+
+  Future<bool> finalizeCommittedPendingConsumption({
+    required String draftId,
+    required String itemId,
+    required int quantity,
+    required int currentAmount,
+  }) {
+    return _runSerializedTask<bool>(
+      operation: () async {
+        final draft = _pendingConsumptionsById.remove(draftId);
+        if (draft == null) {
+          return false;
+        }
+
+        final currentItems = _persistedItems;
+        if (currentItems == null) {
+          _publishVisibleItems();
+          return false;
+        }
+
+        final nextItems = List<InventoryItem>.from(currentItems);
+        final itemIndex = nextItems.indexWhere((item) => item.id == itemId);
+        if (itemIndex < 0) {
+          _publishVisibleItems();
+          return false;
+        }
+
+        final currentItem = nextItems[itemIndex];
+        nextItems[itemIndex] = currentItem.copyWith(
+          quantity: quantity,
+          currentAmount: currentAmount,
+        );
+        _persistedItems = nextItems;
+        _publishVisibleItems();
+        return true;
+      },
+      fallbackValue: false,
+    );
   }
 
   Future<bool> _runItemsMutation(
     List<InventoryItem>? Function(List<InventoryItem> currentItems) mutation,
   ) {
     return _runSerializedMutation(() async {
-      final currentItems = await _currentItems();
+      final currentItems = await _currentPersistedItems();
       final nextItems = mutation(currentItems);
       if (nextItems == null) {
         return true;
@@ -385,15 +489,15 @@ class InventoryItemsController extends _$InventoryItemsController {
     required List<InventoryItem> previousItems,
     required List<InventoryItem> nextItems,
   }) async {
-    if (ref.mounted) {
-      state = AsyncData(nextItems);
-    }
+    _persistedItems = nextItems;
+    _publishVisibleItems();
 
     final repository = ref.read(inventoryItemRepositoryProvider);
     try {
       final saved = await repository.saveAll(nextItems);
-      if (!saved && ref.mounted) {
-        state = AsyncData(previousItems);
+      if (!saved) {
+        _persistedItems = previousItems;
+        _publishVisibleItems();
       }
       return saved;
     } catch (error, stackTrace) {
@@ -403,17 +507,23 @@ class InventoryItemsController extends _$InventoryItemsController {
         error: error,
         stackTrace: stackTrace,
       );
-      if (ref.mounted) {
-        state = AsyncData(previousItems);
-      }
+      _persistedItems = previousItems;
+      _publishVisibleItems();
       return false;
     }
   }
 
   Future<bool> _runSerializedMutation(Future<bool> Function() mutation) {
-    return _mutationQueue.run<bool>(
-      operation: mutation,
-      fallbackValue: false,
+    return _runSerializedTask<bool>(operation: mutation, fallbackValue: false);
+  }
+
+  Future<T> _runSerializedTask<T>({
+    required Future<T> Function() operation,
+    required T fallbackValue,
+  }) {
+    return _mutationQueue.run<T>(
+      operation: operation,
+      fallbackValue: fallbackValue,
       onError: (error, stackTrace) {
         log(
           'Unexpected inventory mutation error.',
@@ -423,6 +533,85 @@ class InventoryItemsController extends _$InventoryItemsController {
         );
       },
     );
+  }
+
+  Future<List<InventoryItem>> _currentPersistedItems() async {
+    final persistedItems = _persistedItems;
+    if (persistedItems != null) {
+      return persistedItems;
+    }
+
+    final items = await ref.read(inventoryItemRepositoryProvider).readAll();
+    _persistedItems = items;
+    return items;
+  }
+
+  Future<List<InventoryItem>> _currentVisibleItems() async {
+    final currentData = state.asData?.value;
+    if (currentData != null) {
+      return currentData;
+    }
+
+    final persistedItems = await _currentPersistedItems();
+    return _buildVisibleItems(persistedItems);
+  }
+
+  List<InventoryItem> _buildVisibleItems(List<InventoryItem> items) {
+    if (_pendingConsumptionsById.isEmpty) {
+      return items;
+    }
+
+    var visibleItems = List<InventoryItem>.from(items);
+    for (final draft in _pendingConsumptionsById.values) {
+      final reducedItems = buildReducedItems(
+        currentItems: visibleItems,
+        itemId: draft.itemId,
+        amount: draft.amount,
+      );
+      if (reducedItems == null) {
+        continue;
+      }
+      visibleItems = reducedItems;
+    }
+    return visibleItems;
+  }
+
+  void _publishVisibleItems() {
+    if (!ref.mounted) {
+      return;
+    }
+
+    final persistedItems = _persistedItems;
+    if (persistedItems == null) {
+      return;
+    }
+    state = AsyncData(_buildVisibleItems(persistedItems));
+  }
+
+  int? _resolveEffectiveConsumptionAmount({
+    required List<InventoryItem> currentItems,
+    required String itemId,
+    required int requestedAmount,
+  }) {
+    if (requestedAmount < 1) {
+      return null;
+    }
+
+    final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
+    if (itemIndex < 0) {
+      return null;
+    }
+
+    final maxReducible = _maxReducibleAmount(currentItems[itemIndex]);
+    if (maxReducible < 1) {
+      return null;
+    }
+    return requestedAmount > maxReducible ? maxReducible : requestedAmount;
+  }
+
+  String _nextPendingConsumptionId() {
+    _pendingConsumptionDraftCounter += 1;
+    return 'pending-consumption-${_pendingConsumptionDraftCounter.toString()}';
   }
 }
 
