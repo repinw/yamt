@@ -31,10 +31,6 @@ abstract final class CaloriesPageKeys {
     return Key('calories_entry_tile_$entryId');
   }
 
-  static Key entryDeleteButton(String entryId) {
-    return Key('calories_entry_delete_$entryId');
-  }
-
   static Key deleteRestoreCheckbox(String entryId) {
     return Key('calories_delete_restore_$entryId');
   }

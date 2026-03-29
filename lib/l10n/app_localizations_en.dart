@@ -9,12 +9,6 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get welcomeTitle => 'Welcome';
-
-  @override
-  String get homeTitle => 'Home';
-
-  @override
   String get homeInventory => 'Inventory';
 
   @override
@@ -33,9 +27,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeQuickActionTooltip => 'Quick action';
 
   @override
-  String get homeQuickActionTapped => 'Quick action tapped';
-
-  @override
   String get inventoryFabTooltip => 'Receipt actions';
 
   @override
@@ -51,16 +42,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryActionCameraUnsupported => 'Camera is not supported on this platform.';
 
   @override
-  String get inventoryReceiptSelectedCamera => 'Receipt image captured.';
-
-  @override
-  String get inventoryReceiptSelectedFile => 'Receipt file selected.';
-
-  @override
   String get inventoryReceiptSelectionFailed => 'Could not select a receipt. Please try again.';
-
-  @override
-  String get inventoryReceiptAnalysisSucceeded => 'Receipt analyzed successfully.';
 
   @override
   String get inventoryReceiptAnalysisFailed => 'Receipt analysis failed. Please try again.';
@@ -125,22 +107,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewApplyItemAction => 'Apply changes';
 
   @override
-  String get inventoryReceiptReviewFieldId => 'ID';
-
-  @override
   String get inventoryReceiptReviewFieldName => 'Name';
-
-  @override
-  String get inventoryReceiptReviewFieldEntryDate => 'Entry date';
 
   @override
   String get inventoryReceiptReviewFieldStoreName => 'Store name';
 
   @override
   String get inventoryReceiptReviewFieldQuantity => 'Quantity';
-
-  @override
-  String get inventoryReceiptReviewFieldInitialQuantity => 'Initial quantity';
 
   @override
   String get inventoryReceiptReviewFieldUnitPrice => 'Unit price';
@@ -191,25 +164,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewAddDiscountAction => 'Add discount row';
 
   @override
-  String get inventoryReceiptReviewFieldReceiptId => 'Receipt ID';
-
-  @override
-  String get inventoryReceiptReviewFieldReceiptDate => 'Receipt date';
-
-  @override
-  String get inventoryReceiptReviewFieldLanguage => 'Language';
-
-  @override
   String get inventoryReceiptReviewFieldIsDeposit => 'Is deposit item';
 
   @override
   String get inventoryReceiptReviewFieldIsDiscount => 'Is discount item';
-
-  @override
-  String get inventoryReceiptReviewSelectDateAction => 'Select date';
-
-  @override
-  String get inventoryReceiptReviewClearDateAction => 'Clear date';
 
   @override
   String get inventoryReceiptReviewNoDate => 'No date';
@@ -239,22 +197,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewReadAsPrefix => 'Read as';
 
   @override
-  String get inventoryReceiptReviewDetermineAction => 'Determine';
-
-  @override
   String get inventoryReceiptReviewCandidatesAction => 'Candidates';
 
   @override
   String get inventoryReceiptReviewProductSelectionLabel => 'Select product';
-
-  @override
-  String get inventoryReceiptReviewCreateNewProduct => 'Create new product';
-
-  @override
-  String get inventoryReceiptReviewMissingProductAction => 'Add missing item';
-
-  @override
-  String get inventoryReceiptReviewMissingProductHint => 'Scan barcode or search manually';
 
   @override
   String get inventoryReceiptReviewManualDataAction => 'Enter barcode and nutrition';
@@ -296,21 +242,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptSaveFailed => 'Could not save receipt items. Please try again.';
 
   @override
-  String get inventorySummaryTitle => 'Overview';
-
-  @override
-  String get inventorySummaryEntries => 'Entries';
-
-  @override
-  String get inventorySummaryQuantity => 'Total quantity';
-
-  @override
-  String get inventorySummaryEstimatedValue => 'Estimated value';
-
-  @override
-  String get inventoryListSectionTitle => 'Items';
-
-  @override
   String get inventoryListModeByReceipt => 'By receipt';
 
   @override
@@ -345,9 +276,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryReceiptGroupItems => 'items';
-
-  @override
-  String get inventoryItemNoPrice => 'No price';
 
   @override
   String get inventoryItemDeleteAction => 'Delete';
@@ -396,9 +324,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryBarcodeLookupQueued => 'Barcode search finished. The result is saved on the inventory item.';
-
-  @override
-  String get inventoryBarcodeRetryAction => 'Search barcode';
 
   @override
   String get inventoryBarcodeScanUnsupported => 'Barcode scanning is currently supported on Android and iOS.';
@@ -692,16 +617,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesAuthRequired => 'Please sign in to manage calories.';
 
   @override
-  String get caloriesTodayTitle => 'Today';
-
-  @override
   String get caloriesTodayAction => 'Today';
-
-  @override
-  String get caloriesPreviousDayAction => 'Previous day';
-
-  @override
-  String get caloriesNextDayAction => 'Next day';
 
   @override
   String get caloriesSetGoalAction => 'Set goal';
@@ -872,9 +788,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesSectionEmptyState => 'No entries yet.';
-
-  @override
-  String get caloriesDeleteEntryAction => 'Delete entry';
 
   @override
   String get caloriesDeleteEntryDialogTitle => 'Delete entry?';
@@ -1196,9 +1109,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get register => 'Register';
-
-  @override
-  String get loginAsGuest => 'Login as guest';
 
   @override
   String get loginWithGoogle => 'Login with Google';

@@ -91,37 +91,6 @@ abstract final class AppInventoryEditorialSurfaces {
     );
   }
 
-  static BoxDecoration sectionCardDecoration(
-    ColorScheme colors, {
-    required BorderRadiusGeometry borderRadius,
-    Color? color,
-    double blurRadius = 36,
-    Offset shadowOffset = const Offset(0, 18),
-  }) {
-    return _layeredDecoration(
-      colors: colors,
-      color: color ?? section(colors),
-      borderRadius: borderRadius,
-      blurRadius: blurRadius,
-      shadowOffset: shadowOffset,
-    );
-  }
-
-  static BoxDecoration glassCardDecoration(
-    ColorScheme colors, {
-    required BorderRadiusGeometry borderRadius,
-    double blurRadius = 48,
-    Offset shadowOffset = const Offset(0, 24),
-  }) {
-    return _layeredDecoration(
-      colors: colors,
-      color: glass(colors),
-      borderRadius: borderRadius,
-      blurRadius: blurRadius,
-      shadowOffset: shadowOffset,
-    );
-  }
-
   static LinearGradient soulGradient(ColorScheme colors) {
     final start = Color.alphaBlend(
       AppInventoryEditorial.primary.withValues(alpha: 0.92),
