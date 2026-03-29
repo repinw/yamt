@@ -311,6 +311,7 @@
   "caloriesPreviousDayAction": "Previous day",
   "caloriesNextDayAction": "Next day",
   "caloriesSetGoalAction": "Set goal",
+  "caloriesCalculatorAction": "Calorie calculator",
   "caloriesGoalDialogTitle": "Set daily goal",
   "caloriesGoalFieldLabel": "Daily kcal goal",
   "caloriesGoalSaveAction": "Save goal",
@@ -318,6 +319,63 @@
   "caloriesGoalInvalidValue": "Please enter a number greater than zero.",
   "caloriesGoalSaveFailed": "Could not save calorie goal.",
   "caloriesGoalClearFailed": "Could not clear calorie goal.",
+  "caloriesCalculatorSheetTitle": "Calorie calculator",
+  "caloriesCalculatorStepProgress": "Step {current} of {total}",
+  "@caloriesCalculatorStepProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesCalculatorBackAction": "Back",
+  "caloriesCalculatorNextAction": "Continue",
+  "caloriesCalculatorSexLabel": "Sex",
+  "caloriesCalculatorSexMale": "Male",
+  "caloriesCalculatorSexFemale": "Female",
+  "caloriesCalculatorWeightLabel": "Weight (kg)",
+  "caloriesCalculatorWeightEmpty": "Please enter your weight.",
+  "caloriesCalculatorWeightInvalid": "Please enter a valid weight.",
+  "caloriesCalculatorHeightLabel": "Height (cm)",
+  "caloriesCalculatorHeightEmpty": "Please enter your height.",
+  "caloriesCalculatorHeightInvalid": "Please enter a valid height.",
+  "caloriesCalculatorAgeLabel": "Age (years)",
+  "caloriesCalculatorAgeEmpty": "Please enter your age.",
+  "caloriesCalculatorAgeInvalid": "Please enter a valid age.",
+  "caloriesCalculatorActivityLevelLabel": "Activity level (PAL)",
+  "caloriesCalculatorActivityLevelHint": "For example 1.2 to 2.0",
+  "caloriesCalculatorActivityLevelEmpty":
+      "Please enter your activity level.",
+  "caloriesCalculatorActivityLevelInvalid":
+      "Please enter a valid activity level.",
+  "caloriesCalculatorGoalModeLabel": "Goal mode",
+  "caloriesCalculatorGoalModeLose": "Lose",
+  "caloriesCalculatorGoalModeMaintain": "Maintain",
+  "caloriesCalculatorGoalModeGain": "Gain",
+  "caloriesCalculatorGoalSpeedLabel": "Goal speed (kg/week)",
+  "caloriesCalculatorGoalSpeedHint": "For example 0.25, 0.5 or 0.75",
+  "caloriesCalculatorGoalSpeedEmpty": "Please enter a goal speed.",
+  "caloriesCalculatorGoalSpeedInvalid":
+      "Please enter a valid goal speed.",
+  "caloriesCalculatorResultsTitle": "Results",
+  "caloriesCalculatorBmrLabel": "Basal metabolic rate",
+  "caloriesCalculatorTdeeLabel": "Maintenance calories",
+  "caloriesCalculatorDailyGoalLabel": "Daily calorie target",
+  "caloriesCalculatorMinimumGoalWarning":
+      "For weight loss, the daily target cannot go below {minimumKcal} kcal. The result was capped at this minimum.",
+  "@caloriesCalculatorMinimumGoalWarning": {
+    "placeholders": {
+      "minimumKcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesCalculatorSaveAction": "Save target",
+  "caloriesCalculatorSaveFailed":
+      "Could not save the calculated calorie target.",
   "caloriesConsumedLabel": "Consumed",
   "caloriesGoalLabel": "Goal",
   "caloriesRemainingLabel": "Remaining",

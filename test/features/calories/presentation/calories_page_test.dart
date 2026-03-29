@@ -272,9 +272,10 @@ void main() {
       ],
     );
     final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings(
+      initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
-        updatedAt: DateTime(today.year, today.month, today.day, 9),
+        calculatorProfile: null,
+        effectiveDate: DateTime(today.year, today.month, today.day, 9),
       ),
     );
     addTearDown(logRepository.dispose);
@@ -824,9 +825,10 @@ void main() {
       ],
     );
     final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings(
+      initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
-        updatedAt: DateTime(today.year, today.month, today.day, 9),
+        calculatorProfile: null,
+        effectiveDate: DateTime(today.year, today.month, today.day, 9),
       ),
     );
     addTearDown(logRepository.dispose);

@@ -1475,6 +1475,12 @@ abstract class AppLocalizations {
   /// **'Set goal'**
   String get caloriesSetGoalAction;
 
+  /// No description provided for @caloriesCalculatorAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Calorie calculator'**
+  String get caloriesCalculatorAction;
+
   /// No description provided for @caloriesGoalDialogTitle.
   ///
   /// In en, this message translates to:
@@ -1516,6 +1522,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not clear calorie goal.'**
   String get caloriesGoalClearFailed;
+
+  /// No description provided for @caloriesCalculatorSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Calorie calculator'**
+  String get caloriesCalculatorSheetTitle;
+
+  /// No description provided for @caloriesCalculatorStepProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String caloriesCalculatorStepProgress(int current, int total);
+
+  /// No description provided for @caloriesCalculatorBackAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get caloriesCalculatorBackAction;
+
+  /// No description provided for @caloriesCalculatorNextAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get caloriesCalculatorNextAction;
+
+  /// No description provided for @caloriesCalculatorSexLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sex'**
+  String get caloriesCalculatorSexLabel;
+
+  /// No description provided for @caloriesCalculatorSexMale.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get caloriesCalculatorSexMale;
+
+  /// No description provided for @caloriesCalculatorSexFemale.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get caloriesCalculatorSexFemale;
+
+  /// No description provided for @caloriesCalculatorWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight (kg)'**
+  String get caloriesCalculatorWeightLabel;
+
+  /// No description provided for @caloriesCalculatorWeightEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your weight.'**
+  String get caloriesCalculatorWeightEmpty;
+
+  /// No description provided for @caloriesCalculatorWeightInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid weight.'**
+  String get caloriesCalculatorWeightInvalid;
+
+  /// No description provided for @caloriesCalculatorHeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Height (cm)'**
+  String get caloriesCalculatorHeightLabel;
+
+  /// No description provided for @caloriesCalculatorHeightEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your height.'**
+  String get caloriesCalculatorHeightEmpty;
+
+  /// No description provided for @caloriesCalculatorHeightInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid height.'**
+  String get caloriesCalculatorHeightInvalid;
+
+  /// No description provided for @caloriesCalculatorAgeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Age (years)'**
+  String get caloriesCalculatorAgeLabel;
+
+  /// No description provided for @caloriesCalculatorAgeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your age.'**
+  String get caloriesCalculatorAgeEmpty;
+
+  /// No description provided for @caloriesCalculatorAgeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid age.'**
+  String get caloriesCalculatorAgeInvalid;
+
+  /// No description provided for @caloriesCalculatorActivityLevelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity level (PAL)'**
+  String get caloriesCalculatorActivityLevelLabel;
+
+  /// No description provided for @caloriesCalculatorActivityLevelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example 1.2 to 2.0'**
+  String get caloriesCalculatorActivityLevelHint;
+
+  /// No description provided for @caloriesCalculatorActivityLevelEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your activity level.'**
+  String get caloriesCalculatorActivityLevelEmpty;
+
+  /// No description provided for @caloriesCalculatorActivityLevelInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid activity level.'**
+  String get caloriesCalculatorActivityLevelInvalid;
+
+  /// No description provided for @caloriesCalculatorGoalModeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal mode'**
+  String get caloriesCalculatorGoalModeLabel;
+
+  /// No description provided for @caloriesCalculatorGoalModeLose.
+  ///
+  /// In en, this message translates to:
+  /// **'Lose'**
+  String get caloriesCalculatorGoalModeLose;
+
+  /// No description provided for @caloriesCalculatorGoalModeMaintain.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintain'**
+  String get caloriesCalculatorGoalModeMaintain;
+
+  /// No description provided for @caloriesCalculatorGoalModeGain.
+  ///
+  /// In en, this message translates to:
+  /// **'Gain'**
+  String get caloriesCalculatorGoalModeGain;
+
+  /// No description provided for @caloriesCalculatorGoalSpeedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal speed (kg/week)'**
+  String get caloriesCalculatorGoalSpeedLabel;
+
+  /// No description provided for @caloriesCalculatorGoalSpeedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example 0.25, 0.5 or 0.75'**
+  String get caloriesCalculatorGoalSpeedHint;
+
+  /// No description provided for @caloriesCalculatorGoalSpeedEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a goal speed.'**
+  String get caloriesCalculatorGoalSpeedEmpty;
+
+  /// No description provided for @caloriesCalculatorGoalSpeedInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid goal speed.'**
+  String get caloriesCalculatorGoalSpeedInvalid;
+
+  /// No description provided for @caloriesCalculatorResultsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get caloriesCalculatorResultsTitle;
+
+  /// No description provided for @caloriesCalculatorBmrLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Basal metabolic rate'**
+  String get caloriesCalculatorBmrLabel;
+
+  /// No description provided for @caloriesCalculatorTdeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintenance calories'**
+  String get caloriesCalculatorTdeeLabel;
+
+  /// No description provided for @caloriesCalculatorDailyGoalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily calorie target'**
+  String get caloriesCalculatorDailyGoalLabel;
+
+  /// No description provided for @caloriesCalculatorMinimumGoalWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'For weight loss, the daily target cannot go below {minimumKcal} kcal. The result was capped at this minimum.'**
+  String caloriesCalculatorMinimumGoalWarning(int minimumKcal);
+
+  /// No description provided for @caloriesCalculatorSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save target'**
+  String get caloriesCalculatorSaveAction;
+
+  /// No description provided for @caloriesCalculatorSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the calculated calorie target.'**
+  String get caloriesCalculatorSaveFailed;
 
   /// No description provided for @caloriesConsumedLabel.
   ///

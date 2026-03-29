@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 
 class _FakeCalorieSettingsUserSession implements CalorieSettingsUserSession {
@@ -62,6 +63,39 @@ void main() {
 
     expect(emitted, isNotEmpty);
     expect(emitted.last.dailyKcalGoal, 2100);
+  });
+
+  test('saveSettings persists calculator profile fields', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreCalorieSettingsRepository(
+      session: _FakeCalorieSettingsUserSession(currentUserId: 'user-1'),
+      firestore: firestore,
+    );
+
+    final settings = CalorieGoalSettings.single(
+      dailyKcalGoal: 1850,
+      calculatorProfile: const CalorieCalculatorProfile(
+        sex: CalorieCalculatorSex.female,
+        weightKg: 65,
+        heightCm: 170,
+        ageYears: 28,
+        activityLevel: 1.5,
+        goalMode: CalorieGoalMode.lose,
+        goalSpeedKgPerWeek: 0.5,
+      ),
+      effectiveDate: DateTime(2026, 2, 25, 11),
+    );
+
+    final saved = await repository.saveSettings(settings);
+    final readBack = await repository.readSettings();
+
+    expect(saved, isTrue);
+    expect(readBack.dailyKcalGoal, 1850);
+    expect(readBack.calculatorProfile?.sex, CalorieCalculatorSex.female);
+    expect(readBack.calculatorProfile?.goalMode, CalorieGoalMode.lose);
+    expect(readBack.calculatorProfile?.goalSpeedKgPerWeek, 0.5);
+    expect(readBack.goalHistory, hasLength(1));
+    expect(readBack.goalHistory.single.effectiveDate, DateTime(2026, 2, 25));
   });
 
   test('repository returns empty defaults when no user is signed in', () async {

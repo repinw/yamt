@@ -60,9 +60,10 @@ void main() {
       ],
     );
     final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings(
+      initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2000,
-        updatedAt: today,
+        calculatorProfile: null,
+        effectiveDate: today.subtract(const Duration(days: 6)),
       ),
     );
     addTearDown(logRepository.dispose);
@@ -118,9 +119,10 @@ void main() {
           .toList(growable: false);
     };
     final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings(
+      initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2000,
-        updatedAt: today,
+        calculatorProfile: null,
+        effectiveDate: today.subtract(const Duration(days: 6)),
       ),
     );
     addTearDown(logRepository.dispose);
@@ -145,6 +147,67 @@ void main() {
     expect(overview.totalConsumedKcal, 600);
     expect(overview.totalGoalKcal, 14000);
     expect(overview.remainingKcal, 13400);
+  });
+
+  test('calorieWeekOverview uses day-specific goals and resets buffer '
+      'on the latest goal change', () async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final yesterday = today.subtract(const Duration(days: 1));
+    final threeDaysAgo = today.subtract(const Duration(days: 3));
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'yesterday',
+          loggedAt: yesterday.add(const Duration(hours: 8)),
+          totalKcal: 2100,
+        ),
+        _entry(
+          'today',
+          loggedAt: today.add(const Duration(hours: 8)),
+          totalKcal: 1700,
+        ),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: threeDaysAgo,
+            dailyKcalGoal: 2400,
+            calculatorProfile: null,
+          )
+          .applyGoalChange(
+            changedAt: yesterday,
+            dailyKcalGoal: 1800,
+            calculatorProfile: null,
+          ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+    final overview = await container.read(calorieWeekOverviewProvider.future);
+
+    expect(
+      overview.days.firstWhere((day) => day.date == threeDaysAgo).goalKcal,
+      2400,
+    );
+    expect(
+      overview.days.firstWhere((day) => day.date == yesterday).goalKcal,
+      1800,
+    );
+    expect(overview.days.firstWhere((day) => day.date == today).goalKcal, 1800);
+    expect(overview.balanceStartDate, yesterday);
+    expect(overview.totalConsumedKcal, 3800);
+    expect(overview.totalGoalKcal, 3600);
+    expect(overview.remainingKcal, -200);
   });
 
   test(
@@ -210,7 +273,7 @@ void main() {
           if (overview == null || updatedOverview.isCompleted) {
             return;
           }
-          if (overview.totalGoalKcal == 12600) {
+          if (overview.totalGoalKcal == 1800) {
             updatedOverview.complete(overview);
           }
         },
@@ -218,11 +281,16 @@ void main() {
       addTearDown(updatedSubscription.close);
 
       settingsRepository.emit(
-        CalorieGoalSettings(dailyKcalGoal: 1800, updatedAt: today),
+        CalorieGoalSettings.single(
+          dailyKcalGoal: 1800,
+          calculatorProfile: null,
+          effectiveDate: today,
+        ),
       );
 
       final overview = await updatedOverview.future;
-      expect(overview.totalGoalKcal, 12600);
+      expect(overview.totalGoalKcal, 1800);
+      expect(overview.totalConsumedKcal, 600);
       expect(readCount, diaryVisibleDayCount);
     },
   );
@@ -249,16 +317,23 @@ class _DelayedCalorieSettingsRepository implements CalorieSettingsRepository {
   @override
   Future<bool> setDailyGoal(double dailyKcalGoal) {
     return saveSettings(
-      CalorieGoalSettings(
+      CalorieGoalSettings.single(
         dailyKcalGoal: dailyKcalGoal,
-        updatedAt: DateTime.now(),
+        calculatorProfile: null,
+        effectiveDate: DateTime.now(),
       ),
     );
   }
 
   @override
   Future<bool> clearDailyGoal() {
-    return saveSettings(const CalorieGoalSettings.empty());
+    return saveSettings(
+      const CalorieGoalSettings.empty().applyGoalChange(
+        changedAt: DateTime.now(),
+        dailyKcalGoal: null,
+        calculatorProfile: null,
+      ),
+    );
   }
 
   void emit(CalorieGoalSettings settings) {

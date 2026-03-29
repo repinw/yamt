@@ -200,16 +200,23 @@ class FakeCalorieSettingsRepository implements CalorieSettingsRepository {
   @override
   Future<bool> setDailyGoal(double dailyKcalGoal) {
     return saveSettings(
-      CalorieGoalSettings(
+      CalorieGoalSettings.single(
         dailyKcalGoal: dailyKcalGoal,
-        updatedAt: DateTime(2026, 2, 25, 10),
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 2, 25, 10),
       ),
     );
   }
 
   @override
   Future<bool> clearDailyGoal() {
-    return saveSettings(const CalorieGoalSettings.empty());
+    return saveSettings(
+      const CalorieGoalSettings.empty().applyGoalChange(
+        changedAt: DateTime(2026, 2, 25, 10),
+        dailyKcalGoal: null,
+        calculatorProfile: null,
+      ),
+    );
   }
 
   Future<void> dispose() {

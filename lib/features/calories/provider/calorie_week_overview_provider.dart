@@ -62,12 +62,14 @@ class CalorieWeekOverview {
     required this.totalConsumedKcal,
     required this.totalGoalKcal,
     required this.remainingKcal,
+    required this.balanceStartDate,
   });
 
   final List<CalorieWeekDayOverview> days;
   final double totalConsumedKcal;
   final double totalGoalKcal;
   final double remainingKcal;
+  final DateTime balanceStartDate;
 }
 
 @riverpod
@@ -111,24 +113,37 @@ Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
     calorieWeekConsumptionSnapshotProvider.future,
   );
   final goalState = ref.watch(calorieGoalControllerProvider);
-  final goalKcal =
-      goalState.asData?.value.dailyKcalGoal ?? defaultDailyCalorieGoalKcal;
+  final settings = goalState.asData?.value ?? const CalorieGoalSettings.empty();
   final overviews = snapshot.days
       .map(
         (day) => CalorieWeekDayOverview(
           date: day.date,
           totalKcal: day.totalKcal,
-          goalKcal: goalKcal,
+          goalKcal: settings.goalKcalForDay(day.date),
           entryCount: day.entryCount,
         ),
       )
       .toList(growable: false);
-  final totalGoalKcal = goalKcal * overviews.length;
+  final balanceStartDate = settings.balanceStartForWindow(
+    snapshot.days.map((day) => day.date),
+  );
+  final bufferDays = overviews.where(
+    (day) => !_isBeforeDay(day.date, balanceStartDate),
+  );
+  final totalConsumedKcal = bufferDays.fold<double>(
+    0,
+    (sum, day) => sum + day.totalKcal,
+  );
+  final totalGoalKcal = bufferDays.fold<double>(
+    0,
+    (sum, day) => sum + day.goalKcal,
+  );
   return CalorieWeekOverview(
     days: List<CalorieWeekDayOverview>.unmodifiable(overviews),
-    totalConsumedKcal: snapshot.totalConsumedKcal,
+    totalConsumedKcal: totalConsumedKcal,
     totalGoalKcal: totalGoalKcal,
-    remainingKcal: totalGoalKcal - snapshot.totalConsumedKcal,
+    remainingKcal: totalGoalKcal - totalConsumedKcal,
+    balanceStartDate: balanceStartDate,
   );
 }
 
@@ -147,4 +162,12 @@ Future<List<CalorieEntry>> _readEntriesForDaySafely(
     );
     return const <CalorieEntry>[];
   }
+}
+
+bool _isBeforeDay(DateTime left, DateTime right) {
+  return DateTime(
+    left.year,
+    left.month,
+    left.day,
+  ).isBefore(DateTime(right.year, right.month, right.day));
 }

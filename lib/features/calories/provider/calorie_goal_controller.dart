@@ -3,6 +3,8 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 
 part 'calorie_goal_controller.g.dart';
@@ -34,61 +36,38 @@ class CalorieGoalController extends _$CalorieGoalController {
       return false;
     }
 
-    final previous = state.asData?.value;
-    final nextSettings = CalorieGoalSettings(
+    final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
+    final now = DateTime.now();
+    final nextSettings = previous.applyGoalChange(
+      changedAt: now,
       dailyKcalGoal: dailyKcalGoal,
-      updatedAt: DateTime.now(),
+      calculatorProfile: null,
     );
-    if (ref.mounted) {
-      state = AsyncData(nextSettings);
-    }
+    return _persistSettings(nextSettings);
+  }
 
-    final repository = ref.read(calorieSettingsRepositoryProvider);
-    try {
-      final saved = await repository.setDailyGoal(dailyKcalGoal);
-      if (!saved && ref.mounted && previous != null) {
-        state = AsyncData(previous);
-      }
-      return saved;
-    } catch (error, stackTrace) {
-      log(
-        'Failed to persist calorie goal.',
-        name: _goalControllerLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      if (ref.mounted && previous != null) {
-        state = AsyncData(previous);
-      }
-      return false;
-    }
+  Future<bool> saveCalculatedGoal(CalorieCalculatorProfile profile) {
+    final calculation = CalorieGoalCalculator.calculate(profile);
+    final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
+    final now = DateTime.now();
+    final nextSettings = previous.applyGoalChange(
+      changedAt: now,
+      dailyKcalGoal: calculation.finalGoalKcal,
+      calculatorProfile: profile,
+    );
+    return _persistSettings(nextSettings);
   }
 
   Future<bool> clearGoal() async {
-    final previous = state.asData?.value;
-    if (ref.mounted) {
-      state = const AsyncData(CalorieGoalSettings.empty());
-    }
-
-    final repository = ref.read(calorieSettingsRepositoryProvider);
-    try {
-      final saved = await repository.clearDailyGoal();
-      if (!saved && ref.mounted && previous != null) {
-        state = AsyncData(previous);
-      }
-      return saved;
-    } catch (error, stackTrace) {
-      log(
-        'Failed to clear calorie goal.',
-        name: _goalControllerLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      if (ref.mounted && previous != null) {
-        state = AsyncData(previous);
-      }
-      return false;
-    }
+    final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
+    final now = DateTime.now();
+    return _persistSettings(
+      previous.applyGoalChange(
+        changedAt: now,
+        dailyKcalGoal: null,
+        calculatorProfile: null,
+      ),
+    );
   }
 
   Future<CalorieGoalSettings> _restartSubscription() {
@@ -136,5 +115,32 @@ class CalorieGoalController extends _$CalorieGoalController {
       return;
     }
     state = AsyncError(error, stackTrace);
+  }
+
+  Future<bool> _persistSettings(CalorieGoalSettings nextSettings) async {
+    final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
+    if (ref.mounted) {
+      state = AsyncData(nextSettings);
+    }
+
+    final repository = ref.read(calorieSettingsRepositoryProvider);
+    try {
+      final saved = await repository.saveSettings(nextSettings);
+      if (!saved && ref.mounted) {
+        state = AsyncData(previous);
+      }
+      return saved;
+    } catch (error, stackTrace) {
+      log(
+        'Failed to persist calorie goal settings.',
+        name: _goalControllerLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (ref.mounted) {
+        state = AsyncData(previous);
+      }
+      return false;
+    }
   }
 }

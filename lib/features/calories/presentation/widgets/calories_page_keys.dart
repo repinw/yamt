@@ -6,6 +6,9 @@ abstract final class CaloriesPageKeys {
   static const appBarMenuSetGoalAction = Key(
     'calories_app_bar_set_goal_action',
   );
+  static const appBarMenuCalculatorAction = Key(
+    'calories_app_bar_calculator_action',
+  );
   static const dayBackButton = Key('calories_day_back_button');
   static const dayTodayButton = Key('calories_day_today_button');
   static const dayForwardButton = Key('calories_day_forward_button');
@@ -53,6 +56,24 @@ abstract final class CalorieGoalDialogKeys {
   static const valueField = Key('calorie_goal_value_field');
   static const saveButton = Key('calorie_goal_save_button');
   static const clearButton = Key('calorie_goal_clear_button');
+}
+
+abstract final class CalorieGoalCalculatorSheetKeys {
+  static const stepCounter = Key('calorie_calculator_step_counter');
+  static const sexSegment = Key('calorie_calculator_sex_segment');
+  static const weightField = Key('calorie_calculator_weight_field');
+  static const heightField = Key('calorie_calculator_height_field');
+  static const ageField = Key('calorie_calculator_age_field');
+  static const activityLevelField = Key(
+    'calorie_calculator_activity_level_field',
+  );
+  static const goalModeSegment = Key('calorie_calculator_goal_mode_segment');
+  static const goalSpeedField = Key('calorie_calculator_goal_speed_field');
+  static const resultsCard = Key('calorie_calculator_results_card');
+  static const warningCard = Key('calorie_calculator_warning_card');
+  static const backButton = Key('calorie_calculator_back_button');
+  static const nextButton = Key('calorie_calculator_next_button');
+  static const saveButton = Key('calorie_calculator_save_button');
 }
 
 abstract final class CalorieEntryEditorKeys {

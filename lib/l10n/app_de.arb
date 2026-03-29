@@ -318,6 +318,7 @@
   "caloriesPreviousDayAction": "Vorheriger Tag",
   "caloriesNextDayAction": "Nächster Tag",
   "caloriesSetGoalAction": "Ziel setzen",
+  "caloriesCalculatorAction": "Kalorienrechner",
   "caloriesGoalDialogTitle": "Tagesziel setzen",
   "caloriesGoalFieldLabel": "Tagesziel in kcal",
   "caloriesGoalSaveAction": "Ziel speichern",
@@ -328,6 +329,68 @@
       "Kalorienziel konnte nicht gespeichert werden.",
   "caloriesGoalClearFailed":
       "Kalorienziel konnte nicht gelöscht werden.",
+  "caloriesCalculatorSheetTitle": "Kalorienrechner",
+  "caloriesCalculatorStepProgress": "Schritt {current} von {total}",
+  "@caloriesCalculatorStepProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesCalculatorBackAction": "Zurück",
+  "caloriesCalculatorNextAction": "Weiter",
+  "caloriesCalculatorSexLabel": "Geschlecht",
+  "caloriesCalculatorSexMale": "Männlich",
+  "caloriesCalculatorSexFemale": "Weiblich",
+  "caloriesCalculatorWeightLabel": "Gewicht (kg)",
+  "caloriesCalculatorWeightEmpty": "Bitte gib dein Gewicht ein.",
+  "caloriesCalculatorWeightInvalid":
+      "Bitte gib ein gültiges Gewicht ein.",
+  "caloriesCalculatorHeightLabel": "Größe (cm)",
+  "caloriesCalculatorHeightEmpty": "Bitte gib deine Größe ein.",
+  "caloriesCalculatorHeightInvalid":
+      "Bitte gib eine gültige Größe ein.",
+  "caloriesCalculatorAgeLabel": "Alter (Jahre)",
+  "caloriesCalculatorAgeEmpty": "Bitte gib dein Alter ein.",
+  "caloriesCalculatorAgeInvalid":
+      "Bitte gib ein gültiges Alter ein.",
+  "caloriesCalculatorActivityLevelLabel": "Aktivitätslevel (PAL)",
+  "caloriesCalculatorActivityLevelHint": "Zum Beispiel 1,2 bis 2,0",
+  "caloriesCalculatorActivityLevelEmpty":
+      "Bitte gib dein Aktivitätslevel ein.",
+  "caloriesCalculatorActivityLevelInvalid":
+      "Bitte gib ein gültiges Aktivitätslevel ein.",
+  "caloriesCalculatorGoalModeLabel": "Zielmodus",
+  "caloriesCalculatorGoalModeLose": "Abnehmen",
+  "caloriesCalculatorGoalModeMaintain": "Halten",
+  "caloriesCalculatorGoalModeGain": "Zunehmen",
+  "caloriesCalculatorGoalSpeedLabel": "Zielgeschwindigkeit (kg/Woche)",
+  "caloriesCalculatorGoalSpeedHint":
+      "Zum Beispiel 0,25, 0,5 oder 0,75",
+  "caloriesCalculatorGoalSpeedEmpty":
+      "Bitte gib eine Zielgeschwindigkeit ein.",
+  "caloriesCalculatorGoalSpeedInvalid":
+      "Bitte gib eine gültige Zielgeschwindigkeit ein.",
+  "caloriesCalculatorResultsTitle": "Ergebnisse",
+  "caloriesCalculatorBmrLabel": "Grundumsatz",
+  "caloriesCalculatorTdeeLabel": "Erhaltungskalorien",
+  "caloriesCalculatorDailyGoalLabel": "Tägliches Kalorienziel",
+  "caloriesCalculatorMinimumGoalWarning":
+      "Beim Abnehmen darf das tägliche Ziel nicht unter {minimumKcal} kcal fallen. Das Ergebnis wurde auf dieses Minimum begrenzt.",
+  "@caloriesCalculatorMinimumGoalWarning": {
+    "placeholders": {
+      "minimumKcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesCalculatorSaveAction": "Ziel speichern",
+  "caloriesCalculatorSaveFailed":
+      "Das berechnete Kalorienziel konnte nicht gespeichert werden.",
   "caloriesConsumedLabel": "Verbraucht",
   "caloriesGoalLabel": "Ziel",
   "caloriesRemainingLabel": "Verbleibend",
