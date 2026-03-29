@@ -221,6 +221,7 @@ class _FakeCalorieSettingsRepository implements CalorieSettingsRepository {
     return saveSettings(
       CalorieGoalSettings(
         dailyKcalGoal: dailyKcalGoal,
+        calculatorProfile: null,
         updatedAt: DateTime(2026, 2, 25, 10),
       ),
     );
@@ -387,6 +388,7 @@ void main() {
     final settingsRepository = _FakeCalorieSettingsRepository(
       initialSettings: CalorieGoalSettings(
         dailyKcalGoal: 2200,
+        calculatorProfile: null,
         updatedAt: DateTime(2026, 2, 25, 10),
       ),
     );

@@ -274,6 +274,7 @@ void main() {
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: CalorieGoalSettings(
         dailyKcalGoal: 2200,
+        calculatorProfile: null,
         updatedAt: DateTime(today.year, today.month, today.day, 9),
       ),
     );
@@ -826,6 +827,7 @@ void main() {
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: CalorieGoalSettings(
         dailyKcalGoal: 2200,
+        calculatorProfile: null,
         updatedAt: DateTime(today.year, today.month, today.day, 9),
       ),
     );

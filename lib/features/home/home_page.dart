@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_calculator_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/calorie_goal_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
@@ -19,7 +21,7 @@ const _inventoryBranchIndex = 0;
 const _diaryBranchIndex = 1;
 const _settingsBranchIndex = 2;
 
-enum _DiaryAppBarAction { today, setGoal }
+enum _DiaryAppBarAction { today, setGoal, calculator }
 
 /// Shell page that hosts the main app tabs and shared home chrome.
 class HomePage extends ConsumerWidget {
@@ -178,6 +180,11 @@ class HomePage extends ConsumerWidget {
                   value: _DiaryAppBarAction.setGoal,
                   child: Text(l10n.caloriesSetGoalAction),
                 ),
+                PopupMenuItem<_DiaryAppBarAction>(
+                  key: CaloriesPageKeys.appBarMenuCalculatorAction,
+                  value: _DiaryAppBarAction.calculator,
+                  child: Text(l10n.caloriesCalculatorAction),
+                ),
               ];
             },
           ),
@@ -244,6 +251,15 @@ class HomePage extends ConsumerWidget {
           onClearGoal: ref
               .read(calorieGoalControllerProvider.notifier)
               .clearGoal,
+        );
+        return;
+      case _DiaryAppBarAction.calculator:
+        final currentSettings =
+            ref.read(calorieGoalControllerProvider).asData?.value ??
+            const CalorieGoalSettings.empty();
+        await showCalorieGoalCalculatorSheet(
+          context,
+          initialSettings: currentSettings,
         );
         return;
     }

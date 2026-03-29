@@ -120,6 +120,7 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
     return saveSettings(
       CalorieGoalSettings(
         dailyKcalGoal: dailyKcalGoal,
+        calculatorProfile: null,
         updatedAt: DateTime.now(),
       ),
     );

@@ -713,6 +713,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesSetGoalAction => 'Set goal';
 
   @override
+  String get caloriesCalculatorAction => 'Calorie calculator';
+
+  @override
   String get caloriesGoalDialogTitle => 'Set daily goal';
 
   @override
@@ -732,6 +735,115 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesGoalClearFailed => 'Could not clear calorie goal.';
+
+  @override
+  String get caloriesCalculatorSheetTitle => 'Calorie calculator';
+
+  @override
+  String caloriesCalculatorStepProgress(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get caloriesCalculatorBackAction => 'Back';
+
+  @override
+  String get caloriesCalculatorNextAction => 'Continue';
+
+  @override
+  String get caloriesCalculatorSexLabel => 'Sex';
+
+  @override
+  String get caloriesCalculatorSexMale => 'Male';
+
+  @override
+  String get caloriesCalculatorSexFemale => 'Female';
+
+  @override
+  String get caloriesCalculatorWeightLabel => 'Weight (kg)';
+
+  @override
+  String get caloriesCalculatorWeightEmpty => 'Please enter your weight.';
+
+  @override
+  String get caloriesCalculatorWeightInvalid => 'Please enter a valid weight.';
+
+  @override
+  String get caloriesCalculatorHeightLabel => 'Height (cm)';
+
+  @override
+  String get caloriesCalculatorHeightEmpty => 'Please enter your height.';
+
+  @override
+  String get caloriesCalculatorHeightInvalid => 'Please enter a valid height.';
+
+  @override
+  String get caloriesCalculatorAgeLabel => 'Age (years)';
+
+  @override
+  String get caloriesCalculatorAgeEmpty => 'Please enter your age.';
+
+  @override
+  String get caloriesCalculatorAgeInvalid => 'Please enter a valid age.';
+
+  @override
+  String get caloriesCalculatorActivityLevelLabel => 'Activity level (PAL)';
+
+  @override
+  String get caloriesCalculatorActivityLevelHint => 'For example 1.2 to 2.0';
+
+  @override
+  String get caloriesCalculatorActivityLevelEmpty => 'Please enter your activity level.';
+
+  @override
+  String get caloriesCalculatorActivityLevelInvalid => 'Please enter a valid activity level.';
+
+  @override
+  String get caloriesCalculatorGoalModeLabel => 'Goal mode';
+
+  @override
+  String get caloriesCalculatorGoalModeLose => 'Lose';
+
+  @override
+  String get caloriesCalculatorGoalModeMaintain => 'Maintain';
+
+  @override
+  String get caloriesCalculatorGoalModeGain => 'Gain';
+
+  @override
+  String get caloriesCalculatorGoalSpeedLabel => 'Goal speed (kg/week)';
+
+  @override
+  String get caloriesCalculatorGoalSpeedHint => 'For example 0.25, 0.5 or 0.75';
+
+  @override
+  String get caloriesCalculatorGoalSpeedEmpty => 'Please enter a goal speed.';
+
+  @override
+  String get caloriesCalculatorGoalSpeedInvalid => 'Please enter a valid goal speed.';
+
+  @override
+  String get caloriesCalculatorResultsTitle => 'Results';
+
+  @override
+  String get caloriesCalculatorBmrLabel => 'Basal metabolic rate';
+
+  @override
+  String get caloriesCalculatorTdeeLabel => 'Maintenance calories';
+
+  @override
+  String get caloriesCalculatorDailyGoalLabel => 'Daily calorie target';
+
+  @override
+  String caloriesCalculatorMinimumGoalWarning(int minimumKcal) {
+    return 'For weight loss, the daily target cannot go below $minimumKcal kcal. The result was capped at this minimum.';
+  }
+
+  @override
+  String get caloriesCalculatorSaveAction => 'Save target';
+
+  @override
+  String get caloriesCalculatorSaveFailed => 'Could not save the calculated calorie target.';
 
   @override
   String get caloriesConsumedLabel => 'Consumed';

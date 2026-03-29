@@ -202,6 +202,7 @@ class FakeCalorieSettingsRepository implements CalorieSettingsRepository {
     return saveSettings(
       CalorieGoalSettings(
         dailyKcalGoal: dailyKcalGoal,
+        calculatorProfile: null,
         updatedAt: DateTime(2026, 2, 25, 10),
       ),
     );

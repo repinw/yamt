@@ -62,6 +62,7 @@ void main() {
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: CalorieGoalSettings(
         dailyKcalGoal: 2000,
+        calculatorProfile: null,
         updatedAt: today,
       ),
     );
@@ -120,6 +121,7 @@ void main() {
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: CalorieGoalSettings(
         dailyKcalGoal: 2000,
+        calculatorProfile: null,
         updatedAt: today,
       ),
     );
@@ -218,7 +220,11 @@ void main() {
       addTearDown(updatedSubscription.close);
 
       settingsRepository.emit(
-        CalorieGoalSettings(dailyKcalGoal: 1800, updatedAt: today),
+        CalorieGoalSettings(
+          dailyKcalGoal: 1800,
+          calculatorProfile: null,
+          updatedAt: today,
+        ),
       );
 
       final overview = await updatedOverview.future;
@@ -251,6 +257,7 @@ class _DelayedCalorieSettingsRepository implements CalorieSettingsRepository {
     return saveSettings(
       CalorieGoalSettings(
         dailyKcalGoal: dailyKcalGoal,
+        calculatorProfile: null,
         updatedAt: DateTime.now(),
       ),
     );

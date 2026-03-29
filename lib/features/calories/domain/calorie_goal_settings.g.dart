@@ -11,6 +11,11 @@ CalorieGoalSettings _$CalorieGoalSettingsFromJson(Map<String, dynamic> json) =>
       dailyKcalGoal: const NullableFlexibleDoubleConverter().fromJson(
         json['daily_kcal_goal'],
       ),
+      calculatorProfile: json['calculator_profile'] == null
+          ? null
+          : CalorieCalculatorProfile.fromJson(
+              json['calculator_profile'] as Map<String, dynamic>,
+            ),
       updatedAt: const NullableFlexibleDateTimeConverter().fromJson(
         json['updated_at'],
       ),
@@ -22,6 +27,7 @@ Map<String, dynamic> _$CalorieGoalSettingsToJson(
   'daily_kcal_goal': const NullableFlexibleDoubleConverter().toJson(
     instance.dailyKcalGoal,
   ),
+  'calculator_profile': instance.calculatorProfile?.toJson(),
   'updated_at': const NullableFlexibleDateTimeConverter().toJson(
     instance.updatedAt,
   ),
