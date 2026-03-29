@@ -118,17 +118,23 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
       return false;
     }
     return saveSettings(
-      CalorieGoalSettings(
+      CalorieGoalSettings.single(
         dailyKcalGoal: dailyKcalGoal,
         calculatorProfile: null,
-        updatedAt: DateTime.now(),
+        effectiveDate: DateTime.now(),
       ),
     );
   }
 
   @override
   Future<bool> clearDailyGoal() {
-    return saveSettings(const CalorieGoalSettings.empty());
+    return saveSettings(
+      const CalorieGoalSettings.empty().applyGoalChange(
+        changedAt: DateTime.now(),
+        dailyKcalGoal: null,
+        calculatorProfile: null,
+      ),
+    );
   }
 
   String? _currentUserId() {
@@ -179,6 +185,18 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
   dynamic _normalizeFirestoreValue(dynamic value) {
     if (value is Timestamp) {
       return value.toDate();
+    }
+    if (value is Map<String, dynamic>) {
+      return _normalizeFirestoreJson(value);
+    }
+    if (value is Map) {
+      return value.map(
+        (key, nestedValue) =>
+            MapEntry(key.toString(), _normalizeFirestoreValue(nestedValue)),
+      );
+    }
+    if (value is List) {
+      return value.map(_normalizeFirestoreValue).toList(growable: false);
     }
     return value;
   }

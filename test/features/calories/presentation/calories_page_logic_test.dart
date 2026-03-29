@@ -21,6 +21,7 @@ CalorieWeekOverview _overview({
     totalConsumedKcal: totalConsumedKcal,
     totalGoalKcal: totalGoalKcal,
     remainingKcal: remainingKcal,
+    balanceStartDate: DateTime(2026, 3, 27).subtract(Duration(days: dayOffset)),
   );
 }
 

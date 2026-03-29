@@ -72,9 +72,9 @@ void main() {
       firestore: firestore,
     );
 
-    const settings = CalorieGoalSettings(
+    final settings = CalorieGoalSettings.single(
       dailyKcalGoal: 1850,
-      calculatorProfile: CalorieCalculatorProfile(
+      calculatorProfile: const CalorieCalculatorProfile(
         sex: CalorieCalculatorSex.female,
         weightKg: 65,
         heightCm: 170,
@@ -83,7 +83,7 @@ void main() {
         goalMode: CalorieGoalMode.lose,
         goalSpeedKgPerWeek: 0.5,
       ),
-      updatedAt: null,
+      effectiveDate: DateTime(2026, 2, 25, 11),
     );
 
     final saved = await repository.saveSettings(settings);
@@ -94,6 +94,8 @@ void main() {
     expect(readBack.calculatorProfile?.sex, CalorieCalculatorSex.female);
     expect(readBack.calculatorProfile?.goalMode, CalorieGoalMode.lose);
     expect(readBack.calculatorProfile?.goalSpeedKgPerWeek, 0.5);
+    expect(readBack.goalHistory, hasLength(1));
+    expect(readBack.goalHistory.single.effectiveDate, DateTime(2026, 2, 25));
   });
 
   test('repository returns empty defaults when no user is signed in', () async {

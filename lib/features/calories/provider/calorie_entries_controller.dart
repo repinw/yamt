@@ -375,8 +375,8 @@ AsyncValue<CalorieDayViewData> calorieDayViewData(Ref ref) {
   final selectedDay = ref.watch(calorieDayControllerProvider);
   final entriesState = ref.watch(calorieEntriesControllerProvider);
   final goalState = ref.watch(calorieGoalControllerProvider);
-  final goalKcal =
-      goalState.asData?.value.dailyKcalGoal ?? defaultDailyCalorieGoalKcal;
+  final settings = goalState.asData?.value ?? const CalorieGoalSettings.empty();
+  final goalKcal = settings.goalKcalForDay(selectedDay);
   return entriesState.whenData(
     (entries) => _buildCalorieDayViewData(
       selectedDay: selectedDay,

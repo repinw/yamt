@@ -12,7 +12,7 @@ void main() {
   });
 
   test('json conversion preserves goal values', () {
-    final settings = CalorieGoalSettings(
+    final settings = CalorieGoalSettings.single(
       dailyKcalGoal: 2300,
       calculatorProfile: const CalorieCalculatorProfile(
         sex: CalorieCalculatorSex.female,
@@ -23,7 +23,7 @@ void main() {
         goalMode: CalorieGoalMode.lose,
         goalSpeedKgPerWeek: 0.5,
       ),
-      updatedAt: DateTime(2026, 2, 25, 11),
+      effectiveDate: DateTime(2026, 2, 25, 11),
     );
 
     final decoded = CalorieGoalSettings.fromJson(settings.toJson());
@@ -32,5 +32,34 @@ void main() {
     expect(decoded.calculatorProfile?.sex, CalorieCalculatorSex.female);
     expect(decoded.calculatorProfile?.goalMode, CalorieGoalMode.lose);
     expect(decoded.updatedAt, DateTime(2026, 2, 25, 11));
+    expect(decoded.goalHistory, hasLength(1));
+    expect(decoded.goalHistory.single.effectiveDate, DateTime(2026, 2, 25));
+  });
+
+  test('resolves goal history by day and resets balance on latest change', () {
+    final settings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          changedAt: DateTime(2026, 2, 20, 8),
+          dailyKcalGoal: 2400,
+          calculatorProfile: null,
+        )
+        .applyGoalChange(
+          changedAt: DateTime(2026, 2, 24, 9),
+          dailyKcalGoal: 1800,
+          calculatorProfile: null,
+        );
+
+    expect(settings.goalKcalForDay(DateTime(2026, 2, 23)), 2400);
+    expect(settings.goalKcalForDay(DateTime(2026, 2, 24)), 1800);
+    expect(
+      settings.balanceStartForWindow(<DateTime>[
+        DateTime(2026, 2, 21),
+        DateTime(2026, 2, 22),
+        DateTime(2026, 2, 23),
+        DateTime(2026, 2, 24),
+        DateTime(2026, 2, 25),
+      ]),
+      DateTime(2026, 2, 24),
+    );
   });
 }

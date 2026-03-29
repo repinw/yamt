@@ -34,7 +34,7 @@ final class CalorieGoalControllerProvider
 }
 
 String _$calorieGoalControllerHash() =>
-    r'f9f9b1f1f1de0836bb2ea49b1923297d9b4e4efb';
+    r'4c1320eea11efef8f9eafa251fdd4ea22bd7692d';
 
 abstract class _$CalorieGoalController
     extends $AsyncNotifier<CalorieGoalSettings> {

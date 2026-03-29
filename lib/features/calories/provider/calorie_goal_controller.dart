@@ -36,26 +36,38 @@ class CalorieGoalController extends _$CalorieGoalController {
       return false;
     }
 
-    final nextSettings = CalorieGoalSettings(
+    final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
+    final now = DateTime.now();
+    final nextSettings = previous.applyGoalChange(
+      changedAt: now,
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: null,
-      updatedAt: DateTime.now(),
     );
     return _persistSettings(nextSettings);
   }
 
   Future<bool> saveCalculatedGoal(CalorieCalculatorProfile profile) {
     final calculation = CalorieGoalCalculator.calculate(profile);
-    final nextSettings = CalorieGoalSettings(
+    final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
+    final now = DateTime.now();
+    final nextSettings = previous.applyGoalChange(
+      changedAt: now,
       dailyKcalGoal: calculation.finalGoalKcal,
       calculatorProfile: profile,
-      updatedAt: DateTime.now(),
     );
     return _persistSettings(nextSettings);
   }
 
   Future<bool> clearGoal() async {
-    return _persistSettings(const CalorieGoalSettings.empty());
+    final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
+    final now = DateTime.now();
+    return _persistSettings(
+      previous.applyGoalChange(
+        changedAt: now,
+        dailyKcalGoal: null,
+        calculatorProfile: null,
+      ),
+    );
   }
 
   Future<CalorieGoalSettings> _restartSubscription() {

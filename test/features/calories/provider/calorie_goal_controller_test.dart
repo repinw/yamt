@@ -47,9 +47,9 @@ void main() {
 
   test('manual setGoal clears an existing calculator profile', () async {
     final repository = FakeCalorieSettingsRepository(
-      initialSettings: const CalorieGoalSettings(
+      initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
-        calculatorProfile: CalorieCalculatorProfile(
+        calculatorProfile: const CalorieCalculatorProfile(
           sex: CalorieCalculatorSex.female,
           weightKg: 65,
           heightCm: 170,
@@ -58,7 +58,7 @@ void main() {
           goalMode: CalorieGoalMode.lose,
           goalSpeedKgPerWeek: 0.5,
         ),
-        updatedAt: null,
+        effectiveDate: DateTime(2026, 2, 25, 9),
       ),
     );
     addTearDown(repository.dispose);
@@ -80,15 +80,18 @@ void main() {
     final settings = await repository.readSettings();
     expect(settings.dailyKcalGoal, 2300);
     expect(settings.calculatorProfile, isNull);
+    expect(settings.goalKcalForDay(DateTime(2026, 2, 25)), 2200);
+    expect(settings.goalKcalForDay(DateTime.now()), 2300);
+    expect(settings.goalHistory, hasLength(2));
   });
 
   test(
     'saveCalculatedGoal restores previous state when saving fails',
     () async {
-      final previousSettings = const CalorieGoalSettings(
+      final previousSettings = CalorieGoalSettings.single(
         dailyKcalGoal: 2100,
         calculatorProfile: null,
-        updatedAt: null,
+        effectiveDate: DateTime(2026, 2, 25, 9),
       );
       final repository = FakeCalorieSettingsRepository(
         initialSettings: previousSettings,

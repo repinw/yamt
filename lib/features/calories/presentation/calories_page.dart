@@ -351,6 +351,7 @@ CalorieWeekOverview _fallbackWeekOverview({required double goalKcal}) {
     totalConsumedKcal: 0,
     totalGoalKcal: goalKcal * visibleDays.length,
     remainingKcal: goalKcal * visibleDays.length,
+    balanceStartDate: visibleDays.first,
   );
 }
 

@@ -219,17 +219,23 @@ class _FakeCalorieSettingsRepository implements CalorieSettingsRepository {
   @override
   Future<bool> setDailyGoal(double dailyKcalGoal) async {
     return saveSettings(
-      CalorieGoalSettings(
+      CalorieGoalSettings.single(
         dailyKcalGoal: dailyKcalGoal,
         calculatorProfile: null,
-        updatedAt: DateTime(2026, 2, 25, 10),
+        effectiveDate: DateTime(2026, 2, 25, 10),
       ),
     );
   }
 
   @override
   Future<bool> clearDailyGoal() async {
-    return saveSettings(const CalorieGoalSettings.empty());
+    return saveSettings(
+      const CalorieGoalSettings.empty().applyGoalChange(
+        changedAt: DateTime(2026, 2, 25, 10),
+        dailyKcalGoal: null,
+        calculatorProfile: null,
+      ),
+    );
   }
 
   Future<void> dispose() {
@@ -386,10 +392,10 @@ void main() {
       ],
     );
     final settingsRepository = _FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings(
+      initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        updatedAt: DateTime(2026, 2, 25, 10),
+        effectiveDate: DateTime(2026, 2, 25, 10),
       ),
     );
     addTearDown(repository.dispose);
@@ -433,6 +439,60 @@ void main() {
     expect(breakfastSection.totalKcal, closeTo(100, 0.001));
     expect(lunchSection.entries, hasLength(1));
     expect(lunchSection.totalKcal, closeTo(300, 0.001));
+  });
+
+  test('calorieDayViewData uses the goal active on the selected day', () async {
+    final selectedDay = DateTime(2026, 2, 24);
+    final repository = _FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'b1',
+          loggedAt: DateTime(2026, 2, 24, 8),
+          mealType: MealType.breakfast,
+          consumedAmount: 100,
+          per100Kcal: 100,
+          per100Protein: 10,
+          per100Carbs: 5,
+          per100Fat: 1,
+        ),
+      ],
+    );
+    final settingsRepository = _FakeCalorieSettingsRepository(
+      initialSettings: const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: DateTime(2026, 2, 20, 10),
+            dailyKcalGoal: 2200,
+            calculatorProfile: null,
+          )
+          .applyGoalChange(
+            changedAt: DateTime(2026, 2, 25, 10),
+            dailyKcalGoal: 1800,
+            calculatorProfile: null,
+          ),
+    );
+    addTearDown(repository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(repository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final entriesSubscription = _keepEntriesAlive(container);
+    final goalSubscription = _keepGoalAlive(container);
+    addTearDown(entriesSubscription.close);
+    addTearDown(goalSubscription.close);
+
+    container.read(calorieDayControllerProvider.notifier).setDay(selectedDay);
+    await container.read(calorieEntriesControllerProvider.future);
+    await container.read(calorieGoalControllerProvider.future);
+
+    final viewData = container.read(calorieDayViewDataProvider).requireValue;
+
+    expect(viewData.goalKcal, 2200);
+    expect(viewData.remainingKcal, closeTo(2100, 0.001));
   });
 
   test('calorieDayViewData stays loading while entries are loading', () {

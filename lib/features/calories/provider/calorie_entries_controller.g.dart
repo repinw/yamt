@@ -180,4 +180,4 @@ final class CalorieDayViewDataProvider
 }
 
 String _$calorieDayViewDataHash() =>
-    r'926dc09b60ec7013052f1e6d1803ef3128283143';
+    r'd128b203b2ee2363819713769af8721583f4ddc7';
