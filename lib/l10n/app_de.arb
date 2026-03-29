@@ -364,6 +364,24 @@
     }
   },
   "caloriesDeleteEntryConfirmAction": "Löschen",
+  "caloriesReturnPreparedMealDialogTitle":
+      "Mahlzeit zurück in den Vorrat legen?",
+  "caloriesReturnPreparedMealDialogMessage":
+      "\"{name}\" zurück in den Vorrat legen und aus dem Tagebuch entfernen?",
+  "@caloriesReturnPreparedMealDialogMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "caloriesReturnPreparedMealConfirmAction": "Zurück in den Vorrat",
+  "caloriesReturnPreparedMealFailed":
+      "Die Mahlzeit konnte nicht zurück in den Vorrat gelegt werden.",
+  "caloriesDeleteRestoreInventoryQuestion":
+      "Nahrungsmittel wieder in den Vorrat legen?",
+  "caloriesDeleteRestoreFailed":
+      "Das Nahrungsmittel konnte nicht zurück in den Vorrat gelegt werden.",
   "caloriesDeleteFailed": "Eintrag konnte nicht gelöscht werden.",
   "caloriesAddEntryTitle": "Kalorien-Eintrag hinzufügen",
   "caloriesEditEntryTitle": "Kalorien-Eintrag bearbeiten",

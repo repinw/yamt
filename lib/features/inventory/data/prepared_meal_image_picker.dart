@@ -13,6 +13,8 @@ part 'prepared_meal_image_picker.g.dart';
 const int _maxPreparedMealImageBytes = 350 * 1024;
 const double _cameraMaxWidth = 1600;
 const double _cameraMaxHeight = 1600;
+const int _normalizedImageMaxWidth = 1600;
+const int _normalizedImageMaxHeight = 1600;
 const int _cameraImageQuality = 72;
 const int _initialJpegQuality = 88;
 const int _minimumJpegQuality = 44;
@@ -142,21 +144,7 @@ class DevicePreparedMealImagePicker implements PreparedMealImagePicker {
   }
 
   Future<Uint8List> _prepareBytes(Uint8List bytes) async {
-    if (bytes.length > _maxPreparedMealImageBytes) {
-      log(
-        'Prepared meal image exceeds byte limit. '
-        'Attempting optimization bytes=${bytes.length}.',
-        name: 'PreparedMealImagePicker',
-      );
-      final optimizedBytes = await optimizePreparedMealImageBytes(bytes);
-      log(
-        'Prepared meal image optimization finished '
-        'original=${bytes.length} optimized=${optimizedBytes.length}.',
-        name: 'PreparedMealImagePicker',
-      );
-      return optimizedBytes;
-    }
-    return bytes;
+    return optimizePreparedMealImageBytes(bytes);
   }
 }
 
@@ -164,16 +152,16 @@ class DevicePreparedMealImagePicker implements PreparedMealImagePicker {
 Future<Uint8List> optimizePreparedMealImageBytes(
   Uint8List bytes, {
   int maxBytes = _maxPreparedMealImageBytes,
+  int maxWidth = _normalizedImageMaxWidth,
+  int maxHeight = _normalizedImageMaxHeight,
   PreparedMealImageOptimizationRunner optimizationRunner =
       _runPreparedMealImageOptimizationInIsolate,
 }) async {
-  if (bytes.length <= maxBytes) {
-    return bytes;
-  }
-
   final message = <String, Object>{
     'bytes': TransferableTypedData.fromList([bytes]),
     'maxBytes': maxBytes,
+    'maxWidth': maxWidth,
+    'maxHeight': maxHeight,
   };
   late final Map<String, Object?> result;
   try {
@@ -220,10 +208,14 @@ Map<String, Object?> _optimizePreparedMealImageBytesInIsolate(
   try {
     final transferableBytes = message['bytes'] as TransferableTypedData;
     final maxBytes = message['maxBytes'] as int;
+    final maxWidth = message['maxWidth'] as int;
+    final maxHeight = message['maxHeight'] as int;
     final bytes = transferableBytes.materialize().asUint8List();
     final optimizedBytes = _optimizePreparedMealImageBytesSync(
       bytes,
       maxBytes: maxBytes,
+      maxWidth: maxWidth,
+      maxHeight: maxHeight,
     );
     return <String, Object?>{
       'bytes': TransferableTypedData.fromList([optimizedBytes]),
@@ -236,32 +228,45 @@ Map<String, Object?> _optimizePreparedMealImageBytesInIsolate(
 Uint8List _optimizePreparedMealImageBytesSync(
   Uint8List bytes, {
   required int maxBytes,
+  required int maxWidth,
+  required int maxHeight,
 }) {
-  if (bytes.length <= maxBytes) {
-    return bytes;
-  }
-
   final decoded = img.decodeImage(bytes);
   if (decoded == null) {
+    if (bytes.length <= maxBytes) {
+      return bytes;
+    }
     throw const PreparedMealImagePickerException(
       PreparedMealImagePickerErrorCodes.imageTooLarge,
     );
   }
 
+  final needsDimensionResize =
+      decoded.width > maxWidth || decoded.height > maxHeight;
+  if (!needsDimensionResize && bytes.length <= maxBytes) {
+    return bytes;
+  }
+
   final preferJpeg = !decoded.hasAlpha;
-  final initialScale = math.min(
-    0.95,
-    math.sqrt(maxBytes / bytes.length) * 0.98,
+  final dimensionScale = math.min(
+    1,
+    math.min(maxWidth / decoded.width, maxHeight / decoded.height),
   );
+  final byteScale = bytes.length <= maxBytes
+      ? 1.0
+      : math.min(0.95, math.sqrt(maxBytes / bytes.length) * 0.98);
+  final initialScale = math.min(dimensionScale, byteScale);
   var currentWidth = math.max(
     _minimumImageDimension,
-    (decoded.width * initialScale).round(),
+    math.min(decoded.width, (decoded.width * initialScale).round()),
   );
   var currentHeight = math.max(
     _minimumImageDimension,
-    (decoded.height * initialScale).round(),
+    math.min(decoded.height, (decoded.height * initialScale).round()),
   );
-  if (currentWidth == decoded.width && currentHeight == decoded.height) {
+  if ((needsDimensionResize || bytes.length > maxBytes) &&
+      currentWidth == decoded.width &&
+      currentHeight == decoded.height) {
     currentWidth = math.max(
       _minimumImageDimension,
       (decoded.width * _downscaleStep).round(),
@@ -284,7 +289,9 @@ Uint8List _optimizePreparedMealImageBytesSync(
       preferJpeg: preferJpeg,
       jpegQuality: currentJpegQuality,
     );
-    if (encodedBytes.length <= maxBytes) {
+    if (encodedBytes.length <= maxBytes &&
+        workingImage.width <= maxWidth &&
+        workingImage.height <= maxHeight) {
       return Uint8List.fromList(encodedBytes);
     }
 

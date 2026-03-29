@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -7,7 +5,6 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 void main() {
   test('PreparedMeal JSON roundtrip keeps nested component snapshot', () {
-    final imageBase64 = base64Encode(<int>[1, 2, 3, 4]);
     final sourceItem = InventoryItem.create(
       id: 'item-1',
       name: 'Rice',
@@ -29,7 +26,7 @@ void main() {
     final meal = PreparedMeal(
       id: 'meal-1',
       name: 'Rice bowl',
-      imageBase64: imageBase64,
+      imageAssetId: 'asset-1',
       totalPortions: 4,
       remainingPortions: 3,
       totalKcal: 720,
@@ -57,9 +54,8 @@ void main() {
 
     final roundtrip = PreparedMeal.fromJson(meal.toJson());
 
-    expect(roundtrip, meal.copyWith(imageBase64: null));
-    expect(roundtrip.imageBase64, isNull);
-    expect(meal.imageBytes, hasLength(4));
+    expect(roundtrip, meal);
+    expect(roundtrip.imageAssetId, meal.imageAssetId);
     expect(roundtrip.components.single.sourceItemSnapshot, sourceItem);
   });
 }

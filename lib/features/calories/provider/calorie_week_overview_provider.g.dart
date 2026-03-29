@@ -9,6 +9,49 @@ part of 'calorie_week_overview_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(calorieWeekConsumptionSnapshot)
+final calorieWeekConsumptionSnapshotProvider =
+    CalorieWeekConsumptionSnapshotProvider._();
+
+final class CalorieWeekConsumptionSnapshotProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<CalorieWeekConsumptionSnapshot>,
+          CalorieWeekConsumptionSnapshot,
+          FutureOr<CalorieWeekConsumptionSnapshot>
+        >
+    with
+        $FutureModifier<CalorieWeekConsumptionSnapshot>,
+        $FutureProvider<CalorieWeekConsumptionSnapshot> {
+  CalorieWeekConsumptionSnapshotProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'calorieWeekConsumptionSnapshotProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$calorieWeekConsumptionSnapshotHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<CalorieWeekConsumptionSnapshot> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<CalorieWeekConsumptionSnapshot> create(Ref ref) {
+    return calorieWeekConsumptionSnapshot(ref);
+  }
+}
+
+String _$calorieWeekConsumptionSnapshotHash() =>
+    r'e635bb61b0bfdb2a31f21d6a2ef96ff01f886e95';
+
 @ProviderFor(calorieWeekOverview)
 final calorieWeekOverviewProvider = CalorieWeekOverviewProvider._();
 
@@ -49,4 +92,4 @@ final class CalorieWeekOverviewProvider
 }
 
 String _$calorieWeekOverviewHash() =>
-    r'74148f22c5b4bfdb8ba766d97853a122a437894e';
+    r'83dc4f79b4975d39a8f2f071fcd8ea8f8080b415';

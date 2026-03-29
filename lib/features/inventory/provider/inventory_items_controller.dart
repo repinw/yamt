@@ -64,6 +64,52 @@ int _maxReducibleAmount(InventoryItem item) {
 }
 
 @visibleForTesting
+List<InventoryItem>? buildRestoredItems({
+  required List<InventoryItem> currentItems,
+  required String itemId,
+  required int amount,
+}) {
+  if (amount < 1) {
+    return null;
+  }
+
+  final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
+  if (itemIndex < 0) {
+    return null;
+  }
+
+  final item = currentItems[itemIndex];
+  final nextItems = List<InventoryItem>.from(currentItems);
+  if (item.usesAmountProgress) {
+    final restoredCurrentAmount = item.currentAmount + amount;
+    final maxAmount = item.initialAmount > 0
+        ? item.initialAmount
+        : restoredCurrentAmount;
+    final safeCurrentAmount = restoredCurrentAmount > maxAmount
+        ? maxAmount
+        : restoredCurrentAmount;
+    nextItems[itemIndex] = item.copyWith(
+      currentAmount: safeCurrentAmount,
+      quantity: quantityForCurrentAmount(
+        item: item,
+        currentAmount: safeCurrentAmount,
+      ),
+    );
+    return nextItems;
+  }
+
+  final restoredQuantity = item.quantity + amount;
+  final maxQuantity = item.initialQuantity > 0
+      ? item.initialQuantity
+      : restoredQuantity;
+  final safeQuantity = restoredQuantity > maxQuantity
+      ? maxQuantity
+      : restoredQuantity;
+  nextItems[itemIndex] = item.copyWith(quantity: safeQuantity);
+  return nextItems;
+}
+
+@visibleForTesting
 int quantityForCurrentAmount({
   required InventoryItem item,
   required int currentAmount,
@@ -241,6 +287,24 @@ class InventoryItemsController extends _$InventoryItemsController {
         amount: amount,
       ),
     );
+  }
+
+  Future<bool> restoreConsumedItem(String itemId, int amount) {
+    if (amount < 1) {
+      return Future<bool>.value(false);
+    }
+    return _runSerializedMutation(() async {
+      final currentItems = await _currentItems();
+      final nextItems = buildRestoredItems(
+        currentItems: currentItems,
+        itemId: itemId,
+        amount: amount,
+      );
+      if (nextItems == null) {
+        return false;
+      }
+      return _saveItems(previousItems: currentItems, nextItems: nextItems);
+    });
   }
 
   Future<bool> markBarcodeLookupRequested(String itemId) {

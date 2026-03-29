@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
@@ -10,7 +8,6 @@ void main() {
       id: 'bundle-1',
       userId: 'user-1',
       name: 'Chili',
-      imageBase64: base64Encode(<int>[1, 2, 3]),
       mealType: MealType.dinner,
       totalKcal: 420,
       totalProtein: 28,
@@ -39,7 +36,6 @@ void main() {
     expect(roundtrip.isBundle, isTrue);
     expect(roundtrip.bundleConsumedPortions, 2);
     expect(roundtrip.bundleComponents.single.amountLabel, '150 g');
-    expect(roundtrip.imageBase64, isNull);
     expect(roundtrip.totalKcal, 420);
   });
 

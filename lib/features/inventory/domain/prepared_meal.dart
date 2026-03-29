@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:collection/collection.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -13,7 +10,7 @@ class PreparedMeal {
   const PreparedMeal({
     required this.id,
     required this.name,
-    this.imageBase64,
+    this.imageAssetId,
     required this.totalPortions,
     required this.remainingPortions,
     required this.totalKcal,
@@ -32,12 +29,8 @@ class PreparedMeal {
   final String id;
   @JsonKey(fromJson: _readRequiredString)
   final String name;
-  @JsonKey(
-    includeFromJson: false,
-    includeToJson: false,
-    fromJson: _readTrimmedNullableString,
-  )
-  final String? imageBase64;
+  @JsonKey(fromJson: _readTrimmedNullableString)
+  final String? imageAssetId;
   @JsonKey(fromJson: _readIntOrZero)
   final int totalPortions;
   @JsonKey(fromJson: _readIntOrZero)
@@ -62,7 +55,7 @@ class PreparedMeal {
   PreparedMeal copyWith({
     String? id,
     String? name,
-    Object? imageBase64 = _keepValue,
+    Object? imageAssetId = _keepValue,
     int? totalPortions,
     int? remainingPortions,
     double? totalKcal,
@@ -76,9 +69,9 @@ class PreparedMeal {
     return PreparedMeal(
       id: id ?? this.id,
       name: name ?? this.name,
-      imageBase64: imageBase64 == _keepValue
-          ? this.imageBase64
-          : imageBase64 as String?,
+      imageAssetId: imageAssetId == _keepValue
+          ? this.imageAssetId
+          : imageAssetId as String?,
       totalPortions: totalPortions ?? this.totalPortions,
       remainingPortions: remainingPortions ?? this.remainingPortions,
       totalKcal: totalKcal ?? this.totalKcal,
@@ -93,18 +86,6 @@ class PreparedMeal {
 
   bool get isDepleted => remainingPortions <= 0;
 
-  Uint8List? get imageBytes {
-    final raw = imageBase64;
-    if (raw == null || raw.trim().isEmpty) {
-      return null;
-    }
-    try {
-      return base64Decode(raw);
-    } catch (_) {
-      return null;
-    }
-  }
-
   double get remainingRatio {
     if (totalPortions <= 0) {
       return 0;
@@ -118,7 +99,7 @@ class PreparedMeal {
         other is PreparedMeal &&
             other.id == id &&
             other.name == name &&
-            other.imageBase64 == imageBase64 &&
+            other.imageAssetId == imageAssetId &&
             other.totalPortions == totalPortions &&
             other.remainingPortions == remainingPortions &&
             other.totalKcal == totalKcal &&
@@ -138,7 +119,7 @@ class PreparedMeal {
     return Object.hashAll(<Object?>[
       id,
       name,
-      imageBase64,
+      imageAssetId,
       totalPortions,
       remainingPortions,
       totalKcal,

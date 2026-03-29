@@ -237,7 +237,7 @@
       }
     }
   },
-  "preparedMealUnbundleAction": "Unbundle",
+  "preparedMealUnbundleAction": "Return to inventory",
   "preparedMealEatTitle": "Eat prepared meal",
   "preparedMealThrowAwayTitle": "Throw away portions",
   "preparedMealPortionsToUseLabel": "Portions to use",
@@ -353,6 +353,22 @@
     }
   },
   "caloriesDeleteEntryConfirmAction": "Delete",
+  "caloriesReturnPreparedMealDialogTitle": "Return meal to inventory?",
+  "caloriesReturnPreparedMealDialogMessage":
+      "Return \"{name}\" to inventory and remove it from the diary?",
+  "@caloriesReturnPreparedMealDialogMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "caloriesReturnPreparedMealConfirmAction": "Return to inventory",
+  "caloriesReturnPreparedMealFailed":
+      "The meal could not be returned to inventory.",
+  "caloriesDeleteRestoreInventoryQuestion": "Add the food back to inventory?",
+  "caloriesDeleteRestoreFailed":
+      "The food could not be added back to inventory.",
   "caloriesDeleteFailed": "Could not delete entry.",
   "caloriesAddEntryTitle": "Add calorie entry",
   "caloriesEditEntryTitle": "Edit calorie entry",

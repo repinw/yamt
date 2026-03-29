@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -63,6 +62,7 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   _FakePreparedMealRepository({
     required List<PreparedMeal> initialMeals,
     this.throwOnSave = false,
+    this.saveDelay = Duration.zero,
   }) : _meals = List<PreparedMeal>.from(initialMeals);
 
   final StreamController<List<PreparedMeal>> _controller =
@@ -70,6 +70,7 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   List<PreparedMeal> _meals;
   List<PreparedMeal> savedMeals = const <PreparedMeal>[];
   bool throwOnSave;
+  final Duration saveDelay;
 
   @override
   Stream<List<PreparedMeal>> watchAll() {
@@ -89,6 +90,9 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
 
   @override
   Future<bool> saveAll(List<PreparedMeal> meals) async {
+    if (saveDelay > Duration.zero) {
+      await Future<void>.delayed(saveDelay);
+    }
     if (throwOnSave) {
       throw Exception('prepared-meal-save-failed');
     }
@@ -140,7 +144,7 @@ PreparedMeal _meal({
   return PreparedMeal(
     id: id,
     name: name,
-    imageBase64: base64Encode(<int>[1, 2, 3]),
+    imageAssetId: 'asset-$id',
     totalPortions: 4,
     remainingPortions: 4,
     totalKcal: 400,
@@ -205,7 +209,7 @@ void main() {
           .read(preparedMealsControllerProvider.notifier)
           .createPreparedMeal(
             name: 'Rice & Beans',
-            imageBase64: base64Encode(<int>[1, 2, 3]),
+            imageAssetId: 'asset-created-meal',
             totalPortions: 2,
             items: const [
               PreparedMealItemInput(itemId: 'rice', usedAmount: 200),
@@ -218,7 +222,10 @@ void main() {
       expect(inventoryRepository.savedItems[1].currentAmount, 150);
       expect(preparedMealRepository.savedMeals, hasLength(1));
       expect(preparedMealRepository.savedMeals.single.totalPortions, 2);
-      expect(preparedMealRepository.savedMeals.single.imageBase64, isNotNull);
+      expect(
+        preparedMealRepository.savedMeals.single.imageAssetId,
+        'asset-created-meal',
+      );
       expect(preparedMealRepository.savedMeals.single.components, hasLength(2));
     },
   );
@@ -326,9 +333,56 @@ void main() {
       expect(saved, isTrue);
       expect(preparedMealRepository.savedMeals.single.remainingPortions, 2);
       expect(calorieLogRepository.entries.single.isBundle, isTrue);
-      expect(calorieLogRepository.entries.single.imageBase64, isNotNull);
+      expect(calorieLogRepository.entries.single.imageAssetId, isNotNull);
       expect(calorieLogRepository.entries.single.bundleConsumedPortions, 2);
       expect(calorieLogRepository.entries.single.totalKcal, 200);
+    },
+  );
+
+  test(
+    'consumePreparedMeal stays alive without active listener during async save',
+    () async {
+      final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: [item],
+      );
+      final preparedMealRepository = _FakePreparedMealRepository(
+        initialMeals: [_meal(id: 'meal-1', name: 'Lunch box', item: item)],
+        saveDelay: const Duration(milliseconds: 20),
+      );
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(inventoryRepository.dispose);
+      addTearDown(preparedMealRepository.dispose);
+      addTearDown(calorieLogRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(
+            inventoryRepository,
+          ),
+          preparedMealRepositoryProvider.overrideWithValue(
+            preparedMealRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(preparedMealsControllerProvider.future);
+      final consumeFuture = container
+          .read(preparedMealsControllerProvider.notifier)
+          .consumePreparedMeal(
+            mealId: 'meal-1',
+            consumedPortions: 1,
+            mealType: MealType.lunch,
+          );
+
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+
+      final saved = await consumeFuture;
+      expect(saved, isTrue);
+      expect(preparedMealRepository.savedMeals.single.remainingPortions, 3);
+      expect(calorieLogRepository.entries.single.isBundle, isTrue);
     },
   );
 
@@ -437,6 +491,52 @@ void main() {
     },
   );
 
+  test(
+    'restorePreparedMealPortions increases remaining portions again',
+    () async {
+      final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: [item],
+      );
+      final preparedMealRepository = _FakePreparedMealRepository(
+        initialMeals: [
+          _meal(
+            id: 'meal-1',
+            name: 'Lunch box',
+            item: item,
+          ).copyWith(remainingPortions: 1),
+        ],
+      );
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(inventoryRepository.dispose);
+      addTearDown(preparedMealRepository.dispose);
+      addTearDown(calorieLogRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(
+            inventoryRepository,
+          ),
+          preparedMealRepositoryProvider.overrideWithValue(
+            preparedMealRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+
+      await container.read(preparedMealsControllerProvider.future);
+      final restored = await container
+          .read(preparedMealsControllerProvider.notifier)
+          .restorePreparedMealPortions(mealId: 'meal-1', portions: 1);
+
+      expect(restored, isTrue);
+      expect(preparedMealRepository.savedMeals.single.remainingPortions, 2);
+    },
+  );
+
   test('updatePreparedMealDetails updates meal name and image', () async {
     final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
     final existingMeal = _meal(id: 'meal-1', name: 'Lunch box', item: item);
@@ -471,14 +571,14 @@ void main() {
           mealId: existingMeal.id,
           name: 'Updated lunch box',
           imageChanged: true,
-          imageBase64: base64Encode(<int>[9, 8, 7]),
+          imageAssetId: 'asset-updated-meal',
         );
 
     expect(saved, isTrue);
     expect(preparedMealRepository.savedMeals.single.name, 'Updated lunch box');
     expect(
-      preparedMealRepository.savedMeals.single.imageBase64,
-      base64Encode(<int>[9, 8, 7]),
+      preparedMealRepository.savedMeals.single.imageAssetId,
+      'asset-updated-meal',
     );
     expect(
       preparedMealRepository.savedMeals.single.updatedAt,

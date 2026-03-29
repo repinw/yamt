@@ -890,6 +890,57 @@ void main() {
     expect(repository.savedItems.single.barcodeLookupRequestedAt, isNotNull);
   });
 
+  test('restoreConsumedItem increases quantity-based stock again', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_item('a').copyWith(quantity: 0)],
+    );
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final restored = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .restoreConsumedItem('a', 1);
+
+    expect(restored, isTrue);
+    expect(repository.savedItems.single.quantity, 1);
+    expect(
+      container.read(inventoryItemsControllerProvider).value?.single.quantity,
+      1,
+    );
+  });
+
+  test('restoreConsumedItem increases amount-based stock again', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_amountItem('a')],
+    );
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final restored = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .restoreConsumedItem('a', 200);
+
+    expect(restored, isTrue);
+    expect(repository.savedItems.single.currentAmount, 800);
+    expect(repository.savedItems.single.quantity, 2);
+  });
+
   test('setItemBarcode stores barcode and resolved timestamp', () async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[_item('a')],

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -98,7 +97,7 @@ PreparedMeal _templateMeal({required String id, required String name}) {
   return PreparedMeal(
     id: id,
     name: name,
-    imageBase64: base64Encode(<int>[1, 2, 3]),
+    imageAssetId: 'asset-$id',
     totalPortions: 4,
     remainingPortions: 2,
     totalKcal: 400,
@@ -159,7 +158,7 @@ void main() {
     expect(saved.templateId, isNotNull);
     expect(repository.savedTemplates, hasLength(1));
     expect(repository.savedTemplates.single.name, 'Lunch Box');
-    expect(repository.savedTemplates.single.imageBase64, isNotNull);
+    expect(repository.savedTemplates.single.imageAssetId, 'asset-meal-1');
     expect(repository.savedTemplates.single.remainingPortions, 4);
     expect(repository.savedTemplates.single.id, isNot('meal-1'));
   });

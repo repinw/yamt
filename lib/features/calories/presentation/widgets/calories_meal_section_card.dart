@@ -1,10 +1,8 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/calories/data/calorie_entry_image_ref.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
@@ -99,7 +97,7 @@ class CaloriesMealSectionCard extends StatelessWidget {
                 kcalUnit: kcalUnit,
                 bundleSummary: bundleSummary,
                 onTap: () => onTapEntry(entry),
-                onDelete: entry.isBundle ? null : () => onDeleteEntry(entry),
+                onDelete: () => onDeleteEntry(entry),
               ),
             );
           }),
@@ -183,7 +181,7 @@ class _DiaryMealEntryCard extends StatelessWidget {
                 _MealThumb(
                   entryId: entry.id,
                   label: entry.name,
-                  imageBytes: entry.imageBytes,
+                  imageAssetId: entry.imageAssetId,
                   imageUrl: entry.imageUrl,
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -240,22 +238,21 @@ class _MealThumb extends ConsumerWidget {
   const _MealThumb({
     required this.entryId,
     required this.label,
-    required this.imageBytes,
+    required this.imageAssetId,
     required this.imageUrl,
   });
 
   final String entryId;
   final String label;
-  final Uint8List? imageBytes;
+  final String? imageAssetId;
   final String? imageUrl;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final storedImageBytes = ref
-        .watch(localImageBytesProvider(calorieEntryImageRef(entryId)))
-        .asData
-        ?.value;
-    final resolvedImageBytes = storedImageBytes ?? imageBytes;
+    final imageRef = maybeLocalImageAssetRef(imageAssetId);
+    final storedImageBytes = imageRef == null
+        ? null
+        : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -272,9 +269,9 @@ class _MealThumb extends ConsumerWidget {
         dimension: 48,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          child: resolvedImageBytes != null
+          child: storedImageBytes != null
               ? Image.memory(
-                  resolvedImageBytes,
+                  storedImageBytes,
                   key: CaloriesPageKeys.entryImage(entryId),
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) {

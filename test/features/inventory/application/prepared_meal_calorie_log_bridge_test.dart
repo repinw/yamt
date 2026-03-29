@@ -1,21 +1,14 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/core/data/local_image_store.dart';
-import 'package:yamt/features/calories/data/calorie_entry_image_ref.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
-import '../../../support/fake_local_image_store.dart';
 
 InventoryItem _item({required String id, required String name}) {
   return InventoryItem.create(
@@ -44,12 +37,10 @@ void main() {
     'bridge writes prepared meal bundles with precise portion snapshots',
     () async {
       final calorieLogRepository = FakeCalorieLogRepository();
-      final localImageStore = FakeLocalImageStore();
       addTearDown(calorieLogRepository.dispose);
 
       final container = ProviderContainer(
         overrides: [
-          localImageStoreProvider.overrideWithValue(localImageStore),
           calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
         ],
       );
@@ -60,7 +51,7 @@ void main() {
       final meal = PreparedMeal(
         id: 'meal-1',
         name: 'Chili',
-        imageBase64: base64Encode(<int>[1, 2, 3]),
+        imageAssetId: 'asset-1',
         totalPortions: 3,
         remainingPortions: 3,
         totalKcal: 510,
@@ -98,10 +89,6 @@ void main() {
           ),
         ],
       );
-      await localImageStore.saveBytes(
-        imageRef: preparedMealImageRef('meal-1'),
-        bytes: Uint8List.fromList(<int>[1, 2, 3]),
-      );
 
       final saved = await container
           .read(preparedMealCalorieLogBridgeProvider)
@@ -116,11 +103,7 @@ void main() {
 
       final entry = calorieLogRepository.entries.single;
       expect(entry.isBundle, isTrue);
-      expect(entry.imageBase64, meal.imageBase64);
-      expect(
-        await localImageStore.readBytes(calorieEntryImageRef(entry.id)),
-        isNotNull,
-      );
+      expect(entry.imageAssetId, meal.imageAssetId);
       expect(entry.bundleConsumedPortions, 1);
       expect(entry.bundleTotalPortions, 3);
       expect(entry.totalKcal, closeTo(170, 0.0001));
@@ -134,4 +117,44 @@ void main() {
       expect(entry.bundleComponents.last.totalProtein, closeTo(5, 0.0001));
     },
   );
+
+  test('bridge still saves after provider invalidation', () async {
+    final calorieLogRepository = FakeCalorieLogRepository();
+    addTearDown(calorieLogRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final meal = PreparedMeal(
+      id: 'meal-2',
+      name: 'Soup',
+      imageAssetId: 'asset-2',
+      totalPortions: 2,
+      remainingPortions: 2,
+      totalKcal: 300,
+      totalProtein: 20,
+      totalCarbs: 30,
+      totalFat: 10,
+      createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      components: const <PreparedMealComponent>[],
+    );
+
+    final bridge = container.read(preparedMealCalorieLogBridgeProvider);
+    container.invalidate(preparedMealCalorieLogBridgeProvider);
+
+    final saved = await bridge.logConsumedPreparedMeal(
+      meal: meal,
+      consumedPortions: 1,
+      mealType: MealType.dinner,
+    );
+
+    expect(saved, isTrue);
+    final entry = calorieLogRepository.entries.single;
+    expect(entry.imageAssetId, meal.imageAssetId);
+  });
 }

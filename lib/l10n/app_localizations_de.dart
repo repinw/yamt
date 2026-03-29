@@ -782,6 +782,26 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesDeleteEntryConfirmAction => 'Löschen';
 
   @override
+  String get caloriesReturnPreparedMealDialogTitle => 'Mahlzeit zurück in den Vorrat legen?';
+
+  @override
+  String caloriesReturnPreparedMealDialogMessage(String name) {
+    return '\"$name\" zurück in den Vorrat legen und aus dem Tagebuch entfernen?';
+  }
+
+  @override
+  String get caloriesReturnPreparedMealConfirmAction => 'Zurück in den Vorrat';
+
+  @override
+  String get caloriesReturnPreparedMealFailed => 'Die Mahlzeit konnte nicht zurück in den Vorrat gelegt werden.';
+
+  @override
+  String get caloriesDeleteRestoreInventoryQuestion => 'Nahrungsmittel wieder in den Vorrat legen?';
+
+  @override
+  String get caloriesDeleteRestoreFailed => 'Das Nahrungsmittel konnte nicht zurück in den Vorrat gelegt werden.';
+
+  @override
   String get caloriesDeleteFailed => 'Eintrag konnte nicht gelöscht werden.';
 
   @override

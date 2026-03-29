@@ -2,14 +2,12 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/data/local_image_store.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -90,7 +88,7 @@ class PreparedMealsController extends _$PreparedMealsController {
 
   Future<PreparedMealCreationResult> createPreparedMeal({
     required String name,
-    String? imageBase64,
+    String? imageAssetId,
     required int totalPortions,
     required List<PreparedMealItemInput> items,
   }) {
@@ -103,78 +101,84 @@ class PreparedMealsController extends _$PreparedMealsController {
       );
     }
 
-    return _mutationQueue.run<PreparedMealCreationResult>(
-      operation: () async {
-        final currentMeals = await _currentMeals();
-        final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
-        final currentItems = await inventoryRepository.readAll();
-
-        try {
-          final creationResult = _buildMealCreationResult(
-            currentItems: currentItems,
-            name: trimmedName,
-            imageBase64: imageBase64,
-            totalPortions: totalPortions,
-            inputs: items,
-          );
-
-          final inventorySaved = await inventoryRepository.saveAll(
-            creationResult.nextItems,
-          );
-          if (!inventorySaved) {
-            return const PreparedMealCreationResult.failure(
-              PreparedMealCreationFailureReason.inventorySaveFailed,
+    final keepAliveLink = ref.keepAlive();
+    return _mutationQueue
+        .run<PreparedMealCreationResult>(
+          operation: () async {
+            final currentMeals = await _currentMeals();
+            final inventoryRepository = ref.read(
+              inventoryItemRepositoryProvider,
             );
-          }
+            final currentItems = await inventoryRepository.readAll();
 
-          final nextMeals = List<PreparedMeal>.from(currentMeals)
-            ..add(creationResult.preparedMeal);
-          final mealsSaved = await _saveMeals(
-            previousMeals: currentMeals,
-            nextMeals: nextMeals,
-          );
-          if (mealsSaved) {
-            return PreparedMealCreationResult.success(
-              creationResult.preparedMeal.id,
-            );
-          }
+            try {
+              final creationResult = _buildMealCreationResult(
+                currentItems: currentItems,
+                name: trimmedName,
+                imageAssetId: imageAssetId,
+                totalPortions: totalPortions,
+                inputs: items,
+              );
 
-          await _restoreInventory(
-            inventoryRepository: inventoryRepository,
-            previousItems: currentItems,
-          );
-          return const PreparedMealCreationResult.failure(
+              final inventorySaved = await inventoryRepository.saveAll(
+                creationResult.nextItems,
+              );
+              if (!inventorySaved) {
+                return const PreparedMealCreationResult.failure(
+                  PreparedMealCreationFailureReason.inventorySaveFailed,
+                );
+              }
+
+              final nextMeals = List<PreparedMeal>.from(currentMeals)
+                ..add(creationResult.preparedMeal);
+              final mealsSaved = await _saveMeals(
+                previousMeals: currentMeals,
+                nextMeals: nextMeals,
+              );
+              if (mealsSaved) {
+                return PreparedMealCreationResult.success(
+                  creationResult.preparedMeal.id,
+                );
+              }
+
+              await _restoreInventory(
+                inventoryRepository: inventoryRepository,
+                previousItems: currentItems,
+              );
+              return const PreparedMealCreationResult.failure(
+                PreparedMealCreationFailureReason.mealSaveFailed,
+              );
+            } on _PreparedMealCreationException catch (error) {
+              return PreparedMealCreationResult.failure(error.reason);
+            }
+          },
+          fallbackValue: const PreparedMealCreationResult.failure(
             PreparedMealCreationFailureReason.mealSaveFailed,
-          );
-        } on _PreparedMealCreationException catch (error) {
-          return PreparedMealCreationResult.failure(error.reason);
-        }
-      },
-      fallbackValue: const PreparedMealCreationResult.failure(
-        PreparedMealCreationFailureReason.mealSaveFailed,
-      ),
-      onError: (error, stackTrace) {
-        log(
-          'Unexpected prepared meal creation error.',
-          name: _preparedMealsControllerLogName,
-          error: error,
-          stackTrace: stackTrace,
-        );
-      },
-    );
+          ),
+          onError: (error, stackTrace) {
+            log(
+              'Unexpected prepared meal creation error.',
+              name: _preparedMealsControllerLogName,
+              error: error,
+              stackTrace: stackTrace,
+            );
+          },
+        )
+        .whenComplete(keepAliveLink.close);
   }
 
   Future<bool> updatePreparedMealDetails({
     required String mealId,
     required String name,
     bool imageChanged = false,
-    String? imageBase64,
+    String? imageAssetId,
   }) {
     final trimmedName = name.trim();
     if (trimmedName.isEmpty) {
       return Future<bool>.value(false);
     }
 
+    final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(() async {
       final currentMeals = await _currentMeals();
       final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
@@ -183,12 +187,12 @@ class PreparedMealsController extends _$PreparedMealsController {
       }
 
       final currentMeal = currentMeals[mealIndex];
-      final normalizedImageBase64 = imageChanged
-          ? _normalizeOptionalImageBase64(imageBase64)
-          : currentMeal.imageBase64;
+      final normalizedImageAssetId = imageChanged
+          ? _normalizeOptionalImageAssetId(imageAssetId)
+          : currentMeal.imageAssetId;
       final isUnchanged =
           currentMeal.name == trimmedName &&
-          (!imageChanged || currentMeal.imageBase64 == normalizedImageBase64);
+          (!imageChanged || currentMeal.imageAssetId == normalizedImageAssetId);
       if (isUnchanged) {
         return true;
       }
@@ -197,12 +201,12 @@ class PreparedMealsController extends _$PreparedMealsController {
       nextMeals[mealIndex] = imageChanged
           ? currentMeal.copyWith(
               name: trimmedName,
-              imageBase64: normalizedImageBase64,
+              imageAssetId: normalizedImageAssetId,
               updatedAt: DateTime.now(),
             )
           : currentMeal.copyWith(name: trimmedName, updatedAt: DateTime.now());
       return _saveMeals(previousMeals: currentMeals, nextMeals: nextMeals);
-    });
+    }).whenComplete(keepAliveLink.close);
   }
 
   Future<bool> consumePreparedMeal({
@@ -210,44 +214,20 @@ class PreparedMealsController extends _$PreparedMealsController {
     required int consumedPortions,
     required MealType mealType,
   }) {
-    log(
-      'Consume prepared meal requested mealId=$mealId '
-      'consumedPortions=$consumedPortions mealType=${mealType.name}.',
-      name: _preparedMealsControllerLogName,
-    );
     if (consumedPortions < 1) {
-      log(
-        'Rejecting consume request for mealId=$mealId: '
-        'consumedPortions must be >= 1.',
-        name: _preparedMealsControllerLogName,
-      );
       return Future<bool>.value(false);
     }
 
+    final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(() async {
       final currentMeals = await _currentMeals();
-      log(
-        'Loaded prepared meals for consume mutation '
-        'mealId=$mealId meals=${currentMeals.length}.',
-        name: _preparedMealsControllerLogName,
-      );
       final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
       if (mealIndex < 0) {
-        log(
-          'Prepared meal not found for consume request mealId=$mealId.',
-          name: _preparedMealsControllerLogName,
-        );
         return false;
       }
 
       final meal = currentMeals[mealIndex];
       if (consumedPortions > meal.remainingPortions) {
-        log(
-          'Rejecting consume request for mealId=$mealId: '
-          'consumedPortions=$consumedPortions exceeds '
-          'remainingPortions=${meal.remainingPortions}.',
-          name: _preparedMealsControllerLogName,
-        );
         return false;
       }
 
@@ -256,23 +236,11 @@ class PreparedMealsController extends _$PreparedMealsController {
         mealIndex: mealIndex,
         consumedPortions: consumedPortions,
       );
-      log(
-        'Prepared meal portion reduction computed mealId=$mealId '
-        'remainingBefore=${meal.remainingPortions} '
-        'remainingAfter=${meal.remainingPortions - consumedPortions} '
-        'nextMeals=${nextMeals.length}.',
-        name: _preparedMealsControllerLogName,
-      );
       final savedMeals = await _saveMeals(
         previousMeals: currentMeals,
         nextMeals: nextMeals,
       );
       if (!savedMeals) {
-        log(
-          'Failed to persist prepared meals before calorie entry save '
-          'mealId=$mealId.',
-          name: _preparedMealsControllerLogName,
-        );
         return false;
       }
 
@@ -283,26 +251,12 @@ class PreparedMealsController extends _$PreparedMealsController {
             consumedPortions: consumedPortions,
             mealType: mealType,
           );
-      log(
-        'Bundle calorie entry save completed mealId=$mealId '
-        'saved=$calorieSaved consumedPortions=$consumedPortions.',
-        name: _preparedMealsControllerLogName,
-      );
       if (calorieSaved) {
         return true;
       }
 
-      final rollbackSaved = await _saveMeals(
-        previousMeals: nextMeals,
-        nextMeals: currentMeals,
-      );
-      log(
-        'Rolled back prepared meal consume mutation mealId=$mealId '
-        'rollbackSaved=$rollbackSaved.',
-        name: _preparedMealsControllerLogName,
-      );
-      return false;
-    });
+      return _saveMeals(previousMeals: nextMeals, nextMeals: currentMeals);
+    }).whenComplete(keepAliveLink.close);
   }
 
   Future<bool> throwAwayPreparedMeal({
@@ -313,6 +267,7 @@ class PreparedMealsController extends _$PreparedMealsController {
       return Future<bool>.value(false);
     }
 
+    final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(() async {
       final currentMeals = await _currentMeals();
       final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
@@ -331,10 +286,42 @@ class PreparedMealsController extends _$PreparedMealsController {
         consumedPortions: discardedPortions,
       );
       return _saveMeals(previousMeals: currentMeals, nextMeals: nextMeals);
-    });
+    }).whenComplete(keepAliveLink.close);
+  }
+
+  Future<bool> restorePreparedMealPortions({
+    required String mealId,
+    required int portions,
+  }) {
+    if (portions < 1) {
+      return Future<bool>.value(false);
+    }
+
+    final keepAliveLink = ref.keepAlive();
+    return _runSerializedMutation(() async {
+      final currentMeals = await _currentMeals();
+      final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
+      if (mealIndex < 0) {
+        return false;
+      }
+
+      final meal = currentMeals[mealIndex];
+      final nextRemainingPortions = meal.remainingPortions + portions;
+      if (nextRemainingPortions > meal.totalPortions) {
+        return false;
+      }
+
+      final nextMeals = List<PreparedMeal>.from(currentMeals);
+      nextMeals[mealIndex] = meal.copyWith(
+        remainingPortions: nextRemainingPortions,
+        updatedAt: DateTime.now(),
+      );
+      return _saveMeals(previousMeals: currentMeals, nextMeals: nextMeals);
+    }).whenComplete(keepAliveLink.close);
   }
 
   Future<bool> unbundlePreparedMeal(String mealId) {
+    final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(() async {
       final currentMeals = await _currentMeals();
       final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
@@ -370,7 +357,7 @@ class PreparedMealsController extends _$PreparedMealsController {
         previousItems: currentItems,
       );
       return false;
-    });
+    }).whenComplete(keepAliveLink.close);
   }
 
   Future<List<PreparedMeal>> _restartSubscription() {
@@ -437,27 +424,11 @@ class PreparedMealsController extends _$PreparedMealsController {
     }
 
     try {
-      log(
-        'Persisting prepared meals previous=${previousMeals.length} '
-        'next=${nextMeals.length}.',
-        name: _preparedMealsControllerLogName,
-      );
       final saved = await ref
           .read(preparedMealRepositoryProvider)
           .saveAll(nextMeals);
-      log(
-        'Prepared meal persistence completed saved=$saved '
-        'next=${nextMeals.length}.',
-        name: _preparedMealsControllerLogName,
-      );
       if (!saved && ref.mounted) {
         state = AsyncData(previousMeals);
-      }
-      if (saved) {
-        await _deleteImagesForRemovedMeals(
-          previousMeals: previousMeals,
-          nextMeals: nextMeals,
-        );
       }
       return saved;
     } catch (error, stackTrace) {
@@ -504,23 +475,6 @@ class PreparedMealsController extends _$PreparedMealsController {
       },
     );
   }
-
-  Future<void> _deleteImagesForRemovedMeals({
-    required List<PreparedMeal> previousMeals,
-    required List<PreparedMeal> nextMeals,
-  }) async {
-    final nextIds = nextMeals.map((meal) => meal.id).toSet();
-    final removedIds = previousMeals
-        .map((meal) => meal.id)
-        .where((mealId) => !nextIds.contains(mealId));
-    final store = ref.read(localImageStoreProvider);
-
-    for (final mealId in removedIds) {
-      final imageRef = preparedMealImageRef(mealId);
-      await store.deleteImage(imageRef);
-      ref.invalidate(localImageBytesProvider(imageRef));
-    }
-  }
 }
 
 class _PreparedMealCreationResult {
@@ -536,7 +490,7 @@ class _PreparedMealCreationResult {
 _PreparedMealCreationResult _buildMealCreationResult({
   required List<InventoryItem> currentItems,
   required String name,
-  required String? imageBase64,
+  required String? imageAssetId,
   required int totalPortions,
   required List<PreparedMealItemInput> inputs,
 }) {
@@ -620,7 +574,7 @@ _PreparedMealCreationResult _buildMealCreationResult({
     preparedMeal: PreparedMeal(
       id: PreparedMealsController._uuid.v4(),
       name: name,
-      imageBase64: _normalizeOptionalImageBase64(imageBase64),
+      imageAssetId: _normalizeOptionalImageAssetId(imageAssetId),
       totalPortions: totalPortions,
       remainingPortions: totalPortions,
       totalKcal: totalKcal,
@@ -634,7 +588,7 @@ _PreparedMealCreationResult _buildMealCreationResult({
   );
 }
 
-String? _normalizeOptionalImageBase64(String? value) {
+String? _normalizeOptionalImageAssetId(String? value) {
   final trimmed = value?.trim();
   if (trimmed == null || trimmed.isEmpty) {
     return null;

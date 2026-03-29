@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
@@ -20,149 +21,138 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_state_views.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calories_summary_card.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class CaloriesPage extends ConsumerWidget {
+class CaloriesPage extends ConsumerStatefulWidget {
   const CaloriesPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CaloriesPage> createState() => _CaloriesPageState();
+}
+
+class _CaloriesPageState extends ConsumerState<CaloriesPage> {
+  CalorieDayViewData? _lastResolvedDayView;
+
+  @override
+  Widget build(BuildContext context) {
     ref.listen(calorieEntriesControllerProvider, _logEntriesLoadErrorOnce);
+    ref.listen(calorieDayViewDataProvider, _cacheResolvedDayView);
 
     final l10n = AppLocalizations.of(context)!;
     final dayController = ref.read(calorieDayControllerProvider.notifier);
-    final entriesController = ref.read(
-      calorieEntriesControllerProvider.notifier,
-    );
+    final selectedDay = ref.watch(calorieDayControllerProvider);
     final dayViewState = ref.watch(calorieDayViewDataProvider);
     final weekOverviewState = ref.watch(calorieWeekOverviewProvider);
-
-    return dayViewState.when(
-      data: (viewData) {
-        final weekOverview = resolveDisplayedWeekOverview(
-          weekOverviewState,
-          goalKcal: viewData.goalKcal,
+    final dayView = dayViewState.value ?? _lastResolvedDayView;
+    if (dayView == null) {
+      if (dayViewState.hasError) {
+        return CaloriesErrorView(
+          onRetry: () {
+            ref.read(calorieEntriesControllerProvider.notifier).refresh();
+          },
+          message: l10n.caloriesLoadFailed,
+          retryLabel: l10n.caloriesRetryAction,
         );
+      }
+      return const CaloriesLoadingView();
+    }
 
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.xl,
-            AppSpacing.lg,
-            AppSpacing.xl,
-            140,
+    final weekOverview = resolveDisplayedWeekOverview(
+      weekOverviewState,
+      goalKcal: dayView.goalKcal,
+    );
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.lg,
+        AppSpacing.xl,
+        140,
+      ),
+      children: <Widget>[
+        CaloriesDayNavigationCard(
+          days: weekOverview.days,
+          selectedDay: selectedDay,
+          onSelectDay: dayController.setDay,
+          onPreviousDay: () => _goToPreviousVisibleDay(ref),
+          onNextDay: () => _goToNextVisibleDay(ref),
+        ),
+        if (dayViewState.isLoading) ...const <Widget>[
+          SizedBox(height: AppSpacing.md),
+          LinearProgressIndicator(
+            key: CaloriesPageKeys.reloadProgressIndicator,
           ),
-          children: <Widget>[
-            CaloriesDayNavigationCard(
-              days: weekOverview.days,
-              selectedDay: viewData.selectedDay,
-              onSelectDay: dayController.setDay,
-              onPreviousDay: () => _goToPreviousVisibleDay(ref),
-              onNextDay: () => _goToNextVisibleDay(ref),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            CaloriesSummaryCard(
-              consumedKcal: viewData.summary.totalKcal,
-              goalKcal: viewData.goalKcal,
-              remainingKcal: viewData.remainingKcal,
-              progress: viewData.progress,
-              totalProtein: viewData.summary.totalProtein,
-              totalCarbs: viewData.summary.totalCarbs,
-              totalFat: viewData.summary.totalFat,
-              consumedLabel: l10n.caloriesConsumedLabel,
-              goalLabel: l10n.caloriesGoalLabel,
-              remainingLabel: l10n.caloriesRemainingLabel,
-              proteinLabel: l10n.caloriesProteinLabel,
-              carbsLabel: l10n.caloriesCarbsLabel,
-              fatLabel: l10n.caloriesFatLabel,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _CaloriesWeekBufferCard(
-              remainingKcal: weekOverview.remainingKcal,
-              title: l10n.caloriesWeekBufferTitle,
-              positiveMessage: l10n.caloriesWeekBufferRemaining(
-                weekOverview.remainingKcal.round(),
-              ),
-              negativeMessage: l10n.caloriesWeekBufferOverspent(
-                weekOverview.remainingKcal.abs().round(),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            ...viewData.sections.map(
-              (section) => Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.xl),
-                child: CaloriesMealSectionCard(
-                  section: section,
-                  title: section.mealType.localizedName(l10n),
-                  emptyMessage: l10n.caloriesSectionEmptyState,
-                  onAddEntry: () => _openCreateEntry(
-                    context,
-                    preselectedMealType: section.mealType,
-                  ),
-                  onTapEntry: (entry) {
-                    if (entry.isBundle) {
-                      showCalorieBundleDetailsSheet(context, entry: entry);
-                      return;
-                    }
-                    context.push(AppRoutes.homeCaloriesEntryEditPath(entry.id));
-                  },
-                  onDeleteEntry: (entry) =>
-                      _deleteEntry(context: context, ref: ref, entry: entry),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-      loading: () => const Center(
-        child: SizedBox.square(
-          dimension: AppSizes.inlineProgressIndicator,
-          child: CircularProgressIndicator(
-            strokeWidth: AppSizes.progressStrokeWidth,
+        ],
+        const SizedBox(height: AppSpacing.lg),
+        CaloriesSummaryCard(
+          consumedKcal: dayView.summary.totalKcal,
+          goalKcal: dayView.goalKcal,
+          remainingKcal: dayView.remainingKcal,
+          progress: dayView.progress,
+          totalProtein: dayView.summary.totalProtein,
+          totalCarbs: dayView.summary.totalCarbs,
+          totalFat: dayView.summary.totalFat,
+          consumedLabel: l10n.caloriesConsumedLabel,
+          goalLabel: l10n.caloriesGoalLabel,
+          remainingLabel: l10n.caloriesRemainingLabel,
+          proteinLabel: l10n.caloriesProteinLabel,
+          carbsLabel: l10n.caloriesCarbsLabel,
+          fatLabel: l10n.caloriesFatLabel,
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        _CaloriesWeekBufferCard(
+          remainingKcal: weekOverview.remainingKcal,
+          title: l10n.caloriesWeekBufferTitle,
+          positiveMessage: l10n.caloriesWeekBufferRemaining(
+            weekOverview.remainingKcal.round(),
+          ),
+          negativeMessage: l10n.caloriesWeekBufferOverspent(
+            weekOverview.remainingKcal.abs().round(),
           ),
         ),
-      ),
-      error: (error, stackTrace) {
-        return Center(
-          child: Padding(
-            padding: AppInsets.pageLarge,
-            child: Card(
-              margin: EdgeInsets.zero,
-              child: Padding(
-                padding: AppInsets.card,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Icon(
-                      Icons.wifi_tethering_error_rounded,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(l10n.caloriesLoadFailed, textAlign: TextAlign.center),
-                    const SizedBox(height: AppSpacing.md),
-                    FilledButton.icon(
-                      key: CaloriesPageKeys.retryButton,
-                      onPressed: () {
-                        entriesController.refresh();
-                        ref
-                            .read(calorieGoalControllerProvider.notifier)
-                            .refresh();
-                      },
-                      icon: const Icon(Icons.refresh),
-                      label: Text(l10n.caloriesRetryAction),
-                    ),
-                  ],
-                ),
+        const SizedBox(height: AppSpacing.xl),
+        ...dayView.sections.map(
+          (section) => Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+            child: CaloriesMealSectionCard(
+              section: section,
+              title: section.mealType.localizedName(l10n),
+              emptyMessage: l10n.caloriesSectionEmptyState,
+              onAddEntry: () => _openCreateEntry(
+                context,
+                preselectedMealType: section.mealType,
               ),
+              onTapEntry: (entry) {
+                if (entry.isBundle) {
+                  showCalorieBundleDetailsSheet(context, entry: entry);
+                  return;
+                }
+                context.push(AppRoutes.homeCaloriesEntryEditPath(entry.id));
+              },
+              onDeleteEntry: (entry) =>
+                  _deleteEntry(context: context, ref: ref, entry: entry),
             ),
           ),
-        );
-      },
+        ),
+      ],
     );
+  }
+
+  void _cacheResolvedDayView(
+    AsyncValue<CalorieDayViewData>? previous,
+    AsyncValue<CalorieDayViewData> next,
+  ) {
+    final nextValue = next.value;
+    if (nextValue == null) {
+      return;
+    }
+    _lastResolvedDayView = nextValue;
   }
 
   void _logEntriesLoadErrorOnce(
@@ -195,41 +185,134 @@ class CaloriesPage extends ConsumerWidget {
     required CalorieEntry entry,
   }) async {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
+    if (entry.canReturnPreparedMealToInventory) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(l10n.caloriesReturnPreparedMealDialogTitle),
+            content: Text(
+              l10n.caloriesReturnPreparedMealDialogMessage(entry.name),
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => context.pop(false),
+                child: Text(l10n.inventoryReceiptReviewCancelAction),
+              ),
+              TextButton(
+                onPressed: () => context.pop(true),
+                child: Text(l10n.caloriesReturnPreparedMealConfirmAction),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirmed != true) {
+        return;
+      }
+
+      final result = await ref
+          .read(calorieEntryDeleteFlowProvider)
+          .deleteEntry(entry: entry, restoreToInventory: true);
+      if (!context.mounted || result.isSuccess) {
+        return;
+      }
+
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.hideCurrentSnackBar();
+      final message = switch (result.failureReason) {
+        CalorieEntryDeleteFailureReason.restoreFailed =>
+          l10n.caloriesReturnPreparedMealFailed,
+        CalorieEntryDeleteFailureReason.deleteFailed ||
+        null => l10n.caloriesDeleteFailed,
+      };
+      messenger.showSnackBar(SnackBar(content: Text(message)));
+      return;
+    }
+
+    final decision = await showDialog<_CalorieEntryDeleteDialogResult>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text(l10n.caloriesDeleteEntryDialogTitle),
-          content: Text(l10n.caloriesDeleteEntryDialogMessage(entry.name)),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => context.pop(false),
-              child: Text(l10n.inventoryReceiptReviewCancelAction),
-            ),
-            TextButton(
-              onPressed: () => context.pop(true),
-              child: Text(l10n.caloriesDeleteEntryConfirmAction),
-            ),
-          ],
+        var restoreToInventory = false;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(l10n.caloriesDeleteEntryDialogTitle),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(l10n.caloriesDeleteEntryDialogMessage(entry.name)),
+                  if (entry.canRestoreToInventory) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    CheckboxListTile(
+                      key: CaloriesPageKeys.deleteRestoreCheckbox(entry.id),
+                      value: restoreToInventory,
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      onChanged: (value) {
+                        setState(() {
+                          restoreToInventory = value ?? false;
+                        });
+                      },
+                      title: Text(l10n.caloriesDeleteRestoreInventoryQuestion),
+                    ),
+                  ],
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => context.pop(),
+                  child: Text(l10n.inventoryReceiptReviewCancelAction),
+                ),
+                TextButton(
+                  onPressed: () {
+                    context.pop(
+                      _CalorieEntryDeleteDialogResult(
+                        restoreToInventory: restoreToInventory,
+                      ),
+                    );
+                  },
+                  child: Text(l10n.caloriesDeleteEntryConfirmAction),
+                ),
+              ],
+            );
+          },
         );
       },
     );
 
-    if (confirmed != true) {
+    if (decision == null) {
       return;
     }
 
-    final deleted = await ref
-        .read(calorieEntriesControllerProvider.notifier)
-        .deleteEntry(entry.id);
-    if (!context.mounted || deleted) {
+    final result = await ref
+        .read(calorieEntryDeleteFlowProvider)
+        .deleteEntry(
+          entry: entry,
+          restoreToInventory: decision.restoreToInventory,
+        );
+    if (!context.mounted || result.isSuccess) {
       return;
     }
 
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(l10n.caloriesDeleteFailed)));
+    final message = switch (result.failureReason) {
+      CalorieEntryDeleteFailureReason.restoreFailed =>
+        l10n.caloriesDeleteRestoreFailed,
+      CalorieEntryDeleteFailureReason.deleteFailed ||
+      null => l10n.caloriesDeleteFailed,
+    };
+    messenger.showSnackBar(SnackBar(content: Text(message)));
   }
+}
+
+class _CalorieEntryDeleteDialogResult {
+  const _CalorieEntryDeleteDialogResult({required this.restoreToInventory});
+
+  final bool restoreToInventory;
 }
 
 CalorieWeekOverview resolveDisplayedWeekOverview(

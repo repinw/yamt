@@ -56,4 +56,4 @@ final class PreparedMealCalorieLogBridgeProvider
 }
 
 String _$preparedMealCalorieLogBridgeHash() =>
-    r'aa929d34f86f70e5cc75e732d9a63bca873a4ec0';
+    r'8acc8eb12442113c3ffeaa5a1652b2ce96f2992f';

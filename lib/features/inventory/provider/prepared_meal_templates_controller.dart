@@ -2,11 +2,8 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/data/local_image_store.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
-import 'package:yamt/features/inventory/data/'
-    'prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -192,12 +189,6 @@ class PreparedMealTemplatesController
       if (!saved && ref.mounted) {
         state = AsyncData(_sortTemplates(previousTemplates));
       }
-      if (saved) {
-        await _deleteImagesForRemovedTemplates(
-          previousTemplates: previousTemplates,
-          nextTemplates: sortedTemplates,
-        );
-      }
       return saved;
     } catch (error, stackTrace) {
       log(
@@ -226,23 +217,6 @@ class PreparedMealTemplatesController
         );
       },
     );
-  }
-
-  Future<void> _deleteImagesForRemovedTemplates({
-    required List<PreparedMeal> previousTemplates,
-    required List<PreparedMeal> nextTemplates,
-  }) async {
-    final nextIds = nextTemplates.map((template) => template.id).toSet();
-    final removedIds = previousTemplates
-        .map((template) => template.id)
-        .where((templateId) => !nextIds.contains(templateId));
-    final store = ref.read(localImageStoreProvider);
-
-    for (final templateId in removedIds) {
-      final imageRef = preparedMealTemplateImageRef(templateId);
-      await store.deleteImage(imageRef);
-      ref.invalidate(localImageBytesProvider(imageRef));
-    }
   }
 }
 

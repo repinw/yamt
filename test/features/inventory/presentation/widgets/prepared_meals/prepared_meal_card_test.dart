@@ -1,11 +1,11 @@
-import 'dart:convert';
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_refs.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -39,7 +39,7 @@ PreparedMeal _meal() {
   return PreparedMeal(
     id: 'meal-1',
     name: 'Rice bowl',
-    imageBase64: base64Encode(<int>[1, 2, 3]),
+    imageAssetId: 'asset-meal-1',
     totalPortions: 3,
     remainingPortions: 2,
     totalKcal: 300,
@@ -66,6 +66,12 @@ PreparedMeal _meal() {
   );
 }
 
+Widget _wrapCard(Widget child) {
+  return SingleChildScrollView(
+    child: Padding(padding: const EdgeInsets.all(16), child: child),
+  );
+}
+
 void main() {
   testWidgets('PreparedMealCard shows eat action in the header', (
     tester,
@@ -77,14 +83,16 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
-            body: PreparedMealCard(
-              meal: _meal(),
-              onEatPressed: (mealId, portions, mealType) async => true,
-              onThrowAwayPressed: (mealId, portions) async => true,
-              onUnbundlePressed: (mealId) async => true,
-              onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                  true,
-              onSaveTemplatePressed: (meal) async => true,
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal(),
+                onEatPressed: (mealId, portions, mealType) async => true,
+                onThrowAwayPressed: (mealId, portions) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
             ),
           ),
         ),
@@ -103,21 +111,30 @@ void main() {
   testWidgets('PreparedMealCard expands to show ingredients and actions', (
     tester,
   ) async {
+    final localImageStore = FakeLocalImageStore();
+    await localImageStore.saveBytes(
+      imageRef: localImageAssetRef('asset-meal-1'),
+      bytes: Uint8List.fromList(<int>[1, 2, 3]),
+    );
+
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [localImageStoreProvider.overrideWithValue(localImageStore)],
         child: MaterialApp(
           locale: const Locale('en'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
-            body: PreparedMealCard(
-              meal: _meal(),
-              onEatPressed: (mealId, portions, mealType) async => true,
-              onThrowAwayPressed: (mealId, portions) async => true,
-              onUnbundlePressed: (mealId) async => true,
-              onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                  true,
-              onSaveTemplatePressed: (meal) async => true,
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal(),
+                onEatPressed: (mealId, portions, mealType) async => true,
+                onThrowAwayPressed: (mealId, portions) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
             ),
           ),
         ),
@@ -135,8 +152,47 @@ void main() {
     );
     expect(find.text('Edit'), findsOneWidget);
     expect(find.text('Throw away'), findsOneWidget);
-    expect(find.text('Unbundle'), findsOneWidget);
+    expect(find.text('Return to inventory'), findsOneWidget);
     expect(find.text('Save as template'), findsOneWidget);
+  });
+
+  testWidgets('PreparedMealCard returns the meal to inventory', (tester) async {
+    final meal = _meal();
+    String? unbundledMealId;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: meal,
+                onEatPressed: (mealId, portions, mealType) async => true,
+                onThrowAwayPressed: (mealId, portions) async => true,
+                onUnbundlePressed: (mealId) async {
+                  unbundledMealId = mealId;
+                  return true;
+                },
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Rice bowl'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Return to inventory'));
+    await tester.pumpAndSettle();
+
+    expect(unbundledMealId, meal.id);
   });
 
   testWidgets('PreparedMealCard renders cover image from local device store', (
@@ -144,28 +200,28 @@ void main() {
   ) async {
     final localImageStore = FakeLocalImageStore();
     await localImageStore.saveBytes(
-      imageRef: preparedMealImageRef('meal-1'),
+      imageRef: localImageAssetRef('asset-meal-1'),
       bytes: Uint8List.fromList(<int>[1, 2, 3]),
     );
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          localImageStoreProvider.overrideWithValue(localImageStore),
-        ],
+        overrides: [localImageStoreProvider.overrideWithValue(localImageStore)],
         child: MaterialApp(
           locale: const Locale('en'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
-            body: PreparedMealCard(
-              meal: _meal().copyWith(imageBase64: null),
-              onEatPressed: (mealId, portions, mealType) async => true,
-              onThrowAwayPressed: (mealId, portions) async => true,
-              onUnbundlePressed: (mealId) async => true,
-              onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                  true,
-              onSaveTemplatePressed: (meal) async => true,
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal(),
+                onEatPressed: (mealId, portions, mealType) async => true,
+                onThrowAwayPressed: (mealId, portions) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
             ),
           ),
         ),
@@ -187,14 +243,16 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
-            body: PreparedMealCard(
-              meal: _meal(),
-              onEatPressed: (mealId, portions, mealType) async => true,
-              onThrowAwayPressed: (mealId, portions) async => true,
-              onUnbundlePressed: (mealId) async => true,
-              onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                  true,
-              onSaveTemplatePressed: (meal) async => true,
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal(),
+                onEatPressed: (mealId, portions, mealType) async => true,
+                onThrowAwayPressed: (mealId, portions) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
             ),
           ),
         ),
@@ -222,6 +280,70 @@ void main() {
     expect(find.text('300'), findsOneWidget);
     expect(find.text('8g'), findsOneWidget);
   });
+
+  testWidgets(
+    'PreparedMealCard re-enables eat action after optimistic meal update',
+    (tester) async {
+      final firstAction = Completer<bool>();
+      var meal = _meal();
+      var invocationCount = 0;
+      late StateSetter setHostState;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: StatefulBuilder(
+                builder: (context, setState) {
+                  setHostState = setState;
+                  return _wrapCard(
+                    PreparedMealCard(
+                      meal: meal,
+                      onEatPressed: (mealId, portions, mealType) async {
+                        invocationCount += 1;
+                        if (invocationCount == 1) {
+                          setHostState(() {
+                            meal = meal.copyWith(
+                              remainingPortions: 1,
+                              updatedAt: DateTime.parse('2026-03-27T12:05:00Z'),
+                            );
+                          });
+                          return firstAction.future;
+                        }
+                        return true;
+                      },
+                      onThrowAwayPressed: (mealId, portions) async => true,
+                      onUnbundlePressed: (mealId) async => true,
+                      onEditPressed:
+                          (mealId, name, imageChanged, imageBytes) async =>
+                              true,
+                      onSaveTemplatePressed: (meal) async => true,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byTooltip('Eat'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Eat').last);
+      await tester.pump();
+      await tester.pump();
+
+      await tester.tap(find.byTooltip('Eat'));
+      await tester.pumpAndSettle();
+
+      expect(invocationCount, 1);
+      expect(find.text('Eat prepared meal'), findsOneWidget);
+      firstAction.complete(true);
+    },
+  );
 
   testWidgets('PreparedMealCard hides per-100 mode for piece meals', (
     tester,
@@ -278,14 +400,16 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
-            body: PreparedMealCard(
-              meal: meal,
-              onEatPressed: (mealId, portions, mealType) async => true,
-              onThrowAwayPressed: (mealId, portions) async => true,
-              onUnbundlePressed: (mealId) async => true,
-              onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
-                  true,
-              onSaveTemplatePressed: (meal) async => true,
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: meal,
+                onEatPressed: (mealId, portions, mealType) async => true,
+                onThrowAwayPressed: (mealId, portions) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
             ),
           ),
         ),

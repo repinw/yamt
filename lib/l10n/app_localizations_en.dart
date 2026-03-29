@@ -544,7 +544,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get preparedMealUnbundleAction => 'Unbundle';
+  String get preparedMealUnbundleAction => 'Return to inventory';
 
   @override
   String get preparedMealEatTitle => 'Eat prepared meal';
@@ -780,6 +780,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesDeleteEntryConfirmAction => 'Delete';
+
+  @override
+  String get caloriesReturnPreparedMealDialogTitle => 'Return meal to inventory?';
+
+  @override
+  String caloriesReturnPreparedMealDialogMessage(String name) {
+    return 'Return \"$name\" to inventory and remove it from the diary?';
+  }
+
+  @override
+  String get caloriesReturnPreparedMealConfirmAction => 'Return to inventory';
+
+  @override
+  String get caloriesReturnPreparedMealFailed => 'The meal could not be returned to inventory.';
+
+  @override
+  String get caloriesDeleteRestoreInventoryQuestion => 'Add the food back to inventory?';
+
+  @override
+  String get caloriesDeleteRestoreFailed => 'The food could not be added back to inventory.';
 
   @override
   String get caloriesDeleteFailed => 'Could not delete entry.';

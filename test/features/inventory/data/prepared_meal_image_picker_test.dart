@@ -31,8 +31,26 @@ void main() {
 
     final optimizedBytes = await optimizePreparedMealImageBytes(originalBytes);
 
-    expect(identical(optimizedBytes, originalBytes), isTrue);
+    expect(optimizedBytes, orderedEquals(originalBytes));
   });
+
+  test(
+    'optimizePreparedMealImageBytes shrinks oversized dimensions '
+    'even when bytes already fit',
+    () async {
+      final originalImage = img.Image(width: 2400, height: 1800);
+      img.fill(originalImage, color: img.ColorRgb8(180, 120, 90));
+      final originalBytes = Uint8List.fromList(img.encodeJpg(originalImage));
+      expect(originalBytes.length, lessThan(_maxPreparedMealImageBytes));
+
+      final optimizedBytes = await optimizePreparedMealImageBytes(originalBytes);
+      final optimizedImage = img.decodeImage(optimizedBytes);
+
+      expect(optimizedImage, isNotNull);
+      expect(optimizedImage!.width, lessThanOrEqualTo(1600));
+      expect(optimizedImage.height, lessThanOrEqualTo(1600));
+    },
+  );
 
   test(
     'optimizePreparedMealImageBytes throws when image cannot fit into max size',
