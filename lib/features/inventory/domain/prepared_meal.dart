@@ -93,6 +93,48 @@ class PreparedMeal {
     return remainingPortions / totalPortions;
   }
 
+  /// Sum of all component costs based on the source inventory snapshots.
+  double get totalPrice {
+    return components.fold<double>(
+      0,
+      (sum, component) => sum + component.totalPrice,
+    );
+  }
+
+  /// Shared amount basis for a 100 g/ml view when all components align.
+  int? get perHundredAmountBasis {
+    if (components.isEmpty) {
+      return null;
+    }
+
+    final firstUnit = components.first.usedUnit;
+    if (firstUnit == InventoryAmountUnit.piece) {
+      return null;
+    }
+
+    var totalAmount = 0;
+    for (final component in components) {
+      if (component.usedUnit != firstUnit || component.usedAmount <= 0) {
+        return null;
+      }
+      totalAmount += component.usedAmount;
+    }
+
+    if (totalAmount <= 0) {
+      return null;
+    }
+    return totalAmount;
+  }
+
+  /// Multiplier that projects totals to a 100 g/ml basis when possible.
+  double? get perHundredMultiplier {
+    final amountBasis = perHundredAmountBasis;
+    if (amountBasis == null || amountBasis <= 0) {
+      return null;
+    }
+    return 100 / amountBasis;
+  }
+
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
@@ -209,6 +251,30 @@ class PreparedMealComponent {
         const GlobalFoodNutrition(
           qualityStatus: GlobalFoodNutritionQualityStatus.missing,
         );
+  }
+
+  /// Cost contribution of this component based on the consumed share.
+  double get totalPrice {
+    if (usedAmount <= 0) {
+      return 0;
+    }
+
+    if (sourceItemSnapshot.usesAmountProgress) {
+      final initialAmount = sourceItemSnapshot.initialAmount;
+      if (initialAmount <= 0) {
+        return 0;
+      }
+
+      final initialQuantity = sourceItemSnapshot.initialQuantity > 0
+          ? sourceItemSnapshot.initialQuantity
+          : sourceItemSnapshot.quantity > 0
+          ? sourceItemSnapshot.quantity
+          : 1;
+      final initialTotalPrice = sourceItemSnapshot.unitPrice * initialQuantity;
+      return initialTotalPrice * (usedAmount / initialAmount);
+    }
+
+    return sourceItemSnapshot.unitPrice * usedAmount;
   }
 
   @override

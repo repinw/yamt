@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
@@ -67,7 +68,7 @@ class PreparedMealCard extends ConsumerStatefulWidget {
 class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
   var _isExpanded = false;
   var _isWorking = false;
-  var _nutritionMode = _PreparedMealNutritionMode.perHundred;
+  var _displayMode = _PreparedMealDisplayMode.perHundred;
 
   @override
   void didUpdateWidget(covariant PreparedMealCard oldWidget) {
@@ -93,16 +94,23 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
     final storedImageBytes = imageRef == null
         ? null
         : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
+    final currency = NumberFormat.currency(
+      locale: l10n.localeName,
+      symbol: '€',
+    );
     final eatActionColors = AppInventoryEatActionColors.fromColorScheme(colors);
-    final availableNutritionModes = _availableNutritionModes(meal);
-    final selectedNutritionMode =
-        availableNutritionModes.contains(_nutritionMode)
-        ? _nutritionMode
-        : availableNutritionModes.first;
+    final availableDisplayModes = _availableDisplayModes(meal);
+    final selectedDisplayMode = availableDisplayModes.contains(_displayMode)
+        ? _displayMode
+        : availableDisplayModes.first;
     final nutritionMetrics = _buildPreparedMealNutritionMetrics(
       l10n: l10n,
       meal: meal,
-      mode: selectedNutritionMode,
+      mode: selectedDisplayMode,
+    );
+    final priceLabel = _priceModeLabel(l10n: l10n, mode: selectedDisplayMode);
+    final priceValue = currency.format(
+      _resolvePreparedMealPrice(meal: meal, mode: selectedDisplayMode),
     );
 
     return DecoratedBox(
@@ -216,14 +224,14 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 if (nutritionMetrics.isNotEmpty) ...[
-                                  if (availableNutritionModes.length > 1) ...[
+                                  if (availableDisplayModes.length > 1) ...[
                                     InventorySegmentedButtonFrame(
-                                      child: _PreparedMealNutritionModeToggle(
-                                        selectedMode: selectedNutritionMode,
-                                        availableModes: availableNutritionModes,
+                                      child: _PreparedMealDisplayModeToggle(
+                                        selectedMode: selectedDisplayMode,
+                                        availableModes: availableDisplayModes,
                                         onModeChanged: (mode) {
                                           setState(() {
-                                            _nutritionMode = mode;
+                                            _displayMode = mode;
                                           });
                                         },
                                       ),
@@ -233,6 +241,11 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
                                   InventoryNutritionStrip(
                                     metrics: nutritionMetrics,
                                     colorScheme: colors,
+                                  ),
+                                  const SizedBox(height: AppSpacing.sm),
+                                  _PreparedMealPriceCard(
+                                    label: priceLabel,
+                                    value: priceValue,
                                   ),
                                   const SizedBox(height: AppSpacing.md),
                                 ],
@@ -452,34 +465,34 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
   }
 }
 
-enum _PreparedMealNutritionMode { perHundred, perPortion, total }
+enum _PreparedMealDisplayMode { perHundred, perPortion, total }
 
-class _PreparedMealNutritionModeToggle extends StatelessWidget {
-  const _PreparedMealNutritionModeToggle({
+class _PreparedMealDisplayModeToggle extends StatelessWidget {
+  const _PreparedMealDisplayModeToggle({
     required this.selectedMode,
     required this.availableModes,
     required this.onModeChanged,
   });
 
-  final _PreparedMealNutritionMode selectedMode;
-  final List<_PreparedMealNutritionMode> availableModes;
-  final ValueChanged<_PreparedMealNutritionMode> onModeChanged;
+  final _PreparedMealDisplayMode selectedMode;
+  final List<_PreparedMealDisplayMode> availableModes;
+  final ValueChanged<_PreparedMealDisplayMode> onModeChanged;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return SegmentedButton<_PreparedMealNutritionMode>(
+    return SegmentedButton<_PreparedMealDisplayMode>(
       expandedInsets: AppInsets.zero,
       showSelectedIcon: false,
       style: inventorySegmentedButtonStyle(context),
       segments: [
         for (final mode in availableModes)
-          ButtonSegment<_PreparedMealNutritionMode>(
+          ButtonSegment<_PreparedMealDisplayMode>(
             value: mode,
-            label: Text(_nutritionModeLabel(l10n, mode)),
+            label: Text(_displayModeLabel(l10n, mode)),
           ),
       ],
-      selected: <_PreparedMealNutritionMode>{selectedMode},
+      selected: <_PreparedMealDisplayMode>{selectedMode},
       onSelectionChanged: (selection) {
         if (selection.isEmpty) {
           return;
@@ -490,28 +503,25 @@ class _PreparedMealNutritionModeToggle extends StatelessWidget {
   }
 }
 
-List<_PreparedMealNutritionMode> _availableNutritionModes(PreparedMeal meal) {
+List<_PreparedMealDisplayMode> _availableDisplayModes(PreparedMeal meal) {
   return [
-    if (_resolvePerHundredAmountBasis(meal) case final _?) ...[
-      _PreparedMealNutritionMode.perHundred,
+    if (meal.perHundredAmountBasis != null) ...[
+      _PreparedMealDisplayMode.perHundred,
     ],
-    if (meal.totalPortions > 0) _PreparedMealNutritionMode.perPortion,
-    _PreparedMealNutritionMode.total,
+    if (meal.totalPortions > 0) _PreparedMealDisplayMode.perPortion,
+    _PreparedMealDisplayMode.total,
   ];
 }
 
 List<InventoryNutritionMetric> _buildPreparedMealNutritionMetrics({
   required AppLocalizations l10n,
   required PreparedMeal meal,
-  required _PreparedMealNutritionMode mode,
+  required _PreparedMealDisplayMode mode,
 }) {
-  final multiplier = switch (mode) {
-    _PreparedMealNutritionMode.perHundred =>
-      _resolvePerHundredMultiplier(meal) ?? 0,
-    _PreparedMealNutritionMode.perPortion =>
-      meal.totalPortions > 0 ? 1 / meal.totalPortions : 0,
-    _PreparedMealNutritionMode.total => 1,
-  };
+  final multiplier = _resolvePreparedMealDisplayMultiplier(
+    meal: meal,
+    mode: mode,
+  );
 
   return [
     InventoryNutritionMetric(
@@ -534,48 +544,44 @@ List<InventoryNutritionMetric> _buildPreparedMealNutritionMetrics({
   ];
 }
 
-double? _resolvePerHundredMultiplier(PreparedMeal meal) {
-  final amountBasis = _resolvePerHundredAmountBasis(meal);
-  if (amountBasis == null || amountBasis <= 0) {
-    return null;
-  }
-  return 100 / amountBasis;
+double _resolvePreparedMealPrice({
+  required PreparedMeal meal,
+  required _PreparedMealDisplayMode mode,
+}) {
+  return meal.totalPrice *
+      _resolvePreparedMealDisplayMultiplier(meal: meal, mode: mode);
 }
 
-int? _resolvePerHundredAmountBasis(PreparedMeal meal) {
-  if (meal.components.isEmpty) {
-    return null;
-  }
-
-  final firstUnit = meal.components.first.usedUnit;
-  if (firstUnit == InventoryAmountUnit.piece) {
-    return null;
-  }
-
-  var totalAmount = 0;
-  for (final component in meal.components) {
-    if (component.usedUnit != firstUnit || component.usedAmount <= 0) {
-      return null;
-    }
-    totalAmount += component.usedAmount;
-  }
-
-  if (totalAmount <= 0) {
-    return null;
-  }
-  return totalAmount;
-}
-
-String _nutritionModeLabel(
-  AppLocalizations l10n,
-  _PreparedMealNutritionMode mode,
-) {
+double _resolvePreparedMealDisplayMultiplier({
+  required PreparedMeal meal,
+  required _PreparedMealDisplayMode mode,
+}) {
   return switch (mode) {
-    _PreparedMealNutritionMode.perHundred =>
+    _PreparedMealDisplayMode.perHundred => meal.perHundredMultiplier ?? 0,
+    _PreparedMealDisplayMode.perPortion =>
+      meal.totalPortions > 0 ? 1 / meal.totalPortions : 0,
+    _PreparedMealDisplayMode.total => 1,
+  };
+}
+
+String _displayModeLabel(AppLocalizations l10n, _PreparedMealDisplayMode mode) {
+  return switch (mode) {
+    _PreparedMealDisplayMode.perHundred =>
       l10n.preparedMealNutritionModePerHundred,
-    _PreparedMealNutritionMode.perPortion =>
+    _PreparedMealDisplayMode.perPortion =>
       l10n.preparedMealNutritionModePerPortion,
-    _PreparedMealNutritionMode.total => l10n.preparedMealNutritionModeTotal,
+    _PreparedMealDisplayMode.total => l10n.preparedMealNutritionModeTotal,
+  };
+}
+
+String _priceModeLabel({
+  required AppLocalizations l10n,
+  required _PreparedMealDisplayMode mode,
+}) {
+  return switch (mode) {
+    _PreparedMealDisplayMode.perHundred => l10n.preparedMealPricePerHundred,
+    _PreparedMealDisplayMode.perPortion => l10n.preparedMealPricePerPortion,
+    _PreparedMealDisplayMode.total => l10n.preparedMealPriceTotal,
   };
 }
 
@@ -606,6 +612,61 @@ class _PreparedMealPrimaryActionButton extends StatelessWidget {
       disabledBorderColor: AppInventoryEditorialSurfaces.ghostBorder(colors),
       enabledForegroundColor: actionColors.iconColor,
       disabledForegroundColor: colors.onSurfaceVariant,
+    );
+  }
+}
+
+class _PreparedMealPriceCard extends StatelessWidget {
+  const _PreparedMealPriceCard({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final backgroundColor = Color.alphaBlend(
+      colors.secondary.withValues(alpha: 0.05),
+      colors.surfaceContainerLowest,
+    );
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(
+          InventoryItemRowConstants.nutritionStripRadius,
+        ),
+        border: Border.all(
+          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: colors.onSurfaceVariant,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: colors.onSurface,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -436,6 +436,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealNutritionModeTotal => 'Total';
 
   @override
+  String get preparedMealPricePerHundred => 'Price per 100 g/ml';
+
+  @override
+  String get preparedMealPricePerPortion => 'Price per portion';
+
+  @override
+  String get preparedMealPriceTotal => 'Total price';
+
+  @override
   String preparedMealSelectionCount(int count) {
     return '$count selected';
   }

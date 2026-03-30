@@ -175,6 +175,9 @@
   "preparedMealNutritionModePerHundred": "100 g/ml",
   "preparedMealNutritionModePerPortion": "Portion",
   "preparedMealNutritionModeTotal": "Total",
+  "preparedMealPricePerHundred": "Price per 100 g/ml",
+  "preparedMealPricePerPortion": "Price per portion",
+  "preparedMealPriceTotal": "Total price",
   "preparedMealSelectionCount": "{count} selected",
   "@preparedMealSelectionCount": {
     "placeholders": {

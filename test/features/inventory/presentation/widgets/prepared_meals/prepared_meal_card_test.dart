@@ -23,6 +23,7 @@ PreparedMeal _meal() {
     storeName: 'Store',
     quantity: 1,
     initialQuantity: 1,
+    unitPrice: 3,
     initialAmount: 300,
     currentAmount: 100,
     amountUnit: InventoryAmountUnit.gram,
@@ -267,18 +268,24 @@ void main() {
     expect(find.text('Total'), findsOneWidget);
     expect(find.text('200'), findsOneWidget);
     expect(find.text('5.3g'), findsOneWidget);
+    expect(find.text('Price per 100 g/ml'), findsOneWidget);
+    expect(find.text('€1.00'), findsOneWidget);
 
     await tester.tap(find.text('Portion'));
     await tester.pumpAndSettle();
 
     expect(find.text('100'), findsOneWidget);
     expect(find.text('2.7g'), findsOneWidget);
+    expect(find.text('Price per portion'), findsOneWidget);
+    expect(find.text('€0.50'), findsOneWidget);
 
     await tester.tap(find.text('Total'));
     await tester.pumpAndSettle();
 
     expect(find.text('300'), findsOneWidget);
     expect(find.text('8g'), findsOneWidget);
+    expect(find.text('Total price'), findsOneWidget);
+    expect(find.text('€1.50'), findsOneWidget);
   });
 
   testWidgets(
