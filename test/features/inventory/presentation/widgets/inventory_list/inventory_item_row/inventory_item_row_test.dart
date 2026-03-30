@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:intl/intl.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -36,10 +35,6 @@ class _InventoryItemRowHost extends StatelessWidget {
                         expansionStorageKey: 'inventory_item_row_milk',
                         item: item ?? _buildItem(),
                         l10n: AppLocalizations.of(context)!,
-                        currency: NumberFormat.currency(
-                          locale: 'en',
-                          symbol: '€',
-                        ),
                         showBarcodeMarkers: false,
                         isAlreadyInShoppingList: false,
                         onDeletePressed: (itemId) async => true,

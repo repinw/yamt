@@ -100,4 +100,14 @@ void main() {
 
     expect(item.resolvedFoodFingerprint, 'organic_milk_3_5__acme_foods');
   });
+
+  test('effectiveInitialQuantity falls back to current quantity and one', () {
+    final explicitInitial = _quantityItem(quantity: 2, initialQuantity: 5);
+    final quantityFallback = _quantityItem(quantity: 3, initialQuantity: 0);
+    final hardFallback = _quantityItem(quantity: 0, initialQuantity: 0);
+
+    expect(explicitInitial.effectiveInitialQuantity, 5);
+    expect(quantityFallback.effectiveInitialQuantity, 3);
+    expect(hardFallback.effectiveInitialQuantity, 1);
+  });
 }

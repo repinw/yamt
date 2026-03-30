@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/core/utils/store_name_normalizer.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
@@ -53,6 +54,7 @@ class DefaultReceiptToReviewItemDraftMapper
       _firstNonBlankString(root['rd'], root['receiptDate']),
     );
     final rootReceiptTime = _firstNonBlankString(root['t'], root['time']);
+    final rootCurrencyCode = _readCurrencyCode(root);
     final receiptId = _buildReceiptId(now);
 
     return extraction.items.indexed
@@ -101,6 +103,7 @@ class DefaultReceiptToReviewItemDraftMapper
               0.0;
           final unitPrice = safeQuantity > 0 ? totalPrice / safeQuantity : 0.0;
           final weight = quantityAndWeight.weight;
+          final currencyCode = _readCurrencyCode(payload) ?? rootCurrencyCode;
 
           final inventoryItem = InventoryItem.create(
             id: _buildItemId(now, index),
@@ -110,6 +113,7 @@ class DefaultReceiptToReviewItemDraftMapper
             quantity: safeQuantity,
             initialQuantity: safeQuantities.initialQuantity,
             unitPrice: unitPrice,
+            currencyCode: currencyCode,
             weight: weight,
             brand: _firstNonBlankString(payload['b'], payload['brand']),
             category: _firstNonBlankString(payload['c'], payload['category']),
@@ -139,6 +143,17 @@ class DefaultReceiptToReviewItemDraftMapper
         })
         .toList(growable: false);
   }
+}
+
+String? _readCurrencyCode(Map<String, dynamic> payload) {
+  return normalizeCurrencyCode(
+    _firstNonBlankString(
+          payload['cur'],
+          payload['currency'],
+          payload['currencyCode'],
+        ) ??
+        _firstNonBlankString(payload['currency_code']),
+  );
 }
 
 String _buildReceiptId(DateTime now) {

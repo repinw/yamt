@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_product_snapshot.dart';
@@ -18,6 +19,7 @@ class InventoryItem {
     required this.quantity,
     this.initialQuantity = 1,
     this.unitPrice = 0.0,
+    this.currencyCode,
     this.weight,
     this.initialAmount = 0,
     this.currentAmount = 0,
@@ -42,6 +44,7 @@ class InventoryItem {
     required int quantity,
     int initialQuantity = 1,
     double unitPrice = 0.0,
+    String? currencyCode,
     String? weight,
     int initialAmount = 0,
     int currentAmount = 0,
@@ -86,6 +89,7 @@ class InventoryItem {
       quantity: quantity,
       initialQuantity: initialQuantity,
       unitPrice: unitPrice,
+      currencyCode: _normalizeCurrencyCodeValue(currencyCode),
       weight: _normalizeWeightText(weight),
       initialAmount: initialAmount,
       currentAmount: currentAmount,
@@ -120,6 +124,7 @@ class InventoryItem {
       quantity: _readInt(json['quantity']) ?? 0,
       initialQuantity: _readInt(json['initial_quantity']) ?? 1,
       unitPrice: _readDouble(json['unit_price']) ?? 0.0,
+      currencyCode: _normalizeCurrencyCodeValue(json['currency_code']),
       weight: _normalizeWeightText(json['weight']),
       initialAmount: _readInt(json['initial_amount']) ?? 0,
       currentAmount: _readInt(json['current_amount']) ?? 0,
@@ -148,6 +153,7 @@ class InventoryItem {
   final int quantity;
   final int initialQuantity;
   final double unitPrice;
+  final String? currencyCode;
   final String? weight;
   final int initialAmount;
   final int currentAmount;
@@ -173,6 +179,7 @@ class InventoryItem {
       'quantity': quantity,
       'initial_quantity': initialQuantity,
       'unit_price': unitPrice,
+      'currency_code': currencyCode,
       'weight': weight,
       'initial_amount': initialAmount,
       'current_amount': currentAmount,
@@ -207,6 +214,7 @@ class InventoryItem {
     int? quantity,
     int? initialQuantity,
     double? unitPrice,
+    Object? currencyCode = _keepValue,
     Object? weight = _keepValue,
     int? initialAmount,
     int? currentAmount,
@@ -242,6 +250,9 @@ class InventoryItem {
       quantity: quantity ?? this.quantity,
       initialQuantity: initialQuantity ?? this.initialQuantity,
       unitPrice: unitPrice ?? this.unitPrice,
+      currencyCode: currencyCode == _keepValue
+          ? this.currencyCode
+          : _normalizeCurrencyCodeValue(currencyCode),
       weight: weight == _keepValue ? this.weight : _normalizeWeightText(weight),
       initialAmount: initialAmount ?? this.initialAmount,
       currentAmount: currentAmount ?? this.currentAmount,
@@ -307,6 +318,17 @@ class InventoryItem {
 
   bool get usesAmountProgress => amountUnit != null && initialAmount > 0;
 
+  /// Best available starting quantity for price and progress fallbacks.
+  int get effectiveInitialQuantity {
+    if (initialQuantity > 0) {
+      return initialQuantity;
+    }
+    if (quantity > 0) {
+      return quantity;
+    }
+    return 1;
+  }
+
   String get resolvedFoodFingerprint {
     return productSnapshot.resolvedFoodFingerprint;
   }
@@ -360,6 +382,7 @@ class InventoryItem {
             other.quantity == quantity &&
             other.initialQuantity == initialQuantity &&
             other.unitPrice == unitPrice &&
+            other.currencyCode == currencyCode &&
             other.weight == weight &&
             other.initialAmount == initialAmount &&
             other.currentAmount == currentAmount &&
@@ -393,6 +416,7 @@ class InventoryItem {
       quantity,
       initialQuantity,
       unitPrice,
+      currencyCode,
       weight,
       initialAmount,
       currentAmount,
@@ -525,6 +549,13 @@ String? _readTrimmedString(Object? value) {
     return null;
   }
   return trimmed;
+}
+
+String? _normalizeCurrencyCodeValue(Object? value) {
+  if (value is! String) {
+    return null;
+  }
+  return normalizeCurrencyCode(value);
 }
 
 String? _normalizeWeightText(Object? rawWeight) {

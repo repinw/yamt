@@ -14,6 +14,7 @@ void main() {
         's': 'Lidl',
         'rd': '2026-02-18T12:00:00.000Z',
         'l': 'de_DE',
+        'currency': 'EUR',
       },
       items: const <ReceiptAnalysisItem>[
         ReceiptAnalysisItem(
@@ -53,6 +54,7 @@ void main() {
     expect(item.category, 'Dairy');
     expect(item.discounts, <String, double>{'Coupon': 0.5});
     expect(item.language, 'de_DE');
+    expect(item.currencyCode, 'EUR');
     expect(item.receiptDate, DateTime.parse('2026-02-18T12:00:00.000Z'));
     expect(item.entryDate, fixedNow);
     expect(item.isDeposit, isFalse);
@@ -181,6 +183,27 @@ void main() {
     expect(item.initialAmount, 9000);
     expect(item.currentAmount, 9000);
     expect(item.amountUnit, InventoryAmountUnit.milliliter);
+  });
+
+  test('item currency overrides root currency during mapping', () {
+    final extraction = ReceiptAnalysisExtraction(
+      root: const <String, dynamic>{'currency': 'EUR'},
+      items: const <ReceiptAnalysisItem>[
+        ReceiptAnalysisItem(
+          name: 'Imported snack',
+          rawPayload: <String, dynamic>{
+            'n': 'Imported snack',
+            'q': 1,
+            'p': 2.5,
+            'currencyCode': 'USD',
+          },
+        ),
+      ],
+    );
+
+    final item = mapper.map(extraction).single.item;
+
+    expect(item.currencyCode, 'USD');
   });
 
   test('maps Kaufland-style AI payload into review drafts', () {

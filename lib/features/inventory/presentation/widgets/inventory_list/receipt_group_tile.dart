@@ -12,7 +12,6 @@ class ReceiptGroupTile extends StatefulWidget {
   const ReceiptGroupTile({
     super.key,
     required this.group,
-    required this.currency,
     required this.dateFormat,
     required this.showBarcodeMarkers,
     required this.activeShoppingListItemKeys,
@@ -26,7 +25,6 @@ class ReceiptGroupTile extends StatefulWidget {
   });
 
   final InventoryReceiptGroup group;
-  final NumberFormat currency;
   final DateFormat dateFormat;
   final bool showBarcodeMarkers;
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
@@ -127,7 +125,6 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
                             keyPrefix: 'receipt_item_row',
                             bottomSpacing: AppSpacing.xl,
                             l10n: l10n,
-                            currency: widget.currency,
                             showBarcodeMarkers: widget.showBarcodeMarkers,
                             activeShoppingListItemKeys:
                                 widget.activeShoppingListItemKeys,

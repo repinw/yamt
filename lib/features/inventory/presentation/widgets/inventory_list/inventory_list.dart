@@ -81,7 +81,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final currency = NumberFormat.currency(locale: locale, symbol: '€');
     final showBarcodeMarkers = ref.watch(
       barcodeBackfillFeatureFlagsProvider.select(
         (flags) => flags.showInventoryBarcodeMarkers,
@@ -187,7 +186,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
         else if (_mode == InventoryListMode.byReceipt)
           InventoryReceiptGroupsSliver(
             groups: groupInventoryItemsByReceipt(filteredItems),
-            currency: currency,
             dateFormat: DateFormat.yMMMd(locale),
             showBarcodeMarkers: showBarcodeMarkers,
             activeShoppingListItemKeys: activeShoppingListItemKeys,
@@ -203,7 +201,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
           InventoryAllItemsSliver(
             items: filteredItems,
             l10n: l10n,
-            currency: currency,
             showBarcodeMarkers: showBarcodeMarkers,
             activeShoppingListItemKeys: activeShoppingListItemKeys,
             onDeleteItem: widget.onDeleteItem,

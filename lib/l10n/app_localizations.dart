@@ -941,6 +941,24 @@ abstract class AppLocalizations {
   /// **'Total'**
   String get preparedMealNutritionModeTotal;
 
+  /// No description provided for @preparedMealPricePerHundred.
+  ///
+  /// In en, this message translates to:
+  /// **'Price per 100 g/ml'**
+  String get preparedMealPricePerHundred;
+
+  /// No description provided for @preparedMealPricePerPortion.
+  ///
+  /// In en, this message translates to:
+  /// **'Price per portion'**
+  String get preparedMealPricePerPortion;
+
+  /// No description provided for @preparedMealPriceTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total price'**
+  String get preparedMealPriceTotal;
+
   /// No description provided for @preparedMealSelectionCount.
   ///
   /// In en, this message translates to:

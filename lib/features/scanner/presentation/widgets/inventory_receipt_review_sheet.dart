@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
@@ -367,6 +368,11 @@ class _InventoryReceiptReviewSheetState
 
   NumberFormat _currencyFormat(BuildContext context) {
     final locale = Localizations.localeOf(context).toLanguageTag();
-    return NumberFormat.currency(locale: locale, symbol: '€');
+    return buildCurrencyFormat(
+      locale: locale,
+      currencyCode: resolveSharedCurrencyCode(
+        _items.map((draft) => draft.item.currencyCode),
+      ),
+    );
   }
 }

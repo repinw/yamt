@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/calories/data/calorie_barcode_backfill_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -35,7 +35,6 @@ class InventoryItemRow extends ConsumerStatefulWidget {
     required this.expansionStorageKey,
     required this.item,
     required this.l10n,
-    required this.currency,
     required this.showBarcodeMarkers,
     required this.isAlreadyInShoppingList,
     required this.onDeletePressed,
@@ -50,7 +49,6 @@ class InventoryItemRow extends ConsumerStatefulWidget {
   final String expansionStorageKey;
   final InventoryItem item;
   final AppLocalizations l10n;
-  final NumberFormat currency;
   final bool showBarcodeMarkers;
   final bool isAlreadyInShoppingList;
   final Future<bool> Function(String itemId) onDeletePressed;
@@ -152,11 +150,12 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   }) {
     final item = widget.item;
     final hasAdjustableAmount = _buildInputConfig(item) != null;
+    final localeName = Localizations.localeOf(context).toLanguageTag();
     return _InventoryItemRowLayoutData.fromItem(
       context: context,
       item: item,
       l10n: widget.l10n,
-      currency: widget.currency,
+      localeName: localeName,
       hasAdjustableAmount: hasAdjustableAmount,
       isWorking: _isWorking,
       isAlreadyInShoppingList: isAlreadyInShoppingList,
@@ -341,7 +340,7 @@ class _InventoryItemRowLayoutData {
     required BuildContext context,
     required InventoryItem item,
     required AppLocalizations l10n,
-    required NumberFormat currency,
+    required String localeName,
     required bool hasAdjustableAmount,
     required bool isWorking,
     required bool isAlreadyInShoppingList,
@@ -372,6 +371,10 @@ class _InventoryItemRowLayoutData {
             status: item.barcodeStatus,
           )
         : null;
+    final currency = buildCurrencyFormat(
+      locale: localeName,
+      currencyCode: item.currencyCode,
+    );
 
     return _InventoryItemRowLayoutData(
       colorScheme: colors,
