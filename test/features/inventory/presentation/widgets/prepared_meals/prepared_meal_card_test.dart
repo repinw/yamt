@@ -24,6 +24,7 @@ PreparedMeal _meal() {
     quantity: 1,
     initialQuantity: 1,
     unitPrice: 3,
+    currencyCode: 'EUR',
     initialAmount: 300,
     currentAmount: 100,
     amountUnit: InventoryAmountUnit.gram,
@@ -287,6 +288,88 @@ void main() {
     expect(find.text('Total price'), findsOneWidget);
     expect(find.text('€1.50'), findsOneWidget);
   });
+
+  testWidgets(
+    'PreparedMealCard uses meal currency instead of app language currency',
+    (tester) async {
+      final sourceItem = InventoryItem.create(
+        id: 'item-usd',
+        name: 'Imported rice',
+        entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
+        storeName: 'Store',
+        quantity: 1,
+        initialQuantity: 1,
+        unitPrice: 3,
+        currencyCode: 'USD',
+        initialAmount: 300,
+        currentAmount: 100,
+        amountUnit: InventoryAmountUnit.gram,
+        nutrition: const GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+          per100Kcal: 200,
+          per100Protein: 10,
+          per100Carbs: 20,
+          per100Fat: 5,
+        ),
+      );
+      final meal = PreparedMeal(
+        id: 'meal-usd',
+        name: 'Imported bowl',
+        totalPortions: 3,
+        remainingPortions: 3,
+        totalKcal: 300,
+        totalProtein: 15,
+        totalCarbs: 30,
+        totalFat: 8,
+        createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+        updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+        components: [
+          PreparedMealComponent(
+            inventoryItemId: sourceItem.id,
+            name: sourceItem.name,
+            brand: sourceItem.brand,
+            imageUrl: sourceItem.imageUrl,
+            usedAmount: 150,
+            usedUnit: InventoryAmountUnit.gram,
+            totalKcal: 300,
+            totalProtein: 15,
+            totalCarbs: 30,
+            totalFat: 8,
+            sourceItemSnapshot: sourceItem,
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: _wrapCard(
+                PreparedMealCard(
+                  meal: meal,
+                  onEatPressed: (mealId, portions, mealType) async => true,
+                  onThrowAwayPressed: (mealId, portions) async => true,
+                  onUnbundlePressed: (mealId) async => true,
+                  onEditPressed:
+                      (mealId, name, imageChanged, imageBytes) async => true,
+                  onSaveTemplatePressed: (meal) async => true,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Imported bowl'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('\$1.00'), findsOneWidget);
+      expect(find.text('€1.00'), findsNothing);
+    },
+  );
 
   testWidgets(
     'PreparedMealCard re-enables eat action after optimistic meal update',

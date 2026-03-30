@@ -14,6 +14,7 @@ InventoryItem _item(
   String name = 'Milk',
   int quantity = 1,
   double unitPrice = 1.0,
+  String? currencyCode,
 }) {
   return InventoryItem.create(
     id: id,
@@ -23,6 +24,7 @@ InventoryItem _item(
     quantity: quantity,
     initialQuantity: quantity,
     unitPrice: unitPrice,
+    currencyCode: currencyCode,
     receiptId: receiptId,
     receiptDate: receiptDate,
   );
@@ -78,7 +80,6 @@ void main() {
   test('title prefers receipt date and subtitle formats store/count/total', () {
     final l10n = AppLocalizationsEn();
     final dateFormat = DateFormat.yMMMd('en');
-    final currency = NumberFormat.currency(locale: 'en', symbol: '€');
     final groups = groupInventoryItemsByReceipt(<InventoryItem>[
       _item(
         'a',
@@ -87,6 +88,7 @@ void main() {
         receiptDate: DateTime.parse('2026-02-11T10:00:00Z'),
         quantity: 2,
         unitPrice: 1.5,
+        currencyCode: 'USD',
       ),
       _item(
         'b',
@@ -95,17 +97,18 @@ void main() {
         receiptDate: DateTime.parse('2026-02-11T10:00:00Z'),
         quantity: 1,
         unitPrice: 2.0,
+        currencyCode: 'USD',
       ),
     ]);
 
     final group = groups.single;
     final title = group.title(l10n: l10n, dateFormat: dateFormat);
-    final subtitle = group.subtitle(l10n: l10n, currency: currency);
+    final subtitle = group.subtitle(l10n: l10n, localeName: 'en');
 
     expect(title, 'Receipt Feb 11, 2026');
     expect(subtitle, contains('Kaufland'));
     expect(subtitle, contains('2 items'));
-    expect(subtitle, contains('€5.00'));
+    expect(subtitle, contains('\$5.00'));
   });
 
   test('title falls back to shortened receipt id without receipt date', () {

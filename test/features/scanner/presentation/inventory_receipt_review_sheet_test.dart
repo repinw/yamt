@@ -30,6 +30,7 @@ InventoryItem _item({
   String? weight,
   int quantity = 1,
   double unitPrice = 1.0,
+  String? currencyCode,
   Map<String, double> discounts = const <String, double>{},
 }) {
   return InventoryItem.create(
@@ -39,6 +40,7 @@ InventoryItem _item({
     storeName: storeName,
     quantity: quantity,
     unitPrice: unitPrice,
+    currencyCode: currencyCode,
     brand: brand,
     weight: weight,
     discounts: discounts,
@@ -623,6 +625,30 @@ void main() {
     expect(find.text('${quantity}x'), findsOneWidget);
     expect(find.text(weight), findsOneWidget);
   });
+
+  testWidgets(
+    'receipt review uses parsed item currency when app locale is english',
+    (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          items: <InventoryItem>[
+            _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              unitPrice: 1.5,
+              currencyCode: 'USD',
+            ),
+          ],
+          onCancelTap: () {},
+          onSaveTap: (_) async {},
+        ),
+      );
+
+      expect(find.text('\$1.50'), findsWidgets);
+      expect(find.text('€1.50'), findsNothing);
+    },
+  );
 
   testWidgets('selected OFF candidate weight overrides OCR weight pill', (
     tester,

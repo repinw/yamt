@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row.dart';
@@ -13,7 +12,6 @@ class InventoryItemRowListEntry extends StatelessWidget {
     required this.keyPrefix,
     required this.bottomSpacing,
     required this.l10n,
-    required this.currency,
     required this.showBarcodeMarkers,
     required this.activeShoppingListItemKeys,
     required this.onDeleteItem,
@@ -29,7 +27,6 @@ class InventoryItemRowListEntry extends StatelessWidget {
   final String keyPrefix;
   final double bottomSpacing;
   final AppLocalizations l10n;
-  final NumberFormat currency;
   final bool showBarcodeMarkers;
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
   final Future<bool> Function(String itemId) onDeleteItem;
@@ -58,7 +55,6 @@ class InventoryItemRowListEntry extends StatelessWidget {
           expansionStorageKey: '${keyPrefix}_${item.id}',
           item: item,
           l10n: l10n,
-          currency: currency,
           showBarcodeMarkers: showBarcodeMarkers,
           isAlreadyInShoppingList: isAlreadyInShoppingList,
           onDeletePressed: onDeleteItem,

@@ -25,6 +25,7 @@ InventoryItem _item(
   required DateTime receiptDate,
   int quantity = 1,
   double unitPrice = 1.0,
+  String? currencyCode,
 }) {
   return InventoryItem.create(
     id: id,
@@ -34,6 +35,7 @@ InventoryItem _item(
     quantity: quantity,
     initialQuantity: quantity,
     unitPrice: unitPrice,
+    currencyCode: currencyCode,
     receiptId: receiptId,
     receiptDate: receiptDate,
   );
@@ -49,6 +51,7 @@ InventoryReceiptGroup _group() {
       receiptDate: DateTime.parse('2026-02-20T10:00:00Z'),
       quantity: 1,
       unitPrice: 1.5,
+      currencyCode: 'EUR',
     ),
     _item(
       'b',
@@ -58,6 +61,7 @@ InventoryReceiptGroup _group() {
       receiptDate: DateTime.parse('2026-02-20T10:00:00Z'),
       quantity: 2,
       unitPrice: 2.0,
+      currencyCode: 'EUR',
     ),
   ]);
 }
@@ -71,11 +75,9 @@ Widget _buildHarness({
   Future<bool> Function(String itemId, int amount)? onEatItem,
   Future<bool> Function(String itemId, int amount)? onThrowAwayItem,
 }) {
-  final localeTag = const Locale('en').toLanguageTag();
   final tile = ReceiptGroupTile(
     group: group,
-    currency: NumberFormat.currency(locale: localeTag, symbol: '€'),
-    dateFormat: DateFormat.yMMMd(localeTag),
+    dateFormat: DateFormat.yMMMd(const Locale('en').toLanguageTag()),
     showBarcodeMarkers: false,
     activeShoppingListItemKeys: const <ShoppingListItemMatchKey>{},
     onDeleteItem: onDeleteItem ?? (_) async => true,

@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -10,6 +11,7 @@ class InventoryReceiptGroup {
     required this.storeName,
     required this.items,
     required this.totalValue,
+    required this.currencyCode,
   });
 
   factory InventoryReceiptGroup.fromItems(
@@ -42,6 +44,9 @@ class InventoryReceiptGroup {
     final value = sortedItems.fold<double>(0.0, (sum, item) {
       return sum + (item.quantity * item.unitPrice);
     });
+    final currencyCode = resolveSharedCurrencyCode(
+      sortedItems.map((item) => item.currencyCode),
+    );
 
     return InventoryReceiptGroup(
       key: key,
@@ -50,6 +55,7 @@ class InventoryReceiptGroup {
       storeName: store,
       items: sortedItems,
       totalValue: value,
+      currencyCode: currencyCode,
     );
   }
 
@@ -59,6 +65,7 @@ class InventoryReceiptGroup {
   final String storeName;
   final List<InventoryItem> items;
   final double totalValue;
+  final String? currencyCode;
 
   bool get hasReceipt {
     final id = receiptId;
@@ -89,10 +96,14 @@ class InventoryReceiptGroup {
 
   String subtitle({
     required AppLocalizations l10n,
-    required NumberFormat currency,
+    required String localeName,
   }) {
     final safeStore = storeName.trim().isEmpty ? '-' : storeName;
     final itemCount = items.length;
+    final currency = buildCurrencyFormat(
+      locale: localeName,
+      currencyCode: currencyCode,
+    );
     final total = currency.format(totalValue);
     return '$safeStore · $itemCount ${l10n.inventoryReceiptGroupItems} · '
         '$total';

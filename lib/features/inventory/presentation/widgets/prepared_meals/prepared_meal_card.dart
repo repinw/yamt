@@ -3,10 +3,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -94,9 +94,9 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
     final storedImageBytes = imageRef == null
         ? null
         : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
-    final currency = NumberFormat.currency(
+    final currency = buildCurrencyFormat(
       locale: l10n.localeName,
-      symbol: '€',
+      currencyCode: meal.currencyCode,
     );
     final eatActionColors = AppInventoryEatActionColors.fromColorScheme(colors);
     final availableDisplayModes = _availableDisplayModes(meal);

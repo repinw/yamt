@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
@@ -98,6 +99,13 @@ class PreparedMeal {
     return components.fold<double>(
       0,
       (sum, component) => sum + component.totalPrice,
+    );
+  }
+
+  /// Shared currency across all priced components when available.
+  String? get currencyCode {
+    return resolveSharedCurrencyCode(
+      components.map((component) => component.sourceItemSnapshot.currencyCode),
     );
   }
 
@@ -265,11 +273,7 @@ class PreparedMealComponent {
         return 0;
       }
 
-      final initialQuantity = sourceItemSnapshot.initialQuantity > 0
-          ? sourceItemSnapshot.initialQuantity
-          : sourceItemSnapshot.quantity > 0
-          ? sourceItemSnapshot.quantity
-          : 1;
+      final initialQuantity = sourceItemSnapshot.effectiveInitialQuantity;
       final initialTotalPrice = sourceItemSnapshot.unitPrice * initialQuantity;
       return initialTotalPrice * (usedAmount / initialAmount);
     }

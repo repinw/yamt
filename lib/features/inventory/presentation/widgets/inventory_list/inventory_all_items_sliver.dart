@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -16,7 +15,6 @@ class InventoryAllItemsSliver extends StatefulWidget {
     super.key,
     required this.items,
     required this.l10n,
-    required this.currency,
     required this.showBarcodeMarkers,
     required this.activeShoppingListItemKeys,
     required this.onDeleteItem,
@@ -30,7 +28,6 @@ class InventoryAllItemsSliver extends StatefulWidget {
 
   final List<InventoryItem> items;
   final AppLocalizations l10n;
-  final NumberFormat currency;
   final bool showBarcodeMarkers;
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
   final Future<bool> Function(String itemId) onDeleteItem;
@@ -85,7 +82,6 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
             keyPrefix: 'inventory_item_row',
             bottomSpacing: AppSpacing.xl,
             l10n: widget.l10n,
-            currency: widget.currency,
             showBarcodeMarkers: widget.showBarcodeMarkers,
             activeShoppingListItemKeys: widget.activeShoppingListItemKeys,
             onDeleteItem: widget.onDeleteItem,
