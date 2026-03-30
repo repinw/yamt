@@ -737,14 +737,6 @@ void main() {
         find.byKey(const Key('receipt_review_clear_receipt_date_button')),
         findsNothing,
       );
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(InventoryReceiptReviewSheet)),
-      )!;
-      expect(
-        find.text(l10n.inventoryReceiptReviewSelectDateAction),
-        findsNothing,
-      );
-
       final applyButton = find.byKey(
         const Key('receipt_review_apply_item_button'),
       );

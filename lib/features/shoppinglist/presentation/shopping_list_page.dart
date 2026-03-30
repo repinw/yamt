@@ -12,8 +12,6 @@ import 'package:yamt/features/shoppinglist/presentation/widgets/'
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-export 'widgets/shopping_list_page_keys.dart';
-
 class ShoppingListPage extends ConsumerWidget {
   const ShoppingListPage({super.key});
 

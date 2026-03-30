@@ -174,7 +174,7 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
       return null;
     }
     if (result.files.length > _maxBatchSelectionCount) {
-      throw const ReceiptInputBatchException(
+      throw const _ReceiptInputBatchException(
         'Too many files selected for receipt batch processing.',
       );
     }
@@ -211,7 +211,7 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
     }
 
     if (selections.isEmpty) {
-      throw const ReceiptInputBatchException(
+      throw const _ReceiptInputBatchException(
         'No selected receipt files could be read.',
       );
     }
@@ -230,7 +230,7 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
 
   Future<ReceiptInputSelection?> _selectionFromFile(PlatformFile file) async {
     if (_isFileTooLarge(file)) {
-      throw ReceiptInputBatchException(
+      throw _ReceiptInputBatchException(
         'Receipt file exceeds size limit: ${file.name}',
       );
     }
@@ -239,7 +239,7 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
       return null;
     }
     if (bytes.length > _maxReceiptInputBytes) {
-      throw ReceiptInputBatchException(
+      throw _ReceiptInputBatchException(
         'Receipt file exceeds size limit: ${file.name}',
       );
     }
@@ -300,13 +300,13 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
   }
 }
 
-class ReceiptInputBatchException implements Exception {
-  const ReceiptInputBatchException(this.message);
+class _ReceiptInputBatchException implements Exception {
+  const _ReceiptInputBatchException(this.message);
 
   final String message;
 
   @override
-  String toString() => 'ReceiptInputBatchException: $message';
+  String toString() => '_ReceiptInputBatchException: $message';
 }
 
 String _resolvedFileName({

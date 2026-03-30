@@ -95,18 +95,6 @@ abstract class AppLocalizations {
     Locale('en')
   ];
 
-  /// No description provided for @welcomeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Welcome'**
-  String get welcomeTitle;
-
-  /// No description provided for @homeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Home'**
-  String get homeTitle;
-
   /// No description provided for @homeInventory.
   ///
   /// In en, this message translates to:
@@ -143,12 +131,6 @@ abstract class AppLocalizations {
   /// **'Quick action'**
   String get homeQuickActionTooltip;
 
-  /// No description provided for @homeQuickActionTapped.
-  ///
-  /// In en, this message translates to:
-  /// **'Quick action tapped'**
-  String get homeQuickActionTapped;
-
   /// No description provided for @inventoryFabTooltip.
   ///
   /// In en, this message translates to:
@@ -179,29 +161,11 @@ abstract class AppLocalizations {
   /// **'Camera is not supported on this platform.'**
   String get inventoryActionCameraUnsupported;
 
-  /// No description provided for @inventoryReceiptSelectedCamera.
-  ///
-  /// In en, this message translates to:
-  /// **'Receipt image captured.'**
-  String get inventoryReceiptSelectedCamera;
-
-  /// No description provided for @inventoryReceiptSelectedFile.
-  ///
-  /// In en, this message translates to:
-  /// **'Receipt file selected.'**
-  String get inventoryReceiptSelectedFile;
-
   /// No description provided for @inventoryReceiptSelectionFailed.
   ///
   /// In en, this message translates to:
   /// **'Could not select a receipt. Please try again.'**
   String get inventoryReceiptSelectionFailed;
-
-  /// No description provided for @inventoryReceiptAnalysisSucceeded.
-  ///
-  /// In en, this message translates to:
-  /// **'Receipt analyzed successfully.'**
-  String get inventoryReceiptAnalysisSucceeded;
 
   /// No description provided for @inventoryReceiptAnalysisFailed.
   ///
@@ -323,23 +287,11 @@ abstract class AppLocalizations {
   /// **'Apply changes'**
   String get inventoryReceiptReviewApplyItemAction;
 
-  /// No description provided for @inventoryReceiptReviewFieldId.
-  ///
-  /// In en, this message translates to:
-  /// **'ID'**
-  String get inventoryReceiptReviewFieldId;
-
   /// No description provided for @inventoryReceiptReviewFieldName.
   ///
   /// In en, this message translates to:
   /// **'Name'**
   String get inventoryReceiptReviewFieldName;
-
-  /// No description provided for @inventoryReceiptReviewFieldEntryDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Entry date'**
-  String get inventoryReceiptReviewFieldEntryDate;
 
   /// No description provided for @inventoryReceiptReviewFieldStoreName.
   ///
@@ -352,12 +304,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Quantity'**
   String get inventoryReceiptReviewFieldQuantity;
-
-  /// No description provided for @inventoryReceiptReviewFieldInitialQuantity.
-  ///
-  /// In en, this message translates to:
-  /// **'Initial quantity'**
-  String get inventoryReceiptReviewFieldInitialQuantity;
 
   /// No description provided for @inventoryReceiptReviewFieldUnitPrice.
   ///
@@ -455,24 +401,6 @@ abstract class AppLocalizations {
   /// **'Add discount row'**
   String get inventoryReceiptReviewAddDiscountAction;
 
-  /// No description provided for @inventoryReceiptReviewFieldReceiptId.
-  ///
-  /// In en, this message translates to:
-  /// **'Receipt ID'**
-  String get inventoryReceiptReviewFieldReceiptId;
-
-  /// No description provided for @inventoryReceiptReviewFieldReceiptDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Receipt date'**
-  String get inventoryReceiptReviewFieldReceiptDate;
-
-  /// No description provided for @inventoryReceiptReviewFieldLanguage.
-  ///
-  /// In en, this message translates to:
-  /// **'Language'**
-  String get inventoryReceiptReviewFieldLanguage;
-
   /// No description provided for @inventoryReceiptReviewFieldIsDeposit.
   ///
   /// In en, this message translates to:
@@ -484,18 +412,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Is discount item'**
   String get inventoryReceiptReviewFieldIsDiscount;
-
-  /// No description provided for @inventoryReceiptReviewSelectDateAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Select date'**
-  String get inventoryReceiptReviewSelectDateAction;
-
-  /// No description provided for @inventoryReceiptReviewClearDateAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear date'**
-  String get inventoryReceiptReviewClearDateAction;
 
   /// No description provided for @inventoryReceiptReviewNoDate.
   ///
@@ -551,12 +467,6 @@ abstract class AppLocalizations {
   /// **'Read as'**
   String get inventoryReceiptReviewReadAsPrefix;
 
-  /// No description provided for @inventoryReceiptReviewDetermineAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Determine'**
-  String get inventoryReceiptReviewDetermineAction;
-
   /// No description provided for @inventoryReceiptReviewCandidatesAction.
   ///
   /// In en, this message translates to:
@@ -568,24 +478,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select product'**
   String get inventoryReceiptReviewProductSelectionLabel;
-
-  /// No description provided for @inventoryReceiptReviewCreateNewProduct.
-  ///
-  /// In en, this message translates to:
-  /// **'Create new product'**
-  String get inventoryReceiptReviewCreateNewProduct;
-
-  /// No description provided for @inventoryReceiptReviewMissingProductAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Add missing item'**
-  String get inventoryReceiptReviewMissingProductAction;
-
-  /// No description provided for @inventoryReceiptReviewMissingProductHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan barcode or search manually'**
-  String get inventoryReceiptReviewMissingProductHint;
 
   /// No description provided for @inventoryReceiptReviewManualDataAction.
   ///
@@ -665,36 +557,6 @@ abstract class AppLocalizations {
   /// **'Could not save receipt items. Please try again.'**
   String get inventoryReceiptSaveFailed;
 
-  /// No description provided for @inventorySummaryTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Overview'**
-  String get inventorySummaryTitle;
-
-  /// No description provided for @inventorySummaryEntries.
-  ///
-  /// In en, this message translates to:
-  /// **'Entries'**
-  String get inventorySummaryEntries;
-
-  /// No description provided for @inventorySummaryQuantity.
-  ///
-  /// In en, this message translates to:
-  /// **'Total quantity'**
-  String get inventorySummaryQuantity;
-
-  /// No description provided for @inventorySummaryEstimatedValue.
-  ///
-  /// In en, this message translates to:
-  /// **'Estimated value'**
-  String get inventorySummaryEstimatedValue;
-
-  /// No description provided for @inventoryListSectionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Items'**
-  String get inventoryListSectionTitle;
-
   /// No description provided for @inventoryListModeByReceipt.
   ///
   /// In en, this message translates to:
@@ -766,12 +628,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'items'**
   String get inventoryReceiptGroupItems;
-
-  /// No description provided for @inventoryItemNoPrice.
-  ///
-  /// In en, this message translates to:
-  /// **'No price'**
-  String get inventoryItemNoPrice;
 
   /// No description provided for @inventoryItemDeleteAction.
   ///
@@ -868,12 +724,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Barcode search finished. The result is saved on the inventory item.'**
   String get inventoryBarcodeLookupQueued;
-
-  /// No description provided for @inventoryBarcodeRetryAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Search barcode'**
-  String get inventoryBarcodeRetryAction;
 
   /// No description provided for @inventoryBarcodeScanUnsupported.
   ///
@@ -1223,12 +1073,6 @@ abstract class AppLocalizations {
   /// **'{count} portions'**
   String preparedMealTemplatePortions(int count);
 
-  /// No description provided for @homeShoppingActionContextPlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Shopping action coming soon.'**
-  String get homeShoppingActionContextPlaceholder;
-
   /// No description provided for @shoppingListStatsEntries.
   ///
   /// In en, this message translates to:
@@ -1337,12 +1181,6 @@ abstract class AppLocalizations {
   /// **'Clear'**
   String get shoppingListClearCrossedOffConfirmAction;
 
-  /// No description provided for @homeCaloriesActionContextPlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Calories action coming soon.'**
-  String get homeCaloriesActionContextPlaceholder;
-
   /// No description provided for @caloriesAddOptionManual.
   ///
   /// In en, this message translates to:
@@ -1445,29 +1283,11 @@ abstract class AppLocalizations {
   /// **'Please sign in to manage calories.'**
   String get caloriesAuthRequired;
 
-  /// No description provided for @caloriesTodayTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Today'**
-  String get caloriesTodayTitle;
-
   /// No description provided for @caloriesTodayAction.
   ///
   /// In en, this message translates to:
   /// **'Today'**
   String get caloriesTodayAction;
-
-  /// No description provided for @caloriesPreviousDayAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Previous day'**
-  String get caloriesPreviousDayAction;
-
-  /// No description provided for @caloriesNextDayAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Next day'**
-  String get caloriesNextDayAction;
 
   /// No description provided for @caloriesSetGoalAction.
   ///
@@ -1792,12 +1612,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No entries yet.'**
   String get caloriesSectionEmptyState;
-
-  /// No description provided for @caloriesDeleteEntryAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete entry'**
-  String get caloriesDeleteEntryAction;
 
   /// No description provided for @caloriesDeleteEntryDialogTitle.
   ///
@@ -2411,12 +2225,6 @@ abstract class AppLocalizations {
   /// **'App version and information'**
   String get settingsAboutSubtitle;
 
-  /// No description provided for @appSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Yet Another Meal Tracker'**
-  String get appSubtitle;
-
   /// No description provided for @commonOr.
   ///
   /// In en, this message translates to:
@@ -2434,12 +2242,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Register'**
   String get register;
-
-  /// No description provided for @loginAsGuest.
-  ///
-  /// In en, this message translates to:
-  /// **'Login as guest'**
-  String get loginAsGuest;
 
   /// No description provided for @loginWithGoogle.
   ///
@@ -2518,18 +2320,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Forgot?'**
   String get authForgotPassword;
-
-  /// No description provided for @authSwitchToRegister.
-  ///
-  /// In en, this message translates to:
-  /// **'Don\'t have an account? Register'**
-  String get authSwitchToRegister;
-
-  /// No description provided for @authSwitchToLogin.
-  ///
-  /// In en, this message translates to:
-  /// **'Already have an account? Login'**
-  String get authSwitchToLogin;
 
   /// No description provided for @authGuestNameSetupTitle.
   ///

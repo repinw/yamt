@@ -2,23 +2,15 @@ import 'package:flutter/widgets.dart';
 
 abstract final class CaloriesPageKeys {
   static const appBarMenuButton = Key('calories_app_bar_menu_button');
-  static const appBarMenuTodayAction = Key('calories_app_bar_today_action');
-  static const appBarMenuSetGoalAction = Key(
-    'calories_app_bar_set_goal_action',
-  );
   static const appBarMenuCalculatorAction = Key(
     'calories_app_bar_calculator_action',
   );
-  static const dayBackButton = Key('calories_day_back_button');
-  static const dayTodayButton = Key('calories_day_today_button');
-  static const dayForwardButton = Key('calories_day_forward_button');
   static const weekStrip = Key('calories_week_strip');
   static const weekBufferCard = Key('calories_week_buffer_card');
   static const summaryCard = Key('calories_summary_card');
   static const reloadProgressIndicator = Key(
     'calories_reload_progress_indicator',
   );
-  static const setGoalButton = Key('calories_set_goal_button');
   static const retryButton = Key('calories_retry_button');
   static const addOptionsManualButton = Key('calories_add_options_manual');
   static const addOptionsBarcodeButton = Key('calories_add_options_barcode');
@@ -29,10 +21,6 @@ abstract final class CaloriesPageKeys {
 
   static Key entryTile(String entryId) {
     return Key('calories_entry_tile_$entryId');
-  }
-
-  static Key entryDeleteButton(String entryId) {
-    return Key('calories_entry_delete_$entryId');
   }
 
   static Key deleteRestoreCheckbox(String entryId) {
@@ -54,13 +42,11 @@ abstract final class CaloriesPageKeys {
 
 abstract final class CalorieGoalDialogKeys {
   static const valueField = Key('calorie_goal_value_field');
-  static const saveButton = Key('calorie_goal_save_button');
   static const clearButton = Key('calorie_goal_clear_button');
 }
 
 abstract final class CalorieGoalCalculatorSheetKeys {
   static const stepCounter = Key('calorie_calculator_step_counter');
-  static const sexSegment = Key('calorie_calculator_sex_segment');
   static const weightField = Key('calorie_calculator_weight_field');
   static const heightField = Key('calorie_calculator_height_field');
   static const ageField = Key('calorie_calculator_age_field');
@@ -78,20 +64,16 @@ abstract final class CalorieGoalCalculatorSheetKeys {
 
 abstract final class CalorieEntryEditorKeys {
   static const nameField = Key('calorie_entry_name_field');
-  static const mealField = Key('calorie_entry_meal_field');
   static const amountField = Key('calorie_entry_amount_field');
   static const unitField = Key('calorie_entry_unit_field');
   static const per100KcalField = Key('calorie_entry_per100_kcal_field');
   static const per100ProteinField = Key('calorie_entry_per100_protein_field');
   static const per100CarbsField = Key('calorie_entry_per100_carbs_field');
   static const per100FatField = Key('calorie_entry_per100_fat_field');
-  static const dateButton = Key('calorie_entry_date_button');
-  static const timeButton = Key('calorie_entry_time_button');
   static const saveButton = Key('calorie_entry_save_button');
 }
 
 abstract final class CalorieBarcodeScanKeys {
-  static const scannerView = Key('calorie_barcode_scanner_view');
   static const candidateSheet = Key('calorie_barcode_candidate_sheet');
   static const notFoundDialog = Key('calorie_barcode_not_found_dialog');
   static const notFoundManualButton = Key('calorie_barcode_not_found_manual');

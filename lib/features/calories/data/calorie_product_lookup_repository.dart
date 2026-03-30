@@ -68,9 +68,9 @@ FirebaseFunctions? calorieLookupFunctions(Ref ref) {
 CalorieOffLookupClient calorieOffLookupClient(Ref ref) {
   final functions = ref.watch(calorieLookupFunctionsProvider);
   if (functions == null) {
-    return const UnavailableCalorieOffLookupClient();
+    return const _UnavailableCalorieOffLookupClient();
   }
-  return FirebaseCallableCalorieOffLookupClient(functions: functions);
+  return _FirebaseCallableCalorieOffLookupClient(functions: functions);
 }
 
 @riverpod
@@ -108,8 +108,9 @@ class CalorieOffLookupResult {
     : this._(status: CalorieOffLookupStatus.failed, errorCode: errorCode);
 }
 
-class FirebaseCallableCalorieOffLookupClient implements CalorieOffLookupClient {
-  const FirebaseCallableCalorieOffLookupClient({
+class _FirebaseCallableCalorieOffLookupClient
+    implements CalorieOffLookupClient {
+  const _FirebaseCallableCalorieOffLookupClient({
     required FirebaseFunctions functions,
   }) : _functions = functions;
 
@@ -211,8 +212,8 @@ class FirebaseCallableCalorieOffLookupClient implements CalorieOffLookupClient {
   }
 }
 
-class UnavailableCalorieOffLookupClient implements CalorieOffLookupClient {
-  const UnavailableCalorieOffLookupClient();
+class _UnavailableCalorieOffLookupClient implements CalorieOffLookupClient {
+  const _UnavailableCalorieOffLookupClient();
 
   @override
   Future<CalorieOffLookupResult> lookupByBarcode(String barcode) async {

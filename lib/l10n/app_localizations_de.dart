@@ -9,12 +9,6 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
-  String get welcomeTitle => 'Willkommen';
-
-  @override
-  String get homeTitle => 'Startseite';
-
-  @override
   String get homeInventory => 'Vorrat';
 
   @override
@@ -33,9 +27,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeQuickActionTooltip => 'Schnellaktion';
 
   @override
-  String get homeQuickActionTapped => 'Schnellaktion ausgeführt';
-
-  @override
   String get inventoryFabTooltip => 'Belegaktionen';
 
   @override
@@ -51,16 +42,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryActionCameraUnsupported => 'Kamera wird auf dieser Plattform nicht unterstützt.';
 
   @override
-  String get inventoryReceiptSelectedCamera => 'Belegbild aufgenommen.';
-
-  @override
-  String get inventoryReceiptSelectedFile => 'Belegdatei ausgewählt.';
-
-  @override
   String get inventoryReceiptSelectionFailed => 'Beleg konnte nicht ausgewählt werden. Bitte erneut versuchen.';
-
-  @override
-  String get inventoryReceiptAnalysisSucceeded => 'Beleg erfolgreich analysiert.';
 
   @override
   String get inventoryReceiptAnalysisFailed => 'Beleganalyse fehlgeschlagen. Bitte erneut versuchen.';
@@ -125,22 +107,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewApplyItemAction => 'Änderungen übernehmen';
 
   @override
-  String get inventoryReceiptReviewFieldId => 'ID';
-
-  @override
   String get inventoryReceiptReviewFieldName => 'Name';
-
-  @override
-  String get inventoryReceiptReviewFieldEntryDate => 'Erfassungsdatum';
 
   @override
   String get inventoryReceiptReviewFieldStoreName => 'Geschäft';
 
   @override
   String get inventoryReceiptReviewFieldQuantity => 'Menge';
-
-  @override
-  String get inventoryReceiptReviewFieldInitialQuantity => 'Anfangsmenge';
 
   @override
   String get inventoryReceiptReviewFieldUnitPrice => 'Stückpreis';
@@ -191,25 +164,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewAddDiscountAction => 'Rabattzeile hinzufügen';
 
   @override
-  String get inventoryReceiptReviewFieldReceiptId => 'Beleg-ID';
-
-  @override
-  String get inventoryReceiptReviewFieldReceiptDate => 'Belegdatum';
-
-  @override
-  String get inventoryReceiptReviewFieldLanguage => 'Sprache';
-
-  @override
   String get inventoryReceiptReviewFieldIsDeposit => 'Ist Pfandartikel';
 
   @override
   String get inventoryReceiptReviewFieldIsDiscount => 'Ist Rabattposition';
-
-  @override
-  String get inventoryReceiptReviewSelectDateAction => 'Datum wählen';
-
-  @override
-  String get inventoryReceiptReviewClearDateAction => 'Datum löschen';
 
   @override
   String get inventoryReceiptReviewNoDate => 'Kein Datum';
@@ -239,22 +197,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewReadAsPrefix => 'Gelesen als';
 
   @override
-  String get inventoryReceiptReviewDetermineAction => 'Ermitteln';
-
-  @override
   String get inventoryReceiptReviewCandidatesAction => 'Kandidaten';
 
   @override
   String get inventoryReceiptReviewProductSelectionLabel => 'Produkt auswählen';
-
-  @override
-  String get inventoryReceiptReviewCreateNewProduct => 'Neues Produkt anlegen';
-
-  @override
-  String get inventoryReceiptReviewMissingProductAction => 'Fehlenden Artikel hinzufügen';
-
-  @override
-  String get inventoryReceiptReviewMissingProductHint => 'Barcode scannen oder manuell suchen';
 
   @override
   String get inventoryReceiptReviewManualDataAction => 'Barcode und Nährwerte eintragen';
@@ -296,21 +242,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptSaveFailed => 'Positionen konnten nicht gespeichert werden.';
 
   @override
-  String get inventorySummaryTitle => 'Übersicht';
-
-  @override
-  String get inventorySummaryEntries => 'Positionen';
-
-  @override
-  String get inventorySummaryQuantity => 'Gesamtmenge';
-
-  @override
-  String get inventorySummaryEstimatedValue => 'Geschätzter Wert';
-
-  @override
-  String get inventoryListSectionTitle => 'Artikel';
-
-  @override
   String get inventoryListModeByReceipt => 'Nach Beleg';
 
   @override
@@ -345,9 +276,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryReceiptGroupItems => 'Artikel';
-
-  @override
-  String get inventoryItemNoPrice => 'Kein Preis';
 
   @override
   String get inventoryItemDeleteAction => 'Löschen';
@@ -396,9 +324,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryBarcodeLookupQueued => 'Barcode-Suche wurde ausgeführt. Ergebnis steht direkt im Inventar-Item.';
-
-  @override
-  String get inventoryBarcodeRetryAction => 'Barcode suchen';
 
   @override
   String get inventoryBarcodeScanUnsupported => 'Barcode-Scan wird aktuell auf Android und iOS unterstützt.';
@@ -585,9 +510,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get homeShoppingActionContextPlaceholder => 'Einkaufsaktion folgt bald.';
-
-  @override
   String get shoppingListStatsEntries => 'Positionen';
 
   @override
@@ -644,9 +566,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shoppingListClearCrossedOffConfirmAction => 'Löschen';
 
   @override
-  String get homeCaloriesActionContextPlaceholder => 'Kalorienaktion folgt bald.';
-
-  @override
   String get caloriesAddOptionManual => 'Manueller Eintrag';
 
   @override
@@ -698,16 +617,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesAuthRequired => 'Bitte melde dich an, um Kalorien zu verwalten.';
 
   @override
-  String get caloriesTodayTitle => 'Heute';
-
-  @override
   String get caloriesTodayAction => 'Heute';
-
-  @override
-  String get caloriesPreviousDayAction => 'Vorheriger Tag';
-
-  @override
-  String get caloriesNextDayAction => 'Nächster Tag';
 
   @override
   String get caloriesSetGoalAction => 'Ziel setzen';
@@ -878,9 +788,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesSectionEmptyState => 'Noch keine Einträge.';
-
-  @override
-  String get caloriesDeleteEntryAction => 'Eintrag löschen';
 
   @override
   String get caloriesDeleteEntryDialogTitle => 'Eintrag löschen?';
@@ -1195,9 +1102,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsAboutSubtitle => 'App-Version und Informationen';
 
   @override
-  String get appSubtitle => 'Yet Another Meal Tracker';
-
-  @override
   String get commonOr => 'Oder';
 
   @override
@@ -1205,9 +1109,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get register => 'Registrieren';
-
-  @override
-  String get loginAsGuest => 'Als Gast anmelden';
 
   @override
   String get loginWithGoogle => 'Mit Google anmelden';
@@ -1247,12 +1148,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get authForgotPassword => 'Passwort vergessen?';
-
-  @override
-  String get authSwitchToRegister => 'Noch kein Konto? Registrieren';
-
-  @override
-  String get authSwitchToLogin => 'Bereits ein Konto? Login';
 
   @override
   String get authGuestNameSetupTitle => 'Name festlegen';

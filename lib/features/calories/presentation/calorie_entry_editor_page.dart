@@ -316,7 +316,6 @@ class _CalorieEntryEditorPageState
                 ),
                 const SizedBox(height: AppSpacing.md),
                 DropdownButtonFormField<MealType>(
-                  key: CalorieEntryEditorKeys.mealField,
                   initialValue: _mealType,
                   decoration: InputDecoration(
                     labelText: l10n.caloriesEntryMealLabel,
@@ -445,7 +444,6 @@ class _CalorieEntryEditorPageState
                   children: <Widget>[
                     Expanded(
                       child: OutlinedButton.icon(
-                        key: CalorieEntryEditorKeys.dateButton,
                         onPressed: () => _pickDate(context),
                         icon: const Icon(Icons.calendar_today_outlined),
                         label: Text(
@@ -458,7 +456,6 @@ class _CalorieEntryEditorPageState
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: OutlinedButton.icon(
-                        key: CalorieEntryEditorKeys.timeButton,
                         onPressed: () => _pickTime(context),
                         icon: const Icon(Icons.access_time_outlined),
                         label: Text(

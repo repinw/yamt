@@ -46,7 +46,6 @@ Future<void> showCalorieGoalDialog({
                 child: Text(l10n.inventoryReceiptReviewCancelAction),
               ),
               FilledButton(
-                key: CalorieGoalDialogKeys.saveButton,
                 onPressed: () {
                   parsedGoal = double.tryParse(
                     controller.text.trim().replaceAll(',', '.'),

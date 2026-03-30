@@ -3,14 +3,6 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 
-typedef ShoppingListAddItem =
-    Future<bool> Function({
-      required String name,
-      String? brand,
-      int quantity,
-      double estimatedUnitPrice,
-    });
-
 typedef ShoppingListItemMatchKey = ({
   String normalizedName,
   String normalizedBrand,
@@ -58,13 +50,26 @@ final isInventoryItemInActiveShoppingListProvider =
     });
 
 class ShoppingListFacade {
-  const ShoppingListFacade({required ShoppingListAddItem addItem})
-    : _addItem = addItem;
+  const ShoppingListFacade({
+    required Future<bool> Function({
+      required String name,
+      String? brand,
+      int quantity,
+      double estimatedUnitPrice,
+    })
+    addItem,
+  }) : _addItem = addItem;
 
-  final ShoppingListAddItem _addItem;
+  final Future<bool> Function({
+    required String name,
+    String? brand,
+    int quantity,
+    double estimatedUnitPrice,
+  })
+  _addItem;
 
   Future<bool> addInventoryItem(InventoryItem item) {
-    final quantity = normalizeInventoryQuantityForShopping(
+    final quantity = _normalizeInventoryQuantityForShopping(
       item.initialQuantity,
     );
     return _addItem(
@@ -86,7 +91,7 @@ class ShoppingListFacade {
   }
 }
 
-int normalizeInventoryQuantityForShopping(int initialQuantity) {
+int _normalizeInventoryQuantityForShopping(int initialQuantity) {
   return initialQuantity > 0 ? initialQuantity : 1;
 }
 
@@ -108,7 +113,7 @@ Set<ShoppingListItemMatchKey> computeActiveShoppingListItemKeys(
       .toSet();
 }
 
-ShoppingListItemMatchKey? inventoryItemMatchKey(InventoryItem item) {
+ShoppingListItemMatchKey? _inventoryItemMatchKey(InventoryItem item) {
   final normalizedName = normalizeShoppingListValue(item.name);
   if (normalizedName.isEmpty) {
     return null;
@@ -125,7 +130,7 @@ bool isInventoryItemInActiveShoppingList({
     return false;
   }
 
-  final key = inventoryItemMatchKey(item);
+  final key = _inventoryItemMatchKey(item);
   if (key == null) {
     return false;
   }

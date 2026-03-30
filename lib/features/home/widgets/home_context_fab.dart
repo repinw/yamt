@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/home/home_tab_page.dart';
 import 'package:yamt/features/home/widgets/home_inventory_fab_flow.dart';
+import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_add_options_sheet.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';

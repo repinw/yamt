@@ -8,8 +8,8 @@ class InventorySortedItemsCache {
 
   factory InventorySortedItemsCache.fromItems(List<InventoryItem> items) {
     return InventorySortedItemsCache(
-      signature: inventorySortSignature(items),
-      sortedItemIds: sortedInventoryItemIds(items),
+      signature: _inventorySortSignature(items),
+      sortedItemIds: _sortedInventoryItemIds(items),
     );
   }
 
@@ -17,7 +17,7 @@ class InventorySortedItemsCache {
   final List<String> sortedItemIds;
 
   InventorySortedItemsCache update(List<InventoryItem> items) {
-    final nextSignature = inventorySortSignature(items);
+    final nextSignature = _inventorySortSignature(items);
     if (nextSignature == signature) {
       return this;
     }
@@ -43,17 +43,17 @@ class InventorySortedItemsCache {
 
 List<InventoryItem> sortInventoryItems(List<InventoryItem> source) {
   final sorted = List<InventoryItem>.from(source)
-    ..sort(compareInventoryItemSortOrder);
+    ..sort(_compareInventoryItemSortOrder);
   return sorted;
 }
 
-List<String> sortedInventoryItemIds(List<InventoryItem> source) {
+List<String> _sortedInventoryItemIds(List<InventoryItem> source) {
   return sortInventoryItems(
     source,
   ).map((item) => item.id).toList(growable: false);
 }
 
-int compareInventoryItemSortOrder(InventoryItem a, InventoryItem b) {
+int _compareInventoryItemSortOrder(InventoryItem a, InventoryItem b) {
   final nameCompare = a.name.toLowerCase().compareTo(b.name.toLowerCase());
   if (nameCompare != 0) {
     return nameCompare;
@@ -67,7 +67,7 @@ int compareInventoryItemSortOrder(InventoryItem a, InventoryItem b) {
   return a.id.compareTo(b.id);
 }
 
-String inventorySortSignature(List<InventoryItem> items) {
+String _inventorySortSignature(List<InventoryItem> items) {
   final buffer = StringBuffer()..write(items.length);
 
   for (final item in items) {

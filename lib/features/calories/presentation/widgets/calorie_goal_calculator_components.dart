@@ -64,7 +64,6 @@ class CalorieGoalCalculatorSexSegmentedControl extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return SegmentedButton<CalorieCalculatorSex>(
-      key: CalorieGoalCalculatorSheetKeys.sexSegment,
       showSelectedIcon: false,
       segments: <ButtonSegment<CalorieCalculatorSex>>[
         ButtonSegment<CalorieCalculatorSex>(

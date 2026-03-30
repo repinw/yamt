@@ -17,10 +17,6 @@ abstract final class AppInsets {
 
   static const EdgeInsets page = EdgeInsets.all(AppSpacing.xl);
   static const EdgeInsets pageLarge = EdgeInsets.all(AppSpacing.xxxl);
-  static const EdgeInsets authPage = EdgeInsets.symmetric(
-    horizontal: AppSpacing.xxxxl,
-    vertical: AppSpacing.md,
-  );
   static const EdgeInsets card = EdgeInsets.all(AppSpacing.xl);
   static const EdgeInsets listVertical = EdgeInsets.symmetric(
     vertical: AppSpacing.xl,

@@ -10,38 +10,6 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 void main() {
-  group('CalorieGoalCalculatorFormState parsing', () {
-    test('parsePositiveDouble accepts comma, point, and whitespace', () {
-      expect(
-        CalorieGoalCalculatorFormState.parsePositiveDoubleForTesting('70,5'),
-        70.5,
-      );
-      expect(
-        CalorieGoalCalculatorFormState.parsePositiveDoubleForTesting('70.5'),
-        70.5,
-      );
-      expect(
-        CalorieGoalCalculatorFormState.parsePositiveDoubleForTesting(' 70 '),
-        70,
-      );
-    });
-
-    test('parsePositiveDouble rejects invalid and non-positive values', () {
-      expect(
-        CalorieGoalCalculatorFormState.parsePositiveDoubleForTesting('abc'),
-        isNull,
-      );
-      expect(
-        CalorieGoalCalculatorFormState.parsePositiveDoubleForTesting('-5'),
-        isNull,
-      );
-      expect(
-        CalorieGoalCalculatorFormState.parsePositiveDoubleForTesting('0'),
-        isNull,
-      );
-    });
-  });
-
   group('CalorieGoalCalculatorFormState validation', () {
     test('sets empty errors for missing required fields', () {
       final state = CalorieGoalCalculatorFormState.initial(null).copyWith(

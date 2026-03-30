@@ -8,7 +8,6 @@ class ShoppingListStatsCardKeys {
 
   static const entriesValue = Key('shopping_list_stats_entries_value');
   static const quantityValue = Key('shopping_list_stats_quantity_value');
-  static const estimatedValue = Key('shopping_list_stats_estimated_value');
 }
 
 class ShoppingListStatsCard extends StatelessWidget {
@@ -56,7 +55,6 @@ class ShoppingListStatsCard extends StatelessWidget {
             _ShoppingStatRow(
               label: l10n.shoppingListStatsEstimatedTotal,
               value: currency.format(estimatedTotal),
-              valueKey: ShoppingListStatsCardKeys.estimatedValue,
             ),
           ],
         ),

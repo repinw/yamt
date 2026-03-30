@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/config/ai_processing_level.dart';
+import 'package:yamt/core/config/ai_processing_level_controller.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/settings/provider/ai_processing_level_controller.dart';
 
 class _FakeAppPreferences implements AppPreferences {
   _FakeAppPreferences({Map<String, Object>? initialValues})

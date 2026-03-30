@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_nutrition_ocr_repository.dart';
@@ -42,8 +44,87 @@ CalorieProductProfile _profile({
   );
 }
 
+class _FakeMobileScannerPlatform extends MobileScannerPlatform {
+  _FakeMobileScannerPlatform();
+
+  final StreamController<BarcodeCapture?> _barcodeController =
+      StreamController<BarcodeCapture?>.broadcast();
+  final StreamController<TorchState> _torchController =
+      StreamController<TorchState>.broadcast();
+  final StreamController<double> _zoomController =
+      StreamController<double>.broadcast();
+
+  @override
+  Stream<BarcodeCapture?> get barcodesStream => _barcodeController.stream;
+
+  @override
+  Stream<TorchState> get torchStateStream => _torchController.stream;
+
+  @override
+  Stream<double> get zoomScaleStateStream => _zoomController.stream;
+
+  @override
+  Widget buildCameraView() {
+    return const SizedBox.expand();
+  }
+
+  @override
+  Future<Set<CameraLensType>> getSupportedLenses() async {
+    return <CameraLensType>{CameraLensType.any};
+  }
+
+  @override
+  Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
+    return const MobileScannerViewAttributes(
+      cameraDirection: CameraFacing.back,
+      currentTorchMode: TorchState.off,
+      size: Size(1080, 1920),
+      initialDeviceOrientation: DeviceOrientation.portraitUp,
+    );
+  }
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> pause() async {}
+
+  @override
+  Future<void> toggleTorch() async {}
+
+  @override
+  Future<void> resetZoomScale() async {}
+
+  @override
+  Future<void> setZoomScale(double zoomScale) async {}
+
+  @override
+  Future<void> setFocusPoint(Offset position) async {}
+
+  @override
+  Future<void> updateScanWindow(Rect? window) async {}
+
+  @override
+  Future<void> dispose() async {
+    // The real controller awaits platform.dispose() during widget teardown.
+    // Closing the backing streams here can deadlock while listeners are
+    // still attached, so test cleanup shuts them down explicitly later.
+  }
+
+  Future<void> shutdown() async {
+    await _barcodeController.close();
+    await _torchController.close();
+    await _zoomController.close();
+  }
+
+  void emitBarcode(String rawValue) {
+    _barcodeController.add(
+      BarcodeCapture(barcodes: <Barcode>[Barcode(rawValue: rawValue)]),
+    );
+  }
+}
+
 Widget _buildHarness({
-  required Stream<String> barcodeStream,
   required FakeCalorieProductLookupRepository lookupRepository,
   required FakeCalorieNutritionOcrRepository ocrRepository,
 }) {
@@ -53,10 +134,7 @@ Widget _buildHarness({
       GoRoute(
         path: AppRoutes.homeCaloriesBarcodeScan,
         builder: (context, state) {
-          return CalorieBarcodeScanPage(
-            barcodeStreamForTesting: barcodeStream,
-            showScannerPreview: false,
-          );
+          return const CalorieBarcodeScanPage();
         },
       ),
       GoRoute(
@@ -94,12 +172,27 @@ Future<void> _pumpUi(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 400));
 }
 
+void _installFakeScannerPlatform(WidgetTester tester) {
+  final previousPlatform = MobileScannerPlatform.instance;
+  final fakePlatform = _FakeMobileScannerPlatform();
+  MobileScannerPlatform.instance = fakePlatform;
+  addTearDown(() async {
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    MobileScannerPlatform.instance = previousPlatform;
+    await fakePlatform.shutdown();
+  });
+}
+
+_FakeMobileScannerPlatform _fakeScannerPlatform() {
+  return MobileScannerPlatform.instance as _FakeMobileScannerPlatform;
+}
+
 void main() {
   testWidgets('ignores queued barcode callback after page disposal', (
     tester,
   ) async {
-    final streamController = StreamController<String>();
-    addTearDown(streamController.close);
+    _installFakeScannerPlatform(tester);
 
     final lookupRepository = FakeCalorieProductLookupRepository(
       onLookupByBarcode: (_) async => const CalorieLookupOutcome.notFound(),
@@ -112,14 +205,13 @@ void main() {
 
     await tester.pumpWidget(
       _buildHarness(
-        barcodeStream: streamController.stream,
         lookupRepository: lookupRepository,
         ocrRepository: ocrRepository,
       ),
     );
     await _pumpUi(tester);
 
-    streamController.add('4006381333931');
+    _fakeScannerPlatform().emitBarcode('4006381333931');
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
 
@@ -131,9 +223,7 @@ void main() {
   ) async {
     await tester.binding.setSurfaceSize(const Size(800, 1200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    final streamController = StreamController<String>();
-    addTearDown(streamController.close);
+    _installFakeScannerPlatform(tester);
 
     final first = _profile(
       barcode: '4006381333931',
@@ -161,14 +251,13 @@ void main() {
 
     await tester.pumpWidget(
       _buildHarness(
-        barcodeStream: streamController.stream,
         lookupRepository: lookupRepository,
         ocrRepository: ocrRepository,
       ),
     );
     await _pumpUi(tester);
 
-    streamController.add('4006381333931');
+    _fakeScannerPlatform().emitBarcode('4006381333931');
     await _pumpUi(tester);
 
     expect(find.byKey(CalorieBarcodeScanKeys.candidateSheet), findsOneWidget);
@@ -179,9 +268,7 @@ void main() {
   ) async {
     await tester.binding.setSurfaceSize(const Size(800, 1200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    final streamController = StreamController<String>();
-    addTearDown(streamController.close);
+    _installFakeScannerPlatform(tester);
 
     final first = _profile(
       barcode: '4006381333931',
@@ -202,14 +289,13 @@ void main() {
 
     await tester.pumpWidget(
       _buildHarness(
-        barcodeStream: streamController.stream,
         lookupRepository: lookupRepository,
         ocrRepository: ocrRepository,
       ),
     );
     await _pumpUi(tester);
 
-    streamController.add('4006381333931');
+    _fakeScannerPlatform().emitBarcode('4006381333931');
     await _pumpUi(tester);
     await tester.pump(const Duration(milliseconds: 1200));
 
@@ -258,9 +344,7 @@ void main() {
   ) async {
     await tester.binding.setSurfaceSize(const Size(800, 1200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    final streamController = StreamController<String>();
-    addTearDown(streamController.close);
+    _installFakeScannerPlatform(tester);
 
     final lookupRepository = FakeCalorieProductLookupRepository(
       onLookupByBarcode: (_) async => const CalorieLookupOutcome.notFound(),
@@ -273,14 +357,13 @@ void main() {
 
     await tester.pumpWidget(
       _buildHarness(
-        barcodeStream: streamController.stream,
         lookupRepository: lookupRepository,
         ocrRepository: ocrRepository,
       ),
     );
     await _pumpUi(tester);
 
-    streamController.add('4006381333931');
+    _fakeScannerPlatform().emitBarcode('4006381333931');
     await _pumpUi(tester);
 
     expect(find.byKey(CalorieBarcodeScanKeys.notFoundDialog), findsOneWidget);
@@ -295,9 +378,7 @@ void main() {
   ) async {
     await tester.binding.setSurfaceSize(const Size(800, 1200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    final streamController = StreamController<String>();
-    addTearDown(streamController.close);
+    _installFakeScannerPlatform(tester);
 
     final ocrProfile = _profile(
       barcode: '4006381333931',
@@ -316,14 +397,13 @@ void main() {
 
     await tester.pumpWidget(
       _buildHarness(
-        barcodeStream: streamController.stream,
         lookupRepository: lookupRepository,
         ocrRepository: ocrRepository,
       ),
     );
     await _pumpUi(tester);
 
-    streamController.add('4006381333931');
+    _fakeScannerPlatform().emitBarcode('4006381333931');
     await _pumpUi(tester);
 
     await tester.tap(find.byKey(CalorieBarcodeScanKeys.notFoundOcrButton));

@@ -27,9 +27,6 @@ const _functionsEmulatorPort = int.fromEnvironment(
   defaultValue: 5001,
 );
 
-typedef ResolveInventoryItemCallable =
-    Future<Map<String, dynamic>?> Function(Map<String, dynamic> payload);
-
 abstract interface class CalorieBarcodeBackfillUserSession {
   String? get currentUserId;
 }
@@ -39,14 +36,16 @@ class FirestoreCalorieBarcodeBackfillRepository
   FirestoreCalorieBarcodeBackfillRepository({
     required CalorieBarcodeBackfillUserSession session,
     FirebaseFunctions? functions,
-    ResolveInventoryItemCallable? resolveInventoryItemCallable,
+    Future<Map<String, dynamic>?> Function(Map<String, dynamic> payload)?
+    resolveInventoryItemCallable,
   }) : _session = session,
        _functions = functions,
        _resolveInventoryItemCallable = resolveInventoryItemCallable;
 
   final CalorieBarcodeBackfillUserSession _session;
   final FirebaseFunctions? _functions;
-  final ResolveInventoryItemCallable? _resolveInventoryItemCallable;
+  final Future<Map<String, dynamic>?> Function(Map<String, dynamic> payload)?
+  _resolveInventoryItemCallable;
 
   @override
   Future<bool> enqueueFingerprintLookup({

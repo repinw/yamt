@@ -7,8 +7,6 @@ import 'receipt_item_editor_discount_rows_field.dart';
 import 'receipt_item_editor_form_field_metadata.dart';
 import 'receipt_item_editor_weight_unit_fallback_option.dart';
 
-typedef ReceiptItemEditorTextValidator = String? Function(String? value);
-
 class ReceiptItemEditorFormSection extends StatelessWidget {
   const ReceiptItemEditorFormSection({
     super.key,
@@ -21,8 +19,8 @@ class ReceiptItemEditorFormSection extends StatelessWidget {
   });
 
   final VoidCallback onSubmit;
-  final ReceiptItemEditorTextValidator numberValidator;
-  final ReceiptItemEditorTextValidator weightValidator;
+  final String? Function(String? value) numberValidator;
+  final String? Function(String? value) weightValidator;
   final List<MapEntry<String, String>> initialDiscountEntries;
   final ValueChanged<List<MapEntry<String, String>>> onDiscountEntriesChanged;
   final String? discountsErrorText;
@@ -81,8 +79,8 @@ class _ReceiptEditorTextFieldsGroup extends StatelessWidget {
   });
 
   final List<ReceiptItemEditorDraftField> fields;
-  final ReceiptItemEditorTextValidator numberValidator;
-  final ReceiptItemEditorTextValidator weightValidator;
+  final String? Function(String? value) numberValidator;
+  final String? Function(String? value) weightValidator;
   final VoidCallback onSubmit;
 
   @override
@@ -96,7 +94,6 @@ class _ReceiptEditorTextFieldsGroup extends StatelessWidget {
             field: field,
             label: field.labelText(l10n),
             keyboardType: field.keyboardType,
-            hintText: field.hintText(l10n),
             validator: _validatorFor(field),
             onSubmitted: onSubmit,
           ),
@@ -104,7 +101,7 @@ class _ReceiptEditorTextFieldsGroup extends StatelessWidget {
     );
   }
 
-  ReceiptItemEditorTextValidator? _validatorFor(
+  String? Function(String? value)? _validatorFor(
     ReceiptItemEditorDraftField field,
   ) {
     return switch (field) {
@@ -121,7 +118,6 @@ class _ReceiptEditorTextField extends StatelessWidget {
     required this.field,
     required this.label,
     required this.keyboardType,
-    required this.hintText,
     required this.validator,
     required this.onSubmitted,
   });
@@ -129,8 +125,7 @@ class _ReceiptEditorTextField extends StatelessWidget {
   final ReceiptItemEditorDraftField field;
   final String label;
   final TextInputType? keyboardType;
-  final String? hintText;
-  final ReceiptItemEditorTextValidator? validator;
+  final String? Function(String? value)? validator;
   final VoidCallback onSubmitted;
 
   @override
@@ -147,7 +142,7 @@ class _ReceiptEditorTextField extends StatelessWidget {
         onSubmitted: (_) => onSubmitted(),
         onChanged: (_) => _revalidateLinkedFields(context),
         validator: validator,
-        decoration: InputDecoration(labelText: label, hintText: hintText),
+        decoration: InputDecoration(labelText: label),
       ),
     );
   }
