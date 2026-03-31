@@ -1,4 +1,4 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
@@ -7,32 +7,21 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart'
     show InventoryAmountUnit, InventoryAmountUnitCode;
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
-part 'prepared_meal_calorie_log_bridge.g.dart';
+final preparedMealCalorieLogBridgeProvider =
+    Provider<PreparedMealCalorieLogBridge>((ref) {
+      return PreparedMealCalorieLogBridge(
+        saveEntry: (entry) {
+          return ref
+              .read(calorieEntriesControllerProvider.notifier)
+              .saveEntry(entry);
+        },
+        now: DateTime.now,
+      );
+    });
 
 /// Bridges prepared-meal consumption into the calorie diary domain.
-abstract interface class PreparedMealCalorieLogBridge {
-  Future<bool> logConsumedPreparedMeal({
-    required PreparedMeal meal,
-    required int consumedPortions,
-    required MealType mealType,
-  });
-}
-
-@riverpod
-PreparedMealCalorieLogBridge preparedMealCalorieLogBridge(Ref ref) {
-  return _RepositoryPreparedMealCalorieLogBridge(
-    saveEntry: (entry) {
-      return ref.read(calorieEntriesControllerProvider.notifier).saveEntry(
-        entry,
-      );
-    },
-    now: DateTime.now,
-  );
-}
-
-class _RepositoryPreparedMealCalorieLogBridge
-    implements PreparedMealCalorieLogBridge {
-  _RepositoryPreparedMealCalorieLogBridge({
+class PreparedMealCalorieLogBridge {
+  PreparedMealCalorieLogBridge({
     required Future<bool> Function(CalorieEntry entry) saveEntry,
     required DateTime Function() now,
   }) : _saveEntry = saveEntry,
@@ -43,7 +32,6 @@ class _RepositoryPreparedMealCalorieLogBridge
   final Future<bool> Function(CalorieEntry entry) _saveEntry;
   final DateTime Function() _now;
 
-  @override
   Future<bool> logConsumedPreparedMeal({
     required PreparedMeal meal,
     required int consumedPortions,

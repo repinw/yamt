@@ -7,6 +7,7 @@ import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
+import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 
 part 'inventory_items_controller.g.dart';
 
@@ -376,7 +377,10 @@ class InventoryItemsController extends _$InventoryItemsController {
   }
 
   Future<bool> buyAgainItem(InventoryItem item) {
-    return ref.read(shoppingListFacadeProvider).addInventoryItem(item);
+    return addInventoryItemToShoppingList(
+      item: item,
+      addItem: ref.read(shoppingListControllerProvider.notifier).addItem,
+    );
   }
 
   Future<PendingInventoryConsumption?> stagePendingConsumption(

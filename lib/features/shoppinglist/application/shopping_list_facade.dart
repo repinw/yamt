@@ -8,25 +8,13 @@ typedef ShoppingListItemMatchKey = ({
   String normalizedBrand,
 });
 
-final shoppingListFacadeProvider = Provider<ShoppingListFacade>((ref) {
-  final controller = ref.read(shoppingListControllerProvider.notifier);
-  return ShoppingListFacade(
-    addItem:
-        ({
-          required String name,
-          String? brand,
-          int quantity = 1,
-          double estimatedUnitPrice = 0.0,
-        }) {
-          return controller.addItem(
-            name: name,
-            brand: brand,
-            quantity: quantity,
-            estimatedUnitPrice: estimatedUnitPrice,
-          );
-        },
-  );
-});
+typedef ShoppingListAddItem =
+    Future<bool> Function({
+      required String name,
+      String? brand,
+      int quantity,
+      double estimatedUnitPrice,
+    });
 
 final activeShoppingListItemKeysProvider =
     Provider<Set<ShoppingListItemMatchKey>>((ref) {
@@ -49,46 +37,17 @@ final isInventoryItemInActiveShoppingListProvider =
       );
     });
 
-class ShoppingListFacade {
-  const ShoppingListFacade({
-    required Future<bool> Function({
-      required String name,
-      String? brand,
-      int quantity,
-      double estimatedUnitPrice,
-    })
-    addItem,
-  }) : _addItem = addItem;
-
-  final Future<bool> Function({
-    required String name,
-    String? brand,
-    int quantity,
-    double estimatedUnitPrice,
-  })
-  _addItem;
-
-  Future<bool> addInventoryItem(InventoryItem item) {
-    final quantity = _normalizeInventoryQuantityForShopping(
-      item.initialQuantity,
-    );
-    return _addItem(
-      name: item.name,
-      brand: item.brand,
-      quantity: quantity,
-      estimatedUnitPrice: item.unitPrice,
-    );
-  }
-
-  bool isInventoryItemInActiveList({
-    required InventoryItem item,
-    required Set<ShoppingListItemMatchKey> activeItemKeys,
-  }) {
-    return isInventoryItemInActiveShoppingList(
-      item: item,
-      activeItemKeys: activeItemKeys,
-    );
-  }
+Future<bool> addInventoryItemToShoppingList({
+  required InventoryItem item,
+  required ShoppingListAddItem addItem,
+}) {
+  final quantity = _normalizeInventoryQuantityForShopping(item.initialQuantity);
+  return addItem(
+    name: item.name,
+    brand: item.brand,
+    quantity: quantity,
+    estimatedUnitPrice: item.unitPrice,
+  );
 }
 
 int _normalizeInventoryQuantityForShopping(int initialQuantity) {

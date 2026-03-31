@@ -6,7 +6,7 @@ import 'package:yamt/features/inventory/provider/inventory_items_controller.dart
 
 final inventoryBackedCalorieEntrySaveFlowProvider =
     Provider<InventoryBackedCalorieEntrySaveFlow>((ref) {
-      return _ProviderBackedInventoryCalorieEntrySaveFlow(
+      return InventoryBackedCalorieEntrySaveFlow(
         inventoryController: ref.read(
           inventoryItemsControllerProvider.notifier,
         ),
@@ -14,16 +14,8 @@ final inventoryBackedCalorieEntrySaveFlowProvider =
       );
     });
 
-abstract interface class InventoryBackedCalorieEntrySaveFlow {
-  Future<bool> saveEntry({
-    required CalorieEntry entry,
-    required String pendingConsumptionId,
-  });
-}
-
-class _ProviderBackedInventoryCalorieEntrySaveFlow
-    implements InventoryBackedCalorieEntrySaveFlow {
-  const _ProviderBackedInventoryCalorieEntrySaveFlow({
+class InventoryBackedCalorieEntrySaveFlow {
+  const InventoryBackedCalorieEntrySaveFlow({
     required InventoryItemsController inventoryController,
     required InventoryCalorieEntryCommitStore commitStore,
   }) : _inventoryController = inventoryController,
@@ -32,7 +24,6 @@ class _ProviderBackedInventoryCalorieEntrySaveFlow
   final InventoryItemsController _inventoryController;
   final InventoryCalorieEntryCommitStore _commitStore;
 
-  @override
   Future<bool> saveEntry({
     required CalorieEntry entry,
     required String pendingConsumptionId,
