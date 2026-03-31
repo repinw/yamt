@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
+import 'package:yamt/features/shoppinglist/application/'
+    'shopping_list_operations.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
 InventoryItem _inventoryItem({

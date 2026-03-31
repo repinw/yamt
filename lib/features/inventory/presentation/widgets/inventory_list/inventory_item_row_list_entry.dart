@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row.dart';
-import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
+import 'package:yamt/features/shoppinglist/application/'
+    'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryItemRowListEntry extends StatelessWidget {

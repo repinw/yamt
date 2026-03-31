@@ -24,7 +24,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_groups_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
-import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
+import 'package:yamt/features/shoppinglist/application/'
+    'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryList extends ConsumerStatefulWidget {

@@ -5,7 +5,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
-import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
+import 'package:yamt/features/shoppinglist/application/'
+    'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class ReceiptGroupTile extends StatefulWidget {

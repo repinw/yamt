@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 
 class _FakeFridgeItemRepository implements InventoryItemRepository {
   _FakeFridgeItemRepository({required this.onReadAll});
@@ -90,6 +92,32 @@ class _FakeFridgeItemRepository implements InventoryItemRepository {
 
   void enqueueSaveError(Object error) {
     _saveErrors.add(error);
+  }
+}
+
+class _RecordingShoppingListController extends ShoppingListController {
+  ({String name, String? brand, int quantity, double estimatedUnitPrice})?
+  addItemInput;
+
+  @override
+  FutureOr<List<ShoppingListItem>> build() {
+    return const <ShoppingListItem>[];
+  }
+
+  @override
+  Future<bool> addItem({
+    required String name,
+    String? brand,
+    int quantity = 1,
+    double estimatedUnitPrice = 0.0,
+  }) async {
+    addItemInput = (
+      name: name,
+      brand: brand,
+      quantity: quantity,
+      estimatedUnitPrice: estimatedUnitPrice,
+    );
+    return true;
   }
 }
 
@@ -396,6 +424,49 @@ void main() {
       hasLength(1),
     );
   });
+
+  test(
+    'buyAgainItem forwards mapped values to shopping list controller',
+    () async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => const <InventoryItem>[],
+      );
+      final shoppingListController = _RecordingShoppingListController();
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+          shoppingListControllerProvider.overrideWith(
+            () => shoppingListController,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .buyAgainItem(
+            InventoryItem.create(
+              id: 'buy-again-1',
+              name: 'Milk',
+              brand: 'Acme',
+              entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
+              storeName: 'Store',
+              quantity: 0,
+              initialQuantity: 0,
+              unitPrice: 2.5,
+            ),
+          );
+
+      expect(result, isTrue);
+      expect(shoppingListController.addItemInput, isNotNull);
+      expect(shoppingListController.addItemInput!.name, 'Milk');
+      expect(shoppingListController.addItemInput!.brand, 'Acme');
+      expect(shoppingListController.addItemInput!.quantity, 1);
+      expect(shoppingListController.addItemInput!.estimatedUnitPrice, 2.5);
+    },
+  );
 
   test('undoLastDeletedItem restores deleted item at original index', () async {
     final repository = _FakeFridgeItemRepository(
