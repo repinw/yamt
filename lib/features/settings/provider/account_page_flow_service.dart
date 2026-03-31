@@ -1,23 +1,37 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/settings/provider/account_controller.dart';
-
-part 'account_page_flow_service.g.dart';
 
 enum AccountCredentialConflictChoice {
   overwriteWithGuest,
   deleteGuestAndSignInWithGoogle,
 }
 
-@riverpod
-AccountPageFlowService accountPageFlowService(Ref ref) {
-  return AccountPageFlowService(ref);
-}
+final accountPageFlowServiceProvider = Provider<AccountPageFlowService>((ref) {
+  final controller = ref.read(accountControllerProvider.notifier);
+  return AccountPageFlowService(
+    overwriteExistingGoogleAccountWithGuest:
+        controller.overwriteExistingGoogleAccountWithGuest,
+    deleteGuestAndSignInWithGoogleCredential:
+        controller.deleteGuestAndSignInWithGoogleCredential,
+  );
+});
 
 class AccountPageFlowService {
-  const AccountPageFlowService(this._ref);
+  const AccountPageFlowService({
+    required Future<void> Function(AuthCredential credential)
+    overwriteExistingGoogleAccountWithGuest,
+    required Future<void> Function(AuthCredential credential)
+    deleteGuestAndSignInWithGoogleCredential,
+  }) : _overwriteExistingGoogleAccountWithGuest =
+           overwriteExistingGoogleAccountWithGuest,
+       _deleteGuestAndSignInWithGoogleCredential =
+           deleteGuestAndSignInWithGoogleCredential;
 
-  final Ref _ref;
+  final Future<void> Function(AuthCredential credential)
+  _overwriteExistingGoogleAccountWithGuest;
+  final Future<void> Function(AuthCredential credential)
+  _deleteGuestAndSignInWithGoogleCredential;
 
   bool isCredentialAlreadyInUseError(FirebaseAuthException error) {
     return error.code == 'credential-already-in-use' ||
@@ -33,12 +47,11 @@ class AccountPageFlowService {
     required AccountCredentialConflictChoice choice,
     required AuthCredential credential,
   }) {
-    final controller = _ref.read(accountControllerProvider.notifier);
     return switch (choice) {
       AccountCredentialConflictChoice.overwriteWithGuest =>
-        controller.overwriteExistingGoogleAccountWithGuest(credential),
+        _overwriteExistingGoogleAccountWithGuest(credential),
       AccountCredentialConflictChoice.deleteGuestAndSignInWithGoogle =>
-        controller.deleteGuestAndSignInWithGoogleCredential(credential),
+        _deleteGuestAndSignInWithGoogleCredential(credential),
     };
   }
 }

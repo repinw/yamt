@@ -1,12 +1,10 @@
 import 'dart:developer' show log;
 
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
-
-part 'calorie_entry_delete_flow.g.dart';
 
 const _deleteFlowLogName = 'CalorieEntryDeleteFlow';
 
@@ -34,16 +32,8 @@ class CalorieEntryDeleteResult {
   final CalorieEntryDeleteFailureReason? failureReason;
 }
 
-abstract interface class CalorieEntryDeleteFlow {
-  Future<CalorieEntryDeleteResult> deleteEntry({
-    required CalorieEntry entry,
-    required bool restoreToInventory,
-  });
-}
-
-@riverpod
-CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
-  return _ProviderBackedCalorieEntryDeleteFlow(
+final calorieEntryDeleteFlowProvider = Provider<CalorieEntryDeleteFlow>((ref) {
+  return CalorieEntryDeleteFlow(
     deleteEntryById: ref
         .read(calorieEntriesControllerProvider.notifier)
         .deleteEntry,
@@ -60,10 +50,10 @@ CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
         .read(preparedMealsControllerProvider.notifier)
         .throwAwayPreparedMeal,
   );
-}
+});
 
-class _ProviderBackedCalorieEntryDeleteFlow implements CalorieEntryDeleteFlow {
-  const _ProviderBackedCalorieEntryDeleteFlow({
+class CalorieEntryDeleteFlow {
+  const CalorieEntryDeleteFlow({
     required Future<bool> Function(String entryId) deleteEntryById,
     required Future<bool> Function(String itemId, int amount)
     restoreConsumedItem,
@@ -96,7 +86,6 @@ class _ProviderBackedCalorieEntryDeleteFlow implements CalorieEntryDeleteFlow {
   })
   _rollbackRestoredPreparedMeal;
 
-  @override
   Future<CalorieEntryDeleteResult> deleteEntry({
     required CalorieEntry entry,
     required bool restoreToInventory,

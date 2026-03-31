@@ -35,12 +35,26 @@ class _RecordingAccountController extends AccountController {
 }
 
 void main() {
+  AccountPageFlowService createService({
+    Future<void> Function(AuthCredential credential)?
+    overwriteExistingGoogleAccountWithGuest,
+    Future<void> Function(AuthCredential credential)?
+    deleteGuestAndSignInWithGoogleCredential,
+  }) {
+    return AccountPageFlowService(
+      overwriteExistingGoogleAccountWithGuest:
+          overwriteExistingGoogleAccountWithGuest ??
+          (_) => Future<void>.value(),
+      deleteGuestAndSignInWithGoogleCredential:
+          deleteGuestAndSignInWithGoogleCredential ??
+          (_) => Future<void>.value(),
+    );
+  }
+
   test(
     'isCredentialAlreadyInUseError returns true for credential/email conflicts',
     () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-      final service = container.read(accountPageFlowServiceProvider);
+      final service = createService();
 
       final credentialConflict = FirebaseAuthException(
         code: 'credential-already-in-use',
@@ -53,9 +67,7 @@ void main() {
   );
 
   test('isCredentialAlreadyInUseError returns false for other error codes', () {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-    final service = container.read(accountPageFlowServiceProvider);
+    final service = createService();
 
     final otherError = FirebaseAuthException(code: 'operation-not-allowed');
 
@@ -63,9 +75,7 @@ void main() {
   });
 
   test('isRequiresRecentLoginError returns true only for matching code', () {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-    final service = container.read(accountPageFlowServiceProvider);
+    final service = createService();
 
     final requiresRecentLogin = FirebaseAuthException(
       code: 'requires-recent-login',

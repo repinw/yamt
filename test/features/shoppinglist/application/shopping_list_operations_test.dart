@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/shoppinglist/application/shopping_list_facade.dart';
+import 'package:yamt/features/shoppinglist/application/'
+    'shopping_list_operations.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
 InventoryItem _inventoryItem({
@@ -72,30 +73,19 @@ void main() {
   });
 
   test('isInventoryItemInActiveList matches by normalized name and brand', () {
-    final facade = ShoppingListFacade(
-      addItem:
-          ({
-            required String name,
-            String? brand,
-            int quantity = 1,
-            double estimatedUnitPrice = 0.0,
-          }) async {
-            return true;
-          },
-    );
     final activeKeys = <ShoppingListItemMatchKey>{
       (normalizedName: 'milk', normalizedBrand: 'acme'),
     };
 
-    final same = facade.isInventoryItemInActiveList(
+    final same = isInventoryItemInActiveShoppingList(
       item: _inventoryItem(id: 'i1', name: ' Milk ', brand: ' ACME '),
       activeItemKeys: activeKeys,
     );
-    final differentBrand = facade.isInventoryItemInActiveList(
+    final differentBrand = isInventoryItemInActiveShoppingList(
       item: _inventoryItem(id: 'i2', name: 'milk', brand: 'other'),
       activeItemKeys: activeKeys,
     );
-    final emptyName = facade.isInventoryItemInActiveList(
+    final emptyName = isInventoryItemInActiveShoppingList(
       item: _inventoryItem(id: 'i3', name: '   ', brand: 'acme'),
       activeItemKeys: activeKeys,
     );
@@ -190,7 +180,8 @@ void main() {
     () async {
       ({String name, String? brand, int quantity, double estimatedUnitPrice})?
       captured;
-      final facade = ShoppingListFacade(
+
+      final result = await addInventoryItemToShoppingList(
         addItem:
             ({
               required String name,
@@ -206,10 +197,7 @@ void main() {
               );
               return true;
             },
-      );
-
-      final result = await facade.addInventoryItem(
-        _inventoryItem(
+        item: _inventoryItem(
           id: 'i4',
           name: 'Milk',
           brand: 'Acme',
