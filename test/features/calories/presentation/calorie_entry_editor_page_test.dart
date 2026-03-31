@@ -594,4 +594,78 @@ void main() {
       expect(logRepository.entries, isEmpty);
     },
   );
+
+  testWidgets(
+    'inventory-backed save does not use widget ref after page unmount',
+    (tester) async {
+      final logRepository = FakeCalorieLogRepository()
+        ..onReadEntriesForDay = (day) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return const <CalorieEntry>[];
+        };
+      final settingsRepository = FakeCalorieSettingsRepository();
+      final saveFlow = _RecordingInventorySaveFlow();
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          logRepository: logRepository,
+          settingsRepository: settingsRepository,
+          initialLocation: AppRoutes.root,
+          createExtra: CalorieEntryCreateArgs(
+            prefilledProfile: null,
+            inventoryContext: const CalorieInventoryCreateContext(
+              inventoryItemId: 'inventory-1',
+              foodFingerprint: 'milk',
+              pendingConsumptionId: 'pending-1',
+              inventoryAmountToRestore: 2,
+              itemName: 'Milk',
+              itemBrand: null,
+              consumedAmount: 100,
+              consumedUnit: ConsumedUnit.grams,
+            ),
+          ),
+          additionalOverrides: [
+            inventoryBackedCalorieEntrySaveFlowProvider.overrideWithValue(
+              saveFlow,
+            ),
+          ],
+          openCreateFromRoot: true,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(CalorieEntryEditorKeys.nameField),
+        'Greek Yogurt',
+      );
+      await tester.enterText(
+        find.byKey(CalorieEntryEditorKeys.per100KcalField),
+        '95',
+      );
+      await tester.enterText(
+        find.byKey(CalorieEntryEditorKeys.per100ProteinField),
+        '9.8',
+      );
+      await tester.enterText(
+        find.byKey(CalorieEntryEditorKeys.per100CarbsField),
+        '4.1',
+      );
+      await tester.enterText(
+        find.byKey(CalorieEntryEditorKeys.per100FatField),
+        '0.5',
+      );
+
+      await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
+      await tester.pump();
+      await tester.pageBack();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 60));
+
+      expect(saveFlow.pendingConsumptionId, 'pending-1');
+      expect(saveFlow.entry?.sourceInventoryItemId, 'inventory-1');
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

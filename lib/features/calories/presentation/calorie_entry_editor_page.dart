@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,8 @@ import 'package:yamt/features/calories/provider/calorie_entries_controller.dart'
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+const _editorLogName = 'CalorieEntryEditorPage';
 
 class CalorieEntryEditorPage extends ConsumerStatefulWidget {
   const CalorieEntryEditorPage({
@@ -591,16 +594,29 @@ class _CalorieEntryEditorPageState
               )
               .recalculateTotals(updatedAt: now);
 
-    final persistEntry = initialEntry == null && pendingConsumptionId != null
-        ? (CalorieEntry entry) {
-            return ref
-                .read(inventoryBackedCalorieEntrySaveFlowProvider)
-                .saveEntry(
-                  entry: entry,
-                  pendingConsumptionId: pendingConsumptionId,
-                );
-          }
+    final inventoryBackedPendingConsumptionId = initialEntry == null
+        ? pendingConsumptionId
         : null;
+    final inventoryBackedSaveFlow = inventoryBackedPendingConsumptionId == null
+        ? null
+        : ref.read(inventoryBackedCalorieEntrySaveFlowProvider);
+    final persistEntry = inventoryBackedSaveFlow == null
+        ? null
+        : (CalorieEntry entry) {
+            return inventoryBackedSaveFlow.saveEntry(
+              entry: entry,
+              pendingConsumptionId: inventoryBackedPendingConsumptionId!,
+            );
+          };
+
+    log(
+      'Saving calorie entry ${entry.id} '
+      '(edit=${initialEntry != null}, '
+      'inventoryBacked=${inventoryBackedSaveFlow != null}, '
+      'pendingConsumptionId=${inventoryBackedPendingConsumptionId ?? 'none'}, '
+      'inventoryItemId=${inventoryContext?.inventoryItemId ?? 'none'}).',
+      name: _editorLogName,
+    );
 
     final saved = await ref
         .read(calorieEntriesControllerProvider.notifier)
@@ -612,7 +628,16 @@ class _CalorieEntryEditorPageState
           persistEntry: persistEntry,
         );
 
+    log(
+      'Calorie entry save completed for ${entry.id} with result=$saved.',
+      name: _editorLogName,
+    );
+
     if (!mounted) {
+      log(
+        'Calorie entry editor unmounted before save UI handling for ${entry.id}.',
+        name: _editorLogName,
+      );
       return;
     }
 
@@ -622,12 +647,20 @@ class _CalorieEntryEditorPageState
 
     if (saved) {
       _didCommitPendingConsumption = true;
+      log(
+        'Calorie entry ${entry.id} saved successfully. Closing editor.',
+        name: _editorLogName,
+      );
       if (router.canPop()) {
         router.pop();
       }
       return;
     }
 
+    log(
+      'Calorie entry ${entry.id} save failed. Showing failure snackbar.',
+      name: _editorLogName,
+    );
     _showFailureSnackBar(messenger, l10n.caloriesSaveFailed);
   }
 

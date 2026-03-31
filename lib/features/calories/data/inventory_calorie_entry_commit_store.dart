@@ -64,9 +64,29 @@ class FirestoreInventoryCalorieEntryCommitStore
     required PendingInventoryConsumption pendingConsumption,
   }) async {
     final userId = _resolveUserId(entry.userId);
-    if (userId == null || pendingConsumption.amount < 1) {
+    if (userId == null) {
+      log(
+        'Cannot commit calorie entry ${entry.id}: no user id resolved '
+        '(entryUserId=${entry.userId}).',
+        name: _commitStoreLogName,
+      );
       return null;
     }
+    if (pendingConsumption.amount < 1) {
+      log(
+        'Cannot commit calorie entry ${entry.id}: invalid pending amount '
+        '${pendingConsumption.amount} for item ${pendingConsumption.itemId}.',
+        name: _commitStoreLogName,
+      );
+      return null;
+    }
+
+    log(
+      'Committing calorie entry ${entry.id} with inventory item '
+      '${pendingConsumption.itemId} for user $userId '
+      '(amount=${pendingConsumption.amount}).',
+      name: _commitStoreLogName,
+    );
 
     try {
       return await _firestore.runTransaction((transaction) async {
@@ -75,6 +95,11 @@ class FirestoreInventoryCalorieEntryCommitStore
         ).doc(pendingConsumption.itemId);
         final inventorySnapshot = await transaction.get(inventoryRef);
         if (!inventorySnapshot.exists) {
+          log(
+            'Inventory item ${pendingConsumption.itemId} no longer exists '
+            'while committing calorie entry ${entry.id}.',
+            name: _commitStoreLogName,
+          );
           return null;
         }
 
@@ -88,6 +113,15 @@ class FirestoreInventoryCalorieEntryCommitStore
           amount: pendingConsumption.amount,
         );
         if (committedItem == null) {
+          log(
+            'Inventory commit rejected for calorie entry ${entry.id} '
+            '(itemId=${currentItem.id}, '
+            'quantity=${currentItem.quantity}, '
+            'currentAmount=${currentItem.currentAmount}, '
+            'requestedAmount=${pendingConsumption.amount}, '
+            'usesAmountProgress=${currentItem.usesAmountProgress}).',
+            name: _commitStoreLogName,
+          );
           return null;
         }
 
@@ -102,6 +136,14 @@ class FirestoreInventoryCalorieEntryCommitStore
           normalizedEntry.toJson(),
         );
         transaction.update(inventoryRef, _buildInventoryUpdate(committedItem));
+
+        log(
+          'Transaction prepared for calorie entry ${entry.id} '
+          '(itemId=${committedItem.id}, '
+          'nextQuantity=${committedItem.quantity}, '
+          'nextCurrentAmount=${committedItem.currentAmount}).',
+          name: _commitStoreLogName,
+        );
 
         return InventoryCalorieEntryCommitResult(
           itemId: committedItem.id,

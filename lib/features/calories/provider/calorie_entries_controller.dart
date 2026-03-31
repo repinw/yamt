@@ -91,6 +91,13 @@ class CalorieEntriesController extends _$CalorieEntriesController {
   }) {
     final keepAliveLink = ref.keepAlive();
     final selectedDay = ref.read(calorieDayControllerProvider);
+    log(
+      'Starting save for calorie entry ${entry.id} '
+      '(selectedDay=$selectedDay, '
+      'customPersist=${persistEntry != null}, '
+      'scannedSource=${scannedSourceRef != null}).',
+      name: _entriesControllerLogName,
+    );
     return _runOptimisticMutation(
       buildNextEntries: (previousEntries) {
         return _applySavedEntry(
@@ -99,9 +106,33 @@ class CalorieEntriesController extends _$CalorieEntriesController {
           selectedDay: selectedDay,
         );
       },
-      persist: () =>
-          persistEntry?.call(entry) ??
-          ref.read(calorieLogRepositoryProvider).saveEntry(entry),
+      persist: () async {
+        if (persistEntry != null) {
+          log(
+            'Persisting calorie entry ${entry.id} via custom save flow.',
+            name: _entriesControllerLogName,
+          );
+          final saved = await persistEntry(entry);
+          log(
+            'Custom save flow for calorie entry ${entry.id} returned $saved.',
+            name: _entriesControllerLogName,
+          );
+          return saved;
+        }
+
+        log(
+          'Persisting calorie entry ${entry.id} via calorie log repository.',
+          name: _entriesControllerLogName,
+        );
+        final saved = await ref
+            .read(calorieLogRepositoryProvider)
+            .saveEntry(entry);
+        log(
+          'Calorie log repository save for ${entry.id} returned $saved.',
+          name: _entriesControllerLogName,
+        );
+        return saved;
+      },
       failureLogMessage: 'Failed to persist calorie entry ${entry.id}.',
       onPersisted: scannedSourceRef == null
           ? null
@@ -144,6 +175,10 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       try {
         final persisted = await persist();
         if (!persisted) {
+          log(
+            '$failureLogMessage Persist returned false without throwing.',
+            name: _entriesControllerLogName,
+          );
           _restoreEntries(previousEntries);
           return false;
         }
