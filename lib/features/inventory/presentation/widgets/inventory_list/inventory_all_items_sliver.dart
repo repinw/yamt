@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_sorted_items_cache.dart';
@@ -33,7 +34,12 @@ class InventoryAllItemsSliver extends StatefulWidget {
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
-  final Future<bool> Function(String itemId, int amount) onThrowAwayItem;
+  final Future<bool> Function(
+    String itemId,
+    int amount,
+    InventoryDiscardReason reason,
+  )
+  onThrowAwayItem;
   final bool isSelectionMode;
   final Set<String> selectedItemIds;
   final ValueChanged<String> onItemLongPress;

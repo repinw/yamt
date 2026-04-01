@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -8,10 +9,13 @@ import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_discard_reason_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -34,6 +38,8 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const _preparedMealCardLogName = 'PreparedMealCard';
+
 class PreparedMealCard extends ConsumerStatefulWidget {
   const PreparedMealCard({
     super.key,
@@ -49,7 +55,12 @@ class PreparedMealCard extends ConsumerStatefulWidget {
   final PreparedMeal meal;
   final Future<bool> Function(String mealId, int portions, MealType mealType)
   onEatPressed;
-  final Future<bool> Function(String mealId, int portions) onThrowAwayPressed;
+  final Future<bool> Function(
+    String mealId,
+    int portions,
+    InventoryDiscardReason reason,
+  )
+  onThrowAwayPressed;
   final Future<bool> Function(String mealId) onUnbundlePressed;
   final Future<bool> Function(
     String mealId,
@@ -387,7 +398,11 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
 
   Future<void> _runEatFlow() async {
     final l10n = AppLocalizations.of(context)!;
-    final result = await showPreparedMealEatDialog(context, widget.meal);
+    final result = await showPreparedMealEatDialog(
+      context,
+      widget.meal,
+      useRootNavigator: false,
+    );
     if (!mounted || result == null) {
       return;
     }
@@ -420,17 +435,57 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
   }
 
   Future<void> _runThrowAwayFlow() async {
+    log(
+      '_runThrowAwayFlow(): opening portion dialog for ${widget.meal.id}',
+      name: _preparedMealCardLogName,
+    );
     final portions = await showPreparedMealPortionDialog(
       context: context,
       meal: widget.meal,
       title: AppLocalizations.of(context)!.preparedMealThrowAwayTitle,
+      useRootNavigator: false,
     );
     if (!mounted || portions == null) {
+      log(
+        '_runThrowAwayFlow(): portion dialog cancelled for ${widget.meal.id}',
+        name: _preparedMealCardLogName,
+      );
+      return;
+    }
+    log(
+      '_runThrowAwayFlow(): confirmed portions=$portions for ${widget.meal.id}',
+      name: _preparedMealCardLogName,
+    );
+
+    await Future<void>.delayed(Duration.zero);
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) {
       return;
     }
 
+    log(
+      '_runThrowAwayFlow(): opening reason dialog for ${widget.meal.id}',
+      name: _preparedMealCardLogName,
+    );
+    final reason = await showInventoryDiscardReasonDialog(
+      context,
+      useRootNavigator: false,
+    );
+    if (!mounted || reason == null) {
+      log(
+        '_runThrowAwayFlow(): reason dialog cancelled for ${widget.meal.id}',
+        name: _preparedMealCardLogName,
+      );
+      return;
+    }
+    log(
+      '_runThrowAwayFlow(): confirmed reason=${reason.name} '
+      'for ${widget.meal.id}',
+      name: _preparedMealCardLogName,
+    );
+
     await _runAction(
-      () => widget.onThrowAwayPressed(widget.meal.id, portions),
+      () => widget.onThrowAwayPressed(widget.meal.id, portions, reason),
       failureMessage: AppLocalizations.of(context)!.preparedMealActionFailed,
     );
   }

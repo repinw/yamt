@@ -89,7 +89,8 @@ void main() {
               PreparedMealCard(
                 meal: _meal(),
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed: (mealId, portions) async => true,
+                onThrowAwayPressed:
+                    (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,
@@ -131,7 +132,8 @@ void main() {
               PreparedMealCard(
                 meal: _meal(),
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed: (mealId, portions) async => true,
+                onThrowAwayPressed:
+                    (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,
@@ -173,7 +175,8 @@ void main() {
               PreparedMealCard(
                 meal: meal,
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed: (mealId, portions) async => true,
+                onThrowAwayPressed:
+                    (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async {
                   unbundledMealId = mealId;
                   return true;
@@ -197,6 +200,60 @@ void main() {
     expect(unbundledMealId, meal.id);
   });
 
+  testWidgets('PreparedMealCard opens discard reason dialog after portions', (
+    tester,
+  ) async {
+    final meal = _meal();
+    String? thrownAwayMealId;
+    int? thrownAwayPortions;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: meal,
+                onEatPressed: (mealId, portions, mealType) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async {
+                  thrownAwayMealId = mealId;
+                  thrownAwayPortions = portions;
+                  return true;
+                },
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Rice bowl'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Throw away'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '1');
+    await tester.tap(find.text('Confirm'));
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Why are you throwing this away?'), findsOneWidget);
+
+    await tester.tap(find.text('Expired'));
+    await tester.pumpAndSettle();
+
+    expect(thrownAwayMealId, meal.id);
+    expect(thrownAwayPortions, 1);
+  });
+
   testWidgets('PreparedMealCard renders cover image from local device store', (
     tester,
   ) async {
@@ -218,7 +275,8 @@ void main() {
               PreparedMealCard(
                 meal: _meal(),
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed: (mealId, portions) async => true,
+                onThrowAwayPressed:
+                    (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,
@@ -249,7 +307,8 @@ void main() {
               PreparedMealCard(
                 meal: _meal(),
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed: (mealId, portions) async => true,
+                onThrowAwayPressed:
+                    (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,
@@ -351,7 +410,8 @@ void main() {
                 PreparedMealCard(
                   meal: meal,
                   onEatPressed: (mealId, portions, mealType) async => true,
-                  onThrowAwayPressed: (mealId, portions) async => true,
+                  onThrowAwayPressed:
+                      (mealId, portions, reason) async => true,
                   onUnbundlePressed: (mealId) async => true,
                   onEditPressed:
                       (mealId, name, imageChanged, imageBytes) async => true,
@@ -405,7 +465,8 @@ void main() {
                         }
                         return true;
                       },
-                      onThrowAwayPressed: (mealId, portions) async => true,
+                      onThrowAwayPressed:
+                          (mealId, portions, reason) async => true,
                       onUnbundlePressed: (mealId) async => true,
                       onEditPressed:
                           (mealId, name, imageChanged, imageBytes) async =>
@@ -494,7 +555,8 @@ void main() {
               PreparedMealCard(
                 meal: meal,
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed: (mealId, portions) async => true,
+                onThrowAwayPressed:
+                    (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/app_theme.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
@@ -74,7 +75,12 @@ Widget _buildHarness({
   bool showTile = true,
   Future<bool> Function(String itemId)? onDeleteItem,
   Future<bool> Function(String itemId, int amount)? onEatItem,
-  Future<bool> Function(String itemId, int amount)? onThrowAwayItem,
+  Future<bool> Function(
+    String itemId,
+    int amount,
+    InventoryDiscardReason reason,
+  )?
+  onThrowAwayItem,
 }) {
   final tile = ReceiptGroupTile(
     group: group,
@@ -83,7 +89,8 @@ Widget _buildHarness({
     activeShoppingListItemKeys: const <ShoppingListItemMatchKey>{},
     onDeleteItem: onDeleteItem ?? (_) async => true,
     onEatItem: onEatItem ?? (itemId, amount) async => true,
-    onThrowAwayItem: onThrowAwayItem ?? (itemId, amount) async => true,
+    onThrowAwayItem:
+        onThrowAwayItem ?? (itemId, amount, reason) async => true,
   );
   final body = SingleChildScrollView(
     padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
@@ -325,7 +332,7 @@ void main() {
       _buildHarness(
         theme: lightTheme,
         group: _group(),
-        onThrowAwayItem: (itemId, amount) async {
+        onThrowAwayItem: (itemId, amount, reason) async {
           thrownAwayItemId = itemId;
           thrownAwayAmount = amount;
           return true;
@@ -345,6 +352,8 @@ void main() {
     await tester.tap(
       find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
     );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Expired'));
     await tester.pumpAndSettle();
 
     expect(thrownAwayItemId, 'a');

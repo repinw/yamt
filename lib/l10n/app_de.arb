@@ -225,6 +225,11 @@
   "preparedMealThrowAwayTitle": "Portionen wegwerfen",
   "preparedMealPortionsToUseLabel": "Portionen verwenden",
   "preparedMealConfirmAction": "Bestätigen",
+  "inventoryDiscardReasonTitle": "Warum wirfst du das weg?",
+  "inventoryDiscardReasonExpired": "Abgelaufen",
+  "inventoryDiscardReasonSpoiled": "Verdorben",
+  "inventoryDiscardReasonCookedTooMuch": "Zu viel gekocht",
+  "inventoryDiscardReasonOther": "Sonstiges",
   "preparedMealSaveTemplateAction": "Als Vorlage speichern",
   "preparedMealTemplateSavedMessage": "Vorlage gespeichert.",
   "preparedMealTemplatesPageTitle": "Vorlagen",
@@ -594,12 +599,38 @@
   "statisticsWasteOverviewTitle": "Food Waste Überblick",
   "statisticsWasteTrackingMissingValue": "Noch keine Historie",
   "statisticsWasteTrackingMissingMessage": "Wegwerf-Events und Gründe werden aktuell noch nicht dauerhaft gespeichert.",
+  "statisticsWasteOverviewSummary": "{eventCount, plural, =1{1 Wegwerf-Event · {lossValue} erfasster Verlust} other{{eventCount} Wegwerf-Events · {lossValue} erfasster Verlust}}",
+  "@statisticsWasteOverviewSummary": {
+    "placeholders": {
+      "eventCount": {
+        "type": "int"
+      },
+      "lossValue": {}
+    }
+  },
   "statisticsWasteRatioTitle": "Verhältnis & Geldverlust",
   "statisticsWasteMoneyLossMissing": "Sobald Wegwerfwerte erfasst werden, erscheint hier das Verhältnis und der Euro-Verlust.",
+  "statisticsWasteMoneyLossTracked": "Erfasster Wert der weggeworfenen Lebensmittel im Zeitraum.",
   "statisticsWasteReasonsTitle": "Waste-Gründe",
   "statisticsWasteReasonsMissing": "Füge beim Wegwerfen Gründe wie abgelaufen oder zu viel gekocht hinzu, damit wir Muster erkennen.",
+  "statisticsWasteReasonsTopSummary": "Häufigster Grund über {count} Wegwerf-Events.",
+  "@statisticsWasteReasonsTopSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "statisticsWasteItemsTitle": "Oft weggeworfen",
   "statisticsWasteItemsMissing": "Sobald genug Wegwerf-Events vorliegen, zeigen wir hier deine häufigsten Problemartikel.",
+  "statisticsWasteItemsTopSummary": "{count, plural, =1{1x weggeworfen} other{{count}x weggeworfen}}",
+  "@statisticsWasteItemsTopSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "statisticsCaloriesOverviewTitle": "Kalorien Überblick",
   "statisticsCaloriesOverviewSummary": "{trackedDays} Tage mit Einträgen · {entries} Einträge",
   "@statisticsCaloriesOverviewSummary": {

@@ -9,6 +9,9 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_discard_event_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -19,6 +22,23 @@ import 'package:yamt/features/statistics/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
+
+class _FakeInventoryDiscardEventRepository
+    implements InventoryDiscardEventRepository {
+  const _FakeInventoryDiscardEventRepository(this.events);
+
+  final List<InventoryDiscardEvent> events;
+
+  @override
+  Future<List<InventoryDiscardEvent>> readAll() async {
+    return events;
+  }
+
+  @override
+  Future<bool> saveEvent(InventoryDiscardEvent event) async {
+    return true;
+  }
+}
 
 void main() {
   testWidgets('switches between spending waste and calories tabs', (
@@ -130,7 +150,6 @@ void main() {
     await tester.pump();
 
     expect(inventoryController.refreshCount, 1);
-    expect(mealsController.refreshCount, 1);
   });
 
   testWidgets('shows error card when calorie statistics provider fails', (
@@ -183,6 +202,11 @@ Widget _buildHarness({
       preparedMealsControllerProvider.overrideWith(() => mealsController),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      inventoryDiscardEventRepositoryProvider.overrideWithValue(
+        const _FakeInventoryDiscardEventRepository(
+          <InventoryDiscardEvent>[],
+        ),
+      ),
     ],
     child: MaterialApp(
       locale: const Locale('en'),

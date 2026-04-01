@@ -5,10 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/calories/data/calorie_barcode_backfill_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_discard_reason_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_amount_input_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -53,7 +56,12 @@ class InventoryItemRow extends ConsumerStatefulWidget {
   final bool isAlreadyInShoppingList;
   final Future<bool> Function(String itemId) onDeletePressed;
   final Future<bool> Function(String itemId, int amount) onEatPressed;
-  final Future<bool> Function(String itemId, int amount) onThrowAwayPressed;
+  final Future<bool> Function(
+    String itemId,
+    int amount,
+    InventoryDiscardReason reason,
+  )
+  onThrowAwayPressed;
   final bool isSelectionMode;
   final bool isSelected;
   final VoidCallback? onStartSelection;
@@ -198,13 +206,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   }
 
   void _onThrowAwayPressed() {
-    unawaited(
-      _requestAmountAndRunAction(
-        action: widget.onThrowAwayPressed,
-        title: widget.l10n.inventoryItemThrowAwayAction,
-        confirmLabel: widget.l10n.inventoryItemThrowAwayAction,
-      ),
-    );
+    unawaited(_requestDiscardAndRunAction());
   }
 
   void _onEditPressed() {
@@ -261,6 +263,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
 
     final amount = await showDialog<int>(
       context: context,
+      useRootNavigator: false,
       builder: (context) {
         return InventoryItemAmountInputDialog(
           title: title,
@@ -278,6 +281,44 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     }
 
     await _actionCoordinator.runAction(() => action(widget.item.id, amount));
+  }
+
+  Future<void> _requestDiscardAndRunAction() async {
+    final config = _buildInputConfig(widget.item);
+    if (config == null) {
+      return;
+    }
+
+    final amount = await showDialog<int>(
+      context: context,
+      useRootNavigator: false,
+      builder: (context) {
+        return InventoryItemAmountInputDialog(
+          title: widget.l10n.inventoryItemThrowAwayAction,
+          confirmLabel: widget.l10n.inventoryItemThrowAwayAction,
+          cancelLabel: widget.l10n.inventoryReceiptReviewCancelAction,
+          fieldLabel: config.fieldLabel,
+          invalidAmountMessage: widget.l10n.inventoryReceiptReviewInvalidNumber,
+          maxAmount: config.maxAmount,
+          suffixText: config.suffixText,
+        );
+      },
+    );
+    if (!mounted || amount == null) {
+      return;
+    }
+
+    final reason = await showInventoryDiscardReasonDialog(
+      context,
+      useRootNavigator: false,
+    );
+    if (!mounted || reason == null) {
+      return;
+    }
+
+    await _actionCoordinator.runAction(
+      () => widget.onThrowAwayPressed(widget.item.id, amount, reason),
+    );
   }
 
   void _showActionSnackBar(String message) {

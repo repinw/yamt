@@ -157,6 +157,10 @@ service cloud.firestore {
       allow read, create, update, delete: if isOwner(uid);
     }
 
+    match /users/{uid}/inventory_discard_events/{eventId} {
+      allow read, create, update, delete: if isOwner(uid);
+    }
+
     match /users/{uid}/calorie_entries/{entryId} {
       allow read, create, update, delete: if isOwner(uid);
     }
