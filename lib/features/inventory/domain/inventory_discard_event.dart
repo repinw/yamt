@@ -169,9 +169,15 @@ DateTime _readDateTime(Object? value) {
     return value;
   }
   if (value is String) {
-    return DateTime.tryParse(value.trim()) ?? DateTime.now();
+    final parsed = DateTime.tryParse(value.trim());
+    if (parsed != null) {
+      return parsed;
+    }
   }
-  return DateTime.now();
+
+  throw FormatException(
+    'Invalid discarded_at value: ${value.runtimeType}',
+  );
 }
 
 int _readInt(Object? value) {
