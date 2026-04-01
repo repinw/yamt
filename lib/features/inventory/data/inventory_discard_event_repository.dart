@@ -34,19 +34,10 @@ class FirestoreInventoryDiscardEventRepository
     }
 
     try {
-      log(
-        'readAll(): reading discard events for user $userId',
-        name: _discardEventRepositoryLogName,
-      );
       final snapshot = await _collection(
         userId,
       ).orderBy('discarded_at', descending: true).get();
-      final events = _decodeSnapshot(snapshot);
-      log(
-        'readAll(): decoded ${events.length} discard events for user $userId',
-        name: _discardEventRepositoryLogName,
-      );
-      return events;
+      return _decodeSnapshot(snapshot);
     } catch (error, stackTrace) {
       log(
         'Failed to read discard events for user $userId',
@@ -66,17 +57,7 @@ class FirestoreInventoryDiscardEventRepository
     }
 
     try {
-      log(
-        'saveEvent(): saving discard event ${event.id} '
-        '(source=${event.sourceType.name}, sourceId=${event.sourceId}, '
-        'reason=${event.reason.name})',
-        name: _discardEventRepositoryLogName,
-      );
       await _collection(userId).doc(event.id).set(event.toJson());
-      log(
-        'saveEvent(): saved discard event ${event.id}',
-        name: _discardEventRepositoryLogName,
-      );
       return true;
     } catch (error, stackTrace) {
       log(

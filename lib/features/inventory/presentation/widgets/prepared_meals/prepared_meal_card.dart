@@ -398,24 +398,10 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
 
   Future<void> _runEatFlow() async {
     final l10n = AppLocalizations.of(context)!;
-    log(
-      '_runEatFlow(): opening eat dialog for ${widget.meal.id}',
-      name: _preparedMealCardLogName,
-    );
     final result = await showPreparedMealEatDialog(context, widget.meal);
     if (!mounted || result == null) {
-      log(
-        '_runEatFlow(): cancelled for ${widget.meal.id}',
-        name: _preparedMealCardLogName,
-      );
       return;
     }
-    log(
-      '_runEatFlow(): confirmed '
-      '(mealId=${widget.meal.id}, portions=${result.portions}, '
-      'mealType=${result.mealType.name})',
-      name: _preparedMealCardLogName,
-    );
 
     await _runAction(
       () =>
@@ -425,19 +411,11 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
   }
 
   Future<void> _runEditFlow() async {
-    log(
-      '_runEditFlow(): opening edit sheet for ${widget.meal.id}',
-      name: _preparedMealCardLogName,
-    );
     final result = await showPreparedMealEditSheet(
       context: context,
       meal: widget.meal,
     );
     if (!mounted || result == null) {
-      log(
-        '_runEditFlow(): cancelled for ${widget.meal.id}',
-        name: _preparedMealCardLogName,
-      );
       return;
     }
 
@@ -498,18 +476,10 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
     Future<bool> Function() action, {
     required String failureMessage,
   }) async {
-    log(
-      '_runAction(): starting action for ${widget.meal.id}',
-      name: _preparedMealCardLogName,
-    );
     setState(() {
       _isWorking = true;
     });
     final success = await action();
-    log(
-      '_runAction(): completed action for ${widget.meal.id} => $success',
-      name: _preparedMealCardLogName,
-    );
     if (!mounted) {
       return;
     }

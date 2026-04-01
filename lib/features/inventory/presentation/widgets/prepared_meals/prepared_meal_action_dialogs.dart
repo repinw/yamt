@@ -87,23 +87,12 @@ Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
                   if (portions == null ||
                       portions < 1 ||
                       portions > meal.remainingPortions) {
-                    log(
-                      'showPreparedMealEatDialog(): invalid portions '
-                      '"${portionsController.text}" for meal ${meal.id}',
-                      name: _preparedMealDialogsLogName,
-                    );
                     _showInvalidPortionsSnackBar(
                       scaffoldContext: context,
                       message: l10n.preparedMealInvalidPortionsRange,
                     );
                     return;
                   }
-                  log(
-                    'showPreparedMealEatDialog(): confirmed '
-                    '(mealId=${meal.id}, portions=$portions, '
-                    'mealType=${selectedMealType.name})',
-                    name: _preparedMealDialogsLogName,
-                  );
                   Navigator.of(dialogContext).pop(
                     PreparedMealEatDialogResult(
                       portions: portions,

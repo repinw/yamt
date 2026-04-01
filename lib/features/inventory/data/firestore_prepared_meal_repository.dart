@@ -26,10 +26,6 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
     if (userId == null) {
       return Stream<List<PreparedMeal>>.value(const <PreparedMeal>[]);
     }
-    log(
-      'watchAll(): starting stream for user $userId',
-      name: _repositoryLogName,
-    );
     return _watchAllForUser(userId);
   }
 
@@ -39,7 +35,6 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
     if (userId == null) {
       return const <PreparedMeal>[];
     }
-    log('readAll(): reading meals for user $userId', name: _repositoryLogName);
     return _readAllForUser(userId);
   }
 
@@ -49,10 +44,6 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
     if (userId == null) {
       return Future<bool>.value(false);
     }
-    log(
-      'saveAll(): queueing write of ${meals.length} meals for user $userId',
-      name: _repositoryLogName,
-    );
     return _runExclusiveWrite(() => _replaceAllForUser(userId, meals));
   }
 
@@ -71,12 +62,7 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
   Stream<List<PreparedMeal>> _watchAllForUser(String userId) async* {
     try {
       await for (final documents in _store.watchAll(userId: userId)) {
-        final meals = _decodeDocuments(documents);
-        log(
-          '_watchAllForUser(): received ${meals.length} meals for user $userId',
-          name: _repositoryLogName,
-        );
-        yield meals;
+        yield _decodeDocuments(documents);
       }
     } on FirebaseException catch (error, stackTrace) {
       if (error.code == 'permission-denied') {
@@ -110,12 +96,7 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
   Future<List<PreparedMeal>> _readAllForUser(String userId) async {
     try {
       final documents = await _store.readAll(userId: userId);
-      final meals = _decodeDocuments(documents);
-      log(
-        '_readAllForUser(): decoded ${meals.length} meals for user $userId',
-        name: _repositoryLogName,
-      );
-      return meals;
+      return _decodeDocuments(documents);
     } catch (error, stackTrace) {
       log(
         'Failed to read prepared meals for user $userId.',
@@ -131,11 +112,6 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
     final documentsById = <String, Map<String, dynamic>>{
       for (final meal in meals) meal.id: meal.toJson(),
     };
-    log(
-      '_replaceAllForUser(): writing ${documentsById.length} docs '
-      'for user $userId',
-      name: _repositoryLogName,
-    );
     return _store.replaceAll(userId: userId, documentsById: documentsById);
   }
 
@@ -161,13 +137,7 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
   }
 
   Future<T> _runExclusiveWrite<T>(Future<T> Function() operation) {
-    log('_runExclusiveWrite(): waiting for write barrier', name: _repositoryLogName);
-    final queuedOperation = _writeBarrier.then((_) async {
-      log('_runExclusiveWrite(): entering write operation', name: _repositoryLogName);
-      final value = await operation();
-      log('_runExclusiveWrite(): leaving write operation', name: _repositoryLogName);
-      return value;
-    });
+    final queuedOperation = _writeBarrier.then((_) => operation());
     _writeBarrier = queuedOperation.then<void>(
       (_) {},
       onError: (Object error, StackTrace stackTrace) {},

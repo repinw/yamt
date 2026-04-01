@@ -75,17 +75,12 @@ class PreparedMealsController extends _$PreparedMealsController {
 
   @override
   FutureOr<List<PreparedMeal>> build() {
-    log(
-      'build(): starting prepared meal subscription',
-      name: _preparedMealsControllerLogName,
-    );
     ref.watch(preparedMealRepositoryProvider);
     ref.onDispose(_disposeSubscription);
     return _restartSubscription();
   }
 
   Future<void> refresh() async {
-    log('refresh(): reloading prepared meals', name: _preparedMealsControllerLogName);
     state = const AsyncLoading();
     final next = await AsyncValue.guard(_restartSubscription);
     if (!ref.mounted) {
@@ -102,11 +97,6 @@ class PreparedMealsController extends _$PreparedMealsController {
   }) {
     final trimmedName = name.trim();
     if (trimmedName.isEmpty || totalPortions < 1 || items.isEmpty) {
-      log(
-        'createPreparedMeal(): invalid input '
-        '(name="$trimmedName", totalPortions=$totalPortions, items=${items.length})',
-        name: _preparedMealsControllerLogName,
-      );
       return Future<PreparedMealCreationResult>.value(
         const PreparedMealCreationResult.failure(
           PreparedMealCreationFailureReason.invalidInput,
@@ -118,12 +108,6 @@ class PreparedMealsController extends _$PreparedMealsController {
     return _mutationQueue
         .run<PreparedMealCreationResult>(
           operation: () async {
-            log(
-              'createPreparedMeal(): queued '
-              '(name="$trimmedName", totalPortions=$totalPortions, '
-              'items=${items.length})',
-              name: _preparedMealsControllerLogName,
-            );
             final currentMeals = await _currentMeals();
             final inventoryRepository = ref.read(
               inventoryItemRepositoryProvider,
@@ -155,20 +139,11 @@ class PreparedMealsController extends _$PreparedMealsController {
                 nextMeals: nextMeals,
               );
               if (mealsSaved) {
-                log(
-                  'createPreparedMeal(): saved meal '
-                  '${creationResult.preparedMeal.id}',
-                  name: _preparedMealsControllerLogName,
-                );
                 return PreparedMealCreationResult.success(
                   creationResult.preparedMeal.id,
                 );
               }
 
-              log(
-                'createPreparedMeal(): meal save failed, restoring inventory',
-                name: _preparedMealsControllerLogName,
-              );
               await _restoreInventory(
                 inventoryRepository: inventoryRepository,
                 previousItems: currentItems,
@@ -177,10 +152,6 @@ class PreparedMealsController extends _$PreparedMealsController {
                 PreparedMealCreationFailureReason.mealSaveFailed,
               );
             } on _PreparedMealCreationException catch (error) {
-              log(
-                'createPreparedMeal(): failed with ${error.reason.name}',
-                name: _preparedMealsControllerLogName,
-              );
               return PreparedMealCreationResult.failure(error.reason);
             }
           },
@@ -452,20 +423,12 @@ class PreparedMealsController extends _$PreparedMealsController {
   }
 
   Future<List<PreparedMeal>> _restartSubscription() {
-    log(
-      '_restartSubscription(): creating repository watch',
-      name: _preparedMealsControllerLogName,
-    );
     final initialMeals = Completer<List<PreparedMeal>>();
     final repository = ref.read(preparedMealRepositoryProvider);
     _disposeSubscription();
 
     _mealsSubscription = repository.watchAll().listen(
       (meals) {
-        log(
-          '_restartSubscription(): received ${meals.length} meals from watch',
-          name: _preparedMealsControllerLogName,
-        );
         if (!initialMeals.isCompleted) {
           initialMeals.complete(meals);
           return;
@@ -473,12 +436,6 @@ class PreparedMealsController extends _$PreparedMealsController {
         _onRealtimeMeals(meals);
       },
       onError: (Object error, StackTrace stackTrace) {
-        log(
-          '_restartSubscription(): watch emitted error',
-          name: _preparedMealsControllerLogName,
-          error: error,
-          stackTrace: stackTrace,
-        );
         if (!initialMeals.isCompleted) {
           initialMeals.completeError(error, stackTrace);
           return;
@@ -494,10 +451,6 @@ class PreparedMealsController extends _$PreparedMealsController {
     final currentSubscription = _mealsSubscription;
     _mealsSubscription = null;
     if (currentSubscription != null) {
-      log(
-        '_disposeSubscription(): cancelling existing watch',
-        name: _preparedMealsControllerLogName,
-      );
       unawaited(currentSubscription.cancel());
     }
   }
@@ -519,16 +472,8 @@ class PreparedMealsController extends _$PreparedMealsController {
   Future<List<PreparedMeal>> _currentMeals() async {
     final currentData = state.asData?.value;
     if (currentData != null) {
-      log(
-        '_currentMeals(): using in-memory state (${currentData.length} meals)',
-        name: _preparedMealsControllerLogName,
-      );
       return currentData;
     }
-    log(
-      '_currentMeals(): awaiting controller future',
-      name: _preparedMealsControllerLogName,
-    );
     return future;
   }
 
@@ -541,18 +486,9 @@ class PreparedMealsController extends _$PreparedMealsController {
     }
 
     try {
-      log(
-        '_saveMeals(): writing ${nextMeals.length} meals '
-        '(previous=${previousMeals.length})',
-        name: _preparedMealsControllerLogName,
-      );
       final saved = await ref
           .read(preparedMealRepositoryProvider)
           .saveAll(nextMeals);
-      log(
-        '_saveMeals(): repository returned $saved',
-        name: _preparedMealsControllerLogName,
-      );
       if (!saved && ref.mounted) {
         state = AsyncData(previousMeals);
       }
@@ -589,18 +525,7 @@ class PreparedMealsController extends _$PreparedMealsController {
 
   Future<bool> _runSerializedMutation(Future<bool> Function() mutation) {
     return _mutationQueue.run<bool>(
-      operation: () async {
-        log(
-          '_runSerializedMutation(): starting queued mutation',
-          name: _preparedMealsControllerLogName,
-        );
-        final result = await mutation();
-        log(
-          '_runSerializedMutation(): finished queued mutation => $result',
-          name: _preparedMealsControllerLogName,
-        );
-        return result;
-      },
+      operation: mutation,
       fallbackValue: false,
       onError: (error, stackTrace) {
         log(
