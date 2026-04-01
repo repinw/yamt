@@ -254,6 +254,31 @@
   "preparedMealTemplatesLoadFailed": "Vorlagen konnten nicht geladen werden.",
   "preparedMealTemplateDeleteAction": "Vorlage löschen",
   "preparedMealTemplateDeletedMessage": "Vorlage gelöscht.",
+  "preparedMealTemplateAddRecipeAction": "Rezeptvorlage hinzufügen",
+  "preparedMealTemplateCreateFromRecipeAction": "Aus Rezept anlegen",
+  "preparedMealTemplateCreateFailedMessage": "Vorlage konnte nicht erstellt werden.",
+  "preparedMealTemplateRecipeImportFailedMessage": "Rezeptdaten konnten nicht importiert werden.",
+  "preparedMealTemplateRecipeSheetTitle": "Vorlage aus Rezept anlegen",
+  "preparedMealTemplateRecipeEditSheetTitle": "Rezeptvorlage bearbeiten",
+  "preparedMealTemplateRecipeSheetSubtitle": "Füge einen Rezept-Link ein, zum Beispiel von Chefkoch.",
+  "preparedMealTemplateRecipeUrlLabel": "Rezept-Link",
+  "preparedMealTemplateRecipeUrlHint": "https://www.chefkoch.de/...",
+  "preparedMealTemplateRecipeUrlInvalid": "Bitte gib einen gültigen Rezept-Link ein.",
+  "preparedMealTemplateNameLabel": "Vorlagenname",
+  "preparedMealTemplateNameHelper": "Optional. Wenn leer, wird der Name aus dem Link abgeleitet.",
+  "preparedMealTemplatePortionsLabel": "Portionen",
+  "preparedMealTemplatePortionsHelper": "Optional. Wenn leer, werden die Portionen aus dem Rezept übernommen.",
+  "preparedMealTemplateRecipePlaceholder": "Rezept-Link",
+  "preparedMealTemplateNoIngredientsYet": "Noch keine Zutaten verknüpft.",
+  "preparedMealTemplateUpdatedMessage": "Vorlage aktualisiert.",
+  "preparedMealTemplateRecipeSource": "Rezept: {host}",
+  "@preparedMealTemplateRecipeSource": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
   "preparedMealTemplatePortions": "{count} Portionen",
   "@preparedMealTemplatePortions": {
     "placeholders": {

@@ -249,6 +249,31 @@
   "preparedMealTemplatesLoadFailed": "Could not load templates.",
   "preparedMealTemplateDeleteAction": "Delete template",
   "preparedMealTemplateDeletedMessage": "Template deleted.",
+  "preparedMealTemplateAddRecipeAction": "Add recipe template",
+  "preparedMealTemplateCreateFromRecipeAction": "Create from recipe",
+  "preparedMealTemplateCreateFailedMessage": "Template could not be created.",
+  "preparedMealTemplateRecipeImportFailedMessage": "Recipe data could not be imported.",
+  "preparedMealTemplateRecipeSheetTitle": "Create template from recipe",
+  "preparedMealTemplateRecipeEditSheetTitle": "Edit recipe template",
+  "preparedMealTemplateRecipeSheetSubtitle": "Paste a recipe link, for example from Chefkoch.",
+  "preparedMealTemplateRecipeUrlLabel": "Recipe link",
+  "preparedMealTemplateRecipeUrlHint": "https://www.chefkoch.de/...",
+  "preparedMealTemplateRecipeUrlInvalid": "Please enter a valid recipe link.",
+  "preparedMealTemplateNameLabel": "Template name",
+  "preparedMealTemplateNameHelper": "Optional. If empty, the name is derived from the link.",
+  "preparedMealTemplatePortionsLabel": "Portions",
+  "preparedMealTemplatePortionsHelper": "Optional. If empty, the servings from the recipe are used.",
+  "preparedMealTemplateRecipePlaceholder": "Recipe link",
+  "preparedMealTemplateNoIngredientsYet": "No ingredients linked yet.",
+  "preparedMealTemplateUpdatedMessage": "Template updated.",
+  "preparedMealTemplateRecipeSource": "Recipe: {host}",
+  "@preparedMealTemplateRecipeSource": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
   "preparedMealTemplatePortions": "{count} portions",
   "@preparedMealTemplatePortions": {
     "placeholders": {

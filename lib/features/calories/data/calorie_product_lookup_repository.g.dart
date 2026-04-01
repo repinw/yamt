@@ -103,7 +103,7 @@ final class CalorieOffLookupClientProvider
 }
 
 String _$calorieOffLookupClientHash() =>
-    r'680a8e0cd2949828be397c20397e8d1a61e0c05b';
+    r'f042897a64b2a4d0bfde9f0fff8e379422e5afb5';
 
 @ProviderFor(calorieProductLookupRepository)
 final calorieProductLookupRepositoryProvider =

@@ -111,6 +111,8 @@ void main() {
       id: 'meal-1',
       name: 'Rice bowl',
       imageAssetId: 'asset-1',
+      imageUrl: 'https://images.example.com/rice-bowl.jpg',
+      recipeUrl: 'https://www.chefkoch.de/rezepte/123/rice-bowl.html',
       totalPortions: 4,
       remainingPortions: 3,
       totalKcal: 720,
@@ -140,6 +142,8 @@ void main() {
 
     expect(roundtrip, meal);
     expect(roundtrip.imageAssetId, meal.imageAssetId);
+    expect(roundtrip.imageUrl, meal.imageUrl);
+    expect(roundtrip.recipeUrl, meal.recipeUrl);
     expect(roundtrip.components.single.sourceItemSnapshot, sourceItem);
   });
 

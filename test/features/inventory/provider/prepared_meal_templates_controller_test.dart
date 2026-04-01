@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -74,6 +75,17 @@ class _SilentPreparedMealTemplateRepository
   }
 }
 
+class _FakePreparedMealRecipeImporter extends PreparedMealRecipeImporter {
+  const _FakePreparedMealRecipeImporter(this.recipe);
+
+  final PreparedMealRecipeImport? recipe;
+
+  @override
+  Future<PreparedMealRecipeImport?> importRecipe(String recipeUrl) async {
+    return recipe;
+  }
+}
+
 PreparedMeal _templateMeal({required String id, required String name}) {
   final sourceItem = InventoryItem.create(
     id: 'rice',
@@ -143,6 +155,9 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+        preparedMealRecipeImporterProvider.overrideWithValue(
+          const _FakePreparedMealRecipeImporter(null),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -174,6 +189,9 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+        preparedMealRecipeImporterProvider.overrideWithValue(
+          const _FakePreparedMealRecipeImporter(null),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -197,6 +215,9 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+        preparedMealRecipeImporterProvider.overrideWithValue(
+          const _FakePreparedMealRecipeImporter(null),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -209,5 +230,175 @@ void main() {
     expect(saved.isSuccess, isTrue);
     expect(repository.savedTemplates, hasLength(1));
     expect(repository.savedTemplates.single.name, 'Lunch Box');
+  });
+
+  test(
+    'createTemplateFromRecipe stores normalized recipe template data',
+    () async {
+      final repository = _FakePreparedMealTemplateRepository(
+        initialTemplates: const <PreparedMeal>[],
+      );
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+          preparedMealRecipeImporterProvider.overrideWithValue(
+            const _FakePreparedMealRecipeImporter(
+              PreparedMealRecipeImport(
+                recipeUrl: 'https://chefkoch.de/rezepte/1234/spaghetti.html',
+                title: 'Spaghetti mit Pesto',
+                servings: 4,
+                ingredients: <String>['500 g Spaghetti', '2 EL Pesto'],
+              ),
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+
+      await container.read(preparedMealTemplatesControllerProvider.future);
+      final saved = await container
+          .read(preparedMealTemplatesControllerProvider.notifier)
+          .createTemplateFromRecipe(
+            recipeUrl: 'chefkoch.de/rezepte/1234/spaghetti-mit-pesto.html',
+            name: '',
+          );
+
+      expect(saved.isSuccess, isTrue);
+      expect(repository.savedTemplates, hasLength(1));
+      expect(
+        repository.savedTemplates.single.recipeUrl,
+        'https://chefkoch.de/rezepte/1234/spaghetti.html',
+      );
+      expect(repository.savedTemplates.single.name, 'Spaghetti mit Pesto');
+      expect(repository.savedTemplates.single.totalPortions, 4);
+      expect(repository.savedTemplates.single.recipeIngredients, <String>[
+        '500 g Spaghetti',
+        '2 EL Pesto',
+      ]);
+      expect(repository.savedTemplates.single.components, isEmpty);
+    },
+  );
+
+  test('createTemplateFromRecipe rejects invalid input', () async {
+    final repository = _FakePreparedMealTemplateRepository(
+      initialTemplates: const <PreparedMeal>[],
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+        preparedMealRecipeImporterProvider.overrideWithValue(
+          const _FakePreparedMealRecipeImporter(null),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(preparedMealTemplatesControllerProvider.future);
+    final saved = await container
+        .read(preparedMealTemplatesControllerProvider.notifier)
+        .createTemplateFromRecipe(recipeUrl: 'notaurl', name: '');
+
+    expect(saved.isSuccess, isFalse);
+    expect(
+      saved.failureReason,
+      PreparedMealTemplateSaveFailureReason.invalidInput,
+    );
+    expect(repository.savedTemplates, isEmpty);
+  });
+
+  test('createTemplateFromRecipe reports import failures separately', () async {
+    final repository = _FakePreparedMealTemplateRepository(
+      initialTemplates: const <PreparedMeal>[],
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+        preparedMealRecipeImporterProvider.overrideWithValue(
+          const _FakePreparedMealRecipeImporter(null),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(preparedMealTemplatesControllerProvider.future);
+    final saved = await container
+        .read(preparedMealTemplatesControllerProvider.notifier)
+        .createTemplateFromRecipe(
+          recipeUrl: 'https://chefkoch.de/rezepte/1234/spaghetti.html',
+          name: '',
+        );
+
+    expect(saved.isSuccess, isFalse);
+    expect(
+      saved.failureReason,
+      PreparedMealTemplateSaveFailureReason.recipeLoadFailed,
+    );
+  });
+
+  test('updateRecipeTemplate updates recipe-backed templates', () async {
+    final repository = _FakePreparedMealTemplateRepository(
+      initialTemplates: <PreparedMeal>[
+        _templateMeal(id: 'template-1', name: 'Old Name').copyWith(
+          recipeUrl: 'https://chefkoch.de/rezepte/old.html',
+          recipeIngredients: const <String>['1 old ingredient'],
+        ),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+        preparedMealRecipeImporterProvider.overrideWithValue(
+          const _FakePreparedMealRecipeImporter(
+            PreparedMealRecipeImport(
+              recipeUrl: 'https://chefkoch.de/rezepte/new.html',
+              title: 'Imported Recipe',
+              servings: 6,
+              ingredients: <String>['2 carrots', '1 onion'],
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(preparedMealTemplatesControllerProvider.future);
+    final result = await container
+        .read(preparedMealTemplatesControllerProvider.notifier)
+        .updateRecipeTemplate(
+          templateId: 'template-1',
+          recipeUrl: 'chefkoch.de/rezepte/new.html',
+          name: 'Edited Name',
+          totalPortions: 2,
+        );
+
+    expect(result.isSuccess, isTrue);
+    expect(repository.savedTemplates, hasLength(1));
+    expect(repository.savedTemplates.single.name, 'Edited Name');
+    expect(
+      repository.savedTemplates.single.recipeUrl,
+      'https://chefkoch.de/rezepte/new.html',
+    );
+    expect(repository.savedTemplates.single.recipeIngredients, <String>[
+      '2 carrots',
+      '1 onion',
+    ]);
+    expect(repository.savedTemplates.single.totalPortions, 2);
+    expect(repository.savedTemplates.single.remainingPortions, 2);
   });
 }

@@ -2,10 +2,17 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meal_templates/'
     'prepared_meal_template_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meal_templates/'
+    'prepared_meal_recipe_template_sheet.dart';
+import 'package:yamt/features/meal_templates/presentation/models/'
+    'meal_template_import_review_args.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -24,7 +31,17 @@ class PreparedMealTemplatesPage extends ConsumerWidget {
     final templatesAsync = ref.watch(preparedMealTemplatesControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.preparedMealTemplatesPageTitle)),
+      appBar: AppBar(
+        title: Text(l10n.preparedMealTemplatesPageTitle),
+        actions: [
+          IconButton(
+            tooltip: l10n.preparedMealTemplateAddRecipeAction,
+            onPressed: () =>
+                _createTemplateFromRecipe(context: context, ref: ref),
+            icon: const Icon(Icons.add_link_rounded),
+          ),
+        ],
+      ),
       body: templatesAsync.when(
         data: (templates) {
           if (templates.isEmpty) {
@@ -52,6 +69,11 @@ class PreparedMealTemplatesPage extends ConsumerWidget {
               final template = templates[index];
               return PreparedMealTemplateCard(
                 template: template,
+                onEditPressed: (template) => _editTemplate(
+                  context: context,
+                  ref: ref,
+                  template: template,
+                ),
                 onDeletePressed: (templateId) => _deleteTemplate(
                   context: context,
                   ref: ref,
@@ -155,5 +177,104 @@ class PreparedMealTemplatesPage extends ConsumerWidget {
       ),
     );
     return true;
+  }
+
+  Future<void> _createTemplateFromRecipe({
+    required BuildContext context,
+    required WidgetRef ref,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    final draft = await showPreparedMealRecipeTemplateSheet(context);
+    if (!context.mounted || draft == null) {
+      return;
+    }
+
+    final importedRecipe = await ref
+        .read(preparedMealRecipeImporterProvider)
+        .importRecipe(draft.recipeUrl);
+    if (!context.mounted) {
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    if (importedRecipe == null) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.preparedMealTemplateRecipeImportFailedMessage),
+        ),
+      );
+      return;
+    }
+
+    context.push(
+      AppRoutes.homeInventoryTemplateImportReview,
+      extra: MealTemplateImportReviewArgs(
+        importedRecipe: importedRecipe,
+        preferredName: draft.name,
+        preferredPortions: draft.totalPortions,
+      ),
+    );
+  }
+
+  Future<bool> _editTemplate({
+    required BuildContext context,
+    required WidgetRef ref,
+    required PreparedMeal template,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    final draft = await showPreparedMealRecipeTemplateSheet(
+      context,
+      initialDraft: PreparedMealRecipeTemplateDraft(
+        recipeUrl: template.recipeUrl ?? '',
+        name: template.name,
+        totalPortions: template.totalPortions,
+      ),
+      title: l10n.preparedMealTemplateRecipeEditSheetTitle,
+      submitLabel: l10n.inventoryReceiptReviewEditAction,
+    );
+    if (!context.mounted || draft == null) {
+      return false;
+    }
+
+    final result = await ref
+        .read(preparedMealTemplatesControllerProvider.notifier)
+        .updateRecipeTemplate(
+          templateId: template.id,
+          recipeUrl: draft.recipeUrl,
+          name: draft.name,
+          totalPortions: draft.totalPortions,
+        );
+    if (!context.mounted) {
+      return result.isSuccess;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    if (result.isSuccess) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.preparedMealTemplateUpdatedMessage)),
+      );
+      return true;
+    }
+
+    messenger.showSnackBar(
+      SnackBar(content: Text(_templateFailureMessage(l10n, result))),
+    );
+    return false;
+  }
+
+  String _templateFailureMessage(
+    AppLocalizations l10n,
+    PreparedMealTemplateSaveResult result,
+  ) {
+    return switch (result.failureReason) {
+      PreparedMealTemplateSaveFailureReason.invalidInput =>
+        l10n.preparedMealTemplateRecipeUrlInvalid,
+      PreparedMealTemplateSaveFailureReason.recipeLoadFailed =>
+        l10n.preparedMealTemplateRecipeImportFailedMessage,
+      PreparedMealTemplateSaveFailureReason.saveFailed ||
+      null => l10n.preparedMealTemplateCreateFailedMessage,
+    };
   }
 }

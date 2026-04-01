@@ -15,10 +15,12 @@ class PreparedMealTemplateCard extends ConsumerWidget {
   const PreparedMealTemplateCard({
     super.key,
     required this.template,
+    required this.onEditPressed,
     required this.onDeletePressed,
   });
 
   final PreparedMeal template;
+  final Future<bool> Function(PreparedMeal template) onEditPressed;
   final Future<bool> Function(String templateId) onDeletePressed;
 
   @override
@@ -29,9 +31,8 @@ class PreparedMealTemplateCard extends ConsumerWidget {
     final storedImageBytes = imageRef == null
         ? null
         : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
-    final metadata =
-        '${l10n.preparedMealIngredientsCount(template.components.length)} • '
-        '${l10n.preparedMealTemplatePortions(template.totalPortions)}';
+    final metadata = _buildMetadata(l10n);
+    final recipeSourceHost = _recipeSourceHost();
 
     return DecoratedBox(
       decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
@@ -49,6 +50,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                 PreparedMealCover(
                   label: template.name,
                   imageBytes: storedImageBytes,
+                  imageUrl: template.imageUrl,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -71,6 +73,12 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
+                if (template.recipeUrl != null)
+                  IconButton(
+                    tooltip: l10n.inventoryReceiptReviewEditAction,
+                    onPressed: () => onEditPressed(template),
+                    icon: const Icon(Icons.edit_outlined),
+                  ),
                 IconButton(
                   tooltip: l10n.preparedMealTemplateDeleteAction,
                   onPressed: () => onDeletePressed(template.id),
@@ -79,6 +87,27 @@ class PreparedMealTemplateCard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.md),
+            if (recipeSourceHost != null) ...[
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colors.secondaryContainer,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.xs,
+                  ),
+                  child: Text(
+                    l10n.preparedMealTemplateRecipeSource(recipeSourceHost),
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
             DecoratedBox(
               decoration: BoxDecoration(
                 color: colors.primaryContainer,
@@ -99,27 +128,72 @@ class PreparedMealTemplateCard extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: template.components
-                  .map((component) {
-                    return Chip(
-                      avatar: PreparedMealComponentAvatar(
-                        label: component.name,
-                        imageUrl: component.imageUrl,
-                      ),
-                      label: Text(
-                        '${component.name} • ${component.usedAmount} '
-                        '${component.usedUnit.code}',
-                      ),
-                    );
-                  })
-                  .toList(growable: false),
-            ),
+            if (template.components.isEmpty &&
+                template.recipeIngredients.isEmpty)
+              Text(
+                l10n.preparedMealTemplateNoIngredientsYet,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              )
+            else if (template.components.isEmpty)
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: template.recipeIngredients
+                    .map((ingredient) => Chip(label: Text(ingredient)))
+                    .toList(growable: false),
+              )
+            else
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: template.components
+                    .map((component) {
+                      return Chip(
+                        avatar: PreparedMealComponentAvatar(
+                          label: component.name,
+                          imageUrl: component.imageUrl,
+                        ),
+                        label: Text(
+                          '${component.name} • ${component.usedAmount} '
+                          '${component.usedUnit.code}',
+                        ),
+                      );
+                    })
+                    .toList(growable: false),
+              ),
           ],
         ),
       ),
     );
+  }
+
+  String _buildMetadata(AppLocalizations l10n) {
+    final parts = <String>[];
+    if (template.components.isNotEmpty) {
+      parts.add(l10n.preparedMealIngredientsCount(template.components.length));
+    } else if (template.recipeIngredients.isNotEmpty) {
+      parts.add(
+        l10n.preparedMealIngredientsCount(template.recipeIngredients.length),
+      );
+    } else if (template.recipeUrl != null) {
+      parts.add(l10n.preparedMealTemplateRecipePlaceholder);
+    }
+    parts.add(l10n.preparedMealTemplatePortions(template.totalPortions));
+    return parts.join(' • ');
+  }
+
+  String? _recipeSourceHost() {
+    final recipeUrl = template.recipeUrl;
+    if (recipeUrl == null || recipeUrl.isEmpty) {
+      return null;
+    }
+
+    final uri = Uri.tryParse(recipeUrl);
+    if (uri == null || uri.host.isEmpty) {
+      return null;
+    }
+    return uri.host.replaceFirst(RegExp(r'^www\.'), '');
   }
 }

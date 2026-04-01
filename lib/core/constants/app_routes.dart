@@ -7,6 +7,10 @@ abstract final class AppRoutes {
   static const homeInventory = '/home/inventory';
   static const homeInventoryManualAdd = '/home/inventory/manual-add';
   static const homeInventoryTemplates = '/home/inventory/templates';
+  static const homeInventoryTemplateImportReview =
+      '/home/inventory/templates/import-review';
+  static const homeInventoryTemplateDetail =
+      '/home/inventory/templates/:templateId';
   static const homeInventoryReceiptReview = '/home/inventory/receipt-review';
   static const homeShopping = '/home/shopping';
   static const homeCalories = '/home/calories';
@@ -19,5 +23,9 @@ abstract final class AppRoutes {
 
   static String homeCaloriesEntryEditPath(String entryId) {
     return '/home/calories/entry/$entryId/edit';
+  }
+
+  static String homeInventoryTemplateDetailPath(String templateId) {
+    return '/home/inventory/templates/$templateId';
   }
 }

@@ -57,7 +57,7 @@ final class CalorieNutritionOcrRepositoryProvider
 }
 
 String _$calorieNutritionOcrRepositoryHash() =>
-    r'3d3203a682b1e51540499d35afcc01c46e48c418';
+    r'42da416ee54c75fa7c8481261b3d10e19530cece';
 
 @ProviderFor(calorieNutritionImagePicker)
 final calorieNutritionImagePickerProvider =
@@ -151,7 +151,7 @@ final class CalorieNutritionTemplateConfigClientProvider
 }
 
 String _$calorieNutritionTemplateConfigClientHash() =>
-    r'fdbbc4f872de490bd3806b29348fa89cc11c3745';
+    r'ccf18a5b495ed92fdfece978825cfa1bbff901cb';
 
 @ProviderFor(calorieNutritionTemplateModelClient)
 final calorieNutritionTemplateModelClientProvider =
@@ -203,4 +203,4 @@ final class CalorieNutritionTemplateModelClientProvider
 }
 
 String _$calorieNutritionTemplateModelClientHash() =>
-    r'386df73763eb148b943379954390e6fffc453364';
+    r'81b0d4c9f525c09ced580514b0e9eabedcbc4de8';

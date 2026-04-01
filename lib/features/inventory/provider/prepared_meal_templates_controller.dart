@@ -4,6 +4,9 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
+import 'package:yamt/features/inventory/data/'
+    'prepared_meal_recipe_url_parser.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -13,19 +16,29 @@ part 'prepared_meal_templates_controller.g.dart';
 const _preparedMealTemplatesControllerLogName =
     'PreparedMealTemplatesController';
 
+enum PreparedMealTemplateSaveFailureReason {
+  invalidInput,
+  recipeLoadFailed,
+  saveFailed,
+}
+
 class PreparedMealTemplateSaveResult {
   const PreparedMealTemplateSaveResult._({
     required this.isSuccess,
     this.templateId,
+    this.failureReason,
   });
 
   const PreparedMealTemplateSaveResult.success(String templateId)
     : this._(isSuccess: true, templateId: templateId);
 
-  const PreparedMealTemplateSaveResult.failure() : this._(isSuccess: false);
+  const PreparedMealTemplateSaveResult.failure(
+    PreparedMealTemplateSaveFailureReason reason,
+  ) : this._(isSuccess: false, failureReason: reason);
 
   final bool isSuccess;
   final String? templateId;
+  final PreparedMealTemplateSaveFailureReason? failureReason;
 }
 
 @riverpod
@@ -59,7 +72,9 @@ class PreparedMealTemplatesController
         meal.components.isEmpty ||
         meal.totalPortions < 1) {
       return Future<PreparedMealTemplateSaveResult>.value(
-        const PreparedMealTemplateSaveResult.failure(),
+        const PreparedMealTemplateSaveResult.failure(
+          PreparedMealTemplateSaveFailureReason.invalidInput,
+        ),
       );
     }
 
@@ -76,14 +91,205 @@ class PreparedMealTemplatesController
               nextTemplates: nextTemplates,
             );
             if (!saved) {
-              return const PreparedMealTemplateSaveResult.failure();
+              return const PreparedMealTemplateSaveResult.failure(
+                PreparedMealTemplateSaveFailureReason.saveFailed,
+              );
             }
             return PreparedMealTemplateSaveResult.success(template.id);
           },
-          fallbackValue: const PreparedMealTemplateSaveResult.failure(),
+          fallbackValue: const PreparedMealTemplateSaveResult.failure(
+            PreparedMealTemplateSaveFailureReason.saveFailed,
+          ),
           onError: (error, stackTrace) {
             log(
               'Unexpected prepared meal template save error.',
+              name: _preparedMealTemplatesControllerLogName,
+              error: error,
+              stackTrace: stackTrace,
+            );
+          },
+        )
+        .whenComplete(keepAliveLink.close);
+  }
+
+  Future<PreparedMealTemplateSaveResult> createTemplateFromRecipe({
+    required String recipeUrl,
+    String name = '',
+    int? totalPortions,
+  }) {
+    final normalizedRecipeUrl = _normalizeRecipeUrl(recipeUrl);
+    if (normalizedRecipeUrl == null) {
+      return Future<PreparedMealTemplateSaveResult>.value(
+        const PreparedMealTemplateSaveResult.failure(
+          PreparedMealTemplateSaveFailureReason.invalidInput,
+        ),
+      );
+    }
+
+    final keepAliveLink = ref.keepAlive();
+    return _mutationQueue
+        .run<PreparedMealTemplateSaveResult>(
+          operation: () async {
+            final currentTemplates = await _currentTemplates();
+            final importedRecipe = await ref
+                .read(preparedMealRecipeImporterProvider)
+                .importRecipe(normalizedRecipeUrl);
+            if (importedRecipe == null) {
+              return const PreparedMealTemplateSaveResult.failure(
+                PreparedMealTemplateSaveFailureReason.recipeLoadFailed,
+              );
+            }
+
+            return _saveImportedRecipeTemplate(
+              currentTemplates: currentTemplates,
+              importedRecipe: importedRecipe,
+              name: name,
+              totalPortions: totalPortions,
+            );
+          },
+          fallbackValue: const PreparedMealTemplateSaveResult.failure(
+            PreparedMealTemplateSaveFailureReason.saveFailed,
+          ),
+          onError: (error, stackTrace) {
+            log(
+              'Unexpected recipe template save error.',
+              name: _preparedMealTemplatesControllerLogName,
+              error: error,
+              stackTrace: stackTrace,
+            );
+          },
+        )
+        .whenComplete(keepAliveLink.close);
+  }
+
+  Future<PreparedMealTemplateSaveResult> saveImportedRecipeTemplate({
+    required PreparedMealRecipeImport importedRecipe,
+    String name = '',
+    int? totalPortions,
+  }) {
+    final keepAliveLink = ref.keepAlive();
+    return _mutationQueue
+        .run<PreparedMealTemplateSaveResult>(
+          operation: () async {
+            final currentTemplates = await _currentTemplates();
+            return _saveImportedRecipeTemplate(
+              currentTemplates: currentTemplates,
+              importedRecipe: importedRecipe,
+              name: name,
+              totalPortions: totalPortions,
+            );
+          },
+          fallbackValue: const PreparedMealTemplateSaveResult.failure(
+            PreparedMealTemplateSaveFailureReason.saveFailed,
+          ),
+          onError: (error, stackTrace) {
+            log(
+              'Unexpected imported recipe template save error.',
+              name: _preparedMealTemplatesControllerLogName,
+              error: error,
+              stackTrace: stackTrace,
+            );
+          },
+        )
+        .whenComplete(keepAliveLink.close);
+  }
+
+  Future<PreparedMealTemplateSaveResult> updateRecipeTemplate({
+    required String templateId,
+    required String recipeUrl,
+    String name = '',
+    int? totalPortions,
+  }) {
+    final normalizedRecipeUrl = _normalizeRecipeUrl(recipeUrl);
+    if (templateId.trim().isEmpty || normalizedRecipeUrl == null) {
+      return Future<PreparedMealTemplateSaveResult>.value(
+        const PreparedMealTemplateSaveResult.failure(
+          PreparedMealTemplateSaveFailureReason.invalidInput,
+        ),
+      );
+    }
+
+    final keepAliveLink = ref.keepAlive();
+    return _mutationQueue
+        .run<PreparedMealTemplateSaveResult>(
+          operation: () async {
+            final currentTemplates = await _currentTemplates();
+            final templateIndex = currentTemplates.indexWhere(
+              (template) => template.id == templateId,
+            );
+            if (templateIndex < 0) {
+              return const PreparedMealTemplateSaveResult.failure(
+                PreparedMealTemplateSaveFailureReason.invalidInput,
+              );
+            }
+
+            final currentTemplate = currentTemplates[templateIndex];
+            final shouldReloadRecipe =
+                currentTemplate.recipeUrl != normalizedRecipeUrl;
+            var nextRecipeUrl = normalizedRecipeUrl;
+            var nextImageUrl = currentTemplate.imageUrl;
+            var nextRecipeIngredients = currentTemplate.recipeIngredients;
+            var importedTitle = currentTemplate.name;
+            var importedServings = currentTemplate.totalPortions;
+
+            if (shouldReloadRecipe) {
+              final importedRecipe = await ref
+                  .read(preparedMealRecipeImporterProvider)
+                  .importRecipe(normalizedRecipeUrl);
+              if (importedRecipe == null) {
+                return const PreparedMealTemplateSaveResult.failure(
+                  PreparedMealTemplateSaveFailureReason.recipeLoadFailed,
+                );
+              }
+              nextRecipeUrl = importedRecipe.recipeUrl;
+              nextImageUrl = importedRecipe.imageUrl;
+              nextRecipeIngredients = importedRecipe.ingredients;
+              importedTitle = importedRecipe.title;
+              importedServings = importedRecipe.servings;
+            }
+
+            final resolvedName = _resolveRecipeTemplateName(
+              name: name,
+              importedTitle: importedTitle,
+              normalizedRecipeUrl: nextRecipeUrl,
+            );
+            if (resolvedName == null) {
+              return const PreparedMealTemplateSaveResult.failure(
+                PreparedMealTemplateSaveFailureReason.invalidInput,
+              );
+            }
+
+            final resolvedPortions = _resolveRecipeTemplatePortions(
+              requestedPortions: totalPortions,
+              importedServings: importedServings,
+            );
+            final nextTemplates = List<PreparedMeal>.from(currentTemplates);
+            nextTemplates[templateIndex] = currentTemplate.copyWith(
+              name: resolvedName,
+              imageUrl: nextImageUrl,
+              recipeUrl: nextRecipeUrl,
+              recipeIngredients: nextRecipeIngredients,
+              totalPortions: resolvedPortions,
+              remainingPortions: resolvedPortions,
+              updatedAt: DateTime.now(),
+            );
+            final saved = await _saveTemplates(
+              previousTemplates: currentTemplates,
+              nextTemplates: nextTemplates,
+            );
+            if (!saved) {
+              return const PreparedMealTemplateSaveResult.failure(
+                PreparedMealTemplateSaveFailureReason.saveFailed,
+              );
+            }
+            return PreparedMealTemplateSaveResult.success(templateId);
+          },
+          fallbackValue: const PreparedMealTemplateSaveResult.failure(
+            PreparedMealTemplateSaveFailureReason.saveFailed,
+          ),
+          onError: (error, stackTrace) {
+            log(
+              'Unexpected recipe template update error.',
               name: _preparedMealTemplatesControllerLogName,
               error: error,
               stackTrace: stackTrace,
@@ -218,6 +424,48 @@ class PreparedMealTemplatesController
       },
     );
   }
+
+  Future<PreparedMealTemplateSaveResult> _saveImportedRecipeTemplate({
+    required List<PreparedMeal> currentTemplates,
+    required PreparedMealRecipeImport importedRecipe,
+    required String name,
+    required int? totalPortions,
+  }) async {
+    final resolvedName = _resolveRecipeTemplateName(
+      name: name,
+      importedTitle: importedRecipe.title,
+      normalizedRecipeUrl: importedRecipe.recipeUrl,
+    );
+    final resolvedPortions = _resolveRecipeTemplatePortions(
+      requestedPortions: totalPortions,
+      importedServings: importedRecipe.servings,
+    );
+    if (resolvedName == null) {
+      return const PreparedMealTemplateSaveResult.failure(
+        PreparedMealTemplateSaveFailureReason.invalidInput,
+      );
+    }
+
+    final template = _buildTemplateFromRecipe(
+      recipeUrl: importedRecipe.recipeUrl,
+      imageUrl: importedRecipe.imageUrl,
+      name: resolvedName,
+      recipeIngredients: importedRecipe.ingredients,
+      totalPortions: resolvedPortions,
+    );
+    final nextTemplates = List<PreparedMeal>.from(currentTemplates)
+      ..add(template);
+    final saved = await _saveTemplates(
+      previousTemplates: currentTemplates,
+      nextTemplates: nextTemplates,
+    );
+    if (!saved) {
+      return const PreparedMealTemplateSaveResult.failure(
+        PreparedMealTemplateSaveFailureReason.saveFailed,
+      );
+    }
+    return PreparedMealTemplateSaveResult.success(template.id);
+  }
 }
 
 PreparedMeal _buildTemplateFromMeal(PreparedMeal meal) {
@@ -229,6 +477,111 @@ PreparedMeal _buildTemplateFromMeal(PreparedMeal meal) {
     createdAt: now,
     updatedAt: now,
   );
+}
+
+PreparedMeal _buildTemplateFromRecipe({
+  required String recipeUrl,
+  required String? imageUrl,
+  required String name,
+  required List<String> recipeIngredients,
+  required int totalPortions,
+}) {
+  final now = DateTime.now();
+  return PreparedMeal(
+    id: PreparedMealTemplatesController._uuid.v4(),
+    name: name,
+    imageUrl: imageUrl,
+    recipeUrl: recipeUrl,
+    recipeIngredients: recipeIngredients,
+    totalPortions: totalPortions,
+    remainingPortions: totalPortions,
+    totalKcal: 0,
+    totalProtein: 0,
+    totalCarbs: 0,
+    totalFat: 0,
+    createdAt: now,
+    updatedAt: now,
+    components: const <PreparedMealComponent>[],
+  );
+}
+
+String? _normalizeRecipeUrl(String value) =>
+    normalizePreparedMealRecipeUrl(value);
+
+String? _resolveRecipeTemplateName({
+  required String name,
+  required String importedTitle,
+  required String? normalizedRecipeUrl,
+}) {
+  final trimmedName = name.trim();
+  if (trimmedName.isNotEmpty) {
+    return trimmedName;
+  }
+  final trimmedImportedTitle = importedTitle.trim();
+  if (trimmedImportedTitle.isNotEmpty) {
+    return trimmedImportedTitle;
+  }
+  if (normalizedRecipeUrl == null) {
+    return null;
+  }
+
+  final uri = Uri.tryParse(normalizedRecipeUrl);
+  if (uri == null) {
+    return null;
+  }
+
+  for (final segment in uri.pathSegments.reversed) {
+    final normalizedSegment = _humanizeRecipePathSegment(segment);
+    if (normalizedSegment != null) {
+      return normalizedSegment;
+    }
+  }
+  return uri.host;
+}
+
+int _resolveRecipeTemplatePortions({
+  required int? requestedPortions,
+  required int importedServings,
+}) {
+  if (requestedPortions != null && requestedPortions > 0) {
+    return requestedPortions;
+  }
+  if (importedServings > 0) {
+    return importedServings;
+  }
+  return 1;
+}
+
+String? _humanizeRecipePathSegment(String segment) {
+  final trimmedSegment = Uri.decodeComponent(segment).trim();
+  if (trimmedSegment.isEmpty) {
+    return null;
+  }
+
+  final withoutExtension = trimmedSegment.replaceFirst(
+    RegExp(r'\.[A-Za-z0-9]+$'),
+    '',
+  );
+  final withoutSeparators = withoutExtension
+      .replaceAll(RegExp(r'[-_]+'), ' ')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+  if (withoutSeparators.isEmpty ||
+      RegExp(r'^\d+$').hasMatch(withoutSeparators)) {
+    return null;
+  }
+  if (withoutSeparators.length < 2) {
+    return null;
+  }
+
+  return withoutSeparators.split(' ').map(_capitalizeWord).join(' ');
+}
+
+String _capitalizeWord(String word) {
+  if (word.isEmpty) {
+    return word;
+  }
+  return '${word[0].toUpperCase()}${word.substring(1)}';
 }
 
 List<PreparedMeal> _sortTemplates(List<PreparedMeal> templates) {

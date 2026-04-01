@@ -1187,6 +1187,114 @@ abstract class AppLocalizations {
   /// **'Template deleted.'**
   String get preparedMealTemplateDeletedMessage;
 
+  /// No description provided for @preparedMealTemplateAddRecipeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add recipe template'**
+  String get preparedMealTemplateAddRecipeAction;
+
+  /// No description provided for @preparedMealTemplateCreateFromRecipeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create from recipe'**
+  String get preparedMealTemplateCreateFromRecipeAction;
+
+  /// No description provided for @preparedMealTemplateCreateFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Template could not be created.'**
+  String get preparedMealTemplateCreateFailedMessage;
+
+  /// No description provided for @preparedMealTemplateRecipeImportFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe data could not be imported.'**
+  String get preparedMealTemplateRecipeImportFailedMessage;
+
+  /// No description provided for @preparedMealTemplateRecipeSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create template from recipe'**
+  String get preparedMealTemplateRecipeSheetTitle;
+
+  /// No description provided for @preparedMealTemplateRecipeEditSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit recipe template'**
+  String get preparedMealTemplateRecipeEditSheetTitle;
+
+  /// No description provided for @preparedMealTemplateRecipeSheetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a recipe link, for example from Chefkoch.'**
+  String get preparedMealTemplateRecipeSheetSubtitle;
+
+  /// No description provided for @preparedMealTemplateRecipeUrlLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe link'**
+  String get preparedMealTemplateRecipeUrlLabel;
+
+  /// No description provided for @preparedMealTemplateRecipeUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://www.chefkoch.de/...'**
+  String get preparedMealTemplateRecipeUrlHint;
+
+  /// No description provided for @preparedMealTemplateRecipeUrlInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid recipe link.'**
+  String get preparedMealTemplateRecipeUrlInvalid;
+
+  /// No description provided for @preparedMealTemplateNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Template name'**
+  String get preparedMealTemplateNameLabel;
+
+  /// No description provided for @preparedMealTemplateNameHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional. If empty, the name is derived from the link.'**
+  String get preparedMealTemplateNameHelper;
+
+  /// No description provided for @preparedMealTemplatePortionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Portions'**
+  String get preparedMealTemplatePortionsLabel;
+
+  /// No description provided for @preparedMealTemplatePortionsHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional. If empty, the servings from the recipe are used.'**
+  String get preparedMealTemplatePortionsHelper;
+
+  /// No description provided for @preparedMealTemplateRecipePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe link'**
+  String get preparedMealTemplateRecipePlaceholder;
+
+  /// No description provided for @preparedMealTemplateNoIngredientsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No ingredients linked yet.'**
+  String get preparedMealTemplateNoIngredientsYet;
+
+  /// No description provided for @preparedMealTemplateUpdatedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Template updated.'**
+  String get preparedMealTemplateUpdatedMessage;
+
+  /// No description provided for @preparedMealTemplateRecipeSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe: {host}'**
+  String preparedMealTemplateRecipeSource(String host);
+
   /// No description provided for @preparedMealTemplatePortions.
   ///
   /// In en, this message translates to:

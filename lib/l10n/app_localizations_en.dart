@@ -565,6 +565,62 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealTemplateDeletedMessage => 'Template deleted.';
 
   @override
+  String get preparedMealTemplateAddRecipeAction => 'Add recipe template';
+
+  @override
+  String get preparedMealTemplateCreateFromRecipeAction => 'Create from recipe';
+
+  @override
+  String get preparedMealTemplateCreateFailedMessage => 'Template could not be created.';
+
+  @override
+  String get preparedMealTemplateRecipeImportFailedMessage => 'Recipe data could not be imported.';
+
+  @override
+  String get preparedMealTemplateRecipeSheetTitle => 'Create template from recipe';
+
+  @override
+  String get preparedMealTemplateRecipeEditSheetTitle => 'Edit recipe template';
+
+  @override
+  String get preparedMealTemplateRecipeSheetSubtitle => 'Paste a recipe link, for example from Chefkoch.';
+
+  @override
+  String get preparedMealTemplateRecipeUrlLabel => 'Recipe link';
+
+  @override
+  String get preparedMealTemplateRecipeUrlHint => 'https://www.chefkoch.de/...';
+
+  @override
+  String get preparedMealTemplateRecipeUrlInvalid => 'Please enter a valid recipe link.';
+
+  @override
+  String get preparedMealTemplateNameLabel => 'Template name';
+
+  @override
+  String get preparedMealTemplateNameHelper => 'Optional. If empty, the name is derived from the link.';
+
+  @override
+  String get preparedMealTemplatePortionsLabel => 'Portions';
+
+  @override
+  String get preparedMealTemplatePortionsHelper => 'Optional. If empty, the servings from the recipe are used.';
+
+  @override
+  String get preparedMealTemplateRecipePlaceholder => 'Recipe link';
+
+  @override
+  String get preparedMealTemplateNoIngredientsYet => 'No ingredients linked yet.';
+
+  @override
+  String get preparedMealTemplateUpdatedMessage => 'Template updated.';
+
+  @override
+  String preparedMealTemplateRecipeSource(String host) {
+    return 'Recipe: $host';
+  }
+
+  @override
   String preparedMealTemplatePortions(int count) {
     return '$count portions';
   }

@@ -565,6 +565,62 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateDeletedMessage => 'Vorlage gelöscht.';
 
   @override
+  String get preparedMealTemplateAddRecipeAction => 'Rezeptvorlage hinzufügen';
+
+  @override
+  String get preparedMealTemplateCreateFromRecipeAction => 'Aus Rezept anlegen';
+
+  @override
+  String get preparedMealTemplateCreateFailedMessage => 'Vorlage konnte nicht erstellt werden.';
+
+  @override
+  String get preparedMealTemplateRecipeImportFailedMessage => 'Rezeptdaten konnten nicht importiert werden.';
+
+  @override
+  String get preparedMealTemplateRecipeSheetTitle => 'Vorlage aus Rezept anlegen';
+
+  @override
+  String get preparedMealTemplateRecipeEditSheetTitle => 'Rezeptvorlage bearbeiten';
+
+  @override
+  String get preparedMealTemplateRecipeSheetSubtitle => 'Füge einen Rezept-Link ein, zum Beispiel von Chefkoch.';
+
+  @override
+  String get preparedMealTemplateRecipeUrlLabel => 'Rezept-Link';
+
+  @override
+  String get preparedMealTemplateRecipeUrlHint => 'https://www.chefkoch.de/...';
+
+  @override
+  String get preparedMealTemplateRecipeUrlInvalid => 'Bitte gib einen gültigen Rezept-Link ein.';
+
+  @override
+  String get preparedMealTemplateNameLabel => 'Vorlagenname';
+
+  @override
+  String get preparedMealTemplateNameHelper => 'Optional. Wenn leer, wird der Name aus dem Link abgeleitet.';
+
+  @override
+  String get preparedMealTemplatePortionsLabel => 'Portionen';
+
+  @override
+  String get preparedMealTemplatePortionsHelper => 'Optional. Wenn leer, werden die Portionen aus dem Rezept übernommen.';
+
+  @override
+  String get preparedMealTemplateRecipePlaceholder => 'Rezept-Link';
+
+  @override
+  String get preparedMealTemplateNoIngredientsYet => 'Noch keine Zutaten verknüpft.';
+
+  @override
+  String get preparedMealTemplateUpdatedMessage => 'Vorlage aktualisiert.';
+
+  @override
+  String preparedMealTemplateRecipeSource(String host) {
+    return 'Rezept: $host';
+  }
+
+  @override
   String preparedMealTemplatePortions(int count) {
     return '$count Portionen';
   }

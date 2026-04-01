@@ -146,6 +146,7 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
                       PreparedMealCover(
                         label: meal.name,
                         imageBytes: storedImageBytes,
+                        imageUrl: meal.imageUrl,
                       ),
                       const SizedBox(width: AppSpacing.md),
                       Expanded(

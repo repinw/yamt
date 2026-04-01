@@ -15,8 +15,13 @@ import 'package:yamt/features/calories/presentation/models/'
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'prepared_meal_templates_page.dart';
+import 'package:yamt/features/meal_templates/presentation/'
+    'meal_template_detail_page.dart';
+import 'package:yamt/features/meal_templates/presentation/models/'
+    'meal_template_import_review_args.dart';
+import 'package:yamt/features/meal_templates/presentation/'
+    'meal_template_import_review_page.dart';
+import 'package:yamt/features/meal_templates/presentation/meal_templates_page.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:yamt/features/scanner/presentation/'
     'inventory_receipt_review_page.dart';
@@ -142,7 +147,27 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.homeInventoryTemplates,
-        builder: (context, state) => const PreparedMealTemplatesPage(),
+        builder: (context, state) => const MealTemplatesPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.homeInventoryTemplateImportReview,
+        builder: (context, state) {
+          final args = state.extra;
+          if (args is! MealTemplateImportReviewArgs) {
+            throw ArgumentError(
+              'Meal template import review route requires '
+              'MealTemplateImportReviewArgs.',
+            );
+          }
+          return MealTemplateImportReviewPage(args: args);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.homeInventoryTemplateDetail,
+        builder: (context, state) {
+          final templateId = state.pathParameters['templateId'] ?? '';
+          return MealTemplateDetailPage(templateId: templateId);
+        },
       ),
       GoRoute(
         path: AppRoutes.homeShopping,
