@@ -156,6 +156,65 @@ void main() {
     expect(find.text('Goal streak'), findsOneWidget);
     expect(find.text('Macro split'), findsNWidgets(2));
   });
+
+  testWidgets(
+    'StatisticsCaloriesView shows no data when macro shares are empty',
+    (tester) async {
+      final snapshot = StatisticsCalorieSnapshot(
+        days: [
+          StatisticsCalorieDaySummary(
+            date: DateTime(2026, 3, 27),
+            entryCount: 0,
+            totalKcal: 0,
+            goalKcal: 2000,
+          ),
+        ],
+        totalEntries: 0,
+        balanceRemainingKcal: 2000,
+        trackedDayCount: 0,
+        goalMetDayCount: 0,
+        averageTrackedKcal: 0,
+        macroShares: const [
+          StatisticsMacroShare(
+            type: StatisticsMacroType.carbs,
+            grams: 0,
+            share: 0,
+          ),
+          StatisticsMacroShare(
+            type: StatisticsMacroType.protein,
+            grams: 0,
+            share: 0,
+          ),
+          StatisticsMacroShare(
+            type: StatisticsMacroType.fat,
+            grams: 0,
+            share: 0,
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        _TestApp(
+          overrides: [
+            statisticsCalorieDataProvider(
+              StatisticsTimeframe.week,
+            ).overrideWith((ref) async => snapshot),
+          ],
+          child: StatisticsCaloriesView(
+            timeframe: StatisticsTimeframe.week,
+            onRetry: () {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('No data yet'), findsOneWidget);
+      expect(
+        find.text('No calorie entries in this period yet.'),
+        findsOneWidget,
+      );
+    },
+  );
 }
 
 class _TestApp extends StatelessWidget {

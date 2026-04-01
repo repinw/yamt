@@ -22,6 +22,10 @@ class StatisticsMacroShareChart extends StatelessWidget {
       AppInventoryEditorial.primary,
       AppInventoryEditorial.warning,
     ];
+    final visibleItems = items.asMap().entries.where(
+      (entry) => entry.value.share > 0,
+    );
+    final hasMacroData = visibleItems.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,10 +36,22 @@ class StatisticsMacroShareChart extends StatelessWidget {
             height: 16,
             child: Row(
               children: [
-                for (var index = 0; index < items.length; index += 1)
+                if (!hasMacroData)
                   Expanded(
-                    flex: _segmentFlex(items[index].share),
-                    child: ColoredBox(color: palette[index % palette.length]),
+                    child: ColoredBox(
+                      key: const ValueKey('statistics-macro-share-empty-bar'),
+                      color: colors.surfaceContainerHighest,
+                    ),
+                  ),
+                for (final entry in visibleItems)
+                  Expanded(
+                    flex: _segmentFlex(entry.value.share),
+                    child: ColoredBox(
+                      key: ValueKey(
+                        'statistics-macro-share-segment-${entry.key}',
+                      ),
+                      color: palette[entry.key % palette.length],
+                    ),
                   ),
               ],
             ),

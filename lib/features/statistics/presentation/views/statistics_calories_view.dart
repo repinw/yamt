@@ -41,7 +41,8 @@ class StatisticsCaloriesView extends ConsumerWidget {
         final chartDays = snapshot.days.length <= 7
             ? snapshot.days
             : snapshot.days.sublist(snapshot.days.length - 7);
-        final topMacro = snapshot.macroShares.isEmpty
+        final hasMacroData = snapshot.macroShares.any((item) => item.share > 0);
+        final topMacro = !hasMacroData
             ? null
             : snapshot.macroShares.reduce(
                 (current, next) => current.share >= next.share ? current : next,
