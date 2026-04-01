@@ -32,9 +32,6 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     final l10n = AppLocalizations.of(context)!;
     final inventoryAsync = ref.watch(inventoryItemsControllerProvider);
     final mealsAsync = ref.watch(preparedMealsControllerProvider);
-    final calorieAsync = _selectedTab == StatisticsTab.calories
-        ? ref.watch(statisticsCalorieDataProvider(_selectedTimeframe))
-        : null;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -76,7 +73,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
             onRetry: _retryHouseholdData,
           ),
           StatisticsTab.calories => StatisticsCaloriesView(
-            calorieAsync: calorieAsync!,
+            timeframe: _selectedTimeframe,
             onRetry: _retryCalorieData,
           ),
         },

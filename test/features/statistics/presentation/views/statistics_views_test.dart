@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/statistics/domain/calorie_metrics.dart';
@@ -12,6 +13,8 @@ import 'package:yamt/features/statistics/presentation/views/'
     'statistics_spending_view.dart';
 import 'package:yamt/features/statistics/presentation/views/'
     'statistics_waste_view.dart';
+import 'package:yamt/features/statistics/provider/'
+    'statistics_calorie_data_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
@@ -43,6 +46,46 @@ void main() {
     expect(find.text('Tracked spending'), findsOneWidget);
     expect(find.text('Top stores'), findsOneWidget);
     expect(find.text('Most expensive items'), findsOneWidget);
+  });
+
+  testWidgets('StatisticsSpendingView shows newest seven chart days', (
+    tester,
+  ) async {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final inventoryItems = List.generate(8, (index) {
+      final day = today.subtract(Duration(days: 7 - index));
+      return InventoryItem.create(
+        id: 'item-$index',
+        name: 'Item $index',
+        entryDate: day,
+        storeName: 'REWE',
+        quantity: 1,
+        initialQuantity: 1,
+        unitPrice: 1,
+        receiptDate: day,
+      );
+    });
+
+    await tester.pumpWidget(
+      _TestApp(
+        child: StatisticsSpendingView(
+          timeframe: StatisticsTimeframe.total,
+          inventoryAsync: AsyncValue.data(inventoryItems),
+          onRetry: () {},
+        ),
+      ),
+    );
+
+    final locale = DateFormat.Md('en');
+    final oldestLabel = locale.format(today.subtract(const Duration(days: 7)));
+    final newestVisibleLabel = locale.format(
+      today.subtract(const Duration(days: 6)),
+    );
+    final latestLabel = locale.format(today);
+
+    expect(find.text(oldestLabel), findsNothing);
+    expect(find.text(newestVisibleLabel), findsOneWidget);
+    expect(find.text(latestLabel), findsOneWidget);
   });
 
   testWidgets('StatisticsWasteView renders placeholder cards', (tester) async {
@@ -96,12 +139,18 @@ void main() {
 
     await tester.pumpWidget(
       _TestApp(
+        overrides: [
+          statisticsCalorieDataProvider(
+            StatisticsTimeframe.week,
+          ).overrideWith((ref) async => snapshot),
+        ],
         child: StatisticsCaloriesView(
-          calorieAsync: AsyncValue.data(snapshot),
+          timeframe: StatisticsTimeframe.week,
           onRetry: () {},
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     expect(find.text('Calories overview'), findsOneWidget);
     expect(find.text('Goal streak'), findsOneWidget);
@@ -110,13 +159,15 @@ void main() {
 }
 
 class _TestApp extends StatelessWidget {
-  const _TestApp({required this.child});
+  const _TestApp({required this.child, this.overrides = const []});
 
   final Widget child;
+  final List<dynamic> overrides;
 
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
+      overrides: overrides.cast(),
       child: MaterialApp(
         locale: const Locale('en'),
         supportedLocales: AppLocalizations.supportedLocales,

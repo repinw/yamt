@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/statistics/domain/calorie_metrics.dart';
+import 'package:yamt/features/statistics/domain/statistics_models.dart';
 import 'package:yamt/features/statistics/presentation/widgets/'
     'statistics_chart_card.dart';
 import 'package:yamt/features/statistics/presentation/widgets/'
@@ -13,22 +14,25 @@ import 'package:yamt/features/statistics/presentation/widgets/'
     'statistics_metric_card.dart';
 import 'package:yamt/features/statistics/presentation/widgets/'
     'statistics_vertical_bar_chart.dart';
+import 'package:yamt/features/statistics/provider/'
+    'statistics_calorie_data_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class StatisticsCaloriesView extends StatelessWidget {
+class StatisticsCaloriesView extends ConsumerWidget {
   const StatisticsCaloriesView({
     super.key,
-    required this.calorieAsync,
+    required this.timeframe,
     required this.onRetry,
   });
 
-  final AsyncValue<StatisticsCalorieSnapshot> calorieAsync;
+  final StatisticsTimeframe timeframe;
   final VoidCallback onRetry;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
+    final calorieAsync = ref.watch(statisticsCalorieDataProvider(timeframe));
 
     return calorieAsync.when(
       data: (snapshot) {
@@ -39,9 +43,9 @@ class StatisticsCaloriesView extends StatelessWidget {
             : snapshot.days.sublist(snapshot.days.length - 7);
         final topMacro = snapshot.macroShares.isEmpty
             ? null
-            : (List<StatisticsMacroShare>.from(snapshot.macroShares)
-                    ..sort((left, right) => right.share.compareTo(left.share)))
-                  .first;
+            : snapshot.macroShares.reduce(
+                (current, next) => current.share >= next.share ? current : next,
+              );
         final dailyChartData = chartDays
             .map((day) {
               return StatisticsBarChartDatum(

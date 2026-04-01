@@ -59,8 +59,11 @@ class StatisticsSpendingView extends StatelessWidget {
     final topTrend = snapshot.priceTrends.isEmpty
         ? null
         : snapshot.priceTrends.first;
-    final spendChartData = snapshot.dailySpendValues
-        .take(7)
+    final spendValues = snapshot.dailySpendValues;
+    final chartDays = spendValues.length <= 7
+        ? spendValues
+        : spendValues.sublist(spendValues.length - 7);
+    final spendChartData = chartDays
         .map((day) {
           return StatisticsBarChartDatum(
             label: DateFormat.Md(locale).format(day.date),
