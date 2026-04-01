@@ -89,7 +89,8 @@ void main() {
               PreparedMealCard(
                 meal: _meal(),
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed: (mealId, portions) async => true,
+                onThrowAwayPressed:
+                    (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,
@@ -131,7 +132,8 @@ void main() {
               PreparedMealCard(
                 meal: _meal(),
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed: (mealId, portions) async => true,
+                onThrowAwayPressed:
+                    (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,
@@ -173,7 +175,8 @@ void main() {
               PreparedMealCard(
                 meal: meal,
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed: (mealId, portions) async => true,
+                onThrowAwayPressed:
+                    (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async {
                   unbundledMealId = mealId;
                   return true;
@@ -218,7 +221,8 @@ void main() {
               PreparedMealCard(
                 meal: _meal(),
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed: (mealId, portions) async => true,
+                onThrowAwayPressed:
+                    (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,
@@ -249,7 +253,8 @@ void main() {
               PreparedMealCard(
                 meal: _meal(),
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed: (mealId, portions) async => true,
+                onThrowAwayPressed:
+                    (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,
@@ -351,7 +356,8 @@ void main() {
                 PreparedMealCard(
                   meal: meal,
                   onEatPressed: (mealId, portions, mealType) async => true,
-                  onThrowAwayPressed: (mealId, portions) async => true,
+                  onThrowAwayPressed:
+                      (mealId, portions, reason) async => true,
                   onUnbundlePressed: (mealId) async => true,
                   onEditPressed:
                       (mealId, name, imageChanged, imageBytes) async => true,
@@ -405,7 +411,8 @@ void main() {
                         }
                         return true;
                       },
-                      onThrowAwayPressed: (mealId, portions) async => true,
+                      onThrowAwayPressed:
+                          (mealId, portions, reason) async => true,
                       onUnbundlePressed: (mealId) async => true,
                       onEditPressed:
                           (mealId, name, imageChanged, imageBytes) async =>
@@ -494,7 +501,8 @@ void main() {
               PreparedMealCard(
                 meal: meal,
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed: (mealId, portions) async => true,
+                onThrowAwayPressed:
+                    (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,

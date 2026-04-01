@@ -85,7 +85,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         amount: amount,
         itemsSnapshot: items,
       ),
-      onThrowAwayItem: controller.throwAwayItem,
+      onThrowAwayItem: (
+        itemId,
+        amount,
+        reason,
+      ) => controller.throwAwayItem(itemId, amount, reason),
       onEatPreparedMeal: (mealId, portions, mealType) => ref
           .read(preparedMealsControllerProvider.notifier)
           .consumePreparedMeal(
@@ -93,9 +97,13 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
             consumedPortions: portions,
             mealType: mealType,
           ),
-      onThrowAwayPreparedMeal: (mealId, portions) => ref
+      onThrowAwayPreparedMeal: (mealId, portions, reason) => ref
           .read(preparedMealsControllerProvider.notifier)
-          .throwAwayPreparedMeal(mealId: mealId, discardedPortions: portions),
+          .throwAwayPreparedMeal(
+            mealId: mealId,
+            discardedPortions: portions,
+            reason: reason,
+          ),
       onUnbundlePreparedMeal: ref
           .read(preparedMealsControllerProvider.notifier)
           .unbundlePreparedMeal,

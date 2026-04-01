@@ -3,8 +3,12 @@ import 'dart:developer' show log;
 
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
@@ -154,6 +158,8 @@ class PendingInventoryConsumption {
 
 @riverpod
 class InventoryItemsController extends _$InventoryItemsController {
+  static const _uuid = Uuid();
+
   StreamSubscription<List<InventoryItem>>? _itemsSubscription;
   final _mutationQueue = SerializedMutationQueue();
   _PendingDeletedInventoryItem? _pendingDeletedItem;
@@ -297,17 +303,67 @@ class InventoryItemsController extends _$InventoryItemsController {
     );
   }
 
-  Future<bool> throwAwayItem(String itemId, int amount) {
+  Future<bool> throwAwayItem(
+    String itemId,
+    int amount,
+    InventoryDiscardReason reason,
+  ) {
     if (amount < 1) {
       return Future<bool>.value(false);
     }
-    return _runItemsMutation(
-      (currentItems) => buildReducedItems(
+
+    return _runSerializedMutation(() async {
+      final currentItems = await _currentPersistedItems();
+      final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
+      if (itemIndex < 0) {
+        return false;
+      }
+
+      final item = currentItems[itemIndex];
+      final discardedAmount = _resolveDiscardedAmount(
+        item: item,
+        requestedAmount: amount,
+      );
+      if (discardedAmount == null) {
+        return false;
+      }
+
+      final nextItems = buildReducedItems(
         currentItems: currentItems,
         itemId: itemId,
         amount: amount,
-      ),
-    );
+      );
+      if (nextItems == null) {
+        return false;
+      }
+
+      final saved = await _saveItems(
+        previousItems: currentItems,
+        nextItems: nextItems,
+      );
+      if (!saved) {
+        return false;
+      }
+
+      final discardEvent = InventoryDiscardEvent.fromInventoryItem(
+        id: _uuid.v4(),
+        item: item,
+        discardedAmount: discardedAmount,
+        reason: reason,
+      );
+      final eventSaved = await ref
+          .read(inventoryDiscardEventRepositoryProvider)
+          .saveEvent(discardEvent);
+      if (eventSaved) {
+        return true;
+      }
+
+      await _saveItems(
+        previousItems: nextItems,
+        nextItems: currentItems,
+      );
+      return false;
+    });
   }
 
   Future<bool> restoreConsumedItem(String itemId, int amount) {
@@ -516,6 +572,17 @@ class InventoryItemsController extends _$InventoryItemsController {
       _publishVisibleItems();
       return false;
     }
+  }
+
+  int? _resolveDiscardedAmount({
+    required InventoryItem item,
+    required int requestedAmount,
+  }) {
+    final maxReducible = _maxReducibleAmount(item);
+    if (maxReducible < 1) {
+      return null;
+    }
+    return requestedAmount > maxReducible ? maxReducible : requestedAmount;
   }
 
   Future<bool> _runSerializedMutation(Future<bool> Function() mutation) {

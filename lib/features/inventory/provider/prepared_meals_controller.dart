@@ -7,9 +7,12 @@ import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
@@ -72,12 +75,17 @@ class PreparedMealsController extends _$PreparedMealsController {
 
   @override
   FutureOr<List<PreparedMeal>> build() {
+    log(
+      'build(): starting prepared meal subscription',
+      name: _preparedMealsControllerLogName,
+    );
     ref.watch(preparedMealRepositoryProvider);
     ref.onDispose(_disposeSubscription);
     return _restartSubscription();
   }
 
   Future<void> refresh() async {
+    log('refresh(): reloading prepared meals', name: _preparedMealsControllerLogName);
     state = const AsyncLoading();
     final next = await AsyncValue.guard(_restartSubscription);
     if (!ref.mounted) {
@@ -94,6 +102,11 @@ class PreparedMealsController extends _$PreparedMealsController {
   }) {
     final trimmedName = name.trim();
     if (trimmedName.isEmpty || totalPortions < 1 || items.isEmpty) {
+      log(
+        'createPreparedMeal(): invalid input '
+        '(name="$trimmedName", totalPortions=$totalPortions, items=${items.length})',
+        name: _preparedMealsControllerLogName,
+      );
       return Future<PreparedMealCreationResult>.value(
         const PreparedMealCreationResult.failure(
           PreparedMealCreationFailureReason.invalidInput,
@@ -105,6 +118,12 @@ class PreparedMealsController extends _$PreparedMealsController {
     return _mutationQueue
         .run<PreparedMealCreationResult>(
           operation: () async {
+            log(
+              'createPreparedMeal(): queued '
+              '(name="$trimmedName", totalPortions=$totalPortions, '
+              'items=${items.length})',
+              name: _preparedMealsControllerLogName,
+            );
             final currentMeals = await _currentMeals();
             final inventoryRepository = ref.read(
               inventoryItemRepositoryProvider,
@@ -136,11 +155,20 @@ class PreparedMealsController extends _$PreparedMealsController {
                 nextMeals: nextMeals,
               );
               if (mealsSaved) {
+                log(
+                  'createPreparedMeal(): saved meal '
+                  '${creationResult.preparedMeal.id}',
+                  name: _preparedMealsControllerLogName,
+                );
                 return PreparedMealCreationResult.success(
                   creationResult.preparedMeal.id,
                 );
               }
 
+              log(
+                'createPreparedMeal(): meal save failed, restoring inventory',
+                name: _preparedMealsControllerLogName,
+              );
               await _restoreInventory(
                 inventoryRepository: inventoryRepository,
                 previousItems: currentItems,
@@ -149,6 +177,10 @@ class PreparedMealsController extends _$PreparedMealsController {
                 PreparedMealCreationFailureReason.mealSaveFailed,
               );
             } on _PreparedMealCreationException catch (error) {
+              log(
+                'createPreparedMeal(): failed with ${error.reason.name}',
+                name: _preparedMealsControllerLogName,
+              );
               return PreparedMealCreationResult.failure(error.reason);
             }
           },
@@ -262,21 +294,41 @@ class PreparedMealsController extends _$PreparedMealsController {
   Future<bool> throwAwayPreparedMeal({
     required String mealId,
     required int discardedPortions,
+    required InventoryDiscardReason reason,
   }) {
     if (discardedPortions < 1) {
+      log(
+        'throwAwayPreparedMeal(): invalid discardedPortions=$discardedPortions',
+        name: _preparedMealsControllerLogName,
+      );
       return Future<bool>.value(false);
     }
 
     final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(() async {
+      log(
+        'throwAwayPreparedMeal(): starting '
+        '(mealId=$mealId, discardedPortions=$discardedPortions, '
+        'reason=${reason.name})',
+        name: _preparedMealsControllerLogName,
+      );
       final currentMeals = await _currentMeals();
       final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
       if (mealIndex < 0) {
+        log(
+          'throwAwayPreparedMeal(): meal not found ($mealId)',
+          name: _preparedMealsControllerLogName,
+        );
         return false;
       }
 
       final meal = currentMeals[mealIndex];
       if (discardedPortions > meal.remainingPortions) {
+        log(
+          'throwAwayPreparedMeal(): discardedPortions exceed remaining '
+          '($discardedPortions > ${meal.remainingPortions})',
+          name: _preparedMealsControllerLogName,
+        );
         return false;
       }
 
@@ -285,7 +337,46 @@ class PreparedMealsController extends _$PreparedMealsController {
         mealIndex: mealIndex,
         consumedPortions: discardedPortions,
       );
-      return _saveMeals(previousMeals: currentMeals, nextMeals: nextMeals);
+      final savedMeals = await _saveMeals(
+        previousMeals: currentMeals,
+        nextMeals: nextMeals,
+      );
+      if (!savedMeals) {
+        log(
+          'throwAwayPreparedMeal(): _saveMeals returned false',
+          name: _preparedMealsControllerLogName,
+        );
+        return false;
+      }
+      log(
+        'throwAwayPreparedMeal(): prepared meals saved, persisting discard event',
+        name: _preparedMealsControllerLogName,
+      );
+
+      final discardEvent = InventoryDiscardEvent.fromPreparedMeal(
+        id: _uuid.v4(),
+        meal: meal,
+        discardedPortions: discardedPortions,
+        reason: reason,
+      );
+      final eventSaved = await ref
+          .read(inventoryDiscardEventRepositoryProvider)
+          .saveEvent(discardEvent);
+      if (eventSaved) {
+        log(
+          'throwAwayPreparedMeal(): discard event saved (${discardEvent.id})',
+          name: _preparedMealsControllerLogName,
+        );
+        return true;
+      }
+
+      log(
+        'throwAwayPreparedMeal(): discard event save failed, '
+        'restoring previous meal state',
+        name: _preparedMealsControllerLogName,
+      );
+      await _saveMeals(previousMeals: nextMeals, nextMeals: currentMeals);
+      return false;
     }).whenComplete(keepAliveLink.close);
   }
 
@@ -361,12 +452,20 @@ class PreparedMealsController extends _$PreparedMealsController {
   }
 
   Future<List<PreparedMeal>> _restartSubscription() {
+    log(
+      '_restartSubscription(): creating repository watch',
+      name: _preparedMealsControllerLogName,
+    );
     final initialMeals = Completer<List<PreparedMeal>>();
     final repository = ref.read(preparedMealRepositoryProvider);
     _disposeSubscription();
 
     _mealsSubscription = repository.watchAll().listen(
       (meals) {
+        log(
+          '_restartSubscription(): received ${meals.length} meals from watch',
+          name: _preparedMealsControllerLogName,
+        );
         if (!initialMeals.isCompleted) {
           initialMeals.complete(meals);
           return;
@@ -374,6 +473,12 @@ class PreparedMealsController extends _$PreparedMealsController {
         _onRealtimeMeals(meals);
       },
       onError: (Object error, StackTrace stackTrace) {
+        log(
+          '_restartSubscription(): watch emitted error',
+          name: _preparedMealsControllerLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
         if (!initialMeals.isCompleted) {
           initialMeals.completeError(error, stackTrace);
           return;
@@ -389,6 +494,10 @@ class PreparedMealsController extends _$PreparedMealsController {
     final currentSubscription = _mealsSubscription;
     _mealsSubscription = null;
     if (currentSubscription != null) {
+      log(
+        '_disposeSubscription(): cancelling existing watch',
+        name: _preparedMealsControllerLogName,
+      );
       unawaited(currentSubscription.cancel());
     }
   }
@@ -410,8 +519,16 @@ class PreparedMealsController extends _$PreparedMealsController {
   Future<List<PreparedMeal>> _currentMeals() async {
     final currentData = state.asData?.value;
     if (currentData != null) {
+      log(
+        '_currentMeals(): using in-memory state (${currentData.length} meals)',
+        name: _preparedMealsControllerLogName,
+      );
       return currentData;
     }
+    log(
+      '_currentMeals(): awaiting controller future',
+      name: _preparedMealsControllerLogName,
+    );
     return future;
   }
 
@@ -424,9 +541,18 @@ class PreparedMealsController extends _$PreparedMealsController {
     }
 
     try {
+      log(
+        '_saveMeals(): writing ${nextMeals.length} meals '
+        '(previous=${previousMeals.length})',
+        name: _preparedMealsControllerLogName,
+      );
       final saved = await ref
           .read(preparedMealRepositoryProvider)
           .saveAll(nextMeals);
+      log(
+        '_saveMeals(): repository returned $saved',
+        name: _preparedMealsControllerLogName,
+      );
       if (!saved && ref.mounted) {
         state = AsyncData(previousMeals);
       }
@@ -463,7 +589,18 @@ class PreparedMealsController extends _$PreparedMealsController {
 
   Future<bool> _runSerializedMutation(Future<bool> Function() mutation) {
     return _mutationQueue.run<bool>(
-      operation: mutation,
+      operation: () async {
+        log(
+          '_runSerializedMutation(): starting queued mutation',
+          name: _preparedMealsControllerLogName,
+        );
+        final result = await mutation();
+        log(
+          '_runSerializedMutation(): finished queued mutation => $result',
+          name: _preparedMealsControllerLogName,
+        );
+        return result;
+      },
       fallbackValue: false,
       onError: (error, stackTrace) {
         log(

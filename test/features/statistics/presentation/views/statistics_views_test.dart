@@ -3,8 +3,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_discard_event_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/statistics/domain/calorie_metrics.dart';
 import 'package:yamt/features/statistics/domain/statistics_models.dart';
 import 'package:yamt/features/statistics/presentation/views/'
@@ -16,6 +18,23 @@ import 'package:yamt/features/statistics/presentation/views/'
 import 'package:yamt/features/statistics/provider/'
     'statistics_calorie_data_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+class _FakeInventoryDiscardEventRepository
+    implements InventoryDiscardEventRepository {
+  const _FakeInventoryDiscardEventRepository(this.events);
+
+  final List<InventoryDiscardEvent> events;
+
+  @override
+  Future<List<InventoryDiscardEvent>> readAll() async {
+    return events;
+  }
+
+  @override
+  Future<bool> saveEvent(InventoryDiscardEvent event) async {
+    return true;
+  }
+}
 
 void main() {
   testWidgets('StatisticsSpendingView renders tracked spending cards', (
@@ -91,13 +110,20 @@ void main() {
   testWidgets('StatisticsWasteView renders placeholder cards', (tester) async {
     await tester.pumpWidget(
       _TestApp(
+        overrides: [
+          inventoryDiscardEventRepositoryProvider.overrideWithValue(
+            const _FakeInventoryDiscardEventRepository(
+              <InventoryDiscardEvent>[],
+            ),
+          ),
+        ],
         child: StatisticsWasteView(
-          inventoryAsync: const AsyncValue.data(<InventoryItem>[]),
-          mealsAsync: const AsyncValue.data(<PreparedMeal>[]),
+          timeframe: StatisticsTimeframe.week,
           onRetry: () {},
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     expect(find.text('Food waste overview'), findsOneWidget);
     expect(find.text('Waste reasons'), findsOneWidget);

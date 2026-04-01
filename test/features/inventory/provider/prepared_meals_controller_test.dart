@@ -4,9 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
@@ -103,6 +106,26 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   }
 
   Future<void> dispose() => _controller.close();
+}
+
+class _FakeInventoryDiscardEventRepository
+    implements InventoryDiscardEventRepository {
+  bool saveShouldFail = false;
+  final List<InventoryDiscardEvent> savedEvents = <InventoryDiscardEvent>[];
+
+  @override
+  Future<List<InventoryDiscardEvent>> readAll() async {
+    return List<InventoryDiscardEvent>.from(savedEvents);
+  }
+
+  @override
+  Future<bool> saveEvent(InventoryDiscardEvent event) async {
+    if (saveShouldFail) {
+      return false;
+    }
+    savedEvents.add(event);
+    return true;
+  }
 }
 
 ProviderSubscription<AsyncValue<List<PreparedMeal>>> _keepControllerAlive(
@@ -403,6 +426,7 @@ void main() {
         ],
       );
       final calorieLogRepository = FakeCalorieLogRepository();
+      final discardEventRepository = _FakeInventoryDiscardEventRepository();
       addTearDown(inventoryRepository.dispose);
       addTearDown(preparedMealRepository.dispose);
       addTearDown(calorieLogRepository.dispose);
@@ -416,6 +440,9 @@ void main() {
             preparedMealRepository,
           ),
           calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+          inventoryDiscardEventRepositoryProvider.overrideWithValue(
+            discardEventRepository,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -457,6 +484,7 @@ void main() {
         ],
       );
       final calorieLogRepository = FakeCalorieLogRepository();
+      final discardEventRepository = _FakeInventoryDiscardEventRepository();
       addTearDown(inventoryRepository.dispose);
       addTearDown(preparedMealRepository.dispose);
       addTearDown(calorieLogRepository.dispose);
@@ -470,6 +498,9 @@ void main() {
             preparedMealRepository,
           ),
           calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+          inventoryDiscardEventRepositoryProvider.overrideWithValue(
+            discardEventRepository,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -479,11 +510,16 @@ void main() {
       await container.read(preparedMealsControllerProvider.future);
       final saved = await container
           .read(preparedMealsControllerProvider.notifier)
-          .throwAwayPreparedMeal(mealId: 'meal-1', discardedPortions: 1);
+          .throwAwayPreparedMeal(
+            mealId: 'meal-1',
+            discardedPortions: 1,
+            reason: InventoryDiscardReason.other,
+          );
 
       expect(saved, isTrue);
       expect(preparedMealRepository.savedMeals, isEmpty);
       expect(calorieLogRepository.entries, isEmpty);
+      expect(discardEventRepository.savedEvents, hasLength(1));
       expect(
         container.read(preparedMealsControllerProvider).asData?.value,
         isEmpty,
@@ -534,6 +570,71 @@ void main() {
 
       expect(restored, isTrue);
       expect(preparedMealRepository.savedMeals.single.remainingPortions, 2);
+    },
+  );
+
+  test(
+    'throwAwayPreparedMeal rolls back and returns false when event save fails',
+    () async {
+      final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: [item],
+      );
+      final preparedMealRepository = _FakePreparedMealRepository(
+        initialMeals: [
+          _meal(
+            id: 'meal-1',
+            name: 'Lunch box',
+            item: item,
+          ).copyWith(remainingPortions: 1),
+        ],
+      );
+      final calorieLogRepository = FakeCalorieLogRepository();
+      final discardEventRepository = _FakeInventoryDiscardEventRepository()
+        ..saveShouldFail = true;
+      addTearDown(inventoryRepository.dispose);
+      addTearDown(preparedMealRepository.dispose);
+      addTearDown(calorieLogRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(
+            inventoryRepository,
+          ),
+          preparedMealRepositoryProvider.overrideWithValue(
+            preparedMealRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+          inventoryDiscardEventRepositoryProvider.overrideWithValue(
+            discardEventRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+
+      await container.read(preparedMealsControllerProvider.future);
+      final saved = await container
+          .read(preparedMealsControllerProvider.notifier)
+          .throwAwayPreparedMeal(
+            mealId: 'meal-1',
+            discardedPortions: 1,
+            reason: InventoryDiscardReason.other,
+          );
+
+      expect(saved, isFalse);
+      expect(preparedMealRepository.savedMeals.single.remainingPortions, 1);
+      expect(discardEventRepository.savedEvents, isEmpty);
+      expect(
+        container
+            .read(preparedMealsControllerProvider)
+            .asData
+            ?.value
+            .single
+            .remainingPortions,
+        1,
+      );
     },
   );
 

@@ -493,6 +493,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealConfirmAction => 'Bestätigen';
 
   @override
+  String get inventoryDiscardReasonTitle => 'Warum wirfst du das weg?';
+
+  @override
+  String get inventoryDiscardReasonExpired => 'Abgelaufen';
+
+  @override
+  String get inventoryDiscardReasonSpoiled => 'Verdorben';
+
+  @override
+  String get inventoryDiscardReasonCookedTooMuch => 'Zu viel gekocht';
+
+  @override
+  String get inventoryDiscardReasonOther => 'Sonstiges';
+
+  @override
   String get preparedMealSaveTemplateAction => 'Als Vorlage speichern';
 
   @override
@@ -1321,10 +1336,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get statisticsWasteTrackingMissingMessage => 'Wegwerf-Events und Gründe werden aktuell noch nicht dauerhaft gespeichert.';
 
   @override
+  String statisticsWasteOverviewSummary(int eventCount, Object lossValue) {
+    String _temp0 = intl.Intl.pluralLogic(
+      eventCount,
+      locale: localeName,
+      other: '$eventCount Wegwerf-Events · $lossValue erfasster Verlust',
+      one: '1 Wegwerf-Event · $lossValue erfasster Verlust',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get statisticsWasteRatioTitle => 'Verhältnis & Geldverlust';
 
   @override
   String get statisticsWasteMoneyLossMissing => 'Sobald Wegwerfwerte erfasst werden, erscheint hier das Verhältnis und der Euro-Verlust.';
+
+  @override
+  String get statisticsWasteMoneyLossTracked => 'Erfasster Wert der weggeworfenen Lebensmittel im Zeitraum.';
 
   @override
   String get statisticsWasteReasonsTitle => 'Waste-Gründe';
@@ -1333,10 +1362,26 @@ class AppLocalizationsDe extends AppLocalizations {
   String get statisticsWasteReasonsMissing => 'Füge beim Wegwerfen Gründe wie abgelaufen oder zu viel gekocht hinzu, damit wir Muster erkennen.';
 
   @override
+  String statisticsWasteReasonsTopSummary(int count) {
+    return 'Häufigster Grund über $count Wegwerf-Events.';
+  }
+
+  @override
   String get statisticsWasteItemsTitle => 'Oft weggeworfen';
 
   @override
   String get statisticsWasteItemsMissing => 'Sobald genug Wegwerf-Events vorliegen, zeigen wir hier deine häufigsten Problemartikel.';
+
+  @override
+  String statisticsWasteItemsTopSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '${count}x weggeworfen',
+      one: '1x weggeworfen',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get statisticsCaloriesOverviewTitle => 'Kalorien Überblick';

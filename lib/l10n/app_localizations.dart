@@ -1043,6 +1043,36 @@ abstract class AppLocalizations {
   /// **'Confirm'**
   String get preparedMealConfirmAction;
 
+  /// No description provided for @inventoryDiscardReasonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Why are you throwing this away?'**
+  String get inventoryDiscardReasonTitle;
+
+  /// No description provided for @inventoryDiscardReasonExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get inventoryDiscardReasonExpired;
+
+  /// No description provided for @inventoryDiscardReasonSpoiled.
+  ///
+  /// In en, this message translates to:
+  /// **'Spoiled'**
+  String get inventoryDiscardReasonSpoiled;
+
+  /// No description provided for @inventoryDiscardReasonCookedTooMuch.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooked too much'**
+  String get inventoryDiscardReasonCookedTooMuch;
+
+  /// No description provided for @inventoryDiscardReasonOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get inventoryDiscardReasonOther;
+
   /// No description provided for @preparedMealSaveTemplateAction.
   ///
   /// In en, this message translates to:
@@ -2663,6 +2693,12 @@ abstract class AppLocalizations {
   /// **'Discard events and reasons are not persisted yet.'**
   String get statisticsWasteTrackingMissingMessage;
 
+  /// No description provided for @statisticsWasteOverviewSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{eventCount, plural, =1{1 discard event · {lossValue} tracked loss} other{{eventCount} discard events · {lossValue} tracked loss}}'**
+  String statisticsWasteOverviewSummary(int eventCount, Object lossValue);
+
   /// No description provided for @statisticsWasteRatioTitle.
   ///
   /// In en, this message translates to:
@@ -2674,6 +2710,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Once discarded values are tracked, the ratio and exact money loss will appear here.'**
   String get statisticsWasteMoneyLossMissing;
+
+  /// No description provided for @statisticsWasteMoneyLossTracked.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracked value of thrown-away food in this period.'**
+  String get statisticsWasteMoneyLossTracked;
 
   /// No description provided for @statisticsWasteReasonsTitle.
   ///
@@ -2687,6 +2729,12 @@ abstract class AppLocalizations {
   /// **'Add reasons such as expired or cooked too much when throwing items away so we can surface patterns.'**
   String get statisticsWasteReasonsMissing;
 
+  /// No description provided for @statisticsWasteReasonsTopSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Most common reason across {count} discard events.'**
+  String statisticsWasteReasonsTopSummary(int count);
+
   /// No description provided for @statisticsWasteItemsTitle.
   ///
   /// In en, this message translates to:
@@ -2698,6 +2746,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Once enough discard events exist, your most frequent problem items will show up here.'**
   String get statisticsWasteItemsMissing;
+
+  /// No description provided for @statisticsWasteItemsTopSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{discarded once} other{discarded {count} times}}'**
+  String statisticsWasteItemsTopSummary(int count);
 
   /// No description provided for @statisticsCaloriesOverviewTitle.
   ///

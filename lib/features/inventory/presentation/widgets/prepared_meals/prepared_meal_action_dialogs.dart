@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
@@ -6,6 +8,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _defaultPreparedMealPortions = 1;
+const _preparedMealDialogsLogName = 'PreparedMealDialogs';
 
 class PreparedMealEatDialogResult {
   const PreparedMealEatDialogResult({
@@ -84,12 +87,23 @@ Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
                   if (portions == null ||
                       portions < 1 ||
                       portions > meal.remainingPortions) {
+                    log(
+                      'showPreparedMealEatDialog(): invalid portions '
+                      '"${portionsController.text}" for meal ${meal.id}',
+                      name: _preparedMealDialogsLogName,
+                    );
                     _showInvalidPortionsSnackBar(
                       scaffoldContext: context,
                       message: l10n.preparedMealInvalidPortionsRange,
                     );
                     return;
                   }
+                  log(
+                    'showPreparedMealEatDialog(): confirmed '
+                    '(mealId=${meal.id}, portions=$portions, '
+                    'mealType=${selectedMealType.name})',
+                    name: _preparedMealDialogsLogName,
+                  );
                   Navigator.of(dialogContext).pop(
                     PreparedMealEatDialogResult(
                       portions: portions,
@@ -144,12 +158,22 @@ Future<int?> showPreparedMealPortionDialog({
               if (portions == null ||
                   portions < 1 ||
                   portions > meal.remainingPortions) {
+                log(
+                  'showPreparedMealPortionDialog(): invalid portions '
+                  '"${controller.text}" for meal ${meal.id}',
+                  name: _preparedMealDialogsLogName,
+                );
                 _showInvalidPortionsSnackBar(
                   scaffoldContext: context,
                   message: l10n.preparedMealInvalidPortionsRange,
                 );
                 return;
               }
+              log(
+                'showPreparedMealPortionDialog(): confirmed '
+                '(mealId=${meal.id}, portions=$portions)',
+                name: _preparedMealDialogsLogName,
+              );
               Navigator.of(dialogContext).pop(portions);
             },
             child: Text(l10n.preparedMealConfirmAction),

@@ -3,6 +3,9 @@ import 'dart:collection';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_discard_event_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -117,6 +120,26 @@ class _RecordingShoppingListController extends ShoppingListController {
       quantity: quantity,
       estimatedUnitPrice: estimatedUnitPrice,
     );
+    return true;
+  }
+}
+
+class _FakeInventoryDiscardEventRepository
+    implements InventoryDiscardEventRepository {
+  bool saveShouldFail = false;
+  final List<InventoryDiscardEvent> savedEvents = <InventoryDiscardEvent>[];
+
+  @override
+  Future<List<InventoryDiscardEvent>> readAll() async {
+    return List<InventoryDiscardEvent>.from(savedEvents);
+  }
+
+  @override
+  Future<bool> saveEvent(InventoryDiscardEvent event) async {
+    if (saveShouldFail) {
+      return false;
+    }
+    savedEvents.add(event);
     return true;
   }
 }
@@ -952,20 +975,24 @@ void main() {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[_item('a')],
     );
+    final discardEventRepository = _FakeInventoryDiscardEventRepository();
     addTearDown(repository.dispose);
     final container = ProviderContainer(
       overrides: [
         inventoryItemRepositoryProvider.overrideWithValue(repository),
+        inventoryDiscardEventRepositoryProvider.overrideWithValue(
+          discardEventRepository,
+        ),
       ],
     );
     addTearDown(container.dispose);
     final controllerSubscription = _keepControllerAlive(container);
     addTearDown(controllerSubscription.close);
 
-    await container.read(inventoryItemsControllerProvider.future);
-    final updated = await container
-        .read(inventoryItemsControllerProvider.notifier)
-        .throwAwayItem('a', 1);
+      await container.read(inventoryItemsControllerProvider.future);
+      final updated = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .throwAwayItem('a', 1, InventoryDiscardReason.other);
     await _waitForItems(
       container,
       (items) => items.length == 1 && items.single.quantity == 0,
@@ -982,26 +1009,31 @@ void main() {
       container.read(inventoryItemsControllerProvider).value?.single.quantity,
       0,
     );
+    expect(discardEventRepository.savedEvents, hasLength(1));
   });
 
   test('throwAwayItem reduces amount-based stock and keeps item', () async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[_amountItem('a')],
     );
+    final discardEventRepository = _FakeInventoryDiscardEventRepository();
     addTearDown(repository.dispose);
     final container = ProviderContainer(
       overrides: [
         inventoryItemRepositoryProvider.overrideWithValue(repository),
+        inventoryDiscardEventRepositoryProvider.overrideWithValue(
+          discardEventRepository,
+        ),
       ],
     );
     addTearDown(container.dispose);
     final controllerSubscription = _keepControllerAlive(container);
     addTearDown(controllerSubscription.close);
 
-    await container.read(inventoryItemsControllerProvider.future);
-    final updated = await container
-        .read(inventoryItemsControllerProvider.notifier)
-        .throwAwayItem('a', 200);
+      await container.read(inventoryItemsControllerProvider.future);
+      final updated = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .throwAwayItem('a', 200, InventoryDiscardReason.other);
     await _waitForItems(
       container,
       (items) =>
@@ -1014,6 +1046,7 @@ void main() {
     expect(repository.savedItems, hasLength(1));
     expect(repository.savedItems.single.currentAmount, 400);
     expect(repository.savedItems.single.quantity, 1);
+    expect(discardEventRepository.savedEvents, hasLength(1));
   });
 
   test(
@@ -1022,10 +1055,14 @@ void main() {
       final repository = _FakeFridgeItemRepository(
         onReadAll: () async => <InventoryItem>[_amountItem('a')],
       );
+      final discardEventRepository = _FakeInventoryDiscardEventRepository();
       addTearDown(repository.dispose);
       final container = ProviderContainer(
         overrides: [
           inventoryItemRepositoryProvider.overrideWithValue(repository),
+          inventoryDiscardEventRepositoryProvider.overrideWithValue(
+            discardEventRepository,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -1035,7 +1072,7 @@ void main() {
       await container.read(inventoryItemsControllerProvider.future);
       final updated = await container
           .read(inventoryItemsControllerProvider.notifier)
-          .throwAwayItem('a', 9999);
+          .throwAwayItem('a', 9999, InventoryDiscardReason.other);
       await _waitForItems(
         container,
         (items) =>
@@ -1060,8 +1097,42 @@ void main() {
             .currentAmount,
         0,
       );
+      expect(discardEventRepository.savedEvents, hasLength(1));
     },
   );
+
+  test('throwAwayItem rolls back and returns false when event save fails', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_item('a')],
+    );
+    final discardEventRepository = _FakeInventoryDiscardEventRepository()
+      ..saveShouldFail = true;
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+        inventoryDiscardEventRepositoryProvider.overrideWithValue(
+          discardEventRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final updated = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .throwAwayItem('a', 1, InventoryDiscardReason.other);
+
+    expect(updated, isFalse);
+    expect(repository.savedItems.single.quantity, 1);
+    expect(
+      container.read(inventoryItemsControllerProvider).value?.single.quantity,
+      1,
+    );
+    expect(discardEventRepository.savedEvents, isEmpty);
+  });
 
   test('markBarcodeLookupRequested sets pending timestamp', () async {
     final repository = _FakeFridgeItemRepository(

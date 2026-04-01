@@ -11,7 +11,10 @@ import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository_contract.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -113,6 +116,22 @@ class _RecordingBackfillRepository
     required String itemName,
     String? brand,
   }) async {
+    return true;
+  }
+}
+
+class _FakeInventoryDiscardEventRepository
+    implements InventoryDiscardEventRepository {
+  final List<InventoryDiscardEvent> savedEvents = <InventoryDiscardEvent>[];
+
+  @override
+  Future<List<InventoryDiscardEvent>> readAll() async {
+    return List<InventoryDiscardEvent>.from(savedEvents);
+  }
+
+  @override
+  Future<bool> saveEvent(InventoryDiscardEvent event) async {
+    savedEvents.add(event);
     return true;
   }
 }
@@ -273,6 +292,9 @@ Widget _buildTestApp(
   return ProviderScope(
     overrides: [
       inventoryItemRepositoryProvider.overrideWithValue(repository),
+      inventoryDiscardEventRepositoryProvider.overrideWithValue(
+        _FakeInventoryDiscardEventRepository(),
+      ),
       if (includeDefaultBarcodeFlagsOverride)
         barcodeBackfillFeatureFlagsProvider.overrideWithValue(
           const BarcodeBackfillFeatureFlags(
@@ -1040,6 +1062,8 @@ void main() {
     await tester.tap(
       find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
     );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Expired'));
     await tester.pumpAndSettle();
 
     expect(

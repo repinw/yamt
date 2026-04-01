@@ -493,6 +493,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealConfirmAction => 'Confirm';
 
   @override
+  String get inventoryDiscardReasonTitle => 'Why are you throwing this away?';
+
+  @override
+  String get inventoryDiscardReasonExpired => 'Expired';
+
+  @override
+  String get inventoryDiscardReasonSpoiled => 'Spoiled';
+
+  @override
+  String get inventoryDiscardReasonCookedTooMuch => 'Cooked too much';
+
+  @override
+  String get inventoryDiscardReasonOther => 'Other';
+
+  @override
   String get preparedMealSaveTemplateAction => 'Save as template';
 
   @override
@@ -1321,10 +1336,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statisticsWasteTrackingMissingMessage => 'Discard events and reasons are not persisted yet.';
 
   @override
+  String statisticsWasteOverviewSummary(int eventCount, Object lossValue) {
+    String _temp0 = intl.Intl.pluralLogic(
+      eventCount,
+      locale: localeName,
+      other: '$eventCount discard events · $lossValue tracked loss',
+      one: '1 discard event · $lossValue tracked loss',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get statisticsWasteRatioTitle => 'Ratio & money loss';
 
   @override
   String get statisticsWasteMoneyLossMissing => 'Once discarded values are tracked, the ratio and exact money loss will appear here.';
+
+  @override
+  String get statisticsWasteMoneyLossTracked => 'Tracked value of thrown-away food in this period.';
 
   @override
   String get statisticsWasteReasonsTitle => 'Waste reasons';
@@ -1333,10 +1362,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statisticsWasteReasonsMissing => 'Add reasons such as expired or cooked too much when throwing items away so we can surface patterns.';
 
   @override
+  String statisticsWasteReasonsTopSummary(int count) {
+    return 'Most common reason across $count discard events.';
+  }
+
+  @override
   String get statisticsWasteItemsTitle => 'Often discarded';
 
   @override
   String get statisticsWasteItemsMissing => 'Once enough discard events exist, your most frequent problem items will show up here.';
+
+  @override
+  String statisticsWasteItemsTopSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'discarded $count times',
+      one: 'discarded once',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get statisticsCaloriesOverviewTitle => 'Calories overview';

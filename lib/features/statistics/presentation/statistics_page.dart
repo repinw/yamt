@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/statistics/domain/statistics_models.dart';
 import 'package:yamt/features/statistics/presentation/views/'
     'statistics_calories_view.dart';
@@ -14,6 +13,8 @@ import 'package:yamt/features/statistics/presentation/widgets/'
     'statistics_surface_card.dart';
 import 'package:yamt/features/statistics/provider/'
     'statistics_calorie_data_provider.dart';
+import 'package:yamt/features/statistics/provider/'
+    'statistics_waste_data_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class StatisticsPage extends ConsumerStatefulWidget {
@@ -31,7 +32,6 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final inventoryAsync = ref.watch(inventoryItemsControllerProvider);
-    final mealsAsync = ref.watch(preparedMealsControllerProvider);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -68,9 +68,8 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
             onRetry: _retryHouseholdData,
           ),
           StatisticsTab.waste => StatisticsWasteView(
-            inventoryAsync: inventoryAsync,
-            mealsAsync: mealsAsync,
-            onRetry: _retryHouseholdData,
+            timeframe: _selectedTimeframe,
+            onRetry: _retryWasteData,
           ),
           StatisticsTab.calories => StatisticsCaloriesView(
             timeframe: _selectedTimeframe,
@@ -131,11 +130,14 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
 
   void _retryHouseholdData() {
     ref.read(inventoryItemsControllerProvider.notifier).refresh();
-    ref.read(preparedMealsControllerProvider.notifier).refresh();
   }
 
   void _retryCalorieData() {
     ref.invalidate(statisticsCalorieDataProvider(_selectedTimeframe));
+  }
+
+  void _retryWasteData() {
+    ref.invalidate(statisticsWasteDataProvider(_selectedTimeframe));
   }
 }
 

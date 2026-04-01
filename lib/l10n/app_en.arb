@@ -220,6 +220,11 @@
   "preparedMealThrowAwayTitle": "Throw away portions",
   "preparedMealPortionsToUseLabel": "Portions to use",
   "preparedMealConfirmAction": "Confirm",
+  "inventoryDiscardReasonTitle": "Why are you throwing this away?",
+  "inventoryDiscardReasonExpired": "Expired",
+  "inventoryDiscardReasonSpoiled": "Spoiled",
+  "inventoryDiscardReasonCookedTooMuch": "Cooked too much",
+  "inventoryDiscardReasonOther": "Other",
   "preparedMealSaveTemplateAction": "Save as template",
   "preparedMealTemplateSavedMessage": "Template saved.",
   "preparedMealTemplatesPageTitle": "Templates",
@@ -577,12 +582,38 @@
   "statisticsWasteOverviewTitle": "Food waste overview",
   "statisticsWasteTrackingMissingValue": "No history yet",
   "statisticsWasteTrackingMissingMessage": "Discard events and reasons are not persisted yet.",
+  "statisticsWasteOverviewSummary": "{eventCount, plural, =1{1 discard event · {lossValue} tracked loss} other{{eventCount} discard events · {lossValue} tracked loss}}",
+  "@statisticsWasteOverviewSummary": {
+    "placeholders": {
+      "eventCount": {
+        "type": "int"
+      },
+      "lossValue": {}
+    }
+  },
   "statisticsWasteRatioTitle": "Ratio & money loss",
   "statisticsWasteMoneyLossMissing": "Once discarded values are tracked, the ratio and exact money loss will appear here.",
+  "statisticsWasteMoneyLossTracked": "Tracked value of thrown-away food in this period.",
   "statisticsWasteReasonsTitle": "Waste reasons",
   "statisticsWasteReasonsMissing": "Add reasons such as expired or cooked too much when throwing items away so we can surface patterns.",
+  "statisticsWasteReasonsTopSummary": "Most common reason across {count} discard events.",
+  "@statisticsWasteReasonsTopSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "statisticsWasteItemsTitle": "Often discarded",
   "statisticsWasteItemsMissing": "Once enough discard events exist, your most frequent problem items will show up here.",
+  "statisticsWasteItemsTopSummary": "{count, plural, =1{discarded once} other{discarded {count} times}}",
+  "@statisticsWasteItemsTopSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "statisticsCaloriesOverviewTitle": "Calories overview",
   "statisticsCaloriesOverviewSummary": "{trackedDays} tracked days · {entries} entries",
   "@statisticsCaloriesOverviewSummary": {
