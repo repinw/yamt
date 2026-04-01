@@ -7,12 +7,19 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _discardReasonDialogLogName = 'InventoryDiscardReasonDialog';
 
 Future<InventoryDiscardReason?> showInventoryDiscardReasonDialog(
-  BuildContext context,
+  BuildContext context, {
+  bool useRootNavigator = false,
+}
 ) {
   final l10n = AppLocalizations.of(context)!;
+  log(
+    'showInventoryDiscardReasonDialog(): opening',
+    name: _discardReasonDialogLogName,
+  );
 
   return showDialog<InventoryDiscardReason>(
     context: context,
+    useRootNavigator: useRootNavigator,
     builder: (dialogContext) {
       return SimpleDialog(
         title: Text(l10n.inventoryDiscardReasonTitle),
@@ -20,11 +27,15 @@ Future<InventoryDiscardReason?> showInventoryDiscardReasonDialog(
           for (final reason in InventoryDiscardReason.values)
             SimpleDialogOption(
               onPressed: () {
+                FocusManager.instance.primaryFocus?.unfocus();
                 log(
                   'showInventoryDiscardReasonDialog(): selected ${reason.name}',
                   name: _discardReasonDialogLogName,
                 );
-                Navigator.of(dialogContext).pop(reason);
+                Navigator.of(
+                  dialogContext,
+                  rootNavigator: useRootNavigator,
+                ).pop(reason);
               },
               child: Text(reason.localizedLabel(l10n)),
             ),

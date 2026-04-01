@@ -22,155 +22,218 @@ class PreparedMealEatDialogResult {
 
 Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
   BuildContext context,
-  PreparedMeal meal,
+  PreparedMeal meal, {
+  bool useRootNavigator = false,
+}
 ) {
-  final l10n = AppLocalizations.of(context)!;
-  final portionsController = TextEditingController(
-    text: _defaultPreparedMealPortions.toString(),
-  );
-  var selectedMealType = MealType.defaultForDateTime(DateTime.now());
-
   return showDialog<PreparedMealEatDialogResult>(
     context: context,
+    useRootNavigator: useRootNavigator,
     builder: (dialogContext) {
-      return StatefulBuilder(
-        builder: (dialogChildContext, setState) {
-          return AlertDialog(
-            title: Text(l10n.preparedMealEatTitle),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: portionsController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: l10n.preparedMealPortionsToUseLabel,
-                    helperText: l10n.preparedMealPortionsRemaining(
-                      meal.remainingPortions,
-                      meal.totalPortions,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                DropdownButtonFormField<MealType>(
-                  initialValue: selectedMealType,
-                  decoration: InputDecoration(
-                    labelText: l10n.caloriesEntryMealLabel,
-                  ),
-                  items: MealType.sectionOrder
-                      .map((mealType) {
-                        return DropdownMenuItem<MealType>(
-                          value: mealType,
-                          child: Text(mealType.localizedName(l10n)),
-                        );
-                      })
-                      .toList(growable: false),
-                  onChanged: (value) {
-                    if (value == null) {
-                      return;
-                    }
-                    setState(() {
-                      selectedMealType = value;
-                    });
-                  },
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: Text(l10n.inventoryReceiptReviewCancelAction),
-              ),
-              TextButton(
-                onPressed: () {
-                  final portions = int.tryParse(portionsController.text.trim());
-                  if (portions == null ||
-                      portions < 1 ||
-                      portions > meal.remainingPortions) {
-                    _showInvalidPortionsSnackBar(
-                      scaffoldContext: context,
-                      message: l10n.preparedMealInvalidPortionsRange,
-                    );
-                    return;
-                  }
-                  Navigator.of(dialogContext).pop(
-                    PreparedMealEatDialogResult(
-                      portions: portions,
-                      mealType: selectedMealType,
-                    ),
-                  );
-                },
-                child: Text(l10n.inventoryItemEatAction),
-              ),
-            ],
-          );
-        },
-      );
+      return _PreparedMealEatDialog(meal: meal);
     },
-  ).whenComplete(portionsController.dispose);
+  );
 }
 
 Future<int?> showPreparedMealPortionDialog({
   required BuildContext context,
   required PreparedMeal meal,
   required String title,
+  bool useRootNavigator = false,
 }) {
-  final l10n = AppLocalizations.of(context)!;
-  final controller = TextEditingController(
+  return showDialog<int>(
+    context: context,
+    useRootNavigator: useRootNavigator,
+    builder: (dialogContext) {
+      return _PreparedMealPortionDialog(meal: meal, title: title);
+    },
+  );
+}
+
+class _PreparedMealEatDialog extends StatefulWidget {
+  const _PreparedMealEatDialog({required this.meal});
+
+  final PreparedMeal meal;
+
+  @override
+  State<_PreparedMealEatDialog> createState() => _PreparedMealEatDialogState();
+}
+
+class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
+  late final TextEditingController _portionsController =
+      TextEditingController(
+        text: _defaultPreparedMealPortions.toString(),
+      );
+  late MealType _selectedMealType =
+      MealType.defaultForDateTime(DateTime.now());
+
+  @override
+  void dispose() {
+    _portionsController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return AlertDialog(
+      title: Text(l10n.preparedMealEatTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _portionsController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: l10n.preparedMealPortionsToUseLabel,
+              helperText: l10n.preparedMealPortionsRemaining(
+                widget.meal.remainingPortions,
+                widget.meal.totalPortions,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          DropdownButtonFormField<MealType>(
+            initialValue: _selectedMealType,
+            decoration: InputDecoration(
+              labelText: l10n.caloriesEntryMealLabel,
+            ),
+            items: MealType.sectionOrder
+                .map((mealType) {
+                  return DropdownMenuItem<MealType>(
+                    value: mealType,
+                    child: Text(mealType.localizedName(l10n)),
+                  );
+                })
+                .toList(growable: false),
+            onChanged: (value) {
+              if (value == null) {
+                return;
+              }
+              setState(() {
+                _selectedMealType = value;
+              });
+            },
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+            Navigator.of(context).pop();
+          },
+          child: Text(l10n.inventoryReceiptReviewCancelAction),
+        ),
+        TextButton(
+          onPressed: () {
+            final portions = int.tryParse(_portionsController.text.trim());
+            if (portions == null ||
+                portions < 1 ||
+                portions > widget.meal.remainingPortions) {
+              _showInvalidPortionsSnackBar(
+                scaffoldContext: context,
+                message: l10n.preparedMealInvalidPortionsRange,
+              );
+              return;
+            }
+            FocusManager.instance.primaryFocus?.unfocus();
+            Navigator.of(context).pop(
+              PreparedMealEatDialogResult(
+                portions: portions,
+                mealType: _selectedMealType,
+              ),
+            );
+          },
+          child: Text(l10n.inventoryItemEatAction),
+        ),
+      ],
+    );
+  }
+}
+
+class _PreparedMealPortionDialog extends StatefulWidget {
+  const _PreparedMealPortionDialog({
+    required this.meal,
+    required this.title,
+  });
+
+  final PreparedMeal meal;
+  final String title;
+
+  @override
+  State<_PreparedMealPortionDialog> createState() =>
+      _PreparedMealPortionDialogState();
+}
+
+class _PreparedMealPortionDialogState
+    extends State<_PreparedMealPortionDialog> {
+  late final TextEditingController _controller = TextEditingController(
     text: _defaultPreparedMealPortions.toString(),
   );
 
-  return showDialog<int>(
-    context: context,
-    builder: (dialogContext) {
-      return AlertDialog(
-        title: Text(title),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            labelText: l10n.preparedMealPortionsToUseLabel,
-            helperText: l10n.preparedMealPortionsRemaining(
-              meal.remainingPortions,
-              meal.totalPortions,
-            ),
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return AlertDialog(
+      title: Text(widget.title),
+      content: TextField(
+        controller: _controller,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          labelText: l10n.preparedMealPortionsToUseLabel,
+          helperText: l10n.preparedMealPortionsRemaining(
+            widget.meal.remainingPortions,
+            widget.meal.totalPortions,
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l10n.inventoryReceiptReviewCancelAction),
-          ),
-          TextButton(
-            onPressed: () {
-              final portions = int.tryParse(controller.text.trim());
-              if (portions == null ||
-                  portions < 1 ||
-                  portions > meal.remainingPortions) {
-                log(
-                  'showPreparedMealPortionDialog(): invalid portions '
-                  '"${controller.text}" for meal ${meal.id}',
-                  name: _preparedMealDialogsLogName,
-                );
-                _showInvalidPortionsSnackBar(
-                  scaffoldContext: context,
-                  message: l10n.preparedMealInvalidPortionsRange,
-                );
-                return;
-              }
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+            Navigator.of(context).pop();
+          },
+          child: Text(l10n.inventoryReceiptReviewCancelAction),
+        ),
+        TextButton(
+          onPressed: () {
+            final portions = int.tryParse(_controller.text.trim());
+            if (portions == null ||
+                portions < 1 ||
+                portions > widget.meal.remainingPortions) {
               log(
-                'showPreparedMealPortionDialog(): confirmed '
-                '(mealId=${meal.id}, portions=$portions)',
+                'showPreparedMealPortionDialog(): invalid portions '
+                '"${_controller.text}" for meal ${widget.meal.id}',
                 name: _preparedMealDialogsLogName,
               );
-              Navigator.of(dialogContext).pop(portions);
-            },
-            child: Text(l10n.preparedMealConfirmAction),
-          ),
-        ],
-      );
-    },
-  ).whenComplete(controller.dispose);
+              _showInvalidPortionsSnackBar(
+                scaffoldContext: context,
+                message: l10n.preparedMealInvalidPortionsRange,
+              );
+              return;
+            }
+            FocusManager.instance.primaryFocus?.unfocus();
+            log(
+              'showPreparedMealPortionDialog(): confirmed '
+              '(mealId=${widget.meal.id}, portions=$portions)',
+              name: _preparedMealDialogsLogName,
+            );
+            Navigator.of(context).pop(portions);
+          },
+          child: Text(l10n.preparedMealConfirmAction),
+        ),
+      ],
+    );
+  }
 }
 
 void _showInvalidPortionsSnackBar({

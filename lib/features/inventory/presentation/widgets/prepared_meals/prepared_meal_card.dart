@@ -398,7 +398,11 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
 
   Future<void> _runEatFlow() async {
     final l10n = AppLocalizations.of(context)!;
-    final result = await showPreparedMealEatDialog(context, widget.meal);
+    final result = await showPreparedMealEatDialog(
+      context,
+      widget.meal,
+      useRootNavigator: false,
+    );
     if (!mounted || result == null) {
       return;
     }
@@ -439,6 +443,7 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
       context: context,
       meal: widget.meal,
       title: AppLocalizations.of(context)!.preparedMealThrowAwayTitle,
+      useRootNavigator: false,
     );
     if (!mounted || portions == null) {
       log(
@@ -452,7 +457,20 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
       name: _preparedMealCardLogName,
     );
 
-    final reason = await showInventoryDiscardReasonDialog(context);
+    await Future<void>.delayed(Duration.zero);
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) {
+      return;
+    }
+
+    log(
+      '_runThrowAwayFlow(): opening reason dialog for ${widget.meal.id}',
+      name: _preparedMealCardLogName,
+    );
+    final reason = await showInventoryDiscardReasonDialog(
+      context,
+      useRootNavigator: false,
+    );
     if (!mounted || reason == null) {
       log(
         '_runThrowAwayFlow(): reason dialog cancelled for ${widget.meal.id}',

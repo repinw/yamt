@@ -263,6 +263,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
 
     final amount = await showDialog<int>(
       context: context,
+      useRootNavigator: false,
       builder: (context) {
         return InventoryItemAmountInputDialog(
           title: title,
@@ -290,6 +291,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
 
     final amount = await showDialog<int>(
       context: context,
+      useRootNavigator: false,
       builder: (context) {
         return InventoryItemAmountInputDialog(
           title: widget.l10n.inventoryItemThrowAwayAction,
@@ -306,7 +308,10 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       return;
     }
 
-    final reason = await showInventoryDiscardReasonDialog(context);
+    final reason = await showInventoryDiscardReasonDialog(
+      context,
+      useRootNavigator: false,
+    );
     if (!mounted || reason == null) {
       return;
     }
