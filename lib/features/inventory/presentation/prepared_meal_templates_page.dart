@@ -69,6 +69,10 @@ class PreparedMealTemplatesPage extends ConsumerWidget {
               final template = templates[index];
               return PreparedMealTemplateCard(
                 template: template,
+                onOpenPressed: () => _openTemplateDetail(
+                  context: context,
+                  templateId: template.id,
+                ),
                 onEditPressed: (template) => _editTemplate(
                   context: context,
                   ref: ref,
@@ -126,6 +130,13 @@ class PreparedMealTemplatesPage extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  void _openTemplateDetail({
+    required BuildContext context,
+    required String templateId,
+  }) {
+    context.push(AppRoutes.homeInventoryTemplateDetailPath(templateId));
   }
 
   void _logLoadErrorOnce(

@@ -15,11 +15,13 @@ class PreparedMealTemplateCard extends ConsumerWidget {
   const PreparedMealTemplateCard({
     super.key,
     required this.template,
+    required this.onOpenPressed,
     required this.onEditPressed,
     required this.onDeletePressed,
   });
 
   final PreparedMeal template;
+  final VoidCallback onOpenPressed;
   final Future<bool> Function(PreparedMeal template) onEditPressed;
   final Future<bool> Function(String templateId) onDeletePressed;
 
@@ -73,6 +75,12 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
+                IconButton(
+                  // TODO(l10n): Localize tooltip.
+                  tooltip: 'Vorlage öffnen',
+                  onPressed: onOpenPressed,
+                  icon: const Icon(Icons.chevron_right_rounded),
+                ),
                 if (template.recipeUrl != null)
                   IconButton(
                     tooltip: l10n.inventoryReceiptReviewEditAction,
