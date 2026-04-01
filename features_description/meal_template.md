@@ -114,11 +114,14 @@ Der bisherige Stand ist:
 - `Ignorieren` pro Rezeptzutat
 - einfache Inventar-Belegung pro Rezeptzutat
 - einfacher Push einzelner Zutaten zur Einkaufsliste
+- lokale Zutat-Neuzuordnung in der Detailansicht
+- `Vorlage anpassen` speichert diese Neuzuordnung bewusst zurueck
+- `Mahlzeit erstellen` arbeitet direkt mit dem aktuellen lokalen Stand
 
 Noch bewusst offen:
 - Mengenaufteilung auf mehrere Inventarartikel
 - echte Fehlmengen-Berechnung fuer Einkaufsliste
-- `Mahlzeit erstellen` aus der Vorlage
+- spaeteres Auffuellen einer unvollstaendigen Mahlzeit
 
 ## Erster Umsetzungs-Slice
 

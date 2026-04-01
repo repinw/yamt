@@ -100,7 +100,11 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final meal = widget.meal;
-    final canEat = widget.enabled && !_isWorking && meal.remainingPortions > 0;
+    final canEat =
+        widget.enabled &&
+        !_isWorking &&
+        meal.remainingPortions > 0 &&
+        !meal.hasPendingRecipeIngredients;
     final imageRef = maybeLocalImageAssetRef(meal.imageAssetId);
     final storedImageBytes = imageRef == null
         ? null
@@ -160,9 +164,13 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
                             ),
                             const SizedBox(height: AppSpacing.xxs),
                             Text(
-                              l10n.preparedMealIngredientsCount(
-                                meal.components.length,
-                              ),
+                              meal.hasPendingRecipeIngredients
+                                  ? '${l10n.preparedMealIngredientsCount(meal.components.length)} • '
+                                        // TODO(l10n): Localize incomplete meal label.
+                                        'Unvollständig'
+                                  : l10n.preparedMealIngredientsCount(
+                                      meal.components.length,
+                                    ),
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(color: colors.onSurfaceVariant),
                             ),
@@ -295,6 +303,19 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard> {
                                     ),
                                   );
                                 }),
+                                if (meal.hasPendingRecipeIngredients) ...[
+                                  const SizedBox(height: AppSpacing.sm),
+                                  Text(
+                                    // TODO(l10n): Localize incomplete meal hint.
+                                    'Diese Mahlzeit ist noch nicht vollstaendig '
+                                    'und kann erst gegessen werden, wenn alle '
+                                    'fehlenden Zutaten ergaenzt wurden.',
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: colors.onSurfaceVariant,
+                                        ),
+                                  ),
+                                ],
                                 const SizedBox(height: AppSpacing.sm),
                                 SizedBox(
                                   width: double.infinity,

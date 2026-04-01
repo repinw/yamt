@@ -4,13 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/product_image_url.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
 import 'package:yamt/features/inventory/provider/'
     'inventory_items_controller.dart';
+import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/shoppinglist/provider/'
@@ -29,6 +30,9 @@ class MealTemplateDetailPage extends ConsumerStatefulWidget {
 class _MealTemplateDetailPageState
     extends ConsumerState<MealTemplateDetailPage> {
   int? _selectedPortions;
+  Map<String, List<String>>? _draftAssignments;
+  var _isCreatingMeal = false;
+  var _isSavingTemplate = false;
 
   @override
   Widget build(BuildContext context) {
@@ -56,9 +60,22 @@ class _MealTemplateDetailPageState
 
           final selectedPortions =
               _selectedPortions ?? _defaultPortions(template.totalPortions);
+          final effectiveAssignments = _effectiveAssignments(
+            template: template,
+            draftAssignments: _draftAssignments,
+          );
+          final hasAssignmentChanges = !_assignmentMapsEqual(
+            template.recipeIngredientAssignments,
+            effectiveAssignments,
+          );
+
           return _MealTemplateDetailContent(
             template: template,
             selectedPortions: selectedPortions,
+            recipeIngredientAssignments: effectiveAssignments,
+            hasAssignmentChanges: hasAssignmentChanges,
+            isCreatingMeal: _isCreatingMeal,
+            isSavingTemplate: _isSavingTemplate,
             onDecreasePortions: selectedPortions > 1
                 ? () {
                     setState(() {
@@ -71,6 +88,42 @@ class _MealTemplateDetailPageState
                 _selectedPortions = selectedPortions + 1;
               });
             },
+            onAssignmentChanged:
+                ({
+                  required String ingredient,
+                  required List<String> inventoryItemIds,
+                }) {
+                  setState(() {
+                    final nextAssignments = <String, List<String>>{
+                      ...effectiveAssignments,
+                    };
+                    final normalizedIngredient = ingredient.trim();
+                    final normalizedItemIds = inventoryItemIds
+                        .map((itemId) => itemId.trim())
+                        .where((itemId) => itemId.isNotEmpty)
+                        .toSet()
+                        .toList(growable: false);
+                    if (normalizedItemIds.isEmpty) {
+                      nextAssignments.remove(normalizedIngredient);
+                    } else {
+                      nextAssignments[normalizedIngredient] = normalizedItemIds;
+                    }
+                    _draftAssignments = nextAssignments;
+                  });
+                },
+            onCreateMealPressed: () => _createMealFromTemplate(
+              context: context,
+              template: template,
+              selectedPortions: selectedPortions,
+              recipeIngredientAssignments: effectiveAssignments,
+            ),
+            onSaveTemplatePressed: hasAssignmentChanges
+                ? () => _saveTemplateAssignments(
+                    context: context,
+                    templateId: template.id,
+                    recipeIngredientAssignments: effectiveAssignments,
+                  )
+                : null,
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -85,20 +138,115 @@ class _MealTemplateDetailPageState
       ),
     );
   }
+
+  Future<void> _createMealFromTemplate({
+    required BuildContext context,
+    required PreparedMeal template,
+    required int selectedPortions,
+    required Map<String, List<String>> recipeIngredientAssignments,
+  }) async {
+    setState(() {
+      _isCreatingMeal = true;
+    });
+    final result = await ref
+        .read(preparedMealsControllerProvider.notifier)
+        .createPreparedMealFromTemplate(
+          template: template,
+          totalPortions: selectedPortions,
+          recipeIngredientAssignments: recipeIngredientAssignments,
+        );
+    if (!mounted || !context.mounted) {
+      return;
+    }
+
+    setState(() {
+      _isCreatingMeal = false;
+    });
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        // TODO(l10n): Localize create meal result messages.
+        content: Text(
+          result.isSuccess
+              ? 'Mahlzeit wurde erstellt.'
+              : _createMealFailureMessage(result.failureReason),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveTemplateAssignments({
+    required BuildContext context,
+    required String templateId,
+    required Map<String, List<String>> recipeIngredientAssignments,
+  }) async {
+    setState(() {
+      _isSavingTemplate = true;
+    });
+    final saved = await ref
+        .read(preparedMealTemplatesControllerProvider.notifier)
+        .updateRecipeIngredientAssignments(
+          templateId: templateId,
+          recipeIngredientAssignments: recipeIngredientAssignments,
+        );
+    if (!mounted || !context.mounted) {
+      return;
+    }
+
+    setState(() {
+      _isSavingTemplate = false;
+      if (saved) {
+        _draftAssignments = null;
+      }
+    });
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        // TODO(l10n): Localize template assignment save messages.
+        content: Text(
+          saved
+              ? 'Vorlage wurde angepasst.'
+              : 'Vorlage konnte nicht angepasst werden.',
+        ),
+      ),
+    );
+  }
 }
 
 class _MealTemplateDetailContent extends ConsumerWidget {
   const _MealTemplateDetailContent({
     required this.template,
     required this.selectedPortions,
+    required this.recipeIngredientAssignments,
+    required this.hasAssignmentChanges,
+    required this.isCreatingMeal,
+    required this.isSavingTemplate,
     required this.onDecreasePortions,
     required this.onIncreasePortions,
+    required this.onAssignmentChanged,
+    required this.onCreateMealPressed,
+    required this.onSaveTemplatePressed,
   });
 
   final PreparedMeal template;
   final int selectedPortions;
+  final Map<String, List<String>> recipeIngredientAssignments;
+  final bool hasAssignmentChanges;
+  final bool isCreatingMeal;
+  final bool isSavingTemplate;
   final VoidCallback? onDecreasePortions;
   final VoidCallback onIncreasePortions;
+  final void Function({
+    required String ingredient,
+    required List<String> inventoryItemIds,
+  })
+  onAssignmentChanged;
+  final Future<void> Function() onCreateMealPressed;
+  final Future<void> Function()? onSaveTemplatePressed;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -112,8 +260,12 @@ class _MealTemplateDetailContent extends ConsumerWidget {
     final recipeSourceHost = _recipeSourceHost(template.recipeUrl);
     final ingredientRows = _buildIngredientRows(
       template: template,
+      recipeIngredientAssignments: recipeIngredientAssignments,
       selectedPortions: selectedPortions,
     );
+    final canCreateMeal =
+        template.recipeIngredients.isNotEmpty &&
+        ingredientRows.any((row) => row.assignedInventoryItemIds.isNotEmpty);
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -204,35 +356,88 @@ class _MealTemplateDetailContent extends ConsumerWidget {
                   templateId: template.id,
                   row: row,
                   inventoryItems: inventoryItems,
+                  onAssignmentChanged: row.rawIngredient == null
+                      ? null
+                      : (inventoryItemIds) {
+                          onAssignmentChanged(
+                            ingredient: row.rawIngredient!,
+                            inventoryItemIds: inventoryItemIds,
+                          );
+                        },
                 ),
                 const SizedBox(height: AppSpacing.md),
               ],
             ],
           ),
+        if (template.recipeIngredients.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.xl),
+          Row(
+            children: [
+              if (hasAssignmentChanges) ...[
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: isSavingTemplate || isCreatingMeal
+                        ? null
+                        : onSaveTemplatePressed,
+                    child: Text(
+                      isSavingTemplate ? 'Speichert...' : 'Vorlage anpassen',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+              ],
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed:
+                      isCreatingMeal || isSavingTemplate || !canCreateMeal
+                      ? null
+                      : onCreateMealPressed,
+                  icon: const Icon(Icons.restaurant_rounded),
+                  label: Text(
+                    isCreatingMeal ? 'Erstellt...' : 'Mahlzeit erstellen',
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (!canCreateMeal) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              // TODO(l10n): Localize create meal hint text.
+              'Ordne mindestens eine Zutat zu, bevor du eine Mahlzeit '
+              'erstellst.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
       ],
     );
   }
 }
 
-class _MealTemplateIngredientCard extends ConsumerStatefulWidget {
+class _MealTemplateIngredientCard extends StatefulWidget {
   const _MealTemplateIngredientCard({
     required this.templateId,
     required this.row,
     required this.inventoryItems,
+    this.onAssignmentChanged,
   });
 
   final String templateId;
   final _IngredientRowData row;
   final List<InventoryItem> inventoryItems;
+  final void Function(List<String> inventoryItemIds)? onAssignmentChanged;
 
   @override
-  ConsumerState<_MealTemplateIngredientCard> createState() =>
+  State<_MealTemplateIngredientCard> createState() =>
       _MealTemplateIngredientCardState();
 }
 
 class _MealTemplateIngredientCardState
-    extends ConsumerState<_MealTemplateIngredientCard> {
-  bool _isExpanded = false;
+    extends State<_MealTemplateIngredientCard> {
+  var _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -258,7 +463,6 @@ class _MealTemplateIngredientCardState
       row: widget.row,
       assignedItems: assignedItems,
     );
-
     final ingredientStyle = widget.row.isIgnored
         ? textTheme.titleMedium?.copyWith(
             decoration: TextDecoration.lineThrough,
@@ -303,15 +507,16 @@ class _MealTemplateIngredientCardState
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     IconButton(
-                      onPressed: widget.inventoryItems.isEmpty
+                      onPressed:
+                          widget.inventoryItems.isEmpty ||
+                              widget.onAssignmentChanged == null
                           ? null
                           : () => _selectInventoryAssignments(
-                                context: context,
-                                ref: ref,
-                              templateId: widget.templateId,
+                              context: context,
                               row: widget.row,
-                                inventoryItems: widget.inventoryItems,
-                              ),
+                              inventoryItems: widget.inventoryItems,
+                              onAssignmentChanged: widget.onAssignmentChanged!,
+                            ),
                       // TODO(l10n): Localize assignment button tooltip.
                       tooltip: widget.row.assignedInventoryItemIds.isEmpty
                           ? 'Zuordnen'
@@ -370,7 +575,6 @@ class _MealTemplateIngredientCardState
                           ? null
                           : () => _addIngredientToShoppingList(
                               context: context,
-                              ref: ref,
                               shoppingListLabel: _shoppingListLabel(widget.row),
                             ),
                       icon: const Icon(Icons.shopping_cart_outlined),
@@ -379,7 +583,6 @@ class _MealTemplateIngredientCardState
                     TextButton(
                       onPressed: () => _toggleIgnored(
                         context: context,
-                        ref: ref,
                         templateId: widget.templateId,
                         ingredient: widget.row.rawIngredient!,
                         isIgnored: !widget.row.isIgnored,
@@ -406,7 +609,6 @@ class _IngredientRowData {
     required this.name,
     required this.amountLabel,
     this.rawIngredient,
-    this.canToggleIgnore = false,
     this.isIgnored = false,
     this.assignedInventoryItemIds = const <String>[],
   });
@@ -414,7 +616,6 @@ class _IngredientRowData {
   final String name;
   final String amountLabel;
   final String? rawIngredient;
-  final bool canToggleIgnore;
   final bool isIgnored;
   final List<String> assignedInventoryItemIds;
 }
@@ -475,8 +676,65 @@ int _defaultPortions(int totalPortions) {
   return totalPortions > 0 ? totalPortions : 1;
 }
 
+Map<String, List<String>> _effectiveAssignments({
+  required PreparedMeal template,
+  required Map<String, List<String>>? draftAssignments,
+}) {
+  if (draftAssignments == null) {
+    return _normalizedAssignments(template.recipeIngredientAssignments);
+  }
+  return _normalizedAssignments(draftAssignments);
+}
+
+Map<String, List<String>> _normalizedAssignments(
+  Map<String, List<String>> assignments,
+) {
+  final normalized = <String, List<String>>{};
+  for (final entry in assignments.entries) {
+    final ingredient = entry.key.trim();
+    if (ingredient.isEmpty) {
+      continue;
+    }
+    final itemIds = entry.value
+        .map((itemId) => itemId.trim())
+        .where((itemId) => itemId.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
+    if (itemIds.isEmpty) {
+      continue;
+    }
+    normalized[ingredient] = itemIds;
+  }
+  return normalized;
+}
+
+bool _assignmentMapsEqual(
+  Map<String, List<String>> left,
+  Map<String, List<String>> right,
+) {
+  final normalizedLeft = _normalizedAssignments(left);
+  final normalizedRight = _normalizedAssignments(right);
+  if (normalizedLeft.length != normalizedRight.length) {
+    return false;
+  }
+
+  for (final entry in normalizedLeft.entries) {
+    final otherValue = normalizedRight[entry.key];
+    if (otherValue == null) {
+      return false;
+    }
+    final leftIds = entry.value.toSet();
+    final rightIds = otherValue.toSet();
+    if (leftIds.length != rightIds.length || !leftIds.containsAll(rightIds)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 List<_IngredientRowData> _buildIngredientRows({
   required PreparedMeal template,
+  required Map<String, List<String>> recipeIngredientAssignments,
   required int selectedPortions,
 }) {
   if (template.components.isNotEmpty) {
@@ -500,8 +758,7 @@ List<_IngredientRowData> _buildIngredientRows({
           ingredient,
           isIgnored: template.ignoredRecipeIngredients.contains(ingredient),
           assignedInventoryItemIds:
-              template.recipeIngredientAssignments[ingredient] ??
-              const <String>[],
+              recipeIngredientAssignments[ingredient] ?? const <String>[],
           selectedPortions: selectedPortions,
           basePortions: template.totalPortions,
         ),
@@ -525,7 +782,6 @@ _IngredientRowData _scaledRecipeIngredient(
       name: trimmed,
       amountLabel: '-',
       rawIngredient: ingredient,
-      canToggleIgnore: true,
       isIgnored: isIgnored,
       assignedInventoryItemIds: assignedInventoryItemIds,
     );
@@ -539,7 +795,6 @@ _IngredientRowData _scaledRecipeIngredient(
       name: trimmed,
       amountLabel: '-',
       rawIngredient: ingredient,
-      canToggleIgnore: true,
       isIgnored: isIgnored,
       assignedInventoryItemIds: assignedInventoryItemIds,
     );
@@ -551,7 +806,6 @@ _IngredientRowData _scaledRecipeIngredient(
       name: name,
       amountLabel: '$rawQuantity $unit',
       rawIngredient: ingredient,
-      canToggleIgnore: true,
       isIgnored: isIgnored,
       assignedInventoryItemIds: assignedInventoryItemIds,
     );
@@ -562,7 +816,6 @@ _IngredientRowData _scaledRecipeIngredient(
     name: name,
     amountLabel: '${_formatAmount(scaledQuantity)} $unit',
     rawIngredient: ingredient,
-    canToggleIgnore: true,
     isIgnored: isIgnored,
     assignedInventoryItemIds: assignedInventoryItemIds,
   );
@@ -764,40 +1017,29 @@ String? _resolvePreviewImageUrl({
   return null;
 }
 
-Future<void> _toggleIgnored({
-  required BuildContext context,
-  required WidgetRef ref,
-  required String templateId,
-  required String ingredient,
-  required bool isIgnored,
-}) async {
-  final updated = await ref
-      .read(preparedMealTemplatesControllerProvider.notifier)
-      .setRecipeIngredientIgnored(
-        templateId: templateId,
-        ingredient: ingredient,
-        isIgnored: isIgnored,
-      );
-  if (!context.mounted || updated) {
-    return;
-  }
-
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(
-      const SnackBar(
-        // TODO(l10n): Localize ignore toggle error text.
-        content: Text('Zutatenstatus konnte nicht gespeichert werden.'),
-      ),
-    );
+String _createMealFailureMessage(
+  PreparedMealCreationFailureReason? failureReason,
+) {
+  return switch (failureReason) {
+    PreparedMealCreationFailureReason.invalidInput =>
+      'Die Vorlage braucht mindestens eine gueltige Zutaten-Zuordnung.',
+    PreparedMealCreationFailureReason.itemUnavailable =>
+      'Mindestens ein zugeordneter Inventarartikel ist nicht mehr verfuegbar.',
+    PreparedMealCreationFailureReason.insufficientAmount =>
+      'Die zugeordneten Mengen reichen fuer diese Mahlzeit nicht aus.',
+    PreparedMealCreationFailureReason.missingNutrition =>
+      'Mindestens eine Zutat hat noch keine vollstaendigen Naehrwerte.',
+    PreparedMealCreationFailureReason.inventorySaveFailed ||
+    PreparedMealCreationFailureReason.mealSaveFailed ||
+    null => 'Mahlzeit konnte nicht erstellt werden.',
+  };
 }
 
 Future<void> _selectInventoryAssignments({
   required BuildContext context,
-  required WidgetRef ref,
-  required String templateId,
   required _IngredientRowData row,
   required List<InventoryItem> inventoryItems,
+  required void Function(List<String> inventoryItemIds) onAssignmentChanged,
 }) async {
   final sortedItems = inventoryItems
       .where((item) => !item.isFullyConsumed)
@@ -861,6 +1103,9 @@ Future<void> _selectInventoryAssignments({
                                 return CheckboxListTile(
                                   value: isSelected,
                                   contentPadding: EdgeInsets.zero,
+                                  secondary: _IngredientPreviewThumbnail(
+                                    imageUrl: item.imageUrl,
+                                  ),
                                   title: Text(item.name),
                                   subtitle: Text(_inventoryAmountLabel(item)),
                                   onChanged: (checked) {
@@ -906,34 +1151,15 @@ Future<void> _selectInventoryAssignments({
   if (!context.mounted || selectedItemIds == null) {
     return;
   }
-
-  final updated = await ref
-      .read(preparedMealTemplatesControllerProvider.notifier)
-      .setRecipeIngredientAssignments(
-        templateId: templateId,
-        ingredient: row.rawIngredient!,
-        inventoryItemIds: selectedItemIds,
-      );
-  if (!context.mounted || updated) {
-    return;
-  }
-
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(
-      const SnackBar(
-        // TODO(l10n): Localize assignment save error text.
-        content: Text('Inventar-Belegung konnte nicht gespeichert werden.'),
-      ),
-    );
+  onAssignmentChanged(selectedItemIds);
 }
 
 Future<void> _addIngredientToShoppingList({
   required BuildContext context,
-  required WidgetRef ref,
   required String shoppingListLabel,
 }) async {
-  final added = await ref
+  final container = ProviderScope.containerOf(context, listen: false);
+  final added = await container
       .read(shoppingListControllerProvider.notifier)
       .addItem(name: shoppingListLabel);
   if (!context.mounted || added) {
@@ -948,6 +1174,34 @@ Future<void> _addIngredientToShoppingList({
         content: Text(
           'Zutat konnte nicht zur Einkaufsliste hinzugefügt werden.',
         ),
+      ),
+    );
+}
+
+Future<void> _toggleIgnored({
+  required BuildContext context,
+  required String templateId,
+  required String ingredient,
+  required bool isIgnored,
+}) async {
+  final container = ProviderScope.containerOf(context, listen: false);
+  final updated = await container
+      .read(preparedMealTemplatesControllerProvider.notifier)
+      .setRecipeIngredientIgnored(
+        templateId: templateId,
+        ingredient: ingredient,
+        isIgnored: isIgnored,
+      );
+  if (!context.mounted || updated) {
+    return;
+  }
+
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      const SnackBar(
+        // TODO(l10n): Localize ignore toggle error text.
+        content: Text('Zutatenstatus konnte nicht gespeichert werden.'),
       ),
     );
 }

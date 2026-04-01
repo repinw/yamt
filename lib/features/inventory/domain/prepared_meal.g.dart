@@ -28,6 +28,11 @@ PreparedMeal _$PreparedMealFromJson(Map<String, dynamic> json) => PreparedMeal(
             MapEntry(k, (e as List<dynamic>).map((e) => e as String).toList()),
       ) ??
       {},
+  pendingRecipeIngredients:
+      (json['pending_recipe_ingredients'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      [],
   totalPortions: _readIntOrZero(json['total_portions']),
   remainingPortions: _readIntOrZero(json['remaining_portions']),
   totalKcal: _readDoubleOrZero(json['total_kcal']),
@@ -55,6 +60,7 @@ Map<String, dynamic> _$PreparedMealToJson(PreparedMeal instance) =>
       'recipe_ingredients': instance.recipeIngredients,
       'ignored_recipe_ingredients': instance.ignoredRecipeIngredients,
       'recipe_ingredient_assignments': instance.recipeIngredientAssignments,
+      'pending_recipe_ingredients': instance.pendingRecipeIngredients,
       'total_portions': instance.totalPortions,
       'remaining_portions': instance.remainingPortions,
       'total_kcal': instance.totalKcal,

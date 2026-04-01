@@ -17,6 +17,7 @@ class PreparedMeal {
     this.recipeIngredients = const <String>[],
     this.ignoredRecipeIngredients = const <String>[],
     this.recipeIngredientAssignments = const <String, List<String>>{},
+    this.pendingRecipeIngredients = const <String>[],
     required this.totalPortions,
     required this.remainingPortions,
     required this.totalKcal,
@@ -47,6 +48,8 @@ class PreparedMeal {
   final List<String> ignoredRecipeIngredients;
   @JsonKey(defaultValue: <String, List<String>>{})
   final Map<String, List<String>> recipeIngredientAssignments;
+  @JsonKey(defaultValue: <String>[])
+  final List<String> pendingRecipeIngredients;
   @JsonKey(fromJson: _readIntOrZero)
   final int totalPortions;
   @JsonKey(fromJson: _readIntOrZero)
@@ -77,6 +80,7 @@ class PreparedMeal {
     List<String>? recipeIngredients,
     List<String>? ignoredRecipeIngredients,
     Map<String, List<String>>? recipeIngredientAssignments,
+    List<String>? pendingRecipeIngredients,
     int? totalPortions,
     int? remainingPortions,
     double? totalKcal,
@@ -102,6 +106,8 @@ class PreparedMeal {
           ignoredRecipeIngredients ?? this.ignoredRecipeIngredients,
       recipeIngredientAssignments:
           recipeIngredientAssignments ?? this.recipeIngredientAssignments,
+      pendingRecipeIngredients:
+          pendingRecipeIngredients ?? this.pendingRecipeIngredients,
       totalPortions: totalPortions ?? this.totalPortions,
       remainingPortions: remainingPortions ?? this.remainingPortions,
       totalKcal: totalKcal ?? this.totalKcal,
@@ -115,6 +121,8 @@ class PreparedMeal {
   }
 
   bool get isDepleted => remainingPortions <= 0;
+
+  bool get hasPendingRecipeIngredients => pendingRecipeIngredients.isNotEmpty;
 
   double get remainingRatio {
     if (totalPortions <= 0) {
@@ -193,6 +201,10 @@ class PreparedMeal {
               other.recipeIngredientAssignments,
               recipeIngredientAssignments,
             ) &&
+            const ListEquality<String>().equals(
+              other.pendingRecipeIngredients,
+              pendingRecipeIngredients,
+            ) &&
             other.totalPortions == totalPortions &&
             other.remainingPortions == remainingPortions &&
             other.totalKcal == totalKcal &&
@@ -218,6 +230,7 @@ class PreparedMeal {
       const ListEquality<String>().hash(recipeIngredients),
       const ListEquality<String>().hash(ignoredRecipeIngredients),
       const DeepCollectionEquality().hash(recipeIngredientAssignments),
+      const ListEquality<String>().hash(pendingRecipeIngredients),
       totalPortions,
       remainingPortions,
       totalKcal,

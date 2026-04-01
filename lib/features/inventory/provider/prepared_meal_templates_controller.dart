@@ -422,6 +422,54 @@ class PreparedMealTemplatesController
     }).whenComplete(keepAliveLink.close);
   }
 
+  Future<bool> updateRecipeIngredientAssignments({
+    required String templateId,
+    required Map<String, List<String>> recipeIngredientAssignments,
+  }) {
+    if (templateId.trim().isEmpty) {
+      return Future<bool>.value(false);
+    }
+
+    final keepAliveLink = ref.keepAlive();
+    return _runSerializedMutation(() async {
+      final currentTemplates = await _currentTemplates();
+      final templateIndex = currentTemplates.indexWhere(
+        (template) => template.id == templateId,
+      );
+      if (templateIndex < 0) {
+        return false;
+      }
+
+      final currentTemplate = currentTemplates[templateIndex];
+      final nextAssignments = <String, List<String>>{};
+      for (final entry in recipeIngredientAssignments.entries) {
+        final ingredient = entry.key.trim();
+        if (ingredient.isEmpty) {
+          continue;
+        }
+        final itemIds = entry.value
+            .map((itemId) => itemId.trim())
+            .where((itemId) => itemId.isNotEmpty)
+            .toSet()
+            .toList(growable: false);
+        if (itemIds.isEmpty) {
+          continue;
+        }
+        nextAssignments[ingredient] = itemIds;
+      }
+
+      final nextTemplates = List<PreparedMeal>.from(currentTemplates);
+      nextTemplates[templateIndex] = currentTemplate.copyWith(
+        recipeIngredientAssignments: nextAssignments,
+        updatedAt: DateTime.now(),
+      );
+      return _saveTemplates(
+        previousTemplates: currentTemplates,
+        nextTemplates: nextTemplates,
+      );
+    }).whenComplete(keepAliveLink.close);
+  }
+
   Future<List<PreparedMeal>> _restartSubscription() {
     final initialTemplates = Completer<List<PreparedMeal>>();
     final repository = ref.read(preparedMealTemplateRepositoryProvider);
