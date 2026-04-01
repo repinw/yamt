@@ -73,6 +73,33 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 
   @override
+  Future<List<CalorieEntry>> readEntriesInRange({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async {
+    final start = _normalize(startInclusive);
+    final end = _normalize(endExclusive);
+    final entries = _entries
+        .where((entry) {
+          final loggedAt = entry.loggedAt;
+          return !loggedAt.isBefore(start) && loggedAt.isBefore(end);
+        })
+        .toList(growable: false);
+    entries.sort((left, right) => left.loggedAt.compareTo(right.loggedAt));
+    return entries;
+  }
+
+  @override
+  Future<DateTime?> readFirstEntryDate() async {
+    if (_entries.isEmpty) {
+      return null;
+    }
+    final sorted = List<CalorieEntry>.from(_entries)
+      ..sort((left, right) => left.loggedAt.compareTo(right.loggedAt));
+    return sorted.first.loggedAt;
+  }
+
+  @override
   Future<bool> saveEntry(CalorieEntry entry) async {
     if (saveShouldFail) {
       return false;

@@ -566,6 +566,96 @@
   "authErrorProviderAlreadyLinked": "Dieser Anmeldeanbieter ist bereits mit deinem Konto verknüpft.",
   "authErrorGoogleSignInCanceled": "Google-Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
   "authErrorGoogleIdTokenMissing": "Google-Anmeldung hat kein gültiges Token geliefert.",
+  "statisticsPageSubtitle": "Muster aus Vorrat, Food Waste und Ernährung auf einen Blick.",
+  "statisticsContextHousehold": "Haushalt",
+  "statisticsContextPersonal": "Persönlich",
+  "statisticsTimeframeWeek": "7 Tage",
+  "statisticsTimeframeMonth": "Monat",
+  "statisticsTimeframeYear": "Jahr",
+  "statisticsTimeframeTotal": "Gesamt",
+  "statisticsTabSpending": "Ausgaben",
+  "statisticsTabWaste": "Food Waste",
+  "statisticsTabCalories": "Kalorien",
+  "statisticsHouseholdHintTitle": "MVP-Hinweis",
+  "statisticsHouseholdHintBody": "Haushaltszahlen basieren aktuell auf erfassten Vorratsartikeln und verfügbaren Belegdaten. Eine vollständige Verlaufs-Historie folgt später.",
+  "statisticsWasteHintTitle": "Waste-Tracking vorbereiten",
+  "statisticsWasteHintBody": "Für echte Food-Waste-Statistiken brauchen wir dauerhafte Wegwerf-Events und Gründe im Wegwerfen-Flow.",
+  "statisticsSpendingTotalTitle": "Erfasste Ausgaben",
+  "statisticsSpendingTotalSubtitle": "Summe der erfassten Einkäufe im gewählten Zeitraum",
+  "statisticsSpendingTrendTitle": "Preisentwicklung",
+  "statisticsSpendingTrendEmpty": "Noch keine wiederkehrenden Produkte mit Preisverlauf im gewählten Zeitraum.",
+  "statisticsSpendingStoresTitle": "Top Supermärkte",
+  "statisticsTopStoresEmpty": "Noch keine Märkte mit verwertbaren Werten im Zeitraum.",
+  "statisticsSpendingChartTitle": "Ausgaben nach Belegdatum",
+  "statisticsSpendingChartSubtitle": "Der Graph nutzt das echte receiptDate des Belegs und zeigt die letzten Einkaufstage im Filter.",
+  "statisticsSpendingChartEmpty": "Sobald Belegdaten mit Datum vorliegen, erscheint hier dein Ausgabenverlauf.",
+  "statisticsSpendingItemsTitle": "Teuerste Einkäufe",
+  "statisticsExpensiveItemsEmpty": "Noch keine kostenrelevanten Positionen im Zeitraum.",
+  "statisticsWasteOverviewTitle": "Food Waste Überblick",
+  "statisticsWasteTrackingMissingValue": "Noch keine Historie",
+  "statisticsWasteTrackingMissingMessage": "Wegwerf-Events und Gründe werden aktuell noch nicht dauerhaft gespeichert.",
+  "statisticsWasteRatioTitle": "Verhältnis & Geldverlust",
+  "statisticsWasteMoneyLossMissing": "Sobald Wegwerfwerte erfasst werden, erscheint hier das Verhältnis und der Euro-Verlust.",
+  "statisticsWasteReasonsTitle": "Waste-Gründe",
+  "statisticsWasteReasonsMissing": "Füge beim Wegwerfen Gründe wie abgelaufen oder zu viel gekocht hinzu, damit wir Muster erkennen.",
+  "statisticsWasteItemsTitle": "Oft weggeworfen",
+  "statisticsWasteItemsMissing": "Sobald genug Wegwerf-Events vorliegen, zeigen wir hier deine häufigsten Problemartikel.",
+  "statisticsCaloriesOverviewTitle": "Kalorien Überblick",
+  "statisticsCaloriesOverviewSummary": "{trackedDays} Tage mit Einträgen · {entries} Einträge",
+  "@statisticsCaloriesOverviewSummary": {
+    "placeholders": {
+      "trackedDays": {
+        "type": "int"
+      },
+      "entries": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsCaloriesStreakTitle": "Ziel-Streak",
+  "statisticsCaloriesStreakSummary": "{goalDays} von {trackedDays} Tagen im Ziel",
+  "@statisticsCaloriesStreakSummary": {
+    "placeholders": {
+      "goalDays": {
+        "type": "int"
+      },
+      "trackedDays": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsCaloriesBufferTitle": "Wochenpuffer",
+  "statisticsCaloriesBufferSubtitle": "aktuelle Balance gegen dein Ziel",
+  "statisticsCaloriesChartTitle": "Tagesverlauf",
+  "statisticsCaloriesChartSubtitle": "Letzte Tage mit gegessenen Kalorien und Zielmarke.",
+  "statisticsCaloriesChartEmpty": "Sobald Kalorien-Einträge vorliegen, erscheint hier dein Tagesverlauf.",
+  "statisticsCaloriesMacrosTitle": "Makro-Verteilung",
+  "statisticsCaloriesMacroChartSubtitle": "Anteil der Kalorien aus Kohlenhydraten, Protein und Fett.",
+  "statisticsCaloriesNoEntries": "Noch keine Kalorien-Einträge im Zeitraum.",
+  "statisticsChartGoalLegend": "Zielmarke",
+  "statisticsMetricNoTrend": "Noch kein Trend",
+  "statisticsMetricNoData": "Noch keine Daten",
+  "statisticsMetricAverage": "Durchschnitt",
+  "statisticsMetricEntries": "Einträge",
+  "statisticsMetricTrackedDays": "Tage mit Einträgen",
+  "statisticsMetricGoalDays": "Im Ziel",
+  "statisticsMetricReceipts": "Belege",
+  "statisticsWasteSignalsTitle": "Was noch fehlt",
+  "statisticsWasteChecklistEvents": "dauerhafte Wegwerf-Events mit Menge und Zeitpunkt",
+  "statisticsWasteChecklistReasons": "Wegwerf-Gründe wie abgelaufen, schimmelig oder zu viel gekocht",
+  "statisticsWasteChecklistEatingOut": "Preise für externe Mahlzeiten, damit Haushaltskosten vollständiger werden",
+  "statisticsCaloriesBalanceWindow": "Balance-Fenster von {startDate} bis {endDate}",
+  "@statisticsCaloriesBalanceWindow": {
+    "placeholders": {
+      "startDate": {
+        "type": "String"
+      },
+      "endDate": {
+        "type": "String"
+      }
+    }
+  },
+  "statisticsLoadFailed": "Statistik konnte nicht geladen werden.",
   "commonUndoAction": "Rückgängig machen",
   "commonNotImplementedYet": "Noch nicht implementiert"
 }

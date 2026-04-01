@@ -91,6 +91,60 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 
   @override
+  Future<List<CalorieEntry>> readEntriesInRange({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async {
+    final userId = _currentUserId();
+    if (userId == null) {
+      return const <CalorieEntry>[];
+    }
+
+    try {
+      final snapshot = await _collection(userId)
+          .where('logged_at', isGreaterThanOrEqualTo: startInclusive)
+          .where('logged_at', isLessThan: endExclusive)
+          .orderBy('logged_at')
+          .get();
+      return _decodeSnapshot(snapshot);
+    } catch (error, stackTrace) {
+      log(
+        'Failed to read calorie range for user $userId',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <CalorieEntry>[];
+    }
+  }
+
+  @override
+  Future<DateTime?> readFirstEntryDate() async {
+    final userId = _currentUserId();
+    if (userId == null) {
+      return null;
+    }
+
+    try {
+      final snapshot = await _collection(
+        userId,
+      ).orderBy('logged_at').limit(1).get();
+      if (snapshot.docs.isEmpty) {
+        return null;
+      }
+      return _decodeDocument(snapshot.docs.first).loggedAt;
+    } catch (error, stackTrace) {
+      log(
+        'Failed to read first calorie entry date for user $userId',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
+  }
+
+  @override
   Future<bool> saveEntry(CalorieEntry entry) async {
     final userId = _currentUserId();
     if (userId == null) {
@@ -295,6 +349,19 @@ class _UnavailableCalorieLogRepository implements CalorieLogRepositoryContract {
   @override
   Future<List<CalorieEntry>> readEntriesForDay(DateTime day) async {
     return const <CalorieEntry>[];
+  }
+
+  @override
+  Future<List<CalorieEntry>> readEntriesInRange({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async {
+    return const <CalorieEntry>[];
+  }
+
+  @override
+  Future<DateTime?> readFirstEntryDate() async {
+    return null;
   }
 
   @override

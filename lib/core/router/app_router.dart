@@ -21,6 +21,7 @@ import 'package:yamt/features/scanner/presentation/'
     'inventory_receipt_review_page.dart';
 import 'package:yamt/features/settings/account_page.dart';
 import 'package:yamt/features/settings/settings_page.dart';
+import 'package:yamt/features/statistics/presentation/statistics_page.dart';
 
 part 'app_router.g.dart';
 
@@ -159,6 +160,14 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: AppRoutes.homeCalories,
                 builder: (context, state) => const CaloriesPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.homeStatistics,
+                builder: (context, state) => const StatisticsPage(),
               ),
             ],
           ),

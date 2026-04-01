@@ -68,28 +68,19 @@ PreparedMeal _meal({
 
 class _AlwaysAmountProgressInventoryItem extends InventoryItem {
   _AlwaysAmountProgressInventoryItem({
-    required String id,
+    required super.id,
     required String name,
-    required DateTime entryDate,
-    required String storeName,
-    required int quantity,
-    int initialQuantity = 1,
-    double unitPrice = 0.0,
-    int initialAmount = 0,
-    int currentAmount = 0,
-    InventoryAmountUnit? amountUnit,
+    required super.entryDate,
+    required super.storeName,
+    required super.quantity,
+    super.unitPrice = 0.0,
+    super.initialAmount = 0,
+    super.currentAmount = 0,
+    super.amountUnit,
   }) : super(
-         id: id,
          globalFoodItemId: 'pending-$id',
          productSnapshot: InventoryItemProductSnapshot(name: name),
-         entryDate: entryDate,
-         storeName: storeName,
-         quantity: quantity,
-         initialQuantity: initialQuantity,
-         unitPrice: unitPrice,
-         initialAmount: initialAmount,
-         currentAmount: currentAmount,
-         amountUnit: amountUnit,
+         initialQuantity: 1,
        );
 
   @override
