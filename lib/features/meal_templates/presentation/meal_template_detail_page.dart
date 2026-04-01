@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
@@ -117,6 +118,15 @@ class _MealTemplateDetailPageState
               selectedPortions: selectedPortions,
               recipeIngredientAssignments: effectiveAssignments,
             ),
+            onAddIngredientsToShoppingListPressed: () =>
+                _addTemplateIngredientsToShoppingList(
+                  context: context,
+                  ingredientRows: _buildIngredientRows(
+                    template: template,
+                    recipeIngredientAssignments: effectiveAssignments,
+                    selectedPortions: selectedPortions,
+                  ),
+                ),
             onSaveTemplatePressed: hasAssignmentChanges
                 ? () => _saveTemplateAssignments(
                     context: context,
@@ -162,6 +172,11 @@ class _MealTemplateDetailPageState
     setState(() {
       _isCreatingMeal = false;
     });
+
+    if (result.isSuccess && result.preparedMealId != null) {
+      context.go(AppRoutes.homeInventory, extra: result.preparedMealId);
+      return;
+    }
 
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
@@ -229,6 +244,7 @@ class _MealTemplateDetailContent extends ConsumerWidget {
     required this.onIncreasePortions,
     required this.onAssignmentChanged,
     required this.onCreateMealPressed,
+    required this.onAddIngredientsToShoppingListPressed,
     required this.onSaveTemplatePressed,
   });
 
@@ -246,6 +262,7 @@ class _MealTemplateDetailContent extends ConsumerWidget {
   })
   onAssignmentChanged;
   final Future<void> Function() onCreateMealPressed;
+  final Future<void> Function() onAddIngredientsToShoppingListPressed;
   final Future<void> Function()? onSaveTemplatePressed;
 
   @override
@@ -263,9 +280,7 @@ class _MealTemplateDetailContent extends ConsumerWidget {
       recipeIngredientAssignments: recipeIngredientAssignments,
       selectedPortions: selectedPortions,
     );
-    final canCreateMeal =
-        template.recipeIngredients.isNotEmpty &&
-        ingredientRows.any((row) => row.assignedInventoryItemIds.isNotEmpty);
+    final canCreateMeal = ingredientRows.isNotEmpty;
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -387,6 +402,19 @@ class _MealTemplateDetailContent extends ConsumerWidget {
                 const SizedBox(width: AppSpacing.md),
               ],
               Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: isCreatingMeal || isSavingTemplate
+                      ? null
+                      : onAddIngredientsToShoppingListPressed,
+                  icon: const Icon(Icons.shopping_cart_outlined),
+                  label: const Text(
+                    // TODO(l10n): Localize bulk shopping list action.
+                    'Zutaten auf Einkaufsliste',
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
                 child: FilledButton.icon(
                   onPressed:
                       isCreatingMeal || isSavingTemplate || !canCreateMeal
@@ -404,8 +432,8 @@ class _MealTemplateDetailContent extends ConsumerWidget {
             const SizedBox(height: AppSpacing.sm),
             Text(
               // TODO(l10n): Localize create meal hint text.
-              'Ordne mindestens eine Zutat zu, bevor du eine Mahlzeit '
-              'erstellst.',
+              'Diese Vorlage braucht mindestens eine Zutat, bevor du eine '
+              'Mahlzeit erstellst.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -1022,7 +1050,7 @@ String _createMealFailureMessage(
 ) {
   return switch (failureReason) {
     PreparedMealCreationFailureReason.invalidInput =>
-      'Die Vorlage braucht mindestens eine gueltige Zutaten-Zuordnung.',
+      'Die Vorlage braucht mindestens eine gueltige Zutat.',
     PreparedMealCreationFailureReason.itemUnavailable =>
       'Mindestens ein zugeordneter Inventarartikel ist nicht mehr verfuegbar.',
     PreparedMealCreationFailureReason.insufficientAmount =>
@@ -1173,6 +1201,54 @@ Future<void> _addIngredientToShoppingList({
         // TODO(l10n): Localize shopping list save error text.
         content: Text(
           'Zutat konnte nicht zur Einkaufsliste hinzugefügt werden.',
+        ),
+      ),
+    );
+}
+
+Future<void> _addTemplateIngredientsToShoppingList({
+  required BuildContext context,
+  required List<_IngredientRowData> ingredientRows,
+}) async {
+  final rowsToAdd = ingredientRows
+      .where((row) => !row.isIgnored)
+      .toList(growable: false);
+  if (rowsToAdd.isEmpty) {
+    return;
+  }
+
+  final container = ProviderScope.containerOf(context, listen: false);
+  final controller = container.read(shoppingListControllerProvider.notifier);
+  var addedCount = 0;
+
+  for (final row in rowsToAdd) {
+    final added = await controller.addItem(name: _shoppingListLabel(row));
+    if (!context.mounted) {
+      return;
+    }
+    if (!added) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            // TODO(l10n): Localize bulk shopping list save error text.
+            content: Text(
+              'Zutaten konnten nicht zur Einkaufsliste hinzugefügt werden.',
+            ),
+          ),
+        );
+      return;
+    }
+    addedCount += 1;
+  }
+
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        // TODO(l10n): Localize bulk shopping list success text.
+        content: Text(
+          '$addedCount Zutaten wurden zur Einkaufsliste hinzugefügt.',
         ),
       ),
     );

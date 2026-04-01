@@ -181,7 +181,14 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.homeInventory,
-                builder: (context, state) => const InventoryPage(),
+                builder: (context, state) {
+                  final expandedPreparedMealId = state.extra is String
+                      ? state.extra! as String
+                      : null;
+                  return InventoryPage(
+                    expandedPreparedMealId: expandedPreparedMealId,
+                  );
+                },
               ),
             ],
           ),

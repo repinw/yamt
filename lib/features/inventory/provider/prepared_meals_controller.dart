@@ -244,6 +244,143 @@ class PreparedMealsController extends _$PreparedMealsController {
     }).whenComplete(keepAliveLink.close);
   }
 
+  Future<bool> fillPreparedMealPendingIngredient({
+    required String mealId,
+    required String ingredient,
+    required List<String> inventoryItemIds,
+  }) {
+    final trimmedIngredient = ingredient.trim();
+    final normalizedItemIds = inventoryItemIds
+        .map((itemId) => itemId.trim())
+        .where((itemId) => itemId.isNotEmpty)
+        .toList(growable: false);
+    if (trimmedIngredient.isEmpty || normalizedItemIds.isEmpty) {
+      return Future<bool>.value(false);
+    }
+
+    final keepAliveLink = ref.keepAlive();
+    return _runSerializedMutation(() async {
+      final currentMeals = await _currentMeals();
+      final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
+      if (mealIndex < 0) {
+        return false;
+      }
+
+      final currentMeal = currentMeals[mealIndex];
+      final pendingIndex = currentMeal.pendingRecipeIngredients.indexWhere(
+        (entry) => entry.trim() == trimmedIngredient,
+      );
+      if (pendingIndex < 0) {
+        return false;
+      }
+
+      final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
+      final currentItems = await inventoryRepository.readAll();
+      final fillResult = _buildPendingIngredientFillResult(
+        currentItems: currentItems,
+        ingredient: trimmedIngredient,
+        inventoryItemIds: normalizedItemIds,
+      );
+      if (fillResult == null) {
+        return false;
+      }
+
+      final inventorySaved = await inventoryRepository.saveAll(
+        fillResult.nextItems,
+      );
+      if (!inventorySaved) {
+        return false;
+      }
+
+      final nextPendingIngredients = List<String>.from(
+        currentMeal.pendingRecipeIngredients,
+      )..removeAt(pendingIndex);
+      if (fillResult.remainingIngredient != null) {
+        nextPendingIngredients.insert(
+          pendingIndex,
+          fillResult.remainingIngredient!,
+        );
+      }
+
+      final nextComponents = <PreparedMealComponent>[
+        ...currentMeal.components,
+        ...fillResult.components,
+      ];
+      final nextMeal = currentMeal.copyWith(
+        components: nextComponents,
+        pendingRecipeIngredients: nextPendingIngredients,
+        totalKcal: nextComponents.fold<double>(
+          0,
+          (sum, component) => sum + component.totalKcal,
+        ),
+        totalProtein: nextComponents.fold<double>(
+          0,
+          (sum, component) => sum + component.totalProtein,
+        ),
+        totalCarbs: nextComponents.fold<double>(
+          0,
+          (sum, component) => sum + component.totalCarbs,
+        ),
+        totalFat: nextComponents.fold<double>(
+          0,
+          (sum, component) => sum + component.totalFat,
+        ),
+        updatedAt: DateTime.now(),
+      );
+
+      final nextMeals = List<PreparedMeal>.from(currentMeals);
+      nextMeals[mealIndex] = nextMeal;
+      final mealsSaved = await _saveMeals(
+        previousMeals: currentMeals,
+        nextMeals: nextMeals,
+      );
+      if (mealsSaved) {
+        return true;
+      }
+
+      await _restoreInventory(
+        inventoryRepository: inventoryRepository,
+        previousItems: currentItems,
+      );
+      return false;
+    }).whenComplete(keepAliveLink.close);
+  }
+
+  Future<bool> ignorePreparedMealPendingIngredient({
+    required String mealId,
+    required String ingredient,
+  }) {
+    final trimmedIngredient = ingredient.trim();
+    if (trimmedIngredient.isEmpty) {
+      return Future<bool>.value(false);
+    }
+
+    final keepAliveLink = ref.keepAlive();
+    return _runSerializedMutation(() async {
+      final currentMeals = await _currentMeals();
+      final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
+      if (mealIndex < 0) {
+        return false;
+      }
+
+      final currentMeal = currentMeals[mealIndex];
+      final nextPendingIngredients = currentMeal.pendingRecipeIngredients
+          .where((entry) => entry.trim() != trimmedIngredient)
+          .toList(growable: false);
+      if (nextPendingIngredients.length ==
+          currentMeal.pendingRecipeIngredients.length) {
+        return false;
+      }
+
+      final nextMeals = List<PreparedMeal>.from(currentMeals);
+      nextMeals[mealIndex] = currentMeal.copyWith(
+        pendingRecipeIngredients: nextPendingIngredients,
+        updatedAt: DateTime.now(),
+      );
+      return _saveMeals(previousMeals: currentMeals, nextMeals: nextMeals);
+    }).whenComplete(keepAliveLink.close);
+  }
+
   Future<bool> consumePreparedMeal({
     required String mealId,
     required int consumedPortions,
@@ -618,6 +755,18 @@ class _PreparedMealCreationResult {
   final PreparedMeal preparedMeal;
 }
 
+class _PendingIngredientFillResult {
+  const _PendingIngredientFillResult({
+    required this.nextItems,
+    required this.components,
+    this.remainingIngredient,
+  });
+
+  final List<InventoryItem> nextItems;
+  final List<PreparedMealComponent> components;
+  final String? remainingIngredient;
+}
+
 _PreparedMealCreationResult _buildMealCreationResult({
   required List<InventoryItem> currentItems,
   required String name,
@@ -745,7 +894,16 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
     final assignedItemIds =
         recipeIngredientAssignments[ingredient] ?? const <String>[];
     if (assignedItemIds.isEmpty) {
-      pendingIngredients.add(ingredient);
+      pendingIngredients.add(
+        _pendingIngredientLabel(
+          originalIngredient: ingredient,
+          requirement: _parseTemplateIngredientRequirement(
+            ingredient: ingredient,
+            selectedPortions: totalPortions,
+            basePortions: template.totalPortions,
+          ),
+        ),
+      );
       continue;
     }
 
@@ -755,13 +913,12 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
       basePortions: template.totalPortions,
     );
     if (requirement == null) {
-      pendingIngredients.add(ingredient);
+      pendingIngredients.add(ingredient.trim());
       continue;
     }
 
     var remainingAmount = requirement.amount;
     var consumedAnyAmount = false;
-    var ingredientNeedsAttention = false;
     for (final itemId in assignedItemIds) {
       if (remainingAmount <= 0) {
         break;
@@ -785,7 +942,6 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
           const GlobalFoodNutrition(
             qualityStatus: GlobalFoodNutritionQualityStatus.missing,
           );
-      final hasCompleteNutrition = _hasCompleteNutrition(currentItem.nutrition);
       final consumableAmount = _consumableAmountForRequirement(
         item: currentItem,
         requiredUnit: requirement.unit,
@@ -823,20 +979,27 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
         consumedAmount: consumableAmount,
       );
       consumedAnyAmount = true;
-      if (!hasCompleteNutrition) {
-        ingredientNeedsAttention = true;
-      }
     }
 
-    if (!consumedAnyAmount || remainingAmount > 0 || ingredientNeedsAttention) {
-      pendingIngredients.add(ingredient);
+    if (!consumedAnyAmount) {
+      pendingIngredients.add(
+        _pendingIngredientLabel(
+          originalIngredient: ingredient,
+          requirement: requirement,
+        ),
+      );
+      continue;
     }
-  }
 
-  if (components.isEmpty) {
-    throw const _PreparedMealCreationException(
-      PreparedMealCreationFailureReason.invalidInput,
-    );
+    if (remainingAmount > 0) {
+      pendingIngredients.add(
+        _formatPendingIngredient(
+          amount: remainingAmount,
+          unit: requirement.unit,
+          name: requirement.name,
+        ),
+      );
+    }
   }
 
   final totalKcal = components.fold<double>(
@@ -885,10 +1048,12 @@ class _TemplateIngredientRequirement {
   const _TemplateIngredientRequirement({
     required this.amount,
     required this.unit,
+    required this.name,
   });
 
   final int amount;
   final InventoryAmountUnit unit;
+  final String name;
 }
 
 _TemplateIngredientRequirement? _parseTemplateIngredientRequirement({
@@ -920,6 +1085,9 @@ _TemplateIngredientRequirement? _parseTemplateIngredientRequirement({
   }
 
   final conversion = _resolveTemplateIngredientUnitConversion(rawTail);
+  final ingredientName = conversion.consumesUnitToken
+      ? rawTail.split(RegExp(r'\s+')).skip(1).join(' ').trim()
+      : rawTail.trim();
   final scaledQuantity =
       parsedQuantity * conversion.multiplier * selectedPortions / basePortions;
   final roundedAmount = scaledQuantity.round();
@@ -930,6 +1098,7 @@ _TemplateIngredientRequirement? _parseTemplateIngredientRequirement({
   return _TemplateIngredientRequirement(
     amount: roundedAmount,
     unit: conversion.unit,
+    name: ingredientName.isEmpty ? rawTail.trim() : ingredientName,
   );
 }
 
@@ -950,7 +1119,7 @@ double? _parseIngredientQuantity(String rawValue) {
   return double.tryParse(normalized);
 }
 
-({InventoryAmountUnit unit, double multiplier})
+({InventoryAmountUnit unit, double multiplier, bool consumesUnitToken})
 _resolveTemplateIngredientUnitConversion(String rawTail) {
   final tokens = rawTail.split(RegExp(r'\s+'));
   final normalizedToken = tokens.isEmpty
@@ -976,11 +1145,139 @@ _resolveTemplateIngredientUnitConversion(String rawTail) {
   if (normalizedToken != null) {
     final conversion = unitConversions[normalizedToken];
     if (conversion != null) {
-      return conversion;
+      return (
+        unit: conversion.unit,
+        multiplier: conversion.multiplier,
+        consumesUnitToken: true,
+      );
     }
   }
 
-  return (unit: InventoryAmountUnit.piece, multiplier: 1);
+  return (
+    unit: InventoryAmountUnit.piece,
+    multiplier: 1,
+    consumesUnitToken: false,
+  );
+}
+
+String _pendingIngredientLabel({
+  required String originalIngredient,
+  required _TemplateIngredientRequirement? requirement,
+}) {
+  if (requirement == null) {
+    return originalIngredient.trim();
+  }
+  return _formatPendingIngredient(
+    amount: requirement.amount,
+    unit: requirement.unit,
+    name: requirement.name,
+  );
+}
+
+String _formatPendingIngredient({
+  required int amount,
+  required InventoryAmountUnit unit,
+  required String name,
+}) {
+  return '$amount ${unit.code} $name';
+}
+
+_PendingIngredientFillResult? _buildPendingIngredientFillResult({
+  required List<InventoryItem> currentItems,
+  required String ingredient,
+  required List<String> inventoryItemIds,
+}) {
+  final requirement = _parseTemplateIngredientRequirement(
+    ingredient: ingredient,
+    selectedPortions: 1,
+    basePortions: 1,
+  );
+  if (requirement == null) {
+    return null;
+  }
+
+  final nextItems = List<InventoryItem>.from(currentItems);
+  final components = <PreparedMealComponent>[];
+  var remainingAmount = requirement.amount;
+  var consumedAnyAmount = false;
+
+  for (final itemId in inventoryItemIds) {
+    if (remainingAmount <= 0) {
+      break;
+    }
+
+    final itemIndex = nextItems.indexWhere((item) => item.id == itemId);
+    if (itemIndex < 0) {
+      continue;
+    }
+
+    final currentItem = nextItems[itemIndex];
+    if (!_hasCompatibleTemplateRequirement(
+      item: currentItem,
+      requiredUnit: requirement.unit,
+    )) {
+      continue;
+    }
+
+    final consumableAmount = _consumableAmountForRequirement(
+      item: currentItem,
+      requiredUnit: requirement.unit,
+      remainingAmount: remainingAmount,
+    );
+    if (consumableAmount < 1) {
+      continue;
+    }
+
+    final nextItem = _reduceInventoryItem(
+      item: currentItem,
+      amount: consumableAmount,
+    );
+    if (nextItem == null) {
+      continue;
+    }
+
+    final resolvedNutrition =
+        currentItem.nutrition ??
+        const GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.missing,
+        );
+    final usedUnit = _resolveTemplateUsedUnit(
+      item: currentItem,
+      requiredUnit: requirement.unit,
+    );
+    nextItems[itemIndex] = nextItem;
+    components.add(
+      _buildPreparedMealComponent(
+        item: currentItem,
+        usedAmount: consumableAmount,
+        usedUnit: usedUnit,
+        nutrition: resolvedNutrition,
+      ),
+    );
+    remainingAmount = _remainingRequirementAfterConsumption(
+      item: currentItem,
+      requiredUnit: requirement.unit,
+      remainingAmount: remainingAmount,
+      consumedAmount: consumableAmount,
+    );
+    consumedAnyAmount = true;
+  }
+
+  if (!consumedAnyAmount || components.isEmpty) {
+    return null;
+  }
+
+  return _PendingIngredientFillResult(
+    nextItems: nextItems,
+    components: components,
+    remainingIngredient: remainingAmount > 0
+        ? _formatPendingIngredient(
+            amount: remainingAmount,
+            unit: requirement.unit,
+            name: requirement.name,
+          )
+        : null,
+  );
 }
 
 bool _hasCompatibleAmountUnit({

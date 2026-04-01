@@ -29,7 +29,9 @@ const _deleteUndoSnackBarDuration = Duration(seconds: 4);
 const _preparedMealImageAssetUuid = Uuid();
 
 class InventoryPage extends ConsumerStatefulWidget {
-  const InventoryPage({super.key});
+  const InventoryPage({super.key, this.expandedPreparedMealId});
+
+  final String? expandedPreparedMealId;
 
   @override
   ConsumerState<InventoryPage> createState() => _InventoryPageState();
@@ -76,6 +78,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     return InventoryList(
       items: items,
       preparedMeals: meals,
+      expandedPreparedMealId: widget.expandedPreparedMealId,
       onDeleteItem: (itemId) =>
           _deleteItemWithUndo(context: context, ref: ref, itemId: itemId),
       onEatItem: (itemId, amount) => _eatItemWithCalorieBridge(
@@ -85,11 +88,8 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         amount: amount,
         itemsSnapshot: items,
       ),
-      onThrowAwayItem: (
-        itemId,
-        amount,
-        reason,
-      ) => controller.throwAwayItem(itemId, amount, reason),
+      onThrowAwayItem: (itemId, amount, reason) =>
+          controller.throwAwayItem(itemId, amount, reason),
       onEatPreparedMeal: (mealId, portions, mealType) => ref
           .read(preparedMealsControllerProvider.notifier)
           .consumePreparedMeal(
@@ -103,6 +103,19 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
             mealId: mealId,
             discardedPortions: portions,
             reason: reason,
+          ),
+      onFillPendingPreparedMealIngredient: (mealId, ingredient, itemIds) => ref
+          .read(preparedMealsControllerProvider.notifier)
+          .fillPreparedMealPendingIngredient(
+            mealId: mealId,
+            ingredient: ingredient,
+            inventoryItemIds: itemIds,
+          ),
+      onIgnorePendingPreparedMealIngredient: (mealId, ingredient) => ref
+          .read(preparedMealsControllerProvider.notifier)
+          .ignorePreparedMealPendingIngredient(
+            mealId: mealId,
+            ingredient: ingredient,
           ),
       onUnbundlePreparedMeal: ref
           .read(preparedMealsControllerProvider.notifier)

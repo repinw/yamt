@@ -22,6 +22,34 @@ Wenn es sinnvoll machbar ist, sollen beide Wege langfristig im selben
 6. Es erscheint eine Review
 7. Nutzer speichert die Vorlage erst nach der Review
 
+## Kern-Flow, Der Immer Funktionieren Muss
+
+Dieser Basis-Flow soll immer moeglich sein, auch wenn:
+- noch keine Belege gescannt wurden
+- das Inventar komplett leer ist
+- noch keine Zutaten zugeordnet werden koennen
+
+Beispiel-Flow:
+1. Nutzer geht auf `Vorlagen`
+2. Nutzer klickt auf `Rezept importieren`
+3. Nutzer fuegt einen `chefkoch.de`-Link oder Share-Text ein
+4. Das Rezept wird geparst und in der Review angezeigt
+5. Nutzer speichert das Rezept als Vorlage
+6. Nutzer oeffnet die gespeicherte Vorlage
+7. Weil das Inventar leer ist, kann der Nutzer noch keine Zutaten belegen
+8. Stattdessen setzt der Nutzer die fehlenden Zutaten auf die Einkaufsliste
+9. Der Nutzer kann spaeter einkaufen, Belege scannen oder Inventar aufbauen
+10. Erst danach werden Zutaten in der Vorlage mit Inventarartikeln verknuepft
+11. Danach kann aus der Vorlage eine Mahlzeit erstellt werden
+
+Wichtig:
+- `meal_templates` darf nicht voraussetzen, dass das Inventar schon befuellt
+  ist
+- die Einkaufsliste ist deshalb kein Nebenfall, sondern ein zentraler Teil
+  des Flows
+- der Import einer Vorlage muss auch dann nuetzlich sein, wenn noch keine
+  einzige Zutat im Inventar vorhanden ist
+
 ## Importquelle V1
 
 - Zunaechst nur `chefkoch.de`
@@ -64,6 +92,7 @@ Beim Oeffnen einer Vorlage soll es geben:
 - Mengen-Skalierung auf Basis der importierten Rezept-Portionen
 - Zuordnung von Zutaten zu Inventarartikeln
 - Einkaufsaktion fuer fehlende Zutaten
+- Bulk-Aktion, um Zutaten gesammelt auf die Einkaufsliste zu setzen
 
 ## Zutaten-Zuordnung
 
@@ -91,6 +120,11 @@ Dann gilt:
 - daraus wird eine Mahlzeit erzeugt
 - fehlende Zutaten blockieren die Erstellung nicht
 - fehlende Zutaten koennen in die Einkaufsliste uebertragen werden
+- die Mahlzeit darf auch ohne belegte Inventarartikel erstellt werden
+- in diesem Fall landet sie als unvollstaendige Mahlzeit im Inventar
+- die fehlenden Zutaten werden dort als Text weitergefuehrt
+- von der Inventar-Mahlzeit aus sollen fehlende Zutaten spaeter befuellt
+  werden koennen, mit Kandidatenlogik aehnlich zur Vorlagenansicht
 
 Aktuelle Fachidee:
 - eine unvollstaendige Mahlzeit darf erstellt werden
@@ -114,9 +148,16 @@ Der bisherige Stand ist:
 - `Ignorieren` pro Rezeptzutat
 - einfache Inventar-Belegung pro Rezeptzutat
 - einfacher Push einzelner Zutaten zur Einkaufsliste
+- Sammelaktion, um Zutaten aus der Vorlage gesammelt auf die Einkaufsliste zu
+  setzen
 - lokale Zutat-Neuzuordnung in der Detailansicht
 - `Vorlage anpassen` speichert diese Neuzuordnung bewusst zurueck
 - `Mahlzeit erstellen` arbeitet direkt mit dem aktuellen lokalen Stand
+- `Mahlzeit erstellen` funktioniert auch ohne Inventar-Zuordnung
+- `Mahlzeit erstellen` springt danach direkt ins Inventar und klappt die neue
+  Mahlzeit auf
+- fehlende Zutaten koennen dort direkt an der Mahlzeit aus dem Inventar
+  nachgetragen werden
 
 Noch bewusst offen:
 - Mengenaufteilung auf mehrere Inventarartikel
