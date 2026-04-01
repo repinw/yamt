@@ -229,6 +229,10 @@ class PreparedMealTemplatesController
             var nextRecipeUrl = normalizedRecipeUrl;
             var nextImageUrl = currentTemplate.imageUrl;
             var nextRecipeIngredients = currentTemplate.recipeIngredients;
+            var nextIgnoredIngredients =
+                currentTemplate.ignoredRecipeIngredients;
+            var nextRecipeIngredientAssignments =
+                currentTemplate.recipeIngredientAssignments;
             var importedTitle = currentTemplate.name;
             var importedServings = currentTemplate.totalPortions;
 
@@ -244,6 +248,8 @@ class PreparedMealTemplatesController
               nextRecipeUrl = importedRecipe.recipeUrl;
               nextImageUrl = importedRecipe.imageUrl;
               nextRecipeIngredients = importedRecipe.ingredients;
+              nextIgnoredIngredients = const <String>[];
+              nextRecipeIngredientAssignments = const <String, List<String>>{};
               importedTitle = importedRecipe.title;
               importedServings = importedRecipe.servings;
             }
@@ -269,6 +275,8 @@ class PreparedMealTemplatesController
               imageUrl: nextImageUrl,
               recipeUrl: nextRecipeUrl,
               recipeIngredients: nextRecipeIngredients,
+              ignoredRecipeIngredients: nextIgnoredIngredients,
+              recipeIngredientAssignments: nextRecipeIngredientAssignments,
               totalPortions: resolvedPortions,
               remainingPortions: resolvedPortions,
               updatedAt: DateTime.now(),
@@ -313,6 +321,100 @@ class PreparedMealTemplatesController
       if (nextTemplates.length == currentTemplates.length) {
         return false;
       }
+      return _saveTemplates(
+        previousTemplates: currentTemplates,
+        nextTemplates: nextTemplates,
+      );
+    }).whenComplete(keepAliveLink.close);
+  }
+
+  Future<bool> setRecipeIngredientIgnored({
+    required String templateId,
+    required String ingredient,
+    required bool isIgnored,
+  }) {
+    if (templateId.trim().isEmpty || ingredient.trim().isEmpty) {
+      return Future<bool>.value(false);
+    }
+
+    final keepAliveLink = ref.keepAlive();
+    return _runSerializedMutation(() async {
+      final currentTemplates = await _currentTemplates();
+      final templateIndex = currentTemplates.indexWhere(
+        (template) => template.id == templateId,
+      );
+      if (templateIndex < 0) {
+        return false;
+      }
+
+      final currentTemplate = currentTemplates[templateIndex];
+      final normalizedIngredient = ingredient.trim();
+      final nextIgnoredIngredients = List<String>.from(
+        currentTemplate.ignoredRecipeIngredients,
+      );
+      final alreadyIgnored = nextIgnoredIngredients.contains(
+        normalizedIngredient,
+      );
+      if (isIgnored && !alreadyIgnored) {
+        nextIgnoredIngredients.add(normalizedIngredient);
+      } else if (!isIgnored && alreadyIgnored) {
+        nextIgnoredIngredients.remove(normalizedIngredient);
+      } else {
+        return true;
+      }
+
+      final nextTemplates = List<PreparedMeal>.from(currentTemplates);
+      nextTemplates[templateIndex] = currentTemplate.copyWith(
+        ignoredRecipeIngredients: nextIgnoredIngredients,
+        updatedAt: DateTime.now(),
+      );
+      return _saveTemplates(
+        previousTemplates: currentTemplates,
+        nextTemplates: nextTemplates,
+      );
+    }).whenComplete(keepAliveLink.close);
+  }
+
+  Future<bool> setRecipeIngredientAssignments({
+    required String templateId,
+    required String ingredient,
+    required List<String> inventoryItemIds,
+  }) {
+    if (templateId.trim().isEmpty || ingredient.trim().isEmpty) {
+      return Future<bool>.value(false);
+    }
+
+    final keepAliveLink = ref.keepAlive();
+    return _runSerializedMutation(() async {
+      final currentTemplates = await _currentTemplates();
+      final templateIndex = currentTemplates.indexWhere(
+        (template) => template.id == templateId,
+      );
+      if (templateIndex < 0) {
+        return false;
+      }
+
+      final currentTemplate = currentTemplates[templateIndex];
+      final normalizedIngredient = ingredient.trim();
+      final nextAssignments = <String, List<String>>{
+        ...currentTemplate.recipeIngredientAssignments,
+      };
+      final nextItemIds = inventoryItemIds
+          .map((itemId) => itemId.trim())
+          .where((itemId) => itemId.isNotEmpty)
+          .toSet()
+          .toList(growable: false);
+      if (nextItemIds.isEmpty) {
+        nextAssignments.remove(normalizedIngredient);
+      } else {
+        nextAssignments[normalizedIngredient] = nextItemIds;
+      }
+
+      final nextTemplates = List<PreparedMeal>.from(currentTemplates);
+      nextTemplates[templateIndex] = currentTemplate.copyWith(
+        recipeIngredientAssignments: nextAssignments,
+        updatedAt: DateTime.now(),
+      );
       return _saveTemplates(
         previousTemplates: currentTemplates,
         nextTemplates: nextTemplates,

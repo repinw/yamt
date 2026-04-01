@@ -105,6 +105,21 @@ Aktuelle Fachidee:
 5. Optional einfache Match-Vorschlaege
 6. `Mahlzeit erstellen` mit Teilmengen und Einkaufslisten-Uebergabe
 
+## Aktueller Stand Im Code
+
+Der bisherige Stand ist:
+- Chefkoch-Import mit Review vor dem Speichern
+- gespeicherte Vorlagen-Detailansicht
+- Portions-Skalierung fuer Zutaten
+- `Ignorieren` pro Rezeptzutat
+- einfache Inventar-Belegung pro Rezeptzutat
+- einfacher Push einzelner Zutaten zur Einkaufsliste
+
+Noch bewusst offen:
+- Mengenaufteilung auf mehrere Inventarartikel
+- echte Fehlmengen-Berechnung fuer Einkaufsliste
+- `Mahlzeit erstellen` aus der Vorlage
+
 ## Erster Umsetzungs-Slice
 
 Der erste sinnvolle technische Slice soll noch nicht alles koennen.

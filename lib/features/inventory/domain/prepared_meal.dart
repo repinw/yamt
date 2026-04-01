@@ -15,6 +15,8 @@ class PreparedMeal {
     this.imageUrl,
     this.recipeUrl,
     this.recipeIngredients = const <String>[],
+    this.ignoredRecipeIngredients = const <String>[],
+    this.recipeIngredientAssignments = const <String, List<String>>{},
     required this.totalPortions,
     required this.remainingPortions,
     required this.totalKcal,
@@ -41,6 +43,10 @@ class PreparedMeal {
   final String? recipeUrl;
   @JsonKey(defaultValue: <String>[])
   final List<String> recipeIngredients;
+  @JsonKey(defaultValue: <String>[])
+  final List<String> ignoredRecipeIngredients;
+  @JsonKey(defaultValue: <String, List<String>>{})
+  final Map<String, List<String>> recipeIngredientAssignments;
   @JsonKey(fromJson: _readIntOrZero)
   final int totalPortions;
   @JsonKey(fromJson: _readIntOrZero)
@@ -69,6 +75,8 @@ class PreparedMeal {
     Object? imageUrl = _keepValue,
     Object? recipeUrl = _keepValue,
     List<String>? recipeIngredients,
+    List<String>? ignoredRecipeIngredients,
+    Map<String, List<String>>? recipeIngredientAssignments,
     int? totalPortions,
     int? remainingPortions,
     double? totalKcal,
@@ -90,6 +98,10 @@ class PreparedMeal {
           ? this.recipeUrl
           : recipeUrl as String?,
       recipeIngredients: recipeIngredients ?? this.recipeIngredients,
+      ignoredRecipeIngredients:
+          ignoredRecipeIngredients ?? this.ignoredRecipeIngredients,
+      recipeIngredientAssignments:
+          recipeIngredientAssignments ?? this.recipeIngredientAssignments,
       totalPortions: totalPortions ?? this.totalPortions,
       remainingPortions: remainingPortions ?? this.remainingPortions,
       totalKcal: totalKcal ?? this.totalKcal,
@@ -173,6 +185,14 @@ class PreparedMeal {
               other.recipeIngredients,
               recipeIngredients,
             ) &&
+            const ListEquality<String>().equals(
+              other.ignoredRecipeIngredients,
+              ignoredRecipeIngredients,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other.recipeIngredientAssignments,
+              recipeIngredientAssignments,
+            ) &&
             other.totalPortions == totalPortions &&
             other.remainingPortions == remainingPortions &&
             other.totalKcal == totalKcal &&
@@ -196,6 +216,8 @@ class PreparedMeal {
       imageUrl,
       recipeUrl,
       const ListEquality<String>().hash(recipeIngredients),
+      const ListEquality<String>().hash(ignoredRecipeIngredients),
+      const DeepCollectionEquality().hash(recipeIngredientAssignments),
       totalPortions,
       remainingPortions,
       totalKcal,
