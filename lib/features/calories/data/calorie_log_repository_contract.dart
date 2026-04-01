@@ -5,6 +5,13 @@ abstract interface class CalorieLogRepositoryContract {
 
   Future<List<CalorieEntry>> readEntriesForDay(DateTime day);
 
+  Future<List<CalorieEntry>> readEntriesInRange({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  });
+
+  Future<DateTime?> readFirstEntryDate();
+
   Future<bool> saveEntry(CalorieEntry entry);
 
   Future<bool> deleteEntry(String entryId);

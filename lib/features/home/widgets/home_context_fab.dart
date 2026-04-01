@@ -75,6 +75,7 @@ class HomeContextFab extends ConsumerWidget {
     return switch (currentTab) {
       HomeTabType.inventory => l10n.inventoryFabTooltip,
       HomeTabType.diary => l10n.caloriesFabTooltip,
+      HomeTabType.statistics => l10n.homeQuickActionTooltip,
       HomeTabType.settings => l10n.homeQuickActionTooltip,
     };
   }
@@ -94,6 +95,9 @@ class HomeContextFab extends ConsumerWidget {
         return;
       case HomeTabType.diary:
         await _openCaloriesAddOptions(context);
+        return;
+      case HomeTabType.statistics:
+        _showSnackBar(context, l10n.homeQuickActionTooltip);
         return;
       case HomeTabType.settings:
         _showSnackBar(context, l10n.homeSettingsActionContextPlaceholder);

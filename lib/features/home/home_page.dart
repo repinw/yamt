@@ -18,7 +18,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBranchIndex = 0;
 const _diaryBranchIndex = 1;
-const _settingsBranchIndex = 2;
+const _statisticsBranchIndex = 2;
+const _settingsBranchIndex = 3;
 
 enum _DiaryAppBarAction { today, setGoal, calculator }
 
@@ -39,6 +40,7 @@ class HomePage extends ConsumerWidget {
     return switch (navigationShell.currentIndex) {
       _inventoryBranchIndex => HomeTabType.inventory,
       _diaryBranchIndex => HomeTabType.diary,
+      _statisticsBranchIndex => HomeTabType.statistics,
       _settingsBranchIndex => HomeTabType.settings,
       _ => HomeTabType.inventory, // coverage:ignore-line
     };
@@ -58,6 +60,8 @@ class HomePage extends ConsumerWidget {
         return l10n.inventoryPageTitle;
       case HomeTabType.diary:
         return l10n.homeCalories;
+      case HomeTabType.statistics:
+        return l10n.homeStatistics;
       case HomeTabType.settings:
         return l10n.homeSettings;
     }
@@ -88,8 +92,8 @@ class HomePage extends ConsumerWidget {
           icon: Icons.insights_rounded,
           label: l10n.homeStatistics,
         ),
-        isSelected: false,
-        onTap: () => _showSnackBar(context, l10n.commonNotImplementedYet),
+        isSelected: currentTab == HomeTabType.statistics,
+        onTap: () => _onTabTapped(_statisticsBranchIndex),
       ),
       HomeNavEntry(
         item: HomeNavItem(icon: Icons.person_rounded, label: l10n.homeSettings),
@@ -186,6 +190,8 @@ class HomePage extends ConsumerWidget {
             },
           ),
         ];
+      case HomeTabType.statistics:
+        return const <Widget>[];
       case HomeTabType.settings:
         return const <Widget>[];
     }
@@ -203,14 +209,17 @@ class HomePage extends ConsumerWidget {
         title: _titleForTab(l10n, selectionState),
         titleColor:
             currentTab == HomeTabType.inventory ||
-                currentTab == HomeTabType.diary
+                currentTab == HomeTabType.diary ||
+                currentTab == HomeTabType.statistics
             ? AppInventoryEditorial.primary
             : null,
         actions: _buildActions(context, ref, l10n, selectionState),
       ),
       body: navigationShell,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: HomeContextFab(currentTab: currentTab),
+      floatingActionButton: currentTab == HomeTabType.statistics
+          ? null
+          : HomeContextFab(currentTab: currentTab),
       bottomNavigationBar: HomeBottomNavBar(
         entries: _navEntries(context, l10n),
       ),

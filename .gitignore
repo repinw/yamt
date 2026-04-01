@@ -55,6 +55,7 @@ app.*.map.json
 
 # Local AI agent instructions (private, do not commit)
 AGENTS.md
+.codex
 
 AGENTS.md.bk
 

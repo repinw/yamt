@@ -1237,6 +1237,216 @@ class AppLocalizationsDe extends AppLocalizations {
   String get authErrorGoogleIdTokenMissing => 'Google-Anmeldung hat kein gültiges Token geliefert.';
 
   @override
+  String get statisticsPageSubtitle => 'Muster aus Vorrat, Food Waste und Ernährung auf einen Blick.';
+
+  @override
+  String get statisticsContextHousehold => 'Haushalt';
+
+  @override
+  String get statisticsContextPersonal => 'Persönlich';
+
+  @override
+  String get statisticsTimeframeWeek => '7 Tage';
+
+  @override
+  String get statisticsTimeframeMonth => 'Monat';
+
+  @override
+  String get statisticsTimeframeYear => 'Jahr';
+
+  @override
+  String get statisticsTimeframeTotal => 'Gesamt';
+
+  @override
+  String get statisticsTabSpending => 'Ausgaben';
+
+  @override
+  String get statisticsTabWaste => 'Food Waste';
+
+  @override
+  String get statisticsTabCalories => 'Kalorien';
+
+  @override
+  String get statisticsHouseholdHintTitle => 'MVP-Hinweis';
+
+  @override
+  String get statisticsHouseholdHintBody => 'Haushaltszahlen basieren aktuell auf vorhandenem Vorrat, Meal Preps und verfügbaren Belegdaten. Eine vollständige Verlaufs-Historie folgt später.';
+
+  @override
+  String get statisticsWasteHintTitle => 'Waste-Tracking vorbereiten';
+
+  @override
+  String get statisticsWasteHintBody => 'Für echte Food-Waste-Statistiken brauchen wir dauerhafte Wegwerf-Events und Gründe im Wegwerfen-Flow.';
+
+  @override
+  String get statisticsSpendingTotalTitle => 'Aktiver Warenwert';
+
+  @override
+  String get statisticsSpendingTotalSubtitle => 'auf Basis aktueller Vorräte und Meal Preps';
+
+  @override
+  String get statisticsSpendingTrendTitle => 'Preisentwicklung';
+
+  @override
+  String get statisticsSpendingTrendEmpty => 'Noch keine wiederkehrenden Produkte mit Preisverlauf im gewählten Zeitraum.';
+
+  @override
+  String get statisticsSpendingStoresTitle => 'Top Supermärkte';
+
+  @override
+  String get statisticsTopStoresEmpty => 'Noch keine Märkte mit verwertbaren Werten im Zeitraum.';
+
+  @override
+  String get statisticsSpendingChartTitle => 'Ausgaben nach Belegdatum';
+
+  @override
+  String get statisticsSpendingChartSubtitle => 'Der Graph nutzt das echte receiptDate des Belegs und zeigt die letzten Einkaufstage im Filter.';
+
+  @override
+  String get statisticsSpendingChartEmpty => 'Sobald Belegdaten mit Datum vorliegen, erscheint hier dein Ausgabenverlauf.';
+
+  @override
+  String get statisticsSpendingItemsTitle => 'Teuerste Einkäufe';
+
+  @override
+  String get statisticsExpensiveItemsEmpty => 'Noch keine kostenrelevanten Positionen im Zeitraum.';
+
+  @override
+  String get statisticsSpendingSourcesTitle => 'Herkunft der Kosten';
+
+  @override
+  String get statisticsCostSourcesEmpty => 'Sobald Kostenquellen vorliegen, wird die Verteilung hier sichtbar.';
+
+  @override
+  String get statisticsWasteOverviewTitle => 'Food Waste Überblick';
+
+  @override
+  String get statisticsWasteTrackingMissingValue => 'Noch keine Historie';
+
+  @override
+  String get statisticsWasteTrackingMissingMessage => 'Wegwerf-Events und Gründe werden aktuell noch nicht dauerhaft gespeichert.';
+
+  @override
+  String get statisticsWasteRatioTitle => 'Verhältnis & Geldverlust';
+
+  @override
+  String get statisticsWasteMoneyLossMissing => 'Sobald Wegwerfwerte erfasst werden, erscheint hier das Verhältnis und der Euro-Verlust.';
+
+  @override
+  String get statisticsWasteReasonsTitle => 'Waste-Gründe';
+
+  @override
+  String get statisticsWasteReasonsMissing => 'Füge beim Wegwerfen Gründe wie abgelaufen oder zu viel gekocht hinzu, damit wir Muster erkennen.';
+
+  @override
+  String get statisticsWasteItemsTitle => 'Oft weggeworfen';
+
+  @override
+  String get statisticsWasteItemsMissing => 'Sobald genug Wegwerf-Events vorliegen, zeigen wir hier deine häufigsten Problemartikel.';
+
+  @override
+  String get statisticsCaloriesOverviewTitle => 'Kalorien Überblick';
+
+  @override
+  String statisticsCaloriesOverviewSummary(int trackedDays, int entries) {
+    return '$trackedDays Tage mit Einträgen · $entries Einträge';
+  }
+
+  @override
+  String get statisticsCaloriesStreakTitle => 'Ziel-Streak';
+
+  @override
+  String statisticsCaloriesStreakSummary(int goalDays, int trackedDays) {
+    return '$goalDays von $trackedDays Tagen im Ziel';
+  }
+
+  @override
+  String get statisticsCaloriesBufferTitle => 'Wochenpuffer';
+
+  @override
+  String get statisticsCaloriesBufferSubtitle => 'aktuelle Balance gegen dein Ziel';
+
+  @override
+  String get statisticsCaloriesChartTitle => 'Tagesverlauf';
+
+  @override
+  String get statisticsCaloriesChartSubtitle => 'Letzte Tage mit gegessenen Kalorien und Zielmarke.';
+
+  @override
+  String get statisticsCaloriesChartEmpty => 'Sobald Kalorien-Einträge vorliegen, erscheint hier dein Tagesverlauf.';
+
+  @override
+  String get statisticsCaloriesMacrosTitle => 'Makro-Verteilung';
+
+  @override
+  String get statisticsCaloriesMacroChartSubtitle => 'Anteil der Kalorien aus Kohlenhydraten, Protein und Fett.';
+
+  @override
+  String get statisticsCaloriesNoEntries => 'Noch keine Kalorien-Einträge im Zeitraum.';
+
+  @override
+  String get statisticsChartGoalLegend => 'Zielmarke';
+
+  @override
+  String get statisticsMetricNoTrend => 'Noch kein Trend';
+
+  @override
+  String get statisticsMetricNoData => 'Noch keine Daten';
+
+  @override
+  String get statisticsMetricAverage => 'Durchschnitt';
+
+  @override
+  String get statisticsMetricEntries => 'Einträge';
+
+  @override
+  String get statisticsMetricTrackedDays => 'Tage mit Einträgen';
+
+  @override
+  String get statisticsMetricGoalDays => 'Im Ziel';
+
+  @override
+  String get statisticsMetricReceipts => 'Belege';
+
+  @override
+  String get statisticsCostSourceInventory => 'Vorrat';
+
+  @override
+  String get statisticsCostSourcePreparedMeals => 'Meal Prep';
+
+  @override
+  String get statisticsCostSourceEatingOut => 'Eating out';
+
+  @override
+  String get statisticsCostSourceSpices => 'Gewürze';
+
+  @override
+  String get statisticsExternalMealsMissing => 'Sobald externe Mahlzeiten mit Preis erfasst werden, tauchen sie hier in der Kostenverteilung auf.';
+
+  @override
+  String get statisticsSpiceCostMissing => 'Gewürzkosten werden später über Nutzungsverteilung in die Statistik eingerechnet.';
+
+  @override
+  String get statisticsWasteSignalsTitle => 'Was noch fehlt';
+
+  @override
+  String get statisticsWasteChecklistEvents => 'dauerhafte Wegwerf-Events mit Menge und Zeitpunkt';
+
+  @override
+  String get statisticsWasteChecklistReasons => 'Wegwerf-Gründe wie abgelaufen, schimmelig oder zu viel gekocht';
+
+  @override
+  String get statisticsWasteChecklistEatingOut => 'Preise für externe Mahlzeiten, damit Haushaltskosten vollständiger werden';
+
+  @override
+  String statisticsCaloriesBalanceWindow(String startDate, String endDate) {
+    return 'Balance-Fenster von $startDate bis $endDate';
+  }
+
+  @override
+  String get statisticsLoadFailed => 'Statistik konnte nicht geladen werden.';
+
+  @override
   String get commonUndoAction => 'Rückgängig machen';
 
   @override

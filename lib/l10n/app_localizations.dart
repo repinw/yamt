@@ -2495,6 +2495,414 @@ abstract class AppLocalizations {
   /// **'Google sign-in did not return a valid token.'**
   String get authErrorGoogleIdTokenMissing;
 
+  /// No description provided for @statisticsPageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Patterns from inventory, food waste, and nutrition at a glance.'**
+  String get statisticsPageSubtitle;
+
+  /// No description provided for @statisticsContextHousehold.
+  ///
+  /// In en, this message translates to:
+  /// **'Household'**
+  String get statisticsContextHousehold;
+
+  /// No description provided for @statisticsContextPersonal.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal'**
+  String get statisticsContextPersonal;
+
+  /// No description provided for @statisticsTimeframeWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'7 days'**
+  String get statisticsTimeframeWeek;
+
+  /// No description provided for @statisticsTimeframeMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get statisticsTimeframeMonth;
+
+  /// No description provided for @statisticsTimeframeYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get statisticsTimeframeYear;
+
+  /// No description provided for @statisticsTimeframeTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get statisticsTimeframeTotal;
+
+  /// No description provided for @statisticsTabSpending.
+  ///
+  /// In en, this message translates to:
+  /// **'Spending'**
+  String get statisticsTabSpending;
+
+  /// No description provided for @statisticsTabWaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Food Waste'**
+  String get statisticsTabWaste;
+
+  /// No description provided for @statisticsTabCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get statisticsTabCalories;
+
+  /// No description provided for @statisticsHouseholdHintTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'MVP note'**
+  String get statisticsHouseholdHintTitle;
+
+  /// No description provided for @statisticsHouseholdHintBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Household figures currently use available inventory, prepared meals, and receipt data. A full timeline view will come later.'**
+  String get statisticsHouseholdHintBody;
+
+  /// No description provided for @statisticsWasteHintTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepare waste tracking'**
+  String get statisticsWasteHintTitle;
+
+  /// No description provided for @statisticsWasteHintBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Real food-waste statistics need durable discard events and discard reasons in the throw-away flow.'**
+  String get statisticsWasteHintBody;
+
+  /// No description provided for @statisticsSpendingTotalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Active food value'**
+  String get statisticsSpendingTotalTitle;
+
+  /// No description provided for @statisticsSpendingTotalSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'based on current inventory and prepared meals'**
+  String get statisticsSpendingTotalSubtitle;
+
+  /// No description provided for @statisticsSpendingTrendTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Price trend'**
+  String get statisticsSpendingTrendTitle;
+
+  /// No description provided for @statisticsSpendingTrendEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No recurring products with usable price history in the selected period yet.'**
+  String get statisticsSpendingTrendEmpty;
+
+  /// No description provided for @statisticsSpendingStoresTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Top stores'**
+  String get statisticsSpendingStoresTitle;
+
+  /// No description provided for @statisticsTopStoresEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No stores with useful values in this period yet.'**
+  String get statisticsTopStoresEmpty;
+
+  /// No description provided for @statisticsSpendingChartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Spending by receipt date'**
+  String get statisticsSpendingChartTitle;
+
+  /// No description provided for @statisticsSpendingChartSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The chart uses the real receiptDate and shows the latest shopping days for the selected filter.'**
+  String get statisticsSpendingChartSubtitle;
+
+  /// No description provided for @statisticsSpendingChartEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'As soon as dated receipt data exists, your spending timeline will show up here.'**
+  String get statisticsSpendingChartEmpty;
+
+  /// No description provided for @statisticsSpendingItemsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Most expensive items'**
+  String get statisticsSpendingItemsTitle;
+
+  /// No description provided for @statisticsExpensiveItemsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No cost-relevant items in this period yet.'**
+  String get statisticsExpensiveItemsEmpty;
+
+  /// No description provided for @statisticsSpendingSourcesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost sources'**
+  String get statisticsSpendingSourcesTitle;
+
+  /// No description provided for @statisticsCostSourcesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost source distribution will appear here as soon as it is available.'**
+  String get statisticsCostSourcesEmpty;
+
+  /// No description provided for @statisticsWasteOverviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Food waste overview'**
+  String get statisticsWasteOverviewTitle;
+
+  /// No description provided for @statisticsWasteTrackingMissingValue.
+  ///
+  /// In en, this message translates to:
+  /// **'No history yet'**
+  String get statisticsWasteTrackingMissingValue;
+
+  /// No description provided for @statisticsWasteTrackingMissingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard events and reasons are not persisted yet.'**
+  String get statisticsWasteTrackingMissingMessage;
+
+  /// No description provided for @statisticsWasteRatioTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ratio & money loss'**
+  String get statisticsWasteRatioTitle;
+
+  /// No description provided for @statisticsWasteMoneyLossMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Once discarded values are tracked, the ratio and exact money loss will appear here.'**
+  String get statisticsWasteMoneyLossMissing;
+
+  /// No description provided for @statisticsWasteReasonsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Waste reasons'**
+  String get statisticsWasteReasonsTitle;
+
+  /// No description provided for @statisticsWasteReasonsMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Add reasons such as expired or cooked too much when throwing items away so we can surface patterns.'**
+  String get statisticsWasteReasonsMissing;
+
+  /// No description provided for @statisticsWasteItemsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Often discarded'**
+  String get statisticsWasteItemsTitle;
+
+  /// No description provided for @statisticsWasteItemsMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Once enough discard events exist, your most frequent problem items will show up here.'**
+  String get statisticsWasteItemsMissing;
+
+  /// No description provided for @statisticsCaloriesOverviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories overview'**
+  String get statisticsCaloriesOverviewTitle;
+
+  /// No description provided for @statisticsCaloriesOverviewSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{trackedDays} tracked days · {entries} entries'**
+  String statisticsCaloriesOverviewSummary(int trackedDays, int entries);
+
+  /// No description provided for @statisticsCaloriesStreakTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal streak'**
+  String get statisticsCaloriesStreakTitle;
+
+  /// No description provided for @statisticsCaloriesStreakSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{goalDays} of {trackedDays} days within goal'**
+  String statisticsCaloriesStreakSummary(int goalDays, int trackedDays);
+
+  /// No description provided for @statisticsCaloriesBufferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly buffer'**
+  String get statisticsCaloriesBufferTitle;
+
+  /// No description provided for @statisticsCaloriesBufferSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'current balance against your goal'**
+  String get statisticsCaloriesBufferSubtitle;
+
+  /// No description provided for @statisticsCaloriesChartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily view'**
+  String get statisticsCaloriesChartTitle;
+
+  /// No description provided for @statisticsCaloriesChartSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent days with eaten calories and goal marker.'**
+  String get statisticsCaloriesChartSubtitle;
+
+  /// No description provided for @statisticsCaloriesChartEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'As soon as calorie entries exist, your daily view will show up here.'**
+  String get statisticsCaloriesChartEmpty;
+
+  /// No description provided for @statisticsCaloriesMacrosTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Macro split'**
+  String get statisticsCaloriesMacrosTitle;
+
+  /// No description provided for @statisticsCaloriesMacroChartSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share of calories coming from carbs, protein, and fat.'**
+  String get statisticsCaloriesMacroChartSubtitle;
+
+  /// No description provided for @statisticsCaloriesNoEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'No calorie entries in this period yet.'**
+  String get statisticsCaloriesNoEntries;
+
+  /// No description provided for @statisticsChartGoalLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal marker'**
+  String get statisticsChartGoalLegend;
+
+  /// No description provided for @statisticsMetricNoTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'No trend yet'**
+  String get statisticsMetricNoTrend;
+
+  /// No description provided for @statisticsMetricNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No data yet'**
+  String get statisticsMetricNoData;
+
+  /// No description provided for @statisticsMetricAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Average'**
+  String get statisticsMetricAverage;
+
+  /// No description provided for @statisticsMetricEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries'**
+  String get statisticsMetricEntries;
+
+  /// No description provided for @statisticsMetricTrackedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracked days'**
+  String get statisticsMetricTrackedDays;
+
+  /// No description provided for @statisticsMetricGoalDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Within goal'**
+  String get statisticsMetricGoalDays;
+
+  /// No description provided for @statisticsMetricReceipts.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipts'**
+  String get statisticsMetricReceipts;
+
+  /// No description provided for @statisticsCostSourceInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get statisticsCostSourceInventory;
+
+  /// No description provided for @statisticsCostSourcePreparedMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal prep'**
+  String get statisticsCostSourcePreparedMeals;
+
+  /// No description provided for @statisticsCostSourceEatingOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Eating out'**
+  String get statisticsCostSourceEatingOut;
+
+  /// No description provided for @statisticsCostSourceSpices.
+  ///
+  /// In en, this message translates to:
+  /// **'Spices'**
+  String get statisticsCostSourceSpices;
+
+  /// No description provided for @statisticsExternalMealsMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'As soon as outside meals can be logged with a price, they will appear in this cost split.'**
+  String get statisticsExternalMealsMissing;
+
+  /// No description provided for @statisticsSpiceCostMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Spice costs will later be distributed across usage days and included here.'**
+  String get statisticsSpiceCostMissing;
+
+  /// No description provided for @statisticsWasteSignalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What is still missing'**
+  String get statisticsWasteSignalsTitle;
+
+  /// No description provided for @statisticsWasteChecklistEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'durable discard events with amount and timestamp'**
+  String get statisticsWasteChecklistEvents;
+
+  /// No description provided for @statisticsWasteChecklistReasons.
+  ///
+  /// In en, this message translates to:
+  /// **'discard reasons such as expired, moldy, or cooked too much'**
+  String get statisticsWasteChecklistReasons;
+
+  /// No description provided for @statisticsWasteChecklistEatingOut.
+  ///
+  /// In en, this message translates to:
+  /// **'prices for outside meals so household spending becomes more complete'**
+  String get statisticsWasteChecklistEatingOut;
+
+  /// No description provided for @statisticsCaloriesBalanceWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance window from {startDate} to {endDate}'**
+  String statisticsCaloriesBalanceWindow(String startDate, String endDate);
+
+  /// No description provided for @statisticsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load statistics.'**
+  String get statisticsLoadFailed;
+
   /// No description provided for @commonUndoAction.
   ///
   /// In en, this message translates to:
