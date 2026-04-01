@@ -11,6 +11,7 @@
   "inventoryActionScanCamera": "Scan receipt (camera)",
   "inventoryActionUploadFile": "Upload receipt (image/PDF)",
   "inventoryActionCameraUnsupported": "Camera is not supported on this platform.",
+  "inventoryActionManualAdd": "Add food manually",
   "inventoryReceiptSelectionFailed": "Could not select a receipt. Please try again.",
   "inventoryReceiptAnalysisFailed": "Receipt analysis failed. Please try again.",
   "inventoryReceiptBatchTitle": "Processing receipts",
@@ -125,6 +126,22 @@
       "Barcode search finished. The result is saved on the inventory item.",
   "inventoryBarcodeScanUnsupported":
       "Barcode scanning is currently supported on Android and iOS.",
+  "inventoryManualAddTitle": "Add food manually",
+  "inventoryManualAddHint":
+      "Scan a barcode to fetch matching products from your OFF server.",
+  "inventoryManualAddResolving": "Looking up barcode...",
+  "inventoryManualAddCandidateTitle": "Select product",
+  "inventoryManualAddCandidateSubtitle":
+      "Multiple matching products were found for this barcode.",
+  "inventoryManualAddUnknownBrand": "Unknown brand",
+  "inventoryManualAddNotFound":
+      "No matching product was found for this barcode.",
+  "inventoryManualAddLookupFailed":
+      "Barcode lookup failed. Please try again.",
+  "inventoryManualAddSaveFailed":
+      "The product could not be added to the inventory.",
+  "inventoryManualAddSaved": "Product added to inventory.",
+  "inventoryManualAddStoreName": "Added manually",
   "inventoryBarcodePortionDialogTitle": "Enter consumed amount",
   "inventoryBarcodePortionDialogConfirmAction": "Continue",
   "inventoryEmptyState": "No items in your fridge yet. Scan a receipt to get started.",

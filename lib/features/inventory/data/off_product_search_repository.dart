@@ -41,6 +41,12 @@ abstract interface class OffProductSearchRepository {
     String? weight,
     int limit = 15,
   });
+
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
+  });
+
+  Future<OffProductSearchResult?> lookupByBarcode({required String barcode});
 }
 
 @Riverpod(keepAlive: true)
@@ -114,6 +120,53 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
     }
   }
 
+  @override
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
+  }) async {
+    final normalizedBarcode = barcode.trim();
+    if (normalizedBarcode.isEmpty) {
+      return const <OffProductSearchResult>[];
+    }
+
+    final uri = _buildBarcodeUri(barcode: normalizedBarcode);
+
+    try {
+      final response = await _client
+          .get(uri)
+          .timeout(offProductSearchTimeout());
+      if (response.statusCode != 200) {
+        log(
+          'OFF barcode lookup failed with status ${response.statusCode} '
+          'for $uri.',
+          name: _offProductSearchLogName,
+        );
+        return const <OffProductSearchResult>[];
+      }
+
+      return _responseParser.parse(response.body);
+    } catch (error, stackTrace) {
+      log(
+        'OFF barcode lookup request failed for $uri.',
+        name: _offProductSearchLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <OffProductSearchResult>[];
+    }
+  }
+
+  @override
+  Future<OffProductSearchResult?> lookupByBarcode({
+    required String barcode,
+  }) async {
+    final results = await lookupCandidatesByBarcode(barcode: barcode);
+    if (results.isEmpty) {
+      return null;
+    }
+    return results.first;
+  }
+
   Uri _buildSearchUri({
     required String query,
     required String? store,
@@ -138,6 +191,25 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
 
     return _searchUri.replace(queryParameters: queryParameters);
   }
+
+  Uri _buildBarcodeUri({required String barcode}) {
+    final pathSegments = _searchUri.pathSegments.toList(growable: true);
+    if (pathSegments.isEmpty) {
+      pathSegments.add('barcode');
+    } else if (pathSegments.last == 'search') {
+      pathSegments[pathSegments.length - 1] = 'barcode';
+    } else {
+      pathSegments.add('barcode');
+    }
+
+    return _searchUri.replace(
+      pathSegments: pathSegments,
+      queryParameters: <String, String>{
+        ..._searchUri.queryParameters,
+        'code': barcode,
+      },
+    );
+  }
 }
 
 class _UnavailableOffProductSearchRepository
@@ -153,5 +225,19 @@ class _UnavailableOffProductSearchRepository
     int limit = 15,
   }) async {
     return const <OffProductSearchResult>[];
+  }
+
+  @override
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
+  }) async {
+    return const <OffProductSearchResult>[];
+  }
+
+  @override
+  Future<OffProductSearchResult?> lookupByBarcode({
+    required String barcode,
+  }) async {
+    return null;
   }
 }

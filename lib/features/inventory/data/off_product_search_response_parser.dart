@@ -32,6 +32,13 @@ class _OffProductSearchResponseParser {
         map['results'] as List<dynamic>,
       Map<String, dynamic> map when map['items'] is List<dynamic> =>
         map['items'] as List<dynamic>,
+      Map<String, dynamic> map when map['product'] is Map => <dynamic>[
+        map['product'],
+      ],
+      Map<String, dynamic> map
+          when map['code'] != null &&
+              (map['name'] != null || map['product_name'] != null) =>
+        <dynamic>[map],
       _ => const <dynamic>[],
     };
 

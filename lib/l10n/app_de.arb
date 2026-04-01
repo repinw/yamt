@@ -11,6 +11,7 @@
   "inventoryActionScanCamera": "Beleg scannen (Kamera)",
   "inventoryActionUploadFile": "Beleg hochladen (Bild/PDF)",
   "inventoryActionCameraUnsupported": "Kamera wird auf dieser Plattform nicht unterstützt.",
+  "inventoryActionManualAdd": "Lebensmittel manuell hinzufügen",
   "inventoryReceiptSelectionFailed": "Beleg konnte nicht ausgewählt werden. Bitte erneut versuchen.",
   "inventoryReceiptAnalysisFailed": "Beleganalyse fehlgeschlagen. Bitte erneut versuchen.",
   "inventoryReceiptBatchTitle": "Belege werden verarbeitet",
@@ -126,6 +127,22 @@
       "Barcode-Suche wurde ausgeführt. Ergebnis steht direkt im Inventar-Item.",
   "inventoryBarcodeScanUnsupported":
       "Barcode-Scan wird aktuell auf Android und iOS unterstützt.",
+  "inventoryManualAddTitle": "Lebensmittel manuell hinzufügen",
+  "inventoryManualAddHint":
+      "Scanne einen Barcode, um passende Produkte von deinem OFF-Server zu laden.",
+  "inventoryManualAddResolving": "Barcode wird gesucht...",
+  "inventoryManualAddCandidateTitle": "Produkt auswählen",
+  "inventoryManualAddCandidateSubtitle":
+      "Zu diesem Barcode wurden mehrere passende Produkte gefunden.",
+  "inventoryManualAddUnknownBrand": "Unbekannte Marke",
+  "inventoryManualAddNotFound":
+      "Zu diesem Barcode wurde kein passendes Produkt gefunden.",
+  "inventoryManualAddLookupFailed":
+      "Barcode-Abfrage fehlgeschlagen. Bitte versuche es erneut.",
+  "inventoryManualAddSaveFailed":
+      "Das Produkt konnte nicht zum Inventar hinzugefügt werden.",
+  "inventoryManualAddSaved": "Produkt zum Inventar hinzugefügt.",
+  "inventoryManualAddStoreName": "Manuell hinzugefügt",
   "inventoryBarcodePortionDialogTitle": "Verzehrte Menge eingeben",
   "inventoryBarcodePortionDialogConfirmAction": "Weiter",
   "inventoryEmptyState": "Noch keine Vorratsartikel vorhanden. Scanne einen Beleg, um zu starten.",

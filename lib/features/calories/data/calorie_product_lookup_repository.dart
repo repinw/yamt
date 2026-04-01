@@ -12,7 +12,7 @@ import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_lookup_repository_contract.dart';
-import 'package:yamt/features/calories/domain/calorie_barcode_utils.dart';
+import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
 

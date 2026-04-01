@@ -5,11 +5,13 @@ class InventoryReceiptActionsSheet extends StatelessWidget {
   const InventoryReceiptActionsSheet({
     super.key,
     required this.isCameraEnabled,
+    required this.onManualAddTap,
     required this.onScanCameraTap,
     required this.onUploadFileTap,
   });
 
   final bool isCameraEnabled;
+  final VoidCallback onManualAddTap;
   final VoidCallback onScanCameraTap;
   final VoidCallback onUploadFileTap;
 
@@ -21,6 +23,11 @@ class InventoryReceiptActionsSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          ListTile(
+            leading: const Icon(Icons.qr_code_scanner_outlined),
+            title: Text(l10n.inventoryActionManualAdd),
+            onTap: onManualAddTap,
+          ),
           ListTile(
             leading: const Icon(Icons.photo_camera_outlined),
             title: Text(l10n.inventoryActionScanCamera),

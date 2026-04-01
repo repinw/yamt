@@ -75,18 +75,24 @@ class GlobalFoodItemMatcher {
     return false;
   }
 
+  GlobalFoodMatchCandidate candidateFromExternalResult(
+    OffProductSearchResult result,
+  ) {
+    final product = _externalCandidateSource.productFrom(result);
+    return GlobalFoodMatchCandidate(
+      item: product,
+      score: _scoreExternalCandidate(result.score),
+      reason: GlobalFoodMatchReason.externalSearch,
+      requiresPersistence: true,
+    );
+  }
+
   List<GlobalFoodMatchCandidate> _buildExternalMatches({
     required List<OffProductSearchResult> externalResults,
   }) {
     return externalResults
         .map((result) {
-          final product = _externalCandidateSource.productFrom(result);
-          return GlobalFoodMatchCandidate(
-            item: product,
-            score: _scoreExternalCandidate(result.score),
-            reason: GlobalFoodMatchReason.externalSearch,
-            requiresPersistence: true,
-          );
+          return candidateFromExternalResult(result);
         })
         .toList(growable: false);
   }

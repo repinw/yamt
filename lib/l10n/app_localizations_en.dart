@@ -42,6 +42,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryActionCameraUnsupported => 'Camera is not supported on this platform.';
 
   @override
+  String get inventoryActionManualAdd => 'Add food manually';
+
+  @override
   String get inventoryReceiptSelectionFailed => 'Could not select a receipt. Please try again.';
 
   @override
@@ -327,6 +330,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryBarcodeScanUnsupported => 'Barcode scanning is currently supported on Android and iOS.';
+
+  @override
+  String get inventoryManualAddTitle => 'Add food manually';
+
+  @override
+  String get inventoryManualAddHint => 'Scan a barcode to fetch matching products from your OFF server.';
+
+  @override
+  String get inventoryManualAddResolving => 'Looking up barcode...';
+
+  @override
+  String get inventoryManualAddCandidateTitle => 'Select product';
+
+  @override
+  String get inventoryManualAddCandidateSubtitle => 'Multiple matching products were found for this barcode.';
+
+  @override
+  String get inventoryManualAddUnknownBrand => 'Unknown brand';
+
+  @override
+  String get inventoryManualAddNotFound => 'No matching product was found for this barcode.';
+
+  @override
+  String get inventoryManualAddLookupFailed => 'Barcode lookup failed. Please try again.';
+
+  @override
+  String get inventoryManualAddSaveFailed => 'The product could not be added to the inventory.';
+
+  @override
+  String get inventoryManualAddSaved => 'Product added to inventory.';
+
+  @override
+  String get inventoryManualAddStoreName => 'Added manually';
 
   @override
   String get inventoryBarcodePortionDialogTitle => 'Enter consumed amount';
