@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/statistics/domain/statistics_metrics.dart';
+import 'package:yamt/features/statistics/domain/calorie_metrics.dart';
 
 class StatisticsMacroShareChart extends StatelessWidget {
   const StatisticsMacroShareChart({

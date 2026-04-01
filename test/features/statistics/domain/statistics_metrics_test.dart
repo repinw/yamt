@@ -3,8 +3,8 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/statistics/domain/statistics_metrics.dart';
+import 'package:yamt/features/statistics/domain/calorie_metrics.dart';
+import 'package:yamt/features/statistics/domain/spending_metrics.dart';
 
 InventoryItem _inventoryItem({
   required String id,
@@ -36,53 +36,6 @@ InventoryItem _inventoryItem({
   );
 }
 
-PreparedMeal _preparedMeal({
-  required String id,
-  required String name,
-  required DateTime createdAt,
-  required int totalPortions,
-  required int remainingPortions,
-  required double totalPrice,
-}) {
-  final sourceItem = _inventoryItem(
-    id: '${id}_item',
-    name: '$name ingredient',
-    entryDate: createdAt,
-    storeName: 'REWE',
-    quantity: totalPrice.round(),
-    initialQuantity: totalPrice.round(),
-    unitPrice: 1,
-  );
-
-  return PreparedMeal(
-    id: id,
-    name: name,
-    totalPortions: totalPortions,
-    remainingPortions: remainingPortions,
-    totalKcal: 900,
-    totalProtein: 50,
-    totalCarbs: 80,
-    totalFat: 25,
-    createdAt: createdAt,
-    updatedAt: createdAt,
-    components: [
-      PreparedMealComponent(
-        inventoryItemId: sourceItem.id,
-        name: sourceItem.name,
-        brand: sourceItem.brand,
-        imageUrl: sourceItem.imageUrl,
-        usedAmount: totalPrice.round(),
-        usedUnit: InventoryAmountUnit.piece,
-        totalKcal: 900,
-        totalProtein: 50,
-        totalCarbs: 80,
-        totalFat: 25,
-        sourceItemSnapshot: sourceItem,
-      ),
-    ],
-  );
-}
-
 CalorieEntry _entry(
   String id, {
   required DateTime loggedAt,
@@ -109,26 +62,7 @@ CalorieEntry _entry(
 }
 
 void main() {
-  test('calculateRemainingInventoryValue respects amount progress ratio', () {
-    final item = _inventoryItem(
-      id: 'milk',
-      name: 'Milk',
-      entryDate: DateTime(2026, 3, 20),
-      storeName: 'REWE',
-      quantity: 1,
-      initialQuantity: 1,
-      unitPrice: 4,
-      initialAmount: 1000,
-      currentAmount: 250,
-      amountUnit: InventoryAmountUnit.milliliter,
-    );
-
-    final value = calculateRemainingInventoryValue(item);
-
-    expect(value, 1);
-  });
-
-  test('buildStatisticsSpendingSnapshot aggregates current values', () {
+  test('buildStatisticsSpendingSnapshot aggregates tracked purchases', () {
     final snapshot = buildStatisticsSpendingSnapshot(
       items: [
         _inventoryItem(
@@ -154,25 +88,13 @@ void main() {
           receiptId: 'receipt-2',
         ),
       ],
-      meals: [
-        _preparedMeal(
-          id: 'meal-1',
-          name: 'Chili',
-          createdAt: DateTime(2026, 3, 20),
-          totalPortions: 4,
-          remainingPortions: 2,
-          totalPrice: 10,
-        ),
-      ],
       startDate: DateTime(2026, 3, 1),
       endDate: DateTime(2026, 3, 31),
     );
 
-    expect(snapshot.totalValue, 12);
-    expect(snapshot.inventoryValue, 7);
-    expect(snapshot.preparedMealValue, 5);
+    expect(snapshot.totalValue, 7);
     expect(snapshot.topStores.first.storeName, 'REWE');
-    expect(snapshot.expensiveEntries.first.title, 'Chili');
+    expect(snapshot.expensiveEntries.first.title, 'Rice');
     expect(snapshot.dailySpendValues, hasLength(2));
     expect(snapshot.dailySpendValues.first.date, DateTime(2026, 3, 21));
     expect(snapshot.dailySpendValues.last.date, DateTime(2026, 3, 27));
@@ -180,9 +102,9 @@ void main() {
     expect(snapshot.dailySpendValues.last.value, 3);
   });
 
-  test('resolveSpendingWindowStartDate keeps sparse receipt dates visible '
+  test('resolveVisibleSpendingStartDate keeps sparse receipt dates visible '
       'for week view', () {
-    final startDate = resolveSpendingWindowStartDate(
+    final startDate = resolveVisibleSpendingStartDate(
       spendingDates: [DateTime(2026, 3, 21), DateTime(2026, 3, 27)],
       maxVisibleDays: 7,
       fallbackDate: DateTime(2026, 4, 1),

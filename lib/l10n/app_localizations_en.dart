@@ -1270,7 +1270,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statisticsHouseholdHintTitle => 'MVP note';
 
   @override
-  String get statisticsHouseholdHintBody => 'Household figures currently use available inventory, prepared meals, and receipt data. A full timeline view will come later.';
+  String get statisticsHouseholdHintBody => 'Household figures currently use tracked inventory items and available receipt data. A full timeline view will come later.';
 
   @override
   String get statisticsWasteHintTitle => 'Prepare waste tracking';
@@ -1279,10 +1279,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statisticsWasteHintBody => 'Real food-waste statistics need durable discard events and discard reasons in the throw-away flow.';
 
   @override
-  String get statisticsSpendingTotalTitle => 'Active food value';
+  String get statisticsSpendingTotalTitle => 'Tracked spending';
 
   @override
-  String get statisticsSpendingTotalSubtitle => 'based on current inventory and prepared meals';
+  String get statisticsSpendingTotalSubtitle => 'sum of captured purchases in the selected period';
 
   @override
   String get statisticsSpendingTrendTitle => 'Price trend';
@@ -1310,12 +1310,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statisticsExpensiveItemsEmpty => 'No cost-relevant items in this period yet.';
-
-  @override
-  String get statisticsSpendingSourcesTitle => 'Cost sources';
-
-  @override
-  String get statisticsCostSourcesEmpty => 'Cost source distribution will appear here as soon as it is available.';
 
   @override
   String get statisticsWasteOverviewTitle => 'Food waste overview';
@@ -1407,24 +1401,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statisticsMetricReceipts => 'Receipts';
-
-  @override
-  String get statisticsCostSourceInventory => 'Inventory';
-
-  @override
-  String get statisticsCostSourcePreparedMeals => 'Meal prep';
-
-  @override
-  String get statisticsCostSourceEatingOut => 'Eating out';
-
-  @override
-  String get statisticsCostSourceSpices => 'Spices';
-
-  @override
-  String get statisticsExternalMealsMissing => 'As soon as outside meals can be logged with a price, they will appear in this cost split.';
-
-  @override
-  String get statisticsSpiceCostMissing => 'Spice costs will later be distributed across usage days and included here.';
 
   @override
   String get statisticsWasteSignalsTitle => 'What is still missing';

@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
-import 'package:yamt/features/statistics/domain/statistics_metrics.dart';
+import 'package:yamt/features/statistics/domain/calorie_metrics.dart';
 import 'package:yamt/features/statistics/domain/statistics_models.dart';
 
 const _statisticsCalorieLogName = 'StatisticsCalorieDataProvider';
@@ -28,8 +28,9 @@ final statisticsCalorieDataProvider =
           firstEntryDate: firstEntryDate,
           today: today,
         );
-        final startDate = timeframe.startDate(
-          now: today,
+        final startDate = _calendarStartDateForTimeframe(
+          timeframe: timeframe,
+          today: today,
           firstAvailableDate: historyStartDate,
         );
         final endExclusive = today.add(const Duration(days: 1));
@@ -46,7 +47,7 @@ final statisticsCalorieDataProvider =
         );
       } catch (error, stackTrace) {
         log(
-          'Failed to build calorie statistics for ${timeframe.routeKey}.',
+          'Failed to build calorie statistics for ${timeframe.name}.',
           name: _statisticsCalorieLogName,
           error: error,
           stackTrace: stackTrace,
@@ -54,6 +55,20 @@ final statisticsCalorieDataProvider =
         rethrow;
       }
     });
+
+DateTime _calendarStartDateForTimeframe({
+  required StatisticsTimeframe timeframe,
+  required DateTime today,
+  required DateTime firstAvailableDate,
+}) {
+  if (timeframe == StatisticsTimeframe.total) {
+    final firstDay = DateUtils.dateOnly(firstAvailableDate);
+    return firstDay.isAfter(today) ? today : firstDay;
+  }
+
+  final days = timeframe.dayCount ?? 7;
+  return today.subtract(Duration(days: days - 1));
+}
 
 DateTime _resolveHistoryStartDate({
   required CalorieGoalSettings settings,

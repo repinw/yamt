@@ -137,6 +137,56 @@ void main() {
     expect(entries.map((entry) => entry.id), <String>['earlier', 'later']);
   });
 
+  test('readEntriesInRange returns ordered entries within bounds', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreCalorieLogRepository(
+      session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
+      firestore: firestore,
+    );
+
+    await repository.saveEntry(
+      _entry('outside-before', loggedAt: DateTime(2026, 2, 24, 23, 59)),
+    );
+    await repository.saveEntry(
+      _entry('in-range-late', loggedAt: DateTime(2026, 2, 25, 18)),
+    );
+    await repository.saveEntry(
+      _entry('in-range-early', loggedAt: DateTime(2026, 2, 25, 7)),
+    );
+    await repository.saveEntry(
+      _entry('outside-after', loggedAt: DateTime(2026, 2, 27)),
+    );
+
+    final entries = await repository.readEntriesInRange(
+      startInclusive: DateTime(2026, 2, 25),
+      endExclusive: DateTime(2026, 2, 27),
+    );
+
+    expect(entries.map((entry) => entry.id), <String>[
+      'in-range-early',
+      'in-range-late',
+    ]);
+  });
+
+  test('readFirstEntryDate returns earliest logged_at value', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreCalorieLogRepository(
+      session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
+      firestore: firestore,
+    );
+
+    await repository.saveEntry(
+      _entry('later', loggedAt: DateTime(2026, 2, 26, 12)),
+    );
+    await repository.saveEntry(
+      _entry('earliest', loggedAt: DateTime(2026, 2, 25, 6)),
+    );
+
+    final firstEntryDate = await repository.readFirstEntryDate();
+
+    expect(firstEntryDate, DateTime(2026, 2, 25, 6));
+  });
+
   test('watchEntriesForDay streams realtime updates', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
@@ -159,5 +209,23 @@ void main() {
 
     expect(emitted, isNotEmpty);
     expect(emitted.last.map((entry) => entry.id), contains('entry-1'));
+  });
+
+  test('readEntriesInRange and readFirstEntryDate return safe defaults '
+      'when no user is signed in', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreCalorieLogRepository(
+      session: _FakeCalorieLogUserSession(currentUserId: null),
+      firestore: firestore,
+    );
+
+    final entries = await repository.readEntriesInRange(
+      startInclusive: DateTime(2026, 2, 25),
+      endExclusive: DateTime(2026, 2, 26),
+    );
+    final firstEntryDate = await repository.readFirstEntryDate();
+
+    expect(entries, isEmpty);
+    expect(firstEntryDate, isNull);
   });
 }

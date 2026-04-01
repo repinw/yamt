@@ -2564,7 +2564,7 @@ abstract class AppLocalizations {
   /// No description provided for @statisticsHouseholdHintBody.
   ///
   /// In en, this message translates to:
-  /// **'Household figures currently use available inventory, prepared meals, and receipt data. A full timeline view will come later.'**
+  /// **'Household figures currently use tracked inventory items and available receipt data. A full timeline view will come later.'**
   String get statisticsHouseholdHintBody;
 
   /// No description provided for @statisticsWasteHintTitle.
@@ -2582,13 +2582,13 @@ abstract class AppLocalizations {
   /// No description provided for @statisticsSpendingTotalTitle.
   ///
   /// In en, this message translates to:
-  /// **'Active food value'**
+  /// **'Tracked spending'**
   String get statisticsSpendingTotalTitle;
 
   /// No description provided for @statisticsSpendingTotalSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'based on current inventory and prepared meals'**
+  /// **'sum of captured purchases in the selected period'**
   String get statisticsSpendingTotalSubtitle;
 
   /// No description provided for @statisticsSpendingTrendTitle.
@@ -2644,18 +2644,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No cost-relevant items in this period yet.'**
   String get statisticsExpensiveItemsEmpty;
-
-  /// No description provided for @statisticsSpendingSourcesTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Cost sources'**
-  String get statisticsSpendingSourcesTitle;
-
-  /// No description provided for @statisticsCostSourcesEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'Cost source distribution will appear here as soon as it is available.'**
-  String get statisticsCostSourcesEmpty;
 
   /// No description provided for @statisticsWasteOverviewTitle.
   ///
@@ -2830,42 +2818,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Receipts'**
   String get statisticsMetricReceipts;
-
-  /// No description provided for @statisticsCostSourceInventory.
-  ///
-  /// In en, this message translates to:
-  /// **'Inventory'**
-  String get statisticsCostSourceInventory;
-
-  /// No description provided for @statisticsCostSourcePreparedMeals.
-  ///
-  /// In en, this message translates to:
-  /// **'Meal prep'**
-  String get statisticsCostSourcePreparedMeals;
-
-  /// No description provided for @statisticsCostSourceEatingOut.
-  ///
-  /// In en, this message translates to:
-  /// **'Eating out'**
-  String get statisticsCostSourceEatingOut;
-
-  /// No description provided for @statisticsCostSourceSpices.
-  ///
-  /// In en, this message translates to:
-  /// **'Spices'**
-  String get statisticsCostSourceSpices;
-
-  /// No description provided for @statisticsExternalMealsMissing.
-  ///
-  /// In en, this message translates to:
-  /// **'As soon as outside meals can be logged with a price, they will appear in this cost split.'**
-  String get statisticsExternalMealsMissing;
-
-  /// No description provided for @statisticsSpiceCostMissing.
-  ///
-  /// In en, this message translates to:
-  /// **'Spice costs will later be distributed across usage days and included here.'**
-  String get statisticsSpiceCostMissing;
 
   /// No description provided for @statisticsWasteSignalsTitle.
   ///
