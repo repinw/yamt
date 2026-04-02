@@ -1,9 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/store_name_normalizer.dart';
-import 'package:yamt/features/calories/data/'
-    'calorie_product_cache_repository_contract.dart';
-import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
@@ -25,9 +21,6 @@ GlobalFoodItemMatcher globalFoodItemMatcher(Ref ref) {
 
 class GlobalFoodItemMatcher {
   GlobalFoodItemMatcher({
-    GlobalFoodItemRepository? repository,
-    InventoryItemRepository? inventoryRepository,
-    CalorieProductCacheRepositoryContract? calorieProductCacheRepository,
     OffProductSearchRepository? offProductSearchRepository,
   }) : _localCandidateMatcher = const _GlobalFoodLocalCandidateMatcher(),
        _externalCandidateSource = _OffProductCandidateSource(

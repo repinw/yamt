@@ -102,17 +102,6 @@ class _RecordingOffProductSearchRepository
     lastBarcode = barcode;
     return results;
   }
-
-  @override
-  Future<OffProductSearchResult?> lookupByBarcode({
-    required String barcode,
-  }) async {
-    lastBarcode = barcode;
-    if (results.isEmpty) {
-      return null;
-    }
-    return results.first;
-  }
 }
 
 class _FakeMobileScannerPlatform extends MobileScannerPlatform {
@@ -276,28 +265,29 @@ _FakeMobileScannerPlatform _fakeScannerPlatform() {
 }
 
 void main() {
-  testWidgets('scanned product is saved to inventory and global catalog', (
+  testWidgets('single barcode result needs explicit confirmation before save', (
     tester,
   ) async {
     _installFakeScannerPlatform(tester);
 
-    final offRepository = _RecordingOffProductSearchRepository(
-      <OffProductSearchResult>[
-        OffProductSearchResult(
-          code: '4006381333931',
-          name: 'Milk',
-          brand: 'Brand',
-          score: 99,
-          nutrition: const GlobalFoodNutrition(
-            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-            per100Kcal: 100,
-            per100Protein: 10,
-            per100Carbs: 20,
-            per100Fat: 3,
+    final offRepository =
+        _RecordingOffProductSearchRepository(<OffProductSearchResult>[
+          OffProductSearchResult(
+            code: '4006381333931',
+            name: 'Milk',
+            brand: 'Brand',
+            score: 99,
+            packageWeight: '1 l',
+            imageUrl: 'https://example.com/milk.png',
+            nutrition: const GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 100,
+              per100Protein: 10,
+              per100Carbs: 20,
+              per100Fat: 3,
+            ),
           ),
-        ),
-      ],
-    );
+        ]);
     final inventoryRepository = _RecordingInventoryItemRepository();
     final globalFoodRepository = _RecordingGlobalFoodItemRepository();
 
@@ -313,8 +303,21 @@ void main() {
     _fakeScannerPlatform().emitBarcode('4006381333931');
     await _pumpUi(tester);
 
-    expect(find.text('home'), findsOneWidget);
     expect(offRepository.lastBarcode, '4006381333931');
+    expect(inventoryRepository.appendedItems, isEmpty);
+    expect(globalFoodRepository.appendedItems, isEmpty);
+    expect(find.text('Milk'), findsOneWidget);
+    expect(find.text('Brand'), findsOneWidget);
+    expect(find.text('1 l'), findsOneWidget);
+
+    final manualSaveButton = find.byKey(
+      const Key('receipt_review_manual_save_button'),
+    );
+    await tester.ensureVisible(manualSaveButton);
+    await tester.tap(manualSaveButton);
+    await _pumpUi(tester);
+
+    expect(find.text('home'), findsOneWidget);
     expect(globalFoodRepository.appendedItems, hasLength(1));
     expect(
       globalFoodRepository.appendedItems.single.id,
@@ -337,22 +340,21 @@ void main() {
   ) async {
     _installFakeScannerPlatform(tester);
 
-    final offRepository = _RecordingOffProductSearchRepository(
-      <OffProductSearchResult>[
-        const OffProductSearchResult(
-          code: '4316268671224',
-          name: 'Cashews Sour Creme & Onion',
-          brand: 'Clarkys',
-          score: 100,
-        ),
-        const OffProductSearchResult(
-          code: '4316268671225',
-          name: 'Cashews Paprika',
-          brand: 'Clarkys',
-          score: 90,
-        ),
-      ],
-    );
+    final offRepository =
+        _RecordingOffProductSearchRepository(<OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4316268671224',
+            name: 'Cashews Sour Creme & Onion',
+            brand: 'Clarkys',
+            score: 100,
+          ),
+          const OffProductSearchResult(
+            code: '4316268671225',
+            name: 'Cashews Paprika',
+            brand: 'Clarkys',
+            score: 90,
+          ),
+        ]);
     final inventoryRepository = _RecordingInventoryItemRepository();
     final globalFoodRepository = _RecordingGlobalFoodItemRepository();
 
@@ -366,12 +368,21 @@ void main() {
     await _pumpUi(tester);
 
     _fakeScannerPlatform().emitBarcode('4316268671224');
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
 
     expect(find.text('Cashews Paprika'), findsOneWidget);
 
     await tester.tap(find.text('Cashews Paprika'));
-    await tester.pumpAndSettle();
+    await _pumpUi(tester);
+
+    expect(inventoryRepository.appendedItems, isEmpty);
+
+    final manualSaveButton = find.byKey(
+      const Key('receipt_review_manual_save_button'),
+    );
+    await tester.ensureVisible(manualSaveButton);
+    await tester.tap(manualSaveButton);
+    await _pumpUi(tester);
 
     expect(inventoryRepository.appendedItems, hasLength(1));
     expect(inventoryRepository.appendedItems.single.name, 'Cashews Paprika');

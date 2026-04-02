@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,8 +11,6 @@ import 'package:yamt/features/calories/data/'
     'calorie_nutrition_ocr_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
-import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
@@ -91,55 +87,6 @@ Widget _wrap({
   );
 }
 
-class _StaticGlobalFoodItemRepository implements GlobalFoodItemRepository {
-  const _StaticGlobalFoodItemRepository(this.items);
-
-  final List<GlobalFoodItem> items;
-
-  @override
-  Stream<List<GlobalFoodItem>> watchAll() async* {
-    yield items;
-  }
-
-  @override
-  Future<List<GlobalFoodItem>> readAll() async => items;
-
-  @override
-  Future<List<GlobalFoodItem>> searchCandidates({
-    String? normalizedName,
-    String? barcode,
-    String? foodFingerprint,
-    List<String> searchTokens = const <String>[],
-    int limit = 20,
-  }) async {
-    return const <GlobalFoodItem>[];
-  }
-
-  @override
-  Future<bool> saveAll(List<GlobalFoodItem> items) async => true;
-
-  @override
-  Future<bool> appendAll(List<GlobalFoodItem> items) async => true;
-}
-
-class _StaticInventoryItemRepository implements InventoryItemRepository {
-  const _StaticInventoryItemRepository();
-
-  @override
-  Stream<List<InventoryItem>> watchAll() async* {
-    yield const <InventoryItem>[];
-  }
-
-  @override
-  Future<List<InventoryItem>> readAll() async => const <InventoryItem>[];
-
-  @override
-  Future<bool> saveAll(List<InventoryItem> items) async => true;
-
-  @override
-  Future<bool> appendAll(List<InventoryItem> items) async => true;
-}
-
 class _RecordingOffProductSearchRepository
     implements OffProductSearchRepository {
   _RecordingOffProductSearchRepository(this.results);
@@ -157,16 +104,6 @@ class _RecordingOffProductSearchRepository
   }) async {
     lastQuery = query;
     return results.take(limit).toList(growable: false);
-  }
-
-  @override
-  Future<OffProductSearchResult?> lookupByBarcode({
-    required String barcode,
-  }) async {
-    if (results.isEmpty) {
-      return null;
-    }
-    return results.first;
   }
 
   @override
@@ -193,17 +130,6 @@ class _CompletingOffProductSearchRepository
     int limit = 15,
   }) {
     return completer.future;
-  }
-
-  @override
-  Future<OffProductSearchResult?> lookupByBarcode({
-    required String barcode,
-  }) async {
-    final results = await completer.future;
-    if (results.isEmpty) {
-      return null;
-    }
-    return results.first;
   }
 
   @override
@@ -516,7 +442,7 @@ void main() {
         _RecordingOffProductSearchRepository(<OffProductSearchResult>[
           const OffProductSearchResult(
             code: '4061458029995',
-            name: 'Waffelhoernchen Haselnuss-Vanille',
+            name: 'Waffelhörnchen Haselnuss-Vanille',
             brand: 'Aldi, Froneri, Mucci',
             packageWeight: '110 ml',
             nutrition: GlobalFoodNutrition(
@@ -531,8 +457,6 @@ void main() {
           ),
         ]);
     final matcher = GlobalFoodItemMatcher(
-      repository: const _StaticGlobalFoodItemRepository(<GlobalFoodItem>[]),
-      inventoryRepository: const _StaticInventoryItemRepository(),
       offProductSearchRepository: externalRepository,
     );
 
@@ -569,7 +493,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text('Waffelhoernchen Haselnuss-Vanille'),
+      find.text('Waffelhörnchen Haselnuss-Vanille'),
       findsAtLeastNWidgets(1),
     );
     expect(find.text('110 ml'), findsAtLeastNWidgets(1));
@@ -580,8 +504,6 @@ void main() {
   testWidgets('determine loading is tracked by item id', (tester) async {
     final externalRepository = _CompletingOffProductSearchRepository();
     final matcher = GlobalFoodItemMatcher(
-      repository: const _StaticGlobalFoodItemRepository(<GlobalFoodItem>[]),
-      inventoryRepository: const _StaticInventoryItemRepository(),
       offProductSearchRepository: externalRepository,
     );
 
@@ -643,8 +565,6 @@ void main() {
   ) async {
     List<InventoryItem>? savedItems;
     final matcher = GlobalFoodItemMatcher(
-      repository: const _StaticGlobalFoodItemRepository(<GlobalFoodItem>[]),
-      inventoryRepository: const _StaticInventoryItemRepository(),
       offProductSearchRepository: _RecordingOffProductSearchRepository(
         const <OffProductSearchResult>[],
       ),
@@ -715,8 +635,6 @@ void main() {
         const <OffProductSearchResult>[],
       );
       final matcher = GlobalFoodItemMatcher(
-        repository: const _StaticGlobalFoodItemRepository(<GlobalFoodItem>[]),
-        inventoryRepository: const _StaticInventoryItemRepository(),
         offProductSearchRepository: offRepository,
       );
       final ocrRepository = _FakeNutritionOcrRepository(
@@ -780,7 +698,9 @@ void main() {
       final ocrButtonBefore = tester.widget<OutlinedButton>(ocrButtonFinder);
       expect(ocrButtonBefore.onPressed, isNull);
 
-      await tester.tap(find.byKey(const Key('receipt_review_manual_scan_button')));
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_scan_button')),
+      );
       await tester.pumpAndSettle();
 
       _fakeScannerPlatform().emitBarcode('4006381333931');

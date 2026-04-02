@@ -206,13 +206,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewProductSelectionLabel => 'Select product';
 
   @override
-  String get inventoryReceiptReviewManualDataAction => 'Enter barcode and nutrition';
+  String get inventoryReceiptReviewManualDataAction => 'Scan barcode or enter nutrition';
 
   @override
-  String get inventoryReceiptReviewManualDataTitle => 'Enter barcode and nutrition';
+  String get inventoryReceiptReviewManualDataTitle => 'Scan barcode or enter nutrition';
 
   @override
-  String get inventoryReceiptReviewManualDataHint => 'If you know the product, you can enter barcode and nutrition directly.';
+  String get inventoryReceiptReviewManualDataHint => 'Scan the barcode first. If nothing is found, you can then take a photo of the nutrition label or enter the values manually.';
 
   @override
   String get inventoryReceiptReviewManualDataSaveAction => 'Apply';
@@ -221,7 +221,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewManualDataBarcodeLabel => 'Barcode';
 
   @override
-  String get inventoryReceiptReviewManualDataRequired => 'Please enter at least a barcode or nutrition values.';
+  String get inventoryReceiptReviewManualDataRequired => 'Please scan a barcode or enter nutrition values.';
 
   @override
   String get inventoryReceiptReviewRequestEnrichmentAction => 'Let AI enrich it later';
@@ -335,7 +335,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryManualAddTitle => 'Add food manually';
 
   @override
-  String get inventoryManualAddHint => 'Scan a barcode to fetch matching products from your OFF server.';
+  String get inventoryManualAddHint => 'Scan a barcode. Then you can review the product, save it, or add nutrition values.';
 
   @override
   String get inventoryManualAddResolving => 'Looking up barcode...';

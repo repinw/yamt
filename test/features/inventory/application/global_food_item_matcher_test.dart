@@ -54,17 +54,6 @@ class _FakeOffProductSearchRepository implements OffProductSearchRepository {
   }
 
   @override
-  Future<OffProductSearchResult?> lookupByBarcode({
-    required String barcode,
-  }) async {
-    final results = _resultsByQuery[barcode] ?? fallbackResults;
-    if (results.isEmpty) {
-      return null;
-    }
-    return results.first;
-  }
-
-  @override
   Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
     required String barcode,
   }) async {
@@ -132,7 +121,7 @@ void main() {
       fallbackResults: <OffProductSearchResult>[
         _offResult(
           code: '4061458029995',
-          name: 'Waffelhoernchen Haselnuss-Vanille',
+          name: 'Waffelhörnchen Haselnuss-Vanille',
           brand: 'Aldi, Froneri, Mucci',
           packageWeight: '110 ml',
           imageUrl:

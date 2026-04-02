@@ -48,67 +48,31 @@ class _InventoryManualAddPageState
     required OffProductSearchResult candidate,
     required String scannedBarcode,
   }) async {
-    final draftItem = _buildDraftItem(
-      scannedBarcode: candidate.code.trim().isEmpty
-          ? scannedBarcode
-          : candidate.code.trim(),
-      now: DateTime.now(),
-      name: candidate.name,
-      brand: candidate.brand,
-      imageUrl: normalizeProductImageUrl(candidate.imageUrl),
-      weight: candidate.packageWeight,
-      nutrition: candidate.nutrition,
-    );
-    final result = await _openManualProductSheet(
-      item: draftItem,
+    final barcode = candidate.code.trim().isEmpty
+        ? scannedBarcode
+        : candidate.code.trim();
+    return _editAndSave(
+      item: _buildDraftItem(
+        scannedBarcode: barcode,
+        now: DateTime.now(),
+        name: candidate.name,
+        brand: candidate.brand,
+        imageUrl: normalizeProductImageUrl(candidate.imageUrl),
+        weight: candidate.packageWeight,
+        nutrition: candidate.nutrition,
+      ),
       selectedProduct: candidate,
     );
-    if (!mounted || result == null) {
-      return false;
-    }
-
-    final saved = await _persistManualProduct(result);
-    if (!mounted) {
-      return false;
-    }
-    if (!saved) {
-      _showSnackBar(AppLocalizations.of(context)!.inventoryManualAddSaveFailed);
-      return false;
-    }
-
-    final navigator = Navigator.of(context);
-    if (navigator.canPop()) {
-      navigator.pop(true);
-    }
-    return true;
   }
 
   Future<bool> _openManualFallback({required String scannedBarcode}) async {
-    final result = await _openManualProductSheet(
+    return _editAndSave(
       item: _buildDraftItem(
         scannedBarcode: scannedBarcode,
         now: DateTime.now(),
         name: scannedBarcode,
       ),
     );
-    if (!mounted || result == null) {
-      return false;
-    }
-
-    final saved = await _persistManualProduct(result);
-    if (!mounted) {
-      return false;
-    }
-    if (!saved) {
-      _showSnackBar(AppLocalizations.of(context)!.inventoryManualAddSaveFailed);
-      return false;
-    }
-
-    final navigator = Navigator.of(context);
-    if (navigator.canPop()) {
-      navigator.pop(true);
-    }
-    return true;
   }
 
   Future<InventoryReceiptManualProductResult?> _openManualProductSheet({
@@ -128,23 +92,50 @@ class _InventoryManualAddPageState
     );
   }
 
-  Future<bool> _persistManualProduct(
-    InventoryReceiptManualProductResult result,
+  Future<bool> _editAndSave({
+    required InventoryItem item,
+    OffProductSearchResult? selectedProduct,
+  }) async {
+    final result = await _openManualProductSheet(
+      item: item,
+      selectedProduct: selectedProduct,
+    );
+    return _saveSheetResult(result);
+  }
+
+  Future<bool> _saveSheetResult(
+    InventoryReceiptManualProductResult? result,
   ) async {
-    final item = result.item;
-    final barcode = item.normalizedBarcode;
+    if (!mounted || result == null) {
+      return false;
+    }
+
+    final barcode = result.item.normalizedBarcode;
     if (barcode == null) {
       return false;
     }
 
-    return _persistScannedProduct(
-      item: item,
+    final saved = await _persistProduct(
+      item: result.item,
       barcode: barcode,
       selectedProduct: result.selectedProduct,
     );
+    if (!mounted) {
+      return false;
+    }
+    if (!saved) {
+      _showSnackBar(AppLocalizations.of(context)!.inventoryManualAddSaveFailed);
+      return false;
+    }
+
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop(true);
+    }
+    return true;
   }
 
-  Future<bool> _persistScannedProduct({
+  Future<bool> _persistProduct({
     required InventoryItem item,
     required String barcode,
     OffProductSearchResult? selectedProduct,
@@ -178,10 +169,7 @@ class _InventoryManualAddPageState
       foodFingerprint: globalProduct.resolvedFoodFingerprint,
       barcodeCandidates: <String>[barcode],
       barcodeResolvedAt: now,
-    ).withDerivedAmount(
-      weight: item.weight,
-      quantity: 1,
-    );
+    ).withDerivedAmount(weight: item.weight, quantity: 1);
 
     final inventorySaved = await ref
         .read(inventoryItemRepositoryProvider)
@@ -210,10 +198,7 @@ class _InventoryManualAddPageState
       imageUrl: imageUrl,
       nutrition: nutrition,
       weight: weight,
-    ).withDerivedAmount(
-      weight: weight,
-      quantity: 1,
-    );
+    ).withDerivedAmount(weight: weight, quantity: 1);
   }
 
   GlobalFoodItem _buildGlobalFoodItem({

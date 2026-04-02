@@ -76,15 +76,15 @@
   "inventoryReceiptReviewCandidatesAction": "Candidates",
   "inventoryReceiptReviewProductSelectionLabel": "Select product",
   "inventoryReceiptReviewManualDataAction":
-      "Enter barcode and nutrition",
+      "Scan barcode or enter nutrition",
   "inventoryReceiptReviewManualDataTitle":
-      "Enter barcode and nutrition",
+      "Scan barcode or enter nutrition",
   "inventoryReceiptReviewManualDataHint":
-      "If you know the product, you can enter barcode and nutrition directly.",
+      "Scan the barcode first. If nothing is found, you can then take a photo of the nutrition label or enter the values manually.",
   "inventoryReceiptReviewManualDataSaveAction": "Apply",
   "inventoryReceiptReviewManualDataBarcodeLabel": "Barcode",
   "inventoryReceiptReviewManualDataRequired":
-      "Please enter at least a barcode or nutrition values.",
+      "Please scan a barcode or enter nutrition values.",
   "inventoryReceiptReviewRequestEnrichmentAction":
       "Let AI enrich it later",
   "inventoryReceiptReviewRequestEnrichmentHint":
@@ -128,7 +128,7 @@
       "Barcode scanning is currently supported on Android and iOS.",
   "inventoryManualAddTitle": "Add food manually",
   "inventoryManualAddHint":
-      "Scan a barcode to fetch matching products from your OFF server.",
+      "Scan a barcode. Then you can review the product, save it, or add nutrition values.",
   "inventoryManualAddResolving": "Looking up barcode...",
   "inventoryManualAddCandidateTitle": "Select product",
   "inventoryManualAddCandidateSubtitle":

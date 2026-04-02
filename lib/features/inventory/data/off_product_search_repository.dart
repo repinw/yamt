@@ -11,7 +11,6 @@ part 'off_product_search_response_parser.dart';
 
 const _offProductSearchLogName = 'OffProductSearchRepository';
 
-/// A single external OFF search match returned by the search service.
 class OffProductSearchResult {
   const OffProductSearchResult({
     required this.code,
@@ -32,7 +31,6 @@ class OffProductSearchResult {
   final GlobalFoodNutrition? nutrition;
 }
 
-/// Looks up candidate products from an external OFF-backed search service.
 abstract interface class OffProductSearchRepository {
   Future<List<OffProductSearchResult>> search({
     required String query,
@@ -45,8 +43,6 @@ abstract interface class OffProductSearchRepository {
   Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
     required String barcode,
   });
-
-  Future<OffProductSearchResult?> lookupByBarcode({required String barcode});
 }
 
 @Riverpod(keepAlive: true)
@@ -61,7 +57,6 @@ OffProductSearchRepository offProductSearchRepository(Ref ref) {
   return HttpOffProductSearchRepository(client: client, searchUri: searchUri);
 }
 
-/// HTTP implementation for the external OFF search service.
 class HttpOffProductSearchRepository implements OffProductSearchRepository {
   const HttpOffProductSearchRepository({
     required http.Client client,
@@ -94,30 +89,7 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
       weight: weight?.trim(),
       limit: limit,
     );
-
-    try {
-      final response = await _client
-          .get(uri)
-          .timeout(offProductSearchTimeout());
-      if (response.statusCode != 200) {
-        log(
-          'OFF search failed with status ${response.statusCode} '
-          'for $uri.',
-          name: _offProductSearchLogName,
-        );
-        return const <OffProductSearchResult>[];
-      }
-
-      return _responseParser.parse(response.body);
-    } catch (error, stackTrace) {
-      log(
-        'OFF search request failed for $uri.',
-        name: _offProductSearchLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return const <OffProductSearchResult>[];
-    }
+    return _fetchResults(uri: uri, action: 'search');
   }
 
   @override
@@ -130,41 +102,7 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
     }
 
     final uri = _buildBarcodeUri(barcode: normalizedBarcode);
-
-    try {
-      final response = await _client
-          .get(uri)
-          .timeout(offProductSearchTimeout());
-      if (response.statusCode != 200) {
-        log(
-          'OFF barcode lookup failed with status ${response.statusCode} '
-          'for $uri.',
-          name: _offProductSearchLogName,
-        );
-        return const <OffProductSearchResult>[];
-      }
-
-      return _responseParser.parse(response.body);
-    } catch (error, stackTrace) {
-      log(
-        'OFF barcode lookup request failed for $uri.',
-        name: _offProductSearchLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return const <OffProductSearchResult>[];
-    }
-  }
-
-  @override
-  Future<OffProductSearchResult?> lookupByBarcode({
-    required String barcode,
-  }) async {
-    final results = await lookupCandidatesByBarcode(barcode: barcode);
-    if (results.isEmpty) {
-      return null;
-    }
-    return results.first;
+    return _fetchResults(uri: uri, action: 'barcode lookup');
   }
 
   Uri _buildSearchUri({
@@ -210,6 +148,34 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
       },
     );
   }
+
+  Future<List<OffProductSearchResult>> _fetchResults({
+    required Uri uri,
+    required String action,
+  }) async {
+    try {
+      final response = await _client
+          .get(uri)
+          .timeout(offProductSearchTimeout());
+      if (response.statusCode != 200) {
+        log(
+          'OFF $action failed with status ${response.statusCode} for $uri.',
+          name: _offProductSearchLogName,
+        );
+        return const <OffProductSearchResult>[];
+      }
+
+      return _responseParser.parse(response.body);
+    } catch (error, stackTrace) {
+      log(
+        'OFF $action request failed for $uri.',
+        name: _offProductSearchLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <OffProductSearchResult>[];
+    }
+  }
 }
 
 class _UnavailableOffProductSearchRepository
@@ -232,12 +198,5 @@ class _UnavailableOffProductSearchRepository
     required String barcode,
   }) async {
     return const <OffProductSearchResult>[];
-  }
-
-  @override
-  Future<OffProductSearchResult?> lookupByBarcode({
-    required String barcode,
-  }) async {
-    return null;
   }
 }

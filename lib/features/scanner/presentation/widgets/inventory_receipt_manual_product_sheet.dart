@@ -1,14 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/calories/data/calorie_nutrition_ocr_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/product_image_url.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
+import 'package:yamt/features/scanner/presentation/widgets/'
+    'inventory_receipt_manual_product_form.dart';
+import 'package:yamt/features/scanner/presentation/widgets/'
+    'inventory_receipt_manual_product_form_utils.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryReceiptManualProductSheet extends ConsumerStatefulWidget {
@@ -80,27 +84,30 @@ class _InventoryReceiptManualProductSheetState
   @override
   void initState() {
     super.initState();
-    final nutrition = widget.item.nutrition;
+    final nutrition =
+        widget.item.nutrition ?? widget.selectedProduct?.nutrition;
     _barcodeController = TextEditingController(
-      text: widget.item.normalizedBarcode ?? '',
+      text: widget.item.normalizedBarcode ?? widget.selectedProduct?.code ?? '',
     );
+    _barcodeController.addListener(_handleBarcodeChanged);
     _kcalController = TextEditingController(
-      text: _formatDouble(nutrition?.per100Kcal),
+      text: formatManualProductDouble(nutrition?.per100Kcal),
     );
     _proteinController = TextEditingController(
-      text: _formatDouble(nutrition?.per100Protein),
+      text: formatManualProductDouble(nutrition?.per100Protein),
     );
     _carbsController = TextEditingController(
-      text: _formatDouble(nutrition?.per100Carbs),
+      text: formatManualProductDouble(nutrition?.per100Carbs),
     );
     _fatController = TextEditingController(
-      text: _formatDouble(nutrition?.per100Fat),
+      text: formatManualProductDouble(nutrition?.per100Fat),
     );
     _selectedScannedProduct = widget.selectedProduct;
   }
 
   @override
   void dispose() {
+    _barcodeController.removeListener(_handleBarcodeChanged);
     _barcodeController.dispose();
     _kcalController.dispose();
     _proteinController.dispose();
@@ -111,152 +118,75 @@ class _InventoryReceiptManualProductSheetState
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final insets = MediaQuery.viewInsetsOf(context).bottom;
-
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          AppSpacing.xl,
-          AppSpacing.xl,
-          AppSpacing.xl + insets,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.inventoryReceiptReviewManualDataTitle,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              l10n.inventoryReceiptReviewManualDataHint,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _buildTextField(
-              controller: _barcodeController,
-              label: l10n.inventoryReceiptReviewManualDataBarcodeLabel,
-              key: const Key('receipt_review_manual_barcode_field'),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                key: const Key('receipt_review_manual_scan_button'),
-                onPressed: _openBarcodeScanner,
-                icon: const Icon(Icons.qr_code_scanner_outlined),
-                label: Text(l10n.inventoryBarcodeMissingPromptScanNow),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: OutlinedButton.icon(
-                key: const Key('receipt_review_manual_nutrition_ocr_button'),
-                onPressed: _isRunningNutritionOcr ? null : _scanNutritionLabel,
-                icon: const Icon(Icons.document_scanner_outlined),
-                label: Text(l10n.caloriesBarcodeNotFoundOcrAction),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _buildTextField(
-              controller: _kcalController,
-              label: l10n.caloriesPer100KcalLabel,
-              key: const Key('receipt_review_manual_kcal_field'),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _buildTextField(
-              controller: _proteinController,
-              label: l10n.caloriesPer100ProteinLabel,
-              key: const Key('receipt_review_manual_protein_field'),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _buildTextField(
-              controller: _carbsController,
-              label: l10n.caloriesPer100CarbsLabel,
-              key: const Key('receipt_review_manual_carbs_field'),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _buildTextField(
-              controller: _fatController,
-              label: l10n.caloriesPer100FatLabel,
-              key: const Key('receipt_review_manual_fat_field'),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-            ),
-            if (_errorText case final String message) ...[
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                message,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                ),
-              ),
-            ],
-            const SizedBox(height: AppSpacing.lg),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l10n.inventoryReceiptReviewCancelAction),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: FilledButton(
-                    key: const Key('receipt_review_manual_save_button'),
-                    onPressed: _save,
-                    child: Text(
-                      l10n.inventoryReceiptReviewManualDataSaveAction,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+    return InventoryReceiptManualProductForm(
+      preview: _buildPreviewData(),
+      barcodeController: _barcodeController,
+      kcalController: _kcalController,
+      fatController: _fatController,
+      carbsController: _carbsController,
+      proteinController: _proteinController,
+      errorText: _errorText,
+      onScanBarcode: () {
+        _openBarcodeScanner();
+      },
+      onScanNutritionLabel: _canScanNutritionLabel
+          ? () {
+              _scanNutritionLabel();
+            }
+          : null,
+      onCancel: () => Navigator.of(context).pop(),
+      onSave: _save,
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required Key key,
-    required TextInputType keyboardType,
-  }) {
-    return TextField(
-      key: key,
-      controller: controller,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
+  bool get _canScanNutritionLabel {
+    return !_isRunningNutritionOcr &&
+        normalizeBarcode(_barcodeController.text).isNotEmpty;
+  }
+
+  InventoryReceiptManualProductPreviewData? _buildPreviewData() {
+    final selectedProduct = _currentPreviewProduct();
+    final imageUrl = normalizeProductImageUrl(
+      selectedProduct?.imageUrl ?? widget.item.imageUrl,
     );
+    if (imageUrl == null) {
+      return null;
+    }
+
+    final ocrProfile = _resolvedOcrProfile();
+    return InventoryReceiptManualProductPreviewData(
+      imageUrl: imageUrl,
+      name:
+          selectedProduct?.name ??
+          _resolvedNameFromOcr(ocrProfile) ??
+          widget.item.name,
+      brand: selectedProduct?.brand ?? ocrProfile?.brand ?? widget.item.brand,
+      weight: selectedProduct?.packageWeight ?? widget.item.weight,
+    );
+  }
+
+  OffProductSearchResult? _currentPreviewProduct() {
+    final selectedProduct = _selectedScannedProduct;
+    if (selectedProduct == null) {
+      return null;
+    }
+
+    final normalizedBarcode = normalizeBarcode(_barcodeController.text);
+    if (normalizedBarcode.isEmpty) {
+      return selectedProduct;
+    }
+    if (normalizedBarcode != normalizeBarcode(selectedProduct.code)) {
+      return null;
+    }
+    return selectedProduct;
   }
 
   void _save() {
-    final barcode = _normalizeText(_barcodeController.text);
-    final kcal = _parseDouble(_kcalController.text);
-    final protein = _parseDouble(_proteinController.text);
-    final carbs = _parseDouble(_carbsController.text);
-    final fat = _parseDouble(_fatController.text);
+    final barcode = normalizeManualProductText(_barcodeController.text);
+    final kcal = parseManualProductDouble(_kcalController.text);
+    final protein = parseManualProductDouble(_proteinController.text);
+    final carbs = parseManualProductDouble(_carbsController.text);
+    final fat = parseManualProductDouble(_fatController.text);
     final selectedProduct = _effectiveSelectedProduct(
       barcode: barcode,
       kcal: kcal,
@@ -285,7 +215,7 @@ class _InventoryReceiptManualProductSheetState
       brand: selectedProduct?.brand ?? ocrProfile?.brand ?? widget.item.brand,
       barcode: barcode,
       imageUrl: selectedProduct?.imageUrl ?? widget.item.imageUrl,
-      weight: widget.item.weight ?? selectedProduct?.packageWeight,
+      weight: selectedProduct?.packageWeight ?? widget.item.weight,
       nutrition: hasNutrition
           ? GlobalFoodNutrition(
               qualityStatus: GlobalFoodNutritionQualityStatus.verified,
@@ -348,32 +278,13 @@ class _InventoryReceiptManualProductSheetState
         if (product == null) {
           return;
         }
-        final nutrition = product.nutrition;
-        setState(() {
-          _selectedScannedProduct = product;
-          _ocrProfile = null;
-          _barcodeController.text = product.code;
-          _kcalController.text = _formatDouble(nutrition?.per100Kcal);
-          _proteinController.text = _formatDouble(nutrition?.per100Protein);
-          _carbsController.text = _formatDouble(nutrition?.per100Carbs);
-          _fatController.text = _formatDouble(nutrition?.per100Fat);
-          _errorText = null;
-        });
+        _applySelectedProduct(product);
       case _ManualBarcodeScanResultKind.notFound:
         final scannedBarcode = result.scannedBarcode;
         if (scannedBarcode == null || scannedBarcode.isEmpty) {
           return;
         }
-        setState(() {
-          _selectedScannedProduct = null;
-          _ocrProfile = null;
-          _barcodeController.text = scannedBarcode;
-          _kcalController.clear();
-          _proteinController.clear();
-          _carbsController.clear();
-          _fatController.clear();
-          _errorText = null;
-        });
+        _applyBarcodeOnly(scannedBarcode);
         _showSnackBar(AppLocalizations.of(context)!.inventoryManualAddNotFound);
     }
   }
@@ -406,14 +317,7 @@ class _InventoryReceiptManualProductSheetState
 
       if (result.status == CalorieNutritionOcrStatus.succeeded &&
           result.profile != null) {
-        final profile = result.profile!;
-        setState(() {
-          _ocrProfile = profile;
-          _kcalController.text = _formatDouble(profile.per100Kcal);
-          _proteinController.text = _formatDouble(profile.per100Protein);
-          _carbsController.text = _formatDouble(profile.per100Carbs);
-          _fatController.text = _formatDouble(profile.per100Fat);
-        });
+        _applyOcrProfile(result.profile!);
         return;
       }
 
@@ -495,35 +399,65 @@ class _InventoryReceiptManualProductSheetState
     );
   }
 
+  void _applySelectedProduct(OffProductSearchResult product) {
+    final nutrition = product.nutrition;
+    setState(() {
+      _selectedScannedProduct = product;
+      _ocrProfile = null;
+      _barcodeController.text = product.code;
+      _fillNutritionFields(
+        kcal: nutrition?.per100Kcal,
+        protein: nutrition?.per100Protein,
+        carbs: nutrition?.per100Carbs,
+        fat: nutrition?.per100Fat,
+      );
+      _errorText = null;
+    });
+  }
+
+  void _applyBarcodeOnly(String barcode) {
+    setState(() {
+      _selectedScannedProduct = null;
+      _ocrProfile = null;
+      _barcodeController.text = barcode;
+      _fillNutritionFields();
+      _errorText = null;
+    });
+  }
+
+  void _applyOcrProfile(CalorieProductProfile profile) {
+    setState(() {
+      _ocrProfile = profile;
+      _fillNutritionFields(
+        kcal: profile.per100Kcal,
+        protein: profile.per100Protein,
+        carbs: profile.per100Carbs,
+        fat: profile.per100Fat,
+      );
+    });
+  }
+
+  void _fillNutritionFields({
+    double? kcal,
+    double? protein,
+    double? carbs,
+    double? fat,
+  }) {
+    _kcalController.text = formatManualProductDouble(kcal);
+    _proteinController.text = formatManualProductDouble(protein);
+    _carbsController.text = formatManualProductDouble(carbs);
+    _fatController.text = formatManualProductDouble(fat);
+  }
+
   void _showSnackBar(String message) {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(message)));
   }
-}
 
-String? _normalizeText(String value) {
-  final trimmed = value.trim();
-  if (trimmed.isEmpty) {
-    return null;
+  void _handleBarcodeChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
-  return trimmed;
-}
-
-double? _parseDouble(String value) {
-  final trimmed = value.trim();
-  if (trimmed.isEmpty) {
-    return null;
-  }
-  return double.tryParse(trimmed.replaceAll(',', '.'));
-}
-
-String _formatDouble(double? value) {
-  if (value == null) {
-    return '';
-  }
-  if (value.truncateToDouble() == value) {
-    return value.toStringAsFixed(0);
-  }
-  return value.toString();
 }

@@ -76,15 +76,15 @@
   "inventoryReceiptReviewCandidatesAction": "Kandidaten",
   "inventoryReceiptReviewProductSelectionLabel": "Produkt auswählen",
   "inventoryReceiptReviewManualDataAction":
-      "Barcode und Nährwerte eintragen",
+      "Barcode scannen oder Nährwerte eintragen",
   "inventoryReceiptReviewManualDataTitle":
-      "Barcode und Nährwerte eintragen",
+      "Barcode scannen oder Nährwerte eintragen",
   "inventoryReceiptReviewManualDataHint":
-      "Wenn du den Artikel kennst, kannst du Barcode und Nährwerte direkt eintragen.",
+      "Scanne zuerst den Barcode. Wenn nichts gefunden wird, kannst du danach die Nährwerttabelle fotografieren oder die Werte direkt eintragen.",
   "inventoryReceiptReviewManualDataSaveAction": "Übernehmen",
   "inventoryReceiptReviewManualDataBarcodeLabel": "Barcode",
   "inventoryReceiptReviewManualDataRequired":
-      "Bitte mindestens einen Barcode oder Nährwerte angeben.",
+      "Bitte einen Barcode scannen oder Nährwerte angeben.",
   "inventoryReceiptReviewRequestEnrichmentAction":
       "Später per KI ermitteln lassen",
   "inventoryReceiptReviewRequestEnrichmentHint":
@@ -129,7 +129,7 @@
       "Barcode-Scan wird aktuell auf Android und iOS unterstützt.",
   "inventoryManualAddTitle": "Lebensmittel manuell hinzufügen",
   "inventoryManualAddHint":
-      "Scanne einen Barcode, um passende Produkte von deinem OFF-Server zu laden.",
+      "Scanne einen Barcode. Danach kannst du das Produkt prüfen, speichern oder Nährwerte ergänzen.",
   "inventoryManualAddResolving": "Barcode wird gesucht...",
   "inventoryManualAddCandidateTitle": "Produkt auswählen",
   "inventoryManualAddCandidateSubtitle":

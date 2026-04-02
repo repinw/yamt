@@ -206,13 +206,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewProductSelectionLabel => 'Produkt auswählen';
 
   @override
-  String get inventoryReceiptReviewManualDataAction => 'Barcode und Nährwerte eintragen';
+  String get inventoryReceiptReviewManualDataAction => 'Barcode scannen oder Nährwerte eintragen';
 
   @override
-  String get inventoryReceiptReviewManualDataTitle => 'Barcode und Nährwerte eintragen';
+  String get inventoryReceiptReviewManualDataTitle => 'Barcode scannen oder Nährwerte eintragen';
 
   @override
-  String get inventoryReceiptReviewManualDataHint => 'Wenn du den Artikel kennst, kannst du Barcode und Nährwerte direkt eintragen.';
+  String get inventoryReceiptReviewManualDataHint => 'Scanne zuerst den Barcode. Wenn nichts gefunden wird, kannst du danach die Nährwerttabelle fotografieren oder die Werte direkt eintragen.';
 
   @override
   String get inventoryReceiptReviewManualDataSaveAction => 'Übernehmen';
@@ -221,7 +221,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewManualDataBarcodeLabel => 'Barcode';
 
   @override
-  String get inventoryReceiptReviewManualDataRequired => 'Bitte mindestens einen Barcode oder Nährwerte angeben.';
+  String get inventoryReceiptReviewManualDataRequired => 'Bitte einen Barcode scannen oder Nährwerte angeben.';
 
   @override
   String get inventoryReceiptReviewRequestEnrichmentAction => 'Später per KI ermitteln lassen';
@@ -335,7 +335,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryManualAddTitle => 'Lebensmittel manuell hinzufügen';
 
   @override
-  String get inventoryManualAddHint => 'Scanne einen Barcode, um passende Produkte von deinem OFF-Server zu laden.';
+  String get inventoryManualAddHint => 'Scanne einen Barcode. Danach kannst du das Produkt prüfen, speichern oder Nährwerte ergänzen.';
 
   @override
   String get inventoryManualAddResolving => 'Barcode wird gesucht...';

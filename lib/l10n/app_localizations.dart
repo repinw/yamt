@@ -488,19 +488,19 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryReceiptReviewManualDataAction.
   ///
   /// In en, this message translates to:
-  /// **'Enter barcode and nutrition'**
+  /// **'Scan barcode or enter nutrition'**
   String get inventoryReceiptReviewManualDataAction;
 
   /// No description provided for @inventoryReceiptReviewManualDataTitle.
   ///
   /// In en, this message translates to:
-  /// **'Enter barcode and nutrition'**
+  /// **'Scan barcode or enter nutrition'**
   String get inventoryReceiptReviewManualDataTitle;
 
   /// No description provided for @inventoryReceiptReviewManualDataHint.
   ///
   /// In en, this message translates to:
-  /// **'If you know the product, you can enter barcode and nutrition directly.'**
+  /// **'Scan the barcode first. If nothing is found, you can then take a photo of the nutrition label or enter the values manually.'**
   String get inventoryReceiptReviewManualDataHint;
 
   /// No description provided for @inventoryReceiptReviewManualDataSaveAction.
@@ -518,7 +518,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryReceiptReviewManualDataRequired.
   ///
   /// In en, this message translates to:
-  /// **'Please enter at least a barcode or nutrition values.'**
+  /// **'Please scan a barcode or enter nutrition values.'**
   String get inventoryReceiptReviewManualDataRequired;
 
   /// No description provided for @inventoryReceiptReviewRequestEnrichmentAction.
@@ -746,7 +746,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryManualAddHint.
   ///
   /// In en, this message translates to:
-  /// **'Scan a barcode to fetch matching products from your OFF server.'**
+  /// **'Scan a barcode. Then you can review the product, save it, or add nutrition values.'**
   String get inventoryManualAddHint;
 
   /// No description provided for @inventoryManualAddResolving.
