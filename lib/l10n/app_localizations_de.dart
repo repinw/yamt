@@ -547,6 +547,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealEatTitle => 'Mahlzeit essen';
 
   @override
+  String get preparedMealDiaryDayLabel => 'Tagebuchtag';
+
+  @override
   String get preparedMealThrowAwayTitle => 'Portionen wegwerfen';
 
   @override

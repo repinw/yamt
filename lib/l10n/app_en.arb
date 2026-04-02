@@ -248,6 +248,7 @@
   },
   "preparedMealUnbundleAction": "Return to inventory",
   "preparedMealEatTitle": "Eat prepared meal",
+  "preparedMealDiaryDayLabel": "Diary day",
   "preparedMealThrowAwayTitle": "Throw away portions",
   "preparedMealPortionsToUseLabel": "Portions to use",
   "preparedMealConfirmAction": "Confirm",

@@ -147,7 +147,13 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed: (mealId, portions, mealType) async => true,
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
@@ -189,7 +195,13 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed: (mealId, portions, mealType) async => true,
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
@@ -231,7 +243,13 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: meal,
-                onEatPressed: (mealId, portions, mealType) async => true,
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async {
                   unbundledMealId = mealId;
@@ -273,7 +291,13 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: meal,
-                onEatPressed: (mealId, portions, mealType) async => true,
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async {
                   thrownAwayMealId = mealId;
                   thrownAwayPortions = portions;
@@ -330,7 +354,13 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed: (mealId, portions, mealType) async => true,
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
@@ -361,7 +391,13 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed: (mealId, portions, mealType) async => true,
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
@@ -463,7 +499,13 @@ void main() {
               body: _wrapCard(
                 PreparedMealCard(
                   meal: meal,
-                  onEatPressed: (mealId, portions, mealType) async => true,
+                  onEatPressed:
+                      ({
+                        required mealId,
+                        required portions,
+                        required mealType,
+                        required loggedDay,
+                      }) async => true,
                   onThrowAwayPressed: (mealId, portions, reason) async => true,
                   onUnbundlePressed: (mealId) async => true,
                   onEditPressed:
@@ -505,19 +547,27 @@ void main() {
                   return _wrapCard(
                     PreparedMealCard(
                       meal: meal,
-                      onEatPressed: (mealId, portions, mealType) async {
-                        invocationCount += 1;
-                        if (invocationCount == 1) {
-                          setHostState(() {
-                            meal = meal.copyWith(
-                              remainingPortions: 1,
-                              updatedAt: DateTime.parse('2026-03-27T12:05:00Z'),
-                            );
-                          });
-                          return firstAction.future;
-                        }
-                        return true;
-                      },
+                      onEatPressed:
+                          ({
+                            required mealId,
+                            required portions,
+                            required mealType,
+                            required loggedDay,
+                          }) async {
+                            invocationCount += 1;
+                            if (invocationCount == 1) {
+                              setHostState(() {
+                                meal = meal.copyWith(
+                                  remainingPortions: 1,
+                                  updatedAt: DateTime.parse(
+                                    '2026-03-27T12:05:00Z',
+                                  ),
+                                );
+                              });
+                              return firstAction.future;
+                            }
+                            return true;
+                          },
                       onThrowAwayPressed: (mealId, portions, reason) async =>
                           true,
                       onUnbundlePressed: (mealId) async => true,
@@ -607,7 +657,13 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: meal,
-                onEatPressed: (mealId, portions, mealType) async => true,
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
@@ -641,7 +697,13 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _incompleteMeal(),
-                onEatPressed: (mealId, portions, mealType) async => true,
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
@@ -698,7 +760,13 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _incompleteMeal(),
-                onEatPressed: (mealId, portions, mealType) async => true,
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
@@ -751,7 +819,13 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _incompleteMeal(),
-                onEatPressed: (mealId, portions, mealType) async => true,
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>

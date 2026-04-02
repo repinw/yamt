@@ -391,6 +391,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     required String mealId,
     required int consumedPortions,
     required MealType mealType,
+    DateTime? loggedDay,
   }) {
     if (consumedPortions < 1) {
       return Future<bool>.value(false);
@@ -431,6 +432,7 @@ class PreparedMealsController extends _$PreparedMealsController {
             meal: meal,
             consumedPortions: consumedPortions,
             mealType: mealType,
+            loggedDay: loggedDay,
           );
       if (calorieSaved) {
         return true;

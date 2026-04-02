@@ -9,28 +9,40 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const _defaultPreparedMealPortions = 1;
 const _preparedMealDialogsLogName = 'PreparedMealDialogs';
+typedef PreparedMealDayPicker =
+    Future<DateTime?> Function({
+      required BuildContext context,
+      required DateTime initialDate,
+      required DateTime firstDate,
+      required DateTime lastDate,
+    });
 
 class PreparedMealEatDialogResult {
   const PreparedMealEatDialogResult({
     required this.portions,
     required this.mealType,
+    required this.loggedDay,
   });
 
   final int portions;
   final MealType mealType;
+  final DateTime loggedDay;
 }
 
 Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
   BuildContext context,
   PreparedMeal meal, {
   bool useRootNavigator = false,
-}
-) {
+  PreparedMealDayPicker? pickLoggedDay,
+}) {
   return showDialog<PreparedMealEatDialogResult>(
     context: context,
     useRootNavigator: useRootNavigator,
     builder: (dialogContext) {
-      return _PreparedMealEatDialog(meal: meal);
+      return _PreparedMealEatDialog(
+        meal: meal,
+        pickLoggedDay: pickLoggedDay ?? _showPreparedMealDayPicker,
+      );
     },
   );
 }
@@ -51,21 +63,24 @@ Future<int?> showPreparedMealPortionDialog({
 }
 
 class _PreparedMealEatDialog extends StatefulWidget {
-  const _PreparedMealEatDialog({required this.meal});
+  const _PreparedMealEatDialog({
+    required this.meal,
+    required this.pickLoggedDay,
+  });
 
   final PreparedMeal meal;
+  final PreparedMealDayPicker pickLoggedDay;
 
   @override
   State<_PreparedMealEatDialog> createState() => _PreparedMealEatDialogState();
 }
 
 class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
-  late final TextEditingController _portionsController =
-      TextEditingController(
-        text: _defaultPreparedMealPortions.toString(),
-      );
-  late MealType _selectedMealType =
-      MealType.defaultForDateTime(DateTime.now());
+  late final TextEditingController _portionsController = TextEditingController(
+    text: _defaultPreparedMealPortions.toString(),
+  );
+  late DateTime _selectedDay = DateUtils.dateOnly(DateTime.now());
+  late MealType _selectedMealType = MealType.defaultForDateTime(DateTime.now());
 
   @override
   void dispose() {
@@ -76,11 +91,13 @@ class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final material = MaterialLocalizations.of(context);
 
     return AlertDialog(
       title: Text(l10n.preparedMealEatTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextField(
             controller: _portionsController,
@@ -96,9 +113,7 @@ class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
           const SizedBox(height: AppSpacing.md),
           DropdownButtonFormField<MealType>(
             initialValue: _selectedMealType,
-            decoration: InputDecoration(
-              labelText: l10n.caloriesEntryMealLabel,
-            ),
+            decoration: InputDecoration(labelText: l10n.caloriesEntryMealLabel),
             items: MealType.sectionOrder
                 .map((mealType) {
                   return DropdownMenuItem<MealType>(
@@ -115,6 +130,20 @@ class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
                 _selectedMealType = value;
               });
             },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            l10n.preparedMealDiaryDayLabel,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _pickLoggedDay,
+              icon: const Icon(Icons.calendar_today_outlined),
+              label: Text(material.formatMediumDate(_selectedDay)),
+            ),
           ),
         ],
       ),
@@ -143,6 +172,7 @@ class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
               PreparedMealEatDialogResult(
                 portions: portions,
                 mealType: _selectedMealType,
+                loggedDay: _selectedDay,
               ),
             );
           },
@@ -151,13 +181,48 @@ class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
       ],
     );
   }
+
+  Future<void> _pickLoggedDay() async {
+    final firstDate = DateTime(2000);
+    final lastDate = DateUtils.dateOnly(DateTime.now());
+    final pickedDate = await widget.pickLoggedDay(
+      context: context,
+      initialDate: _selectedDay.isAfter(lastDate) ? lastDate : _selectedDay,
+      firstDate: firstDate,
+      lastDate: lastDate,
+    );
+    if (!mounted || pickedDate == null) {
+      return;
+    }
+
+    final normalizedDate = DateUtils.dateOnly(pickedDate);
+    if (normalizedDate.isBefore(firstDate) ||
+        normalizedDate.isAfter(lastDate)) {
+      return;
+    }
+
+    setState(() {
+      _selectedDay = normalizedDate;
+    });
+  }
+}
+
+Future<DateTime?> _showPreparedMealDayPicker({
+  required BuildContext context,
+  required DateTime initialDate,
+  required DateTime firstDate,
+  required DateTime lastDate,
+}) {
+  return showDatePicker(
+    context: context,
+    initialDate: initialDate,
+    firstDate: firstDate,
+    lastDate: lastDate,
+  );
 }
 
 class _PreparedMealPortionDialog extends StatefulWidget {
-  const _PreparedMealPortionDialog({
-    required this.meal,
-    required this.title,
-  });
+  const _PreparedMealPortionDialog({required this.meal, required this.title});
 
   final PreparedMeal meal;
   final String title;

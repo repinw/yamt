@@ -127,6 +127,7 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.preparedMealPortionsRemaining(1, 2),
     l10n.preparedMealUnbundleAction,
     l10n.preparedMealEatTitle,
+    l10n.preparedMealDiaryDayLabel,
     l10n.preparedMealThrowAwayTitle,
     l10n.preparedMealPortionsToUseLabel,
     l10n.preparedMealConfirmAction,

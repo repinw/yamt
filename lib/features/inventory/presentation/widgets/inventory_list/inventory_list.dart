@@ -62,7 +62,12 @@ class InventoryList extends ConsumerStatefulWidget {
     InventoryDiscardReason reason,
   )
   onThrowAwayItem;
-  final Future<bool> Function(String mealId, int portions, MealType mealType)
+  final Future<bool> Function({
+    required String mealId,
+    required int portions,
+    required MealType mealType,
+    required DateTime loggedDay,
+  })
   onEatPreparedMeal;
   final Future<bool> Function(
     String mealId,

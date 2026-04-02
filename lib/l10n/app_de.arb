@@ -253,6 +253,7 @@
   },
   "preparedMealUnbundleAction": "Auflösen",
   "preparedMealEatTitle": "Mahlzeit essen",
+  "preparedMealDiaryDayLabel": "Tagebuchtag",
   "preparedMealThrowAwayTitle": "Portionen wegwerfen",
   "preparedMealPortionsToUseLabel": "Portionen verwenden",
   "preparedMealConfirmAction": "Bestätigen",

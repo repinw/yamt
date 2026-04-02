@@ -547,6 +547,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealEatTitle => 'Eat prepared meal';
 
   @override
+  String get preparedMealDiaryDayLabel => 'Diary day';
+
+  @override
   String get preparedMealThrowAwayTitle => 'Throw away portions';
 
   @override
