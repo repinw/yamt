@@ -221,6 +221,20 @@
       }
     }
   },
+  "preparedMealIncompleteLabel": "Incomplete",
+  "preparedMealIncompleteHint":
+      "This meal is not complete yet and can only be eaten once all missing ingredients have been added.",
+  "preparedMealPendingIngredientUnassigned": "Not linked yet",
+  "preparedMealPendingIngredientAddAction": "Add ingredient",
+  "preparedMealPendingIngredientIgnoreAction": "Ignore ingredient",
+  "preparedMealPendingIngredientSelectionTitle":
+      "Add ingredient from inventory",
+  "preparedMealPendingIngredientSelectionEmpty":
+      "No inventory items available.",
+  "preparedMealPendingIngredientFillFailed":
+      "Ingredient could not be added to the meal.",
+  "preparedMealPendingIngredientIgnoreFailed":
+      "Ingredient could not be ignored.",
   "preparedMealPortionsRemaining": "{remaining}/{total} portions",
   "@preparedMealPortionsRemaining": {
     "placeholders": {
@@ -265,7 +279,11 @@
   "preparedMealTemplatePortionsHelper": "Optional. If empty, the servings from the recipe are used.",
   "preparedMealTemplateRecipePlaceholder": "Recipe link",
   "preparedMealTemplateNoIngredientsYet": "No ingredients linked yet.",
+  "preparedMealTemplateOpenAction": "Open template",
   "preparedMealTemplateUpdatedMessage": "Template updated.",
+  "preparedMealTemplateImportReviewTitle": "Review recipe",
+  "preparedMealTemplateImportReviewInstructionsTitle": "Short instructions",
+  "preparedMealTemplateImportReviewSavingAction": "Saving...",
   "preparedMealTemplateRecipeSource": "Recipe: {host}",
   "@preparedMealTemplateRecipeSource": {
     "placeholders": {
@@ -282,6 +300,83 @@
       }
     }
   },
+  "preparedMealTemplateDetailTitle": "Template",
+  "preparedMealTemplateDetailNotFound": "Template not found.",
+  "preparedMealTemplateDetailLoadFailed": "Template could not be loaded.",
+  "preparedMealTemplateDetailBasePortions": "Base: {count} portions",
+  "@preparedMealTemplateDetailBasePortions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealTemplateDetailScaleHint":
+      "Ingredients are scaled to this number of portions.",
+  "preparedMealTemplateDetailNoIngredients": "No ingredients available yet.",
+  "preparedMealTemplateDetailSaveAction": "Update template",
+  "preparedMealTemplateDetailSavingAction": "Saving...",
+  "preparedMealTemplateDetailIngredientsToShoppingListAction":
+      "Ingredients to shopping list",
+  "preparedMealTemplateDetailCreateMealHint":
+      "This template needs at least one ingredient before you can create a meal.",
+  "preparedMealTemplateDetailAssignAction": "Assign",
+  "preparedMealTemplateDetailChangeAssignmentAction": "Change assignment",
+  "preparedMealTemplateDetailAssignedFromInventoryTitle":
+      "Covered from inventory",
+  "preparedMealTemplateDetailMatchingInventoryItemsTitle":
+      "Matching inventory items",
+  "preparedMealTemplateDetailMissingAssignedItems":
+      "{count} assigned items are no longer in inventory.",
+  "@preparedMealTemplateDetailMissingAssignedItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealTemplateDetailIgnoredAmount": "Ignored • {amount}",
+  "@preparedMealTemplateDetailIgnoredAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealTemplateDetailAssignedCount": "{count} items assigned",
+  "@preparedMealTemplateDetailAssignedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealTemplateDetailSelectionTitle": "Choose inventory items",
+  "preparedMealTemplateDetailSelectionEmpty":
+      "No inventory items available.",
+  "preparedMealTemplateDetailAddToShoppingListAction":
+      "Add to shopping list",
+  "preparedMealTemplateDetailIgnoreAction": "Ignore",
+  "preparedMealTemplateDetailUnignoreAction": "Do not ignore",
+  "preparedMealTemplateDetailAddIngredientShoppingFailed":
+      "Ingredient could not be added to the shopping list.",
+  "preparedMealTemplateDetailAddIngredientsShoppingFailed":
+      "Ingredients could not be added to the shopping list.",
+  "preparedMealTemplateDetailAddIngredientsShoppingSucceeded":
+      "{count} ingredients were added to the shopping list.",
+  "@preparedMealTemplateDetailAddIngredientsShoppingSucceeded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealTemplateDetailIgnoreSaveFailed":
+      "Ingredient status could not be saved.",
+  "preparedMealTemplateDetailInvalidMealMessage":
+      "The template needs at least one valid ingredient.",
+  "preparedMealTemplateDetailSaveFailedMessage":
+      "Template could not be updated.",
   "shoppingListStatsEntries": "Entries",
   "shoppingListStatsQuantity": "Total quantity",
   "shoppingListStatsEstimatedTotal": "Estimated total",

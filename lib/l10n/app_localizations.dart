@@ -1079,6 +1079,60 @@ abstract class AppLocalizations {
   /// **'{count} ingredients'**
   String preparedMealIngredientsCount(int count);
 
+  /// No description provided for @preparedMealIncompleteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Incomplete'**
+  String get preparedMealIncompleteLabel;
+
+  /// No description provided for @preparedMealIncompleteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This meal is not complete yet and can only be eaten once all missing ingredients have been added.'**
+  String get preparedMealIncompleteHint;
+
+  /// No description provided for @preparedMealPendingIngredientUnassigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Not linked yet'**
+  String get preparedMealPendingIngredientUnassigned;
+
+  /// No description provided for @preparedMealPendingIngredientAddAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add ingredient'**
+  String get preparedMealPendingIngredientAddAction;
+
+  /// No description provided for @preparedMealPendingIngredientIgnoreAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignore ingredient'**
+  String get preparedMealPendingIngredientIgnoreAction;
+
+  /// No description provided for @preparedMealPendingIngredientSelectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add ingredient from inventory'**
+  String get preparedMealPendingIngredientSelectionTitle;
+
+  /// No description provided for @preparedMealPendingIngredientSelectionEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No inventory items available.'**
+  String get preparedMealPendingIngredientSelectionEmpty;
+
+  /// No description provided for @preparedMealPendingIngredientFillFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredient could not be added to the meal.'**
+  String get preparedMealPendingIngredientFillFailed;
+
+  /// No description provided for @preparedMealPendingIngredientIgnoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredient could not be ignored.'**
+  String get preparedMealPendingIngredientIgnoreFailed;
+
   /// No description provided for @preparedMealPortionsRemaining.
   ///
   /// In en, this message translates to:
@@ -1283,11 +1337,35 @@ abstract class AppLocalizations {
   /// **'No ingredients linked yet.'**
   String get preparedMealTemplateNoIngredientsYet;
 
+  /// No description provided for @preparedMealTemplateOpenAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open template'**
+  String get preparedMealTemplateOpenAction;
+
   /// No description provided for @preparedMealTemplateUpdatedMessage.
   ///
   /// In en, this message translates to:
   /// **'Template updated.'**
   String get preparedMealTemplateUpdatedMessage;
+
+  /// No description provided for @preparedMealTemplateImportReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review recipe'**
+  String get preparedMealTemplateImportReviewTitle;
+
+  /// No description provided for @preparedMealTemplateImportReviewInstructionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Short instructions'**
+  String get preparedMealTemplateImportReviewInstructionsTitle;
+
+  /// No description provided for @preparedMealTemplateImportReviewSavingAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get preparedMealTemplateImportReviewSavingAction;
 
   /// No description provided for @preparedMealTemplateRecipeSource.
   ///
@@ -1300,6 +1378,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} portions'**
   String preparedMealTemplatePortions(int count);
+
+  /// No description provided for @preparedMealTemplateDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Template'**
+  String get preparedMealTemplateDetailTitle;
+
+  /// No description provided for @preparedMealTemplateDetailNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Template not found.'**
+  String get preparedMealTemplateDetailNotFound;
+
+  /// No description provided for @preparedMealTemplateDetailLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Template could not be loaded.'**
+  String get preparedMealTemplateDetailLoadFailed;
+
+  /// No description provided for @preparedMealTemplateDetailBasePortions.
+  ///
+  /// In en, this message translates to:
+  /// **'Base: {count} portions'**
+  String preparedMealTemplateDetailBasePortions(int count);
+
+  /// No description provided for @preparedMealTemplateDetailScaleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients are scaled to this number of portions.'**
+  String get preparedMealTemplateDetailScaleHint;
+
+  /// No description provided for @preparedMealTemplateDetailNoIngredients.
+  ///
+  /// In en, this message translates to:
+  /// **'No ingredients available yet.'**
+  String get preparedMealTemplateDetailNoIngredients;
+
+  /// No description provided for @preparedMealTemplateDetailSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update template'**
+  String get preparedMealTemplateDetailSaveAction;
+
+  /// No description provided for @preparedMealTemplateDetailSavingAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get preparedMealTemplateDetailSavingAction;
+
+  /// No description provided for @preparedMealTemplateDetailIngredientsToShoppingListAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients to shopping list'**
+  String get preparedMealTemplateDetailIngredientsToShoppingListAction;
+
+  /// No description provided for @preparedMealTemplateDetailCreateMealHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This template needs at least one ingredient before you can create a meal.'**
+  String get preparedMealTemplateDetailCreateMealHint;
+
+  /// No description provided for @preparedMealTemplateDetailAssignAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign'**
+  String get preparedMealTemplateDetailAssignAction;
+
+  /// No description provided for @preparedMealTemplateDetailChangeAssignmentAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Change assignment'**
+  String get preparedMealTemplateDetailChangeAssignmentAction;
+
+  /// No description provided for @preparedMealTemplateDetailAssignedFromInventoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Covered from inventory'**
+  String get preparedMealTemplateDetailAssignedFromInventoryTitle;
+
+  /// No description provided for @preparedMealTemplateDetailMatchingInventoryItemsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Matching inventory items'**
+  String get preparedMealTemplateDetailMatchingInventoryItemsTitle;
+
+  /// No description provided for @preparedMealTemplateDetailMissingAssignedItems.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} assigned items are no longer in inventory.'**
+  String preparedMealTemplateDetailMissingAssignedItems(int count);
+
+  /// No description provided for @preparedMealTemplateDetailIgnoredAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignored • {amount}'**
+  String preparedMealTemplateDetailIgnoredAmount(String amount);
+
+  /// No description provided for @preparedMealTemplateDetailAssignedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items assigned'**
+  String preparedMealTemplateDetailAssignedCount(int count);
+
+  /// No description provided for @preparedMealTemplateDetailSelectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose inventory items'**
+  String get preparedMealTemplateDetailSelectionTitle;
+
+  /// No description provided for @preparedMealTemplateDetailSelectionEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No inventory items available.'**
+  String get preparedMealTemplateDetailSelectionEmpty;
+
+  /// No description provided for @preparedMealTemplateDetailAddToShoppingListAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to shopping list'**
+  String get preparedMealTemplateDetailAddToShoppingListAction;
+
+  /// No description provided for @preparedMealTemplateDetailIgnoreAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignore'**
+  String get preparedMealTemplateDetailIgnoreAction;
+
+  /// No description provided for @preparedMealTemplateDetailUnignoreAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not ignore'**
+  String get preparedMealTemplateDetailUnignoreAction;
+
+  /// No description provided for @preparedMealTemplateDetailAddIngredientShoppingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredient could not be added to the shopping list.'**
+  String get preparedMealTemplateDetailAddIngredientShoppingFailed;
+
+  /// No description provided for @preparedMealTemplateDetailAddIngredientsShoppingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients could not be added to the shopping list.'**
+  String get preparedMealTemplateDetailAddIngredientsShoppingFailed;
+
+  /// No description provided for @preparedMealTemplateDetailAddIngredientsShoppingSucceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ingredients were added to the shopping list.'**
+  String preparedMealTemplateDetailAddIngredientsShoppingSucceeded(int count);
+
+  /// No description provided for @preparedMealTemplateDetailIgnoreSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredient status could not be saved.'**
+  String get preparedMealTemplateDetailIgnoreSaveFailed;
+
+  /// No description provided for @preparedMealTemplateDetailInvalidMealMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The template needs at least one valid ingredient.'**
+  String get preparedMealTemplateDetailInvalidMealMessage;
+
+  /// No description provided for @preparedMealTemplateDetailSaveFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Template could not be updated.'**
+  String get preparedMealTemplateDetailSaveFailedMessage;
 
   /// No description provided for @shoppingListStatsEntries.
   ///

@@ -509,6 +509,33 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get preparedMealIncompleteLabel => 'Unvollständig';
+
+  @override
+  String get preparedMealIncompleteHint => 'Diese Mahlzeit ist noch nicht vollständig und kann erst gegessen werden, wenn alle fehlenden Zutaten ergänzt wurden.';
+
+  @override
+  String get preparedMealPendingIngredientUnassigned => 'Noch nicht belegt';
+
+  @override
+  String get preparedMealPendingIngredientAddAction => 'Zutat ergänzen';
+
+  @override
+  String get preparedMealPendingIngredientIgnoreAction => 'Zutat ignorieren';
+
+  @override
+  String get preparedMealPendingIngredientSelectionTitle => 'Zutat aus Inventar ergänzen';
+
+  @override
+  String get preparedMealPendingIngredientSelectionEmpty => 'Keine Inventarartikel vorhanden.';
+
+  @override
+  String get preparedMealPendingIngredientFillFailed => 'Zutat konnte nicht zur Mahlzeit hinzugefügt werden.';
+
+  @override
+  String get preparedMealPendingIngredientIgnoreFailed => 'Zutat konnte nicht ignoriert werden.';
+
+  @override
   String preparedMealPortionsRemaining(int remaining, int total) {
     return '$remaining/$total Portionen';
   }
@@ -613,7 +640,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateNoIngredientsYet => 'Noch keine Zutaten verknüpft.';
 
   @override
+  String get preparedMealTemplateOpenAction => 'Vorlage öffnen';
+
+  @override
   String get preparedMealTemplateUpdatedMessage => 'Vorlage aktualisiert.';
+
+  @override
+  String get preparedMealTemplateImportReviewTitle => 'Rezept prüfen';
+
+  @override
+  String get preparedMealTemplateImportReviewInstructionsTitle => 'Kurze Anleitung';
+
+  @override
+  String get preparedMealTemplateImportReviewSavingAction => 'Speichert...';
 
   @override
   String preparedMealTemplateRecipeSource(String host) {
@@ -624,6 +663,100 @@ class AppLocalizationsDe extends AppLocalizations {
   String preparedMealTemplatePortions(int count) {
     return '$count Portionen';
   }
+
+  @override
+  String get preparedMealTemplateDetailTitle => 'Vorlage';
+
+  @override
+  String get preparedMealTemplateDetailNotFound => 'Vorlage nicht gefunden.';
+
+  @override
+  String get preparedMealTemplateDetailLoadFailed => 'Vorlage konnte nicht geladen werden.';
+
+  @override
+  String preparedMealTemplateDetailBasePortions(int count) {
+    return 'Basis: $count Portionen';
+  }
+
+  @override
+  String get preparedMealTemplateDetailScaleHint => 'Zutaten werden auf diese Portionszahl skaliert.';
+
+  @override
+  String get preparedMealTemplateDetailNoIngredients => 'Noch keine Zutaten vorhanden.';
+
+  @override
+  String get preparedMealTemplateDetailSaveAction => 'Vorlage anpassen';
+
+  @override
+  String get preparedMealTemplateDetailSavingAction => 'Speichert...';
+
+  @override
+  String get preparedMealTemplateDetailIngredientsToShoppingListAction => 'Zutaten auf Einkaufsliste';
+
+  @override
+  String get preparedMealTemplateDetailCreateMealHint => 'Diese Vorlage braucht mindestens eine Zutat, bevor du eine Mahlzeit erstellst.';
+
+  @override
+  String get preparedMealTemplateDetailAssignAction => 'Zuordnen';
+
+  @override
+  String get preparedMealTemplateDetailChangeAssignmentAction => 'Zuordnung ändern';
+
+  @override
+  String get preparedMealTemplateDetailAssignedFromInventoryTitle => 'Aus dem Inventar belegt';
+
+  @override
+  String get preparedMealTemplateDetailMatchingInventoryItemsTitle => 'Passende Inventarartikel';
+
+  @override
+  String preparedMealTemplateDetailMissingAssignedItems(int count) {
+    return '$count belegte Artikel sind nicht mehr im Inventar.';
+  }
+
+  @override
+  String preparedMealTemplateDetailIgnoredAmount(String amount) {
+    return 'Ignoriert • $amount';
+  }
+
+  @override
+  String preparedMealTemplateDetailAssignedCount(int count) {
+    return '$count Artikel belegt';
+  }
+
+  @override
+  String get preparedMealTemplateDetailSelectionTitle => 'Inventarartikel wählen';
+
+  @override
+  String get preparedMealTemplateDetailSelectionEmpty => 'Keine Inventarartikel vorhanden.';
+
+  @override
+  String get preparedMealTemplateDetailAddToShoppingListAction => 'Zur Einkaufsliste';
+
+  @override
+  String get preparedMealTemplateDetailIgnoreAction => 'Ignorieren';
+
+  @override
+  String get preparedMealTemplateDetailUnignoreAction => 'Nicht ignorieren';
+
+  @override
+  String get preparedMealTemplateDetailAddIngredientShoppingFailed => 'Zutat konnte nicht zur Einkaufsliste hinzugefügt werden.';
+
+  @override
+  String get preparedMealTemplateDetailAddIngredientsShoppingFailed => 'Zutaten konnten nicht zur Einkaufsliste hinzugefügt werden.';
+
+  @override
+  String preparedMealTemplateDetailAddIngredientsShoppingSucceeded(int count) {
+    return '$count Zutaten wurden zur Einkaufsliste hinzugefügt.';
+  }
+
+  @override
+  String get preparedMealTemplateDetailIgnoreSaveFailed => 'Zutatenstatus konnte nicht gespeichert werden.';
+
+  @override
+  String get preparedMealTemplateDetailInvalidMealMessage => 'Die Vorlage braucht mindestens eine gültige Zutat.';
+
+  @override
+  String get preparedMealTemplateDetailSaveFailedMessage => 'Vorlage konnte nicht angepasst werden.';
 
   @override
   String get shoppingListStatsEntries => 'Positionen';

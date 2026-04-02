@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
@@ -13,6 +15,10 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/'
     'prepared_meal_templates_page.dart';
+import 'package:yamt/features/meal_templates/presentation/'
+    'meal_template_import_review_page.dart';
+import 'package:yamt/features/meal_templates/presentation/models/'
+    'meal_template_import_review_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../support/fake_local_image_store.dart';
@@ -134,6 +140,43 @@ PreparedMeal _recipeTemplate({required String id, required String name}) {
   );
 }
 
+Widget _buildHarness({
+  required PreparedMealTemplateRepository repository,
+  required PreparedMealRecipeImporter importer,
+  LocalImageStore? localImageStore,
+}) {
+  final router = GoRouter(
+    routes: [
+      GoRoute(
+        path: AppRoutes.root,
+        builder: (context, state) => const PreparedMealTemplatesPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.homeInventoryTemplateImportReview,
+        builder: (context, state) {
+          final args = state.extra! as MealTemplateImportReviewArgs;
+          return MealTemplateImportReviewPage(args: args);
+        },
+      ),
+    ],
+  );
+
+  return ProviderScope(
+    overrides: [
+      preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+      preparedMealRecipeImporterProvider.overrideWithValue(importer),
+      if (localImageStore != null)
+        localImageStoreProvider.overrideWithValue(localImageStore),
+    ],
+    child: MaterialApp.router(
+      locale: const Locale('en'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      routerConfig: router,
+    ),
+  );
+}
+
 void main() {
   testWidgets('renders templates and deletes one from the list', (
     tester,
@@ -152,20 +195,10 @@ void main() {
     );
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
-          preparedMealRecipeImporterProvider.overrideWithValue(
-            const _FakePreparedMealRecipeImporter(null),
-          ),
-          localImageStoreProvider.overrideWithValue(localImageStore),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const PreparedMealTemplatesPage(),
-        ),
+      _buildHarness(
+        repository: repository,
+        importer: const _FakePreparedMealRecipeImporter(null),
+        localImageStore: localImageStore,
       ),
     );
     await tester.pumpAndSettle();
@@ -198,20 +231,10 @@ void main() {
     );
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
-          preparedMealRecipeImporterProvider.overrideWithValue(
-            const _FakePreparedMealRecipeImporter(null),
-          ),
-          localImageStoreProvider.overrideWithValue(localImageStore),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const PreparedMealTemplatesPage(),
-        ),
+      _buildHarness(
+        repository: repository,
+        importer: const _FakePreparedMealRecipeImporter(null),
+        localImageStore: localImageStore,
       ),
     );
     await tester.pumpAndSettle();
@@ -229,26 +252,16 @@ void main() {
     addTearDown(repository.dispose);
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
-          preparedMealRecipeImporterProvider.overrideWithValue(
-            const _FakePreparedMealRecipeImporter(
-              PreparedMealRecipeImport(
-                recipeUrl:
-                    'https://www.chefkoch.de/rezepte/1234/kartoffelsuppe.html',
-                title: 'Kartoffelsuppe',
-                servings: 5,
-                ingredients: <String>['1 kg Kartoffeln', '500 ml Brühe'],
-              ),
-            ),
+      _buildHarness(
+        repository: repository,
+        importer: const _FakePreparedMealRecipeImporter(
+          PreparedMealRecipeImport(
+            recipeUrl:
+                'https://www.chefkoch.de/rezepte/1234/kartoffelsuppe.html',
+            title: 'Kartoffelsuppe',
+            servings: 5,
+            ingredients: <String>['1 kg Kartoffeln', '500 ml Brühe'],
           ),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const PreparedMealTemplatesPage(),
         ),
       ),
     );
@@ -262,6 +275,9 @@ void main() {
       'chefkoch.de/rezepte/1234/kartoffelsuppe.html',
     );
     await tester.tap(find.text('Create from recipe'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Save as template'));
     await tester.pumpAndSettle();
 
     expect(find.text('Kartoffelsuppe'), findsOneWidget);
@@ -286,26 +302,15 @@ void main() {
     addTearDown(repository.dispose);
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
-          preparedMealRecipeImporterProvider.overrideWithValue(
-            const _FakePreparedMealRecipeImporter(
-              PreparedMealRecipeImport(
-                recipeUrl:
-                    'https://www.chefkoch.de/rezepte/9999/linsensuppe.html',
-                title: 'Linsensuppe',
-                servings: 3,
-                ingredients: <String>['500 g Linsen'],
-              ),
-            ),
+      _buildHarness(
+        repository: repository,
+        importer: const _FakePreparedMealRecipeImporter(
+          PreparedMealRecipeImport(
+            recipeUrl: 'https://www.chefkoch.de/rezepte/9999/linsensuppe.html',
+            title: 'Linsensuppe',
+            servings: 3,
+            ingredients: <String>['500 g Linsen'],
           ),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const PreparedMealTemplatesPage(),
         ),
       ),
     );

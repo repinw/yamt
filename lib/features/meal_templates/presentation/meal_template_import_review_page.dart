@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 class MealTemplateImportReviewPage extends ConsumerStatefulWidget {
   const MealTemplateImportReviewPage({super.key, required this.args});
@@ -22,78 +24,81 @@ class _MealTemplateImportReviewPageState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final importedRecipe = widget.args.importedRecipe;
     final title = _resolvedName();
     final portions = _resolvedPortions();
 
     return Scaffold(
-      appBar: AppBar(
-        // TODO(l10n): Localize meal template review texts.
-        title: const Text('Rezept-Review'),
-      ),
+      appBar: AppBar(title: Text(l10n.preparedMealTemplateImportReviewTitle)),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: AppInsets.pageLarge,
         children: [
           if (importedRecipe.imageUrl != null) ...[
             ClipRRect(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadius.xl),
               child: Image.network(
                 importedRecipe.imageUrl!,
                 height: 220,
                 fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xxxl),
           ],
           Text(title, style: Theme.of(context).textTheme.headlineSmall),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             importedRecipe.recipeUrl,
             style: Theme.of(context).textTheme.bodySmall,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.xl),
           Text(
-            'Portionen: $portions',
+            l10n.preparedMealTemplatePortions(portions),
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          const SizedBox(height: 24),
-          Text('Zutaten', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.xxxl),
+          Text(
+            l10n.preparedMealIngredientsTitle,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: AppSpacing.md),
           ...importedRecipe.ingredients.map(
             (ingredient) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
               child: Text('• $ingredient'),
             ),
           ),
           if (importedRecipe.instructionsPreview.isNotEmpty) ...[
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xxxl),
             Text(
-              'Kurze Anleitung',
+              l10n.preparedMealTemplateImportReviewInstructionsTitle,
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             ...importedRecipe.instructionsPreview.map(
               (step) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                 child: Text('• $step'),
               ),
             ),
           ],
-          const SizedBox(height: 32),
+          const SizedBox(height: AppSpacing.xxxxl),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
                   onPressed: _isSaving ? null : context.pop,
-                  child: const Text('Abbrechen'),
+                  child: Text(l10n.inventoryReceiptReviewCancelAction),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: FilledButton(
                   onPressed: _isSaving ? null : _saveTemplate,
                   child: Text(
-                    _isSaving ? 'Speichert...' : 'Als Vorlage speichern',
+                    _isSaving
+                        ? l10n.preparedMealTemplateImportReviewSavingAction
+                        : l10n.preparedMealSaveTemplateAction,
                   ),
                 ),
               ),
@@ -140,20 +145,32 @@ class _MealTemplateImportReviewPageState
       _isSaving = false;
     });
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
+    final l10n = AppLocalizations.of(context)!;
     if (result.isSuccess) {
-      // TODO(l10n): Localize success text.
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Vorlage gespeichert')),
-      );
+      _showSnackBar(l10n.preparedMealTemplateSavedMessage);
       context.pop();
       return;
     }
 
-    // TODO(l10n): Localize failure text.
-    messenger.showSnackBar(
-      const SnackBar(content: Text('Vorlage konnte nicht gespeichert werden.')),
-    );
+    _showSnackBar(_saveFailureMessage(l10n, result));
+  }
+
+  String _saveFailureMessage(
+    AppLocalizations l10n,
+    PreparedMealTemplateSaveResult result,
+  ) {
+    return switch (result.failureReason) {
+      PreparedMealTemplateSaveFailureReason.recipeLoadFailed =>
+        l10n.preparedMealTemplateRecipeImportFailedMessage,
+      PreparedMealTemplateSaveFailureReason.invalidInput ||
+      PreparedMealTemplateSaveFailureReason.saveFailed ||
+      null => l10n.preparedMealTemplateCreateFailedMessage,
+    };
+  }
+
+  void _showSnackBar(String message) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(SnackBar(content: Text(message)));
   }
 }

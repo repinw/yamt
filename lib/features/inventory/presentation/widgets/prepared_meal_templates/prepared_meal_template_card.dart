@@ -76,8 +76,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                 ),
                 const SizedBox(width: AppSpacing.md),
                 IconButton(
-                  // TODO(l10n): Localize tooltip.
-                  tooltip: 'Vorlage öffnen',
+                  tooltip: l10n.preparedMealTemplateOpenAction,
                   onPressed: onOpenPressed,
                   icon: const Icon(Icons.chevron_right_rounded),
                 ),

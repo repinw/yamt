@@ -178,14 +178,9 @@ class PreparedMealTemplatesPage extends ConsumerWidget {
       return false;
     }
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          AppLocalizations.of(context)!.preparedMealTemplateDeletedMessage,
-        ),
-      ),
+    _showSnackBar(
+      context,
+      AppLocalizations.of(context)!.preparedMealTemplateDeletedMessage,
     );
     return true;
   }
@@ -207,13 +202,10 @@ class PreparedMealTemplatesPage extends ConsumerWidget {
       return;
     }
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
     if (importedRecipe == null) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(l10n.preparedMealTemplateRecipeImportFailedMessage),
-        ),
+      _showSnackBar(
+        context,
+        l10n.preparedMealTemplateRecipeImportFailedMessage,
       );
       return;
     }
@@ -260,18 +252,12 @@ class PreparedMealTemplatesPage extends ConsumerWidget {
       return result.isSuccess;
     }
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
     if (result.isSuccess) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.preparedMealTemplateUpdatedMessage)),
-      );
+      _showSnackBar(context, l10n.preparedMealTemplateUpdatedMessage);
       return true;
     }
 
-    messenger.showSnackBar(
-      SnackBar(content: Text(_templateFailureMessage(l10n, result))),
-    );
+    _showSnackBar(context, _templateFailureMessage(l10n, result));
     return false;
   }
 
@@ -287,5 +273,11 @@ class PreparedMealTemplatesPage extends ConsumerWidget {
       PreparedMealTemplateSaveFailureReason.saveFailed ||
       null => l10n.preparedMealTemplateCreateFailedMessage,
     };
+  }
+
+  void _showSnackBar(BuildContext context, String message) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(SnackBar(content: Text(message)));
   }
 }

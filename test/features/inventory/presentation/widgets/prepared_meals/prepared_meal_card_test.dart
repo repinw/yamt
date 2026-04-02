@@ -68,6 +68,12 @@ PreparedMeal _meal() {
   );
 }
 
+PreparedMeal _incompleteMeal() {
+  return _meal().copyWith(
+    pendingRecipeIngredients: const <String>['Sour cream'],
+  );
+}
+
 Widget _wrapCard(Widget child) {
   return SingleChildScrollView(
     child: Padding(padding: const EdgeInsets.all(16), child: child),
@@ -89,8 +95,7 @@ void main() {
               PreparedMealCard(
                 meal: _meal(),
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed:
-                    (mealId, portions, reason) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,
@@ -132,8 +137,7 @@ void main() {
               PreparedMealCard(
                 meal: _meal(),
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed:
-                    (mealId, portions, reason) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,
@@ -175,8 +179,7 @@ void main() {
               PreparedMealCard(
                 meal: meal,
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed:
-                    (mealId, portions, reason) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async {
                   unbundledMealId = mealId;
                   return true;
@@ -275,8 +278,7 @@ void main() {
               PreparedMealCard(
                 meal: _meal(),
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed:
-                    (mealId, portions, reason) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,
@@ -307,8 +309,7 @@ void main() {
               PreparedMealCard(
                 meal: _meal(),
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed:
-                    (mealId, portions, reason) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,
@@ -410,8 +411,7 @@ void main() {
                 PreparedMealCard(
                   meal: meal,
                   onEatPressed: (mealId, portions, mealType) async => true,
-                  onThrowAwayPressed:
-                      (mealId, portions, reason) async => true,
+                  onThrowAwayPressed: (mealId, portions, reason) async => true,
                   onUnbundlePressed: (mealId) async => true,
                   onEditPressed:
                       (mealId, name, imageChanged, imageBytes) async => true,
@@ -465,8 +465,8 @@ void main() {
                         }
                         return true;
                       },
-                      onThrowAwayPressed:
-                          (mealId, portions, reason) async => true,
+                      onThrowAwayPressed: (mealId, portions, reason) async =>
+                          true,
                       onUnbundlePressed: (mealId) async => true,
                       onEditPressed:
                           (mealId, name, imageChanged, imageBytes) async =>
@@ -555,8 +555,7 @@ void main() {
               PreparedMealCard(
                 meal: meal,
                 onEatPressed: (mealId, portions, mealType) async => true,
-                onThrowAwayPressed:
-                    (mealId, portions, reason) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
                     true,
@@ -574,5 +573,51 @@ void main() {
     expect(find.text('100 g/ml'), findsNothing);
     expect(find.text('Portion'), findsOneWidget);
     expect(find.text('Total'), findsOneWidget);
+  });
+
+  testWidgets('PreparedMealCard shows localized incomplete meal details', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _incompleteMeal(),
+                onEatPressed: (mealId, portions, mealType) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+                onFillPendingIngredientPressed:
+                    (mealId, ingredient, inventoryItemIds) async => true,
+                onIgnorePendingIngredientPressed: (mealId, ingredient) async =>
+                    true,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.textContaining('Incomplete'), findsOneWidget);
+
+    await tester.tap(find.text('Rice bowl'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'This meal is not complete yet and can only be eaten once all '
+        'missing ingredients have been added.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.byTooltip('Add ingredient'), findsOneWidget);
+    expect(find.byTooltip('Ignore ingredient'), findsOneWidget);
   });
 }
