@@ -13,6 +13,7 @@ import 'package:yamt/features/calories/presentation/calories_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/home/home_page.dart';
+import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/presentation/'
     'prepared_meal_templates_page.dart';
@@ -121,6 +122,10 @@ GoRouter appRouter(Ref ref) {
             inventoryContext: args?.inventoryContext,
           );
         },
+      ),
+      GoRoute(
+        path: AppRoutes.homeInventoryManualAdd,
+        builder: (context, state) => const InventoryManualAddPage(),
       ),
       GoRoute(
         path: AppRoutes.homeInventoryReceiptReview,

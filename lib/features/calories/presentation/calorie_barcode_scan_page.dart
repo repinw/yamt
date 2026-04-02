@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/calories/domain/calorie_barcode_utils.dart';
+import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/models/'
@@ -57,10 +57,7 @@ class _CalorieBarcodeScanPageState
         body: Stack(
           fit: StackFit.expand,
           children: <Widget>[
-            MobileScanner(
-              controller: _scannerController,
-              onDetect: _onDetect,
-            ),
+            MobileScanner(controller: _scannerController, onDetect: _onDetect),
             if (_isResolving)
               ColoredBox(
                 color: Colors.black45,

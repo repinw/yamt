@@ -19,20 +19,32 @@ class _OffProductCandidateSource {
     }
 
     final rawBrand = item.brand?.trim();
+    final normalizedStoreName = normalizeStoreName(item.storeName);
+    final normalizedBrandName = normalizeStoreName(rawBrand);
     final normalizedBrandStore = _normalizeSupportedExternalStore(rawBrand);
     final store = _resolveExternalStore(
-      storeName: item.storeName,
+      normalizedStoreName: normalizedStoreName,
       brandStore: normalizedBrandStore,
     );
     final isNettoSearch = store == 'Netto';
-    final effectiveBrand = isNettoSearch && normalizedBrandStore == store
+    final isGeneralCollectionSearch =
+        store == null || (store != 'Aldi' && store != 'Netto');
+    final brandRepeatsStore =
+        normalizedStoreName != null &&
+        normalizedBrandName != null &&
+        normalizedStoreName == normalizedBrandName;
+    final effectiveBrand =
+        brandRepeatsStore || (isNettoSearch && normalizedBrandStore == store)
         ? null
         : rawBrand;
+    final effectiveWeight = item.weight?.trim();
     return repository.search(
       query: query,
       store: store,
-      brand: isNettoSearch ? effectiveBrand : null,
-      weight: isNettoSearch ? item.weight?.trim() : null,
+      brand: isNettoSearch || isGeneralCollectionSearch ? effectiveBrand : null,
+      weight: isNettoSearch || isGeneralCollectionSearch
+          ? effectiveWeight
+          : null,
       limit: _globalFoodCandidateQueryLimit,
     );
   }
@@ -66,12 +78,17 @@ class _OffProductCandidateSource {
   }
 
   String? _resolveExternalStore({
-    required String storeName,
+    required String? normalizedStoreName,
     required String? brandStore,
   }) {
-    final normalizedStore = _normalizeSupportedExternalStore(storeName);
+    final normalizedStore = _normalizeSupportedExternalStore(
+      normalizedStoreName,
+    );
     if (normalizedStore != null) {
       return normalizedStore;
+    }
+    if (_isGeneralFallbackStore(normalizedStoreName)) {
+      return normalizedStoreName;
     }
     return brandStore;
   }
@@ -83,5 +100,12 @@ class _OffProductCandidateSource {
       'Netto' => 'Netto',
       _ => null,
     };
+  }
+
+  bool _isGeneralFallbackStore(String? normalizedStoreName) {
+    if (normalizedStoreName == null || normalizedStoreName.isEmpty) {
+      return false;
+    }
+    return normalizedStoreName != 'Unknown';
   }
 }

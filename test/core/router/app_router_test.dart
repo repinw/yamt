@@ -435,8 +435,13 @@ void main() {
     await tester.tap(find.byIcon(Icons.insights_rounded).hitTestable());
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
+    expect(router.state.uri.path, AppRoutes.homeStatistics);
+    expect(find.text('MVP note'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.inventory_2_rounded).hitTestable());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
     expect(router.state.uri.path, AppRoutes.homeInventory);
-    expect(find.text('Not implemented yet'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.shopping_cart_rounded).hitTestable());
     await _pumpRouterTransition(tester);
@@ -625,5 +630,31 @@ void main() {
     );
 
     expect(barcodeRoute.path, AppRoutes.homeCaloriesBarcodeScan);
+  });
+
+  testWidgets('inventory manual add route is registered on app router', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    final routes = container
+        .read(appRouterProvider)
+        .configuration
+        .routes
+        .whereType<GoRoute>()
+        .toList();
+    final manualAddRoute = routes.firstWhere(
+      (route) => route.path == AppRoutes.homeInventoryManualAdd,
+    );
+
+    expect(manualAddRoute.path, AppRoutes.homeInventoryManualAdd);
   });
 }

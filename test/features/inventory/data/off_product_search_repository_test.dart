@@ -10,8 +10,8 @@ void main() {
       client: MockClient((request) async {
         capturedUri = request.url;
         return http.Response('''
-Score: 34 | token=20 | gram=14 | store=0 | 4061458029995 | [Aldi, Froneri, Mucci] Waffelhoernchen Haselnuss-Vanille | https://images.openfoodfacts.org/images/products/406/145/802/9995/front_de.3.400.jpg
-Score: 22 | token=10 | gram=12 | store=0 | 0771869110697 | [bofrost] Waffelhoernchen Vanille-Nuss
+Score: 34 | token=20 | gram=14 | store=0 | 4061458029995 | [Aldi, Froneri, Mucci] Waffelhörnchen Haselnuss-Vanille | https://images.openfoodfacts.org/images/products/406/145/802/9995/front_de.3.400.jpg
+Score: 22 | token=10 | gram=12 | store=0 | 0771869110697 | [bofrost] Waffelhörnchen Vanille-Nuss
 ''', 200);
       }),
       searchUri: Uri.parse('https://example.com/search'),
@@ -33,7 +33,7 @@ Score: 22 | token=10 | gram=12 | store=0 | 0771869110697 | [bofrost] Waffelhoern
     expect(results, hasLength(2));
     expect(results.first.code, '4061458029995');
     expect(results.first.brand, 'Aldi, Froneri, Mucci');
-    expect(results.first.name, 'Waffelhoernchen Haselnuss-Vanille');
+    expect(results.first.name, 'Waffelhörnchen Haselnuss-Vanille');
     expect(
       results.first.imageUrl,
       'https://images.openfoodfacts.org/images/products/'
@@ -50,7 +50,7 @@ Score: 22 | token=10 | gram=12 | store=0 | 0771869110697 | [bofrost] Waffelhoern
   "results": [
     {
       "code": "4063367095306",
-      "product_name": "Waffelhoernchen Haselnuss",
+      "product_name": "Waffelhörnchen Haselnuss",
       "brands": "K Classic, Kaufland",
       "weight": "800g",
       "image_url": "/images/products/406/336/709/5306/front_de.3.400.jpg",
@@ -75,7 +75,7 @@ Score: 22 | token=10 | gram=12 | store=0 | 0771869110697 | [bofrost] Waffelhoern
 
     expect(results, hasLength(1));
     expect(results.single.code, '4063367095306');
-    expect(results.single.name, 'Waffelhoernchen Haselnuss');
+    expect(results.single.name, 'Waffelhörnchen Haselnuss');
     expect(results.single.brand, 'K Classic, Kaufland');
     expect(results.single.packageWeight, '800g');
     expect(
@@ -86,5 +86,63 @@ Score: 22 | token=10 | gram=12 | store=0 | 0771869110697 | [bofrost] Waffelhoern
     expect(results.single.nutrition!.per100Kcal, 210);
     expect(results.single.nutrition!.per100Salt, 1.1);
     expect(results.single.score, 34);
+  });
+
+  test(
+    'lookupCandidatesByBarcode parses single product payload as list',
+    () async {
+      late Uri capturedUri;
+      final repository = HttpOffProductSearchRepository(
+        client: MockClient((request) async {
+          capturedUri = request.url;
+          return http.Response('''
+{
+  "ok": true,
+  "code": "4316268671224",
+  "found": true,
+  "product": {
+    "code": "4316268671224",
+    "name": "Cashews Sour Creme & Onion",
+    "brand": "Clarkys",
+    "score": 100
+  }
+}
+''', 200);
+        }),
+        searchUri: Uri.parse('https://example.com/search'),
+      );
+
+      final results = await repository.lookupCandidatesByBarcode(
+        barcode: '4316268671224',
+      );
+
+      expect(capturedUri.path, '/barcode');
+      expect(results, hasLength(1));
+      expect(results.single.code, '4316268671224');
+      expect(results.single.name, 'Cashews Sour Creme & Onion');
+      expect(results.single.brand, 'Clarkys');
+    },
+  );
+
+  test('lookupCandidatesByBarcode returns empty list when not found', () async {
+    final repository = HttpOffProductSearchRepository(
+      client: MockClient((request) async {
+        return http.Response('''
+{
+  "ok": true,
+  "code": "4006381333931",
+  "found": false,
+  "product": null
+}
+''', 200);
+      }),
+      searchUri: Uri.parse('https://example.com/search'),
+    );
+
+    final result = await repository.lookupCandidatesByBarcode(
+      barcode: '4006381333931',
+    );
+
+    expect(result, isEmpty);
   });
 }

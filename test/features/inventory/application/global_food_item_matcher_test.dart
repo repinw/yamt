@@ -52,6 +52,13 @@ class _FakeOffProductSearchRepository implements OffProductSearchRepository {
     final results = _resultsByQuery[query] ?? fallbackResults;
     return results.take(limit).toList(growable: false);
   }
+
+  @override
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
+  }) async {
+    return _resultsByQuery[barcode] ?? fallbackResults;
+  }
 }
 
 InventoryItem _inventoryItem({
@@ -114,7 +121,7 @@ void main() {
       fallbackResults: <OffProductSearchResult>[
         _offResult(
           code: '4061458029995',
-          name: 'Waffelhoernchen Haselnuss-Vanille',
+          name: 'Waffelhörnchen Haselnuss-Vanille',
           brand: 'Aldi, Froneri, Mucci',
           packageWeight: '110 ml',
           imageUrl:
@@ -279,6 +286,53 @@ void main() {
       expect(repository.calls.single.store, 'Netto');
       expect(repository.calls.single.brand, isNull);
       expect(repository.calls.single.weight, '800g');
+    },
+  );
+
+  test(
+    'findCandidates forwards brand and optional weight for DE fallback',
+    () async {
+      final repository = _FakeOffProductSearchRepository();
+      final matcher = GlobalFoodItemMatcher(
+        offProductSearchRepository: repository,
+      );
+
+      await matcher.findCandidates(
+        _inventoryItem(
+          id: 'item-1',
+          name: 'Pils Stubbi',
+          brand: 'Bitburger',
+          storeName: 'Kaufland',
+          weight: '20x0.33l',
+        ),
+      );
+
+      expect(repository.calls.single.store, 'Kaufland');
+      expect(repository.calls.single.brand, 'Bitburger');
+      expect(repository.calls.single.weight, '20x0.33l');
+    },
+  );
+
+  test(
+    'findCandidates drops fallback brand when it only repeats the store',
+    () async {
+      final repository = _FakeOffProductSearchRepository();
+      final matcher = GlobalFoodItemMatcher(
+        offProductSearchRepository: repository,
+      );
+
+      await matcher.findCandidates(
+        _inventoryItem(
+          id: 'item-1',
+          name: 'Cashews Sour Creme Onion',
+          brand: 'Kaufland',
+          storeName: 'Kaufland',
+        ),
+      );
+
+      expect(repository.calls.single.store, 'Kaufland');
+      expect(repository.calls.single.brand, isNull);
+      expect(repository.calls.single.weight, isNull);
     },
   );
 

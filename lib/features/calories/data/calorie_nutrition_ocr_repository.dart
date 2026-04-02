@@ -18,7 +18,7 @@ part 'calorie_nutrition_ocr_repository.g.dart';
 
 const _ocrLogName = 'CalorieNutritionOcrRepository';
 const _ocrTemplateConfigKey = 'nutrition_label_template_id';
-const _ocrTemplateIdFallback = 'nutritionlabelocr';
+const _ocrTemplateIdFallback = 'nutrition-template-id';
 const _vertexLocation = 'global';
 const _defaultMimeType = 'application/octet-stream';
 const _lookupHeaderLength = 32;
@@ -237,10 +237,12 @@ class _FirebaseCalorieNutritionOcrRepository
 
     final flat = _flatten(payload);
     final name = _extractString(flat, const <String>[
+      'n',
       'name',
       'product_name',
       'title',
     ]);
+    final brand = _extractString(flat, const <String>['b', 'brand']);
     final kcal = _extractDouble(flat, const <String>[
       'kcal',
       'calories',
@@ -267,7 +269,7 @@ class _FirebaseCalorieNutritionOcrRepository
     return CalorieProductProfile(
       barcode: barcode,
       name: name?.trim().isNotEmpty == true ? name!.trim() : barcode,
-      brand: null,
+      brand: brand?.trim().isNotEmpty == true ? brand!.trim() : null,
       per100Kcal: kcal,
       per100Protein: protein,
       per100Carbs: carbs,

@@ -11,7 +11,6 @@ part 'off_product_search_response_parser.dart';
 
 const _offProductSearchLogName = 'OffProductSearchRepository';
 
-/// A single external OFF search match returned by the search service.
 class OffProductSearchResult {
   const OffProductSearchResult({
     required this.code,
@@ -32,7 +31,6 @@ class OffProductSearchResult {
   final GlobalFoodNutrition? nutrition;
 }
 
-/// Looks up candidate products from an external OFF-backed search service.
 abstract interface class OffProductSearchRepository {
   Future<List<OffProductSearchResult>> search({
     required String query,
@@ -40,6 +38,10 @@ abstract interface class OffProductSearchRepository {
     String? brand,
     String? weight,
     int limit = 15,
+  });
+
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
   });
 }
 
@@ -55,7 +57,6 @@ OffProductSearchRepository offProductSearchRepository(Ref ref) {
   return HttpOffProductSearchRepository(client: client, searchUri: searchUri);
 }
 
-/// HTTP implementation for the external OFF search service.
 class HttpOffProductSearchRepository implements OffProductSearchRepository {
   const HttpOffProductSearchRepository({
     required http.Client client,
@@ -88,30 +89,20 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
       weight: weight?.trim(),
       limit: limit,
     );
+    return _fetchResults(uri: uri, action: 'search');
+  }
 
-    try {
-      final response = await _client
-          .get(uri)
-          .timeout(offProductSearchTimeout());
-      if (response.statusCode != 200) {
-        log(
-          'OFF search failed with status ${response.statusCode} '
-          'for $uri.',
-          name: _offProductSearchLogName,
-        );
-        return const <OffProductSearchResult>[];
-      }
-
-      return _responseParser.parse(response.body);
-    } catch (error, stackTrace) {
-      log(
-        'OFF search request failed for $uri.',
-        name: _offProductSearchLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
+  @override
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
+  }) async {
+    final normalizedBarcode = barcode.trim();
+    if (normalizedBarcode.isEmpty) {
       return const <OffProductSearchResult>[];
     }
+
+    final uri = _buildBarcodeUri(barcode: normalizedBarcode);
+    return _fetchResults(uri: uri, action: 'barcode lookup');
   }
 
   Uri _buildSearchUri({
@@ -138,6 +129,53 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
 
     return _searchUri.replace(queryParameters: queryParameters);
   }
+
+  Uri _buildBarcodeUri({required String barcode}) {
+    final pathSegments = _searchUri.pathSegments.toList(growable: true);
+    if (pathSegments.isEmpty) {
+      pathSegments.add('barcode');
+    } else if (pathSegments.last == 'search') {
+      pathSegments[pathSegments.length - 1] = 'barcode';
+    } else {
+      pathSegments.add('barcode');
+    }
+
+    return _searchUri.replace(
+      pathSegments: pathSegments,
+      queryParameters: <String, String>{
+        ..._searchUri.queryParameters,
+        'code': barcode,
+      },
+    );
+  }
+
+  Future<List<OffProductSearchResult>> _fetchResults({
+    required Uri uri,
+    required String action,
+  }) async {
+    try {
+      final response = await _client
+          .get(uri)
+          .timeout(offProductSearchTimeout());
+      if (response.statusCode != 200) {
+        log(
+          'OFF $action failed with status ${response.statusCode} for $uri.',
+          name: _offProductSearchLogName,
+        );
+        return const <OffProductSearchResult>[];
+      }
+
+      return _responseParser.parse(response.body);
+    } catch (error, stackTrace) {
+      log(
+        'OFF $action request failed for $uri.',
+        name: _offProductSearchLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <OffProductSearchResult>[];
+    }
+  }
 }
 
 class _UnavailableOffProductSearchRepository
@@ -151,6 +189,13 @@ class _UnavailableOffProductSearchRepository
     String? brand,
     String? weight,
     int limit = 15,
+  }) async {
+    return const <OffProductSearchResult>[];
+  }
+
+  @override
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
   }) async {
     return const <OffProductSearchResult>[];
   }

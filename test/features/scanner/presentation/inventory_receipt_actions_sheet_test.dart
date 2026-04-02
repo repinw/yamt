@@ -5,6 +5,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 Widget _wrap({
   required bool isCameraEnabled,
+  required VoidCallback onManualAddTap,
   required VoidCallback onScanCameraTap,
   required VoidCallback onUploadFileTap,
 }) {
@@ -14,6 +15,7 @@ Widget _wrap({
     home: Scaffold(
       body: InventoryReceiptActionsSheet(
         isCameraEnabled: isCameraEnabled,
+        onManualAddTap: onManualAddTap,
         onScanCameraTap: onScanCameraTap,
         onUploadFileTap: onUploadFileTap,
       ),
@@ -25,16 +27,22 @@ void main() {
   testWidgets('camera and upload actions trigger callbacks when enabled', (
     tester,
   ) async {
+    var manualTapCount = 0;
     var cameraTapCount = 0;
     var uploadTapCount = 0;
 
     await tester.pumpWidget(
       _wrap(
         isCameraEnabled: true,
+        onManualAddTap: () => manualTapCount++,
         onScanCameraTap: () => cameraTapCount++,
         onUploadFileTap: () => uploadTapCount++,
       ),
     );
+
+    await tester.tap(find.text('Add food manually'));
+    await tester.pumpAndSettle();
+    expect(manualTapCount, 1);
 
     await tester.tap(find.text('Scan receipt (camera)'));
     await tester.pumpAndSettle();
@@ -53,6 +61,7 @@ void main() {
     await tester.pumpWidget(
       _wrap(
         isCameraEnabled: false,
+        onManualAddTap: () {},
         onScanCameraTap: () => cameraTapCount++,
         onUploadFileTap: () {},
       ),

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_processor.dart';
@@ -249,22 +250,43 @@ class _InventoryReceiptReviewSheetState
     if (index < 0) {
       return;
     }
-    final updatedItem = await showModalBottomSheet<InventoryItem>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (sheetContext) {
-        return InventoryReceiptManualProductSheet(item: _items[index].item);
-      },
-    );
-    if (!mounted || updatedItem == null) {
+    final result =
+        await showModalBottomSheet<InventoryReceiptManualProductResult>(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          builder: (sheetContext) {
+            return InventoryReceiptManualProductSheet(item: _items[index].item);
+          },
+        );
+    if (!mounted || result == null) {
       return;
     }
 
-    _replaceDraftByItemId(
-      itemId,
-      (draft) => draft.copyWith(item: updatedItem).selectNewItem(),
-    );
+    final matcher = ref.read(globalFoodItemMatcherProvider);
+    _replaceDraftByItemId(itemId, (draft) {
+      final selectedProduct = result.selectedProduct;
+      if (selectedProduct == null) {
+        return draft.copyWith(item: result.item).selectNewItem();
+      }
+
+      final scannedCandidate = matcher.candidateFromExternalResult(
+        selectedProduct,
+      );
+      final mergedCandidates = <GlobalFoodMatchCandidate>[
+        scannedCandidate,
+        ...draft.candidates.where(
+          (candidate) => candidate.item.id != scannedCandidate.item.id,
+        ),
+      ];
+      return draft.copyWith(
+        item: result.item,
+        candidates: mergedCandidates,
+        selectedGlobalFoodItemId: scannedCandidate.item.id,
+        selectionNeedsReview: false,
+        requestAiEnrichment: false,
+      );
+    });
   }
 
   Future<ReceiptReviewItemDraft?> _prepareDraftForCandidateSelection(

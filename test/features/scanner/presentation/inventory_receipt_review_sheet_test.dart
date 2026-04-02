@@ -1,14 +1,16 @@
 import 'dart:async';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:riverpod/src/framework.dart' show Override;
+import 'package:yamt/features/calories/data/calorie_nutrition_ocr_repository.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_nutrition_ocr_repository_contract.dart';
+import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
-import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
@@ -85,55 +87,6 @@ Widget _wrap({
   );
 }
 
-class _StaticGlobalFoodItemRepository implements GlobalFoodItemRepository {
-  const _StaticGlobalFoodItemRepository(this.items);
-
-  final List<GlobalFoodItem> items;
-
-  @override
-  Stream<List<GlobalFoodItem>> watchAll() async* {
-    yield items;
-  }
-
-  @override
-  Future<List<GlobalFoodItem>> readAll() async => items;
-
-  @override
-  Future<List<GlobalFoodItem>> searchCandidates({
-    String? normalizedName,
-    String? barcode,
-    String? foodFingerprint,
-    List<String> searchTokens = const <String>[],
-    int limit = 20,
-  }) async {
-    return const <GlobalFoodItem>[];
-  }
-
-  @override
-  Future<bool> saveAll(List<GlobalFoodItem> items) async => true;
-
-  @override
-  Future<bool> appendAll(List<GlobalFoodItem> items) async => true;
-}
-
-class _StaticInventoryItemRepository implements InventoryItemRepository {
-  const _StaticInventoryItemRepository();
-
-  @override
-  Stream<List<InventoryItem>> watchAll() async* {
-    yield const <InventoryItem>[];
-  }
-
-  @override
-  Future<List<InventoryItem>> readAll() async => const <InventoryItem>[];
-
-  @override
-  Future<bool> saveAll(List<InventoryItem> items) async => true;
-
-  @override
-  Future<bool> appendAll(List<InventoryItem> items) async => true;
-}
-
 class _RecordingOffProductSearchRepository
     implements OffProductSearchRepository {
   _RecordingOffProductSearchRepository(this.results);
@@ -151,6 +104,13 @@ class _RecordingOffProductSearchRepository
   }) async {
     lastQuery = query;
     return results.take(limit).toList(growable: false);
+  }
+
+  @override
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
+  }) async {
+    return results;
   }
 }
 
@@ -171,6 +131,118 @@ class _CompletingOffProductSearchRepository
   }) {
     return completer.future;
   }
+
+  @override
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
+  }) {
+    return completer.future;
+  }
+}
+
+class _FakeNutritionOcrRepository
+    implements CalorieNutritionOcrRepositoryContract {
+  _FakeNutritionOcrRepository({required this.onScanNutritionLabel});
+
+  final Future<CalorieNutritionOcrResult> Function(String barcode)
+  onScanNutritionLabel;
+
+  @override
+  Future<CalorieNutritionOcrResult> scanNutritionLabel({
+    required String barcode,
+  }) {
+    return onScanNutritionLabel(barcode);
+  }
+}
+
+class _FakeMobileScannerPlatform extends MobileScannerPlatform {
+  final StreamController<BarcodeCapture?> _barcodeController =
+      StreamController<BarcodeCapture?>.broadcast();
+  final StreamController<TorchState> _torchController =
+      StreamController<TorchState>.broadcast();
+  final StreamController<double> _zoomController =
+      StreamController<double>.broadcast();
+
+  @override
+  Stream<BarcodeCapture?> get barcodesStream => _barcodeController.stream;
+
+  @override
+  Stream<TorchState> get torchStateStream => _torchController.stream;
+
+  @override
+  Stream<double> get zoomScaleStateStream => _zoomController.stream;
+
+  @override
+  Widget buildCameraView() {
+    return const SizedBox.expand();
+  }
+
+  @override
+  Future<void> dispose() async {}
+
+  @override
+  Future<Set<CameraLensType>> getSupportedLenses() async {
+    return <CameraLensType>{CameraLensType.any};
+  }
+
+  @override
+  Future<void> pause() async {}
+
+  @override
+  Future<void> resetZoomScale() async {}
+
+  @override
+  Future<void> setFocusPoint(Offset position) async {}
+
+  @override
+  Future<void> setZoomScale(double zoomScale) async {}
+
+  @override
+  Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
+    return const MobileScannerViewAttributes(
+      cameraDirection: CameraFacing.back,
+      currentTorchMode: TorchState.off,
+      size: Size(1080, 1920),
+      initialDeviceOrientation: DeviceOrientation.portraitUp,
+    );
+  }
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> toggleTorch() async {}
+
+  @override
+  Future<void> updateScanWindow(Rect? window) async {}
+
+  void emitBarcode(String rawValue) {
+    _barcodeController.add(
+      BarcodeCapture(barcodes: <Barcode>[Barcode(rawValue: rawValue)]),
+    );
+  }
+
+  Future<void> shutdown() async {
+    await _barcodeController.close();
+    await _torchController.close();
+    await _zoomController.close();
+  }
+}
+
+void _installFakeScannerPlatform(WidgetTester tester) {
+  final previousPlatform = MobileScannerPlatform.instance;
+  final fakePlatform = _FakeMobileScannerPlatform();
+  MobileScannerPlatform.instance = fakePlatform;
+  addTearDown(() async {
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    MobileScannerPlatform.instance = previousPlatform;
+    await fakePlatform.shutdown();
+  });
+}
+
+_FakeMobileScannerPlatform _fakeScannerPlatform() {
+  return MobileScannerPlatform.instance as _FakeMobileScannerPlatform;
 }
 
 GlobalFoodMatchCandidate _candidate({
@@ -370,7 +442,7 @@ void main() {
         _RecordingOffProductSearchRepository(<OffProductSearchResult>[
           const OffProductSearchResult(
             code: '4061458029995',
-            name: 'Waffelhoernchen Haselnuss-Vanille',
+            name: 'Waffelhörnchen Haselnuss-Vanille',
             brand: 'Aldi, Froneri, Mucci',
             packageWeight: '110 ml',
             nutrition: GlobalFoodNutrition(
@@ -385,8 +457,6 @@ void main() {
           ),
         ]);
     final matcher = GlobalFoodItemMatcher(
-      repository: const _StaticGlobalFoodItemRepository(<GlobalFoodItem>[]),
-      inventoryRepository: const _StaticInventoryItemRepository(),
       offProductSearchRepository: externalRepository,
     );
 
@@ -423,7 +493,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text('Waffelhoernchen Haselnuss-Vanille'),
+      find.text('Waffelhörnchen Haselnuss-Vanille'),
       findsAtLeastNWidgets(1),
     );
     expect(find.text('110 ml'), findsAtLeastNWidgets(1));
@@ -434,8 +504,6 @@ void main() {
   testWidgets('determine loading is tracked by item id', (tester) async {
     final externalRepository = _CompletingOffProductSearchRepository();
     final matcher = GlobalFoodItemMatcher(
-      repository: const _StaticGlobalFoodItemRepository(<GlobalFoodItem>[]),
-      inventoryRepository: const _StaticInventoryItemRepository(),
       offProductSearchRepository: externalRepository,
     );
 
@@ -497,8 +565,6 @@ void main() {
   ) async {
     List<InventoryItem>? savedItems;
     final matcher = GlobalFoodItemMatcher(
-      repository: const _StaticGlobalFoodItemRepository(<GlobalFoodItem>[]),
-      inventoryRepository: const _StaticInventoryItemRepository(),
       offProductSearchRepository: _RecordingOffProductSearchRepository(
         const <OffProductSearchResult>[],
       ),
@@ -558,6 +624,113 @@ void main() {
     expect(savedItems!.single.barcode, '4006381333931');
     expect(savedItems!.single.nutrition?.per100Kcal, 120);
   });
+
+  testWidgets(
+    'manual fallback enables nutrition OCR after barcode scan finds nothing',
+    (tester) async {
+      _installFakeScannerPlatform(tester);
+
+      List<InventoryItem>? savedItems;
+      final offRepository = _RecordingOffProductSearchRepository(
+        const <OffProductSearchResult>[],
+      );
+      final matcher = GlobalFoodItemMatcher(
+        offProductSearchRepository: offRepository,
+      );
+      final ocrRepository = _FakeNutritionOcrRepository(
+        onScanNutritionLabel: (barcode) async {
+          return CalorieNutritionOcrResult.succeeded(
+            profile: CalorieProductProfile(
+              barcode: barcode,
+              name: 'Manual OCR Product',
+              brand: 'OCR Brand',
+              per100Kcal: 321,
+              per100Protein: 12,
+              per100Carbs: 22,
+              per100Fat: 7,
+              source: CalorieProductSource.ocr,
+              createdAt: DateTime.parse('2026-02-19T10:00:00Z'),
+              updatedAt: DateTime.parse('2026-02-19T10:00:00Z'),
+            ),
+          );
+        },
+      );
+
+      await tester.pumpWidget(
+        _wrap(
+          drafts: <ReceiptReviewItemDraft>[
+            ReceiptReviewItemDraft(
+              item: _item(
+                id: 'food',
+                isDeposit: false,
+                isDiscount: false,
+                name: 'Mystery Product',
+              ),
+            ),
+          ],
+          overrides: <Override>[
+            globalFoodItemMatcherProvider.overrideWithValue(matcher),
+            offProductSearchRepositoryProvider.overrideWithValue(offRepository),
+            calorieNutritionOcrRepositoryProvider.overrideWithValue(
+              ocrRepository,
+            ),
+          ],
+          onCancelTap: () {},
+          onSaveTap: (items) async {
+            savedItems = items;
+          },
+        ),
+      );
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_determine_button_0')),
+      );
+      await tester.pumpAndSettle();
+
+      final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+      final l10n = AppLocalizations.of(context)!;
+      await tester.tap(find.text(l10n.inventoryReceiptReviewManualDataAction));
+      await tester.pumpAndSettle();
+
+      final ocrButtonFinder = find.byKey(
+        const Key('receipt_review_manual_nutrition_ocr_button'),
+      );
+      final ocrButtonBefore = tester.widget<OutlinedButton>(ocrButtonFinder);
+      expect(ocrButtonBefore.onPressed, isNull);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_scan_button')),
+      );
+      await tester.pumpAndSettle();
+
+      _fakeScannerPlatform().emitBarcode('4006381333931');
+      await tester.pumpAndSettle();
+
+      final ocrButtonAfter = tester.widget<OutlinedButton>(ocrButtonFinder);
+      expect(ocrButtonAfter.onPressed, isNotNull);
+
+      await tester.tap(ocrButtonFinder);
+      await tester.pumpAndSettle();
+
+      expect(find.text('321'), findsOneWidget);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_save_button')),
+      );
+      await tester.pumpAndSettle();
+
+      final saveButton = find.byKey(const Key('receipt_review_save_button'));
+      await tester.ensureVisible(saveButton);
+      await tester.tap(saveButton);
+      await tester.pumpAndSettle();
+
+      expect(savedItems, isNotNull);
+      expect(savedItems!.single.name, 'Manual OCR Product');
+      expect(savedItems!.single.brand, 'OCR Brand');
+      expect(savedItems!.single.barcode, '4006381333931');
+      expect(savedItems!.single.nutrition?.per100Kcal, 321);
+    },
+  );
 
   testWidgets('suggested candidate already shows nutrition chips', (
     tester,

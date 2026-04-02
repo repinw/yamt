@@ -5,7 +5,6 @@ import 'dart:developer' as developer;
 
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/config/ai_processing_level.dart';
 import 'package:yamt/core/config/ai_processing_level_controller.dart';
@@ -102,7 +101,7 @@ class FirebaseReceiptTemplateConfigClient
     await _remoteConfig.setConfigSettings(
       RemoteConfigSettings(
         fetchTimeout: _remoteConfigFetchTimeout,
-        minimumFetchInterval: _minimumFetchInterval(),
+        minimumFetchInterval: _remoteConfigProdFetchInterval,
       ),
     );
     await _remoteConfig.setDefaults(const <String, Object>{
@@ -122,14 +121,6 @@ class FirebaseReceiptTemplateConfigClient
         stackTrace: stackTrace,
       );
     }
-  }
-
-  Duration _minimumFetchInterval() {
-    if (kDebugMode) {
-      return Duration.zero;
-    }
-
-    return _remoteConfigProdFetchInterval;
   }
 
   static String _templateKeyForLevel(AiProcessingLevel level) {

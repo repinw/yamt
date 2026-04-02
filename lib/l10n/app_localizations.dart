@@ -161,6 +161,12 @@ abstract class AppLocalizations {
   /// **'Camera is not supported on this platform.'**
   String get inventoryActionCameraUnsupported;
 
+  /// No description provided for @inventoryActionManualAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add food manually'**
+  String get inventoryActionManualAdd;
+
   /// No description provided for @inventoryReceiptSelectionFailed.
   ///
   /// In en, this message translates to:
@@ -482,19 +488,19 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryReceiptReviewManualDataAction.
   ///
   /// In en, this message translates to:
-  /// **'Enter barcode and nutrition'**
+  /// **'Scan barcode or enter nutrition'**
   String get inventoryReceiptReviewManualDataAction;
 
   /// No description provided for @inventoryReceiptReviewManualDataTitle.
   ///
   /// In en, this message translates to:
-  /// **'Enter barcode and nutrition'**
+  /// **'Scan barcode or enter nutrition'**
   String get inventoryReceiptReviewManualDataTitle;
 
   /// No description provided for @inventoryReceiptReviewManualDataHint.
   ///
   /// In en, this message translates to:
-  /// **'If you know the product, you can enter barcode and nutrition directly.'**
+  /// **'Scan the barcode first. If nothing is found, you can then take a photo of the nutrition label or enter the values manually.'**
   String get inventoryReceiptReviewManualDataHint;
 
   /// No description provided for @inventoryReceiptReviewManualDataSaveAction.
@@ -512,7 +518,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryReceiptReviewManualDataRequired.
   ///
   /// In en, this message translates to:
-  /// **'Please enter at least a barcode or nutrition values.'**
+  /// **'Please scan a barcode or enter nutrition values.'**
   String get inventoryReceiptReviewManualDataRequired;
 
   /// No description provided for @inventoryReceiptReviewRequestEnrichmentAction.
@@ -730,6 +736,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Barcode scanning is currently supported on Android and iOS.'**
   String get inventoryBarcodeScanUnsupported;
+
+  /// No description provided for @inventoryManualAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add food manually'**
+  String get inventoryManualAddTitle;
+
+  /// No description provided for @inventoryManualAddHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a barcode. Then you can review the product, save it, or add nutrition values.'**
+  String get inventoryManualAddHint;
+
+  /// No description provided for @inventoryManualAddResolving.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking up barcode...'**
+  String get inventoryManualAddResolving;
+
+  /// No description provided for @inventoryManualAddCandidateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select product'**
+  String get inventoryManualAddCandidateTitle;
+
+  /// No description provided for @inventoryManualAddCandidateSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple matching products were found for this barcode.'**
+  String get inventoryManualAddCandidateSubtitle;
+
+  /// No description provided for @inventoryManualAddUnknownBrand.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown brand'**
+  String get inventoryManualAddUnknownBrand;
+
+  /// No description provided for @inventoryManualAddNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching product was found for this barcode.'**
+  String get inventoryManualAddNotFound;
+
+  /// No description provided for @inventoryManualAddLookupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode lookup failed. Please try again.'**
+  String get inventoryManualAddLookupFailed;
+
+  /// No description provided for @inventoryManualAddSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The product could not be added to the inventory.'**
+  String get inventoryManualAddSaveFailed;
+
+  /// No description provided for @inventoryManualAddSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Product added to inventory.'**
+  String get inventoryManualAddSaved;
+
+  /// No description provided for @inventoryManualAddStoreName.
+  ///
+  /// In en, this message translates to:
+  /// **'Added manually'**
+  String get inventoryManualAddStoreName;
 
   /// No description provided for @inventoryBarcodePortionDialogTitle.
   ///

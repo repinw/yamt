@@ -33,6 +33,10 @@ class HomeInventoryFabFlow {
       builder: (sheetContext) {
         return InventoryReceiptActionsSheet(
           isCameraEnabled: isCameraEnabled,
+          onManualAddTap: () {
+            Navigator.of(sheetContext).pop();
+            unawaited(_openManualAddPage(context, l10n));
+          },
           onScanCameraTap: () {
             Navigator.of(sheetContext).pop();
             unawaited(_runFlow(context, ref, l10n, ReceiptInputSource.camera));
@@ -44,6 +48,17 @@ class HomeInventoryFabFlow {
         );
       },
     );
+  }
+
+  static Future<void> _openManualAddPage(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
+    final saved = await context.push<bool>(AppRoutes.homeInventoryManualAdd);
+    if (!context.mounted || saved != true) {
+      return;
+    }
+    _showSnackBar(context, l10n.inventoryManualAddSaved);
   }
 
   static Future<void> _runFlow(

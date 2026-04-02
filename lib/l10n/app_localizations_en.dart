@@ -42,6 +42,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryActionCameraUnsupported => 'Camera is not supported on this platform.';
 
   @override
+  String get inventoryActionManualAdd => 'Add food manually';
+
+  @override
   String get inventoryReceiptSelectionFailed => 'Could not select a receipt. Please try again.';
 
   @override
@@ -203,13 +206,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewProductSelectionLabel => 'Select product';
 
   @override
-  String get inventoryReceiptReviewManualDataAction => 'Enter barcode and nutrition';
+  String get inventoryReceiptReviewManualDataAction => 'Scan barcode or enter nutrition';
 
   @override
-  String get inventoryReceiptReviewManualDataTitle => 'Enter barcode and nutrition';
+  String get inventoryReceiptReviewManualDataTitle => 'Scan barcode or enter nutrition';
 
   @override
-  String get inventoryReceiptReviewManualDataHint => 'If you know the product, you can enter barcode and nutrition directly.';
+  String get inventoryReceiptReviewManualDataHint => 'Scan the barcode first. If nothing is found, you can then take a photo of the nutrition label or enter the values manually.';
 
   @override
   String get inventoryReceiptReviewManualDataSaveAction => 'Apply';
@@ -218,7 +221,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewManualDataBarcodeLabel => 'Barcode';
 
   @override
-  String get inventoryReceiptReviewManualDataRequired => 'Please enter at least a barcode or nutrition values.';
+  String get inventoryReceiptReviewManualDataRequired => 'Please scan a barcode or enter nutrition values.';
 
   @override
   String get inventoryReceiptReviewRequestEnrichmentAction => 'Let AI enrich it later';
@@ -327,6 +330,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryBarcodeScanUnsupported => 'Barcode scanning is currently supported on Android and iOS.';
+
+  @override
+  String get inventoryManualAddTitle => 'Add food manually';
+
+  @override
+  String get inventoryManualAddHint => 'Scan a barcode. Then you can review the product, save it, or add nutrition values.';
+
+  @override
+  String get inventoryManualAddResolving => 'Looking up barcode...';
+
+  @override
+  String get inventoryManualAddCandidateTitle => 'Select product';
+
+  @override
+  String get inventoryManualAddCandidateSubtitle => 'Multiple matching products were found for this barcode.';
+
+  @override
+  String get inventoryManualAddUnknownBrand => 'Unknown brand';
+
+  @override
+  String get inventoryManualAddNotFound => 'No matching product was found for this barcode.';
+
+  @override
+  String get inventoryManualAddLookupFailed => 'Barcode lookup failed. Please try again.';
+
+  @override
+  String get inventoryManualAddSaveFailed => 'The product could not be added to the inventory.';
+
+  @override
+  String get inventoryManualAddSaved => 'Product added to inventory.';
+
+  @override
+  String get inventoryManualAddStoreName => 'Added manually';
 
   @override
   String get inventoryBarcodePortionDialogTitle => 'Enter consumed amount';
