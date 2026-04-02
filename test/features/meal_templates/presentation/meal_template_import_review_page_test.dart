@@ -4,13 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/meal_templates/presentation/meal_template_import_review_page.dart';
 import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
-import 'package:yamt/features/prepared_meals/data/'
-    'prepared_meal_recipe_importer.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _FakePreparedMealTemplateRepository

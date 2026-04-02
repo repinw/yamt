@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/features/prepared_meals/presentation/'
+import 'package:yamt/features/inventory/presentation/'
     'prepared_meal_templates_page.dart';
 
 class MealTemplatesPage extends StatelessWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/prepared_meals/application/'
     'ingredient_inventory_matcher.dart';
-import 'package:yamt/features/prepared_meals/domain/inventory_item.dart';
 
 InventoryItem _item({
   required String id,
@@ -34,6 +34,18 @@ void main() {
     );
 
     expect(matches.map((item) => item.id), <String>['1', '2']);
+  });
+
+  test('prefers exact matches over broader partial matches', () {
+    final matches = matchInventoryItemsForIngredient(
+      ingredient: 'Milch',
+      inventoryItems: <InventoryItem>[
+        _item(id: '1', name: 'Hafermilch'),
+        _item(id: '2', name: 'Milch'),
+      ],
+    );
+
+    expect(matches.map((item) => item.id), <String>['2', '1']);
   });
 
   test('rankInventoryItemsForIngredient keeps non matches for manual pick', () {
@@ -78,6 +90,27 @@ void main() {
       );
 
       expect(rankedItems.map((item) => item.id).first, '2');
+    },
+  );
+
+  test('matchInventoryItemsForIngredient returns empty for blank input', () {
+    final matches = matchInventoryItemsForIngredient(
+      ingredient: '   ',
+      inventoryItems: <InventoryItem>[_item(id: '1', name: 'Milch')],
+    );
+
+    expect(matches, isEmpty);
+  });
+
+  test(
+    'matchInventoryItemsForIngredient returns empty for symbols only input',
+    () {
+      final matches = matchInventoryItemsForIngredient(
+        ingredient: '!@#',
+        inventoryItems: <InventoryItem>[_item(id: '1', name: 'Milch')],
+      );
+
+      expect(matches, isEmpty);
     },
   );
 }

@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:recipe_scraper/recipe_scraper.dart';
+import 'package:yamt/features/inventory/data/'
+    'prepared_meal_recipe_import_formatter.dart';
 
 class PreparedMealRecipeImport {
   const PreparedMealRecipeImport({
@@ -20,9 +22,16 @@ class PreparedMealRecipeImport {
 }
 
 class PreparedMealRecipeImporter {
-  const PreparedMealRecipeImporter();
+  const PreparedMealRecipeImporter({
+    this.formatter = const PreparedMealRecipeImportFormatter(),
+  });
 
-  Future<PreparedMealRecipeImport?> importRecipe(String recipeUrl) async {
+  final PreparedMealRecipeImportFormatter formatter;
+
+  Future<PreparedMealRecipeImport?> importRecipe(
+    String recipeUrl, {
+    String? localeName,
+  }) async {
     final recipe = await scrapeRecipe(recipeUrl);
     if (recipe == null) {
       return null;
@@ -30,13 +39,18 @@ class PreparedMealRecipeImporter {
 
     return PreparedMealRecipeImport(
       recipeUrl: recipe.url,
-      imageUrl: _normalizeRecipeImageUrl(
+      imageUrl: formatter.normalizeRecipeImageUrl(
         recipe.imageUrls.isEmpty ? null : recipe.imageUrls.first,
       ),
       title: recipe.title.trim(),
       servings: recipe.servings,
       ingredients: recipe.ingredients
-          .map(_formatIngredientLine)
+          .map(
+            (ingredient) => formatter.formatIngredientLine(
+              ingredient,
+              localeName: localeName,
+            ),
+          )
           .where((line) => line.isNotEmpty)
           .toList(growable: false),
       instructionsPreview: recipe.instructions
@@ -44,48 +58,6 @@ class PreparedMealRecipeImporter {
           .take(3)
           .toList(growable: false),
     );
-  }
-
-  String _formatIngredientLine(Ingredient ingredient) {
-    final parts = <String>[];
-    final quantity = _formatQuantity(ingredient.quantity);
-    if (quantity.isNotEmpty) {
-      parts.add(quantity);
-    }
-    final unit = ingredient.unit?.trim();
-    if (unit != null && unit.isNotEmpty) {
-      parts.add(unit);
-    }
-    final name = ingredient.name.trim();
-    if (name.isNotEmpty) {
-      parts.add(name);
-    }
-    return parts.join(' ').trim();
-  }
-
-  String _formatQuantity(num value) {
-    if (value == value.roundToDouble()) {
-      return value.toInt().toString();
-    }
-    return value.toString().replaceAll('.', ',');
-  }
-
-  String? _normalizeRecipeImageUrl(String? value) {
-    if (value == null) {
-      return null;
-    }
-
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) {
-      return null;
-    }
-    if (trimmed.startsWith('//')) {
-      return 'https:$trimmed';
-    }
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-      return trimmed;
-    }
-    return null;
   }
 }
 

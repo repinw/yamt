@@ -134,6 +134,7 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
   const _PreparedMealCardExpandedContent({
     required this.meal,
     required this.inventoryItems,
+    required this.pendingIngredientSuggestions,
     required this.colors,
     required this.isWorking,
     required this.enabled,
@@ -155,6 +156,7 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
 
   final PreparedMeal meal;
   final List<InventoryItem> inventoryItems;
+  final Map<String, List<InventoryItem>> pendingIngredientSuggestions;
   final ColorScheme colors;
   final bool isWorking;
   final bool enabled;
@@ -242,10 +244,9 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             ...meal.pendingRecipeIngredients.map((ingredient) {
-              final suggestions = matchInventoryItemsForIngredient(
-                ingredient: ingredient,
-                inventoryItems: inventoryItems,
-              ).take(3).toList(growable: false);
+              final suggestions =
+                  pendingIngredientSuggestions[ingredient] ??
+                  const <InventoryItem>[];
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: _PreparedMealPendingIngredientRow(

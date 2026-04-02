@@ -7,6 +7,8 @@ import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
+import 'package:yamt/features/inventory/application/'
+    'template_ingredient_parser.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -167,6 +169,7 @@ class PreparedMealsController extends _$PreparedMealsController {
             final inventoryRepository = ref.read(
               inventoryItemRepositoryProvider,
             );
+            final ingredientParser = ref.read(templateIngredientParserProvider);
             final currentMeals = await _currentMeals();
             final currentItems = await inventoryRepository.readAll();
 
@@ -176,6 +179,7 @@ class PreparedMealsController extends _$PreparedMealsController {
                 template: template,
                 totalPortions: totalPortions,
                 recipeIngredientAssignments: recipeIngredientAssignments,
+                ingredientParser: ingredientParser,
               );
               return _persistCreatedMeal(
                 inventoryRepository: inventoryRepository,
@@ -260,6 +264,7 @@ class PreparedMealsController extends _$PreparedMealsController {
 
     final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(() async {
+      final ingredientParser = ref.read(templateIngredientParserProvider);
       final currentMeals = await _currentMeals();
       final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
       if (mealIndex < 0) {
@@ -280,6 +285,7 @@ class PreparedMealsController extends _$PreparedMealsController {
         currentItems: currentItems,
         ingredient: trimmedIngredient,
         inventoryItemIds: normalizedItemIds,
+        ingredientParser: ingredientParser,
       );
       if (fillResult == null) {
         return false;
@@ -873,6 +879,7 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
   required PreparedMeal template,
   required int totalPortions,
   required Map<String, List<String>> recipeIngredientAssignments,
+  required TemplateIngredientParser ingredientParser,
 }) {
   final activeIngredients = template.recipeIngredients
       .where(
@@ -895,9 +902,9 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
         recipeIngredientAssignments[ingredient] ?? const <String>[];
     if (assignedItemIds.isEmpty) {
       pendingIngredients.add(
-        _pendingIngredientLabel(
+        ingredientParser.pendingIngredientLabel(
           originalIngredient: ingredient,
-          requirement: _parseTemplateIngredientRequirement(
+          requirement: ingredientParser.parseRequirement(
             ingredient: ingredient,
             selectedPortions: totalPortions,
             basePortions: template.totalPortions,
@@ -907,7 +914,7 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
       continue;
     }
 
-    final requirement = _parseTemplateIngredientRequirement(
+    final requirement = ingredientParser.parseRequirement(
       ingredient: ingredient,
       selectedPortions: totalPortions,
       basePortions: template.totalPortions,
@@ -983,7 +990,7 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
 
     if (!consumedAnyAmount) {
       pendingIngredients.add(
-        _pendingIngredientLabel(
+        ingredientParser.pendingIngredientLabel(
           originalIngredient: ingredient,
           requirement: requirement,
         ),
@@ -993,7 +1000,7 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
 
     if (remainingAmount > 0) {
       pendingIngredients.add(
-        _formatPendingIngredient(
+        ingredientParser.formatPendingIngredient(
           amount: remainingAmount,
           unit: requirement.unit,
           name: requirement.name,
@@ -1044,202 +1051,13 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
   );
 }
 
-class _TemplateIngredientRequirement {
-  const _TemplateIngredientRequirement({
-    required this.amount,
-    required this.unit,
-    required this.name,
-  });
-
-  final int amount;
-  final InventoryAmountUnit unit;
-  final String name;
-}
-
-_TemplateIngredientRequirement? _parseTemplateIngredientRequirement({
-  required String ingredient,
-  required int selectedPortions,
-  required int basePortions,
-}) {
-  if (selectedPortions < 1 || basePortions < 1) {
-    return null;
-  }
-
-  final trimmed = ingredient.trim();
-  final match = RegExp(
-    r'^(\d+(?:[.,]\d+)?|\d+/\d+)\s+(.+)$',
-  ).firstMatch(trimmed);
-  if (match == null) {
-    return null;
-  }
-
-  final rawQuantity = match.group(1);
-  final rawTail = match.group(2);
-  if (rawQuantity == null || rawTail == null) {
-    return null;
-  }
-
-  final parsedQuantity = _parseIngredientQuantity(rawQuantity);
-  if (parsedQuantity == null || parsedQuantity <= 0) {
-    return null;
-  }
-
-  final conversion = _resolveTemplateIngredientUnitConversion(rawTail);
-  if (conversion == null) {
-    return null;
-  }
-  final ingredientName = conversion.consumesUnitToken
-      ? rawTail.split(RegExp(r'\s+')).skip(1).join(' ').trim()
-      : rawTail.trim();
-  final scaledQuantity =
-      parsedQuantity * conversion.multiplier * selectedPortions / basePortions;
-  final roundedAmount = scaledQuantity.round();
-  if (roundedAmount < 1) {
-    return null;
-  }
-
-  return _TemplateIngredientRequirement(
-    amount: roundedAmount,
-    unit: conversion.unit,
-    name: ingredientName.isEmpty ? rawTail.trim() : ingredientName,
-  );
-}
-
-double? _parseIngredientQuantity(String rawValue) {
-  final normalized = rawValue.trim().replaceAll(',', '.');
-  if (normalized.contains('/')) {
-    final parts = normalized.split('/');
-    if (parts.length != 2) {
-      return null;
-    }
-    final numerator = double.tryParse(parts[0]);
-    final denominator = double.tryParse(parts[1]);
-    if (numerator == null || denominator == null || denominator == 0) {
-      return null;
-    }
-    return numerator / denominator;
-  }
-  return double.tryParse(normalized);
-}
-
-({InventoryAmountUnit unit, double multiplier, bool consumesUnitToken})?
-_resolveTemplateIngredientUnitConversion(String rawTail) {
-  final tokens = rawTail.split(RegExp(r'\s+'));
-  final normalizedToken = tokens.isEmpty
-      ? null
-      : _normalizeTemplateIngredientToken(tokens.first);
-  const unitConversions =
-      <String, ({InventoryAmountUnit unit, double multiplier})>{
-        'g': (unit: InventoryAmountUnit.gram, multiplier: 1),
-        'gr': (unit: InventoryAmountUnit.gram, multiplier: 1),
-        'gramm': (unit: InventoryAmountUnit.gram, multiplier: 1),
-        'gram': (unit: InventoryAmountUnit.gram, multiplier: 1),
-        'grams': (unit: InventoryAmountUnit.gram, multiplier: 1),
-        'kg': (unit: InventoryAmountUnit.gram, multiplier: 1000),
-        'kgs': (unit: InventoryAmountUnit.gram, multiplier: 1000),
-        'kilogramm': (unit: InventoryAmountUnit.gram, multiplier: 1000),
-        'kilogram': (unit: InventoryAmountUnit.gram, multiplier: 1000),
-        'kilograms': (unit: InventoryAmountUnit.gram, multiplier: 1000),
-        'ml': (unit: InventoryAmountUnit.milliliter, multiplier: 1),
-        'milliliter': (unit: InventoryAmountUnit.milliliter, multiplier: 1),
-        'milliliters': (unit: InventoryAmountUnit.milliliter, multiplier: 1),
-        'millilitre': (unit: InventoryAmountUnit.milliliter, multiplier: 1),
-        'millilitres': (unit: InventoryAmountUnit.milliliter, multiplier: 1),
-        'cl': (unit: InventoryAmountUnit.milliliter, multiplier: 10),
-        'dl': (unit: InventoryAmountUnit.milliliter, multiplier: 100),
-        'l': (unit: InventoryAmountUnit.milliliter, multiplier: 1000),
-        'liter': (unit: InventoryAmountUnit.milliliter, multiplier: 1000),
-        'liters': (unit: InventoryAmountUnit.milliliter, multiplier: 1000),
-        'litre': (unit: InventoryAmountUnit.milliliter, multiplier: 1000),
-        'litres': (unit: InventoryAmountUnit.milliliter, multiplier: 1000),
-        'pc': (unit: InventoryAmountUnit.piece, multiplier: 1),
-        'piece': (unit: InventoryAmountUnit.piece, multiplier: 1),
-        'pieces': (unit: InventoryAmountUnit.piece, multiplier: 1),
-        'stk': (unit: InventoryAmountUnit.piece, multiplier: 1),
-        'stuck': (unit: InventoryAmountUnit.piece, multiplier: 1),
-        'stueck': (unit: InventoryAmountUnit.piece, multiplier: 1),
-        'stück': (unit: InventoryAmountUnit.piece, multiplier: 1),
-        'stücke': (unit: InventoryAmountUnit.piece, multiplier: 1),
-      };
-  const unsupportedMeasureTokens = <String>{
-    'cup',
-    'cups',
-    'el',
-    'essloeffel',
-    'esslöffel',
-    'lb',
-    'lbs',
-    'ounce',
-    'ounces',
-    'oz',
-    'pinch',
-    'pinches',
-    'pound',
-    'pounds',
-    'prise',
-    'prisen',
-    'tbsp',
-    'teeloeffel',
-    'teelöffel',
-    'teaspoon',
-    'teaspoons',
-    'tl',
-    'tsp',
-  };
-
-  if (normalizedToken != null) {
-    final conversion = unitConversions[normalizedToken];
-    if (conversion != null) {
-      return (
-        unit: conversion.unit,
-        multiplier: conversion.multiplier,
-        consumesUnitToken: true,
-      );
-    }
-    if (unsupportedMeasureTokens.contains(normalizedToken)) {
-      return null;
-    }
-  }
-
-  return (
-    unit: InventoryAmountUnit.piece,
-    multiplier: 1,
-    consumesUnitToken: false,
-  );
-}
-
-String _normalizeTemplateIngredientToken(String value) {
-  return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9äöüß]+'), '');
-}
-
-String _pendingIngredientLabel({
-  required String originalIngredient,
-  required _TemplateIngredientRequirement? requirement,
-}) {
-  if (requirement == null) {
-    return originalIngredient.trim();
-  }
-  return _formatPendingIngredient(
-    amount: requirement.amount,
-    unit: requirement.unit,
-    name: requirement.name,
-  );
-}
-
-String _formatPendingIngredient({
-  required int amount,
-  required InventoryAmountUnit unit,
-  required String name,
-}) {
-  return '$amount ${unit.code} $name';
-}
-
 _PendingIngredientFillResult? _buildPendingIngredientFillResult({
   required List<InventoryItem> currentItems,
   required String ingredient,
   required List<String> inventoryItemIds,
+  required TemplateIngredientParser ingredientParser,
 }) {
-  final requirement = _parseTemplateIngredientRequirement(
+  final requirement = ingredientParser.parseRequirement(
     ingredient: ingredient,
     selectedPortions: 1,
     basePortions: 1,
@@ -1323,7 +1141,7 @@ _PendingIngredientFillResult? _buildPendingIngredientFillResult({
     nextItems: nextItems,
     components: components,
     remainingIngredient: remainingAmount > 0
-        ? _formatPendingIngredient(
+        ? ingredientParser.formatPendingIngredient(
             amount: remainingAmount,
             unit: requirement.unit,
             name: requirement.name,

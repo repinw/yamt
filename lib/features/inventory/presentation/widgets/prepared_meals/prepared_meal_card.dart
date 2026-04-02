@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer' show log;
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
@@ -98,9 +99,16 @@ class PreparedMealCard extends ConsumerStatefulWidget {
 
 class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
     with _PreparedMealCardActions {
+  static const _inventoryItemListEquality = ListEquality<InventoryItem>();
+  static const _ingredientListEquality = ListEquality<String>();
+
   var _isExpanded = false;
   var _isWorking = false;
   var _displayMode = _PreparedMealDisplayMode.perHundred;
+  List<InventoryItem> _cachedSuggestionInventoryItems = const <InventoryItem>[];
+  List<String> _cachedPendingIngredients = const <String>[];
+  Map<String, List<InventoryItem>> _cachedPendingSuggestions =
+      const <String, List<InventoryItem>>{};
 
   @override
   bool get expandedState => _isExpanded;
@@ -150,6 +158,10 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
     final inventoryItems =
         ref.watch(inventoryItemsControllerProvider).asData?.value ??
         const <InventoryItem>[];
+    final pendingIngredientSuggestions = _pendingIngredientSuggestions(
+      meal: meal,
+      inventoryItems: inventoryItems,
+    );
     final ingredientCount =
         meal.components.length + meal.pendingRecipeIngredients.length;
     final imageRef = maybeLocalImageAssetRef(meal.imageAssetId);
@@ -207,6 +219,8 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
                       ? _PreparedMealCardExpandedContent(
                           meal: meal,
                           inventoryItems: inventoryItems,
+                          pendingIngredientSuggestions:
+                              pendingIngredientSuggestions,
                           colors: colors,
                           isWorking: _isWorking,
                           enabled: widget.enabled,
@@ -246,5 +260,39 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
         previous.name != next.name ||
         previous.imageAssetId != next.imageAssetId ||
         previous.updatedAt != next.updatedAt;
+  }
+
+  Map<String, List<InventoryItem>> _pendingIngredientSuggestions({
+    required PreparedMeal meal,
+    required List<InventoryItem> inventoryItems,
+  }) {
+    if (_inventoryItemListEquality.equals(
+          inventoryItems,
+          _cachedSuggestionInventoryItems,
+        ) &&
+        _ingredientListEquality.equals(
+          meal.pendingRecipeIngredients,
+          _cachedPendingIngredients,
+        )) {
+      return _cachedPendingSuggestions;
+    }
+
+    final suggestions = <String, List<InventoryItem>>{
+      for (final ingredient in meal.pendingRecipeIngredients)
+        ingredient: matchInventoryItemsForIngredient(
+          ingredient: ingredient,
+          inventoryItems: inventoryItems,
+        ).take(3).toList(growable: false),
+    };
+    _cachedSuggestionInventoryItems = List<InventoryItem>.from(
+      inventoryItems,
+      growable: false,
+    );
+    _cachedPendingIngredients = List<String>.from(
+      meal.pendingRecipeIngredients,
+      growable: false,
+    );
+    _cachedPendingSuggestions = suggestions;
+    return suggestions;
   }
 }

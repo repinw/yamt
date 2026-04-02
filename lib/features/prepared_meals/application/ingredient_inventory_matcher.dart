@@ -1,4 +1,4 @@
-import 'package:yamt/features/prepared_meals/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 List<InventoryItem> resolveInventoryItemsById({
   required List<String> inventoryItemIds,

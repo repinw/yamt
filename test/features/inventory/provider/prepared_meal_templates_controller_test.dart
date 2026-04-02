@@ -81,7 +81,10 @@ class _FakePreparedMealRecipeImporter extends PreparedMealRecipeImporter {
   final PreparedMealRecipeImport? recipe;
 
   @override
-  Future<PreparedMealRecipeImport?> importRecipe(String recipeUrl) async {
+  Future<PreparedMealRecipeImport?> importRecipe(
+    String recipeUrl, {
+    String? localeName,
+  }) async {
     return recipe;
   }
 }

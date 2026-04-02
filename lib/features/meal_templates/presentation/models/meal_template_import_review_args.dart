@@ -1,5 +1,4 @@
-import 'package:yamt/features/prepared_meals/data/'
-    'prepared_meal_recipe_importer.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 
 class MealTemplateImportReviewArgs {
   const MealTemplateImportReviewArgs({

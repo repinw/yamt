@@ -7,16 +7,15 @@ import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/features/prepared_meals/application/'
     'ingredient_inventory_matcher.dart';
-import 'package:yamt/features/prepared_meals/domain/inventory_item.dart';
-import 'package:yamt/features/prepared_meals/domain/prepared_meal.dart';
-import 'package:yamt/features/prepared_meals/domain/product_image_url.dart';
-import 'package:yamt/features/prepared_meals/presentation/widgets/'
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/product_image_url.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
-import 'package:yamt/features/prepared_meals/provider/'
-    'prepared_meal_available_inventory_items_provider.dart';
-import 'package:yamt/features/prepared_meals/provider/'
-    'prepared_meals_controller.dart';
-import 'package:yamt/features/prepared_meals/provider/'
+import 'package:yamt/features/inventory/provider/'
+    'inventory_items_controller.dart';
+import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/provider/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/shoppinglist/provider/'
     'shopping_list_controller.dart';

@@ -116,6 +116,7 @@ class PreparedMealTemplatesController
     required String recipeUrl,
     String name = '',
     int? totalPortions,
+    String? localeName,
   }) {
     final normalizedRecipeUrl = _normalizeRecipeUrl(recipeUrl);
     if (normalizedRecipeUrl == null) {
@@ -133,7 +134,7 @@ class PreparedMealTemplatesController
             final currentTemplates = await _currentTemplates();
             final importedRecipe = await ref
                 .read(preparedMealRecipeImporterProvider)
-                .importRecipe(normalizedRecipeUrl);
+                .importRecipe(normalizedRecipeUrl, localeName: localeName);
             if (importedRecipe == null) {
               return const PreparedMealTemplateSaveResult.failure(
                 PreparedMealTemplateSaveFailureReason.recipeLoadFailed,
@@ -199,6 +200,7 @@ class PreparedMealTemplatesController
     required String recipeUrl,
     String name = '',
     int? totalPortions,
+    String? localeName,
   }) {
     final normalizedRecipeUrl = _normalizeRecipeUrl(recipeUrl);
     if (templateId.trim().isEmpty || normalizedRecipeUrl == null) {
@@ -239,7 +241,7 @@ class PreparedMealTemplatesController
             if (shouldReloadRecipe) {
               final importedRecipe = await ref
                   .read(preparedMealRecipeImporterProvider)
-                  .importRecipe(normalizedRecipeUrl);
+                  .importRecipe(normalizedRecipeUrl, localeName: localeName);
               if (importedRecipe == null) {
                 return const PreparedMealTemplateSaveResult.failure(
                   PreparedMealTemplateSaveFailureReason.recipeLoadFailed,

@@ -197,7 +197,7 @@ class PreparedMealTemplatesPage extends ConsumerWidget {
 
     final importedRecipe = await ref
         .read(preparedMealRecipeImporterProvider)
-        .importRecipe(draft.recipeUrl);
+        .importRecipe(draft.recipeUrl, localeName: l10n.localeName);
     if (!context.mounted) {
       return;
     }
@@ -247,6 +247,7 @@ class PreparedMealTemplatesPage extends ConsumerWidget {
           recipeUrl: draft.recipeUrl,
           name: draft.name,
           totalPortions: draft.totalPortions,
+          localeName: l10n.localeName,
         );
     if (!context.mounted) {
       return result.isSuccess;
