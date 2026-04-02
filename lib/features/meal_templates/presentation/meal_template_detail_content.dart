@@ -41,9 +41,9 @@ class _MealTemplateDetailContent extends ConsumerWidget {
     final storedImageBytes = imageRef == null
         ? null
         : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
-    final inventoryItems =
-        ref.watch(inventoryItemsControllerProvider).asData?.value ??
-        const <InventoryItem>[];
+    final inventoryItems = ref.watch(
+      preparedMealAvailableInventoryItemsProvider,
+    );
     final recipeSourceHost = _recipeSourceHost(template.recipeUrl);
     final ingredientRows = _buildIngredientRows(
       template: template,

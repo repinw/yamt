@@ -37,11 +37,12 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_edit_sheet.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/prepared_meals/application/'
+    'ingredient_inventory_matcher.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 part 'prepared_meal_card_display.dart';
 part 'prepared_meal_card_content.dart';
-part 'prepared_meal_card_helpers.dart';
 part 'prepared_meal_card_actions.dart';
 part 'prepared_meal_card_pending_ingredient.dart';
 

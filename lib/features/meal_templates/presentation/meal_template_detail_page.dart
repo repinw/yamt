@@ -5,15 +5,18 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/domain/product_image_url.dart';
-import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+import 'package:yamt/features/prepared_meals/application/'
+    'ingredient_inventory_matcher.dart';
+import 'package:yamt/features/prepared_meals/domain/inventory_item.dart';
+import 'package:yamt/features/prepared_meals/domain/prepared_meal.dart';
+import 'package:yamt/features/prepared_meals/domain/product_image_url.dart';
+import 'package:yamt/features/prepared_meals/presentation/widgets/'
     'prepared_meal_cover.dart';
-import 'package:yamt/features/inventory/provider/'
-    'inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
-import 'package:yamt/features/inventory/provider/'
+import 'package:yamt/features/prepared_meals/provider/'
+    'prepared_meal_available_inventory_items_provider.dart';
+import 'package:yamt/features/prepared_meals/provider/'
+    'prepared_meals_controller.dart';
+import 'package:yamt/features/prepared_meals/provider/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/shoppinglist/provider/'
     'shopping_list_controller.dart';
@@ -23,7 +26,6 @@ part 'meal_template_detail_content.dart';
 part 'meal_template_detail_ingredient_card.dart';
 part 'meal_template_detail_actions.dart';
 part 'meal_template_detail_helpers.dart';
-part 'meal_template_detail_matching.dart';
 
 class MealTemplateDetailPage extends ConsumerStatefulWidget {
   const MealTemplateDetailPage({super.key, required this.templateId});

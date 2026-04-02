@@ -1085,6 +1085,9 @@ _TemplateIngredientRequirement? _parseTemplateIngredientRequirement({
   }
 
   final conversion = _resolveTemplateIngredientUnitConversion(rawTail);
+  if (conversion == null) {
+    return null;
+  }
   final ingredientName = conversion.consumesUnitToken
       ? rawTail.split(RegExp(r'\s+')).skip(1).join(' ').trim()
       : rawTail.trim();
@@ -1119,28 +1122,70 @@ double? _parseIngredientQuantity(String rawValue) {
   return double.tryParse(normalized);
 }
 
-({InventoryAmountUnit unit, double multiplier, bool consumesUnitToken})
+({InventoryAmountUnit unit, double multiplier, bool consumesUnitToken})?
 _resolveTemplateIngredientUnitConversion(String rawTail) {
   final tokens = rawTail.split(RegExp(r'\s+'));
   final normalizedToken = tokens.isEmpty
       ? null
-      : tokens.first.trim().toLowerCase();
+      : _normalizeTemplateIngredientToken(tokens.first);
   const unitConversions =
       <String, ({InventoryAmountUnit unit, double multiplier})>{
         'g': (unit: InventoryAmountUnit.gram, multiplier: 1),
         'gr': (unit: InventoryAmountUnit.gram, multiplier: 1),
         'gramm': (unit: InventoryAmountUnit.gram, multiplier: 1),
         'gram': (unit: InventoryAmountUnit.gram, multiplier: 1),
+        'grams': (unit: InventoryAmountUnit.gram, multiplier: 1),
         'kg': (unit: InventoryAmountUnit.gram, multiplier: 1000),
+        'kgs': (unit: InventoryAmountUnit.gram, multiplier: 1000),
         'kilogramm': (unit: InventoryAmountUnit.gram, multiplier: 1000),
         'kilogram': (unit: InventoryAmountUnit.gram, multiplier: 1000),
+        'kilograms': (unit: InventoryAmountUnit.gram, multiplier: 1000),
         'ml': (unit: InventoryAmountUnit.milliliter, multiplier: 1),
+        'milliliter': (unit: InventoryAmountUnit.milliliter, multiplier: 1),
+        'milliliters': (unit: InventoryAmountUnit.milliliter, multiplier: 1),
+        'millilitre': (unit: InventoryAmountUnit.milliliter, multiplier: 1),
+        'millilitres': (unit: InventoryAmountUnit.milliliter, multiplier: 1),
         'cl': (unit: InventoryAmountUnit.milliliter, multiplier: 10),
         'dl': (unit: InventoryAmountUnit.milliliter, multiplier: 100),
         'l': (unit: InventoryAmountUnit.milliliter, multiplier: 1000),
         'liter': (unit: InventoryAmountUnit.milliliter, multiplier: 1000),
+        'liters': (unit: InventoryAmountUnit.milliliter, multiplier: 1000),
         'litre': (unit: InventoryAmountUnit.milliliter, multiplier: 1000),
+        'litres': (unit: InventoryAmountUnit.milliliter, multiplier: 1000),
+        'pc': (unit: InventoryAmountUnit.piece, multiplier: 1),
+        'piece': (unit: InventoryAmountUnit.piece, multiplier: 1),
+        'pieces': (unit: InventoryAmountUnit.piece, multiplier: 1),
+        'stk': (unit: InventoryAmountUnit.piece, multiplier: 1),
+        'stuck': (unit: InventoryAmountUnit.piece, multiplier: 1),
+        'stueck': (unit: InventoryAmountUnit.piece, multiplier: 1),
+        'stück': (unit: InventoryAmountUnit.piece, multiplier: 1),
+        'stücke': (unit: InventoryAmountUnit.piece, multiplier: 1),
       };
+  const unsupportedMeasureTokens = <String>{
+    'cup',
+    'cups',
+    'el',
+    'essloeffel',
+    'esslöffel',
+    'lb',
+    'lbs',
+    'ounce',
+    'ounces',
+    'oz',
+    'pinch',
+    'pinches',
+    'pound',
+    'pounds',
+    'prise',
+    'prisen',
+    'tbsp',
+    'teeloeffel',
+    'teelöffel',
+    'teaspoon',
+    'teaspoons',
+    'tl',
+    'tsp',
+  };
 
   if (normalizedToken != null) {
     final conversion = unitConversions[normalizedToken];
@@ -1151,6 +1196,9 @@ _resolveTemplateIngredientUnitConversion(String rawTail) {
         consumesUnitToken: true,
       );
     }
+    if (unsupportedMeasureTokens.contains(normalizedToken)) {
+      return null;
+    }
   }
 
   return (
@@ -1158,6 +1206,10 @@ _resolveTemplateIngredientUnitConversion(String rawTail) {
     multiplier: 1,
     consumesUnitToken: false,
   );
+}
+
+String _normalizeTemplateIngredientToken(String value) {
+  return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9äöüß]+'), '');
 }
 
 String _pendingIngredientLabel({

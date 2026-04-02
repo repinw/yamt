@@ -242,7 +242,7 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             ...meal.pendingRecipeIngredients.map((ingredient) {
-              final suggestions = _matchingInventoryItemsForIngredient(
+              final suggestions = matchInventoryItemsForIngredient(
                 ingredient: ingredient,
                 inventoryItems: inventoryItems,
               ).take(3).toList(growable: false);

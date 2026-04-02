@@ -113,20 +113,10 @@ Future<List<String>?> _showPendingIngredientSelectionSheet({
   required List<InventoryItem> inventoryItems,
 }) {
   final l10n = AppLocalizations.of(context)!;
-  final sortedItems = inventoryItems
-      .where((item) => !item.isFullyConsumed)
-      .toList(growable: false);
-  sortedItems.sort((left, right) {
-    final rightScore = _ingredientMatchScore(
-      ingredient: ingredient,
-      item: right,
-    );
-    final leftScore = _ingredientMatchScore(ingredient: ingredient, item: left);
-    if (rightScore != leftScore) {
-      return rightScore.compareTo(leftScore);
-    }
-    return left.name.toLowerCase().compareTo(right.name.toLowerCase());
-  });
+  final sortedItems = rankInventoryItemsForIngredient(
+    ingredient: ingredient,
+    inventoryItems: inventoryItems,
+  );
 
   return showModalBottomSheet<List<String>>(
     context: context,
@@ -221,4 +211,11 @@ Future<List<String>?> _showPendingIngredientSelectionSheet({
       );
     },
   );
+}
+
+String _pendingIngredientInventoryAmount(InventoryItem item) {
+  if (item.usesAmountProgress && item.amountUnit != null) {
+    return '${item.currentAmount} ${item.amountUnit!.code}';
+  }
+  return '${item.quantity}x';
 }

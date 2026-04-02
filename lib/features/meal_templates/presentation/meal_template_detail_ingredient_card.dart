@@ -27,7 +27,7 @@ class _MealTemplateIngredientCardState
     final l10n = AppLocalizations.of(context)!;
     final textTheme = Theme.of(context).textTheme;
     final colors = Theme.of(context).colorScheme;
-    final assignedItems = _resolveAssignedItems(
+    final assignedItems = resolveInventoryItemsById(
       inventoryItemIds: widget.row.assignedInventoryItemIds,
       inventoryItems: widget.inventoryItems,
     );
@@ -35,8 +35,8 @@ class _MealTemplateIngredientCardState
         widget.row.assignedInventoryItemIds.length - assignedItems.length;
     final suggestions = widget.row.isIgnored
         ? const <InventoryItem>[]
-        : _matchingInventoryItems(
-            ingredientName: widget.row.name,
+        : matchInventoryItemsForIngredient(
+            ingredient: widget.row.name,
             inventoryItems: widget.inventoryItems,
           ).take(3).toList(growable: false);
     final previewImageUrl = _resolvePreviewImageUrl(

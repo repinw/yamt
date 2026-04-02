@@ -1,6 +1,39 @@
-part of 'prepared_meal_card.dart';
+import 'package:yamt/features/prepared_meals/domain/inventory_item.dart';
 
-List<InventoryItem> _matchingInventoryItemsForIngredient({
+List<InventoryItem> resolveInventoryItemsById({
+  required List<String> inventoryItemIds,
+  required List<InventoryItem> inventoryItems,
+}) {
+  if (inventoryItemIds.isEmpty || inventoryItems.isEmpty) {
+    return const <InventoryItem>[];
+  }
+
+  final itemsById = <String, InventoryItem>{
+    for (final item in inventoryItems) item.id: item,
+  };
+  return inventoryItemIds
+      .map((itemId) => itemsById[itemId])
+      .whereType<InventoryItem>()
+      .toList(growable: false);
+}
+
+List<InventoryItem> matchInventoryItemsForIngredient({
+  required String ingredient,
+  required List<InventoryItem> inventoryItems,
+}) {
+  return rankInventoryItemsForIngredient(
+        ingredient: ingredient,
+        inventoryItems: inventoryItems,
+      )
+      .where(
+        (item) =>
+            ingredientInventoryMatchScore(ingredient: ingredient, item: item) >
+            0,
+      )
+      .toList(growable: false);
+}
+
+List<InventoryItem> rankInventoryItemsForIngredient({
   required String ingredient,
   required List<InventoryItem> inventoryItems,
 }) {
@@ -13,25 +46,23 @@ List<InventoryItem> _matchingInventoryItemsForIngredient({
 
   final sortedCandidates = List<InventoryItem>.from(candidates);
   sortedCandidates.sort((left, right) {
-    final rightScore = _ingredientMatchScore(
+    final rightScore = ingredientInventoryMatchScore(
       ingredient: ingredient,
       item: right,
     );
-    final leftScore = _ingredientMatchScore(ingredient: ingredient, item: left);
+    final leftScore = ingredientInventoryMatchScore(
+      ingredient: ingredient,
+      item: left,
+    );
     if (rightScore != leftScore) {
       return rightScore.compareTo(leftScore);
     }
     return left.name.toLowerCase().compareTo(right.name.toLowerCase());
   });
-
-  return sortedCandidates
-      .where(
-        (item) => _ingredientMatchScore(ingredient: ingredient, item: item) > 0,
-      )
-      .toList(growable: false);
+  return sortedCandidates;
 }
 
-int _ingredientMatchScore({
+int ingredientInventoryMatchScore({
   required String ingredient,
   required InventoryItem item,
 }) {
@@ -74,34 +105,33 @@ String _normalizeMatchText(String value) {
 
 Set<String> _matchTokens(String value) {
   const stopWords = <String>{
+    'and',
+    'fresh',
     'frisch',
     'frische',
     'frischer',
     'frisches',
+    'large',
     'klein',
     'kleine',
     'kleiner',
+    'little',
     'gross',
     'grosse',
     'grosses',
     'groß',
     'große',
     'großes',
+    'small',
     'etwas',
     'zum',
     'zur',
     'und',
+    'with',
   };
   return value
       .split(RegExp(r'\s+'))
       .map((token) => token.trim())
       .where((token) => token.length >= 3 && !stopWords.contains(token))
       .toSet();
-}
-
-String _pendingIngredientInventoryAmount(InventoryItem item) {
-  if (item.usesAmountProgress && item.amountUnit != null) {
-    return '${item.currentAmount} ${item.amountUnit!.code}';
-  }
-  return '${item.quantity}x';
 }

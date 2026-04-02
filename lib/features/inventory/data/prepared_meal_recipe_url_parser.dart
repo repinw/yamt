@@ -1,4 +1,9 @@
 String? normalizePreparedMealRecipeUrl(String value) {
+  final trimmedValue = value.trim();
+  if (_hasUnsupportedExplicitScheme(trimmedValue)) {
+    return null;
+  }
+
   final candidate = _extractRecipeUrlCandidate(value);
   if (candidate == null) {
     return null;
@@ -18,6 +23,19 @@ String? normalizePreparedMealRecipeUrl(String value) {
     return null;
   }
   return _withoutQueryAndFragment(uri);
+}
+
+bool _hasUnsupportedExplicitScheme(String value) {
+  final schemeMatch = RegExp(
+    r'^\s*([a-z][a-z0-9+\-.]*):\/\/',
+    caseSensitive: false,
+  ).firstMatch(value);
+  if (schemeMatch == null) {
+    return false;
+  }
+
+  final scheme = schemeMatch.group(1)?.toLowerCase();
+  return scheme != null && scheme != 'http' && scheme != 'https';
 }
 
 String? _extractRecipeUrlCandidate(String value) {

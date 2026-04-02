@@ -7,23 +7,10 @@ Future<void> _selectInventoryAssignments({
   required void Function(List<String> inventoryItemIds) onAssignmentChanged,
 }) async {
   final l10n = AppLocalizations.of(context)!;
-  final sortedItems = inventoryItems
-      .where((item) => !item.isFullyConsumed)
-      .toList(growable: false);
-  sortedItems.sort((left, right) {
-    final rightScore = _ingredientMatchScore(
-      ingredientName: row.name,
-      item: right,
-    );
-    final leftScore = _ingredientMatchScore(
-      ingredientName: row.name,
-      item: left,
-    );
-    if (rightScore != leftScore) {
-      return rightScore.compareTo(leftScore);
-    }
-    return left.name.toLowerCase().compareTo(right.name.toLowerCase());
-  });
+  final sortedItems = rankInventoryItemsForIngredient(
+    ingredient: row.name,
+    inventoryItems: inventoryItems,
+  );
 
   final selectedItemIds = await showModalBottomSheet<List<String>>(
     context: context,
