@@ -49,9 +49,16 @@ PreparedMeal _meal() {
 }
 
 class _ActionDialogsHarness extends StatefulWidget {
-  const _ActionDialogsHarness({required this.meal});
+  const _ActionDialogsHarness({required this.meal, this.pickLoggedDay});
 
   final PreparedMeal meal;
+  final Future<DateTime?> Function({
+    required BuildContext context,
+    required DateTime initialDate,
+    required DateTime firstDate,
+    required DateTime lastDate,
+  })?
+  pickLoggedDay;
 
   @override
   State<_ActionDialogsHarness> createState() => _ActionDialogsHarnessState();
@@ -70,6 +77,7 @@ class _ActionDialogsHarnessState extends State<_ActionDialogsHarness> {
               final result = await showPreparedMealEatDialog(
                 context,
                 widget.meal,
+                pickLoggedDay: widget.pickLoggedDay,
               );
               if (!mounted || result == null) {
                 return;
@@ -109,6 +117,12 @@ class _ActionDialogsHarnessState extends State<_ActionDialogsHarness> {
 }
 
 void main() {
+  String formatTodayLabel(WidgetTester tester) {
+    final context = tester.element(find.byType(Scaffold).first);
+    final material = MaterialLocalizations.of(context);
+    return material.formatMediumDate(DateUtils.dateOnly(DateTime.now()));
+  }
+
   testWidgets('eat dialog shows snackbar for invalid portions', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -160,6 +174,95 @@ void main() {
 
     expect(find.textContaining('eat:1:'), findsOneWidget);
     expect(find.textContaining(':$today'), findsOneWidget);
+  });
+
+  testWidgets('eat dialog keeps selected day when date picker is cancelled', (
+    tester,
+  ) async {
+    var pickerCalls = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _ActionDialogsHarness(
+          meal: _meal(),
+          pickLoggedDay:
+              ({
+                required context,
+                required initialDate,
+                required firstDate,
+                required lastDate,
+              }) async {
+                pickerCalls += 1;
+                return null;
+              },
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open eat'));
+    await tester.pumpAndSettle();
+
+    final todayLabel = formatTodayLabel(tester);
+    expect(find.text(todayLabel), findsOneWidget);
+
+    await tester.tap(find.text(todayLabel));
+    await tester.pumpAndSettle();
+
+    expect(pickerCalls, 1);
+    expect(find.text(todayLabel), findsOneWidget);
+
+    await tester.tap(find.text('Eat'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining(
+        ':${DateTime.now().toIso8601String().substring(0, 10)}',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('eat dialog ignores future dates and passes today as limit', (
+    tester,
+  ) async {
+    DateTime? capturedLastDate;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _ActionDialogsHarness(
+          meal: _meal(),
+          pickLoggedDay:
+              ({
+                required context,
+                required initialDate,
+                required firstDate,
+                required lastDate,
+              }) async {
+                capturedLastDate = lastDate;
+                return lastDate.add(const Duration(days: 1));
+              },
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open eat'));
+    await tester.pumpAndSettle();
+
+    final today = DateUtils.dateOnly(DateTime.now());
+    final todayLabel = formatTodayLabel(tester);
+    expect(find.text(todayLabel), findsOneWidget);
+
+    await tester.tap(find.text(todayLabel));
+    await tester.pumpAndSettle();
+
+    expect(capturedLastDate, today);
+    expect(find.text(todayLabel), findsOneWidget);
   });
 
   testWidgets('portion dialog returns selected amount on confirm', (

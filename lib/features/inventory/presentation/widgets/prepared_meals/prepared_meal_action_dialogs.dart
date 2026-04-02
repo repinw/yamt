@@ -9,6 +9,13 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const _defaultPreparedMealPortions = 1;
 const _preparedMealDialogsLogName = 'PreparedMealDialogs';
+typedef PreparedMealDayPicker =
+    Future<DateTime?> Function({
+      required BuildContext context,
+      required DateTime initialDate,
+      required DateTime firstDate,
+      required DateTime lastDate,
+    });
 
 class PreparedMealEatDialogResult {
   const PreparedMealEatDialogResult({
@@ -26,12 +33,16 @@ Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
   BuildContext context,
   PreparedMeal meal, {
   bool useRootNavigator = false,
+  PreparedMealDayPicker? pickLoggedDay,
 }) {
   return showDialog<PreparedMealEatDialogResult>(
     context: context,
     useRootNavigator: useRootNavigator,
     builder: (dialogContext) {
-      return _PreparedMealEatDialog(meal: meal);
+      return _PreparedMealEatDialog(
+        meal: meal,
+        pickLoggedDay: pickLoggedDay ?? _showPreparedMealDayPicker,
+      );
     },
   );
 }
@@ -52,9 +63,13 @@ Future<int?> showPreparedMealPortionDialog({
 }
 
 class _PreparedMealEatDialog extends StatefulWidget {
-  const _PreparedMealEatDialog({required this.meal});
+  const _PreparedMealEatDialog({
+    required this.meal,
+    required this.pickLoggedDay,
+  });
 
   final PreparedMeal meal;
+  final PreparedMealDayPicker pickLoggedDay;
 
   @override
   State<_PreparedMealEatDialog> createState() => _PreparedMealEatDialogState();
@@ -168,21 +183,42 @@ class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
   }
 
   Future<void> _pickLoggedDay() async {
+    final firstDate = DateTime(2000);
     final lastDate = DateUtils.dateOnly(DateTime.now());
-    final pickedDate = await showDatePicker(
+    final pickedDate = await widget.pickLoggedDay(
       context: context,
       initialDate: _selectedDay.isAfter(lastDate) ? lastDate : _selectedDay,
-      firstDate: DateTime(2000),
+      firstDate: firstDate,
       lastDate: lastDate,
     );
     if (!mounted || pickedDate == null) {
       return;
     }
 
+    final normalizedDate = DateUtils.dateOnly(pickedDate);
+    if (normalizedDate.isBefore(firstDate) ||
+        normalizedDate.isAfter(lastDate)) {
+      return;
+    }
+
     setState(() {
-      _selectedDay = DateUtils.dateOnly(pickedDate);
+      _selectedDay = normalizedDate;
     });
   }
+}
+
+Future<DateTime?> _showPreparedMealDayPicker({
+  required BuildContext context,
+  required DateTime initialDate,
+  required DateTime firstDate,
+  required DateTime lastDate,
+}) {
+  return showDatePicker(
+    context: context,
+    initialDate: initialDate,
+    firstDate: firstDate,
+    lastDate: lastDate,
+  );
 }
 
 class _PreparedMealPortionDialog extends StatefulWidget {

@@ -72,10 +72,10 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
 
     await _runAction(
       () => widget.onEatPressed(
-        widget.meal.id,
-        result.portions,
-        result.mealType,
-        result.loggedDay,
+        mealId: widget.meal.id,
+        portions: result.portions,
+        mealType: result.mealType,
+        loggedDay: result.loggedDay,
       ),
       failureMessage: l10n.preparedMealActionFailed,
     );
