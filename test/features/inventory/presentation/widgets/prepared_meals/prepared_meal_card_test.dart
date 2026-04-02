@@ -9,11 +9,52 @@ import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../../support/fake_local_image_store.dart';
+
+class _FakeInventoryItemRepository implements InventoryItemRepository {
+  _FakeInventoryItemRepository({required List<InventoryItem> initialItems})
+    : _items = List<InventoryItem>.from(initialItems);
+
+  final _controller = StreamController<List<InventoryItem>>.broadcast();
+  List<InventoryItem> _items;
+
+  @override
+  Stream<List<InventoryItem>> watchAll() {
+    return Stream<List<InventoryItem>>.multi((controller) {
+      controller.add(List<InventoryItem>.from(_items));
+      final subscription = _controller.stream.listen(controller.add);
+      controller.onCancel = () {
+        unawaited(subscription.cancel());
+      };
+    });
+  }
+
+  @override
+  Future<List<InventoryItem>> readAll() async {
+    return List<InventoryItem>.from(_items);
+  }
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async {
+    _items = List<InventoryItem>.from(items);
+    _controller.add(List<InventoryItem>.from(_items));
+    return true;
+  }
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async {
+    _items = <InventoryItem>[..._items, ...items];
+    _controller.add(List<InventoryItem>.from(_items));
+    return true;
+  }
+
+  Future<void> dispose() => _controller.close();
+}
 
 PreparedMeal _meal() {
   final sourceItem = InventoryItem.create(
@@ -71,6 +112,18 @@ PreparedMeal _meal() {
 PreparedMeal _incompleteMeal() {
   return _meal().copyWith(
     pendingRecipeIngredients: const <String>['Sour cream'],
+  );
+}
+
+InventoryItem _inventorySuggestion({required String id, required String name}) {
+  return InventoryItem.create(
+    id: id,
+    name: name,
+    entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
+    storeName: 'Store',
+    quantity: 1,
+    initialQuantity: 1,
+    imageUrl: '//images.example.com/sour-cream.jpg',
   );
 }
 
@@ -619,5 +672,112 @@ void main() {
     );
     expect(find.byTooltip('Add ingredient'), findsOneWidget);
     expect(find.byTooltip('Ignore ingredient'), findsOneWidget);
+  });
+
+  testWidgets('PreparedMealCard assigns a pending ingredient', (tester) async {
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[
+        _inventorySuggestion(id: 'sour-cream', name: 'Sour cream'),
+      ],
+    );
+    addTearDown(repository.dispose);
+    String? filledMealId;
+    String? filledIngredient;
+    List<String>? filledItemIds;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _incompleteMeal(),
+                onEatPressed: (mealId, portions, mealType) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+                onFillPendingIngredientPressed:
+                    (mealId, ingredient, inventoryItemIds) async {
+                      filledMealId = mealId;
+                      filledIngredient = ingredient;
+                      filledItemIds = inventoryItemIds;
+                      return true;
+                    },
+                onIgnorePendingIngredientPressed: (mealId, ingredient) async =>
+                    true,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Rice bowl'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Add ingredient'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(CheckboxListTile));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Apply'));
+    await tester.pumpAndSettle();
+
+    expect(filledMealId, 'meal-1');
+    expect(filledIngredient, 'Sour cream');
+    expect(filledItemIds, <String>['sour-cream']);
+  });
+
+  testWidgets('PreparedMealCard ignores a pending ingredient', (tester) async {
+    String? ignoredMealId;
+    String? ignoredIngredient;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _incompleteMeal(),
+                onEatPressed: (mealId, portions, mealType) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+                onFillPendingIngredientPressed:
+                    (mealId, ingredient, inventoryItemIds) async => true,
+                onIgnorePendingIngredientPressed: (mealId, ingredient) async {
+                  ignoredMealId = mealId;
+                  ignoredIngredient = ingredient;
+                  return true;
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Rice bowl'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Ignore ingredient'));
+    await tester.pumpAndSettle();
+
+    expect(ignoredMealId, 'meal-1');
+    expect(ignoredIngredient, 'Sour cream');
   });
 }

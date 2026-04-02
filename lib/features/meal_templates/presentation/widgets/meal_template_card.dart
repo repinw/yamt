@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_component_avatar.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
+import 'package:yamt/features/meal_templates/application/'
+    'recipe_source_host.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class PreparedMealTemplateCard extends ConsumerWidget {
@@ -34,7 +36,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
         ? null
         : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
     final metadata = _buildMetadata(l10n);
-    final recipeSourceHost = _recipeSourceHost();
+    final recipeHost = recipeSourceHost(template.recipeUrl);
 
     return DecoratedBox(
       decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
@@ -94,7 +96,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.md),
-            if (recipeSourceHost != null) ...[
+            if (recipeHost != null) ...[
               DecoratedBox(
                 decoration: BoxDecoration(
                   color: colors.secondaryContainer,
@@ -106,7 +108,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                     vertical: AppSpacing.xs,
                   ),
                   child: Text(
-                    l10n.preparedMealTemplateRecipeSource(recipeSourceHost),
+                    l10n.preparedMealTemplateRecipeSource(recipeHost),
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -189,18 +191,5 @@ class PreparedMealTemplateCard extends ConsumerWidget {
     }
     parts.add(l10n.preparedMealTemplatePortions(template.totalPortions));
     return parts.join(' • ');
-  }
-
-  String? _recipeSourceHost() {
-    final recipeUrl = template.recipeUrl;
-    if (recipeUrl == null || recipeUrl.isEmpty) {
-      return null;
-    }
-
-    final uri = Uri.tryParse(recipeUrl);
-    if (uri == null || uri.host.isEmpty) {
-      return null;
-    }
-    return uri.host.replaceFirst(RegExp(r'^www\.'), '');
   }
 }

@@ -45,6 +45,32 @@ void main() {
     expect(requirement.name, 'Nudeln');
   });
 
+  test('parses gram requirements without a space before the unit', () {
+    final requirement = parser.parseRequirement(
+      ingredient: '500g Nudeln',
+      selectedPortions: 1,
+      basePortions: 1,
+    );
+
+    expect(requirement, isNotNull);
+    expect(requirement!.amount, 500);
+    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.name, 'Nudeln');
+  });
+
+  test('parses mixed fractional requirements', () {
+    final requirement = parser.parseRequirement(
+      ingredient: '1 1/2 kg Kartoffeln',
+      selectedPortions: 1,
+      basePortions: 1,
+    );
+
+    expect(requirement, isNotNull);
+    expect(requirement!.amount, 1500);
+    expect(requirement.unit, InventoryAmountUnit.gram);
+    expect(requirement.name, 'Kartoffeln');
+  });
+
   test('returns null for unsupported measure words', () {
     final requirement = parser.parseRequirement(
       ingredient: '2 cups Mehl',

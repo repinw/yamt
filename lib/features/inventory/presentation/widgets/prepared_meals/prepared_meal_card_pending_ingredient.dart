@@ -76,12 +76,13 @@ class _PendingIngredientPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final normalizedImageUrl = normalizeProductImageUrl(imageUrl);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: SizedBox.square(
         dimension: 44,
-        child: imageUrl == null
+        child: normalizedImageUrl == null
             ? ColoredBox(
                 color: colors.surfaceContainerHighest,
                 child: Icon(
@@ -90,7 +91,7 @@ class _PendingIngredientPreview extends StatelessWidget {
                 ),
               )
             : Image.network(
-                imageUrl!,
+                normalizedImageUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (_, error, stackTrace) {
                   return ColoredBox(

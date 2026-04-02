@@ -157,6 +157,10 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
     required String ingredient,
     required List<InventoryItem> inventoryItems,
   }) async {
+    if (widget.onFillPendingIngredientPressed == null) {
+      return;
+    }
+
     final selectedItemIds = await _showPendingIngredientSelectionSheet(
       context: context,
       ingredient: ingredient,
@@ -181,6 +185,10 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
   Future<void> _runIgnorePendingIngredientFlow({
     required String ingredient,
   }) async {
+    if (widget.onIgnorePendingIngredientPressed == null) {
+      return;
+    }
+
     await _runAction(
       () =>
           widget.onIgnorePendingIngredientPressed!(widget.meal.id, ingredient),

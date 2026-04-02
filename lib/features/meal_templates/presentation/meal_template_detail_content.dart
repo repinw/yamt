@@ -44,7 +44,7 @@ class _MealTemplateDetailContent extends ConsumerWidget {
     final inventoryItems =
         ref.watch(inventoryItemsControllerProvider).asData?.value ??
         const <InventoryItem>[];
-    final recipeSourceHost = _recipeSourceHost(template.recipeUrl);
+    final recipeHost = recipeSourceHost(template.recipeUrl);
     final ingredientRows = _buildIngredientRows(
       template: template,
       recipeIngredientAssignments: recipeIngredientAssignments,
@@ -75,9 +75,9 @@ class _MealTemplateDetailContent extends ConsumerWidget {
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  if (recipeSourceHost != null)
+                  if (recipeHost != null)
                     Text(
-                      l10n.preparedMealTemplateRecipeSource(recipeSourceHost),
+                      l10n.preparedMealTemplateRecipeSource(recipeHost),
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   const SizedBox(height: AppSpacing.xs),
@@ -143,9 +143,24 @@ class _MealTemplateDetailContent extends ConsumerWidget {
             children: [
               for (final row in ingredientRows) ...[
                 _MealTemplateIngredientCard(
-                  templateId: template.id,
                   row: row,
                   inventoryItems: inventoryItems,
+                  onAddToShoppingListPressed: row.rawIngredient == null
+                      ? null
+                      : () => _addIngredientToShoppingList(
+                          context: context,
+                          ref: ref,
+                          shoppingListLabel: _shoppingListLabel(row),
+                        ),
+                  onToggleIgnoredPressed: row.rawIngredient == null
+                      ? null
+                      : () => _toggleIgnored(
+                          context: context,
+                          ref: ref,
+                          templateId: template.id,
+                          ingredient: row.rawIngredient!,
+                          isIgnored: !row.isIgnored,
+                        ),
                   onAssignmentChanged: row.rawIngredient == null
                       ? null
                       : (inventoryItemIds) {

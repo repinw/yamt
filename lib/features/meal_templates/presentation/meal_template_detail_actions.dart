@@ -112,10 +112,10 @@ Future<void> _selectInventoryAssignments({
 
 Future<void> _addIngredientToShoppingList({
   required BuildContext context,
+  required WidgetRef ref,
   required String shoppingListLabel,
 }) async {
-  final container = ProviderScope.containerOf(context, listen: false);
-  final added = await container
+  final added = await ref
       .read(shoppingListControllerProvider.notifier)
       .addItem(name: shoppingListLabel);
   if (!context.mounted || added) {
@@ -132,6 +132,7 @@ Future<void> _addIngredientToShoppingList({
 
 Future<void> _addTemplateIngredientsToShoppingList({
   required BuildContext context,
+  required WidgetRef ref,
   required List<_IngredientRowData> ingredientRows,
 }) async {
   final rowsToAdd = ingredientRows
@@ -141,8 +142,7 @@ Future<void> _addTemplateIngredientsToShoppingList({
     return;
   }
 
-  final container = ProviderScope.containerOf(context, listen: false);
-  final controller = container.read(shoppingListControllerProvider.notifier);
+  final controller = ref.read(shoppingListControllerProvider.notifier);
   var addedCount = 0;
 
   for (final row in rowsToAdd) {
@@ -172,12 +172,12 @@ Future<void> _addTemplateIngredientsToShoppingList({
 
 Future<void> _toggleIgnored({
   required BuildContext context,
+  required WidgetRef ref,
   required String templateId,
   required String ingredient,
   required bool isIgnored,
 }) async {
-  final container = ProviderScope.containerOf(context, listen: false);
-  final updated = await container
+  final updated = await ref
       .read(preparedMealTemplatesControllerProvider.notifier)
       .setRecipeIngredientIgnored(
         templateId: templateId,

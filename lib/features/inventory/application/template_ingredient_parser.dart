@@ -33,7 +33,7 @@ class TemplateIngredientParser {
 
     final trimmed = ingredient.trim();
     final match = RegExp(
-      r'^(\d+(?:[.,]\d+)?|\d+/\d+)\s+(.+)$',
+      r'^(\d+\s+\d+/\d+|\d+/\d+|\d+(?:[.,]\d+)?)\s*(.+)$',
     ).firstMatch(trimmed);
     if (match == null) {
       return null;
@@ -99,6 +99,22 @@ class TemplateIngredientParser {
 
   double? _parseQuantity(String rawValue) {
     final normalized = rawValue.trim().replaceAll(',', '.');
+    final mixedFractionMatch = RegExp(
+      r'^(\d+)\s+(\d+)/(\d+)$',
+    ).firstMatch(normalized);
+    if (mixedFractionMatch != null) {
+      final whole = double.tryParse(mixedFractionMatch.group(1)!);
+      final numerator = double.tryParse(mixedFractionMatch.group(2)!);
+      final denominator = double.tryParse(mixedFractionMatch.group(3)!);
+      if (whole == null ||
+          numerator == null ||
+          denominator == null ||
+          denominator == 0) {
+        return null;
+      }
+      return whole + (numerator / denominator);
+    }
+
     if (normalized.contains('/')) {
       final parts = normalized.split('/');
       if (parts.length != 2) {

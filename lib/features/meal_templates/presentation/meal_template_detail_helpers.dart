@@ -217,18 +217,6 @@ String _formatAmount(double value) {
   return value.toStringAsFixed(1).replaceAll('.', ',');
 }
 
-String? _recipeSourceHost(String? recipeUrl) {
-  if (recipeUrl == null || recipeUrl.isEmpty) {
-    return null;
-  }
-
-  final uri = Uri.tryParse(recipeUrl);
-  if (uri == null || uri.host.isEmpty) {
-    return null;
-  }
-  return uri.host.replaceFirst(RegExp(r'^www\.'), '');
-}
-
 String _inventoryAmountLabel(InventoryItem item) {
   if (item.usesAmountProgress && item.amountUnit != null) {
     return '${item.currentAmount} ${item.amountUnit!.code}';

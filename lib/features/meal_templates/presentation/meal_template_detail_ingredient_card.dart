@@ -2,15 +2,17 @@ part of 'meal_template_detail_page.dart';
 
 class _MealTemplateIngredientCard extends StatefulWidget {
   const _MealTemplateIngredientCard({
-    required this.templateId,
     required this.row,
     required this.inventoryItems,
+    this.onAddToShoppingListPressed,
+    this.onToggleIgnoredPressed,
     this.onAssignmentChanged,
   });
 
-  final String templateId;
   final _IngredientRowData row;
   final List<InventoryItem> inventoryItems;
+  final Future<void> Function()? onAddToShoppingListPressed;
+  final Future<void> Function()? onToggleIgnoredPressed;
   final void Function(List<String> inventoryItemIds)? onAssignmentChanged;
 
   @override
@@ -164,22 +166,14 @@ class _MealTemplateIngredientCardState
                     OutlinedButton.icon(
                       onPressed: widget.row.isIgnored
                           ? null
-                          : () => _addIngredientToShoppingList(
-                              context: context,
-                              shoppingListLabel: _shoppingListLabel(widget.row),
-                            ),
+                          : widget.onAddToShoppingListPressed,
                       icon: const Icon(Icons.shopping_cart_outlined),
                       label: Text(
                         l10n.preparedMealTemplateDetailAddToShoppingListAction,
                       ),
                     ),
                     TextButton(
-                      onPressed: () => _toggleIgnored(
-                        context: context,
-                        templateId: widget.templateId,
-                        ingredient: widget.row.rawIngredient!,
-                        isIgnored: !widget.row.isIgnored,
-                      ),
+                      onPressed: widget.onToggleIgnoredPressed,
                       child: Text(
                         widget.row.isIgnored
                             ? l10n.preparedMealTemplateDetailUnignoreAction
