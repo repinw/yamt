@@ -246,8 +246,8 @@ class InventoryCalorieBridgeFlow {
         prefilledProfile: profile,
         scannedSourceRef: scannedSourceRef,
         inventoryContext: inventoryContext,
-        ),
-      );
+      ),
+    );
   }
 
   static void _showSnackBar({
