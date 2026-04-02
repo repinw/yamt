@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
@@ -299,13 +298,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     required int amount,
     required List<InventoryItem> itemsSnapshot,
   }) async {
-    final flags = ref.read(barcodeBackfillFeatureFlagsProvider);
     final inventoryController = ref.read(
       inventoryItemsControllerProvider.notifier,
     );
-    if (!flags.enableEatBridge) {
-      return inventoryController.eatItem(itemId, amount);
-    }
 
     InventoryItem? selectedItem;
     for (final item in itemsSnapshot) {
@@ -332,7 +327,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     }
 
     unawaited(
-      InventoryCalorieBridgeFlow.onEatCompleted(
+      _completeEatBridge(
         context: context,
         ref: ref,
         itemBeforeMutation: selectedItem,
@@ -341,6 +336,46 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       ),
     );
     return true;
+  }
+
+  Future<void> _completeEatBridge({
+    required BuildContext context,
+    required WidgetRef ref,
+    required InventoryItem itemBeforeMutation,
+    required int consumedAmount,
+    required String pendingConsumptionId,
+  }) async {
+    try {
+      await InventoryCalorieBridgeFlow.onEatCompleted(
+        context: context,
+        ref: ref,
+        itemBeforeMutation: itemBeforeMutation,
+        consumedAmount: consumedAmount,
+        pendingConsumptionId: pendingConsumptionId,
+      );
+    } catch (error, stackTrace) {
+      developer.log(
+        'Eat bridge failed unexpectedly.',
+        name: 'InventoryPage',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      await ref
+          .read(inventoryItemsControllerProvider.notifier)
+          .discardPendingConsumption(pendingConsumptionId);
+      if (!context.mounted) {
+        return;
+      }
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.inventoryItemActionFailed,
+          ),
+        ),
+      );
+    }
   }
 }
 
