@@ -5,16 +5,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository_contract.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
+import 'package:yamt/features/calories/presentation/models/'
+    'calorie_entry_create_args.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -22,46 +26,6 @@ import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 import '../../shoppinglist/support/fake_shopping_list_repository.dart';
-
-class _NoopBackfillRepository
-    implements CalorieBarcodeBackfillRepositoryContract {
-  @override
-  Future<bool> enqueueFingerprintLookup({
-    String? itemId,
-    required String fingerprint,
-    required String itemName,
-    String? brand,
-    required String trigger,
-    bool forceRetry = false,
-  }) async {
-    return true;
-  }
-
-  @override
-  Future<bool> enqueueBatchLookup({
-    required List<BarcodeLookupBatchItem> items,
-    required String trigger,
-  }) async {
-    return true;
-  }
-
-  @override
-  Future<CalorieProductProfile?> getResolvedProfileByFingerprint(
-    String fingerprint,
-  ) async {
-    return null;
-  }
-
-  @override
-  Future<bool> submitUserProvidedBarcode({
-    required String fingerprint,
-    required String barcode,
-    required String itemName,
-    String? brand,
-  }) async {
-    return true;
-  }
-}
 
 class _RecordingBackfillRepository
     implements CalorieBarcodeBackfillRepositoryContract {
@@ -225,6 +189,36 @@ class _DelayedStageInventoryItemsController extends InventoryItemsController {
   }
 }
 
+class _RecordingInventoryItemsController extends InventoryItemsController {
+  _RecordingInventoryItemsController({
+    required List<InventoryItem> initialItems,
+  }) : _initialItems = initialItems;
+
+  final List<InventoryItem> _initialItems;
+  final List<String> discardedPendingIds = <String>[];
+
+  @override
+  FutureOr<List<InventoryItem>> build() => _initialItems;
+
+  @override
+  Future<PendingInventoryConsumption?> stagePendingConsumption(
+    String itemId,
+    int amount,
+  ) async {
+    return PendingInventoryConsumption(
+      id: 'pending-recorded',
+      itemId: itemId,
+      amount: amount,
+    );
+  }
+
+  @override
+  Future<bool> discardPendingConsumption(String draftId) async {
+    discardedPendingIds.add(draftId);
+    return true;
+  }
+}
+
 InventoryItem _item(
   String id, {
   String? brand,
@@ -256,6 +250,54 @@ InventoryItem _item(
   );
 }
 
+InventoryItem _itemWithNutrition(
+  String id, {
+  int initialAmount = 1000,
+  int currentAmount = 1000,
+}) {
+  return InventoryItem.create(
+    id: id,
+    globalFoodItemId: 'off-4061458029995',
+    name: 'Milk',
+    brand: 'Acme',
+    barcode: '4061458029995',
+    imageUrl: 'https://example.com/milk.png',
+    nutrition: const GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+      per100Kcal: 64,
+      per100Protein: 3.3,
+      per100Carbs: 4.8,
+      per100Fat: 3.5,
+    ),
+    entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
+    storeName: 'Store',
+    quantity: 1,
+    initialQuantity: 1,
+    unitPrice: 1.0,
+    weight: '1000g',
+    initialAmount: initialAmount,
+    currentAmount: currentAmount,
+    amountUnit: InventoryAmountUnit.gram,
+  );
+}
+
+InventoryItem _amountItemWithoutNutrition(String id) {
+  return InventoryItem.create(
+    id: id,
+    name: 'Milk',
+    brand: 'Acme',
+    entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
+    storeName: 'Store',
+    quantity: 1,
+    initialQuantity: 1,
+    unitPrice: 1.0,
+    weight: '1000g',
+    initialAmount: 1000,
+    currentAmount: 1000,
+    amountUnit: InventoryAmountUnit.gram,
+  );
+}
+
 ShoppingListItem _shoppingItem(
   String id, {
   required String name,
@@ -279,15 +321,18 @@ Widget _buildTestApp(
   InventoryItemRepository repository, {
   List<dynamic> overrides = const <dynamic>[],
   bool includeDefaultBarcodeFlagsOverride = true,
+  GoRoute? calorieEntryRoute,
 }) {
-  final router = GoRouter(
-    routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const Scaffold(body: InventoryPage()),
-      ),
-    ],
-  );
+  final routes = <RouteBase>[
+    GoRoute(
+      path: AppRoutes.root,
+      builder: (context, state) => const Scaffold(body: InventoryPage()),
+    ),
+  ];
+  if (calorieEntryRoute != null) {
+    routes.add(calorieEntryRoute);
+  }
+  final router = GoRouter(routes: routes);
 
   return ProviderScope(
     overrides: [
@@ -299,7 +344,6 @@ Widget _buildTestApp(
         barcodeBackfillFeatureFlagsProvider.overrideWithValue(
           const BarcodeBackfillFeatureFlags(
             showInventoryBarcodeMarkers: false,
-            enableEatBridge: false,
             enableQueueBackfill: false,
           ),
         ),
@@ -485,7 +529,6 @@ void main() {
           barcodeBackfillFeatureFlagsProvider.overrideWithValue(
             const BarcodeBackfillFeatureFlags(
               showInventoryBarcodeMarkers: true,
-              enableEatBridge: false,
               enableQueueBackfill: false,
             ),
           ),
@@ -520,7 +563,6 @@ void main() {
           barcodeBackfillFeatureFlagsProvider.overrideWithValue(
             const BarcodeBackfillFeatureFlags(
               showInventoryBarcodeMarkers: true,
-              enableEatBridge: false,
               enableQueueBackfill: false,
             ),
           ),
@@ -552,7 +594,6 @@ void main() {
           barcodeBackfillFeatureFlagsProvider.overrideWithValue(
             const BarcodeBackfillFeatureFlags(
               showInventoryBarcodeMarkers: true,
-              enableEatBridge: false,
               enableQueueBackfill: false,
             ),
           ),
@@ -652,22 +693,32 @@ void main() {
     expect(find.text('Undo'), findsNothing);
   });
 
-  testWidgets('eat action opens amount dialog and updates stock', (
+  testWidgets('eat action opens calorie entry from local nutrition', (
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <InventoryItem>[
-        _item('a', quantity: 3, initialQuantity: 3),
-      ],
+      onReadAll: () async => <InventoryItem>[_itemWithNutrition('a')],
     );
+    CalorieEntryCreateArgs? openedArgs;
     addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
+    await tester.pumpWidget(
+      _buildTestApp(
+        repository,
+        calorieEntryRoute: GoRoute(
+          path: AppRoutes.homeCaloriesEntryCreate,
+          builder: (context, state) {
+            openedArgs = state.extra as CalorieEntryCreateArgs?;
+            return const Scaffold(body: Text('editor'));
+          },
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
-    await _scrollUntilVisible(tester, find.text('3/3'));
+    await _scrollUntilVisible(tester, find.text('1000g / 1000g'));
 
-    expect(find.text('3/3'), findsOneWidget);
+    expect(find.text('1000g / 1000g'), findsOneWidget);
 
     await _tapVisible(tester, find.byTooltip('Eat'));
 
@@ -675,51 +726,58 @@ void main() {
       const Key('inventory_item_amount_dialog_field'),
     );
     expect(amountField, findsOneWidget);
-    await tester.enterText(amountField, '2');
+    await tester.enterText(amountField, '120');
 
     await tester.tap(
       find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.byKey(const Key('inventory_item_amount_dialog_field')),
-      findsNothing,
-    );
-    expect(find.text('1/3'), findsOneWidget);
+    expect(find.text('editor'), findsOneWidget);
+    expect(openedArgs?.prefilledProfile?.barcode, '4061458029995');
+    expect(openedArgs?.inventoryContext?.consumedAmount, 120);
+    expect(openedArgs?.inventoryContext?.inventoryAmountToRestore, 120);
   });
 
-  testWidgets('eat action depletes item but keeps it visible', (tester) async {
-    final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <InventoryItem>[
-        _item('a', quantity: 1, initialQuantity: 1),
-      ],
-    );
-    addTearDown(repository.dispose);
+  testWidgets(
+    'eat action with missing local nutrition discards pending consumption '
+    'and shows feedback',
+    (tester) async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => const <InventoryItem>[],
+      );
+      final controller = _RecordingInventoryItemsController(
+        initialItems: <InventoryItem>[_amountItemWithoutNutrition('a')],
+      );
+      addTearDown(repository.dispose);
 
-    await tester.pumpWidget(_buildTestApp(repository));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildTestApp(
+          repository,
+          overrides: <dynamic>[
+            inventoryItemsControllerProvider.overrideWith(() => controller),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    await _scrollUntilVisible(tester, find.text('1/1'));
+      await _tapVisible(tester, find.byTooltip('Eat'));
 
-    expect(find.text('1/1'), findsOneWidget);
+      final amountField = find.byKey(
+        const Key('inventory_item_amount_dialog_field'),
+      );
+      expect(amountField, findsOneWidget);
+      await tester.enterText(amountField, '100');
 
-    await _tapVisible(tester, find.byTooltip('Eat'));
+      await tester.tap(
+        find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+      );
+      await tester.pumpAndSettle();
 
-    final amountField = find.byKey(
-      const Key('inventory_item_amount_dialog_field'),
-    );
-    expect(amountField, findsOneWidget);
-    await tester.enterText(amountField, '1');
-
-    await tester.tap(
-      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Milk'), findsOneWidget);
-    expect(find.text('0/1'), findsOneWidget);
-  });
+      expect(controller.discardedPendingIds, <String>['pending-recorded']);
+      expect(find.text('Action failed. Please try again.'), findsOneWidget);
+    },
+  );
 
   testWidgets('unmount during staged eat discards pending consumption', (
     tester,
@@ -745,7 +803,6 @@ void main() {
           barcodeBackfillFeatureFlagsProvider.overrideWithValue(
             const BarcodeBackfillFeatureFlags(
               showInventoryBarcodeMarkers: false,
-              enableEatBridge: true,
               enableQueueBackfill: true,
             ),
           ),
@@ -772,58 +829,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(controller.discardedPendingIds, <String>['pending-delayed']);
-  });
-
-  testWidgets('eat action with missing barcode opens scan-or-later prompt', (
-    tester,
-  ) async {
-    final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <InventoryItem>[
-        _item(
-          'a',
-          quantity: 1,
-          initialQuantity: 1,
-          weight: '1000g',
-          initialAmount: 1000,
-          currentAmount: 1000,
-          amountUnit: InventoryAmountUnit.gram,
-        ),
-      ],
-    );
-    addTearDown(repository.dispose);
-
-    await tester.pumpWidget(
-      _buildTestApp(
-        repository,
-        includeDefaultBarcodeFlagsOverride: false,
-        overrides: <dynamic>[
-          barcodeBackfillFeatureFlagsProvider.overrideWithValue(
-            const BarcodeBackfillFeatureFlags(
-              showInventoryBarcodeMarkers: true,
-              enableEatBridge: true,
-              enableQueueBackfill: true,
-            ),
-          ),
-          calorieBarcodeBackfillRepositoryProvider.overrideWithValue(
-            _NoopBackfillRepository(),
-          ),
-        ],
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await _tapVisible(tester, find.byTooltip('Eat'));
-    await tester.enterText(
-      find.byKey(const Key('inventory_item_amount_dialog_field')),
-      '100',
-    );
-    await tester.tap(
-      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Scan barcode now'), findsOneWidget);
-    expect(find.text('Later'), findsOneWidget);
   });
 
   testWidgets(

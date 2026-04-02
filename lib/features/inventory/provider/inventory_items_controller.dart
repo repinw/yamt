@@ -192,9 +192,8 @@ class InventoryItemsController extends _$InventoryItemsController {
     _itemsSubscription = repository.watchAll().listen(
       (items) {
         _persistedItems = items;
-        final visibleItems = _buildVisibleItems(items);
         if (!initialItems.isCompleted) {
-          initialItems.complete(visibleItems);
+          initialItems.complete(items);
           return;
         }
         _onRealtimeItems(items);
@@ -223,7 +222,7 @@ class InventoryItemsController extends _$InventoryItemsController {
       return;
     }
     _persistedItems = items;
-    state = AsyncData(_buildVisibleItems(items));
+    state = AsyncData(items);
   }
 
   void _onRealtimeError(Object error, StackTrace stackTrace) {
@@ -624,28 +623,7 @@ class InventoryItemsController extends _$InventoryItemsController {
       return currentData;
     }
 
-    final persistedItems = await _currentPersistedItems();
-    return _buildVisibleItems(persistedItems);
-  }
-
-  List<InventoryItem> _buildVisibleItems(List<InventoryItem> items) {
-    if (_pendingConsumptionsById.isEmpty) {
-      return items;
-    }
-
-    var visibleItems = List<InventoryItem>.from(items);
-    for (final draft in _pendingConsumptionsById.values) {
-      final reducedItems = buildReducedItems(
-        currentItems: visibleItems,
-        itemId: draft.itemId,
-        amount: draft.amount,
-      );
-      if (reducedItems == null) {
-        continue;
-      }
-      visibleItems = reducedItems;
-    }
-    return visibleItems;
+    return _currentPersistedItems();
   }
 
   void _publishVisibleItems() {
@@ -657,7 +635,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     if (persistedItems == null) {
       return;
     }
-    state = AsyncData(_buildVisibleItems(persistedItems));
+    state = AsyncData(persistedItems);
   }
 
   int? _resolveEffectiveConsumptionAmount({

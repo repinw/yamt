@@ -1,18 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
 import 'package:yamt/features/calories/presentation/models/calorie_entry_create_args.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_barcode_candidate_picker_sheet.dart';
-import 'package:yamt/features/calories/provider/calorie_barcode_flow_controller.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -27,11 +22,6 @@ class InventoryCalorieBridgeFlow {
     required int consumedAmount,
     required String pendingConsumptionId,
   }) async {
-    final flags = ref.read(barcodeBackfillFeatureFlagsProvider);
-    if (!flags.enableEatBridge) {
-      return;
-    }
-
     final inventoryContext = await _buildInventoryContext(
       context: context,
       item: itemBeforeMutation,
@@ -47,87 +37,44 @@ class InventoryCalorieBridgeFlow {
     }
 
     final localProfile = _buildProfileFromInventoryItem(itemBeforeMutation);
-    if (localProfile != null) {
-      await _openEditor(
-        context: context,
-        profile: localProfile,
-        inventoryContext: inventoryContext,
-        scannedSourceRef: CalorieScannedSourceRef(
-          barcode: localProfile.barcode,
-          source: localProfile.source,
-          offProductId: localProfile.offProductId,
-        ),
-      );
-      return;
-    }
-
-    final barcode = itemBeforeMutation.normalizedBarcode;
-    if (barcode != null) {
-      final openedEditor = await _openEditorFromBarcode(
-        context: context,
+    if (localProfile == null) {
+      await _discardPendingConsumption(
         ref: ref,
-        barcode: barcode,
-        inventoryContext: inventoryContext,
+        pendingConsumptionId: pendingConsumptionId,
       );
-      if (!openedEditor) {
-        await _discardPendingConsumption(
-          ref: ref,
-          pendingConsumptionId: pendingConsumptionId,
+      if (context.mounted) {
+        _showSnackBar(
+          context: context,
+          message: AppLocalizations.of(context)!.inventoryItemActionFailed,
         );
       }
       return;
     }
 
-    final action = await _showMissingBarcodeActionSheet(context: context);
-    if (!context.mounted || action == null) {
-      await _discardPendingConsumption(
-        ref: ref,
-        pendingConsumptionId: pendingConsumptionId,
-      );
-      return;
-    }
-
-    switch (action) {
-      case _InventoryMissingBarcodeAction.scanNow:
-        if (!_isMobileBarcodeScanSupported()) {
-          _showSnackBar(
-            context: context,
-            message: AppLocalizations.of(
-              context,
-            )!.inventoryBarcodeScanUnsupported,
-          );
-          await _discardPendingConsumption(
-            ref: ref,
-            pendingConsumptionId: pendingConsumptionId,
-          );
-          return;
-        }
-        await context.push(
-          AppRoutes.homeCaloriesBarcodeScan,
-          extra: CalorieBarcodeScanArgs(inventoryContext: inventoryContext),
-        );
-        return;
-      case _InventoryMissingBarcodeAction.later:
-        _showSnackBar(
-          context: context,
-          message: AppLocalizations.of(context)!.inventoryBarcodeLookupQueued,
-        );
-        await _discardPendingConsumption(
-          ref: ref,
-          pendingConsumptionId: pendingConsumptionId,
-        );
-        return;
-    }
+    final barcode = itemBeforeMutation.normalizedBarcode;
+    await _openEditor(
+      context: context,
+      profile: localProfile,
+      inventoryContext: inventoryContext,
+      scannedSourceRef: barcode == null
+          ? null
+          : CalorieScannedSourceRef(
+              barcode: barcode,
+              source: localProfile.source,
+              offProductId: localProfile.offProductId,
+            ),
+    );
   }
 
   static CalorieProductProfile? _buildProfileFromInventoryItem(
     InventoryItem item,
   ) {
-    final barcode = item.normalizedBarcode;
     final nutrition = item.nutrition;
-    if (barcode == null || nutrition?.hasAnyNutritionValue != true) {
+    if (nutrition?.hasAnyNutritionValue != true) {
       return null;
     }
+
+    final barcode = item.normalizedBarcode ?? 'inventory-${item.id}';
 
     return CalorieProductProfile(
       barcode: barcode,
@@ -154,87 +101,6 @@ class InventoryCalorieBridgeFlow {
       return normalizedId;
     }
     return null;
-  }
-
-  static Future<bool> _openEditorFromBarcode({
-    required BuildContext context,
-    required WidgetRef ref,
-    required String barcode,
-    required CalorieInventoryCreateContext inventoryContext,
-  }) async {
-    final outcome = await ref
-        .read(calorieBarcodeFlowControllerProvider.notifier)
-        .resolveBarcode(barcode);
-    if (!context.mounted) {
-      return false;
-    }
-
-    switch (outcome.status) {
-      case CalorieLookupStatus.foundSingle:
-        final profile = outcome.product;
-        if (profile == null) {
-          return false;
-        }
-        await _openEditor(
-          context: context,
-          profile: profile,
-          inventoryContext: inventoryContext,
-          scannedSourceRef: CalorieScannedSourceRef(
-            barcode: barcode,
-            source: profile.source,
-            offProductId: profile.offProductId,
-          ),
-        );
-        return true;
-      case CalorieLookupStatus.foundMultiple:
-        final selected = await _pickCandidate(
-          context: context,
-          candidates: outcome.candidates,
-        );
-        if (selected == null || !context.mounted) {
-          return false;
-        }
-        await ref
-            .read(calorieBarcodeFlowControllerProvider.notifier)
-            .persistSelectedCandidate(selected.profile);
-        if (!context.mounted) {
-          return false;
-        }
-        await _openEditor(
-          context: context,
-          profile: selected.profile,
-          inventoryContext: inventoryContext,
-          scannedSourceRef: CalorieScannedSourceRef(
-            barcode: barcode,
-            source: selected.profile.source,
-            offProductId: selected.profile.offProductId,
-          ),
-        );
-        return true;
-      case CalorieLookupStatus.notFound:
-      case CalorieLookupStatus.failed:
-        _showSnackBar(
-          context: context,
-          message: AppLocalizations.of(context)!.caloriesBarcodeLookupFailed,
-        );
-        return false;
-    }
-  }
-
-  static Future<CalorieProductCandidate?> _pickCandidate({
-    required BuildContext context,
-    required List<CalorieProductCandidate> candidates,
-  }) {
-    return showModalBottomSheet<CalorieProductCandidate>(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return CalorieBarcodeCandidatePickerSheet(
-          candidates: candidates,
-          onSelect: (candidate) => sheetContext.pop(candidate),
-        );
-      },
-    );
   }
 
   static Future<CalorieInventoryCreateContext?> _buildInventoryContext({
@@ -368,46 +234,11 @@ class InventoryCalorieBridgeFlow {
     return parsed;
   }
 
-  static Future<_InventoryMissingBarcodeAction?>
-  _showMissingBarcodeActionSheet({required BuildContext context}) {
-    final l10n = AppLocalizations.of(context)!;
-    return showModalBottomSheet<_InventoryMissingBarcodeAction>(
-      context: context,
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                title: Text(l10n.inventoryBarcodeMissingPromptTitle),
-                subtitle: Text(l10n.inventoryBarcodeMissingPromptMessage),
-              ),
-              ListTile(
-                leading: const Icon(Icons.qr_code_scanner_outlined),
-                title: Text(l10n.inventoryBarcodeMissingPromptScanNow),
-                onTap: () {
-                  sheetContext.pop(_InventoryMissingBarcodeAction.scanNow);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.schedule_outlined),
-                title: Text(l10n.inventoryBarcodeMissingPromptLater),
-                onTap: () {
-                  sheetContext.pop(_InventoryMissingBarcodeAction.later);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   static Future<void> _openEditor({
     required BuildContext context,
     required CalorieProductProfile profile,
     required CalorieInventoryCreateContext inventoryContext,
-    required CalorieScannedSourceRef scannedSourceRef,
+    required CalorieScannedSourceRef? scannedSourceRef,
   }) {
     return context.push(
       AppRoutes.homeCaloriesEntryCreate,
@@ -417,14 +248,6 @@ class InventoryCalorieBridgeFlow {
         inventoryContext: inventoryContext,
       ),
     );
-  }
-
-  static bool _isMobileBarcodeScanSupported() {
-    if (kIsWeb) {
-      return false;
-    }
-    return defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS;
   }
 
   static void _showSnackBar({
@@ -452,5 +275,3 @@ class _ManualPortionResult {
   final double amount;
   final ConsumedUnit unit;
 }
-
-enum _InventoryMissingBarcodeAction { scanNow, later }
