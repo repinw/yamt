@@ -66,7 +66,12 @@ class PreparedMealCard extends ConsumerStatefulWidget {
   });
 
   final PreparedMeal meal;
-  final Future<bool> Function(String mealId, int portions, MealType mealType)
+  final Future<bool> Function(
+    String mealId,
+    int portions,
+    MealType mealType,
+    DateTime loggedDay,
+  )
   onEatPressed;
   final Future<bool> Function(
     String mealId,

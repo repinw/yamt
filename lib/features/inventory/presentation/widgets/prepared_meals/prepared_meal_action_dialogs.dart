@@ -14,18 +14,19 @@ class PreparedMealEatDialogResult {
   const PreparedMealEatDialogResult({
     required this.portions,
     required this.mealType,
+    required this.loggedDay,
   });
 
   final int portions;
   final MealType mealType;
+  final DateTime loggedDay;
 }
 
 Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
   BuildContext context,
   PreparedMeal meal, {
   bool useRootNavigator = false,
-}
-) {
+}) {
   return showDialog<PreparedMealEatDialogResult>(
     context: context,
     useRootNavigator: useRootNavigator,
@@ -60,12 +61,11 @@ class _PreparedMealEatDialog extends StatefulWidget {
 }
 
 class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
-  late final TextEditingController _portionsController =
-      TextEditingController(
-        text: _defaultPreparedMealPortions.toString(),
-      );
-  late MealType _selectedMealType =
-      MealType.defaultForDateTime(DateTime.now());
+  late final TextEditingController _portionsController = TextEditingController(
+    text: _defaultPreparedMealPortions.toString(),
+  );
+  late DateTime _selectedDay = DateUtils.dateOnly(DateTime.now());
+  late MealType _selectedMealType = MealType.defaultForDateTime(DateTime.now());
 
   @override
   void dispose() {
@@ -76,11 +76,13 @@ class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final material = MaterialLocalizations.of(context);
 
     return AlertDialog(
       title: Text(l10n.preparedMealEatTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextField(
             controller: _portionsController,
@@ -96,9 +98,7 @@ class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
           const SizedBox(height: AppSpacing.md),
           DropdownButtonFormField<MealType>(
             initialValue: _selectedMealType,
-            decoration: InputDecoration(
-              labelText: l10n.caloriesEntryMealLabel,
-            ),
+            decoration: InputDecoration(labelText: l10n.caloriesEntryMealLabel),
             items: MealType.sectionOrder
                 .map((mealType) {
                   return DropdownMenuItem<MealType>(
@@ -115,6 +115,20 @@ class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
                 _selectedMealType = value;
               });
             },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            l10n.preparedMealDiaryDayLabel,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _pickLoggedDay,
+              icon: const Icon(Icons.calendar_today_outlined),
+              label: Text(material.formatMediumDate(_selectedDay)),
+            ),
           ),
         ],
       ),
@@ -143,6 +157,7 @@ class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
               PreparedMealEatDialogResult(
                 portions: portions,
                 mealType: _selectedMealType,
+                loggedDay: _selectedDay,
               ),
             );
           },
@@ -151,13 +166,27 @@ class _PreparedMealEatDialogState extends State<_PreparedMealEatDialog> {
       ],
     );
   }
+
+  Future<void> _pickLoggedDay() async {
+    final lastDate = DateUtils.dateOnly(DateTime.now());
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDay.isAfter(lastDate) ? lastDate : _selectedDay,
+      firstDate: DateTime(2000),
+      lastDate: lastDate,
+    );
+    if (!mounted || pickedDate == null) {
+      return;
+    }
+
+    setState(() {
+      _selectedDay = DateUtils.dateOnly(pickedDate);
+    });
+  }
 }
 
 class _PreparedMealPortionDialog extends StatefulWidget {
-  const _PreparedMealPortionDialog({
-    required this.meal,
-    required this.title,
-  });
+  const _PreparedMealPortionDialog({required this.meal, required this.title});
 
   final PreparedMeal meal;
   final String title;

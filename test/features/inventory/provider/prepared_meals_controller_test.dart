@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
@@ -577,12 +578,14 @@ void main() {
       addTearDown(subscription.close);
 
       await container.read(preparedMealsControllerProvider.future);
+      final loggedDay = DateTime(2026, 3, 20);
       final saved = await container
           .read(preparedMealsControllerProvider.notifier)
           .consumePreparedMeal(
             mealId: 'meal-1',
             consumedPortions: 2,
             mealType: MealType.dinner,
+            loggedDay: loggedDay,
           );
 
       expect(saved, isTrue);
@@ -591,6 +594,10 @@ void main() {
       expect(calorieLogRepository.entries.single.imageAssetId, isNotNull);
       expect(calorieLogRepository.entries.single.bundleConsumedPortions, 2);
       expect(calorieLogRepository.entries.single.totalKcal, 200);
+      expect(
+        normalizeDiaryDay(calorieLogRepository.entries.single.loggedAt),
+        loggedDay,
+      );
     },
   );
 

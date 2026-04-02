@@ -74,8 +74,13 @@ class _ActionDialogsHarnessState extends State<_ActionDialogsHarness> {
               if (!mounted || result == null) {
                 return;
               }
+              final loggedDay = result.loggedDay.toIso8601String().substring(
+                0,
+                10,
+              );
               setState(() {
-                _resultLabel = 'eat:${result.portions}:${result.mealType.name}';
+                _resultLabel =
+                    'eat:${result.portions}:${result.mealType.name}:$loggedDay';
               });
             },
             child: const Text('Open eat'),
@@ -128,6 +133,33 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Eat prepared meal'), findsOneWidget);
+    expect(find.text('Diary day'), findsOneWidget);
+  });
+
+  testWidgets('eat dialog returns selected meal day on confirm', (
+    tester,
+  ) async {
+    final today = DateUtils.dateOnly(
+      DateTime.now(),
+    ).toIso8601String().substring(0, 10);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _ActionDialogsHarness(meal: _meal()),
+      ),
+    );
+
+    await tester.tap(find.text('Open eat'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Eat'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('eat:1:'), findsOneWidget);
+    expect(find.textContaining(':$today'), findsOneWidget);
   });
 
   testWidgets('portion dialog returns selected amount on confirm', (

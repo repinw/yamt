@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart'
@@ -19,7 +20,6 @@ final preparedMealCalorieLogBridgeProvider =
       );
     });
 
-/// Bridges prepared-meal consumption into the calorie diary domain.
 class PreparedMealCalorieLogBridge {
   PreparedMealCalorieLogBridge({
     required Future<bool> Function(CalorieEntry entry) saveEntry,
@@ -36,12 +36,14 @@ class PreparedMealCalorieLogBridge {
     required PreparedMeal meal,
     required int consumedPortions,
     required MealType mealType,
+    DateTime? loggedDay,
   }) {
     if (meal.totalPortions < 1 || consumedPortions < 1) {
       return Future<bool>.value(false);
     }
 
     final now = _now();
+    final loggedAt = _resolveLoggedAt(now: now, loggedDay: loggedDay);
     final portionRatio = consumedPortions / meal.totalPortions;
     final entry = CalorieEntry.bundle(
       id: _uuid.v4(),
@@ -60,13 +62,34 @@ class PreparedMealCalorieLogBridge {
         meal: meal,
         portionRatio: portionRatio,
       ),
-      loggedAt: now,
+      loggedAt: loggedAt,
       createdAt: now,
       updatedAt: now,
     );
 
     return _saveEntry(entry);
   }
+}
+
+DateTime _resolveLoggedAt({
+  required DateTime now,
+  required DateTime? loggedDay,
+}) {
+  if (loggedDay == null) {
+    return now;
+  }
+
+  final normalizedDay = normalizeDiaryDay(loggedDay);
+  return DateTime(
+    normalizedDay.year,
+    normalizedDay.month,
+    normalizedDay.day,
+    now.hour,
+    now.minute,
+    now.second,
+    now.millisecond,
+    now.microsecond,
+  );
 }
 
 List<CalorieEntryBundleComponent> _buildBundleComponents({

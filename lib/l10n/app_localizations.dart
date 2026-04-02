@@ -1151,6 +1151,12 @@ abstract class AppLocalizations {
   /// **'Eat prepared meal'**
   String get preparedMealEatTitle;
 
+  /// No description provided for @preparedMealDiaryDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary day'**
+  String get preparedMealDiaryDayLabel;
+
   /// No description provided for @preparedMealThrowAwayTitle.
   ///
   /// In en, this message translates to:

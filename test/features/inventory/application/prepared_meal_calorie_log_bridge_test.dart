@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
@@ -156,5 +158,44 @@ void main() {
     expect(saved, isTrue);
     final entry = calorieLogRepository.entries.single;
     expect(entry.imageAssetId, meal.imageAssetId);
+  });
+
+  test('bridge writes selected diary day while keeping current time', () async {
+    final savedEntries = <CalorieEntry>[];
+    final bridge = PreparedMealCalorieLogBridge(
+      saveEntry: (entry) async {
+        savedEntries.add(entry);
+        return true;
+      },
+      now: () => DateTime(2026, 4, 2, 18, 45, 30),
+    );
+    final meal = PreparedMeal(
+      id: 'meal-3',
+      name: 'Soup',
+      imageAssetId: 'asset-3',
+      totalPortions: 2,
+      remainingPortions: 2,
+      totalKcal: 300,
+      totalProtein: 20,
+      totalCarbs: 30,
+      totalFat: 10,
+      createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      components: const <PreparedMealComponent>[],
+    );
+
+    final saved = await bridge.logConsumedPreparedMeal(
+      meal: meal,
+      consumedPortions: 1,
+      mealType: MealType.dinner,
+      loggedDay: DateTime(2026, 3, 30),
+    );
+
+    expect(saved, isTrue);
+    final entry = savedEntries.single;
+    expect(normalizeDiaryDay(entry.loggedAt), DateTime(2026, 3, 30));
+    expect(entry.loggedAt.hour, 18);
+    expect(entry.loggedAt.minute, 45);
+    expect(entry.createdAt, DateTime(2026, 4, 2, 18, 45, 30));
   });
 }

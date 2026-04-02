@@ -89,12 +89,13 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       ),
       onThrowAwayItem: (itemId, amount, reason) =>
           controller.throwAwayItem(itemId, amount, reason),
-      onEatPreparedMeal: (mealId, portions, mealType) => ref
+      onEatPreparedMeal: (mealId, portions, mealType, loggedDay) => ref
           .read(preparedMealsControllerProvider.notifier)
           .consumePreparedMeal(
             mealId: mealId,
             consumedPortions: portions,
             mealType: mealType,
+            loggedDay: loggedDay,
           ),
       onThrowAwayPreparedMeal: (mealId, portions, reason) => ref
           .read(preparedMealsControllerProvider.notifier)
