@@ -2,18 +2,21 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/domain/product_image_url.dart';
 
 class PreparedMealCover extends StatelessWidget {
   const PreparedMealCover({
     super.key,
     required this.label,
     required this.imageBytes,
+    this.imageUrl,
     this.size = 64,
     this.borderRadius,
   });
 
   final String label;
   final Uint8List? imageBytes;
+  final String? imageUrl;
   final double size;
   final BorderRadius? borderRadius;
 
@@ -21,6 +24,7 @@ class PreparedMealCover extends StatelessWidget {
   Widget build(BuildContext context) {
     final radius =
         borderRadius ?? BorderRadius.circular(AppInventoryEditorial.cardRadius);
+    final normalizedImageUrl = normalizeProductImageUrl(imageUrl);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -38,15 +42,23 @@ class PreparedMealCover extends StatelessWidget {
         dimension: size,
         child: ClipRRect(
           borderRadius: radius,
-          child: imageBytes == null
-              ? _PreparedMealCoverFallback(label: label)
-              : Image.memory(
+          child: imageBytes != null
+              ? Image.memory(
                   imageBytes!,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) {
                     return _PreparedMealCoverFallback(label: label);
                   },
-                ),
+                )
+              : normalizedImageUrl != null
+              ? Image.network(
+                  normalizedImageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) {
+                    return _PreparedMealCoverFallback(label: label);
+                  },
+                )
+              : _PreparedMealCoverFallback(label: label),
         ),
       ),
     );

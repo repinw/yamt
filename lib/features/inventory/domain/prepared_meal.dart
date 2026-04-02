@@ -12,6 +12,12 @@ class PreparedMeal {
     required this.id,
     required this.name,
     this.imageAssetId,
+    this.imageUrl,
+    this.recipeUrl,
+    this.recipeIngredients = const <String>[],
+    this.ignoredRecipeIngredients = const <String>[],
+    this.recipeIngredientAssignments = const <String, List<String>>{},
+    this.pendingRecipeIngredients = const <String>[],
     required this.totalPortions,
     required this.remainingPortions,
     required this.totalKcal,
@@ -32,6 +38,18 @@ class PreparedMeal {
   final String name;
   @JsonKey(fromJson: _readTrimmedNullableString)
   final String? imageAssetId;
+  @JsonKey(fromJson: _readTrimmedNullableString)
+  final String? imageUrl;
+  @JsonKey(fromJson: _readTrimmedNullableString)
+  final String? recipeUrl;
+  @JsonKey(defaultValue: <String>[])
+  final List<String> recipeIngredients;
+  @JsonKey(defaultValue: <String>[])
+  final List<String> ignoredRecipeIngredients;
+  @JsonKey(defaultValue: <String, List<String>>{})
+  final Map<String, List<String>> recipeIngredientAssignments;
+  @JsonKey(defaultValue: <String>[])
+  final List<String> pendingRecipeIngredients;
   @JsonKey(fromJson: _readIntOrZero)
   final int totalPortions;
   @JsonKey(fromJson: _readIntOrZero)
@@ -57,6 +75,12 @@ class PreparedMeal {
     String? id,
     String? name,
     Object? imageAssetId = _keepValue,
+    Object? imageUrl = _keepValue,
+    Object? recipeUrl = _keepValue,
+    List<String>? recipeIngredients,
+    List<String>? ignoredRecipeIngredients,
+    Map<String, List<String>>? recipeIngredientAssignments,
+    List<String>? pendingRecipeIngredients,
     int? totalPortions,
     int? remainingPortions,
     double? totalKcal,
@@ -73,6 +97,17 @@ class PreparedMeal {
       imageAssetId: imageAssetId == _keepValue
           ? this.imageAssetId
           : imageAssetId as String?,
+      imageUrl: imageUrl == _keepValue ? this.imageUrl : imageUrl as String?,
+      recipeUrl: recipeUrl == _keepValue
+          ? this.recipeUrl
+          : recipeUrl as String?,
+      recipeIngredients: recipeIngredients ?? this.recipeIngredients,
+      ignoredRecipeIngredients:
+          ignoredRecipeIngredients ?? this.ignoredRecipeIngredients,
+      recipeIngredientAssignments:
+          recipeIngredientAssignments ?? this.recipeIngredientAssignments,
+      pendingRecipeIngredients:
+          pendingRecipeIngredients ?? this.pendingRecipeIngredients,
       totalPortions: totalPortions ?? this.totalPortions,
       remainingPortions: remainingPortions ?? this.remainingPortions,
       totalKcal: totalKcal ?? this.totalKcal,
@@ -86,6 +121,8 @@ class PreparedMeal {
   }
 
   bool get isDepleted => remainingPortions <= 0;
+
+  bool get hasPendingRecipeIngredients => pendingRecipeIngredients.isNotEmpty;
 
   double get remainingRatio {
     if (totalPortions <= 0) {
@@ -150,6 +187,24 @@ class PreparedMeal {
             other.id == id &&
             other.name == name &&
             other.imageAssetId == imageAssetId &&
+            other.imageUrl == imageUrl &&
+            other.recipeUrl == recipeUrl &&
+            const ListEquality<String>().equals(
+              other.recipeIngredients,
+              recipeIngredients,
+            ) &&
+            const ListEquality<String>().equals(
+              other.ignoredRecipeIngredients,
+              ignoredRecipeIngredients,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other.recipeIngredientAssignments,
+              recipeIngredientAssignments,
+            ) &&
+            const ListEquality<String>().equals(
+              other.pendingRecipeIngredients,
+              pendingRecipeIngredients,
+            ) &&
             other.totalPortions == totalPortions &&
             other.remainingPortions == remainingPortions &&
             other.totalKcal == totalKcal &&
@@ -170,6 +225,12 @@ class PreparedMeal {
       id,
       name,
       imageAssetId,
+      imageUrl,
+      recipeUrl,
+      const ListEquality<String>().hash(recipeIngredients),
+      const ListEquality<String>().hash(ignoredRecipeIngredients),
+      const DeepCollectionEquality().hash(recipeIngredientAssignments),
+      const ListEquality<String>().hash(pendingRecipeIngredients),
       totalPortions,
       remainingPortions,
       totalKcal,

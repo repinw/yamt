@@ -509,6 +509,33 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get preparedMealIncompleteLabel => 'Incomplete';
+
+  @override
+  String get preparedMealIncompleteHint => 'This meal is not complete yet and can only be eaten once all missing ingredients have been added.';
+
+  @override
+  String get preparedMealPendingIngredientUnassigned => 'Not linked yet';
+
+  @override
+  String get preparedMealPendingIngredientAddAction => 'Add ingredient';
+
+  @override
+  String get preparedMealPendingIngredientIgnoreAction => 'Ignore ingredient';
+
+  @override
+  String get preparedMealPendingIngredientSelectionTitle => 'Add ingredient from inventory';
+
+  @override
+  String get preparedMealPendingIngredientSelectionEmpty => 'No inventory items available.';
+
+  @override
+  String get preparedMealPendingIngredientFillFailed => 'Ingredient could not be added to the meal.';
+
+  @override
+  String get preparedMealPendingIngredientIgnoreFailed => 'Ingredient could not be ignored.';
+
+  @override
   String preparedMealPortionsRemaining(int remaining, int total) {
     return '$remaining/$total portions';
   }
@@ -565,9 +592,171 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealTemplateDeletedMessage => 'Template deleted.';
 
   @override
+  String get preparedMealTemplateAddRecipeAction => 'Add recipe template';
+
+  @override
+  String get preparedMealTemplateCreateFromRecipeAction => 'Create from recipe';
+
+  @override
+  String get preparedMealTemplateCreateFailedMessage => 'Template could not be created.';
+
+  @override
+  String get preparedMealTemplateRecipeImportFailedMessage => 'Recipe data could not be imported.';
+
+  @override
+  String get preparedMealTemplateRecipeSheetTitle => 'Create template from recipe';
+
+  @override
+  String get preparedMealTemplateRecipeEditSheetTitle => 'Edit recipe template';
+
+  @override
+  String get preparedMealTemplateRecipeSheetSubtitle => 'Paste a recipe link, for example from Chefkoch.';
+
+  @override
+  String get preparedMealTemplateRecipeUrlLabel => 'Recipe link';
+
+  @override
+  String get preparedMealTemplateRecipeUrlHint => 'https://www.chefkoch.de/...';
+
+  @override
+  String get preparedMealTemplateRecipeUrlInvalid => 'Please enter a valid recipe link.';
+
+  @override
+  String get preparedMealTemplateNameLabel => 'Template name';
+
+  @override
+  String get preparedMealTemplateNameHelper => 'Optional. If empty, the name is derived from the link.';
+
+  @override
+  String get preparedMealTemplatePortionsLabel => 'Portions';
+
+  @override
+  String get preparedMealTemplatePortionsHelper => 'Optional. If empty, the servings from the recipe are used.';
+
+  @override
+  String get preparedMealTemplateRecipePlaceholder => 'Recipe link';
+
+  @override
+  String get preparedMealTemplateNoIngredientsYet => 'No ingredients linked yet.';
+
+  @override
+  String get preparedMealTemplateOpenAction => 'Open template';
+
+  @override
+  String get preparedMealTemplateUpdatedMessage => 'Template updated.';
+
+  @override
+  String get preparedMealTemplateImportReviewTitle => 'Review recipe';
+
+  @override
+  String get preparedMealTemplateImportReviewInstructionsTitle => 'Short instructions';
+
+  @override
+  String get preparedMealTemplateImportReviewSavingAction => 'Saving...';
+
+  @override
+  String preparedMealTemplateRecipeSource(String host) {
+    return 'Recipe: $host';
+  }
+
+  @override
   String preparedMealTemplatePortions(int count) {
     return '$count portions';
   }
+
+  @override
+  String get preparedMealTemplateDetailTitle => 'Template';
+
+  @override
+  String get preparedMealTemplateDetailNotFound => 'Template not found.';
+
+  @override
+  String get preparedMealTemplateDetailLoadFailed => 'Template could not be loaded.';
+
+  @override
+  String preparedMealTemplateDetailBasePortions(int count) {
+    return 'Base: $count portions';
+  }
+
+  @override
+  String get preparedMealTemplateDetailScaleHint => 'Ingredients are scaled to this number of portions.';
+
+  @override
+  String get preparedMealTemplateDetailNoIngredients => 'No ingredients available yet.';
+
+  @override
+  String get preparedMealTemplateDetailSaveAction => 'Update template';
+
+  @override
+  String get preparedMealTemplateDetailSavingAction => 'Saving...';
+
+  @override
+  String get preparedMealTemplateDetailIngredientsToShoppingListAction => 'Ingredients to shopping list';
+
+  @override
+  String get preparedMealTemplateDetailCreateMealHint => 'This template needs at least one ingredient before you can create a meal.';
+
+  @override
+  String get preparedMealTemplateDetailAssignAction => 'Assign';
+
+  @override
+  String get preparedMealTemplateDetailChangeAssignmentAction => 'Change assignment';
+
+  @override
+  String get preparedMealTemplateDetailAssignedFromInventoryTitle => 'Covered from inventory';
+
+  @override
+  String get preparedMealTemplateDetailMatchingInventoryItemsTitle => 'Matching inventory items';
+
+  @override
+  String preparedMealTemplateDetailMissingAssignedItems(int count) {
+    return '$count assigned items are no longer in inventory.';
+  }
+
+  @override
+  String preparedMealTemplateDetailIgnoredAmount(String amount) {
+    return 'Ignored • $amount';
+  }
+
+  @override
+  String preparedMealTemplateDetailAssignedCount(int count) {
+    return '$count items assigned';
+  }
+
+  @override
+  String get preparedMealTemplateDetailSelectionTitle => 'Choose inventory items';
+
+  @override
+  String get preparedMealTemplateDetailSelectionEmpty => 'No inventory items available.';
+
+  @override
+  String get preparedMealTemplateDetailAddToShoppingListAction => 'Add to shopping list';
+
+  @override
+  String get preparedMealTemplateDetailIgnoreAction => 'Ignore';
+
+  @override
+  String get preparedMealTemplateDetailUnignoreAction => 'Do not ignore';
+
+  @override
+  String get preparedMealTemplateDetailAddIngredientShoppingFailed => 'Ingredient could not be added to the shopping list.';
+
+  @override
+  String get preparedMealTemplateDetailAddIngredientsShoppingFailed => 'Ingredients could not be added to the shopping list.';
+
+  @override
+  String preparedMealTemplateDetailAddIngredientsShoppingSucceeded(int count) {
+    return '$count ingredients were added to the shopping list.';
+  }
+
+  @override
+  String get preparedMealTemplateDetailIgnoreSaveFailed => 'Ingredient status could not be saved.';
+
+  @override
+  String get preparedMealTemplateDetailInvalidMealMessage => 'The template needs at least one valid ingredient.';
+
+  @override
+  String get preparedMealTemplateDetailSaveFailedMessage => 'Template could not be updated.';
 
   @override
   String get shoppingListStatsEntries => 'Entries';

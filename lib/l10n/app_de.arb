@@ -226,6 +226,20 @@
       }
     }
   },
+  "preparedMealIncompleteLabel": "Unvollständig",
+  "preparedMealIncompleteHint":
+      "Diese Mahlzeit ist noch nicht vollständig und kann erst gegessen werden, wenn alle fehlenden Zutaten ergänzt wurden.",
+  "preparedMealPendingIngredientUnassigned": "Noch nicht belegt",
+  "preparedMealPendingIngredientAddAction": "Zutat ergänzen",
+  "preparedMealPendingIngredientIgnoreAction": "Zutat ignorieren",
+  "preparedMealPendingIngredientSelectionTitle":
+      "Zutat aus Inventar ergänzen",
+  "preparedMealPendingIngredientSelectionEmpty":
+      "Keine Inventarartikel vorhanden.",
+  "preparedMealPendingIngredientFillFailed":
+      "Zutat konnte nicht zur Mahlzeit hinzugefügt werden.",
+  "preparedMealPendingIngredientIgnoreFailed":
+      "Zutat konnte nicht ignoriert werden.",
   "preparedMealPortionsRemaining": "{remaining}/{total} Portionen",
   "@preparedMealPortionsRemaining": {
     "placeholders": {
@@ -254,6 +268,35 @@
   "preparedMealTemplatesLoadFailed": "Vorlagen konnten nicht geladen werden.",
   "preparedMealTemplateDeleteAction": "Vorlage löschen",
   "preparedMealTemplateDeletedMessage": "Vorlage gelöscht.",
+  "preparedMealTemplateAddRecipeAction": "Rezeptvorlage hinzufügen",
+  "preparedMealTemplateCreateFromRecipeAction": "Aus Rezept anlegen",
+  "preparedMealTemplateCreateFailedMessage": "Vorlage konnte nicht erstellt werden.",
+  "preparedMealTemplateRecipeImportFailedMessage": "Rezeptdaten konnten nicht importiert werden.",
+  "preparedMealTemplateRecipeSheetTitle": "Vorlage aus Rezept anlegen",
+  "preparedMealTemplateRecipeEditSheetTitle": "Rezeptvorlage bearbeiten",
+  "preparedMealTemplateRecipeSheetSubtitle": "Füge einen Rezept-Link ein, zum Beispiel von Chefkoch.",
+  "preparedMealTemplateRecipeUrlLabel": "Rezept-Link",
+  "preparedMealTemplateRecipeUrlHint": "https://www.chefkoch.de/...",
+  "preparedMealTemplateRecipeUrlInvalid": "Bitte gib einen gültigen Rezept-Link ein.",
+  "preparedMealTemplateNameLabel": "Vorlagenname",
+  "preparedMealTemplateNameHelper": "Optional. Wenn leer, wird der Name aus dem Link abgeleitet.",
+  "preparedMealTemplatePortionsLabel": "Portionen",
+  "preparedMealTemplatePortionsHelper": "Optional. Wenn leer, werden die Portionen aus dem Rezept übernommen.",
+  "preparedMealTemplateRecipePlaceholder": "Rezept-Link",
+  "preparedMealTemplateNoIngredientsYet": "Noch keine Zutaten verknüpft.",
+  "preparedMealTemplateOpenAction": "Vorlage öffnen",
+  "preparedMealTemplateUpdatedMessage": "Vorlage aktualisiert.",
+  "preparedMealTemplateImportReviewTitle": "Rezept prüfen",
+  "preparedMealTemplateImportReviewInstructionsTitle": "Kurze Anleitung",
+  "preparedMealTemplateImportReviewSavingAction": "Speichert...",
+  "preparedMealTemplateRecipeSource": "Rezept: {host}",
+  "@preparedMealTemplateRecipeSource": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
   "preparedMealTemplatePortions": "{count} Portionen",
   "@preparedMealTemplatePortions": {
     "placeholders": {
@@ -262,6 +305,87 @@
       }
     }
   },
+  "preparedMealTemplateDetailTitle": "Vorlage",
+  "preparedMealTemplateDetailNotFound": "Vorlage nicht gefunden.",
+  "preparedMealTemplateDetailLoadFailed":
+      "Vorlage konnte nicht geladen werden.",
+  "preparedMealTemplateDetailBasePortions": "Basis: {count} Portionen",
+  "@preparedMealTemplateDetailBasePortions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealTemplateDetailScaleHint":
+      "Zutaten werden auf diese Portionszahl skaliert.",
+  "preparedMealTemplateDetailNoIngredients":
+      "Noch keine Zutaten vorhanden.",
+  "preparedMealTemplateDetailSaveAction": "Vorlage anpassen",
+  "preparedMealTemplateDetailSavingAction": "Speichert...",
+  "preparedMealTemplateDetailIngredientsToShoppingListAction":
+      "Zutaten auf Einkaufsliste",
+  "preparedMealTemplateDetailCreateMealHint":
+      "Diese Vorlage braucht mindestens eine Zutat, bevor du eine Mahlzeit erstellst.",
+  "preparedMealTemplateDetailAssignAction": "Zuordnen",
+  "preparedMealTemplateDetailChangeAssignmentAction":
+      "Zuordnung ändern",
+  "preparedMealTemplateDetailAssignedFromInventoryTitle":
+      "Aus dem Inventar belegt",
+  "preparedMealTemplateDetailMatchingInventoryItemsTitle":
+      "Passende Inventarartikel",
+  "preparedMealTemplateDetailMissingAssignedItems":
+      "{count} belegte Artikel sind nicht mehr im Inventar.",
+  "@preparedMealTemplateDetailMissingAssignedItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealTemplateDetailIgnoredAmount": "Ignoriert • {amount}",
+  "@preparedMealTemplateDetailIgnoredAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealTemplateDetailAssignedCount": "{count} Artikel belegt",
+  "@preparedMealTemplateDetailAssignedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealTemplateDetailSelectionTitle":
+      "Inventarartikel wählen",
+  "preparedMealTemplateDetailSelectionEmpty":
+      "Keine Inventarartikel vorhanden.",
+  "preparedMealTemplateDetailAddToShoppingListAction":
+      "Zur Einkaufsliste",
+  "preparedMealTemplateDetailIgnoreAction": "Ignorieren",
+  "preparedMealTemplateDetailUnignoreAction": "Nicht ignorieren",
+  "preparedMealTemplateDetailAddIngredientShoppingFailed":
+      "Zutat konnte nicht zur Einkaufsliste hinzugefügt werden.",
+  "preparedMealTemplateDetailAddIngredientsShoppingFailed":
+      "Zutaten konnten nicht zur Einkaufsliste hinzugefügt werden.",
+  "preparedMealTemplateDetailAddIngredientsShoppingSucceeded":
+      "{count} Zutaten wurden zur Einkaufsliste hinzugefügt.",
+  "@preparedMealTemplateDetailAddIngredientsShoppingSucceeded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealTemplateDetailIgnoreSaveFailed":
+      "Zutatenstatus konnte nicht gespeichert werden.",
+  "preparedMealTemplateDetailInvalidMealMessage":
+      "Die Vorlage braucht mindestens eine gültige Zutat.",
+  "preparedMealTemplateDetailSaveFailedMessage":
+      "Vorlage konnte nicht angepasst werden.",
   "shoppingListStatsEntries": "Positionen",
   "shoppingListStatsQuantity": "Gesamtmenge",
   "shoppingListStatsEstimatedTotal": "Geschätzte Summe",

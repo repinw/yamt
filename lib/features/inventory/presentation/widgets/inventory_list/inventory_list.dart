@@ -34,11 +34,14 @@ class InventoryList extends ConsumerStatefulWidget {
     super.key,
     required this.items,
     required this.preparedMeals,
+    this.expandedPreparedMealId,
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
     required this.onEatPreparedMeal,
     required this.onThrowAwayPreparedMeal,
+    required this.onFillPendingPreparedMealIngredient,
+    required this.onIgnorePendingPreparedMealIngredient,
     required this.onUnbundlePreparedMeal,
     required this.onEditPreparedMeal,
     required this.onSavePreparedMealTemplate,
@@ -50,6 +53,7 @@ class InventoryList extends ConsumerStatefulWidget {
 
   final List<InventoryItem> items;
   final List<PreparedMeal> preparedMeals;
+  final String? expandedPreparedMealId;
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
   final Future<bool> Function(
@@ -66,6 +70,14 @@ class InventoryList extends ConsumerStatefulWidget {
     InventoryDiscardReason reason,
   )
   onThrowAwayPreparedMeal;
+  final Future<bool> Function(
+    String mealId,
+    String ingredient,
+    List<String> inventoryItemIds,
+  )
+  onFillPendingPreparedMealIngredient;
+  final Future<bool> Function(String mealId, String ingredient)
+  onIgnorePendingPreparedMealIngredient;
   final Future<bool> Function(String mealId) onUnbundlePreparedMeal;
   final Future<bool> Function(
     String mealId,
@@ -152,10 +164,17 @@ class _InventoryListState extends ConsumerState<InventoryList> {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.lg),
                         child: PreparedMealCard(
+                          key: ValueKey(meal.id),
                           meal: meal,
+                          initiallyExpanded:
+                              meal.id == widget.expandedPreparedMealId,
                           enabled: !widget.isSelectionMode,
                           onEatPressed: widget.onEatPreparedMeal,
                           onThrowAwayPressed: widget.onThrowAwayPreparedMeal,
+                          onFillPendingIngredientPressed:
+                              widget.onFillPendingPreparedMealIngredient,
+                          onIgnorePendingIngredientPressed:
+                              widget.onIgnorePendingPreparedMealIngredient,
                           onUnbundlePressed: widget.onUnbundlePreparedMeal,
                           onEditPressed: widget.onEditPreparedMeal,
                           onSaveTemplatePressed:

@@ -4,14 +4,21 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'prepared_meal_templates_page.dart';
+import 'package:yamt/features/meal_templates/presentation/'
+    'meal_template_import_review_page.dart';
+import 'package:yamt/features/meal_templates/presentation/'
+    'meal_templates_page.dart';
+import 'package:yamt/features/meal_templates/presentation/models/'
+    'meal_template_import_review_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../support/fake_local_image_store.dart';
@@ -52,6 +59,20 @@ class _FakePreparedMealTemplateRepository
   }
 
   Future<void> dispose() => _controller.close();
+}
+
+class _FakePreparedMealRecipeImporter extends PreparedMealRecipeImporter {
+  const _FakePreparedMealRecipeImporter(this.recipe);
+
+  final PreparedMealRecipeImport? recipe;
+
+  @override
+  Future<PreparedMealRecipeImport?> importRecipe(
+    String recipeUrl, {
+    String? localeName,
+  }) async {
+    return recipe;
+  }
 }
 
 PreparedMeal _template({required String id, required String name}) {
@@ -104,6 +125,61 @@ PreparedMeal _template({required String id, required String name}) {
   );
 }
 
+PreparedMeal _recipeTemplate({required String id, required String name}) {
+  return PreparedMeal(
+    id: id,
+    name: name,
+    recipeUrl: 'https://www.chefkoch.de/rezepte/$id/$name.html',
+    recipeIngredients: const <String>['1 kg Kartoffeln'],
+    totalPortions: 4,
+    remainingPortions: 4,
+    totalKcal: 0,
+    totalProtein: 0,
+    totalCarbs: 0,
+    totalFat: 0,
+    createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+    updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+    components: const <PreparedMealComponent>[],
+  );
+}
+
+Widget _buildHarness({
+  required PreparedMealTemplateRepository repository,
+  required PreparedMealRecipeImporter importer,
+  LocalImageStore? localImageStore,
+}) {
+  final router = GoRouter(
+    routes: [
+      GoRoute(
+        path: AppRoutes.root,
+        builder: (context, state) => const MealTemplatesPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.homeInventoryTemplateImportReview,
+        builder: (context, state) {
+          final args = state.extra! as MealTemplateImportReviewArgs;
+          return MealTemplateImportReviewPage(args: args);
+        },
+      ),
+    ],
+  );
+
+  return ProviderScope(
+    overrides: [
+      preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
+      preparedMealRecipeImporterProvider.overrideWithValue(importer),
+      if (localImageStore != null)
+        localImageStoreProvider.overrideWithValue(localImageStore),
+    ],
+    child: MaterialApp.router(
+      locale: const Locale('en'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      routerConfig: router,
+    ),
+  );
+}
+
 void main() {
   testWidgets('renders templates and deletes one from the list', (
     tester,
@@ -122,17 +198,10 @@ void main() {
     );
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
-          localImageStoreProvider.overrideWithValue(localImageStore),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const PreparedMealTemplatesPage(),
-        ),
+      _buildHarness(
+        repository: repository,
+        importer: const _FakePreparedMealRecipeImporter(null),
+        localImageStore: localImageStore,
       ),
     );
     await tester.pumpAndSettle();
@@ -165,22 +234,109 @@ void main() {
     );
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
-          localImageStoreProvider.overrideWithValue(localImageStore),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const PreparedMealTemplatesPage(),
-        ),
+      _buildHarness(
+        repository: repository,
+        importer: const _FakePreparedMealRecipeImporter(null),
+        localImageStore: localImageStore,
       ),
     );
     await tester.pumpAndSettle();
 
     final imageWidget = tester.widget<Image>(find.byType(Image).first);
     expect(imageWidget.image, isA<MemoryImage>());
+  });
+
+  testWidgets('creates a recipe-based template from the templates page', (
+    tester,
+  ) async {
+    final repository = _FakePreparedMealTemplateRepository(
+      initialTemplates: const <PreparedMeal>[],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        repository: repository,
+        importer: const _FakePreparedMealRecipeImporter(
+          PreparedMealRecipeImport(
+            recipeUrl:
+                'https://www.chefkoch.de/rezepte/1234/kartoffelsuppe.html',
+            title: 'Kartoffelsuppe',
+            servings: 5,
+            ingredients: <String>['1 kg Kartoffeln', '500 ml Brühe'],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Add recipe template'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Recipe link'),
+      'chefkoch.de/rezepte/1234/kartoffelsuppe.html',
+    );
+    await tester.tap(find.text('Create from recipe'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Save as template'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Kartoffelsuppe'), findsOneWidget);
+    expect(find.textContaining('Recipe: chefkoch.de'), findsOneWidget);
+    expect(find.text('1 kg Kartoffeln'), findsOneWidget);
+    expect(repository.savedTemplates, hasLength(1));
+    expect(
+      repository.savedTemplates.single.recipeUrl,
+      'https://www.chefkoch.de/rezepte/1234/kartoffelsuppe.html',
+    );
+    expect(repository.savedTemplates.single.totalPortions, 5);
+  });
+
+  testWidgets('edits a recipe-based template from the templates page', (
+    tester,
+  ) async {
+    final repository = _FakePreparedMealTemplateRepository(
+      initialTemplates: <PreparedMeal>[
+        _recipeTemplate(id: 'template-1', name: 'Kartoffelsuppe'),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        repository: repository,
+        importer: const _FakePreparedMealRecipeImporter(
+          PreparedMealRecipeImport(
+            recipeUrl: 'https://www.chefkoch.de/rezepte/9999/linsensuppe.html',
+            title: 'Linsensuppe',
+            servings: 3,
+            ingredients: <String>['500 g Linsen'],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Edit'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Recipe link'),
+      'chefkoch.de/rezepte/9999/linsensuppe.html',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Template name'),
+      'Red Lentil Soup',
+    );
+    await tester.enterText(find.widgetWithText(TextField, 'Portions'), '2');
+    await tester.tap(find.text('Edit'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Red Lentil Soup'), findsOneWidget);
+    expect(find.text('500 g Linsen'), findsOneWidget);
+    expect(repository.savedTemplates.single.name, 'Red Lentil Soup');
+    expect(repository.savedTemplates.single.totalPortions, 2);
   });
 }

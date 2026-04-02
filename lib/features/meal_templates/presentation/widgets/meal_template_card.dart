@@ -1,24 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_component_avatar.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
+import 'package:yamt/features/meal_templates/application/'
+    'recipe_source_host.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class PreparedMealTemplateCard extends ConsumerWidget {
   const PreparedMealTemplateCard({
     super.key,
     required this.template,
+    required this.onOpenPressed,
+    required this.onEditPressed,
     required this.onDeletePressed,
   });
 
   final PreparedMeal template;
+  final VoidCallback onOpenPressed;
+  final Future<bool> Function(PreparedMeal template) onEditPressed;
   final Future<bool> Function(String templateId) onDeletePressed;
 
   @override
@@ -29,9 +35,8 @@ class PreparedMealTemplateCard extends ConsumerWidget {
     final storedImageBytes = imageRef == null
         ? null
         : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
-    final metadata =
-        '${l10n.preparedMealIngredientsCount(template.components.length)} • '
-        '${l10n.preparedMealTemplatePortions(template.totalPortions)}';
+    final metadata = _buildMetadata(l10n);
+    final recipeHost = recipeSourceHost(template.recipeUrl);
 
     return DecoratedBox(
       decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
@@ -49,6 +54,7 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                 PreparedMealCover(
                   label: template.name,
                   imageBytes: storedImageBytes,
+                  imageUrl: template.imageUrl,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -72,6 +78,17 @@ class PreparedMealTemplateCard extends ConsumerWidget {
                 ),
                 const SizedBox(width: AppSpacing.md),
                 IconButton(
+                  tooltip: l10n.preparedMealTemplateOpenAction,
+                  onPressed: onOpenPressed,
+                  icon: const Icon(Icons.chevron_right_rounded),
+                ),
+                if (template.recipeUrl != null)
+                  IconButton(
+                    tooltip: l10n.inventoryReceiptReviewEditAction,
+                    onPressed: () => onEditPressed(template),
+                    icon: const Icon(Icons.edit_outlined),
+                  ),
+                IconButton(
                   tooltip: l10n.preparedMealTemplateDeleteAction,
                   onPressed: () => onDeletePressed(template.id),
                   icon: const Icon(Icons.delete_outline_rounded),
@@ -79,6 +96,27 @@ class PreparedMealTemplateCard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.md),
+            if (recipeHost != null) ...[
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colors.secondaryContainer,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.xs,
+                  ),
+                  child: Text(
+                    l10n.preparedMealTemplateRecipeSource(recipeHost),
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
             DecoratedBox(
               decoration: BoxDecoration(
                 color: colors.primaryContainer,
@@ -99,27 +137,59 @@ class PreparedMealTemplateCard extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: template.components
-                  .map((component) {
-                    return Chip(
-                      avatar: PreparedMealComponentAvatar(
-                        label: component.name,
-                        imageUrl: component.imageUrl,
-                      ),
-                      label: Text(
-                        '${component.name} • ${component.usedAmount} '
-                        '${component.usedUnit.code}',
-                      ),
-                    );
-                  })
-                  .toList(growable: false),
-            ),
+            if (template.components.isEmpty &&
+                template.recipeIngredients.isEmpty)
+              Text(
+                l10n.preparedMealTemplateNoIngredientsYet,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              )
+            else if (template.components.isEmpty)
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: template.recipeIngredients
+                    .map((ingredient) => Chip(label: Text(ingredient)))
+                    .toList(growable: false),
+              )
+            else
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: template.components
+                    .map((component) {
+                      return Chip(
+                        avatar: PreparedMealComponentAvatar(
+                          label: component.name,
+                          imageUrl: component.imageUrl,
+                        ),
+                        label: Text(
+                          '${component.name} • ${component.usedAmount} '
+                          '${component.usedUnit.code}',
+                        ),
+                      );
+                    })
+                    .toList(growable: false),
+              ),
           ],
         ),
       ),
     );
+  }
+
+  String _buildMetadata(AppLocalizations l10n) {
+    final parts = <String>[];
+    if (template.components.isNotEmpty) {
+      parts.add(l10n.preparedMealIngredientsCount(template.components.length));
+    } else if (template.recipeIngredients.isNotEmpty) {
+      parts.add(
+        l10n.preparedMealIngredientsCount(template.recipeIngredients.length),
+      );
+    } else if (template.recipeUrl != null) {
+      parts.add(l10n.preparedMealTemplateRecipePlaceholder);
+    }
+    parts.add(l10n.preparedMealTemplatePortions(template.totalPortions));
+    return parts.join(' • ');
   }
 }

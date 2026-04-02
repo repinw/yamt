@@ -7,6 +7,8 @@ import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
+import 'package:yamt/features/inventory/application/'
+    'template_ingredient_parser.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -108,10 +110,10 @@ class PreparedMealsController extends _$PreparedMealsController {
     return _mutationQueue
         .run<PreparedMealCreationResult>(
           operation: () async {
-            final currentMeals = await _currentMeals();
             final inventoryRepository = ref.read(
               inventoryItemRepositoryProvider,
             );
+            final currentMeals = await _currentMeals();
             final currentItems = await inventoryRepository.readAll();
 
             try {
@@ -122,34 +124,11 @@ class PreparedMealsController extends _$PreparedMealsController {
                 totalPortions: totalPortions,
                 inputs: items,
               );
-
-              final inventorySaved = await inventoryRepository.saveAll(
-                creationResult.nextItems,
-              );
-              if (!inventorySaved) {
-                return const PreparedMealCreationResult.failure(
-                  PreparedMealCreationFailureReason.inventorySaveFailed,
-                );
-              }
-
-              final nextMeals = List<PreparedMeal>.from(currentMeals)
-                ..add(creationResult.preparedMeal);
-              final mealsSaved = await _saveMeals(
-                previousMeals: currentMeals,
-                nextMeals: nextMeals,
-              );
-              if (mealsSaved) {
-                return PreparedMealCreationResult.success(
-                  creationResult.preparedMeal.id,
-                );
-              }
-
-              await _restoreInventory(
+              return _persistCreatedMeal(
                 inventoryRepository: inventoryRepository,
-                previousItems: currentItems,
-              );
-              return const PreparedMealCreationResult.failure(
-                PreparedMealCreationFailureReason.mealSaveFailed,
+                currentMeals: currentMeals,
+                currentItems: currentItems,
+                creationResult: creationResult,
               );
             } on _PreparedMealCreationException catch (error) {
               return PreparedMealCreationResult.failure(error.reason);
@@ -161,6 +140,63 @@ class PreparedMealsController extends _$PreparedMealsController {
           onError: (error, stackTrace) {
             log(
               'Unexpected prepared meal creation error.',
+              name: _preparedMealsControllerLogName,
+              error: error,
+              stackTrace: stackTrace,
+            );
+          },
+        )
+        .whenComplete(keepAliveLink.close);
+  }
+
+  Future<PreparedMealCreationResult> createPreparedMealFromTemplate({
+    required PreparedMeal template,
+    required int totalPortions,
+    required Map<String, List<String>> recipeIngredientAssignments,
+  }) {
+    if (totalPortions < 1 || template.name.trim().isEmpty) {
+      return Future<PreparedMealCreationResult>.value(
+        const PreparedMealCreationResult.failure(
+          PreparedMealCreationFailureReason.invalidInput,
+        ),
+      );
+    }
+
+    final keepAliveLink = ref.keepAlive();
+    return _mutationQueue
+        .run<PreparedMealCreationResult>(
+          operation: () async {
+            final inventoryRepository = ref.read(
+              inventoryItemRepositoryProvider,
+            );
+            final ingredientParser = ref.read(templateIngredientParserProvider);
+            final currentMeals = await _currentMeals();
+            final currentItems = await inventoryRepository.readAll();
+
+            try {
+              final creationResult = _buildMealCreationFromTemplateResult(
+                currentItems: currentItems,
+                template: template,
+                totalPortions: totalPortions,
+                recipeIngredientAssignments: recipeIngredientAssignments,
+                ingredientParser: ingredientParser,
+              );
+              return _persistCreatedMeal(
+                inventoryRepository: inventoryRepository,
+                currentMeals: currentMeals,
+                currentItems: currentItems,
+                creationResult: creationResult,
+              );
+            } on _PreparedMealCreationException catch (error) {
+              return PreparedMealCreationResult.failure(error.reason);
+            }
+          },
+          fallbackValue: const PreparedMealCreationResult.failure(
+            PreparedMealCreationFailureReason.mealSaveFailed,
+          ),
+          onError: (error, stackTrace) {
+            log(
+              'Unexpected template meal creation error.',
               name: _preparedMealsControllerLogName,
               error: error,
               stackTrace: stackTrace,
@@ -212,6 +248,145 @@ class PreparedMealsController extends _$PreparedMealsController {
     }).whenComplete(keepAliveLink.close);
   }
 
+  Future<bool> fillPreparedMealPendingIngredient({
+    required String mealId,
+    required String ingredient,
+    required List<String> inventoryItemIds,
+  }) {
+    final trimmedIngredient = ingredient.trim();
+    final normalizedItemIds = inventoryItemIds
+        .map((itemId) => itemId.trim())
+        .where((itemId) => itemId.isNotEmpty)
+        .toList(growable: false);
+    if (trimmedIngredient.isEmpty || normalizedItemIds.isEmpty) {
+      return Future<bool>.value(false);
+    }
+
+    final keepAliveLink = ref.keepAlive();
+    return _runSerializedMutation(() async {
+      final ingredientParser = ref.read(templateIngredientParserProvider);
+      final currentMeals = await _currentMeals();
+      final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
+      if (mealIndex < 0) {
+        return false;
+      }
+
+      final currentMeal = currentMeals[mealIndex];
+      final pendingIndex = currentMeal.pendingRecipeIngredients.indexWhere(
+        (entry) => entry.trim() == trimmedIngredient,
+      );
+      if (pendingIndex < 0) {
+        return false;
+      }
+
+      final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
+      final currentItems = await inventoryRepository.readAll();
+      final fillResult = _buildPendingIngredientFillResult(
+        currentItems: currentItems,
+        ingredient: trimmedIngredient,
+        inventoryItemIds: normalizedItemIds,
+        ingredientParser: ingredientParser,
+      );
+      if (fillResult == null) {
+        return false;
+      }
+
+      final inventorySaved = await inventoryRepository.saveAll(
+        fillResult.nextItems,
+      );
+      if (!inventorySaved) {
+        return false;
+      }
+
+      final nextPendingIngredients = List<String>.from(
+        currentMeal.pendingRecipeIngredients,
+      )..removeAt(pendingIndex);
+      if (fillResult.remainingIngredient != null) {
+        nextPendingIngredients.insert(
+          pendingIndex,
+          fillResult.remainingIngredient!,
+        );
+      }
+
+      final nextComponents = <PreparedMealComponent>[
+        ...currentMeal.components,
+        ...fillResult.components,
+      ];
+      final nextMeal = currentMeal.copyWith(
+        components: nextComponents,
+        pendingRecipeIngredients: nextPendingIngredients,
+        totalKcal: nextComponents.fold<double>(
+          0,
+          (sum, component) => sum + component.totalKcal,
+        ),
+        totalProtein: nextComponents.fold<double>(
+          0,
+          (sum, component) => sum + component.totalProtein,
+        ),
+        totalCarbs: nextComponents.fold<double>(
+          0,
+          (sum, component) => sum + component.totalCarbs,
+        ),
+        totalFat: nextComponents.fold<double>(
+          0,
+          (sum, component) => sum + component.totalFat,
+        ),
+        updatedAt: DateTime.now(),
+      );
+
+      final nextMeals = List<PreparedMeal>.from(currentMeals);
+      nextMeals[mealIndex] = nextMeal;
+      final mealsSaved = await _saveMeals(
+        previousMeals: currentMeals,
+        nextMeals: nextMeals,
+      );
+      if (mealsSaved) {
+        return true;
+      }
+
+      await _restoreInventory(
+        inventoryRepository: inventoryRepository,
+        previousItems: currentItems,
+      );
+      return false;
+    }).whenComplete(keepAliveLink.close);
+  }
+
+  Future<bool> ignorePreparedMealPendingIngredient({
+    required String mealId,
+    required String ingredient,
+  }) {
+    final trimmedIngredient = ingredient.trim();
+    if (trimmedIngredient.isEmpty) {
+      return Future<bool>.value(false);
+    }
+
+    final keepAliveLink = ref.keepAlive();
+    return _runSerializedMutation(() async {
+      final currentMeals = await _currentMeals();
+      final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
+      if (mealIndex < 0) {
+        return false;
+      }
+
+      final currentMeal = currentMeals[mealIndex];
+      final nextPendingIngredients = currentMeal.pendingRecipeIngredients
+          .where((entry) => entry.trim() != trimmedIngredient)
+          .toList(growable: false);
+      if (nextPendingIngredients.length ==
+          currentMeal.pendingRecipeIngredients.length) {
+        return false;
+      }
+
+      final nextMeals = List<PreparedMeal>.from(currentMeals);
+      nextMeals[mealIndex] = currentMeal.copyWith(
+        pendingRecipeIngredients: nextPendingIngredients,
+        updatedAt: DateTime.now(),
+      );
+      return _saveMeals(previousMeals: currentMeals, nextMeals: nextMeals);
+    }).whenComplete(keepAliveLink.close);
+  }
+
   Future<bool> consumePreparedMeal({
     required String mealId,
     required int consumedPortions,
@@ -230,6 +405,9 @@ class PreparedMealsController extends _$PreparedMealsController {
       }
 
       final meal = currentMeals[mealIndex];
+      if (meal.hasPendingRecipeIngredients) {
+        return false;
+      }
       if (consumedPortions > meal.remainingPortions) {
         return false;
       }
@@ -537,6 +715,40 @@ class PreparedMealsController extends _$PreparedMealsController {
       },
     );
   }
+
+  Future<PreparedMealCreationResult> _persistCreatedMeal({
+    required InventoryItemRepository inventoryRepository,
+    required List<PreparedMeal> currentMeals,
+    required List<InventoryItem> currentItems,
+    required _PreparedMealCreationResult creationResult,
+  }) async {
+    final inventorySaved = await inventoryRepository.saveAll(
+      creationResult.nextItems,
+    );
+    if (!inventorySaved) {
+      return const PreparedMealCreationResult.failure(
+        PreparedMealCreationFailureReason.inventorySaveFailed,
+      );
+    }
+
+    final nextMeals = List<PreparedMeal>.from(currentMeals)
+      ..add(creationResult.preparedMeal);
+    final mealsSaved = await _saveMeals(
+      previousMeals: currentMeals,
+      nextMeals: nextMeals,
+    );
+    if (mealsSaved) {
+      return PreparedMealCreationResult.success(creationResult.preparedMeal.id);
+    }
+
+    await _restoreInventory(
+      inventoryRepository: inventoryRepository,
+      previousItems: currentItems,
+    );
+    return const PreparedMealCreationResult.failure(
+      PreparedMealCreationFailureReason.mealSaveFailed,
+    );
+  }
 }
 
 class _PreparedMealCreationResult {
@@ -547,6 +759,18 @@ class _PreparedMealCreationResult {
 
   final List<InventoryItem> nextItems;
   final PreparedMeal preparedMeal;
+}
+
+class _PendingIngredientFillResult {
+  const _PendingIngredientFillResult({
+    required this.nextItems,
+    required this.components,
+    this.remainingIngredient,
+  });
+
+  final List<InventoryItem> nextItems;
+  final List<PreparedMealComponent> components;
+  final String? remainingIngredient;
 }
 
 _PreparedMealCreationResult _buildMealCreationResult({
@@ -648,6 +872,348 @@ _PreparedMealCreationResult _buildMealCreationResult({
       components: components,
     ),
   );
+}
+
+_PreparedMealCreationResult _buildMealCreationFromTemplateResult({
+  required List<InventoryItem> currentItems,
+  required PreparedMeal template,
+  required int totalPortions,
+  required Map<String, List<String>> recipeIngredientAssignments,
+  required TemplateIngredientParser ingredientParser,
+}) {
+  final activeIngredients = template.recipeIngredients
+      .where(
+        (ingredient) => !template.ignoredRecipeIngredients.contains(ingredient),
+      )
+      .toList(growable: false);
+  if (activeIngredients.isEmpty) {
+    throw const _PreparedMealCreationException(
+      PreparedMealCreationFailureReason.invalidInput,
+    );
+  }
+
+  final now = DateTime.now();
+  final nextItems = List<InventoryItem>.from(currentItems);
+  final components = <PreparedMealComponent>[];
+  final pendingIngredients = <String>[];
+
+  for (final ingredient in activeIngredients) {
+    final assignedItemIds =
+        recipeIngredientAssignments[ingredient] ?? const <String>[];
+    if (assignedItemIds.isEmpty) {
+      pendingIngredients.add(
+        ingredientParser.pendingIngredientLabel(
+          originalIngredient: ingredient,
+          requirement: ingredientParser.parseRequirement(
+            ingredient: ingredient,
+            selectedPortions: totalPortions,
+            basePortions: template.totalPortions,
+          ),
+        ),
+      );
+      continue;
+    }
+
+    final requirement = ingredientParser.parseRequirement(
+      ingredient: ingredient,
+      selectedPortions: totalPortions,
+      basePortions: template.totalPortions,
+    );
+    if (requirement == null) {
+      pendingIngredients.add(ingredient.trim());
+      continue;
+    }
+
+    var remainingAmount = requirement.amount;
+    var consumedAnyAmount = false;
+    for (final itemId in assignedItemIds) {
+      if (remainingAmount <= 0) {
+        break;
+      }
+
+      final itemIndex = nextItems.indexWhere((item) => item.id == itemId);
+      if (itemIndex < 0) {
+        continue;
+      }
+
+      final currentItem = nextItems[itemIndex];
+      if (!_hasCompatibleTemplateRequirement(
+        item: currentItem,
+        requiredUnit: requirement.unit,
+      )) {
+        continue;
+      }
+
+      final resolvedNutrition =
+          currentItem.nutrition ??
+          const GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.missing,
+          );
+      final consumableAmount = _consumableAmountForRequirement(
+        item: currentItem,
+        requiredUnit: requirement.unit,
+        remainingAmount: remainingAmount,
+      );
+      if (consumableAmount < 1) {
+        continue;
+      }
+
+      final nextItem = _reduceInventoryItem(
+        item: currentItem,
+        amount: consumableAmount,
+      );
+      if (nextItem == null) {
+        continue;
+      }
+
+      final usedUnit = _resolveTemplateUsedUnit(
+        item: currentItem,
+        requiredUnit: requirement.unit,
+      );
+      nextItems[itemIndex] = nextItem;
+      components.add(
+        _buildPreparedMealComponent(
+          item: currentItem,
+          usedAmount: consumableAmount,
+          usedUnit: usedUnit,
+          nutrition: resolvedNutrition,
+        ),
+      );
+      remainingAmount = _remainingRequirementAfterConsumption(
+        item: currentItem,
+        requiredUnit: requirement.unit,
+        remainingAmount: remainingAmount,
+        consumedAmount: consumableAmount,
+      );
+      consumedAnyAmount = true;
+    }
+
+    if (!consumedAnyAmount) {
+      pendingIngredients.add(
+        ingredientParser.pendingIngredientLabel(
+          originalIngredient: ingredient,
+          requirement: requirement,
+        ),
+      );
+      continue;
+    }
+
+    if (remainingAmount > 0) {
+      pendingIngredients.add(
+        ingredientParser.formatPendingIngredient(
+          amount: remainingAmount,
+          unit: requirement.unit,
+          name: requirement.name,
+        ),
+      );
+    }
+  }
+
+  final totalKcal = components.fold<double>(
+    0,
+    (sum, component) => sum + component.totalKcal,
+  );
+  final totalProtein = components.fold<double>(
+    0,
+    (sum, component) => sum + component.totalProtein,
+  );
+  final totalCarbs = components.fold<double>(
+    0,
+    (sum, component) => sum + component.totalCarbs,
+  );
+  final totalFat = components.fold<double>(
+    0,
+    (sum, component) => sum + component.totalFat,
+  );
+
+  return _PreparedMealCreationResult(
+    nextItems: nextItems,
+    preparedMeal: PreparedMeal(
+      id: PreparedMealsController._uuid.v4(),
+      name: template.name,
+      imageAssetId: _normalizeOptionalImageAssetId(template.imageAssetId),
+      imageUrl: template.imageUrl,
+      recipeUrl: template.recipeUrl,
+      recipeIngredients: template.recipeIngredients,
+      ignoredRecipeIngredients: template.ignoredRecipeIngredients,
+      recipeIngredientAssignments: recipeIngredientAssignments,
+      pendingRecipeIngredients: pendingIngredients,
+      totalPortions: totalPortions,
+      remainingPortions: totalPortions,
+      totalKcal: totalKcal,
+      totalProtein: totalProtein,
+      totalCarbs: totalCarbs,
+      totalFat: totalFat,
+      createdAt: now,
+      updatedAt: now,
+      components: components,
+    ),
+  );
+}
+
+_PendingIngredientFillResult? _buildPendingIngredientFillResult({
+  required List<InventoryItem> currentItems,
+  required String ingredient,
+  required List<String> inventoryItemIds,
+  required TemplateIngredientParser ingredientParser,
+}) {
+  final requirement = ingredientParser.parseRequirement(
+    ingredient: ingredient,
+    selectedPortions: 1,
+    basePortions: 1,
+  );
+  if (requirement == null) {
+    return null;
+  }
+
+  final nextItems = List<InventoryItem>.from(currentItems);
+  final components = <PreparedMealComponent>[];
+  var remainingAmount = requirement.amount;
+  var consumedAnyAmount = false;
+
+  for (final itemId in inventoryItemIds) {
+    if (remainingAmount <= 0) {
+      break;
+    }
+
+    final itemIndex = nextItems.indexWhere((item) => item.id == itemId);
+    if (itemIndex < 0) {
+      continue;
+    }
+
+    final currentItem = nextItems[itemIndex];
+    if (!_hasCompatibleTemplateRequirement(
+      item: currentItem,
+      requiredUnit: requirement.unit,
+    )) {
+      continue;
+    }
+
+    final consumableAmount = _consumableAmountForRequirement(
+      item: currentItem,
+      requiredUnit: requirement.unit,
+      remainingAmount: remainingAmount,
+    );
+    if (consumableAmount < 1) {
+      continue;
+    }
+
+    final nextItem = _reduceInventoryItem(
+      item: currentItem,
+      amount: consumableAmount,
+    );
+    if (nextItem == null) {
+      continue;
+    }
+
+    final resolvedNutrition =
+        currentItem.nutrition ??
+        const GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.missing,
+        );
+    final usedUnit = _resolveTemplateUsedUnit(
+      item: currentItem,
+      requiredUnit: requirement.unit,
+    );
+    nextItems[itemIndex] = nextItem;
+    components.add(
+      _buildPreparedMealComponent(
+        item: currentItem,
+        usedAmount: consumableAmount,
+        usedUnit: usedUnit,
+        nutrition: resolvedNutrition,
+      ),
+    );
+    remainingAmount = _remainingRequirementAfterConsumption(
+      item: currentItem,
+      requiredUnit: requirement.unit,
+      remainingAmount: remainingAmount,
+      consumedAmount: consumableAmount,
+    );
+    consumedAnyAmount = true;
+  }
+
+  if (!consumedAnyAmount || components.isEmpty) {
+    return null;
+  }
+
+  return _PendingIngredientFillResult(
+    nextItems: nextItems,
+    components: components,
+    remainingIngredient: remainingAmount > 0
+        ? ingredientParser.formatPendingIngredient(
+            amount: remainingAmount,
+            unit: requirement.unit,
+            name: requirement.name,
+          )
+        : null,
+  );
+}
+
+bool _hasCompatibleAmountUnit({
+  required InventoryItem item,
+  required InventoryAmountUnit requiredUnit,
+}) {
+  if (requiredUnit == InventoryAmountUnit.piece) {
+    return !item.usesAmountProgress;
+  }
+  return item.usesAmountProgress && item.amountUnit == requiredUnit;
+}
+
+bool _hasCompatibleTemplateRequirement({
+  required InventoryItem item,
+  required InventoryAmountUnit requiredUnit,
+}) {
+  if (requiredUnit == InventoryAmountUnit.piece) {
+    return _availableAmount(item) > 0;
+  }
+  return _hasCompatibleAmountUnit(item: item, requiredUnit: requiredUnit);
+}
+
+int _consumableAmountForRequirement({
+  required InventoryItem item,
+  required InventoryAmountUnit requiredUnit,
+  required int remainingAmount,
+}) {
+  if (remainingAmount < 1) {
+    return 0;
+  }
+
+  final availableAmount = _availableAmount(item);
+  if (availableAmount < 1) {
+    return 0;
+  }
+
+  if (requiredUnit == InventoryAmountUnit.piece && item.usesAmountProgress) {
+    return availableAmount;
+  }
+  if (requiredUnit != InventoryAmountUnit.piece &&
+      item.amountUnit != requiredUnit) {
+    return 0;
+  }
+  return remainingAmount < availableAmount ? remainingAmount : availableAmount;
+}
+
+InventoryAmountUnit _resolveTemplateUsedUnit({
+  required InventoryItem item,
+  required InventoryAmountUnit requiredUnit,
+}) {
+  if (requiredUnit == InventoryAmountUnit.piece && item.usesAmountProgress) {
+    return item.amountUnit ?? InventoryAmountUnit.piece;
+  }
+  return requiredUnit;
+}
+
+int _remainingRequirementAfterConsumption({
+  required InventoryItem item,
+  required InventoryAmountUnit requiredUnit,
+  required int remainingAmount,
+  required int consumedAmount,
+}) {
+  if (requiredUnit == InventoryAmountUnit.piece && item.usesAmountProgress) {
+    return remainingAmount - 1;
+  }
+  return remainingAmount - consumedAmount;
 }
 
 String? _normalizeOptionalImageAssetId(String? value) {
