@@ -22,11 +22,27 @@ class GlobalFoodNutrition {
   factory GlobalFoodNutrition.fromJson(Map<String, dynamic> json) {
     return GlobalFoodNutrition(
       qualityStatus: _nutritionQualityFromJson(json['quality_status']),
-      per100Kcal: _readDouble(json['per_100_kcal']),
-      per100Protein: _readDouble(json['per_100_protein']),
-      per100Carbs: _readDouble(json['per_100_carbs']),
-      per100Fat: _readDouble(json['per_100_fat']),
-      per100Salt: _readDouble(json['per_100_salt']),
+      per100Kcal: _readFirstDouble(json, const <String>[
+        'per_100_kcal',
+        'energy_kcal_100g',
+        'energy-kcal_100g',
+      ]),
+      per100Protein: _readFirstDouble(json, const <String>[
+        'per_100_protein',
+        'proteins_100g',
+      ]),
+      per100Carbs: _readFirstDouble(json, const <String>[
+        'per_100_carbs',
+        'carbohydrates_100g',
+      ]),
+      per100Fat: _readFirstDouble(json, const <String>[
+        'per_100_fat',
+        'fat_100g',
+      ]),
+      per100Salt: _readFirstDouble(json, const <String>[
+        'per_100_salt',
+        'salt_100g',
+      ]),
     );
   }
 
@@ -136,6 +152,16 @@ double? _readDouble(Object? value) {
   }
   if (value is String) {
     return double.tryParse(value.trim());
+  }
+  return null;
+}
+
+double? _readFirstDouble(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = _readDouble(json[key]);
+    if (value != null) {
+      return value;
+    }
   }
   return null;
 }

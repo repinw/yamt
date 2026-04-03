@@ -6,14 +6,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:riverpod/src/framework.dart' show Override;
-import 'package:yamt/features/calories/data/calorie_nutrition_ocr_repository.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_nutrition_ocr_repository.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_nutrition_ocr_repository_contract.dart';
-import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
-import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
-import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_product_lookup_models.dart';
+import 'package:yamt/features/inventory/application/'
+    'global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/data/'
+    'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
-import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
+import 'package:yamt/features/inventory/domain/'
+    'global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
@@ -563,6 +568,8 @@ void main() {
   testWidgets('manual fallback saves entered barcode and nutrition', (
     tester,
   ) async {
+    _installFakeScannerPlatform(tester);
+
     List<InventoryItem>? savedItems;
     final matcher = GlobalFoodItemMatcher(
       offProductSearchRepository: _RecordingOffProductSearchRepository(
@@ -602,17 +609,22 @@ void main() {
     await tester.tap(find.text(l10n.inventoryReceiptReviewManualDataAction));
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byKey(const Key('receipt_review_manual_barcode_field')),
-      '4006381333931',
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_scan_button')),
     );
+    await tester.pumpAndSettle();
+
+    _fakeScannerPlatform().emitBarcode('4006381333931');
+    await tester.pumpAndSettle();
+
     await tester.enterText(
       find.byKey(const Key('receipt_review_manual_kcal_field')),
       '120',
     );
-    await tester.tap(
+    final manualSaveButton = tester.widget<FilledButton>(
       find.byKey(const Key('receipt_review_manual_save_button')),
     );
+    manualSaveButton.onPressed!.call();
     await tester.pumpAndSettle();
 
     final saveButton = find.byKey(const Key('receipt_review_save_button'));
@@ -695,8 +707,7 @@ void main() {
       final ocrButtonFinder = find.byKey(
         const Key('receipt_review_manual_nutrition_ocr_button'),
       );
-      final ocrButtonBefore = tester.widget<OutlinedButton>(ocrButtonFinder);
-      expect(ocrButtonBefore.onPressed, isNull);
+      expect(ocrButtonFinder, findsNothing);
 
       await tester.tap(
         find.byKey(const Key('receipt_review_manual_scan_button')),
@@ -714,9 +725,10 @@ void main() {
 
       expect(find.text('321'), findsOneWidget);
 
-      await tester.tap(
+      final manualSaveButton = tester.widget<FilledButton>(
         find.byKey(const Key('receipt_review_manual_save_button')),
       );
+      manualSaveButton.onPressed!.call();
       await tester.pumpAndSettle();
 
       final saveButton = find.byKey(const Key('receipt_review_save_button'));

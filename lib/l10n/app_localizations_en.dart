@@ -125,6 +125,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewFieldWeight => 'Weight';
 
   @override
+  String get inventoryReceiptReviewFieldWeightUnit => 'Unit';
+
+  @override
   String get inventoryReceiptReviewFieldWeightUnitFallback => 'Fallback unit';
 
   @override
@@ -206,13 +209,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewProductSelectionLabel => 'Select product';
 
   @override
-  String get inventoryReceiptReviewManualDataAction => 'Scan barcode or enter nutrition';
+  String get inventoryReceiptReviewManualDataAction => 'Search product or scan barcode';
 
   @override
-  String get inventoryReceiptReviewManualDataTitle => 'Scan barcode or enter nutrition';
+  String get inventoryReceiptReviewManualDataTitle => 'Search product or scan barcode';
 
   @override
-  String get inventoryReceiptReviewManualDataHint => 'Scan the barcode first. If nothing is found, you can then take a photo of the nutrition label or enter the values manually.';
+  String get inventoryReceiptReviewManualDataHint => 'Search product or scan barcode. Add nutrition later.';
 
   @override
   String get inventoryReceiptReviewManualDataSaveAction => 'Apply';
@@ -221,7 +224,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewManualDataBarcodeLabel => 'Barcode';
 
   @override
-  String get inventoryReceiptReviewManualDataRequired => 'Please scan a barcode or enter nutrition values.';
+  String get inventoryReceiptReviewManualDataRequired => 'Please select a product, scan a barcode, or add nutrition.';
 
   @override
   String get inventoryReceiptReviewRequestEnrichmentAction => 'Let AI enrich it later';

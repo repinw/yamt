@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
-import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/product_image_url.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_barcode_scanner_page.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
-    'inventory_receipt_manual_product_sheet.dart';
+    'inventory_receipt_manual_product_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryManualAddItemId = Uuid();
@@ -27,92 +27,42 @@ class InventoryManualAddPage extends ConsumerStatefulWidget {
 
 class _InventoryManualAddPageState
     extends ConsumerState<InventoryManualAddPage> {
+  bool _hasInitializedDraft = false;
+  late InventoryItem _draftItem;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_hasInitializedDraft) {
+      return;
+    }
+    _hasInitializedDraft = true;
+    _draftItem = _buildDraftItem(
+      scannedBarcode: '',
+      now: DateTime.now(),
+      name: '',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return InventoryBarcodeScannerPage(
-      title: l10n.inventoryManualAddTitle,
-      onProductSelected: (candidate, scannedBarcode) async {
-        return _confirmAndSaveCandidate(
-          candidate: candidate,
-          scannedBarcode: scannedBarcode,
-        );
-      },
-      onProductNotFound: (scannedBarcode) async {
-        return _openManualFallback(scannedBarcode: scannedBarcode);
-      },
+    return InventoryReceiptManualProductPage(
+      item: _draftItem,
+      onSaved: _saveSheetResult,
     );
   }
 
-  Future<bool> _confirmAndSaveCandidate({
-    required OffProductSearchResult candidate,
-    required String scannedBarcode,
-  }) async {
-    final barcode = candidate.code.trim().isEmpty
-        ? scannedBarcode
-        : candidate.code.trim();
-    return _editAndSave(
-      item: _buildDraftItem(
-        scannedBarcode: barcode,
-        now: DateTime.now(),
-        name: candidate.name,
-        brand: candidate.brand,
-        imageUrl: normalizeProductImageUrl(candidate.imageUrl),
-        weight: candidate.packageWeight,
-        nutrition: candidate.nutrition,
-      ),
-      selectedProduct: candidate,
-    );
-  }
-
-  Future<bool> _openManualFallback({required String scannedBarcode}) async {
-    return _editAndSave(
-      item: _buildDraftItem(
-        scannedBarcode: scannedBarcode,
-        now: DateTime.now(),
-        name: scannedBarcode,
-      ),
-    );
-  }
-
-  Future<InventoryReceiptManualProductResult?> _openManualProductSheet({
-    required InventoryItem item,
-    OffProductSearchResult? selectedProduct,
-  }) {
-    return showModalBottomSheet<InventoryReceiptManualProductResult>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (sheetContext) {
-        return InventoryReceiptManualProductSheet(
-          item: item,
-          selectedProduct: selectedProduct,
-        );
-      },
-    );
-  }
-
-  Future<bool> _editAndSave({
-    required InventoryItem item,
-    OffProductSearchResult? selectedProduct,
-  }) async {
-    final result = await _openManualProductSheet(
-      item: item,
-      selectedProduct: selectedProduct,
-    );
-    return _saveSheetResult(result);
-  }
-
-  Future<bool> _saveSheetResult(
-    InventoryReceiptManualProductResult? result,
+  Future<void> _saveSheetResult(
+    InventoryReceiptManualProductResult result,
   ) async {
-    if (!mounted || result == null) {
-      return false;
+    if (!mounted) {
+      return;
     }
 
     final barcode = result.item.normalizedBarcode;
     if (barcode == null) {
-      return false;
+      _showSnackBar(AppLocalizations.of(context)!.inventoryManualAddSaveFailed);
+      return;
     }
 
     final saved = await _persistProduct(
@@ -121,18 +71,16 @@ class _InventoryManualAddPageState
       selectedProduct: result.selectedProduct,
     );
     if (!mounted) {
-      return false;
+      return;
     }
     if (!saved) {
       _showSnackBar(AppLocalizations.of(context)!.inventoryManualAddSaveFailed);
-      return false;
+      return;
     }
 
-    final navigator = Navigator.of(context);
-    if (navigator.canPop()) {
-      navigator.pop(true);
+    if (context.canPop()) {
+      context.pop(true);
     }
-    return true;
   }
 
   Future<bool> _persistProduct({
