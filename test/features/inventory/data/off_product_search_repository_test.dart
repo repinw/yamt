@@ -1,7 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'off_product_search_repository.dart';
 
 void main() {
   test('search forwards query params and parses text payload', () async {
@@ -10,8 +11,8 @@ void main() {
       client: MockClient((request) async {
         capturedUri = request.url;
         return http.Response('''
-Score: 34 | token=20 | gram=14 | store=0 | 4061458029995 | [Aldi, Froneri, Mucci] Waffelhörnchen Haselnuss-Vanille | https://images.openfoodfacts.org/images/products/406/145/802/9995/front_de.3.400.jpg
-Score: 22 | token=10 | gram=12 | store=0 | 0771869110697 | [bofrost] Waffelhörnchen Vanille-Nuss
+Score: 34 | token=20 | gram=14 | store=0 | 1 | [Mucci] Waffel | /i.jpg
+Score: 22 | token=10 | gram=12 | store=0 | 2 | [bofrost] Vanille
 ''', 200);
       }),
       searchUri: Uri.parse('https://example.com/search'),
@@ -31,14 +32,10 @@ Score: 22 | token=10 | gram=12 | store=0 | 0771869110697 | [bofrost] Waffelhörn
     expect(capturedUri.queryParameters['weight'], '1000g');
     expect(capturedUri.queryParameters['limit'], '5');
     expect(results, hasLength(2));
-    expect(results.first.code, '4061458029995');
-    expect(results.first.brand, 'Aldi, Froneri, Mucci');
-    expect(results.first.name, 'Waffelhörnchen Haselnuss-Vanille');
-    expect(
-      results.first.imageUrl,
-      'https://images.openfoodfacts.org/images/products/'
-      '406/145/802/9995/front_de.3.400.jpg',
-    );
+    expect(results.first.code, '1');
+    expect(results.first.brand, 'Mucci');
+    expect(results.first.name, 'Waffel');
+    expect(results.first.imageUrl, '/i.jpg');
     expect(results.first.score, 34);
   });
 
@@ -86,6 +83,45 @@ Score: 22 | token=10 | gram=12 | store=0 | 0771869110697 | [bofrost] Waffelhörn
     expect(results.single.nutrition!.per100Kcal, 210);
     expect(results.single.nutrition!.per100Salt, 1.1);
     expect(results.single.score, 34);
+  });
+
+  test('search parses v5 nutrition keys from json payload', () async {
+    final repository = HttpOffProductSearchRepository(
+      client: MockClient((request) async {
+        return http.Response('''
+{
+  "results": [
+    {
+      "code": "4015051095802",
+      "product_name": "Hackfleisch gemischt",
+      "brands": "Gut Ponholz",
+      "weight": "800 g",
+      "image_url": "https://example.com/4015051095802.jpg",
+      "nutrition": {
+        "energy_kcal_100g": 234.0,
+        "proteins_100g": 18.0,
+        "carbohydrates_100g": 0.0,
+        "fat_100g": 18.0,
+        "salt_100g": 0.1775
+      },
+      "score": 137
+    }
+  ]
+}
+''', 200);
+      }),
+      searchUri: Uri.parse('https://example.com/search'),
+    );
+
+    final results = await repository.search(query: 'Hackfleisch gem.');
+
+    expect(results, hasLength(1));
+    expect(results.single.nutrition, isNotNull);
+    expect(results.single.nutrition!.per100Kcal, 234);
+    expect(results.single.nutrition!.per100Protein, 18);
+    expect(results.single.nutrition!.per100Carbs, 0);
+    expect(results.single.nutrition!.per100Fat, 18);
+    expect(results.single.nutrition!.per100Salt, 0.1775);
   });
 
   test(

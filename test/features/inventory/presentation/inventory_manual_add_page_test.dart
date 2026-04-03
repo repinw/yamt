@@ -9,11 +9,13 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
-import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _RecordingInventoryItemRepository implements InventoryItemRepository {
@@ -300,15 +302,44 @@ void main() {
     );
     await _pumpUi(tester);
 
+    expect(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+      findsOneWidget,
+    );
+    final scanButton = find.byKey(
+      const Key('receipt_review_manual_scan_button'),
+    );
+    await tester.tap(scanButton);
+    await _pumpUi(tester);
+
     _fakeScannerPlatform().emitBarcode('4006381333931');
     await _pumpUi(tester);
 
     expect(offRepository.lastBarcode, '4006381333931');
     expect(inventoryRepository.appendedItems, isEmpty);
     expect(globalFoodRepository.appendedItems, isEmpty);
-    expect(find.text('Milk'), findsOneWidget);
-    expect(find.text('Brand'), findsOneWidget);
-    expect(find.text('1 l'), findsOneWidget);
+    final searchField = tester.widget<TextField>(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+    );
+    final previewName = tester.widget<Text>(
+      find.byKey(const Key('receipt_review_manual_preview_name')),
+    );
+    expect(searchField.controller?.text, 'Milk');
+    expect(previewName.data, 'Milk');
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('receipt_review_manual_preview')),
+        matching: find.text('Brand'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('receipt_review_manual_preview')),
+        matching: find.text('1000 ml'),
+      ),
+      findsOneWidget,
+    );
 
     final manualSaveButton = find.byKey(
       const Key('receipt_review_manual_save_button'),
@@ -365,6 +396,16 @@ void main() {
         globalFoodRepository: globalFoodRepository,
       ),
     );
+    await _pumpUi(tester);
+
+    expect(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+      findsOneWidget,
+    );
+    final scanButton = find.byKey(
+      const Key('receipt_review_manual_scan_button'),
+    );
+    await tester.tap(scanButton);
     await _pumpUi(tester);
 
     _fakeScannerPlatform().emitBarcode('4316268671224');

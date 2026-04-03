@@ -48,6 +48,7 @@
   "inventoryReceiptReviewFieldQuantity": "Menge",
   "inventoryReceiptReviewFieldUnitPrice": "Stückpreis",
   "inventoryReceiptReviewFieldWeight": "Gewicht",
+  "inventoryReceiptReviewFieldWeightUnit": "Einheit",
   "inventoryReceiptReviewFieldWeightUnitFallback": "Fallback-Einheit",
   "inventoryReceiptReviewWeightUnitAuto": "Automatisch",
   "inventoryReceiptReviewWeightUnitGram": "Gramm (g)",
@@ -76,15 +77,15 @@
   "inventoryReceiptReviewCandidatesAction": "Kandidaten",
   "inventoryReceiptReviewProductSelectionLabel": "Produkt auswählen",
   "inventoryReceiptReviewManualDataAction":
-      "Barcode scannen oder Nährwerte eintragen",
+      "Produkt suchen oder Barcode scannen",
   "inventoryReceiptReviewManualDataTitle":
-      "Barcode scannen oder Nährwerte eintragen",
+      "Produkt suchen oder Barcode scannen",
   "inventoryReceiptReviewManualDataHint":
-      "Scanne zuerst den Barcode. Wenn nichts gefunden wird, kannst du danach die Nährwerttabelle fotografieren oder die Werte direkt eintragen.",
+      "Produkt suchen oder Barcode scannen. Nährwerte später ergänzen.",
   "inventoryReceiptReviewManualDataSaveAction": "Übernehmen",
   "inventoryReceiptReviewManualDataBarcodeLabel": "Barcode",
   "inventoryReceiptReviewManualDataRequired":
-      "Bitte einen Barcode scannen oder Nährwerte angeben.",
+      "Bitte Produkt wählen, Barcode scannen oder Nährwerte angeben.",
   "inventoryReceiptReviewRequestEnrichmentAction":
       "Später per KI ermitteln lassen",
   "inventoryReceiptReviewRequestEnrichmentHint":

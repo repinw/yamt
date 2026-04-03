@@ -4,16 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/utils/currency_format.dart';
-import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
-import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
+import 'package:yamt/features/inventory/application/'
+    'global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/domain/'
+    'global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
-import 'package:yamt/features/scanner/domain/receipt_review_item_processor.dart';
+import 'package:yamt/features/scanner/domain/'
+    'receipt_review_item_processor.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_price_summary.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
-    'inventory_receipt_manual_product_sheet.dart';
+    'inventory_receipt_manual_product_page.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_preview_button.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
@@ -250,14 +253,17 @@ class _InventoryReceiptReviewSheetState
     if (index < 0) {
       return;
     }
-    final result =
-        await showModalBottomSheet<InventoryReceiptManualProductResult>(
-          context: context,
-          isScrollControlled: true,
-          useSafeArea: true,
-          builder: (sheetContext) {
-            return InventoryReceiptManualProductSheet(item: _items[index].item);
-          },
+    final result = await Navigator.of(context)
+        .push<InventoryReceiptManualProductResult>(
+          MaterialPageRoute<InventoryReceiptManualProductResult>(
+            builder: (routeContext) {
+              return InventoryReceiptManualProductPage(
+                item: _items[index].item,
+                includeStoreInSearch: false,
+                includeWeightInSearch: false,
+              );
+            },
+          ),
         );
     if (!mounted || result == null) {
       return;

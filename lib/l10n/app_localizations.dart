@@ -323,6 +323,12 @@ abstract class AppLocalizations {
   /// **'Weight'**
   String get inventoryReceiptReviewFieldWeight;
 
+  /// No description provided for @inventoryReceiptReviewFieldWeightUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get inventoryReceiptReviewFieldWeightUnit;
+
   /// No description provided for @inventoryReceiptReviewFieldWeightUnitFallback.
   ///
   /// In en, this message translates to:
@@ -488,19 +494,19 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryReceiptReviewManualDataAction.
   ///
   /// In en, this message translates to:
-  /// **'Scan barcode or enter nutrition'**
+  /// **'Search product or scan barcode'**
   String get inventoryReceiptReviewManualDataAction;
 
   /// No description provided for @inventoryReceiptReviewManualDataTitle.
   ///
   /// In en, this message translates to:
-  /// **'Scan barcode or enter nutrition'**
+  /// **'Search product or scan barcode'**
   String get inventoryReceiptReviewManualDataTitle;
 
   /// No description provided for @inventoryReceiptReviewManualDataHint.
   ///
   /// In en, this message translates to:
-  /// **'Scan the barcode first. If nothing is found, you can then take a photo of the nutrition label or enter the values manually.'**
+  /// **'Search product or scan barcode. Add nutrition later.'**
   String get inventoryReceiptReviewManualDataHint;
 
   /// No description provided for @inventoryReceiptReviewManualDataSaveAction.
@@ -518,7 +524,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryReceiptReviewManualDataRequired.
   ///
   /// In en, this message translates to:
-  /// **'Please scan a barcode or enter nutrition values.'**
+  /// **'Please select a product, scan a barcode, or add nutrition.'**
   String get inventoryReceiptReviewManualDataRequired;
 
   /// No description provided for @inventoryReceiptReviewRequestEnrichmentAction.

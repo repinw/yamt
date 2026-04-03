@@ -125,6 +125,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewFieldWeight => 'Gewicht';
 
   @override
+  String get inventoryReceiptReviewFieldWeightUnit => 'Einheit';
+
+  @override
   String get inventoryReceiptReviewFieldWeightUnitFallback => 'Fallback-Einheit';
 
   @override
@@ -206,13 +209,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewProductSelectionLabel => 'Produkt auswählen';
 
   @override
-  String get inventoryReceiptReviewManualDataAction => 'Barcode scannen oder Nährwerte eintragen';
+  String get inventoryReceiptReviewManualDataAction => 'Produkt suchen oder Barcode scannen';
 
   @override
-  String get inventoryReceiptReviewManualDataTitle => 'Barcode scannen oder Nährwerte eintragen';
+  String get inventoryReceiptReviewManualDataTitle => 'Produkt suchen oder Barcode scannen';
 
   @override
-  String get inventoryReceiptReviewManualDataHint => 'Scanne zuerst den Barcode. Wenn nichts gefunden wird, kannst du danach die Nährwerttabelle fotografieren oder die Werte direkt eintragen.';
+  String get inventoryReceiptReviewManualDataHint => 'Produkt suchen oder Barcode scannen. Nährwerte später ergänzen.';
 
   @override
   String get inventoryReceiptReviewManualDataSaveAction => 'Übernehmen';
@@ -221,7 +224,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewManualDataBarcodeLabel => 'Barcode';
 
   @override
-  String get inventoryReceiptReviewManualDataRequired => 'Bitte einen Barcode scannen oder Nährwerte angeben.';
+  String get inventoryReceiptReviewManualDataRequired => 'Bitte Produkt wählen, Barcode scannen oder Nährwerte angeben.';
 
   @override
   String get inventoryReceiptReviewRequestEnrichmentAction => 'Später per KI ermitteln lassen';

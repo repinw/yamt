@@ -89,6 +89,7 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
       weight: weight?.trim(),
       limit: limit,
     );
+    _debugLogRequest(action: 'search', uri: uri);
     return _fetchResults(uri: uri, action: 'search');
   }
 
@@ -102,6 +103,7 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
     }
 
     final uri = _buildBarcodeUri(barcode: normalizedBarcode);
+    _debugLogRequest(action: 'barcode lookup', uri: uri);
     return _fetchResults(uri: uri, action: 'barcode lookup');
   }
 
@@ -147,6 +149,13 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
         'code': barcode,
       },
     );
+  }
+
+  void _debugLogRequest({required String action, required Uri uri}) {
+    assert(() {
+      log('OFF $action request: GET $uri', name: _offProductSearchLogName);
+      return true;
+    }());
   }
 
   Future<List<OffProductSearchResult>> _fetchResults({

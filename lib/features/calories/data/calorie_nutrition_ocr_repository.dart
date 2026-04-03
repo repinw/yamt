@@ -18,7 +18,7 @@ part 'calorie_nutrition_ocr_repository.g.dart';
 
 const _ocrLogName = 'CalorieNutritionOcrRepository';
 const _ocrTemplateConfigKey = 'nutrition_label_template_id';
-const _ocrTemplateIdFallback = 'nutrition-template-id';
+const _ocrTemplateIdFallback = 'testtemplate';
 const _vertexLocation = 'global';
 const _defaultMimeType = 'application/octet-stream';
 const _lookupHeaderLength = 32;
@@ -89,11 +89,7 @@ class _FirebaseCalorieNutritionTemplateConfigClient
   @override
   Future<String> loadTemplateId() async {
     await _ensureInitialized();
-    final templateId = _remoteConfig.getString(_ocrTemplateConfigKey);
-    if (templateId.trim().isEmpty) {
-      return _ocrTemplateIdFallback;
-    }
-    return templateId;
+    return _ocrTemplateIdFallback;
   }
 
   Future<void> _ensureInitialized() {
