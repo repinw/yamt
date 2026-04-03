@@ -12,11 +12,9 @@ import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 part 'receipt_analysis_repository.g.dart';
 
 const String _repositoryLogName = 'DeviceReceiptAnalysisRepository';
+const String _receiptTemplateId = 'testtemplate';
 
 abstract final class _ReceiptAnalysisRepositoryFailures {
-  static const templateConfig = ReceiptAnalysisResult.failed(
-    errorCode: ReceiptAnalysisErrorCodes.templateConfigFailed,
-  );
   static const emptyResponse = ReceiptAnalysisResult.failed(
     errorCode: ReceiptAnalysisErrorCodes.emptyResponse,
   );
@@ -31,7 +29,6 @@ abstract final class _ReceiptAnalysisRepositoryFailures {
 @riverpod
 ReceiptAnalysisRepository receiptAnalysisRepository(Ref ref) {
   return DeviceReceiptAnalysisRepository(
-    templateConfigClient: ref.watch(receiptTemplateConfigClientProvider),
     templateModelClient: ref.watch(receiptTemplateModelClientProvider),
     parser: ref.watch(receiptAnalysisParserProvider),
   );
@@ -39,14 +36,11 @@ ReceiptAnalysisRepository receiptAnalysisRepository(Ref ref) {
 
 class DeviceReceiptAnalysisRepository implements ReceiptAnalysisRepository {
   DeviceReceiptAnalysisRepository({
-    required ReceiptTemplateConfigClient templateConfigClient,
     required ReceiptTemplateModelClient templateModelClient,
     required ReceiptAnalysisParser parser,
-  }) : _templateConfigClient = templateConfigClient,
-       _templateModelClient = templateModelClient,
+  }) : _templateModelClient = templateModelClient,
        _parser = parser;
 
-  final ReceiptTemplateConfigClient _templateConfigClient;
   final ReceiptTemplateModelClient _templateModelClient;
   final ReceiptAnalysisParser _parser;
 
@@ -54,12 +48,10 @@ class DeviceReceiptAnalysisRepository implements ReceiptAnalysisRepository {
   Future<ReceiptAnalysisResult> analyzeSelection(
     ReceiptInputSelection selection,
   ) async {
-    final templateId = await _loadTemplateId();
-    if (templateId == null) {
-      return _ReceiptAnalysisRepositoryFailures.templateConfig;
-    }
-
-    return _generateWithTemplate(templateId: templateId, selection: selection);
+    return _generateWithTemplate(
+      templateId: _receiptTemplateId,
+      selection: selection,
+    );
   }
 
   Future<ReceiptAnalysisResult> _generateWithTemplate({
@@ -95,19 +87,6 @@ class DeviceReceiptAnalysisRepository implements ReceiptAnalysisRepository {
         stackTrace: stackTrace,
       );
       return _ReceiptAnalysisRepositoryFailures.aiRequest;
-    }
-  }
-
-  Future<String?> _loadTemplateId() async {
-    try {
-      return await _templateConfigClient.loadTemplateId();
-    } catch (error, stackTrace) {
-      _logReceiptAnalysisRepositoryError(
-        message: 'Receipt template config load failed',
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return null;
     }
   }
 

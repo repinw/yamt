@@ -8,11 +8,6 @@ abstract interface class ReceiptAnalysisRepository {
   );
 }
 
-/// Resolves the active template id used by Firebase AI templates.
-abstract interface class ReceiptTemplateConfigClient {
-  Future<String> loadTemplateId();
-}
-
 /// Executes a Firebase AI template and returns generated text.
 abstract interface class ReceiptTemplateModelClient {
   Future<String?> generateContent({

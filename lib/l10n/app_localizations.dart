@@ -2441,60 +2441,6 @@ abstract class AppLocalizations {
   /// **'Orange'**
   String get settingsColorOrange;
 
-  /// No description provided for @settingsAiProcessingTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'AI processing'**
-  String get settingsAiProcessingTitle;
-
-  /// No description provided for @settingsAiProcessingSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Control OCR and analysis intensity'**
-  String get settingsAiProcessingSubtitle;
-
-  /// No description provided for @settingsAiProcessingInfoLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Processing level info'**
-  String get settingsAiProcessingInfoLabel;
-
-  /// No description provided for @settingsAiProcessingInfoTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Processing level'**
-  String get settingsAiProcessingInfoTitle;
-
-  /// No description provided for @settingsAiProcessingInfoMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Speed and result quality depend on the selected level.'**
-  String get settingsAiProcessingInfoMessage;
-
-  /// No description provided for @settingsAiProcessingMinimal.
-  ///
-  /// In en, this message translates to:
-  /// **'Minimal'**
-  String get settingsAiProcessingMinimal;
-
-  /// No description provided for @settingsAiProcessingLow.
-  ///
-  /// In en, this message translates to:
-  /// **'Low'**
-  String get settingsAiProcessingLow;
-
-  /// No description provided for @settingsAiProcessingBalanced.
-  ///
-  /// In en, this message translates to:
-  /// **'Balanced'**
-  String get settingsAiProcessingBalanced;
-
-  /// No description provided for @settingsAiProcessingHigh.
-  ///
-  /// In en, this message translates to:
-  /// **'High'**
-  String get settingsAiProcessingHigh;
-
   /// No description provided for @settingsNotificationsTitle.
   ///
   /// In en, this message translates to:
