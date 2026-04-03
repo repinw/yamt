@@ -9,17 +9,6 @@ import 'package:yamt/features/scanner/domain/receipt_analysis_contracts.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 
-class _FakeTemplateConfigClient implements ReceiptTemplateConfigClient {
-  _FakeTemplateConfigClient({required this.onLoadTemplateId});
-
-  final Future<String> Function() onLoadTemplateId;
-
-  @override
-  Future<String> loadTemplateId() {
-    return onLoadTemplateId();
-  }
-}
-
 class _FakeTemplateModelClient implements ReceiptTemplateModelClient {
   _FakeTemplateModelClient({required this.onGenerateContent});
 
@@ -65,9 +54,6 @@ void main() {
     Map<String, Object?>? capturedInputs;
 
     final repository = DeviceReceiptAnalysisRepository(
-      templateConfigClient: _FakeTemplateConfigClient(
-        onLoadTemplateId: () async => 'receiptocr',
-      ),
       templateModelClient: _FakeTemplateModelClient(
         onGenerateContent: ({required templateId, required inputs}) async {
           capturedTemplateId = templateId;
@@ -88,7 +74,7 @@ void main() {
     expect(result.status, ReceiptAnalysisStatus.succeeded);
     final successResult = result as ReceiptAnalysisSuccess;
     expect(successResult.rawResponse, '{"items": []}');
-    expect(capturedTemplateId, 'receiptocr');
+    expect(capturedTemplateId, 'testtemplate');
     expect(capturedInputs?['mimeType'], selection.mimeType);
     expect(capturedInputs?['imageData'], base64Encode(selection.bytes));
   });
@@ -114,9 +100,6 @@ void main() {
       );
 
       final repository = DeviceReceiptAnalysisRepository(
-        templateConfigClient: _FakeTemplateConfigClient(
-          onLoadTemplateId: () async => 'receiptocr',
-        ),
         templateModelClient: _FakeTemplateModelClient(
           onGenerateContent: ({required templateId, required inputs}) async {
             capturedInputs = inputs;
@@ -140,9 +123,6 @@ void main() {
 
   test('analyzeSelection maps empty text to empty_response failure', () async {
     final repository = DeviceReceiptAnalysisRepository(
-      templateConfigClient: _FakeTemplateConfigClient(
-        onLoadTemplateId: () async => 'receiptocr',
-      ),
       templateModelClient: _FakeTemplateModelClient(
         onGenerateContent: ({required templateId, required inputs}) async {
           return '   ';
@@ -162,38 +142,8 @@ void main() {
     expect(result.errorCode, ReceiptAnalysisErrorCodes.emptyResponse);
   });
 
-  test(
-    'analyzeSelection maps template config exception to config failure',
-    () async {
-      final repository = DeviceReceiptAnalysisRepository(
-        templateConfigClient: _FakeTemplateConfigClient(
-          onLoadTemplateId: () => throw Exception('rc failed'),
-        ),
-        templateModelClient: _FakeTemplateModelClient(
-          onGenerateContent: ({required templateId, required inputs}) async {
-            return '{"items": []}';
-          },
-        ),
-        parser: _FakeReceiptAnalysisParser(
-          onParse: (_) => const ReceiptAnalysisExtraction(
-            root: <String, dynamic>{},
-            items: <ReceiptAnalysisItem>[],
-          ),
-        ),
-      );
-
-      final result = await repository.analyzeSelection(_selection());
-
-      expect(result.status, ReceiptAnalysisStatus.failed);
-      expect(result.errorCode, ReceiptAnalysisErrorCodes.templateConfigFailed);
-    },
-  );
-
   test('analyzeSelection maps model exception to request failure', () async {
     final repository = DeviceReceiptAnalysisRepository(
-      templateConfigClient: _FakeTemplateConfigClient(
-        onLoadTemplateId: () async => 'receiptocr',
-      ),
       templateModelClient: _FakeTemplateModelClient(
         onGenerateContent: ({required templateId, required inputs}) {
           throw Exception('ai failed');
@@ -215,9 +165,6 @@ void main() {
 
   test('analyzeSelection maps parser exception to parse failure', () async {
     final repository = DeviceReceiptAnalysisRepository(
-      templateConfigClient: _FakeTemplateConfigClient(
-        onLoadTemplateId: () async => 'receiptocr',
-      ),
       templateModelClient: _FakeTemplateModelClient(
         onGenerateContent: ({required templateId, required inputs}) async {
           return '{"items":[{"n":"Milk"}]}';

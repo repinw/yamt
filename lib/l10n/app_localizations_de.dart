@@ -1222,33 +1222,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsColorOrange => 'Orange';
 
   @override
-  String get settingsAiProcessingTitle => 'KI-Verarbeitung';
-
-  @override
-  String get settingsAiProcessingSubtitle => 'OCR- und Analyseintensität steuern';
-
-  @override
-  String get settingsAiProcessingInfoLabel => 'Info zur Verarbeitungsstufe';
-
-  @override
-  String get settingsAiProcessingInfoTitle => 'Verarbeitungsstufe';
-
-  @override
-  String get settingsAiProcessingInfoMessage => 'Geschwindigkeit und Ergebnisqualität hängen von der gewählten Stufe ab.';
-
-  @override
-  String get settingsAiProcessingMinimal => 'Minimal';
-
-  @override
-  String get settingsAiProcessingLow => 'Niedrig';
-
-  @override
-  String get settingsAiProcessingBalanced => 'Ausgewogen';
-
-  @override
-  String get settingsAiProcessingHigh => 'Hoch';
-
-  @override
   String get settingsNotificationsTitle => 'Benachrichtigungen';
 
   @override

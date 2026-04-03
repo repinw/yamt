@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:yamt/core/config/ai_processing_level.dart';
-import 'package:yamt/core/config/ai_processing_level_controller.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
@@ -20,7 +18,6 @@ class SettingsPage extends StatelessWidget {
       _AccountTile(l10n: l10n),
       const _ThemeModeTile(),
       const _SeedColorTile(),
-      const _AiProcessingLevelTile(),
       _NotImplementedTile(
         icon: Icons.language_outlined,
         title: l10n.settingsLanguageTitle,
@@ -134,86 +131,6 @@ class _SeedColorTile extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _AiProcessingLevelTile extends ConsumerWidget {
-  const _AiProcessingLevelTile();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final aiProcessingLevel = ref.watch(aiProcessingLevelControllerProvider);
-
-    return ListTile(
-      leading: const Icon(Icons.auto_awesome_outlined),
-      title: Text(l10n.settingsAiProcessingTitle),
-      subtitle: Text(l10n.settingsAiProcessingSubtitle),
-      trailing: Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          IconButton(
-            tooltip: l10n.settingsAiProcessingInfoLabel,
-            icon: const Icon(Icons.info_outline),
-            onPressed: () => _showAiProcessingInfo(context, l10n),
-          ),
-          DropdownButtonHideUnderline(
-            child: DropdownButton<AiProcessingLevel>(
-              value: aiProcessingLevel,
-              onChanged: (selectedLevel) {
-                if (selectedLevel == null) {
-                  return;
-                }
-                ref
-                    .read(aiProcessingLevelControllerProvider.notifier)
-                    .setLevel(selectedLevel);
-              },
-              items: [
-                for (final option in AiProcessingLevel.values)
-                  DropdownMenuItem<AiProcessingLevel>(
-                    value: option,
-                    child: Text(_aiProcessingLevelLabel(l10n, option)),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _aiProcessingLevelLabel(
-    AppLocalizations l10n,
-    AiProcessingLevel level,
-  ) {
-    return switch (level) {
-      AiProcessingLevel.minimal => l10n.settingsAiProcessingMinimal,
-      AiProcessingLevel.low => l10n.settingsAiProcessingLow,
-      AiProcessingLevel.balanced => l10n.settingsAiProcessingBalanced,
-      AiProcessingLevel.high => l10n.settingsAiProcessingHigh,
-    };
-  }
-
-  Future<void> _showAiProcessingInfo(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
-    final material = MaterialLocalizations.of(context);
-    return showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(l10n.settingsAiProcessingInfoTitle),
-          content: Text(l10n.settingsAiProcessingInfoMessage),
-          actions: [
-            TextButton(
-              onPressed: () => context.pop(),
-              child: Text(material.okButtonLabel),
-            ),
-          ],
-        );
-      },
     );
   }
 }
