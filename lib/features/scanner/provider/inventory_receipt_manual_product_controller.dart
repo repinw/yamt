@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
@@ -18,6 +19,8 @@ import 'package:yamt/features/scanner/presentation/widgets/'
 
 part 'inventory_receipt_manual_product_controller.g.dart';
 
+const _manualProductControllerLogName =
+    'InventoryReceiptManualProductController';
 const _keepValue = Object();
 
 class InventoryReceiptManualProductConfig {
@@ -419,21 +422,38 @@ class InventoryReceiptManualProductController
     final requestId = ++_activeSearchRequestId;
     state = state.copyWith(isSearching: true);
 
-    final results = await ref
-        .read(offProductSearchRepositoryProvider)
-        .search(
-          query: query,
-          store: _resolvedSearchStore(),
-          brand: null,
-          weight: _resolvedSearchWeight(),
-          limit: _searchResultLimit,
-        );
+    try {
+      final results = await ref
+          .read(offProductSearchRepositoryProvider)
+          .search(
+            query: query,
+            store: _resolvedSearchStore(),
+            brand: null,
+            weight: _resolvedSearchWeight(),
+            limit: _searchResultLimit,
+          );
 
-    if (!ref.mounted || requestId != _activeSearchRequestId) {
-      return;
+      if (!ref.mounted || requestId != _activeSearchRequestId) {
+        return;
+      }
+
+      state = state.copyWith(isSearching: false, searchResults: results);
+    } catch (error, stackTrace) {
+      log(
+        'Manual product search failed for query "$query".',
+        name: _manualProductControllerLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (!ref.mounted || requestId != _activeSearchRequestId) {
+        return;
+      }
+
+      state = state.copyWith(
+        isSearching: false,
+        searchResults: const <OffProductSearchResult>[],
+      );
     }
-
-    state = state.copyWith(isSearching: false, searchResults: results);
   }
 
   void _applySelectedProduct(OffProductSearchResult product) {

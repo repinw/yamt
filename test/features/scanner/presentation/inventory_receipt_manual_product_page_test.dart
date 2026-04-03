@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_nutrition_ocr_repository.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_nutrition_ocr_repository_contract.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_manual_product_page.dart';
+import 'package:yamt/features/scanner/provider/'
+    'inventory_receipt_manual_product_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 Widget _wrapPage({
   required InventoryItem item,
   OffProductSearchResult? selectedProduct,
   OffProductSearchRepository? offRepository,
+  CalorieNutritionOcrRepositoryContract? ocrRepository,
   bool includeStoreInSearch = true,
   bool includeWeightInSearch = true,
   Locale locale = const Locale('de'),
@@ -21,6 +30,8 @@ Widget _wrapPage({
     overrides: [
       if (offRepository != null)
         offProductSearchRepositoryProvider.overrideWithValue(offRepository),
+      if (ocrRepository != null)
+        calorieNutritionOcrRepositoryProvider.overrideWithValue(ocrRepository),
     ],
     child: MaterialApp(
       locale: locale,
@@ -69,6 +80,42 @@ class _RecordingOffProductSearchRepository
   }
 }
 
+class _ThrowingOffProductSearchRepository
+    implements OffProductSearchRepository {
+  @override
+  Future<List<OffProductSearchResult>> search({
+    required String query,
+    String? store,
+    String? brand,
+    String? weight,
+    int limit = 15,
+  }) async {
+    throw StateError('search failed');
+  }
+
+  @override
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
+  }) async {
+    return const <OffProductSearchResult>[];
+  }
+}
+
+class _FakeNutritionOcrRepository
+    implements CalorieNutritionOcrRepositoryContract {
+  _FakeNutritionOcrRepository({required this.onScanNutritionLabel});
+
+  final Future<CalorieNutritionOcrResult> Function(String barcode)
+  onScanNutritionLabel;
+
+  @override
+  Future<CalorieNutritionOcrResult> scanNutritionLabel({
+    required String barcode,
+  }) {
+    return onScanNutritionLabel(barcode);
+  }
+}
+
 InventoryItem _item() {
   return InventoryItem.create(
     id: 'item-1',
@@ -77,6 +124,24 @@ InventoryItem _item() {
     storeName: 'Kaufland',
     quantity: 1,
   );
+}
+
+InventoryReceiptManualProductState _manualProductState(
+  WidgetTester tester, {
+  required InventoryItem item,
+  OffProductSearchResult? selectedProduct,
+  bool includeStoreInSearch = true,
+  bool includeWeightInSearch = true,
+}) {
+  final context = tester.element(find.byType(InventoryReceiptManualProductPage));
+  final container = ProviderScope.containerOf(context, listen: false);
+  final config = InventoryReceiptManualProductConfig(
+    item: item,
+    selectedProduct: selectedProduct,
+    includeStoreInSearch: includeStoreInSearch,
+    includeWeightInSearch: includeWeightInSearch,
+  );
+  return container.read(inventoryReceiptManualProductControllerProvider(config));
 }
 
 void main() {
@@ -322,4 +387,68 @@ void main() {
       expect(offRepository.lastWeight, isNull);
     },
   );
+
+  testWidgets('search failure resets loading state without surfacing errors', (
+    tester,
+  ) async {
+    final item = _item().copyWith(name: 'Zero');
+
+    await tester.pumpWidget(
+      _wrapPage(
+        item: item,
+        offRepository: _ThrowingOffProductSearchRepository(),
+      ),
+    );
+    await tester.pump();
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+      'Zero',
+    );
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pump();
+
+    final state = _manualProductState(tester, item: item);
+    expect(state.isSearching, isFalse);
+    expect(state.error, isNull);
+    expect(state.searchResults, isEmpty);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('failed OCR scan shows a snackbar message', (tester) async {
+    final selectedProduct = const OffProductSearchResult(
+      code: '4311596490202',
+      name: 'Booster Absolute Zero',
+      brand: 'Booster',
+      imageUrl: 'https://example.com/booster.png',
+      packageWeight: '330 ml',
+      score: 100,
+    );
+
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item(),
+        selectedProduct: selectedProduct,
+        ocrRepository: _FakeNutritionOcrRepository(
+          onScanNutritionLabel: (_) async =>
+              const CalorieNutritionOcrResult.failed(
+                errorCode: 'ocr_failed',
+              ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_nutrition_ocr_button')),
+    );
+    await tester.pump();
+
+    final context = tester.element(
+      find.byType(InventoryReceiptManualProductPage),
+    );
+    final l10n = AppLocalizations.of(context)!;
+    expect(find.text(l10n.caloriesOcrFailed), findsOneWidget);
+  });
 }
