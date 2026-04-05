@@ -3,30 +3,13 @@ import 'dart:developer' show log;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mime/mime.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/scanner/data/receipt_input_selection_loader.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 
 part 'receipt_input_repository.g.dart';
 
-const List<String> _allowedReceiptExtensions = <String>[
-  'jpg',
-  'jpeg',
-  'png',
-  'webp',
-  'heic',
-  'heif',
-  'pdf',
-];
-
-const String _defaultMimeType = 'application/octet-stream';
-const String _pdfMimeType = 'application/pdf';
-const String _fallbackCameraFileName = 'camera-image.jpg';
-const String _fallbackUploadFileName = 'receipt-upload';
-const int _mimeHeaderLength = 32;
 const int _maxBatchSelectionCount = 20;
-const int _maxReceiptInputBytes = 12 * 1024 * 1024;
-final Uint8List _emptySelectionBytes = Uint8List(0);
 
 @riverpod
 ImagePicker imagePicker(Ref ref) {
@@ -53,25 +36,6 @@ abstract interface class ReceiptInputRepository {
   Future<ReceiptInputResult> pickFromFile();
 
   Future<ReceiptInputBatchResult> pickFromFiles();
-}
-
-Future<List<ReceiptInputSelection>> loadSharedReceiptSelectionsFromPaths(
-  Iterable<String> filePaths,
-) async {
-  final selections = <ReceiptInputSelection>[];
-  final seenPaths = <String>{};
-  for (final filePath in filePaths) {
-    final normalizedPath = filePath.trim();
-    if (normalizedPath.isEmpty || !seenPaths.add(normalizedPath)) {
-      continue;
-    }
-
-    final selection = await _loadSharedReceiptSelection(normalizedPath);
-    if (selection != null) {
-      selections.add(selection);
-    }
-  }
-  return selections;
 }
 
 /// Plugin-backed implementation using `image_picker` and `file_picker`.
@@ -163,19 +127,9 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
       return null;
     }
 
-    final fileName = _resolvedFileName(
-      primaryName: pickedFile.name,
-      fallbackPath: pickedFile.path,
-      fallbackName: _fallbackCameraFileName,
-    );
-    final bytes = await pickedFile.readAsBytes();
-
-    return ReceiptInputSelection(
+    return ReceiptInputSelectionLoader.loadFromXFile(
+      pickedFile,
       source: ReceiptInputSource.camera,
-      name: fileName,
-      mimeType: _detectMimeType(fileName: fileName, bytes: bytes),
-      bytes: bytes,
-      filePath: pickedFile.path,
     );
   }
 
@@ -203,11 +157,12 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
     final skippedFileNames = <String>[];
     final skippedLargeFileNames = <String>[];
     for (final file in result.files) {
-      if (_isFileTooLarge(file)) {
+      if (ReceiptInputSelectionLoader.isFileTooLarge(file)) {
         skippedLargeFileNames.add(file.name);
         continue;
       }
-      final selection = _selectionMetadataFromFile(file);
+      final selection =
+          ReceiptInputSelectionLoader.loadMetadataFromPlatformFile(file);
       if (selection == null) {
         skippedFileNames.add(file.name);
         continue;
@@ -244,108 +199,15 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
       allowMultiple: allowMultiple,
       withData: _shouldPreloadFileBytes,
       type: FileType.custom,
-      allowedExtensions: _allowedReceiptExtensions,
+      allowedExtensions: ReceiptInputSelectionLoader.allowedFileExtensions,
     );
   }
 
   Future<ReceiptInputSelection?> _selectionFromFile(PlatformFile file) async {
-    if (_isFileTooLarge(file)) {
-      throw _ReceiptInputBatchException(
-        'Receipt file exceeds size limit: ${file.name}',
-      );
-    }
-    final bytes = await _resolveFileBytes(file);
-    if (bytes == null) {
-      return null;
-    }
-    if (bytes.length > _maxReceiptInputBytes) {
-      throw _ReceiptInputBatchException(
-        'Receipt file exceeds size limit: ${file.name}',
-      );
-    }
-    return _buildFileSelection(file: file, bytes: bytes);
-  }
-
-  ReceiptInputSelection? _selectionMetadataFromFile(PlatformFile file) {
-    final inMemoryBytes = file.bytes;
-    final path = file.path;
-    final hasLoadablePath = path != null && path.isNotEmpty;
-    if (inMemoryBytes == null && !hasLoadablePath) {
-      return null;
-    }
-    return _buildFileSelection(file: file, bytes: inMemoryBytes);
-  }
-
-  ReceiptInputSelection _buildFileSelection({
-    required PlatformFile file,
-    required Uint8List? bytes,
-  }) {
-    final fileName = _resolvedFileName(
-      primaryName: file.name,
-      fallbackPath: file.path,
-      fallbackName: _fallbackUploadFileName,
-    );
-    return ReceiptInputSelection(
-      source: ReceiptInputSource.file,
-      name: fileName,
-      mimeType: _detectMimeType(fileName: fileName, bytes: bytes),
-      bytes: bytes ?? _emptySelectionBytes,
-      filePath: file.path,
-    );
+    return ReceiptInputSelectionLoader.loadFromPlatformFile(file);
   }
 
   bool get _shouldPreloadFileBytes => kIsWeb;
-
-  Future<Uint8List?> _resolveFileBytes(PlatformFile file) async {
-    final inMemoryBytes = file.bytes;
-    if (inMemoryBytes != null) {
-      return inMemoryBytes;
-    }
-
-    final path = file.path;
-    if (path == null || path.isEmpty) {
-      return null;
-    }
-
-    return XFile(path).readAsBytes();
-  }
-
-  bool _isFileTooLarge(PlatformFile file) {
-    final bytesLength = file.bytes?.length ?? 0;
-    final resolvedLength = bytesLength > file.size ? bytesLength : file.size;
-    if (resolvedLength <= 0) {
-      return false;
-    }
-    return resolvedLength > _maxReceiptInputBytes;
-  }
-}
-
-Future<ReceiptInputSelection?> _loadSharedReceiptSelection(
-  String filePath,
-) async {
-  final sharedFile = XFile(filePath);
-  final bytes = await sharedFile.readAsBytes();
-  if (bytes.isEmpty || bytes.length > _maxReceiptInputBytes) {
-    return null;
-  }
-
-  final fileName = _resolvedFileName(
-    primaryName: filePath,
-    fallbackPath: filePath,
-    fallbackName: _fallbackUploadFileName,
-  );
-  final mimeType = _detectMimeType(fileName: fileName, bytes: bytes);
-  if (!_isSupportedSharedReceiptMimeType(mimeType)) {
-    return null;
-  }
-
-  return ReceiptInputSelection(
-    source: ReceiptInputSource.file,
-    name: fileName,
-    mimeType: mimeType,
-    bytes: bytes,
-    filePath: filePath,
-  );
 }
 
 class _ReceiptInputBatchException implements Exception {
@@ -355,52 +217,4 @@ class _ReceiptInputBatchException implements Exception {
 
   @override
   String toString() => '_ReceiptInputBatchException: $message';
-}
-
-String _resolvedFileName({
-  required String primaryName,
-  required String fallbackName,
-  String? fallbackPath,
-}) {
-  final normalizedPrimaryName = _fileNameFromPath(primaryName);
-  if (normalizedPrimaryName.isNotEmpty) {
-    return normalizedPrimaryName;
-  }
-
-  final fromPath = fallbackPath == null ? '' : _fileNameFromPath(fallbackPath);
-  if (fromPath.isNotEmpty) {
-    return fromPath;
-  }
-
-  return fallbackName;
-}
-
-String _fileNameFromPath(String path) {
-  final normalizedPath = path.replaceAll('\\', '/');
-  final separatorIndex = normalizedPath.lastIndexOf('/');
-  if (separatorIndex == -1) {
-    return normalizedPath;
-  }
-  return normalizedPath.substring(separatorIndex + 1);
-}
-
-String _detectMimeType({required String fileName, Uint8List? bytes}) {
-  List<int>? headerBytes;
-  if (bytes != null && bytes.isNotEmpty) {
-    final headerLength = bytes.length < _mimeHeaderLength
-        ? bytes.length
-        : _mimeHeaderLength;
-    headerBytes = bytes.sublist(0, headerLength);
-  }
-
-  final mimeType = lookupMimeType(fileName, headerBytes: headerBytes);
-  if (mimeType == null || mimeType.isEmpty) {
-    return _defaultMimeType;
-  }
-
-  return mimeType;
-}
-
-bool _isSupportedSharedReceiptMimeType(String mimeType) {
-  return mimeType == _pdfMimeType || mimeType.startsWith('image/');
 }

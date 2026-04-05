@@ -5,9 +5,9 @@ import 'package:file_share_intent/file_share_intent.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
-import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
-import 'package:yamt/features/scanner/domain/shared_receipt_intent.dart';
+import 'package:yamt/features/scanner/data/receipt_input_selection_loader.dart';
+import 'package:yamt/features/scanner/provider/'
+    'pending_shared_receipt_intent.dart';
 
 part 'shared_receipt_service.g.dart';
 
@@ -16,32 +16,6 @@ const String _sharedReceiptServiceLogName = 'SharedReceiptService';
 @riverpod
 FileShareIntent fileShareIntent(Ref ref) {
   return FileShareIntent.instance;
-}
-
-@riverpod
-class PendingSharedReceiptIntent extends _$PendingSharedReceiptIntent {
-  @override
-  SharedReceiptIntent? build() {
-    return null;
-  }
-
-  void replace(List<ReceiptInputSelection> selections) {
-    if (selections.isEmpty) {
-      return;
-    }
-
-    state = SharedReceiptIntent(
-      requestId: DateTime.now().microsecondsSinceEpoch,
-      selections: List.unmodifiable(selections),
-    );
-  }
-
-  void consume(int requestId) {
-    if (state?.requestId != requestId) {
-      return;
-    }
-    state = null;
-  }
 }
 
 @Riverpod(keepAlive: true)
@@ -105,9 +79,10 @@ class SharedReceiptService extends _$SharedReceiptService {
     List<SharedMediaFile> files,
   ) async {
     try {
-      final selections = await loadSharedReceiptSelectionsFromPaths(
-        files.map((file) => file.path),
-      );
+      final selections =
+          await ReceiptInputSelectionLoader.loadSharedSelectionsFromPaths(
+            files.map((file) => file.path),
+          );
       if (selections.isEmpty) {
         log(
           'Ignored shared files because no supported receipt files could '

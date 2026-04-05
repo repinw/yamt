@@ -3,13 +3,10 @@ import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
-import 'package:yamt/features/scanner/presentation/'
-    'inventory_receipt_review_page.dart';
+import 'package:yamt/features/scanner/presentation/receipt_review_flow_runner.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_batch_progress_dialog.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
@@ -22,19 +19,24 @@ class ReceiptBatchFlowRunner {
     required this.ref,
     required this.l10n,
     required this.onItemsSaved,
-  }) : _captureController = ref.read(
-         receiptCaptureFlowControllerProvider.notifier,
-       ),
-       _batchController = ref.read(receiptBatchFlowControllerProvider.notifier),
-       _rootNavigator = Navigator.of(context, rootNavigator: true);
+  }) : _batchController = ref.read(receiptBatchFlowControllerProvider.notifier),
+       _rootNavigator = Navigator.of(context, rootNavigator: true),
+       _reviewFlow = ReceiptReviewFlowRunner(
+         context: Navigator.of(context, rootNavigator: true).context,
+         ref: ref,
+         l10n: l10n,
+         captureController: ref.read(
+           receiptCaptureFlowControllerProvider.notifier,
+         ),
+       );
 
   final BuildContext context;
   final WidgetRef ref;
   final AppLocalizations l10n;
   final VoidCallback onItemsSaved;
-  final ReceiptCaptureFlowController _captureController;
   final ReceiptBatchFlowController _batchController;
   final NavigatorState _rootNavigator;
+  final ReceiptReviewFlowRunner _reviewFlow;
 
   ProviderSubscription<ReceiptBatchFlowState>? _subscription;
   Future<void>? _progressDialog;
@@ -81,8 +83,9 @@ class ReceiptBatchFlowRunner {
       await _closeProgressDialog();
       _subscription?.close();
       _batchController.reset();
+      _reviewFlow.dispose();
       if (feedbackMessage != null && context.mounted) {
-        _showSnackBar(feedbackMessage);
+        _reviewFlow.showSnackBar(feedbackMessage);
       }
     }
   }
@@ -189,36 +192,10 @@ class ReceiptBatchFlowRunner {
       return false;
     }
 
-    final saved = await _rootNavigator.context.push<bool>(
-      AppRoutes.homeInventoryReceiptReview,
-      extra: InventoryReceiptReviewPageArgs(
-        items: reviewDrafts,
-        onSaveTap: (reviewedItems) async {
-          final saved = await _captureController.persistReviewedItems(
-            reviewedItems,
-          );
-          if (!context.mounted) {
-            return false;
-          }
-
-          if (saved) {
-            onItemsSaved();
-            _showSnackBar(l10n.inventoryReceiptSaveSucceeded);
-            return true;
-          }
-
-          _showSnackBar(l10n.inventoryReceiptSaveFailed);
-          return false;
-        },
-      ),
+    return _reviewFlow.openReviewPage(
+      reviewDrafts: reviewDrafts,
+      receiptPreviewBytes: null,
+      onItemsSaved: onItemsSaved,
     );
-
-    return saved ?? false;
-  }
-
-  void _showSnackBar(String message) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
   }
 }

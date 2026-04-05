@@ -1,19 +1,14 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/router/app_router.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
-import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/shared_receipt_intent.dart';
 import 'package:yamt/features/scanner/presentation/'
-    'inventory_receipt_review_page.dart';
-import 'package:yamt/features/scanner/presentation/receipt_batch_flow_runner.dart';
-import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
+    'shared_receipt_flow_runner.dart';
+import 'package:yamt/features/scanner/provider/'
+    'pending_shared_receipt_intent.dart';
 import 'package:yamt/features/scanner/provider/shared_receipt_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -101,135 +96,26 @@ class _SharedReceiptListenerState extends ConsumerState<SharedReceiptListener> {
   }
 
   Future<void> _handlePendingIntent(SharedReceiptIntent pendingIntent) async {
-    final navigatorContext = _navigatorContext;
-    final l10n = navigatorContext == null
-        ? null
-        : AppLocalizations.of(navigatorContext);
-    if (navigatorContext == null || l10n == null) {
+    final flowRunner = _sharedReceiptFlowRunner;
+    if (flowRunner == null) {
       return;
     }
 
-    final shouldScan = await _showConfirmationDialog(
-      context: navigatorContext,
-      l10n: l10n,
-      pendingIntent: pendingIntent,
-    );
-    if (!mounted) {
-      return;
-    }
-
-    if (shouldScan != true) {
-      _consumePendingIntent(pendingIntent);
-      return;
-    }
-
-    _consumePendingIntent(pendingIntent);
-
-    if (pendingIntent.isBatch) {
-      final batchNavigatorContext = _navigatorContext;
-      if (batchNavigatorContext == null || !batchNavigatorContext.mounted) {
+    try {
+      final shouldScan = await flowRunner.confirmScan(pendingIntent);
+      if (!mounted) {
         return;
       }
 
-      final runner = ReceiptBatchFlowRunner(
-        context: batchNavigatorContext,
-        ref: ref,
-        l10n: l10n,
-        onItemsSaved: () => ref.invalidate(inventoryItemsControllerProvider),
-      );
-      await runner.runSelections(pendingIntent.selections);
-      return;
+      _consumePendingIntent(pendingIntent);
+      if (shouldScan != true) {
+        return;
+      }
+
+      await flowRunner.runConfirmed(pendingIntent);
+    } finally {
+      flowRunner.dispose();
     }
-
-    await _runSingleSelection(pendingIntent, l10n);
-  }
-
-  Future<void> _runSingleSelection(
-    SharedReceiptIntent pendingIntent,
-    AppLocalizations l10n,
-  ) async {
-    final controller = ref.read(receiptCaptureFlowControllerProvider.notifier);
-    final navigatorContext = _navigatorContext;
-    final navigatorState = ref.read(navigatorKeyProvider).currentState;
-    if (navigatorContext == null || navigatorState == null) {
-      return;
-    }
-
-    var loadingDialogOpen = true;
-    final loadingDialog =
-        showDialog<void>(
-          context: navigatorContext,
-          barrierDismissible: false,
-          builder: (_) {
-            return const Center(child: CircularProgressIndicator());
-          },
-        ).whenComplete(() {
-          loadingDialogOpen = false;
-        });
-
-    final result = await controller.runSelection(
-      selection: pendingIntent.selections.first,
-    );
-
-    if (loadingDialogOpen && navigatorState.mounted) {
-      navigatorState.pop();
-    }
-    await loadingDialog;
-    if (!mounted) {
-      return;
-    }
-
-    if (result.status == ReceiptCaptureFlowStatus.completed) {
-      await _openReviewPage(
-        controller: controller,
-        l10n: l10n,
-        reviewDrafts: result.reviewDrafts ?? const <ReceiptReviewItemDraft>[],
-        receiptPreviewBytes: result.receiptPreviewBytes,
-      );
-      return;
-    }
-
-    final message = _messageForFlowResult(result, l10n);
-    if (message != null) {
-      _showSnackBar(message);
-    }
-  }
-
-  Future<bool> _openReviewPage({
-    required ReceiptCaptureFlowController controller,
-    required AppLocalizations l10n,
-    required List<ReceiptReviewItemDraft> reviewDrafts,
-    required Uint8List? receiptPreviewBytes,
-  }) async {
-    final navigatorContext = _navigatorContext;
-    if (navigatorContext == null) {
-      return false;
-    }
-
-    final saved = await navigatorContext.push<bool>(
-      AppRoutes.homeInventoryReceiptReview,
-      extra: InventoryReceiptReviewPageArgs(
-        items: reviewDrafts,
-        receiptPreviewBytes: receiptPreviewBytes,
-        onSaveTap: (reviewedItems) async {
-          final saved = await controller.persistReviewedItems(reviewedItems);
-          if (!mounted) {
-            return false;
-          }
-
-          if (saved) {
-            ref.invalidate(inventoryItemsControllerProvider);
-            _showSnackBar(l10n.inventoryReceiptSaveSucceeded);
-            return true;
-          }
-
-          _showSnackBar(l10n.inventoryReceiptSaveFailed);
-          return false;
-        },
-      ),
-    );
-
-    return saved ?? false;
   }
 
   void _consumePendingIntent(SharedReceiptIntent pendingIntent) {
@@ -238,15 +124,22 @@ class _SharedReceiptListenerState extends ConsumerState<SharedReceiptListener> {
         .consume(pendingIntent.requestId);
   }
 
-  void _showSnackBar(String message) {
+  SharedReceiptFlowRunner? get _sharedReceiptFlowRunner {
     final navigatorContext = _navigatorContext;
     if (navigatorContext == null) {
-      return;
+      return null;
     }
 
-    final messenger = ScaffoldMessenger.of(navigatorContext);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    final l10n = AppLocalizations.of(navigatorContext);
+    if (l10n == null) {
+      return null;
+    }
+
+    return SharedReceiptFlowRunner(
+      context: navigatorContext,
+      ref: ref,
+      l10n: l10n,
+    );
   }
 
   BuildContext? get _navigatorContext {
@@ -256,52 +149,4 @@ class _SharedReceiptListenerState extends ConsumerState<SharedReceiptListener> {
     }
     return navigatorContext;
   }
-}
-
-Future<bool?> _showConfirmationDialog({
-  required BuildContext context,
-  required AppLocalizations l10n,
-  required SharedReceiptIntent pendingIntent,
-}) {
-  return showDialog<bool>(
-    context: context,
-    builder: (dialogContext) {
-      return AlertDialog(
-        title: Text(l10n.inventorySharedReceiptConfirmTitle),
-        content: Text(
-          pendingIntent.isBatch
-              ? l10n.inventorySharedReceiptConfirmMultipleMessage(
-                  pendingIntent.selections.length,
-                )
-              : l10n.inventorySharedReceiptConfirmSingleMessage,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.inventoryReceiptReviewCancelAction),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.inventorySharedReceiptConfirmAction),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-String? _messageForFlowResult(
-  ReceiptCaptureFlowResult result,
-  AppLocalizations l10n,
-) {
-  return switch (result.status) {
-    ReceiptCaptureFlowStatus.completed => null,
-    ReceiptCaptureFlowStatus.inputCanceled => null,
-    ReceiptCaptureFlowStatus.inputUnsupported =>
-      l10n.inventoryActionCameraUnsupported,
-    ReceiptCaptureFlowStatus.inputFailed =>
-      l10n.inventoryReceiptSelectionFailed,
-    ReceiptCaptureFlowStatus.analysisFailed =>
-      l10n.inventoryReceiptAnalysisFailed,
-  };
 }
