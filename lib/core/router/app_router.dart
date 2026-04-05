@@ -32,6 +32,11 @@ import 'package:yamt/features/statistics/presentation/statistics_page.dart';
 part 'app_router.g.dart';
 
 @Riverpod(keepAlive: true)
+GlobalKey<NavigatorState> navigatorKey(Ref ref) {
+  return GlobalKey<NavigatorState>(debugLabel: 'rootNavigator');
+}
+
+@Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
   final authState = ref.watch(authStateChangesProvider);
   final isAuthLoading = authState.isLoading;
@@ -41,6 +46,7 @@ GoRouter appRouter(Ref ref) {
   final needsGuestNameSetup = isAuthenticated && !hasCompletedProfileSetup;
 
   return GoRouter(
+    navigatorKey: ref.watch(navigatorKeyProvider),
     initialLocation: AppRoutes.root,
     redirect: (context, state) {
       final path = state.matchedLocation;

@@ -167,6 +167,30 @@ abstract class AppLocalizations {
   /// **'Add food manually'**
   String get inventoryActionManualAdd;
 
+  /// No description provided for @inventorySharedReceiptConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan shared receipt?'**
+  String get inventorySharedReceiptConfirmTitle;
+
+  /// No description provided for @inventorySharedReceiptConfirmSingleMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to scan this shared file as a receipt?'**
+  String get inventorySharedReceiptConfirmSingleMessage;
+
+  /// No description provided for @inventorySharedReceiptConfirmMultipleMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to scan {count} shared files as receipts?'**
+  String inventorySharedReceiptConfirmMultipleMessage(int count);
+
+  /// No description provided for @inventorySharedReceiptConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan'**
+  String get inventorySharedReceiptConfirmAction;
+
   /// No description provided for @inventoryReceiptSelectionFailed.
   ///
   /// In en, this message translates to:

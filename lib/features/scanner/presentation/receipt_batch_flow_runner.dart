@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/'
     'inventory_receipt_review_page.dart';
@@ -40,13 +41,21 @@ class ReceiptBatchFlowRunner {
   bool _isDialogClosed = true;
 
   Future<void> run() async {
+    await _runWith(() => _batchController.runFileBatch());
+  }
+
+  Future<void> runSelections(List<ReceiptInputSelection> selections) async {
+    await _runWith(() => _batchController.runSelections(selections));
+  }
+
+  Future<void> _runWith(Future<void> Function() runBatch) async {
     _batchController.reset();
     String? feedbackMessage;
     _progressDialog = _openProgressDialog();
     _subscription = _listenForAutoReview();
 
     try {
-      await _batchController.runFileBatch();
+      await runBatch();
       if (!context.mounted) {
         return;
       }

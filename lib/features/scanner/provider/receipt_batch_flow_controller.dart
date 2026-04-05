@@ -76,6 +76,24 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
     }
   }
 
+  Future<void> runSelections(List<ReceiptInputSelection> selections) async {
+    final inFlight = _activeBatchRun;
+    if (inFlight != null) {
+      await inFlight;
+      return;
+    }
+
+    final operation = _runSelectionsInternal(selections);
+    _activeBatchRun = operation;
+    try {
+      await operation;
+    } finally {
+      if (identical(_activeBatchRun, operation)) {
+        _activeBatchRun = null;
+      }
+    }
+  }
+
   Future<void> _runFileBatchInternal() async {
     state = const ReceiptBatchFlowState(status: ReceiptBatchFlowStatus.running);
 
@@ -98,6 +116,13 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
           errorCode: errorCode,
         );
     }
+  }
+
+  Future<void> _runSelectionsInternal(
+    List<ReceiptInputSelection> selections,
+  ) async {
+    state = const ReceiptBatchFlowState(status: ReceiptBatchFlowStatus.running);
+    await _runSelectedBatch(selections);
   }
 
   Future<void> _runSelectedBatch(List<ReceiptInputSelection> selections) async {

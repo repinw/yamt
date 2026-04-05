@@ -47,6 +47,25 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     }
   }
 
+  Future<ReceiptCaptureFlowResult> runSelection({
+    required ReceiptInputSelection selection,
+  }) async {
+    final inFlight = _activeRun;
+    if (inFlight != null) {
+      return inFlight;
+    }
+
+    final operation = _runSelectionInternal(selection: selection);
+    _activeRun = operation;
+    try {
+      return await operation;
+    } finally {
+      if (identical(_activeRun, operation)) {
+        _activeRun = null;
+      }
+    }
+  }
+
   Future<ReceiptCaptureFlowResult> _runInternal({
     required ReceiptInputSource source,
   }) async {
@@ -104,6 +123,13 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
           ),
         );
     }
+  }
+
+  Future<ReceiptCaptureFlowResult> _runSelectionInternal({
+    required ReceiptInputSelection selection,
+  }) async {
+    state = const AsyncLoading();
+    return _analyzeSelection(source: selection.source, selection: selection);
   }
 
   bool _isSourceSupported(ReceiptInputSource source) {

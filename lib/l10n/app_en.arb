@@ -12,6 +12,19 @@
   "inventoryActionUploadFile": "Upload receipt (image/PDF)",
   "inventoryActionCameraUnsupported": "Camera is not supported on this platform.",
   "inventoryActionManualAdd": "Add food manually",
+  "inventorySharedReceiptConfirmTitle": "Scan shared receipt?",
+  "inventorySharedReceiptConfirmSingleMessage":
+      "Do you want to scan this shared file as a receipt?",
+  "inventorySharedReceiptConfirmMultipleMessage":
+      "Do you want to scan {count} shared files as receipts?",
+  "@inventorySharedReceiptConfirmMultipleMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inventorySharedReceiptConfirmAction": "Scan",
   "inventoryReceiptSelectionFailed": "Could not select a receipt. Please try again.",
   "inventoryReceiptAnalysisFailed": "Receipt analysis failed. Please try again.",
   "inventoryReceiptBatchTitle": "Processing receipts",

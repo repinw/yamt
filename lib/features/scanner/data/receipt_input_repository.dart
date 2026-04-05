@@ -20,6 +20,7 @@ const List<String> _allowedReceiptExtensions = <String>[
 ];
 
 const String _defaultMimeType = 'application/octet-stream';
+const String _pdfMimeType = 'application/pdf';
 const String _fallbackCameraFileName = 'camera-image.jpg';
 const String _fallbackUploadFileName = 'receipt-upload';
 const int _mimeHeaderLength = 32;
@@ -52,6 +53,25 @@ abstract interface class ReceiptInputRepository {
   Future<ReceiptInputResult> pickFromFile();
 
   Future<ReceiptInputBatchResult> pickFromFiles();
+}
+
+Future<List<ReceiptInputSelection>> loadSharedReceiptSelectionsFromPaths(
+  Iterable<String> filePaths,
+) async {
+  final selections = <ReceiptInputSelection>[];
+  final seenPaths = <String>{};
+  for (final filePath in filePaths) {
+    final normalizedPath = filePath.trim();
+    if (normalizedPath.isEmpty || !seenPaths.add(normalizedPath)) {
+      continue;
+    }
+
+    final selection = await _loadSharedReceiptSelection(normalizedPath);
+    if (selection != null) {
+      selections.add(selection);
+    }
+  }
+  return selections;
 }
 
 /// Plugin-backed implementation using `image_picker` and `file_picker`.
@@ -300,6 +320,34 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
   }
 }
 
+Future<ReceiptInputSelection?> _loadSharedReceiptSelection(
+  String filePath,
+) async {
+  final sharedFile = XFile(filePath);
+  final bytes = await sharedFile.readAsBytes();
+  if (bytes.isEmpty || bytes.length > _maxReceiptInputBytes) {
+    return null;
+  }
+
+  final fileName = _resolvedFileName(
+    primaryName: filePath,
+    fallbackPath: filePath,
+    fallbackName: _fallbackUploadFileName,
+  );
+  final mimeType = _detectMimeType(fileName: fileName, bytes: bytes);
+  if (!_isSupportedSharedReceiptMimeType(mimeType)) {
+    return null;
+  }
+
+  return ReceiptInputSelection(
+    source: ReceiptInputSource.file,
+    name: fileName,
+    mimeType: mimeType,
+    bytes: bytes,
+    filePath: filePath,
+  );
+}
+
 class _ReceiptInputBatchException implements Exception {
   const _ReceiptInputBatchException(this.message);
 
@@ -351,4 +399,8 @@ String _detectMimeType({required String fileName, Uint8List? bytes}) {
   }
 
   return mimeType;
+}
+
+bool _isSupportedSharedReceiptMimeType(String mimeType) {
+  return mimeType == _pdfMimeType || mimeType.startsWith('image/');
 }

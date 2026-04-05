@@ -45,6 +45,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryActionManualAdd => 'Add food manually';
 
   @override
+  String get inventorySharedReceiptConfirmTitle => 'Scan shared receipt?';
+
+  @override
+  String get inventorySharedReceiptConfirmSingleMessage => 'Do you want to scan this shared file as a receipt?';
+
+  @override
+  String inventorySharedReceiptConfirmMultipleMessage(int count) {
+    return 'Do you want to scan $count shared files as receipts?';
+  }
+
+  @override
+  String get inventorySharedReceiptConfirmAction => 'Scan';
+
+  @override
   String get inventoryReceiptSelectionFailed => 'Could not select a receipt. Please try again.';
 
   @override
