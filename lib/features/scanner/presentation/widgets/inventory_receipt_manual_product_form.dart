@@ -3,6 +3,7 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
+import 'package:yamt/features/inventory/domain/product_image_url.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import 'inventory_receipt_manual_product_form_utils.dart';
@@ -492,7 +493,7 @@ class _ManualProductSearchImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final resolvedUrl = normalizeManualProductText(imageUrl ?? '');
+    final resolvedUrl = normalizeProductImageUrl(imageUrl);
     if (resolvedUrl == null) {
       return SizedBox.square(
         dimension: _imageSize,

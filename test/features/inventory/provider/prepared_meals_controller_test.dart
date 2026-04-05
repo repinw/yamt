@@ -649,7 +649,7 @@ void main() {
   );
 
   test(
-    'consumePreparedMeal removes meal when remaining portions hit zero',
+    'consumePreparedMeal keeps meal with zero portions when fully consumed',
     () async {
       final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
       final inventoryRepository = _FakeInventoryItemRepository(
@@ -698,10 +698,15 @@ void main() {
           );
 
       expect(saved, isTrue);
-      expect(preparedMealRepository.savedMeals, isEmpty);
+      expect(preparedMealRepository.savedMeals.single.remainingPortions, 0);
       expect(
-        container.read(preparedMealsControllerProvider).asData?.value,
-        isEmpty,
+        container
+            .read(preparedMealsControllerProvider)
+            .asData
+            ?.value
+            .single
+            .remainingPortions,
+        0,
       );
     },
   );
