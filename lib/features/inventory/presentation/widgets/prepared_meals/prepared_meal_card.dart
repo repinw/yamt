@@ -9,11 +9,11 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/utils/currency_format.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/domain/product_image_url.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'

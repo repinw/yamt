@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/inventory/domain/product_image_url.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
 
 class PreparedMealCover extends StatelessWidget {
   const PreparedMealCover({
