@@ -383,4 +383,80 @@ void main() {
       2,
     );
   });
+
+  test(
+    'delete flow restores a fully consumed prepared meal kept at zero portions',
+    () async {
+      final calorieRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _bundleEntry(
+            id: 'entry-1',
+            sourceMealId: 'meal-1',
+            consumedPortions: 1,
+          ).copyWith(
+            loggedAt: DateTime(2026, 4, 1, 12),
+            createdAt: DateTime(2026, 4, 3, 10),
+            updatedAt: DateTime(2026, 4, 3, 10),
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository();
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: <InventoryItem>[_inventoryItem()],
+      );
+      final preparedMealRepository = _FakePreparedMealRepository(
+        initialMeals: <PreparedMeal>[_meal(id: 'meal-1', remainingPortions: 0)],
+      );
+      addTearDown(calorieRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+      addTearDown(inventoryRepository.dispose);
+      addTearDown(preparedMealRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(calorieRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          inventoryItemRepositoryProvider.overrideWithValue(
+            inventoryRepository,
+          ),
+          preparedMealRepositoryProvider.overrideWithValue(
+            preparedMealRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final inventorySub = _keepInventoryAlive(container);
+      final caloriesSub = _keepCaloriesAlive(container);
+      final mealsSub = _keepPreparedMealsAlive(container);
+      addTearDown(inventorySub.close);
+      addTearDown(caloriesSub.close);
+      addTearDown(mealsSub.close);
+
+      await container.read(inventoryItemsControllerProvider.future);
+      await container.read(preparedMealsControllerProvider.future);
+      await container.read(calorieEntriesControllerProvider.future);
+
+      final result = await container
+          .read(calorieEntryDeleteFlowProvider)
+          .deleteEntry(
+            entry: calorieRepository.entries.single,
+            restoreToInventory: true,
+          );
+
+      expect(result.isSuccess, isTrue);
+      expect(result.restoredToInventory, isTrue);
+      expect(calorieRepository.entries, isEmpty);
+      expect(
+        container
+            .read(preparedMealsControllerProvider)
+            .asData
+            ?.value
+            .single
+            .remainingPortions,
+        1,
+      );
+    },
+  );
 }

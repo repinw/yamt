@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/utils/store_name_normalizer.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_nutrition_ocr_repository.dart';
@@ -13,7 +14,6 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/product_image_url.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_manual_product_form_utils.dart';
 
@@ -82,9 +82,7 @@ class InventoryReceiptManualProductConfig {
   }
 }
 
-enum InventoryReceiptManualProductError {
-  requiredProductOrNutrition,
-}
+enum InventoryReceiptManualProductError { requiredProductOrNutrition }
 
 enum InventoryReceiptManualProductNutritionScanOutcome {
   applied,
@@ -208,7 +206,8 @@ class InventoryReceiptManualProductController
       _searchDebounce?.cancel();
     });
 
-    final nutrition = config.item.nutrition ?? config.selectedProduct?.nutrition;
+    final nutrition =
+        config.item.nutrition ?? config.selectedProduct?.nutrition;
     final weightInput = _resolveWeightInput(
       config.selectedProduct?.packageWeight ?? config.item.weight,
       fallbackUnit: config.item.amountUnit,
@@ -332,8 +331,7 @@ class InventoryReceiptManualProductController
     if (barcode.isEmpty || state.isRunningNutritionOcr) {
       if (barcode.isEmpty) {
         state = state.copyWith(
-          error:
-              InventoryReceiptManualProductError.requiredProductOrNutrition,
+          error: InventoryReceiptManualProductError.requiredProductOrNutrition,
         );
       }
       return InventoryReceiptManualProductNutritionScanOutcome.missingBarcode;
@@ -673,9 +671,7 @@ class InventoryReceiptManualProductController
     }
 
     final normalized = normalizeManualProductText(rawWeight ?? '');
-    final amountMatch = RegExp(
-      r'\d+(?:[.,]\d+)?',
-    ).firstMatch(normalized ?? '');
+    final amountMatch = RegExp(r'\d+(?:[.,]\d+)?').firstMatch(normalized ?? '');
     final amount = amountMatch?.group(0)?.replaceAll(',', '.') ?? '';
     return (
       amount: amount,

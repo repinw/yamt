@@ -182,6 +182,8 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final canRunSecondaryActions = !isWorking && enabled;
+    final canThrowAway = canRunSecondaryActions && meal.remainingPortions > 0;
 
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.md),
@@ -271,7 +273,7 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: isWorking || !enabled ? null : onEditPressed,
+              onPressed: canRunSecondaryActions ? onEditPressed : null,
               icon: const Icon(Icons.edit_outlined),
               label: Text(l10n.inventoryReceiptReviewEditAction),
             ),
@@ -280,7 +282,7 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: FilledButton.tonal(
-              onPressed: isWorking || !enabled ? null : onThrowAwayPressed,
+              onPressed: canThrowAway ? onThrowAwayPressed : null,
               child: Text(l10n.inventoryItemThrowAwayAction),
             ),
           ),
@@ -288,7 +290,7 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
-              onPressed: isWorking || !enabled ? null : onUnbundlePressed,
+              onPressed: canRunSecondaryActions ? onUnbundlePressed : null,
               child: Text(l10n.preparedMealUnbundleAction),
             ),
           ),
@@ -296,7 +298,7 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: isWorking || !enabled ? null : onSaveTemplatePressed,
+              onPressed: canRunSecondaryActions ? onSaveTemplatePressed : null,
               icon: const Icon(Icons.bookmark_add_outlined),
               label: Text(l10n.preparedMealSaveTemplateAction),
             ),

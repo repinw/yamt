@@ -115,6 +115,10 @@ PreparedMeal _incompleteMeal() {
   );
 }
 
+PreparedMeal _depletedMeal() {
+  return _meal().copyWith(remainingPortions: 0);
+}
+
 InventoryItem _inventorySuggestion({required String id, required String name}) {
   return InventoryItem.create(
     id: id,
@@ -228,6 +232,51 @@ void main() {
     expect(find.text('Return to inventory'), findsOneWidget);
     expect(find.text('Save as template'), findsOneWidget);
   });
+
+  testWidgets(
+    'PreparedMealCard disables eat and throw away actions at zero portions',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: _wrapCard(
+                PreparedMealCard(
+                  meal: _depletedMeal(),
+                  onEatPressed:
+                      ({
+                        required mealId,
+                        required portions,
+                        required mealType,
+                        required loggedDay,
+                      }) async => true,
+                  onThrowAwayPressed: (mealId, portions, reason) async => true,
+                  onUnbundlePressed: (mealId) async => true,
+                  onEditPressed:
+                      (mealId, name, imageChanged, imageBytes) async => true,
+                  onSaveTemplatePressed: (meal) async => true,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final eatButton = tester.widget<IconButton>(find.byType(IconButton));
+      expect(eatButton.onPressed, isNull);
+
+      await tester.tap(find.text('Rice bowl'));
+      await tester.pumpAndSettle();
+
+      final throwAwayButton = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Throw away'),
+      );
+      expect(throwAwayButton.onPressed, isNull);
+    },
+  );
 
   testWidgets('PreparedMealCard returns the meal to inventory', (tester) async {
     final meal = _meal();

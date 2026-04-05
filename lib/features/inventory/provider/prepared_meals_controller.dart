@@ -394,6 +394,11 @@ class PreparedMealsController extends _$PreparedMealsController {
     DateTime? loggedDay,
   }) {
     if (consumedPortions < 1) {
+      log(
+        'consumePreparedMeal(): invalid consumedPortions=$consumedPortions '
+        '(mealId=$mealId)',
+        name: _preparedMealsControllerLogName,
+      );
       return Future<bool>.value(false);
     }
 
@@ -402,27 +407,64 @@ class PreparedMealsController extends _$PreparedMealsController {
       final currentMeals = await _currentMeals();
       final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
       if (mealIndex < 0) {
+        log(
+          'consumePreparedMeal(): meal not found ($mealId)',
+          name: _preparedMealsControllerLogName,
+        );
         return false;
       }
 
       final meal = currentMeals[mealIndex];
+      log(
+        'consumePreparedMeal(): starting '
+        '(mealId=$mealId, consumedPortions=$consumedPortions, '
+        'remainingPortions=${meal.remainingPortions}, '
+        'totalPortions=${meal.totalPortions}, '
+        'mealType=${mealType.name}, '
+        'loggedDay=${loggedDay?.toIso8601String()})',
+        name: _preparedMealsControllerLogName,
+      );
       if (meal.hasPendingRecipeIngredients) {
+        log(
+          'consumePreparedMeal(): meal has pending recipe ingredients '
+          '(mealId=$mealId)',
+          name: _preparedMealsControllerLogName,
+        );
         return false;
       }
       if (consumedPortions > meal.remainingPortions) {
+        log(
+          'consumePreparedMeal(): consumedPortions exceed remaining '
+          '($consumedPortions > ${meal.remainingPortions}) '
+          '(mealId=$mealId)',
+          name: _preparedMealsControllerLogName,
+        );
         return false;
+      }
+      if (consumedPortions == meal.remainingPortions) {
+        log(
+          'consumePreparedMeal(): meal will be fully depleted and kept '
+          'with zero remaining portions (mealId=$mealId)',
+          name: _preparedMealsControllerLogName,
+        );
       }
 
       final nextMeals = _applyPortionReduction(
         currentMeals: currentMeals,
         mealIndex: mealIndex,
-        consumedPortions: consumedPortions,
+        removedPortions: consumedPortions,
+        keepDepletedMeal: true,
       );
       final savedMeals = await _saveMeals(
         previousMeals: currentMeals,
         nextMeals: nextMeals,
       );
       if (!savedMeals) {
+        log(
+          'consumePreparedMeal(): failed to save updated prepared meals '
+          '(mealId=$mealId)',
+          name: _preparedMealsControllerLogName,
+        );
         return false;
       }
 
@@ -435,9 +477,19 @@ class PreparedMealsController extends _$PreparedMealsController {
             loggedDay: loggedDay,
           );
       if (calorieSaved) {
+        log(
+          'consumePreparedMeal(): calorie entry saved '
+          '(mealId=$mealId, consumedPortions=$consumedPortions)',
+          name: _preparedMealsControllerLogName,
+        );
         return true;
       }
 
+      log(
+        'consumePreparedMeal(): calorie entry save failed, restoring '
+        'previous meal state (mealId=$mealId)',
+        name: _preparedMealsControllerLogName,
+      );
       return _saveMeals(previousMeals: nextMeals, nextMeals: currentMeals);
     }).whenComplete(keepAliveLink.close);
   }
@@ -486,7 +538,7 @@ class PreparedMealsController extends _$PreparedMealsController {
       final nextMeals = _applyPortionReduction(
         currentMeals: currentMeals,
         mealIndex: mealIndex,
-        consumedPortions: discardedPortions,
+        removedPortions: discardedPortions,
       );
       final savedMeals = await _saveMeals(
         previousMeals: currentMeals,
@@ -536,20 +588,42 @@ class PreparedMealsController extends _$PreparedMealsController {
     required int portions,
   }) {
     if (portions < 1) {
+      log(
+        'restorePreparedMealPortions(): invalid portions=$portions '
+        '(mealId=$mealId)',
+        name: _preparedMealsControllerLogName,
+      );
       return Future<bool>.value(false);
     }
 
     final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(() async {
+      log(
+        'restorePreparedMealPortions(): starting '
+        '(mealId=$mealId, portions=$portions)',
+        name: _preparedMealsControllerLogName,
+      );
       final currentMeals = await _currentMeals();
       final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
       if (mealIndex < 0) {
+        log(
+          'restorePreparedMealPortions(): meal not found '
+          '(mealId=$mealId, portions=$portions, '
+          'knownMeals=${currentMeals.length})',
+          name: _preparedMealsControllerLogName,
+        );
         return false;
       }
 
       final meal = currentMeals[mealIndex];
       final nextRemainingPortions = meal.remainingPortions + portions;
       if (nextRemainingPortions > meal.totalPortions) {
+        log(
+          'restorePreparedMealPortions(): restore exceeds total portions '
+          '(mealId=$mealId, nextRemaining=$nextRemainingPortions, '
+          'totalPortions=${meal.totalPortions})',
+          name: _preparedMealsControllerLogName,
+        );
         return false;
       }
 
@@ -558,7 +632,26 @@ class PreparedMealsController extends _$PreparedMealsController {
         remainingPortions: nextRemainingPortions,
         updatedAt: DateTime.now(),
       );
-      return _saveMeals(previousMeals: currentMeals, nextMeals: nextMeals);
+      final saved = await _saveMeals(
+        previousMeals: currentMeals,
+        nextMeals: nextMeals,
+      );
+      if (!saved) {
+        log(
+          'restorePreparedMealPortions(): failed to save restored '
+          'portions (mealId=$mealId)',
+          name: _preparedMealsControllerLogName,
+        );
+        return false;
+      }
+
+      log(
+        'restorePreparedMealPortions(): succeeded '
+        '(mealId=$mealId, remainingPortions=${meal.remainingPortions}, '
+        'nextRemainingPortions=$nextRemainingPortions)',
+        name: _preparedMealsControllerLogName,
+      );
+      return true;
     }).whenComplete(keepAliveLink.close);
   }
 
@@ -1313,19 +1406,19 @@ InventoryItem? _reduceInventoryItem({
 List<PreparedMeal> _applyPortionReduction({
   required List<PreparedMeal> currentMeals,
   required int mealIndex,
-  required int consumedPortions,
+  required int removedPortions,
+  bool keepDepletedMeal = false,
 }) {
   final currentMeal = currentMeals[mealIndex];
-  final nextRemainingPortions =
-      currentMeal.remainingPortions - consumedPortions;
+  final nextRemainingPortions = currentMeal.remainingPortions - removedPortions;
   final nextMeals = List<PreparedMeal>.from(currentMeals);
-  if (nextRemainingPortions <= 0) {
+  if (nextRemainingPortions <= 0 && !keepDepletedMeal) {
     nextMeals.removeAt(mealIndex);
     return nextMeals;
   }
 
   nextMeals[mealIndex] = currentMeal.copyWith(
-    remainingPortions: nextRemainingPortions,
+    remainingPortions: nextRemainingPortions < 0 ? 0 : nextRemainingPortions,
     updatedAt: DateTime.now(),
   );
   return nextMeals;

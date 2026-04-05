@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
-import 'package:yamt/features/inventory/domain/product_image_url.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
 
 class PreparedMealComponentAvatar extends StatelessWidget {
   const PreparedMealComponentAvatar({

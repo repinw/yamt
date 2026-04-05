@@ -47,8 +47,8 @@ final calorieEntryDeleteFlowProvider = Provider<CalorieEntryDeleteFlow>((ref) {
     restorePreparedMealPortions: ref
         .read(preparedMealsControllerProvider.notifier)
         .restorePreparedMealPortions,
-    rollbackRestoredPreparedMeal: ({required mealId, required discardedPortions})
-        => ref
+    rollbackRestoredPreparedMeal:
+        ({required mealId, required discardedPortions}) => ref
             .read(preparedMealsControllerProvider.notifier)
             .throwAwayPreparedMeal(
               mealId: mealId,
@@ -96,8 +96,24 @@ class CalorieEntryDeleteFlow {
     required CalorieEntry entry,
     required bool restoreToInventory,
   }) async {
+    log(
+      'deleteEntry(): starting '
+      '(entryId=${entry.id}, restoreToInventory=$restoreToInventory, '
+      'loggedAt=${entry.loggedAt.toIso8601String()}, '
+      'createdAt=${entry.createdAt.toIso8601String()}, '
+      'preparedMealId=${entry.bundleSourcePreparedMealId}, '
+      'preparedMealPortions=${entry.bundleConsumedPortions})',
+      name: _deleteFlowLogName,
+    );
     if (!restoreToInventory) {
       final deleted = await _deleteEntryById(entry.id);
+      if (!deleted) {
+        log(
+          'deleteEntry(): diary delete failed without inventory restore '
+          '(entryId=${entry.id}).',
+          name: _deleteFlowLogName,
+        );
+      }
       return deleted
           ? const CalorieEntryDeleteResult.success(restoredToInventory: false)
           : const CalorieEntryDeleteResult.failure(
@@ -158,16 +174,36 @@ class CalorieEntryDeleteFlow {
         sourceMealId.isEmpty ||
         portionsToRestore == null ||
         portionsToRestore < 1) {
+      log(
+        '_returnPreparedMealToInventory(): missing prepared meal restore '
+        'data (entryId=${entry.id}, mealId=$sourceMealId, '
+        'portions=$portionsToRestore).',
+        name: _deleteFlowLogName,
+      );
       return const CalorieEntryDeleteResult.failure(
         CalorieEntryDeleteFailureReason.restoreFailed,
       );
     }
 
+    log(
+      '_returnPreparedMealToInventory(): restoring prepared meal '
+      '(entryId=${entry.id}, mealId=$sourceMealId, '
+      'portions=$portionsToRestore, '
+      'loggedAt=${entry.loggedAt.toIso8601String()}, '
+      'createdAt=${entry.createdAt.toIso8601String()}).',
+      name: _deleteFlowLogName,
+    );
     final restored = await _restorePreparedMealPortions(
       mealId: sourceMealId,
       portions: portionsToRestore,
     );
     if (!restored) {
+      log(
+        '_returnPreparedMealToInventory(): restore failed '
+        '(entryId=${entry.id}, mealId=$sourceMealId, '
+        'portions=$portionsToRestore).',
+        name: _deleteFlowLogName,
+      );
       return const CalorieEntryDeleteResult.failure(
         CalorieEntryDeleteFailureReason.restoreFailed,
       );
@@ -175,9 +211,20 @@ class CalorieEntryDeleteFlow {
 
     final deleted = await _deleteEntryById(entry.id);
     if (deleted) {
+      log(
+        '_returnPreparedMealToInventory(): restore and diary delete '
+        'succeeded (entryId=${entry.id}, mealId=$sourceMealId).',
+        name: _deleteFlowLogName,
+      );
       return const CalorieEntryDeleteResult.success(restoredToInventory: true);
     }
 
+    log(
+      '_returnPreparedMealToInventory(): diary delete failed after restore '
+      '(entryId=${entry.id}, mealId=$sourceMealId, '
+      'portions=$portionsToRestore).',
+      name: _deleteFlowLogName,
+    );
     final rolledBack = await _rollbackRestoredPreparedMeal(
       mealId: sourceMealId,
       discardedPortions: portionsToRestore,
@@ -187,6 +234,12 @@ class CalorieEntryDeleteFlow {
         'Failed to rollback restored prepared meal portions '
         'after diary delete failure entryId=${entry.id} '
         'mealId=$sourceMealId portions=$portionsToRestore.',
+        name: _deleteFlowLogName,
+      );
+    } else {
+      log(
+        '_returnPreparedMealToInventory(): rollback after diary delete '
+        'failure succeeded (entryId=${entry.id}, mealId=$sourceMealId).',
         name: _deleteFlowLogName,
       );
     }

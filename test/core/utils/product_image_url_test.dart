@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/domain/product_image_url.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
 
 void main() {
   test('normalizes OFF protocol-relative image URLs', () {
