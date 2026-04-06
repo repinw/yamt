@@ -17,7 +17,6 @@ class CaloriesMealSectionCard extends StatelessWidget {
     required this.emptyMessage,
     required this.onTapEntry,
     required this.onDeleteEntry,
-    required this.onAddEntry,
   });
 
   final CalorieMealSection section;
@@ -25,7 +24,6 @@ class CaloriesMealSectionCard extends StatelessWidget {
   final String emptyMessage;
   final ValueChanged<CalorieEntry> onTapEntry;
   final ValueChanged<CalorieEntry> onDeleteEntry;
-  final VoidCallback onAddEntry;
 
   @override
   Widget build(BuildContext context) {
@@ -62,19 +60,6 @@ class CaloriesMealSectionCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            IconButton.filledTonal(
-              key: CaloriesPageKeys.sectionAddButton(section.mealType.name),
-              tooltip: l10n.caloriesAddEntryTitle,
-              onPressed: onAddEntry,
-              icon: const Icon(Icons.add, size: 18),
-              style: IconButton.styleFrom(
-                backgroundColor: AppInventoryEditorial.primary.withValues(
-                  alpha: 0.12,
-                ),
-                foregroundColor: AppInventoryEditorial.primary,
               ),
             ),
           ],

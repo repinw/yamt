@@ -201,6 +201,9 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final currentTab = _currentTab();
+    final showsContextFab =
+        currentTab == HomeTabType.inventory ||
+        currentTab == HomeTabType.settings;
     final selectionState = ref.watch(preparedMealSelectionControllerProvider);
 
     return Scaffold(
@@ -217,9 +220,9 @@ class HomePage extends ConsumerWidget {
       ),
       body: navigationShell,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: currentTab == HomeTabType.statistics
-          ? null
-          : HomeContextFab(currentTab: currentTab),
+      floatingActionButton: showsContextFab
+          ? HomeContextFab(currentTab: currentTab)
+          : null,
       bottomNavigationBar: HomeBottomNavBar(
         entries: _navEntries(context, l10n),
       ),
