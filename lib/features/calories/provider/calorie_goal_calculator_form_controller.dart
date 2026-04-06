@@ -79,7 +79,7 @@ class CalorieGoalCalculatorFormController
         .read(calorieGoalControllerProvider.notifier)
         .saveCalculatedGoal(profile);
     if (!ref.mounted) {
-      return false;
+      return saved;
     }
     state = state.copyWith(isSaving: false);
     return saved;
