@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -578,9 +579,8 @@ void main() {
     final imageFinder = find.byKey(CaloriesPageKeys.entryImage('image-entry'));
     expect(imageFinder, findsOneWidget);
 
-    final imageWidget = tester.widget<Image>(imageFinder);
-    final provider = imageWidget.image as NetworkImage;
-    expect(provider.url, 'https://images.example.com/skyr.jpg');
+    final imageWidget = tester.widget<AppCachedNetworkImage>(imageFinder);
+    expect(imageWidget.imageUrl, 'https://images.example.com/skyr.jpg');
   });
 
   testWidgets('renders ingredient image in bundle details sheet', (
@@ -620,9 +620,8 @@ void main() {
     );
     expect(imageFinder, findsOneWidget);
 
-    final imageWidget = tester.widget<Image>(imageFinder);
-    final provider = imageWidget.image as NetworkImage;
-    expect(provider.url, 'https://images.example.com/beans.jpg');
+    final imageWidget = tester.widget<AppCachedNetworkImage>(imageFinder);
+    expect(imageWidget.imageUrl, 'https://images.example.com/beans.jpg');
   });
 
   testWidgets(

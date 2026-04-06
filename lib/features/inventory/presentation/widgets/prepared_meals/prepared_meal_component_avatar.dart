@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
 
 class PreparedMealComponentAvatar extends StatelessWidget {
   const PreparedMealComponentAvatar({
@@ -21,8 +22,8 @@ class PreparedMealComponentAvatar extends StatelessWidget {
       return SizedBox.square(
         dimension: size,
         child: ClipOval(
-          child: Image.network(
-            normalizedImageUrl,
+          child: AppCachedNetworkImage(
+            imageUrl: normalizedImageUrl,
             fit: BoxFit.cover,
             errorBuilder: (_, _, _) {
               return _PreparedMealComponentAvatarFallback(

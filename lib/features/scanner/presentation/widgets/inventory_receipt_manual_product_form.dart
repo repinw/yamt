@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
@@ -507,8 +508,8 @@ class _ManualProductSearchImage extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.md),
-      child: Image.network(
-        resolvedUrl,
+      child: AppCachedNetworkImage(
+        imageUrl: resolvedUrl,
         width: _imageSize,
         height: _imageSize,
         fit: BoxFit.cover,
@@ -556,8 +557,8 @@ class _ManualProductPreview extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.md),
-            child: Image.network(
-              preview.imageUrl,
+            child: AppCachedNetworkImage(
+              imageUrl: preview.imageUrl,
               width: 72,
               height: 72,
               fit: BoxFit.cover,

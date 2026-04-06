@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
 
 class PreparedMealCover extends StatelessWidget {
   const PreparedMealCover({
@@ -51,8 +52,8 @@ class PreparedMealCover extends StatelessWidget {
                   },
                 )
               : normalizedImageUrl != null
-              ? Image.network(
-                  normalizedImageUrl,
+              ? AppCachedNetworkImage(
+                  imageUrl: normalizedImageUrl,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) {
                     return _PreparedMealCoverFallback(label: label);
