@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
@@ -55,11 +56,17 @@ Future<void> _ensureSaveButtonVisible(WidgetTester tester) async {
 }
 
 Future<void> _tapNext(WidgetTester tester) async {
+  await tester.ensureVisible(
+    find.byKey(CalorieGoalCalculatorSheetKeys.nextButton),
+  );
   await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.nextButton));
   await tester.pumpAndSettle();
 }
 
 Future<void> _tapBack(WidgetTester tester) async {
+  await tester.ensureVisible(
+    find.byKey(CalorieGoalCalculatorSheetKeys.backButton),
+  );
   await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.backButton));
   await tester.pumpAndSettle();
 }
@@ -116,6 +123,49 @@ void main() {
     );
     expect(find.text('1,680 kcal'), findsOneWidget);
   });
+
+  testWidgets(
+    'activity step shows selectable options instead of a text field',
+    (tester) async {
+      final repository = FakeCalorieSettingsRepository();
+      addTearDown(repository.dispose);
+
+      await tester.pumpWidget(_buildHarness(settingsRepository: repository));
+      await _openSheet(tester);
+
+      await _tapNext(tester);
+      await _tapNext(tester);
+      await _tapNext(tester);
+      await _tapNext(tester);
+
+      expect(
+        find.byKey(CalorieGoalCalculatorSheetKeys.activityLevelOptions),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          CalorieGoalCalculatorSheetKeys.activityLevelOption(
+            CalorieActivityLevelOption.low.name,
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byType(TextField), findsNothing);
+
+      final highActivityOption = find.byKey(
+        CalorieGoalCalculatorSheetKeys.activityLevelOption(
+          CalorieActivityLevelOption.high.name,
+        ),
+      );
+      await tester.ensureVisible(highActivityOption);
+      await tester.tap(highActivityOption);
+      await tester.pumpAndSettle();
+      await _tapNext(tester);
+      await _tapNext(tester);
+
+      expect(find.text('3,204 kcal'), findsNWidgets(2));
+    },
+  );
 
   testWidgets('maintain mode disables goal speed and restores previous value', (
     tester,
@@ -194,10 +244,14 @@ void main() {
       '60',
     );
     await _tapNext(tester);
-    await tester.enterText(
-      find.byKey(CalorieGoalCalculatorSheetKeys.activityLevelField),
-      '1.2',
+    final noneActivityOption = find.byKey(
+      CalorieGoalCalculatorSheetKeys.activityLevelOption(
+        CalorieActivityLevelOption.none.name,
+      ),
     );
+    await tester.ensureVisible(noneActivityOption);
+    await tester.tap(noneActivityOption);
+    await tester.pumpAndSettle();
     await _tapNext(tester);
     await tester.tap(find.text('Lose'));
     await tester.pumpAndSettle();

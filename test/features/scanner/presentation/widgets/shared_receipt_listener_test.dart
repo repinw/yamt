@@ -90,6 +90,12 @@ GoRouter _router(GlobalKey<NavigatorState> navigatorKey) {
         },
       ),
       GoRoute(
+        path: AppRoutes.calorieGoalSetup,
+        builder: (context, state) {
+          return const Scaffold(body: Text('Calorie setup'));
+        },
+      ),
+      GoRoute(
         path: AppRoutes.homeInventoryReceiptReview,
         builder: (context, state) {
           final args = state.extra! as InventoryReceiptReviewPageArgs;
@@ -222,5 +228,60 @@ void main() {
     ]);
     expect(find.text('Review receipt'), findsOneWidget);
     expect(container.read(pendingSharedReceiptIntentProvider), isNull);
+  });
+
+  testWidgets('does not process shared scan on calorie onboarding route', (
+    tester,
+  ) async {
+    final navigatorKey = GlobalKey<NavigatorState>();
+    final router = _router(navigatorKey);
+    addTearDown(router.dispose);
+    final fakeController = _FakeReceiptCaptureFlowController(
+      result: const ReceiptCaptureFlowResult.analysisFailed(
+        source: ReceiptInputSource.file,
+        errorCode: ReceiptAnalysisErrorCodes.aiRequestFailed,
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appRouterProvider.overrideWithValue(router),
+          navigatorKeyProvider.overrideWithValue(navigatorKey),
+          sharedReceiptServiceProvider.overrideWith(
+            () => _FakeSharedReceiptService(),
+          ),
+          receiptCaptureFlowControllerProvider.overrideWith(
+            () => fakeController,
+          ),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+          builder: (context, child) {
+            return SharedReceiptListener(
+              child: child ?? const SizedBox.shrink(),
+            );
+          },
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    router.go(AppRoutes.calorieGoalSetup);
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(SharedReceiptListener)),
+    );
+    container.read(pendingSharedReceiptIntentProvider.notifier).replace(
+      <ReceiptInputSelection>[_selection()],
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Scan shared receipt?'), findsNothing);
+    expect(fakeController.capturedSelections, isEmpty);
+    expect(container.read(pendingSharedReceiptIntentProvider), isNotNull);
   });
 }

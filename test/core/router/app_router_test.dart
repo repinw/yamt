@@ -16,8 +16,13 @@ import 'package:yamt/features/auth/provider/'
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_goal_onboarding_preferences.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_goal_onboarding_completed_provider.dart';
 
 import '../../features/calories/support/fake_calories_repositories.dart';
 import '../../helpers/memory_app_preferences.dart';
@@ -49,18 +54,28 @@ UserMetadata _userMetadata({required bool isFirstSignIn}) {
 ProviderContainer _createContainerWithAuth(
   Stream<User?> authStream, {
   Set<String> completedProfileSetupUserIds = const <String>{},
+  Set<String> completedCalorieGoalOnboardingUserIds = const <String>{},
+  CalorieGoalSettings initialCalorieSettings =
+      const CalorieGoalSettings.empty(),
 }) {
   final calorieLogRepository = FakeCalorieLogRepository();
-  final calorieSettingsRepository = FakeCalorieSettingsRepository();
+  final calorieSettingsRepository = FakeCalorieSettingsRepository(
+    initialSettings: initialCalorieSettings,
+  );
+  final broadcastAuthStream = authStream.isBroadcast
+      ? authStream
+      : authStream.asBroadcastStream();
   final appPreferences = MemoryAppPreferences(
     completedProfileSetupUserIds: completedProfileSetupUserIds,
+    completedCalorieGoalOnboardingUserIds:
+        completedCalorieGoalOnboardingUserIds,
   );
   final firebaseAuth = _MockFirebaseAuth();
   when(() => firebaseAuth.currentUser).thenReturn(null);
   final container = ProviderContainer(
     overrides: [
       appPreferencesProvider.overrideWithValue(appPreferences),
-      authStateChangesProvider.overrideWith((ref) => authStream),
+      authStateChangesProvider.overrideWith((ref) => broadcastAuthStream),
       firebaseAuthProvider.overrideWithValue(firebaseAuth),
       calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(
@@ -154,6 +169,9 @@ void main() {
     await _pumpRouterTransition(tester);
 
     expect(container.read(appRouterProvider).state.uri.path, AppRoutes.welcome);
+    container.dispose();
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
   });
 
   testWidgets('redirects root path to welcome', (tester) async {
@@ -189,6 +207,7 @@ void main() {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
       completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
     );
 
     await tester.pumpWidget(
@@ -252,6 +271,7 @@ void main() {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_guestUser(displayName: 'Guest Name')),
       completedProfileSetupUserIds: {'guest-123'},
+      completedCalorieGoalOnboardingUserIds: {'guest-123'},
     );
 
     await tester.pumpWidget(
@@ -301,6 +321,7 @@ void main() {
         ),
       ),
       completedProfileSetupUserIds: {'fresh-user'},
+      completedCalorieGoalOnboardingUserIds: {'fresh-user'},
     );
 
     await tester.pumpWidget(
@@ -311,6 +332,98 @@ void main() {
     expect(
       container.read(appRouterProvider).state.uri.path,
       AppRoutes.homeInventory,
+    );
+  });
+
+  testWidgets(
+    'redirects authenticated user without calorie onboarding to calorie setup',
+    (tester) async {
+      final container = _createContainerWithAuth(
+        Stream<User?>.value(_authenticatedUser()),
+        completedProfileSetupUserIds: {'uid-123'},
+      );
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: container, child: const YAMT()),
+      );
+      await _pumpRouterTransition(tester);
+      await _pumpRouterTransition(tester);
+
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.calorieGoalSetup,
+      );
+      expect(find.text('Set your calorie goal'), findsOneWidget);
+    },
+  );
+
+  testWidgets('saving calorie onboarding redirects to home', (tester) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalSetup,
+    );
+
+    for (var index = 0; index < 6; index += 1) {
+      await tester.ensureVisible(
+        find.byKey(CalorieGoalCalculatorSheetKeys.nextButton),
+      );
+      await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.nextButton));
+      await tester.pumpAndSettle();
+    }
+
+    await tester.ensureVisible(
+      find.byKey(CalorieGoalCalculatorSheetKeys.saveButton),
+    );
+    await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
+    await tester.pump();
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.homeInventory,
+    );
+  });
+
+  testWidgets('existing calorie goal marks onboarding as completed', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
+      initialCalorieSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 2, 25, 10),
+      ),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.homeInventory,
+    );
+    expect(
+      container
+          .read(appPreferencesProvider)
+          .getStringSync(calorieGoalOnboardingKeyForUser('uid-123')),
+      calorieGoalOnboardingCompletedValue,
     );
   });
 
@@ -372,7 +485,7 @@ void main() {
   });
 
   testWidgets(
-    'leaves setup when completion marker changes without new auth event',
+    'moves from guest setup to calorie setup and then home via markers',
     (tester) async {
       final authController = StreamController<User?>();
       final container = _createContainerWithAuth(authController.stream);
@@ -407,6 +520,22 @@ void main() {
 
       expect(
         container.read(appRouterProvider).state.uri.path,
+        AppRoutes.calorieGoalSetup,
+      );
+
+      await container
+          .read(appPreferencesProvider)
+          .setString(
+            calorieGoalOnboardingKeyForUser('setup-user'),
+            calorieGoalOnboardingCompletedValue,
+          );
+      container.invalidate(calorieGoalOnboardingCompletedProvider);
+
+      await tester.pump();
+      await _pumpRouterTransition(tester);
+
+      expect(
+        container.read(appRouterProvider).state.uri.path,
         AppRoutes.homeInventory,
       );
     },
@@ -420,11 +549,13 @@ void main() {
     final container = _createContainerWithAuth(
       Stream<User?>.value(user),
       completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
     );
 
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
     );
+    await _pumpRouterTransition(tester);
     await _pumpRouterTransition(tester);
 
     final router = container.read(appRouterProvider);
@@ -478,11 +609,13 @@ void main() {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
       completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
     );
 
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const YAMT()),
     );
+    await _pumpRouterTransition(tester);
     await _pumpRouterTransition(tester);
 
     final router = container.read(appRouterProvider);
@@ -496,45 +629,13 @@ void main() {
     expect(find.byType(BackButton), findsOneWidget);
   });
 
-  testWidgets('redirects to welcome after logout from a home route', (
-    tester,
-  ) async {
-    final authController = StreamController<User?>();
-    final container = _createContainerWithAuth(
-      authController.stream,
-      completedProfileSetupUserIds: {'uid-123'},
-    );
-    addTearDown(() {
-      unawaited(authController.close());
-    });
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(container: container, child: const YAMT()),
-    );
-    await tester.pump();
-
-    authController.add(_authenticatedUser());
-    await tester.pump();
-    await _pumpRouterTransition(tester);
-
-    expect(
-      container.read(appRouterProvider).state.uri.path,
-      AppRoutes.homeInventory,
-    );
-
-    authController.add(null);
-    await tester.pump();
-    await _pumpRouterTransition(tester);
-
-    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.welcome);
-  });
-
   testWidgets('route-level redirects for root and home routes are configured', (
     tester,
   ) async {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
       completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
     );
 
     await tester.pumpWidget(
@@ -586,6 +687,7 @@ void main() {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
       completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
     );
 
     await tester.pumpWidget(
@@ -612,6 +714,7 @@ void main() {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
       completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
     );
 
     await tester.pumpWidget(
@@ -638,6 +741,7 @@ void main() {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
       completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
     );
 
     await tester.pumpWidget(

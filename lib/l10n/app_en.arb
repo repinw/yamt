@@ -450,6 +450,9 @@
   "caloriesGoalSaveFailed": "Could not save calorie goal.",
   "caloriesGoalClearFailed": "Could not clear calorie goal.",
   "caloriesCalculatorSheetTitle": "Calorie calculator",
+  "caloriesCalculatorOnboardingTitle": "Set your calorie goal",
+  "caloriesCalculatorOnboardingSubtitle":
+      "We use a few details to calculate a daily calorie target for you.",
   "caloriesCalculatorStepProgress": "Step {current} of {total}",
   "@caloriesCalculatorStepProgress": {
     "placeholders": {
@@ -476,6 +479,20 @@
   "caloriesCalculatorAgeEmpty": "Please enter your age.",
   "caloriesCalculatorAgeInvalid": "Please enter a valid age.",
   "caloriesCalculatorActivityLevelLabel": "Activity level (PAL)",
+  "caloriesCalculatorActivityLevelHelp":
+      "Choose the option that best matches your typical week.",
+  "caloriesCalculatorActivityLevelNoneTitle": "No activity",
+  "caloriesCalculatorActivityLevelNoneDescription":
+      "Mostly sitting, hardly any exercise, and very little movement in daily life.",
+  "caloriesCalculatorActivityLevelLowTitle": "Low activity",
+  "caloriesCalculatorActivityLevelLowDescription":
+      "Mostly desk work, short walks, and only occasional exercise.",
+  "caloriesCalculatorActivityLevelMediumTitle": "Medium activity",
+  "caloriesCalculatorActivityLevelMediumDescription":
+      "Regular movement, frequent walks, or exercise several times per week.",
+  "caloriesCalculatorActivityLevelHighTitle": "High activity",
+  "caloriesCalculatorActivityLevelHighDescription":
+      "Physically active daily life, a demanding job, or frequent training.",
   "caloriesCalculatorActivityLevelHint": "For example 1.2 to 2.0",
   "caloriesCalculatorActivityLevelEmpty":
       "Please enter your activity level.",

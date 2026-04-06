@@ -6,6 +6,8 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_goal_onboarding_completed_provider.dart';
 
 part 'calorie_goal_controller.g.dart';
 
@@ -126,6 +128,9 @@ class CalorieGoalController extends _$CalorieGoalController {
     final repository = ref.read(calorieSettingsRepositoryProvider);
     try {
       final saved = await repository.saveSettings(nextSettings);
+      if (saved && nextSettings.hasGoal) {
+        await markCalorieGoalOnboardingCompleted(ref);
+      }
       if (!saved && ref.mounted) {
         state = AsyncData(previous);
       }

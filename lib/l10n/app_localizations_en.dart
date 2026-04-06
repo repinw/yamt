@@ -919,6 +919,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesCalculatorSheetTitle => 'Calorie calculator';
 
   @override
+  String get caloriesCalculatorOnboardingTitle => 'Set your calorie goal';
+
+  @override
+  String get caloriesCalculatorOnboardingSubtitle => 'We use a few details to calculate a daily calorie target for you.';
+
+  @override
   String caloriesCalculatorStepProgress(int current, int total) {
     return 'Step $current of $total';
   }
@@ -967,6 +973,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesCalculatorActivityLevelLabel => 'Activity level (PAL)';
+
+  @override
+  String get caloriesCalculatorActivityLevelHelp => 'Choose the option that best matches your typical week.';
+
+  @override
+  String get caloriesCalculatorActivityLevelNoneTitle => 'No activity';
+
+  @override
+  String get caloriesCalculatorActivityLevelNoneDescription => 'Mostly sitting, hardly any exercise, and very little movement in daily life.';
+
+  @override
+  String get caloriesCalculatorActivityLevelLowTitle => 'Low activity';
+
+  @override
+  String get caloriesCalculatorActivityLevelLowDescription => 'Mostly desk work, short walks, and only occasional exercise.';
+
+  @override
+  String get caloriesCalculatorActivityLevelMediumTitle => 'Medium activity';
+
+  @override
+  String get caloriesCalculatorActivityLevelMediumDescription => 'Regular movement, frequent walks, or exercise several times per week.';
+
+  @override
+  String get caloriesCalculatorActivityLevelHighTitle => 'High activity';
+
+  @override
+  String get caloriesCalculatorActivityLevelHighDescription => 'Physically active daily life, a demanding job, or frequent training.';
 
   @override
   String get caloriesCalculatorActivityLevelHint => 'For example 1.2 to 2.0';

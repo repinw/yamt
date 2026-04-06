@@ -3,6 +3,7 @@ abstract final class AppRoutes {
   static const splash = '/splash';
   static const welcome = '/welcome';
   static const guestNameSetup = '/welcome/guest-name';
+  static const calorieGoalSetup = '/welcome/calorie-goal';
   static const home = '/home';
   static const homeInventory = '/home/inventory';
   static const homeInventoryManualAdd = '/home/inventory/manual-add';

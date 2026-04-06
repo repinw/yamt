@@ -6,6 +6,8 @@ void main() {
     expect(AppRoutes.root, '/');
     expect(AppRoutes.splash, '/splash');
     expect(AppRoutes.welcome, '/welcome');
+    expect(AppRoutes.guestNameSetup, '/welcome/guest-name');
+    expect(AppRoutes.calorieGoalSetup, '/welcome/calorie-goal');
     expect(AppRoutes.home, '/home');
     expect(AppRoutes.homeInventory, '/home/inventory');
     expect(AppRoutes.homeInventoryTemplates, '/home/inventory/templates');
