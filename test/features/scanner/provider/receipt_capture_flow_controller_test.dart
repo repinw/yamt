@@ -116,8 +116,7 @@ class _UnsupportedReceiptToReviewItemDraftMapper
 }
 
 class _UnsupportedGlobalFoodItemMatcher extends GlobalFoodItemMatcher {
-  _UnsupportedGlobalFoodItemMatcher()
-    : super(repository: _UnsupportedGlobalFoodItemRepository());
+  _UnsupportedGlobalFoodItemMatcher();
 }
 
 class _UnsupportedGlobalFoodItemRepository implements GlobalFoodItemRepository {
@@ -425,6 +424,63 @@ void main() {
     expect(pickCalls, 1);
     expect(analysisCalls, 1);
   });
+
+  test(
+    'runSelection analyzes a provided shared selection without picker',
+    () async {
+      final analyzedSelections = <ReceiptInputSelection>[];
+      final container = ProviderContainer(
+        overrides: [
+          receiptAnalysisRepositoryProvider.overrideWithValue(
+            _FakeReceiptAnalysisRepository(
+              onAnalyzeSelection: (selection) async {
+                analyzedSelections.add(selection);
+                return const ReceiptAnalysisResult.succeeded(
+                  rawResponse: '{"i":[{"n":"Milk"}]}',
+                  extraction: ReceiptAnalysisExtraction(
+                    root: <String, dynamic>{},
+                    items: <ReceiptAnalysisItem>[
+                      ReceiptAnalysisItem(
+                        name: 'Milk',
+                        rawPayload: <String, dynamic>{'n': 'Milk'},
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          receiptReviewResolutionServiceProvider.overrideWithValue(
+            _FakeReceiptReviewResolutionService(
+              onPrepareDrafts: (_) async => <ReceiptReviewItemDraft>[
+                _draft(id: 'food', isDeposit: false, isDiscount: false),
+              ],
+              onPersistReviewedItems: (_) async =>
+                  const ReceiptReviewPersistResult(
+                    saved: true,
+                    inventoryItems: <InventoryItem>[],
+                  ),
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final controller = container.read(
+        receiptCaptureFlowControllerProvider.notifier,
+      );
+      final selection = _selectionWithName('shared-receipt.jpg');
+      final result = await controller.runSelection(selection: selection);
+
+      expect(result.status, ReceiptCaptureFlowStatus.completed);
+      expect(analyzedSelections, <ReceiptInputSelection>[selection]);
+      expect(result.reviewDrafts, hasLength(1));
+      expect(
+        container.read(receiptCaptureFlowControllerProvider).value,
+        result,
+      );
+    },
+  );
 
   test(
     'successful analysis maps to completed status with extraction',

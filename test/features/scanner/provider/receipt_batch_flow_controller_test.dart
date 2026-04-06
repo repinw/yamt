@@ -86,7 +86,7 @@ class _UnsupportedMapper implements ReceiptToReviewItemDraftMapper {
 }
 
 class _UnsupportedMatcher extends GlobalFoodItemMatcher {
-  _UnsupportedMatcher() : super(repository: _UnsupportedGlobalRepository());
+  _UnsupportedMatcher();
 }
 
 class _UnsupportedGlobalRepository implements GlobalFoodItemRepository {
@@ -223,6 +223,56 @@ void main() {
     expect(state.status, ReceiptBatchFlowStatus.inputCanceled);
     expect(state.progress.totalCount, 0);
   });
+
+  test(
+    'runSelections processes provided shared selections without picker',
+    () async {
+      final analysisOrder = <String>[];
+      final container = ProviderContainer(
+        overrides: [
+          receiptAnalysisRepositoryProvider.overrideWithValue(
+            _FakeReceiptAnalysisRepository(
+              onAnalyzeSelection: (selection) async {
+                analysisOrder.add(selection.name);
+                return const ReceiptAnalysisResult.succeeded(
+                  rawResponse: '{"i":[{"n":"A"}]}',
+                  extraction: ReceiptAnalysisExtraction(
+                    root: <String, dynamic>{},
+                    items: <ReceiptAnalysisItem>[
+                      ReceiptAnalysisItem(
+                        name: 'A',
+                        rawPayload: <String, dynamic>{'n': 'A'},
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          receiptReviewResolutionServiceProvider.overrideWithValue(
+            _FakeReceiptReviewResolutionService(
+              onPrepareDrafts: (_) async => <ReceiptReviewItemDraft>[
+                _reviewDraft(id: 'mapped-a'),
+              ],
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(receiptBatchFlowControllerProvider.notifier)
+          .runSelections(<ReceiptInputSelection>[
+            _selectionWithName('shared-a.jpg'),
+            _selectionWithName('shared-b.jpg'),
+          ]);
+      final state = container.read(receiptBatchFlowControllerProvider);
+
+      expect(state.status, ReceiptBatchFlowStatus.completed);
+      expect(state.reviewableIndices, <int>{0, 1});
+      expect(analysisOrder, <String>['shared-a.jpg', 'shared-b.jpg']);
+    },
+  );
 
   test(
     'runFileBatch processes selections and exposes reviewable index',

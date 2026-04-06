@@ -12,6 +12,19 @@
   "inventoryActionUploadFile": "Beleg hochladen (Bild/PDF)",
   "inventoryActionCameraUnsupported": "Kamera wird auf dieser Plattform nicht unterstützt.",
   "inventoryActionManualAdd": "Lebensmittel manuell hinzufügen",
+  "inventorySharedReceiptConfirmTitle": "Geteilten Beleg scannen?",
+  "inventorySharedReceiptConfirmSingleMessage":
+      "Möchtest du diese geteilte Datei als Beleg scannen?",
+  "inventorySharedReceiptConfirmMultipleMessage":
+      "Möchtest du {count} geteilte Dateien als Belege scannen?",
+  "@inventorySharedReceiptConfirmMultipleMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inventorySharedReceiptConfirmAction": "Scannen",
   "inventoryReceiptSelectionFailed": "Beleg konnte nicht ausgewählt werden. Bitte erneut versuchen.",
   "inventoryReceiptAnalysisFailed": "Beleganalyse fehlgeschlagen. Bitte erneut versuchen.",
   "inventoryReceiptBatchTitle": "Belege werden verarbeitet",

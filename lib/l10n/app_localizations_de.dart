@@ -45,6 +45,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryActionManualAdd => 'Lebensmittel manuell hinzufügen';
 
   @override
+  String get inventorySharedReceiptConfirmTitle => 'Geteilten Beleg scannen?';
+
+  @override
+  String get inventorySharedReceiptConfirmSingleMessage => 'Möchtest du diese geteilte Datei als Beleg scannen?';
+
+  @override
+  String inventorySharedReceiptConfirmMultipleMessage(int count) {
+    return 'Möchtest du $count geteilte Dateien als Belege scannen?';
+  }
+
+  @override
+  String get inventorySharedReceiptConfirmAction => 'Scannen';
+
+  @override
   String get inventoryReceiptSelectionFailed => 'Beleg konnte nicht ausgewählt werden. Bitte erneut versuchen.';
 
   @override

@@ -37,6 +37,7 @@ dependencies:
   file_picker: ^10.3.3
   image: ^4.5.4
   mime: ^2.0.0
+  file_share_intent: ^3.0.3
   intl: ^0.20.2
   collection: ^1.19.1
   recipe_scraper: ^1.0.1
