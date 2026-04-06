@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
@@ -31,6 +33,11 @@ class AppCachedNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (imageUrl.trim().isEmpty) {
+      return errorBuilder?.call(context, Exception('Empty URL'), null) ??
+          _buildPlaceholder(context);
+    }
+
     return CachedNetworkImage(
       imageUrl: imageUrl,
       width: width,
@@ -83,7 +90,7 @@ class AppCachedNetworkImage extends StatelessWidget {
     final hasBoundedHeight = height.isFinite && height > 0;
 
     if (hasBoundedWidth && hasBoundedHeight) {
-      return width < height ? width : height;
+      return math.min(width, height);
     }
     if (hasBoundedWidth) {
       return width;
