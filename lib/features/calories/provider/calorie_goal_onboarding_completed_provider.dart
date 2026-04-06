@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
@@ -13,11 +14,11 @@ part 'calorie_goal_onboarding_completed_provider.g.dart';
 FutureOr<bool> calorieGoalOnboardingCompleted(Ref ref) async {
   String? userId;
   try {
-    userId = ref.watch(authStateChangesProvider).asData?.value?.uid;
+    userId = _userIdFromAuthState(ref.watch(authStateChangesProvider));
   } catch (_) {
     return false;
   }
-  if (userId == null || userId.isEmpty) {
+  if (userId == null) {
     return false;
   }
 
@@ -67,12 +68,15 @@ bool _hasCompletionMarker(AppPreferences preferences, String userId) {
 }
 
 String? _currentUserId(Ref ref) {
-  String? userId;
   try {
-    userId = ref.read(authStateChangesProvider).asData?.value?.uid;
+    return _userIdFromAuthState(ref.read(authStateChangesProvider));
   } catch (_) {
     return null;
   }
+}
+
+String? _userIdFromAuthState(AsyncValue<User?> authState) {
+  final userId = authState.asData?.value?.uid;
   if (userId == null || userId.isEmpty) {
     return null;
   }
