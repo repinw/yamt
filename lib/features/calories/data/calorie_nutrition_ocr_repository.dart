@@ -31,119 +31,34 @@ abstract final class CalorieNutritionOcrErrorCodes {
   static const parseFailed = 'ocr_parse_failed';
 }
 
-abstract interface class CalorieNutritionTemplateConfigClient {
-  Future<String> loadTemplateId();
-}
-
-abstract interface class CalorieNutritionTemplateModelClient {
-  Future<String?> generateContent({
-    required String templateId,
-    required Map<String, Object?> inputs,
-  });
-}
-
 @riverpod
 CalorieNutritionOcrRepositoryContract calorieNutritionOcrRepository(Ref ref) {
-  final imagePicker = ref.watch(calorieNutritionImagePickerProvider);
   return _FirebaseCalorieNutritionOcrRepository(
-    imagePicker: imagePicker,
-    configClient: ref.watch(calorieNutritionTemplateConfigClientProvider),
-    modelClient: ref.watch(calorieNutritionTemplateModelClientProvider),
-  );
-}
-
-@riverpod
-ImagePicker calorieNutritionImagePicker(Ref ref) {
-  return ImagePicker();
-}
-
-@riverpod
-CalorieNutritionTemplateConfigClient calorieNutritionTemplateConfigClient(
-  Ref ref,
-) {
-  return _FirebaseCalorieNutritionTemplateConfigClient(
+    imagePicker: ImagePicker(),
     remoteConfig: FirebaseRemoteConfig.instance,
-  );
-}
-
-@riverpod
-CalorieNutritionTemplateModelClient calorieNutritionTemplateModelClient(
-  Ref ref,
-) {
-  return _FirebaseCalorieNutritionTemplateModelClient(
     model: FirebaseAI.vertexAI(
       location: _vertexLocation,
     ).templateGenerativeModel(),
   );
 }
 
-class _FirebaseCalorieNutritionTemplateConfigClient
-    implements CalorieNutritionTemplateConfigClient {
-  _FirebaseCalorieNutritionTemplateConfigClient({
-    required FirebaseRemoteConfig remoteConfig,
-  }) : _remoteConfig = remoteConfig;
-
-  final FirebaseRemoteConfig _remoteConfig;
-  Future<void>? _initialization;
-
-  @override
-  Future<String> loadTemplateId() async {
-    await _ensureInitialized();
-    return _ocrTemplateIdFallback;
-  }
-
-  Future<void> _ensureInitialized() {
-    final current = _initialization;
-    if (current != null) {
-      return current;
-    }
-    final initialized = _initializeRemoteConfig();
-    _initialization = initialized;
-    return initialized;
-  }
-
-  Future<void> _initializeRemoteConfig() async {
-    await _remoteConfig.setDefaults(const <String, Object>{
-      _ocrTemplateConfigKey: _ocrTemplateIdFallback,
-    });
-    await _remoteConfig.fetchAndActivate();
-  }
-}
-
-class _FirebaseCalorieNutritionTemplateModelClient
-    implements CalorieNutritionTemplateModelClient {
-  _FirebaseCalorieNutritionTemplateModelClient({
-    required TemplateGenerativeModel model,
-  }) : _model = model;
-
-  final TemplateGenerativeModel _model;
-
-  @override
-  Future<String?> generateContent({
-    required String templateId,
-    required Map<String, Object?> inputs,
-  }) async {
-    final response = await _model.generateContent(templateId, inputs: inputs);
-    return response.text;
-  }
-}
-
 class _FirebaseCalorieNutritionOcrRepository
     implements CalorieNutritionOcrRepositoryContract {
   _FirebaseCalorieNutritionOcrRepository({
     required ImagePicker imagePicker,
-    required CalorieNutritionTemplateConfigClient configClient,
-    required CalorieNutritionTemplateModelClient modelClient,
+    required FirebaseRemoteConfig remoteConfig,
+    required TemplateGenerativeModel model,
     DateTime Function()? now,
   }) : _imagePicker = imagePicker,
-       _configClient = configClient,
-       _modelClient = modelClient,
+       _remoteConfig = remoteConfig,
+       _model = model,
        _now = now ?? DateTime.now;
 
   final ImagePicker _imagePicker;
-  final CalorieNutritionTemplateConfigClient _configClient;
-  final CalorieNutritionTemplateModelClient _modelClient;
+  final FirebaseRemoteConfig _remoteConfig;
+  final TemplateGenerativeModel _model;
   final DateTime Function() _now;
+  Future<void>? _remoteConfigInitialization;
 
   @override
   Future<CalorieNutritionOcrResult> scanNutritionLabel({
@@ -170,14 +85,14 @@ class _FirebaseCalorieNutritionOcrRepository
         );
       }
 
-      final responseText = await _modelClient.generateContent(
-        templateId: templateId,
+      final response = await _model.generateContent(
+        templateId,
         inputs: <String, Object?>{
           'mimeType': mimeType,
           'imageData': base64Encode(bytes),
         },
       );
-      final profile = _parseProfile(responseText, barcode: barcode);
+      final profile = _parseProfile(response.text, barcode: barcode);
       if (profile == null) {
         return const CalorieNutritionOcrResult.failed(
           errorCode: CalorieNutritionOcrErrorCodes.parseFailed,
@@ -207,7 +122,8 @@ class _FirebaseCalorieNutritionOcrRepository
 
   Future<String?> _loadTemplateId() async {
     try {
-      return await _configClient.loadTemplateId();
+      await _ensureRemoteConfigInitialized();
+      return _ocrTemplateIdFallback;
     } catch (error, stackTrace) {
       log(
         'Failed to load OCR template id.',
@@ -217,6 +133,24 @@ class _FirebaseCalorieNutritionOcrRepository
       );
       return null;
     }
+  }
+
+  Future<void> _ensureRemoteConfigInitialized() {
+    final current = _remoteConfigInitialization;
+    if (current != null) {
+      return current;
+    }
+
+    final initialized = _initializeRemoteConfig();
+    _remoteConfigInitialization = initialized;
+    return initialized;
+  }
+
+  Future<void> _initializeRemoteConfig() async {
+    await _remoteConfig.setDefaults(const <String, Object>{
+      _ocrTemplateConfigKey: _ocrTemplateIdFallback,
+    });
+    await _remoteConfig.fetchAndActivate();
   }
 
   CalorieProductProfile? _parseProfile(
