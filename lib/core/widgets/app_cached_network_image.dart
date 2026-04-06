@@ -31,21 +31,66 @@ class AppCachedNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageProvider = ResizeImage.resizeIfNeeded(
-      cacheWidth,
-      cacheHeight,
-      CachedNetworkImageProvider(imageUrl),
-    );
-
-    return Image(
-      image: imageProvider,
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
       width: width,
       height: height,
       fit: fit,
       alignment: alignment,
+      useOldImageOnUrlChange: gaplessPlayback,
       filterQuality: filterQuality,
-      gaplessPlayback: gaplessPlayback,
-      errorBuilder: errorBuilder,
+      memCacheWidth: cacheWidth,
+      memCacheHeight: cacheHeight,
+      maxWidthDiskCache: cacheWidth,
+      maxHeightDiskCache: cacheHeight,
+      fadeInDuration: const Duration(milliseconds: 180),
+      fadeOutDuration: const Duration(milliseconds: 120),
+      placeholder: (context, _) => _buildPlaceholder(context),
+      errorWidget: errorBuilder == null
+          ? null
+          : (context, _, error) => errorBuilder!(context, error, null),
     );
+  }
+
+  Widget _buildPlaceholder(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final shortestSide = _resolveShortestSide(constraints);
+        if (shortestSide == null || shortestSide < 32) {
+          return const SizedBox.expand();
+        }
+
+        final colors = Theme.of(context).colorScheme;
+        final iconSize = shortestSide < 56 ? 16.0 : 20.0;
+        return ColoredBox(
+          color: colors.surfaceContainerHighest.withValues(alpha: 0.24),
+          child: Center(
+            child: Icon(
+              Icons.image_outlined,
+              size: iconSize,
+              color: colors.onSurfaceVariant,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  double? _resolveShortestSide(BoxConstraints constraints) {
+    final width = constraints.maxWidth;
+    final height = constraints.maxHeight;
+    final hasBoundedWidth = width.isFinite && width > 0;
+    final hasBoundedHeight = height.isFinite && height > 0;
+
+    if (hasBoundedWidth && hasBoundedHeight) {
+      return width < height ? width : height;
+    }
+    if (hasBoundedWidth) {
+      return width;
+    }
+    if (hasBoundedHeight) {
+      return height;
+    }
+    return null;
   }
 }
