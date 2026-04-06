@@ -37,6 +37,13 @@ abstract final class AppInventoryEditorial {
   static const double cardRadius = AppRadius.xl;
   static const double categoryTileSize = 56;
   static const double actionTileSize = 48;
+  static const double contextFabSize = 64;
+  static const double emptyStateActionHighlightSize = 96;
+  static const double emptyStateActionHaloSize = 68;
+  static const double emptyStateActionLightBlurRadius = 24;
+  static const double emptyStateActionDarkBlurRadius = 28;
+  static const double emptyStateActionLightSpreadRadius = 3;
+  static const double emptyStateActionDarkSpreadRadius = 4;
   static const double progressHeight = 8;
 }
 

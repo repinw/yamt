@@ -14,7 +14,6 @@ import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
-import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -22,6 +21,8 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
@@ -399,7 +400,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.byType(HomeContextFab), findsOneWidget);
+    expect(find.byType(InventoryActionFab), findsOneWidget);
     expect(
       find.byKey(const Key('inventory_empty_state_fab_highlight')),
       findsOneWidget,

@@ -14,6 +14,10 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_action_fab.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../calories/support/fake_calories_repositories.dart';
@@ -59,11 +63,54 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   Future<bool> saveAll(List<PreparedMeal> meals) async => true;
 }
 
+class _LoadingInventoryItemsController extends InventoryItemsController {
+  @override
+  FutureOr<List<InventoryItem>> build() {
+    return Completer<List<InventoryItem>>().future;
+  }
+}
+
+class _LoadingPreparedMealsController extends PreparedMealsController {
+  @override
+  FutureOr<List<PreparedMeal>> build() {
+    return Completer<List<PreparedMeal>>().future;
+  }
+}
+
+InventoryItem _inventoryItem(String id) {
+  return InventoryItem.create(
+    id: id,
+    name: 'Milk',
+    entryDate: DateTime.parse('2026-04-01T08:00:00Z'),
+    storeName: 'Store',
+    quantity: 1,
+  );
+}
+
+PreparedMeal _preparedMeal(String id) {
+  final now = DateTime.parse('2026-04-01T08:00:00Z');
+  return PreparedMeal(
+    id: id,
+    name: 'Soup',
+    totalPortions: 2,
+    remainingPortions: 2,
+    totalKcal: 400,
+    totalProtein: 20,
+    totalCarbs: 30,
+    totalFat: 10,
+    createdAt: now,
+    updatedAt: now,
+    components: const <PreparedMealComponent>[],
+  );
+}
+
 Widget _buildHarness({
   required FakeCalorieSettingsRepository settingsRepository,
   String initialLocation = AppRoutes.homeCalories,
   InventoryItemRepository? inventoryRepository,
   PreparedMealRepository? preparedMealRepository,
+  InventoryItemsController? inventoryItemsController,
+  PreparedMealsController? preparedMealsController,
 }) {
   final router = GoRouter(
     initialLocation: initialLocation,
@@ -117,10 +164,18 @@ Widget _buildHarness({
         inventoryRepository ??
             _FakeInventoryItemRepository(const <InventoryItem>[]),
       ),
+      if (inventoryItemsController != null)
+        inventoryItemsControllerProvider.overrideWith(
+          () => inventoryItemsController,
+        ),
       preparedMealRepositoryProvider.overrideWithValue(
         preparedMealRepository ??
             _FakePreparedMealRepository(const <PreparedMeal>[]),
       ),
+      if (preparedMealsController != null)
+        preparedMealsControllerProvider.overrideWith(
+          () => preparedMealsController,
+        ),
     ],
     child: MaterialApp.router(
       locale: const Locale('en'),
@@ -179,6 +234,93 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(find.byType(InventoryActionFab), findsNothing);
+    expect(find.byType(HomeContextFab), findsNothing);
+  });
+
+  testWidgets('inventory tab hides shell fab while inventory is loading', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryItemsController: _LoadingInventoryItemsController(),
+        preparedMealsController: _LoadingPreparedMealsController(),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(InventoryActionFab), findsNothing);
+    expect(find.byType(HomeContextFab), findsNothing);
+  });
+
+  testWidgets('inventory tab shows shell fab when inventory and meals exist', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+          _inventoryItem('item-1'),
+        ]),
+        preparedMealRepository: _FakePreparedMealRepository(<PreparedMeal>[
+          _preparedMeal('meal-1'),
+        ]),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(InventoryActionFab), findsOneWidget);
+    expect(find.byType(HomeContextFab), findsNothing);
+  });
+
+  testWidgets('inventory tab shows shell fab when only inventory items exist', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+          _inventoryItem('item-1'),
+        ]),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(InventoryActionFab), findsOneWidget);
+    expect(find.byType(HomeContextFab), findsNothing);
+  });
+
+  testWidgets('inventory tab shows shell fab when only prepared meals exist', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        preparedMealRepository: _FakePreparedMealRepository(<PreparedMeal>[
+          _preparedMeal('meal-1'),
+        ]),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(InventoryActionFab), findsOneWidget);
     expect(find.byType(HomeContextFab), findsNothing);
   });
 }

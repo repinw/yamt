@@ -20,6 +20,8 @@ import 'package:yamt/features/inventory/provider/'
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_templates_controller.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -78,6 +80,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       items: items,
       preparedMeals: meals,
       expandedPreparedMealId: widget.expandedPreparedMealId,
+      emptyStateActionButton: const InventoryActionFab(),
       onDeleteItem: (itemId) =>
           _deleteItemWithUndo(context: context, ref: ref, itemId: itemId),
       onEatItem: (itemId, amount) => _eatItemWithCalorieBridge(

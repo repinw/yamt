@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/home/widgets/home_context_fab.dart';
-import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_segmented_button_frame.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -117,8 +115,13 @@ class InventoryFiltersSheet extends StatelessWidget {
 }
 
 class InventoryEmptyState extends StatelessWidget {
-  const InventoryEmptyState({super.key, this.message});
+  const InventoryEmptyState({
+    super.key,
+    required this.actionButton,
+    this.message,
+  });
 
+  final Widget actionButton;
   final String? message;
 
   @override
@@ -141,7 +144,7 @@ class InventoryEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const _InventoryEmptyStateHighlightedFab(),
+            _InventoryEmptyStateHighlightedAction(child: actionButton),
             const SizedBox(height: AppSpacing.xxl),
             Text(
               emptyStateMessage,
@@ -155,8 +158,10 @@ class InventoryEmptyState extends StatelessWidget {
   }
 }
 
-class _InventoryEmptyStateHighlightedFab extends StatelessWidget {
-  const _InventoryEmptyStateHighlightedFab();
+class _InventoryEmptyStateHighlightedAction extends StatelessWidget {
+  const _InventoryEmptyStateHighlightedAction({required this.child});
+
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +176,7 @@ class _InventoryEmptyStateHighlightedFab extends StatelessWidget {
 
     return SizedBox.square(
       key: const Key('inventory_empty_state_fab_highlight'),
-      dimension: 96,
+      dimension: AppInventoryEditorial.emptyStateActionHighlightSize,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -182,14 +187,20 @@ class _InventoryEmptyStateHighlightedFab extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   color: haloShadowColor,
-                  blurRadius: isLightTheme ? 24 : 28,
-                  spreadRadius: isLightTheme ? 3 : 4,
+                  blurRadius: isLightTheme
+                      ? AppInventoryEditorial.emptyStateActionLightBlurRadius
+                      : AppInventoryEditorial.emptyStateActionDarkBlurRadius,
+                  spreadRadius: isLightTheme
+                      ? AppInventoryEditorial.emptyStateActionLightSpreadRadius
+                      : AppInventoryEditorial.emptyStateActionDarkSpreadRadius,
                 ),
               ],
             ),
-            child: const SizedBox.square(dimension: 68),
+            child: const SizedBox.square(
+              dimension: AppInventoryEditorial.emptyStateActionHaloSize,
+            ),
           ),
-          const HomeContextFab(currentTab: HomeTabType.inventory),
+          child,
         ],
       ),
     );
