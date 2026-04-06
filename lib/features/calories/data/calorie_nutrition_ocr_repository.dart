@@ -32,13 +32,28 @@ abstract final class CalorieNutritionOcrErrorCodes {
 }
 
 @riverpod
+ImagePicker calorieNutritionImagePicker(Ref ref) {
+  return ImagePicker();
+}
+
+@riverpod
+FirebaseRemoteConfig calorieNutritionRemoteConfig(Ref ref) {
+  return FirebaseRemoteConfig.instance;
+}
+
+@riverpod
+TemplateGenerativeModel calorieNutritionTemplateModel(Ref ref) {
+  return FirebaseAI.vertexAI(
+    location: _vertexLocation,
+  ).templateGenerativeModel();
+}
+
+@riverpod
 CalorieNutritionOcrRepositoryContract calorieNutritionOcrRepository(Ref ref) {
   return _FirebaseCalorieNutritionOcrRepository(
-    imagePicker: ImagePicker(),
-    remoteConfig: FirebaseRemoteConfig.instance,
-    model: FirebaseAI.vertexAI(
-      location: _vertexLocation,
-    ).templateGenerativeModel(),
+    imagePicker: ref.watch(calorieNutritionImagePickerProvider),
+    remoteConfig: ref.watch(calorieNutritionRemoteConfigProvider),
+    model: ref.watch(calorieNutritionTemplateModelProvider),
   );
 }
 
@@ -123,7 +138,11 @@ class _FirebaseCalorieNutritionOcrRepository
   Future<String?> _loadTemplateId() async {
     try {
       await _ensureRemoteConfigInitialized();
-      return _ocrTemplateIdFallback;
+      final templateId = _remoteConfig.getString(_ocrTemplateConfigKey).trim();
+      if (templateId.isEmpty) {
+        return _ocrTemplateIdFallback;
+      }
+      return templateId;
     } catch (error, stackTrace) {
       log(
         'Failed to load OCR template id.',
