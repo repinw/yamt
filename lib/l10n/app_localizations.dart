@@ -848,7 +848,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryEmptyState.
   ///
   /// In en, this message translates to:
-  /// **'No items in your fridge yet. Scan a receipt to get started.'**
+  /// **'No items in your fridge yet. Scan a receipt or add foods manually.'**
   String get inventoryEmptyState;
 
   /// No description provided for @inventoryFilteredEmptyState.

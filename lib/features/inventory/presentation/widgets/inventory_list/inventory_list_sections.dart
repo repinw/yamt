@@ -115,8 +115,13 @@ class InventoryFiltersSheet extends StatelessWidget {
 }
 
 class InventoryEmptyState extends StatelessWidget {
-  const InventoryEmptyState({super.key, this.message});
+  const InventoryEmptyState({
+    super.key,
+    required this.actionButton,
+    this.message,
+  });
 
+  final Widget actionButton;
   final String? message;
 
   @override
@@ -139,20 +144,7 @@ class InventoryEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: colors.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xxl),
-                child: Icon(
-                  Icons.kitchen_outlined,
-                  size: AppSizes.welcomeIcon * 0.42,
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
-            ),
+            _InventoryEmptyStateHighlightedAction(child: actionButton),
             const SizedBox(height: AppSpacing.xxl),
             Text(
               emptyStateMessage,
@@ -161,6 +153,55 @@ class InventoryEmptyState extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _InventoryEmptyStateHighlightedAction extends StatelessWidget {
+  const _InventoryEmptyStateHighlightedAction({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final isLightTheme = Theme.of(context).brightness == Brightness.light;
+    final haloColor = isLightTheme
+        ? colors.shadow.withValues(alpha: 0.08)
+        : AppInventoryEditorial.primary.withValues(alpha: 0.12);
+    final haloShadowColor = isLightTheme
+        ? colors.shadow.withValues(alpha: 0.18)
+        : colors.primary.withValues(alpha: 0.28);
+
+    return SizedBox.square(
+      key: const Key('inventory_empty_state_fab_highlight'),
+      dimension: AppInventoryEditorial.emptyStateActionHighlightSize,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: haloColor,
+              boxShadow: [
+                BoxShadow(
+                  color: haloShadowColor,
+                  blurRadius: isLightTheme
+                      ? AppInventoryEditorial.emptyStateActionLightBlurRadius
+                      : AppInventoryEditorial.emptyStateActionDarkBlurRadius,
+                  spreadRadius: isLightTheme
+                      ? AppInventoryEditorial.emptyStateActionLightSpreadRadius
+                      : AppInventoryEditorial.emptyStateActionDarkSpreadRadius,
+                ),
+              ],
+            ),
+            child: const SizedBox.square(
+              dimension: AppInventoryEditorial.emptyStateActionHaloSize,
+            ),
+          ),
+          child,
+        ],
       ),
     );
   }

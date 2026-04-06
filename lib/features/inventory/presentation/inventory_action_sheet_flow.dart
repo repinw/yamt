@@ -14,8 +14,8 @@ import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.d
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class HomeInventoryFabFlow {
-  const HomeInventoryFabFlow._();
+class InventoryActionSheetFlow {
+  const InventoryActionSheetFlow._();
 
   static Future<void> openActionSheet({
     required BuildContext context,
@@ -26,6 +26,7 @@ class HomeInventoryFabFlow {
 
     return showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       builder: (sheetContext) {
         return InventoryReceiptActionsSheet(
           isCameraEnabled: isCameraEnabled,

@@ -21,6 +21,8 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
@@ -322,11 +324,18 @@ Widget _buildTestApp(
   List<dynamic> overrides = const <dynamic>[],
   bool includeDefaultBarcodeFlagsOverride = true,
   GoRoute? calorieEntryRoute,
+  Widget Function(Widget child)? shellBuilder,
 }) {
   final routes = <RouteBase>[
     GoRoute(
       path: AppRoutes.root,
-      builder: (context, state) => const Scaffold(body: InventoryPage()),
+      builder: (context, state) {
+        final page = const InventoryPage();
+        if (shellBuilder == null) {
+          return const Scaffold(body: InventoryPage());
+        }
+        return shellBuilder(page);
+      },
     ),
   ];
   if (calorieEntryRoute != null) {
@@ -386,8 +395,56 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('No items in your fridge yet. Scan a receipt to get started.'),
+      find.text(
+        'No items in your fridge yet. Scan a receipt or add foods manually.',
+      ),
       findsOneWidget,
+    );
+    expect(find.byType(InventoryActionFab), findsOneWidget);
+    expect(
+      find.byKey(const Key('inventory_empty_state_fab_highlight')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('empty state card stays above fab overlay chrome', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => const <InventoryItem>[],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        repository,
+        shellBuilder: (child) {
+          return Scaffold(
+            body: child,
+            floatingActionButton: const SizedBox.square(
+              key: Key('test_inventory_fab'),
+              dimension: 64,
+            ),
+            bottomNavigationBar: const SizedBox(height: 96),
+          );
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final emptyStateText = find.text(
+      'No items in your fridge yet. Scan a receipt or add foods manually.',
+    );
+    final emptyStateCard = find.ancestor(
+      of: emptyStateText,
+      matching: find.byType(DecoratedBox),
+    );
+    final fab = find.byKey(const Key('test_inventory_fab'));
+
+    expect(emptyStateCard, findsWidgets);
+    expect(
+      tester.getRect(emptyStateCard.first).bottom,
+      lessThan(tester.getRect(fab).top),
     );
   });
 

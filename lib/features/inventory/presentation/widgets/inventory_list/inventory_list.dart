@@ -35,6 +35,7 @@ class InventoryList extends ConsumerStatefulWidget {
     required this.items,
     required this.preparedMeals,
     this.expandedPreparedMealId,
+    required this.emptyStateActionButton,
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
@@ -54,6 +55,7 @@ class InventoryList extends ConsumerStatefulWidget {
   final List<InventoryItem> items;
   final List<PreparedMeal> preparedMeals;
   final String? expandedPreparedMealId;
+  final Widget emptyStateActionButton;
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, int amount) onEatItem;
   final Future<bool> Function(
@@ -307,7 +309,13 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       hasScrollBody: false,
       child: Padding(
         padding: AppInsets.pageLarge,
-        child: InventoryEmptyState(message: message),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: InventoryEmptyState(
+            message: message,
+            actionButton: widget.emptyStateActionButton,
+          ),
+        ),
       ),
     );
   }

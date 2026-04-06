@@ -159,7 +159,7 @@
   "inventoryManualAddStoreName": "Manuell hinzugefügt",
   "inventoryBarcodePortionDialogTitle": "Verzehrte Menge eingeben",
   "inventoryBarcodePortionDialogConfirmAction": "Weiter",
-  "inventoryEmptyState": "Noch keine Vorratsartikel vorhanden. Scanne einen Beleg, um zu starten.",
+  "inventoryEmptyState": "Noch keine Vorratsartikel vorhanden. Scanne einen Beleg oder füge Lebensmittel manuell hinzu.",
   "inventoryFilteredEmptyState":
       "Keine Artikel entsprechen den ausgewählten Filtern.",
   "inventoryLoadFailed": "Vorratsartikel konnten nicht geladen werden.",

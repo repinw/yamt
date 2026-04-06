@@ -158,7 +158,7 @@
   "inventoryManualAddStoreName": "Added manually",
   "inventoryBarcodePortionDialogTitle": "Enter consumed amount",
   "inventoryBarcodePortionDialogConfirmAction": "Continue",
-  "inventoryEmptyState": "No items in your fridge yet. Scan a receipt to get started.",
+  "inventoryEmptyState": "No items in your fridge yet. Scan a receipt or add foods manually.",
   "inventoryFilteredEmptyState": "No items match the selected filters.",
   "inventoryLoadFailed": "Could not load inventory items.",
   "inventoryRetryAction": "Retry",

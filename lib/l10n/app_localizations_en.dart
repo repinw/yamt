@@ -388,7 +388,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryBarcodePortionDialogConfirmAction => 'Continue';
 
   @override
-  String get inventoryEmptyState => 'No items in your fridge yet. Scan a receipt to get started.';
+  String get inventoryEmptyState => 'No items in your fridge yet. Scan a receipt or add foods manually.';
 
   @override
   String get inventoryFilteredEmptyState => 'No items match the selected filters.';
