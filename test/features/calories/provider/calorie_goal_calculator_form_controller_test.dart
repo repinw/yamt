@@ -207,6 +207,37 @@ void main() {
         expect(settings.hasGoal, isFalse);
       },
     );
+
+    test(
+      'save still returns success after provider disposal during save',
+      () async {
+        final repository = _BlockingCalorieSettingsRepository(
+          saveBlocker: Completer<void>(),
+        );
+        addTearDown(repository.dispose);
+        final container = ProviderContainer(
+          overrides: [
+            calorieSettingsRepositoryProvider.overrideWithValue(repository),
+          ],
+        );
+        final provider = calorieGoalCalculatorFormControllerProvider(null);
+
+        await container.read(calorieGoalControllerProvider.future);
+
+        final saveFuture = container.read(provider.notifier).save();
+
+        expect(repository.saveCallCount, 1);
+
+        container.dispose();
+        repository.saveBlocker!.complete();
+
+        final saved = await saveFuture;
+
+        expect(saved, isTrue);
+        final settings = await repository.readSettings();
+        expect(settings.dailyKcalGoal, 2492);
+      },
+    );
   });
 }
 
