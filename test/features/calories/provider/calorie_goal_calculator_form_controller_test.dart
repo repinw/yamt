@@ -3,10 +3,13 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_goal_calculator_form_state.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 void main() {
@@ -16,7 +19,6 @@ void main() {
         weightKgText: '',
         heightCmText: ' ',
         ageYearsText: '',
-        activityLevelText: '',
         goalMode: CalorieGoalMode.lose,
         goalSpeedKgPerWeekText: '',
       );
@@ -24,7 +26,6 @@ void main() {
       expect(state.weightError, CalorieCalculatorFieldError.empty);
       expect(state.heightError, CalorieCalculatorFieldError.empty);
       expect(state.ageError, CalorieCalculatorFieldError.empty);
-      expect(state.activityLevelError, CalorieCalculatorFieldError.empty);
       expect(state.goalSpeedError, CalorieCalculatorFieldError.empty);
       expect(state.calculation, isNull);
       expect(state.profile, isNull);
@@ -35,7 +36,6 @@ void main() {
         weightKgText: 'abc',
         heightCmText: '-170',
         ageYearsText: '1.5',
-        activityLevelText: '0',
         goalMode: CalorieGoalMode.gain,
         goalSpeedKgPerWeekText: '-0.5',
       );
@@ -43,10 +43,35 @@ void main() {
       expect(state.weightError, CalorieCalculatorFieldError.invalid);
       expect(state.heightError, CalorieCalculatorFieldError.invalid);
       expect(state.ageError, CalorieCalculatorFieldError.invalid);
-      expect(state.activityLevelError, CalorieCalculatorFieldError.invalid);
       expect(state.goalSpeedError, CalorieCalculatorFieldError.invalid);
       expect(state.calculation, isNull);
       expect(state.profile, isNull);
+    });
+  });
+
+  group('CalorieGoalCalculatorFormState activity level mapping', () {
+    test('defaults to low activity at PAL 1.4', () {
+      final state = CalorieGoalCalculatorFormState.initial(null);
+
+      expect(state.activityLevelOption, CalorieActivityLevelOption.low);
+      expect(state.profile?.activityLevel, 1.4);
+    });
+
+    test('maps saved PAL values to the nearest option', () {
+      const initialProfile = CalorieCalculatorProfile(
+        sex: CalorieCalculatorSex.female,
+        weightKg: 65,
+        heightCm: 170,
+        ageYears: 29,
+        activityLevel: 1.5,
+        goalMode: CalorieGoalMode.maintain,
+        goalSpeedKgPerWeek: 0,
+      );
+
+      final state = CalorieGoalCalculatorFormState.initial(initialProfile);
+
+      expect(state.activityLevelOption, CalorieActivityLevelOption.low);
+      expect(state.profile?.activityLevel, 1.4);
     });
   });
 
@@ -99,6 +124,21 @@ void main() {
       expect(loseState.goalSpeedKgPerWeekText, '0.5');
       expect(loseState.lastNonMaintainGoalSpeedText, '0.5');
       expect(loseState.goalSpeedError, isNull);
+    });
+
+    test('changing activity option updates the PAL value in the profile', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final provider = calorieGoalCalculatorFormControllerProvider(null);
+
+      container
+          .read(provider.notifier)
+          .updateActivityLevel(CalorieActivityLevelOption.high);
+
+      final state = container.read(provider);
+
+      expect(state.activityLevelOption, CalorieActivityLevelOption.high);
+      expect(state.profile?.activityLevel, 1.8);
     });
   });
 

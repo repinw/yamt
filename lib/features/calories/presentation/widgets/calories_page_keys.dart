@@ -50,8 +50,8 @@ abstract final class CalorieGoalCalculatorSheetKeys {
   static const weightField = Key('calorie_calculator_weight_field');
   static const heightField = Key('calorie_calculator_height_field');
   static const ageField = Key('calorie_calculator_age_field');
-  static const activityLevelField = Key(
-    'calorie_calculator_activity_level_field',
+  static const activityLevelOptions = Key(
+    'calorie_calculator_activity_level_options',
   );
   static const goalModeSegment = Key('calorie_calculator_goal_mode_segment');
   static const goalSpeedField = Key('calorie_calculator_goal_speed_field');
@@ -60,6 +60,10 @@ abstract final class CalorieGoalCalculatorSheetKeys {
   static const backButton = Key('calorie_calculator_back_button');
   static const nextButton = Key('calorie_calculator_next_button');
   static const saveButton = Key('calorie_calculator_save_button');
+
+  static Key activityLevelOption(String optionId) {
+    return Key('calorie_calculator_activity_level_option_$optionId');
+  }
 }
 
 abstract final class CalorieEntryEditorKeys {

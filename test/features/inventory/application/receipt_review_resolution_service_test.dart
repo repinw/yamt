@@ -30,7 +30,7 @@ class _FakeMatcher extends GlobalFoodItemMatcher {
     required this.candidatesByItemId,
     required this.defaultSelections,
     this.defaultSelectionsNeedingReview = const <String, bool>{},
-  }) : super(repository: _NoopGlobalFoodItemRepository());
+  });
 
   final Map<String, List<GlobalFoodMatchCandidate>> candidatesByItemId;
   final Map<String, String?> defaultSelections;
@@ -155,35 +155,6 @@ class _RecordingCalorieProductCacheRepository
     savedOverrideReasons.add(reason);
     return true;
   }
-}
-
-class _NoopGlobalFoodItemRepository implements GlobalFoodItemRepository {
-  @override
-  Stream<List<GlobalFoodItem>> watchAll() async* {
-    yield const <GlobalFoodItem>[];
-  }
-
-  @override
-  Future<List<GlobalFoodItem>> readAll() async {
-    return const <GlobalFoodItem>[];
-  }
-
-  @override
-  Future<List<GlobalFoodItem>> searchCandidates({
-    String? normalizedName,
-    String? barcode,
-    String? foodFingerprint,
-    List<String> searchTokens = const <String>[],
-    int limit = 20,
-  }) async {
-    return const <GlobalFoodItem>[];
-  }
-
-  @override
-  Future<bool> saveAll(List<GlobalFoodItem> items) async => true;
-
-  @override
-  Future<bool> appendAll(List<GlobalFoodItem> items) async => true;
 }
 
 InventoryItem _item({

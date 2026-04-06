@@ -89,8 +89,7 @@ Widget _buildHarness({
     activeShoppingListItemKeys: const <ShoppingListItemMatchKey>{},
     onDeleteItem: onDeleteItem ?? (_) async => true,
     onEatItem: onEatItem ?? (itemId, amount) async => true,
-    onThrowAwayItem:
-        onThrowAwayItem ?? (itemId, amount, reason) async => true,
+    onThrowAwayItem: onThrowAwayItem ?? (itemId, amount, reason) async => true,
   );
   final body = SingleChildScrollView(
     padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
@@ -118,7 +117,6 @@ Widget _buildHarness({
       barcodeBackfillFeatureFlagsProvider.overrideWithValue(
         const BarcodeBackfillFeatureFlags(
           showInventoryBarcodeMarkers: false,
-          enableEatBridge: true,
           enableQueueBackfill: true,
         ),
       ),

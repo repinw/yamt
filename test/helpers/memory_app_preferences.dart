@@ -1,10 +1,13 @@
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/domain/'
     'auth_profile_setup_preferences.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_goal_onboarding_preferences.dart';
 
 class MemoryAppPreferences implements AppPreferences {
   MemoryAppPreferences({
     Set<String> completedProfileSetupUserIds = const <String>{},
+    Set<String> completedCalorieGoalOnboardingUserIds = const <String>{},
     Map<String, String>? initialStrings,
     Map<String, int>? initialInts,
   }) {
@@ -17,6 +20,10 @@ class MemoryAppPreferences implements AppPreferences {
     for (final userId in completedProfileSetupUserIds) {
       final key = AuthProfileSetupPreferences.keyForUser(userId);
       _strings[key] = AuthProfileSetupPreferences.completedValue;
+    }
+    for (final userId in completedCalorieGoalOnboardingUserIds) {
+      final key = calorieGoalOnboardingKeyForUser(userId);
+      _strings[key] = calorieGoalOnboardingCompletedValue;
     }
   }
 

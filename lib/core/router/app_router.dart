@@ -7,11 +7,15 @@ import 'package:yamt/features/auth/provider/'
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/guest_name_setup_page.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
+import 'package:yamt/features/calories/presentation/'
+    'calorie_goal_onboarding_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_barcode_scan_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/calories_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_goal_onboarding_completed_provider.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
@@ -44,6 +48,20 @@ GoRouter appRouter(Ref ref) {
   final isAuthenticated = currentUser != null;
   final hasCompletedProfileSetup = ref.watch(authProfileSetupCompletedProvider);
   final needsGuestNameSetup = isAuthenticated && !hasCompletedProfileSetup;
+  final calorieGoalOnboardingState = isAuthenticated && hasCompletedProfileSetup
+      ? ref.watch(calorieGoalOnboardingCompletedProvider)
+      : const AsyncData<bool>(false);
+  final isCalorieGoalOnboardingLoading =
+      isAuthenticated &&
+      hasCompletedProfileSetup &&
+      calorieGoalOnboardingState.isLoading;
+  final hasCompletedCalorieGoalOnboarding =
+      calorieGoalOnboardingState.asData?.value ?? false;
+  final needsCalorieGoalSetup =
+      isAuthenticated &&
+      hasCompletedProfileSetup &&
+      !isCalorieGoalOnboardingLoading &&
+      !hasCompletedCalorieGoalOnboarding;
 
   return GoRouter(
     navigatorKey: ref.watch(navigatorKeyProvider),
@@ -66,7 +84,21 @@ GoRouter appRouter(Ref ref) {
             : AppRoutes.guestNameSetup;
       }
 
+      if (isCalorieGoalOnboardingLoading) {
+        return path == AppRoutes.splash ? null : AppRoutes.splash;
+      }
+
+      if (needsCalorieGoalSetup) {
+        return path == AppRoutes.calorieGoalSetup
+            ? null
+            : AppRoutes.calorieGoalSetup;
+      }
+
       if (path == AppRoutes.guestNameSetup) {
+        return AppRoutes.homeInventory;
+      }
+
+      if (path == AppRoutes.calorieGoalSetup) {
         return AppRoutes.homeInventory;
       }
 
@@ -93,6 +125,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.guestNameSetup,
         builder: (context, state) => const GuestNameSetupPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.calorieGoalSetup,
+        builder: (context, state) => const CalorieGoalOnboardingPage(),
       ),
       GoRoute(
         path: AppRoutes.home,

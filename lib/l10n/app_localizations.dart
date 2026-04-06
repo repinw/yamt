@@ -1859,6 +1859,18 @@ abstract class AppLocalizations {
   /// **'Calorie calculator'**
   String get caloriesCalculatorSheetTitle;
 
+  /// No description provided for @caloriesCalculatorOnboardingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your calorie goal'**
+  String get caloriesCalculatorOnboardingTitle;
+
+  /// No description provided for @caloriesCalculatorOnboardingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We use a few details to calculate a daily calorie target for you.'**
+  String get caloriesCalculatorOnboardingSubtitle;
+
   /// No description provided for @caloriesCalculatorStepProgress.
   ///
   /// In en, this message translates to:
@@ -1954,6 +1966,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Activity level (PAL)'**
   String get caloriesCalculatorActivityLevelLabel;
+
+  /// No description provided for @caloriesCalculatorActivityLevelHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the option that best matches your typical week.'**
+  String get caloriesCalculatorActivityLevelHelp;
+
+  /// No description provided for @caloriesCalculatorActivityLevelNoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity'**
+  String get caloriesCalculatorActivityLevelNoneTitle;
+
+  /// No description provided for @caloriesCalculatorActivityLevelNoneDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Mostly sitting, hardly any exercise, and very little movement in daily life.'**
+  String get caloriesCalculatorActivityLevelNoneDescription;
+
+  /// No description provided for @caloriesCalculatorActivityLevelLowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Low activity'**
+  String get caloriesCalculatorActivityLevelLowTitle;
+
+  /// No description provided for @caloriesCalculatorActivityLevelLowDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Mostly desk work, short walks, and only occasional exercise.'**
+  String get caloriesCalculatorActivityLevelLowDescription;
+
+  /// No description provided for @caloriesCalculatorActivityLevelMediumTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium activity'**
+  String get caloriesCalculatorActivityLevelMediumTitle;
+
+  /// No description provided for @caloriesCalculatorActivityLevelMediumDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular movement, frequent walks, or exercise several times per week.'**
+  String get caloriesCalculatorActivityLevelMediumDescription;
+
+  /// No description provided for @caloriesCalculatorActivityLevelHighTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'High activity'**
+  String get caloriesCalculatorActivityLevelHighTitle;
+
+  /// No description provided for @caloriesCalculatorActivityLevelHighDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Physically active daily life, a demanding job, or frequent training.'**
+  String get caloriesCalculatorActivityLevelHighDescription;
 
   /// No description provided for @caloriesCalculatorActivityLevelHint.
   ///

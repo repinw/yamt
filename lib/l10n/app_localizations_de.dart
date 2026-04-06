@@ -919,6 +919,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorSheetTitle => 'Kalorienrechner';
 
   @override
+  String get caloriesCalculatorOnboardingTitle => 'Kalorienziel festlegen';
+
+  @override
+  String get caloriesCalculatorOnboardingSubtitle => 'Wir berechnen aus ein paar Angaben dein tägliches Kalorienziel.';
+
+  @override
   String caloriesCalculatorStepProgress(int current, int total) {
     return 'Schritt $current von $total';
   }
@@ -967,6 +973,33 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesCalculatorActivityLevelLabel => 'Aktivitätslevel (PAL)';
+
+  @override
+  String get caloriesCalculatorActivityLevelHelp => 'Wähle die Option, die am besten zu deiner typischen Woche passt.';
+
+  @override
+  String get caloriesCalculatorActivityLevelNoneTitle => 'Keine Aktivität';
+
+  @override
+  String get caloriesCalculatorActivityLevelNoneDescription => 'Meist sitzend, kaum Sport und nur sehr wenig Bewegung im Alltag.';
+
+  @override
+  String get caloriesCalculatorActivityLevelLowTitle => 'Wenig Aktivität';
+
+  @override
+  String get caloriesCalculatorActivityLevelLowDescription => 'Vor allem Schreibtisch, kurze Wege und nur gelegentlich Bewegung.';
+
+  @override
+  String get caloriesCalculatorActivityLevelMediumTitle => 'Mittlere Aktivität';
+
+  @override
+  String get caloriesCalculatorActivityLevelMediumDescription => 'Regelmäßige Bewegung, häufige Spaziergänge oder mehrmals pro Woche Sport.';
+
+  @override
+  String get caloriesCalculatorActivityLevelHighTitle => 'Viel Aktivität';
+
+  @override
+  String get caloriesCalculatorActivityLevelHighDescription => 'Körperlich aktiver Alltag, anstrengende Arbeit oder häufiges Training.';
 
   @override
   String get caloriesCalculatorActivityLevelHint => 'Zum Beispiel 1,2 bis 2,0';
