@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -578,8 +579,10 @@ void main() {
     final imageFinder = find.byKey(CaloriesPageKeys.entryImage('image-entry'));
     expect(imageFinder, findsOneWidget);
 
-    final imageWidget = tester.widget<Image>(imageFinder);
-    final provider = imageWidget.image as NetworkImage;
+    final imageWidget = tester.widget<Image>(
+      find.descendant(of: imageFinder, matching: find.byType(Image)),
+    );
+    final provider = imageWidget.image as CachedNetworkImageProvider;
     expect(provider.url, 'https://images.example.com/skyr.jpg');
   });
 
@@ -620,8 +623,10 @@ void main() {
     );
     expect(imageFinder, findsOneWidget);
 
-    final imageWidget = tester.widget<Image>(imageFinder);
-    final provider = imageWidget.image as NetworkImage;
+    final imageWidget = tester.widget<Image>(
+      find.descendant(of: imageFinder, matching: find.byType(Image)),
+    );
+    final provider = imageWidget.image as CachedNetworkImageProvider;
     expect(provider.url, 'https://images.example.com/beans.jpg');
   });
 

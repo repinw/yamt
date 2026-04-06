@@ -90,8 +90,8 @@ class _PendingIngredientPreview extends StatelessWidget {
                   color: colors.onSurfaceVariant,
                 ),
               )
-            : Image.network(
-                normalizedImageUrl,
+            : AppCachedNetworkImage(
+                imageUrl: normalizedImageUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (_, error, stackTrace) {
                   return ColoredBox(

@@ -10,6 +10,7 @@ import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';

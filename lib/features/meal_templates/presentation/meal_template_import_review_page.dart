@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/meal_templates/presentation/models/'
@@ -37,8 +38,8 @@ class _MealTemplateImportReviewPageState
           if (importedRecipe.imageUrl != null) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(AppRadius.xl),
-              child: Image.network(
-                importedRecipe.imageUrl!,
+              child: AppCachedNetworkImage(
+                imageUrl: importedRecipe.imageUrl!,
                 height: 220,
                 fit: BoxFit.cover,
               ),

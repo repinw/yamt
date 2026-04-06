@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/inventory/provider/'
     'inventory_barcode_image_provider.dart';
 
@@ -157,8 +158,8 @@ class CategoryIcon extends ConsumerWidget {
           child: Center(
             child: imageUrl == null
                 ? Text(emoji, style: emojiTextStyle)
-                : Image.network(
-                    imageUrl,
+                : AppCachedNetworkImage(
+                    imageUrl: imageUrl,
                     width: _size,
                     height: _size,
                     fit: BoxFit.cover,

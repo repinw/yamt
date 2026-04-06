@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
@@ -758,8 +759,8 @@ class InventoryReceiptSelectionThumbnail extends StatelessWidget {
       child: SizedBox.square(
         dimension: dimension,
         child: hasImage
-            ? Image.network(
-                normalizedImageUrl,
+            ? AppCachedNetworkImage(
+                imageUrl: normalizedImageUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (_, error, stackTrace) {
                   return ColoredBox(

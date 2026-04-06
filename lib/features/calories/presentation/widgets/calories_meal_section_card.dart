@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
@@ -265,8 +266,8 @@ class _MealThumb extends ConsumerWidget {
                 )
               : imageUrl == null
               ? _MealThumbFallback(label: label)
-              : Image.network(
-                  imageUrl!,
+              : AppCachedNetworkImage(
+                  imageUrl: imageUrl!,
                   key: CaloriesPageKeys.entryImage(entryId),
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) {
