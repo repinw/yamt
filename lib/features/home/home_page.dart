@@ -12,6 +12,8 @@ import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_selection_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -201,9 +203,11 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final currentTab = _currentTab();
-    final showsContextFab =
-        currentTab == HomeTabType.inventory ||
-        currentTab == HomeTabType.settings;
+    final showsContextFab = switch (currentTab) {
+      HomeTabType.inventory => !_showsInlineInventoryFab(ref),
+      HomeTabType.diary || HomeTabType.statistics => false,
+      HomeTabType.settings => true,
+    };
     final selectionState = ref.watch(preparedMealSelectionControllerProvider);
 
     return Scaffold(
@@ -227,6 +231,15 @@ class HomePage extends ConsumerWidget {
         entries: _navEntries(context, l10n),
       ),
     );
+  }
+
+  bool _showsInlineInventoryFab(WidgetRef ref) {
+    final items = ref.watch(inventoryItemsControllerProvider).asData?.value;
+    final meals = ref.watch(preparedMealsControllerProvider).asData?.value;
+    if (items == null || meals == null) {
+      return false;
+    }
+    return items.isEmpty && meals.isEmpty;
   }
 
   void _showSnackBar(BuildContext context, String message) {

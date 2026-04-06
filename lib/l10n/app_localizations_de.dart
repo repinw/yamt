@@ -388,7 +388,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryBarcodePortionDialogConfirmAction => 'Weiter';
 
   @override
-  String get inventoryEmptyState => 'Noch keine Vorratsartikel vorhanden. Scanne einen Beleg, um zu starten.';
+  String get inventoryEmptyState => 'Noch keine Vorratsartikel vorhanden. Scanne einen Beleg oder füge Lebensmittel manuell hinzu.';
 
   @override
   String get inventoryFilteredEmptyState => 'Keine Artikel entsprechen den ausgewählten Filtern.';

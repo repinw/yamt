@@ -26,6 +26,7 @@ class HomeInventoryFabFlow {
 
     return showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       builder: (sheetContext) {
         return InventoryReceiptActionsSheet(
           isCameraEnabled: isCameraEnabled,

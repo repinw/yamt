@@ -307,7 +307,10 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       hasScrollBody: false,
       child: Padding(
         padding: AppInsets.pageLarge,
-        child: InventoryEmptyState(message: message),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: InventoryEmptyState(message: message),
+        ),
       ),
     );
   }

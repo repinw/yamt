@@ -14,6 +14,7 @@ import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
+import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -322,11 +323,18 @@ Widget _buildTestApp(
   List<dynamic> overrides = const <dynamic>[],
   bool includeDefaultBarcodeFlagsOverride = true,
   GoRoute? calorieEntryRoute,
+  Widget Function(Widget child)? shellBuilder,
 }) {
   final routes = <RouteBase>[
     GoRoute(
       path: AppRoutes.root,
-      builder: (context, state) => const Scaffold(body: InventoryPage()),
+      builder: (context, state) {
+        final page = const InventoryPage();
+        if (shellBuilder == null) {
+          return const Scaffold(body: InventoryPage());
+        }
+        return shellBuilder(page);
+      },
     ),
   ];
   if (calorieEntryRoute != null) {
@@ -386,8 +394,56 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('No items in your fridge yet. Scan a receipt to get started.'),
+      find.text(
+        'No items in your fridge yet. Scan a receipt or add foods manually.',
+      ),
       findsOneWidget,
+    );
+    expect(find.byType(HomeContextFab), findsOneWidget);
+    expect(
+      find.byKey(const Key('inventory_empty_state_fab_highlight')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('empty state card stays above fab overlay chrome', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => const <InventoryItem>[],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        repository,
+        shellBuilder: (child) {
+          return Scaffold(
+            body: child,
+            floatingActionButton: const SizedBox.square(
+              key: Key('test_inventory_fab'),
+              dimension: 64,
+            ),
+            bottomNavigationBar: const SizedBox(height: 96),
+          );
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final emptyStateText = find.text(
+      'No items in your fridge yet. Scan a receipt or add foods manually.',
+    );
+    final emptyStateCard = find.ancestor(
+      of: emptyStateText,
+      matching: find.byType(DecoratedBox),
+    );
+    final fab = find.byKey(const Key('test_inventory_fab'));
+
+    expect(emptyStateCard, findsWidgets);
+    expect(
+      tester.getRect(emptyStateCard.first).bottom,
+      lessThan(tester.getRect(fab).top),
     );
   });
 

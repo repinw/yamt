@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/home/widgets/home_context_fab.dart';
+import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_segmented_button_frame.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -139,20 +141,7 @@ class InventoryEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: colors.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xxl),
-                child: Icon(
-                  Icons.kitchen_outlined,
-                  size: AppSizes.welcomeIcon * 0.42,
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
-            ),
+            const _InventoryEmptyStateHighlightedFab(),
             const SizedBox(height: AppSpacing.xxl),
             Text(
               emptyStateMessage,
@@ -161,6 +150,47 @@ class InventoryEmptyState extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _InventoryEmptyStateHighlightedFab extends StatelessWidget {
+  const _InventoryEmptyStateHighlightedFab();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final isLightTheme = Theme.of(context).brightness == Brightness.light;
+    final haloColor = isLightTheme
+        ? colors.shadow.withValues(alpha: 0.08)
+        : AppInventoryEditorial.primary.withValues(alpha: 0.12);
+    final haloShadowColor = isLightTheme
+        ? colors.shadow.withValues(alpha: 0.18)
+        : colors.primary.withValues(alpha: 0.28);
+
+    return SizedBox.square(
+      key: const Key('inventory_empty_state_fab_highlight'),
+      dimension: 96,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: haloColor,
+              boxShadow: [
+                BoxShadow(
+                  color: haloShadowColor,
+                  blurRadius: isLightTheme ? 24 : 28,
+                  spreadRadius: isLightTheme ? 3 : 4,
+                ),
+              ],
+            ),
+            child: const SizedBox.square(dimension: 68),
+          ),
+          const HomeContextFab(currentTab: HomeTabType.inventory),
+        ],
       ),
     );
   }
