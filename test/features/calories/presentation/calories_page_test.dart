@@ -513,7 +513,7 @@ void main() {
     );
   });
 
-  testWidgets('meal add button opens create route with preselected meal', (
+  testWidgets('does not render meal add buttons in diary sections', (
     tester,
   ) async {
     final today = DateTime.now();
@@ -538,16 +538,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await _scrollUntilVisible(
-      tester,
+    expect(
       find.byKey(CaloriesPageKeys.sectionAddButton(MealType.breakfast.name)),
+      findsNothing,
     );
-    await tester.tap(
-      find.byKey(CaloriesPageKeys.sectionAddButton(MealType.breakfast.name)),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Create:breakfast'), findsOneWidget);
   });
 
   testWidgets('renders product image when diary entry has imageUrl', (

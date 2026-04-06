@@ -7,6 +7,7 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
+import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../calories/support/fake_calories_repositories.dart';
@@ -65,6 +66,16 @@ Widget _buildHarness({
 }
 
 void main() {
+  testWidgets('diary tab does not show the context fab', (tester) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildHarness(settingsRepository: repository));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HomeContextFab), findsNothing);
+  });
+
   testWidgets('diary menu shows the calculator action and opens the sheet', (
     tester,
   ) async {

@@ -8,10 +8,7 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
-import 'package:yamt/features/calories/presentation/models/'
-    'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_bundle_details_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -124,10 +121,6 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
               section: section,
               title: section.mealType.localizedName(l10n),
               emptyMessage: l10n.caloriesSectionEmptyState,
-              onAddEntry: () => _openCreateEntry(
-                context,
-                preselectedMealType: section.mealType,
-              ),
               onTapEntry: (entry) {
                 if (entry.isBundle) {
                   showCalorieBundleDetailsSheet(context, entry: entry);
@@ -320,19 +313,6 @@ CalorieWeekOverview resolveDisplayedWeekOverview(
   required double goalKcal,
 }) {
   return weekOverviewState.value ?? _fallbackWeekOverview(goalKcal: goalKcal);
-}
-
-void _openCreateEntry(
-  BuildContext context, {
-  required MealType preselectedMealType,
-}) {
-  context.push(
-    AppRoutes.homeCaloriesEntryCreate,
-    extra: CalorieEntryCreateArgs(
-      prefilledProfile: null,
-      preselectedMealType: preselectedMealType,
-    ),
-  );
 }
 
 CalorieWeekOverview _fallbackWeekOverview({required double goalKcal}) {

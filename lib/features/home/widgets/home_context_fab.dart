@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/home/widgets/home_inventory_fab_flow.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_add_options_sheet.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
@@ -20,7 +16,9 @@ class HomeContextFab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    assert(currentTab != HomeTabType.statistics);
+    assert(
+      currentTab == HomeTabType.inventory || currentTab == HomeTabType.settings,
+    );
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final flowState = ref.watch(receiptCaptureFlowControllerProvider);
@@ -75,9 +73,8 @@ class HomeContextFab extends ConsumerWidget {
   String _fabTooltip(AppLocalizations l10n) {
     return switch (currentTab) {
       HomeTabType.inventory => l10n.inventoryFabTooltip,
-      HomeTabType.diary => l10n.caloriesFabTooltip,
-      HomeTabType.statistics => throw StateError(
-        'Statistics tab does not show a floating action button.',
+      HomeTabType.diary || HomeTabType.statistics => throw StateError(
+        'Diary and statistics tabs do not show a floating action button.',
       ),
       HomeTabType.settings => l10n.homeQuickActionTooltip,
     };
@@ -97,11 +94,9 @@ class HomeContextFab extends ConsumerWidget {
         );
         return;
       case HomeTabType.diary:
-        await _openCaloriesAddOptions(context);
-        return;
       case HomeTabType.statistics:
         throw StateError(
-          'Statistics tab does not show a floating action button.',
+          'Diary and statistics tabs do not show a floating action button.',
         );
       case HomeTabType.settings:
         _showSnackBar(context, l10n.homeSettingsActionContextPlaceholder);
@@ -114,30 +109,4 @@ class HomeContextFab extends ConsumerWidget {
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(message)));
   }
-
-  Future<void> _openCaloriesAddOptions(BuildContext context) async {
-    final action = await showModalBottomSheet<_CaloriesAddAction>(
-      context: context,
-      builder: (sheetContext) {
-        return CalorieAddOptionsSheet(
-          onManualTap: () => sheetContext.pop(_CaloriesAddAction.manual),
-          onBarcodeTap: () => sheetContext.pop(_CaloriesAddAction.barcode),
-        );
-      },
-    );
-    if (!context.mounted || action == null) {
-      return;
-    }
-
-    switch (action) {
-      case _CaloriesAddAction.manual:
-        context.push(AppRoutes.homeCaloriesEntryCreate);
-        return;
-      case _CaloriesAddAction.barcode:
-        context.push(AppRoutes.homeCaloriesBarcodeScan);
-        return;
-    }
-  }
 }
-
-enum _CaloriesAddAction { manual, barcode }
