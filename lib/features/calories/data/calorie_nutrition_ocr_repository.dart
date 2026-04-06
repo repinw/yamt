@@ -157,12 +157,25 @@ class _FirebaseCalorieNutritionOcrRepository
   Future<void> _ensureRemoteConfigInitialized() {
     final current = _remoteConfigInitialization;
     if (current != null) {
-      return current;
+      return _awaitRemoteConfigInitialization(current);
     }
 
     final initialized = _initializeRemoteConfig();
     _remoteConfigInitialization = initialized;
-    return initialized;
+    return _awaitRemoteConfigInitialization(initialized);
+  }
+
+  Future<void> _awaitRemoteConfigInitialization(
+    Future<void> initialization,
+  ) async {
+    try {
+      await initialization;
+    } catch (_) {
+      if (identical(_remoteConfigInitialization, initialization)) {
+        _remoteConfigInitialization = null;
+      }
+      rethrow;
+    }
   }
 
   Future<void> _initializeRemoteConfig() async {
