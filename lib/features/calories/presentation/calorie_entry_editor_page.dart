@@ -17,6 +17,8 @@ import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
+import 'package:yamt/features/calories/presentation/models/'
+    'calorie_entry_create_prefill.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -32,6 +34,7 @@ class CalorieEntryEditorPage extends ConsumerStatefulWidget {
     this.scannedSourceRef,
     this.inventoryContext,
     this.preselectedMealType,
+    this.preselectedLoggedAt,
   });
 
   final String? entryId;
@@ -39,6 +42,7 @@ class CalorieEntryEditorPage extends ConsumerStatefulWidget {
   final CalorieScannedSourceRef? scannedSourceRef;
   final CalorieInventoryCreateContext? inventoryContext;
   final MealType? preselectedMealType;
+  final DateTime? preselectedLoggedAt;
 
   @override
   ConsumerState<CalorieEntryEditorPage> createState() {
@@ -91,7 +95,8 @@ class _CalorieEntryEditorPageState
         oldWidget.inventoryContext?.consumedUnit !=
             widget.inventoryContext?.consumedUnit;
     final didMealPrefillChange =
-        oldWidget.preselectedMealType != widget.preselectedMealType;
+        oldWidget.preselectedMealType != widget.preselectedMealType ||
+        oldWidget.preselectedLoggedAt != widget.preselectedLoggedAt;
     if (!didEntryIdChange &&
         !didPrefillChange &&
         !didInventoryContextChange &&
@@ -208,33 +213,27 @@ class _CalorieEntryEditorPageState
       return false;
     }
 
-    final prefill = widget.prefilledProfile;
-    final inventoryContext = widget.inventoryContext;
-    final prefillKey = prefill == null
-        ? '__new_entry__'
-        : '__new_entry__${prefill.barcode}_${prefill.source.jsonValue}_'
-              '${inventoryContext?.inventoryItemId ?? ''}'
-              '${inventoryContext?.pendingConsumptionId ?? ''}'
-              '${inventoryContext?.consumedAmount ?? 100}'
-              '${inventoryContext?.consumedUnit.jsonValue ?? 'g'}';
-    if (_initializedEntryId == prefillKey) {
+    final createPrefill = CalorieEntryCreatePrefill.fromArgs(
+      prefilledProfile: widget.prefilledProfile,
+      inventoryContext: widget.inventoryContext,
+      preselectedMealType: widget.preselectedMealType,
+      preselectedLoggedAt: widget.preselectedLoggedAt,
+    );
+    if (_initializedEntryId == createPrefill.initializationKey) {
       return false;
     }
 
-    _nameController.text = prefill?.name ?? '';
-    _brandController.text = prefill?.brand ?? '';
-    final consumedAmount = inventoryContext?.consumedAmount ?? 100;
-    _amountController.text = _formatDouble(consumedAmount);
-    _per100KcalController.text = _formatDouble(prefill?.per100Kcal ?? 0);
-    _per100ProteinController.text = _formatDouble(prefill?.per100Protein ?? 0);
-    _per100CarbsController.text = _formatDouble(prefill?.per100Carbs ?? 0);
-    _per100FatController.text = _formatDouble(prefill?.per100Fat ?? 0);
-    _mealType =
-        widget.preselectedMealType ??
-        MealType.defaultForDateTime(DateTime.now());
-    _consumedUnit = inventoryContext?.consumedUnit ?? ConsumedUnit.grams;
-    _loggedAt = DateTime.now();
-    _initializedEntryId = prefillKey;
+    _nameController.text = createPrefill.name;
+    _brandController.text = createPrefill.brand ?? '';
+    _amountController.text = _formatDouble(createPrefill.consumedAmount);
+    _per100KcalController.text = _formatDouble(createPrefill.per100Kcal);
+    _per100ProteinController.text = _formatDouble(createPrefill.per100Protein);
+    _per100CarbsController.text = _formatDouble(createPrefill.per100Carbs);
+    _per100FatController.text = _formatDouble(createPrefill.per100Fat);
+    _mealType = createPrefill.mealType;
+    _consumedUnit = createPrefill.consumedUnit;
+    _loggedAt = createPrefill.loggedAt;
+    _initializedEntryId = createPrefill.initializationKey;
     return true;
   }
 

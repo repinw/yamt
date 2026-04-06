@@ -149,6 +149,7 @@ GoRouter appRouter(Ref ref) {
             scannedSourceRef: args?.scannedSourceRef,
             inventoryContext: args?.inventoryContext,
             preselectedMealType: args?.preselectedMealType,
+            preselectedLoggedAt: args?.preselectedLoggedAt,
           );
         },
       ),

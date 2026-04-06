@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row.dart';
 import 'package:yamt/features/shoppinglist/application/'
@@ -32,7 +34,8 @@ class InventoryItemRowListEntry extends StatelessWidget {
   final bool showBarcodeMarkers;
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
   final Future<bool> Function(String itemId) onDeleteItem;
-  final Future<bool> Function(String itemId, int amount) onEatItem;
+  final Future<bool> Function(String itemId, InventoryItemEatRequest request)
+  onEatItem;
   final Future<bool> Function(
     String itemId,
     int amount,

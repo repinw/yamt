@@ -683,6 +683,60 @@ abstract class AppLocalizations {
   /// **'Eat'**
   String get inventoryItemEatAction;
 
+  /// No description provided for @inventoryItemEatSheetEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Log'**
+  String get inventoryItemEatSheetEyebrow;
+
+  /// No description provided for @inventoryItemEatSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat: {name}'**
+  String inventoryItemEatSheetTitle(String name);
+
+  /// No description provided for @inventoryItemEatSheetAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter amount'**
+  String get inventoryItemEatSheetAmountLabel;
+
+  /// No description provided for @inventoryItemEatSheetQuickSelectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick select'**
+  String get inventoryItemEatSheetQuickSelectLabel;
+
+  /// No description provided for @inventoryItemEatSheetAllAction.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get inventoryItemEatSheetAllAction;
+
+  /// No description provided for @inventoryItemEatSheetWhenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'When?'**
+  String get inventoryItemEatSheetWhenLabel;
+
+  /// No description provided for @inventoryItemEatSheetNowValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Now'**
+  String get inventoryItemEatSheetNowValue;
+
+  /// No description provided for @inventoryItemEatSheetNutritionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition'**
+  String get inventoryItemEatSheetNutritionLabel;
+
+  /// No description provided for @inventoryItemEatSheetConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Log'**
+  String get inventoryItemEatSheetConfirmAction;
+
   /// No description provided for @inventoryItemBuyAgainAction.
   ///
   /// In en, this message translates to:

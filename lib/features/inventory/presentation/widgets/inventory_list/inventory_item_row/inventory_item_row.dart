@@ -10,8 +10,12 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_discard_reason_dialog.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/inventory_item_eat_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_amount_input_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -55,7 +59,8 @@ class InventoryItemRow extends ConsumerStatefulWidget {
   final bool showBarcodeMarkers;
   final bool isAlreadyInShoppingList;
   final Future<bool> Function(String itemId) onDeletePressed;
-  final Future<bool> Function(String itemId, int amount) onEatPressed;
+  final Future<bool> Function(String itemId, InventoryItemEatRequest request)
+  onEatPressed;
   final Future<bool> Function(
     String itemId,
     int amount,
@@ -196,13 +201,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   }
 
   void _onEatPressed() {
-    unawaited(
-      _requestAmountAndRunAction(
-        action: widget.onEatPressed,
-        title: widget.l10n.inventoryItemEatAction,
-        confirmLabel: widget.l10n.inventoryItemEatAction,
-      ),
-    );
+    unawaited(_requestEatAmountAndRunAction(action: widget.onEatPressed));
   }
 
   void _onThrowAwayPressed() {
@@ -251,36 +250,29 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     );
   }
 
-  Future<void> _requestAmountAndRunAction({
-    required Future<bool> Function(String itemId, int amount) action,
-    required String title,
-    required String confirmLabel,
+  Future<void> _requestEatAmountAndRunAction({
+    required Future<bool> Function(
+      String itemId,
+      InventoryItemEatRequest request,
+    )
+    action,
   }) async {
     final config = _buildInputConfig(widget.item);
     if (config == null) {
       return;
     }
 
-    final amount = await showDialog<int>(
+    final result = await showInventoryItemEatSheet(
       context: context,
-      useRootNavigator: false,
-      builder: (context) {
-        return InventoryItemAmountInputDialog(
-          title: title,
-          confirmLabel: confirmLabel,
-          cancelLabel: widget.l10n.inventoryReceiptReviewCancelAction,
-          fieldLabel: config.fieldLabel,
-          invalidAmountMessage: widget.l10n.inventoryReceiptReviewInvalidNumber,
-          maxAmount: config.maxAmount,
-          suffixText: config.suffixText,
-        );
-      },
+      item: widget.item,
+      maxAmount: config.maxAmount,
+      invalidAmountMessage: widget.l10n.inventoryReceiptReviewInvalidNumber,
     );
-    if (!mounted || amount == null) {
+    if (!mounted || result == null) {
       return;
     }
 
-    await _actionCoordinator.runAction(() => action(widget.item.id, amount));
+    await _actionCoordinator.runAction(() => action(widget.item.id, result));
   }
 
   Future<void> _requestDiscardAndRunAction() async {
