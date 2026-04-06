@@ -1,3 +1,4 @@
+import 'dart:developer' show log;
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -11,6 +12,8 @@ const String _fallbackCameraFileName = 'camera-image.jpg';
 const String _fallbackUploadFileName = 'receipt-upload';
 const int _mimeHeaderLength = 32;
 const int _maxReceiptInputBytes = 12 * 1024 * 1024;
+const String _receiptInputSelectionLoaderLogName =
+    'ReceiptInputSelectionLoader';
 final Uint8List _emptySelectionBytes = Uint8List(0);
 
 /// Builds receipt input selections from picked files and shared file paths.
@@ -38,9 +41,18 @@ abstract final class ReceiptInputSelectionLoader {
         continue;
       }
 
-      final selection = await _loadSharedSelection(normalizedPath);
-      if (selection != null) {
-        selections.add(selection);
+      try {
+        final selection = await _loadSharedSelection(normalizedPath);
+        if (selection != null) {
+          selections.add(selection);
+        }
+      } catch (error, stackTrace) {
+        log(
+          'Skipped shared receipt file: $normalizedPath',
+          name: _receiptInputSelectionLoaderLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
       }
     }
     return selections;
@@ -80,6 +92,13 @@ abstract final class ReceiptInputSelectionLoader {
     XFile file, {
     required ReceiptInputSource source,
   }) async {
+    final length = await file.length();
+    if (length > _maxReceiptInputBytes) {
+      throw _ReceiptInputSelectionLoaderException(
+        'Receipt file exceeds size limit: ${file.name}',
+      );
+    }
+
     final bytes = await file.readAsBytes();
     if (bytes.length > _maxReceiptInputBytes) {
       throw _ReceiptInputSelectionLoaderException(
@@ -124,10 +143,15 @@ abstract final class ReceiptInputSelectionLoader {
 
 Future<ReceiptInputSelection?> _loadSharedSelection(String filePath) async {
   final sharedFile = XFile(filePath);
-  final selection = await ReceiptInputSelectionLoader.loadFromXFile(
-    sharedFile,
-    source: ReceiptInputSource.file,
-  );
+  ReceiptInputSelection selection;
+  try {
+    selection = await ReceiptInputSelectionLoader.loadFromXFile(
+      sharedFile,
+      source: ReceiptInputSource.file,
+    );
+  } on _ReceiptInputSelectionLoaderException {
+    return null;
+  }
   if (selection.bytes.isEmpty) {
     return null;
   }

@@ -78,12 +78,17 @@ class ReceiptReviewFlowRunner {
           loadingDialogOpen = false;
         });
 
-    final result = await _captureController.runSelection(selection: selection);
+    final result = await (() async {
+      try {
+        return await _captureController.runSelection(selection: selection);
+      } finally {
+        if (loadingDialogOpen && _rootNavigator.mounted) {
+          _rootNavigator.pop();
+        }
+        await loadingDialog;
+      }
+    })();
 
-    if (loadingDialogOpen && _rootNavigator.mounted) {
-      _rootNavigator.pop();
-    }
-    await loadingDialog;
     if (!context.mounted) {
       return;
     }
