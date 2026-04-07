@@ -92,61 +92,69 @@ class _InventoryItemEatAmountCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: colors.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(
-              AppInventoryEditorial.cardRadius,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xxxl,
-              vertical: AppSpacing.xxl,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    key: const Key('inventory_item_amount_dialog_field'),
-                    controller: controller,
-                    focusNode: focusNode,
-                    autofocus: false,
-                    keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.done,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: '0',
-                      isCollapsed: true,
-                    ),
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                    onChanged: onChanged,
-                    onSubmitted: (_) => onSubmitted(),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colors.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(
+                    AppInventoryEditorial.cardRadius,
                   ),
                 ),
-                IconButton(
-                  key: const Key('inventory_item_amount_dialog_clear_button'),
-                  tooltip: clearTooltip,
-                  onPressed: onClearAndFocus,
-                  visualDensity: VisualDensity.compact,
-                  icon: const Icon(Icons.cleaning_services_outlined),
-                  color: colors.onSurfaceVariant,
-                ),
-                if (unitLabel != null) ...[
-                  const SizedBox(width: AppSpacing.md),
-                  Text(
-                    unitLabel!,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xxxl,
+                    vertical: AppSpacing.xxl,
                   ),
-                ],
-              ],
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          key: const Key('inventory_item_amount_dialog_field'),
+                          controller: controller,
+                          focusNode: focusNode,
+                          autofocus: false,
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.done,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: '0',
+                            isCollapsed: true,
+                          ),
+                          style: Theme.of(context).textTheme.displaySmall
+                              ?.copyWith(fontWeight: FontWeight.w800),
+                          onChanged: onChanged,
+                          onSubmitted: (_) => onSubmitted(),
+                        ),
+                      ),
+                      if (unitLabel != null) ...[
+                        const SizedBox(width: AppSpacing.md),
+                        Text(
+                          unitLabel!,
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                color: colors.onSurfaceVariant,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: AppSpacing.sm),
+            IconButton(
+              key: const Key('inventory_item_amount_dialog_clear_button'),
+              tooltip: clearTooltip,
+              onPressed: onClearAndFocus,
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.cleaning_services_outlined),
+              color: colors.onSurfaceVariant,
+            ),
+          ],
         ),
         if (errorText != null) ...[
           const SizedBox(height: AppSpacing.sm),
