@@ -27,15 +27,42 @@ class _ThrowingOffProductSearchRepository
   }
 }
 
+class _RecordingOffProductSearchRepository
+    implements OffProductSearchRepository {
+  int searchCallCount = 0;
+
+  @override
+  Future<List<OffProductSearchResult>> search({
+    required String query,
+    String? store,
+    String? brand,
+    String? weight,
+    int limit = 15,
+  }) async {
+    searchCallCount++;
+    return const <OffProductSearchResult>[];
+  }
+
+  @override
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
+  }) async {
+    return const <OffProductSearchResult>[];
+  }
+}
+
 InventoryItem _item({
   String? weight,
   InventoryAmountUnit? amountUnit,
+  String storeName = 'Netto',
+  InventoryItemOrigin origin = InventoryItemOrigin.standard,
 }) {
   return InventoryItem.create(
     id: 'item-1',
     name: 'Unbekannt',
     entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
-    storeName: 'Netto',
+    storeName: storeName,
+    origin: origin,
     quantity: 1,
     weight: weight,
     amountUnit: amountUnit,
@@ -122,14 +149,16 @@ void main() {
     );
     addTearDown(subscription.close);
 
-    container.read(provider.notifier).applySearchResult(
-      const OffProductSearchResult(
-        code: '4311596490202',
-        name: 'Brötchen',
-        score: 100,
-        packageWeight: '2 Stück',
-      ),
-    );
+    container
+        .read(provider.notifier)
+        .applySearchResult(
+          const OffProductSearchResult(
+            code: '4311596490202',
+            name: 'Brötchen',
+            score: 100,
+            packageWeight: '2 Stück',
+          ),
+        );
 
     final state = container.read(provider);
     expect(state.weightAmount, '2');
@@ -150,5 +179,90 @@ void main() {
 
     expect(state.weightAmount, isEmpty);
     expect(state.selectedWeightUnit, InventoryAmountUnit.piece);
+  });
+
+  test('manual add origin omits store from initial search query', () {
+    final query = buildManualProductInitialSearchQuery(
+      InventoryReceiptManualProductConfig(
+        item: _item(
+          storeName: 'Ajout manuel',
+          origin: InventoryItemOrigin.manualAdd,
+        ).copyWith(name: 'Olivenoel'),
+      ),
+    );
+
+    expect(query, 'Olivenoel');
+  });
+
+  test('applyRecentItem cancels a pending debounced search', () async {
+    final repository = _RecordingOffProductSearchRepository();
+    final config = _config();
+    final container = ProviderContainer(
+      overrides: [
+        offProductSearchRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final provider = inventoryReceiptManualProductControllerProvider(config);
+    final subscription = container.listen(
+      provider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+
+    container.read(provider.notifier).updateSearchQuery('Zero');
+    container
+        .read(provider.notifier)
+        .applyRecentItem(
+          InventoryItem.create(
+            id: 'recent-1',
+            name: 'Olivenoel',
+            entryDate: DateTime.parse('2026-04-03T10:00:00Z'),
+            storeName: 'Ajout manuel',
+            origin: InventoryItemOrigin.manualAdd,
+            quantity: 1,
+            barcode: '4061462542046',
+          ),
+        );
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(repository.searchCallCount, 0);
+  });
+
+  test('applySearchResult cancels a pending debounced search', () async {
+    final repository = _RecordingOffProductSearchRepository();
+    final config = _config();
+    final container = ProviderContainer(
+      overrides: [
+        offProductSearchRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final provider = inventoryReceiptManualProductControllerProvider(config);
+    final subscription = container.listen(
+      provider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+
+    container.read(provider.notifier).updateSearchQuery('Zero');
+    container
+        .read(provider.notifier)
+        .applySearchResult(
+          const OffProductSearchResult(
+            code: '4311596490202',
+            name: 'Booster Absolute Zero',
+            score: 100,
+          ),
+        );
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(repository.searchCallCount, 0);
   });
 }

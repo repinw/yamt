@@ -19,7 +19,6 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const _manualProductRecentItemLimit = 6;
 const _manualProductPageLogName = 'InventoryReceiptManualProductPage';
-const _manualAddStoreNames = <String>{'Added manually', 'Manuell hinzugefügt'};
 
 class InventoryReceiptManualProductPage extends StatelessWidget {
   const InventoryReceiptManualProductPage({
@@ -728,7 +727,7 @@ List<InventoryItem> _buildRecentItems(List<InventoryItem> items) {
       items
           .where((item) => item.canBeSavedToInventory)
           .where((item) => item.name.trim().isNotEmpty)
-          .where((item) => _manualAddStoreNames.contains(item.storeName.trim()))
+          .where((item) => item.isManuallyAdded)
           .toList(growable: false)
         ..sort((left, right) => right.entryDate.compareTo(left.entryDate));
 
@@ -749,7 +748,8 @@ List<InventoryItem> _buildRecentItems(List<InventoryItem> items) {
 
 String _recentItemKey(InventoryItem item) {
   final globalFoodItemId = item.globalFoodItemId.trim();
-  if (globalFoodItemId.isNotEmpty && !globalFoodItemId.startsWith('pending-')) {
+  if (globalFoodItemId.isNotEmpty &&
+      !isPendingGlobalFoodItemId(globalFoodItemId)) {
     return 'global:$globalFoodItemId';
   }
 

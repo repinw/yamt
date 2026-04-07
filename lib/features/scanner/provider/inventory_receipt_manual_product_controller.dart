@@ -183,7 +183,7 @@ String? buildManualProductInitialSearchQuery(
 
   addPart(config.item.name, canBeBarcode: false);
   addPart(config.item.brand);
-  addPart(_initialSearchStoreName(config.item.storeName));
+  addPart(_initialSearchStoreName(config.item));
 
   if (parts.isEmpty) {
     return null;
@@ -783,14 +783,11 @@ class InventoryReceiptManualProductController
   }
 }
 
-String? _initialSearchStoreName(String? rawStoreName) {
-  final storeName = normalizeManualProductText(rawStoreName ?? '');
-  return switch (storeName) {
-    null => null,
-    'Added manually' => null,
-    'Manuell hinzugefügt' => null,
-    _ => storeName,
-  };
+String? _initialSearchStoreName(InventoryItem item) {
+  if (item.isManuallyAdded) {
+    return null;
+  }
+  return normalizeManualProductText(item.storeName);
 }
 
 bool _looksLikeBarcodeText(String value) {
@@ -807,7 +804,7 @@ String? _normalizeReusableGlobalFoodItemId(String? value) {
   if (normalized == null || normalized.isEmpty) {
     return null;
   }
-  if (normalized.startsWith('pending-')) {
+  if (isPendingGlobalFoodItemId(normalized)) {
     return null;
   }
   return normalized;

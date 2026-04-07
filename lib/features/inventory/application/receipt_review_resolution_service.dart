@@ -201,7 +201,9 @@ class ReceiptReviewResolutionService {
     return item.sourceItem.copyWith(
       globalFoodItemId: canReferenceGlobalItem
           ? resolvedProduct.id
-          : 'pending-${resolvedProduct.resolvedFoodFingerprint}',
+          : buildPendingGlobalFoodItemId(
+              resolvedProduct.resolvedFoodFingerprint,
+            ),
       name: resolvedProduct.name,
       brand: resolvedProduct.brand,
       category: resolvedProduct.category,

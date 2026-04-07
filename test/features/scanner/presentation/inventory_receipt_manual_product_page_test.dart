@@ -114,6 +114,28 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   }
 }
 
+class _ThrowingInventoryItemRepository implements InventoryItemRepository {
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async {
+    return true;
+  }
+
+  @override
+  Future<List<InventoryItem>> readAll() async {
+    throw StateError('readAll failed');
+  }
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async {
+    return true;
+  }
+
+  @override
+  Stream<List<InventoryItem>> watchAll() async* {
+    yield const <InventoryItem>[];
+  }
+}
+
 class _ThrowingOffProductSearchRepository
     implements OffProductSearchRepository {
   @override
@@ -412,7 +434,8 @@ void main() {
       globalFoodItemId: 'global-olive-oil',
       name: 'Olivenoel',
       entryDate: DateTime.parse('2026-04-03T10:00:00Z'),
-      storeName: 'Manuell hinzugefügt',
+      storeName: 'Ajout manuel',
+      origin: InventoryItemOrigin.manualAdd,
       quantity: 1,
       brand: 'Gut Bio',
       barcode: '4061462542046',
@@ -557,6 +580,26 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('recent items load failure keeps launcher usable', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item(),
+        inventoryRepository: _ThrowingInventoryItemRepository(),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+      findsOneWidget,
+    );
+    expect(find.text('Zuletzt hinzugefügt'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('cancel after selecting product returns to search results', (
     tester,
   ) async {
@@ -637,7 +680,8 @@ void main() {
       id: 'recent-1',
       name: 'Olivenoel',
       entryDate: DateTime.parse('2026-04-03T10:00:00Z'),
-      storeName: 'Manuell hinzugefügt',
+      storeName: 'Ajout manuel',
+      origin: InventoryItemOrigin.manualAdd,
       quantity: 1,
       barcode: '4061462542046',
     );

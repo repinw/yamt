@@ -364,6 +364,10 @@ void main() {
       inventoryRepository.appendedItems.single.globalFoodItemId,
       'off-4006381333931-milk-brand',
     );
+    expect(
+      inventoryRepository.appendedItems.single.origin,
+      InventoryItemOrigin.manualAdd,
+    );
   });
 
   testWidgets('multiple barcode candidates can be selected before saving', (
@@ -428,5 +432,9 @@ void main() {
     expect(inventoryRepository.appendedItems, hasLength(1));
     expect(inventoryRepository.appendedItems.single.name, 'Cashews Paprika');
     expect(inventoryRepository.appendedItems.single.barcode, '4316268671225');
+    expect(
+      inventoryRepository.appendedItems.single.origin,
+      InventoryItemOrigin.manualAdd,
+    );
   });
 }
