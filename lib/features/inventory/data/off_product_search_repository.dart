@@ -102,6 +102,25 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
       return const <OffProductSearchResult>[];
     }
 
+    final searchUri = _buildSearchUri(
+      query: normalizedBarcode,
+      store: null,
+      brand: null,
+      weight: null,
+      limit: 10,
+    );
+    _debugLogRequest(action: 'barcode search', uri: searchUri);
+    final searchResults = await _fetchResults(
+      uri: searchUri,
+      action: 'barcode search',
+    );
+    final exactMatches = searchResults
+        .where((result) => result.code.trim() == normalizedBarcode)
+        .toList(growable: false);
+    if (exactMatches.isNotEmpty) {
+      return exactMatches;
+    }
+
     final uri = _buildBarcodeUri(barcode: normalizedBarcode);
     _debugLogRequest(action: 'barcode lookup', uri: uri);
     return _fetchResults(uri: uri, action: 'barcode lookup');

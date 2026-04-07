@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 
 void main() {
   test('search forwards query params and parses text payload', () async {
@@ -125,12 +126,34 @@ Score: 22 | token=10 | gram=12 | store=0 | 2 | [bofrost] Vanille
   });
 
   test(
-    'lookupCandidatesByBarcode parses single product payload as list',
+    'lookupCandidatesByBarcode prefers exact search match with nutrition',
     () async {
-      late Uri capturedUri;
+      final requestedPaths = <String>[];
       final repository = HttpOffProductSearchRepository(
         client: MockClient((request) async {
-          capturedUri = request.url;
+          requestedPaths.add(request.url.path);
+          if (request.url.path == '/search') {
+            return http.Response('''
+{
+  "results": [
+    {
+      "code": "4316268671224",
+      "product_name": "Cashews Sour Creme & Onion",
+      "brands": "Clarkys",
+      "nutrition_quality_status": "verified",
+      "nutrition": {
+        "energy_kcal_100g": 553.0,
+        "proteins_100g": 18.2,
+        "carbohydrates_100g": 29.0,
+        "fat_100g": 42.0,
+        "salt_100g": 1.3
+      },
+      "score": 100
+    }
+  ]
+}
+''', 200);
+          }
           return http.Response('''
 {
   "ok": true,
@@ -152,17 +175,72 @@ Score: 22 | token=10 | gram=12 | store=0 | 2 | [bofrost] Vanille
         barcode: '4316268671224',
       );
 
-      expect(capturedUri.path, '/barcode');
+      expect(requestedPaths, <String>['/search']);
       expect(results, hasLength(1));
       expect(results.single.code, '4316268671224');
       expect(results.single.name, 'Cashews Sour Creme & Onion');
       expect(results.single.brand, 'Clarkys');
+      expect(results.single.nutrition, isNotNull);
+      expect(
+        results.single.nutrition!.qualityStatus,
+        GlobalFoodNutritionQualityStatus.verified,
+      );
+      expect(results.single.nutrition!.per100Kcal, 553);
     },
   );
+
+  test('lookupCandidatesByBarcode falls back to barcode endpoint '
+      'when search has no exact match', () async {
+    final requestedPaths = <String>[];
+    final repository = HttpOffProductSearchRepository(
+      client: MockClient((request) async {
+        requestedPaths.add(request.url.path);
+        if (request.url.path == '/search') {
+          return http.Response('''
+{
+  "results": [
+    {
+      "code": "999",
+      "product_name": "Other product",
+      "score": 50
+    }
+  ]
+}
+''', 200);
+        }
+        return http.Response('''
+{
+  "ok": true,
+  "code": "4316268671224",
+  "found": true,
+  "product": {
+    "code": "4316268671224",
+    "name": "Cashews Sour Creme & Onion",
+    "brand": "Clarkys",
+    "score": 100
+  }
+}
+''', 200);
+      }),
+      searchUri: Uri.parse('https://example.com/search'),
+    );
+
+    final results = await repository.lookupCandidatesByBarcode(
+      barcode: '4316268671224',
+    );
+
+    expect(requestedPaths, <String>['/search', '/barcode']);
+    expect(results, hasLength(1));
+    expect(results.single.code, '4316268671224');
+    expect(results.single.name, 'Cashews Sour Creme & Onion');
+  });
 
   test('lookupCandidatesByBarcode returns empty list when not found', () async {
     final repository = HttpOffProductSearchRepository(
       client: MockClient((request) async {
+        if (request.url.path == '/search') {
+          return http.Response('{"results":[]}', 200);
+        }
         return http.Response('''
 {
   "ok": true,

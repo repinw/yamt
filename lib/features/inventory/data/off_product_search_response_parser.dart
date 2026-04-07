@@ -69,7 +69,7 @@ class _OffProductSearchResponseParser {
       packageWeight: _readText(
         item['weight'] ?? item['package_weight'] ?? item['quantity'],
       ),
-      nutrition: _readNutrition(item['nutrition']),
+      nutrition: _readNutrition(item),
       score: _readScore(item['score'] ?? item['totalScore']) ?? 0,
     );
   }
@@ -156,13 +156,42 @@ class _OffProductSearchResponseParser {
     return text;
   }
 
-  GlobalFoodNutrition? _readNutrition(Object? value) {
-    if (value is! Map) {
+  GlobalFoodNutrition? _readNutrition(Map<String, dynamic> item) {
+    final rawNutrition = item['nutrition'];
+    final nutritionJson = <String, dynamic>{};
+
+    if (rawNutrition is Map) {
+      nutritionJson.addAll(Map<String, dynamic>.from(rawNutrition));
+    }
+
+    for (final key in const <String>[
+      'energy_kcal_100g',
+      'energy-kcal_100g',
+      'proteins_100g',
+      'carbohydrates_100g',
+      'fat_100g',
+      'salt_100g',
+    ]) {
+      final value = item[key];
+      if (value != null && !nutritionJson.containsKey(key)) {
+        nutritionJson[key] = value;
+      }
+    }
+
+    final qualityStatus = _readText(
+      item['nutrition_quality_status'] ?? item['quality_status'],
+    );
+    if (qualityStatus != null &&
+        !nutritionJson.containsKey('quality_status')) {
+      nutritionJson['quality_status'] = qualityStatus;
+    }
+
+    if (nutritionJson.isEmpty) {
       return null;
     }
 
     final nutrition = GlobalFoodNutrition.fromJson(
-      Map<String, dynamic>.from(value),
+      nutritionJson,
     );
     return nutrition.hasAnyNutritionValue ? nutrition : null;
   }
