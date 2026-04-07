@@ -27,6 +27,7 @@ class InventoryReceiptManualProductPage extends StatelessWidget {
     this.selectedProduct,
     this.includeStoreInSearch = true,
     this.includeWeightInSearch = true,
+    this.showEatImmediatelyOption = false,
     this.onSaved,
   });
 
@@ -34,6 +35,7 @@ class InventoryReceiptManualProductPage extends StatelessWidget {
   final OffProductSearchResult? selectedProduct;
   final bool includeStoreInSearch;
   final bool includeWeightInSearch;
+  final bool showEatImmediatelyOption;
   final Future<void> Function(InventoryReceiptManualProductResult result)?
   onSaved;
 
@@ -52,12 +54,14 @@ class InventoryReceiptManualProductPage extends StatelessWidget {
     )) {
       return _InventoryReceiptManualProductEditorPage(
         config: config,
+        showEatImmediatelyOption: showEatImmediatelyOption,
         onSaved: onSaved,
       );
     }
 
     return _InventoryReceiptManualProductLauncherPage(
       config: config,
+      showEatImmediatelyOption: showEatImmediatelyOption,
       onSaved: onSaved,
     );
   }
@@ -68,11 +72,13 @@ class InventoryReceiptManualProductResult {
     required this.item,
     this.selectedProduct,
     this.selectedGlobalFoodItemId,
+    this.eatImmediately = false,
   });
 
   final InventoryItem item;
   final OffProductSearchResult? selectedProduct;
   final String? selectedGlobalFoodItemId;
+  final bool eatImmediately;
 }
 
 bool _shouldOpenEditorImmediately({
@@ -88,10 +94,12 @@ class _InventoryReceiptManualProductLauncherPage
     extends ConsumerStatefulWidget {
   const _InventoryReceiptManualProductLauncherPage({
     required this.config,
+    required this.showEatImmediatelyOption,
     this.onSaved,
   });
 
   final InventoryReceiptManualProductConfig config;
+  final bool showEatImmediatelyOption;
   final Future<void> Function(InventoryReceiptManualProductResult result)?
   onSaved;
 
@@ -189,6 +197,7 @@ class _InventoryReceiptManualProductLauncherPageState
             builder: (routeContext) {
               return _InventoryReceiptManualProductEditorPage(
                 config: config,
+                showEatImmediatelyOption: widget.showEatImmediatelyOption,
                 autofocusSearch: autofocusSearch,
                 initialRecentItem: initialRecentItem,
                 initialInfoMessage: initialInfoMessage,
@@ -280,18 +289,22 @@ class _InventoryReceiptManualProductLauncherPageState
 class _InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
   const _InventoryReceiptManualProductEditorPage({
     required this.config,
+    required this.showEatImmediatelyOption,
     this.onSaved,
     this.autofocusSearch = false,
     this.initialRecentItem,
     this.initialInfoMessage,
+    this.initialEatImmediately = false,
   });
 
   final InventoryReceiptManualProductConfig config;
+  final bool showEatImmediatelyOption;
   final Future<void> Function(InventoryReceiptManualProductResult result)?
   onSaved;
   final bool autofocusSearch;
   final InventoryItem? initialRecentItem;
   final String? initialInfoMessage;
+  final bool initialEatImmediately;
 
   @override
   ConsumerState<_InventoryReceiptManualProductEditorPage> createState() =>
@@ -362,6 +375,7 @@ class _InventoryReceiptManualProductEditorPageState
   bool _didBindProviderState = false;
   bool _didScheduleInitialRecentItem = false;
   bool _isSyncingControllers = false;
+  late bool _eatImmediately = widget.initialEatImmediately;
 
   InventoryReceiptManualProductControllerProvider get _provider {
     return inventoryReceiptManualProductControllerProvider(widget.config);
@@ -480,6 +494,7 @@ class _InventoryReceiptManualProductEditorPageState
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(_provider);
     final preview = _buildPreviewData();
+    final canEatImmediately = _canEatImmediately(state);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.inventoryReceiptReviewManualDataTitle)),
@@ -498,6 +513,9 @@ class _InventoryReceiptManualProductEditorPageState
         carbsController: _carbsController,
         proteinController: _proteinController,
         errorText: _resolveErrorText(l10n, state.error),
+        showEatImmediatelyOption: widget.showEatImmediatelyOption,
+        eatImmediately: _eatImmediately && canEatImmediately,
+        canEatImmediately: canEatImmediately,
         onSearchResultSelected: _handleSearchResultSelected,
         onRecentItemSelected: _controller.applyRecentItem,
         onScanBarcode: () {
@@ -509,6 +527,11 @@ class _InventoryReceiptManualProductEditorPageState
                 unawaited(_scanNutritionLabel());
               }
             : null,
+        onEatImmediatelyChanged: (value) {
+          setState(() {
+            _eatImmediately = value;
+          });
+        },
         onCancel: _closePage,
         onSave: () {
           unawaited(_save());
@@ -552,7 +575,11 @@ class _InventoryReceiptManualProductEditorPageState
           _NoAnimationMaterialPageRoute<InventoryReceiptManualProductResult>(
             fullscreenDialog: true,
             builder: (routeContext) {
-              return _InventoryReceiptManualProductEditorPage(config: config);
+              return _InventoryReceiptManualProductEditorPage(
+                config: config,
+                showEatImmediatelyOption: widget.showEatImmediatelyOption,
+                initialEatImmediately: _eatImmediately,
+              );
             },
           ),
         );
@@ -569,10 +596,17 @@ class _InventoryReceiptManualProductEditorPageState
       return;
     }
 
+    final eatImmediately =
+        widget.showEatImmediatelyOption &&
+            _canEatImmediately(ref.read(_provider))
+        ? _eatImmediately
+        : false;
+
     final result = InventoryReceiptManualProductResult(
       item: payload.item,
       selectedProduct: payload.selectedProduct,
       selectedGlobalFoodItemId: payload.selectedGlobalFoodItemId,
+      eatImmediately: eatImmediately,
     );
     final onSaved = widget.onSaved;
     if (onSaved != null) {
@@ -654,6 +688,20 @@ class _InventoryReceiptManualProductEditorPageState
       return;
     }
     _controller.updateSearchQuery(_searchController.text);
+  }
+
+  bool _canEatImmediately(InventoryReceiptManualProductState state) {
+    if (state.hasNutritionInput) {
+      return true;
+    }
+    if (state.selectedProduct?.nutrition?.hasAnyNutritionValue == true) {
+      return true;
+    }
+    if (widget.config.selectedProduct?.nutrition?.hasAnyNutritionValue ==
+        true) {
+      return true;
+    }
+    return widget.config.item.nutrition?.hasAnyNutritionValue == true;
   }
 
   void _showSnackBar(String message) {

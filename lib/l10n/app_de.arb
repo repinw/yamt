@@ -183,6 +183,9 @@
   "inventoryManualAddSaveFailed":
       "Das Produkt konnte nicht zum Inventar hinzugefügt werden.",
   "inventoryManualAddSaved": "Produkt zum Inventar hinzugefügt.",
+  "inventoryManualAddEatNowOption": "Sofort essen",
+  "inventoryManualAddEatNowRequiresNutrition":
+      "Nur verfügbar, wenn Nährwerte vorhanden sind.",
   "inventoryManualAddStoreName": "Manuell hinzugefügt",
   "inventoryBarcodePortionDialogTitle": "Verzehrte Menge eingeben",
   "inventoryBarcodePortionDialogConfirmAction": "Weiter",

@@ -94,11 +94,15 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.proteinController,
     required this.preview,
     required this.errorText,
+    this.showEatImmediatelyOption = false,
+    this.eatImmediately = false,
+    this.canEatImmediately = false,
     required this.onSearchResultSelected,
     required this.onRecentItemSelected,
     required this.onScanBarcode,
     required this.onWeightUnitChanged,
     required this.onScanNutritionLabel,
+    this.onEatImmediatelyChanged,
     required this.onCancel,
     required this.onSave,
   });
@@ -117,11 +121,15 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   final TextEditingController proteinController;
   final InventoryReceiptManualProductPreviewData? preview;
   final String? errorText;
+  final bool showEatImmediatelyOption;
+  final bool eatImmediately;
+  final bool canEatImmediately;
   final ValueChanged<OffProductSearchResult> onSearchResultSelected;
   final ValueChanged<InventoryItem> onRecentItemSelected;
   final VoidCallback onScanBarcode;
   final ValueChanged<InventoryAmountUnit> onWeightUnitChanged;
   final VoidCallback? onScanNutritionLabel;
+  final ValueChanged<bool>? onEatImmediatelyChanged;
   final VoidCallback onCancel;
   final VoidCallback onSave;
 
@@ -221,6 +229,14 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                   decimal: true,
                 ),
               ),
+              if (showEatImmediatelyOption) ...[
+                const SizedBox(height: AppSpacing.md),
+                _ManualProductEatImmediatelyOption(
+                  value: eatImmediately,
+                  enabled: canEatImmediately,
+                  onChanged: onEatImmediatelyChanged,
+                ),
+              ],
               if (errorText case final String message) ...[
                 const SizedBox(height: AppSpacing.md),
                 Text(
@@ -257,6 +273,38 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ManualProductEatImmediatelyOption extends StatelessWidget {
+  const _ManualProductEatImmediatelyOption({
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final bool value;
+  final bool enabled;
+  final ValueChanged<bool>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return CheckboxListTile(
+      key: const Key('receipt_review_manual_eat_now_checkbox'),
+      value: value,
+      contentPadding: EdgeInsets.zero,
+      controlAffinity: ListTileControlAffinity.leading,
+      enabled: enabled,
+      title: Text(l10n.inventoryManualAddEatNowOption),
+      subtitle: enabled
+          ? null
+          : Text(l10n.inventoryManualAddEatNowRequiresNutrition),
+      onChanged: onChanged == null
+          ? null
+          : (checked) => onChanged!(checked ?? false),
     );
   }
 }

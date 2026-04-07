@@ -1,12 +1,21 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_product_cache_repository.dart';
+import 'package:yamt/features/calories/data/'
+    'inventory_calorie_entry_commit_store.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
@@ -16,30 +25,56 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../calories/support/fake_calories_repositories.dart';
+
+class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+
+class _MockUser extends Mock implements User {}
+
 class _RecordingInventoryItemRepository implements InventoryItemRepository {
+  final StreamController<List<InventoryItem>> _controller =
+      StreamController<List<InventoryItem>>.broadcast();
   final List<InventoryItem> appendedItems = <InventoryItem>[];
+  final List<InventoryItem> _items = <InventoryItem>[];
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
+    _items.addAll(items);
     appendedItems.addAll(items);
+    _controller.add(List<InventoryItem>.from(_items));
     return true;
   }
 
   @override
   Future<List<InventoryItem>> readAll() async {
-    return const <InventoryItem>[];
+    return List<InventoryItem>.from(_items);
   }
 
   @override
   Future<bool> saveAll(List<InventoryItem> items) async {
+    _items
+      ..clear()
+      ..addAll(items);
+    _controller.add(List<InventoryItem>.from(_items));
     return true;
   }
 
   @override
   Stream<List<InventoryItem>> watchAll() {
-    return const Stream<List<InventoryItem>>.empty();
+    return Stream<List<InventoryItem>>.multi((controller) {
+      controller.add(List<InventoryItem>.from(_items));
+      final subscription = _controller.stream.listen(controller.add);
+      controller.onCancel = () {
+        unawaited(subscription.cancel());
+      };
+    });
+  }
+
+  Future<void> dispose() {
+    return _controller.close();
   }
 }
 
@@ -76,6 +111,24 @@ class _RecordingGlobalFoodItemRepository implements GlobalFoodItemRepository {
   @override
   Stream<List<GlobalFoodItem>> watchAll() {
     return const Stream<List<GlobalFoodItem>>.empty();
+  }
+}
+
+class _RecordingInventoryCalorieEntryCommitStore
+    implements InventoryCalorieEntryCommitStore {
+  PendingInventoryConsumption? pendingConsumption;
+
+  @override
+  Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
+    required CalorieEntry entry,
+    required PendingInventoryConsumption pendingConsumption,
+  }) async {
+    this.pendingConsumption = pendingConsumption;
+    return InventoryCalorieEntryCommitResult(
+      itemId: pendingConsumption.itemId,
+      quantity: 1,
+      currentAmount: 999,
+    );
   }
 }
 
@@ -184,6 +237,10 @@ Widget _buildHarness({
   required OffProductSearchRepository offRepository,
   required InventoryItemRepository inventoryRepository,
   required GlobalFoodItemRepository globalFoodRepository,
+  FirebaseAuth? auth,
+  FakeCalorieLogRepository? calorieLogRepository,
+  FakeCalorieProductCacheRepository? calorieProductCacheRepository,
+  InventoryCalorieEntryCommitStore? inventoryCommitStore,
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.root,
@@ -204,6 +261,17 @@ Widget _buildHarness({
       offProductSearchRepositoryProvider.overrideWithValue(offRepository),
       inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
       globalFoodItemRepositoryProvider.overrideWithValue(globalFoodRepository),
+      if (auth != null) firebaseAuthProvider.overrideWithValue(auth),
+      if (calorieLogRepository != null)
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+      if (calorieProductCacheRepository != null)
+        calorieProductCacheRepositoryProvider.overrideWithValue(
+          calorieProductCacheRepository,
+        ),
+      if (inventoryCommitStore != null)
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
+          inventoryCommitStore,
+        ),
     ],
     child: MaterialApp.router(
       locale: const Locale('en'),
@@ -281,7 +349,7 @@ void main() {
             score: 99,
             packageWeight: '1 l',
             imageUrl: 'https://example.com/milk.png',
-            nutrition: const GlobalFoodNutrition(
+            nutrition: GlobalFoodNutrition(
               qualityStatus: GlobalFoodNutritionQualityStatus.verified,
               per100Kcal: 100,
               per100Protein: 10,
@@ -291,6 +359,7 @@ void main() {
           ),
         ]);
     final inventoryRepository = _RecordingInventoryItemRepository();
+    addTearDown(inventoryRepository.dispose);
     final globalFoodRepository = _RecordingGlobalFoodItemRepository();
 
     await tester.pumpWidget(
@@ -370,6 +439,136 @@ void main() {
     );
   });
 
+  testWidgets(
+    'eat now stays disabled when the manual product has no nutrition',
+    (tester) async {
+      _installFakeScannerPlatform(tester);
+
+      final offRepository =
+          _RecordingOffProductSearchRepository(<OffProductSearchResult>[
+            const OffProductSearchResult(
+              code: '4316268671224',
+              name: 'Cashews Sour Creme & Onion',
+              brand: 'Clarkys',
+              score: 100,
+            ),
+          ]);
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      addTearDown(inventoryRepository.dispose);
+      final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+
+      await tester.pumpWidget(
+        _buildHarness(
+          offRepository: offRepository,
+          inventoryRepository: inventoryRepository,
+          globalFoodRepository: globalFoodRepository,
+        ),
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_scan_button')),
+      );
+      await _pumpUi(tester);
+
+      _fakeScannerPlatform().emitBarcode('4316268671224');
+      await _pumpUi(tester);
+
+      final checkbox = tester.widget<CheckboxListTile>(
+        find.byKey(const Key('receipt_review_manual_eat_now_checkbox')),
+      );
+      expect(checkbox.enabled, isFalse);
+      expect(
+        find.text('Only available when nutrition values are present.'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('eat now opens the eat flow after the product was saved', (
+    tester,
+  ) async {
+    _installFakeScannerPlatform(tester);
+
+    final auth = _MockFirebaseAuth();
+    final user = _MockUser();
+    when(() => auth.currentUser).thenReturn(user);
+    when(() => user.uid).thenReturn('user-1');
+
+    final offRepository =
+        _RecordingOffProductSearchRepository(<OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4006381333931',
+            name: 'Milk',
+            brand: 'Brand',
+            score: 99,
+            packageWeight: '1 l',
+            imageUrl: 'https://example.com/milk.png',
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 100,
+              per100Protein: 10,
+              per100Carbs: 20,
+              per100Fat: 3,
+            ),
+          ),
+        ]);
+    final inventoryRepository = _RecordingInventoryItemRepository();
+    addTearDown(inventoryRepository.dispose);
+    final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+    final calorieLogRepository = FakeCalorieLogRepository();
+    addTearDown(calorieLogRepository.dispose);
+    final calorieProductCacheRepository = FakeCalorieProductCacheRepository();
+    final inventoryCommitStore = _RecordingInventoryCalorieEntryCommitStore();
+
+    await tester.pumpWidget(
+      _buildHarness(
+        auth: auth,
+        offRepository: offRepository,
+        inventoryRepository: inventoryRepository,
+        globalFoodRepository: globalFoodRepository,
+        calorieLogRepository: calorieLogRepository,
+        calorieProductCacheRepository: calorieProductCacheRepository,
+        inventoryCommitStore: inventoryCommitStore,
+      ),
+    );
+    await _pumpUi(tester);
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_scan_button')),
+    );
+    await _pumpUi(tester);
+
+    _fakeScannerPlatform().emitBarcode('4006381333931');
+    await _pumpUi(tester);
+
+    final eatNowCheckbox = find.byKey(
+      const Key('receipt_review_manual_eat_now_checkbox'),
+    );
+    await tester.ensureVisible(eatNowCheckbox);
+    await tester.tap(eatNowCheckbox);
+    await _pumpUi(tester);
+
+    final manualSaveButton = find.byKey(
+      const Key('receipt_review_manual_save_button'),
+    );
+    await tester.ensureVisible(manualSaveButton);
+    await tester.tap(manualSaveButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Eat: Milk'), findsOneWidget);
+
+    final logButton = find.text('Log');
+    await tester.ensureVisible(logButton);
+    await tester.tap(logButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('home'), findsOneWidget);
+    expect(inventoryCommitStore.pendingConsumption, isNotNull);
+    expect(inventoryCommitStore.pendingConsumption?.itemId, isNotEmpty);
+    expect(inventoryCommitStore.pendingConsumption?.amount, 1);
+  });
+
   testWidgets('multiple barcode candidates can be selected before saving', (
     tester,
   ) async {
@@ -391,6 +590,7 @@ void main() {
           ),
         ]);
     final inventoryRepository = _RecordingInventoryItemRepository();
+    addTearDown(inventoryRepository.dispose);
     final globalFoodRepository = _RecordingGlobalFoodItemRepository();
 
     await tester.pumpWidget(
