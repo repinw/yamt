@@ -514,6 +514,54 @@ void main() {
   });
 
   testWidgets(
+    'recent items without explicit global id or barcode dedupe safely',
+    (tester) async {
+      final firstManualItem = InventoryItem.create(
+        id: 'recent-a',
+        name: 'Haferflocken',
+        entryDate: DateTime.parse('2026-04-03T10:00:00Z'),
+        storeName: 'Ajout manuel',
+        origin: InventoryItemOrigin.manualAdd,
+        quantity: 1,
+        brand: 'Bio',
+        weight: '500 g',
+      );
+      final secondManualItem = InventoryItem.create(
+        id: 'recent-b',
+        name: 'Haferflocken',
+        entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
+        storeName: 'Ajout manuel',
+        origin: InventoryItemOrigin.manualAdd,
+        quantity: 1,
+        brand: 'Bio',
+        weight: '500 g',
+      );
+
+      await tester.pumpWidget(
+        _wrapPage(
+          item: _item(),
+          inventoryRepository: _FakeInventoryItemRepository(
+            initialItems: <InventoryItem>[firstManualItem, secondManualItem],
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Zuletzt hinzugefügt'), findsOneWidget);
+      expect(find.text('Haferflocken'), findsOneWidget);
+      expect(
+        find.byKey(const Key('receipt_review_manual_recent_item_recent-a')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('receipt_review_manual_recent_item_recent-b')),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'receipt review manual search does not pass store or weight to search',
     (tester) async {
       final offRepository = _RecordingOffProductSearchRepository(
