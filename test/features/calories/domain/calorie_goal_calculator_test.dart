@@ -46,6 +46,26 @@ void main() {
     expect(result.wasClampedToMinimum, isFalse);
   });
 
+  test('calculates female BMR and applies calorie deficit for weight loss', () {
+    const profile = CalorieCalculatorProfile(
+      sex: CalorieCalculatorSex.female,
+      weightKg: 65,
+      heightCm: 170,
+      ageYears: 28,
+      activityLevel: 1.55,
+      goalMode: CalorieGoalMode.lose,
+      goalSpeedKgPerWeek: 0.5,
+    );
+
+    final result = CalorieGoalCalculator.calculate(profile);
+
+    expect(result.bmrKcal, 1411.5);
+    expect(result.tdeeKcal, closeTo(2187.825, 0.000001));
+    expect(result.dailyAdjustmentKcal, 500);
+    expect(result.finalGoalKcal, closeTo(1687.825, 0.000001));
+    expect(result.wasClampedToMinimum, isFalse);
+  });
+
   test(
     'maintenance calories rise with each higher standard activity level',
     () {
