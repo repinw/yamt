@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
 
 const _expandIndicatorAnimationDuration = Duration(milliseconds: 220);
 const _expandIndicatorSize = 32.0;
@@ -11,11 +10,17 @@ class InventoryExpandIndicator extends StatelessWidget {
     required this.isExpanded,
     this.rotationKey,
     this.enabled = true,
+    this.width = _expandIndicatorSize,
+    this.height = _expandIndicatorSize,
+    this.iconSize = _expandIndicatorIconSize,
   });
 
   final bool isExpanded;
   final Key? rotationKey;
   final bool enabled;
+  final double width;
+  final double height;
+  final double iconSize;
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +33,11 @@ class InventoryExpandIndicator extends StatelessWidget {
       child: AnimatedContainer(
         duration: _expandIndicatorAnimationDuration,
         curve: Curves.easeOutCubic,
-        width: _expandIndicatorSize,
-        height: _expandIndicatorSize,
+        width: width,
+        height: height,
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderRadius: BorderRadius.circular(height / 2),
           border: Border.all(color: borderColor),
         ),
         child: Center(
@@ -43,7 +48,7 @@ class InventoryExpandIndicator extends StatelessWidget {
             turns: isExpanded ? 0.5 : 0,
             child: Icon(
               Icons.expand_more_rounded,
-              size: _expandIndicatorIconSize,
+              size: iconSize,
               color: iconColor,
             ),
           ),

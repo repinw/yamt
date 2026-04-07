@@ -22,6 +22,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_action_coordinator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_expand_section.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_expand_indicator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_nutrition_strip.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -652,6 +654,15 @@ class _InventoryItemRowBody extends StatelessWidget {
   final VoidCallback onSwapCandidatePressed;
   final VoidCallback? onThrowAwayPressed;
 
+  static const _expandIndicatorWidth = 42.0;
+  static const _expandIndicatorHeight = 16.0;
+  static const _expandIndicatorIconSize = 14.0;
+  static const _expandIndicatorLeftInset =
+      (AppInventoryEditorial.categoryTileSize - _expandIndicatorWidth) / 2;
+  static const _collapsedExpandIndicatorBottomGap = 5.0;
+  static const _expandIndicatorBottomOffset =
+      AppSpacing.xl - _collapsedExpandIndicatorBottomGap;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -659,15 +670,42 @@ class _InventoryItemRowBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InventoryItemRowMainSection(
-            item: layoutData.snapshot,
-            viewData: layoutData.viewData,
-            isExpanded: isExpanded,
-            onPrimaryActionPressed: onPrimaryActionPressed,
-            showSelectionCheckbox: isSelectionMode,
-            isSelected: isSelected,
-          ),
-          const SizedBox(height: AppSpacing.xs),
+          if (isSelectionMode)
+            InventoryItemRowMainSection(
+              item: layoutData.snapshot,
+              viewData: layoutData.viewData,
+              onPrimaryActionPressed: onPrimaryActionPressed,
+              showSelectionCheckbox: isSelectionMode,
+              isSelected: isSelected,
+            )
+          else
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                InventoryItemRowMainSection(
+                  item: layoutData.snapshot,
+                  viewData: layoutData.viewData,
+                  onPrimaryActionPressed: onPrimaryActionPressed,
+                  showSelectionCheckbox: isSelectionMode,
+                  isSelected: isSelected,
+                ),
+                Positioned(
+                  left: _expandIndicatorLeftInset,
+                  bottom: -_expandIndicatorBottomOffset,
+                  child: InventoryExpandIndicator(
+                    isExpanded: isExpanded,
+                    width: _expandIndicatorWidth,
+                    height: _expandIndicatorHeight,
+                    iconSize: _expandIndicatorIconSize,
+                    rotationKey: Key(
+                      'inventory_item_row_expand_indicator_'
+                      '${layoutData.snapshot.itemId}',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          SizedBox(height: isExpanded ? AppSpacing.md : 0),
           InventoryItemRowExpandSection(
             isExpanded: isExpanded,
             viewData: layoutData.viewData,

@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_primary_action_button.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/category_icon.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -68,7 +68,7 @@ class _InventoryItemRowHost extends StatelessWidget {
 }
 
 void main() {
-  testWidgets('places expand indicator below the primary action button', (
+  testWidgets('positions expand indicator under the leading image', (
     tester,
   ) async {
     final bucket = PageStorageBucket();
@@ -79,12 +79,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final buttonCenter = tester.getCenter(
-      find.byType(InventoryPrimaryActionButton),
-    );
+    final iconCenter = tester.getCenter(find.byType(CategoryIcon));
     final indicatorCenter = tester.getCenter(find.byKey(indicatorKey));
 
-    expect(indicatorCenter.dy, greaterThan(buttonCenter.dy));
+    expect(indicatorCenter.dx, closeTo(iconCenter.dx, 1));
+    expect(indicatorCenter.dy, greaterThan(iconCenter.dy));
   });
 
   testWidgets('shows expand indicator and rotates it on tap', (tester) async {
