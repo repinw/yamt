@@ -113,6 +113,34 @@ Future<void> _tapConfirmButton(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+DateTime _targetLoggedAtDate() {
+  final today = DateUtils.dateOnly(DateTime.now());
+  if (today.day > 1) {
+    return today.subtract(const Duration(days: 1));
+  }
+  return today.subtract(const Duration(days: 2));
+}
+
+Future<void> _pickLoggedAtDate(WidgetTester tester, DateTime targetDate) async {
+  await tester.tap(find.text('Today'));
+  await tester.pumpAndSettle();
+
+  final today = DateUtils.dateOnly(DateTime.now());
+  if (targetDate.year != today.year || targetDate.month != today.month) {
+    await tester.tap(find.byTooltip('Previous month'));
+    await tester.pumpAndSettle();
+  }
+
+  await tester.tap(find.text('${targetDate.day}').last);
+  await tester.pumpAndSettle();
+
+  final okButton = find.text('OK');
+  if (okButton.evaluate().isNotEmpty) {
+    await tester.tap(okButton.last);
+    await tester.pumpAndSettle();
+  }
+}
+
 String _mealTypeLabel(MealType mealType) {
   return switch (mealType) {
     MealType.breakfast => 'Breakfast',
@@ -276,5 +304,31 @@ void main() {
       find.byKey(const Key('inventory_item_amount_dialog_field')),
     );
     expect(amountField.controller?.text, '50');
+  });
+
+  testWidgets('date picker updates loggedAt in the submitted request', (
+    tester,
+  ) async {
+    InventoryItemEatRequest? result;
+    final targetDate = _targetLoggedAtDate();
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _amountItem(),
+        maxAmount: 1000,
+        onResult: (value) {
+          result = value;
+        },
+      ),
+    );
+
+    await _openSheet(tester);
+    await _pickLoggedAtDate(tester, targetDate);
+    await _tapConfirmButton(tester);
+
+    expect(result, isNotNull);
+    expect(
+      DateUtils.dateOnly(result!.loggedAt),
+      DateUtils.dateOnly(targetDate),
+    );
   });
 }
