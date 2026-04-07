@@ -30,12 +30,14 @@ class CalorieEntryCreateArgs {
     this.scannedSourceRef,
     this.inventoryContext,
     this.preselectedMealType,
+    this.preselectedLoggedAt,
   });
 
   final CalorieProductProfile? prefilledProfile;
   final CalorieScannedSourceRef? scannedSourceRef;
   final CalorieInventoryCreateContext? inventoryContext;
   final MealType? preselectedMealType;
+  final DateTime? preselectedLoggedAt;
 }
 
 class CalorieBarcodeScanArgs {

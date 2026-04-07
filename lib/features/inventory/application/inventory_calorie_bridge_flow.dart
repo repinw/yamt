@@ -1,72 +1,27 @@
-import 'dart:async';
-
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:yamt/core/constants/app_routes.dart';
+import 'package:uuid/uuid.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
-import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
-import 'package:yamt/features/calories/presentation/models/calorie_entry_create_args.dart';
+import 'package:yamt/features/calories/presentation/models/'
+    'calorie_entry_create_args.dart';
+import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryCalorieBridgeFlow {
   const InventoryCalorieBridgeFlow._();
 
-  static Future<void> onEatCompleted({
-    required BuildContext context,
-    required WidgetRef ref,
-    required InventoryItem itemBeforeMutation,
-    required int consumedAmount,
-    required String pendingConsumptionId,
-  }) async {
-    final inventoryContext = await _buildInventoryContext(
-      context: context,
-      item: itemBeforeMutation,
-      pendingConsumptionId: pendingConsumptionId,
-      consumedAmount: consumedAmount,
-    );
-    if (!context.mounted || inventoryContext == null) {
-      await _discardPendingConsumption(
-        ref: ref,
-        pendingConsumptionId: pendingConsumptionId,
-      );
-      return;
-    }
+  static const _uuid = Uuid();
 
-    final localProfile = _buildProfileFromInventoryItem(itemBeforeMutation);
-    if (localProfile == null) {
-      await _discardPendingConsumption(
-        ref: ref,
-        pendingConsumptionId: pendingConsumptionId,
-      );
-      if (context.mounted) {
-        _showSnackBar(
-          context: context,
-          message: AppLocalizations.of(context)!.inventoryItemActionFailed,
-        );
-      }
-      return;
-    }
-
-    final barcode = itemBeforeMutation.normalizedBarcode;
-    await _openEditor(
-      context: context,
-      profile: localProfile,
-      inventoryContext: inventoryContext,
-      scannedSourceRef: barcode == null
-          ? null
-          : CalorieScannedSourceRef(
-              barcode: barcode,
-              source: localProfile.source,
-              offProductId: localProfile.offProductId,
-            ),
-    );
-  }
-
-  static CalorieProductProfile? _buildProfileFromInventoryItem(
+  static CalorieProductProfile? buildProfileFromInventoryItem(
     InventoryItem item,
   ) {
     final nutrition = item.nutrition;
@@ -92,6 +47,110 @@ class InventoryCalorieBridgeFlow {
     );
   }
 
+  static CalorieScannedSourceRef? buildScannedSourceRef({
+    required InventoryItem item,
+    required CalorieProductProfile profile,
+  }) {
+    final barcode = item.normalizedBarcode;
+    if (barcode == null) {
+      return null;
+    }
+
+    return CalorieScannedSourceRef(
+      barcode: barcode,
+      source: profile.source,
+      offProductId: profile.offProductId,
+    );
+  }
+
+  static CalorieInventoryCreateContext buildInventoryContext({
+    required InventoryItem item,
+    required String pendingConsumptionId,
+    required InventoryItemEatRequest request,
+  }) {
+    final fixedUnit = inventoryItemConsumedUnit(item);
+    if (fixedUnit == null && !request.hasManualCaloriePortion) {
+      throw StateError(
+        'Manual calorie portion is required for inventory item ${item.id}.',
+      );
+    }
+
+    final consumedAmount = fixedUnit == null
+        ? request.calorieAmount!
+        : request.inventoryAmount.toDouble();
+    final consumedUnit = fixedUnit ?? request.calorieUnit!;
+
+    return CalorieInventoryCreateContext(
+      inventoryItemId: item.id,
+      foodFingerprint: item.resolvedFoodFingerprint,
+      pendingConsumptionId: pendingConsumptionId,
+      inventoryAmountToRestore: request.inventoryAmount,
+      itemName: item.name,
+      itemBrand: item.brand,
+      consumedAmount: consumedAmount,
+      consumedUnit: consumedUnit,
+    );
+  }
+
+  static Future<bool> saveDirectEntry({
+    required WidgetRef ref,
+    required CalorieProductProfile profile,
+    required CalorieInventoryCreateContext inventoryContext,
+    required CalorieScannedSourceRef? scannedSourceRef,
+    required DateTime loggedAt,
+    required MealType mealType,
+  }) async {
+    final user = ref.read(firebaseAuthProvider).currentUser;
+    if (user == null) {
+      return false;
+    }
+
+    final now = DateTime.now();
+    final entry = CalorieEntry.create(
+      id: _uuid.v4(),
+      userId: user.uid,
+      name: profile.name,
+      brand: profile.brand,
+      imageUrl: profile.imageUrl,
+      mealType: mealType,
+      consumedAmount: inventoryContext.consumedAmount,
+      consumedUnit: inventoryContext.consumedUnit,
+      per100Kcal: profile.per100Kcal,
+      per100Protein: profile.per100Protein,
+      per100Carbs: profile.per100Carbs,
+      per100Fat: profile.per100Fat,
+      sourceInventoryItemId: inventoryContext.inventoryItemId,
+      sourceInventoryAmountToRestore: inventoryContext.inventoryAmountToRestore,
+      loggedAt: loggedAt,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    return ref
+        .read(calorieEntriesControllerProvider.notifier)
+        .saveEntry(
+          entry,
+          scannedSourceRef: scannedSourceRef,
+          persistEntry: (entry) {
+            return ref
+                .read(inventoryBackedCalorieEntrySaveFlowProvider)
+                .saveEntry(
+                  entry: entry,
+                  pendingConsumptionId: inventoryContext.pendingConsumptionId,
+                );
+          },
+        );
+  }
+
+  static Future<void> discardPendingConsumption({
+    required WidgetRef ref,
+    required String pendingConsumptionId,
+  }) {
+    return ref
+        .read(inventoryItemsControllerProvider.notifier)
+        .discardPendingConsumption(pendingConsumptionId);
+  }
+
   static String? _resolveOffProductId(String? globalFoodItemId) {
     final normalizedId = globalFoodItemId?.trim();
     if (normalizedId == null || normalizedId.isEmpty) {
@@ -102,176 +161,4 @@ class InventoryCalorieBridgeFlow {
     }
     return null;
   }
-
-  static Future<CalorieInventoryCreateContext?> _buildInventoryContext({
-    required BuildContext context,
-    required InventoryItem item,
-    required String pendingConsumptionId,
-    required int consumedAmount,
-  }) async {
-    final unit = item.amountUnit;
-    if (item.usesAmountProgress &&
-        unit != null &&
-        (unit == InventoryAmountUnit.gram ||
-            unit == InventoryAmountUnit.milliliter)) {
-      return CalorieInventoryCreateContext(
-        inventoryItemId: item.id,
-        foodFingerprint: item.resolvedFoodFingerprint,
-        pendingConsumptionId: pendingConsumptionId,
-        inventoryAmountToRestore: consumedAmount,
-        itemName: item.name,
-        itemBrand: item.brand,
-        consumedAmount: consumedAmount.toDouble(),
-        consumedUnit: unit == InventoryAmountUnit.gram
-            ? ConsumedUnit.grams
-            : ConsumedUnit.milliliters,
-      );
-    }
-
-    final portion = await _requestManualPortion(context: context);
-    if (portion == null) {
-      return null;
-    }
-    return CalorieInventoryCreateContext(
-      inventoryItemId: item.id,
-      foodFingerprint: item.resolvedFoodFingerprint,
-      pendingConsumptionId: pendingConsumptionId,
-      inventoryAmountToRestore: consumedAmount,
-      itemName: item.name,
-      itemBrand: item.brand,
-      consumedAmount: portion.amount,
-      consumedUnit: portion.unit,
-    );
-  }
-
-  static Future<_ManualPortionResult?> _requestManualPortion({
-    required BuildContext context,
-  }) {
-    final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController();
-    var selectedUnit = ConsumedUnit.grams;
-    String? errorText;
-
-    return showDialog<_ManualPortionResult>(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (dialogContext, setState) {
-            return AlertDialog(
-              title: Text(l10n.inventoryBarcodePortionDialogTitle),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  TextField(
-                    controller: controller,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: l10n.caloriesEntryAmountLabel,
-                      errorText: errorText,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<ConsumedUnit>(
-                    initialValue: selectedUnit,
-                    decoration: InputDecoration(
-                      labelText: l10n.caloriesEntryUnitLabel,
-                    ),
-                    items: ConsumedUnit.values
-                        .map((unit) {
-                          return DropdownMenuItem<ConsumedUnit>(
-                            value: unit,
-                            child: Text(unit.localizedName(l10n)),
-                          );
-                        })
-                        .toList(growable: false),
-                    onChanged: (value) {
-                      if (value == null) {
-                        return;
-                      }
-                      setState(() {
-                        selectedUnit = value;
-                      });
-                    },
-                  ),
-                ],
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => dialogContext.pop(),
-                  child: Text(l10n.inventoryReceiptReviewCancelAction),
-                ),
-                FilledButton(
-                  onPressed: () {
-                    final amount = _parsePositiveAmount(controller.text);
-                    if (amount == null) {
-                      setState(() {
-                        errorText = l10n.caloriesPositiveNumberValidation;
-                      });
-                      return;
-                    }
-                    dialogContext.pop(
-                      _ManualPortionResult(amount: amount, unit: selectedUnit),
-                    );
-                  },
-                  child: Text(l10n.inventoryBarcodePortionDialogConfirmAction),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  static double? _parsePositiveAmount(String rawValue) {
-    final normalized = rawValue.trim().replaceAll(',', '.');
-    final parsed = double.tryParse(normalized);
-    if (parsed == null || parsed <= 0) {
-      return null;
-    }
-    return parsed;
-  }
-
-  static Future<void> _openEditor({
-    required BuildContext context,
-    required CalorieProductProfile profile,
-    required CalorieInventoryCreateContext inventoryContext,
-    required CalorieScannedSourceRef? scannedSourceRef,
-  }) {
-    return context.push(
-      AppRoutes.homeCaloriesEntryCreate,
-      extra: CalorieEntryCreateArgs(
-        prefilledProfile: profile,
-        scannedSourceRef: scannedSourceRef,
-        inventoryContext: inventoryContext,
-      ),
-    );
-  }
-
-  static void _showSnackBar({
-    required BuildContext context,
-    required String message,
-  }) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  static Future<void> _discardPendingConsumption({
-    required WidgetRef ref,
-    required String pendingConsumptionId,
-  }) {
-    return ref
-        .read(inventoryItemsControllerProvider.notifier)
-        .discardPendingConsumption(pendingConsumptionId);
-  }
-}
-
-class _ManualPortionResult {
-  const _ManualPortionResult({required this.amount, required this.unit});
-
-  final double amount;
-  final ConsumedUnit unit;
 }

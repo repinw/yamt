@@ -123,6 +123,23 @@
   "inventoryItemDeleteAction": "Löschen",
   "inventoryItemDeletedMessage": "Artikel gelöscht.",
   "inventoryItemEatAction": "Essen",
+  "inventoryItemEatSheetEyebrow": "Loggen",
+  "inventoryItemEatSheetTitle": "Essen: {name}",
+  "@inventoryItemEatSheetTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryItemEatSheetAmountLabel": "Menge eingeben",
+  "inventoryItemEatSheetQuickSelectLabel": "Schnellwahl",
+  "inventoryItemEatSheetAllAction": "Alles",
+  "inventoryItemEatSheetWhenLabel": "Wann?",
+  "inventoryItemEatSheetNowValue": "Heute",
+  "inventoryItemEatSheetNutritionLabel": "Nährwerte",
+  "inventoryItemEatSheetConfirmAction": "Loggen",
+  "inventoryItemEatSheetClearAmountAction": "Menge leeren",
   "inventoryItemBuyAgainAction": "Erneut kaufen",
   "inventoryItemBuyAgainSucceeded":
       "Artikel zur Einkaufsliste hinzugefügt.",

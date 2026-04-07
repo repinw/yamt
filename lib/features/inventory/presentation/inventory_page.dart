@@ -8,12 +8,14 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/inventory/application/'
-    'inventory_calorie_bridge_flow.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/'
+    'inventory_item_eat_flow.dart';
+import 'package:yamt/features/inventory/presentation/'
     'inventory_prepared_meal_creation_coordinator.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_selection_controller.dart';
@@ -83,11 +85,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       emptyStateActionButton: const InventoryActionFab(),
       onDeleteItem: (itemId) =>
           _deleteItemWithUndo(context: context, ref: ref, itemId: itemId),
-      onEatItem: (itemId, amount) => _eatItemWithCalorieBridge(
+      onEatItem: (itemId, request) => _eatItemWithCalorieBridge(
         context: context,
         ref: ref,
         itemId: itemId,
-        amount: amount,
+        request: request,
         itemsSnapshot: items,
       ),
       onThrowAwayItem: (itemId, amount, reason) =>
@@ -305,7 +307,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     required BuildContext context,
     required WidgetRef ref,
     required String itemId,
-    required int amount,
+    required InventoryItemEatRequest request,
     required List<InventoryItem> itemsSnapshot,
   }) async {
     final inventoryController = ref.read(
@@ -324,7 +326,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     }
 
     final pendingConsumption = await inventoryController
-        .stagePendingConsumption(itemId, amount);
+        .stagePendingConsumption(itemId, request.inventoryAmount);
     if (pendingConsumption == null) {
       return false;
     }
@@ -336,56 +338,27 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       return false;
     }
 
-    unawaited(
-      _completeEatBridge(
+    if (InventoryItemEatFlow.shouldAwaitCompletion(selectedItem, request)) {
+      await InventoryItemEatFlow.complete(
         context: context,
         ref: ref,
         itemBeforeMutation: selectedItem,
-        consumedAmount: pendingConsumption.amount,
+        request: request,
+        pendingConsumptionId: pendingConsumption.id,
+      );
+      return true;
+    }
+
+    unawaited(
+      InventoryItemEatFlow.complete(
+        context: context,
+        ref: ref,
+        itemBeforeMutation: selectedItem,
+        request: request,
         pendingConsumptionId: pendingConsumption.id,
       ),
     );
     return true;
-  }
-
-  Future<void> _completeEatBridge({
-    required BuildContext context,
-    required WidgetRef ref,
-    required InventoryItem itemBeforeMutation,
-    required int consumedAmount,
-    required String pendingConsumptionId,
-  }) async {
-    try {
-      await InventoryCalorieBridgeFlow.onEatCompleted(
-        context: context,
-        ref: ref,
-        itemBeforeMutation: itemBeforeMutation,
-        consumedAmount: consumedAmount,
-        pendingConsumptionId: pendingConsumptionId,
-      );
-    } catch (error, stackTrace) {
-      developer.log(
-        'Eat bridge failed unexpectedly.',
-        name: 'InventoryPage',
-        error: error,
-        stackTrace: stackTrace,
-      );
-      await ref
-          .read(inventoryItemsControllerProvider.notifier)
-          .discardPendingConsumption(pendingConsumptionId);
-      if (!context.mounted) {
-        return;
-      }
-      final messenger = ScaffoldMessenger.of(context);
-      messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(context)!.inventoryItemActionFailed,
-          ),
-        ),
-      );
-    }
   }
 }
 

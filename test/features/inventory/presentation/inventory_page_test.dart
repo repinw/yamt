@@ -384,6 +384,15 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
+  final confirmButton = find.byKey(
+    const Key('inventory_item_amount_dialog_confirm_button'),
+  );
+  await tester.ensureVisible(confirmButton);
+  await tester.tap(confirmButton);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('shows empty state when repository has no items', (tester) async {
     final repository = _FakeFridgeItemRepository(
@@ -779,21 +788,57 @@ void main() {
 
     await _tapVisible(tester, find.byTooltip('Eat'));
 
+    expect(find.text('Eat: Milk'), findsOneWidget);
+    expect(find.text('QUICK SELECT'), findsOneWidget);
+    expect(find.text('NUTRITION'), findsOneWidget);
+
     final amountField = find.byKey(
       const Key('inventory_item_amount_dialog_field'),
     );
     expect(amountField, findsOneWidget);
     await tester.enterText(amountField, '120');
 
-    await tester.tap(
-      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
-    );
-    await tester.pumpAndSettle();
+    await _tapAmountDialogConfirm(tester);
 
     expect(find.text('editor'), findsOneWidget);
     expect(openedArgs?.prefilledProfile?.barcode, '4061458029995');
     expect(openedArgs?.inventoryContext?.consumedAmount, 120);
     expect(openedArgs?.inventoryContext?.inventoryAmountToRestore, 120);
+  });
+
+  testWidgets('eat action quick select all uses remaining amount', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_itemWithNutrition('a')],
+    );
+    CalorieEntryCreateArgs? openedArgs;
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        repository,
+        calorieEntryRoute: GoRoute(
+          path: AppRoutes.homeCaloriesEntryCreate,
+          builder: (context, state) {
+            openedArgs = state.extra as CalorieEntryCreateArgs?;
+            return const Scaffold(body: Text('editor'));
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollUntilVisible(tester, find.text('1000g / 1000g'));
+    await _tapVisible(tester, find.byTooltip('Eat'));
+    await tester.tap(find.text('All'));
+    await tester.pumpAndSettle();
+
+    await _tapAmountDialogConfirm(tester);
+
+    expect(find.text('editor'), findsOneWidget);
+    expect(openedArgs?.inventoryContext?.consumedAmount, 1000);
+    expect(openedArgs?.inventoryContext?.inventoryAmountToRestore, 1000);
   });
 
   testWidgets(
@@ -826,10 +871,7 @@ void main() {
       expect(amountField, findsOneWidget);
       await tester.enterText(amountField, '100');
 
-      await tester.tap(
-        find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
-      );
-      await tester.pumpAndSettle();
+      await _tapAmountDialogConfirm(tester);
 
       expect(controller.discardedPendingIds, <String>['pending-recorded']);
       expect(find.text('Action failed. Please try again.'), findsOneWidget);
@@ -873,9 +915,11 @@ void main() {
       find.byKey(const Key('inventory_item_amount_dialog_field')),
       '1',
     );
-    await tester.tap(
-      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+    final confirmButton = find.byKey(
+      const Key('inventory_item_amount_dialog_confirm_button'),
     );
+    await tester.ensureVisible(confirmButton);
+    await tester.tap(confirmButton);
     await tester.pump();
 
     await tester.pumpWidget(const SizedBox.shrink());
@@ -1088,10 +1132,7 @@ void main() {
     expect(amountField, findsOneWidget);
     await tester.enterText(amountField, '999');
 
-    await tester.tap(
-      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
-    );
-    await tester.pumpAndSettle();
+    await _tapAmountDialogConfirm(tester);
 
     expect(find.text('Please enter valid numbers.'), findsOneWidget);
     expect(amountField, findsOneWidget);
@@ -1121,10 +1162,7 @@ void main() {
     expect(amountField, findsOneWidget);
     await tester.enterText(amountField, '1');
 
-    await tester.tap(
-      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
-    );
-    await tester.pumpAndSettle();
+    await _tapAmountDialogConfirm(tester);
     await tester.tap(find.text('Expired'));
     await tester.pumpAndSettle();
 

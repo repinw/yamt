@@ -1,0 +1,144 @@
+import 'dart:developer' as developer;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/calories/presentation/models/'
+    'calorie_entry_create_args.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_calorie_bridge_flow.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_item_eat_policy.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_request.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+class InventoryItemEatFlow {
+  const InventoryItemEatFlow._();
+
+  static bool shouldAwaitCompletion(
+    InventoryItem item,
+    InventoryItemEatRequest request,
+  ) {
+    return canDirectlySaveInventoryItemEatRequest(item, request);
+  }
+
+  static Future<void> complete({
+    required BuildContext context,
+    required WidgetRef ref,
+    required InventoryItem itemBeforeMutation,
+    required InventoryItemEatRequest request,
+    required String pendingConsumptionId,
+  }) async {
+    try {
+      final l10n = AppLocalizations.of(context)!;
+      final profile = InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(
+        itemBeforeMutation,
+      );
+      if (profile == null) {
+        await _discardPendingConsumption(
+          ref: ref,
+          pendingConsumptionId: pendingConsumptionId,
+        );
+        if (context.mounted) {
+          _showSnackBar(
+            context: context,
+            message: l10n.inventoryItemActionFailed,
+          );
+        }
+        return;
+      }
+
+      final inventoryContext = InventoryCalorieBridgeFlow.buildInventoryContext(
+        item: itemBeforeMutation,
+        pendingConsumptionId: pendingConsumptionId,
+        request: request,
+      );
+      final scannedSourceRef = InventoryCalorieBridgeFlow.buildScannedSourceRef(
+        item: itemBeforeMutation,
+        profile: profile,
+      );
+
+      if (canDirectlySaveInventoryItemEatRequest(itemBeforeMutation, request)) {
+        final saved = await InventoryCalorieBridgeFlow.saveDirectEntry(
+          ref: ref,
+          profile: profile,
+          inventoryContext: inventoryContext,
+          scannedSourceRef: scannedSourceRef,
+          loggedAt: request.loggedAt,
+          mealType: request.mealType,
+        );
+        if (saved) {
+          return;
+        }
+
+        await _discardPendingConsumption(
+          ref: ref,
+          pendingConsumptionId: pendingConsumptionId,
+        );
+        if (context.mounted) {
+          _showSnackBar(context: context, message: l10n.caloriesSaveFailed);
+        }
+        return;
+      }
+
+      if (!context.mounted) {
+        await _discardPendingConsumption(
+          ref: ref,
+          pendingConsumptionId: pendingConsumptionId,
+        );
+        return;
+      }
+
+      await context.push(
+        AppRoutes.homeCaloriesEntryCreate,
+        extra: CalorieEntryCreateArgs(
+          prefilledProfile: profile,
+          scannedSourceRef: scannedSourceRef,
+          inventoryContext: inventoryContext,
+          preselectedMealType: request.mealType,
+          preselectedLoggedAt: request.loggedAt,
+        ),
+      );
+    } catch (error, stackTrace) {
+      developer.log(
+        'Eat flow failed unexpectedly.',
+        name: 'InventoryItemEatFlow',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      await _discardPendingConsumption(
+        ref: ref,
+        pendingConsumptionId: pendingConsumptionId,
+      );
+      if (!context.mounted) {
+        return;
+      }
+      _showSnackBar(
+        context: context,
+        message: AppLocalizations.of(context)!.inventoryItemActionFailed,
+      );
+    }
+  }
+
+  static Future<void> _discardPendingConsumption({
+    required WidgetRef ref,
+    required String pendingConsumptionId,
+  }) {
+    return InventoryCalorieBridgeFlow.discardPendingConsumption(
+      ref: ref,
+      pendingConsumptionId: pendingConsumptionId,
+    );
+  }
+
+  static void _showSnackBar({
+    required BuildContext context,
+    required String message,
+  }) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+}

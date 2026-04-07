@@ -123,6 +123,23 @@
   "inventoryItemDeleteAction": "Delete",
   "inventoryItemDeletedMessage": "Item deleted.",
   "inventoryItemEatAction": "Eat",
+  "inventoryItemEatSheetEyebrow": "Log",
+  "inventoryItemEatSheetTitle": "Eat: {name}",
+  "@inventoryItemEatSheetTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryItemEatSheetAmountLabel": "Enter amount",
+  "inventoryItemEatSheetQuickSelectLabel": "Quick select",
+  "inventoryItemEatSheetAllAction": "All",
+  "inventoryItemEatSheetWhenLabel": "When?",
+  "inventoryItemEatSheetNowValue": "Today",
+  "inventoryItemEatSheetNutritionLabel": "Nutrition",
+  "inventoryItemEatSheetConfirmAction": "Log",
+  "inventoryItemEatSheetClearAmountAction": "Clear amount",
   "inventoryItemBuyAgainAction": "Buy again",
   "inventoryItemBuyAgainSucceeded": "Item added to shopping list.",
   "inventoryItemThrowAwayAction": "Throw away",

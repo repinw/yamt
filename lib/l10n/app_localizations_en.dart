@@ -307,6 +307,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemEatAction => 'Eat';
 
   @override
+  String get inventoryItemEatSheetEyebrow => 'Log';
+
+  @override
+  String inventoryItemEatSheetTitle(String name) {
+    return 'Eat: $name';
+  }
+
+  @override
+  String get inventoryItemEatSheetAmountLabel => 'Enter amount';
+
+  @override
+  String get inventoryItemEatSheetQuickSelectLabel => 'Quick select';
+
+  @override
+  String get inventoryItemEatSheetAllAction => 'All';
+
+  @override
+  String get inventoryItemEatSheetWhenLabel => 'When?';
+
+  @override
+  String get inventoryItemEatSheetNowValue => 'Today';
+
+  @override
+  String get inventoryItemEatSheetNutritionLabel => 'Nutrition';
+
+  @override
+  String get inventoryItemEatSheetConfirmAction => 'Log';
+
+  @override
+  String get inventoryItemEatSheetClearAmountAction => 'Clear amount';
+
+  @override
   String get inventoryItemBuyAgainAction => 'Buy again';
 
   @override
