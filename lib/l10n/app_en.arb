@@ -498,18 +498,21 @@
   "caloriesCalculatorActivityLevelLabel": "Activity level (PAL)",
   "caloriesCalculatorActivityLevelHelp":
       "Choose the option that best matches your typical week.",
-  "caloriesCalculatorActivityLevelNoneTitle": "No activity",
+  "caloriesCalculatorActivityLevelNoneTitle": "Sedentary",
   "caloriesCalculatorActivityLevelNoneDescription":
-      "Mostly sitting, hardly any exercise, and very little movement in daily life.",
-  "caloriesCalculatorActivityLevelLowTitle": "Low activity",
+      "Office work, lots of sitting, few steps, and little to no exercise.",
+  "caloriesCalculatorActivityLevelLowTitle": "Lightly active",
   "caloriesCalculatorActivityLevelLowDescription":
-      "Mostly desk work, short walks, and only occasional exercise.",
-  "caloriesCalculatorActivityLevelMediumTitle": "Medium activity",
+      "Mostly sitting, but with some daily movement or 1 to 2 light workouts per week.",
+  "caloriesCalculatorActivityLevelMediumTitle": "Moderately active",
   "caloriesCalculatorActivityLevelMediumDescription":
-      "Regular movement, frequent walks, or exercise several times per week.",
-  "caloriesCalculatorActivityLevelHighTitle": "High activity",
+      "Regular daily movement or 3 to 4 training sessions per week.",
+  "caloriesCalculatorActivityLevelHighTitle": "Very active",
   "caloriesCalculatorActivityLevelHighDescription":
-      "Physically active daily life, a demanding job, or frequent training.",
+      "A physically active daily life or intense training on most days.",
+  "caloriesCalculatorActivityLevelExtremeTitle": "Extremely active",
+  "caloriesCalculatorActivityLevelExtremeDescription":
+      "Very high training volume, physically demanding work, or competitive sports.",
   "caloriesCalculatorActivityLevelHint": "For example 1.2 to 2.0",
   "caloriesCalculatorActivityLevelEmpty":
       "Please enter your activity level.",

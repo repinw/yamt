@@ -60,6 +60,8 @@ class CalorieGoalCalculatorActivityLevelSelector extends StatelessWidget {
         l10n.caloriesCalculatorActivityLevelMediumTitle,
       CalorieActivityLevelOption.high =>
         l10n.caloriesCalculatorActivityLevelHighTitle,
+      CalorieActivityLevelOption.extreme =>
+        l10n.caloriesCalculatorActivityLevelExtremeTitle,
     };
   }
 
@@ -76,6 +78,8 @@ class CalorieGoalCalculatorActivityLevelSelector extends StatelessWidget {
         l10n.caloriesCalculatorActivityLevelMediumDescription,
       CalorieActivityLevelOption.high =>
         l10n.caloriesCalculatorActivityLevelHighDescription,
+      CalorieActivityLevelOption.extreme =>
+        l10n.caloriesCalculatorActivityLevelExtremeDescription,
     };
   }
 }

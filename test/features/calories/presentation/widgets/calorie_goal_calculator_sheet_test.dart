@@ -163,7 +163,7 @@ void main() {
       await _tapNext(tester);
       await _tapNext(tester);
 
-      expect(find.text('3,204 kcal'), findsNWidgets(2));
+      expect(find.text('3,071 kcal'), findsNWidgets(2));
     },
   );
 
@@ -287,7 +287,7 @@ void main() {
     expect(find.text('Calorie calculator'), findsNothing);
     final settings = await repository.readSettings();
     expect(settings.calculatorProfile, isNotNull);
-    expect(settings.dailyKcalGoal, 2492);
+    expect(settings.dailyKcalGoal, 2136);
   });
 
   testWidgets('save failure keeps the sheet open and shows feedback', (

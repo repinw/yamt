@@ -50,11 +50,11 @@ void main() {
   });
 
   group('CalorieGoalCalculatorFormState activity level mapping', () {
-    test('defaults to low activity at PAL 1.4', () {
+    test('defaults to sedentary activity at PAL 1.2', () {
       final state = CalorieGoalCalculatorFormState.initial(null);
 
-      expect(state.activityLevelOption, CalorieActivityLevelOption.low);
-      expect(state.profile?.activityLevel, 1.4);
+      expect(state.activityLevelOption, CalorieActivityLevelOption.none);
+      expect(state.profile?.activityLevel, 1.2);
     });
 
     test('maps saved PAL values to the nearest option', () {
@@ -70,8 +70,8 @@ void main() {
 
       final state = CalorieGoalCalculatorFormState.initial(initialProfile);
 
-      expect(state.activityLevelOption, CalorieActivityLevelOption.low);
-      expect(state.profile?.activityLevel, 1.4);
+      expect(state.activityLevelOption, CalorieActivityLevelOption.medium);
+      expect(state.profile?.activityLevel, 1.55);
     });
   });
 
@@ -82,7 +82,7 @@ void main() {
         weightKg: 80,
         heightCm: 180,
         ageYears: 30,
-        activityLevel: 1.4,
+        activityLevel: 1.2,
         goalMode: CalorieGoalMode.lose,
         goalSpeedKgPerWeek: 0.75,
       );
@@ -138,7 +138,7 @@ void main() {
       final state = container.read(provider);
 
       expect(state.activityLevelOption, CalorieActivityLevelOption.high);
-      expect(state.profile?.activityLevel, 1.8);
+      expect(state.profile?.activityLevel, 1.725);
     });
   });
 
@@ -171,7 +171,7 @@ void main() {
         expect(saved, isTrue);
         expect(container.read(provider).isSaving, isFalse);
         final settings = await repository.readSettings();
-        expect(settings.dailyKcalGoal, 2492);
+        expect(settings.dailyKcalGoal, 2136);
         expect(settings.calculatorProfile?.goalMode, CalorieGoalMode.maintain);
       },
     );
@@ -235,7 +235,7 @@ void main() {
 
         expect(saved, isTrue);
         final settings = await repository.readSettings();
-        expect(settings.dailyKcalGoal, 2492);
+        expect(settings.dailyKcalGoal, 2136);
       },
     );
   });

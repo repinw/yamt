@@ -28,7 +28,7 @@ void main() {
         weightKg: 80,
         heightCm: 180,
         ageYears: 30,
-        activityLevel: 1.4,
+        activityLevel: 1.2,
         goalMode: CalorieGoalMode.maintain,
         goalSpeedKgPerWeek: 0,
       );
@@ -39,7 +39,7 @@ void main() {
 
       expect(saved, isTrue);
       final settings = await repository.readSettings();
-      expect(settings.dailyKcalGoal, 2492);
+      expect(settings.dailyKcalGoal, 2136);
       expect(settings.calculatorProfile?.goalMode, CalorieGoalMode.maintain);
       expect(settings.calculatorProfile?.weightKg, 80);
     },
