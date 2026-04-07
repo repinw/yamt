@@ -11,6 +11,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_expand_indicator.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/remaining_progress_bar.dart';
@@ -22,6 +24,7 @@ class InventoryItemRowMainSection extends StatelessWidget {
     super.key,
     required this.item,
     required this.viewData,
+    required this.isExpanded,
     required this.onPrimaryActionPressed,
     required this.showSelectionCheckbox,
     required this.isSelected,
@@ -29,6 +32,7 @@ class InventoryItemRowMainSection extends StatelessWidget {
 
   final InventoryItemRowSnapshot item;
   final InventoryItemRowViewData viewData;
+  final bool isExpanded;
   final VoidCallback? onPrimaryActionPressed;
   final bool showSelectionCheckbox;
   final bool isSelected;
@@ -58,7 +62,14 @@ class InventoryItemRowMainSection extends StatelessWidget {
           child: _InventoryItemRowInfoColumn(item: item, viewData: viewData),
         ),
         if (!showSelectionCheckbox) ...[
-          const SizedBox(width: AppSpacing.md),
+          const SizedBox(width: AppSpacing.sm),
+          InventoryExpandIndicator(
+            isExpanded: isExpanded,
+            rotationKey: Key(
+              'inventory_item_row_expand_indicator_${item.itemId}',
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
           _InventoryItemPrimaryActionButton(
             viewData: viewData,
             onPrimaryActionPressed: onPrimaryActionPressed,

@@ -662,6 +662,7 @@ class _InventoryItemRowBody extends StatelessWidget {
           InventoryItemRowMainSection(
             item: layoutData.snapshot,
             viewData: layoutData.viewData,
+            isExpanded: isExpanded,
             onPrimaryActionPressed: onPrimaryActionPressed,
             showSelectionCheckbox: isSelectionMode,
             isSelected: isSelected,

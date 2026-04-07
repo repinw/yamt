@@ -39,8 +39,8 @@ class _InventoryItemRowHost extends StatelessWidget {
                         isAlreadyInShoppingList: false,
                         onDeletePressed: (itemId) async => true,
                         onEatPressed: (itemId, amount) async => true,
-                        onThrowAwayPressed:
-                            (itemId, amount, reason) async => true,
+                        onThrowAwayPressed: (itemId, amount, reason) async =>
+                            true,
                       );
                     },
                   )
@@ -66,6 +66,29 @@ class _InventoryItemRowHost extends StatelessWidget {
 }
 
 void main() {
+  testWidgets('shows expand indicator and rotates it on tap', (tester) async {
+    final bucket = PageStorageBucket();
+    const indicatorKey = Key('inventory_item_row_expand_indicator_milk');
+
+    await tester.pumpWidget(
+      _InventoryItemRowHost(showRow: true, bucket: bucket),
+    );
+    await tester.pumpAndSettle();
+
+    final initialRotation = tester.widget<AnimatedRotation>(
+      find.byKey(indicatorKey),
+    );
+    expect(initialRotation.turns, 0);
+
+    await tester.tap(find.text('Milk'));
+    await tester.pumpAndSettle();
+
+    final expandedRotation = tester.widget<AnimatedRotation>(
+      find.byKey(indicatorKey),
+    );
+    expect(expandedRotation.turns, 0.5);
+  });
+
   testWidgets('restores expanded state from page storage after rebuild', (
     tester,
   ) async {

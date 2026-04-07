@@ -4,6 +4,8 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_expand_indicator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -82,7 +84,7 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InkWell(
-          onTap: _toggleExpanded,
+          onTap: widget.isSelectionMode ? null : _toggleExpanded,
           borderRadius: BorderRadius.circular(AppRadius.xl),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
@@ -114,6 +116,14 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
                         color: colors.onSurfaceVariant,
                       ),
                     ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                InventoryExpandIndicator(
+                  isExpanded: _isExpanded,
+                  enabled: !widget.isSelectionMode,
+                  rotationKey: Key(
+                    'receipt_group_expand_indicator_${widget.group.key}',
                   ),
                 ),
               ],

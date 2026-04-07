@@ -176,6 +176,24 @@ void main() {
     expect(find.text('2 ITEMS'), findsOneWidget);
   });
 
+  testWidgets('shows expand indicator and rotates it on tap', (tester) async {
+    const indicatorKey = Key('receipt_group_expand_indicator_receipt:abc123');
+
+    await _pump(tester, theme: lightTheme);
+
+    final initialRotation = tester.widget<AnimatedRotation>(
+      find.byKey(indicatorKey),
+    );
+    expect(initialRotation.turns, 0.5);
+
+    await _toggleExpansion(tester);
+
+    final collapsedRotation = tester.widget<AnimatedRotation>(
+      find.byKey(indicatorKey),
+    );
+    expect(collapsedRotation.turns, 0);
+  });
+
   testWidgets('golden: light collapsed', (tester) async {
     await _pump(tester, theme: lightTheme);
     await _toggleExpansion(tester);

@@ -138,6 +138,55 @@ Widget _wrapCard(Widget child) {
 }
 
 void main() {
+  testWidgets('PreparedMealCard shows expand indicator and rotates it', (
+    tester,
+  ) async {
+    const indicatorKey = Key('prepared_meal_card_expand_indicator_meal-1');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal(),
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final initialRotation = tester.widget<AnimatedRotation>(
+      find.byKey(indicatorKey),
+    );
+    expect(initialRotation.turns, 0);
+
+    await tester.tap(find.text('Rice bowl'));
+    await tester.pumpAndSettle();
+
+    final expandedRotation = tester.widget<AnimatedRotation>(
+      find.byKey(indicatorKey),
+    );
+    expect(expandedRotation.turns, 0.5);
+  });
+
   testWidgets('PreparedMealCard shows eat action in the header', (
     tester,
   ) async {

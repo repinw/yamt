@@ -5,6 +5,7 @@ class _PreparedMealCardHeader extends StatelessWidget {
     required this.meal,
     required this.imageBytes,
     required this.ingredientCount,
+    required this.isExpanded,
     required this.canEat,
     required this.actionColors,
     required this.enabled,
@@ -15,6 +16,7 @@ class _PreparedMealCardHeader extends StatelessWidget {
   final PreparedMeal meal;
   final Uint8List? imageBytes;
   final int ingredientCount;
+  final bool isExpanded;
   final bool canEat;
   final AppInventoryEatActionColors actionColors;
   final bool enabled;
@@ -70,25 +72,38 @@ class _PreparedMealCardHeader extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: colors.primaryContainer,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.xs,
-                        ),
-                        child: Text(
-                          l10n.preparedMealPortionsRemaining(
-                            meal.remainingPortions,
-                            meal.totalPortions,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: colors.primaryContainer,
+                            borderRadius: BorderRadius.circular(999),
                           ),
-                          style: Theme.of(context).textTheme.labelMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                              vertical: AppSpacing.xs,
+                            ),
+                            child: Text(
+                              l10n.preparedMealPortionsRemaining(
+                                meal.remainingPortions,
+                                meal.totalPortions,
+                              ),
+                              style: Theme.of(context).textTheme.labelMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: AppSpacing.sm),
+                        InventoryExpandIndicator(
+                          isExpanded: isExpanded,
+                          enabled: enabled,
+                          rotationKey: Key(
+                            'prepared_meal_card_expand_indicator_${meal.id}',
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     _PreparedMealPrimaryActionButton(
