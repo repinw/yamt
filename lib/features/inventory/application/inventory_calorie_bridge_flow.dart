@@ -98,6 +98,7 @@ class InventoryCalorieBridgeFlow {
     required CalorieInventoryCreateContext inventoryContext,
     required CalorieScannedSourceRef? scannedSourceRef,
     required DateTime loggedAt,
+    required MealType mealType,
   }) async {
     final user = ref.read(firebaseAuthProvider).currentUser;
     if (user == null) {
@@ -111,7 +112,7 @@ class InventoryCalorieBridgeFlow {
       name: profile.name,
       brand: profile.brand,
       imageUrl: profile.imageUrl,
-      mealType: MealType.defaultForDateTime(loggedAt),
+      mealType: mealType,
       consumedAmount: inventoryContext.consumedAmount,
       consumedUnit: inventoryContext.consumedUnit,
       per100Kcal: profile.per100Kcal,

@@ -1,9 +1,11 @@
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 
 class InventoryItemEatRequest {
   const InventoryItemEatRequest({
     required this.inventoryAmount,
     required this.loggedAt,
+    required this.mealType,
     this.calorieAmount,
     this.calorieUnit,
   }) : assert(
@@ -13,6 +15,7 @@ class InventoryItemEatRequest {
 
   final int inventoryAmount;
   final DateTime loggedAt;
+  final MealType mealType;
   final double? calorieAmount;
   final ConsumedUnit? calorieUnit;
 

@@ -1,59 +1,132 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
-import 'package:yamt/core/constants/app_routes.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/'
+    'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
+import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 
-class _RecordingInventoryItemsController extends InventoryItemsController {
-  _RecordingInventoryItemsController({List<InventoryItem>? initialItems})
-    : _initialItems = initialItems ?? const <InventoryItem>[];
+import '../../calories/support/fake_calories_repositories.dart';
 
-  final List<InventoryItem> _initialItems;
-  final List<String> discardedPendingIds = <String>[];
+class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+
+class _MockUser extends Mock implements User {}
+
+class _FakeInventoryItemRepository implements InventoryItemRepository {
+  _FakeInventoryItemRepository({required List<InventoryItem> initialItems})
+    : _items = List<InventoryItem>.from(initialItems);
+
+  final StreamController<List<InventoryItem>> _controller =
+      StreamController<List<InventoryItem>>.broadcast();
+  List<InventoryItem> _items;
 
   @override
-  Future<List<InventoryItem>> build() async => _initialItems;
-
-  @override
-  Future<bool> discardPendingConsumption(String draftId) async {
-    discardedPendingIds.add(draftId);
+  Future<bool> appendAll(List<InventoryItem> items) async {
     return true;
+  }
+
+  @override
+  Future<List<InventoryItem>> readAll() async {
+    return List<InventoryItem>.from(_items);
+  }
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async {
+    _items = List<InventoryItem>.from(items);
+    _controller.add(List<InventoryItem>.from(_items));
+    return true;
+  }
+
+  @override
+  Stream<List<InventoryItem>> watchAll() {
+    return Stream<List<InventoryItem>>.multi((controller) {
+      controller.add(List<InventoryItem>.from(_items));
+      final subscription = _controller.stream.listen(controller.add);
+      controller.onCancel = () {
+        unawaited(subscription.cancel());
+      };
+    });
+  }
+
+  Future<void> dispose() {
+    return _controller.close();
   }
 }
 
-class _EatButton extends ConsumerWidget {
-  const _EatButton({required this.item});
+class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
+  PendingInventoryConsumption? pendingConsumption;
+  CalorieEntry? entry;
 
-  final InventoryItem item;
+  @override
+  Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
+    required CalorieEntry entry,
+    required PendingInventoryConsumption pendingConsumption,
+  }) async {
+    this.entry = entry;
+    this.pendingConsumption = pendingConsumption;
+    return const InventoryCalorieEntryCommitResult(
+      itemId: 'inventory-1',
+      quantity: 1,
+      currentAmount: 500,
+    );
+  }
+}
+
+class _SaveDirectEntryButton extends ConsumerWidget {
+  const _SaveDirectEntryButton({
+    required this.profile,
+    required this.inventoryContext,
+    required this.loggedAt,
+    required this.mealType,
+    required this.onCompleted,
+  });
+
+  final CalorieProductProfile profile;
+  final CalorieInventoryCreateContext inventoryContext;
+  final DateTime loggedAt;
+  final MealType mealType;
+  final ValueChanged<bool> onCompleted;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ElevatedButton(
-      onPressed: () {
-        InventoryCalorieBridgeFlow.onEatCompleted(
-          context: context,
+      onPressed: () async {
+        final saved = await InventoryCalorieBridgeFlow.saveDirectEntry(
           ref: ref,
-          itemBeforeMutation: item,
-          consumedAmount: 250,
-          pendingConsumptionId: 'pending-1',
+          profile: profile,
+          inventoryContext: inventoryContext,
+          scannedSourceRef: null,
+          loggedAt: loggedAt,
+          mealType: mealType,
         );
+        onCompleted(saved);
       },
-      child: const Text('eat'),
+      child: const Text('save'),
     );
   }
 }
 
 InventoryItem _amountItemWithNutrition({
-  String id = 'item-1',
+  String id = 'inventory-1',
   String? barcode = '4061458029995',
 }) {
   return InventoryItem.create(
@@ -72,7 +145,8 @@ InventoryItem _amountItemWithNutrition({
     ),
     entryDate: DateTime.parse('2026-03-01T12:00:00Z'),
     storeName: 'Aldi',
-    quantity: 1,
+    quantity: 2,
+    initialQuantity: 2,
     initialAmount: 1000,
     currentAmount: 750,
     amountUnit: InventoryAmountUnit.gram,
@@ -100,7 +174,7 @@ InventoryItem _portionItemWithNutrition() {
 
 InventoryItem _itemWithoutNutrition() {
   return InventoryItem.create(
-    id: 'item-1',
+    id: 'item-no-nutrition',
     name: 'Milk',
     brand: 'Brand',
     entryDate: DateTime.parse('2026-03-01T12:00:00Z'),
@@ -112,188 +186,234 @@ InventoryItem _itemWithoutNutrition() {
   );
 }
 
+ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepInventoryAlive(
+  ProviderContainer container,
+) {
+  return container.listen(inventoryItemsControllerProvider, (_, _) {});
+}
+
+ProviderSubscription<AsyncValue<List<CalorieEntry>>> _keepCaloriesAlive(
+  ProviderContainer container,
+) {
+  return container.listen(calorieEntriesControllerProvider, (_, _) {});
+}
+
 void main() {
-  testWidgets('eat flow opens calorie editor from local inventory nutrition', (
-    tester,
-  ) async {
-    CalorieEntryCreateArgs? openedArgs;
-    final router = GoRouter(
-      routes: <RouteBase>[
-        GoRoute(
-          path: AppRoutes.root,
-          builder: (context, state) {
-            return Scaffold(body: _EatButton(item: _amountItemWithNutrition()));
-          },
-        ),
-        GoRoute(
-          path: AppRoutes.homeCaloriesEntryCreate,
-          builder: (context, state) {
-            openedArgs = state.extra as CalorieEntryCreateArgs?;
-            return const Scaffold(body: Text('editor'));
-          },
-        ),
-      ],
+  test('buildProfileFromInventoryItem maps nutrition and barcode fallback', () {
+    final item = _amountItemWithNutrition(barcode: null);
+
+    final profile = InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(
+      item,
     );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp.router(
-          routerConfig: router,
-          locale: const Locale('de'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('eat'));
-    await tester.pumpAndSettle();
-
-    expect(openedArgs, isNotNull);
-    expect(openedArgs?.prefilledProfile, isNotNull);
-    expect(openedArgs?.prefilledProfile?.barcode, '4061458029995');
-    expect(openedArgs?.prefilledProfile?.per100Kcal, 215);
-    expect(openedArgs?.prefilledProfile?.per100Protein, 4.2);
-    expect(openedArgs?.prefilledProfile?.per100Carbs, 24.8);
-    expect(openedArgs?.prefilledProfile?.per100Fat, 9.6);
-    expect(openedArgs?.inventoryContext?.inventoryItemId, 'item-1');
-    expect(openedArgs?.inventoryContext?.inventoryAmountToRestore, 250);
-    expect(openedArgs?.inventoryContext?.consumedAmount, 250);
-    expect(openedArgs?.inventoryContext?.consumedUnit, ConsumedUnit.grams);
-    expect(openedArgs?.scannedSourceRef?.barcode, '4061458029995');
-    expect(openedArgs?.scannedSourceRef?.offProductId, 'off-4061458029995');
+    expect(profile, isNotNull);
+    expect(profile?.barcode, 'inventory-inventory-1');
+    expect(profile?.name, 'Waffelhörnchen Haselnuss-Vanille');
+    expect(profile?.brand, 'Mucci');
+    expect(profile?.per100Kcal, 215);
+    expect(profile?.source, CalorieProductSource.userOverride);
+    expect(profile?.offProductId, 'off-4061458029995');
   });
 
-  testWidgets('eat flow uses synthetic barcode when item has no barcode', (
-    tester,
-  ) async {
-    CalorieEntryCreateArgs? openedArgs;
-    final router = GoRouter(
-      routes: <RouteBase>[
-        GoRoute(
-          path: AppRoutes.root,
-          builder: (context, state) {
-            return Scaffold(
-              body: _EatButton(item: _amountItemWithNutrition(barcode: null)),
-            );
-          },
-        ),
-        GoRoute(
-          path: AppRoutes.homeCaloriesEntryCreate,
-          builder: (context, state) {
-            openedArgs = state.extra as CalorieEntryCreateArgs?;
-            return const Scaffold(body: Text('editor'));
-          },
-        ),
-      ],
+  test('buildProfileFromInventoryItem returns null without nutrition', () {
+    final profile = InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(
+      _itemWithoutNutrition(),
     );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp.router(
-          routerConfig: router,
-          locale: const Locale('de'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('eat'));
-    await tester.pumpAndSettle();
-
-    expect(openedArgs?.prefilledProfile?.barcode, 'inventory-item-1');
-    expect(openedArgs?.scannedSourceRef, isNull);
+    expect(profile, isNull);
   });
 
-  testWidgets(
-    'eat flow asks for manual portion when item is not amount based',
-    (tester) async {
-      CalorieEntryCreateArgs? openedArgs;
-      final router = GoRouter(
-        routes: <RouteBase>[
-          GoRoute(
-            path: AppRoutes.root,
-            builder: (context, state) {
-              return Scaffold(
-                body: _EatButton(item: _portionItemWithNutrition()),
-              );
-            },
-          ),
-          GoRoute(
-            path: AppRoutes.homeCaloriesEntryCreate,
-            builder: (context, state) {
-              openedArgs = state.extra as CalorieEntryCreateArgs?;
-              return const Scaffold(body: Text('editor'));
-            },
-          ),
-        ],
+  test('buildScannedSourceRef uses barcode information when available', () {
+    final item = _amountItemWithNutrition();
+    final profile = InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(
+      item,
+    )!;
+
+    final sourceRef = InventoryCalorieBridgeFlow.buildScannedSourceRef(
+      item: item,
+      profile: profile,
+    );
+
+    expect(sourceRef, isNotNull);
+    expect(sourceRef?.barcode, '4061458029995');
+    expect(sourceRef?.source, CalorieProductSource.userOverride);
+    expect(sourceRef?.offProductId, 'off-4061458029995');
+  });
+
+  test('buildScannedSourceRef returns null when the item has no barcode', () {
+    final item = _amountItemWithNutrition(barcode: null);
+    final profile = InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(
+      item,
+    )!;
+
+    final sourceRef = InventoryCalorieBridgeFlow.buildScannedSourceRef(
+      item: item,
+      profile: profile,
+    );
+
+    expect(sourceRef, isNull);
+  });
+
+  test('buildInventoryContext uses fixed amount unit from the item', () {
+    final item = _amountItemWithNutrition();
+    final request = InventoryItemEatRequest(
+      inventoryAmount: 250,
+      loggedAt: DateTime.parse('2026-04-06T12:30:00Z'),
+      mealType: MealType.lunch,
+    );
+
+    final context = InventoryCalorieBridgeFlow.buildInventoryContext(
+      item: item,
+      pendingConsumptionId: 'pending-1',
+      request: request,
+    );
+
+    expect(context.inventoryItemId, 'inventory-1');
+    expect(context.pendingConsumptionId, 'pending-1');
+    expect(context.inventoryAmountToRestore, 250);
+    expect(context.consumedAmount, 250);
+    expect(context.consumedUnit, ConsumedUnit.grams);
+  });
+
+  test(
+    'buildInventoryContext uses manual portion for non fixed-unit items',
+    () {
+      final item = _portionItemWithNutrition();
+      final request = InventoryItemEatRequest(
+        inventoryAmount: 1,
+        loggedAt: DateTime.parse('2026-04-06T12:30:00Z'),
+        mealType: MealType.lunch,
+        calorieAmount: 2.5,
+        calorieUnit: ConsumedUnit.grams,
       );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp.router(
-            routerConfig: router,
-            locale: const Locale('de'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-          ),
-        ),
+      final context = InventoryCalorieBridgeFlow.buildInventoryContext(
+        item: item,
+        pendingConsumptionId: 'pending-1',
+        request: request,
       );
 
-      await tester.tap(find.text('eat'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Verzehrte Menge eingeben'), findsOneWidget);
-      await tester.enterText(find.byType(TextField), '2,5');
-      await tester.tap(find.text('Weiter'));
-      await tester.pumpAndSettle();
-
-      expect(openedArgs?.inventoryContext?.consumedAmount, 2.5);
-      expect(openedArgs?.inventoryContext?.consumedUnit, ConsumedUnit.grams);
+      expect(context.inventoryItemId, 'item-portion');
+      expect(context.consumedAmount, 2.5);
+      expect(context.consumedUnit, ConsumedUnit.grams);
     },
   );
 
-  testWidgets(
-    'missing local nutrition discards pending consumption and shows feedback',
-    (tester) async {
-      final inventoryController = _RecordingInventoryItemsController();
-      final router = GoRouter(
-        routes: <RouteBase>[
-          GoRoute(
-            path: AppRoutes.root,
-            builder: (context, state) {
-              return Scaffold(body: _EatButton(item: _itemWithoutNutrition()));
-            },
-          ),
-        ],
-      );
+  test('buildInventoryContext throws without manual portion when required', () {
+    final item = _portionItemWithNutrition();
+    final request = InventoryItemEatRequest(
+      inventoryAmount: 1,
+      loggedAt: DateTime.parse('2026-04-06T12:30:00Z'),
+      mealType: MealType.lunch,
+    );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            inventoryItemsControllerProvider.overrideWith(
-              () => inventoryController,
+    expect(
+      () => InventoryCalorieBridgeFlow.buildInventoryContext(
+        item: item,
+        pendingConsumptionId: 'pending-1',
+        request: request,
+      ),
+      throwsStateError,
+    );
+  });
+
+  testWidgets('saveDirectEntry persists through commit flow and clears pending '
+      'consumption', (tester) async {
+    final item = _amountItemWithNutrition();
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[item],
+    );
+    final calorieLogRepository = FakeCalorieLogRepository();
+    final commitStore = _RecordingCommitStore();
+    final auth = _MockFirebaseAuth();
+    final user = _MockUser();
+    var saved = false;
+    addTearDown(repository.dispose);
+    addTearDown(calorieLogRepository.dispose);
+
+    when(() => user.uid).thenReturn('user-1');
+    when(() => auth.currentUser).thenReturn(user);
+
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(commitStore),
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        firebaseAuthProvider.overrideWithValue(auth),
+      ],
+    );
+    addTearDown(container.dispose);
+    final inventorySubscription = _keepInventoryAlive(container);
+    final caloriesSubscription = _keepCaloriesAlive(container);
+    addTearDown(inventorySubscription.close);
+    addTearDown(caloriesSubscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final pendingConsumption = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .stagePendingConsumption(item.id, 250);
+
+    final request = InventoryItemEatRequest(
+      inventoryAmount: 250,
+      loggedAt: DateTime.parse('2026-04-06T12:30:00Z'),
+      mealType: MealType.lunch,
+    );
+    final profile = InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(
+      item,
+    )!;
+    final inventoryContext = InventoryCalorieBridgeFlow.buildInventoryContext(
+      item: item,
+      pendingConsumptionId: pendingConsumption!.id,
+      request: request,
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          home: Scaffold(
+            body: _SaveDirectEntryButton(
+              profile: profile,
+              inventoryContext: inventoryContext,
+              loggedAt: request.loggedAt,
+              mealType: request.mealType,
+              onCompleted: (value) {
+                saved = value;
+              },
             ),
-          ],
-          child: MaterialApp.router(
-            routerConfig: router,
-            locale: const Locale('de'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
           ),
         ),
-      );
-      await tester.pumpAndSettle();
+      ),
+    );
 
-      await tester.tap(find.text('eat'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('save'));
+    await tester.pumpAndSettle();
 
-      expect(inventoryController.discardedPendingIds, <String>['pending-1']);
-      expect(
-        find.text('Aktion fehlgeschlagen. Bitte erneut versuchen.'),
-        findsOneWidget,
-      );
-    },
-  );
+    expect(saved, isTrue);
+    expect(commitStore.pendingConsumption?.id, pendingConsumption.id);
+    expect(commitStore.pendingConsumption?.amount, 250);
+    expect(commitStore.entry?.name, item.name);
+    expect(commitStore.entry?.userId, 'user-1');
+    expect(commitStore.entry?.mealType, MealType.lunch);
+    expect(commitStore.entry?.consumedAmount, 250);
+    expect(commitStore.entry?.consumedUnit, ConsumedUnit.grams);
+    expect(
+      container
+          .read(inventoryItemsControllerProvider.notifier)
+          .hasPendingConsumption(pendingConsumption.id),
+      isFalse,
+    );
+    expect(
+      container.read(inventoryItemsControllerProvider).value?.single.quantity,
+      1,
+    );
+    expect(
+      container
+          .read(calorieEntriesControllerProvider)
+          .value
+          ?.single
+          .sourceInventoryItemId,
+      item.id,
+    );
+  });
 }

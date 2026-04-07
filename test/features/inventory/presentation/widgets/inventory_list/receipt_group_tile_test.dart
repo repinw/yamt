@@ -9,6 +9,8 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -74,7 +76,8 @@ Widget _buildHarness({
   PageStorageBucket? bucket,
   bool showTile = true,
   Future<bool> Function(String itemId)? onDeleteItem,
-  Future<bool> Function(String itemId, int amount)? onEatItem,
+  Future<bool> Function(String itemId, InventoryItemEatRequest request)?
+  onEatItem,
   Future<bool> Function(
     String itemId,
     int amount,
@@ -88,7 +91,7 @@ Widget _buildHarness({
     showBarcodeMarkers: false,
     activeShoppingListItemKeys: const <ShoppingListItemMatchKey>{},
     onDeleteItem: onDeleteItem ?? (_) async => true,
-    onEatItem: onEatItem ?? (itemId, amount) async => true,
+    onEatItem: onEatItem ?? (itemId, request) async => true,
     onThrowAwayItem: onThrowAwayItem ?? (itemId, amount, reason) async => true,
   );
   final body = SingleChildScrollView(
@@ -292,13 +295,15 @@ void main() {
   ) async {
     String? eatenItemId;
     int? eatenAmount;
+    InventoryItemEatRequest? eatRequest;
     await tester.pumpWidget(
       _buildHarness(
         theme: lightTheme,
         group: _group(),
-        onEatItem: (itemId, amount) async {
+        onEatItem: (itemId, request) async {
           eatenItemId = itemId;
-          eatenAmount = amount;
+          eatenAmount = request.inventoryAmount;
+          eatRequest = request;
           return true;
         },
       ),
@@ -311,6 +316,10 @@ void main() {
       find.byKey(const Key('inventory_item_amount_dialog_field')),
       '1',
     );
+    await tester.enterText(find.byType(TextField).last, '25');
+    await tester.ensureVisible(
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+    );
     await tester.tap(
       find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
     );
@@ -319,6 +328,7 @@ void main() {
     expect(eatenItemId, isNotNull);
     expect(<String>['a', 'b'], contains(eatenItemId));
     expect(eatenAmount, 1);
+    expect(eatRequest?.calorieAmount, 25);
   });
 
   testWidgets('triggers onThrowAwayItem when action is confirmed', (

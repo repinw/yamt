@@ -136,9 +136,10 @@
   "inventoryItemEatSheetQuickSelectLabel": "Schnellwahl",
   "inventoryItemEatSheetAllAction": "Alles",
   "inventoryItemEatSheetWhenLabel": "Wann?",
-  "inventoryItemEatSheetNowValue": "Jetzt",
+  "inventoryItemEatSheetNowValue": "Heute",
   "inventoryItemEatSheetNutritionLabel": "Nährwerte",
   "inventoryItemEatSheetConfirmAction": "Loggen",
+  "inventoryItemEatSheetClearAmountAction": "Menge leeren",
   "inventoryItemBuyAgainAction": "Erneut kaufen",
   "inventoryItemBuyAgainSucceeded":
       "Artikel zur Einkaufsliste hinzugefügt.",

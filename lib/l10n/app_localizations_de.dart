@@ -327,13 +327,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemEatSheetWhenLabel => 'Wann?';
 
   @override
-  String get inventoryItemEatSheetNowValue => 'Jetzt';
+  String get inventoryItemEatSheetNowValue => 'Heute';
 
   @override
   String get inventoryItemEatSheetNutritionLabel => 'Nährwerte';
 
   @override
   String get inventoryItemEatSheetConfirmAction => 'Loggen';
+
+  @override
+  String get inventoryItemEatSheetClearAmountAction => 'Menge leeren';
 
   @override
   String get inventoryItemBuyAgainAction => 'Erneut kaufen';

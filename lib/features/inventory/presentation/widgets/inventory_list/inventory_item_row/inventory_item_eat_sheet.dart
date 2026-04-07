@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
+import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/inventory/application/inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
@@ -59,9 +61,16 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
       TextEditingController();
   late final FocusNode _manualCalorieAmountFocusNode = FocusNode();
   late DateTime _selectedLoggedAt = DateTime.now();
+  late MealType _selectedMealType = MealType.defaultForDateTime(
+    _selectedLoggedAt,
+  );
   var _selectedManualCalorieUnit = ConsumedUnit.grams;
   String? _inventoryAmountErrorText;
   String? _manualCalorieAmountErrorText;
+
+  void _updateState(VoidCallback callback) {
+    setState(callback);
+  }
 
   bool get _requiresManualCaloriePortion {
     return inventoryItemRequiresManualCaloriePortion(widget.item);
@@ -72,19 +81,15 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
   @override
   void initState() {
     super.initState();
-    _inventoryAmountFocusNode.addListener(this._selectAllInventoryAmount);
-    _manualCalorieAmountFocusNode.addListener(
-      this._selectAllManualCalorieAmount,
-    );
+    _inventoryAmountFocusNode.addListener(_selectAllInventoryAmount);
+    _manualCalorieAmountFocusNode.addListener(_selectAllManualCalorieAmount);
   }
 
   @override
   void dispose() {
-    _inventoryAmountFocusNode.removeListener(this._selectAllInventoryAmount);
+    _inventoryAmountFocusNode.removeListener(_selectAllInventoryAmount);
     _inventoryAmountFocusNode.dispose();
-    _manualCalorieAmountFocusNode.removeListener(
-      this._selectAllManualCalorieAmount,
-    );
+    _manualCalorieAmountFocusNode.removeListener(_selectAllManualCalorieAmount);
     _manualCalorieAmountFocusNode.dispose();
     _inventoryAmountController.dispose();
     _manualCalorieAmountController.dispose();
@@ -97,9 +102,9 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
     final colors = Theme.of(context).colorScheme;
     final material = MaterialLocalizations.of(context);
     final selectedAmount = int.tryParse(_inventoryAmountController.text.trim());
-    final unitLabel = this._inventoryUnitLabel(l10n);
-    final quickOptions = this._buildQuickOptions(l10n, unitLabel);
-    final nutritionMetrics = this._buildNutritionMetrics(l10n);
+    final unitLabel = _inventoryUnitLabel(l10n);
+    final quickOptions = _buildQuickOptions(l10n, unitLabel);
+    final nutritionMetrics = _buildNutritionMetrics(l10n);
 
     return SafeArea(
       top: false,
@@ -144,8 +149,11 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
                         focusNode: _inventoryAmountFocusNode,
                         unitLabel: unitLabel,
                         errorText: _inventoryAmountErrorText,
-                        onChanged: this._clearInventoryAmountError,
-                        onSubmitted: this._submit,
+                        clearTooltip:
+                            l10n.inventoryItemEatSheetClearAmountAction,
+                        onChanged: _clearInventoryAmountError,
+                        onClearAndFocus: _clearInventoryAmountAndFocus,
+                        onSubmitted: _submit,
                       ),
                       if (quickOptions.isNotEmpty) ...[
                         const SizedBox(height: AppSpacing.xxxl),
@@ -162,7 +170,7 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
                                 label: option.label,
                                 isSelected: selectedAmount == option.value,
                                 onPressed: () =>
-                                    this._selectInventoryAmount(option.value),
+                                    _selectInventoryAmount(option.value),
                               ),
                           ],
                         ),
@@ -178,8 +186,8 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
                           amountFocusNode: _manualCalorieAmountFocusNode,
                           amountErrorText: _manualCalorieAmountErrorText,
                           selectedUnit: _selectedManualCalorieUnit,
-                          onAmountChanged: this._clearManualCalorieAmountError,
-                          onUnitChanged: this._selectManualCalorieUnit,
+                          onAmountChanged: _clearManualCalorieAmountError,
+                          onUnitChanged: _selectManualCalorieUnit,
                         ),
                       ],
                       const SizedBox(height: AppSpacing.xxxl),
@@ -188,8 +196,13 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
                       ),
                       const SizedBox(height: AppSpacing.md),
                       _InventoryItemEatWhenCard(
-                        label: this._loggedAtLabel(material, l10n),
-                        onPressed: this._pickLoggedAt,
+                        label: _loggedAtLabel(material, l10n),
+                        onPressed: _pickLoggedAt,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      _InventoryItemEatMealTypeSelector(
+                        selectedMealType: _selectedMealType,
+                        onMealTypeSelected: _selectMealType,
                       ),
                       if (nutritionMetrics.isNotEmpty) ...[
                         const SizedBox(height: AppSpacing.xxxl),
@@ -208,7 +221,7 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
                           key: const Key(
                             'inventory_item_amount_dialog_confirm_button',
                           ),
-                          onPressed: this._submit,
+                          onPressed: _submit,
                           style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                               vertical: AppSpacing.xxl,

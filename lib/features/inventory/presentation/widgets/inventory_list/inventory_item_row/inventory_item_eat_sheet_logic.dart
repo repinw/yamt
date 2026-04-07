@@ -80,7 +80,7 @@ extension _InventoryItemEatSheetStateLogic on _InventoryItemEatSheetState {
     if (_inventoryAmountErrorText == null) {
       return;
     }
-    setState(() {
+    _updateState(() {
       _inventoryAmountErrorText = null;
     });
   }
@@ -89,21 +89,35 @@ extension _InventoryItemEatSheetStateLogic on _InventoryItemEatSheetState {
     if (_manualCalorieAmountErrorText == null) {
       return;
     }
-    setState(() {
+    _updateState(() {
       _manualCalorieAmountErrorText = null;
     });
   }
 
   void _selectInventoryAmount(int amount) {
-    setState(() {
+    _updateState(() {
       _inventoryAmountController.text = amount.toString();
       _inventoryAmountErrorText = null;
     });
   }
 
+  void _clearInventoryAmountAndFocus() {
+    _updateState(() {
+      _inventoryAmountController.clear();
+      _inventoryAmountErrorText = null;
+    });
+    _inventoryAmountFocusNode.requestFocus();
+  }
+
   void _selectManualCalorieUnit(ConsumedUnit unit) {
-    setState(() {
+    _updateState(() {
       _selectedManualCalorieUnit = unit;
+    });
+  }
+
+  void _selectMealType(MealType mealType) {
+    _updateState(() {
+      _selectedMealType = mealType;
     });
   }
 
@@ -122,7 +136,7 @@ extension _InventoryItemEatSheetStateLogic on _InventoryItemEatSheetState {
         _requiresManualCaloriePortion && manualCalorieAmount == null;
 
     if (!isInventoryAmountValid || needsManualCalorieAmount) {
-      setState(() {
+      _updateState(() {
         if (!isInventoryAmountValid) {
           _inventoryAmountErrorText = widget.invalidAmountMessage;
         }
@@ -139,6 +153,7 @@ extension _InventoryItemEatSheetStateLogic on _InventoryItemEatSheetState {
       InventoryItemEatRequest(
         inventoryAmount: inventoryAmount,
         loggedAt: _selectedLoggedAt,
+        mealType: _selectedMealType,
         calorieAmount: manualCalorieAmount,
         calorieUnit: _requiresManualCaloriePortion
             ? _selectedManualCalorieUnit
@@ -207,7 +222,7 @@ extension _InventoryItemEatSheetStateLogic on _InventoryItemEatSheetState {
     }
 
     final now = DateTime.now();
-    setState(() {
+    _updateState(() {
       _selectedLoggedAt = DateTime(
         pickedDate.year,
         pickedDate.month,

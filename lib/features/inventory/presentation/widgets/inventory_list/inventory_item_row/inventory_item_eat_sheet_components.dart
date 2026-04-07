@@ -70,7 +70,9 @@ class _InventoryItemEatAmountCard extends StatelessWidget {
     required this.focusNode,
     required this.unitLabel,
     required this.errorText,
+    required this.clearTooltip,
     required this.onChanged,
+    required this.onClearAndFocus,
     required this.onSubmitted,
   });
 
@@ -78,7 +80,9 @@ class _InventoryItemEatAmountCard extends StatelessWidget {
   final FocusNode focusNode;
   final String? unitLabel;
   final String? errorText;
+  final String clearTooltip;
   final ValueChanged<String> onChanged;
+  final VoidCallback onClearAndFocus;
   final VoidCallback onSubmitted;
 
   @override
@@ -107,7 +111,7 @@ class _InventoryItemEatAmountCard extends StatelessWidget {
                     key: const Key('inventory_item_amount_dialog_field'),
                     controller: controller,
                     focusNode: focusNode,
-                    autofocus: true,
+                    autofocus: false,
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.done,
                     decoration: const InputDecoration(
@@ -121,6 +125,14 @@ class _InventoryItemEatAmountCard extends StatelessWidget {
                     onChanged: onChanged,
                     onSubmitted: (_) => onSubmitted(),
                   ),
+                ),
+                IconButton(
+                  key: const Key('inventory_item_amount_dialog_clear_button'),
+                  tooltip: clearTooltip,
+                  onPressed: onClearAndFocus,
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.cleaning_services_outlined),
+                  color: colors.onSurfaceVariant,
                 ),
                 if (unitLabel != null) ...[
                   const SizedBox(width: AppSpacing.md),
@@ -265,6 +277,73 @@ class _InventoryItemEatWhenCard extends StatelessWidget {
               Icon(Icons.chevron_right_rounded, color: colors.onSurfaceVariant),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _InventoryItemEatMealTypeSelector extends StatelessWidget {
+  const _InventoryItemEatMealTypeSelector({
+    required this.selectedMealType,
+    required this.onMealTypeSelected,
+  });
+
+  final MealType selectedMealType;
+  final ValueChanged<MealType> onMealTypeSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        child: Row(
+          children: [
+            Icon(
+              Icons.restaurant_rounded,
+              color: AppInventoryEditorial.primary,
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<MealType>(
+                  value: selectedMealType,
+                  isExpanded: true,
+                  borderRadius: BorderRadius.circular(AppRadius.xl),
+                  dropdownColor: colors.surfaceContainerHigh,
+                  icon: Icon(
+                    Icons.expand_more_rounded,
+                    color: colors.onSurfaceVariant,
+                  ),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: colors.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  items: MealType.sectionOrder
+                      .map((mealType) {
+                        return DropdownMenuItem<MealType>(
+                          value: mealType,
+                          child: Text(mealType.localizedName(l10n)),
+                        );
+                      })
+                      .toList(growable: false),
+                  onChanged: (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    onMealTypeSelected(value);
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

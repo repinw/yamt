@@ -722,7 +722,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryItemEatSheetNowValue.
   ///
   /// In en, this message translates to:
-  /// **'Now'**
+  /// **'Today'**
   String get inventoryItemEatSheetNowValue;
 
   /// No description provided for @inventoryItemEatSheetNutritionLabel.
@@ -736,6 +736,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Log'**
   String get inventoryItemEatSheetConfirmAction;
+
+  /// No description provided for @inventoryItemEatSheetClearAmountAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear amount'**
+  String get inventoryItemEatSheetClearAmountAction;
 
   /// No description provided for @inventoryItemBuyAgainAction.
   ///

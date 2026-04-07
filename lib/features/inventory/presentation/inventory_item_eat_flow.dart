@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/inventory/application/'
@@ -69,6 +68,7 @@ class InventoryItemEatFlow {
           inventoryContext: inventoryContext,
           scannedSourceRef: scannedSourceRef,
           loggedAt: request.loggedAt,
+          mealType: request.mealType,
         );
         if (saved) {
           return;
@@ -98,7 +98,7 @@ class InventoryItemEatFlow {
           prefilledProfile: profile,
           scannedSourceRef: scannedSourceRef,
           inventoryContext: inventoryContext,
-          preselectedMealType: MealType.defaultForDateTime(request.loggedAt),
+          preselectedMealType: request.mealType,
           preselectedLoggedAt: request.loggedAt,
         ),
       );
