@@ -11,6 +11,8 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_expand_indicator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -75,6 +77,7 @@ Widget _buildHarness({
   required InventoryReceiptGroup group,
   PageStorageBucket? bucket,
   bool showTile = true,
+  bool isSelectionMode = false,
   Future<bool> Function(String itemId)? onDeleteItem,
   Future<bool> Function(String itemId, InventoryItemEatRequest request)?
   onEatItem,
@@ -93,6 +96,7 @@ Widget _buildHarness({
     onDeleteItem: onDeleteItem ?? (_) async => true,
     onEatItem: onEatItem ?? (itemId, request) async => true,
     onThrowAwayItem: onThrowAwayItem ?? (itemId, amount, reason) async => true,
+    isSelectionMode: isSelectionMode,
   );
   final body = SingleChildScrollView(
     padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
@@ -192,6 +196,44 @@ void main() {
       find.byKey(indicatorKey),
     );
     expect(collapsedRotation.turns, 0);
+  });
+
+  testWidgets('does not toggle expansion in selection mode', (tester) async {
+    const indicatorKey = Key('receipt_group_expand_indicator_receipt:abc123');
+
+    await tester.pumpWidget(
+      _buildHarness(theme: lightTheme, group: _group(), isSelectionMode: true),
+    );
+    await tester.pumpAndSettle();
+
+    final initialRotation = tester.widget<AnimatedRotation>(
+      find.byKey(indicatorKey),
+    );
+    expect(initialRotation.turns, 0.5);
+    expect(find.byType(InventoryItemRowListEntry), findsNWidgets(2));
+
+    await tester.tap(find.text('Receipt Feb 20, 2026'));
+    await tester.pumpAndSettle();
+
+    final rotationAfterTap = tester.widget<AnimatedRotation>(
+      find.byKey(indicatorKey),
+    );
+    expect(rotationAfterTap.turns, 0.5);
+    expect(find.byType(InventoryItemRowListEntry), findsNWidgets(2));
+
+    final container = tester.widget<AnimatedContainer>(
+      find
+          .descendant(
+            of: find.byType(InventoryExpandIndicator),
+            matching: find.byType(AnimatedContainer),
+          )
+          .first,
+    );
+    final decoration = container.decoration! as BoxDecoration;
+    expect(
+      decoration.color,
+      lightTheme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+    );
   });
 
   testWidgets('golden: light collapsed', (tester) async {

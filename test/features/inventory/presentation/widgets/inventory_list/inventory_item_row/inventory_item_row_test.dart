@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -66,6 +68,25 @@ class _InventoryItemRowHost extends StatelessWidget {
 }
 
 void main() {
+  testWidgets('places expand indicator below the primary action button', (
+    tester,
+  ) async {
+    final bucket = PageStorageBucket();
+    const indicatorKey = Key('inventory_item_row_expand_indicator_milk');
+
+    await tester.pumpWidget(
+      _InventoryItemRowHost(showRow: true, bucket: bucket),
+    );
+    await tester.pumpAndSettle();
+
+    final buttonCenter = tester.getCenter(
+      find.byType(InventoryPrimaryActionButton),
+    );
+    final indicatorCenter = tester.getCenter(find.byKey(indicatorKey));
+
+    expect(indicatorCenter.dy, greaterThan(buttonCenter.dy));
+  });
+
   testWidgets('shows expand indicator and rotates it on tap', (tester) async {
     final bucket = PageStorageBucket();
     const indicatorKey = Key('inventory_item_row_expand_indicator_milk');

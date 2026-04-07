@@ -63,18 +63,45 @@ class InventoryItemRowMainSection extends StatelessWidget {
         ),
         if (!showSelectionCheckbox) ...[
           const SizedBox(width: AppSpacing.sm),
-          InventoryExpandIndicator(
+          _InventoryItemActionColumn(
+            itemId: item.itemId,
             isExpanded: isExpanded,
-            rotationKey: Key(
-              'inventory_item_row_expand_indicator_${item.itemId}',
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          _InventoryItemPrimaryActionButton(
             viewData: viewData,
             onPrimaryActionPressed: onPrimaryActionPressed,
           ),
         ],
+      ],
+    );
+  }
+}
+
+class _InventoryItemActionColumn extends StatelessWidget {
+  const _InventoryItemActionColumn({
+    required this.itemId,
+    required this.isExpanded,
+    required this.viewData,
+    required this.onPrimaryActionPressed,
+  });
+
+  final String itemId;
+  final bool isExpanded;
+  final InventoryItemRowViewData viewData;
+  final VoidCallback? onPrimaryActionPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _InventoryItemPrimaryActionButton(
+          viewData: viewData,
+          onPrimaryActionPressed: onPrimaryActionPressed,
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        InventoryExpandIndicator(
+          isExpanded: isExpanded,
+          rotationKey: Key('inventory_item_row_expand_indicator_$itemId'),
+        ),
       ],
     );
   }

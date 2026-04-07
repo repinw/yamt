@@ -20,21 +20,9 @@ class InventoryExpandIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final borderColor = enabled
-        ? isExpanded
-              ? colors.primary.withValues(alpha: 0.24)
-              : colors.outlineVariant.withValues(alpha: 0.6)
-        : colors.outlineVariant.withValues(alpha: 0.32);
-    final backgroundColor = enabled
-        ? isExpanded
-              ? colors.primaryContainer.withValues(alpha: 0.72)
-              : colors.surfaceContainerHigh.withValues(alpha: 0.82)
-        : colors.surfaceContainerHighest.withValues(alpha: 0.5);
-    final iconColor = enabled
-        ? isExpanded
-              ? colors.primary
-              : colors.onSurfaceVariant
-        : colors.onSurfaceVariant.withValues(alpha: 0.55);
+    final borderColor = _borderColor(colors);
+    final backgroundColor = _backgroundColor(colors);
+    final iconColor = _iconColor(colors);
 
     return ExcludeSemantics(
       child: AnimatedContainer(
@@ -62,5 +50,35 @@ class InventoryExpandIndicator extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Color _borderColor(ColorScheme colors) {
+    if (!enabled) {
+      return colors.outlineVariant.withValues(alpha: 0.32);
+    }
+    if (isExpanded) {
+      return colors.primary.withValues(alpha: 0.24);
+    }
+    return colors.outlineVariant.withValues(alpha: 0.6);
+  }
+
+  Color _backgroundColor(ColorScheme colors) {
+    if (!enabled) {
+      return colors.surfaceContainerHighest.withValues(alpha: 0.5);
+    }
+    if (isExpanded) {
+      return colors.primaryContainer.withValues(alpha: 0.72);
+    }
+    return colors.surfaceContainerHigh.withValues(alpha: 0.82);
+  }
+
+  Color _iconColor(ColorScheme colors) {
+    if (!enabled) {
+      return colors.onSurfaceVariant.withValues(alpha: 0.55);
+    }
+    if (isExpanded) {
+      return colors.primary;
+    }
+    return colors.onSurfaceVariant;
   }
 }
