@@ -21,6 +21,20 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryManualAddItemId = Uuid();
 
+@visibleForTesting
+int? resolveInventoryManualAddEatFlowMaxAmount(InventoryItem item) {
+  if (item.usesAmountProgress) {
+    if (item.amountUnit == null || item.currentAmount < 1) {
+      return null;
+    }
+    return item.currentAmount;
+  }
+  if (item.quantity < 1) {
+    return null;
+  }
+  return item.quantity;
+}
+
 class InventoryManualAddPage extends ConsumerStatefulWidget {
   const InventoryManualAddPage({super.key});
 
@@ -207,7 +221,7 @@ class _InventoryManualAddPageState
 
   Future<void> _openImmediateEatFlow(InventoryItem item) async {
     final l10n = AppLocalizations.of(context)!;
-    final maxAmount = _eatFlowMaxAmount(item);
+    final maxAmount = resolveInventoryManualAddEatFlowMaxAmount(item);
     if (maxAmount == null) {
       _showSnackBar(l10n.inventoryItemActionFailed);
       return;
@@ -248,19 +262,6 @@ class _InventoryManualAddPageState
       request: request,
       pendingConsumptionId: pendingConsumption.id,
     );
-  }
-
-  int? _eatFlowMaxAmount(InventoryItem item) {
-    if (item.usesAmountProgress) {
-      if (item.amountUnit == null || item.currentAmount < 1) {
-        return null;
-      }
-      return item.currentAmount;
-    }
-    if (item.quantity < 1) {
-      return null;
-    }
-    return item.quantity;
   }
 
   void _showSnackBar(String message) {

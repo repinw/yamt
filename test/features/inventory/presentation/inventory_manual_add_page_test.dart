@@ -78,6 +78,14 @@ class _RecordingInventoryItemRepository implements InventoryItemRepository {
   }
 }
 
+class _FailingInventoryItemRepository
+    extends _RecordingInventoryItemRepository {
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async {
+    return false;
+  }
+}
+
 class _RecordingGlobalFoodItemRepository implements GlobalFoodItemRepository {
   final List<GlobalFoodItem> appendedItems = <GlobalFoodItem>[];
 
@@ -129,6 +137,21 @@ class _RecordingInventoryCalorieEntryCommitStore
       quantity: 1,
       currentAmount: 999,
     );
+  }
+}
+
+class _FailingStageInventoryItemsController extends InventoryItemsController {
+  @override
+  Future<List<InventoryItem>> build() async {
+    return const <InventoryItem>[];
+  }
+
+  @override
+  Future<PendingInventoryConsumption?> stagePendingConsumptionForItem(
+    InventoryItem item,
+    int amount,
+  ) async {
+    return null;
   }
 }
 
@@ -241,6 +264,7 @@ Widget _buildHarness({
   FakeCalorieLogRepository? calorieLogRepository,
   FakeCalorieProductCacheRepository? calorieProductCacheRepository,
   InventoryCalorieEntryCommitStore? inventoryCommitStore,
+  InventoryItemsController? inventoryItemsController,
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.root,
@@ -271,6 +295,10 @@ Widget _buildHarness({
       if (inventoryCommitStore != null)
         inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
           inventoryCommitStore,
+        ),
+      if (inventoryItemsController != null)
+        inventoryItemsControllerProvider.overrideWith(
+          () => inventoryItemsController,
         ),
     ],
     child: MaterialApp.router(
@@ -569,6 +597,142 @@ void main() {
     expect(inventoryCommitStore.pendingConsumption?.amount, 1);
   });
 
+  testWidgets(
+    'eat now shows save error and does not open eat flow when persisting fails',
+    (tester) async {
+      _installFakeScannerPlatform(tester);
+
+      final offRepository =
+          _RecordingOffProductSearchRepository(<OffProductSearchResult>[
+            const OffProductSearchResult(
+              code: '4006381333931',
+              name: 'Milk',
+              brand: 'Brand',
+              score: 99,
+              packageWeight: '1 l',
+              imageUrl: 'https://example.com/milk.png',
+              nutrition: GlobalFoodNutrition(
+                qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+                per100Kcal: 100,
+                per100Protein: 10,
+                per100Carbs: 20,
+                per100Fat: 3,
+              ),
+            ),
+          ]);
+      final inventoryRepository = _FailingInventoryItemRepository();
+      addTearDown(inventoryRepository.dispose);
+      final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+
+      await tester.pumpWidget(
+        _buildHarness(
+          offRepository: offRepository,
+          inventoryRepository: inventoryRepository,
+          globalFoodRepository: globalFoodRepository,
+        ),
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_scan_button')),
+      );
+      await _pumpUi(tester);
+
+      _fakeScannerPlatform().emitBarcode('4006381333931');
+      await _pumpUi(tester);
+
+      final eatNowCheckbox = find.byKey(
+        const Key('receipt_review_manual_eat_now_checkbox'),
+      );
+      await tester.ensureVisible(eatNowCheckbox);
+      await tester.tap(eatNowCheckbox);
+      await _pumpUi(tester);
+
+      final manualSaveButton = find.byKey(
+        const Key('receipt_review_manual_save_button'),
+      );
+      await tester.ensureVisible(manualSaveButton);
+      await tester.tap(manualSaveButton);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('The product could not be added to the inventory.'),
+        findsOneWidget,
+      );
+      expect(find.text('Eat: Milk'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'eat now shows action error when staging pending consumption fails',
+    (tester) async {
+      _installFakeScannerPlatform(tester);
+
+      final offRepository =
+          _RecordingOffProductSearchRepository(<OffProductSearchResult>[
+            const OffProductSearchResult(
+              code: '4006381333931',
+              name: 'Milk',
+              brand: 'Brand',
+              score: 99,
+              packageWeight: '1 l',
+              imageUrl: 'https://example.com/milk.png',
+              nutrition: GlobalFoodNutrition(
+                qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+                per100Kcal: 100,
+                per100Protein: 10,
+                per100Carbs: 20,
+                per100Fat: 3,
+              ),
+            ),
+          ]);
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      addTearDown(inventoryRepository.dispose);
+      final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+
+      await tester.pumpWidget(
+        _buildHarness(
+          offRepository: offRepository,
+          inventoryRepository: inventoryRepository,
+          globalFoodRepository: globalFoodRepository,
+          inventoryItemsController: _FailingStageInventoryItemsController(),
+        ),
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_scan_button')),
+      );
+      await _pumpUi(tester);
+
+      _fakeScannerPlatform().emitBarcode('4006381333931');
+      await _pumpUi(tester);
+
+      final eatNowCheckbox = find.byKey(
+        const Key('receipt_review_manual_eat_now_checkbox'),
+      );
+      await tester.ensureVisible(eatNowCheckbox);
+      await tester.tap(eatNowCheckbox);
+      await _pumpUi(tester);
+
+      final manualSaveButton = find.byKey(
+        const Key('receipt_review_manual_save_button'),
+      );
+      await tester.ensureVisible(manualSaveButton);
+      await tester.tap(manualSaveButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Eat: Milk'), findsOneWidget);
+
+      final logButton = find.text('Log');
+      await tester.ensureVisible(logButton);
+      await tester.tap(logButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Action failed. Please try again.'), findsOneWidget);
+    },
+  );
+
   testWidgets('multiple barcode candidates can be selected before saving', (
     tester,
   ) async {
@@ -635,6 +799,32 @@ void main() {
     expect(
       inventoryRepository.appendedItems.single.origin,
       InventoryItemOrigin.manualAdd,
+    );
+  });
+
+  test('resolveInventoryManualAddEatFlowMaxAmount guards invalid items', () {
+    final quantitylessItem = InventoryItem.create(
+      id: 'item-0',
+      name: 'Nothing',
+      entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
+      storeName: 'Added manually',
+      quantity: 0,
+    );
+    final depletedAmountItem = InventoryItem.create(
+      id: 'item-1',
+      name: 'Milk',
+      entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
+      storeName: 'Added manually',
+      quantity: 1,
+      initialAmount: 1000,
+      currentAmount: 0,
+      amountUnit: InventoryAmountUnit.milliliter,
+    );
+
+    expect(resolveInventoryManualAddEatFlowMaxAmount(quantitylessItem), isNull);
+    expect(
+      resolveInventoryManualAddEatFlowMaxAmount(depletedAmountItem),
+      isNull,
     );
   });
 }
