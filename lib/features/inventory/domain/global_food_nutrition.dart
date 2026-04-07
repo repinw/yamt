@@ -168,6 +168,9 @@ double? _readFirstDouble(Map<String, dynamic> json, List<String> keys) {
 
 GlobalFoodNutritionQualityStatus _nutritionQualityFromJson(Object? value) {
   final raw = value is String ? value.trim() : '';
+  if (raw == 'partial') {
+    return GlobalFoodNutritionQualityStatus.unverified;
+  }
   return GlobalFoodNutritionQualityStatus.values.firstWhereOrNull(
         (status) => status.name == raw,
       ) ??
