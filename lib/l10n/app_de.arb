@@ -515,18 +515,21 @@
   "caloriesCalculatorActivityLevelLabel": "Aktivitätslevel (PAL)",
   "caloriesCalculatorActivityLevelHelp":
       "Wähle die Option, die am besten zu deiner typischen Woche passt.",
-  "caloriesCalculatorActivityLevelNoneTitle": "Keine Aktivität",
+  "caloriesCalculatorActivityLevelNoneTitle": "Kaum aktiv",
   "caloriesCalculatorActivityLevelNoneDescription":
-      "Meist sitzend, kaum Sport und nur sehr wenig Bewegung im Alltag.",
-  "caloriesCalculatorActivityLevelLowTitle": "Wenig Aktivität",
+      "Büro, viel sitzen, wenige Schritte und kein oder kaum Sport.",
+  "caloriesCalculatorActivityLevelLowTitle": "Leicht aktiv",
   "caloriesCalculatorActivityLevelLowDescription":
-      "Vor allem Schreibtisch, kurze Wege und nur gelegentlich Bewegung.",
-  "caloriesCalculatorActivityLevelMediumTitle": "Mittlere Aktivität",
+      "Überwiegend sitzend, aber mit etwas Bewegung im Alltag oder 1 bis 2 lockeren Einheiten pro Woche.",
+  "caloriesCalculatorActivityLevelMediumTitle": "Moderat aktiv",
   "caloriesCalculatorActivityLevelMediumDescription":
-      "Regelmäßige Bewegung, häufige Spaziergänge oder mehrmals pro Woche Sport.",
-  "caloriesCalculatorActivityLevelHighTitle": "Viel Aktivität",
+      "Regelmäßige Bewegung im Alltag oder 3 bis 4 Sporteinheiten pro Woche.",
+  "caloriesCalculatorActivityLevelHighTitle": "Sehr aktiv",
   "caloriesCalculatorActivityLevelHighDescription":
-      "Körperlich aktiver Alltag, anstrengende Arbeit oder häufiges Training.",
+      "Körperlich aktiver Alltag oder intensives Training an den meisten Tagen.",
+  "caloriesCalculatorActivityLevelExtremeTitle": "Extrem aktiv",
+  "caloriesCalculatorActivityLevelExtremeDescription":
+      "Sehr hohe Trainingsumfänge, körperlich harte Arbeit oder Leistungssport.",
   "caloriesCalculatorActivityLevelHint": "Zum Beispiel 1,2 bis 2,0",
   "caloriesCalculatorActivityLevelEmpty":
       "Bitte gib dein Aktivitätslevel ein.",

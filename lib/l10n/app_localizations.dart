@@ -2036,50 +2036,62 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesCalculatorActivityLevelNoneTitle.
   ///
   /// In en, this message translates to:
-  /// **'No activity'**
+  /// **'Sedentary'**
   String get caloriesCalculatorActivityLevelNoneTitle;
 
   /// No description provided for @caloriesCalculatorActivityLevelNoneDescription.
   ///
   /// In en, this message translates to:
-  /// **'Mostly sitting, hardly any exercise, and very little movement in daily life.'**
+  /// **'Office work, lots of sitting, few steps, and little to no exercise.'**
   String get caloriesCalculatorActivityLevelNoneDescription;
 
   /// No description provided for @caloriesCalculatorActivityLevelLowTitle.
   ///
   /// In en, this message translates to:
-  /// **'Low activity'**
+  /// **'Lightly active'**
   String get caloriesCalculatorActivityLevelLowTitle;
 
   /// No description provided for @caloriesCalculatorActivityLevelLowDescription.
   ///
   /// In en, this message translates to:
-  /// **'Mostly desk work, short walks, and only occasional exercise.'**
+  /// **'Mostly sitting, but with some daily movement or 1 to 2 light workouts per week.'**
   String get caloriesCalculatorActivityLevelLowDescription;
 
   /// No description provided for @caloriesCalculatorActivityLevelMediumTitle.
   ///
   /// In en, this message translates to:
-  /// **'Medium activity'**
+  /// **'Moderately active'**
   String get caloriesCalculatorActivityLevelMediumTitle;
 
   /// No description provided for @caloriesCalculatorActivityLevelMediumDescription.
   ///
   /// In en, this message translates to:
-  /// **'Regular movement, frequent walks, or exercise several times per week.'**
+  /// **'Regular daily movement or 3 to 4 training sessions per week.'**
   String get caloriesCalculatorActivityLevelMediumDescription;
 
   /// No description provided for @caloriesCalculatorActivityLevelHighTitle.
   ///
   /// In en, this message translates to:
-  /// **'High activity'**
+  /// **'Very active'**
   String get caloriesCalculatorActivityLevelHighTitle;
 
   /// No description provided for @caloriesCalculatorActivityLevelHighDescription.
   ///
   /// In en, this message translates to:
-  /// **'Physically active daily life, a demanding job, or frequent training.'**
+  /// **'A physically active daily life or intense training on most days.'**
   String get caloriesCalculatorActivityLevelHighDescription;
+
+  /// No description provided for @caloriesCalculatorActivityLevelExtremeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Extremely active'**
+  String get caloriesCalculatorActivityLevelExtremeTitle;
+
+  /// No description provided for @caloriesCalculatorActivityLevelExtremeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Very high training volume, physically demanding work, or competitive sports.'**
+  String get caloriesCalculatorActivityLevelExtremeDescription;
 
   /// No description provided for @caloriesCalculatorActivityLevelHint.
   ///

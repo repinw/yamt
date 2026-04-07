@@ -1010,28 +1010,34 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorActivityLevelHelp => 'Wähle die Option, die am besten zu deiner typischen Woche passt.';
 
   @override
-  String get caloriesCalculatorActivityLevelNoneTitle => 'Keine Aktivität';
+  String get caloriesCalculatorActivityLevelNoneTitle => 'Kaum aktiv';
 
   @override
-  String get caloriesCalculatorActivityLevelNoneDescription => 'Meist sitzend, kaum Sport und nur sehr wenig Bewegung im Alltag.';
+  String get caloriesCalculatorActivityLevelNoneDescription => 'Büro, viel sitzen, wenige Schritte und kein oder kaum Sport.';
 
   @override
-  String get caloriesCalculatorActivityLevelLowTitle => 'Wenig Aktivität';
+  String get caloriesCalculatorActivityLevelLowTitle => 'Leicht aktiv';
 
   @override
-  String get caloriesCalculatorActivityLevelLowDescription => 'Vor allem Schreibtisch, kurze Wege und nur gelegentlich Bewegung.';
+  String get caloriesCalculatorActivityLevelLowDescription => 'Überwiegend sitzend, aber mit etwas Bewegung im Alltag oder 1 bis 2 lockeren Einheiten pro Woche.';
 
   @override
-  String get caloriesCalculatorActivityLevelMediumTitle => 'Mittlere Aktivität';
+  String get caloriesCalculatorActivityLevelMediumTitle => 'Moderat aktiv';
 
   @override
-  String get caloriesCalculatorActivityLevelMediumDescription => 'Regelmäßige Bewegung, häufige Spaziergänge oder mehrmals pro Woche Sport.';
+  String get caloriesCalculatorActivityLevelMediumDescription => 'Regelmäßige Bewegung im Alltag oder 3 bis 4 Sporteinheiten pro Woche.';
 
   @override
-  String get caloriesCalculatorActivityLevelHighTitle => 'Viel Aktivität';
+  String get caloriesCalculatorActivityLevelHighTitle => 'Sehr aktiv';
 
   @override
-  String get caloriesCalculatorActivityLevelHighDescription => 'Körperlich aktiver Alltag, anstrengende Arbeit oder häufiges Training.';
+  String get caloriesCalculatorActivityLevelHighDescription => 'Körperlich aktiver Alltag oder intensives Training an den meisten Tagen.';
+
+  @override
+  String get caloriesCalculatorActivityLevelExtremeTitle => 'Extrem aktiv';
+
+  @override
+  String get caloriesCalculatorActivityLevelExtremeDescription => 'Sehr hohe Trainingsumfänge, körperlich harte Arbeit oder Leistungssport.';
 
   @override
   String get caloriesCalculatorActivityLevelHint => 'Zum Beispiel 1,2 bis 2,0';

@@ -41,7 +41,7 @@ class CalorieCalculatorProfile {
       weightKg = 80,
       heightCm = 180,
       ageYears = 30,
-      activityLevel = 1.4,
+      activityLevel = 1.2,
       goalMode = CalorieGoalMode.maintain,
       goalSpeedKgPerWeek = 0;
 
