@@ -58,7 +58,7 @@ class InventoryItemRowMainSection extends StatelessWidget {
           child: _InventoryItemRowInfoColumn(item: item, viewData: viewData),
         ),
         if (!showSelectionCheckbox) ...[
-          const SizedBox(width: AppSpacing.md),
+          const SizedBox(width: AppSpacing.sm),
           _InventoryItemPrimaryActionButton(
             viewData: viewData,
             onPrimaryActionPressed: onPrimaryActionPressed,

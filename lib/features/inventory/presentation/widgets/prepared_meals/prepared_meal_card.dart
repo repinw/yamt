@@ -20,6 +20,8 @@ import 'package:yamt/features/inventory/presentation/constants/'
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_discard_reason_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_expand_indicator.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_constants.dart';
@@ -212,6 +214,7 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
                   meal: meal,
                   imageBytes: storedImageBytes,
                   ingredientCount: ingredientCount,
+                  isExpanded: _isExpanded,
                   canEat: canEat,
                   actionColors: eatActionColors,
                   enabled: widget.enabled,
