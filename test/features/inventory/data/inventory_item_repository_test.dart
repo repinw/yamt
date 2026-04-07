@@ -221,6 +221,28 @@ void main() {
     expect(items.map((item) => item.id), containsAll(<String>['a', 'b']));
   });
 
+  test('readAll preserves manual add origin from stored documents', () async {
+    final manualItem = _item(
+      'manual-1',
+    ).copyWith(origin: InventoryItemOrigin.manualAdd);
+    final store = _FakeInventoryItemStore(
+      initialDocumentsByUser: <String, List<InventoryItemDocument>>{
+        'user-1': <InventoryItemDocument>[
+          InventoryItemDocument(id: 'manual-1', data: manualItem.toJson()),
+        ],
+      },
+    );
+    addTearDown(store.dispose);
+    final repository = FirestoreInventoryItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      store: store,
+    );
+
+    final items = await repository.readAll();
+
+    expect(items.single.origin, InventoryItemOrigin.manualAdd);
+  });
+
   test('appendAll serializes concurrent writes', () async {
     final store = _FakeInventoryItemStore()
       ..upsertDelay = const Duration(milliseconds: 25);

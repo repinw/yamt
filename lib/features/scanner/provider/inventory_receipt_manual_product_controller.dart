@@ -91,6 +91,106 @@ enum InventoryReceiptManualProductNutritionScanOutcome {
   missingBarcode,
 }
 
+enum InventoryReceiptManualProductSelectionSource {
+  externalSearch,
+  recentInventory,
+}
+
+class InventoryReceiptManualProductSelection {
+  const InventoryReceiptManualProductSelection({
+    required this.source,
+    required this.name,
+    required this.barcode,
+    this.brand,
+    this.imageUrl,
+    this.packageWeight,
+    this.nutrition,
+    this.externalProduct,
+    this.globalFoodItemId,
+  });
+
+  factory InventoryReceiptManualProductSelection.fromSearchResult(
+    OffProductSearchResult result,
+  ) {
+    return InventoryReceiptManualProductSelection(
+      source: InventoryReceiptManualProductSelectionSource.externalSearch,
+      name: result.name,
+      barcode: result.code,
+      brand: result.brand,
+      imageUrl: result.imageUrl,
+      packageWeight: result.packageWeight,
+      nutrition: result.nutrition,
+      externalProduct: result,
+    );
+  }
+
+  factory InventoryReceiptManualProductSelection.fromInventoryItem(
+    InventoryItem item,
+  ) {
+    return InventoryReceiptManualProductSelection(
+      source: InventoryReceiptManualProductSelectionSource.recentInventory,
+      name: item.name,
+      barcode: item.normalizedBarcode ?? '',
+      brand: item.brand,
+      imageUrl: item.imageUrl,
+      packageWeight: item.weight,
+      nutrition: item.nutrition,
+      globalFoodItemId: _normalizeReusableGlobalFoodItemId(
+        item.globalFoodItemId,
+      ),
+    );
+  }
+
+  final InventoryReceiptManualProductSelectionSource source;
+  final String name;
+  final String barcode;
+  final String? brand;
+  final String? imageUrl;
+  final String? packageWeight;
+  final GlobalFoodNutrition? nutrition;
+  final OffProductSearchResult? externalProduct;
+  final String? globalFoodItemId;
+}
+
+String? buildManualProductInitialSearchQuery(
+  InventoryReceiptManualProductConfig config,
+) {
+  final selectedProductName = normalizeManualProductText(
+    config.selectedProduct?.name ?? '',
+  );
+  if (selectedProductName != null) {
+    return selectedProductName;
+  }
+
+  final parts = <String>[];
+  final normalizedParts = <String>{};
+
+  void addPart(String? value, {bool canBeBarcode = true}) {
+    final normalized = normalizeManualProductText(value ?? '');
+    if (normalized == null) {
+      return;
+    }
+    if (!canBeBarcode && _looksLikeBarcodeText(normalized)) {
+      return;
+    }
+
+    final key = normalized.toLowerCase();
+    if (!normalizedParts.add(key)) {
+      return;
+    }
+    parts.add(normalized);
+  }
+
+  addPart(config.item.name, canBeBarcode: false);
+  addPart(config.item.brand);
+  addPart(_initialSearchStoreName(config.item));
+
+  if (parts.isEmpty) {
+    return null;
+  }
+  return parts.join(' ');
+}
+
 class InventoryReceiptManualProductState {
   const InventoryReceiptManualProductState({
     this.searchQuery = '',
@@ -103,7 +203,7 @@ class InventoryReceiptManualProductState {
     this.fatText = '',
     this.isSearching = false,
     this.searchResults = const <OffProductSearchResult>[],
-    this.selectedScannedProduct,
+    this.selectedProduct,
     this.ocrProfile,
     this.isRunningNutritionOcr = false,
     this.error,
@@ -119,7 +219,7 @@ class InventoryReceiptManualProductState {
   final String fatText;
   final bool isSearching;
   final List<OffProductSearchResult> searchResults;
-  final OffProductSearchResult? selectedScannedProduct;
+  final InventoryReceiptManualProductSelection? selectedProduct;
   final CalorieProductProfile? ocrProfile;
   final bool isRunningNutritionOcr;
   final InventoryReceiptManualProductError? error;
@@ -134,7 +234,7 @@ class InventoryReceiptManualProductState {
   }
 
   bool get showDetails {
-    return selectedScannedProduct != null ||
+    return selectedProduct != null ||
         ocrProfile != null ||
         hasBarcode ||
         hasNutritionInput ||
@@ -156,7 +256,7 @@ class InventoryReceiptManualProductState {
     String? fatText,
     bool? isSearching,
     List<OffProductSearchResult>? searchResults,
-    Object? selectedScannedProduct = _keepValue,
+    Object? selectedProduct = _keepValue,
     Object? ocrProfile = _keepValue,
     bool? isRunningNutritionOcr,
     Object? error = _keepValue,
@@ -172,9 +272,9 @@ class InventoryReceiptManualProductState {
       fatText: fatText ?? this.fatText,
       isSearching: isSearching ?? this.isSearching,
       searchResults: searchResults ?? this.searchResults,
-      selectedScannedProduct: selectedScannedProduct == _keepValue
-          ? this.selectedScannedProduct
-          : selectedScannedProduct as OffProductSearchResult?,
+      selectedProduct: selectedProduct == _keepValue
+          ? this.selectedProduct
+          : selectedProduct as InventoryReceiptManualProductSelection?,
       ocrProfile: ocrProfile == _keepValue
           ? this.ocrProfile
           : ocrProfile as CalorieProductProfile?,
@@ -214,7 +314,7 @@ class InventoryReceiptManualProductController
     );
 
     return InventoryReceiptManualProductState(
-      searchQuery: _initialSearchQuery(config) ?? '',
+      searchQuery: buildManualProductInitialSearchQuery(config) ?? '',
       barcode:
           config.item.normalizedBarcode ?? config.selectedProduct?.code ?? '',
       weightAmount: weightInput.amount,
@@ -223,7 +323,11 @@ class InventoryReceiptManualProductController
       proteinText: formatManualProductDouble(nutrition?.per100Protein),
       carbsText: formatManualProductDouble(nutrition?.per100Carbs),
       fatText: formatManualProductDouble(nutrition?.per100Fat),
-      selectedScannedProduct: config.selectedProduct,
+      selectedProduct: config.selectedProduct == null
+          ? null
+          : InventoryReceiptManualProductSelection.fromSearchResult(
+              config.selectedProduct!,
+            ),
     );
   }
 
@@ -305,17 +409,28 @@ class InventoryReceiptManualProductController
 
   void applySearchResult(OffProductSearchResult product) {
     _searchDebounce?.cancel();
-    _applySelectedProduct(product);
+    _applySelectedProductSelection(
+      InventoryReceiptManualProductSelection.fromSearchResult(product),
+    );
   }
 
   void applyScannedProduct(OffProductSearchResult product) {
-    _applySelectedProduct(product);
+    _applySelectedProductSelection(
+      InventoryReceiptManualProductSelection.fromSearchResult(product),
+    );
+  }
+
+  void applyRecentItem(InventoryItem item) {
+    _searchDebounce?.cancel();
+    _applySelectedProductSelection(
+      InventoryReceiptManualProductSelection.fromInventoryItem(item),
+    );
   }
 
   void applyScannedBarcodeOnly(String barcode) {
     state = state.copyWith(
       barcode: barcode,
-      selectedScannedProduct: null,
+      selectedProduct: null,
       ocrProfile: null,
       kcalText: '',
       proteinText: '',
@@ -367,7 +482,11 @@ class InventoryReceiptManualProductController
     }
   }
 
-  ({InventoryItem item, OffProductSearchResult? selectedProduct})?
+  ({
+    InventoryItem item,
+    OffProductSearchResult? selectedProduct,
+    String? selectedGlobalFoodItemId,
+  })?
   buildSavePayload() {
     final barcode = normalizeManualProductText(state.barcode);
     final kcal = parseManualProductDouble(state.kcalText);
@@ -384,7 +503,7 @@ class InventoryReceiptManualProductController
       return null;
     }
 
-    final selectedProduct = _effectiveSelectedProduct(
+    final selectedProduct = _effectiveSelectedProductSelection(
       barcode: barcode,
       kcal: kcal,
       protein: protein,
@@ -413,7 +532,11 @@ class InventoryReceiptManualProductController
                 _nutritionFromProfile(ocrProfile) ??
                 _config.item.nutrition,
     );
-    return (item: updatedItem, selectedProduct: selectedProduct);
+    return (
+      item: updatedItem,
+      selectedProduct: selectedProduct?.externalProduct,
+      selectedGlobalFoodItemId: selectedProduct?.globalFoodItemId,
+    );
   }
 
   Future<void> _runProductSearch(String query) async {
@@ -454,7 +577,9 @@ class InventoryReceiptManualProductController
     }
   }
 
-  void _applySelectedProduct(OffProductSearchResult product) {
+  void _applySelectedProductSelection(
+    InventoryReceiptManualProductSelection product,
+  ) {
     final nutrition = product.nutrition;
     final weightInput = _resolveWeightInput(
       product.packageWeight,
@@ -462,14 +587,14 @@ class InventoryReceiptManualProductController
     );
     state = state.copyWith(
       searchQuery: product.name,
-      barcode: product.code,
+      barcode: product.barcode,
       weightAmount: weightInput.amount,
       selectedWeightUnit: weightInput.unit,
       kcalText: formatManualProductDouble(nutrition?.per100Kcal),
       proteinText: formatManualProductDouble(nutrition?.per100Protein),
       carbsText: formatManualProductDouble(nutrition?.per100Carbs),
       fatText: formatManualProductDouble(nutrition?.per100Fat),
-      selectedScannedProduct: product,
+      selectedProduct: product,
       ocrProfile: null,
       searchResults: const <OffProductSearchResult>[],
       error: null,
@@ -487,20 +612,20 @@ class InventoryReceiptManualProductController
     );
   }
 
-  OffProductSearchResult? _effectiveSelectedProduct({
+  InventoryReceiptManualProductSelection? _effectiveSelectedProductSelection({
     required String? barcode,
     required double? kcal,
     required double? protein,
     required double? carbs,
     required double? fat,
   }) {
-    final selectedProduct = state.selectedScannedProduct;
+    final selectedProduct = state.selectedProduct;
     if (selectedProduct == null) {
       return null;
     }
 
     final normalizedBarcode = barcode == null ? '' : normalizeBarcode(barcode);
-    if (normalizedBarcode != normalizeBarcode(selectedProduct.code)) {
+    if (normalizedBarcode != normalizeBarcode(selectedProduct.barcode)) {
       return null;
     }
 
@@ -516,8 +641,8 @@ class InventoryReceiptManualProductController
     return selectedProduct;
   }
 
-  OffProductSearchResult? _currentPreviewProduct() {
-    final selectedProduct = state.selectedScannedProduct;
+  InventoryReceiptManualProductSelection? _currentPreviewProduct() {
+    final selectedProduct = state.selectedProduct;
     if (selectedProduct == null) {
       return null;
     }
@@ -526,7 +651,7 @@ class InventoryReceiptManualProductController
     if (normalizedBarcode.isEmpty) {
       return selectedProduct;
     }
-    if (normalizedBarcode != normalizeBarcode(selectedProduct.code)) {
+    if (normalizedBarcode != normalizeBarcode(selectedProduct.barcode)) {
       return null;
     }
     return selectedProduct;
@@ -600,62 +725,6 @@ class InventoryReceiptManualProductController
     };
   }
 
-  String? _initialSearchQuery(InventoryReceiptManualProductConfig config) {
-    final selectedProductName = normalizeManualProductText(
-      config.selectedProduct?.name ?? '',
-    );
-    if (selectedProductName != null) {
-      return selectedProductName;
-    }
-
-    final parts = <String>[];
-    final normalizedParts = <String>{};
-
-    void addPart(String? value, {bool canBeBarcode = true}) {
-      final normalized = normalizeManualProductText(value ?? '');
-      if (normalized == null) {
-        return;
-      }
-      if (!canBeBarcode && _looksLikeBarcodeText(normalized)) {
-        return;
-      }
-
-      final key = normalized.toLowerCase();
-      if (!normalizedParts.add(key)) {
-        return;
-      }
-      parts.add(normalized);
-    }
-
-    addPart(config.item.name, canBeBarcode: false);
-    addPart(config.item.brand);
-    addPart(_initialSearchStoreName(config.item.storeName));
-
-    if (parts.isEmpty) {
-      return null;
-    }
-    return parts.join(' ');
-  }
-
-  String? _initialSearchStoreName(String? rawStoreName) {
-    final storeName = normalizeManualProductText(rawStoreName ?? '');
-    return switch (storeName) {
-      null => null,
-      'Added manually' => null,
-      'Manuell hinzugefügt' => null,
-      _ => storeName,
-    };
-  }
-
-  bool _looksLikeBarcodeText(String value) {
-    final normalized = normalizeBarcode(value);
-    if (normalized.isEmpty) {
-      return false;
-    }
-    final compact = value.replaceAll(RegExp(r'[\s-]+'), '');
-    return compact == normalized;
-  }
-
   ({String amount, InventoryAmountUnit unit}) _resolveWeightInput(
     String? rawWeight, {
     InventoryAmountUnit? fallbackUnit,
@@ -712,4 +781,31 @@ class InventoryReceiptManualProductController
       InventoryAmountUnit.piece => 'Stk',
     };
   }
+}
+
+String? _initialSearchStoreName(InventoryItem item) {
+  if (item.isManuallyAdded) {
+    return null;
+  }
+  return normalizeManualProductText(item.storeName);
+}
+
+bool _looksLikeBarcodeText(String value) {
+  final normalized = normalizeBarcode(value);
+  if (normalized.isEmpty) {
+    return false;
+  }
+  final compact = value.replaceAll(RegExp(r'[\s-]+'), '');
+  return compact == normalized;
+}
+
+String? _normalizeReusableGlobalFoodItemId(String? value) {
+  final normalized = value?.trim();
+  if (normalized == null || normalized.isEmpty) {
+    return null;
+  }
+  if (isPendingGlobalFoodItemId(normalized)) {
+    return null;
+  }
+  return normalized;
 }

@@ -89,6 +89,8 @@
   "inventoryReceiptReviewReadAsPrefix": "Gelesen als",
   "inventoryReceiptReviewCandidatesAction": "Kandidaten",
   "inventoryReceiptReviewProductSelectionLabel": "Produkt auswählen",
+  "inventoryReceiptReviewManualSearchLabel": "Produkt suchen",
+  "inventoryReceiptReviewRecentProductsTitle": "Zuletzt hinzugefügt",
   "inventoryReceiptReviewManualDataAction":
       "Produkt suchen oder Barcode scannen",
   "inventoryReceiptReviewManualDataTitle":

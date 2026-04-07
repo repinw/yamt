@@ -9,6 +9,22 @@ export 'package:yamt/features/inventory/domain/inventory_amount_parser.dart'
 
 enum InventoryBarcodeStatus { resolved, uncertain, pending, missing }
 
+enum InventoryItemOrigin { standard, manualAdd }
+
+const pendingGlobalFoodItemIdPrefix = 'pending-';
+
+String buildPendingGlobalFoodItemId(String resolvedFoodFingerprint) {
+  return '$pendingGlobalFoodItemIdPrefix$resolvedFoodFingerprint';
+}
+
+bool isPendingGlobalFoodItemId(String? value) {
+  final normalized = _normalizeGlobalFoodItemId(value);
+  if (normalized == null) {
+    return false;
+  }
+  return normalized.startsWith(pendingGlobalFoodItemIdPrefix);
+}
+
 class InventoryItem {
   const InventoryItem({
     required this.id,
@@ -34,6 +50,7 @@ class InventoryItem {
     this.language,
     this.isDeposit = false,
     this.isDiscount = false,
+    this.origin = InventoryItemOrigin.standard,
   });
 
   factory InventoryItem.create({
@@ -65,6 +82,7 @@ class InventoryItem {
     String? language,
     bool isDeposit = false,
     bool isDiscount = false,
+    InventoryItemOrigin origin = InventoryItemOrigin.standard,
     String? globalFoodItemId,
   }) {
     final productSnapshot = InventoryItemProductSnapshot(
@@ -104,6 +122,7 @@ class InventoryItem {
       language: language,
       isDeposit: isDeposit,
       isDiscount: isDiscount,
+      origin: origin,
     );
   }
 
@@ -142,6 +161,7 @@ class InventoryItem {
       language: _readTrimmedString(json['language']),
       isDeposit: _readBool(json['is_deposit']) ?? false,
       isDiscount: _readBool(json['is_discount']) ?? false,
+      origin: _readInventoryItemOrigin(json['origin']),
     );
   }
 
@@ -168,6 +188,7 @@ class InventoryItem {
   final String? language;
   final bool isDeposit;
   final bool isDiscount;
+  final InventoryItemOrigin origin;
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
@@ -195,6 +216,7 @@ class InventoryItem {
       'language': language,
       'is_deposit': isDeposit,
       'is_discount': isDiscount,
+      'origin': origin.name,
     };
   }
 
@@ -229,6 +251,7 @@ class InventoryItem {
     Object? language = _keepValue,
     bool? isDeposit,
     bool? isDiscount,
+    InventoryItemOrigin? origin,
   }) {
     final nextProductSnapshot = (productSnapshot ?? this.productSnapshot)
         .copyWith(
@@ -278,6 +301,7 @@ class InventoryItem {
       language: language == _keepValue ? this.language : language as String?,
       isDeposit: isDeposit ?? this.isDeposit,
       isDiscount: isDiscount ?? this.isDiscount,
+      origin: origin ?? this.origin,
     );
   }
 
@@ -315,6 +339,8 @@ class InventoryItem {
   bool get isReviewOnly => isDeposit || isDiscount;
 
   bool get canBeSavedToInventory => !isReviewOnly;
+
+  bool get isManuallyAdded => origin == InventoryItemOrigin.manualAdd;
 
   bool get usesAmountProgress => amountUnit != null && initialAmount > 0;
 
@@ -402,7 +428,8 @@ class InventoryItem {
             other.receiptDate == receiptDate &&
             other.language == language &&
             other.isDeposit == isDeposit &&
-            other.isDiscount == isDiscount;
+            other.isDiscount == isDiscount &&
+            other.origin == origin;
   }
 
   @override
@@ -431,6 +458,7 @@ class InventoryItem {
       language,
       isDeposit,
       isDiscount,
+      origin,
     ]);
   }
 }
@@ -582,7 +610,15 @@ String _resolveGlobalFoodItemId({
   required InventoryItemProductSnapshot productSnapshot,
 }) {
   return _normalizeGlobalFoodItemId(globalFoodItemId) ??
-      'pending-${productSnapshot.resolvedFoodFingerprint}';
+      buildPendingGlobalFoodItemId(productSnapshot.resolvedFoodFingerprint);
+}
+
+InventoryItemOrigin _readInventoryItemOrigin(Object? value) {
+  final raw = value is String ? value.trim() : '';
+  return InventoryItemOrigin.values.firstWhere(
+    (origin) => origin.name == raw,
+    orElse: () => InventoryItemOrigin.standard,
+  );
 }
 
 const Object _keepValue = Object();
