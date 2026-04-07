@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
@@ -151,8 +150,8 @@ class _InventoryManualAddPageState
     ).withDerivedAmount(weight: item.weight, quantity: 1);
 
     final inventorySaved = await ref
-        .read(inventoryItemRepositoryProvider)
-        .appendAll(<InventoryItem>[savedItem]);
+        .read(inventoryItemsControllerProvider.notifier)
+        .addItem(savedItem);
     if (!inventorySaved) {
       return null;
     }
@@ -241,7 +240,7 @@ class _InventoryManualAddPageState
       inventoryItemsControllerProvider.notifier,
     );
     final pendingConsumption = await inventoryController
-        .stagePendingConsumptionForItem(item, request.inventoryAmount);
+        .stagePendingConsumption(item.id, request.inventoryAmount);
     if (pendingConsumption == null) {
       if (mounted) {
         _showSnackBar(l10n.inventoryItemActionFailed);

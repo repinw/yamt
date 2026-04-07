@@ -147,8 +147,13 @@ class _FailingStageInventoryItemsController extends InventoryItemsController {
   }
 
   @override
-  Future<PendingInventoryConsumption?> stagePendingConsumptionForItem(
-    InventoryItem item,
+  Future<bool> addItem(InventoryItem item) async {
+    return true;
+  }
+
+  @override
+  Future<PendingInventoryConsumption?> stagePendingConsumption(
+    String itemId,
     int amount,
   ) async {
     return null;
@@ -264,7 +269,7 @@ Widget _buildHarness({
   FakeCalorieLogRepository? calorieLogRepository,
   FakeCalorieProductCacheRepository? calorieProductCacheRepository,
   InventoryCalorieEntryCommitStore? inventoryCommitStore,
-  InventoryItemsController? inventoryItemsController,
+  InventoryItemsController Function()? inventoryItemsControllerFactory,
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.root,
@@ -296,9 +301,9 @@ Widget _buildHarness({
         inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
           inventoryCommitStore,
         ),
-      if (inventoryItemsController != null)
+      if (inventoryItemsControllerFactory != null)
         inventoryItemsControllerProvider.overrideWith(
-          () => inventoryItemsController,
+          inventoryItemsControllerFactory,
         ),
     ],
     child: MaterialApp.router(
@@ -695,7 +700,9 @@ void main() {
           offRepository: offRepository,
           inventoryRepository: inventoryRepository,
           globalFoodRepository: globalFoodRepository,
-          inventoryItemsController: _FailingStageInventoryItemsController(),
+          inventoryItemsControllerFactory: () {
+            return _FailingStageInventoryItemsController();
+          },
         ),
       );
       await _pumpUi(tester);

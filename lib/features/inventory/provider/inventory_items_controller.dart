@@ -436,6 +436,40 @@ class InventoryItemsController extends _$InventoryItemsController {
     );
   }
 
+  /// Adds a newly created item and publishes it immediately so follow-up
+  /// flows can reference it before the realtime repository catches up.
+  Future<bool> addItem(InventoryItem item) {
+    return _runSerializedMutation(() async {
+      final previousItems = await _currentPersistedItems();
+      final nextItems = _mergePersistedItem(
+        currentItems: previousItems,
+        item: item,
+      );
+      _persistedItems = nextItems;
+      _publishVisibleItems();
+
+      final repository = ref.read(inventoryItemRepositoryProvider);
+      try {
+        final saved = await repository.appendAll(<InventoryItem>[item]);
+        if (!saved) {
+          _persistedItems = previousItems;
+          _publishVisibleItems();
+        }
+        return saved;
+      } catch (error, stackTrace) {
+        log(
+          'Failed to append inventory item ${item.id}.',
+          name: _controllerLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+        _persistedItems = previousItems;
+        _publishVisibleItems();
+        return false;
+      }
+    });
+  }
+
   Future<PendingInventoryConsumption?> stagePendingConsumption(
     String itemId,
     int amount,
@@ -449,33 +483,6 @@ class InventoryItemsController extends _$InventoryItemsController {
         final draft = _createPendingConsumption(
           currentItems: visibleItems,
           itemId: itemId,
-          requestedAmount: amount,
-        );
-        _publishVisibleItems();
-        return draft;
-      },
-      fallbackValue: null,
-    );
-  }
-
-  Future<PendingInventoryConsumption?> stagePendingConsumptionForItem(
-    InventoryItem item,
-    int amount,
-  ) {
-    if (amount < 1) {
-      return Future<PendingInventoryConsumption?>.value(null);
-    }
-    return _runSerializedTask<PendingInventoryConsumption?>(
-      operation: () async {
-        final currentItems = await _currentPersistedItems();
-        final nextItems = _mergePersistedItem(
-          currentItems: currentItems,
-          item: item,
-        );
-        _persistedItems = nextItems;
-        final draft = _createPendingConsumption(
-          currentItems: nextItems,
-          itemId: item.id,
           requestedAmount: amount,
         );
         _publishVisibleItems();
