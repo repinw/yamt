@@ -8,6 +8,8 @@ import 'package:yamt/features/calories/data/'
 import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/data/'
+    'inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -22,12 +24,16 @@ Widget _wrapPage({
   OffProductSearchResult? selectedProduct,
   OffProductSearchRepository? offRepository,
   CalorieNutritionOcrRepositoryContract? ocrRepository,
+  InventoryItemRepository? inventoryRepository,
   bool includeStoreInSearch = true,
   bool includeWeightInSearch = true,
   Locale locale = const Locale('de'),
 }) {
   return ProviderScope(
     overrides: [
+      inventoryItemRepositoryProvider.overrideWithValue(
+        inventoryRepository ?? _FakeInventoryItemRepository(),
+      ),
       if (offRepository != null)
         offProductSearchRepositoryProvider.overrideWithValue(offRepository),
       if (ocrRepository != null)
@@ -77,6 +83,34 @@ class _RecordingOffProductSearchRepository
     required String barcode,
   }) async {
     return const <OffProductSearchResult>[];
+  }
+}
+
+class _FakeInventoryItemRepository implements InventoryItemRepository {
+  _FakeInventoryItemRepository({
+    List<InventoryItem> initialItems = const <InventoryItem>[],
+  }) : _items = initialItems;
+
+  final List<InventoryItem> _items;
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async {
+    return true;
+  }
+
+  @override
+  Future<List<InventoryItem>> readAll() async {
+    return List<InventoryItem>.from(_items);
+  }
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async {
+    return true;
+  }
+
+  @override
+  Stream<List<InventoryItem>> watchAll() async* {
+    yield List<InventoryItem>.from(_items);
   }
 }
 
@@ -133,7 +167,9 @@ InventoryReceiptManualProductState _manualProductState(
   bool includeStoreInSearch = true,
   bool includeWeightInSearch = true,
 }) {
-  final context = tester.element(find.byType(InventoryReceiptManualProductPage));
+  final context = tester.element(
+    find.byKey(const Key('receipt_review_manual_search_field')),
+  );
   final container = ProviderScope.containerOf(context, listen: false);
   final config = InventoryReceiptManualProductConfig(
     item: item,
@@ -141,7 +177,16 @@ InventoryReceiptManualProductState _manualProductState(
     includeStoreInSearch: includeStoreInSearch,
     includeWeightInSearch: includeWeightInSearch,
   );
-  return container.read(inventoryReceiptManualProductControllerProvider(config));
+  return container.read(
+    inventoryReceiptManualProductControllerProvider(config),
+  );
+}
+
+Future<void> _openSearchEditor(WidgetTester tester) async {
+  await tester.tap(
+    find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+  );
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -173,10 +218,14 @@ void main() {
       final searchField = tester.widget<TextField>(
         find.byKey(const Key('receipt_review_manual_search_field')),
       );
+      final prefixIcon = searchField.decoration?.prefixIcon;
       final previewName = tester.widget<Text>(
         find.byKey(const Key('receipt_review_manual_preview_name')),
       );
       expect(searchField.controller?.text, 'Cashews Sour Creme & Onion');
+      expect(searchField.decoration?.labelText, 'Produkt suchen');
+      expect(prefixIcon, isA<Icon>());
+      expect((prefixIcon! as Icon).icon, Icons.search);
       expect(previewName.data, 'Cashews Sour Creme & Onion');
       expect(
         find.descendant(
@@ -283,6 +332,8 @@ void main() {
     );
     await tester.pump();
 
+    await _openSearchEditor(tester);
+
     await tester.enterText(
       find.byKey(const Key('receipt_review_manual_search_field')),
       'Zero',
@@ -344,7 +395,7 @@ void main() {
       await tester.pump();
 
       final searchField = tester.widget<TextField>(
-        find.byKey(const Key('receipt_review_manual_search_field')),
+        find.byKey(const Key('receipt_review_manual_launcher_search_field')),
       );
 
       expect(searchField.controller?.text, 'Zero Booster Netto');
@@ -352,6 +403,92 @@ void main() {
       expect(offRepository.lastBrand, isNull);
     },
   );
+
+  testWidgets('shows recent items and applies their data when selected', (
+    tester,
+  ) async {
+    final recentItem = InventoryItem.create(
+      id: 'recent-1',
+      globalFoodItemId: 'global-olive-oil',
+      name: 'Olivenoel',
+      entryDate: DateTime.parse('2026-04-03T10:00:00Z'),
+      storeName: 'Manuell hinzugefügt',
+      quantity: 1,
+      brand: 'Gut Bio',
+      barcode: '4061462542046',
+      imageUrl: 'https://example.com/olive-oil.png',
+      weight: '500 ml',
+      nutrition: const GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Kcal: 824,
+        per100Protein: 0,
+        per100Carbs: 0,
+        per100Fat: 91.6,
+      ),
+    );
+    final receiptScannedItem = InventoryItem.create(
+      id: 'receipt-1',
+      globalFoodItemId: 'global-receipt-item',
+      name: 'Receipt Chips',
+      entryDate: DateTime.parse('2026-04-05T10:00:00Z'),
+      storeName: 'Netto',
+      quantity: 1,
+      brand: 'Scan Brand',
+      barcode: '4311111111111',
+      weight: '150 g',
+    );
+
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item().copyWith(name: 'Zero'),
+        inventoryRepository: _FakeInventoryItemRepository(
+          initialItems: <InventoryItem>[
+            receiptScannedItem,
+            recentItem,
+            recentItem.copyWith(
+              id: 'recent-duplicate',
+              entryDate: DateTime.parse('2026-04-01T10:00:00Z'),
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Zuletzt hinzugefügt'), findsOneWidget);
+    expect(find.text('Olivenoel'), findsOneWidget);
+    expect(find.text('Receipt Chips'), findsNothing);
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_recent_item_recent-1')),
+    );
+    await tester.pumpAndSettle();
+
+    final state = _manualProductState(
+      tester,
+      item: _item().copyWith(name: 'Zero'),
+    );
+    final searchField = tester.widget<TextField>(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+    );
+    final weightField = tester.widget<TextField>(
+      find.byKey(const Key('receipt_review_manual_weight_field')),
+    );
+    final weightUnitField = tester
+        .widget<DropdownButtonFormField<InventoryAmountUnit>>(
+          find.byKey(const Key('receipt_review_manual_weight_unit_field')),
+        );
+
+    expect(searchField.controller?.text, 'Olivenoel');
+    expect(weightField.controller?.text, '500');
+    expect(weightUnitField.initialValue, InventoryAmountUnit.milliliter);
+    expect(state.selectedProduct?.globalFoodItemId, 'global-olive-oil');
+    expect(find.text('Zuletzt hinzugefügt'), findsNothing);
+    expect(
+      find.byKey(const Key('receipt_review_manual_preview_brand')),
+      findsOneWidget,
+    );
+  });
 
   testWidgets(
     'receipt review manual search does not pass store or weight to search',
@@ -373,6 +510,8 @@ void main() {
         ),
       );
       await tester.pump();
+
+      await _openSearchEditor(tester);
 
       await tester.enterText(
         find.byKey(const Key('receipt_review_manual_search_field')),
@@ -401,6 +540,8 @@ void main() {
     );
     await tester.pump();
 
+    await _openSearchEditor(tester);
+
     await tester.enterText(
       find.byKey(const Key('receipt_review_manual_search_field')),
       'Zero',
@@ -414,6 +555,126 @@ void main() {
     expect(state.searchResults, isEmpty);
     expect(find.byType(CircularProgressIndicator), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('cancel after selecting product returns to search results', (
+    tester,
+  ) async {
+    final offRepository =
+        _RecordingOffProductSearchRepository(const <OffProductSearchResult>[
+          OffProductSearchResult(
+            code: '4311596490202',
+            name: 'Booster Absolute Zero',
+            brand: 'Booster',
+            imageUrl: 'https://example.com/booster.png',
+            packageWeight: '330 ml',
+            score: 100,
+          ),
+        ]);
+
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item().copyWith(name: 'Zero', storeName: 'Netto'),
+        offRepository: offRepository,
+      ),
+    );
+    await tester.pump();
+
+    await _openSearchEditor(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+      'Zero',
+    );
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pump();
+
+    expect(
+      find.byKey(
+        const Key('receipt_review_manual_search_result_4311596490202'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(
+        const Key('receipt_review_manual_search_result_4311596490202'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('receipt_review_manual_preview_brand')),
+      findsOneWidget,
+    );
+
+    final closeButton = find.byType(CloseButton);
+    if (closeButton.evaluate().isNotEmpty) {
+      await tester.tap(closeButton);
+    } else {
+      await tester.tap(find.byType(BackButton));
+    }
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(
+        const Key('receipt_review_manual_search_result_4311596490202'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('receipt_review_manual_preview_brand')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('back from editor shows launcher list again', (tester) async {
+    final recentItem = InventoryItem.create(
+      id: 'recent-1',
+      name: 'Olivenoel',
+      entryDate: DateTime.parse('2026-04-03T10:00:00Z'),
+      storeName: 'Manuell hinzugefügt',
+      quantity: 1,
+      barcode: '4061462542046',
+    );
+
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item().copyWith(name: 'Zero'),
+        inventoryRepository: _FakeInventoryItemRepository(
+          initialItems: <InventoryItem>[recentItem],
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Zuletzt hinzugefügt'), findsOneWidget);
+
+    await _openSearchEditor(tester);
+
+    expect(find.text('Zuletzt hinzugefügt'), findsNothing);
+    expect(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+      findsOneWidget,
+    );
+
+    final closeButton = find.byType(CloseButton);
+    if (closeButton.evaluate().isNotEmpty) {
+      await tester.tap(closeButton);
+    } else {
+      await tester.tap(find.byType(BackButton));
+    }
+    await tester.pumpAndSettle();
+
+    expect(find.text('Zuletzt hinzugefügt'), findsOneWidget);
+    expect(
+      find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('failed OCR scan shows a snackbar message', (tester) async {
@@ -432,9 +693,7 @@ void main() {
         selectedProduct: selectedProduct,
         ocrRepository: _FakeNutritionOcrRepository(
           onScanNutritionLabel: (_) async =>
-              const CalorieNutritionOcrResult.failed(
-                errorCode: 'ocr_failed',
-              ),
+              const CalorieNutritionOcrResult.failed(errorCode: 'ocr_failed'),
         ),
       ),
     );

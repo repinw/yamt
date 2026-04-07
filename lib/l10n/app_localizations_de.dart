@@ -223,6 +223,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewProductSelectionLabel => 'Produkt auswählen';
 
   @override
+  String get inventoryReceiptReviewManualSearchLabel => 'Produkt suchen';
+
+  @override
+  String get inventoryReceiptReviewRecentProductsTitle => 'Zuletzt hinzugefügt';
+
+  @override
   String get inventoryReceiptReviewManualDataAction => 'Produkt suchen oder Barcode scannen';
 
   @override

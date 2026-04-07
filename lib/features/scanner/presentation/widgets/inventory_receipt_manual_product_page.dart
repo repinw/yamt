@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -13,6 +16,10 @@ import 'package:yamt/features/scanner/presentation/widgets/'
 import 'package:yamt/features/scanner/provider/'
     'inventory_receipt_manual_product_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+const _manualProductRecentItemLimit = 6;
+const _manualProductPageLogName = 'InventoryReceiptManualProductPage';
+const _manualAddStoreNames = <String>{'Added manually', 'Manuell hinzugefügt'};
 
 class InventoryReceiptManualProductPage extends StatelessWidget {
   const InventoryReceiptManualProductPage({
@@ -40,7 +47,17 @@ class InventoryReceiptManualProductPage extends StatelessWidget {
       includeWeightInSearch: includeWeightInSearch,
     );
 
-    return _InventoryReceiptManualProductContent(
+    if (_shouldOpenEditorImmediately(
+      item: item,
+      selectedProduct: selectedProduct,
+    )) {
+      return _InventoryReceiptManualProductEditorPage(
+        config: config,
+        onSaved: onSaved,
+      );
+    }
+
+    return _InventoryReceiptManualProductLauncherPage(
       config: config,
       onSaved: onSaved,
     );
@@ -51,14 +68,26 @@ class InventoryReceiptManualProductResult {
   const InventoryReceiptManualProductResult({
     required this.item,
     this.selectedProduct,
+    this.selectedGlobalFoodItemId,
   });
 
   final InventoryItem item;
   final OffProductSearchResult? selectedProduct;
+  final String? selectedGlobalFoodItemId;
 }
 
-class _InventoryReceiptManualProductContent extends ConsumerStatefulWidget {
-  const _InventoryReceiptManualProductContent({
+bool _shouldOpenEditorImmediately({
+  required InventoryItem item,
+  required OffProductSearchResult? selectedProduct,
+}) {
+  return selectedProduct != null ||
+      item.normalizedBarcode != null ||
+      item.nutrition != null;
+}
+
+class _InventoryReceiptManualProductLauncherPage
+    extends ConsumerStatefulWidget {
+  const _InventoryReceiptManualProductLauncherPage({
     required this.config,
     this.onSaved,
   });
@@ -68,8 +97,229 @@ class _InventoryReceiptManualProductContent extends ConsumerStatefulWidget {
   onSaved;
 
   @override
-  ConsumerState<_InventoryReceiptManualProductContent> createState() =>
-      _InventoryReceiptManualProductContentState();
+  ConsumerState<_InventoryReceiptManualProductLauncherPage> createState() =>
+      _InventoryReceiptManualProductLauncherPageState();
+}
+
+class _InventoryReceiptManualProductLauncherPageState
+    extends ConsumerState<_InventoryReceiptManualProductLauncherPage> {
+  late final TextEditingController _searchController;
+  List<InventoryItem> _recentItems = const <InventoryItem>[];
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController(
+      text: buildManualProductInitialSearchQuery(widget.config) ?? '',
+    );
+    unawaited(_loadRecentItems());
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.inventoryReceiptReviewManualDataTitle)),
+      body: InventoryReceiptManualProductLauncherContent(
+        searchController: _searchController,
+        recentItems: _recentItems,
+        onSearchTap: () {
+          unawaited(_openSearchEditor());
+        },
+        onRecentItemSelected: (item) {
+          unawaited(_openRecentItemEditor(item));
+        },
+        onScanBarcode: () {
+          unawaited(_openBarcodeScanner());
+        },
+      ),
+    );
+  }
+
+  Future<void> _loadRecentItems() async {
+    try {
+      final items = await ref.read(inventoryItemRepositoryProvider).readAll();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _recentItems = _buildRecentItems(items);
+      });
+    } catch (error, stackTrace) {
+      log(
+        'Failed to load recent manual product items.',
+        name: _manualProductPageLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<void> _openSearchEditor() async {
+    await _openEditor(autofocusSearch: true);
+  }
+
+  Future<void> _openRecentItemEditor(InventoryItem item) async {
+    await _openEditor(initialRecentItem: item);
+  }
+
+  Future<void> _openEditor({
+    InventoryItem? itemOverride,
+    OffProductSearchResult? selectedProduct,
+    InventoryItem? initialRecentItem,
+    bool autofocusSearch = false,
+    String? initialInfoMessage,
+  }) async {
+    final config = InventoryReceiptManualProductConfig(
+      item: itemOverride ?? widget.config.item,
+      selectedProduct: selectedProduct,
+      includeStoreInSearch: widget.config.includeStoreInSearch,
+      includeWeightInSearch: widget.config.includeWeightInSearch,
+    );
+    final result = await Navigator.of(context)
+        .push<InventoryReceiptManualProductResult>(
+          _NoAnimationMaterialPageRoute<InventoryReceiptManualProductResult>(
+            fullscreenDialog: true,
+            builder: (routeContext) {
+              return _InventoryReceiptManualProductEditorPage(
+                config: config,
+                autofocusSearch: autofocusSearch,
+                initialRecentItem: initialRecentItem,
+                initialInfoMessage: initialInfoMessage,
+              );
+            },
+          ),
+        );
+    if (!mounted || result == null) {
+      return;
+    }
+
+    final onSaved = widget.onSaved;
+    if (onSaved != null) {
+      await onSaved(result);
+      return;
+    }
+    _closePage(result);
+  }
+
+  Future<void> _openBarcodeScanner() async {
+    final l10n = AppLocalizations.of(context)!;
+    final result = await showModalBottomSheet<_ManualBarcodeScanResult>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheetContext) {
+        return FractionallySizedBox(
+          heightFactor: 1,
+          child: InventoryBarcodeScannerPage(
+            title: l10n.inventoryBarcodeMissingPromptScanNow,
+            onProductSelected: (candidate, scannedBarcode) async {
+              Navigator.of(sheetContext).pop(
+                _ManualBarcodeScanResult.selected(
+                  product: candidate,
+                  scannedBarcode: scannedBarcode,
+                ),
+              );
+              return true;
+            },
+            onProductNotFound: (scannedBarcode) async {
+              Navigator.of(sheetContext).pop(
+                _ManualBarcodeScanResult.notFound(
+                  scannedBarcode: scannedBarcode,
+                ),
+              );
+              return true;
+            },
+          ),
+        );
+      },
+    );
+    if (!mounted || result == null) {
+      return;
+    }
+
+    switch (result.kind) {
+      case _ManualBarcodeScanResultKind.selected:
+        final product = result.product;
+        if (product == null) {
+          return;
+        }
+        await _openEditor(selectedProduct: product);
+      case _ManualBarcodeScanResultKind.notFound:
+        final scannedBarcode = result.scannedBarcode;
+        if (scannedBarcode == null || scannedBarcode.isEmpty) {
+          return;
+        }
+        await _openEditor(
+          itemOverride: widget.config.item.copyWith(barcode: scannedBarcode),
+          initialInfoMessage: l10n.inventoryManualAddNotFound,
+        );
+    }
+  }
+
+  void _closePage<T extends Object?>([T? result]) {
+    if (!mounted) {
+      return;
+    }
+
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      router.pop(result);
+      return;
+    }
+    Navigator.of(context).pop(result);
+  }
+}
+
+class _InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
+  const _InventoryReceiptManualProductEditorPage({
+    required this.config,
+    this.onSaved,
+    this.autofocusSearch = false,
+    this.initialRecentItem,
+    this.initialInfoMessage,
+  });
+
+  final InventoryReceiptManualProductConfig config;
+  final Future<void> Function(InventoryReceiptManualProductResult result)?
+  onSaved;
+  final bool autofocusSearch;
+  final InventoryItem? initialRecentItem;
+  final String? initialInfoMessage;
+
+  @override
+  ConsumerState<_InventoryReceiptManualProductEditorPage> createState() =>
+      _InventoryReceiptManualProductEditorPageState();
+}
+
+class _NoAnimationMaterialPageRoute<T> extends MaterialPageRoute<T> {
+  _NoAnimationMaterialPageRoute({
+    required super.builder,
+    super.fullscreenDialog,
+  });
+
+  @override
+  Duration get transitionDuration => Duration.zero;
+
+  @override
+  Duration get reverseTransitionDuration => Duration.zero;
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return child;
+  }
 }
 
 enum _ManualBarcodeScanResultKind { selected, notFound }
@@ -101,8 +351,8 @@ class _ManualBarcodeScanResult {
   final String? scannedBarcode;
 }
 
-class _InventoryReceiptManualProductContentState
-    extends ConsumerState<_InventoryReceiptManualProductContent> {
+class _InventoryReceiptManualProductEditorPageState
+    extends ConsumerState<_InventoryReceiptManualProductEditorPage> {
   late final TextEditingController _searchController;
   late final TextEditingController _weightAmountController;
   late final TextEditingController _kcalController;
@@ -111,6 +361,7 @@ class _InventoryReceiptManualProductContentState
   late final TextEditingController _fatController;
   ProviderSubscription<InventoryReceiptManualProductState>? _stateSubscription;
   bool _didBindProviderState = false;
+  bool _didScheduleInitialRecentItem = false;
   bool _isSyncingControllers = false;
 
   InventoryReceiptManualProductControllerProvider get _provider {
@@ -136,6 +387,15 @@ class _InventoryReceiptManualProductContentState
     _proteinController.addListener(_handleProteinChanged);
     _carbsController.addListener(_handleCarbsChanged);
     _fatController.addListener(_handleFatChanged);
+    final initialInfoMessage = widget.initialInfoMessage;
+    if (initialInfoMessage != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        _showSnackBar(initialInfoMessage);
+      });
+    }
   }
 
   @override
@@ -153,6 +413,16 @@ class _InventoryReceiptManualProductContentState
         _syncControllers(next);
       },
     );
+    final initialRecentItem = widget.initialRecentItem;
+    if (!_didScheduleInitialRecentItem && initialRecentItem != null) {
+      _didScheduleInitialRecentItem = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        _controller.applyRecentItem(initialRecentItem);
+      });
+    }
   }
 
   void _syncControllers(InventoryReceiptManualProductState state) {
@@ -213,15 +483,15 @@ class _InventoryReceiptManualProductContentState
     final preview = _buildPreviewData();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.inventoryReceiptReviewManualDataTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.inventoryReceiptReviewManualDataTitle)),
       body: InventoryReceiptManualProductForm(
         preview: preview,
         searchController: _searchController,
         isSearching: state.isSearching,
+        autofocusSearch: widget.autofocusSearch,
         showDetails: state.showDetails,
         searchResults: state.searchResults,
+        recentItems: const <InventoryItem>[],
         weightAmountController: _weightAmountController,
         selectedWeightUnit: state.selectedWeightUnit,
         kcalController: _kcalController,
@@ -229,7 +499,8 @@ class _InventoryReceiptManualProductContentState
         carbsController: _carbsController,
         proteinController: _proteinController,
         errorText: _resolveErrorText(l10n, state.error),
-        onSearchResultSelected: _controller.applySearchResult,
+        onSearchResultSelected: _handleSearchResultSelected,
+        onRecentItemSelected: _controller.applyRecentItem,
         onScanBarcode: () {
           unawaited(_openBarcodeScanner());
         },
@@ -260,6 +531,39 @@ class _InventoryReceiptManualProductContentState
     );
   }
 
+  void _handleSearchResultSelected(OffProductSearchResult product) {
+    if (widget.autofocusSearch) {
+      unawaited(_openSelectedProductEditor(product));
+      return;
+    }
+    _controller.applySearchResult(product);
+  }
+
+  Future<void> _openSelectedProductEditor(
+    OffProductSearchResult product,
+  ) async {
+    final config = InventoryReceiptManualProductConfig(
+      item: widget.config.item,
+      selectedProduct: product,
+      includeStoreInSearch: widget.config.includeStoreInSearch,
+      includeWeightInSearch: widget.config.includeWeightInSearch,
+    );
+    final result = await Navigator.of(context)
+        .push<InventoryReceiptManualProductResult>(
+          _NoAnimationMaterialPageRoute<InventoryReceiptManualProductResult>(
+            fullscreenDialog: true,
+            builder: (routeContext) {
+              return _InventoryReceiptManualProductEditorPage(config: config);
+            },
+          ),
+        );
+    if (!mounted || result == null) {
+      return;
+    }
+
+    _closePage(result);
+  }
+
   Future<void> _save() async {
     final payload = _controller.buildSavePayload();
     if (payload == null) {
@@ -269,6 +573,7 @@ class _InventoryReceiptManualProductContentState
     final result = InventoryReceiptManualProductResult(
       item: payload.item,
       selectedProduct: payload.selectedProduct,
+      selectedGlobalFoodItemId: payload.selectedGlobalFoodItemId,
     );
     final onSaved = widget.onSaved;
     if (onSaved != null) {
@@ -318,6 +623,10 @@ class _InventoryReceiptManualProductContentState
       case _ManualBarcodeScanResultKind.selected:
         final product = result.product;
         if (product == null) {
+          return;
+        }
+        if (widget.autofocusSearch) {
+          await _openSelectedProductEditor(product);
           return;
         }
         _controller.applyScannedProduct(product);
@@ -412,4 +721,47 @@ class _InventoryReceiptManualProductContentState
         l10n.inventoryReceiptReviewManualDataRequired,
     };
   }
+}
+
+List<InventoryItem> _buildRecentItems(List<InventoryItem> items) {
+  final sortedItems =
+      items
+          .where((item) => item.canBeSavedToInventory)
+          .where((item) => item.name.trim().isNotEmpty)
+          .where((item) => _manualAddStoreNames.contains(item.storeName.trim()))
+          .toList(growable: false)
+        ..sort((left, right) => right.entryDate.compareTo(left.entryDate));
+
+  final recentItems = <InventoryItem>[];
+  final seenKeys = <String>{};
+  for (final item in sortedItems) {
+    final key = _recentItemKey(item);
+    if (!seenKeys.add(key)) {
+      continue;
+    }
+    recentItems.add(item);
+    if (recentItems.length >= _manualProductRecentItemLimit) {
+      break;
+    }
+  }
+  return recentItems;
+}
+
+String _recentItemKey(InventoryItem item) {
+  final globalFoodItemId = item.globalFoodItemId.trim();
+  if (globalFoodItemId.isNotEmpty && !globalFoodItemId.startsWith('pending-')) {
+    return 'global:$globalFoodItemId';
+  }
+
+  final barcode = item.normalizedBarcode;
+  if (barcode != null && barcode.isNotEmpty) {
+    return 'barcode:$barcode';
+  }
+
+  final normalizedName = item.name.trim().toLowerCase();
+  final normalizedBrand = (item.brand ?? '').trim().toLowerCase();
+  final normalizedWeight = (item.weight ?? '').trim().toLowerCase();
+  return 'name:$normalizedName'
+      '|brand:$normalizedBrand'
+      '|weight:$normalizedWeight';
 }

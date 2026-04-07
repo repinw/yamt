@@ -515,6 +515,18 @@ abstract class AppLocalizations {
   /// **'Select product'**
   String get inventoryReceiptReviewProductSelectionLabel;
 
+  /// No description provided for @inventoryReceiptReviewManualSearchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Search product'**
+  String get inventoryReceiptReviewManualSearchLabel;
+
+  /// No description provided for @inventoryReceiptReviewRecentProductsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently added'**
+  String get inventoryReceiptReviewRecentProductsTitle;
+
   /// No description provided for @inventoryReceiptReviewManualDataAction.
   ///
   /// In en, this message translates to:

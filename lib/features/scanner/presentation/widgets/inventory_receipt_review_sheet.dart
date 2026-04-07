@@ -8,6 +8,7 @@ import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_match_candidate.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/'
@@ -272,13 +273,17 @@ class _InventoryReceiptReviewSheetState
     final matcher = ref.read(globalFoodItemMatcherProvider);
     _replaceDraftByItemId(itemId, (draft) {
       final selectedProduct = result.selectedProduct;
-      if (selectedProduct == null) {
+      final selectedGlobalFoodItemId = result.selectedGlobalFoodItemId;
+      if (selectedProduct == null && selectedGlobalFoodItemId == null) {
         return draft.copyWith(item: result.item).selectNewItem();
       }
 
-      final scannedCandidate = matcher.candidateFromExternalResult(
-        selectedProduct,
-      );
+      final scannedCandidate = selectedProduct != null
+          ? matcher.candidateFromExternalResult(selectedProduct)
+          : _candidateFromRecentItem(
+              item: result.item,
+              globalFoodItemId: selectedGlobalFoodItemId!,
+            );
       final mergedCandidates = <GlobalFoodMatchCandidate>[
         scannedCandidate,
         ...draft.candidates.where(
@@ -293,6 +298,28 @@ class _InventoryReceiptReviewSheetState
         requestAiEnrichment: false,
       );
     });
+  }
+
+  GlobalFoodMatchCandidate _candidateFromRecentItem({
+    required InventoryItem item,
+    required String globalFoodItemId,
+  }) {
+    return GlobalFoodMatchCandidate(
+      item: GlobalFoodItem.create(
+        id: globalFoodItemId,
+        name: item.name,
+        now: item.entryDate,
+        brand: item.brand,
+        category: item.category,
+        barcode: item.barcode,
+        imageUrl: item.imageUrl,
+        packageWeight: item.weight,
+        foodFingerprint: item.resolvedFoodFingerprint,
+        nutrition: item.nutrition,
+      ),
+      score: 100,
+      reason: GlobalFoodMatchReason.nameExact,
+    );
   }
 
   Future<ReceiptReviewItemDraft?> _prepareDraftForCandidateSelection(

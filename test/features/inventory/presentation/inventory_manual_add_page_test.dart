@@ -303,7 +303,7 @@ void main() {
     await _pumpUi(tester);
 
     expect(
-      find.byKey(const Key('receipt_review_manual_search_field')),
+      find.byKey(const Key('receipt_review_manual_launcher_search_field')),
       findsOneWidget,
     );
     final scanButton = find.byKey(
@@ -399,7 +399,7 @@ void main() {
     await _pumpUi(tester);
 
     expect(
-      find.byKey(const Key('receipt_review_manual_search_field')),
+      find.byKey(const Key('receipt_review_manual_launcher_search_field')),
       findsOneWidget,
     );
     final scanButton = find.byKey(

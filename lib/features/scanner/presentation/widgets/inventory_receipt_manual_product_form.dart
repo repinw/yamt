@@ -4,7 +4,7 @@ import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
-import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import 'inventory_receipt_manual_product_form_utils.dart';
@@ -23,13 +23,69 @@ class InventoryReceiptManualProductPreviewData {
   final String? weight;
 }
 
+class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
+  const InventoryReceiptManualProductLauncherContent({
+    super.key,
+    required this.searchController,
+    required this.recentItems,
+    required this.onSearchTap,
+    required this.onRecentItemSelected,
+    required this.onScanBarcode,
+  });
+
+  final TextEditingController searchController;
+  final List<InventoryItem> recentItems;
+  final VoidCallback onSearchTap;
+  final ValueChanged<InventoryItem> onRecentItemSelected;
+  final VoidCallback onScanBarcode;
+
+  @override
+  Widget build(BuildContext context) {
+    final insets = MediaQuery.viewInsetsOf(context).bottom;
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.xl,
+          AppSpacing.xl,
+          AppSpacing.xl + insets,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _ManualProductSearchBar(
+              controller: searchController,
+              isSearching: false,
+              onScanBarcode: onScanBarcode,
+              fieldKey: const Key(
+                'receipt_review_manual_launcher_search_field',
+              ),
+              readOnly: true,
+              onTap: onSearchTap,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            _ManualProductRecentItems(
+              items: recentItems,
+              onSelect: onRecentItemSelected,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class InventoryReceiptManualProductForm extends StatelessWidget {
   const InventoryReceiptManualProductForm({
     super.key,
     required this.searchController,
     required this.isSearching,
+    this.autofocusSearch = false,
     required this.showDetails,
     required this.searchResults,
+    required this.recentItems,
     required this.weightAmountController,
     required this.selectedWeightUnit,
     required this.kcalController,
@@ -39,6 +95,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.preview,
     required this.errorText,
     required this.onSearchResultSelected,
+    required this.onRecentItemSelected,
     required this.onScanBarcode,
     required this.onWeightUnitChanged,
     required this.onScanNutritionLabel,
@@ -48,8 +105,10 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
 
   final TextEditingController searchController;
   final bool isSearching;
+  final bool autofocusSearch;
   final bool showDetails;
   final List<OffProductSearchResult> searchResults;
+  final List<InventoryItem> recentItems;
   final TextEditingController weightAmountController;
   final InventoryAmountUnit selectedWeightUnit;
   final TextEditingController kcalController;
@@ -59,6 +118,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   final InventoryReceiptManualProductPreviewData? preview;
   final String? errorText;
   final ValueChanged<OffProductSearchResult> onSearchResultSelected;
+  final ValueChanged<InventoryItem> onRecentItemSelected;
   final VoidCallback onScanBarcode;
   final ValueChanged<InventoryAmountUnit> onWeightUnitChanged;
   final VoidCallback? onScanNutritionLabel;
@@ -86,12 +146,20 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
               controller: searchController,
               isSearching: isSearching,
               onScanBarcode: onScanBarcode,
+              fieldKey: const Key('receipt_review_manual_search_field'),
+              autofocus: autofocusSearch,
             ),
             const SizedBox(height: AppSpacing.sm),
-            _ManualProductSearchResults(
-              results: searchResults,
-              onSelect: onSearchResultSelected,
-            ),
+            if (searchResults.isNotEmpty)
+              _ManualProductSearchResults(
+                results: searchResults,
+                onSelect: onSearchResultSelected,
+              )
+            else
+              _ManualProductRecentItems(
+                items: recentItems,
+                onSelect: onRecentItemSelected,
+              ),
             if (showDetails && preview != null) ...[
               const SizedBox(height: AppSpacing.lg),
               _ManualProductPreview(preview: preview!),
@@ -261,11 +329,19 @@ class _ManualProductSearchBar extends StatelessWidget {
     required this.controller,
     required this.isSearching,
     required this.onScanBarcode,
+    required this.fieldKey,
+    this.readOnly = false,
+    this.autofocus = false,
+    this.onTap,
   });
 
   final TextEditingController controller;
   final bool isSearching;
   final VoidCallback onScanBarcode;
+  final Key fieldKey;
+  final bool readOnly;
+  final bool autofocus;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -276,9 +352,13 @@ class _ManualProductSearchBar extends StatelessWidget {
         Expanded(
           child: _ManualProductTextField(
             controller: controller,
-            label: l10n.inventoryReceiptReviewProductSelectionLabel,
-            fieldKey: const Key('receipt_review_manual_search_field'),
+            label: l10n.inventoryReceiptReviewManualSearchLabel,
+            fieldKey: fieldKey,
             keyboardType: TextInputType.text,
+            prefixIcon: const Icon(Icons.search),
+            readOnly: readOnly,
+            autofocus: autofocus,
+            onTap: onTap,
             suffixIcon: isSearching
                 ? const Padding(
                     padding: EdgeInsets.all(12),
@@ -312,6 +392,10 @@ class _ManualProductTextField extends StatelessWidget {
     required this.label,
     required this.fieldKey,
     required this.keyboardType,
+    this.readOnly = false,
+    this.autofocus = false,
+    this.onTap,
+    this.prefixIcon,
     this.suffixIcon,
   });
 
@@ -319,6 +403,10 @@ class _ManualProductTextField extends StatelessWidget {
   final String label;
   final Key fieldKey;
   final TextInputType keyboardType;
+  final bool readOnly;
+  final bool autofocus;
+  final VoidCallback? onTap;
+  final Widget? prefixIcon;
   final Widget? suffixIcon;
 
   @override
@@ -327,9 +415,13 @@ class _ManualProductTextField extends StatelessWidget {
       key: fieldKey,
       controller: controller,
       keyboardType: keyboardType,
+      readOnly: readOnly,
+      autofocus: autofocus,
+      onTap: onTap,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
+        prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
       ),
     );
@@ -383,6 +475,70 @@ class _ManualProductSearchResults extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+class _ManualProductRecentItems extends StatelessWidget {
+  const _ManualProductRecentItems({
+    required this.items,
+    required this.onSelect,
+  });
+
+  final List<InventoryItem> items;
+  final ValueChanged<InventoryItem> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.inventoryReceiptReviewRecentProductsTitle,
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border.all(color: colors.outlineVariant),
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          child: ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: items.length,
+            separatorBuilder: (_, _) =>
+                Divider(height: 1, color: colors.outlineVariant),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return InkWell(
+                key: Key('receipt_review_manual_recent_item_${item.id}'),
+                onTap: () => onSelect(item),
+                child: Padding(
+                  padding: AppInsets.card,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _ManualProductSearchImage(imageUrl: item.imageUrl),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: _ManualProductRecentItemDetails(item: item),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -448,6 +604,54 @@ class _ManualProductSearchDetails extends StatelessWidget {
                   label: l10n.caloriesFatLabel,
                 ),
             ],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _ManualProductRecentItemDetails extends StatelessWidget {
+  const _ManualProductRecentItemDetails({required this.item});
+
+  final InventoryItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final brand = normalizeManualProductText(item.brand ?? '');
+    final weight = normalizeManualProductText(item.weight ?? '');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          item.name,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: textTheme.titleSmall,
+        ),
+        if (brand != null) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            brand,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.bodyMedium?.copyWith(
+              color: colors.onSurfaceVariant,
+            ),
+          ),
+        ],
+        if (weight != null) ...[
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            weight,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.bodySmall?.copyWith(
+              color: colors.onSurfaceVariant,
+            ),
           ),
         ],
       ],

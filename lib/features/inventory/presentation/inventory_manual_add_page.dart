@@ -69,6 +69,7 @@ class _InventoryManualAddPageState
       item: result.item,
       barcode: barcode,
       selectedProduct: result.selectedProduct,
+      selectedGlobalFoodItemId: result.selectedGlobalFoodItemId,
     );
     if (!mounted) {
       return;
@@ -87,6 +88,7 @@ class _InventoryManualAddPageState
     required InventoryItem item,
     required String barcode,
     OffProductSearchResult? selectedProduct,
+    String? selectedGlobalFoodItemId,
   }) async {
     final now = DateTime.now();
     final l10n = AppLocalizations.of(context)!;
@@ -95,6 +97,7 @@ class _InventoryManualAddPageState
       barcode: barcode,
       now: now,
       selectedProduct: selectedProduct,
+      selectedGlobalFoodItemId: selectedGlobalFoodItemId,
     );
 
     final globalSaved = await ref
@@ -154,9 +157,12 @@ class _InventoryManualAddPageState
     required String barcode,
     required DateTime now,
     OffProductSearchResult? selectedProduct,
+    String? selectedGlobalFoodItemId,
   }) {
     return GlobalFoodItem.create(
-      id: _globalFoodItemIdFor(item, barcode: barcode),
+      id:
+          selectedGlobalFoodItemId ??
+          _globalFoodItemIdFor(item, barcode: barcode),
       name: item.name,
       now: now,
       brand: item.brand,
