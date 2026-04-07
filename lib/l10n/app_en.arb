@@ -135,6 +135,12 @@
   "inventoryItemEatSheetAmountLabel": "Enter amount",
   "inventoryItemEatSheetQuickSelectLabel": "Quick select",
   "inventoryItemEatSheetAllAction": "All",
+  "inventoryItemEatSheetInedibleAmountLabel": "Subtract inedible part",
+  "inventoryItemEatSheetInedibleAmountHint":
+      "Optional, e.g. bones or shells. Calories are calculated only for the edible remainder.",
+  "inventoryItemEatSheetInedibleAmountFieldLabel": "Inedible amount",
+  "inventoryItemEatSheetInedibleAmountError":
+      "The deducted amount must be smaller than the eaten amount.",
   "inventoryItemEatSheetWhenLabel": "When?",
   "inventoryItemEatSheetNowValue": "Today",
   "inventoryItemEatSheetNutritionLabel": "Nutrition",

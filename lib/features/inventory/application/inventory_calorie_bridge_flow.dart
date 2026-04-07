@@ -69,16 +69,18 @@ class InventoryCalorieBridgeFlow {
     required InventoryItemEatRequest request,
   }) {
     final fixedUnit = inventoryItemConsumedUnit(item);
-    if (fixedUnit == null && !request.hasManualCaloriePortion) {
+    if (!request.hasManualCaloriePortion && fixedUnit == null) {
       throw StateError(
         'Manual calorie portion is required for inventory item ${item.id}.',
       );
     }
 
-    final consumedAmount = fixedUnit == null
+    final consumedAmount = request.hasManualCaloriePortion
         ? request.calorieAmount!
         : request.inventoryAmount.toDouble();
-    final consumedUnit = fixedUnit ?? request.calorieUnit!;
+    final consumedUnit = request.hasManualCaloriePortion
+        ? request.calorieUnit!
+        : fixedUnit!;
 
     return CalorieInventoryCreateContext(
       inventoryItemId: item.id,

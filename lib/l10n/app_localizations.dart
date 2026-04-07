@@ -713,6 +713,30 @@ abstract class AppLocalizations {
   /// **'All'**
   String get inventoryItemEatSheetAllAction;
 
+  /// No description provided for @inventoryItemEatSheetInedibleAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtract inedible part'**
+  String get inventoryItemEatSheetInedibleAmountLabel;
+
+  /// No description provided for @inventoryItemEatSheetInedibleAmountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional, e.g. bones or shells. Calories are calculated only for the edible remainder.'**
+  String get inventoryItemEatSheetInedibleAmountHint;
+
+  /// No description provided for @inventoryItemEatSheetInedibleAmountFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Inedible amount'**
+  String get inventoryItemEatSheetInedibleAmountFieldLabel;
+
+  /// No description provided for @inventoryItemEatSheetInedibleAmountError.
+  ///
+  /// In en, this message translates to:
+  /// **'The deducted amount must be smaller than the eaten amount.'**
+  String get inventoryItemEatSheetInedibleAmountError;
+
   /// No description provided for @inventoryItemEatSheetWhenLabel.
   ///
   /// In en, this message translates to:

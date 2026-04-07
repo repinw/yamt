@@ -122,20 +122,27 @@ DateTime _targetLoggedAtDate() {
 }
 
 Future<void> _pickLoggedAtDate(WidgetTester tester, DateTime targetDate) async {
-  await tester.tap(find.text('Today'));
+  final todayButton = find.text('Today');
+  await tester.ensureVisible(todayButton);
+  await tester.tap(todayButton);
   await tester.pumpAndSettle();
 
   final today = DateUtils.dateOnly(DateTime.now());
   if (targetDate.year != today.year || targetDate.month != today.month) {
-    await tester.tap(find.byTooltip('Previous month'));
+    final previousMonthButton = find.byTooltip('Previous month');
+    await tester.ensureVisible(previousMonthButton);
+    await tester.tap(previousMonthButton);
     await tester.pumpAndSettle();
   }
 
-  await tester.tap(find.text('${targetDate.day}').last);
+  final dayButton = find.text('${targetDate.day}').last;
+  await tester.ensureVisible(dayButton);
+  await tester.tap(dayButton);
   await tester.pumpAndSettle();
 
   final okButton = find.text('OK');
   if (okButton.evaluate().isNotEmpty) {
+    await tester.ensureVisible(okButton.last);
     await tester.tap(okButton.last);
     await tester.pumpAndSettle();
   }
@@ -213,9 +220,13 @@ void main() {
       find.byKey(const Key('inventory_item_amount_dialog_field')),
       '120',
     );
-    await tester.tap(find.byType(DropdownButton<MealType>));
+    final mealTypeDropdown = find.byType(DropdownButton<MealType>);
+    await tester.ensureVisible(mealTypeDropdown);
+    await tester.tap(mealTypeDropdown);
     await tester.pumpAndSettle();
-    await tester.tap(find.text(_mealTypeLabel(targetMealType)).last);
+    final mealTypeOption = find.text(_mealTypeLabel(targetMealType)).last;
+    await tester.ensureVisible(mealTypeOption);
+    await tester.tap(mealTypeOption);
     await tester.pumpAndSettle();
     await _tapConfirmButton(tester);
 
@@ -286,6 +297,73 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Eat: Banana'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'fixed-unit inedible amount keeps inventory deduction and reduces '
+    'calories',
+    (tester) async {
+      InventoryItemEatRequest? result;
+      await tester.pumpWidget(
+        _buildTestApp(
+          item: _amountItem(),
+          maxAmount: 1000,
+          onResult: (value) {
+            result = value;
+          },
+        ),
+      );
+
+      await _openSheet(tester);
+      await tester.enterText(
+        find.byKey(const Key('inventory_item_amount_dialog_field')),
+        '120',
+      );
+      await tester.enterText(
+        find.byKey(const Key('inventory_item_inedible_amount_dialog_field')),
+        '20',
+      );
+      await _tapConfirmButton(tester);
+
+      expect(result, isNotNull);
+      expect(result?.inventoryAmount, 120);
+      expect(result?.calorieAmount, 100);
+      expect(result?.calorieUnit?.jsonValue, 'g');
+    },
+  );
+
+  testWidgets(
+    'shows validation error when inedible amount is not smaller than eaten '
+    'amount',
+    (tester) async {
+      InventoryItemEatRequest? result;
+      await tester.pumpWidget(
+        _buildTestApp(
+          item: _amountItem(),
+          maxAmount: 1000,
+          onResult: (value) {
+            result = value;
+          },
+        ),
+      );
+
+      await _openSheet(tester);
+      await tester.enterText(
+        find.byKey(const Key('inventory_item_amount_dialog_field')),
+        '120',
+      );
+      await tester.enterText(
+        find.byKey(const Key('inventory_item_inedible_amount_dialog_field')),
+        '120',
+      );
+      await _tapConfirmButton(tester);
+
+      expect(result, isNull);
+      expect(
+        find.text('The deducted amount must be smaller than the eaten amount.'),
+        findsOneWidget,
+      );
     },
   );
 
