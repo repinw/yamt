@@ -275,6 +275,28 @@ void main() {
     expect(context.consumedUnit, ConsumedUnit.grams);
   });
 
+  test('buildInventoryContext prefers manual portion for fixed-unit items', () {
+    final item = _amountItemWithNutrition();
+    final request = InventoryItemEatRequest(
+      inventoryAmount: 250,
+      loggedAt: DateTime.parse('2026-04-06T12:30:00Z'),
+      mealType: MealType.lunch,
+      calorieAmount: 180,
+      calorieUnit: ConsumedUnit.grams,
+    );
+
+    final context = InventoryCalorieBridgeFlow.buildInventoryContext(
+      item: item,
+      pendingConsumptionId: 'pending-1',
+      request: request,
+    );
+
+    expect(context.inventoryItemId, 'inventory-1');
+    expect(context.inventoryAmountToRestore, 250);
+    expect(context.consumedAmount, 180);
+    expect(context.consumedUnit, ConsumedUnit.grams);
+  });
+
   test(
     'buildInventoryContext uses manual portion for non fixed-unit items',
     () {
@@ -407,13 +429,6 @@ void main() {
       container.read(inventoryItemsControllerProvider).value?.single.quantity,
       1,
     );
-    expect(
-      container
-          .read(calorieEntriesControllerProvider)
-          .value
-          ?.single
-          .sourceInventoryItemId,
-      item.id,
-    );
+    expect(commitStore.entry?.sourceInventoryItemId, item.id);
   });
 }

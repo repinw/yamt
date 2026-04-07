@@ -240,6 +240,57 @@ class _InventoryItemEatManualPortionSection extends StatelessWidget {
   }
 }
 
+class _InventoryItemEatInedibleAmountSection extends StatelessWidget {
+  const _InventoryItemEatInedibleAmountSection({
+    required this.amountController,
+    required this.amountFocusNode,
+    required this.amountErrorText,
+    required this.unitLabel,
+    required this.onAmountChanged,
+    required this.onSubmitted,
+  });
+
+  final TextEditingController amountController;
+  final FocusNode amountFocusNode;
+  final String? amountErrorText;
+  final String unitLabel;
+  final ValueChanged<String> onAmountChanged;
+  final VoidCallback onSubmitted;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.inventoryItemEatSheetInedibleAmountHint,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        TextField(
+          key: const Key('inventory_item_inedible_amount_dialog_field'),
+          controller: amountController,
+          focusNode: amountFocusNode,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          textInputAction: TextInputAction.done,
+          decoration: InputDecoration(
+            labelText: l10n.inventoryItemEatSheetInedibleAmountFieldLabel,
+            suffixText: unitLabel,
+            errorText: amountErrorText,
+          ),
+          onChanged: onAmountChanged,
+          onSubmitted: (_) => onSubmitted(),
+        ),
+      ],
+    );
+  }
+}
+
 class _InventoryItemEatWhenCard extends StatelessWidget {
   const _InventoryItemEatWhenCard({
     required this.label,

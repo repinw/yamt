@@ -181,7 +181,7 @@ void main() {
     );
   });
 
-  test('manual calorie portion always disables direct save', () {
+  test('fixed-unit manual calorie portion can still be saved directly', () {
     final gramItem = _inventoryItem(
       id: 'gram-item',
       name: 'Yogurt',
@@ -194,10 +194,10 @@ void main() {
 
     final request = _eatRequest(
       inventoryAmount: 120,
-      calorieAmount: 1.5,
+      calorieAmount: 95,
       calorieUnit: ConsumedUnit.grams,
     );
 
-    expect(canDirectlySaveInventoryItemEatRequest(gramItem, request), isFalse);
+    expect(canDirectlySaveInventoryItemEatRequest(gramItem, request), isTrue);
   });
 }

@@ -135,6 +135,14 @@
   "inventoryItemEatSheetAmountLabel": "Menge eingeben",
   "inventoryItemEatSheetQuickSelectLabel": "Schnellwahl",
   "inventoryItemEatSheetAllAction": "Alles",
+  "inventoryItemEatSheetInedibleAmountLabel":
+      "Nicht essbaren Anteil abziehen",
+  "inventoryItemEatSheetInedibleAmountHint":
+      "Optional, zum Beispiel Knochen oder Schalen. Kalorien werden nur für den essbaren Rest berechnet.",
+  "inventoryItemEatSheetInedibleAmountFieldLabel":
+      "Nicht essbarer Anteil",
+  "inventoryItemEatSheetInedibleAmountError":
+      "Der Abzug muss kleiner als die verzehrte Menge sein.",
   "inventoryItemEatSheetWhenLabel": "Wann?",
   "inventoryItemEatSheetNowValue": "Heute",
   "inventoryItemEatSheetNutritionLabel": "Nährwerte",

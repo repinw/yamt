@@ -324,6 +324,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemEatSheetAllAction => 'All';
 
   @override
+  String get inventoryItemEatSheetInedibleAmountLabel => 'Subtract inedible part';
+
+  @override
+  String get inventoryItemEatSheetInedibleAmountHint => 'Optional, e.g. bones or shells. Calories are calculated only for the edible remainder.';
+
+  @override
+  String get inventoryItemEatSheetInedibleAmountFieldLabel => 'Inedible amount';
+
+  @override
+  String get inventoryItemEatSheetInedibleAmountError => 'The deducted amount must be smaller than the eaten amount.';
+
+  @override
   String get inventoryItemEatSheetWhenLabel => 'When?';
 
   @override

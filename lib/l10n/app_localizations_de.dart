@@ -324,6 +324,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemEatSheetAllAction => 'Alles';
 
   @override
+  String get inventoryItemEatSheetInedibleAmountLabel => 'Nicht essbaren Anteil abziehen';
+
+  @override
+  String get inventoryItemEatSheetInedibleAmountHint => 'Optional, zum Beispiel Knochen oder Schalen. Kalorien werden nur für den essbaren Rest berechnet.';
+
+  @override
+  String get inventoryItemEatSheetInedibleAmountFieldLabel => 'Nicht essbarer Anteil';
+
+  @override
+  String get inventoryItemEatSheetInedibleAmountError => 'Der Abzug muss kleiner als die verzehrte Menge sein.';
+
+  @override
   String get inventoryItemEatSheetWhenLabel => 'Wann?';
 
   @override
