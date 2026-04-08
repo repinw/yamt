@@ -12,11 +12,15 @@ class TemplateIngredientRequirement {
     required this.amount,
     required this.unit,
     required this.name,
+    this.countMeasureLabel,
+    this.allowsDirectPieceInventoryMatch = true,
   });
 
   final int amount;
   final InventoryAmountUnit unit;
   final String name;
+  final String? countMeasureLabel;
+  final bool allowsDirectPieceInventoryMatch;
 }
 
 class TemplateIngredientParser {
@@ -72,6 +76,9 @@ class TemplateIngredientParser {
       amount: roundedAmount,
       unit: conversion.unit,
       name: ingredientName.isEmpty ? rawTail.trim() : ingredientName,
+      countMeasureLabel: conversion.countMeasureLabel,
+      allowsDirectPieceInventoryMatch:
+          conversion.allowsDirectPieceInventoryMatch,
     );
   }
 
@@ -86,6 +93,7 @@ class TemplateIngredientParser {
       amount: requirement.amount,
       unit: requirement.unit,
       name: requirement.name,
+      countMeasureLabel: requirement.countMeasureLabel,
     );
   }
 
@@ -93,8 +101,11 @@ class TemplateIngredientParser {
     required int amount,
     required InventoryAmountUnit unit,
     required String name,
+    String? countMeasureLabel,
   }) {
-    return '$amount ${unit.code} $name';
+    final amountLabel = countMeasureLabel?.trim();
+    return '$amount ${amountLabel?.isNotEmpty == true ? amountLabel : unit.code} '
+        '$name';
   }
 
   double? _parseQuantity(String rawValue) {
@@ -134,12 +145,18 @@ class TemplateIngredientParser {
 
   _TemplateIngredientUnitConversion? _resolveUnitConversion(String rawTail) {
     final tokens = rawTail.split(RegExp(r'\s+'));
+    final rawToken = tokens.isEmpty ? null : tokens.first.trim();
     final normalizedToken = tokens.isEmpty
         ? null
         : _normalizeToken(tokens.first);
 
     if (normalizedToken != null) {
-      final conversion = _unitConversions[normalizedToken];
+      final mappedConversion = _unitConversions[normalizedToken];
+      final conversion = mappedConversion == null
+          ? null
+          : mappedConversion.unit == InventoryAmountUnit.piece
+          ? mappedConversion.copyWith(countMeasureLabel: rawToken)
+          : mappedConversion;
       if (conversion != null) {
         return conversion;
       }
@@ -165,11 +182,25 @@ class _TemplateIngredientUnitConversion {
     required this.unit,
     required this.multiplier,
     required this.consumesUnitToken,
+    this.countMeasureLabel,
+    this.allowsDirectPieceInventoryMatch = true,
   });
 
   final InventoryAmountUnit unit;
   final double multiplier;
   final bool consumesUnitToken;
+  final String? countMeasureLabel;
+  final bool allowsDirectPieceInventoryMatch;
+
+  _TemplateIngredientUnitConversion copyWith({String? countMeasureLabel}) {
+    return _TemplateIngredientUnitConversion(
+      unit: unit,
+      multiplier: multiplier,
+      consumesUnitToken: consumesUnitToken,
+      countMeasureLabel: countMeasureLabel ?? this.countMeasureLabel,
+      allowsDirectPieceInventoryMatch: allowsDirectPieceInventoryMatch,
+    );
+  }
 }
 
 const _unitConversions = <String, _TemplateIngredientUnitConversion>{
@@ -323,14 +354,71 @@ const _unitConversions = <String, _TemplateIngredientUnitConversion>{
     multiplier: 1,
     consumesUnitToken: true,
   ),
+  'el': _TemplateIngredientUnitConversion(
+    unit: InventoryAmountUnit.piece,
+    multiplier: 1,
+    consumesUnitToken: true,
+    allowsDirectPieceInventoryMatch: false,
+  ),
+  'essloeffel': _TemplateIngredientUnitConversion(
+    unit: InventoryAmountUnit.piece,
+    multiplier: 1,
+    consumesUnitToken: true,
+    allowsDirectPieceInventoryMatch: false,
+  ),
+  'esslöffel': _TemplateIngredientUnitConversion(
+    unit: InventoryAmountUnit.piece,
+    multiplier: 1,
+    consumesUnitToken: true,
+    allowsDirectPieceInventoryMatch: false,
+  ),
+  'tbsp': _TemplateIngredientUnitConversion(
+    unit: InventoryAmountUnit.piece,
+    multiplier: 1,
+    consumesUnitToken: true,
+    allowsDirectPieceInventoryMatch: false,
+  ),
+  'tl': _TemplateIngredientUnitConversion(
+    unit: InventoryAmountUnit.piece,
+    multiplier: 1,
+    consumesUnitToken: true,
+    allowsDirectPieceInventoryMatch: false,
+  ),
+  'teeloeffel': _TemplateIngredientUnitConversion(
+    unit: InventoryAmountUnit.piece,
+    multiplier: 1,
+    consumesUnitToken: true,
+    allowsDirectPieceInventoryMatch: false,
+  ),
+  'teelöffel': _TemplateIngredientUnitConversion(
+    unit: InventoryAmountUnit.piece,
+    multiplier: 1,
+    consumesUnitToken: true,
+    allowsDirectPieceInventoryMatch: false,
+  ),
+  'teaspoon': _TemplateIngredientUnitConversion(
+    unit: InventoryAmountUnit.piece,
+    multiplier: 1,
+    consumesUnitToken: true,
+    allowsDirectPieceInventoryMatch: false,
+  ),
+  'teaspoons': _TemplateIngredientUnitConversion(
+    unit: InventoryAmountUnit.piece,
+    multiplier: 1,
+    consumesUnitToken: true,
+    allowsDirectPieceInventoryMatch: false,
+  ),
+  'tsp': _TemplateIngredientUnitConversion(
+    unit: InventoryAmountUnit.piece,
+    multiplier: 1,
+    consumesUnitToken: true,
+    allowsDirectPieceInventoryMatch: false,
+  ),
 };
 
 const _unsupportedMeasureTokens = <String>{
   'cup',
   'cups',
-  'el',
-  'essloeffel',
-  'esslöffel',
   'lb',
   'lbs',
   'ounce',
@@ -342,11 +430,4 @@ const _unsupportedMeasureTokens = <String>{
   'pounds',
   'prise',
   'prisen',
-  'tbsp',
-  'teeloeffel',
-  'teelöffel',
-  'teaspoon',
-  'teaspoons',
-  'tl',
-  'tsp',
 };

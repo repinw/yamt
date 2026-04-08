@@ -7,6 +7,47 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 part 'prepared_meal.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+class RecipeIngredientAmountConversion {
+  const RecipeIngredientAmountConversion({
+    required this.amountPerPiece,
+    required this.unit,
+  });
+
+  factory RecipeIngredientAmountConversion.fromJson(
+    Map<String, dynamic> json,
+  ) => _$RecipeIngredientAmountConversionFromJson(json);
+
+  @JsonKey(fromJson: _readIntOrZero)
+  final int amountPerPiece;
+  @JsonKey(fromJson: _readAmountUnitOrPiece, toJson: _writeAmountUnit)
+  final InventoryAmountUnit unit;
+
+  Map<String, dynamic> toJson() =>
+      _$RecipeIngredientAmountConversionToJson(this);
+
+  RecipeIngredientAmountConversion copyWith({
+    int? amountPerPiece,
+    InventoryAmountUnit? unit,
+  }) {
+    return RecipeIngredientAmountConversion(
+      amountPerPiece: amountPerPiece ?? this.amountPerPiece,
+      unit: unit ?? this.unit,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is RecipeIngredientAmountConversion &&
+            other.amountPerPiece == amountPerPiece &&
+            other.unit == unit;
+  }
+
+  @override
+  int get hashCode => Object.hash(amountPerPiece, unit);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PreparedMeal {
   const PreparedMeal({
     required this.id,
@@ -17,6 +58,8 @@ class PreparedMeal {
     this.recipeIngredients = const <String>[],
     this.ignoredRecipeIngredients = const <String>[],
     this.recipeIngredientAssignments = const <String, List<String>>{},
+    this.recipeIngredientAmountConversions =
+        const <String, RecipeIngredientAmountConversion>{},
     this.pendingRecipeIngredients = const <String>[],
     required this.totalPortions,
     required this.remainingPortions,
@@ -48,6 +91,9 @@ class PreparedMeal {
   final List<String> ignoredRecipeIngredients;
   @JsonKey(defaultValue: <String, List<String>>{})
   final Map<String, List<String>> recipeIngredientAssignments;
+  @JsonKey(defaultValue: <String, RecipeIngredientAmountConversion>{})
+  final Map<String, RecipeIngredientAmountConversion>
+  recipeIngredientAmountConversions;
   @JsonKey(defaultValue: <String>[])
   final List<String> pendingRecipeIngredients;
   @JsonKey(fromJson: _readIntOrZero)
@@ -80,6 +126,8 @@ class PreparedMeal {
     List<String>? recipeIngredients,
     List<String>? ignoredRecipeIngredients,
     Map<String, List<String>>? recipeIngredientAssignments,
+    Map<String, RecipeIngredientAmountConversion>?
+    recipeIngredientAmountConversions,
     List<String>? pendingRecipeIngredients,
     int? totalPortions,
     int? remainingPortions,
@@ -106,6 +154,9 @@ class PreparedMeal {
           ignoredRecipeIngredients ?? this.ignoredRecipeIngredients,
       recipeIngredientAssignments:
           recipeIngredientAssignments ?? this.recipeIngredientAssignments,
+      recipeIngredientAmountConversions:
+          recipeIngredientAmountConversions ??
+          this.recipeIngredientAmountConversions,
       pendingRecipeIngredients:
           pendingRecipeIngredients ?? this.pendingRecipeIngredients,
       totalPortions: totalPortions ?? this.totalPortions,
@@ -201,6 +252,10 @@ class PreparedMeal {
               other.recipeIngredientAssignments,
               recipeIngredientAssignments,
             ) &&
+            const DeepCollectionEquality().equals(
+              other.recipeIngredientAmountConversions,
+              recipeIngredientAmountConversions,
+            ) &&
             const ListEquality<String>().equals(
               other.pendingRecipeIngredients,
               pendingRecipeIngredients,
@@ -230,6 +285,7 @@ class PreparedMeal {
       const ListEquality<String>().hash(recipeIngredients),
       const ListEquality<String>().hash(ignoredRecipeIngredients),
       const DeepCollectionEquality().hash(recipeIngredientAssignments),
+      const DeepCollectionEquality().hash(recipeIngredientAmountConversions),
       const ListEquality<String>().hash(pendingRecipeIngredients),
       totalPortions,
       remainingPortions,

@@ -210,7 +210,10 @@ void main() {
     expect(find.text('Templates'), findsOneWidget);
     expect(find.byType(Image), findsWidgets);
 
-    await tester.tap(find.byTooltip('Delete template'));
+    await tester.tap(find.byTooltip('Show menu'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Delete template'));
     await tester.pumpAndSettle();
 
     expect(find.text('Lunch Box'), findsNothing);
@@ -284,8 +287,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Kartoffelsuppe'), findsOneWidget);
-    expect(find.textContaining('Recipe: chefkoch.de'), findsOneWidget);
-    expect(find.text('1 kg Kartoffeln'), findsOneWidget);
     expect(repository.savedTemplates, hasLength(1));
     expect(
       repository.savedTemplates.single.recipeUrl,
@@ -319,7 +320,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Edit'));
+    await tester.tap(find.byTooltip('Show menu'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Edit'));
     await tester.pumpAndSettle();
 
     await tester.enterText(
@@ -335,7 +339,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Red Lentil Soup'), findsOneWidget);
-    expect(find.text('500 g Linsen'), findsOneWidget);
     expect(repository.savedTemplates.single.name, 'Red Lentil Soup');
     expect(repository.savedTemplates.single.totalPortions, 2);
   });

@@ -6,6 +6,20 @@ part of 'prepared_meal.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
+RecipeIngredientAmountConversion _$RecipeIngredientAmountConversionFromJson(
+  Map<String, dynamic> json,
+) => RecipeIngredientAmountConversion(
+  amountPerPiece: _readIntOrZero(json['amount_per_piece']),
+  unit: _readAmountUnitOrPiece(json['unit']),
+);
+
+Map<String, dynamic> _$RecipeIngredientAmountConversionToJson(
+  RecipeIngredientAmountConversion instance,
+) => <String, dynamic>{
+  'amount_per_piece': instance.amountPerPiece,
+  'unit': _writeAmountUnit(instance.unit),
+};
+
 PreparedMeal _$PreparedMealFromJson(Map<String, dynamic> json) => PreparedMeal(
   id: _readRequiredString(json['id']),
   name: _readRequiredString(json['name']),
@@ -27,6 +41,17 @@ PreparedMeal _$PreparedMealFromJson(Map<String, dynamic> json) => PreparedMeal(
         (k, e) =>
             MapEntry(k, (e as List<dynamic>).map((e) => e as String).toList()),
       ) ??
+      {},
+  recipeIngredientAmountConversions:
+      (json['recipe_ingredient_amount_conversions'] as Map<String, dynamic>?)
+          ?.map(
+            (k, e) => MapEntry(
+              k,
+              RecipeIngredientAmountConversion.fromJson(
+                e as Map<String, dynamic>,
+              ),
+            ),
+          ) ??
       {},
   pendingRecipeIngredients:
       (json['pending_recipe_ingredients'] as List<dynamic>?)
@@ -60,6 +85,9 @@ Map<String, dynamic> _$PreparedMealToJson(PreparedMeal instance) =>
       'recipe_ingredients': instance.recipeIngredients,
       'ignored_recipe_ingredients': instance.ignoredRecipeIngredients,
       'recipe_ingredient_assignments': instance.recipeIngredientAssignments,
+      'recipe_ingredient_amount_conversions': instance
+          .recipeIngredientAmountConversions
+          .map((k, e) => MapEntry(k, e.toJson())),
       'pending_recipe_ingredients': instance.pendingRecipeIngredients,
       'total_portions': instance.totalPortions,
       'remaining_portions': instance.remainingPortions,

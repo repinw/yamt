@@ -1,6 +1,6 @@
 part of 'meal_template_detail_page.dart';
 
-class _MealTemplateIngredientCard extends StatefulWidget {
+class _MealTemplateIngredientCard extends StatelessWidget {
   const _MealTemplateIngredientCard({
     required this.row,
     required this.inventoryItems,
@@ -13,177 +13,159 @@ class _MealTemplateIngredientCard extends StatefulWidget {
   final List<InventoryItem> inventoryItems;
   final Future<void> Function()? onAddToShoppingListPressed;
   final Future<void> Function()? onToggleIgnoredPressed;
-  final void Function(List<String> inventoryItemIds)? onAssignmentChanged;
-
-  @override
-  State<_MealTemplateIngredientCard> createState() =>
-      _MealTemplateIngredientCardState();
-}
-
-class _MealTemplateIngredientCardState
-    extends State<_MealTemplateIngredientCard> {
-  var _isExpanded = false;
+  final void Function(MealTemplateIngredientAssignmentSelection selection)?
+  onAssignmentChanged;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final textTheme = Theme.of(context).textTheme;
-    final colors = Theme.of(context).colorScheme;
     final assignedItems = resolveInventoryItemsById(
-      inventoryItemIds: widget.row.assignedInventoryItemIds,
-      inventoryItems: widget.inventoryItems,
+      inventoryItemIds: row.assignedInventoryItemIds,
+      inventoryItems: inventoryItems,
     );
-    final missingAssignedCount =
-        widget.row.assignedInventoryItemIds.length - assignedItems.length;
-    final suggestions = widget.row.isIgnored
+    final suggestions = row.isIgnored
         ? const <InventoryItem>[]
         : matchInventoryItemsForIngredient(
-            ingredient: widget.row.name,
-            inventoryItems: widget.inventoryItems,
+            ingredient: row.name,
+            inventoryItems: inventoryItems,
+            localeCode: l10n.localeName,
           ).take(3).toList(growable: false);
+    final missingAssignedCount =
+        row.assignedInventoryItemIds.length - assignedItems.length;
     final previewImageUrl = _resolvePreviewImageUrl(
       assignedItems: assignedItems,
       suggestions: suggestions,
     );
-    final subtitle = _buildIngredientSubtitle(
-      l10n: l10n,
-      row: widget.row,
+    final effectiveRequirement = row.requirement == null
+        ? null
+        : resolveEffectiveRequirementForItems(
+            requirement: row.requirement!,
+            assignedItems: assignedItems,
+            amountConversion: row.amountConversion,
+          );
+    final hasCompatibleAssignment = row.requirement == null
+        ? assignedItems.isNotEmpty
+        : effectiveRequirement != null;
+    final state = _ingredientCardState(
+      row: row,
       assignedItems: assignedItems,
+      hasCompatibleAssignment: hasCompatibleAssignment,
     );
-    final ingredientStyle = widget.row.isIgnored
-        ? textTheme.titleMedium?.copyWith(
-            decoration: TextDecoration.lineThrough,
-            color: colors.onSurfaceVariant,
-          )
-        : textTheme.titleMedium;
-    final amountStyle = widget.row.isIgnored
-        ? textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant)
-        : textTheme.bodyMedium;
 
-    return Card(
+    return switch (state) {
+      _IngredientCardState.ignored => _IgnoredIngredientCard(
+        row: row,
+        onToggleIgnoredPressed: onToggleIgnoredPressed,
+      ),
+      _IngredientCardState.matched => _MatchedIngredientCard(
+        row: row,
+        assignedItems: assignedItems,
+        previewImageUrl: previewImageUrl,
+        missingAssignedCount: missingAssignedCount,
+        onAssignmentChanged: onAssignmentChanged,
+        inventoryItems: inventoryItems,
+      ),
+      _IngredientCardState.missing => _MissingIngredientCard(
+        row: row,
+        onAddToShoppingListPressed: onAddToShoppingListPressed,
+        onToggleIgnoredPressed: onToggleIgnoredPressed,
+        onAssignmentChanged: onAssignmentChanged,
+        inventoryItems: inventoryItems,
+      ),
+      _IngredientCardState.plain => _PlainIngredientCard(
+        row: row,
+        previewImageUrl: previewImageUrl,
+      ),
+    };
+  }
+}
+
+class _MissingIngredientCard extends StatelessWidget {
+  const _MissingIngredientCard({
+    required this.row,
+    required this.onAddToShoppingListPressed,
+    required this.onToggleIgnoredPressed,
+    required this.onAssignmentChanged,
+    required this.inventoryItems,
+  });
+
+  final _IngredientRowData row;
+  final Future<void> Function()? onAddToShoppingListPressed;
+  final Future<void> Function()? onToggleIgnoredPressed;
+  final void Function(MealTemplateIngredientAssignmentSelection selection)?
+  onAssignmentChanged;
+  final List<InventoryItem> inventoryItems;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return DecoratedBox(
+      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+        colors,
+        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+      ),
       child: Padding(
         padding: AppInsets.card,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            InkWell(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              onTap: () {
-                setState(() {
-                  _isExpanded = !_isExpanded;
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xs,
-                  vertical: AppSpacing.xs,
-                ),
-                child: Row(
-                  children: [
-                    _IngredientPreviewThumbnail(imageUrl: previewImageUrl),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(widget.row.name, style: ingredientStyle),
-                          const SizedBox(height: AppSpacing.xxs),
-                          Text(subtitle, style: amountStyle),
-                        ],
-                      ),
+            Row(
+              children: [
+                Icon(Icons.error_rounded, color: colors.tertiary),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    _ingredientDisplayTitle(row),
+                    style: textTheme.titleLarge?.copyWith(
+                      color: colors.tertiary,
+                      fontWeight: FontWeight.w800,
                     ),
-                    const SizedBox(width: AppSpacing.sm),
-                    IconButton(
-                      onPressed:
-                          widget.inventoryItems.isEmpty ||
-                              widget.onAssignmentChanged == null
-                          ? null
-                          : () => _selectInventoryAssignments(
-                              context: context,
-                              row: widget.row,
-                              inventoryItems: widget.inventoryItems,
-                              onAssignmentChanged: widget.onAssignmentChanged!,
-                            ),
-                      tooltip: widget.row.assignedInventoryItemIds.isEmpty
-                          ? l10n.preparedMealTemplateDetailAssignAction
-                          : l10n.preparedMealTemplateDetailChangeAssignmentAction,
-                      icon: const Icon(Icons.sync_alt_rounded),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-            if (_isExpanded) ...[
-              const SizedBox(height: AppSpacing.md),
-              if (assignedItems.isNotEmpty) ...[
-                Text(
-                  l10n.preparedMealTemplateDetailAssignedFromInventoryTitle,
-                  style: textTheme.labelLarge,
+            const SizedBox(height: AppSpacing.md),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                _IngredientActionPill(
+                  icon: Icons.shopping_cart_rounded,
+                  label: l10n.preparedMealTemplateDetailListAction,
+                  onPressed: onAddToShoppingListPressed == null
+                      ? null
+                      : () async {
+                          await onAddToShoppingListPressed!();
+                        },
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: assignedItems
-                      .map(
-                        (item) => Chip(
-                          label: Text(
-                            '${item.name} • '
-                            '${_inventoryAmountLabel(item)}',
-                          ),
-                        ),
-                      )
-                      .toList(growable: false),
+                _IngredientActionPill(
+                  icon: Icons.search_rounded,
+                  label: l10n.preparedMealTemplateDetailSearchAction,
+                  onPressed: onAssignmentChanged == null
+                      ? null
+                      : () async {
+                          await _selectInventoryAssignments(
+                            context: context,
+                            row: row,
+                            inventoryItems: inventoryItems,
+                            onAssignmentChanged: onAssignmentChanged!,
+                          );
+                        },
                 ),
-              ] else if (suggestions.isNotEmpty) ...[
-                Text(
-                  l10n.preparedMealTemplateDetailMatchingInventoryItemsTitle,
-                  style: textTheme.labelLarge,
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  suggestions.map((item) => item.name).join(', '),
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-              ],
-              if (missingAssignedCount > 0) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  l10n.preparedMealTemplateDetailMissingAssignedItems(
-                    missingAssignedCount,
-                  ),
-                  style: textTheme.bodySmall?.copyWith(color: colors.error),
+                _IngredientActionPill(
+                  icon: Icons.block_rounded,
+                  label: l10n.preparedMealTemplateDetailIgnoreAction,
+                  onPressed: onToggleIgnoredPressed == null
+                      ? null
+                      : () async {
+                          await onToggleIgnoredPressed!();
+                        },
                 ),
               ],
-              if (widget.row.rawIngredient != null) ...[
-                const SizedBox(height: AppSpacing.md),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: widget.row.isIgnored
-                          ? null
-                          : widget.onAddToShoppingListPressed,
-                      icon: const Icon(Icons.shopping_cart_outlined),
-                      label: Text(
-                        l10n.preparedMealTemplateDetailAddToShoppingListAction,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: widget.onToggleIgnoredPressed,
-                      child: Text(
-                        widget.row.isIgnored
-                            ? l10n.preparedMealTemplateDetailUnignoreAction
-                            : l10n.preparedMealTemplateDetailIgnoreAction,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ],
+            ),
           ],
         ),
       ),
@@ -191,10 +173,310 @@ class _MealTemplateIngredientCardState
   }
 }
 
+class _MatchedIngredientCard extends StatelessWidget {
+  const _MatchedIngredientCard({
+    required this.row,
+    required this.assignedItems,
+    required this.previewImageUrl,
+    required this.missingAssignedCount,
+    required this.onAssignmentChanged,
+    required this.inventoryItems,
+  });
+
+  final _IngredientRowData row;
+  final List<InventoryItem> assignedItems;
+  final String? previewImageUrl;
+  final int missingAssignedCount;
+  final void Function(MealTemplateIngredientAssignmentSelection selection)?
+  onAssignmentChanged;
+  final List<InventoryItem> inventoryItems;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final assignedLabel = _assignedInventoryLabel(
+      l10n: l10n,
+      assignedItems: assignedItems,
+    );
+
+    return DecoratedBox(
+      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+        colors,
+        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+      ),
+      child: Padding(
+        padding: AppInsets.card,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: colors.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.check_rounded,
+                size: 18,
+                color: colors.onPrimaryContainer,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _ingredientDisplayTitle(row),
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Row(
+                    children: [
+                      _IngredientPreviewThumbnail(
+                        imageUrl: previewImageUrl,
+                        size: 28,
+                        borderRadius: 8,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Expanded(
+                        child: Text(
+                          assignedLabel,
+                          style: textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (row.amountConversion != null) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      l10n.preparedMealTemplateDetailConversionSummary(
+                        _conversionSourceUnitLabel(
+                          requirement: row.requirement,
+                          l10n: l10n,
+                        ),
+                        row.amountConversion!.amountPerPiece,
+                        row.amountConversion!.unit.code,
+                      ),
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                  if (missingAssignedCount > 0) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      l10n.preparedMealTemplateDetailMissingAssignedItems(
+                        missingAssignedCount,
+                      ),
+                      style: textTheme.bodySmall?.copyWith(color: colors.error),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            TextButton(
+              onPressed: onAssignmentChanged == null
+                  ? null
+                  : () async {
+                      await _selectInventoryAssignments(
+                        context: context,
+                        row: row,
+                        inventoryItems: inventoryItems,
+                        onAssignmentChanged: onAssignmentChanged!,
+                      );
+                    },
+              child: Text(l10n.preparedMealTemplateDetailSwapAction),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _IgnoredIngredientCard extends StatelessWidget {
+  const _IgnoredIngredientCard({
+    required this.row,
+    required this.onToggleIgnoredPressed,
+  });
+
+  final _IngredientRowData row;
+  final Future<void> Function()? onToggleIgnoredPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return DecoratedBox(
+      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+        colors,
+        color: colors.surfaceContainerLow.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+        blurRadius: 18,
+        shadowOffset: const Offset(0, 10),
+      ),
+      child: Opacity(
+        opacity: 0.82,
+        child: Padding(
+          padding: AppInsets.card,
+          child: Row(
+            children: [
+              Icon(
+                Icons.visibility_off_rounded,
+                color: colors.onSurfaceVariant,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  _ingredientDisplayTitle(row),
+                  style: textTheme.titleMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    decoration: TextDecoration.lineThrough,
+                    decorationColor: colors.onSurfaceVariant.withValues(
+                      alpha: 0.45,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              TextButton(
+                onPressed: onToggleIgnoredPressed == null
+                    ? null
+                    : () async {
+                        await onToggleIgnoredPressed!();
+                      },
+                child: Text(l10n.preparedMealTemplateDetailRestoreAction),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PlainIngredientCard extends StatelessWidget {
+  const _PlainIngredientCard({
+    required this.row,
+    required this.previewImageUrl,
+  });
+
+  final _IngredientRowData row;
+  final String? previewImageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return DecoratedBox(
+      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+        colors,
+        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+      ),
+      child: Padding(
+        padding: AppInsets.card,
+        child: Row(
+          children: [
+            _IngredientPreviewThumbnail(imageUrl: previewImageUrl),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    row.name,
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(row.amountLabel, style: textTheme.bodyMedium),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _IngredientActionPill extends StatelessWidget {
+  const _IngredientActionPill({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(999);
+
+    return Material(
+      color: colors.surfaceContainerLow,
+      borderRadius: radius,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: radius,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: onPressed == null
+                    ? colors.onSurfaceVariant
+                    : colors.onSurface,
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: onPressed == null
+                      ? colors.onSurfaceVariant
+                      : colors.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _IngredientPreviewThumbnail extends StatelessWidget {
-  const _IngredientPreviewThumbnail({required this.imageUrl});
+  const _IngredientPreviewThumbnail({
+    required this.imageUrl,
+    this.size = 48,
+    this.borderRadius = 12,
+  });
 
   final String? imageUrl;
+  final double size;
+  final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -202,14 +484,15 @@ class _IngredientPreviewThumbnail extends StatelessWidget {
     final normalizedImageUrl = normalizeProductImageUrl(imageUrl);
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(borderRadius),
       child: SizedBox.square(
-        dimension: 48,
+        dimension: size,
         child: normalizedImageUrl == null
             ? ColoredBox(
                 color: colors.surfaceContainerHighest,
                 child: Icon(
                   Icons.restaurant_menu_rounded,
+                  size: size < 32 ? 16 : 20,
                   color: colors.onSurfaceVariant,
                 ),
               )
@@ -221,12 +504,60 @@ class _IngredientPreviewThumbnail extends StatelessWidget {
                     color: colors.surfaceContainerHighest,
                     child: Icon(
                       Icons.restaurant_menu_rounded,
+                      size: size < 32 ? 16 : 20,
                       color: colors.onSurfaceVariant,
                     ),
                   );
                 },
               ),
       ),
+    );
+  }
+}
+
+@visibleForTesting
+class MealTemplateIngredientCardTestHarness extends StatelessWidget {
+  const MealTemplateIngredientCardTestHarness({
+    super.key,
+    required this.name,
+    required this.amountLabel,
+    required this.inventoryItems,
+    this.rawIngredient,
+    this.isIgnored = false,
+    this.assignedInventoryItemIds = const <String>[],
+    this.amountConversion,
+    this.onAddToShoppingListPressed,
+    this.onToggleIgnoredPressed,
+    this.onAssignmentChanged,
+  });
+
+  final String name;
+  final String amountLabel;
+  final String? rawIngredient;
+  final bool isIgnored;
+  final List<String> assignedInventoryItemIds;
+  final List<InventoryItem> inventoryItems;
+  final Future<void> Function()? onAddToShoppingListPressed;
+  final Future<void> Function()? onToggleIgnoredPressed;
+  final void Function(MealTemplateIngredientAssignmentSelection selection)?
+  onAssignmentChanged;
+  final RecipeIngredientAmountConversion? amountConversion;
+
+  @override
+  Widget build(BuildContext context) {
+    return _MealTemplateIngredientCard(
+      row: _IngredientRowData(
+        name: name,
+        amountLabel: amountLabel,
+        rawIngredient: rawIngredient,
+        isIgnored: isIgnored,
+        assignedInventoryItemIds: assignedInventoryItemIds,
+        amountConversion: amountConversion,
+      ),
+      inventoryItems: inventoryItems,
+      onAddToShoppingListPressed: onAddToShoppingListPressed,
+      onToggleIgnoredPressed: onToggleIgnoredPressed,
+      onAssignmentChanged: onAssignmentChanged,
     );
   }
 }

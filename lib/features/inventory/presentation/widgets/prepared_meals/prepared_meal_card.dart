@@ -42,7 +42,7 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_edit_sheet.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/prepared_meals/application/'
+import 'package:yamt/features/inventory/application/'
     'ingredient_inventory_matcher.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -292,6 +292,7 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
         ingredient: matchInventoryItemsForIngredient(
           ingredient: ingredient,
           inventoryItems: inventoryItems,
+          localeCode: Localizations.localeOf(context).languageCode,
         ).take(3).toList(growable: false),
     };
     _cachedSuggestionInventoryItems = List<InventoryItem>.from(

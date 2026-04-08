@@ -308,31 +308,31 @@
   "inventoryDiscardReasonSpoiled": "Verdorben",
   "inventoryDiscardReasonCookedTooMuch": "Zu viel gekocht",
   "inventoryDiscardReasonOther": "Sonstiges",
-  "preparedMealSaveTemplateAction": "Als Vorlage speichern",
-  "preparedMealTemplateSavedMessage": "Vorlage gespeichert.",
-  "preparedMealTemplatesPageTitle": "Vorlagen",
-  "preparedMealTemplatesEmptyState": "Noch keine Vorlagen gespeichert.",
-  "preparedMealTemplatesLoadFailed": "Vorlagen konnten nicht geladen werden.",
-  "preparedMealTemplateDeleteAction": "Vorlage löschen",
-  "preparedMealTemplateDeletedMessage": "Vorlage gelöscht.",
-  "preparedMealTemplateAddRecipeAction": "Rezeptvorlage hinzufügen",
+  "preparedMealSaveTemplateAction": "Als Rezept speichern",
+  "preparedMealTemplateSavedMessage": "Rezept gespeichert.",
+  "preparedMealTemplatesPageTitle": "Rezepte",
+  "preparedMealTemplatesEmptyState": "Noch keine Rezepte gespeichert.",
+  "preparedMealTemplatesLoadFailed": "Rezepte konnten nicht geladen werden.",
+  "preparedMealTemplateDeleteAction": "Rezept löschen",
+  "preparedMealTemplateDeletedMessage": "Rezept gelöscht.",
+  "preparedMealTemplateAddRecipeAction": "Rezept hinzufügen",
   "preparedMealTemplateCreateFromRecipeAction": "Aus Rezept anlegen",
-  "preparedMealTemplateCreateFailedMessage": "Vorlage konnte nicht erstellt werden.",
+  "preparedMealTemplateCreateFailedMessage": "Rezept konnte nicht erstellt werden.",
   "preparedMealTemplateRecipeImportFailedMessage": "Rezeptdaten konnten nicht importiert werden.",
-  "preparedMealTemplateRecipeSheetTitle": "Vorlage aus Rezept anlegen",
-  "preparedMealTemplateRecipeEditSheetTitle": "Rezeptvorlage bearbeiten",
+  "preparedMealTemplateRecipeSheetTitle": "Rezept anlegen",
+  "preparedMealTemplateRecipeEditSheetTitle": "Rezept bearbeiten",
   "preparedMealTemplateRecipeSheetSubtitle": "Füge einen Rezept-Link ein, zum Beispiel von Chefkoch.",
   "preparedMealTemplateRecipeUrlLabel": "Rezept-Link",
   "preparedMealTemplateRecipeUrlHint": "https://www.chefkoch.de/...",
   "preparedMealTemplateRecipeUrlInvalid": "Bitte gib einen gültigen Rezept-Link ein.",
-  "preparedMealTemplateNameLabel": "Vorlagenname",
+  "preparedMealTemplateNameLabel": "Rezeptname",
   "preparedMealTemplateNameHelper": "Optional. Wenn leer, wird der Name aus dem Link abgeleitet.",
   "preparedMealTemplatePortionsLabel": "Portionen",
   "preparedMealTemplatePortionsHelper": "Optional. Wenn leer, werden die Portionen aus dem Rezept übernommen.",
   "preparedMealTemplateRecipePlaceholder": "Rezept-Link",
   "preparedMealTemplateNoIngredientsYet": "Noch keine Zutaten verknüpft.",
-  "preparedMealTemplateOpenAction": "Vorlage öffnen",
-  "preparedMealTemplateUpdatedMessage": "Vorlage aktualisiert.",
+  "preparedMealTemplateOpenAction": "Rezept öffnen",
+  "preparedMealTemplateUpdatedMessage": "Rezept aktualisiert.",
   "preparedMealTemplateImportReviewTitle": "Rezept prüfen",
   "preparedMealTemplateImportReviewInstructionsTitle": "Kurze Anleitung",
   "preparedMealTemplateImportReviewSavingAction": "Speichert...",
@@ -352,10 +352,18 @@
       }
     }
   },
-  "preparedMealTemplateDetailTitle": "Vorlage",
-  "preparedMealTemplateDetailNotFound": "Vorlage nicht gefunden.",
+  "preparedMealTemplateDetailTitle": "Rezept",
+  "preparedMealTemplateDetailMatchTitle": "Zutaten-Abgleich: {name}",
+  "@preparedMealTemplateDetailMatchTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealTemplateDetailNotFound": "Rezept nicht gefunden.",
   "preparedMealTemplateDetailLoadFailed":
-      "Vorlage konnte nicht geladen werden.",
+      "Rezept konnte nicht geladen werden.",
   "preparedMealTemplateDetailBasePortions": "Basis: {count} Portionen",
   "@preparedMealTemplateDetailBasePortions": {
     "placeholders": {
@@ -368,12 +376,12 @@
       "Zutaten werden auf diese Portionszahl skaliert.",
   "preparedMealTemplateDetailNoIngredients":
       "Noch keine Zutaten vorhanden.",
-  "preparedMealTemplateDetailSaveAction": "Vorlage anpassen",
+  "preparedMealTemplateDetailSaveAction": "Rezept anpassen",
   "preparedMealTemplateDetailSavingAction": "Speichert...",
   "preparedMealTemplateDetailIngredientsToShoppingListAction":
       "Zutaten auf Einkaufsliste",
   "preparedMealTemplateDetailCreateMealHint":
-      "Diese Vorlage braucht mindestens eine Zutat, bevor du eine Mahlzeit erstellst.",
+      "Dieses Rezept braucht mindestens eine Zutat, bevor du eine Mahlzeit erstellst.",
   "preparedMealTemplateDetailAssignAction": "Zuordnen",
   "preparedMealTemplateDetailChangeAssignmentAction":
       "Zuordnung ändern",
@@ -410,6 +418,54 @@
       "Inventarartikel wählen",
   "preparedMealTemplateDetailSelectionEmpty":
       "Keine Inventarartikel vorhanden.",
+  "preparedMealTemplateDetailSelectionConversionLabel":
+      "Menge pro {sourceUnit} ({unit})",
+  "@preparedMealTemplateDetailSelectionConversionLabel": {
+    "placeholders": {
+      "sourceUnit": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealTemplateDetailSelectionConversionHint":
+      "Wie viel {unit} entspricht 1 {sourceUnit} von \"{ingredient}\"?",
+  "@preparedMealTemplateDetailSelectionConversionHint": {
+    "placeholders": {
+      "sourceUnit": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      },
+      "ingredient": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealTemplateDetailSelectionConversionError":
+      "Bitte gib eine Menge größer als 0 ein.",
+  "preparedMealTemplateDetailConversionSummary":
+      "1 {sourceUnit} = {amount} {unit}",
+  "@preparedMealTemplateDetailConversionSummary": {
+    "placeholders": {
+      "sourceUnit": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealTemplateDetailListAction": "Liste",
+  "preparedMealTemplateDetailSearchAction": "Suchen",
+  "preparedMealTemplateDetailSwapAction": "Tauschen",
+  "preparedMealTemplateDetailRestoreAction": "Wiederherstellen",
   "preparedMealTemplateDetailAddToShoppingListAction":
       "Zur Einkaufsliste",
   "preparedMealTemplateDetailIgnoreAction": "Ignorieren",
@@ -430,9 +486,9 @@
   "preparedMealTemplateDetailIgnoreSaveFailed":
       "Zutatenstatus konnte nicht gespeichert werden.",
   "preparedMealTemplateDetailInvalidMealMessage":
-      "Die Vorlage braucht mindestens eine gültige Zutat.",
+      "Das Rezept braucht mindestens eine gültige Zutat.",
   "preparedMealTemplateDetailSaveFailedMessage":
-      "Vorlage konnte nicht angepasst werden.",
+      "Rezept konnte nicht angepasst werden.",
   "shoppingListStatsEntries": "Positionen",
   "shoppingListStatsQuantity": "Gesamtmenge",
   "shoppingListStatsEstimatedTotal": "Geschätzte Summe",

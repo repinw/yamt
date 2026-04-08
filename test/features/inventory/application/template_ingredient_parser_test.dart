@@ -134,6 +134,21 @@ void main() {
     expect(requirement.name, 'Zwiebeln');
   });
 
+  test('parses tablespoon counts as conversion-based ingredient units', () {
+    final requirement = parser.parseRequirement(
+      ingredient: '4 EL Tomatenmark',
+      selectedPortions: 1,
+      basePortions: 1,
+    );
+
+    expect(requirement, isNotNull);
+    expect(requirement!.amount, 4);
+    expect(requirement.unit, InventoryAmountUnit.piece);
+    expect(requirement.name, 'Tomatenmark');
+    expect(requirement.countMeasureLabel, 'EL');
+    expect(requirement.allowsDirectPieceInventoryMatch, isFalse);
+  });
+
   test('formats pending ingredient labels from requirements', () {
     final label = parser.pendingIngredientLabel(
       originalIngredient: '1 kg Kartoffeln',
@@ -145,5 +160,20 @@ void main() {
     );
 
     expect(label, '500 g Kartoffeln');
+  });
+
+  test('formats pending ingredient labels with custom count measures', () {
+    final label = parser.pendingIngredientLabel(
+      originalIngredient: '4 EL Tomatenmark',
+      requirement: const TemplateIngredientRequirement(
+        amount: 4,
+        unit: InventoryAmountUnit.piece,
+        name: 'Tomatenmark',
+        countMeasureLabel: 'EL',
+        allowsDirectPieceInventoryMatch: false,
+      ),
+    );
+
+    expect(label, '4 EL Tomatenmark');
   });
 }

@@ -489,6 +489,8 @@ void main() {
               '1,5 l Broth': <String>['broth'],
               '1 cup Milk': <String>['milk'],
             },
+            recipeIngredientAmountConversions:
+                const <String, RecipeIngredientAmountConversion>{},
           );
 
       expect(result.isSuccess, isTrue);
@@ -503,6 +505,165 @@ void main() {
       );
     },
   );
+
+  test(
+    'createPreparedMealFromTemplate uses piece-to-gram conversions safely',
+    () async {
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: [
+          _item(
+            id: 'carrots',
+            name: 'Carrots',
+            currentAmount: 2000,
+            initialAmount: 2000,
+            amountUnit: InventoryAmountUnit.gram,
+          ),
+        ],
+      );
+      final preparedMealRepository = _FakePreparedMealRepository(
+        initialMeals: const <PreparedMeal>[],
+      );
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(inventoryRepository.dispose);
+      addTearDown(preparedMealRepository.dispose);
+      addTearDown(calorieLogRepository.dispose);
+
+      final template = PreparedMeal(
+        id: 'template-1',
+        name: 'Carrot side',
+        recipeIngredients: const <String>['2 Carrots'],
+        totalPortions: 1,
+        remainingPortions: 1,
+        totalKcal: 0,
+        totalProtein: 0,
+        totalCarbs: 0,
+        totalFat: 0,
+        createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+        updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+        components: const <PreparedMealComponent>[],
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(
+            inventoryRepository,
+          ),
+          preparedMealRepositoryProvider.overrideWithValue(
+            preparedMealRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+
+      await container.read(preparedMealsControllerProvider.future);
+      final result = await container
+          .read(preparedMealsControllerProvider.notifier)
+          .createPreparedMealFromTemplate(
+            template: template,
+            totalPortions: 1,
+            recipeIngredientAssignments: const <String, List<String>>{
+              '2 Carrots': <String>['carrots'],
+            },
+            recipeIngredientAmountConversions:
+                const <String, RecipeIngredientAmountConversion>{
+                  '2 Carrots': RecipeIngredientAmountConversion(
+                    amountPerPiece: 100,
+                    unit: InventoryAmountUnit.gram,
+                  ),
+                },
+          );
+
+      expect(result.isSuccess, isTrue);
+      expect(inventoryRepository.savedItems.single.currentAmount, 1800);
+      expect(preparedMealRepository.savedMeals.single.components, hasLength(1));
+      expect(
+        preparedMealRepository.savedMeals.single.components.single.usedAmount,
+        200,
+      );
+      expect(
+        preparedMealRepository.savedMeals.single.components.single.usedUnit,
+        InventoryAmountUnit.gram,
+      );
+      expect(
+        preparedMealRepository.savedMeals.single.pendingRecipeIngredients,
+        isEmpty,
+      );
+    },
+  );
+
+  test('createPreparedMealFromTemplate does not consume measured items '
+      'without piece conversion', () async {
+    final inventoryRepository = _FakeInventoryItemRepository(
+      initialItems: [
+        _item(
+          id: 'carrots',
+          name: 'Carrots',
+          currentAmount: 2000,
+          initialAmount: 2000,
+          amountUnit: InventoryAmountUnit.gram,
+        ),
+      ],
+    );
+    final preparedMealRepository = _FakePreparedMealRepository(
+      initialMeals: const <PreparedMeal>[],
+    );
+    final calorieLogRepository = FakeCalorieLogRepository();
+    addTearDown(inventoryRepository.dispose);
+    addTearDown(preparedMealRepository.dispose);
+    addTearDown(calorieLogRepository.dispose);
+
+    final template = PreparedMeal(
+      id: 'template-1',
+      name: 'Carrot side',
+      recipeIngredients: const <String>['2 Carrots'],
+      totalPortions: 1,
+      remainingPortions: 1,
+      totalKcal: 0,
+      totalProtein: 0,
+      totalCarbs: 0,
+      totalFat: 0,
+      createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      components: const <PreparedMealComponent>[],
+    );
+
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
+        preparedMealRepositoryProvider.overrideWithValue(
+          preparedMealRepository,
+        ),
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(preparedMealsControllerProvider.future);
+    final result = await container
+        .read(preparedMealsControllerProvider.notifier)
+        .createPreparedMealFromTemplate(
+          template: template,
+          totalPortions: 1,
+          recipeIngredientAssignments: const <String, List<String>>{
+            '2 Carrots': <String>['carrots'],
+          },
+          recipeIngredientAmountConversions:
+              const <String, RecipeIngredientAmountConversion>{},
+        );
+
+    expect(result.isSuccess, isTrue);
+    expect(inventoryRepository.savedItems.single.currentAmount, 2000);
+    expect(preparedMealRepository.savedMeals.single.components, isEmpty);
+    expect(
+      preparedMealRepository.savedMeals.single.pendingRecipeIngredients,
+      const <String>['2 pc Carrots'],
+    );
+  });
 
   test(
     'createPreparedMealFromTemplate restores inventory when meal save throws',
@@ -558,6 +719,8 @@ void main() {
             recipeIngredientAssignments: const <String, List<String>>{
               '500 g Rice': <String>['rice'],
             },
+            recipeIngredientAmountConversions:
+                const <String, RecipeIngredientAmountConversion>{},
           );
 
       expect(result.isSuccess, isFalse);

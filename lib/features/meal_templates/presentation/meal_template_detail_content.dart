@@ -4,7 +4,9 @@ class _MealTemplateDetailContent extends ConsumerWidget {
   const _MealTemplateDetailContent({
     required this.template,
     required this.selectedPortions,
+    required this.inventoryItems,
     required this.recipeIngredientAssignments,
+    required this.recipeIngredientAmountConversions,
     required this.hasAssignmentChanges,
     required this.isCreatingMeal,
     required this.isSavingTemplate,
@@ -16,9 +18,17 @@ class _MealTemplateDetailContent extends ConsumerWidget {
     required this.onSaveTemplatePressed,
   });
 
+  static const _maxContentWidth = 760.0;
+  static const _footerHeight = 164.0;
+  static const _footerHeightWithSave = 220.0;
+  static const _topBarContentHeight = 76.0;
+
   final PreparedMeal template;
   final int selectedPortions;
+  final List<InventoryItem> inventoryItems;
   final Map<String, List<String>> recipeIngredientAssignments;
+  final Map<String, RecipeIngredientAmountConversion>
+  recipeIngredientAmountConversions;
   final bool hasAssignmentChanges;
   final bool isCreatingMeal;
   final bool isSavingTemplate;
@@ -27,6 +37,7 @@ class _MealTemplateDetailContent extends ConsumerWidget {
   final void Function({
     required String ingredient,
     required List<String> inventoryItemIds,
+    required RecipeIngredientAmountConversion? amountConversion,
   })
   onAssignmentChanged;
   final Future<void> Function() onCreateMealPressed;
@@ -37,197 +48,146 @@ class _MealTemplateDetailContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
+    final topBarReservedHeight =
+        MediaQuery.paddingOf(context).top + _topBarContentHeight;
     final imageRef = maybeLocalImageAssetRef(template.imageAssetId);
     final storedImageBytes = imageRef == null
         ? null
         : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
-    final inventoryItems =
-        ref.watch(inventoryItemsControllerProvider).asData?.value ??
-        const <InventoryItem>[];
-    final recipeHost = recipeSourceHost(template.recipeUrl);
     final ingredientRows = _buildIngredientRows(
       template: template,
       recipeIngredientAssignments: recipeIngredientAssignments,
+      recipeIngredientAmountConversions: recipeIngredientAmountConversions,
       selectedPortions: selectedPortions,
+      ingredientParser: ref.read(templateIngredientParserProvider),
     );
     final canCreateMeal = ingredientRows.isNotEmpty;
+    final showFooter = template.recipeIngredients.isNotEmpty;
+    final scrollBottomPadding = showFooter
+        ? hasAssignmentChanges
+              ? _footerHeightWithSave
+              : _footerHeight
+        : AppSpacing.xxxxl;
 
-    return ListView(
-      padding: AppInsets.pageLarge,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            PreparedMealCover(
-              label: template.name,
-              imageBytes: storedImageBytes,
-              imageUrl: template.imageUrl,
-              size: 112,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: AppInventoryEditorialSurfaces.backdropGradient(colors),
+      ),
+      child: Stack(
+        children: [
+          ListView(
+            padding: EdgeInsets.only(
+              top: topBarReservedHeight,
+              bottom: scrollBottomPadding,
             ),
-            const SizedBox(width: AppSpacing.lg),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    template.name,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  if (recipeHost != null)
-                    Text(
-                      l10n.preparedMealTemplateRecipeSource(recipeHost),
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    l10n.preparedMealTemplateDetailBasePortions(
-                      template.totalPortions,
-                    ),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        Card(
-          child: Padding(
-            padding: AppInsets.card,
-            child: Row(
-              children: [
-                Expanded(
+            children: [
+              Align(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: _maxContentWidth),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        l10n.preparedMealPortionsLabel,
-                        style: Theme.of(context).textTheme.titleMedium,
+                      _MealTemplateHeroSection(
+                        templateName: template.name,
+                        imageBytes: storedImageBytes,
+                        imageUrl: template.imageUrl,
+                        portionsLabel: l10n.preparedMealTemplatePortions(
+                          selectedPortions,
+                        ),
+                        basePortionsLabel: l10n
+                            .preparedMealTemplateDetailBasePortions(
+                              _defaultPortions(template.totalPortions),
+                            ),
+                        onDecreasePortions: onDecreasePortions,
+                        onIncreasePortions: onIncreasePortions,
                       ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        l10n.preparedMealTemplateDetailScaleHint,
-                        style: Theme.of(context).textTheme.bodySmall,
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.xl,
+                          0,
+                          AppSpacing.xl,
+                          AppSpacing.xxxxl,
+                        ),
+                        child: ingredientRows.isEmpty
+                            ? _MealTemplateEmptyIngredientsCard(
+                                message: l10n
+                                    .preparedMealTemplateDetailNoIngredients,
+                              )
+                            : Column(
+                                children: [
+                                  for (final row in ingredientRows) ...[
+                                    _MealTemplateIngredientCard(
+                                      row: row,
+                                      inventoryItems: inventoryItems,
+                                      onAddToShoppingListPressed:
+                                          row.rawIngredient == null
+                                          ? null
+                                          : () => _addIngredientToShoppingList(
+                                              context: context,
+                                              ref: ref,
+                                              shoppingListLabel:
+                                                  _shoppingListLabelForRow(
+                                                    row: row,
+                                                    inventoryItems:
+                                                        inventoryItems,
+                                                  ),
+                                            ),
+                                      onToggleIgnoredPressed:
+                                          row.rawIngredient == null
+                                          ? null
+                                          : () => _toggleIgnored(
+                                              context: context,
+                                              ref: ref,
+                                              templateId: template.id,
+                                              ingredient: row.rawIngredient!,
+                                              isIgnored: !row.isIgnored,
+                                            ),
+                                      onAssignmentChanged:
+                                          row.rawIngredient == null
+                                          ? null
+                                          : (selection) {
+                                              onAssignmentChanged(
+                                                ingredient: row.rawIngredient!,
+                                                inventoryItemIds:
+                                                    selection.inventoryItemIds,
+                                                amountConversion:
+                                                    selection.amountConversion,
+                                              );
+                                            },
+                                    ),
+                                    const SizedBox(height: AppSpacing.md),
+                                  ],
+                                ],
+                              ),
                       ),
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: onDecreasePortions,
-                  icon: const Icon(Icons.remove_circle_outline),
-                ),
-                Text(
-                  '$selectedPortions',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                IconButton(
-                  onPressed: onIncreasePortions,
-                  icon: const Icon(Icons.add_circle_outline),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        Text(
-          l10n.preparedMealIngredientsTitle,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: AppSpacing.md),
-        if (ingredientRows.isEmpty)
-          Text(l10n.preparedMealTemplateDetailNoIngredients)
-        else
-          Column(
-            children: [
-              for (final row in ingredientRows) ...[
-                _MealTemplateIngredientCard(
-                  row: row,
-                  inventoryItems: inventoryItems,
-                  onAddToShoppingListPressed: row.rawIngredient == null
-                      ? null
-                      : () => _addIngredientToShoppingList(
-                          context: context,
-                          ref: ref,
-                          shoppingListLabel: _shoppingListLabel(row),
-                        ),
-                  onToggleIgnoredPressed: row.rawIngredient == null
-                      ? null
-                      : () => _toggleIgnored(
-                          context: context,
-                          ref: ref,
-                          templateId: template.id,
-                          ingredient: row.rawIngredient!,
-                          isIgnored: !row.isIgnored,
-                        ),
-                  onAssignmentChanged: row.rawIngredient == null
-                      ? null
-                      : (inventoryItemIds) {
-                          onAssignmentChanged(
-                            ingredient: row.rawIngredient!,
-                            inventoryItemIds: inventoryItemIds,
-                          );
-                        },
-                ),
-                const SizedBox(height: AppSpacing.md),
-              ],
-            ],
-          ),
-        if (template.recipeIngredients.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.xl),
-          Row(
-            children: [
-              if (hasAssignmentChanges) ...[
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: isSavingTemplate || isCreatingMeal
-                        ? null
-                        : onSaveTemplatePressed,
-                    child: Text(
-                      isSavingTemplate
-                          ? l10n.preparedMealTemplateDetailSavingAction
-                          : l10n.preparedMealTemplateDetailSaveAction,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-              ],
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: isCreatingMeal || isSavingTemplate
-                      ? null
-                      : onAddIngredientsToShoppingListPressed,
-                  icon: const Icon(Icons.shopping_cart_outlined),
-                  label: Text(
-                    l10n.preparedMealTemplateDetailIngredientsToShoppingListAction,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed:
-                      isCreatingMeal || isSavingTemplate || !canCreateMeal
-                      ? null
-                      : onCreateMealPressed,
-                  icon: const Icon(Icons.restaurant_rounded),
-                  label: Text(l10n.preparedMealCreateAction),
-                ),
               ),
             ],
           ),
-          if (!canCreateMeal) ...[
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              l10n.preparedMealTemplateDetailCreateMealHint,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+          _MealTemplateTopBar(
+            title: l10n.preparedMealTemplateDetailMatchTitle(template.name),
+            height: _topBarContentHeight,
+          ),
+          if (showFooter)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+                child: _MealTemplateFooter(
+                  hasAssignmentChanges: hasAssignmentChanges,
+                  isCreatingMeal: isCreatingMeal,
+                  isSavingTemplate: isSavingTemplate,
+                  canCreateMeal: canCreateMeal,
+                  onSaveTemplatePressed: onSaveTemplatePressed,
+                  onAddIngredientsToShoppingListPressed:
+                      onAddIngredientsToShoppingListPressed,
+                  onCreateMealPressed: onCreateMealPressed,
+                ),
+              ),
             ),
-          ],
         ],
-      ],
+      ),
     );
   }
 }

@@ -747,6 +747,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealTemplateDetailTitle => 'Template';
 
   @override
+  String preparedMealTemplateDetailMatchTitle(String name) {
+    return 'Ingredient Matching: $name';
+  }
+
+  @override
   String get preparedMealTemplateDetailNotFound => 'Template not found.';
 
   @override
@@ -807,6 +812,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get preparedMealTemplateDetailSelectionEmpty => 'No inventory items available.';
+
+  @override
+  String preparedMealTemplateDetailSelectionConversionLabel(String sourceUnit, String unit) {
+    return 'Amount per $sourceUnit ($unit)';
+  }
+
+  @override
+  String preparedMealTemplateDetailSelectionConversionHint(String sourceUnit, String unit, String ingredient) {
+    return 'How much $unit does 1 $sourceUnit of \"$ingredient\" use?';
+  }
+
+  @override
+  String get preparedMealTemplateDetailSelectionConversionError => 'Please enter an amount greater than 0.';
+
+  @override
+  String preparedMealTemplateDetailConversionSummary(String sourceUnit, int amount, String unit) {
+    return '1 $sourceUnit = $amount $unit';
+  }
+
+  @override
+  String get preparedMealTemplateDetailListAction => 'List';
+
+  @override
+  String get preparedMealTemplateDetailSearchAction => 'Search';
+
+  @override
+  String get preparedMealTemplateDetailSwapAction => 'Swap';
+
+  @override
+  String get preparedMealTemplateDetailRestoreAction => 'Restore';
 
   @override
   String get preparedMealTemplateDetailAddToShoppingListAction => 'Add to shopping list';

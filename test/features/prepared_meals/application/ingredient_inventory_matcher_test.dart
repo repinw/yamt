@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/prepared_meals/application/'
+import 'package:yamt/features/inventory/application/'
     'ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 InventoryItem _item({
   required String id,
@@ -48,6 +48,32 @@ void main() {
     expect(matches.map((item) => item.id), <String>['2', '1']);
   });
 
+  test('matches german carrot synonyms with quantities', () {
+    final matches = matchInventoryItemsForIngredient(
+      ingredient: '2 Möhren',
+      inventoryItems: <InventoryItem>[
+        _item(id: '1', name: 'Karotten'),
+        _item(id: '2', name: 'Milch'),
+      ],
+      localeCode: 'de',
+    );
+
+    expect(matches.map((item) => item.id), <String>['1']);
+  });
+
+  test('matches english scallion synonyms with english lexicon', () {
+    final matches = matchInventoryItemsForIngredient(
+      ingredient: '2 spring onions',
+      inventoryItems: <InventoryItem>[
+        _item(id: '1', name: 'Scallions'),
+        _item(id: '2', name: 'Milk'),
+      ],
+      localeCode: 'en',
+    );
+
+    expect(matches.map((item) => item.id), <String>['1']);
+  });
+
   test('rankInventoryItemsForIngredient keeps non matches for manual pick', () {
     final inventoryItems = <InventoryItem>[
       _item(id: '1', name: 'Milch'),
@@ -87,6 +113,7 @@ void main() {
           _item(id: '1', name: 'Fresh Large'),
           _item(id: '2', name: 'Milk'),
         ],
+        localeCode: 'en',
       );
 
       expect(rankedItems.map((item) => item.id).first, '2');
