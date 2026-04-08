@@ -575,7 +575,7 @@ class InventoryItemsController extends _$InventoryItemsController {
       }
 
       final sourceItem = currentItems[itemIndex];
-      if (sourceItem.isConsumed) {
+      if (!sourceItem.isFullyAvailable) {
         return false;
       }
 

@@ -14,7 +14,7 @@ import 'package:yamt/features/inventory/presentation/'
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_list/inventory_item_row/inventory_item_eat_sheet.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
+import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_manual_product_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

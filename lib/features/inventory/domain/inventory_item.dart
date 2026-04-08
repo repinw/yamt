@@ -391,6 +391,11 @@ class InventoryItem {
     return progress.remaining < progress.initial;
   }
 
+  bool get isFullyAvailable {
+    final progress = _consumptionProgress;
+    return progress.remaining >= progress.initial;
+  }
+
   bool get isFullyConsumed {
     final progress = _consumptionProgress;
     return progress.remaining <= 0;

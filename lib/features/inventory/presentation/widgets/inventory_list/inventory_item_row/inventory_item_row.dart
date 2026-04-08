@@ -227,7 +227,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   }
 
   void _onSwapCandidatePressed() {
-    if (widget.item.isConsumed) {
+    if (!widget.item.isFullyAvailable) {
       _showActionSnackBar(
         widget.l10n.inventoryItemSwapCandidateRequiresFullItem,
       );

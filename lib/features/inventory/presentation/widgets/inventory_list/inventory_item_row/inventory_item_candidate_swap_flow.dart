@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -6,15 +7,14 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
+import 'package:yamt/features/product_search/domain/'
+    'receipt_review_item_draft.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
+import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_manual_product_page.dart';
 
 const _swapGlobalFoodIdPrefix = 'global-food-';
-
-final _swapGlobalFoodItemId = Uuid();
 
 /// Describes the product data that should replace an inventory item.
 class InventoryItemCandidateSwapRequest {
@@ -148,7 +148,7 @@ InventoryItemCandidateSwapRequest _requestFromManualResult({
       item: result.item,
       id:
           selectedGlobalFoodItemId ??
-          '$_swapGlobalFoodIdPrefix${_swapGlobalFoodItemId.v4()}',
+          '$_swapGlobalFoodIdPrefix${const Uuid().v4()}',
       packageWeight: result.item.weight,
     ),
     requiresGlobalPersistence: selectedGlobalFoodItemId == null,
@@ -160,12 +160,9 @@ GlobalFoodMatchCandidate? _candidateById(
   List<GlobalFoodMatchCandidate> candidates,
   String candidateId,
 ) {
-  for (final candidate in candidates) {
-    if (candidate.item.id == candidateId) {
-      return candidate;
-    }
-  }
-  return null;
+  return candidates.firstWhereOrNull((candidate) {
+    return candidate.item.id == candidateId;
+  });
 }
 
 GlobalFoodItem _productFromManualItem({
