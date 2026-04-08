@@ -14,12 +14,16 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
       StreamController<List<InventoryItem>>.broadcast();
   List<InventoryItem> _items;
   bool appendShouldFail = false;
+  bool appendShouldThrow = false;
   bool emitRealtimeOnAppend = true;
   final List<List<InventoryItem>> appendHistory = <List<InventoryItem>>[];
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
     appendHistory.add(List<InventoryItem>.from(items));
+    if (appendShouldThrow) {
+      throw StateError('appendAll failed');
+    }
     if (appendShouldFail) {
       return false;
     }
@@ -153,6 +157,75 @@ void main() {
     final items = container.read(inventoryItemsControllerProvider).value;
     expect(items, hasLength(1));
     expect(items?.single, replacement);
+  });
+
+  test(
+    'addItem rolls back optimistic state when append returns false',
+    () async {
+      final existingItem = _item(id: 'a', name: 'Milk');
+      final repository = _FakeInventoryItemRepository(
+        initialItems: <InventoryItem>[existingItem],
+      );
+      repository.emitRealtimeOnAppend = false;
+      repository.appendShouldFail = true;
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+
+      await container.read(inventoryItemsControllerProvider.future);
+      final addedItem = _item(id: 'b', name: 'Oat Milk');
+
+      final saved = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .addItem(addedItem);
+
+      expect(saved, isFalse);
+      expect(repository.appendHistory.single, <InventoryItem>[addedItem]);
+      expect(
+        container.read(inventoryItemsControllerProvider).value,
+        <InventoryItem>[existingItem],
+      );
+    },
+  );
+
+  test('addItem rolls back optimistic state when append throws', () async {
+    final existingItem = _item(id: 'a', name: 'Milk');
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[existingItem],
+    );
+    repository.emitRealtimeOnAppend = false;
+    repository.appendShouldThrow = true;
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final addedItem = _item(id: 'b', name: 'Oat Milk');
+
+    final saved = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .addItem(addedItem);
+
+    expect(saved, isFalse);
+    expect(repository.appendHistory.single, <InventoryItem>[addedItem]);
+    expect(
+      container.read(inventoryItemsControllerProvider).value,
+      <InventoryItem>[existingItem],
+    );
   });
 
   test(
