@@ -369,6 +369,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemSwapCandidateAction => 'Swap candidate';
 
   @override
+  String get inventoryItemSwapCandidateRequiresFullItem => 'You can swap the candidate only while the item is still fully available.';
+
+  @override
   String get inventoryItemActionFailed => 'Action failed. Please try again.';
 
   @override

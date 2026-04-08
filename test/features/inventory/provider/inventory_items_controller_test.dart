@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 
@@ -70,6 +72,42 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   }
 }
 
+class _FakeGlobalFoodItemRepository implements GlobalFoodItemRepository {
+  final List<GlobalFoodItem> appendedItems = <GlobalFoodItem>[];
+
+  @override
+  Future<bool> appendAll(List<GlobalFoodItem> items) async {
+    appendedItems.addAll(items);
+    return true;
+  }
+
+  @override
+  Future<List<GlobalFoodItem>> readAll() async {
+    return const <GlobalFoodItem>[];
+  }
+
+  @override
+  Future<bool> saveAll(List<GlobalFoodItem> items) async {
+    return true;
+  }
+
+  @override
+  Future<List<GlobalFoodItem>> searchCandidates({
+    String? normalizedName,
+    String? barcode,
+    String? foodFingerprint,
+    List<String> searchTokens = const <String>[],
+    int limit = 20,
+  }) async {
+    return const <GlobalFoodItem>[];
+  }
+
+  @override
+  Stream<List<GlobalFoodItem>> watchAll() {
+    return const Stream<List<GlobalFoodItem>>.empty();
+  }
+}
+
 ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepControllerAlive(
   ProviderContainer container,
 ) {
@@ -84,6 +122,7 @@ InventoryItem _item({
   String name = 'Milk',
   int quantity = 1,
   int initialQuantity = 1,
+  String? weight,
 }) {
   return InventoryItem.create(
     id: id,
@@ -92,6 +131,22 @@ InventoryItem _item({
     storeName: 'Store',
     quantity: quantity,
     initialQuantity: initialQuantity,
+    weight: weight,
+  ).withDerivedAmount(weight: weight, quantity: quantity);
+}
+
+GlobalFoodItem _globalProduct({
+  required String id,
+  String name = 'Oat Drink',
+  String? barcode,
+  String? packageWeight,
+}) {
+  return GlobalFoodItem.create(
+    id: id,
+    name: name,
+    now: DateTime.parse('2026-04-07T12:00:00Z'),
+    barcode: barcode,
+    packageWeight: packageWeight,
   );
 }
 
@@ -251,6 +306,98 @@ void main() {
           .stagePendingConsumption('a', 0);
 
       expect(pendingConsumption, isNull);
+    },
+  );
+
+  test(
+    'swapItemCandidate persists the resolved product and updates the item',
+    () async {
+      final repository = _FakeInventoryItemRepository(
+        initialItems: <InventoryItem>[
+          _item(id: 'a', name: 'Milk', quantity: 2, initialQuantity: 2),
+        ],
+      );
+      final globalRepository = _FakeGlobalFoodItemRepository();
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+          globalFoodItemRepositoryProvider.overrideWithValue(globalRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+
+      await container.read(inventoryItemsControllerProvider.future);
+
+      final saved = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .swapItemCandidate(
+            itemId: 'a',
+            resolvedProduct: _globalProduct(
+              id: 'off-4061458029995',
+              name: 'Oat Drink',
+              barcode: '4061458029995',
+              packageWeight: '1000 g',
+            ),
+            requiresGlobalPersistence: true,
+            weight: '1000 g',
+          );
+
+      expect(saved, isTrue);
+      expect(globalRepository.appendedItems, hasLength(1));
+
+      final items = container.read(inventoryItemsControllerProvider).value;
+      expect(items, hasLength(1));
+      expect(items?.single.name, 'Oat Drink');
+      expect(items?.single.globalFoodItemId, 'off-4061458029995');
+      expect(items?.single.barcode, '4061458029995');
+      expect(items?.single.weight, '1000 g');
+      expect(items?.single.initialAmount, 2000);
+      expect(items?.single.currentAmount, 2000);
+    },
+  );
+
+  test(
+    'swapItemCandidate rejects items that were already partially consumed',
+    () async {
+      final repository = _FakeInventoryItemRepository(
+        initialItems: <InventoryItem>[
+          _item(id: 'a', quantity: 1, initialQuantity: 2),
+        ],
+      );
+      final globalRepository = _FakeGlobalFoodItemRepository();
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+          globalFoodItemRepositoryProvider.overrideWithValue(globalRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+
+      await container.read(inventoryItemsControllerProvider.future);
+
+      final saved = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .swapItemCandidate(
+            itemId: 'a',
+            resolvedProduct: _globalProduct(id: 'off-123', barcode: '123'),
+            requiresGlobalPersistence: true,
+            weight: '1000 g',
+          );
+
+      expect(saved, isFalse);
+      expect(globalRepository.appendedItems, isEmpty);
+
+      final items = container.read(inventoryItemsControllerProvider).value;
+      expect(items?.single.name, 'Milk');
+      expect(items?.single.globalFoodItemId, isNot('off-123'));
     },
   );
 }

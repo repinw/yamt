@@ -6,18 +6,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/features/calories/data/'
-    'calorie_barcode_backfill_repository.dart';
-import 'package:yamt/features/calories/data/'
-    'calorie_barcode_backfill_repository_contract.dart';
-import 'package:yamt/features/calories/domain/'
-    'calorie_product_lookup_models.dart';
+import 'package:yamt/features/inventory/application/'
+    'global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
@@ -28,63 +27,6 @@ import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 import '../../shoppinglist/support/fake_shopping_list_repository.dart';
-
-class _RecordingBackfillRepository
-    implements CalorieBarcodeBackfillRepositoryContract {
-  int enqueueCalls = 0;
-  String? lastItemId;
-  String? lastFingerprint;
-  String? lastItemName;
-  String? lastBrand;
-  String? lastTrigger;
-  bool lastForceRetry = false;
-  int enqueueBatchCalls = 0;
-
-  @override
-  Future<bool> enqueueFingerprintLookup({
-    String? itemId,
-    required String fingerprint,
-    required String itemName,
-    String? brand,
-    required String trigger,
-    bool forceRetry = false,
-  }) async {
-    enqueueCalls += 1;
-    lastItemId = itemId;
-    lastFingerprint = fingerprint;
-    lastItemName = itemName;
-    lastBrand = brand;
-    lastTrigger = trigger;
-    lastForceRetry = forceRetry;
-    return true;
-  }
-
-  @override
-  Future<bool> enqueueBatchLookup({
-    required List<BarcodeLookupBatchItem> items,
-    required String trigger,
-  }) async {
-    enqueueBatchCalls += 1;
-    return true;
-  }
-
-  @override
-  Future<CalorieProductProfile?> getResolvedProfileByFingerprint(
-    String fingerprint,
-  ) async {
-    return null;
-  }
-
-  @override
-  Future<bool> submitUserProvidedBarcode({
-    required String fingerprint,
-    required String barcode,
-    required String itemName,
-    String? brand,
-  }) async {
-    return true;
-  }
-}
 
 class _FakeInventoryDiscardEventRepository
     implements InventoryDiscardEventRepository {
@@ -157,6 +99,69 @@ class _FakeFridgeItemRepository implements InventoryItemRepository {
   }
 }
 
+class _RecordingGlobalFoodItemRepository implements GlobalFoodItemRepository {
+  final List<GlobalFoodItem> appendedItems = <GlobalFoodItem>[];
+
+  @override
+  Future<bool> appendAll(List<GlobalFoodItem> items) async {
+    appendedItems.addAll(items);
+    return true;
+  }
+
+  @override
+  Future<List<GlobalFoodItem>> readAll() async {
+    return const <GlobalFoodItem>[];
+  }
+
+  @override
+  Future<bool> saveAll(List<GlobalFoodItem> items) async {
+    return true;
+  }
+
+  @override
+  Future<List<GlobalFoodItem>> searchCandidates({
+    String? normalizedName,
+    String? barcode,
+    String? foodFingerprint,
+    List<String> searchTokens = const <String>[],
+    int limit = 20,
+  }) async {
+    return const <GlobalFoodItem>[];
+  }
+
+  @override
+  Stream<List<GlobalFoodItem>> watchAll() {
+    return const Stream<List<GlobalFoodItem>>.empty();
+  }
+}
+
+class _RecordingOffProductSearchRepository
+    implements OffProductSearchRepository {
+  _RecordingOffProductSearchRepository(this.results);
+
+  final List<OffProductSearchResult> results;
+  String? lastQuery;
+
+  @override
+  Future<List<OffProductSearchResult>> search({
+    required String query,
+    String? store,
+    String? brand,
+    String? weight,
+    int limit = 15,
+  }) async {
+    lastQuery = query;
+    return results.take(limit).toList(growable: false);
+  }
+
+  @override
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
+  }) async {
+    return results;
+  }
+}
+
 class _DelayedStageInventoryItemsController extends InventoryItemsController {
   _DelayedStageInventoryItemsController({
     required List<InventoryItem> initialItems,
@@ -225,6 +230,7 @@ InventoryItem _item(
   String id, {
   String? brand,
   String? name,
+  String? ocrName,
   String? receiptId,
   DateTime? receiptDate,
   int quantity = 2,
@@ -247,6 +253,7 @@ InventoryItem _item(
     currentAmount: currentAmount,
     amountUnit: amountUnit,
     brand: brand,
+    ocrName: ocrName,
     receiptId: receiptId,
     receiptDate: receiptDate,
   );
@@ -641,15 +648,34 @@ void main() {
     expect(find.text('Not sure'), findsOneWidget);
   });
 
-  testWidgets('search barcode button triggers direct item lookup', (
+  testWidgets('swap candidate opens picker and persists the selected item', (
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
-        _item('a', name: 'Milk', quantity: 2, initialQuantity: 2),
+        _item(
+          'a',
+          name: 'Milk',
+          ocrName: 'MILCH 3,5%',
+          quantity: 2,
+          initialQuantity: 2,
+        ),
       ],
     );
-    final backfillRepository = _RecordingBackfillRepository();
+    final globalRepository = _RecordingGlobalFoodItemRepository();
+    final offRepository =
+        _RecordingOffProductSearchRepository(<OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4061458029995',
+            name: 'Oat Drink',
+            brand: 'Oatly',
+            packageWeight: '1000 ml',
+            score: 34,
+          ),
+        ]);
+    final matcher = GlobalFoodItemMatcher(
+      offProductSearchRepository: offRepository,
+    );
     addTearDown(repository.dispose);
 
     await tester.pumpWidget(
@@ -663,26 +689,56 @@ void main() {
               enableQueueBackfill: false,
             ),
           ),
-          calorieBarcodeBackfillRepositoryProvider.overrideWithValue(
-            backfillRepository,
-          ),
+          globalFoodItemRepositoryProvider.overrideWithValue(globalRepository),
+          globalFoodItemMatcherProvider.overrideWithValue(matcher),
         ],
       ),
     );
     await tester.pumpAndSettle();
     await _tapVisible(tester, find.text('Milk'));
 
-    final retryButtonFinder = find.text('Swap candidate');
-    expect(retryButtonFinder, findsOneWidget);
-    await _tapVisible(tester, retryButtonFinder);
+    await _tapVisible(tester, find.text('Swap candidate'));
 
-    expect(backfillRepository.enqueueCalls, 1);
-    expect(backfillRepository.lastItemId, 'a');
-    expect(backfillRepository.lastFingerprint, 'milk');
-    expect(backfillRepository.lastItemName, 'Milk');
-    expect(backfillRepository.lastTrigger, 'manual_search');
-    expect(backfillRepository.lastForceRetry, isFalse);
+    expect(find.text('Select product'), findsOneWidget);
+    expect(find.text('Oat Drink'), findsAtLeastNWidgets(1));
+
+    await tester.tap(find.text('Oat Drink').last);
+    await tester.pumpAndSettle();
+
+    final savedItems = await repository.readAll();
+    expect(savedItems.single.name, 'Oat Drink');
+    expect(savedItems.single.brand, 'Oatly');
+    expect(savedItems.single.globalFoodItemId, 'off-4061458029995');
+    expect(savedItems.single.weight, '1000 ml');
+    expect(savedItems.single.initialAmount, 2000);
+    expect(savedItems.single.currentAmount, 2000);
+    expect(globalRepository.appendedItems, hasLength(1));
+    expect(offRepository.lastQuery, 'MILCH 3,5%');
   });
+
+  testWidgets(
+    'swap candidate shows feedback when the item is no longer complete',
+    (tester) async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <InventoryItem>[
+          _item('a', name: 'Milk', quantity: 1, initialQuantity: 2),
+        ],
+      );
+      addTearDown(repository.dispose);
+
+      await tester.pumpWidget(_buildTestApp(repository));
+      await tester.pumpAndSettle();
+      await _tapVisible(tester, find.text('Milk'));
+      await _tapVisible(tester, find.text('Swap candidate'));
+
+      expect(
+        find.text(
+          'You can swap the candidate only while the item is still fully available.',
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('edit action currently shows not-implemented feedback', (
     tester,

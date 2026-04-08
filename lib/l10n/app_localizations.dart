@@ -803,6 +803,12 @@ abstract class AppLocalizations {
   /// **'Swap candidate'**
   String get inventoryItemSwapCandidateAction;
 
+  /// No description provided for @inventoryItemSwapCandidateRequiresFullItem.
+  ///
+  /// In en, this message translates to:
+  /// **'You can swap the candidate only while the item is still fully available.'**
+  String get inventoryItemSwapCandidateRequiresFullItem;
+
   /// No description provided for @inventoryItemActionFailed.
   ///
   /// In en, this message translates to:

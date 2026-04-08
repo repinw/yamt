@@ -128,6 +128,7 @@ class DefaultReceiptToReviewItemDraftMapper
                 ) ??
                 rootReceiptDate,
             language: language,
+            ocrName: name,
             isDeposit: !isFood,
             isDiscount: isDiscount,
           ).withDerivedAmount(weight: weight, quantity: safeQuantity);

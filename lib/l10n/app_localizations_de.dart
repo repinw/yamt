@@ -369,6 +369,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemSwapCandidateAction => 'Kandidat tauschen';
 
   @override
+  String get inventoryItemSwapCandidateRequiresFullItem => 'Du kannst den Kandidaten nur tauschen, solange der Artikel noch vollständig vorhanden ist.';
+
+  @override
   String get inventoryItemActionFailed => 'Aktion fehlgeschlagen. Bitte erneut versuchen.';
 
   @override

@@ -243,6 +243,26 @@ void main() {
     expect(items.single.origin, InventoryItemOrigin.manualAdd);
   });
 
+  test('readAll preserves ocr name from stored documents', () async {
+    final ocrItem = _item('ocr-1').copyWith(ocrName: 'MILCH 3,5%');
+    final store = _FakeInventoryItemStore(
+      initialDocumentsByUser: <String, List<InventoryItemDocument>>{
+        'user-1': <InventoryItemDocument>[
+          InventoryItemDocument(id: 'ocr-1', data: ocrItem.toJson()),
+        ],
+      },
+    );
+    addTearDown(store.dispose);
+    final repository = FirestoreInventoryItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      store: store,
+    );
+
+    final items = await repository.readAll();
+
+    expect(items.single.ocrName, 'MILCH 3,5%');
+  });
+
   test('appendAll serializes concurrent writes', () async {
     final store = _FakeInventoryItemStore()
       ..upsertDelay = const Duration(milliseconds: 25);

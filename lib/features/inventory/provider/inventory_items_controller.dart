@@ -13,9 +13,12 @@ import 'package:yamt/features/household/provider/'
     'household_permission_recovery.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/'
+    'global_food_item_repository.dart';
+import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
@@ -557,6 +560,41 @@ class InventoryItemsController extends _$InventoryItemsController {
     );
   }
 
+  /// Replaces the product reference on an existing full inventory item.
+  Future<bool> swapItemCandidate({
+    required String itemId,
+    required GlobalFoodItem resolvedProduct,
+    required bool requiresGlobalPersistence,
+    String? weight,
+  }) {
+    return _runSerializedMutation(() async {
+      final currentItems = await _currentPersistedItems();
+      final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
+      if (itemIndex < 0) {
+        return false;
+      }
+
+      final sourceItem = currentItems[itemIndex];
+      if (!sourceItem.isFullyAvailable) {
+        return false;
+      }
+
+      final canReferenceGlobalItem = await _persistResolvedProduct(
+        resolvedProduct: resolvedProduct,
+        requiresGlobalPersistence: requiresGlobalPersistence,
+      );
+
+      final nextItems = List<InventoryItem>.from(currentItems);
+      nextItems[itemIndex] = _buildSwappedItem(
+        sourceItem: sourceItem,
+        resolvedProduct: resolvedProduct,
+        weight: weight,
+        canReferenceGlobalItem: canReferenceGlobalItem,
+      );
+      return _saveItems(previousItems: currentItems, nextItems: nextItems);
+    });
+  }
+
   /// Adds a newly created item and publishes it immediately so follow-up
   /// flows can reference it before the realtime repository catches up.
   Future<bool> addItem(InventoryItem item) {
@@ -713,6 +751,58 @@ class InventoryItemsController extends _$InventoryItemsController {
       _publishVisibleItems();
       return false;
     }
+  }
+
+  Future<bool> _persistResolvedProduct({
+    required GlobalFoodItem resolvedProduct,
+    required bool requiresGlobalPersistence,
+  }) async {
+    if (!requiresGlobalPersistence) {
+      return true;
+    }
+
+    try {
+      return await ref.read(globalFoodItemRepositoryProvider).appendAll(
+        <GlobalFoodItem>[resolvedProduct],
+      );
+    } catch (error, stackTrace) {
+      log(
+        'Failed to persist swapped product ${resolvedProduct.id}. '
+        'Continuing with inventory-only save.',
+        name: _controllerLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
+  InventoryItem _buildSwappedItem({
+    required InventoryItem sourceItem,
+    required GlobalFoodItem resolvedProduct,
+    required String? weight,
+    required bool canReferenceGlobalItem,
+  }) {
+    final updatedItem = sourceItem.copyWith(
+      globalFoodItemId: canReferenceGlobalItem
+          ? resolvedProduct.id
+          : buildPendingGlobalFoodItemId(
+              resolvedProduct.resolvedFoodFingerprint,
+            ),
+      name: resolvedProduct.name,
+      brand: resolvedProduct.brand,
+      category: resolvedProduct.category,
+      barcode: resolvedProduct.barcode,
+      imageUrl: resolvedProduct.imageUrl,
+      weight: weight,
+      foodFingerprint: resolvedProduct.resolvedFoodFingerprint,
+      nutrition: resolvedProduct.nutrition,
+    );
+    return updatedItem.withDerivedAmount(
+      weight: updatedItem.weight,
+      quantity: updatedItem.quantity,
+      fallbackUnit: sourceItem.amountUnit,
+    );
   }
 
   int? _resolveDiscardedAmount({

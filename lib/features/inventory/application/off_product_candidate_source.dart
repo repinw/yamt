@@ -13,7 +13,7 @@ class _OffProductCandidateSource {
       return const <OffProductSearchResult>[];
     }
 
-    final query = item.name.trim();
+    final query = (item.ocrName ?? item.name).trim();
     if (query.isEmpty) {
       return const <OffProductSearchResult>[];
     }
