@@ -1,6 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/household/provider/household_scope_provider.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
 import 'firestore_shopping_list_repository.dart';
 import 'shopping_list_item_store.dart';
@@ -11,13 +13,15 @@ part 'shopping_list_repository.g.dart';
 
 @riverpod
 ShoppingListRepository shoppingListRepository(Ref ref) {
-  final authState = ref.watch(authStateChangesProvider);
-  final currentUserId = authState.asData?.value?.uid;
+  ref.watch(authStateChangesProvider);
+  final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
+  final firestore = ref.watch(firebaseFirestoreProvider);
+  if (firestore == null) {
+    return const _UnavailableShoppingListRepository();
+  }
   return FirestoreShoppingListRepository(
     session: _CurrentShoppingListUserSession(currentUserId: currentUserId),
-    store: FirestoreShoppingListItemStore(
-      firestore: FirebaseFirestore.instance,
-    ),
+    store: FirestoreShoppingListItemStore(firestore: firestore),
   );
 }
 
@@ -29,4 +33,23 @@ class _CurrentShoppingListUserSession implements ShoppingListUserSession {
 
   @override
   String? get currentUserId => _currentUserId;
+}
+
+class _UnavailableShoppingListRepository implements ShoppingListRepository {
+  const _UnavailableShoppingListRepository();
+
+  @override
+  Stream<List<ShoppingListItem>> watchAll() {
+    return const Stream<List<ShoppingListItem>>.empty();
+  }
+
+  @override
+  Future<List<ShoppingListItem>> readAll() async {
+    return const <ShoppingListItem>[];
+  }
+
+  @override
+  Future<bool> saveAll(List<ShoppingListItem> items) async {
+    return false;
+  }
 }

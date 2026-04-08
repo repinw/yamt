@@ -1,8 +1,9 @@
 import 'dart:developer' show log;
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/household/provider/household_scope_provider.dart';
 
 import 'firestore_prepared_meal_repository.dart';
 import 'inventory_user_session.dart';
@@ -17,27 +18,25 @@ part 'prepared_meal_repository.g.dart';
 
 @riverpod
 PreparedMealRepository preparedMealRepository(Ref ref) {
-  final authState = ref.watch(authStateChangesProvider);
-  final currentUserId = authState.asData?.value?.uid;
-  final store = _resolveStore();
+  ref.watch(authStateChangesProvider);
+  final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
+  final store = _resolveStore(ref);
   return FirestorePreparedMealRepository(
     session: _CurrentPreparedMealUserSession(currentUserId: currentUserId),
     store: store,
   );
 }
 
-PreparedMealStore _resolveStore() {
-  try {
-    return FirestorePreparedMealStore(firestore: FirebaseFirestore.instance);
-  } catch (error, stackTrace) {
+PreparedMealStore _resolveStore(Ref ref) {
+  final firestore = ref.watch(firebaseFirestoreProvider);
+  if (firestore == null) {
     log(
       'Falling back to unavailable prepared meal store.',
       name: 'PreparedMealRepositoryProvider',
-      error: error,
-      stackTrace: stackTrace,
     );
     return const _UnavailablePreparedMealStore();
   }
+  return FirestorePreparedMealStore(firestore: firestore);
 }
 
 class _CurrentPreparedMealUserSession implements InventoryUserSession {

@@ -5,6 +5,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/household/provider/'
+    'household_access_recovery_utils.dart';
+import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/application/'
@@ -68,15 +71,38 @@ class PreparedMealItemInput {
   final GlobalFoodNutrition? manualNutrition;
 }
 
+extension _PreparedMealComponentNutritionTotals
+    on Iterable<PreparedMealComponent> {
+  ({double totalCarbs, double totalFat, double totalKcal, double totalProtein})
+  get nutritionTotals {
+    return fold(
+      (totalCarbs: 0.0, totalFat: 0.0, totalKcal: 0.0, totalProtein: 0.0),
+      (totals, component) => (
+        totalCarbs: totals.totalCarbs + component.totalCarbs,
+        totalFat: totals.totalFat + component.totalFat,
+        totalKcal: totals.totalKcal + component.totalKcal,
+        totalProtein: totals.totalProtein + component.totalProtein,
+      ),
+    );
+  }
+}
+
 @riverpod
 class PreparedMealsController extends _$PreparedMealsController {
   static const _uuid = Uuid();
 
   StreamSubscription<List<PreparedMeal>>? _mealsSubscription;
+  int _subscriptionGeneration = 0;
   final _mutationQueue = SerializedMutationQueue();
+  String? _currentDataOwnerUserId;
+  bool _isRecoveringHouseholdAccess = false;
 
   @override
   FutureOr<List<PreparedMeal>> build() {
+    ref.watch(householdDataOwnerUserIdProvider);
+    _currentDataOwnerUserId = ref.watch(
+      effectiveHouseholdDataOwnerUserIdProvider,
+    );
     ref.watch(preparedMealRepositoryProvider);
     ref.onDispose(_disposeSubscription);
     return _restartSubscription();
@@ -312,25 +338,14 @@ class PreparedMealsController extends _$PreparedMealsController {
         ...currentMeal.components,
         ...fillResult.components,
       ];
+      final nutritionTotals = nextComponents.nutritionTotals;
       final nextMeal = currentMeal.copyWith(
         components: nextComponents,
         pendingRecipeIngredients: nextPendingIngredients,
-        totalKcal: nextComponents.fold<double>(
-          0,
-          (sum, component) => sum + component.totalKcal,
-        ),
-        totalProtein: nextComponents.fold<double>(
-          0,
-          (sum, component) => sum + component.totalProtein,
-        ),
-        totalCarbs: nextComponents.fold<double>(
-          0,
-          (sum, component) => sum + component.totalCarbs,
-        ),
-        totalFat: nextComponents.fold<double>(
-          0,
-          (sum, component) => sum + component.totalFat,
-        ),
+        totalKcal: nutritionTotals.totalKcal,
+        totalProtein: nutritionTotals.totalProtein,
+        totalCarbs: nutritionTotals.totalCarbs,
+        totalFat: nutritionTotals.totalFat,
         updatedAt: DateTime.now(),
       );
 
@@ -697,11 +712,18 @@ class PreparedMealsController extends _$PreparedMealsController {
 
   Future<List<PreparedMeal>> _restartSubscription() {
     final initialMeals = Completer<List<PreparedMeal>>();
+    _currentDataOwnerUserId = ref.read(
+      effectiveHouseholdDataOwnerUserIdProvider,
+    );
     final repository = ref.read(preparedMealRepositoryProvider);
+    final generation = ++_subscriptionGeneration;
     _disposeSubscription();
 
     _mealsSubscription = repository.watchAll().listen(
       (meals) {
+        if (generation != _subscriptionGeneration) {
+          return;
+        }
         if (!initialMeals.isCompleted) {
           initialMeals.complete(meals);
           return;
@@ -709,7 +731,15 @@ class PreparedMealsController extends _$PreparedMealsController {
         _onRealtimeMeals(meals);
       },
       onError: (Object error, StackTrace stackTrace) {
+        if (generation != _subscriptionGeneration) {
+          return;
+        }
         if (!initialMeals.isCompleted) {
+          if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
+            initialMeals.complete(const <PreparedMeal>[]);
+            unawaited(_recoverFromRevokedHouseholdAccess(showLoading: false));
+            return;
+          }
           initialMeals.completeError(error, stackTrace);
           return;
         }
@@ -736,10 +766,42 @@ class PreparedMealsController extends _$PreparedMealsController {
   }
 
   void _onRealtimeError(Object error, StackTrace stackTrace) {
+    if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
+      unawaited(_recoverFromRevokedHouseholdAccess());
+      return;
+    }
     if (!ref.mounted) {
       return;
     }
     state = AsyncError(error, stackTrace);
+  }
+
+  bool _shouldRecoverFromRevokedHouseholdAccess(Object error) {
+    return shouldRecoverControllerHouseholdAccess(
+      ref: ref,
+      error: error,
+      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
+      currentHouseholdDataOwnerUserId: _currentDataOwnerUserId,
+    );
+  }
+
+  Future<void> _recoverFromRevokedHouseholdAccess({bool showLoading = true}) {
+    return recoverControllerHouseholdAccess<PreparedMeal>(
+      ref: ref,
+      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
+      setIsRecoveringHouseholdAccess: (value) {
+        _isRecoveringHouseholdAccess = value;
+      },
+      setState: (nextState) {
+        state = nextState;
+      },
+      restartHouseholdScopedSubscription: _restartSubscription,
+      currentHouseholdDataOwnerUserId: _currentDataOwnerUserId,
+      householdAccessRecoveryLogName: _preparedMealsControllerLogName,
+      householdAccessRecoveryMessage:
+          'Rebuilding prepared meal stream after household access changed.',
+      showLoading: showLoading,
+    );
   }
 
   Future<List<PreparedMeal>> _currentMeals() async {
@@ -933,22 +995,7 @@ _PreparedMealCreationResult _buildMealCreationResult({
     );
   }
 
-  final totalKcal = components.fold<double>(
-    0,
-    (sum, component) => sum + component.totalKcal,
-  );
-  final totalProtein = components.fold<double>(
-    0,
-    (sum, component) => sum + component.totalProtein,
-  );
-  final totalCarbs = components.fold<double>(
-    0,
-    (sum, component) => sum + component.totalCarbs,
-  );
-  final totalFat = components.fold<double>(
-    0,
-    (sum, component) => sum + component.totalFat,
-  );
+  final nutritionTotals = components.nutritionTotals;
 
   return _PreparedMealCreationResult(
     nextItems: nextItems,
@@ -958,10 +1005,10 @@ _PreparedMealCreationResult _buildMealCreationResult({
       imageAssetId: _normalizeOptionalImageAssetId(imageAssetId),
       totalPortions: totalPortions,
       remainingPortions: totalPortions,
-      totalKcal: totalKcal,
-      totalProtein: totalProtein,
-      totalCarbs: totalCarbs,
-      totalFat: totalFat,
+      totalKcal: nutritionTotals.totalKcal,
+      totalProtein: nutritionTotals.totalProtein,
+      totalCarbs: nutritionTotals.totalCarbs,
+      totalFat: nutritionTotals.totalFat,
       createdAt: now,
       updatedAt: now,
       components: components,
@@ -1104,22 +1151,7 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
     }
   }
 
-  final totalKcal = components.fold<double>(
-    0,
-    (sum, component) => sum + component.totalKcal,
-  );
-  final totalProtein = components.fold<double>(
-    0,
-    (sum, component) => sum + component.totalProtein,
-  );
-  final totalCarbs = components.fold<double>(
-    0,
-    (sum, component) => sum + component.totalCarbs,
-  );
-  final totalFat = components.fold<double>(
-    0,
-    (sum, component) => sum + component.totalFat,
-  );
+  final nutritionTotals = components.nutritionTotals;
 
   return _PreparedMealCreationResult(
     nextItems: nextItems,
@@ -1135,10 +1167,10 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
       pendingRecipeIngredients: pendingIngredients,
       totalPortions: totalPortions,
       remainingPortions: totalPortions,
-      totalKcal: totalKcal,
-      totalProtein: totalProtein,
-      totalCarbs: totalCarbs,
-      totalFat: totalFat,
+      totalKcal: nutritionTotals.totalKcal,
+      totalProtein: nutritionTotals.totalProtein,
+      totalCarbs: nutritionTotals.totalCarbs,
+      totalFat: nutritionTotals.totalFat,
       createdAt: now,
       updatedAt: now,
       components: components,

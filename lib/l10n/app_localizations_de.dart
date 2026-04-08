@@ -1340,6 +1340,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsNotificationsSubtitle => 'Erinnerungen und Hinweise verwalten';
 
   @override
+  String get settingsHouseholdTitle => 'Haushalt';
+
+  @override
+  String get settingsHouseholdSubtitle => 'Mitglieder einladen und geteilten Zugriff verwalten';
+
+  @override
   String get settingsAccountTitle => 'Konto';
 
   @override
@@ -1431,6 +1437,101 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get accountPageNotSet => 'Nicht gesetzt';
+
+  @override
+  String get householdTitle => 'Haushalt';
+
+  @override
+  String get householdJoinTitle => 'Haushalt beitreten';
+
+  @override
+  String get householdJoinCodeLabel => 'Code';
+
+  @override
+  String get householdJoinCodeHint => '6-stelligen Einladungscode eingeben';
+
+  @override
+  String get householdJoinAction => 'Beitreten';
+
+  @override
+  String get householdJoinSuccess => 'Haushalt beigetreten.';
+
+  @override
+  String get householdJoinInvalidCode => 'Ungültiger Haushaltscode.';
+
+  @override
+  String get householdJoinExpiredCode => 'Dieser Haushaltscode ist abgelaufen.';
+
+  @override
+  String get householdJoinOwnCode => 'Du kannst deinem eigenen Haushalt nicht beitreten.';
+
+  @override
+  String get householdInviteTitle => 'Mitglieder einladen';
+
+  @override
+  String get householdInviteGenerateCode => 'Code erstellen';
+
+  @override
+  String get householdInviteCodeValidFor => 'Code 24 Stunden gültig';
+
+  @override
+  String get householdInviteCopyCode => 'Code kopieren';
+
+  @override
+  String get householdInviteCodeCopied => 'Code kopiert.';
+
+  @override
+  String get householdInviteRefreshCode => 'Neuen Code erstellen';
+
+  @override
+  String get householdInviteVerificationRequired => 'Verknüpfe dein Konto erst mit Google oder E-Mail, bevor du einen Haushalt leitest.';
+
+  @override
+  String get householdHostVerificationHint => 'Um andere Personen in deinen Haushalt einzuladen, verknüpfe dein Gastkonto mit Google oder E-Mail & Passwort.';
+
+  @override
+  String get householdMembersTitle => 'Mitglieder';
+
+  @override
+  String get householdLeaderBadge => 'Leitung';
+
+  @override
+  String get householdYouBadge => 'Du';
+
+  @override
+  String get householdRemoveMemberTitle => 'Mitglied entfernen?';
+
+  @override
+  String householdRemoveMemberMessage(Object name) {
+    return '$name aus diesem Haushalt entfernen?';
+  }
+
+  @override
+  String get householdRemoveMemberAction => 'Entfernen';
+
+  @override
+  String get householdRemoveMemberSuccess => 'Mitglied entfernt.';
+
+  @override
+  String get householdRemoveMemberFailed => 'Dieses Mitglied kann nicht entfernt werden.';
+
+  @override
+  String get householdLeaveTitle => 'Haushalt verlassen?';
+
+  @override
+  String get householdLeaveMessage => 'Du verlierst den Zugriff auf den geteilten Haushalt, bis du erneut beitrittst.';
+
+  @override
+  String get householdLeaveAction => 'Haushalt verlassen';
+
+  @override
+  String get householdLeaveSuccess => 'Haushalt verlassen.';
+
+  @override
+  String get householdLeaderOnly => 'Das kann nur die Haushaltsleitung tun.';
+
+  @override
+  String get householdActionFailed => 'Haushaltsaktion fehlgeschlagen. Bitte versuche es erneut.';
 
   @override
   String get settingsAboutTitle => 'Über die App';

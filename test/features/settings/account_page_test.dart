@@ -9,6 +9,12 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 class _MockUser extends Mock implements User {}
 
+Future<void> _ensureVisibleText(WidgetTester tester, String text) async {
+  final finder = find.text(text, skipOffstage: false);
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+}
+
 Widget _wrapWithApp({required Stream<User?> authStream}) {
   return ProviderScope(
     overrides: [authStateChangesProvider.overrideWith((ref) => authStream)],
@@ -39,6 +45,7 @@ void main() {
     expect(find.text('Jane Doe'), findsOneWidget);
     expect(find.text('jane@example.com'), findsOneWidget);
     expect(find.text('uid-123'), findsOneWidget);
+    await _ensureVisibleText(tester, 'Sign out');
     expect(find.text('Sign out'), findsOneWidget);
     expect(find.text('Guest account'), findsNothing);
     expect(find.text('Link with Google'), findsNothing);

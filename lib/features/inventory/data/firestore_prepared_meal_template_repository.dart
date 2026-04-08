@@ -61,24 +61,17 @@ class FirestorePreparedMealTemplateRepository
   }
 
   Stream<List<PreparedMeal>> _watchAllForUser(String userId) async* {
+    final collectionPath = 'users/$userId/prepared_meal_templates';
     try {
       await for (final documents in _store.watchAll(userId: userId)) {
         yield _decodeDocuments(documents);
       }
     } on FirebaseException catch (error, stackTrace) {
-      if (error.code == 'permission-denied') {
-        log(
-          'Skipping prepared meal template watch for user $userId: '
-          'permission denied.',
-          name: _repositoryLogName,
-          error: error,
-          stackTrace: stackTrace,
-        );
-        yield const <PreparedMeal>[];
-        return;
-      }
       log(
-        'Failed to watch prepared meal templates for user $userId.',
+        error.code == 'permission-denied'
+            ? 'Prepared meal template watch denied by Firestore rules for '
+                  '$collectionPath.'
+            : 'Failed to watch prepared meal templates for user $userId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,

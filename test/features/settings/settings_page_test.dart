@@ -10,6 +10,7 @@ import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/settings/account_page.dart';
+import 'package:yamt/features/household/presentation/household_page.dart';
 import 'package:yamt/features/settings/settings_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -71,6 +72,7 @@ void main() {
 
     expect(find.byIcon(Icons.language_outlined), findsOneWidget);
     expect(find.byIcon(Icons.notifications_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.group_outlined), findsOneWidget);
     expect(find.byIcon(Icons.person_outline), findsOneWidget);
     expect(find.byIcon(Icons.palette_outlined), findsOneWidget);
     expect(find.byIcon(Icons.format_paint_outlined), findsOneWidget);
@@ -84,10 +86,57 @@ void main() {
     expect(find.text('Teal'), findsNWidgets(2));
     expect(find.text('Notifications'), findsOneWidget);
     expect(find.text('Manage reminders and alerts'), findsOneWidget);
+    expect(find.text('Household'), findsOneWidget);
+    expect(
+      find.text('Invite members and manage shared access'),
+      findsOneWidget,
+    );
     expect(find.text('Account'), findsOneWidget);
     expect(find.text('Manage profile and sign-in'), findsOneWidget);
     expect(find.text('About'), findsOneWidget);
     expect(find.text('App version and information'), findsOneWidget);
+  });
+
+  testWidgets('Household tile opens HouseholdPage', (tester) async {
+    final user = _MockUser();
+    when(() => user.isAnonymous).thenReturn(false);
+    when(() => user.displayName).thenReturn('Jane Doe');
+    when(() => user.email).thenReturn('jane@example.com');
+    when(() => user.uid).thenReturn('uid-123');
+
+    final router = GoRouter(
+      initialLocation: AppRoutes.homeSettings,
+      routes: [
+        GoRoute(
+          path: AppRoutes.homeSettings,
+          builder: (context, state) => const Scaffold(body: SettingsPage()),
+        ),
+        GoRoute(
+          path: AppRoutes.homeSettingsHousehold,
+          builder: (context, state) => const HouseholdPage(),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
+          appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Household').first);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HouseholdPage), findsOneWidget);
+    expect(find.text('Invite members'), findsOneWidget);
   });
 
   testWidgets('non-implemented tiles show snackbar', (tester) async {

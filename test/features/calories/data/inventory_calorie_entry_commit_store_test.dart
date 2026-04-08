@@ -14,19 +14,21 @@ const _inventoryItemsCollection = 'inventory_items';
 
 CollectionReference<Map<String, dynamic>> _inventoryCollection({
   required FirebaseFirestore firestore,
+  String userId = 'user-1',
 }) {
   return firestore
       .collection(_usersCollection)
-      .doc('user-1')
+      .doc(userId)
       .collection(_inventoryItemsCollection);
 }
 
 CollectionReference<Map<String, dynamic>> _entryCollection({
   required FirebaseFirestore firestore,
+  String userId = 'user-1',
 }) {
   return firestore
       .collection(_usersCollection)
-      .doc('user-1')
+      .doc(userId)
       .collection(_calorieEntriesCollection);
 }
 
@@ -82,6 +84,7 @@ void main() {
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
         currentUserId: 'user-1',
+        inventoryOwnerUserId: 'user-1',
       );
 
       final result = await store.commitEntryAndInventory(
@@ -129,6 +132,7 @@ void main() {
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
         currentUserId: 'user-1',
+        inventoryOwnerUserId: 'user-1',
       );
 
       final result = await store.commitEntryAndInventory(
@@ -171,6 +175,7 @@ void main() {
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
         currentUserId: 'user-1',
+        inventoryOwnerUserId: 'user-1',
       );
 
       await store.commitEntryAndInventory(
@@ -188,6 +193,48 @@ void main() {
       expect(savedItemSnapshot.data()?['custom_server_flag'], isTrue);
       expect(savedItemSnapshot.data()?['notes'], 'keep me');
       expect(savedItemSnapshot.data()?['current_amount'], 500);
+    },
+  );
+
+  test(
+    'commitEntryAndInventory uses shared inventory owner and personal entry user',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await _inventoryCollection(
+        firestore: firestore,
+        userId: 'host-1',
+      ).doc('inventory-1').set(_inventoryItem().toJson());
+
+      final store = FirestoreInventoryCalorieEntryCommitStore(
+        firestore: firestore,
+        currentUserId: 'member-1',
+        inventoryOwnerUserId: 'host-1',
+      );
+      final entry = _entry().copyWith(userId: 'member-1');
+
+      final result = await store.commitEntryAndInventory(
+        entry: entry,
+        pendingConsumption: const PendingInventoryConsumption(
+          id: 'pending-1',
+          itemId: 'inventory-1',
+          amount: 250,
+        ),
+      );
+
+      expect(result, isNotNull);
+
+      final savedEntry = await _entryCollection(
+        firestore: firestore,
+        userId: 'member-1',
+      ).doc('entry-1').get();
+      final savedItem = await _inventoryCollection(
+        firestore: firestore,
+        userId: 'host-1',
+      ).doc('inventory-1').get();
+
+      expect(savedEntry.exists, isTrue);
+      expect(savedEntry.data()?['user_id'], 'member-1');
+      expect(savedItem.data()?['current_amount'], 500);
     },
   );
 }

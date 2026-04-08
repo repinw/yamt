@@ -1340,6 +1340,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsNotificationsSubtitle => 'Manage reminders and alerts';
 
   @override
+  String get settingsHouseholdTitle => 'Household';
+
+  @override
+  String get settingsHouseholdSubtitle => 'Invite members and manage shared access';
+
+  @override
   String get settingsAccountTitle => 'Account';
 
   @override
@@ -1431,6 +1437,101 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountPageNotSet => 'Not set';
+
+  @override
+  String get householdTitle => 'Household';
+
+  @override
+  String get householdJoinTitle => 'Join household';
+
+  @override
+  String get householdJoinCodeLabel => 'Code';
+
+  @override
+  String get householdJoinCodeHint => 'Enter 6-digit invite code';
+
+  @override
+  String get householdJoinAction => 'Join';
+
+  @override
+  String get householdJoinSuccess => 'Household joined.';
+
+  @override
+  String get householdJoinInvalidCode => 'Invalid household code.';
+
+  @override
+  String get householdJoinExpiredCode => 'This household code has expired.';
+
+  @override
+  String get householdJoinOwnCode => 'You cannot join your own household.';
+
+  @override
+  String get householdInviteTitle => 'Invite members';
+
+  @override
+  String get householdInviteGenerateCode => 'Generate code';
+
+  @override
+  String get householdInviteCodeValidFor => 'Code valid for 24 hours';
+
+  @override
+  String get householdInviteCopyCode => 'Copy code';
+
+  @override
+  String get householdInviteCodeCopied => 'Code copied.';
+
+  @override
+  String get householdInviteRefreshCode => 'Generate new code';
+
+  @override
+  String get householdInviteVerificationRequired => 'Verify your account with Google or email before you lead a household.';
+
+  @override
+  String get householdHostVerificationHint => 'To invite other people into your household, link your guest account with Google or email & password.';
+
+  @override
+  String get householdMembersTitle => 'Members';
+
+  @override
+  String get householdLeaderBadge => 'Leader';
+
+  @override
+  String get householdYouBadge => 'You';
+
+  @override
+  String get householdRemoveMemberTitle => 'Remove member?';
+
+  @override
+  String householdRemoveMemberMessage(Object name) {
+    return 'Remove $name from this household?';
+  }
+
+  @override
+  String get householdRemoveMemberAction => 'Remove';
+
+  @override
+  String get householdRemoveMemberSuccess => 'Member removed.';
+
+  @override
+  String get householdRemoveMemberFailed => 'This member cannot be removed.';
+
+  @override
+  String get householdLeaveTitle => 'Leave household?';
+
+  @override
+  String get householdLeaveMessage => 'You will lose access to the shared household until you join again.';
+
+  @override
+  String get householdLeaveAction => 'Leave household';
+
+  @override
+  String get householdLeaveSuccess => 'Household left.';
+
+  @override
+  String get householdLeaderOnly => 'Only the household leader can do that.';
+
+  @override
+  String get householdActionFailed => 'Household action failed. Please try again.';
 
   @override
   String get settingsAboutTitle => 'About';

@@ -69,24 +69,18 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
   }
 
   Stream<List<InventoryItem>> _watchAllForUser(String userId) async* {
+    final collectionPath = 'users/$userId/inventory_items';
     try {
       await for (final documents in _store.watchAll(userId: userId)) {
         yield _decodeDocuments(documents);
       }
     } on FirebaseException catch (error, stackTrace) {
-      if (_isPermissionDenied(error)) {
-        log(
-          'Skipping inventory watch for user $userId: '
-          'permission denied by Firestore rules.',
-          name: _repositoryLogName,
-          error: error,
-          stackTrace: stackTrace,
-        );
-        yield const <InventoryItem>[];
-        return;
-      }
       log(
-        'Failed to watch inventory items from firestore for user $userId.',
+        _isPermissionDenied(error)
+            ? 'Inventory watch denied by Firestore rules for '
+                  '$collectionPath.'
+            : 'Failed to watch inventory items from firestore for user '
+                  '$userId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -104,9 +98,22 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
   }
 
   Future<List<InventoryItem>> _readAllForUser(String userId) async {
+    final collectionPath = 'users/$userId/inventory_items';
     try {
       final documents = await _store.readAll(userId: userId);
       return _decodeDocuments(documents);
+    } on FirebaseException catch (error, stackTrace) {
+      log(
+        _isPermissionDenied(error)
+            ? 'Inventory read denied by Firestore rules for '
+                  '$collectionPath.'
+            : 'Failed to read inventory items from firestore for user '
+                  '$userId.',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
     } catch (error, stackTrace) {
       log(
         'Failed to read inventory items from firestore for user $userId.',
@@ -114,11 +121,17 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
         error: error,
         stackTrace: stackTrace,
       );
-      return const <InventoryItem>[];
+      rethrow;
     }
   }
 
   Future<bool> _replaceAllForUser(String userId, List<InventoryItem> items) {
+    if (items.isEmpty) {
+      log(
+        'Replacing inventory with an empty collection for user $userId.',
+        name: _repositoryLogName,
+      );
+    }
     final documentsById = <String, Map<String, dynamic>>{
       for (final item in items) item.id: _normalizeItem(item).toJson(),
     };

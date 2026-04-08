@@ -21,6 +21,7 @@ abstract final class AppRoutes {
   static const homeStatistics = '/home/statistics';
   static const homeSettings = '/home/settings';
   static const homeSettingsAccount = '/home/settings/account';
+  static const homeSettingsHousehold = '/home/settings/household';
 
   static String homeCaloriesEntryEditPath(String entryId) {
     return '/home/calories/entry/$entryId/edit';

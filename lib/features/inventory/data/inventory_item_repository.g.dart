@@ -55,4 +55,4 @@ final class InventoryItemRepositoryProvider
 }
 
 String _$inventoryItemRepositoryHash() =>
-    r'aa64714b6faf4ddd16712156216ef81256388df2';
+    r'a10108ae7a478d37034bb93d8d7e02b44313cef0';

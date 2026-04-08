@@ -15,6 +15,7 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final tiles = <Widget>[
+      _HouseholdTile(l10n: l10n),
       _AccountTile(l10n: l10n),
       const _ThemeModeTile(),
       const _SeedColorTile(),
@@ -43,6 +44,22 @@ class SettingsPage extends StatelessWidget {
       itemCount: tiles.length,
       itemBuilder: (context, index) => tiles[index],
       separatorBuilder: (context, index) => const Divider(height: 1),
+    );
+  }
+}
+
+class _HouseholdTile extends StatelessWidget {
+  const _HouseholdTile({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.group_outlined),
+      title: Text(l10n.settingsHouseholdTitle),
+      subtitle: Text(l10n.settingsHouseholdSubtitle),
+      onTap: () => context.push(AppRoutes.homeSettingsHousehold),
     );
   }
 }

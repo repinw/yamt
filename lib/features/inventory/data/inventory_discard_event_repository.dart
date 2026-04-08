@@ -2,7 +2,9 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 
 const _discardEventRepositoryLogName = 'InventoryDiscardEventRepository';
@@ -152,21 +154,19 @@ class _UnavailableInventoryDiscardEventRepository
 
 final inventoryDiscardEventRepositoryProvider =
     Provider<InventoryDiscardEventRepository>((ref) {
-      final authState = ref.watch(authStateChangesProvider);
-      final currentUserId = authState.asData?.value?.uid;
-
-      try {
-        return FirestoreInventoryDiscardEventRepository(
-          firestore: FirebaseFirestore.instance,
-          currentUserId: currentUserId,
-        );
-      } catch (error, stackTrace) {
+      ref.watch(authStateChangesProvider);
+      final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
+      final firestore = ref.watch(firebaseFirestoreProvider);
+      if (firestore == null) {
         log(
           'Falling back to unavailable discard event repository.',
           name: _discardEventRepositoryLogName,
-          error: error,
-          stackTrace: stackTrace,
         );
         return const _UnavailableInventoryDiscardEventRepository();
       }
+
+      return FirestoreInventoryDiscardEventRepository(
+        firestore: firestore,
+        currentUserId: currentUserId,
+      );
     });
