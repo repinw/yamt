@@ -4,11 +4,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/household/data/household_repository.dart';
 import 'package:yamt/features/household/provider/household_invite_code_controller.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
-import 'package:yamt/features/inventory/provider/'
-    'prepared_meal_templates_controller.dart';
-import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 
 part 'household_membership_controller.g.dart';
 
@@ -20,7 +15,7 @@ class HouseholdMembershipController extends _$HouseholdMembershipController {
   Future<void> joinHousehold(String code) async {
     await _runAction(() async {
       await ref.read(householdRepositoryProvider).joinHousehold(code);
-      _resetSharedScopeState();
+      _clearHouseholdScopeRecovery();
       ref.read(householdInviteCodeControllerProvider.notifier).clear();
     });
   }
@@ -28,7 +23,7 @@ class HouseholdMembershipController extends _$HouseholdMembershipController {
   Future<void> leaveHousehold() async {
     await _runAction(() async {
       await ref.read(householdRepositoryProvider).leaveHousehold();
-      _resetSharedScopeState();
+      _clearHouseholdScopeRecovery();
       ref.read(householdInviteCodeControllerProvider.notifier).clear();
     });
   }
@@ -55,13 +50,7 @@ class HouseholdMembershipController extends _$HouseholdMembershipController {
     }
   }
 
-  void _resetSharedScopeState() {
+  void _clearHouseholdScopeRecovery() {
     ref.read(householdDataOwnerRecoveryProvider.notifier).clear();
-    ref.invalidate(householdDataOwnerUserIdProvider);
-    ref.invalidate(effectiveHouseholdDataOwnerUserIdProvider);
-    ref.invalidate(inventoryItemsControllerProvider);
-    ref.invalidate(preparedMealsControllerProvider);
-    ref.invalidate(preparedMealTemplatesControllerProvider);
-    ref.invalidate(shoppingListControllerProvider);
   }
 }
