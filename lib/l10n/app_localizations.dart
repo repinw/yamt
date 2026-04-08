@@ -923,6 +923,18 @@ abstract class AppLocalizations {
   /// **'Product added to inventory.'**
   String get inventoryManualAddSaved;
 
+  /// No description provided for @inventoryManualAddEatNowOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat now'**
+  String get inventoryManualAddEatNowOption;
+
+  /// No description provided for @inventoryManualAddEatNowRequiresNutrition.
+  ///
+  /// In en, this message translates to:
+  /// **'Only available when nutrition values are present.'**
+  String get inventoryManualAddEatNowRequiresNutrition;
+
   /// No description provided for @inventoryManualAddStoreName.
   ///
   /// In en, this message translates to:

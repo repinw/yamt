@@ -180,6 +180,9 @@
   "inventoryManualAddSaveFailed":
       "The product could not be added to the inventory.",
   "inventoryManualAddSaved": "Product added to inventory.",
+  "inventoryManualAddEatNowOption": "Eat now",
+  "inventoryManualAddEatNowRequiresNutrition":
+      "Only available when nutrition values are present.",
   "inventoryManualAddStoreName": "Added manually",
   "inventoryBarcodePortionDialogTitle": "Enter consumed amount",
   "inventoryBarcodePortionDialogConfirmAction": "Continue",

@@ -357,10 +357,7 @@ class InventoryItemsController extends _$InventoryItemsController {
         return true;
       }
 
-      await _saveItems(
-        previousItems: nextItems,
-        nextItems: currentItems,
-      );
+      await _saveItems(previousItems: nextItems, nextItems: currentItems);
       return false;
     });
   }
@@ -439,6 +436,40 @@ class InventoryItemsController extends _$InventoryItemsController {
     );
   }
 
+  /// Adds a newly created item and publishes it immediately so follow-up
+  /// flows can reference it before the realtime repository catches up.
+  Future<bool> addItem(InventoryItem item) {
+    return _runSerializedMutation(() async {
+      final previousItems = await _currentPersistedItems();
+      final nextItems = _mergePersistedItem(
+        currentItems: previousItems,
+        item: item,
+      );
+      _persistedItems = nextItems;
+      _publishVisibleItems();
+
+      final repository = ref.read(inventoryItemRepositoryProvider);
+      try {
+        final saved = await repository.appendAll(<InventoryItem>[item]);
+        if (!saved) {
+          _persistedItems = previousItems;
+          _publishVisibleItems();
+        }
+        return saved;
+      } catch (error, stackTrace) {
+        log(
+          'Failed to append inventory item ${item.id}.',
+          name: _controllerLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+        _persistedItems = previousItems;
+        _publishVisibleItems();
+        return false;
+      }
+    });
+  }
+
   Future<PendingInventoryConsumption?> stagePendingConsumption(
     String itemId,
     int amount,
@@ -449,21 +480,11 @@ class InventoryItemsController extends _$InventoryItemsController {
     return _runSerializedTask<PendingInventoryConsumption?>(
       operation: () async {
         final visibleItems = await _currentVisibleItems();
-        final effectiveAmount = _resolveEffectiveConsumptionAmount(
+        final draft = _createPendingConsumption(
           currentItems: visibleItems,
           itemId: itemId,
           requestedAmount: amount,
         );
-        if (effectiveAmount == null) {
-          return null;
-        }
-
-        final draft = PendingInventoryConsumption(
-          id: _nextPendingConsumptionId(),
-          itemId: itemId,
-          amount: effectiveAmount,
-        );
-        _pendingConsumptionsById[draft.id] = draft;
         _publishVisibleItems();
         return draft;
       },
@@ -657,6 +678,43 @@ class InventoryItemsController extends _$InventoryItemsController {
       return null;
     }
     return requestedAmount > maxReducible ? maxReducible : requestedAmount;
+  }
+
+  PendingInventoryConsumption? _createPendingConsumption({
+    required List<InventoryItem> currentItems,
+    required String itemId,
+    required int requestedAmount,
+  }) {
+    final effectiveAmount = _resolveEffectiveConsumptionAmount(
+      currentItems: currentItems,
+      itemId: itemId,
+      requestedAmount: requestedAmount,
+    );
+    if (effectiveAmount == null) {
+      return null;
+    }
+
+    final draft = PendingInventoryConsumption(
+      id: _nextPendingConsumptionId(),
+      itemId: itemId,
+      amount: effectiveAmount,
+    );
+    _pendingConsumptionsById[draft.id] = draft;
+    return draft;
+  }
+
+  List<InventoryItem> _mergePersistedItem({
+    required List<InventoryItem> currentItems,
+    required InventoryItem item,
+  }) {
+    final nextItems = List<InventoryItem>.from(currentItems);
+    final itemIndex = nextItems.indexWhere((current) => current.id == item.id);
+    if (itemIndex < 0) {
+      nextItems.add(item);
+      return nextItems;
+    }
+    nextItems[itemIndex] = item;
+    return nextItems;
   }
 
   String _nextPendingConsumptionId() {

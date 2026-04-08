@@ -4,17 +4,35 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_item_eat_flow.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_list/inventory_item_row/inventory_item_eat_sheet.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_manual_product_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryManualAddItemId = Uuid();
+
+@visibleForTesting
+int? resolveInventoryManualAddEatFlowMaxAmount(InventoryItem item) {
+  if (item.usesAmountProgress) {
+    if (item.amountUnit == null || item.currentAmount < 1) {
+      return null;
+    }
+    return item.currentAmount;
+  }
+  if (item.quantity < 1) {
+    return null;
+  }
+  return item.quantity;
+}
 
 class InventoryManualAddPage extends ConsumerStatefulWidget {
   const InventoryManualAddPage({super.key});
@@ -48,6 +66,7 @@ class _InventoryManualAddPageState
   Widget build(BuildContext context) {
     return InventoryReceiptManualProductPage(
       item: _draftItem,
+      showEatImmediatelyOption: true,
       onSaved: _saveSheetResult,
     );
   }
@@ -65,7 +84,7 @@ class _InventoryManualAddPageState
       return;
     }
 
-    final saved = await _persistProduct(
+    final savedItem = await _persistProduct(
       item: result.item,
       barcode: barcode,
       selectedProduct: result.selectedProduct,
@@ -74,9 +93,16 @@ class _InventoryManualAddPageState
     if (!mounted) {
       return;
     }
-    if (!saved) {
+    if (savedItem == null) {
       _showSnackBar(AppLocalizations.of(context)!.inventoryManualAddSaveFailed);
       return;
+    }
+
+    if (result.eatImmediately) {
+      await _openImmediateEatFlow(savedItem);
+      if (!mounted) {
+        return;
+      }
     }
 
     if (context.canPop()) {
@@ -84,7 +110,7 @@ class _InventoryManualAddPageState
     }
   }
 
-  Future<bool> _persistProduct({
+  Future<InventoryItem?> _persistProduct({
     required InventoryItem item,
     required String barcode,
     OffProductSearchResult? selectedProduct,
@@ -104,7 +130,7 @@ class _InventoryManualAddPageState
         .read(globalFoodItemRepositoryProvider)
         .appendAll(<GlobalFoodItem>[globalProduct]);
 
-    final inventoryItem = InventoryItem.create(
+    final savedItem = InventoryItem.create(
       id: _inventoryManualAddItemId.v4(),
       globalFoodItemId: globalSaved ? globalProduct.id : null,
       name: globalProduct.name,
@@ -124,9 +150,12 @@ class _InventoryManualAddPageState
     ).withDerivedAmount(weight: item.weight, quantity: 1);
 
     final inventorySaved = await ref
-        .read(inventoryItemRepositoryProvider)
-        .appendAll(<InventoryItem>[inventoryItem]);
-    return inventorySaved;
+        .read(inventoryItemsControllerProvider.notifier)
+        .addItem(savedItem);
+    if (!inventorySaved) {
+      return null;
+    }
+    return savedItem;
   }
 
   InventoryItem _buildDraftItem({
@@ -187,6 +216,51 @@ class _InventoryManualAddPageState
       return 'off-$barcode';
     }
     return 'off-$barcode-$suffix';
+  }
+
+  Future<void> _openImmediateEatFlow(InventoryItem item) async {
+    final l10n = AppLocalizations.of(context)!;
+    final maxAmount = resolveInventoryManualAddEatFlowMaxAmount(item);
+    if (maxAmount == null) {
+      _showSnackBar(l10n.inventoryItemActionFailed);
+      return;
+    }
+
+    final request = await showInventoryItemEatSheet(
+      context: context,
+      item: item,
+      maxAmount: maxAmount,
+      invalidAmountMessage: l10n.inventoryReceiptReviewInvalidNumber,
+    );
+    if (!mounted || request == null) {
+      return;
+    }
+
+    final inventoryController = ref.read(
+      inventoryItemsControllerProvider.notifier,
+    );
+    final pendingConsumption = await inventoryController
+        .stagePendingConsumption(item.id, request.inventoryAmount);
+    if (pendingConsumption == null) {
+      if (mounted) {
+        _showSnackBar(l10n.inventoryItemActionFailed);
+      }
+      return;
+    }
+    if (!mounted) {
+      await inventoryController.discardPendingConsumption(
+        pendingConsumption.id,
+      );
+      return;
+    }
+
+    await InventoryItemEatFlow.complete(
+      context: context,
+      ref: ref,
+      itemBeforeMutation: item,
+      request: request,
+      pendingConsumptionId: pendingConsumption.id,
+    );
   }
 
   void _showSnackBar(String message) {
