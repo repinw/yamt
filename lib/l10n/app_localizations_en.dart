@@ -814,6 +814,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealTemplateDetailSelectionEmpty => 'No inventory items available.';
 
   @override
+  String preparedMealTemplateDetailSelectionConversionLabel(String sourceUnit, String unit) {
+    return 'Amount per $sourceUnit ($unit)';
+  }
+
+  @override
+  String preparedMealTemplateDetailSelectionConversionHint(String sourceUnit, String unit, String ingredient) {
+    return 'How much $unit does 1 $sourceUnit of \"$ingredient\" use?';
+  }
+
+  @override
+  String get preparedMealTemplateDetailSelectionConversionError => 'Please enter an amount greater than 0.';
+
+  @override
+  String preparedMealTemplateDetailConversionSummary(String sourceUnit, int amount, String unit) {
+    return '1 $sourceUnit = $amount $unit';
+  }
+
+  @override
   String get preparedMealTemplateDetailListAction => 'List';
 
   @override

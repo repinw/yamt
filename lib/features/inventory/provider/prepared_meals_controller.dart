@@ -11,7 +11,11 @@ import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/application/'
+    'recipe_ingredient_assignment_support.dart';
+import 'package:yamt/features/inventory/application/'
     'template_ingredient_parser.dart';
+import 'package:yamt/features/prepared_meals/application/'
+    'ingredient_inventory_matcher.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -179,6 +183,8 @@ class PreparedMealsController extends _$PreparedMealsController {
     required PreparedMeal template,
     required int totalPortions,
     required Map<String, List<String>> recipeIngredientAssignments,
+    required Map<String, RecipeIngredientAmountConversion>
+    recipeIngredientAmountConversions,
   }) {
     if (totalPortions < 1 || template.name.trim().isEmpty) {
       return Future<PreparedMealCreationResult>.value(
@@ -205,6 +211,8 @@ class PreparedMealsController extends _$PreparedMealsController {
                 template: template,
                 totalPortions: totalPortions,
                 recipeIngredientAssignments: recipeIngredientAssignments,
+                recipeIngredientAmountConversions:
+                    recipeIngredientAmountConversions,
                 ingredientParser: ingredientParser,
               );
               return _persistCreatedMeal(
@@ -1021,6 +1029,8 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
   required PreparedMeal template,
   required int totalPortions,
   required Map<String, List<String>> recipeIngredientAssignments,
+  required Map<String, RecipeIngredientAmountConversion>
+  recipeIngredientAmountConversions,
   required TemplateIngredientParser ingredientParser,
 }) {
   final activeIngredients = template.recipeIngredients
@@ -1066,7 +1076,29 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
       continue;
     }
 
-    var remainingAmount = requirement.amount;
+    final assignedItems = resolveInventoryItemsById(
+      inventoryItemIds: assignedItemIds,
+      inventoryItems: nextItems,
+    );
+    final effectiveRequirement = resolveEffectiveRequirementForItems(
+      requirement: requirement,
+      assignedItems: assignedItems,
+      amountConversion: _assignmentAmountConversionForIngredient(
+        recipeIngredientAmountConversions,
+        ingredient,
+      ),
+    );
+    if (effectiveRequirement == null) {
+      pendingIngredients.add(
+        ingredientParser.pendingIngredientLabel(
+          originalIngredient: ingredient,
+          requirement: requirement,
+        ),
+      );
+      continue;
+    }
+
+    var remainingAmount = effectiveRequirement.amount;
     var consumedAnyAmount = false;
     for (final itemId in assignedItemIds) {
       if (remainingAmount <= 0) {
@@ -1081,7 +1113,7 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
       final currentItem = nextItems[itemIndex];
       if (!_hasCompatibleTemplateRequirement(
         item: currentItem,
-        requiredUnit: requirement.unit,
+        requiredUnit: effectiveRequirement.unit,
       )) {
         continue;
       }
@@ -1093,7 +1125,7 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
           );
       final consumableAmount = _consumableAmountForRequirement(
         item: currentItem,
-        requiredUnit: requirement.unit,
+        requiredUnit: effectiveRequirement.unit,
         remainingAmount: remainingAmount,
       );
       if (consumableAmount < 1) {
@@ -1110,7 +1142,7 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
 
       final usedUnit = _resolveTemplateUsedUnit(
         item: currentItem,
-        requiredUnit: requirement.unit,
+        requiredUnit: effectiveRequirement.unit,
       );
       nextItems[itemIndex] = nextItem;
       components.add(
@@ -1123,7 +1155,7 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
       );
       remainingAmount = _remainingRequirementAfterConsumption(
         item: currentItem,
-        requiredUnit: requirement.unit,
+        requiredUnit: effectiveRequirement.unit,
         remainingAmount: remainingAmount,
         consumedAmount: consumableAmount,
       );
@@ -1144,8 +1176,8 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
       pendingIngredients.add(
         ingredientParser.formatPendingIngredient(
           amount: remainingAmount,
-          unit: requirement.unit,
-          name: requirement.name,
+          unit: effectiveRequirement.unit,
+          name: effectiveRequirement.name,
         ),
       );
     }
@@ -1164,6 +1196,7 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
       recipeIngredients: template.recipeIngredients,
       ignoredRecipeIngredients: template.ignoredRecipeIngredients,
       recipeIngredientAssignments: recipeIngredientAssignments,
+      recipeIngredientAmountConversions: recipeIngredientAmountConversions,
       pendingRecipeIngredients: pendingIngredients,
       totalPortions: totalPortions,
       remainingPortions: totalPortions,
@@ -1341,6 +1374,29 @@ int _remainingRequirementAfterConsumption({
     return remainingAmount - 1;
   }
   return remainingAmount - consumedAmount;
+}
+
+RecipeIngredientAmountConversion? _assignmentAmountConversionForIngredient(
+  Map<String, RecipeIngredientAmountConversion> conversions,
+  String ingredient,
+) {
+  final directMatch = conversions[ingredient];
+  if (directMatch != null) {
+    return directMatch;
+  }
+
+  final normalizedIngredient = ingredient.trim();
+  if (normalizedIngredient.isEmpty) {
+    return null;
+  }
+
+  for (final entry in conversions.entries) {
+    if (entry.key.trim() == normalizedIngredient) {
+      return entry.value;
+    }
+  }
+
+  return null;
 }
 
 String? _normalizeOptionalImageAssetId(String? value) {

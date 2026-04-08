@@ -418,6 +418,50 @@
       "Inventarartikel wählen",
   "preparedMealTemplateDetailSelectionEmpty":
       "Keine Inventarartikel vorhanden.",
+  "preparedMealTemplateDetailSelectionConversionLabel":
+      "Menge pro {sourceUnit} ({unit})",
+  "@preparedMealTemplateDetailSelectionConversionLabel": {
+    "placeholders": {
+      "sourceUnit": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealTemplateDetailSelectionConversionHint":
+      "Wie viel {unit} entspricht 1 {sourceUnit} von \"{ingredient}\"?",
+  "@preparedMealTemplateDetailSelectionConversionHint": {
+    "placeholders": {
+      "sourceUnit": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      },
+      "ingredient": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealTemplateDetailSelectionConversionError":
+      "Bitte gib eine Menge größer als 0 ein.",
+  "preparedMealTemplateDetailConversionSummary":
+      "1 {sourceUnit} = {amount} {unit}",
+  "@preparedMealTemplateDetailConversionSummary": {
+    "placeholders": {
+      "sourceUnit": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
   "preparedMealTemplateDetailListAction": "Liste",
   "preparedMealTemplateDetailSearchAction": "Suchen",
   "preparedMealTemplateDetailSwapAction": "Tauschen",

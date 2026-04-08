@@ -48,6 +48,18 @@ void main() {
     expect(matches.map((item) => item.id), <String>['2', '1']);
   });
 
+  test('matches german carrot synonyms with quantities', () {
+    final matches = matchInventoryItemsForIngredient(
+      ingredient: '2 Möhren',
+      inventoryItems: <InventoryItem>[
+        _item(id: '1', name: 'Karotten'),
+        _item(id: '2', name: 'Milch'),
+      ],
+    );
+
+    expect(matches.map((item) => item.id), <String>['1']);
+  });
+
   test('rankInventoryItemsForIngredient keeps non matches for manual pick', () {
     final inventoryItems = <InventoryItem>[
       _item(id: '1', name: 'Milch'),

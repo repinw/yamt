@@ -13,7 +13,8 @@ class _MealTemplateIngredientCard extends StatelessWidget {
   final List<InventoryItem> inventoryItems;
   final Future<void> Function()? onAddToShoppingListPressed;
   final Future<void> Function()? onToggleIgnoredPressed;
-  final void Function(List<String> inventoryItemIds)? onAssignmentChanged;
+  final void Function(MealTemplateIngredientAssignmentSelection selection)?
+  onAssignmentChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +34,21 @@ class _MealTemplateIngredientCard extends StatelessWidget {
       assignedItems: assignedItems,
       suggestions: suggestions,
     );
-    final state = _ingredientCardState(row: row, assignedItems: assignedItems);
+    final effectiveRequirement = row.requirement == null
+        ? null
+        : resolveEffectiveRequirementForItems(
+            requirement: row.requirement!,
+            assignedItems: assignedItems,
+            amountConversion: row.amountConversion,
+          );
+    final hasCompatibleAssignment = row.requirement == null
+        ? assignedItems.isNotEmpty
+        : effectiveRequirement != null;
+    final state = _ingredientCardState(
+      row: row,
+      assignedItems: assignedItems,
+      hasCompatibleAssignment: hasCompatibleAssignment,
+    );
 
     return switch (state) {
       _IngredientCardState.ignored => _IgnoredIngredientCard(
@@ -75,7 +90,8 @@ class _MissingIngredientCard extends StatelessWidget {
   final _IngredientRowData row;
   final Future<void> Function()? onAddToShoppingListPressed;
   final Future<void> Function()? onToggleIgnoredPressed;
-  final void Function(List<String> inventoryItemIds)? onAssignmentChanged;
+  final void Function(MealTemplateIngredientAssignmentSelection selection)?
+  onAssignmentChanged;
   final List<InventoryItem> inventoryItems;
 
   @override
@@ -169,7 +185,8 @@ class _MatchedIngredientCard extends StatelessWidget {
   final List<InventoryItem> assignedItems;
   final String? previewImageUrl;
   final int missingAssignedCount;
-  final void Function(List<String> inventoryItemIds)? onAssignmentChanged;
+  final void Function(MealTemplateIngredientAssignmentSelection selection)?
+  onAssignmentChanged;
   final List<InventoryItem> inventoryItems;
 
   @override
@@ -235,6 +252,22 @@ class _MatchedIngredientCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (row.amountConversion != null) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      l10n.preparedMealTemplateDetailConversionSummary(
+                        _conversionSourceUnitLabel(
+                          requirement: row.requirement,
+                          l10n: l10n,
+                        ),
+                        row.amountConversion!.amountPerPiece,
+                        row.amountConversion!.unit.code,
+                      ),
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                   if (missingAssignedCount > 0) ...[
                     const SizedBox(height: AppSpacing.xs),
                     Text(
@@ -476,6 +509,53 @@ class _IngredientPreviewThumbnail extends StatelessWidget {
                 },
               ),
       ),
+    );
+  }
+}
+
+@visibleForTesting
+class MealTemplateIngredientCardTestHarness extends StatelessWidget {
+  const MealTemplateIngredientCardTestHarness({
+    super.key,
+    required this.name,
+    required this.amountLabel,
+    required this.inventoryItems,
+    this.rawIngredient,
+    this.isIgnored = false,
+    this.assignedInventoryItemIds = const <String>[],
+    this.amountConversion,
+    this.onAddToShoppingListPressed,
+    this.onToggleIgnoredPressed,
+    this.onAssignmentChanged,
+  });
+
+  final String name;
+  final String amountLabel;
+  final String? rawIngredient;
+  final bool isIgnored;
+  final List<String> assignedInventoryItemIds;
+  final List<InventoryItem> inventoryItems;
+  final Future<void> Function()? onAddToShoppingListPressed;
+  final Future<void> Function()? onToggleIgnoredPressed;
+  final void Function(MealTemplateIngredientAssignmentSelection selection)?
+  onAssignmentChanged;
+  final RecipeIngredientAmountConversion? amountConversion;
+
+  @override
+  Widget build(BuildContext context) {
+    return _MealTemplateIngredientCard(
+      row: _IngredientRowData(
+        name: name,
+        amountLabel: amountLabel,
+        rawIngredient: rawIngredient,
+        isIgnored: isIgnored,
+        assignedInventoryItemIds: assignedInventoryItemIds,
+        amountConversion: amountConversion,
+      ),
+      inventoryItems: inventoryItems,
+      onAddToShoppingListPressed: onAddToShoppingListPressed,
+      onToggleIgnoredPressed: onToggleIgnoredPressed,
+      onAssignmentChanged: onAssignmentChanged,
     );
   }
 }

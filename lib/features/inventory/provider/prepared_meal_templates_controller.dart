@@ -12,6 +12,7 @@ import 'package:yamt/features/inventory/data/'
     'prepared_meal_recipe_url_parser.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 part 'prepared_meal_templates_controller.g.dart';
@@ -391,6 +392,7 @@ class PreparedMealTemplatesController
     required String templateId,
     required String ingredient,
     required List<String> inventoryItemIds,
+    RecipeIngredientAmountConversion? amountConversion,
   }) {
     if (templateId.trim().isEmpty || ingredient.trim().isEmpty) {
       return Future<bool>.value(false);
@@ -421,10 +423,22 @@ class PreparedMealTemplatesController
       } else {
         nextAssignments[normalizedIngredient] = nextItemIds;
       }
+      final nextConversions = <String, RecipeIngredientAmountConversion>{
+        ...currentTemplate.recipeIngredientAmountConversions,
+      };
+      if (nextItemIds.isEmpty ||
+          amountConversion == null ||
+          amountConversion.amountPerPiece < 1 ||
+          amountConversion.unit == InventoryAmountUnit.piece) {
+        nextConversions.remove(normalizedIngredient);
+      } else {
+        nextConversions[normalizedIngredient] = amountConversion;
+      }
 
       final nextTemplates = List<PreparedMeal>.from(currentTemplates);
       nextTemplates[templateIndex] = currentTemplate.copyWith(
         recipeIngredientAssignments: nextAssignments,
+        recipeIngredientAmountConversions: nextConversions,
         updatedAt: DateTime.now(),
       );
       return _saveTemplates(
@@ -437,6 +451,8 @@ class PreparedMealTemplatesController
   Future<bool> updateRecipeIngredientAssignments({
     required String templateId,
     required Map<String, List<String>> recipeIngredientAssignments,
+    required Map<String, RecipeIngredientAmountConversion>
+    recipeIngredientAmountConversions,
   }) {
     if (templateId.trim().isEmpty) {
       return Future<bool>.value(false);
@@ -469,10 +485,23 @@ class PreparedMealTemplatesController
         }
         nextAssignments[ingredient] = itemIds;
       }
+      final nextConversions = <String, RecipeIngredientAmountConversion>{};
+      for (final entry in recipeIngredientAmountConversions.entries) {
+        final ingredient = entry.key.trim();
+        final conversion = entry.value;
+        if (ingredient.isEmpty ||
+            conversion.amountPerPiece < 1 ||
+            conversion.unit == InventoryAmountUnit.piece ||
+            !nextAssignments.containsKey(ingredient)) {
+          continue;
+        }
+        nextConversions[ingredient] = conversion;
+      }
 
       final nextTemplates = List<PreparedMeal>.from(currentTemplates);
       nextTemplates[templateIndex] = currentTemplate.copyWith(
         recipeIngredientAssignments: nextAssignments,
+        recipeIngredientAmountConversions: nextConversions,
         updatedAt: DateTime.now(),
       );
       return _saveTemplates(

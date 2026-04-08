@@ -1649,6 +1649,30 @@ abstract class AppLocalizations {
   /// **'No inventory items available.'**
   String get preparedMealTemplateDetailSelectionEmpty;
 
+  /// No description provided for @preparedMealTemplateDetailSelectionConversionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount per {sourceUnit} ({unit})'**
+  String preparedMealTemplateDetailSelectionConversionLabel(String sourceUnit, String unit);
+
+  /// No description provided for @preparedMealTemplateDetailSelectionConversionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'How much {unit} does 1 {sourceUnit} of \"{ingredient}\" use?'**
+  String preparedMealTemplateDetailSelectionConversionHint(String sourceUnit, String unit, String ingredient);
+
+  /// No description provided for @preparedMealTemplateDetailSelectionConversionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an amount greater than 0.'**
+  String get preparedMealTemplateDetailSelectionConversionError;
+
+  /// No description provided for @preparedMealTemplateDetailConversionSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'1 {sourceUnit} = {amount} {unit}'**
+  String preparedMealTemplateDetailConversionSummary(String sourceUnit, int amount, String unit);
+
   /// No description provided for @preparedMealTemplateDetailListAction.
   ///
   /// In en, this message translates to:

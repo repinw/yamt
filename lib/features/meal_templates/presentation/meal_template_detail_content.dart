@@ -4,7 +4,9 @@ class _MealTemplateDetailContent extends ConsumerWidget {
   const _MealTemplateDetailContent({
     required this.template,
     required this.selectedPortions,
+    required this.inventoryItems,
     required this.recipeIngredientAssignments,
+    required this.recipeIngredientAmountConversions,
     required this.hasAssignmentChanges,
     required this.isCreatingMeal,
     required this.isSavingTemplate,
@@ -23,7 +25,10 @@ class _MealTemplateDetailContent extends ConsumerWidget {
 
   final PreparedMeal template;
   final int selectedPortions;
+  final List<InventoryItem> inventoryItems;
   final Map<String, List<String>> recipeIngredientAssignments;
+  final Map<String, RecipeIngredientAmountConversion>
+  recipeIngredientAmountConversions;
   final bool hasAssignmentChanges;
   final bool isCreatingMeal;
   final bool isSavingTemplate;
@@ -32,6 +37,7 @@ class _MealTemplateDetailContent extends ConsumerWidget {
   final void Function({
     required String ingredient,
     required List<String> inventoryItemIds,
+    required RecipeIngredientAmountConversion? amountConversion,
   })
   onAssignmentChanged;
   final Future<void> Function() onCreateMealPressed;
@@ -48,13 +54,12 @@ class _MealTemplateDetailContent extends ConsumerWidget {
     final storedImageBytes = imageRef == null
         ? null
         : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
-    final inventoryItems =
-        ref.watch(inventoryItemsControllerProvider).asData?.value ??
-        const <InventoryItem>[];
     final ingredientRows = _buildIngredientRows(
       template: template,
       recipeIngredientAssignments: recipeIngredientAssignments,
+      recipeIngredientAmountConversions: recipeIngredientAmountConversions,
       selectedPortions: selectedPortions,
+      ingredientParser: ref.read(templateIngredientParserProvider),
     );
     final canCreateMeal = ingredientRows.isNotEmpty;
     final showFooter = template.recipeIngredients.isNotEmpty;
@@ -120,7 +125,11 @@ class _MealTemplateDetailContent extends ConsumerWidget {
                                               context: context,
                                               ref: ref,
                                               shoppingListLabel:
-                                                  _shoppingListLabel(row),
+                                                  _shoppingListLabelForRow(
+                                                    row: row,
+                                                    inventoryItems:
+                                                        inventoryItems,
+                                                  ),
                                             ),
                                       onToggleIgnoredPressed:
                                           row.rawIngredient == null
@@ -135,11 +144,13 @@ class _MealTemplateDetailContent extends ConsumerWidget {
                                       onAssignmentChanged:
                                           row.rawIngredient == null
                                           ? null
-                                          : (inventoryItemIds) {
+                                          : (selection) {
                                               onAssignmentChanged(
                                                 ingredient: row.rawIngredient!,
                                                 inventoryItemIds:
-                                                    inventoryItemIds,
+                                                    selection.inventoryItemIds,
+                                                amountConversion:
+                                                    selection.amountConversion,
                                               );
                                             },
                                     ),
@@ -843,6 +854,43 @@ class _FooterOutlineActionButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+@visibleForTesting
+class MealTemplateFooterTestHarness extends StatelessWidget {
+  const MealTemplateFooterTestHarness({
+    super.key,
+    required this.hasAssignmentChanges,
+    required this.isCreatingMeal,
+    required this.isSavingTemplate,
+    required this.canCreateMeal,
+    this.onSaveTemplatePressed,
+    this.onAddIngredientsToShoppingListPressed,
+    this.onCreateMealPressed,
+  });
+
+  final bool hasAssignmentChanges;
+  final bool isCreatingMeal;
+  final bool isSavingTemplate;
+  final bool canCreateMeal;
+  final Future<void> Function()? onSaveTemplatePressed;
+  final Future<void> Function()? onAddIngredientsToShoppingListPressed;
+  final Future<void> Function()? onCreateMealPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return _MealTemplateFooter(
+      hasAssignmentChanges: hasAssignmentChanges,
+      isCreatingMeal: isCreatingMeal,
+      isSavingTemplate: isSavingTemplate,
+      canCreateMeal: canCreateMeal,
+      onSaveTemplatePressed:
+          onSaveTemplatePressed ?? () => Future<void>.value(),
+      onAddIngredientsToShoppingListPressed:
+          onAddIngredientsToShoppingListPressed ?? () => Future<void>.value(),
+      onCreateMealPressed: onCreateMealPressed ?? () => Future<void>.value(),
     );
   }
 }

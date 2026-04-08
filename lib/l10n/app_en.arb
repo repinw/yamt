@@ -407,6 +407,50 @@
   "preparedMealTemplateDetailSelectionTitle": "Choose inventory items",
   "preparedMealTemplateDetailSelectionEmpty":
       "No inventory items available.",
+  "preparedMealTemplateDetailSelectionConversionLabel":
+      "Amount per {sourceUnit} ({unit})",
+  "@preparedMealTemplateDetailSelectionConversionLabel": {
+    "placeholders": {
+      "sourceUnit": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealTemplateDetailSelectionConversionHint":
+      "How much {unit} does 1 {sourceUnit} of \"{ingredient}\" use?",
+  "@preparedMealTemplateDetailSelectionConversionHint": {
+    "placeholders": {
+      "sourceUnit": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      },
+      "ingredient": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealTemplateDetailSelectionConversionError":
+      "Please enter an amount greater than 0.",
+  "preparedMealTemplateDetailConversionSummary":
+      "1 {sourceUnit} = {amount} {unit}",
+  "@preparedMealTemplateDetailConversionSummary": {
+    "placeholders": {
+      "sourceUnit": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
   "preparedMealTemplateDetailListAction": "List",
   "preparedMealTemplateDetailSearchAction": "Search",
   "preparedMealTemplateDetailSwapAction": "Swap",

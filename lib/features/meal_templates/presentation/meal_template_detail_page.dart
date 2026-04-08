@@ -1,7 +1,7 @@
-import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
@@ -10,6 +10,10 @@ import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/features/inventory/application/'
+    'recipe_ingredient_assignment_support.dart';
+import 'package:yamt/features/inventory/application/'
+    'template_ingredient_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/'
@@ -42,6 +46,7 @@ class _MealTemplateDetailPageState
     extends ConsumerState<MealTemplateDetailPage> {
   int? _selectedPortions;
   Map<String, List<String>>? _draftAssignments;
+  Map<String, RecipeIngredientAmountConversion>? _draftAssignmentConversions;
   var _isCreatingMeal = false;
   var _isSavingTemplate = false;
 
@@ -69,19 +74,39 @@ class _MealTemplateDetailPageState
 
           final selectedPortions =
               _selectedPortions ?? _defaultPortions(template.totalPortions);
+          final inventoryItems =
+              ref.watch(inventoryItemsControllerProvider).asData?.value ??
+              const <InventoryItem>[];
+          final ingredientParser = ref.read(templateIngredientParserProvider);
           final assignments = _effectiveAssignments(
             template: template,
             draftAssignments: _draftAssignments,
+            inventoryItems: inventoryItems,
+            ingredientParser: ingredientParser,
           );
-          final hasAssignmentChanges = !_assignmentMapsEqual(
-            template.recipeIngredientAssignments,
-            assignments,
+          final assignmentConversions = _effectiveAssignmentConversions(
+            template: template,
+            draftAssignmentConversions: _draftAssignmentConversions,
+            recipeIngredientAssignments: assignments,
+            inventoryItems: inventoryItems,
+            ingredientParser: ingredientParser,
           );
+          final hasAssignmentChanges =
+              !_assignmentMapsEqual(
+                template.recipeIngredientAssignments,
+                assignments,
+              ) ||
+              !_assignmentConversionMapsEqual(
+                template.recipeIngredientAmountConversions,
+                assignmentConversions,
+              );
 
           return _MealTemplateDetailContent(
             template: template,
             selectedPortions: selectedPortions,
+            inventoryItems: inventoryItems,
             recipeIngredientAssignments: assignments,
+            recipeIngredientAmountConversions: assignmentConversions,
             hasAssignmentChanges: hasAssignmentChanges,
             isCreatingMeal: _isCreatingMeal,
             isSavingTemplate: _isSavingTemplate,
@@ -101,12 +126,18 @@ class _MealTemplateDetailPageState
                 ({
                   required String ingredient,
                   required List<String> inventoryItemIds,
+                  required RecipeIngredientAmountConversion? amountConversion,
                 }) {
                   setState(() {
                     _draftAssignments = _updatedAssignments(
                       assignments: assignments,
                       ingredient: ingredient,
                       inventoryItemIds: inventoryItemIds,
+                    );
+                    _draftAssignmentConversions = _updatedAssignmentConversions(
+                      conversions: assignmentConversions,
+                      ingredient: ingredient,
+                      amountConversion: amountConversion,
                     );
                   });
                 },
@@ -115,6 +146,7 @@ class _MealTemplateDetailPageState
               template: template,
               selectedPortions: selectedPortions,
               recipeIngredientAssignments: assignments,
+              recipeIngredientAmountConversions: assignmentConversions,
             ),
             onAddIngredientsToShoppingListPressed: () =>
                 _addTemplateIngredientsToShoppingList(
@@ -123,14 +155,18 @@ class _MealTemplateDetailPageState
                   ingredientRows: _buildIngredientRows(
                     template: template,
                     recipeIngredientAssignments: assignments,
+                    recipeIngredientAmountConversions: assignmentConversions,
                     selectedPortions: selectedPortions,
+                    ingredientParser: ingredientParser,
                   ),
+                  inventoryItems: inventoryItems,
                 ),
             onSaveTemplatePressed: hasAssignmentChanges
                 ? () => _saveTemplateAssignments(
                     context: context,
                     templateId: template.id,
                     recipeIngredientAssignments: assignments,
+                    recipeIngredientAmountConversions: assignmentConversions,
                   )
                 : null,
           );
@@ -153,6 +189,8 @@ class _MealTemplateDetailPageState
     required PreparedMeal template,
     required int selectedPortions,
     required Map<String, List<String>> recipeIngredientAssignments,
+    required Map<String, RecipeIngredientAmountConversion>
+    recipeIngredientAmountConversions,
   }) async {
     setState(() {
       _isCreatingMeal = true;
@@ -163,6 +201,7 @@ class _MealTemplateDetailPageState
           template: template,
           totalPortions: selectedPortions,
           recipeIngredientAssignments: recipeIngredientAssignments,
+          recipeIngredientAmountConversions: recipeIngredientAmountConversions,
         );
     if (!mounted || !context.mounted) {
       return;
@@ -190,6 +229,8 @@ class _MealTemplateDetailPageState
     required BuildContext context,
     required String templateId,
     required Map<String, List<String>> recipeIngredientAssignments,
+    required Map<String, RecipeIngredientAmountConversion>
+    recipeIngredientAmountConversions,
   }) async {
     setState(() {
       _isSavingTemplate = true;
@@ -199,6 +240,7 @@ class _MealTemplateDetailPageState
         .updateRecipeIngredientAssignments(
           templateId: templateId,
           recipeIngredientAssignments: recipeIngredientAssignments,
+          recipeIngredientAmountConversions: recipeIngredientAmountConversions,
         );
     if (!mounted || !context.mounted) {
       return;
@@ -208,6 +250,7 @@ class _MealTemplateDetailPageState
       _isSavingTemplate = false;
       if (saved) {
         _draftAssignments = null;
+        _draftAssignmentConversions = null;
       }
     });
 

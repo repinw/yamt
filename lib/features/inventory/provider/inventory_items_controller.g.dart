@@ -35,7 +35,7 @@ final class InventoryItemsControllerProvider
 }
 
 String _$inventoryItemsControllerHash() =>
-    r'110bdf45353b3125e2b468a21e7e738b7ab26447';
+    r'03fa57b48d8e62b98b5d83355266ae55dca77a48';
 
 abstract class _$InventoryItemsController
     extends $AsyncNotifier<List<InventoryItem>> {
