@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/models/user_profile.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart';
 
 String? normalizeHouseholdScopeValue(String? value) {
   final normalized = value?.trim();
@@ -62,4 +64,10 @@ bool hasWatchedHouseholdRootChanged({
   return normalizedWatchedHouseholdRootId != null &&
       latestHouseholdRootId != null &&
       latestHouseholdRootId != normalizedWatchedHouseholdRootId;
+}
+
+String? signedInHouseholdRecoveryUserId(Ref ref) {
+  return normalizeHouseholdScopeValue(
+    ref.read(authStateChangesProvider).asData?.value?.uid,
+  );
 }

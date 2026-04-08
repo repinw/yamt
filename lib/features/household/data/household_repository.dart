@@ -74,6 +74,10 @@ class HouseholdRepository {
   }
 
   Future<void> joinHousehold(String code) async {
+    if (_currentHouseholdId != null) {
+      throw const HouseholdLeaveRequiredException();
+    }
+
     final normalizedCode = code.trim();
     final snapshot = await _inviteDocument(normalizedCode).get();
     if (!snapshot.exists) {
@@ -101,6 +105,10 @@ class HouseholdRepository {
   }
 
   Future<void> leaveHousehold() {
+    if (_currentHouseholdId == null) {
+      throw const HouseholdMembershipRequiredException();
+    }
+
     return _userDocument(_currentUserId).set(<String, dynamic>{
       _fieldUid: _currentUserId,
       _fieldHouseholdId: FieldValue.delete(),

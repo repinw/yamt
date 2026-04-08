@@ -8,6 +8,8 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/household/provider/'
+    'household_access_recovery_mixin.dart';
+import 'package:yamt/features/household/provider/'
     'household_permission_recovery.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/'
@@ -267,19 +269,15 @@ class InventoryItemsController extends _$InventoryItemsController {
   }
 
   bool _shouldRecoverFromRevokedHouseholdAccess(Object error) {
-    final profile = ref.read(userProfileProvider).asData?.value;
     final actualDataOwnerUserId = ref.read(householdDataOwnerUserIdProvider);
     final effectiveDataOwnerUserId = ref.read(
       effectiveHouseholdDataOwnerUserIdProvider,
     );
-    final shouldRecover = shouldRecoverFromHouseholdPermissionDenied(
+    final shouldRecover = shouldRecoverControllerHouseholdAccess(
+      ref: ref,
       error: error,
       isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      currentUserId: _currentSignedInUserId() ?? profile?.uid,
-      actualDataOwnerUserId: actualDataOwnerUserId,
-      effectiveDataOwnerUserId:
-          _currentDataOwnerUserId ?? effectiveDataOwnerUserId,
-      profileHouseholdId: profile?.householdId,
+      currentHouseholdDataOwnerUserId: _currentDataOwnerUserId,
     );
     if (error is FirebaseException && error.code == 'permission-denied') {
       _logPermissionDeniedContext(
@@ -291,64 +289,23 @@ class InventoryItemsController extends _$InventoryItemsController {
     return shouldRecover;
   }
 
-  Future<void> _recoverFromRevokedHouseholdAccess({
-    bool showLoading = true,
-  }) async {
-    if (_isRecoveringHouseholdAccess || !ref.mounted) {
-      return;
-    }
-
-    _isRecoveringHouseholdAccess = true;
-    try {
-      if (showLoading) {
-        state = const AsyncLoading<List<InventoryItem>>();
-      }
-      final nextState = await AsyncValue.guard(
-        _performRevokedHouseholdAccessRecovery,
-      );
-      if (!ref.mounted) {
-        return;
-      }
-      state = nextState;
-    } finally {
-      _isRecoveringHouseholdAccess = false;
-    }
-  }
-
-  Future<List<InventoryItem>> _performRevokedHouseholdAccessRecovery() async {
-    final profile = ref.read(userProfileProvider).asData?.value;
-    final personalUserId = _currentSignedInUserId() ?? profile?.uid.trim();
-    final staleOwnerUserId = normalizeHouseholdScopeValue(
-      _currentDataOwnerUserId,
-    );
-    if (personalUserId != null &&
-        personalUserId.isNotEmpty &&
-        staleOwnerUserId != null &&
-        staleOwnerUserId.isNotEmpty &&
-        staleOwnerUserId != personalUserId) {
-      log(
-        'Rebuilding inventory stream after household access changed.',
-        name: _controllerLogName,
-      );
-      ref
-          .read(householdDataOwnerRecoveryProvider.notifier)
-          .recoverToPersonalScope(
-            staleOwnerUserId: staleOwnerUserId,
-            personalUserId: personalUserId,
-          );
-    } else {
-      log(
-        'Inventory access recovery had no owner swap candidate. '
-        '${_buildScopeDebugDetails(actualDataOwnerUserId: ref.read(householdDataOwnerUserIdProvider), effectiveDataOwnerUserId: ref.read(effectiveHouseholdDataOwnerUserIdProvider))}',
-        name: _controllerLogName,
-      );
-    }
-    return _restartRealtimeSubscription();
-  }
-
-  String? _currentSignedInUserId() {
-    return normalizeHouseholdScopeValue(
-      ref.read(authStateChangesProvider).asData?.value?.uid,
+  Future<void> _recoverFromRevokedHouseholdAccess({bool showLoading = true}) {
+    return recoverControllerHouseholdAccess<InventoryItem>(
+      ref: ref,
+      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
+      setIsRecoveringHouseholdAccess: (value) {
+        _isRecoveringHouseholdAccess = value;
+      },
+      setState: (nextState) {
+        state = nextState;
+      },
+      restartHouseholdScopedSubscription: _restartRealtimeSubscription,
+      currentHouseholdDataOwnerUserId: _currentDataOwnerUserId,
+      householdAccessRecoveryLogName: _controllerLogName,
+      householdAccessRecoveryMessage:
+          'Rebuilding inventory stream after household access changed.',
+      showLoading: showLoading,
+      onSkippedHouseholdAccessRecovery: onSkippedHouseholdAccessRecovery,
     );
   }
 
@@ -365,13 +322,21 @@ class InventoryItemsController extends _$InventoryItemsController {
     );
   }
 
+  void onSkippedHouseholdAccessRecovery() {
+    log(
+      'Inventory access recovery had no owner swap candidate. '
+      '${_buildScopeDebugDetails(actualDataOwnerUserId: ref.read(householdDataOwnerUserIdProvider), effectiveDataOwnerUserId: ref.read(effectiveHouseholdDataOwnerUserIdProvider))}',
+      name: _controllerLogName,
+    );
+  }
+
   String _buildScopeDebugDetails({
     required String? actualDataOwnerUserId,
     required String? effectiveDataOwnerUserId,
   }) {
     final profile = ref.read(userProfileProvider).asData?.value;
     final recoveryState = ref.read(householdDataOwnerRecoveryProvider);
-    final currentUserId = _currentSignedInUserId() ?? profile?.uid;
+    final currentUserId = signedInHouseholdRecoveryUserId(ref) ?? profile?.uid;
     return 'authUserId='
         '${normalizeHouseholdScopeValue(currentUserId) ?? '<none>'} '
         'profileHouseholdId='

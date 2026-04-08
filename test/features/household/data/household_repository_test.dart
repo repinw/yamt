@@ -180,6 +180,30 @@ void main() {
     );
   });
 
+  test(
+    'joinHousehold rejects switching while already in a household',
+    () async {
+      await firestore.collection('household_invites').doc('123456').set({
+        'hostUid': 'host-2',
+        'expiresAt': Timestamp.fromDate(
+          DateTime.now().add(const Duration(hours: 1)),
+        ),
+      });
+
+      final repository = HouseholdRepository(
+        firestore: firestore,
+        currentUserId: 'member-1',
+        isAnonymous: false,
+        currentHouseholdId: 'host-1',
+      );
+
+      await expectLater(
+        repository.joinHousehold('123456'),
+        throwsA(isA<HouseholdLeaveRequiredException>()),
+      );
+    },
+  );
+
   test('leaveHousehold and removeMember clear the membership field', () async {
     await firestore.collection('users').doc('member-1').set({
       'uid': 'member-1',
@@ -217,6 +241,20 @@ void main() {
 
     expect(leftMember.data()?.containsKey('householdId'), isFalse);
     expect(removedMember.data()?.containsKey('householdId'), isFalse);
+  });
+
+  test('leaveHousehold rejects leaders without a household membership', () {
+    final repository = HouseholdRepository(
+      firestore: firestore,
+      currentUserId: 'host-1',
+      isAnonymous: false,
+      currentHouseholdId: null,
+    );
+
+    expect(
+      repository.leaveHousehold,
+      throwsA(isA<HouseholdMembershipRequiredException>()),
+    );
   });
 
   test(

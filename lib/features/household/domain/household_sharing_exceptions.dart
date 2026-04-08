@@ -32,3 +32,13 @@ class HouseholdMemberRemovalDeniedException implements Exception {
 class HouseholdInviteCodeGenerationFailedException implements Exception {
   const HouseholdInviteCodeGenerationFailedException();
 }
+
+/// Thrown when the user must leave the current household before joining.
+class HouseholdLeaveRequiredException implements Exception {
+  const HouseholdLeaveRequiredException();
+}
+
+/// Thrown when an operation requires an active guest household membership.
+class HouseholdMembershipRequiredException implements Exception {
+  const HouseholdMembershipRequiredException();
+}

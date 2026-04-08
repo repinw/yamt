@@ -35,7 +35,7 @@ final class HouseholdMembershipControllerProvider
 }
 
 String _$householdMembershipControllerHash() =>
-    r'327670ef845b7f8abb971506d5583514184afd15';
+    r'3e5d1d4ac9cd8b31a38c0029c02f02fcc6d800da';
 
 abstract class _$HouseholdMembershipController extends $AsyncNotifier<void> {
   FutureOr<void> build();

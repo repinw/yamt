@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/household/provider/household_members_provider.dart';
 
 part 'household_scope_provider.g.dart';
 

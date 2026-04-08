@@ -9,6 +9,7 @@ import 'package:yamt/core/models/user_profile.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/household/presentation/widgets/'
     'household_sharing_card.dart';
+import 'package:yamt/features/household/provider/household_members_provider.dart';
 import 'package:yamt/features/household/provider/'
     'household_invite_code_controller.dart';
 import 'package:yamt/features/household/provider/'

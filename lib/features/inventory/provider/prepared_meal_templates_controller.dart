@@ -4,9 +4,8 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/household/provider/'
-    'household_permission_recovery.dart';
+    'household_access_recovery_mixin.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/'
@@ -551,73 +550,32 @@ class PreparedMealTemplatesController
   }
 
   bool _shouldRecoverFromRevokedHouseholdAccess(Object error) {
-    final profile = ref.read(userProfileProvider).asData?.value;
-    final actualDataOwnerUserId = ref.read(householdDataOwnerUserIdProvider);
-    final effectiveDataOwnerUserId = ref.read(
-      effectiveHouseholdDataOwnerUserIdProvider,
-    );
-    return shouldRecoverFromHouseholdPermissionDenied(
+    return shouldRecoverControllerHouseholdAccess(
+      ref: ref,
       error: error,
       isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      currentUserId:
-          normalizeHouseholdScopeValue(
-            ref.read(authStateChangesProvider).asData?.value?.uid,
-          ) ??
-          profile?.uid,
-      actualDataOwnerUserId: actualDataOwnerUserId,
-      effectiveDataOwnerUserId:
-          _currentDataOwnerUserId ?? effectiveDataOwnerUserId,
-      profileHouseholdId: profile?.householdId,
+      currentHouseholdDataOwnerUserId: _currentDataOwnerUserId,
     );
   }
 
-  Future<void> _recoverFromRevokedHouseholdAccess({
-    bool showLoading = true,
-  }) async {
-    if (_isRecoveringHouseholdAccess || !ref.mounted) {
-      return;
-    }
-
-    _isRecoveringHouseholdAccess = true;
-    try {
-      if (showLoading) {
-        state = const AsyncLoading<List<PreparedMeal>>();
-      }
-      final nextState = await AsyncValue.guard(
-        _performRevokedHouseholdAccessRecovery,
-      );
-      if (!ref.mounted) {
-        return;
-      }
-      state = nextState;
-    } finally {
-      _isRecoveringHouseholdAccess = false;
-    }
-  }
-
-  Future<List<PreparedMeal>> _performRevokedHouseholdAccessRecovery() async {
-    final personalUserId = normalizeHouseholdScopeValue(
-      ref.read(authStateChangesProvider).asData?.value?.uid,
+  Future<void> _recoverFromRevokedHouseholdAccess({bool showLoading = true}) {
+    return recoverControllerHouseholdAccess<PreparedMeal>(
+      ref: ref,
+      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
+      setIsRecoveringHouseholdAccess: (value) {
+        _isRecoveringHouseholdAccess = value;
+      },
+      setState: (nextState) {
+        state = nextState;
+      },
+      restartHouseholdScopedSubscription: _restartSubscription,
+      currentHouseholdDataOwnerUserId: _currentDataOwnerUserId,
+      householdAccessRecoveryLogName: _preparedMealTemplatesControllerLogName,
+      householdAccessRecoveryMessage:
+          'Rebuilding prepared meal template stream after household access '
+          'changed.',
+      showLoading: showLoading,
     );
-    final staleOwnerUserId = normalizeHouseholdScopeValue(
-      _currentDataOwnerUserId,
-    );
-    if (personalUserId != null &&
-        staleOwnerUserId != null &&
-        staleOwnerUserId != personalUserId) {
-      log(
-        'Rebuilding prepared meal template stream after household access '
-        'changed.',
-        name: _preparedMealTemplatesControllerLogName,
-      );
-      ref
-          .read(householdDataOwnerRecoveryProvider.notifier)
-          .recoverToPersonalScope(
-            staleOwnerUserId: staleOwnerUserId,
-            personalUserId: personalUserId,
-          );
-    }
-    return _restartSubscription();
   }
 
   Future<List<PreparedMeal>> _currentTemplates() async {
