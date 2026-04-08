@@ -98,6 +98,12 @@ Widget _wrap({
   );
 }
 
+Future<void> _ensureActionVisible(WidgetTester tester, String text) async {
+  final finder = find.text(text, skipOffstage: false);
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(_FakeCredential());
@@ -154,6 +160,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _ensureActionVisible(tester, 'Sign out');
     await tester.tap(find.text('Sign out'));
     await tester.pumpAndSettle();
 
@@ -604,6 +611,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _ensureActionVisible(tester, 'Delete account');
     await tester.tap(find.text('Delete account'));
     await tester.pumpAndSettle();
     expect(find.text('Delete account?'), findsOneWidget);
@@ -634,6 +642,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _ensureActionVisible(tester, 'Delete account');
     await tester.tap(find.text('Delete account'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete'));
@@ -663,6 +672,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _ensureActionVisible(tester, 'Delete account');
     await tester.tap(find.text('Delete account'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete'));
@@ -693,6 +703,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _ensureActionVisible(tester, 'Delete account');
     await tester.tap(find.text('Delete account'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete'));

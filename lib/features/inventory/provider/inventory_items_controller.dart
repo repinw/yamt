@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/household/provider/'
+    'household_permission_recovery.dart';
+import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -161,15 +166,22 @@ class InventoryItemsController extends _$InventoryItemsController {
   static const _uuid = Uuid();
 
   StreamSubscription<List<InventoryItem>>? _itemsSubscription;
+  int _subscriptionGeneration = 0;
   final _mutationQueue = SerializedMutationQueue();
   _PendingDeletedInventoryItem? _pendingDeletedItem;
   final Map<String, PendingInventoryConsumption> _pendingConsumptionsById =
       <String, PendingInventoryConsumption>{};
   List<InventoryItem>? _persistedItems;
   int _pendingConsumptionDraftCounter = 0;
+  String? _currentDataOwnerUserId;
+  bool _isRecoveringHouseholdAccess = false;
 
   @override
   FutureOr<List<InventoryItem>> build() {
+    ref.watch(householdDataOwnerUserIdProvider);
+    _currentDataOwnerUserId = ref.watch(
+      effectiveHouseholdDataOwnerUserIdProvider,
+    );
     ref.watch(inventoryItemRepositoryProvider);
     ref.onDispose(_disposeRealtimeSubscription);
     return _restartRealtimeSubscription();
@@ -186,11 +198,21 @@ class InventoryItemsController extends _$InventoryItemsController {
 
   Future<List<InventoryItem>> _restartRealtimeSubscription() {
     final initialItems = Completer<List<InventoryItem>>();
+    _currentDataOwnerUserId = ref.read(
+      effectiveHouseholdDataOwnerUserIdProvider,
+    );
     final repository = ref.read(inventoryItemRepositoryProvider);
+    final generation = ++_subscriptionGeneration;
     _disposeRealtimeSubscription();
+    _persistedItems = null;
+    _pendingDeletedItem = null;
+    _pendingConsumptionsById.clear();
 
     _itemsSubscription = repository.watchAll().listen(
       (items) {
+        if (generation != _subscriptionGeneration) {
+          return;
+        }
         _persistedItems = items;
         if (!initialItems.isCompleted) {
           initialItems.complete(items);
@@ -199,7 +221,15 @@ class InventoryItemsController extends _$InventoryItemsController {
         _onRealtimeItems(items);
       },
       onError: (Object error, StackTrace stackTrace) {
+        if (generation != _subscriptionGeneration) {
+          return;
+        }
         if (!initialItems.isCompleted) {
+          if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
+            initialItems.complete(const <InventoryItem>[]);
+            unawaited(_recoverFromRevokedHouseholdAccess(showLoading: false));
+            return;
+          }
           initialItems.completeError(error, stackTrace);
           return;
         }
@@ -226,10 +256,136 @@ class InventoryItemsController extends _$InventoryItemsController {
   }
 
   void _onRealtimeError(Object error, StackTrace stackTrace) {
+    if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
+      unawaited(_recoverFromRevokedHouseholdAccess());
+      return;
+    }
     if (!ref.mounted) {
       return;
     }
     state = AsyncError(error, stackTrace);
+  }
+
+  bool _shouldRecoverFromRevokedHouseholdAccess(Object error) {
+    final profile = ref.read(userProfileProvider).asData?.value;
+    final actualDataOwnerUserId = ref.read(householdDataOwnerUserIdProvider);
+    final effectiveDataOwnerUserId = ref.read(
+      effectiveHouseholdDataOwnerUserIdProvider,
+    );
+    final shouldRecover = shouldRecoverFromHouseholdPermissionDenied(
+      error: error,
+      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
+      currentUserId: _currentSignedInUserId() ?? profile?.uid,
+      actualDataOwnerUserId: actualDataOwnerUserId,
+      effectiveDataOwnerUserId:
+          _currentDataOwnerUserId ?? effectiveDataOwnerUserId,
+      profileHouseholdId: profile?.householdId,
+    );
+    if (error is FirebaseException && error.code == 'permission-denied') {
+      _logPermissionDeniedContext(
+        shouldRecover: shouldRecover,
+        actualDataOwnerUserId: actualDataOwnerUserId,
+        effectiveDataOwnerUserId: effectiveDataOwnerUserId,
+      );
+    }
+    return shouldRecover;
+  }
+
+  Future<void> _recoverFromRevokedHouseholdAccess({
+    bool showLoading = true,
+  }) async {
+    if (_isRecoveringHouseholdAccess || !ref.mounted) {
+      return;
+    }
+
+    _isRecoveringHouseholdAccess = true;
+    try {
+      if (showLoading) {
+        state = const AsyncLoading<List<InventoryItem>>();
+      }
+      final nextState = await AsyncValue.guard(
+        _performRevokedHouseholdAccessRecovery,
+      );
+      if (!ref.mounted) {
+        return;
+      }
+      state = nextState;
+    } finally {
+      _isRecoveringHouseholdAccess = false;
+    }
+  }
+
+  Future<List<InventoryItem>> _performRevokedHouseholdAccessRecovery() async {
+    final profile = ref.read(userProfileProvider).asData?.value;
+    final personalUserId = _currentSignedInUserId() ?? profile?.uid.trim();
+    final staleOwnerUserId = normalizeHouseholdScopeValue(
+      _currentDataOwnerUserId,
+    );
+    if (personalUserId != null &&
+        personalUserId.isNotEmpty &&
+        staleOwnerUserId != null &&
+        staleOwnerUserId.isNotEmpty &&
+        staleOwnerUserId != personalUserId) {
+      log(
+        'Rebuilding inventory stream after household access changed.',
+        name: _controllerLogName,
+      );
+      ref
+          .read(householdDataOwnerRecoveryProvider.notifier)
+          .recoverToPersonalScope(
+            staleOwnerUserId: staleOwnerUserId,
+            personalUserId: personalUserId,
+          );
+    } else {
+      log(
+        'Inventory access recovery had no owner swap candidate. '
+        '${_buildScopeDebugDetails(actualDataOwnerUserId: ref.read(householdDataOwnerUserIdProvider), effectiveDataOwnerUserId: ref.read(effectiveHouseholdDataOwnerUserIdProvider))}',
+        name: _controllerLogName,
+      );
+    }
+    return _restartRealtimeSubscription();
+  }
+
+  String? _currentSignedInUserId() {
+    return normalizeHouseholdScopeValue(
+      ref.read(authStateChangesProvider).asData?.value?.uid,
+    );
+  }
+
+  void _logPermissionDeniedContext({
+    required bool shouldRecover,
+    required String? actualDataOwnerUserId,
+    required String? effectiveDataOwnerUserId,
+  }) {
+    log(
+      'Permission denied while watching inventory. '
+      'shouldRecover=$shouldRecover '
+      '${_buildScopeDebugDetails(actualDataOwnerUserId: actualDataOwnerUserId, effectiveDataOwnerUserId: effectiveDataOwnerUserId)}',
+      name: _controllerLogName,
+    );
+  }
+
+  String _buildScopeDebugDetails({
+    required String? actualDataOwnerUserId,
+    required String? effectiveDataOwnerUserId,
+  }) {
+    final profile = ref.read(userProfileProvider).asData?.value;
+    final recoveryState = ref.read(householdDataOwnerRecoveryProvider);
+    final currentUserId = _currentSignedInUserId() ?? profile?.uid;
+    return 'authUserId='
+        '${normalizeHouseholdScopeValue(currentUserId) ?? '<none>'} '
+        'profileHouseholdId='
+        '${normalizeHouseholdScopeValue(profile?.householdId) ?? '<none>'} '
+        'actualDataOwnerId='
+        '${normalizeHouseholdScopeValue(actualDataOwnerUserId) ?? '<none>'} '
+        'effectiveDataOwnerId='
+        '${normalizeHouseholdScopeValue(effectiveDataOwnerUserId) ?? '<none>'} '
+        'controllerDataOwnerId='
+        '${normalizeHouseholdScopeValue(_currentDataOwnerUserId) ?? '<none>'} '
+        'recoveryStaleOwnerId='
+        '${recoveryState?.staleOwnerUserId ?? '<none>'} '
+        'recoveryPersonalUserId='
+        '${recoveryState?.personalUserId ?? '<none>'}';
   }
 
   Future<bool> deleteItem(String itemId) {

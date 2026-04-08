@@ -20,12 +20,17 @@ class _FakePreparedMealTemplateRepository
       StreamController<List<PreparedMeal>>.broadcast();
   List<PreparedMeal> _templates;
   List<PreparedMeal> savedTemplates = const <PreparedMeal>[];
+  int watchInvocationCount = 0;
 
   @override
   Stream<List<PreparedMeal>> watchAll() {
     return Stream<List<PreparedMeal>>.multi((controller) {
+      watchInvocationCount += 1;
       controller.add(List<PreparedMeal>.from(_templates));
-      final subscription = _controller.stream.listen(controller.add);
+      final subscription = _controller.stream.listen(
+        controller.add,
+        onError: controller.addError,
+      );
       controller.onCancel = () {
         unawaited(subscription.cancel());
       };
@@ -43,6 +48,10 @@ class _FakePreparedMealTemplateRepository
     savedTemplates = List<PreparedMeal>.from(templates);
     _controller.add(List<PreparedMeal>.from(_templates));
     return true;
+  }
+
+  void emitWatchError(Object error, [StackTrace? stackTrace]) {
+    _controller.addError(error, stackTrace);
   }
 
   Future<void> dispose() => _controller.close();
@@ -149,6 +158,55 @@ ProviderSubscription<AsyncValue<List<PreparedMeal>>> _keepControllerAlive(
 }
 
 void main() {
+  test('stale repository errors are ignored after repository swap', () async {
+    var usesSharedRepository = true;
+    final sharedRepository = _FakePreparedMealTemplateRepository(
+      initialTemplates: <PreparedMeal>[
+        _templateMeal(id: 'shared-template', name: 'Shared Template'),
+      ],
+    );
+    final personalRepository = _FakePreparedMealTemplateRepository(
+      initialTemplates: const <PreparedMeal>[],
+    );
+    addTearDown(sharedRepository.dispose);
+    addTearDown(personalRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        preparedMealTemplateRepositoryProvider.overrideWith((ref) {
+          if (usesSharedRepository) {
+            return sharedRepository;
+          }
+          return personalRepository;
+        }),
+        preparedMealRecipeImporterProvider.overrideWithValue(
+          const _FakePreparedMealRecipeImporter(null),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(preparedMealTemplatesControllerProvider.future);
+    usesSharedRepository = false;
+    container.invalidate(preparedMealTemplateRepositoryProvider);
+
+    final reloadedTemplates = await container.read(
+      preparedMealTemplatesControllerProvider.future,
+    );
+    expect(reloadedTemplates, isEmpty);
+
+    sharedRepository.emitWatchError(StateError('stale permission denied'));
+    await Future<void>.delayed(const Duration(milliseconds: 1));
+
+    final stateAfterStaleError = container.read(
+      preparedMealTemplatesControllerProvider,
+    );
+    expect(stateAfterStaleError.hasError, isFalse);
+    expect(stateAfterStaleError.asData?.value, isEmpty);
+  });
+
   test('saveTemplateFromMeal stores a normalized meal template', () async {
     final repository = _FakePreparedMealTemplateRepository(
       initialTemplates: const <PreparedMeal>[],

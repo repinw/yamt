@@ -1,6 +1,7 @@
+const String _defaultOffProductSearchUrl = 'http://162.55.213.135:3000/search';
 const String _offProductSearchUrl = String.fromEnvironment(
   'OFF_PRODUCT_SEARCH_URL',
-  defaultValue: '',
+  defaultValue: _defaultOffProductSearchUrl,
 );
 const int _offProductSearchTimeoutSeconds = int.fromEnvironment(
   'OFF_PRODUCT_SEARCH_TIMEOUT_SECONDS',

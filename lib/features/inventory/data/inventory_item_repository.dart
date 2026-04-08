@@ -1,8 +1,9 @@
 import 'dart:developer' show log;
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/household/provider/household_scope_provider.dart';
 
 import 'firestore_inventory_item_repository.dart';
 import 'inventory_item_repository_contract.dart';
@@ -18,27 +19,25 @@ part 'inventory_item_repository.g.dart';
 
 @riverpod
 InventoryItemRepository inventoryItemRepository(Ref ref) {
-  final authState = ref.watch(authStateChangesProvider);
-  final currentUserId = authState.asData?.value?.uid;
-  final store = _resolveStore();
+  ref.watch(authStateChangesProvider);
+  final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
+  final store = _resolveStore(ref);
   return FirestoreInventoryItemRepository(
     session: _CurrentInventoryUserSession(currentUserId: currentUserId),
     store: store,
   );
 }
 
-InventoryItemStore _resolveStore() {
-  try {
-    return FirestoreInventoryItemStore(firestore: FirebaseFirestore.instance);
-  } catch (error, stackTrace) {
+InventoryItemStore _resolveStore(Ref ref) {
+  final firestore = ref.watch(firebaseFirestoreProvider);
+  if (firestore == null) {
     log(
       'Falling back to unavailable inventory item store.',
       name: 'InventoryItemRepositoryProvider',
-      error: error,
-      stackTrace: stackTrace,
     );
     return const _UnavailableInventoryItemStore();
   }
+  return FirestoreInventoryItemStore(firestore: firestore);
 }
 
 class _CurrentInventoryUserSession implements InventoryUserSession {

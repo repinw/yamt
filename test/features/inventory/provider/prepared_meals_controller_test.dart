@@ -84,7 +84,10 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   Stream<List<PreparedMeal>> watchAll() {
     return Stream<List<PreparedMeal>>.multi((controller) {
       controller.add(List<PreparedMeal>.from(_meals));
-      final subscription = _controller.stream.listen(controller.add);
+      final subscription = _controller.stream.listen(
+        controller.add,
+        onError: controller.addError,
+      );
       controller.onCancel = () {
         unawaited(subscription.cancel());
       };
@@ -108,6 +111,15 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
     savedMeals = List<PreparedMeal>.from(meals);
     _controller.add(List<PreparedMeal>.from(_meals));
     return true;
+  }
+
+  void emitWatchMeals(List<PreparedMeal> meals) {
+    _meals = List<PreparedMeal>.from(meals);
+    _controller.add(List<PreparedMeal>.from(_meals));
+  }
+
+  void emitWatchError(Object error, [StackTrace? stackTrace]) {
+    _controller.addError(error, stackTrace);
   }
 
   Future<void> dispose() => _controller.close();
@@ -137,6 +149,31 @@ ProviderSubscription<AsyncValue<List<PreparedMeal>>> _keepControllerAlive(
   ProviderContainer container,
 ) {
   return container.listen(preparedMealsControllerProvider, (previous, next) {});
+}
+
+Future<void> _waitForMeals(
+  ProviderContainer container,
+  bool Function(List<PreparedMeal> meals) predicate,
+) async {
+  final currentMeals = container
+      .read(preparedMealsControllerProvider)
+      .asData
+      ?.value;
+  if (currentMeals != null && predicate(currentMeals)) {
+    return;
+  }
+
+  final ready = Completer<void>();
+  late final ProviderSubscription<AsyncValue<List<PreparedMeal>>> subscription;
+  subscription = container.listen(preparedMealsControllerProvider, (_, next) {
+    final meals = next.asData?.value;
+    if (meals == null || !predicate(meals) || ready.isCompleted) {
+      return;
+    }
+    ready.complete();
+    subscription.close();
+  }, fireImmediately: true);
+  await ready.future.timeout(const Duration(seconds: 1));
 }
 
 InventoryItem _item({
@@ -205,6 +242,61 @@ PreparedMeal _meal({
 }
 
 void main() {
+  test('stale repository errors are ignored after repository swap', () async {
+    var usesSharedRepository = true;
+    final sharedItem = _item(id: 'rice', name: 'Rice');
+    final sharedRepository = _FakePreparedMealRepository(
+      initialMeals: <PreparedMeal>[
+        _meal(id: 'shared-meal', name: 'Shared Meal', item: sharedItem),
+      ],
+    );
+    final personalRepository = _FakePreparedMealRepository(
+      initialMeals: const <PreparedMeal>[],
+    );
+    addTearDown(sharedRepository.dispose);
+    addTearDown(personalRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        preparedMealRepositoryProvider.overrideWith((ref) {
+          if (usesSharedRepository) {
+            return sharedRepository;
+          }
+          return personalRepository;
+        }),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(preparedMealsControllerProvider.future);
+    usesSharedRepository = false;
+    container.invalidate(preparedMealRepositoryProvider);
+
+    final reloadedMeals = await container.read(
+      preparedMealsControllerProvider.future,
+    );
+    expect(reloadedMeals, isEmpty);
+
+    sharedRepository.emitWatchError(StateError('stale permission denied'));
+    await Future<void>.delayed(const Duration(milliseconds: 1));
+
+    final stateAfterStaleError = container.read(
+      preparedMealsControllerProvider,
+    );
+    expect(stateAfterStaleError.hasError, isFalse);
+    expect(stateAfterStaleError.asData?.value, isEmpty);
+
+    personalRepository.emitWatchMeals(<PreparedMeal>[
+      _meal(id: 'personal-meal', name: 'Personal Meal', item: sharedItem),
+    ]);
+    await _waitForMeals(
+      container,
+      (meals) => meals.length == 1 && meals.single.id == 'personal-meal',
+    );
+  });
+
   test(
     'createPreparedMeal reduces inventory and saves a prepared meal',
     () async {

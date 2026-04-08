@@ -10,6 +10,68 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == uid;
     }
 
+    function isVerifiedAccount() {
+      return isSignedIn()
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function userExists(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function userHouseholdId(uid) {
+      return userExists(uid)
+        && get(/databases/$(database)/documents/users/$(uid))
+          .data.householdId is string
+        ? get(/databases/$(database)/documents/users/$(uid))
+            .data.householdId
+        : null;
+    }
+
+    function householdOwnerId(uid) {
+      let householdId = userHouseholdId(uid);
+      return householdId == null ? uid : householdId;
+    }
+
+    function currentHouseholdOwnerId() {
+      return householdOwnerId(request.auth.uid);
+    }
+
+    function resourceHouseholdId() {
+      return resource != null
+        && resource.data.householdId is string
+        ? resource.data.householdId
+        : null;
+    }
+
+    function canAccessHouseholdOwnedData(uid) {
+      return isSignedIn()
+        && (
+          request.auth.uid == uid
+          || currentHouseholdOwnerId() == uid
+        );
+    }
+
+    function canReadUserDocument(uid) {
+      let householdOwnerId = currentHouseholdOwnerId();
+      return isSignedIn()
+        && (
+          uid == request.auth.uid
+          || uid == householdOwnerId
+          || resourceHouseholdId() == householdOwnerId
+        );
+    }
+
+    function canRemoveHouseholdMember(uid) {
+      return isVerifiedAccount()
+        && uid != request.auth.uid
+        && resource.data.householdId == request.auth.uid
+        && request.resource.data.diff(resource.data)
+          .affectedKeys()
+          .hasOnly(['householdId'])
+        && !('householdId' in request.resource.data);
+    }
+
     function isOptionalString(data, key) {
       return !(key in data) || data[key] == null || data[key] is string;
     }
@@ -141,24 +203,46 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /household_invites/{code} {
+      allow read: if isSignedIn();
+      allow create, update: if isVerifiedAccount()
+        && request.resource.data.keys().hasOnly([
+          'hostUid',
+          'expiresAt',
+        ])
+        && request.resource.data.hostUid == request.auth.uid
+        && request.resource.data.expiresAt is timestamp;
+      allow delete: if isVerifiedAccount()
+        && resource.data.hostUid == request.auth.uid;
+    }
+
+    match /users/{uid} {
+      allow read: if canReadUserDocument(uid);
+      allow create: if isOwner(uid)
+        && request.resource.data.uid == uid;
+      allow update: if (isOwner(uid) && request.resource.data.uid == uid)
+        || canRemoveHouseholdMember(uid);
+      allow delete: if isOwner(uid);
+    }
+
     match /users/{uid}/inventory_items/{itemId} {
-      allow read, create, update, delete: if isOwner(uid);
+      allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
     }
 
     match /users/{uid}/shopping_list_items/{itemId} {
-      allow read, create, update, delete: if isOwner(uid);
+      allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
     }
 
     match /users/{uid}/prepared_meals/{mealId} {
-      allow read, create, update, delete: if isOwner(uid);
+      allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
     }
 
     match /users/{uid}/prepared_meal_templates/{templateId} {
-      allow read, create, update, delete: if isOwner(uid);
+      allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
     }
 
     match /users/{uid}/inventory_discard_events/{eventId} {
-      allow read, create, update, delete: if isOwner(uid);
+      allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
     }
 
     match /users/{uid}/calorie_entries/{entryId} {

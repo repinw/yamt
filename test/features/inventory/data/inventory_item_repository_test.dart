@@ -273,7 +273,7 @@ void main() {
     expect(saved, isFalse);
   });
 
-  test('watchAll returns empty list on firestore permission denied', () async {
+  test('watchAll rethrows firestore permission denied errors', () async {
     final store = _FakeInventoryItemStore()
       ..watchAllError = FirebaseException(
         plugin: 'cloud_firestore',
@@ -285,9 +285,16 @@ void main() {
       store: store,
     );
 
-    final items = await repository.watchAll().first;
-
-    expect(items, isEmpty);
+    expect(
+      repository.watchAll().first,
+      throwsA(
+        isA<FirebaseException>().having(
+          (error) => error.code,
+          'code',
+          'permission-denied',
+        ),
+      ),
+    );
   });
 
   test('watchAll rethrows non-permission firestore errors', () async {

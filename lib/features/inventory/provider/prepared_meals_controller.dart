@@ -4,7 +4,11 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/household/provider/'
+    'household_permission_recovery.dart';
+import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/application/'
@@ -73,10 +77,17 @@ class PreparedMealsController extends _$PreparedMealsController {
   static const _uuid = Uuid();
 
   StreamSubscription<List<PreparedMeal>>? _mealsSubscription;
+  int _subscriptionGeneration = 0;
   final _mutationQueue = SerializedMutationQueue();
+  String? _currentDataOwnerUserId;
+  bool _isRecoveringHouseholdAccess = false;
 
   @override
   FutureOr<List<PreparedMeal>> build() {
+    ref.watch(householdDataOwnerUserIdProvider);
+    _currentDataOwnerUserId = ref.watch(
+      effectiveHouseholdDataOwnerUserIdProvider,
+    );
     ref.watch(preparedMealRepositoryProvider);
     ref.onDispose(_disposeSubscription);
     return _restartSubscription();
@@ -317,19 +328,19 @@ class PreparedMealsController extends _$PreparedMealsController {
         pendingRecipeIngredients: nextPendingIngredients,
         totalKcal: nextComponents.fold<double>(
           0,
-          (sum, component) => sum + component.totalKcal,
+          (total, component) => total + component.totalKcal,
         ),
         totalProtein: nextComponents.fold<double>(
           0,
-          (sum, component) => sum + component.totalProtein,
+          (total, component) => total + component.totalProtein,
         ),
         totalCarbs: nextComponents.fold<double>(
           0,
-          (sum, component) => sum + component.totalCarbs,
+          (total, component) => total + component.totalCarbs,
         ),
         totalFat: nextComponents.fold<double>(
           0,
-          (sum, component) => sum + component.totalFat,
+          (total, component) => total + component.totalFat,
         ),
         updatedAt: DateTime.now(),
       );
@@ -697,11 +708,18 @@ class PreparedMealsController extends _$PreparedMealsController {
 
   Future<List<PreparedMeal>> _restartSubscription() {
     final initialMeals = Completer<List<PreparedMeal>>();
+    _currentDataOwnerUserId = ref.read(
+      effectiveHouseholdDataOwnerUserIdProvider,
+    );
     final repository = ref.read(preparedMealRepositoryProvider);
+    final generation = ++_subscriptionGeneration;
     _disposeSubscription();
 
     _mealsSubscription = repository.watchAll().listen(
       (meals) {
+        if (generation != _subscriptionGeneration) {
+          return;
+        }
         if (!initialMeals.isCompleted) {
           initialMeals.complete(meals);
           return;
@@ -709,7 +727,15 @@ class PreparedMealsController extends _$PreparedMealsController {
         _onRealtimeMeals(meals);
       },
       onError: (Object error, StackTrace stackTrace) {
+        if (generation != _subscriptionGeneration) {
+          return;
+        }
         if (!initialMeals.isCompleted) {
+          if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
+            initialMeals.complete(const <PreparedMeal>[]);
+            unawaited(_recoverFromRevokedHouseholdAccess(showLoading: false));
+            return;
+          }
           initialMeals.completeError(error, stackTrace);
           return;
         }
@@ -736,10 +762,85 @@ class PreparedMealsController extends _$PreparedMealsController {
   }
 
   void _onRealtimeError(Object error, StackTrace stackTrace) {
+    if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
+      unawaited(_recoverFromRevokedHouseholdAccess());
+      return;
+    }
     if (!ref.mounted) {
       return;
     }
     state = AsyncError(error, stackTrace);
+  }
+
+  bool _shouldRecoverFromRevokedHouseholdAccess(Object error) {
+    final profile = ref.read(userProfileProvider).asData?.value;
+    final actualDataOwnerUserId = ref.read(householdDataOwnerUserIdProvider);
+    final effectiveDataOwnerUserId = ref.read(
+      effectiveHouseholdDataOwnerUserIdProvider,
+    );
+    return shouldRecoverFromHouseholdPermissionDenied(
+      error: error,
+      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
+      currentUserId:
+          normalizeHouseholdScopeValue(
+            ref.read(authStateChangesProvider).asData?.value?.uid,
+          ) ??
+          profile?.uid,
+      actualDataOwnerUserId: actualDataOwnerUserId,
+      effectiveDataOwnerUserId:
+          _currentDataOwnerUserId ?? effectiveDataOwnerUserId,
+      profileHouseholdId: profile?.householdId,
+    );
+  }
+
+  Future<void> _recoverFromRevokedHouseholdAccess({
+    bool showLoading = true,
+  }) async {
+    if (_isRecoveringHouseholdAccess || !ref.mounted) {
+      return;
+    }
+
+    _isRecoveringHouseholdAccess = true;
+    try {
+      if (showLoading) {
+        state = const AsyncLoading<List<PreparedMeal>>();
+      }
+      final nextState = await AsyncValue.guard(
+        _performRevokedHouseholdAccessRecovery,
+      );
+      if (!ref.mounted) {
+        return;
+      }
+      state = nextState;
+    } finally {
+      _isRecoveringHouseholdAccess = false;
+    }
+  }
+
+  Future<List<PreparedMeal>> _performRevokedHouseholdAccessRecovery() async {
+    final personalUserId = normalizeHouseholdScopeValue(
+      ref.read(authStateChangesProvider).asData?.value?.uid,
+    );
+    final staleOwnerUserId = normalizeHouseholdScopeValue(
+      _currentDataOwnerUserId,
+    );
+    if (personalUserId != null &&
+        personalUserId.isNotEmpty &&
+        staleOwnerUserId != null &&
+        staleOwnerUserId.isNotEmpty &&
+        staleOwnerUserId != personalUserId) {
+      log(
+        'Rebuilding prepared meal stream after household access changed.',
+        name: _preparedMealsControllerLogName,
+      );
+      ref
+          .read(householdDataOwnerRecoveryProvider.notifier)
+          .recoverToPersonalScope(
+            staleOwnerUserId: staleOwnerUserId,
+            personalUserId: personalUserId,
+          );
+    }
+    return _restartSubscription();
   }
 
   Future<List<PreparedMeal>> _currentMeals() async {
@@ -935,19 +1036,19 @@ _PreparedMealCreationResult _buildMealCreationResult({
 
   final totalKcal = components.fold<double>(
     0,
-    (sum, component) => sum + component.totalKcal,
+    (total, component) => total + component.totalKcal,
   );
   final totalProtein = components.fold<double>(
     0,
-    (sum, component) => sum + component.totalProtein,
+    (total, component) => total + component.totalProtein,
   );
   final totalCarbs = components.fold<double>(
     0,
-    (sum, component) => sum + component.totalCarbs,
+    (total, component) => total + component.totalCarbs,
   );
   final totalFat = components.fold<double>(
     0,
-    (sum, component) => sum + component.totalFat,
+    (total, component) => total + component.totalFat,
   );
 
   return _PreparedMealCreationResult(
@@ -1106,19 +1207,19 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
 
   final totalKcal = components.fold<double>(
     0,
-    (sum, component) => sum + component.totalKcal,
+    (total, component) => total + component.totalKcal,
   );
   final totalProtein = components.fold<double>(
     0,
-    (sum, component) => sum + component.totalProtein,
+    (total, component) => total + component.totalProtein,
   );
   final totalCarbs = components.fold<double>(
     0,
-    (sum, component) => sum + component.totalCarbs,
+    (total, component) => total + component.totalCarbs,
   );
   final totalFat = components.fold<double>(
     0,
-    (sum, component) => sum + component.totalFat,
+    (total, component) => total + component.totalFat,
   );
 
   return _PreparedMealCreationResult(

@@ -2,9 +2,11 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 
@@ -15,9 +17,15 @@ const _inventoryItemsCollection = 'inventory_items';
 
 final inventoryCalorieEntryCommitStoreProvider =
     Provider<InventoryCalorieEntryCommitStore>((ref) {
-      final authState = ref.watch(authStateChangesProvider);
-      final currentUserId = authState.asData?.value?.uid;
-      final firestore = _resolveFirestore();
+      final currentUserId = ref
+          .watch(authStateChangesProvider)
+          .asData
+          ?.value
+          ?.uid;
+      final inventoryOwnerUserId = ref.watch(
+        effectiveHouseholdDataOwnerUserIdProvider,
+      );
+      final firestore = ref.watch(firebaseFirestoreProvider);
       if (firestore == null) {
         return const _UnavailableInventoryCalorieEntryCommitStore();
       }
@@ -25,6 +33,7 @@ final inventoryCalorieEntryCommitStoreProvider =
       return FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
         currentUserId: currentUserId,
+        inventoryOwnerUserId: inventoryOwnerUserId,
       );
     });
 
@@ -52,22 +61,28 @@ class FirestoreInventoryCalorieEntryCommitStore
   const FirestoreInventoryCalorieEntryCommitStore({
     required FirebaseFirestore firestore,
     required String? currentUserId,
+    required String? inventoryOwnerUserId,
   }) : _firestore = firestore,
-       _currentUserId = currentUserId;
+       _currentUserId = currentUserId,
+       _inventoryOwnerUserId = inventoryOwnerUserId;
 
   final FirebaseFirestore _firestore;
   final String? _currentUserId;
+  final String? _inventoryOwnerUserId;
 
   @override
   Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
     required CalorieEntry entry,
     required PendingInventoryConsumption pendingConsumption,
   }) async {
-    final userId = _resolveUserId(entry.userId);
-    if (userId == null) {
+    final entryUserId = _resolveEntryUserId(entry.userId);
+    final inventoryUserId = _resolveInventoryUserId();
+    if (entryUserId == null || inventoryUserId == null) {
       log(
         'Cannot commit calorie entry ${entry.id}: no user id resolved '
-        '(entryUserId=${entry.userId}).',
+        '(entryUserId=${entry.userId}, '
+        'currentUserId=$_currentUserId, '
+        'inventoryOwnerUserId=$_inventoryOwnerUserId).',
         name: _commitStoreLogName,
       );
       return null;
@@ -83,7 +98,7 @@ class FirestoreInventoryCalorieEntryCommitStore
 
     log(
       'Committing calorie entry ${entry.id} with inventory item '
-      '${pendingConsumption.itemId} for user $userId '
+      '${pendingConsumption.itemId} for inventory owner $inventoryUserId '
       '(amount=${pendingConsumption.amount}).',
       name: _commitStoreLogName,
     );
@@ -91,7 +106,7 @@ class FirestoreInventoryCalorieEntryCommitStore
     try {
       return await _firestore.runTransaction((transaction) async {
         final inventoryRef = _inventoryCollection(
-          userId,
+          inventoryUserId,
         ).doc(pendingConsumption.itemId);
         final inventorySnapshot = await transaction.get(inventoryRef);
         if (!inventorySnapshot.exists) {
@@ -126,13 +141,13 @@ class FirestoreInventoryCalorieEntryCommitStore
         }
 
         final normalizedEntry = entry.copyWith(
-          userId: userId,
+          userId: entryUserId,
           imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
           updatedAt: DateTime.now(),
         );
 
         transaction.set(
-          _calorieEntriesCollectionRef(userId).doc(normalizedEntry.id),
+          _calorieEntriesCollectionRef(entryUserId).doc(normalizedEntry.id),
           normalizedEntry.toJson(),
         );
         transaction.update(inventoryRef, _buildInventoryUpdate(committedItem));
@@ -163,7 +178,7 @@ class FirestoreInventoryCalorieEntryCommitStore
     }
   }
 
-  String? _resolveUserId(String entryUserId) {
+  String? _resolveEntryUserId(String entryUserId) {
     final currentUserId = _currentUserId?.trim();
     if (currentUserId != null && currentUserId.isNotEmpty) {
       return currentUserId;
@@ -172,6 +187,19 @@ class FirestoreInventoryCalorieEntryCommitStore
     final normalizedEntryUserId = entryUserId.trim();
     if (normalizedEntryUserId.isNotEmpty) {
       return normalizedEntryUserId;
+    }
+    return null;
+  }
+
+  String? _resolveInventoryUserId() {
+    final inventoryOwnerUserId = _inventoryOwnerUserId?.trim();
+    if (inventoryOwnerUserId != null && inventoryOwnerUserId.isNotEmpty) {
+      return inventoryOwnerUserId;
+    }
+
+    final currentUserId = _currentUserId?.trim();
+    if (currentUserId != null && currentUserId.isNotEmpty) {
+      return currentUserId;
     }
     return null;
   }
@@ -204,20 +232,6 @@ class _UnavailableInventoryCalorieEntryCommitStore
     required CalorieEntry entry,
     required PendingInventoryConsumption pendingConsumption,
   }) async {
-    return null;
-  }
-}
-
-FirebaseFirestore? _resolveFirestore() {
-  try {
-    return FirebaseFirestore.instance;
-  } catch (error, stackTrace) {
-    log(
-      'Falling back to unavailable inventory calorie entry commit store.',
-      name: _commitStoreLogName,
-      error: error,
-      stackTrace: stackTrace,
-    );
     return null;
   }
 }

@@ -16,6 +16,7 @@ import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
+import 'package:yamt/features/household/presentation/household_page.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
@@ -137,6 +138,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.homeSettingsAccount,
         builder: (context, state) => const AccountPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.homeSettingsHousehold,
+        builder: (context, state) => const HouseholdPage(),
       ),
       GoRoute(
         path: AppRoutes.homeCaloriesEntryCreate,

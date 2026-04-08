@@ -4,6 +4,10 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/household/provider/'
+    'household_permission_recovery.dart';
+import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_recipe_url_parser.dart';
@@ -47,10 +51,17 @@ class PreparedMealTemplatesController
   static const _uuid = Uuid();
 
   StreamSubscription<List<PreparedMeal>>? _templatesSubscription;
+  int _subscriptionGeneration = 0;
   final _mutationQueue = SerializedMutationQueue();
+  String? _currentDataOwnerUserId;
+  bool _isRecoveringHouseholdAccess = false;
 
   @override
   FutureOr<List<PreparedMeal>> build() {
+    ref.watch(householdDataOwnerUserIdProvider);
+    _currentDataOwnerUserId = ref.watch(
+      effectiveHouseholdDataOwnerUserIdProvider,
+    );
     ref.watch(preparedMealTemplateRepositoryProvider);
     ref.onDispose(_disposeSubscription);
     return _restartSubscription();
@@ -474,11 +485,18 @@ class PreparedMealTemplatesController
 
   Future<List<PreparedMeal>> _restartSubscription() {
     final initialTemplates = Completer<List<PreparedMeal>>();
+    _currentDataOwnerUserId = ref.read(
+      effectiveHouseholdDataOwnerUserIdProvider,
+    );
     final repository = ref.read(preparedMealTemplateRepositoryProvider);
+    final generation = ++_subscriptionGeneration;
     _disposeSubscription();
 
     _templatesSubscription = repository.watchAll().listen(
       (templates) {
+        if (generation != _subscriptionGeneration) {
+          return;
+        }
         final sortedTemplates = _sortTemplates(templates);
         if (!initialTemplates.isCompleted) {
           initialTemplates.complete(sortedTemplates);
@@ -487,7 +505,15 @@ class PreparedMealTemplatesController
         _onRealtimeTemplates(sortedTemplates);
       },
       onError: (Object error, StackTrace stackTrace) {
+        if (generation != _subscriptionGeneration) {
+          return;
+        }
         if (!initialTemplates.isCompleted) {
+          if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
+            initialTemplates.complete(const <PreparedMeal>[]);
+            unawaited(_recoverFromRevokedHouseholdAccess(showLoading: false));
+            return;
+          }
           initialTemplates.completeError(error, stackTrace);
           return;
         }
@@ -514,10 +540,84 @@ class PreparedMealTemplatesController
   }
 
   void _onRealtimeError(Object error, StackTrace stackTrace) {
+    if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
+      unawaited(_recoverFromRevokedHouseholdAccess());
+      return;
+    }
     if (!ref.mounted) {
       return;
     }
     state = AsyncError(error, stackTrace);
+  }
+
+  bool _shouldRecoverFromRevokedHouseholdAccess(Object error) {
+    final profile = ref.read(userProfileProvider).asData?.value;
+    final actualDataOwnerUserId = ref.read(householdDataOwnerUserIdProvider);
+    final effectiveDataOwnerUserId = ref.read(
+      effectiveHouseholdDataOwnerUserIdProvider,
+    );
+    return shouldRecoverFromHouseholdPermissionDenied(
+      error: error,
+      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
+      currentUserId:
+          normalizeHouseholdScopeValue(
+            ref.read(authStateChangesProvider).asData?.value?.uid,
+          ) ??
+          profile?.uid,
+      actualDataOwnerUserId: actualDataOwnerUserId,
+      effectiveDataOwnerUserId:
+          _currentDataOwnerUserId ?? effectiveDataOwnerUserId,
+      profileHouseholdId: profile?.householdId,
+    );
+  }
+
+  Future<void> _recoverFromRevokedHouseholdAccess({
+    bool showLoading = true,
+  }) async {
+    if (_isRecoveringHouseholdAccess || !ref.mounted) {
+      return;
+    }
+
+    _isRecoveringHouseholdAccess = true;
+    try {
+      if (showLoading) {
+        state = const AsyncLoading<List<PreparedMeal>>();
+      }
+      final nextState = await AsyncValue.guard(
+        _performRevokedHouseholdAccessRecovery,
+      );
+      if (!ref.mounted) {
+        return;
+      }
+      state = nextState;
+    } finally {
+      _isRecoveringHouseholdAccess = false;
+    }
+  }
+
+  Future<List<PreparedMeal>> _performRevokedHouseholdAccessRecovery() async {
+    final personalUserId = normalizeHouseholdScopeValue(
+      ref.read(authStateChangesProvider).asData?.value?.uid,
+    );
+    final staleOwnerUserId = normalizeHouseholdScopeValue(
+      _currentDataOwnerUserId,
+    );
+    if (personalUserId != null &&
+        staleOwnerUserId != null &&
+        staleOwnerUserId != personalUserId) {
+      log(
+        'Rebuilding prepared meal template stream after household access '
+        'changed.',
+        name: _preparedMealTemplatesControllerLogName,
+      );
+      ref
+          .read(householdDataOwnerRecoveryProvider.notifier)
+          .recoverToPersonalScope(
+            staleOwnerUserId: staleOwnerUserId,
+            personalUserId: personalUserId,
+          );
+    }
+    return _restartSubscription();
   }
 
   Future<List<PreparedMeal>> _currentTemplates() async {

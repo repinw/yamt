@@ -2669,6 +2669,18 @@ abstract class AppLocalizations {
   /// **'Manage reminders and alerts'**
   String get settingsNotificationsSubtitle;
 
+  /// No description provided for @settingsHouseholdTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Household'**
+  String get settingsHouseholdTitle;
+
+  /// No description provided for @settingsHouseholdSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite members and manage shared access'**
+  String get settingsHouseholdSubtitle;
+
   /// No description provided for @settingsAccountTitle.
   ///
   /// In en, this message translates to:
@@ -2854,6 +2866,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not set'**
   String get accountPageNotSet;
+
+  /// No description provided for @householdTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Household'**
+  String get householdTitle;
+
+  /// No description provided for @householdJoinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join household'**
+  String get householdJoinTitle;
+
+  /// No description provided for @householdJoinCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Code'**
+  String get householdJoinCodeLabel;
+
+  /// No description provided for @householdJoinCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter 6-digit invite code'**
+  String get householdJoinCodeHint;
+
+  /// No description provided for @householdJoinAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get householdJoinAction;
+
+  /// No description provided for @householdJoinSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Household joined.'**
+  String get householdJoinSuccess;
+
+  /// No description provided for @householdJoinInvalidCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid household code.'**
+  String get householdJoinInvalidCode;
+
+  /// No description provided for @householdJoinExpiredCode.
+  ///
+  /// In en, this message translates to:
+  /// **'This household code has expired.'**
+  String get householdJoinExpiredCode;
+
+  /// No description provided for @householdJoinOwnCode.
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot join your own household.'**
+  String get householdJoinOwnCode;
+
+  /// No description provided for @householdInviteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite members'**
+  String get householdInviteTitle;
+
+  /// No description provided for @householdInviteGenerateCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate code'**
+  String get householdInviteGenerateCode;
+
+  /// No description provided for @householdInviteCodeValidFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Code valid for 24 hours'**
+  String get householdInviteCodeValidFor;
+
+  /// No description provided for @householdInviteCopyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy code'**
+  String get householdInviteCopyCode;
+
+  /// No description provided for @householdInviteCodeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Code copied.'**
+  String get householdInviteCodeCopied;
+
+  /// No description provided for @householdInviteRefreshCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate new code'**
+  String get householdInviteRefreshCode;
+
+  /// No description provided for @householdInviteVerificationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your account with Google or email before you lead a household.'**
+  String get householdInviteVerificationRequired;
+
+  /// No description provided for @householdHostVerificationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'To invite other people into your household, link your guest account with Google or email & password.'**
+  String get householdHostVerificationHint;
+
+  /// No description provided for @householdMembersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Members'**
+  String get householdMembersTitle;
+
+  /// No description provided for @householdLeaderBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Leader'**
+  String get householdLeaderBadge;
+
+  /// No description provided for @householdYouBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get householdYouBadge;
+
+  /// No description provided for @householdRemoveMemberTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove member?'**
+  String get householdRemoveMemberTitle;
+
+  /// No description provided for @householdRemoveMemberMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} from this household?'**
+  String householdRemoveMemberMessage(Object name);
+
+  /// No description provided for @householdRemoveMemberAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get householdRemoveMemberAction;
+
+  /// No description provided for @householdRemoveMemberSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Member removed.'**
+  String get householdRemoveMemberSuccess;
+
+  /// No description provided for @householdRemoveMemberFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'This member cannot be removed.'**
+  String get householdRemoveMemberFailed;
+
+  /// No description provided for @householdLeaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave household?'**
+  String get householdLeaveTitle;
+
+  /// No description provided for @householdLeaveMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You will lose access to the shared household until you join again.'**
+  String get householdLeaveMessage;
+
+  /// No description provided for @householdLeaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave household'**
+  String get householdLeaveAction;
+
+  /// No description provided for @householdLeaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Household left.'**
+  String get householdLeaveSuccess;
+
+  /// No description provided for @householdLeaderOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the household leader can do that.'**
+  String get householdLeaderOnly;
+
+  /// No description provided for @householdActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Household action failed. Please try again.'**
+  String get householdActionFailed;
 
   /// No description provided for @settingsAboutTitle.
   ///

@@ -82,3 +82,83 @@ final class AuthStateChangesProvider
 }
 
 String _$authStateChangesHash() => r'c7af77d8677dab52fbf7e97ba783186b3b67e1ee';
+
+@ProviderFor(userProfile)
+final userProfileProvider = UserProfileProvider._();
+
+final class UserProfileProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<UserProfile?>,
+          UserProfile?,
+          Stream<UserProfile?>
+        >
+    with $FutureModifier<UserProfile?>, $StreamProvider<UserProfile?> {
+  UserProfileProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'userProfileProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$userProfileHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<UserProfile?> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<UserProfile?> create(Ref ref) {
+    return userProfile(ref);
+  }
+}
+
+String _$userProfileHash() => r'24444bc3175c53301f531cc2c230914e802f8681';
+
+@ProviderFor(householdMembers)
+final householdMembersProvider = HouseholdMembersProvider._();
+
+final class HouseholdMembersProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<UserProfile>>,
+          List<UserProfile>,
+          Stream<List<UserProfile>>
+        >
+    with
+        $FutureModifier<List<UserProfile>>,
+        $StreamProvider<List<UserProfile>> {
+  HouseholdMembersProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'householdMembersProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$householdMembersHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<List<UserProfile>> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<List<UserProfile>> create(Ref ref) {
+    return householdMembers(ref);
+  }
+}
+
+String _$householdMembersHash() => r'90b5c0676ee15193e705bdcea573045f276356c9';
