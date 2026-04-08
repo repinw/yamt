@@ -57,6 +57,7 @@ void main() {
     expect(item.currencyCode, 'EUR');
     expect(item.receiptDate, DateTime.parse('2026-02-18T12:00:00.000Z'));
     expect(item.entryDate, fixedNow);
+    expect(item.ocrName, 'Milk');
     expect(item.isDeposit, isFalse);
     expect(item.isDiscount, isFalse);
     expect(drafts.single.canBeSavedToInventory, isTrue);

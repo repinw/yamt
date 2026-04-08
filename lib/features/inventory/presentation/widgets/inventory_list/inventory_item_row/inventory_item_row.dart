@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/utils/currency_format.dart';
-import 'package:yamt/features/calories/data/calorie_barcode_backfill_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -18,6 +17,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_eat_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_amount_input_dialog.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/inventory_item_candidate_swap_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_action_coordinator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -226,30 +227,49 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   }
 
   void _onSwapCandidatePressed() {
-    if (widget.item.barcodeStatus != InventoryBarcodeStatus.resolved) {
-      _onRetryBarcodePressed();
+    if (widget.item.isConsumed) {
+      _showActionSnackBar(
+        widget.l10n.inventoryItemSwapCandidateRequiresFullItem,
+      );
       return;
     }
-    _showActionSnackBar(widget.l10n.commonNotImplementedYet);
+    unawaited(_runSwapCandidateFlow());
   }
 
-  void _onRetryBarcodePressed() {
-    final item = widget.item;
-    final backfillRepository = ref.read(
-      calorieBarcodeBackfillRepositoryProvider,
-    );
-    unawaited(
-      _actionCoordinator.runAction(() async {
-        final queued = await backfillRepository.enqueueFingerprintLookup(
-          itemId: item.id,
-          fingerprint: item.resolvedFoodFingerprint,
-          itemName: item.name,
-          brand: item.brand,
-          trigger: 'manual_search',
-        );
-        return queued;
-      }, successMessage: widget.l10n.inventoryBarcodeLookupQueued),
-    );
+  Future<void> _runSwapCandidateFlow() async {
+    if (_isWorking) {
+      return;
+    }
+
+    _setWorking(true);
+    try {
+      final request = await showInventoryItemCandidateSwapFlow(
+        context: context,
+        ref: ref,
+        item: widget.item,
+      );
+      if (!mounted || request == null) {
+        return;
+      }
+
+      final saved = await ref
+          .read(inventoryItemsControllerProvider.notifier)
+          .swapItemCandidate(
+            itemId: widget.item.id,
+            resolvedProduct: request.resolvedProduct,
+            requiresGlobalPersistence: request.requiresGlobalPersistence,
+            weight: request.weight,
+          );
+      if (!mounted || saved) {
+        return;
+      }
+
+      _showActionSnackBar(widget.l10n.inventoryItemActionFailed);
+    } finally {
+      if (mounted) {
+        _setWorking(false);
+      }
+    }
   }
 
   Future<void> _requestEatAmountAndRunAction({

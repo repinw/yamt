@@ -152,6 +152,8 @@
   "inventoryItemBuyAgainSucceeded": "Item added to shopping list.",
   "inventoryItemThrowAwayAction": "Throw away",
   "inventoryItemSwapCandidateAction": "Swap candidate",
+  "inventoryItemSwapCandidateRequiresFullItem":
+      "You can swap the candidate only while the item is still fully available.",
   "inventoryItemActionFailed": "Action failed. Please try again.",
   "inventoryBarcodeStatusPending": "Barcode lookup pending",
   "inventoryBarcodeStatusUncertain": "Not sure",

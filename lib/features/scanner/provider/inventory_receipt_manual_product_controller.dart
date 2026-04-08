@@ -181,7 +181,7 @@ String? buildManualProductInitialSearchQuery(
     parts.add(normalized);
   }
 
-  addPart(config.item.name, canBeBarcode: false);
+  addPart(config.item.ocrName ?? config.item.name, canBeBarcode: false);
   addPart(config.item.brand);
   addPart(_initialSearchStoreName(config.item));
 

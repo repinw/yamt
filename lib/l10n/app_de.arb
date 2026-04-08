@@ -155,6 +155,8 @@
       "Artikel zur Einkaufsliste hinzugefügt.",
   "inventoryItemThrowAwayAction": "Wegwerfen",
   "inventoryItemSwapCandidateAction": "Kandidat tauschen",
+  "inventoryItemSwapCandidateRequiresFullItem":
+      "Du kannst den Kandidaten nur tauschen, solange der Artikel noch vollständig vorhanden ist.",
   "inventoryItemActionFailed": "Aktion fehlgeschlagen. Bitte erneut versuchen.",
   "inventoryBarcodeStatusPending": "Barcode-Abgleich läuft",
   "inventoryBarcodeStatusUncertain": "Nicht sicher",

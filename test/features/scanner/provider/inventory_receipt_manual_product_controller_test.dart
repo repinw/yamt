@@ -56,6 +56,7 @@ InventoryItem _item({
   InventoryAmountUnit? amountUnit,
   String storeName = 'Netto',
   InventoryItemOrigin origin = InventoryItemOrigin.standard,
+  String? ocrName,
 }) {
   return InventoryItem.create(
     id: 'item-1',
@@ -66,6 +67,7 @@ InventoryItem _item({
     quantity: 1,
     weight: weight,
     amountUnit: amountUnit,
+    ocrName: ocrName,
   );
 }
 
@@ -192,6 +194,16 @@ void main() {
     );
 
     expect(query, 'Olivenoel');
+  });
+
+  test('ocr name is preferred for the initial search query', () {
+    final query = buildManualProductInitialSearchQuery(
+      InventoryReceiptManualProductConfig(
+        item: _item(ocrName: 'H-MILCH 3,5%').copyWith(name: 'Milch'),
+      ),
+    );
+
+    expect(query, 'H-MILCH 3,5% Netto');
   });
 
   test('applyRecentItem cancels a pending debounced search', () async {

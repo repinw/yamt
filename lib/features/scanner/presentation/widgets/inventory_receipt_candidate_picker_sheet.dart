@@ -36,9 +36,14 @@ class ReceiptCandidatePickerSelection {
 }
 
 class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
-  const InventoryReceiptCandidatePickerSheet({super.key, required this.draft});
+  const InventoryReceiptCandidatePickerSheet({
+    super.key,
+    required this.draft,
+    this.showAiEnrichmentAction = true,
+  });
 
   final ReceiptReviewItemDraft draft;
+  final bool showAiEnrichmentAction;
 
   @override
   Widget build(BuildContext context) {
@@ -92,18 +97,21 @@ class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
                     title: l10n.inventoryReceiptReviewManualDataAction,
                     subtitle: l10n.inventoryReceiptReviewManualDataHint,
                   ),
-                  const SizedBox(height: AppSpacing.sm),
-                  _FallbackSelectionTile(
-                    icon: Icons.auto_awesome,
-                    isSelected: draft.requestAiEnrichment,
-                    onTap: () {
-                      Navigator.of(context).pop(
-                        const ReceiptCandidatePickerSelection.aiEnrichment(),
-                      );
-                    },
-                    title: l10n.inventoryReceiptReviewRequestEnrichmentAction,
-                    subtitle: l10n.inventoryReceiptReviewRequestEnrichmentHint,
-                  ),
+                  if (showAiEnrichmentAction) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    _FallbackSelectionTile(
+                      icon: Icons.auto_awesome,
+                      isSelected: draft.requestAiEnrichment,
+                      onTap: () {
+                        Navigator.of(context).pop(
+                          const ReceiptCandidatePickerSelection.aiEnrichment(),
+                        );
+                      },
+                      title: l10n.inventoryReceiptReviewRequestEnrichmentAction,
+                      subtitle:
+                          l10n.inventoryReceiptReviewRequestEnrichmentHint,
+                    ),
+                  ],
                 ],
               ),
             ),

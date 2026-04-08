@@ -48,6 +48,7 @@ class InventoryItem {
     this.receiptId,
     this.receiptDate,
     this.language,
+    this.ocrName,
     this.isDeposit = false,
     this.isDiscount = false,
     this.origin = InventoryItemOrigin.standard,
@@ -80,6 +81,7 @@ class InventoryItem {
     String? receiptId,
     DateTime? receiptDate,
     String? language,
+    String? ocrName,
     bool isDeposit = false,
     bool isDiscount = false,
     InventoryItemOrigin origin = InventoryItemOrigin.standard,
@@ -120,6 +122,7 @@ class InventoryItem {
       receiptId: receiptId,
       receiptDate: receiptDate,
       language: language,
+      ocrName: _normalizeOcrName(ocrName),
       isDeposit: isDeposit,
       isDiscount: isDiscount,
       origin: origin,
@@ -159,6 +162,7 @@ class InventoryItem {
       receiptId: _readTrimmedString(json['receipt_id']),
       receiptDate: _readDateTime(json['receipt_date']),
       language: _readTrimmedString(json['language']),
+      ocrName: _readTrimmedString(json['ocr_name']),
       isDeposit: _readBool(json['is_deposit']) ?? false,
       isDiscount: _readBool(json['is_discount']) ?? false,
       origin: _readInventoryItemOrigin(json['origin']),
@@ -186,6 +190,7 @@ class InventoryItem {
   final String? receiptId;
   final DateTime? receiptDate;
   final String? language;
+  final String? ocrName;
   final bool isDeposit;
   final bool isDiscount;
   final InventoryItemOrigin origin;
@@ -214,6 +219,7 @@ class InventoryItem {
       'receipt_id': receiptId,
       'receipt_date': receiptDate?.toIso8601String(),
       'language': language,
+      'ocr_name': ocrName,
       'is_deposit': isDeposit,
       'is_discount': isDiscount,
       'origin': origin.name,
@@ -249,6 +255,7 @@ class InventoryItem {
     Object? receiptId = _keepValue,
     Object? receiptDate = _keepValue,
     Object? language = _keepValue,
+    Object? ocrName = _keepValue,
     bool? isDeposit,
     bool? isDiscount,
     InventoryItemOrigin? origin,
@@ -299,6 +306,9 @@ class InventoryItem {
           ? this.receiptDate
           : receiptDate as DateTime?,
       language: language == _keepValue ? this.language : language as String?,
+      ocrName: ocrName == _keepValue
+          ? this.ocrName
+          : _normalizeOcrName(ocrName),
       isDeposit: isDeposit ?? this.isDeposit,
       isDiscount: isDiscount ?? this.isDiscount,
       origin: origin ?? this.origin,
@@ -427,6 +437,7 @@ class InventoryItem {
             other.receiptId == receiptId &&
             other.receiptDate == receiptDate &&
             other.language == language &&
+            other.ocrName == ocrName &&
             other.isDeposit == isDeposit &&
             other.isDiscount == isDiscount &&
             other.origin == origin;
@@ -456,6 +467,7 @@ class InventoryItem {
       receiptId,
       receiptDate,
       language,
+      ocrName,
       isDeposit,
       isDiscount,
       origin,
@@ -491,6 +503,14 @@ DateTime? _readDateTime(Object? value) {
     return DateTime.tryParse(value.trim());
   }
   return null;
+}
+
+String? _normalizeOcrName(Object? value) {
+  final trimmed = _readTrimmedString(value);
+  if (trimmed == null || trimmed.isEmpty) {
+    return null;
+  }
+  return trimmed;
 }
 
 bool? _readBool(Object? value) {
