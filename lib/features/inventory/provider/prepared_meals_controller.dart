@@ -71,6 +71,22 @@ class PreparedMealItemInput {
   final GlobalFoodNutrition? manualNutrition;
 }
 
+extension _PreparedMealComponentNutritionTotals
+    on Iterable<PreparedMealComponent> {
+  ({double totalCarbs, double totalFat, double totalKcal, double totalProtein})
+  get nutritionTotals {
+    return fold(
+      (totalCarbs: 0.0, totalFat: 0.0, totalKcal: 0.0, totalProtein: 0.0),
+      (totals, component) => (
+        totalCarbs: totals.totalCarbs + component.totalCarbs,
+        totalFat: totals.totalFat + component.totalFat,
+        totalKcal: totals.totalKcal + component.totalKcal,
+        totalProtein: totals.totalProtein + component.totalProtein,
+      ),
+    );
+  }
+}
+
 @riverpod
 class PreparedMealsController extends _$PreparedMealsController {
   static const _uuid = Uuid();
@@ -322,25 +338,14 @@ class PreparedMealsController extends _$PreparedMealsController {
         ...currentMeal.components,
         ...fillResult.components,
       ];
+      final nutritionTotals = nextComponents.nutritionTotals;
       final nextMeal = currentMeal.copyWith(
         components: nextComponents,
         pendingRecipeIngredients: nextPendingIngredients,
-        totalKcal: nextComponents.fold<double>(
-          0,
-          (total, component) => total + component.totalKcal,
-        ),
-        totalProtein: nextComponents.fold<double>(
-          0,
-          (total, component) => total + component.totalProtein,
-        ),
-        totalCarbs: nextComponents.fold<double>(
-          0,
-          (total, component) => total + component.totalCarbs,
-        ),
-        totalFat: nextComponents.fold<double>(
-          0,
-          (total, component) => total + component.totalFat,
-        ),
+        totalKcal: nutritionTotals.totalKcal,
+        totalProtein: nutritionTotals.totalProtein,
+        totalCarbs: nutritionTotals.totalCarbs,
+        totalFat: nutritionTotals.totalFat,
         updatedAt: DateTime.now(),
       );
 
@@ -990,22 +995,7 @@ _PreparedMealCreationResult _buildMealCreationResult({
     );
   }
 
-  final totalKcal = components.fold<double>(
-    0,
-    (total, component) => total + component.totalKcal,
-  );
-  final totalProtein = components.fold<double>(
-    0,
-    (total, component) => total + component.totalProtein,
-  );
-  final totalCarbs = components.fold<double>(
-    0,
-    (total, component) => total + component.totalCarbs,
-  );
-  final totalFat = components.fold<double>(
-    0,
-    (total, component) => total + component.totalFat,
-  );
+  final nutritionTotals = components.nutritionTotals;
 
   return _PreparedMealCreationResult(
     nextItems: nextItems,
@@ -1015,10 +1005,10 @@ _PreparedMealCreationResult _buildMealCreationResult({
       imageAssetId: _normalizeOptionalImageAssetId(imageAssetId),
       totalPortions: totalPortions,
       remainingPortions: totalPortions,
-      totalKcal: totalKcal,
-      totalProtein: totalProtein,
-      totalCarbs: totalCarbs,
-      totalFat: totalFat,
+      totalKcal: nutritionTotals.totalKcal,
+      totalProtein: nutritionTotals.totalProtein,
+      totalCarbs: nutritionTotals.totalCarbs,
+      totalFat: nutritionTotals.totalFat,
       createdAt: now,
       updatedAt: now,
       components: components,
@@ -1161,22 +1151,7 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
     }
   }
 
-  final totalKcal = components.fold<double>(
-    0,
-    (total, component) => total + component.totalKcal,
-  );
-  final totalProtein = components.fold<double>(
-    0,
-    (total, component) => total + component.totalProtein,
-  );
-  final totalCarbs = components.fold<double>(
-    0,
-    (total, component) => total + component.totalCarbs,
-  );
-  final totalFat = components.fold<double>(
-    0,
-    (total, component) => total + component.totalFat,
-  );
+  final nutritionTotals = components.nutritionTotals;
 
   return _PreparedMealCreationResult(
     nextItems: nextItems,
@@ -1192,10 +1167,10 @@ _PreparedMealCreationResult _buildMealCreationFromTemplateResult({
       pendingRecipeIngredients: pendingIngredients,
       totalPortions: totalPortions,
       remainingPortions: totalPortions,
-      totalKcal: totalKcal,
-      totalProtein: totalProtein,
-      totalCarbs: totalCarbs,
-      totalFat: totalFat,
+      totalKcal: nutritionTotals.totalKcal,
+      totalProtein: nutritionTotals.totalProtein,
+      totalCarbs: nutritionTotals.totalCarbs,
+      totalFat: nutritionTotals.totalFat,
       createdAt: now,
       updatedAt: now,
       components: components,
