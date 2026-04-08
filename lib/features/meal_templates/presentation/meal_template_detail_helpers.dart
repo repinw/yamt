@@ -454,46 +454,22 @@ List<String> _assignmentIdsForIngredient(
   Map<String, List<String>> assignments,
   String ingredient,
 ) {
-  final directMatch = assignments[ingredient];
-  if (directMatch != null) {
-    return directMatch;
-  }
-
   final normalizedIngredient = ingredient.trim();
   if (normalizedIngredient.isEmpty) {
     return const <String>[];
   }
-
-  for (final entry in assignments.entries) {
-    if (entry.key.trim() == normalizedIngredient) {
-      return entry.value;
-    }
-  }
-
-  return const <String>[];
+  return assignments[normalizedIngredient] ?? const <String>[];
 }
 
 RecipeIngredientAmountConversion? _assignmentConversionForIngredient(
   Map<String, RecipeIngredientAmountConversion> conversions,
   String ingredient,
 ) {
-  final directMatch = conversions[ingredient];
-  if (directMatch != null) {
-    return directMatch;
-  }
-
   final normalizedIngredient = ingredient.trim();
   if (normalizedIngredient.isEmpty) {
     return null;
   }
-
-  for (final entry in conversions.entries) {
-    if (entry.key.trim() == normalizedIngredient) {
-      return entry.value;
-    }
-  }
-
-  return null;
+  return conversions[normalizedIngredient];
 }
 
 List<String> _validAssignmentIds(

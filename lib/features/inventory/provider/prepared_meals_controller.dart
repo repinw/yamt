@@ -9,13 +9,13 @@ import 'package:yamt/features/household/provider/'
     'household_access_recovery_utils.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/application/'
+    'ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/application/'
     'recipe_ingredient_assignment_support.dart';
 import 'package:yamt/features/inventory/application/'
     'template_ingredient_parser.dart';
-import 'package:yamt/features/prepared_meals/application/'
-    'ingredient_inventory_matcher.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -1380,23 +1380,11 @@ RecipeIngredientAmountConversion? _assignmentAmountConversionForIngredient(
   Map<String, RecipeIngredientAmountConversion> conversions,
   String ingredient,
 ) {
-  final directMatch = conversions[ingredient];
-  if (directMatch != null) {
-    return directMatch;
-  }
-
   final normalizedIngredient = ingredient.trim();
   if (normalizedIngredient.isEmpty) {
     return null;
   }
-
-  for (final entry in conversions.entries) {
-    if (entry.key.trim() == normalizedIngredient) {
-      return entry.value;
-    }
-  }
-
-  return null;
+  return conversions[normalizedIngredient];
 }
 
 String? _normalizeOptionalImageAssetId(String? value) {

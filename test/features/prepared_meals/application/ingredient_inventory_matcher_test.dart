@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/prepared_meals/application/'
+import 'package:yamt/features/inventory/application/'
     'ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 InventoryItem _item({
   required String id,

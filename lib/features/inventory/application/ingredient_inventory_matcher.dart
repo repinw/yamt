@@ -280,7 +280,7 @@ String _normalizedLocaleCode(String? localeCode) {
   if (trimmed.isEmpty) {
     return '';
   }
-  return trimmed.split(RegExp('[-_]')).first;
+  return trimmed.split(RegExp(r'[-_]')).first;
 }
 
 const _fallbackIngredientMatcherLexicon = _IngredientMatcherLexicon(
