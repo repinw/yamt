@@ -117,6 +117,7 @@ Future<List<String>?> _showPendingIngredientSelectionSheet({
   final sortedItems = rankInventoryItemsForIngredient(
     ingredient: ingredient,
     inventoryItems: inventoryItems,
+    localeCode: l10n.localeName,
   );
 
   return showModalBottomSheet<List<String>>(

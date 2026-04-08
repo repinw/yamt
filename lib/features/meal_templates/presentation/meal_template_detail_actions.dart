@@ -80,7 +80,6 @@ class _IngredientAssignmentBottomSheetState
     extends State<_IngredientAssignmentBottomSheet> {
   late final Set<String> _draftSelection;
   late final Set<String> _availableItemIds;
-  late final List<InventoryItem> _sortedItems;
 
   @override
   void initState() {
@@ -93,15 +92,16 @@ class _IngredientAssignmentBottomSheetState
         .map((item) => item.id.trim())
         .where((itemId) => itemId.isNotEmpty)
         .toSet();
-    _sortedItems = rankInventoryItemsForIngredient(
-      ingredient: widget.row.name,
-      inventoryItems: widget.inventoryItems,
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final sortedItems = rankInventoryItemsForIngredient(
+      ingredient: widget.row.name,
+      inventoryItems: widget.inventoryItems,
+      localeCode: l10n.localeName,
+    );
     final maxHeight = MediaQuery.sizeOf(context).height * 0.8;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     final selectedItems = _selectedInventoryItems(
@@ -128,16 +128,16 @@ class _IngredientAssignmentBottomSheetState
               ),
               const SizedBox(height: AppSpacing.lg),
               Expanded(
-                child: _sortedItems.isEmpty
+                child: sortedItems.isEmpty
                     ? Center(
                         child: Text(
                           l10n.preparedMealTemplateDetailSelectionEmpty,
                         ),
                       )
                     : ListView.builder(
-                        itemCount: _sortedItems.length,
+                        itemCount: sortedItems.length,
                         itemBuilder: (context, index) {
-                          final item = _sortedItems[index];
+                          final item = sortedItems[index];
                           final isSelected = _draftSelection.contains(item.id);
                           final isSelectable =
                               canSelectInventoryItemForRequirement(
@@ -264,75 +264,77 @@ class _IngredientAssignmentConversionSheetState
       requirement: widget.row.requirement,
       l10n: l10n,
     );
-    final conversionAmount = int.tryParse(_conversionController.text.trim());
-    final isConversionValid = conversionAmount != null && conversionAmount > 0;
 
     return SafeArea(
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: maxHeight),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                widget.row.name,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              TextField(
-                controller: _conversionController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: InputDecoration(
-                  labelText: l10n
-                      .preparedMealTemplateDetailSelectionConversionLabel(
-                        conversionSourceUnit,
-                        widget.targetUnit.code,
-                      ),
-                  helperText: l10n
-                      .preparedMealTemplateDetailSelectionConversionHint(
-                        conversionSourceUnit,
-                        widget.targetUnit.code,
-                        widget.row.name,
-                      ),
-                  errorText:
-                      _conversionController.text.trim().isEmpty ||
-                          isConversionValid
-                      ? null
-                      : l10n.preparedMealTemplateDetailSelectionConversionError,
-                ),
-                onChanged: (_) {
-                  setState(() {});
-                },
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+        child: ValueListenableBuilder<TextEditingValue>(
+          valueListenable: _conversionController,
+          builder: (context, value, _) {
+            final conversionAmount = int.tryParse(value.text.trim());
+            final isConversionValid =
+                conversionAmount != null && conversionAmount > 0;
+
+            return SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l10n.inventoryReceiptReviewCancelAction),
+                  Text(
+                    widget.row.name,
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  const SizedBox(width: AppSpacing.sm),
-                  FilledButton(
-                    onPressed: !isConversionValid
-                        ? null
-                        : () => Navigator.of(context).pop(
-                            RecipeIngredientAmountConversion(
-                              amountPerPiece: conversionAmount,
-                              unit: widget.targetUnit,
-                            ),
+                  const SizedBox(height: AppSpacing.lg),
+                  TextField(
+                    controller: _conversionController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: InputDecoration(
+                      labelText: l10n
+                          .preparedMealTemplateDetailSelectionConversionLabel(
+                            conversionSourceUnit,
+                            widget.targetUnit.code,
                           ),
-                    child: Text(
-                      l10n.inventoryReceiptReviewManualDataSaveAction,
+                      helperText: l10n
+                          .preparedMealTemplateDetailSelectionConversionHint(
+                            conversionSourceUnit,
+                            widget.targetUnit.code,
+                            widget.row.name,
+                          ),
+                      errorText: value.text.trim().isEmpty || isConversionValid
+                          ? null
+                          : l10n.preparedMealTemplateDetailSelectionConversionError,
                     ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text(l10n.inventoryReceiptReviewCancelAction),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      FilledButton(
+                        onPressed: !isConversionValid
+                            ? null
+                            : () => Navigator.of(context).pop(
+                                RecipeIngredientAmountConversion(
+                                  amountPerPiece: conversionAmount,
+                                  unit: widget.targetUnit,
+                                ),
+                              ),
+                        child: Text(
+                          l10n.inventoryReceiptReviewManualDataSaveAction,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

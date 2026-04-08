@@ -53,6 +53,7 @@ Map<String, List<String>> _effectiveAssignments({
   required Map<String, List<String>>? draftAssignments,
   required List<InventoryItem> inventoryItems,
   required TemplateIngredientParser ingredientParser,
+  required String localeCode,
 }) {
   final normalizedAssignments = draftAssignments == null
       ? _normalizedAssignments(template.recipeIngredientAssignments)
@@ -66,6 +67,7 @@ Map<String, List<String>> _effectiveAssignments({
     assignments: normalizedAssignments,
     inventoryItems: inventoryItems,
     ingredientParser: ingredientParser,
+    localeCode: localeCode,
   );
 }
 
@@ -196,6 +198,7 @@ Map<String, List<String>> _withAutomaticAssignments({
   required Map<String, List<String>> assignments,
   required List<InventoryItem> inventoryItems,
   required TemplateIngredientParser ingredientParser,
+  required String localeCode,
 }) {
   if (template.recipeIngredients.isEmpty || inventoryItems.isEmpty) {
     return assignments;
@@ -235,6 +238,7 @@ Map<String, List<String>> _withAutomaticAssignments({
         matchInventoryItemsForIngredient(
           ingredient: ingredient,
           inventoryItems: inventoryItems,
+          localeCode: localeCode,
         ).where(
           (item) =>
               canAutoAssignInventoryItem(requirement: requirement, item: item),

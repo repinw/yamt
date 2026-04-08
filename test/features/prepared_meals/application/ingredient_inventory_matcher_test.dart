@@ -55,6 +55,20 @@ void main() {
         _item(id: '1', name: 'Karotten'),
         _item(id: '2', name: 'Milch'),
       ],
+      localeCode: 'de',
+    );
+
+    expect(matches.map((item) => item.id), <String>['1']);
+  });
+
+  test('matches english scallion synonyms with english lexicon', () {
+    final matches = matchInventoryItemsForIngredient(
+      ingredient: '2 spring onions',
+      inventoryItems: <InventoryItem>[
+        _item(id: '1', name: 'Scallions'),
+        _item(id: '2', name: 'Milk'),
+      ],
+      localeCode: 'en',
     );
 
     expect(matches.map((item) => item.id), <String>['1']);
@@ -99,6 +113,7 @@ void main() {
           _item(id: '1', name: 'Fresh Large'),
           _item(id: '2', name: 'Milk'),
         ],
+        localeCode: 'en',
       );
 
       expect(rankedItems.map((item) => item.id).first, '2');

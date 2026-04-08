@@ -18,6 +18,7 @@ class _MealTemplateIngredientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final assignedItems = resolveInventoryItemsById(
       inventoryItemIds: row.assignedInventoryItemIds,
       inventoryItems: inventoryItems,
@@ -27,6 +28,7 @@ class _MealTemplateIngredientCard extends StatelessWidget {
         : matchInventoryItemsForIngredient(
             ingredient: row.name,
             inventoryItems: inventoryItems,
+            localeCode: l10n.localeName,
           ).take(3).toList(growable: false);
     final missingAssignedCount =
         row.assignedInventoryItemIds.length - assignedItems.length;

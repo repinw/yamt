@@ -20,14 +20,20 @@ List<InventoryItem> resolveInventoryItemsById({
 List<InventoryItem> matchInventoryItemsForIngredient({
   required String ingredient,
   required List<InventoryItem> inventoryItems,
+  String? localeCode,
 }) {
   return rankInventoryItemsForIngredient(
         ingredient: ingredient,
         inventoryItems: inventoryItems,
+        localeCode: localeCode,
       )
       .where(
         (item) =>
-            ingredientInventoryMatchScore(ingredient: ingredient, item: item) >
+            ingredientInventoryMatchScore(
+              ingredient: ingredient,
+              item: item,
+              localeCode: localeCode,
+            ) >
             0,
       )
       .toList(growable: false);
@@ -36,6 +42,7 @@ List<InventoryItem> matchInventoryItemsForIngredient({
 List<InventoryItem> rankInventoryItemsForIngredient({
   required String ingredient,
   required List<InventoryItem> inventoryItems,
+  String? localeCode,
 }) {
   final candidates = inventoryItems
       .where((item) => !item.isFullyConsumed)
@@ -49,10 +56,12 @@ List<InventoryItem> rankInventoryItemsForIngredient({
     final rightScore = ingredientInventoryMatchScore(
       ingredient: ingredient,
       item: right,
+      localeCode: localeCode,
     );
     final leftScore = ingredientInventoryMatchScore(
       ingredient: ingredient,
       item: left,
+      localeCode: localeCode,
     );
     if (rightScore != leftScore) {
       return rightScore.compareTo(leftScore);
@@ -65,11 +74,35 @@ List<InventoryItem> rankInventoryItemsForIngredient({
 int ingredientInventoryMatchScore({
   required String ingredient,
   required InventoryItem item,
+  String? localeCode,
+}) {
+  final primaryLexicon = _ingredientMatcherLexiconForLocale(localeCode);
+  final primaryScore = _ingredientInventoryMatchScoreWithLexicon(
+    ingredient: ingredient,
+    item: item,
+    lexicon: primaryLexicon,
+  );
+  if (identical(primaryLexicon, _fallbackIngredientMatcherLexicon)) {
+    return primaryScore;
+  }
+
+  final fallbackScore = _ingredientInventoryMatchScoreWithLexicon(
+    ingredient: ingredient,
+    item: item,
+    lexicon: _fallbackIngredientMatcherLexicon,
+  );
+  return fallbackScore > primaryScore ? fallbackScore : primaryScore;
+}
+
+int _ingredientInventoryMatchScoreWithLexicon({
+  required String ingredient,
+  required InventoryItem item,
+  required _IngredientMatcherLexicon lexicon,
 }) {
   final normalizedItem = _normalizeMatchText(
     '${item.name} ${item.brand ?? ''}',
   );
-  final ingredientCandidates = _ingredientMatchCandidates(ingredient);
+  final ingredientCandidates = _ingredientMatchCandidates(ingredient, lexicon);
   if (ingredientCandidates.isEmpty || normalizedItem.isEmpty) {
     return 0;
   }
@@ -79,6 +112,7 @@ int ingredientInventoryMatchScore({
     final score = _scoreMatchTexts(
       normalizedIngredient: normalizedIngredient,
       normalizedItem: normalizedItem,
+      lexicon: lexicon,
     );
     if (score > bestScore) {
       bestScore = score;
@@ -90,6 +124,7 @@ int ingredientInventoryMatchScore({
 int _scoreMatchTexts({
   required String normalizedIngredient,
   required String normalizedItem,
+  required _IngredientMatcherLexicon lexicon,
 }) {
   var score = 0;
   if (normalizedItem == normalizedIngredient) {
@@ -102,8 +137,8 @@ int _scoreMatchTexts({
     score += 30;
   }
 
-  final ingredientTokens = _matchTokens(normalizedIngredient);
-  final itemTokens = _matchTokens(normalizedItem);
+  final ingredientTokens = _matchTokens(normalizedIngredient, lexicon);
+  final itemTokens = _matchTokens(normalizedItem, lexicon);
   for (final token in ingredientTokens) {
     if (itemTokens.contains(token)) {
       score += token.length >= 5 ? 15 : 10;
@@ -116,7 +151,10 @@ int _scoreMatchTexts({
   return score;
 }
 
-Set<String> _ingredientMatchCandidates(String ingredient) {
+Set<String> _ingredientMatchCandidates(
+  String ingredient,
+  _IngredientMatcherLexicon lexicon,
+) {
   final trimmed = ingredient.trim();
   if (trimmed.isEmpty) {
     return const <String>{};
@@ -128,7 +166,7 @@ Set<String> _ingredientMatchCandidates(String ingredient) {
   }
 
   final candidates = <String>{normalizedIngredient};
-  final strippedIngredient = _stripIngredientPrefix(trimmed);
+  final strippedIngredient = _stripIngredientPrefix(trimmed, lexicon);
   final normalizedStrippedIngredient = _normalizeMatchText(strippedIngredient);
   if (normalizedStrippedIngredient.isNotEmpty) {
     candidates.add(normalizedStrippedIngredient);
@@ -140,90 +178,24 @@ String _normalizeMatchText(String value) {
   return value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9äöüß]+'), ' ').trim();
 }
 
-Set<String> _matchTokens(String value) {
-  const stopWords = <String>{
-    'becher',
-    'beutel',
-    'bio',
-    'bund',
-    'bünde',
-    'cl',
-    'cup',
-    'cups',
-    'dose',
-    'dosen',
-    'el',
-    'etwa',
-    'and',
-    'etwas',
-    'fresh',
-    'frisch',
-    'frische',
-    'frischer',
-    'frisches',
-    'g',
-    'glas',
-    'large',
-    'kg',
-    'klein',
-    'kleine',
-    'kleiner',
-    'knolle',
-    'knollen',
-    'l',
-    'little',
-    'liter',
-    'litre',
-    'ml',
-    'mittel',
-    'mittlere',
-    'mittleren',
-    'mittlerer',
-    'mittleres',
-    'gross',
-    'grosse',
-    'grosses',
-    'groß',
-    'große',
-    'großes',
-    'packung',
-    'packungen',
-    'prise',
-    'prisen',
-    'scheibe',
-    'scheiben',
-    'small',
-    'stange',
-    'stangen',
-    'stk',
-    'stück',
-    'stücke',
-    'tasse',
-    'tassen',
-    'teeloeffel',
-    'teelöffel',
-    'tl',
-    'zum',
-    'zur',
-    'und',
-    'with',
-    'wenig',
-    'zehe',
-    'zehen',
-  };
+Set<String> _matchTokens(String value, _IngredientMatcherLexicon lexicon) {
   return value
       .split(RegExp(r'\s+'))
-      .map((token) => _canonicalMatchToken(token.trim()))
+      .map((token) => _canonicalMatchToken(token.trim(), lexicon))
       .where(
         (token) =>
             token.isNotEmpty &&
-            !stopWords.contains(token) &&
-            (token.length >= 3 || _shortIngredientTokens.contains(token)),
+            !lexicon.stopWords.contains(token) &&
+            (token.length >= 3 ||
+                lexicon.shortIngredientTokens.contains(token)),
       )
       .toSet();
 }
 
-String _stripIngredientPrefix(String ingredient) {
+String _stripIngredientPrefix(
+  String ingredient,
+  _IngredientMatcherLexicon lexicon,
+) {
   final quantityMatch = RegExp(
     r'^(\d+\s+\d+/\d+|\d+/\d+|\d+(?:[.,]\d+)?)\s*(.+)$',
   ).firstMatch(ingredient);
@@ -237,7 +209,7 @@ String _stripIngredientPrefix(String ingredient) {
     final normalizedToken = _normalizeMatchText(
       tokens.first,
     ).replaceAll(' ', '');
-    if (!_ingredientPrefixTokens.contains(normalizedToken)) {
+    if (!lexicon.prefixTokens.contains(normalizedToken)) {
       break;
     }
     tokens.removeAt(0);
@@ -249,18 +221,18 @@ String _stripIngredientPrefix(String ingredient) {
   return tokens.join(' ');
 }
 
-String _canonicalMatchToken(String token) {
+String _canonicalMatchToken(String token, _IngredientMatcherLexicon lexicon) {
   if (token.isEmpty) {
     return token;
   }
 
-  final directAlias = _ingredientTokenAliases[token];
+  final directAlias = lexicon.tokenAliases[token];
   if (directAlias != null) {
     return directAlias;
   }
 
   final singularToken = _singularizeMatchToken(token);
-  return _ingredientTokenAliases[singularToken] ?? singularToken;
+  return lexicon.tokenAliases[singularToken] ?? singularToken;
 }
 
 String _singularizeMatchToken(String token) {
@@ -276,15 +248,118 @@ String _singularizeMatchToken(String token) {
   return token;
 }
 
-const _ingredientPrefixTokens = <String>{
+class _IngredientMatcherLexicon {
+  const _IngredientMatcherLexicon({
+    required this.stopWords,
+    required this.prefixTokens,
+    required this.tokenAliases,
+    this.shortIngredientTokens = const <String>{},
+  });
+
+  final Set<String> stopWords;
+  final Set<String> prefixTokens;
+  final Map<String, String> tokenAliases;
+  final Set<String> shortIngredientTokens;
+}
+
+_IngredientMatcherLexicon _ingredientMatcherLexiconForLocale(
+  String? localeCode,
+) {
+  return switch (_normalizedLocaleCode(localeCode)) {
+    'de' => _germanIngredientMatcherLexicon,
+    'en' => _englishIngredientMatcherLexicon,
+    _ => _fallbackIngredientMatcherLexicon,
+  };
+}
+
+String _normalizedLocaleCode(String? localeCode) {
+  if (localeCode == null) {
+    return '';
+  }
+  final trimmed = localeCode.trim().toLowerCase();
+  if (trimmed.isEmpty) {
+    return '';
+  }
+  return trimmed.split(RegExp('[-_]')).first;
+}
+
+const _fallbackIngredientMatcherLexicon = _IngredientMatcherLexicon(
+  stopWords: {
+    ..._commonIngredientStopWords,
+    ..._germanIngredientStopWords,
+    ..._englishIngredientStopWords,
+  },
+  prefixTokens: {
+    ..._commonIngredientPrefixTokens,
+    ..._germanIngredientPrefixTokens,
+    ..._englishIngredientPrefixTokens,
+  },
+  tokenAliases: {
+    ..._commonIngredientTokenAliases,
+    ..._germanIngredientTokenAliases,
+    ..._englishIngredientTokenAliases,
+  },
+  shortIngredientTokens: {
+    ..._commonShortIngredientTokens,
+    ..._germanShortIngredientTokens,
+    ..._englishShortIngredientTokens,
+  },
+);
+
+const _germanIngredientMatcherLexicon = _IngredientMatcherLexicon(
+  stopWords: {..._commonIngredientStopWords, ..._germanIngredientStopWords},
+  prefixTokens: {
+    ..._commonIngredientPrefixTokens,
+    ..._germanIngredientPrefixTokens,
+  },
+  tokenAliases: {
+    ..._commonIngredientTokenAliases,
+    ..._germanIngredientTokenAliases,
+  },
+  shortIngredientTokens: {
+    ..._commonShortIngredientTokens,
+    ..._germanShortIngredientTokens,
+  },
+);
+
+const _englishIngredientMatcherLexicon = _IngredientMatcherLexicon(
+  stopWords: {..._commonIngredientStopWords, ..._englishIngredientStopWords},
+  prefixTokens: {
+    ..._commonIngredientPrefixTokens,
+    ..._englishIngredientPrefixTokens,
+  },
+  tokenAliases: {
+    ..._commonIngredientTokenAliases,
+    ..._englishIngredientTokenAliases,
+  },
+  shortIngredientTokens: {
+    ..._commonShortIngredientTokens,
+    ..._englishShortIngredientTokens,
+  },
+);
+
+const _commonIngredientStopWords = <String>{
+  'cl',
+  'dl',
+  'g',
+  'gr',
+  'gram',
+  'gramm',
+  'grams',
+  'kg',
+  'l',
+  'liter',
+  'litre',
+  'ml',
+  'oz',
+};
+
+const _germanIngredientStopWords = <String>{
   'becher',
   'beutel',
+  'bio',
   'bund',
   'bünde',
-  'cl',
-  'cup',
-  'cups',
-  'dl',
   'dose',
   'dosen',
   'el',
@@ -292,36 +367,33 @@ const _ingredientPrefixTokens = <String>{
   'esslöffel',
   'etwa',
   'etwas',
-  'g',
+  'frisch',
+  'frische',
+  'frischer',
+  'frisches',
   'glas',
-  'gr',
-  'gram',
-  'gramm',
-  'grams',
-  'kg',
+  'gross',
+  'grosse',
+  'grosses',
+  'groß',
+  'große',
+  'großes',
   'klein',
   'kleine',
   'kleiner',
-  'kleines',
-  'l',
-  'large',
-  'little',
-  'liter',
-  'litre',
+  'knolle',
+  'knollen',
   'mittel',
   'mittlere',
   'mittleren',
   'mittlerer',
   'mittleres',
-  'ml',
-  'oz',
   'packung',
   'packungen',
   'prise',
   'prisen',
   'scheibe',
   'scheiben',
-  'small',
   'stange',
   'stangen',
   'stk',
@@ -332,14 +404,55 @@ const _ingredientPrefixTokens = <String>{
   'teeloeffel',
   'teelöffel',
   'tl',
+  'und',
   'wenig',
   'zehe',
   'zehen',
+  'zum',
+  'zur',
 };
 
-const _ingredientTokenAliases = <String, String>{
+const _englishIngredientStopWords = <String>{
+  'and',
+  'bottle',
+  'bottles',
+  'bunch',
+  'bunches',
+  'can',
+  'cans',
+  'cup',
+  'cups',
+  'fresh',
+  'jar',
+  'jars',
+  'large',
+  'little',
+  'package',
+  'packages',
+  'pinch',
+  'pinches',
+  'small',
+  'tablespoon',
+  'tablespoons',
+  'tbsp',
+  'teaspoon',
+  'teaspoons',
+  'tsp',
+  'with',
+};
+
+const _commonIngredientPrefixTokens = <String>{..._commonIngredientStopWords};
+
+const _germanIngredientPrefixTokens = <String>{..._germanIngredientStopWords};
+
+const _englishIngredientPrefixTokens = <String>{..._englishIngredientStopWords};
+
+const _commonIngredientTokenAliases = <String, String>{
   'ei': 'ei',
   'eier': 'ei',
+};
+
+const _germanIngredientTokenAliases = <String, String>{
   'frühlingszwiebel': 'frühlingszwiebel',
   'frühlingszwiebeln': 'frühlingszwiebel',
   'karotte': 'karotte',
@@ -350,4 +463,18 @@ const _ingredientTokenAliases = <String, String>{
   'möhren': 'karotte',
 };
 
-const _shortIngredientTokens = <String>{'ei', 'öl'};
+const _englishIngredientTokenAliases = <String, String>{
+  'aubergine': 'eggplant',
+  'aubergines': 'eggplant',
+  'cilantro': 'coriander',
+  'courgette': 'zucchini',
+  'courgettes': 'zucchini',
+  'garbanzo': 'chickpea',
+  'garbanzos': 'chickpea',
+  'scallion': 'spring',
+  'scallions': 'spring',
+};
+
+const _commonShortIngredientTokens = <String>{'ei'};
+const _germanShortIngredientTokens = <String>{'öl'};
+const _englishShortIngredientTokens = <String>{};

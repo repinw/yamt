@@ -292,6 +292,7 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
         ingredient: matchInventoryItemsForIngredient(
           ingredient: ingredient,
           inventoryItems: inventoryItems,
+          localeCode: Localizations.localeOf(context).languageCode,
         ).take(3).toList(growable: false),
     };
     _cachedSuggestionInventoryItems = List<InventoryItem>.from(

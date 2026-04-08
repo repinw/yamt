@@ -83,6 +83,7 @@ class _MealTemplateDetailPageState
             draftAssignments: _draftAssignments,
             inventoryItems: inventoryItems,
             ingredientParser: ingredientParser,
+            localeCode: l10n.localeName,
           );
           final assignmentConversions = _effectiveAssignmentConversions(
             template: template,
