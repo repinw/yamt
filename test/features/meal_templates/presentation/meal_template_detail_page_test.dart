@@ -117,11 +117,10 @@ void main() {
     await tester.pumpWidget(_buildHarness(templateRepository: repository));
     await tester.pumpAndSettle();
 
-    expect(find.text('Template'), findsOneWidget);
-    expect(find.text('Recipe: chefkoch.de'), findsOneWidget);
+    expect(find.text('Ingredient Matching: Potato soup'), findsOneWidget);
     expect(find.text('Base: 4 portions'), findsOneWidget);
-    expect(find.text('Ingredients'), findsOneWidget);
-    expect(find.text('Potatoes'), findsOneWidget);
+    expect(find.text('4 portions'), findsOneWidget);
+    expect(find.text('1 kg Potatoes'), findsOneWidget);
   });
 
   testWidgets('shows localized not-found state', (tester) async {
@@ -133,7 +132,6 @@ void main() {
     await tester.pumpWidget(_buildHarness(templateRepository: repository));
     await tester.pumpAndSettle();
 
-    expect(find.text('Template'), findsOneWidget);
     expect(find.text('Template not found.'), findsOneWidget);
   });
 }

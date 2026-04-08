@@ -1,5 +1,7 @@
 part of 'meal_template_detail_page.dart';
 
+enum _IngredientCardState { plain, missing, matched, ignored }
+
 class _IngredientRowData {
   const _IngredientRowData({
     required this.name,
@@ -231,21 +233,43 @@ String _shoppingListLabel(_IngredientRowData row) {
   return '${row.amountLabel} ${row.name}';
 }
 
-String _buildIngredientSubtitle({
-  required AppLocalizations l10n,
+_IngredientCardState _ingredientCardState({
   required _IngredientRowData row,
   required List<InventoryItem> assignedItems,
 }) {
   if (row.isIgnored) {
-    return l10n.preparedMealTemplateDetailIgnoredAmount(row.amountLabel);
+    return _IngredientCardState.ignored;
+  }
+  if (row.rawIngredient == null) {
+    return _IngredientCardState.plain;
   }
   if (assignedItems.isNotEmpty) {
-    final assignedLabel = assignedItems.length == 1
-        ? assignedItems.first.name
-        : l10n.preparedMealTemplateDetailAssignedCount(assignedItems.length);
-    return '$assignedLabel • ${row.amountLabel}';
+    return _IngredientCardState.matched;
   }
-  return row.amountLabel;
+  return _IngredientCardState.missing;
+}
+
+String _ingredientDisplayTitle(_IngredientRowData row) {
+  if (row.amountLabel == '-') {
+    return row.name;
+  }
+  return '${row.amountLabel} ${row.name}';
+}
+
+String _assignedInventoryLabel({
+  required AppLocalizations l10n,
+  required List<InventoryItem> assignedItems,
+}) {
+  if (assignedItems.isEmpty) {
+    return '';
+  }
+
+  if (assignedItems.length == 1) {
+    final item = assignedItems.first;
+    return '${item.name} - ${_inventoryAmountLabel(item)}';
+  }
+
+  return l10n.preparedMealTemplateDetailAssignedCount(assignedItems.length);
 }
 
 String? _resolvePreviewImageUrl({

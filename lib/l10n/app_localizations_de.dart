@@ -650,43 +650,43 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryDiscardReasonOther => 'Sonstiges';
 
   @override
-  String get preparedMealSaveTemplateAction => 'Als Vorlage speichern';
+  String get preparedMealSaveTemplateAction => 'Als Rezept speichern';
 
   @override
-  String get preparedMealTemplateSavedMessage => 'Vorlage gespeichert.';
+  String get preparedMealTemplateSavedMessage => 'Rezept gespeichert.';
 
   @override
-  String get preparedMealTemplatesPageTitle => 'Vorlagen';
+  String get preparedMealTemplatesPageTitle => 'Rezepte';
 
   @override
-  String get preparedMealTemplatesEmptyState => 'Noch keine Vorlagen gespeichert.';
+  String get preparedMealTemplatesEmptyState => 'Noch keine Rezepte gespeichert.';
 
   @override
-  String get preparedMealTemplatesLoadFailed => 'Vorlagen konnten nicht geladen werden.';
+  String get preparedMealTemplatesLoadFailed => 'Rezepte konnten nicht geladen werden.';
 
   @override
-  String get preparedMealTemplateDeleteAction => 'Vorlage löschen';
+  String get preparedMealTemplateDeleteAction => 'Rezept löschen';
 
   @override
-  String get preparedMealTemplateDeletedMessage => 'Vorlage gelöscht.';
+  String get preparedMealTemplateDeletedMessage => 'Rezept gelöscht.';
 
   @override
-  String get preparedMealTemplateAddRecipeAction => 'Rezeptvorlage hinzufügen';
+  String get preparedMealTemplateAddRecipeAction => 'Rezept hinzufügen';
 
   @override
   String get preparedMealTemplateCreateFromRecipeAction => 'Aus Rezept anlegen';
 
   @override
-  String get preparedMealTemplateCreateFailedMessage => 'Vorlage konnte nicht erstellt werden.';
+  String get preparedMealTemplateCreateFailedMessage => 'Rezept konnte nicht erstellt werden.';
 
   @override
   String get preparedMealTemplateRecipeImportFailedMessage => 'Rezeptdaten konnten nicht importiert werden.';
 
   @override
-  String get preparedMealTemplateRecipeSheetTitle => 'Vorlage aus Rezept anlegen';
+  String get preparedMealTemplateRecipeSheetTitle => 'Rezept anlegen';
 
   @override
-  String get preparedMealTemplateRecipeEditSheetTitle => 'Rezeptvorlage bearbeiten';
+  String get preparedMealTemplateRecipeEditSheetTitle => 'Rezept bearbeiten';
 
   @override
   String get preparedMealTemplateRecipeSheetSubtitle => 'Füge einen Rezept-Link ein, zum Beispiel von Chefkoch.';
@@ -701,7 +701,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateRecipeUrlInvalid => 'Bitte gib einen gültigen Rezept-Link ein.';
 
   @override
-  String get preparedMealTemplateNameLabel => 'Vorlagenname';
+  String get preparedMealTemplateNameLabel => 'Rezeptname';
 
   @override
   String get preparedMealTemplateNameHelper => 'Optional. Wenn leer, wird der Name aus dem Link abgeleitet.';
@@ -719,10 +719,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateNoIngredientsYet => 'Noch keine Zutaten verknüpft.';
 
   @override
-  String get preparedMealTemplateOpenAction => 'Vorlage öffnen';
+  String get preparedMealTemplateOpenAction => 'Rezept öffnen';
 
   @override
-  String get preparedMealTemplateUpdatedMessage => 'Vorlage aktualisiert.';
+  String get preparedMealTemplateUpdatedMessage => 'Rezept aktualisiert.';
 
   @override
   String get preparedMealTemplateImportReviewTitle => 'Rezept prüfen';
@@ -744,13 +744,18 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get preparedMealTemplateDetailTitle => 'Vorlage';
+  String get preparedMealTemplateDetailTitle => 'Rezept';
 
   @override
-  String get preparedMealTemplateDetailNotFound => 'Vorlage nicht gefunden.';
+  String preparedMealTemplateDetailMatchTitle(String name) {
+    return 'Zutaten-Abgleich: $name';
+  }
 
   @override
-  String get preparedMealTemplateDetailLoadFailed => 'Vorlage konnte nicht geladen werden.';
+  String get preparedMealTemplateDetailNotFound => 'Rezept nicht gefunden.';
+
+  @override
+  String get preparedMealTemplateDetailLoadFailed => 'Rezept konnte nicht geladen werden.';
 
   @override
   String preparedMealTemplateDetailBasePortions(int count) {
@@ -764,7 +769,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateDetailNoIngredients => 'Noch keine Zutaten vorhanden.';
 
   @override
-  String get preparedMealTemplateDetailSaveAction => 'Vorlage anpassen';
+  String get preparedMealTemplateDetailSaveAction => 'Rezept anpassen';
 
   @override
   String get preparedMealTemplateDetailSavingAction => 'Speichert...';
@@ -773,7 +778,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateDetailIngredientsToShoppingListAction => 'Zutaten auf Einkaufsliste';
 
   @override
-  String get preparedMealTemplateDetailCreateMealHint => 'Diese Vorlage braucht mindestens eine Zutat, bevor du eine Mahlzeit erstellst.';
+  String get preparedMealTemplateDetailCreateMealHint => 'Dieses Rezept braucht mindestens eine Zutat, bevor du eine Mahlzeit erstellst.';
 
   @override
   String get preparedMealTemplateDetailAssignAction => 'Zuordnen';
@@ -809,6 +814,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateDetailSelectionEmpty => 'Keine Inventarartikel vorhanden.';
 
   @override
+  String get preparedMealTemplateDetailListAction => 'Liste';
+
+  @override
+  String get preparedMealTemplateDetailSearchAction => 'Suchen';
+
+  @override
+  String get preparedMealTemplateDetailSwapAction => 'Tauschen';
+
+  @override
+  String get preparedMealTemplateDetailRestoreAction => 'Wiederherstellen';
+
+  @override
   String get preparedMealTemplateDetailAddToShoppingListAction => 'Zur Einkaufsliste';
 
   @override
@@ -832,10 +849,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateDetailIgnoreSaveFailed => 'Zutatenstatus konnte nicht gespeichert werden.';
 
   @override
-  String get preparedMealTemplateDetailInvalidMealMessage => 'Die Vorlage braucht mindestens eine gültige Zutat.';
+  String get preparedMealTemplateDetailInvalidMealMessage => 'Das Rezept braucht mindestens eine gültige Zutat.';
 
   @override
-  String get preparedMealTemplateDetailSaveFailedMessage => 'Vorlage konnte nicht angepasst werden.';
+  String get preparedMealTemplateDetailSaveFailedMessage => 'Rezept konnte nicht angepasst werden.';
 
   @override
   String get shoppingListStatsEntries => 'Positionen';

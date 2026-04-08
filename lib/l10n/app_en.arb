@@ -346,6 +346,14 @@
     }
   },
   "preparedMealTemplateDetailTitle": "Template",
+  "preparedMealTemplateDetailMatchTitle": "Ingredient Matching: {name}",
+  "@preparedMealTemplateDetailMatchTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "preparedMealTemplateDetailNotFound": "Template not found.",
   "preparedMealTemplateDetailLoadFailed": "Template could not be loaded.",
   "preparedMealTemplateDetailBasePortions": "Base: {count} portions",
@@ -399,6 +407,10 @@
   "preparedMealTemplateDetailSelectionTitle": "Choose inventory items",
   "preparedMealTemplateDetailSelectionEmpty":
       "No inventory items available.",
+  "preparedMealTemplateDetailListAction": "List",
+  "preparedMealTemplateDetailSearchAction": "Search",
+  "preparedMealTemplateDetailSwapAction": "Swap",
+  "preparedMealTemplateDetailRestoreAction": "Restore",
   "preparedMealTemplateDetailAddToShoppingListAction":
       "Add to shopping list",
   "preparedMealTemplateDetailIgnoreAction": "Ignore",
