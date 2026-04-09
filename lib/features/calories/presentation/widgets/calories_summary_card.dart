@@ -215,20 +215,20 @@ class _SummaryModeToggle extends StatelessWidget {
           },
           segments: <ButtonSegment<CalorieSummaryViewMode>>[
             ButtonSegment<CalorieSummaryViewMode>(
-              value: CalorieSummaryViewMode.classic,
-              label: Text(
-                l10n.caloriesSummaryViewClassic,
-                key: CaloriesPageKeys.summaryModeOption(
-                  CalorieSummaryViewMode.classic.name,
-                ),
-              ),
-            ),
-            ButtonSegment<CalorieSummaryViewMode>(
               value: CalorieSummaryViewMode.balance,
               label: Text(
                 l10n.caloriesSummaryViewBalance,
                 key: CaloriesPageKeys.summaryModeOption(
                   CalorieSummaryViewMode.balance.name,
+                ),
+              ),
+            ),
+            ButtonSegment<CalorieSummaryViewMode>(
+              value: CalorieSummaryViewMode.classic,
+              label: Text(
+                l10n.caloriesSummaryViewClassic,
+                key: CaloriesPageKeys.summaryModeOption(
+                  CalorieSummaryViewMode.classic.name,
                 ),
               ),
             ),

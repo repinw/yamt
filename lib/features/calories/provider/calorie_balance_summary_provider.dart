@@ -13,6 +13,8 @@ import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 part 'calorie_balance_summary_provider.g.dart';
 
 const _balanceSummaryLogName = 'CalorieBalanceSummaryProvider';
+const _paceWindowStartHour = 6;
+const _paceWindowEndHour = 22;
 
 typedef CalorieBalanceNow = DateTime Function();
 
@@ -168,10 +170,29 @@ double _paceRatioForDay({
     return 1.0;
   }
 
-  final startOfDay = normalizeDiaryDay(now);
-  final elapsedSeconds = now.difference(startOfDay).inSeconds;
-  final fullDaySeconds = const Duration(days: 1).inSeconds;
-  return (elapsedSeconds / fullDaySeconds).clamp(0.0, 1.0).toDouble();
+  final paceWindowStart = DateTime(
+    now.year,
+    now.month,
+    now.day,
+    _paceWindowStartHour,
+  );
+  final paceWindowEnd = DateTime(
+    now.year,
+    now.month,
+    now.day,
+    _paceWindowEndHour,
+  );
+
+  if (!now.isAfter(paceWindowStart)) {
+    return 0.0;
+  }
+  if (!now.isBefore(paceWindowEnd)) {
+    return 1.0;
+  }
+
+  final elapsedSeconds = now.difference(paceWindowStart).inSeconds;
+  final paceWindowSeconds = paceWindowEnd.difference(paceWindowStart).inSeconds;
+  return (elapsedSeconds / paceWindowSeconds).clamp(0.0, 1.0).toDouble();
 }
 
 DateTime _laterDay(DateTime left, DateTime right) {

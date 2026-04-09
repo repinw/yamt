@@ -21,7 +21,7 @@ class CalorieSummaryViewModeController
     }
 
     unawaited(_loadSavedMode());
-    return CalorieSummaryViewMode.classic;
+    return CalorieSummaryViewMode.balance;
   }
 
   Future<void> setMode(CalorieSummaryViewMode mode) async {
@@ -48,7 +48,7 @@ class CalorieSummaryViewModeController
     return switch (value) {
       'classic' => CalorieSummaryViewMode.classic,
       'balance' => CalorieSummaryViewMode.balance,
-      _ => CalorieSummaryViewMode.classic,
+      _ => CalorieSummaryViewMode.balance,
     };
   }
 }

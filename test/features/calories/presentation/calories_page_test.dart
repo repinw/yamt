@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -24,6 +25,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../support/fake_calories_repositories.dart';
+import '../../../helpers/memory_app_preferences.dart';
 import '../../../support/fake_local_image_store.dart';
 
 CalorieEntry _entry(
@@ -292,6 +294,10 @@ void main() {
 
     expect(find.byKey(CaloriesPageKeys.summaryCard), findsOneWidget);
     expect(find.byKey(CaloriesPageKeys.weekStrip), findsOneWidget);
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.weekBufferCard),
+    );
     expect(find.byKey(CaloriesPageKeys.weekBufferCard), findsOneWidget);
     await _scrollUntilVisible(
       tester,
@@ -303,6 +309,74 @@ void main() {
     );
     expect(find.text('Skyr'), findsOneWidget);
   });
+
+  testWidgets(
+    'defaults to balance mode first and persists a switch to classic',
+    (tester) async {
+      final today = DateTime.now();
+      final preferences = MemoryAppPreferences();
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'b-1',
+            loggedAt: DateTime(today.year, today.month, today.day, 8),
+            mealType: MealType.breakfast,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2200,
+          calculatorProfile: null,
+          effectiveDate: DateTime(today.year, today.month, today.day, 9),
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          logRepository: logRepository,
+          settingsRepository: settingsRepository,
+          overrides: [appPreferencesProvider.overrideWithValue(preferences)],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final balanceModeFinder = find.byKey(
+        CaloriesPageKeys.summaryModeOption('balance'),
+      );
+      final classicModeFinder = find.byKey(
+        CaloriesPageKeys.summaryModeOption('classic'),
+      );
+
+      expect(find.byKey(CaloriesPageKeys.summaryBalanceBar), findsOneWidget);
+      expect(
+        tester.getCenter(balanceModeFinder).dx,
+        lessThan(tester.getCenter(classicModeFinder).dx),
+      );
+
+      await tester.tap(classicModeFinder);
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(CaloriesPageKeys.summaryBalanceBar), findsNothing);
+      expect(
+        await preferences.getString('calories_summary_view_mode'),
+        'classic',
+      );
+
+      await tester.pumpWidget(
+        _buildHarness(
+          logRepository: logRepository,
+          settingsRepository: settingsRepository,
+          overrides: [appPreferencesProvider.overrideWithValue(preferences)],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(CaloriesPageKeys.summaryBalanceBar), findsNothing);
+    },
+  );
 
   testWidgets('keeps diary visible while switching days', (tester) async {
     final today = DateTime.now();
@@ -841,7 +915,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(CaloriesPageKeys.weekStrip), findsOneWidget);
-    expect(find.byKey(CaloriesPageKeys.weekBufferCard), findsOneWidget);
     expect(find.byKey(CaloriesPageKeys.summaryCard), findsOneWidget);
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.weekBufferCard),
+    );
+    expect(find.byKey(CaloriesPageKeys.weekBufferCard), findsOneWidget);
   });
 }
