@@ -8,6 +8,13 @@ import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.d
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const _weekBalanceChartMinKcal = 800.0;
+const _weekBalanceChartHeadroomFactor = 1.1;
+const _weekBalanceChartHeight = 64.0;
+const _weekBalanceGoalLineHeight = 2.0;
+const _weekBalanceGoalLineAdjustment = 1.0;
+const _weekBalanceSummaryIconSize = 18.0;
+
 class CaloriesWeekBalanceCard extends StatelessWidget {
   const CaloriesWeekBalanceCard({super.key, required this.overview});
 
@@ -60,7 +67,10 @@ class CaloriesWeekBalanceCard extends StatelessWidget {
     final peakKcal = activeDays.fold<double>(0, (peak, day) {
       return math.max(peak, math.max(day.goalKcal, day.totalKcal));
     });
-    return math.max(800.0, peakKcal * 1.1);
+    return math.max(
+      _weekBalanceChartMinKcal,
+      peakKcal * _weekBalanceChartHeadroomFactor,
+    );
   }
 }
 
@@ -118,15 +128,15 @@ class _WeekBalanceDayColumn extends StatelessWidget {
     final locale = Localizations.localeOf(context).languageCode;
     final goalRatio = (day.goalKcal / chartMaxKcal).clamp(0.0, 1.0);
     final totalRatio = (day.totalKcal / chartMaxKcal).clamp(0.0, 1.0);
-    final goalBottomOffset = (64 * goalRatio).toDouble();
-    final barHeight = (64 * totalRatio).toDouble();
+    final goalBottomOffset = (_weekBalanceChartHeight * goalRatio).toDouble();
+    final barHeight = (_weekBalanceChartHeight * totalRatio).toDouble();
 
     return Semantics(
       label: _semanticLabel(context, isToday: isToday),
       child: Column(
         children: [
           SizedBox(
-            height: 64,
+            height: _weekBalanceChartHeight,
             child: isActive
                 ? Stack(
                     clipBehavior: Clip.none,
@@ -153,25 +163,28 @@ class _WeekBalanceDayColumn extends StatelessWidget {
                       Positioned(
                         left: AppSpacing.xs,
                         right: AppSpacing.xs,
-                        bottom: goalBottomOffset - 1,
+                        bottom:
+                            goalBottomOffset - _weekBalanceGoalLineAdjustment,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: colors.outlineVariant,
                             borderRadius: BorderRadius.circular(999),
                           ),
-                          child: const SizedBox(height: 2),
+                          child: const SizedBox(
+                            height: _weekBalanceGoalLineHeight,
+                          ),
                         ),
                       ),
                       if (barHeight > 0)
                         Positioned(
-                          key: CaloriesPageKeys.weekBalanceBar(
-                            _dayKey(day.date),
-                          ),
                           left: AppSpacing.xs,
                           right: AppSpacing.xs,
                           bottom: 0,
                           height: barHeight,
                           child: DecoratedBox(
+                            key: CaloriesPageKeys.weekBalanceBar(
+                              _dayKey(day.date),
+                            ),
                             decoration: BoxDecoration(
                               color: _barColor(colors, isToday: isToday),
                               borderRadius: BorderRadius.circular(AppRadius.md),
@@ -261,6 +274,7 @@ class _WeekBalanceSummary extends StatelessWidget {
     };
 
     return DecoratedBox(
+      key: CaloriesPageKeys.weekBalanceSummary,
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -270,7 +284,12 @@ class _WeekBalanceSummary extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.info_outline, size: 18, color: accentColor),
+            Icon(
+              Icons.info_outline,
+              key: CaloriesPageKeys.weekBalanceSummaryIcon,
+              size: _weekBalanceSummaryIconSize,
+              color: accentColor,
+            ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
