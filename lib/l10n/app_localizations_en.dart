@@ -1167,6 +1167,62 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesRemainingLabel => 'Remaining';
 
   @override
+  String get caloriesSummaryViewClassic => 'Classic';
+
+  @override
+  String get caloriesSummaryViewBalance => 'Balance';
+
+  @override
+  String get caloriesBalanceCarryoverLabel => '7-day carryover';
+
+  @override
+  String get caloriesBalanceFlexGoalLabel => 'Flex goal';
+
+  @override
+  String get caloriesBalancePaceNowLabel => 'Pace now';
+
+  @override
+  String get caloriesBalancePaceFinalLabel => 'Final pace';
+
+  @override
+  String get caloriesBalanceScaleBufferLabel => 'Buffer';
+
+  @override
+  String get caloriesBalanceScaleOnTrackLabel => 'On track';
+
+  @override
+  String get caloriesBalanceScaleOverLabel => 'Over';
+
+  @override
+  String get caloriesBalanceStatusOnTrack => 'Right on pace';
+
+  @override
+  String caloriesBalanceStatusBuffer(int kcal) {
+    return '$kcal kcal buffer for now';
+  }
+
+  @override
+  String caloriesBalanceStatusOver(int kcal) {
+    return '$kcal kcal over pace';
+  }
+
+  @override
+  String get caloriesBalanceStatusFinishedOnTrack => 'The day ended on target';
+
+  @override
+  String caloriesBalanceStatusFinishedBuffer(int kcal) {
+    return '$kcal kcal under the flex target';
+  }
+
+  @override
+  String caloriesBalanceStatusFinishedOver(int kcal) {
+    return '$kcal kcal over the flex target';
+  }
+
+  @override
+  String get caloriesBalanceUnavailable => 'Balance view is unavailable right now.';
+
+  @override
   String get caloriesProteinLabel => 'Protein';
 
   @override

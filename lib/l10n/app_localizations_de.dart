@@ -1167,6 +1167,62 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesRemainingLabel => 'Verbleibend';
 
   @override
+  String get caloriesSummaryViewClassic => 'Klassisch';
+
+  @override
+  String get caloriesSummaryViewBalance => 'Balance';
+
+  @override
+  String get caloriesBalanceCarryoverLabel => '7-Tage-Puffer';
+
+  @override
+  String get caloriesBalanceFlexGoalLabel => 'Flex-Ziel';
+
+  @override
+  String get caloriesBalancePaceNowLabel => 'Pace jetzt';
+
+  @override
+  String get caloriesBalancePaceFinalLabel => 'Pace final';
+
+  @override
+  String get caloriesBalanceScaleBufferLabel => 'Puffer';
+
+  @override
+  String get caloriesBalanceScaleOnTrackLabel => 'Im Takt';
+
+  @override
+  String get caloriesBalanceScaleOverLabel => 'Drüber';
+
+  @override
+  String get caloriesBalanceStatusOnTrack => 'Genau im Takt';
+
+  @override
+  String caloriesBalanceStatusBuffer(int kcal) {
+    return '$kcal kcal Puffer für jetzt';
+  }
+
+  @override
+  String caloriesBalanceStatusOver(int kcal) {
+    return '$kcal kcal über Pace';
+  }
+
+  @override
+  String get caloriesBalanceStatusFinishedOnTrack => 'Der Tag endete im Zielkorridor';
+
+  @override
+  String caloriesBalanceStatusFinishedBuffer(int kcal) {
+    return '$kcal kcal unter dem Flex-Ziel beendet';
+  }
+
+  @override
+  String caloriesBalanceStatusFinishedOver(int kcal) {
+    return '$kcal kcal über dem Flex-Ziel beendet';
+  }
+
+  @override
+  String get caloriesBalanceUnavailable => 'Die Balance-Ansicht ist gerade nicht verfügbar.';
+
+  @override
   String get caloriesProteinLabel => 'Eiweiß';
 
   @override

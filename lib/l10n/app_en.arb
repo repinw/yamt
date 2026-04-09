@@ -615,6 +615,50 @@
   "caloriesConsumedLabel": "Consumed",
   "caloriesGoalLabel": "Goal",
   "caloriesRemainingLabel": "Remaining",
+  "caloriesSummaryViewClassic": "Classic",
+  "caloriesSummaryViewBalance": "Balance",
+  "caloriesBalanceCarryoverLabel": "7-day carryover",
+  "caloriesBalanceFlexGoalLabel": "Flex goal",
+  "caloriesBalancePaceNowLabel": "Pace now",
+  "caloriesBalancePaceFinalLabel": "Final pace",
+  "caloriesBalanceScaleBufferLabel": "Buffer",
+  "caloriesBalanceScaleOnTrackLabel": "On track",
+  "caloriesBalanceScaleOverLabel": "Over",
+  "caloriesBalanceStatusOnTrack": "Right on pace",
+  "caloriesBalanceStatusBuffer": "{kcal} kcal buffer for now",
+  "@caloriesBalanceStatusBuffer": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusOver": "{kcal} kcal over pace",
+  "@caloriesBalanceStatusOver": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusFinishedOnTrack": "The day ended on target",
+  "caloriesBalanceStatusFinishedBuffer": "{kcal} kcal under the flex target",
+  "@caloriesBalanceStatusFinishedBuffer": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusFinishedOver": "{kcal} kcal over the flex target",
+  "@caloriesBalanceStatusFinishedOver": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceUnavailable": "Balance view is unavailable right now.",
   "caloriesProteinLabel": "Protein",
   "caloriesCarbsLabel": "Carbs",
   "caloriesFatLabel": "Fat",

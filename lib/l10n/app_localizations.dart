@@ -2327,6 +2327,102 @@ abstract class AppLocalizations {
   /// **'Remaining'**
   String get caloriesRemainingLabel;
 
+  /// No description provided for @caloriesSummaryViewClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get caloriesSummaryViewClassic;
+
+  /// No description provided for @caloriesSummaryViewBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get caloriesSummaryViewBalance;
+
+  /// No description provided for @caloriesBalanceCarryoverLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'7-day carryover'**
+  String get caloriesBalanceCarryoverLabel;
+
+  /// No description provided for @caloriesBalanceFlexGoalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Flex goal'**
+  String get caloriesBalanceFlexGoalLabel;
+
+  /// No description provided for @caloriesBalancePaceNowLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pace now'**
+  String get caloriesBalancePaceNowLabel;
+
+  /// No description provided for @caloriesBalancePaceFinalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Final pace'**
+  String get caloriesBalancePaceFinalLabel;
+
+  /// No description provided for @caloriesBalanceScaleBufferLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Buffer'**
+  String get caloriesBalanceScaleBufferLabel;
+
+  /// No description provided for @caloriesBalanceScaleOnTrackLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'On track'**
+  String get caloriesBalanceScaleOnTrackLabel;
+
+  /// No description provided for @caloriesBalanceScaleOverLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Over'**
+  String get caloriesBalanceScaleOverLabel;
+
+  /// No description provided for @caloriesBalanceStatusOnTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Right on pace'**
+  String get caloriesBalanceStatusOnTrack;
+
+  /// No description provided for @caloriesBalanceStatusBuffer.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal buffer for now'**
+  String caloriesBalanceStatusBuffer(int kcal);
+
+  /// No description provided for @caloriesBalanceStatusOver.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal over pace'**
+  String caloriesBalanceStatusOver(int kcal);
+
+  /// No description provided for @caloriesBalanceStatusFinishedOnTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'The day ended on target'**
+  String get caloriesBalanceStatusFinishedOnTrack;
+
+  /// No description provided for @caloriesBalanceStatusFinishedBuffer.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal under the flex target'**
+  String caloriesBalanceStatusFinishedBuffer(int kcal);
+
+  /// No description provided for @caloriesBalanceStatusFinishedOver.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal over the flex target'**
+  String caloriesBalanceStatusFinishedOver(int kcal);
+
+  /// No description provided for @caloriesBalanceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance view is unavailable right now.'**
+  String get caloriesBalanceUnavailable;
+
   /// No description provided for @caloriesProteinLabel.
   ///
   /// In en, this message translates to:

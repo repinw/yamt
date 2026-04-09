@@ -8,6 +8,8 @@ abstract final class CaloriesPageKeys {
   static const weekStrip = Key('calories_week_strip');
   static const weekBufferCard = Key('calories_week_buffer_card');
   static const summaryCard = Key('calories_summary_card');
+  static const summaryModeToggle = Key('calories_summary_mode_toggle');
+  static const summaryBalanceBar = Key('calories_summary_balance_bar');
   static const reloadProgressIndicator = Key(
     'calories_reload_progress_indicator',
   );
@@ -37,6 +39,10 @@ abstract final class CaloriesPageKeys {
 
   static Key sectionAddButton(String mealType) {
     return Key('calories_section_add_$mealType');
+  }
+
+  static Key summaryModeOption(String mode) {
+    return Key('calories_summary_mode_$mode');
   }
 }
 
