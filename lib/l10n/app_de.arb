@@ -636,6 +636,126 @@
   "caloriesConsumedLabel": "Verbraucht",
   "caloriesGoalLabel": "Ziel",
   "caloriesRemainingLabel": "Verbleibend",
+  "caloriesSummaryViewClassic": "Klassisch",
+  "caloriesSummaryViewBalance": "Balance",
+  "caloriesBalanceCarryoverLabel": "7 Tage Bilanz",
+  "caloriesBalanceFlexGoalLabel": "Flex-Ziel",
+  "caloriesBalancePaceNowLabel": "Pace jetzt",
+  "caloriesBalancePaceFinalLabel": "Pace final",
+  "caloriesBalanceScaleBufferLabel": "Defizit",
+  "caloriesBalanceScaleOnTrackLabel": "Im Takt",
+  "caloriesBalanceScaleOverLabel": "Überschuss",
+  "caloriesBalanceStatusBalancedNow": "Für jetzt gut ausbalanciert",
+  "caloriesBalanceStatusEatNow":
+      "Nimm jetzt etwa {kcal} kcal zu dir",
+  "@caloriesBalanceStatusEatNow": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusWaitNow":
+      "Gedulde dich noch etwas mit dem Essen",
+  "caloriesBalanceStatusOnTrack": "Genau im Takt",
+  "caloriesBalanceStatusBuffer": "{kcal} kcal unter Pace",
+  "@caloriesBalanceStatusBuffer": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusOver": "{kcal} kcal über Pace",
+  "@caloriesBalanceStatusOver": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusLoseUnder": "{kcal} kcal Puffer fürs Abnehmen",
+  "@caloriesBalanceStatusLoseUnder": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusLoseOver": "{kcal} kcal über Pace fürs Abnehmen",
+  "@caloriesBalanceStatusLoseOver": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusGainUnder":
+      "{kcal} kcal unter Pace fürs Zunehmen",
+  "@caloriesBalanceStatusGainUnder": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusFinishedOnTrack": "Der Tag endete im Zielkorridor",
+  "caloriesBalanceStatusFinishedBuffer":
+      "{kcal} kcal unter dem Flex-Ziel beendet",
+  "@caloriesBalanceStatusFinishedBuffer": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusFinishedOver":
+      "{kcal} kcal über dem Flex-Ziel beendet",
+  "@caloriesBalanceStatusFinishedOver": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusFinishedLoseUnder":
+      "Mit {kcal} kcal Puffer fürs Abnehmen beendet",
+  "@caloriesBalanceStatusFinishedLoseUnder": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusFinishedLoseOver":
+      "{kcal} kcal über dem Flex-Ziel fürs Abnehmen beendet",
+  "@caloriesBalanceStatusFinishedLoseOver": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusFinishedGainUnder":
+      "{kcal} kcal unter dem Flex-Ziel fürs Zunehmen beendet",
+  "@caloriesBalanceStatusFinishedGainUnder": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusFinishedGainOver":
+      "Mit {kcal} kcal Extra fürs Zunehmen beendet",
+  "@caloriesBalanceStatusFinishedGainOver": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceUnavailable":
+      "Die Balance-Ansicht ist gerade nicht verfügbar.",
   "caloriesProteinLabel": "Eiweiß",
   "caloriesCarbsLabel": "Kohlenhydrate",
   "caloriesFatLabel": "Fett",

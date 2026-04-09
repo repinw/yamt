@@ -1167,6 +1167,108 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesRemainingLabel => 'Remaining';
 
   @override
+  String get caloriesSummaryViewClassic => 'Classic';
+
+  @override
+  String get caloriesSummaryViewBalance => 'Balance';
+
+  @override
+  String get caloriesBalanceCarryoverLabel => '7-day balance';
+
+  @override
+  String get caloriesBalanceFlexGoalLabel => 'Flex goal';
+
+  @override
+  String get caloriesBalancePaceNowLabel => 'Pace now';
+
+  @override
+  String get caloriesBalancePaceFinalLabel => 'Final pace';
+
+  @override
+  String get caloriesBalanceScaleBufferLabel => 'Deficit';
+
+  @override
+  String get caloriesBalanceScaleOnTrackLabel => 'On track';
+
+  @override
+  String get caloriesBalanceScaleOverLabel => 'Surplus';
+
+  @override
+  String get caloriesBalanceStatusBalancedNow => 'Well balanced for now';
+
+  @override
+  String caloriesBalanceStatusEatNow(int kcal) {
+    return 'Eat about $kcal kcal now';
+  }
+
+  @override
+  String get caloriesBalanceStatusWaitNow => 'Wait a bit before eating again';
+
+  @override
+  String get caloriesBalanceStatusOnTrack => 'Right on pace';
+
+  @override
+  String caloriesBalanceStatusBuffer(int kcal) {
+    return '$kcal kcal under pace';
+  }
+
+  @override
+  String caloriesBalanceStatusOver(int kcal) {
+    return '$kcal kcal over pace';
+  }
+
+  @override
+  String caloriesBalanceStatusLoseUnder(int kcal) {
+    return '$kcal kcal buffer for weight loss';
+  }
+
+  @override
+  String caloriesBalanceStatusLoseOver(int kcal) {
+    return '$kcal kcal over pace for weight loss';
+  }
+
+  @override
+  String caloriesBalanceStatusGainUnder(int kcal) {
+    return '$kcal kcal under pace for weight gain';
+  }
+
+  @override
+  String get caloriesBalanceStatusFinishedOnTrack => 'The day ended on target';
+
+  @override
+  String caloriesBalanceStatusFinishedBuffer(int kcal) {
+    return '$kcal kcal under the flex target';
+  }
+
+  @override
+  String caloriesBalanceStatusFinishedOver(int kcal) {
+    return '$kcal kcal over the flex target';
+  }
+
+  @override
+  String caloriesBalanceStatusFinishedLoseUnder(int kcal) {
+    return 'Ended with a $kcal kcal buffer for weight loss';
+  }
+
+  @override
+  String caloriesBalanceStatusFinishedLoseOver(int kcal) {
+    return 'Ended $kcal kcal over the flex target for weight loss';
+  }
+
+  @override
+  String caloriesBalanceStatusFinishedGainUnder(int kcal) {
+    return 'Ended $kcal kcal under the flex target for weight gain';
+  }
+
+  @override
+  String caloriesBalanceStatusFinishedGainOver(int kcal) {
+    return 'Ended with $kcal kcal extra for weight gain';
+  }
+
+  @override
+  String get caloriesBalanceUnavailable => 'Balance view is unavailable right now.';
+
+  @override
   String get caloriesProteinLabel => 'Protein';
 
   @override

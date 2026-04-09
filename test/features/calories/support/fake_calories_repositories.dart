@@ -25,6 +25,11 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   bool deleteShouldFail = false;
   Duration initialEmissionDelay = Duration.zero;
   Future<List<CalorieEntry>> Function(DateTime day)? onReadEntriesForDay;
+  Future<List<CalorieEntry>> Function(
+    DateTime startInclusive,
+    DateTime endExclusive,
+  )?
+  onReadEntriesInRange;
 
   List<CalorieEntry> get entries => List<CalorieEntry>.unmodifiable(_entries);
 
@@ -79,6 +84,10 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   }) async {
     final start = _normalize(startInclusive);
     final end = _normalize(endExclusive);
+    final customReader = onReadEntriesInRange;
+    if (customReader != null) {
+      return customReader(start, end);
+    }
     final entries = _entries
         .where((entry) {
           final loggedAt = entry.loggedAt;

@@ -1,12 +1,19 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_balance_summary_view.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_balance_summary_provider.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_summary_view_mode_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class CaloriesSummaryCard extends StatelessWidget {
+class CaloriesSummaryCard extends ConsumerWidget {
   const CaloriesSummaryCard({
     super.key,
     required this.consumedKcal,
@@ -39,17 +46,15 @@ class CaloriesSummaryCard extends StatelessWidget {
   final String fatLabel;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final numberFormat = NumberFormat.decimalPattern(locale);
     final kcalUnit = l10n.caloriesUnitKcal;
     final gramUnit = l10n.caloriesUnitGram;
-    final ringColor = remainingKcal < 0
-        ? colorScheme.error
-        : AppInventoryEditorial.primary;
     final macroGoals = _MacroGoals.fromGoalKcal(goalKcal);
+    final viewMode = ref.watch(calorieSummaryViewModeControllerProvider);
 
     return DecoratedBox(
       key: CaloriesPageKeys.summaryCard,
@@ -62,14 +67,34 @@ class CaloriesSummaryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Center(
-              child: _SummaryHalo(
-                remainingKcal: remainingKcal,
-                progress: progress,
-                color: ringColor,
-                label: remainingLabel,
-                numberFormat: numberFormat,
-              ),
+            _SummaryModeToggle(
+              viewMode: viewMode,
+              onChanged: ref
+                  .read(calorieSummaryViewModeControllerProvider.notifier)
+                  .setMode,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              child: switch (viewMode) {
+                CalorieSummaryViewMode.classic => _ClassicSummaryHero(
+                  key: const ValueKey<String>('classic_summary_hero'),
+                  remainingKcal: remainingKcal,
+                  progress: progress,
+                  color: remainingKcal < 0
+                      ? colorScheme.error
+                      : AppInventoryEditorial.primary,
+                  label: remainingLabel,
+                  numberFormat: numberFormat,
+                ),
+                CalorieSummaryViewMode.balance => _BalanceSummaryHero(
+                  key: const ValueKey<String>('balance_summary_hero'),
+                  numberFormat: numberFormat,
+                  kcalUnit: kcalUnit,
+                ),
+              },
             ),
             const SizedBox(height: AppSpacing.xl),
             _MacroProgressRow(
@@ -99,23 +124,104 @@ class CaloriesSummaryCard extends StatelessWidget {
               numberFormat: numberFormat,
             ),
             const SizedBox(height: AppSpacing.xl),
-            Row(
-              children: [
-                Expanded(
-                  child: _SummaryStat(
-                    label: consumedLabel,
-                    value:
-                        '${numberFormat.format(consumedKcal.round())} $kcalUnit',
+            switch (viewMode) {
+              CalorieSummaryViewMode.classic => Row(
+                children: [
+                  Expanded(
+                    child: _SummaryStat(
+                      label: consumedLabel,
+                      value:
+                          '${numberFormat.format(consumedKcal.round())} '
+                          '$kcalUnit',
+                    ),
                   ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: _SummaryStat(
-                    label: goalLabel,
-                    value: '${numberFormat.format(goalKcal.round())} $kcalUnit',
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: _SummaryStat(
+                      label: goalLabel,
+                      value:
+                          '${numberFormat.format(goalKcal.round())} $kcalUnit',
+                    ),
                   ),
+                ],
+              ),
+              CalorieSummaryViewMode.balance => Row(
+                children: [
+                  Expanded(
+                    child: _SummaryStat(
+                      label: consumedLabel,
+                      value:
+                          '${numberFormat.format(consumedKcal.round())} '
+                          '$kcalUnit',
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: _BalancePaceStat(
+                      numberFormat: numberFormat,
+                      kcalUnit: kcalUnit,
+                    ),
+                  ),
+                ],
+              ),
+            },
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryModeToggle extends StatelessWidget {
+  const _SummaryModeToggle({required this.viewMode, required this.onChanged});
+
+  final CalorieSummaryViewMode viewMode;
+  final Future<void> Function(CalorieSummaryViewMode mode) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
+    return DecoratedBox(
+      key: CaloriesPageKeys.summaryModeToggle,
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(
+          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xs),
+        child: SegmentedButton<CalorieSummaryViewMode>(
+          showSelectedIcon: false,
+          style: _summarySegmentedButtonStyle(context),
+          selected: <CalorieSummaryViewMode>{viewMode},
+          onSelectionChanged: (selection) {
+            if (selection.isEmpty) {
+              return;
+            }
+            onChanged(selection.first);
+          },
+          segments: <ButtonSegment<CalorieSummaryViewMode>>[
+            ButtonSegment<CalorieSummaryViewMode>(
+              value: CalorieSummaryViewMode.balance,
+              label: Text(
+                l10n.caloriesSummaryViewBalance,
+                key: CaloriesPageKeys.summaryModeOption(
+                  CalorieSummaryViewMode.balance.name,
                 ),
-              ],
+              ),
+            ),
+            ButtonSegment<CalorieSummaryViewMode>(
+              value: CalorieSummaryViewMode.classic,
+              label: Text(
+                l10n.caloriesSummaryViewClassic,
+                key: CaloriesPageKeys.summaryModeOption(
+                  CalorieSummaryViewMode.classic.name,
+                ),
+              ),
             ),
           ],
         ),
@@ -124,8 +230,9 @@ class CaloriesSummaryCard extends StatelessWidget {
   }
 }
 
-class _SummaryHalo extends StatelessWidget {
-  const _SummaryHalo({
+class _ClassicSummaryHero extends StatelessWidget {
+  const _ClassicSummaryHero({
+    super.key,
     required this.remainingKcal,
     required this.progress,
     required this.color,
@@ -144,46 +251,129 @@ class _SummaryHalo extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final displayedValue = numberFormat.format(remainingKcal.round());
 
-    return SizedBox.square(
-      dimension: 196,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          SizedBox.square(
-            dimension: 168,
-            child: Transform.rotate(
-              angle: -math.pi / 2,
-              child: CircularProgressIndicator(
-                value: progress,
-                strokeWidth: 12,
-                backgroundColor: colorScheme.surfaceContainerHigh,
-                color: color,
+    return Center(
+      child: SizedBox.square(
+        dimension: 196,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox.square(
+              dimension: 168,
+              child: Transform.rotate(
+                angle: -math.pi / 2,
+                child: CircularProgressIndicator(
+                  value: progress,
+                  strokeWidth: 12,
+                  backgroundColor: colorScheme.surfaceContainerHigh,
+                  color: color,
+                ),
               ),
             ),
-          ),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                displayedValue,
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -1.2,
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  displayedValue,
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -1.2,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xxs),
-              Text(
-                label.toUpperCase(),
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.1,
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  label.toUpperCase(),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _BalanceSummaryHero extends StatelessWidget {
+  const _BalanceSummaryHero({
+    super.key,
+    required this.numberFormat,
+    required this.kcalUnit,
+  });
+
+  final NumberFormat numberFormat;
+  final String kcalUnit;
+
+  @override
+  Widget build(BuildContext context) {
+    return _BalanceSummaryHeroContent(
+      numberFormat: numberFormat,
+      kcalUnit: kcalUnit,
+    );
+  }
+}
+
+class _BalanceSummaryHeroContent extends ConsumerWidget {
+  const _BalanceSummaryHeroContent({
+    required this.numberFormat,
+    required this.kcalUnit,
+  });
+
+  final NumberFormat numberFormat;
+  final String kcalUnit;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final balanceState = ref.watch(calorieBalanceSummaryProvider);
+
+    return balanceState.when(
+      data: (data) => CaloriesBalanceSummaryView(
+        data: data,
+        numberFormat: numberFormat,
+        kcalUnit: kcalUnit,
+      ),
+      loading: () => const SizedBox(
+        height: 172,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (_, _) => SizedBox(
+        height: 172,
+        child: Center(
+          child: Text(
+            l10n.caloriesBalanceUnavailable,
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BalancePaceStat extends ConsumerWidget {
+  const _BalancePaceStat({required this.numberFormat, required this.kcalUnit});
+
+  final NumberFormat numberFormat;
+  final String kcalUnit;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final balanceState = ref.watch(calorieBalanceSummaryProvider);
+    final balanceData = balanceState.value;
+
+    return _SummaryStat(
+      label: balanceData?.isCurrentDay == false
+          ? l10n.caloriesBalancePaceFinalLabel
+          : l10n.caloriesBalancePaceNowLabel,
+      value: balanceData == null
+          ? '...'
+          : '${numberFormat.format(balanceData.pacedGoalKcal.round())} '
+                '$kcalUnit',
     );
   }
 }
@@ -303,4 +493,38 @@ class _MacroGoals {
       fat: goalKcal * 0.30 / 9,
     );
   }
+}
+
+ButtonStyle _summarySegmentedButtonStyle(BuildContext context) {
+  final colors = Theme.of(context).colorScheme;
+  final textTheme = Theme.of(context).textTheme;
+
+  return ButtonStyle(
+    padding: const WidgetStatePropertyAll(
+      EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+    ),
+    textStyle: WidgetStatePropertyAll(
+      textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+    ),
+    side: const WidgetStatePropertyAll(BorderSide.none),
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
+      if (states.contains(WidgetState.selected)) {
+        return colors.surfaceContainerLowest;
+      }
+      return Colors.transparent;
+    }),
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
+      if (states.contains(WidgetState.selected)) {
+        return colors.primary;
+      }
+      return colors.onSurfaceVariant;
+    }),
+    shape: WidgetStatePropertyAll(
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+    ),
+    elevation: const WidgetStatePropertyAll(0),
+    overlayColor: WidgetStatePropertyAll(
+      colors.surfaceContainerHigh.withValues(alpha: 0.16),
+    ),
+  );
 }
