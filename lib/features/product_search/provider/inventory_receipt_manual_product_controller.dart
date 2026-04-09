@@ -66,6 +66,9 @@ class InventoryReceiptManualProductConfig {
         left?.brand == right?.brand &&
         left?.imageUrl == right?.imageUrl &&
         left?.packageWeight == right?.packageWeight &&
+        left?.servingSize == right?.servingSize &&
+        left?.servingQuantity == right?.servingQuantity &&
+        left?.servingQuantityUnit == right?.servingQuantityUnit &&
         left?.nutrition == right?.nutrition;
   }
 
@@ -77,6 +80,9 @@ class InventoryReceiptManualProductConfig {
       product?.brand,
       product?.imageUrl,
       product?.packageWeight,
+      product?.servingSize,
+      product?.servingQuantity,
+      product?.servingQuantityUnit,
       product?.nutrition,
     );
   }
@@ -104,6 +110,9 @@ class InventoryReceiptManualProductSelection {
     this.brand,
     this.imageUrl,
     this.packageWeight,
+    this.servingSize,
+    this.servingQuantity,
+    this.servingQuantityUnit,
     this.nutrition,
     this.externalProduct,
     this.globalFoodItemId,
@@ -119,6 +128,9 @@ class InventoryReceiptManualProductSelection {
       brand: result.brand,
       imageUrl: result.imageUrl,
       packageWeight: result.packageWeight,
+      servingSize: result.servingSize,
+      servingQuantity: result.servingQuantity,
+      servingQuantityUnit: result.servingQuantityUnit,
       nutrition: result.nutrition,
       externalProduct: result,
     );
@@ -134,6 +146,9 @@ class InventoryReceiptManualProductSelection {
       brand: item.brand,
       imageUrl: item.imageUrl,
       packageWeight: item.weight,
+      servingSize: item.servingSize,
+      servingQuantity: item.servingQuantity,
+      servingQuantityUnit: item.servingQuantityUnit,
       nutrition: item.nutrition,
       globalFoodItemId: _normalizeReusableGlobalFoodItemId(
         item.globalFoodItemId,
@@ -147,6 +162,9 @@ class InventoryReceiptManualProductSelection {
   final String? brand;
   final String? imageUrl;
   final String? packageWeight;
+  final String? servingSize;
+  final double? servingQuantity;
+  final String? servingQuantityUnit;
   final GlobalFoodNutrition? nutrition;
   final OffProductSearchResult? externalProduct;
   final String? globalFoodItemId;
@@ -522,6 +540,12 @@ class InventoryReceiptManualProductController
           barcode: barcode,
           imageUrl: selectedProduct?.imageUrl ?? _config.item.imageUrl,
           weight: resolvedWeight,
+          servingSize: selectedProduct?.servingSize ?? _config.item.servingSize,
+          servingQuantity:
+              selectedProduct?.servingQuantity ?? _config.item.servingQuantity,
+          servingQuantityUnit:
+              selectedProduct?.servingQuantityUnit ??
+              _config.item.servingQuantityUnit,
           nutrition: hasNutrition
               ? GlobalFoodNutrition(
                   qualityStatus: GlobalFoodNutritionQualityStatus.verified,

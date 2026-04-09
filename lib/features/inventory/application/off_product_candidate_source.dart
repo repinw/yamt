@@ -58,6 +58,9 @@ class _OffProductCandidateSource {
       barcode: result.code,
       imageUrl: result.imageUrl,
       packageWeight: result.packageWeight,
+      servingSize: result.servingSize,
+      servingQuantity: result.servingQuantity,
+      servingQuantityUnit: result.servingQuantityUnit,
       nutrition: result.nutrition,
     );
   }

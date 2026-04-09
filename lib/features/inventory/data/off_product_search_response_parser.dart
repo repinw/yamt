@@ -69,6 +69,13 @@ class _OffProductSearchResponseParser {
       packageWeight: _readText(
         item['weight'] ?? item['package_weight'] ?? item['quantity'],
       ),
+      servingSize: _readText(item['serving_size'] ?? item['servingSize']),
+      servingQuantity: _readDouble(
+        item['serving_quantity'] ?? item['servingQuantity'],
+      ),
+      servingQuantityUnit: _readText(
+        item['serving_quantity_unit'] ?? item['servingQuantityUnit'],
+      ),
       nutrition: _readNutrition(item),
       score: _readScore(item['score'] ?? item['totalScore']) ?? 0,
     );
@@ -156,6 +163,19 @@ class _OffProductSearchResponseParser {
     return text;
   }
 
+  double? _readDouble(Object? value) {
+    if (value is num) {
+      return value.toDouble();
+    }
+
+    final raw = value?.toString().trim();
+    if (raw == null || raw.isEmpty) {
+      return null;
+    }
+
+    return double.tryParse(raw.replaceAll(',', '.'));
+  }
+
   GlobalFoodNutrition? _readNutrition(Map<String, dynamic> item) {
     final rawNutrition = item['nutrition'];
     final nutritionJson = <String, dynamic>{};
@@ -181,8 +201,7 @@ class _OffProductSearchResponseParser {
     final qualityStatus = _readText(
       item['nutrition_quality_status'] ?? item['quality_status'],
     );
-    if (qualityStatus != null &&
-        !nutritionJson.containsKey('quality_status')) {
+    if (qualityStatus != null && !nutritionJson.containsKey('quality_status')) {
       nutritionJson['quality_status'] = qualityStatus;
     }
 
@@ -190,9 +209,7 @@ class _OffProductSearchResponseParser {
       return null;
     }
 
-    final nutrition = GlobalFoodNutrition.fromJson(
-      nutritionJson,
-    );
+    final nutrition = GlobalFoodNutrition.fromJson(nutritionJson);
     return nutrition.hasAnyNutritionValue ? nutrition : null;
   }
 

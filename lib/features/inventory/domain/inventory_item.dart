@@ -77,6 +77,9 @@ class InventoryItem {
     String? brand,
     String? category,
     String? imageUrl,
+    String? servingSize,
+    double? servingQuantity,
+    String? servingQuantityUnit,
     GlobalFoodNutrition? nutrition,
     Map<String, double> discounts = const <String, double>{},
     String? receiptId,
@@ -96,6 +99,9 @@ class InventoryItem {
       barcode: barcode,
       imageUrl: imageUrl,
       foodFingerprint: foodFingerprint,
+      servingSize: servingSize,
+      servingQuantity: servingQuantity,
+      servingQuantityUnit: servingQuantityUnit,
       nutrition: nutrition,
     );
 
@@ -242,6 +248,9 @@ class InventoryItem {
     Object? barcode = _keepValue,
     Object? imageUrl = _keepValue,
     Object? foodFingerprint = _keepValue,
+    Object? servingSize = _keepValue,
+    Object? servingQuantity = _keepValue,
+    Object? servingQuantityUnit = _keepValue,
     Object? nutrition = _keepValue,
     DateTime? entryDate,
     String? storeName,
@@ -275,6 +284,9 @@ class InventoryItem {
           barcode: barcode,
           imageUrl: imageUrl,
           foodFingerprint: foodFingerprint,
+          servingSize: servingSize,
+          servingQuantity: servingQuantity,
+          servingQuantityUnit: servingQuantityUnit,
           nutrition: nutrition,
         );
 
@@ -331,6 +343,9 @@ class InventoryItem {
   String? get barcode => productSnapshot.barcode;
   String? get imageUrl => productSnapshot.imageUrl;
   String? get foodFingerprint => productSnapshot.foodFingerprint;
+  String? get servingSize => productSnapshot.servingSize;
+  double? get servingQuantity => productSnapshot.servingQuantity;
+  String? get servingQuantityUnit => productSnapshot.servingQuantityUnit;
   GlobalFoodNutrition? get nutrition => productSnapshot.nutrition;
 
   InventoryItem withDerivedAmount({

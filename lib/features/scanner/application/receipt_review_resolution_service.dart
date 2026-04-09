@@ -220,6 +220,12 @@ class ReceiptReviewResolutionService {
       barcode: draft.item.barcode ?? selectedProduct?.barcode,
       imageUrl: draft.item.imageUrl ?? selectedProduct?.imageUrl,
       packageWeight: persistedWeight.weight,
+      servingSize: draft.item.servingSize ?? selectedProduct?.servingSize,
+      servingQuantity:
+          draft.item.servingQuantity ?? selectedProduct?.servingQuantity,
+      servingQuantityUnit:
+          draft.item.servingQuantityUnit ??
+          selectedProduct?.servingQuantityUnit,
       foodFingerprint: draft.item.resolvedFoodFingerprint,
       nutrition: draft.item.nutrition ?? selectedProduct?.nutrition,
       status: status,
@@ -246,6 +252,11 @@ class ReceiptReviewResolutionService {
       barcode: draft.item.barcode ?? selectedProduct.barcode,
       imageUrl: draft.item.imageUrl ?? selectedProduct.imageUrl,
       packageWeight: persistedWeight.weight,
+      servingSize: draft.item.servingSize ?? selectedProduct.servingSize,
+      servingQuantity:
+          draft.item.servingQuantity ?? selectedProduct.servingQuantity,
+      servingQuantityUnit:
+          draft.item.servingQuantityUnit ?? selectedProduct.servingQuantityUnit,
       foodFingerprint: draft.item.resolvedFoodFingerprint,
       nutrition: draft.item.nutrition ?? selectedProduct.nutrition,
       updatedAt: now,
@@ -279,6 +290,9 @@ class ReceiptReviewResolutionService {
       barcode: resolvedProduct.barcode,
       imageUrl: resolvedProduct.imageUrl,
       foodFingerprint: resolvedProduct.resolvedFoodFingerprint,
+      servingSize: resolvedProduct.servingSize,
+      servingQuantity: resolvedProduct.servingQuantity,
+      servingQuantityUnit: resolvedProduct.servingQuantityUnit,
       nutrition: resolvedProduct.nutrition,
     );
   }
