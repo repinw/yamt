@@ -1278,7 +1278,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesFatLabel => 'Fat';
 
   @override
-  String get caloriesWeekBufferTitle => 'Weekly buffer';
+  String get caloriesWeekBufferTitle => 'Weekly balance';
 
   @override
   String caloriesWeekBufferRemaining(int kcal) {
@@ -1289,6 +1289,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String caloriesWeekBufferOverspent(int kcal) {
     return '$kcal kcal over this week';
   }
+
+  @override
+  String get caloriesWeekBalanceTodayLabel => 'Today';
+
+  @override
+  String caloriesWeekBalanceSaved(int kcal) {
+    return 'You saved $kcal kcal since your goal started. Today\'s target was increased.';
+  }
+
+  @override
+  String caloriesWeekBalanceOverspent(int kcal) {
+    return 'You are $kcal kcal over since your goal started.';
+  }
+
+  @override
+  String get caloriesWeekBalanceStable => 'You are balanced since your goal started. Today\'s target stays unchanged.';
+
+  @override
+  String get caloriesWeekBalanceStartedToday => 'Your goal starts today. The balance will build up from here.';
 
   @override
   String get caloriesSectionEmptyState => 'No entries yet.';
@@ -1954,7 +1973,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get statisticsCaloriesBufferTitle => 'Weekly buffer';
+  String get statisticsCaloriesBufferTitle => 'Weekly balance';
 
   @override
   String get statisticsCaloriesBufferSubtitle => 'current balance against your goal';

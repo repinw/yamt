@@ -2504,7 +2504,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesWeekBufferTitle.
   ///
   /// In en, this message translates to:
-  /// **'Weekly buffer'**
+  /// **'Weekly balance'**
   String get caloriesWeekBufferTitle;
 
   /// No description provided for @caloriesWeekBufferRemaining.
@@ -2518,6 +2518,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{kcal} kcal over this week'**
   String caloriesWeekBufferOverspent(int kcal);
+
+  /// No description provided for @caloriesWeekBalanceTodayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get caloriesWeekBalanceTodayLabel;
+
+  /// No description provided for @caloriesWeekBalanceSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'You saved {kcal} kcal since your goal started. Today\'s target was increased.'**
+  String caloriesWeekBalanceSaved(int kcal);
+
+  /// No description provided for @caloriesWeekBalanceOverspent.
+  ///
+  /// In en, this message translates to:
+  /// **'You are {kcal} kcal over since your goal started.'**
+  String caloriesWeekBalanceOverspent(int kcal);
+
+  /// No description provided for @caloriesWeekBalanceStable.
+  ///
+  /// In en, this message translates to:
+  /// **'You are balanced since your goal started. Today\'s target stays unchanged.'**
+  String get caloriesWeekBalanceStable;
+
+  /// No description provided for @caloriesWeekBalanceStartedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Your goal starts today. The balance will build up from here.'**
+  String get caloriesWeekBalanceStartedToday;
 
   /// No description provided for @caloriesSectionEmptyState.
   ///
@@ -3788,7 +3818,7 @@ abstract class AppLocalizations {
   /// No description provided for @statisticsCaloriesBufferTitle.
   ///
   /// In en, this message translates to:
-  /// **'Weekly buffer'**
+  /// **'Weekly balance'**
   String get statisticsCaloriesBufferTitle;
 
   /// No description provided for @statisticsCaloriesBufferSubtitle.

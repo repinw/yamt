@@ -759,7 +759,7 @@
   "caloriesProteinLabel": "Eiweiß",
   "caloriesCarbsLabel": "Kohlenhydrate",
   "caloriesFatLabel": "Fett",
-  "caloriesWeekBufferTitle": "Wochenpuffer",
+  "caloriesWeekBufferTitle": "Wochenbilanz",
   "caloriesWeekBufferRemaining": "{kcal} kcal für diese Woche übrig",
   "@caloriesWeekBufferRemaining": {
     "placeholders": {
@@ -776,6 +776,29 @@
       }
     }
   },
+  "caloriesWeekBalanceTodayLabel": "Heu",
+  "caloriesWeekBalanceSaved":
+      "Du hast seit Zielstart {kcal} kcal gespart. Dein heutiges Ziel wurde erhöht.",
+  "@caloriesWeekBalanceSaved": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesWeekBalanceOverspent":
+      "Seit Zielstart {kcal} kcal im Überschuss.",
+  "@caloriesWeekBalanceOverspent": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesWeekBalanceStable":
+      "Seit Zielstart bist du ausgeglichen. Dein heutiges Ziel bleibt unverändert.",
+  "caloriesWeekBalanceStartedToday":
+      "Dein Zielstart ist heute. Die Bilanz baut sich ab jetzt auf.",
   "caloriesSectionEmptyState": "Noch keine Einträge.",
   "caloriesDeleteEntryDialogTitle": "Eintrag löschen?",
   "caloriesDeleteEntryDialogMessage":
@@ -1067,7 +1090,7 @@
       }
     }
   },
-  "statisticsCaloriesBufferTitle": "Wochenpuffer",
+  "statisticsCaloriesBufferTitle": "Wochenbilanz",
   "statisticsCaloriesBufferSubtitle": "aktuelle Balance gegen dein Ziel",
   "statisticsCaloriesChartTitle": "Tagesverlauf",
   "statisticsCaloriesChartSubtitle": "Letzte Tage mit gegessenen Kalorien und Zielmarke.",

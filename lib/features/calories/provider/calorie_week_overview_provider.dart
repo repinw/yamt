@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -63,6 +64,8 @@ class CalorieWeekOverview {
     required this.totalGoalKcal,
     required this.remainingKcal,
     required this.balanceStartDate,
+    required this.carryoverBeforeTodayKcal,
+    required this.todayFlexibleGoalKcal,
   });
 
   final List<CalorieWeekDayOverview> days;
@@ -70,6 +73,8 @@ class CalorieWeekOverview {
   final double totalGoalKcal;
   final double remainingKcal;
   final DateTime balanceStartDate;
+  final double carryoverBeforeTodayKcal;
+  final double todayFlexibleGoalKcal;
 }
 
 @riverpod
@@ -138,12 +143,26 @@ Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
     0,
     (sum, day) => sum + day.goalKcal,
   );
+  final today = snapshot.days.last.date;
+  final carryoverBeforeTodayKcal = bufferDays.fold<double>(0, (sum, day) {
+    if (!_isBeforeDay(day.date, today)) {
+      return sum;
+    }
+    return sum + (day.goalKcal - day.totalKcal);
+  });
+  final todayOverview = overviews.last;
+  final todayFlexibleGoalKcal = math.max(
+    0.0,
+    todayOverview.goalKcal + carryoverBeforeTodayKcal,
+  );
   return CalorieWeekOverview(
     days: List<CalorieWeekDayOverview>.unmodifiable(overviews),
     totalConsumedKcal: totalConsumedKcal,
     totalGoalKcal: totalGoalKcal,
     remainingKcal: totalGoalKcal - totalConsumedKcal,
     balanceStartDate: balanceStartDate,
+    carryoverBeforeTodayKcal: carryoverBeforeTodayKcal,
+    todayFlexibleGoalKcal: todayFlexibleGoalKcal,
   );
 }
 

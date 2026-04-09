@@ -735,7 +735,7 @@
   "caloriesProteinLabel": "Protein",
   "caloriesCarbsLabel": "Carbs",
   "caloriesFatLabel": "Fat",
-  "caloriesWeekBufferTitle": "Weekly buffer",
+  "caloriesWeekBufferTitle": "Weekly balance",
   "caloriesWeekBufferRemaining": "{kcal} kcal left this week",
   "@caloriesWeekBufferRemaining": {
     "placeholders": {
@@ -752,6 +752,29 @@
       }
     }
   },
+  "caloriesWeekBalanceTodayLabel": "Today",
+  "caloriesWeekBalanceSaved":
+      "You saved {kcal} kcal since your goal started. Today's target was increased.",
+  "@caloriesWeekBalanceSaved": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesWeekBalanceOverspent":
+      "You are {kcal} kcal over since your goal started.",
+  "@caloriesWeekBalanceOverspent": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesWeekBalanceStable":
+      "You are balanced since your goal started. Today's target stays unchanged.",
+  "caloriesWeekBalanceStartedToday":
+      "Your goal starts today. The balance will build up from here.",
   "caloriesSectionEmptyState": "No entries yet.",
   "caloriesDeleteEntryDialogTitle": "Delete entry?",
   "caloriesDeleteEntryDialogMessage": "Delete \"{name}\" from this day?",
@@ -1041,7 +1064,7 @@
       }
     }
   },
-  "statisticsCaloriesBufferTitle": "Weekly buffer",
+  "statisticsCaloriesBufferTitle": "Weekly balance",
   "statisticsCaloriesBufferSubtitle": "current balance against your goal",
   "statisticsCaloriesChartTitle": "Daily view",
   "statisticsCaloriesChartSubtitle": "Recent days with eaten calories and goal marker.",
