@@ -7,6 +7,11 @@ abstract final class CaloriesPageKeys {
   );
   static const weekStrip = Key('calories_week_strip');
   static const weekBufferCard = Key('calories_week_buffer_card');
+  static const weekBalanceChart = Key('calories_week_balance_chart');
+  static const weekBalanceSummary = Key('calories_week_balance_summary');
+  static const weekBalanceSummaryIcon = Key(
+    'calories_week_balance_summary_icon',
+  );
   static const summaryCard = Key('calories_summary_card');
   static const summaryModeToggle = Key('calories_summary_mode_toggle');
   static const summaryBalanceBar = Key('calories_summary_balance_bar');
@@ -43,6 +48,14 @@ abstract final class CaloriesPageKeys {
 
   static Key summaryModeOption(String mode) {
     return Key('calories_summary_mode_$mode');
+  }
+
+  static Key weekBalanceDayColumn(String dayKey) {
+    return Key('calories_week_balance_day_$dayKey');
+  }
+
+  static Key weekBalanceBar(String dayKey) {
+    return Key('calories_week_balance_bar_$dayKey');
   }
 }
 

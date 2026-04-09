@@ -22,6 +22,8 @@ CalorieWeekOverview _overview({
     totalGoalKcal: totalGoalKcal,
     remainingKcal: remainingKcal,
     balanceStartDate: DateTime(2026, 3, 27).subtract(Duration(days: dayOffset)),
+    carryoverBeforeTodayKcal: remainingKcal,
+    todayFlexibleGoalKcal: totalGoalKcal,
   );
 }
 

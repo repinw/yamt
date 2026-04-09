@@ -21,6 +21,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calories_state_views.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_summary_card.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_week_balance_card.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
@@ -103,16 +105,7 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
           fatLabel: l10n.caloriesFatLabel,
         ),
         const SizedBox(height: AppSpacing.lg),
-        _CaloriesWeekBufferCard(
-          remainingKcal: weekOverview.remainingKcal,
-          title: l10n.caloriesWeekBufferTitle,
-          positiveMessage: l10n.caloriesWeekBufferRemaining(
-            weekOverview.remainingKcal.round(),
-          ),
-          negativeMessage: l10n.caloriesWeekBufferOverspent(
-            weekOverview.remainingKcal.abs().round(),
-          ),
-        ),
+        CaloriesWeekBalanceCard(overview: weekOverview),
         const SizedBox(height: AppSpacing.xl),
         ...dayView.sections.map(
           (section) => Padding(
@@ -332,6 +325,8 @@ CalorieWeekOverview _fallbackWeekOverview({required double goalKcal}) {
     totalGoalKcal: goalKcal * visibleDays.length,
     remainingKcal: goalKcal * visibleDays.length,
     balanceStartDate: visibleDays.first,
+    carryoverBeforeTodayKcal: 0,
+    todayFlexibleGoalKcal: goalKcal,
   );
 }
 
@@ -345,73 +340,4 @@ void _goToNextVisibleDay(WidgetRef ref) {
   final controller = ref.read(calorieDayControllerProvider.notifier);
   final selectedDay = ref.read(calorieDayControllerProvider);
   controller.setDay(nextDiaryVisibleDay(selectedDay));
-}
-
-class _CaloriesWeekBufferCard extends StatelessWidget {
-  const _CaloriesWeekBufferCard({
-    required this.remainingKcal,
-    required this.title,
-    required this.positiveMessage,
-    required this.negativeMessage,
-  });
-
-  final double remainingKcal;
-  final String title;
-  final String positiveMessage;
-  final String negativeMessage;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final iconColor = remainingKcal < 0
-        ? AppInventoryEditorial.warning
-        : AppInventoryEditorial.primary;
-
-    return DecoratedBox(
-      key: CaloriesPageKeys.weekBufferCard,
-      decoration: BoxDecoration(
-        color: AppInventoryEditorial.primary.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Row(
-          children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: colors.surface,
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                child: Icon(Icons.savings_outlined, color: iconColor),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xxs),
-                  Text(
-                    remainingKcal < 0 ? negativeMessage : positiveMessage,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right, color: colors.onSurfaceVariant),
-          ],
-        ),
-      ),
-    );
-  }
 }
