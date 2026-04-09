@@ -55,10 +55,6 @@ class CaloriesSummaryCard extends ConsumerWidget {
     final gramUnit = l10n.caloriesUnitGram;
     final macroGoals = _MacroGoals.fromGoalKcal(goalKcal);
     final viewMode = ref.watch(calorieSummaryViewModeControllerProvider);
-    final balanceState = viewMode == CalorieSummaryViewMode.balance
-        ? ref.watch(calorieBalanceSummaryProvider)
-        : null;
-    final balanceData = balanceState?.value;
 
     return DecoratedBox(
       key: CaloriesPageKeys.summaryCard,
@@ -95,7 +91,6 @@ class CaloriesSummaryCard extends ConsumerWidget {
                 ),
                 CalorieSummaryViewMode.balance => _BalanceSummaryHero(
                   key: const ValueKey<String>('balance_summary_hero'),
-                  balanceState: balanceState!,
                   numberFormat: numberFormat,
                   kcalUnit: kcalUnit,
                 ),
@@ -162,13 +157,9 @@ class CaloriesSummaryCard extends ConsumerWidget {
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
-                    child: _SummaryStat(
-                      label: balanceData?.isCurrentDay == false
-                          ? l10n.caloriesBalancePaceFinalLabel
-                          : l10n.caloriesBalancePaceNowLabel,
-                      value: balanceData == null
-                          ? '...'
-                          : '${numberFormat.format(balanceData.pacedGoalKcal.round())} $kcalUnit',
+                    child: _BalancePaceStat(
+                      numberFormat: numberFormat,
+                      kcalUnit: kcalUnit,
                     ),
                   ),
                 ],
@@ -309,18 +300,35 @@ class _ClassicSummaryHero extends StatelessWidget {
 class _BalanceSummaryHero extends StatelessWidget {
   const _BalanceSummaryHero({
     super.key,
-    required this.balanceState,
     required this.numberFormat,
     required this.kcalUnit,
   });
 
-  final AsyncValue<CalorieBalanceSummaryData> balanceState;
   final NumberFormat numberFormat;
   final String kcalUnit;
 
   @override
   Widget build(BuildContext context) {
+    return _BalanceSummaryHeroContent(
+      numberFormat: numberFormat,
+      kcalUnit: kcalUnit,
+    );
+  }
+}
+
+class _BalanceSummaryHeroContent extends ConsumerWidget {
+  const _BalanceSummaryHeroContent({
+    required this.numberFormat,
+    required this.kcalUnit,
+  });
+
+  final NumberFormat numberFormat;
+  final String kcalUnit;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final balanceState = ref.watch(calorieBalanceSummaryProvider);
 
     return balanceState.when(
       data: (data) => CaloriesBalanceSummaryView(
@@ -342,6 +350,30 @@ class _BalanceSummaryHero extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _BalancePaceStat extends ConsumerWidget {
+  const _BalancePaceStat({required this.numberFormat, required this.kcalUnit});
+
+  final NumberFormat numberFormat;
+  final String kcalUnit;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final balanceState = ref.watch(calorieBalanceSummaryProvider);
+    final balanceData = balanceState.value;
+
+    return _SummaryStat(
+      label: balanceData?.isCurrentDay == false
+          ? l10n.caloriesBalancePaceFinalLabel
+          : l10n.caloriesBalancePaceNowLabel,
+      value: balanceData == null
+          ? '...'
+          : '${numberFormat.format(balanceData.pacedGoalKcal.round())} '
+                '$kcalUnit',
     );
   }
 }

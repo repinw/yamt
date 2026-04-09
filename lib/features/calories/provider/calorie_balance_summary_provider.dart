@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
+import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
@@ -26,6 +27,7 @@ class CalorieBalanceSummaryData {
     required this.balanceStartDate,
     required this.baseGoalKcal,
     required this.carryoverKcal,
+    required this.goalMode,
     required this.flexibleGoalKcal,
     required this.pacedGoalKcal,
     required this.consumedKcal,
@@ -41,6 +43,7 @@ class CalorieBalanceSummaryData {
   final DateTime balanceStartDate;
   final double baseGoalKcal;
   final double carryoverKcal;
+  final CalorieGoalMode goalMode;
   final double flexibleGoalKcal;
   final double pacedGoalKcal;
   final double consumedKcal;
@@ -57,12 +60,8 @@ class CalorieBalanceSummaryData {
 
   bool get isOverPace => deltaKcal > deadZoneKcal;
 
-  double get barProgress {
-    if (rangeKcal <= 0) {
-      return 0;
-    }
-    return (deltaKcal.abs() / rangeKcal).clamp(0.0, 1.0).toDouble();
-  }
+  double get barProgress =>
+      (deltaKcal.abs() / rangeKcal).clamp(0.0, 1.0).toDouble();
 }
 
 @Riverpod(keepAlive: true)
@@ -109,6 +108,10 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
     (sum, entry) => sum + entry.totalKcal,
   );
   final baseGoalKcal = settings.goalKcalForDay(selectedDay);
+  final goalMode =
+      settings.goalEntryForDay(selectedDay)?.calculatorProfile?.goalMode ??
+      settings.calculatorProfile?.goalMode ??
+      CalorieGoalMode.maintain;
   final carryoverKcal = historyGoalKcal - historyConsumedKcal;
   final flexibleGoalKcal = math
       .max(0.0, baseGoalKcal + carryoverKcal)
@@ -127,6 +130,7 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
     balanceStartDate: balanceStartDate,
     baseGoalKcal: baseGoalKcal,
     carryoverKcal: carryoverKcal,
+    goalMode: goalMode,
     flexibleGoalKcal: flexibleGoalKcal,
     pacedGoalKcal: pacedGoalKcal,
     consumedKcal: consumedKcal,
@@ -207,4 +211,41 @@ bool _isSameDay(DateTime left, DateTime right) {
   final normalizedLeft = normalizeDiaryDay(left);
   final normalizedRight = normalizeDiaryDay(right);
   return normalizedLeft == normalizedRight;
+}
+
+double resolveCalorieBalanceScore(CalorieBalanceSummaryData data) {
+  if (!data.isUnderPace && !data.isOverPace) {
+    return 1.0;
+  }
+
+  return switch (data.goalMode) {
+    CalorieGoalMode.lose =>
+      data.isUnderPace
+          ? _positiveScore(data.barProgress)
+          : _negativeScore(data.barProgress),
+    CalorieGoalMode.gain =>
+      data.isOverPace
+          ? _positiveScore(data.barProgress)
+          : _negativeScore(data.barProgress),
+    CalorieGoalMode.maintain => _maintainScore(data.barProgress),
+  };
+}
+
+double resolveCalorieBalanceCenterScore(CalorieBalanceSummaryData data) {
+  return switch (data.goalMode) {
+    CalorieGoalMode.maintain => 1.0,
+    CalorieGoalMode.lose || CalorieGoalMode.gain => 0.55,
+  };
+}
+
+double _positiveScore(double progress) {
+  return (0.72 + (progress * 0.28)).clamp(0.0, 1.0);
+}
+
+double _negativeScore(double progress) {
+  return (0.5 - (progress * 0.5)).clamp(0.0, 1.0);
+}
+
+double _maintainScore(double progress) {
+  return (1.0 - progress).clamp(0.0, 1.0);
 }

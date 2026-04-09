@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_summary_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -21,7 +22,7 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
-    final statusColor = _statusColor(colors);
+    final statusColor = _accentColor(colors);
     final carryoverColor = _carryoverColor(colors);
 
     return Column(
@@ -49,12 +50,7 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.xl),
-        _BalanceBar(
-          progress: data.barProgress,
-          isUnderPace: data.isUnderPace,
-          isOverPace: data.isOverPace,
-          semanticLabel: _statusMessage(l10n),
-        ),
+        _BalanceBar(data: data, semanticLabel: _statusMessage(l10n)),
         const SizedBox(height: AppSpacing.md),
         _BalanceScaleLabels(
           leftLabel: l10n.caloriesBalanceScaleBufferLabel,
@@ -93,14 +89,8 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
     );
   }
 
-  Color _statusColor(ColorScheme colors) {
-    if (data.isUnderPace) {
-      return AppInventoryEditorial.primary;
-    }
-    if (data.isOverPace) {
-      return AppInventoryEditorial.warning;
-    }
-    return colors.primary;
+  Color _accentColor(ColorScheme colors) {
+    return _colorForScore(resolveCalorieBalanceScore(data), colors: colors);
   }
 
   Color _carryoverColor(ColorScheme colors) {
@@ -113,25 +103,56 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
     return colors.onSurfaceVariant;
   }
 
+  Color _colorForScore(double score, {required ColorScheme colors}) {
+    return Color.lerp(
+          colors.error,
+          AppInventoryEditorial.primary,
+          score.clamp(0.0, 1.0),
+        ) ??
+        colors.primary;
+  }
+
   String _statusMessage(AppLocalizations l10n) {
     final delta = data.deltaKcal.round().abs();
     if (data.isCurrentDay) {
       if (data.isWithinDeadZone) {
-        return l10n.caloriesBalanceStatusOnTrack;
+        return l10n.caloriesBalanceStatusBalancedNow;
       }
       if (data.isUnderPace) {
-        return l10n.caloriesBalanceStatusBuffer(delta);
+        return l10n.caloriesBalanceStatusEatNow(delta);
       }
-      return l10n.caloriesBalanceStatusOver(delta);
+      return l10n.caloriesBalanceStatusWaitNow;
     }
 
     if (data.isWithinDeadZone) {
       return l10n.caloriesBalanceStatusFinishedOnTrack;
     }
     if (data.isUnderPace) {
-      return l10n.caloriesBalanceStatusFinishedBuffer(delta);
+      return _finishedUnderPaceMessage(l10n, delta);
     }
-    return l10n.caloriesBalanceStatusFinishedOver(delta);
+    return _finishedOverPaceMessage(l10n, delta);
+  }
+
+  String _finishedUnderPaceMessage(AppLocalizations l10n, int delta) {
+    return switch (data.goalMode) {
+      CalorieGoalMode.lose => l10n.caloriesBalanceStatusFinishedLoseUnder(
+        delta,
+      ),
+      CalorieGoalMode.maintain => l10n.caloriesBalanceStatusFinishedBuffer(
+        delta,
+      ),
+      CalorieGoalMode.gain => l10n.caloriesBalanceStatusFinishedGainUnder(
+        delta,
+      ),
+    };
+  }
+
+  String _finishedOverPaceMessage(AppLocalizations l10n, int delta) {
+    return switch (data.goalMode) {
+      CalorieGoalMode.lose => l10n.caloriesBalanceStatusFinishedLoseOver(delta),
+      CalorieGoalMode.maintain => l10n.caloriesBalanceStatusFinishedOver(delta),
+      CalorieGoalMode.gain => l10n.caloriesBalanceStatusFinishedGainOver(delta),
+    };
   }
 
   String _formatSignedKcal(int value) {
@@ -143,31 +164,27 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
 }
 
 class _BalanceBar extends StatelessWidget {
-  const _BalanceBar({
-    required this.progress,
-    required this.isUnderPace,
-    required this.isOverPace,
-    required this.semanticLabel,
-  });
+  const _BalanceBar({required this.data, required this.semanticLabel});
 
-  final double progress;
-  final bool isUnderPace;
-  final bool isOverPace;
+  final CalorieBalanceSummaryData data;
   final String semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final fillColor = isUnderPace
-        ? AppInventoryEditorial.primary
-        : isOverPace
-        ? AppInventoryEditorial.warning
-        : colors.primary;
-    final markerOffset = isUnderPace
-        ? -progress
-        : isOverPace
-        ? progress
+    final markerOffset = data.isUnderPace
+        ? -data.barProgress
+        : data.isOverPace
+        ? data.barProgress
         : 0.0;
+    final centerColor = _colorForScore(
+      resolveCalorieBalanceCenterScore(data),
+      colors: colors,
+    );
+    final edgeColor = _colorForScore(
+      resolveCalorieBalanceScore(data),
+      colors: colors,
+    );
 
     return Semantics(
       label: semanticLabel,
@@ -175,7 +192,7 @@ class _BalanceBar extends StatelessWidget {
         builder: (context, constraints) {
           final totalWidth = constraints.maxWidth;
           final halfWidth = totalWidth / 2;
-          final fillWidth = halfWidth * progress;
+          final fillWidth = halfWidth * data.barProgress;
           final markerCenterX = halfWidth + (halfWidth * markerOffset);
           final markerSize = AppSpacing.md;
 
@@ -196,23 +213,20 @@ class _BalanceBar extends StatelessWidget {
                 Positioned(
                   top: 0,
                   bottom: 0,
-                  left: isUnderPace ? halfWidth - fillWidth : halfWidth,
-                  width: isUnderPace || isOverPace ? fillWidth : 0,
+                  left: data.isUnderPace ? halfWidth - fillWidth : halfWidth,
+                  width: data.isUnderPace || data.isOverPace ? fillWidth : 0,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(999),
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          begin: isUnderPace
-                              ? Alignment.centerLeft
-                              : Alignment.centerRight,
-                          end: isUnderPace
+                          begin: data.isUnderPace
                               ? Alignment.centerRight
                               : Alignment.centerLeft,
-                          colors: [
-                            fillColor.withValues(alpha: 0.76),
-                            fillColor,
-                          ],
+                          end: data.isUnderPace
+                              ? Alignment.centerLeft
+                              : Alignment.centerRight,
+                          colors: [centerColor, edgeColor],
                         ),
                       ),
                     ),
@@ -231,7 +245,7 @@ class _BalanceBar extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: colors.surface,
                       shape: BoxShape.circle,
-                      border: Border.all(color: fillColor, width: 2),
+                      border: Border.all(color: edgeColor, width: 2),
                       boxShadow: [
                         BoxShadow(
                           color: colors.onSurface.withValues(alpha: 0.12),
@@ -249,6 +263,15 @@ class _BalanceBar extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Color _colorForScore(double score, {required ColorScheme colors}) {
+    return Color.lerp(
+          colors.error,
+          AppInventoryEditorial.primary,
+          score.clamp(0.0, 1.0),
+        ) ??
+        colors.primary;
   }
 }
 

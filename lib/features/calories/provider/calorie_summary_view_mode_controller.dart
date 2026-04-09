@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 
@@ -20,7 +18,6 @@ class CalorieSummaryViewModeController
       return _viewModeFromName(storedMode);
     }
 
-    unawaited(_loadSavedMode());
     return CalorieSummaryViewMode.balance;
   }
 
@@ -31,17 +28,6 @@ class CalorieSummaryViewModeController
 
     state = mode;
     await ref.read(appPreferencesProvider).setString(_preferenceKey, mode.name);
-  }
-
-  Future<void> _loadSavedMode() async {
-    final storedMode = await ref
-        .read(appPreferencesProvider)
-        .getString(_preferenceKey);
-    if (!ref.mounted || storedMode == null) {
-      return;
-    }
-
-    state = _viewModeFromName(storedMode);
   }
 
   CalorieSummaryViewMode _viewModeFromName(String value) {

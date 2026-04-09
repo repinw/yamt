@@ -2342,7 +2342,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesBalanceCarryoverLabel.
   ///
   /// In en, this message translates to:
-  /// **'7-day carryover'**
+  /// **'7-day balance'**
   String get caloriesBalanceCarryoverLabel;
 
   /// No description provided for @caloriesBalanceFlexGoalLabel.
@@ -2366,7 +2366,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesBalanceScaleBufferLabel.
   ///
   /// In en, this message translates to:
-  /// **'Buffer'**
+  /// **'Deficit'**
   String get caloriesBalanceScaleBufferLabel;
 
   /// No description provided for @caloriesBalanceScaleOnTrackLabel.
@@ -2378,8 +2378,26 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesBalanceScaleOverLabel.
   ///
   /// In en, this message translates to:
-  /// **'Over'**
+  /// **'Surplus'**
   String get caloriesBalanceScaleOverLabel;
+
+  /// No description provided for @caloriesBalanceStatusBalancedNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Well balanced for now'**
+  String get caloriesBalanceStatusBalancedNow;
+
+  /// No description provided for @caloriesBalanceStatusEatNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat about {kcal} kcal now'**
+  String caloriesBalanceStatusEatNow(int kcal);
+
+  /// No description provided for @caloriesBalanceStatusWaitNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait a bit before eating again'**
+  String get caloriesBalanceStatusWaitNow;
 
   /// No description provided for @caloriesBalanceStatusOnTrack.
   ///
@@ -2390,7 +2408,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesBalanceStatusBuffer.
   ///
   /// In en, this message translates to:
-  /// **'{kcal} kcal buffer for now'**
+  /// **'{kcal} kcal under pace'**
   String caloriesBalanceStatusBuffer(int kcal);
 
   /// No description provided for @caloriesBalanceStatusOver.
@@ -2398,6 +2416,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{kcal} kcal over pace'**
   String caloriesBalanceStatusOver(int kcal);
+
+  /// No description provided for @caloriesBalanceStatusLoseUnder.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal buffer for weight loss'**
+  String caloriesBalanceStatusLoseUnder(int kcal);
+
+  /// No description provided for @caloriesBalanceStatusLoseOver.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal over pace for weight loss'**
+  String caloriesBalanceStatusLoseOver(int kcal);
+
+  /// No description provided for @caloriesBalanceStatusGainUnder.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal under pace for weight gain'**
+  String caloriesBalanceStatusGainUnder(int kcal);
 
   /// No description provided for @caloriesBalanceStatusFinishedOnTrack.
   ///
@@ -2416,6 +2452,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{kcal} kcal over the flex target'**
   String caloriesBalanceStatusFinishedOver(int kcal);
+
+  /// No description provided for @caloriesBalanceStatusFinishedLoseUnder.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended with a {kcal} kcal buffer for weight loss'**
+  String caloriesBalanceStatusFinishedLoseUnder(int kcal);
+
+  /// No description provided for @caloriesBalanceStatusFinishedLoseOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended {kcal} kcal over the flex target for weight loss'**
+  String caloriesBalanceStatusFinishedLoseOver(int kcal);
+
+  /// No description provided for @caloriesBalanceStatusFinishedGainUnder.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended {kcal} kcal under the flex target for weight gain'**
+  String caloriesBalanceStatusFinishedGainUnder(int kcal);
+
+  /// No description provided for @caloriesBalanceStatusFinishedGainOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended with {kcal} kcal extra for weight gain'**
+  String caloriesBalanceStatusFinishedGainOver(int kcal);
 
   /// No description provided for @caloriesBalanceUnavailable.
   ///

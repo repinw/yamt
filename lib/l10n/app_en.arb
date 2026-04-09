@@ -617,15 +617,25 @@
   "caloriesRemainingLabel": "Remaining",
   "caloriesSummaryViewClassic": "Classic",
   "caloriesSummaryViewBalance": "Balance",
-  "caloriesBalanceCarryoverLabel": "7-day carryover",
+  "caloriesBalanceCarryoverLabel": "7-day balance",
   "caloriesBalanceFlexGoalLabel": "Flex goal",
   "caloriesBalancePaceNowLabel": "Pace now",
   "caloriesBalancePaceFinalLabel": "Final pace",
-  "caloriesBalanceScaleBufferLabel": "Buffer",
+  "caloriesBalanceScaleBufferLabel": "Deficit",
   "caloriesBalanceScaleOnTrackLabel": "On track",
-  "caloriesBalanceScaleOverLabel": "Over",
+  "caloriesBalanceScaleOverLabel": "Surplus",
+  "caloriesBalanceStatusBalancedNow": "Well balanced for now",
+  "caloriesBalanceStatusEatNow": "Eat about {kcal} kcal now",
+  "@caloriesBalanceStatusEatNow": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusWaitNow": "Wait a bit before eating again",
   "caloriesBalanceStatusOnTrack": "Right on pace",
-  "caloriesBalanceStatusBuffer": "{kcal} kcal buffer for now",
+  "caloriesBalanceStatusBuffer": "{kcal} kcal under pace",
   "@caloriesBalanceStatusBuffer": {
     "placeholders": {
       "kcal": {
@@ -635,6 +645,33 @@
   },
   "caloriesBalanceStatusOver": "{kcal} kcal over pace",
   "@caloriesBalanceStatusOver": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusLoseUnder":
+      "{kcal} kcal buffer for weight loss",
+  "@caloriesBalanceStatusLoseUnder": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusLoseOver":
+      "{kcal} kcal over pace for weight loss",
+  "@caloriesBalanceStatusLoseOver": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusGainUnder":
+      "{kcal} kcal under pace for weight gain",
+  "@caloriesBalanceStatusGainUnder": {
     "placeholders": {
       "kcal": {
         "type": "int"
@@ -652,6 +689,42 @@
   },
   "caloriesBalanceStatusFinishedOver": "{kcal} kcal over the flex target",
   "@caloriesBalanceStatusFinishedOver": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusFinishedLoseUnder":
+      "Ended with a {kcal} kcal buffer for weight loss",
+  "@caloriesBalanceStatusFinishedLoseUnder": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusFinishedLoseOver":
+      "Ended {kcal} kcal over the flex target for weight loss",
+  "@caloriesBalanceStatusFinishedLoseOver": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusFinishedGainUnder":
+      "Ended {kcal} kcal under the flex target for weight gain",
+  "@caloriesBalanceStatusFinishedGainUnder": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesBalanceStatusFinishedGainOver":
+      "Ended with {kcal} kcal extra for weight gain",
+  "@caloriesBalanceStatusFinishedGainOver": {
     "placeholders": {
       "kcal": {
         "type": "int"

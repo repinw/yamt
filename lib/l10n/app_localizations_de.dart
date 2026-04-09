@@ -1173,7 +1173,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesSummaryViewBalance => 'Balance';
 
   @override
-  String get caloriesBalanceCarryoverLabel => '7-Tage-Puffer';
+  String get caloriesBalanceCarryoverLabel => '7 Tage Bilanz';
 
   @override
   String get caloriesBalanceFlexGoalLabel => 'Flex-Ziel';
@@ -1185,25 +1185,51 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesBalancePaceFinalLabel => 'Pace final';
 
   @override
-  String get caloriesBalanceScaleBufferLabel => 'Puffer';
+  String get caloriesBalanceScaleBufferLabel => 'Defizit';
 
   @override
   String get caloriesBalanceScaleOnTrackLabel => 'Im Takt';
 
   @override
-  String get caloriesBalanceScaleOverLabel => 'Drüber';
+  String get caloriesBalanceScaleOverLabel => 'Überschuss';
+
+  @override
+  String get caloriesBalanceStatusBalancedNow => 'Für jetzt gut ausbalanciert';
+
+  @override
+  String caloriesBalanceStatusEatNow(int kcal) {
+    return 'Nimm jetzt etwa $kcal kcal zu dir';
+  }
+
+  @override
+  String get caloriesBalanceStatusWaitNow => 'Gedulde dich noch etwas mit dem Essen';
 
   @override
   String get caloriesBalanceStatusOnTrack => 'Genau im Takt';
 
   @override
   String caloriesBalanceStatusBuffer(int kcal) {
-    return '$kcal kcal Puffer für jetzt';
+    return '$kcal kcal unter Pace';
   }
 
   @override
   String caloriesBalanceStatusOver(int kcal) {
     return '$kcal kcal über Pace';
+  }
+
+  @override
+  String caloriesBalanceStatusLoseUnder(int kcal) {
+    return '$kcal kcal Puffer fürs Abnehmen';
+  }
+
+  @override
+  String caloriesBalanceStatusLoseOver(int kcal) {
+    return '$kcal kcal über Pace fürs Abnehmen';
+  }
+
+  @override
+  String caloriesBalanceStatusGainUnder(int kcal) {
+    return '$kcal kcal unter Pace fürs Zunehmen';
   }
 
   @override
@@ -1217,6 +1243,26 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String caloriesBalanceStatusFinishedOver(int kcal) {
     return '$kcal kcal über dem Flex-Ziel beendet';
+  }
+
+  @override
+  String caloriesBalanceStatusFinishedLoseUnder(int kcal) {
+    return 'Mit $kcal kcal Puffer fürs Abnehmen beendet';
+  }
+
+  @override
+  String caloriesBalanceStatusFinishedLoseOver(int kcal) {
+    return '$kcal kcal über dem Flex-Ziel fürs Abnehmen beendet';
+  }
+
+  @override
+  String caloriesBalanceStatusFinishedGainUnder(int kcal) {
+    return '$kcal kcal unter dem Flex-Ziel fürs Zunehmen beendet';
+  }
+
+  @override
+  String caloriesBalanceStatusFinishedGainOver(int kcal) {
+    return 'Mit $kcal kcal Extra fürs Zunehmen beendet';
   }
 
   @override

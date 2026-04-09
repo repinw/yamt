@@ -48,7 +48,7 @@ final class CalorieSummaryViewModeControllerProvider
 }
 
 String _$calorieSummaryViewModeControllerHash() =>
-    r'917403e9b2223cccf18551f5cba1233299efd1e1';
+    r'9bf062ad39c3e9c01484e124ad8a6db15d8edf65';
 
 abstract class _$CalorieSummaryViewModeController
     extends $Notifier<CalorieSummaryViewMode> {
