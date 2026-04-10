@@ -8,18 +8,18 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1081825170446:android:7e36f8505733fbcbfc985f",
+        "mobilesdk_app_id": "1:1081825170446:android:e6e0bc6a9f527f1dfc985f",
         "android_client_info": {
-          "package_name": "com.example.mealtrack"
+          "package_name": "de.yamt.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1081825170446-vsb2pg2ga5a3l2j54ltqdtk4o8ep8fh6.apps.googleusercontent.com",
+          "client_id": "1081825170446-5t50h0i6vdbt55cs8fuj1848990okq3j.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.mealtrack",
-            "certificate_hash": "2de1dcbb6723124930bd0bd91fd28957f9c0786b"
+            "package_name": "de.yamt.app",
+            "certificate_hash": "ea3997ba56e092631a2283aa2d2edc8fa3a56ad5"
           }
         },
         {
@@ -40,54 +40,10 @@
               "client_type": 3
             },
             {
-              "client_id": "1081825170446-9ma33rr1n9dcquepo2kvqb9ktbh8n73j.apps.googleusercontent.com",
+              "client_id": "1081825170446-983f1du3ein766kbqdvcb23pboubdbi7.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.mealtrack"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:1081825170446:android:1cdfeec570d1806dfc985f",
-        "android_client_info": {
-          "package_name": "com.example.yamt"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "1081825170446-tnn6jbopa129bhtr621m3p1qrr9ds4em.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.yamt",
-            "certificate_hash": "413f01119cde1e65c7e56f34bc7baf0031f21bc2"
-          }
-        },
-        {
-          "client_id": "1081825170446-0rf8tbq9eo9t0vboejfdei0k0e1kgcgl.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyABE2n8tu6VQzxVi5eWlEMilapAgd0ddzU"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "1081825170446-0rf8tbq9eo9t0vboejfdei0k0e1kgcgl.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "1081825170446-9ma33rr1n9dcquepo2kvqb9ktbh8n73j.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.example.mealtrack"
+                "bundle_id": "de.yamt.app"
               }
             }
           ]

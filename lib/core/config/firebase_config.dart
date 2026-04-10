@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
+import 'package:yamt/core/config/firebase_app_check_config.dart';
 import 'package:yamt/firebase_options.dart';
 
 const _firebaseConfigLogName = 'FirebaseConfig';
@@ -31,6 +32,7 @@ const _firestoreEmulatorPort = int.fromEnvironment(
 // coverage:ignore-file
 Future<void> setupFirebase() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await setupFirebaseAppCheck();
   await _configureFirebaseEmulators();
 }
 
