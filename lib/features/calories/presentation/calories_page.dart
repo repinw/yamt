@@ -21,8 +21,6 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calories_state_views.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_summary_card.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calories_week_balance_card.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
@@ -104,8 +102,8 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
           carbsLabel: l10n.caloriesCarbsLabel,
           fatLabel: l10n.caloriesFatLabel,
         ),
-        const SizedBox(height: AppSpacing.lg),
-        CaloriesWeekBalanceCard(overview: weekOverview),
+        const SizedBox(height: AppSpacing.md),
+        _WeekBalanceSummaryBanner(overview: weekOverview),
         const SizedBox(height: AppSpacing.xl),
         ...dayView.sections.map(
           (section) => Padding(
@@ -299,6 +297,66 @@ class _CalorieEntryDeleteDialogResult {
   const _CalorieEntryDeleteDialogResult({required this.restoreToInventory});
 
   final bool restoreToInventory;
+}
+
+class _WeekBalanceSummaryBanner extends StatelessWidget {
+  const _WeekBalanceSummaryBanner({required this.overview});
+
+  final CalorieWeekOverview overview;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isGoalStartToday =
+        normalizeDiaryDay(overview.balanceStartDate) ==
+        normalizeDiaryDay(DateTime.now());
+    final carryoverBeforeTodayKcal = overview.carryoverBeforeTodayKcal;
+    final accentColor = carryoverBeforeTodayKcal < 0
+        ? AppInventoryEditorial.warning
+        : AppInventoryEditorial.primary;
+    final backgroundColor = carryoverBeforeTodayKcal < 0
+        ? AppInventoryEditorial.warning.withValues(alpha: 0.08)
+        : AppInventoryEditorial.primary.withValues(alpha: 0.08);
+    final absoluteCarryover = carryoverBeforeTodayKcal.abs().round();
+    final message = switch ((isGoalStartToday, carryoverBeforeTodayKcal)) {
+      (true, _) => l10n.caloriesWeekBalanceStartedToday,
+      (_, > 0) => l10n.caloriesWeekBalanceSaved(absoluteCarryover),
+      (_, < 0) => l10n.caloriesWeekBalanceOverspent(absoluteCarryover),
+      _ => l10n.caloriesWeekBalanceStable,
+    };
+
+    return DecoratedBox(
+      key: CaloriesPageKeys.weekBalanceSummary,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.info_outline,
+              key: CaloriesPageKeys.weekBalanceSummaryIcon,
+              size: 18,
+              color: accentColor,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                message,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: accentColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 CalorieWeekOverview resolveDisplayedWeekOverview(

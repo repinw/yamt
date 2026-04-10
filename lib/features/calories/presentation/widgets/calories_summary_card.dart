@@ -67,11 +67,39 @@ class CaloriesSummaryCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            _SummaryModeToggle(
-              viewMode: viewMode,
-              onChanged: ref
-                  .read(calorieSummaryViewModeControllerProvider.notifier)
-                  .setMode,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _SummaryModeToggle(
+                  viewMode: viewMode,
+                  onChanged: ref
+                      .read(calorieSummaryViewModeControllerProvider.notifier)
+                      .setMode,
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: switch (viewMode) {
+                      CalorieSummaryViewMode.balance =>
+                        _BalanceFlexGoalHeaderStat(
+                          numberFormat: numberFormat,
+                          kcalUnit: kcalUnit,
+                        ),
+                      CalorieSummaryViewMode.classic => _ClassicHeaderStats(
+                        consumedLabel: consumedLabel,
+                        consumedValue:
+                            '${numberFormat.format(consumedKcal.round())} '
+                            '$kcalUnit',
+                        goalLabel: goalLabel,
+                        goalValue:
+                            '${numberFormat.format(goalKcal.round())} '
+                            '$kcalUnit',
+                      ),
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.xl),
             AnimatedSwitcher(
@@ -97,74 +125,42 @@ class CaloriesSummaryCard extends ConsumerWidget {
               },
             ),
             const SizedBox(height: AppSpacing.xl),
-            _MacroProgressRow(
-              label: carbsLabel,
-              current: totalCarbs,
-              target: macroGoals.carbs,
-              color: const Color(0xFF3B82F6),
-              unitLabel: gramUnit,
-              numberFormat: numberFormat,
+            Row(
+              children: [
+                Expanded(
+                  child: _MacroProgressCard(
+                    label: carbsLabel,
+                    current: totalCarbs,
+                    target: macroGoals.carbs,
+                    color: const Color(0xFF3B82F6),
+                    unitLabel: gramUnit,
+                    numberFormat: numberFormat,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: _MacroProgressCard(
+                    label: proteinLabel,
+                    current: totalProtein,
+                    target: macroGoals.protein,
+                    color: const Color(0xFFF97316),
+                    unitLabel: gramUnit,
+                    numberFormat: numberFormat,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: _MacroProgressCard(
+                    label: fatLabel,
+                    current: totalFat,
+                    target: macroGoals.fat,
+                    color: const Color(0xFFEF4444),
+                    unitLabel: gramUnit,
+                    numberFormat: numberFormat,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.md),
-            _MacroProgressRow(
-              label: proteinLabel,
-              current: totalProtein,
-              target: macroGoals.protein,
-              color: const Color(0xFFF97316),
-              unitLabel: gramUnit,
-              numberFormat: numberFormat,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _MacroProgressRow(
-              label: fatLabel,
-              current: totalFat,
-              target: macroGoals.fat,
-              color: const Color(0xFFEAB308),
-              unitLabel: gramUnit,
-              numberFormat: numberFormat,
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            switch (viewMode) {
-              CalorieSummaryViewMode.classic => Row(
-                children: [
-                  Expanded(
-                    child: _SummaryStat(
-                      label: consumedLabel,
-                      value:
-                          '${numberFormat.format(consumedKcal.round())} '
-                          '$kcalUnit',
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: _SummaryStat(
-                      label: goalLabel,
-                      value:
-                          '${numberFormat.format(goalKcal.round())} $kcalUnit',
-                    ),
-                  ),
-                ],
-              ),
-              CalorieSummaryViewMode.balance => Row(
-                children: [
-                  Expanded(
-                    child: _SummaryStat(
-                      label: consumedLabel,
-                      value:
-                          '${numberFormat.format(consumedKcal.round())} '
-                          '$kcalUnit',
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: _BalancePaceStat(
-                      numberFormat: numberFormat,
-                      kcalUnit: kcalUnit,
-                    ),
-                  ),
-                ],
-              ),
-            },
           ],
         ),
       ),
@@ -183,47 +179,100 @@ class _SummaryModeToggle extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
-    return DecoratedBox(
-      key: CaloriesPageKeys.summaryModeToggle,
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(
-          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: DecoratedBox(
+        key: CaloriesPageKeys.summaryModeToggle,
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerLow.withValues(alpha: 0.72),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          border: Border.all(
+            color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+          ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xs),
-        child: SegmentedButton<CalorieSummaryViewMode>(
-          showSelectedIcon: false,
-          style: _summarySegmentedButtonStyle(context),
-          selected: <CalorieSummaryViewMode>{viewMode},
-          onSelectionChanged: (selection) {
-            if (selection.isEmpty) {
-              return;
-            }
-            onChanged(selection.first);
-          },
-          segments: <ButtonSegment<CalorieSummaryViewMode>>[
-            ButtonSegment<CalorieSummaryViewMode>(
-              value: CalorieSummaryViewMode.balance,
-              label: Text(
-                l10n.caloriesSummaryViewBalance,
-                key: CaloriesPageKeys.summaryModeOption(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xxs),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _SummaryModeChip(
+                label: l10n.caloriesSummaryViewBalance,
+                isSelected: viewMode == CalorieSummaryViewMode.balance,
+                onTap: () => onChanged(CalorieSummaryViewMode.balance),
+                textKey: CaloriesPageKeys.summaryModeOption(
                   CalorieSummaryViewMode.balance.name,
                 ),
               ),
-            ),
-            ButtonSegment<CalorieSummaryViewMode>(
-              value: CalorieSummaryViewMode.classic,
-              label: Text(
-                l10n.caloriesSummaryViewClassic,
-                key: CaloriesPageKeys.summaryModeOption(
+              const SizedBox(width: AppSpacing.xxs),
+              _SummaryModeChip(
+                label: l10n.caloriesSummaryViewClassic,
+                isSelected: viewMode == CalorieSummaryViewMode.classic,
+                onTap: () => onChanged(CalorieSummaryViewMode.classic),
+                textKey: CaloriesPageKeys.summaryModeOption(
                   CalorieSummaryViewMode.classic.name,
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryModeChip extends StatelessWidget {
+  const _SummaryModeChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    required this.textKey,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final Key textKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? colors.surfaceContainerLowest
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: colors.onSurface.withValues(alpha: 0.06),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Text(
+            label,
+            key: textKey,
+            style: textTheme.labelMedium?.copyWith(
+              color: isSelected ? colors.primary : colors.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -354,32 +403,116 @@ class _BalanceSummaryHeroContent extends ConsumerWidget {
   }
 }
 
-class _BalancePaceStat extends ConsumerWidget {
-  const _BalancePaceStat({required this.numberFormat, required this.kcalUnit});
+class _BalanceFlexGoalHeaderStat extends ConsumerWidget {
+  const _BalanceFlexGoalHeaderStat({
+    required this.numberFormat,
+    required this.kcalUnit,
+  });
 
   final NumberFormat numberFormat;
   final String kcalUnit;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final balanceState = ref.watch(calorieBalanceSummaryProvider);
-    final balanceData = balanceState.value;
+    final flexGoalText = switch (balanceState.value) {
+      final data? =>
+        '${numberFormat.format(data.flexibleGoalKcal.round())} $kcalUnit',
+      null => '...',
+    };
 
-    return _SummaryStat(
-      label: balanceData?.isCurrentDay == false
-          ? l10n.caloriesBalancePaceFinalLabel
-          : l10n.caloriesBalancePaceNowLabel,
-      value: balanceData == null
-          ? '...'
-          : '${numberFormat.format(balanceData.pacedGoalKcal.round())} '
-                '$kcalUnit',
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          l10n.caloriesBalanceFlexGoalLabel.toUpperCase(),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: colors.onSurfaceVariant,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.0,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxs),
+        Text(
+          flexGoalText,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: colors.primary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _MacroProgressRow extends StatelessWidget {
-  const _MacroProgressRow({
+class _ClassicHeaderStats extends StatelessWidget {
+  const _ClassicHeaderStats({
+    required this.consumedLabel,
+    required this.consumedValue,
+    required this.goalLabel,
+    required this.goalValue,
+  });
+
+  final String consumedLabel;
+  final String consumedValue;
+  final String goalLabel;
+  final String goalValue;
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerRight,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _HeaderStat(label: consumedLabel, value: consumedValue),
+          const SizedBox(width: AppSpacing.xl),
+          _HeaderStat(label: goalLabel, value: goalValue),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeaderStat extends StatelessWidget {
+  const _HeaderStat({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.95,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxs),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            color: colorScheme.onSurface,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MacroProgressCard extends StatelessWidget {
+  const _MacroProgressCard({
     required this.label,
     required this.current,
     required this.target,
@@ -398,81 +531,168 @@ class _MacroProgressRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final currentValueColor = current > target ? color : colorScheme.onSurface;
     final progress = target <= 0
         ? 0.0
         : (current / target).clamp(0.0, 1.0).toDouble();
     final currentText = numberFormat.format(current.round());
     final targetText = numberFormat.format(target.round());
+    final backgroundColor = Color.alphaBlend(
+      color.withValues(alpha: 0.06),
+      colorScheme.surfaceContainerLowest,
+    );
+    final trackColor = Color.alphaBlend(
+      color.withValues(alpha: 0.03),
+      colorScheme.surfaceContainerHigh,
+    );
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                label.toUpperCase(),
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.05,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: color.withValues(alpha: 0.12)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.md,
+        ),
+        child: SizedBox(
+          height: 82,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final labelStyle = Theme.of(context).textTheme.labelSmall
+                      ?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.95,
+                      );
+                  final displayLabel = _resolveMacroLabel(
+                    context: context,
+                    label: label.toUpperCase(),
+                    style: labelStyle,
+                    maxWidth: constraints.maxWidth,
+                  );
+
+                  return Text(
+                    displayLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.clip,
+                    style: labelStyle,
+                  );
+                },
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: currentText,
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: currentValueColor,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                            height: 1,
+                          ),
+                    ),
+                    TextSpan(
+                      text: ' / $targetText$unitLabel',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                        height: 1,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            Text(
-              '$currentText$unitLabel / $targetText$unitLabel',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(999),
-          child: LinearProgressIndicator(
-            value: progress,
-            minHeight: 6,
-            backgroundColor: colorScheme.surfaceContainerHighest,
-            color: color,
+              const Spacer(),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: SizedBox(
+                  height: 5,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ColoredBox(color: trackColor),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: FractionallySizedBox(
+                          widthFactor: progress,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: color,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }
 
-class _SummaryStat extends StatelessWidget {
-  const _SummaryStat({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label.toUpperCase(),
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.05,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xxs),
-        Text(
-          value,
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-        ),
-      ],
-    );
+String _resolveMacroLabel({
+  required BuildContext context,
+  required String label,
+  required TextStyle? style,
+  required double maxWidth,
+}) {
+  if (style == null || maxWidth <= 0) {
+    return label;
   }
+
+  if (_textFitsWidth(
+    context: context,
+    text: label,
+    style: style,
+    maxWidth: maxWidth,
+  )) {
+    return label;
+  }
+
+  for (var end = label.length - 1; end > 1; end--) {
+    final shortenedLabel = '${label.substring(0, end).trimRight()}.';
+    if (_textFitsWidth(
+      context: context,
+      text: shortenedLabel,
+      style: style,
+      maxWidth: maxWidth,
+    )) {
+      return shortenedLabel;
+    }
+  }
+
+  return label;
+}
+
+bool _textFitsWidth({
+  required BuildContext context,
+  required String text,
+  required TextStyle style,
+  required double maxWidth,
+}) {
+  final textPainter = TextPainter(
+    text: TextSpan(text: text, style: style),
+    maxLines: 1,
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+  )..layout(maxWidth: maxWidth);
+
+  return !textPainter.didExceedMaxLines;
 }
 
 class _MacroGoals {
@@ -493,38 +713,4 @@ class _MacroGoals {
       fat: goalKcal * 0.30 / 9,
     );
   }
-}
-
-ButtonStyle _summarySegmentedButtonStyle(BuildContext context) {
-  final colors = Theme.of(context).colorScheme;
-  final textTheme = Theme.of(context).textTheme;
-
-  return ButtonStyle(
-    padding: const WidgetStatePropertyAll(
-      EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-    ),
-    textStyle: WidgetStatePropertyAll(
-      textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-    ),
-    side: const WidgetStatePropertyAll(BorderSide.none),
-    backgroundColor: WidgetStateProperty.resolveWith((states) {
-      if (states.contains(WidgetState.selected)) {
-        return colors.surfaceContainerLowest;
-      }
-      return Colors.transparent;
-    }),
-    foregroundColor: WidgetStateProperty.resolveWith((states) {
-      if (states.contains(WidgetState.selected)) {
-        return colors.primary;
-      }
-      return colors.onSurfaceVariant;
-    }),
-    shape: WidgetStatePropertyAll(
-      RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
-    ),
-    elevation: const WidgetStatePropertyAll(0),
-    overlayColor: WidgetStatePropertyAll(
-      colors.surfaceContainerHigh.withValues(alpha: 0.16),
-    ),
-  );
 }

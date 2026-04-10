@@ -1,9 +1,18 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/presentation/calorie_weekday_l10n.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+const _miniWeekBalanceChartMinKcal = 800.0;
+const _miniWeekBalanceChartHeadroomFactor = 1.1;
+const _miniWeekBalanceHeight = 64.0;
+const _miniWeekBalanceWidth = 30.0;
+const _miniWeekBalanceGoalLineHeight = 3.0;
+const _miniWeekBalanceHorizontalInset = 4.0;
 
 class CaloriesDayNavigationCard extends StatelessWidget {
   const CaloriesDayNavigationCard({
@@ -23,6 +32,8 @@ class CaloriesDayNavigationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final chartMaxKcal = _chartMaxKcal(days);
+
     return GestureDetector(
       key: CaloriesPageKeys.weekStrip,
       onHorizontalDragEnd: (details) {
@@ -43,11 +54,22 @@ class CaloriesDayNavigationCard extends StatelessWidget {
                 day: day,
                 isToday: _isSameDay(day.date, DateTime.now()),
                 isSelected: _isSameDay(day.date, selectedDay),
+                chartMaxKcal: chartMaxKcal,
                 onTap: () => onSelectDay(day.date),
               ),
             ),
         ],
       ),
+    );
+  }
+
+  double _chartMaxKcal(List<CalorieWeekDayOverview> days) {
+    final peakKcal = days.fold<double>(0, (peak, day) {
+      return math.max(peak, math.max(day.goalKcal, day.totalKcal));
+    });
+    return math.max(
+      _miniWeekBalanceChartMinKcal,
+      peakKcal * _miniWeekBalanceChartHeadroomFactor,
     );
   }
 }
@@ -57,12 +79,14 @@ class _DiaryDayButton extends StatelessWidget {
     required this.day,
     required this.isToday,
     required this.isSelected,
+    required this.chartMaxKcal,
     required this.onTap,
   });
 
   final CalorieWeekDayOverview day;
   final bool isToday;
   final bool isSelected;
+  final double chartMaxKcal;
   final VoidCallback onTap;
 
   @override
@@ -98,6 +122,13 @@ class _DiaryDayButton extends StatelessWidget {
                     : FontWeight.w700,
                 letterSpacing: 1.1,
               ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            _DiaryDayBalancePreview(
+              day: day,
+              isToday: isToday,
+              isSelected: isSelected,
+              chartMaxKcal: chartMaxKcal,
             ),
             const SizedBox(height: AppSpacing.sm),
             AnimatedContainer(
@@ -145,6 +176,89 @@ class _DiaryDayButton extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _DiaryDayBalancePreview extends StatelessWidget {
+  const _DiaryDayBalancePreview({
+    required this.day,
+    required this.isToday,
+    required this.isSelected,
+    required this.chartMaxKcal,
+  });
+
+  final CalorieWeekDayOverview day;
+  final bool isToday;
+  final bool isSelected;
+  final double chartMaxKcal;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final goalRatio = (day.goalKcal / chartMaxKcal).clamp(0.0, 1.0);
+    final totalRatio = (day.totalKcal / chartMaxKcal).clamp(0.0, 1.0);
+    final goalBottomOffset = (_miniWeekBalanceHeight * goalRatio).toDouble();
+    final barHeight = (_miniWeekBalanceHeight * totalRatio).toDouble();
+
+    return SizedBox(
+      width: _miniWeekBalanceWidth,
+      height: _miniWeekBalanceHeight,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: isToday
+                    ? colors.primaryContainer.withValues(alpha: 0.35)
+                    : colors.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: isSelected
+                      ? colors.primary.withValues(alpha: 0.35)
+                      : AppInventoryEditorialSurfaces.ghostBorder(colors),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: _miniWeekBalanceHorizontalInset,
+            right: _miniWeekBalanceHorizontalInset,
+            bottom: goalBottomOffset - 1,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: colors.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+              child: const SizedBox(height: _miniWeekBalanceGoalLineHeight),
+            ),
+          ),
+          if (barHeight > 0)
+            Positioned(
+              left: _miniWeekBalanceHorizontalInset,
+              right: _miniWeekBalanceHorizontalInset,
+              bottom: 0,
+              height: barHeight,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: _barColor(colors),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Color _barColor(ColorScheme colors) {
+    if (isToday) {
+      return colors.primary;
+    }
+    if (day.isOverGoal) {
+      return AppInventoryEditorial.warning;
+    }
+    return AppInventoryEditorial.primary;
   }
 }
 

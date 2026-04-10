@@ -296,9 +296,9 @@ void main() {
     expect(find.byKey(CaloriesPageKeys.weekStrip), findsOneWidget);
     await _scrollUntilVisible(
       tester,
-      find.byKey(CaloriesPageKeys.weekBufferCard),
+      find.byKey(CaloriesPageKeys.weekBalanceSummary),
     );
-    expect(find.byKey(CaloriesPageKeys.weekBufferCard), findsOneWidget);
+    expect(find.byKey(CaloriesPageKeys.weekBalanceSummary), findsOneWidget);
     await _scrollUntilVisible(
       tester,
       find.byKey(CaloriesPageKeys.sectionCard(MealType.breakfast.name)),
@@ -918,8 +918,8 @@ void main() {
     expect(find.byKey(CaloriesPageKeys.summaryCard), findsOneWidget);
     await _scrollUntilVisible(
       tester,
-      find.byKey(CaloriesPageKeys.weekBufferCard),
+      find.byKey(CaloriesPageKeys.weekBalanceSummary),
     );
-    expect(find.byKey(CaloriesPageKeys.weekBufferCard), findsOneWidget);
+    expect(find.byKey(CaloriesPageKeys.weekBalanceSummary), findsOneWidget);
   });
 }
