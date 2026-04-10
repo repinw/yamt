@@ -15,9 +15,9 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/data/'
     'manual_product_speech_service.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
+import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_manual_product_page.dart';
-import 'package:yamt/features/scanner/provider/'
+import 'package:yamt/features/product_search/provider/'
     'inventory_receipt_manual_product_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -275,6 +275,15 @@ Future<void> _openSearchEditor(WidgetTester tester) async {
     find.byKey(const Key('receipt_review_manual_launcher_search_field')),
   );
   await tester.pumpAndSettle();
+}
+
+Icon _voiceSearchIcon(WidgetTester tester) {
+  return tester.widget<Icon>(
+    find.descendant(
+      of: find.byKey(const Key('receipt_review_manual_voice_search_button')),
+      matching: find.byType(Icon),
+    ),
+  );
 }
 
 void main() {
@@ -538,6 +547,32 @@ void main() {
     );
   });
 
+  testWidgets('voice search can be stopped manually', (tester) async {
+    final speechService = _FakeManualProductSpeechService();
+
+    await tester.pumpWidget(
+      _wrapPage(item: _item(), speechService: speechService),
+    );
+    await tester.pump();
+
+    await _openSearchEditor(tester);
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+    );
+    await tester.pump();
+
+    expect(speechService.startCallCount, 1);
+    expect(_voiceSearchIcon(tester).icon, Icons.mic);
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+    );
+    await tester.pump();
+
+    expect(speechService.stopCallCount, 1);
+    expect(_voiceSearchIcon(tester).icon, Icons.mic_none);
+  });
+
   testWidgets('voice search permission failure shows a snackbar', (
     tester,
   ) async {
@@ -562,6 +597,37 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets(
+    'voice search error while listening resets ui and shows snackbar',
+    (tester) async {
+      final speechService = _FakeManualProductSpeechService();
+
+      await tester.pumpWidget(
+        _wrapPage(item: _item(), speechService: speechService),
+      );
+      await tester.pump();
+
+      await _openSearchEditor(tester);
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_voice_search_button')),
+      );
+      await tester.pump();
+
+      expect(_voiceSearchIcon(tester).icon, Icons.mic);
+
+      speechService.emitError(ManualProductSpeechFailure.error);
+      await tester.pump();
+
+      expect(_voiceSearchIcon(tester).icon, Icons.mic_none);
+      expect(
+        find.text(
+          'Sprachsuche konnte nicht gestartet werden. Bitte versuche es erneut.',
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets(
     'manual search field is prefilled with item name brand and store',

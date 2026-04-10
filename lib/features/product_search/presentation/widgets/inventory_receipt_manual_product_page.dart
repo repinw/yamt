@@ -795,6 +795,10 @@ class _InventoryReceiptManualProductEditorPageState
     if (_isDisposing || !mounted) {
       return;
     }
+    if (_isListeningToSpeech == isListening &&
+        (isListening || !_isStartingVoiceSearch)) {
+      return;
+    }
 
     setState(() {
       _isListeningToSpeech = isListening;
@@ -809,10 +813,12 @@ class _InventoryReceiptManualProductEditorPageState
       return;
     }
 
-    setState(() {
-      _isListeningToSpeech = false;
-      _isStartingVoiceSearch = false;
-    });
+    if (_isListeningToSpeech || _isStartingVoiceSearch) {
+      setState(() {
+        _isListeningToSpeech = false;
+        _isStartingVoiceSearch = false;
+      });
+    }
     _showSnackBar(
       _resolveSpeechErrorText(AppLocalizations.of(context)!, failure),
     );
