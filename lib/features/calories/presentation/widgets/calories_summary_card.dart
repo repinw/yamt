@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -651,17 +652,34 @@ String _resolveMacroLabel({
   required TextStyle? style,
   required double maxWidth,
 }) {
-  if (style == null || maxWidth <= 0) {
+  return resolveMacroLabelForWidth(
+    label: label,
+    style: style,
+    maxWidth: maxWidth,
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+  );
+}
+
+@visibleForTesting
+String resolveMacroLabelForWidth({
+  required String label,
+  required TextStyle? style,
+  required double maxWidth,
+  required ui.TextDirection textDirection,
+  required TextScaler textScaler,
+}) {
+  if (label.isEmpty || style == null || maxWidth <= 0) {
     return label;
   }
 
   final textPainter = TextPainter(
     maxLines: 1,
-    textDirection: Directionality.of(context),
-    textScaler: MediaQuery.textScalerOf(context),
+    textDirection: textDirection,
+    textScaler: textScaler,
   );
 
-  if (_textFitsWidth(
+  if (doesCaloriesSummaryTextFitWidth(
     textPainter: textPainter,
     text: label,
     style: style,
@@ -677,7 +695,7 @@ String _resolveMacroLabel({
   while (low <= high) {
     final middle = low + ((high - low) ~/ 2);
     final shortenedLabel = '${label.substring(0, middle).trimRight()}.';
-    if (_textFitsWidth(
+    if (doesCaloriesSummaryTextFitWidth(
       textPainter: textPainter,
       text: shortenedLabel,
       style: style,
@@ -693,16 +711,26 @@ String _resolveMacroLabel({
   return bestLabel;
 }
 
-bool _textFitsWidth({
-  required TextPainter textPainter,
+@visibleForTesting
+bool doesCaloriesSummaryTextFitWidth({
+  TextPainter? textPainter,
   required String text,
   required TextStyle style,
   required double maxWidth,
+  ui.TextDirection textDirection = ui.TextDirection.ltr,
+  TextScaler textScaler = TextScaler.noScaling,
 }) {
-  textPainter.text = TextSpan(text: text, style: style);
-  textPainter.layout(maxWidth: maxWidth);
+  final resolvedTextPainter =
+      textPainter ??
+      TextPainter(
+        maxLines: 1,
+        textDirection: textDirection,
+        textScaler: textScaler,
+      );
+  resolvedTextPainter.text = TextSpan(text: text, style: style);
+  resolvedTextPainter.layout(maxWidth: maxWidth);
 
-  return !textPainter.didExceedMaxLines;
+  return !resolvedTextPainter.didExceedMaxLines;
 }
 
 class _MacroGoals {
