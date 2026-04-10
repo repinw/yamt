@@ -20,6 +20,7 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
@@ -33,6 +34,7 @@ List<InventoryItem>? buildReducedItems({
   required List<InventoryItem> currentItems,
   required String itemId,
   required int amount,
+  DateTime? consumedAt,
 }) {
   if (amount < 1) {
     return null;
@@ -49,6 +51,9 @@ List<InventoryItem>? buildReducedItems({
     return null;
   }
   final reducedAmount = amount > maxReducible ? maxReducible : amount;
+  final effectiveConsumedAt = item.latestConsumedAtOr(
+    consumedAt ?? DateTime.now(),
+  );
 
   final nextItems = List<InventoryItem>.from(currentItems);
   if (item.usesAmountProgress) {
@@ -60,13 +65,17 @@ List<InventoryItem>? buildReducedItems({
         item: item,
         currentAmount: safeCurrentAmount,
       ),
+      lastConsumedAt: effectiveConsumedAt,
     );
     return nextItems;
   }
 
   final nextQuantity = item.quantity - reducedAmount;
   final safeQuantity = nextQuantity < 0 ? 0 : nextQuantity;
-  nextItems[itemIndex] = item.copyWith(quantity: safeQuantity);
+  nextItems[itemIndex] = item.copyWith(
+    quantity: safeQuantity,
+    lastConsumedAt: effectiveConsumedAt,
+  );
   return nextItems;
 }
 
@@ -104,12 +113,17 @@ List<InventoryItem>? buildRestoredItems({
     final safeCurrentAmount = restoredCurrentAmount > maxAmount
         ? maxAmount
         : restoredCurrentAmount;
-    nextItems[itemIndex] = item.copyWith(
+    final restoredItem = item.copyWith(
       currentAmount: safeCurrentAmount,
       quantity: quantityForCurrentAmount(
         item: item,
         currentAmount: safeCurrentAmount,
       ),
+    );
+    nextItems[itemIndex] = restoredItem.copyWith(
+      lastConsumedAt: restoredItem.isFullyAvailable
+          ? null
+          : restoredItem.lastConsumedAt,
     );
     return nextItems;
   }
@@ -121,7 +135,12 @@ List<InventoryItem>? buildRestoredItems({
   final safeQuantity = restoredQuantity > maxQuantity
       ? maxQuantity
       : restoredQuantity;
-  nextItems[itemIndex] = item.copyWith(quantity: safeQuantity);
+  final restoredItem = item.copyWith(quantity: safeQuantity);
+  nextItems[itemIndex] = restoredItem.copyWith(
+    lastConsumedAt: restoredItem.isFullyAvailable
+        ? null
+        : restoredItem.lastConsumedAt,
+  );
   return nextItems;
 }
 
@@ -413,7 +432,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     });
   }
 
-  Future<bool> eatItem(String itemId, int amount) {
+  Future<bool> eatItem(String itemId, int amount, {DateTime? consumedAt}) {
     if (amount < 1) {
       return Future<bool>.value(false);
     }
@@ -422,6 +441,7 @@ class InventoryItemsController extends _$InventoryItemsController {
         currentItems: currentItems,
         itemId: itemId,
         amount: amount,
+        consumedAt: consumedAt,
       ),
     );
   }
@@ -678,6 +698,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     required String itemId,
     required int quantity,
     required int currentAmount,
+    DateTime? consumedAt,
   }) {
     return _runSerializedTask<bool>(
       operation: () async {
@@ -703,6 +724,9 @@ class InventoryItemsController extends _$InventoryItemsController {
         nextItems[itemIndex] = currentItem.copyWith(
           quantity: quantity,
           currentAmount: currentAmount,
+          lastConsumedAt: consumedAt == null
+              ? currentItem.lastConsumedAt
+              : currentItem.latestConsumedAtOr(consumedAt),
         );
         _persistedItems = nextItems;
         _publishVisibleItems();

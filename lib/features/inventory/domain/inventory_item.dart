@@ -49,6 +49,7 @@ class InventoryItem {
     this.receiptDate,
     this.language,
     this.ocrName,
+    this.lastConsumedAt,
     this.isDeposit = false,
     this.isDiscount = false,
     this.origin = InventoryItemOrigin.standard,
@@ -82,6 +83,7 @@ class InventoryItem {
     DateTime? receiptDate,
     String? language,
     String? ocrName,
+    DateTime? lastConsumedAt,
     bool isDeposit = false,
     bool isDiscount = false,
     InventoryItemOrigin origin = InventoryItemOrigin.standard,
@@ -123,6 +125,7 @@ class InventoryItem {
       receiptDate: receiptDate,
       language: language,
       ocrName: _normalizeOcrName(ocrName),
+      lastConsumedAt: lastConsumedAt,
       isDeposit: isDeposit,
       isDiscount: isDiscount,
       origin: origin,
@@ -163,6 +166,7 @@ class InventoryItem {
       receiptDate: _readDateTime(json['receipt_date']),
       language: _readTrimmedString(json['language']),
       ocrName: _readTrimmedString(json['ocr_name']),
+      lastConsumedAt: _readDateTime(json['last_consumed_at']),
       isDeposit: _readBool(json['is_deposit']) ?? false,
       isDiscount: _readBool(json['is_discount']) ?? false,
       origin: _readInventoryItemOrigin(json['origin']),
@@ -191,6 +195,7 @@ class InventoryItem {
   final DateTime? receiptDate;
   final String? language;
   final String? ocrName;
+  final DateTime? lastConsumedAt;
   final bool isDeposit;
   final bool isDiscount;
   final InventoryItemOrigin origin;
@@ -220,6 +225,7 @@ class InventoryItem {
       'receipt_date': receiptDate?.toIso8601String(),
       'language': language,
       'ocr_name': ocrName,
+      'last_consumed_at': lastConsumedAt?.toIso8601String(),
       'is_deposit': isDeposit,
       'is_discount': isDiscount,
       'origin': origin.name,
@@ -256,6 +262,7 @@ class InventoryItem {
     Object? receiptDate = _keepValue,
     Object? language = _keepValue,
     Object? ocrName = _keepValue,
+    Object? lastConsumedAt = _keepValue,
     bool? isDeposit,
     bool? isDiscount,
     InventoryItemOrigin? origin,
@@ -309,6 +316,9 @@ class InventoryItem {
       ocrName: ocrName == _keepValue
           ? this.ocrName
           : _normalizeOcrName(ocrName),
+      lastConsumedAt: lastConsumedAt == _keepValue
+          ? this.lastConsumedAt
+          : lastConsumedAt as DateTime?,
       isDeposit: isDeposit ?? this.isDeposit,
       isDiscount: isDiscount ?? this.isDiscount,
       origin: origin ?? this.origin,
@@ -443,6 +453,7 @@ class InventoryItem {
             other.receiptDate == receiptDate &&
             other.language == language &&
             other.ocrName == ocrName &&
+            other.lastConsumedAt == lastConsumedAt &&
             other.isDeposit == isDeposit &&
             other.isDiscount == isDiscount &&
             other.origin == origin;
@@ -473,6 +484,7 @@ class InventoryItem {
       receiptDate,
       language,
       ocrName,
+      lastConsumedAt,
       isDeposit,
       isDiscount,
       origin,

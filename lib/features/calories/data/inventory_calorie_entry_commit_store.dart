@@ -8,6 +8,7 @@ import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 
 const _commitStoreLogName = 'InventoryCalorieEntryCommitStore';
@@ -126,6 +127,7 @@ class FirestoreInventoryCalorieEntryCommitStore
         final committedItem = _buildCommittedItem(
           item: currentItem,
           amount: pendingConsumption.amount,
+          consumedAt: entry.loggedAt,
         );
         if (committedItem == null) {
           log(
@@ -239,10 +241,13 @@ class _UnavailableInventoryCalorieEntryCommitStore
 InventoryItem? _buildCommittedItem({
   required InventoryItem item,
   required int amount,
+  required DateTime consumedAt,
 }) {
   if (amount < 1) {
     return null;
   }
+
+  final nextLastConsumedAt = item.latestConsumedAtOr(consumedAt);
 
   if (item.usesAmountProgress) {
     if (item.currentAmount < amount) {
@@ -256,13 +261,17 @@ InventoryItem? _buildCommittedItem({
         item: item,
         currentAmount: nextCurrentAmount,
       ),
+      lastConsumedAt: nextLastConsumedAt,
     );
   }
 
   if (item.quantity < amount) {
     return null;
   }
-  return item.copyWith(quantity: item.quantity - amount);
+  return item.copyWith(
+    quantity: item.quantity - amount,
+    lastConsumedAt: nextLastConsumedAt,
+  );
 }
 
 int _quantityForCurrentAmount({
@@ -290,5 +299,6 @@ Map<String, dynamic> _buildInventoryUpdate(InventoryItem item) {
   return <String, dynamic>{
     'quantity': item.quantity,
     'current_amount': item.currentAmount,
+    'last_consumed_at': item.lastConsumedAt?.toIso8601String(),
   };
 }

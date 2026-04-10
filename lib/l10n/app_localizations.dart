@@ -623,6 +623,18 @@ abstract class AppLocalizations {
   /// **'Recently added'**
   String get inventoryRecentSectionTitle;
 
+  /// No description provided for @inventorySearchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Search inventory'**
+  String get inventorySearchLabel;
+
+  /// No description provided for @inventorySearchClearAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get inventorySearchClearAction;
+
   /// No description provided for @inventoryFilterAction.
   ///
   /// In en, this message translates to:
@@ -658,6 +670,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not consumed'**
   String get inventoryFilterNotConsumed;
+
+  /// No description provided for @inventoryHideFullyConsumedItemsToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide fully consumed items'**
+  String get inventoryHideFullyConsumedItemsToggle;
 
   /// No description provided for @inventoryReceiptGroupTitle.
   ///
@@ -998,7 +1016,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryFilteredEmptyState.
   ///
   /// In en, this message translates to:
-  /// **'No items match the selected filters.'**
+  /// **'No items match your search or active filters.'**
   String get inventoryFilteredEmptyState;
 
   /// No description provided for @inventoryLoadFailed.

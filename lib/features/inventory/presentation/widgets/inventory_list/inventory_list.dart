@@ -1,11 +1,17 @@
+import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_search_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -16,7 +22,7 @@ import 'package:yamt/features/inventory/presentation/models/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_all_items_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_consumption_filter_toggle.dart';
+    'inventory_consumed_items_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_mode_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -107,8 +113,39 @@ class InventoryList extends ConsumerStatefulWidget {
 }
 
 class _InventoryListState extends ConsumerState<InventoryList> {
+  static const _searchService = InventorySearchService();
+  final _voiceSearchController = TextVoiceSearchController();
   var _mode = InventoryListMode.allItems;
   var _consumptionFilter = const InventoryConsumptionFilter();
+  late final VoiceSearchService _voiceSearchService;
+  late final TextEditingController _searchController;
+  late List<InventoryItem> _visibleItems;
+  late List<PreparedMeal> _visiblePreparedMeals;
+  var _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _voiceSearchService = ref.read(voiceSearchServiceProvider);
+    _searchController = TextEditingController();
+    _recomputeVisibleContent();
+  }
+
+  @override
+  void didUpdateWidget(covariant InventoryList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!listEquals(oldWidget.items, widget.items) ||
+        !listEquals(oldWidget.preparedMeals, widget.preparedMeals)) {
+      _recomputeVisibleContent();
+    }
+  }
+
+  @override
+  void dispose() {
+    _voiceSearchController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,9 +159,11 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     final activeShoppingListItemKeys = ref.watch(
       activeShoppingListItemKeysProvider,
     );
-    final filteredItems = _consumptionFilter.apply(widget.items);
-    final hasPreparedMeals = widget.preparedMeals.isNotEmpty;
-    final hasSourceItems = widget.items.isNotEmpty || hasPreparedMeals;
+    final filteredItems = _visibleItems;
+    final filteredPreparedMeals = _visiblePreparedMeals;
+    final hasPreparedMeals = filteredPreparedMeals.isNotEmpty;
+    final hasAnySourceItems =
+        widget.items.isNotEmpty || widget.preparedMeals.isNotEmpty;
     final hasFilteredItems = filteredItems.isNotEmpty;
     final modeToggle = InventoryListModeToggle(
       mode: _mode,
@@ -146,6 +185,28 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             child: InventoryModeToolbar(modeToggle: modeToggle),
           ),
         ),
+        if (hasAnySourceItems)
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl,
+              0,
+              AppSpacing.xl,
+              AppSpacing.lg,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: TextVoiceSearchBar(
+                controller: _searchController,
+                label: l10n.inventorySearchLabel,
+                fieldKey: const Key('inventory_list_search_field'),
+                voiceButtonKey: const Key('inventory_list_voice_search_button'),
+                clearButtonKey: const Key('inventory_list_search_clear_button'),
+                enabled: !widget.isSelectionMode,
+                onChanged: _onSearchQueryChanged,
+                voiceSearchService: _voiceSearchService,
+                voiceSearchController: _voiceSearchController,
+              ),
+            ),
+          ),
         if (hasPreparedMeals) ...[
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
@@ -169,7 +230,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             ),
             sliver: SliverToBoxAdapter(
               child: Column(
-                children: widget.preparedMeals
+                children: filteredPreparedMeals
                     .map((meal) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.lg),
@@ -197,7 +258,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             ),
           ),
         ],
-        if (hasSourceItems && _mode == InventoryListMode.allItems)
+        if (hasAnySourceItems && _mode == InventoryListMode.allItems)
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.xl,
@@ -219,7 +280,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
               ),
             ),
           ),
-        if (!hasSourceItems)
+        if (!hasAnySourceItems)
           _buildEmptyStateSliver()
         else if (!hasFilteredItems && !hasPreparedMeals)
           _buildEmptyStateSliver(message: l10n.inventoryFilteredEmptyState)
@@ -264,17 +325,22 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     });
   }
 
-  void _onShowConsumedChanged(bool showConsumed) {
+  void _onHideFullyConsumedItemsChanged(bool hideFullyConsumedItems) {
     setState(() {
-      _consumptionFilter = _consumptionFilter.toggleConsumed(showConsumed);
+      _consumptionFilter = _consumptionFilter.copyWith(
+        hideFullyConsumedItems: hideFullyConsumedItems,
+      );
+      _recomputeVisibleContent();
     });
   }
 
-  void _onShowNotConsumedChanged(bool showNotConsumed) {
+  void _onSearchQueryChanged(String value) {
+    if (_searchQuery == value) {
+      return;
+    }
     setState(() {
-      _consumptionFilter = _consumptionFilter.toggleNotConsumed(
-        showNotConsumed,
-      );
+      _searchQuery = value;
+      _recomputeVisibleContent();
     });
   }
 
@@ -283,25 +349,29 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     required String title,
     required AppLocalizations l10n,
   }) {
+    var hideFullyConsumedItems = _consumptionFilter.hideFullyConsumedItems;
+
     return showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return InventoryFiltersSheet(
-          title: title,
-          consumptionToggle: InventoryConsumptionFilterToggle(
-            showConsumed: _consumptionFilter.showConsumed,
-            showNotConsumed: _consumptionFilter.showNotConsumed,
-            l10n: l10n,
-            onShowConsumedChanged: (showConsumed) {
-              _onShowConsumedChanged(showConsumed);
-              Navigator.of(context).pop();
-            },
-            onShowNotConsumedChanged: (showNotConsumed) {
-              _onShowNotConsumedChanged(showNotConsumed);
-              Navigator.of(context).pop();
-            },
-          ),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return InventoryFiltersSheet(
+              title: title,
+              consumptionToggle: InventoryConsumedItemsToggle(
+                value: hideFullyConsumedItems,
+                enabled: !widget.isSelectionMode,
+                l10n: l10n,
+                onChanged: (nextHideFullyConsumedItems) {
+                  setModalState(() {
+                    hideFullyConsumedItems = nextHideFullyConsumedItems;
+                  });
+                  _onHideFullyConsumedItemsChanged(nextHideFullyConsumedItems);
+                },
+              ),
+            );
+          },
         );
       },
     );
@@ -320,6 +390,17 @@ class _InventoryListState extends ConsumerState<InventoryList> {
           ),
         ),
       ),
+    );
+  }
+
+  void _recomputeVisibleContent() {
+    _visibleItems = _searchService.filterItems(
+      items: _consumptionFilter.apply(widget.items),
+      query: _searchQuery,
+    );
+    _visiblePreparedMeals = _searchService.filterPreparedMeals(
+      meals: widget.preparedMeals,
+      query: _searchQuery,
     );
   }
 }

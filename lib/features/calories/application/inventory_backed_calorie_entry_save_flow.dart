@@ -83,6 +83,7 @@ class InventoryBackedCalorieEntrySaveFlow {
           itemId: commitResult.itemId,
           quantity: commitResult.quantity,
           currentAmount: commitResult.currentAmount,
+          consumedAt: entry.loggedAt,
         );
     if (finalized) {
       log(

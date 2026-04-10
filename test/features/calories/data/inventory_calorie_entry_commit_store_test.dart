@@ -118,6 +118,7 @@ void main() {
       );
       expect(savedItem.currentAmount, 500);
       expect(savedItem.quantity, 1);
+      expect(savedItem.lastConsumedAt, _entry().loggedAt);
     },
   );
 

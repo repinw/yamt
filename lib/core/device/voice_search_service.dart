@@ -6,12 +6,12 @@ import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
-const _manualProductSpeechServiceLogName = 'ManualProductSpeechService';
+const _voiceSearchServiceLogName = 'VoiceSearchService';
 
-enum ManualProductSpeechFailure { unavailable, permissionDenied, error }
+enum VoiceSearchFailure { unavailable, permissionDenied, error }
 
-class ManualProductSpeechRecognition {
-  const ManualProductSpeechRecognition({
+class VoiceSearchRecognition {
+  const VoiceSearchRecognition({
     required this.transcript,
     required this.isFinal,
   });
@@ -20,13 +20,13 @@ class ManualProductSpeechRecognition {
   final bool isFinal;
 }
 
-abstract class ManualProductSpeechService {
+abstract class VoiceSearchService {
   bool get isListening;
 
-  Future<ManualProductSpeechFailure?> startListening({
-    required ValueChanged<ManualProductSpeechRecognition> onResult,
+  Future<VoiceSearchFailure?> startListening({
+    required ValueChanged<VoiceSearchRecognition> onResult,
     required ValueChanged<bool> onListeningStateChanged,
-    required ValueChanged<ManualProductSpeechFailure> onError,
+    required ValueChanged<VoiceSearchFailure> onError,
   });
 
   Future<void> stopListening();
@@ -34,29 +34,28 @@ abstract class ManualProductSpeechService {
   Future<void> cancelListening();
 }
 
-final manualProductSpeechServiceProvider = Provider<ManualProductSpeechService>(
-  (ref) => SpeechToTextManualProductSpeechService(),
+final voiceSearchServiceProvider = Provider<VoiceSearchService>(
+  (ref) => SpeechToTextVoiceSearchService(),
 );
 
-class SpeechToTextManualProductSpeechService
-    implements ManualProductSpeechService {
-  SpeechToTextManualProductSpeechService({SpeechToText? speechToText})
+class SpeechToTextVoiceSearchService implements VoiceSearchService {
+  SpeechToTextVoiceSearchService({SpeechToText? speechToText})
     : _speechToText = speechToText ?? SpeechToText();
 
   final SpeechToText _speechToText;
-  ValueChanged<ManualProductSpeechRecognition>? _onResult;
+  ValueChanged<VoiceSearchRecognition>? _onResult;
   ValueChanged<bool>? _onListeningStateChanged;
-  ValueChanged<ManualProductSpeechFailure>? _onError;
+  ValueChanged<VoiceSearchFailure>? _onError;
   bool _isInitialized = false;
 
   @override
   bool get isListening => _speechToText.isListening;
 
   @override
-  Future<ManualProductSpeechFailure?> startListening({
-    required ValueChanged<ManualProductSpeechRecognition> onResult,
+  Future<VoiceSearchFailure?> startListening({
+    required ValueChanged<VoiceSearchRecognition> onResult,
     required ValueChanged<bool> onListeningStateChanged,
-    required ValueChanged<ManualProductSpeechFailure> onError,
+    required ValueChanged<VoiceSearchFailure> onError,
   }) async {
     _onResult = onResult;
     _onListeningStateChanged = onListeningStateChanged;
@@ -81,19 +80,19 @@ class SpeechToTextManualProductSpeechService
     } on PlatformException catch (error, stackTrace) {
       log(
         'Failed to start speech recognition.',
-        name: _manualProductSpeechServiceLogName,
+        name: _voiceSearchServiceLogName,
         error: error,
         stackTrace: stackTrace,
       );
-      return ManualProductSpeechFailure.error;
+      return VoiceSearchFailure.error;
     } catch (error, stackTrace) {
       log(
         'Unexpected speech recognition startup failure.',
-        name: _manualProductSpeechServiceLogName,
+        name: _voiceSearchServiceLogName,
         error: error,
         stackTrace: stackTrace,
       );
-      return ManualProductSpeechFailure.error;
+      return VoiceSearchFailure.error;
     }
 
     _onListeningStateChanged?.call(_speechToText.isListening);
@@ -112,7 +111,7 @@ class SpeechToTextManualProductSpeechService
     _onListeningStateChanged?.call(false);
   }
 
-  Future<ManualProductSpeechFailure?> _ensureInitialized() async {
+  Future<VoiceSearchFailure?> _ensureInitialized() async {
     if (_isInitialized) {
       return null;
     }
@@ -132,15 +131,15 @@ class SpeechToTextManualProductSpeechService
     } on MissingPluginException catch (error, stackTrace) {
       log(
         'Speech recognition plugin is unavailable on this platform.',
-        name: _manualProductSpeechServiceLogName,
+        name: _voiceSearchServiceLogName,
         error: error,
         stackTrace: stackTrace,
       );
-      return ManualProductSpeechFailure.unavailable;
+      return VoiceSearchFailure.unavailable;
     } on PlatformException catch (error, stackTrace) {
       log(
         'Failed to initialize speech recognition.',
-        name: _manualProductSpeechServiceLogName,
+        name: _voiceSearchServiceLogName,
         error: error,
         stackTrace: stackTrace,
       );
@@ -148,22 +147,22 @@ class SpeechToTextManualProductSpeechService
     } catch (error, stackTrace) {
       log(
         'Unexpected speech recognition initialization failure.',
-        name: _manualProductSpeechServiceLogName,
+        name: _voiceSearchServiceLogName,
         error: error,
         stackTrace: stackTrace,
       );
-      return ManualProductSpeechFailure.error;
+      return VoiceSearchFailure.error;
     }
   }
 
-  Future<ManualProductSpeechFailure> _permissionOrAvailabilityFailure() async {
+  Future<VoiceSearchFailure> _permissionOrAvailabilityFailure() async {
     try {
       final hasPermission = await _speechToText.hasPermission;
       return hasPermission
-          ? ManualProductSpeechFailure.unavailable
-          : ManualProductSpeechFailure.permissionDenied;
+          ? VoiceSearchFailure.unavailable
+          : VoiceSearchFailure.permissionDenied;
     } catch (_) {
-      return ManualProductSpeechFailure.unavailable;
+      return VoiceSearchFailure.unavailable;
     }
   }
 
@@ -174,7 +173,7 @@ class SpeechToTextManualProductSpeechService
     }
 
     _onResult?.call(
-      ManualProductSpeechRecognition(
+      VoiceSearchRecognition(
         transcript: transcript,
         isFinal: result.finalResult,
       ),
@@ -193,46 +192,46 @@ class SpeechToTextManualProductSpeechService
     }
 
     final failure = _mapErrorMessage(error.errorMsg);
-    if (failure == ManualProductSpeechFailure.unavailable) {
+    if (failure == VoiceSearchFailure.unavailable) {
       log(
         'Speech recognition became unavailable.',
-        name: _manualProductSpeechServiceLogName,
+        name: _voiceSearchServiceLogName,
         error: error,
       );
-    } else if (failure == ManualProductSpeechFailure.error) {
+    } else if (failure == VoiceSearchFailure.error) {
       log(
         'Speech recognition failed during listening.',
-        name: _manualProductSpeechServiceLogName,
+        name: _voiceSearchServiceLogName,
         error: error,
       );
     }
     _onError?.call(failure);
   }
 
-  ManualProductSpeechFailure _mapPlatformFailure(PlatformException error) {
+  VoiceSearchFailure _mapPlatformFailure(PlatformException error) {
     final code = error.code.toLowerCase();
     final message = (error.message ?? '').toLowerCase();
     if (code.contains('permission') || message.contains('permission')) {
-      return ManualProductSpeechFailure.permissionDenied;
+      return VoiceSearchFailure.permissionDenied;
     }
-    return ManualProductSpeechFailure.error;
+    return VoiceSearchFailure.error;
   }
 
-  ManualProductSpeechFailure _mapErrorMessage(String message) {
+  VoiceSearchFailure _mapErrorMessage(String message) {
     final normalized = message.toLowerCase();
     if (normalized.contains('permission') ||
         normalized.contains('denied') ||
         normalized.contains('not_authorized') ||
         normalized.contains('notauthorized')) {
-      return ManualProductSpeechFailure.permissionDenied;
+      return VoiceSearchFailure.permissionDenied;
     }
     if (normalized.contains('language_not_supported') ||
         normalized.contains('language_unavailable') ||
         normalized.contains('recognizer_disabled') ||
         normalized.contains('too_many_requests') ||
         normalized.contains('busy')) {
-      return ManualProductSpeechFailure.unavailable;
+      return VoiceSearchFailure.unavailable;
     }
-    return ManualProductSpeechFailure.error;
+    return VoiceSearchFailure.error;
   }
 }
