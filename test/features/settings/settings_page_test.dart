@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -56,20 +58,42 @@ class _FakeAppPreferences implements AppPreferences {
   }
 }
 
+Future<void> _pumpSettingsPage(
+  WidgetTester tester, {
+  FutureOr<String> Function(Ref ref)? appVersionOverride,
+  AsyncValue<String>? appVersionValueOverride,
+}) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+        if (appVersionValueOverride != null)
+          appVersionProvider.overrideWithValue(appVersionValueOverride),
+        if (appVersionOverride != null)
+          appVersionProvider.overrideWith(appVersionOverride),
+      ],
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const Scaffold(body: SettingsPage()),
+      ),
+    ),
+  );
+}
+
+ListTile _aboutTile(WidgetTester tester) {
+  final finder = find.ancestor(
+    of: find.text('About'),
+    matching: find.byType(ListTile),
+  );
+  return tester.widget<ListTile>(finder.first);
+}
+
 void main() {
   testWidgets('SettingsPage renders localized rows', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
-          appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
-        ],
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: SettingsPage()),
-        ),
-      ),
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
     );
     await tester.pumpAndSettle();
 
@@ -145,18 +169,9 @@ void main() {
   });
 
   testWidgets('non-implemented tiles show snackbar', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
-          appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
-        ],
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: SettingsPage()),
-        ),
-      ),
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
     );
     await tester.pumpAndSettle();
 
@@ -243,6 +258,35 @@ void main() {
     expect(container.read(seedColorControllerProvider).toARGB32(), 0xFFFF006F);
     expect(find.text('Pink'), findsNWidgets(2));
   });
+
+  testWidgets('About tile shows loading indicator while version loads', (
+    tester,
+  ) async {
+    await _pumpSettingsPage(
+      tester,
+      appVersionValueOverride: const AsyncLoading<String>(),
+    );
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(_aboutTile(tester).trailing, isNotNull);
+  });
+
+  testWidgets('About tile renders no trailing widget on version error', (
+    tester,
+  ) async {
+    await _pumpSettingsPage(
+      tester,
+      appVersionValueOverride: AsyncError<String>(
+        Exception('boom'),
+        StackTrace.empty,
+      ),
+    );
+
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.text('1.1.0+2'), findsNothing);
+    expect(_aboutTile(tester).trailing, isNull);
+  });
+
   testWidgets('Account tile opens AccountPage', (tester) async {
     final user = _MockUser();
     when(() => user.isAnonymous).thenReturn(false);
