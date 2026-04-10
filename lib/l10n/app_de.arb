@@ -657,6 +657,21 @@
   },
   "caloriesBalanceStatusWaitNow":
       "Gedulde dich noch etwas mit dem Essen",
+  "caloriesBalanceStatusWaitUntil":
+      "Wieder im Takt ab etwa {time} Uhr",
+  "@caloriesBalanceStatusWaitUntil": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "caloriesBalanceStatusWaitRestOfDay":
+      "Heute vermutlich nicht mehr im Takt",
+  "caloriesBalanceStatusRecommendFast":
+      "Empfehlung: heute fasten",
+  "caloriesBalanceStatusRecommendFastRestOfDay":
+      "Empfehlung: restlichen Tag fasten",
   "caloriesBalanceStatusOnTrack": "Genau im Takt",
   "caloriesBalanceStatusBuffer": "{kcal} kcal unter Pace",
   "@caloriesBalanceStatusBuffer": {

@@ -24,6 +24,12 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final statusColor = _accentColor(colors);
     final carryoverColor = _carryoverColor(colors);
+    final statusMessage = _statusMessage(l10n);
+    final statusDetail = _statusDetailMessage(context, l10n);
+    final semanticStatus = switch (statusDetail) {
+      final String detail => '$statusMessage. $detail',
+      null => statusMessage,
+    };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -50,7 +56,7 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.xl),
-        _BalanceBar(data: data, semanticLabel: _statusMessage(l10n)),
+        _BalanceBar(data: data, semanticLabel: semanticStatus),
         const SizedBox(height: AppSpacing.md),
         _BalanceScaleLabels(
           leftLabel: l10n.caloriesBalanceScaleBufferLabel,
@@ -75,13 +81,29 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
               horizontal: AppSpacing.lg,
               vertical: AppSpacing.md,
             ),
-            child: Text(
-              _statusMessage(l10n),
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: statusColor,
-                fontWeight: FontWeight.w800,
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  statusMessage,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: statusColor,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                if (statusDetail case final String detail) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    detail,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ),
@@ -115,6 +137,12 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
   String _statusMessage(AppLocalizations l10n) {
     final delta = data.deltaKcal.round().abs();
     if (data.isCurrentDay) {
+      if (data.recommendsFastingToday) {
+        return l10n.caloriesBalanceStatusRecommendFast;
+      }
+      if (data.recommendsFastingRestOfDay) {
+        return l10n.caloriesBalanceStatusRecommendFastRestOfDay;
+      }
       if (data.isWithinDeadZone) {
         return l10n.caloriesBalanceStatusBalancedNow;
       }
@@ -153,6 +181,29 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
       CalorieGoalMode.maintain => l10n.caloriesBalanceStatusFinishedOver(delta),
       CalorieGoalMode.gain => l10n.caloriesBalanceStatusFinishedGainOver(delta),
     };
+  }
+
+  String? _statusDetailMessage(BuildContext context, AppLocalizations l10n) {
+    if (data.recommendsFastingToday) {
+      return null;
+    }
+
+    if (data.recommendsFastingRestOfDay) {
+      return l10n.caloriesBalanceStatusWaitRestOfDay;
+    }
+
+    if (!data.isCurrentDay || !data.isOverPace) {
+      return null;
+    }
+
+    final recoveryTime = resolveCalorieBalanceRecoveryTime(data);
+    if (recoveryTime == null) {
+      return l10n.caloriesBalanceStatusWaitRestOfDay;
+    }
+
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final formattedTime = DateFormat.Hm(locale).format(recoveryTime.toLocal());
+    return l10n.caloriesBalanceStatusWaitUntil(formattedTime);
   }
 
   String _formatSignedKcal(int value) {

@@ -54,6 +54,17 @@ class CalorieBalanceSummaryData {
 
   bool get isCurrentDay => _isSameDay(selectedDay, referenceNow);
 
+  double get uncappedFlexibleGoalKcal => baseGoalKcal + carryoverKcal;
+
+  bool get recommendsFastingToday =>
+      isCurrentDay && uncappedFlexibleGoalKcal <= 0;
+
+  bool get recommendsFastingRestOfDay =>
+      isCurrentDay &&
+      !recommendsFastingToday &&
+      flexibleGoalKcal > 0 &&
+      consumedKcal >= flexibleGoalKcal;
+
   bool get isWithinDeadZone => deltaKcal.abs() <= deadZoneKcal;
 
   bool get isUnderPace => deltaKcal < -deadZoneKcal;
@@ -71,7 +82,7 @@ CalorieBalanceNow calorieBalanceNow(Ref ref) {
 
 @riverpod
 Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
-  final now = ref.watch(calorieBalanceNowProvider)();
+  final now = ref.watch(calorieBalanceNowProvider)().toLocal();
   final selectedDay = ref.watch(calorieDayControllerProvider);
   final settings = await ref.watch(calorieGoalControllerProvider.future);
   final selectedEntries = await ref.watch(
@@ -117,7 +128,14 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
       .max(0.0, baseGoalKcal + carryoverKcal)
       .toDouble();
   final paceRatio = _paceRatioForDay(selectedDay: selectedDay, now: now);
-  final pacedGoalKcal = flexibleGoalKcal * paceRatio;
+  final pacedGoalKcal = _resolvePacedGoalKcal(
+    selectedDay: selectedDay,
+    now: now,
+    baseGoalKcal: baseGoalKcal,
+    carryoverKcal: carryoverKcal,
+    flexibleGoalKcal: flexibleGoalKcal,
+    paceRatio: paceRatio,
+  );
   final deltaKcal = consumedKcal - pacedGoalKcal;
   final referenceGoalKcal = math.max(baseGoalKcal, flexibleGoalKcal).toDouble();
   final deadZoneKcal = math.max(60.0, referenceGoalKcal * 0.04).toDouble();
@@ -199,6 +217,22 @@ double _paceRatioForDay({
   return (elapsedSeconds / paceWindowSeconds).clamp(0.0, 1.0).toDouble();
 }
 
+double _resolvePacedGoalKcal({
+  required DateTime selectedDay,
+  required DateTime now,
+  required double baseGoalKcal,
+  required double carryoverKcal,
+  required double flexibleGoalKcal,
+  required double paceRatio,
+}) {
+  if (!_isSameDay(selectedDay, now)) {
+    return flexibleGoalKcal;
+  }
+
+  // For the current day, previous days are already complete and count in full.
+  return carryoverKcal + (baseGoalKcal * paceRatio);
+}
+
 DateTime _laterDay(DateTime left, DateTime right) {
   return _isBeforeDay(left, right) ? right : left;
 }
@@ -236,6 +270,40 @@ double resolveCalorieBalanceCenterScore(CalorieBalanceSummaryData data) {
     CalorieGoalMode.maintain => 1.0,
     CalorieGoalMode.lose || CalorieGoalMode.gain => 0.55,
   };
+}
+
+DateTime? resolveCalorieBalanceRecoveryTime(CalorieBalanceSummaryData data) {
+  if (!data.isCurrentDay || !data.isOverPace || data.baseGoalKcal <= 0) {
+    return null;
+  }
+
+  final paceWindowStart = DateTime(
+    data.referenceNow.year,
+    data.referenceNow.month,
+    data.referenceNow.day,
+    _paceWindowStartHour,
+  );
+  final paceWindowEnd = DateTime(
+    data.referenceNow.year,
+    data.referenceNow.month,
+    data.referenceNow.day,
+    _paceWindowEndHour,
+  );
+  final requiredPacedGoalKcal = data.consumedKcal - data.deadZoneKcal;
+  final requiredRatio =
+      (requiredPacedGoalKcal - data.carryoverKcal) / data.baseGoalKcal;
+
+  if (requiredRatio <= data.paceRatio) {
+    return data.referenceNow;
+  }
+  if (requiredRatio > 1.0 || !data.referenceNow.isBefore(paceWindowEnd)) {
+    return null;
+  }
+
+  final paceWindowDuration = paceWindowEnd.difference(paceWindowStart);
+  final recoveryMilliseconds =
+      (paceWindowDuration.inMilliseconds * requiredRatio).round();
+  return paceWindowStart.add(Duration(milliseconds: recoveryMilliseconds));
 }
 
 double _positiveScore(double progress) {
