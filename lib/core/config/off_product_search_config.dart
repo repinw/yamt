@@ -1,4 +1,4 @@
-const String _defaultOffProductSearchUrl = 'https://162.55.213.135:3000/search';
+const String _defaultOffProductSearchUrl = 'https://api.yamt.de/search';
 const String _offProductSearchUrl = String.fromEnvironment(
   'OFF_PRODUCT_SEARCH_URL',
   defaultValue: _defaultOffProductSearchUrl,

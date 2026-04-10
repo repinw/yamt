@@ -7,8 +7,8 @@ void main() {
 
     expect(uri, isNotNull);
     expect(uri!.scheme, 'https');
-    expect(uri.host, '162.55.213.135');
-    expect(uri.port, 3000);
+    expect(uri.host, 'api.yamt.de');
+    expect(uri.port, 443);
     expect(uri.path, '/search');
   });
 }
