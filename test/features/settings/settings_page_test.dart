@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/provider/app_version_provider.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
@@ -55,20 +58,44 @@ class _FakeAppPreferences implements AppPreferences {
   }
 }
 
+Future<void> _pumpSettingsPage(
+  WidgetTester tester, {
+  FutureOr<String> Function(Ref ref)? appVersionOverride,
+  AsyncValue<String>? appVersionValueOverride,
+}) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+        if (appVersionValueOverride != null)
+          appVersionProvider.overrideWithValue(appVersionValueOverride),
+        if (appVersionOverride != null)
+          appVersionProvider.overrideWith(appVersionOverride),
+      ],
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const Scaffold(body: SettingsPage()),
+      ),
+    ),
+  );
+}
+
+ListTile _aboutTile(WidgetTester tester) {
+  final finder = find.ancestor(
+    of: find.text('About'),
+    matching: find.byType(ListTile),
+  );
+  return tester.widget<ListTile>(finder.first);
+}
+
 void main() {
   testWidgets('SettingsPage renders localized rows', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
-        ],
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: SettingsPage()),
-        ),
-      ),
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
     );
+    await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.language_outlined), findsOneWidget);
     expect(find.byIcon(Icons.notifications_outlined), findsOneWidget);
@@ -95,6 +122,7 @@ void main() {
     expect(find.text('Manage profile and sign-in'), findsOneWidget);
     expect(find.text('About'), findsOneWidget);
     expect(find.text('App version and information'), findsOneWidget);
+    expect(find.text('1.1.0+2'), findsOneWidget);
   });
 
   testWidgets('Household tile opens HouseholdPage', (tester) async {
@@ -121,6 +149,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
           authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
           appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
         ],
@@ -140,18 +169,11 @@ void main() {
   });
 
   testWidgets('non-implemented tiles show snackbar', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
-        ],
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: SettingsPage()),
-        ),
-      ),
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
     );
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Language'));
     await tester.pumpAndSettle();
@@ -161,14 +183,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Not implemented yet'), findsOneWidget);
 
-    await tester.tap(find.text('About'));
-    await tester.pumpAndSettle();
-    expect(find.text('Not implemented yet'), findsOneWidget);
+    expect(find.text('1.1.0+2'), findsOneWidget);
   });
 
   testWidgets('theme dropdown updates theme mode provider', (tester) async {
     final container = ProviderContainer(
       overrides: [
+        appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
         appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
       ],
     );
@@ -184,6 +205,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     final dropdownFinder = find.byWidgetPredicate(
       (widget) => widget is DropdownButton<ThemeMode>,
@@ -203,6 +225,7 @@ void main() {
   testWidgets('color dropdown updates seed color provider', (tester) async {
     final container = ProviderContainer(
       overrides: [
+        appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
         appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
       ],
     );
@@ -218,6 +241,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     final colorDropdownFinder = find.byWidgetPredicate(
       (widget) => widget is DropdownButton<int>,
@@ -234,6 +258,35 @@ void main() {
     expect(container.read(seedColorControllerProvider).toARGB32(), 0xFFFF006F);
     expect(find.text('Pink'), findsNWidgets(2));
   });
+
+  testWidgets('About tile shows loading indicator while version loads', (
+    tester,
+  ) async {
+    await _pumpSettingsPage(
+      tester,
+      appVersionValueOverride: const AsyncLoading<String>(),
+    );
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(_aboutTile(tester).trailing, isNotNull);
+  });
+
+  testWidgets('About tile renders no trailing widget on version error', (
+    tester,
+  ) async {
+    await _pumpSettingsPage(
+      tester,
+      appVersionValueOverride: AsyncError<String>(
+        Exception('boom'),
+        StackTrace.empty,
+      ),
+    );
+
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.text('1.1.0+2'), findsNothing);
+    expect(_aboutTile(tester).trailing, isNull);
+  });
+
   testWidgets('Account tile opens AccountPage', (tester) async {
     final user = _MockUser();
     when(() => user.isAnonymous).thenReturn(false);
@@ -258,6 +311,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
           authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
           appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
         ],
@@ -268,6 +322,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Account').first);
     await tester.pumpAndSettle();
