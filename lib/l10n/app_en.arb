@@ -185,6 +185,14 @@
   "inventoryManualAddEatNowOption": "Eat now",
   "inventoryManualAddEatNowRequiresNutrition":
       "Only available when nutrition values are present.",
+  "inventoryManualAddVoiceSearchStartTooltip": "Start voice search",
+  "inventoryManualAddVoiceSearchStopTooltip": "Stop voice search",
+  "inventoryManualAddVoiceSearchUnavailable":
+      "Voice search is not currently supported on this device.",
+  "inventoryManualAddVoiceSearchPermissionDenied":
+      "Please allow microphone access to use voice search.",
+  "inventoryManualAddVoiceSearchFailed":
+      "Voice search could not be started. Please try again.",
   "inventoryManualAddStoreName": "Added manually",
   "inventoryBarcodePortionDialogTitle": "Enter consumed amount",
   "inventoryBarcodePortionDialogConfirmAction": "Continue",

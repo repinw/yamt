@@ -31,11 +31,11 @@ void main() {
     );
   });
 
-  test('currentPlatform returns windows options on Windows', () {
+  test('currentPlatform throws for Windows without generated options', () {
     debugDefaultTargetPlatformOverride = TargetPlatform.windows;
     expect(
-      DefaultFirebaseOptions.currentPlatform,
-      same(DefaultFirebaseOptions.windows),
+      () => DefaultFirebaseOptions.currentPlatform,
+      throwsUnsupportedError,
     );
   });
 
@@ -60,6 +60,5 @@ void main() {
     expect(DefaultFirebaseOptions.android.projectId, isNotEmpty);
     expect(DefaultFirebaseOptions.ios.projectId, isNotEmpty);
     expect(DefaultFirebaseOptions.macos.projectId, isNotEmpty);
-    expect(DefaultFirebaseOptions.windows.projectId, isNotEmpty);
   });
 }

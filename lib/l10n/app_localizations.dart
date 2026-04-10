@@ -941,6 +941,36 @@ abstract class AppLocalizations {
   /// **'Only available when nutrition values are present.'**
   String get inventoryManualAddEatNowRequiresNutrition;
 
+  /// No description provided for @inventoryManualAddVoiceSearchStartTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Start voice search'**
+  String get inventoryManualAddVoiceSearchStartTooltip;
+
+  /// No description provided for @inventoryManualAddVoiceSearchStopTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop voice search'**
+  String get inventoryManualAddVoiceSearchStopTooltip;
+
+  /// No description provided for @inventoryManualAddVoiceSearchUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice search is not currently supported on this device.'**
+  String get inventoryManualAddVoiceSearchUnavailable;
+
+  /// No description provided for @inventoryManualAddVoiceSearchPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Please allow microphone access to use voice search.'**
+  String get inventoryManualAddVoiceSearchPermissionDenied;
+
+  /// No description provided for @inventoryManualAddVoiceSearchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice search could not be started. Please try again.'**
+  String get inventoryManualAddVoiceSearchFailed;
+
   /// No description provided for @inventoryManualAddStoreName.
   ///
   /// In en, this message translates to:

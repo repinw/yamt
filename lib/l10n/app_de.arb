@@ -188,6 +188,14 @@
   "inventoryManualAddEatNowOption": "Sofort essen",
   "inventoryManualAddEatNowRequiresNutrition":
       "Nur verfügbar, wenn Nährwerte vorhanden sind.",
+  "inventoryManualAddVoiceSearchStartTooltip": "Sprachsuche starten",
+  "inventoryManualAddVoiceSearchStopTooltip": "Sprachsuche beenden",
+  "inventoryManualAddVoiceSearchUnavailable":
+      "Sprachsuche wird auf diesem Gerät aktuell nicht unterstützt.",
+  "inventoryManualAddVoiceSearchPermissionDenied":
+      "Bitte erlaube Mikrofonzugriff, um die Sprachsuche zu verwenden.",
+  "inventoryManualAddVoiceSearchFailed":
+      "Sprachsuche konnte nicht gestartet werden. Bitte versuche es erneut.",
   "inventoryManualAddStoreName": "Manuell hinzugefügt",
   "inventoryBarcodePortionDialogTitle": "Verzehrte Menge eingeben",
   "inventoryBarcodePortionDialogConfirmAction": "Weiter",

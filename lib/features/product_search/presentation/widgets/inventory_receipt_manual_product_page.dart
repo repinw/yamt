@@ -11,6 +11,8 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
+import 'package:yamt/features/product_search/data/'
+    'manual_product_speech_service.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_manual_product_form.dart';
 import 'package:yamt/features/product_search/provider/'
@@ -140,6 +142,9 @@ class _InventoryReceiptManualProductLauncherPageState
         onSearchTap: () {
           unawaited(_openSearchEditor());
         },
+        onVoiceSearchTap: () {
+          unawaited(_openVoiceSearchEditor());
+        },
         onRecentItemSelected: (item) {
           unawaited(_openRecentItemEditor(item));
         },
@@ -173,6 +178,10 @@ class _InventoryReceiptManualProductLauncherPageState
     await _openEditor(autofocusSearch: true);
   }
 
+  Future<void> _openVoiceSearchEditor() async {
+    await _openEditor(autofocusSearch: true, initialStartVoiceSearch: true);
+  }
+
   Future<void> _openRecentItemEditor(InventoryItem item) async {
     await _openEditor(initialRecentItem: item);
   }
@@ -182,6 +191,7 @@ class _InventoryReceiptManualProductLauncherPageState
     OffProductSearchResult? selectedProduct,
     InventoryItem? initialRecentItem,
     bool autofocusSearch = false,
+    bool initialStartVoiceSearch = false,
     String? initialInfoMessage,
   }) async {
     final config = InventoryReceiptManualProductConfig(
@@ -199,6 +209,7 @@ class _InventoryReceiptManualProductLauncherPageState
                 config: config,
                 showEatImmediatelyOption: widget.showEatImmediatelyOption,
                 autofocusSearch: autofocusSearch,
+                initialStartVoiceSearch: initialStartVoiceSearch,
                 initialRecentItem: initialRecentItem,
                 initialInfoMessage: initialInfoMessage,
               );
@@ -292,6 +303,7 @@ class _InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
     required this.showEatImmediatelyOption,
     this.onSaved,
     this.autofocusSearch = false,
+    this.initialStartVoiceSearch = false,
     this.initialRecentItem,
     this.initialInfoMessage,
     this.initialEatImmediately = false,
@@ -302,6 +314,7 @@ class _InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
   final Future<void> Function(InventoryReceiptManualProductResult result)?
   onSaved;
   final bool autofocusSearch;
+  final bool initialStartVoiceSearch;
   final InventoryItem? initialRecentItem;
   final String? initialInfoMessage;
   final bool initialEatImmediately;
@@ -365,6 +378,7 @@ class _ManualBarcodeScanResult {
 
 class _InventoryReceiptManualProductEditorPageState
     extends ConsumerState<_InventoryReceiptManualProductEditorPage> {
+  late final ManualProductSpeechService _speechService;
   late final TextEditingController _searchController;
   late final TextEditingController _weightAmountController;
   late final TextEditingController _kcalController;
@@ -374,8 +388,11 @@ class _InventoryReceiptManualProductEditorPageState
   ProviderSubscription<InventoryReceiptManualProductState>? _stateSubscription;
   bool _didBindProviderState = false;
   bool _didScheduleInitialRecentItem = false;
+  bool _isDisposing = false;
   bool _isSyncingControllers = false;
   late bool _eatImmediately = widget.initialEatImmediately;
+  bool _isListeningToSpeech = false;
+  bool _isStartingVoiceSearch = false;
 
   InventoryReceiptManualProductControllerProvider get _provider {
     return inventoryReceiptManualProductControllerProvider(widget.config);
@@ -388,6 +405,7 @@ class _InventoryReceiptManualProductEditorPageState
   @override
   void initState() {
     super.initState();
+    _speechService = ref.read(manualProductSpeechServiceProvider);
     _searchController = TextEditingController();
     _searchController.addListener(_handleSearchChanged);
     _weightAmountController = TextEditingController();
@@ -407,6 +425,14 @@ class _InventoryReceiptManualProductEditorPageState
           return;
         }
         _showSnackBar(initialInfoMessage);
+      });
+    }
+    if (widget.initialStartVoiceSearch) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        unawaited(_toggleVoiceSearch());
       });
     }
   }
@@ -473,6 +499,8 @@ class _InventoryReceiptManualProductEditorPageState
 
   @override
   void dispose() {
+    _isDisposing = true;
+    unawaited(_speechService.cancelListening());
     _stateSubscription?.close();
     _searchController.removeListener(_handleSearchChanged);
     _searchController.dispose();
@@ -502,6 +530,7 @@ class _InventoryReceiptManualProductEditorPageState
         preview: preview,
         searchController: _searchController,
         isSearching: state.isSearching,
+        isListeningToSpeech: _isListeningToSpeech,
         autofocusSearch: widget.autofocusSearch,
         showDetails: state.showDetails,
         searchResults: state.searchResults,
@@ -520,6 +549,9 @@ class _InventoryReceiptManualProductEditorPageState
         onRecentItemSelected: _controller.applyRecentItem,
         onScanBarcode: () {
           unawaited(_openBarcodeScanner());
+        },
+        onToggleVoiceSearch: () {
+          unawaited(_toggleVoiceSearch());
         },
         onWeightUnitChanged: _controller.updateWeightUnit,
         onScanNutritionLabel: state.canScanNutritionLabel
@@ -554,6 +586,7 @@ class _InventoryReceiptManualProductEditorPageState
   }
 
   void _handleSearchResultSelected(OffProductSearchResult product) {
+    unawaited(_stopVoiceSearchIfNeeded());
     if (widget.autofocusSearch) {
       unawaited(_openSelectedProductEditor(product));
       return;
@@ -617,6 +650,10 @@ class _InventoryReceiptManualProductEditorPageState
   }
 
   Future<void> _openBarcodeScanner() async {
+    await _stopVoiceSearchIfNeeded();
+    if (!mounted) {
+      return;
+    }
     final l10n = AppLocalizations.of(context)!;
     final result = await showModalBottomSheet<_ManualBarcodeScanResult>(
       context: context,
@@ -690,6 +727,103 @@ class _InventoryReceiptManualProductEditorPageState
     _controller.updateSearchQuery(_searchController.text);
   }
 
+  Future<void> _toggleVoiceSearch() async {
+    if (_isStartingVoiceSearch) {
+      return;
+    }
+    if (_isListeningToSpeech) {
+      await _stopVoiceSearchIfNeeded();
+      return;
+    }
+
+    setState(() {
+      _isStartingVoiceSearch = true;
+    });
+
+    final failure = await _speechService.startListening(
+      onResult: _handleSpeechResult,
+      onListeningStateChanged: _handleSpeechListeningChanged,
+      onError: _handleSpeechError,
+    );
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isStartingVoiceSearch = false;
+      _isListeningToSpeech = failure == null;
+    });
+
+    if (failure != null) {
+      final l10n = AppLocalizations.of(context)!;
+      _showSnackBar(_resolveSpeechErrorText(l10n, failure));
+    }
+  }
+
+  Future<void> _stopVoiceSearchIfNeeded() async {
+    if (!_isListeningToSpeech && !_speechService.isListening) {
+      return;
+    }
+
+    await _speechService.stopListening();
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isListeningToSpeech = false;
+      _isStartingVoiceSearch = false;
+    });
+  }
+
+  void _handleSpeechResult(ManualProductSpeechRecognition result) {
+    if (_isDisposing || !mounted) {
+      return;
+    }
+    if (_searchController.text == result.transcript) {
+      return;
+    }
+
+    _searchController.value = TextEditingValue(
+      text: result.transcript,
+      selection: TextSelection.collapsed(offset: result.transcript.length),
+      composing: TextRange.empty,
+    );
+  }
+
+  void _handleSpeechListeningChanged(bool isListening) {
+    if (_isDisposing || !mounted) {
+      return;
+    }
+    if (_isListeningToSpeech == isListening &&
+        (isListening || !_isStartingVoiceSearch)) {
+      return;
+    }
+
+    setState(() {
+      _isListeningToSpeech = isListening;
+      if (!isListening) {
+        _isStartingVoiceSearch = false;
+      }
+    });
+  }
+
+  void _handleSpeechError(ManualProductSpeechFailure failure) {
+    if (_isDisposing || !mounted) {
+      return;
+    }
+
+    if (_isListeningToSpeech || _isStartingVoiceSearch) {
+      setState(() {
+        _isListeningToSpeech = false;
+        _isStartingVoiceSearch = false;
+      });
+    }
+    _showSnackBar(
+      _resolveSpeechErrorText(AppLocalizations.of(context)!, failure),
+    );
+  }
+
   bool _canEatImmediately(InventoryReceiptManualProductState state) {
     if (state.hasNutritionInput) {
       return true;
@@ -715,6 +849,7 @@ class _InventoryReceiptManualProductEditorPageState
       return;
     }
 
+    unawaited(_speechService.cancelListening());
     final router = GoRouter.maybeOf(context);
     if (router != null) {
       router.pop(result);
@@ -766,6 +901,20 @@ class _InventoryReceiptManualProductEditorPageState
       null => null,
       InventoryReceiptManualProductError.requiredProductOrNutrition =>
         l10n.inventoryReceiptReviewManualDataRequired,
+    };
+  }
+
+  String _resolveSpeechErrorText(
+    AppLocalizations l10n,
+    ManualProductSpeechFailure failure,
+  ) {
+    return switch (failure) {
+      ManualProductSpeechFailure.unavailable =>
+        l10n.inventoryManualAddVoiceSearchUnavailable,
+      ManualProductSpeechFailure.permissionDenied =>
+        l10n.inventoryManualAddVoiceSearchPermissionDenied,
+      ManualProductSpeechFailure.error =>
+        l10n.inventoryManualAddVoiceSearchFailed,
     };
   }
 }

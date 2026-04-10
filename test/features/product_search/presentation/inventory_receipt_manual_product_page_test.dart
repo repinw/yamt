@@ -13,9 +13,11 @@ import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
+import 'package:yamt/features/product_search/data/'
+    'manual_product_speech_service.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_manual_product_page.dart';
-import 'package:yamt/features/scanner/provider/'
+import 'package:yamt/features/product_search/provider/'
     'inventory_receipt_manual_product_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -25,6 +27,7 @@ Widget _wrapPage({
   OffProductSearchRepository? offRepository,
   CalorieNutritionOcrRepositoryContract? ocrRepository,
   InventoryItemRepository? inventoryRepository,
+  ManualProductSpeechService? speechService,
   bool includeStoreInSearch = true,
   bool includeWeightInSearch = true,
   Locale locale = const Locale('de'),
@@ -38,6 +41,8 @@ Widget _wrapPage({
         offProductSearchRepositoryProvider.overrideWithValue(offRepository),
       if (ocrRepository != null)
         calorieNutritionOcrRepositoryProvider.overrideWithValue(ocrRepository),
+      if (speechService != null)
+        manualProductSpeechServiceProvider.overrideWithValue(speechService),
     ],
     child: MaterialApp(
       locale: locale,
@@ -172,6 +177,72 @@ class _FakeNutritionOcrRepository
   }
 }
 
+class _FakeManualProductSpeechService implements ManualProductSpeechService {
+  ManualProductSpeechFailure? startFailure;
+  int startCallCount = 0;
+  int stopCallCount = 0;
+  int cancelCallCount = 0;
+  bool _isListening = false;
+  ValueChanged<ManualProductSpeechRecognition>? _onResult;
+  ValueChanged<bool>? _onListeningStateChanged;
+  ValueChanged<ManualProductSpeechFailure>? _onError;
+
+  @override
+  bool get isListening => _isListening;
+
+  @override
+  Future<ManualProductSpeechFailure?> startListening({
+    required ValueChanged<ManualProductSpeechRecognition> onResult,
+    required ValueChanged<bool> onListeningStateChanged,
+    required ValueChanged<ManualProductSpeechFailure> onError,
+  }) async {
+    startCallCount++;
+    _onResult = onResult;
+    _onListeningStateChanged = onListeningStateChanged;
+    _onError = onError;
+
+    final failure = startFailure;
+    if (failure != null) {
+      return failure;
+    }
+
+    _isListening = true;
+    onListeningStateChanged(true);
+    return null;
+  }
+
+  @override
+  Future<void> stopListening() async {
+    stopCallCount++;
+    _isListening = false;
+    _onListeningStateChanged?.call(false);
+  }
+
+  @override
+  Future<void> cancelListening() async {
+    cancelCallCount++;
+    _isListening = false;
+    _onListeningStateChanged?.call(false);
+  }
+
+  void emitTranscript(String transcript, {bool isFinal = false}) {
+    _onResult?.call(
+      ManualProductSpeechRecognition(transcript: transcript, isFinal: isFinal),
+    );
+  }
+
+  void emitError(ManualProductSpeechFailure failure) {
+    _isListening = false;
+    _onListeningStateChanged?.call(false);
+    _onError?.call(failure);
+  }
+
+  void emitListeningState(bool isListening) {
+    _isListening = isListening;
+    _onListeningStateChanged?.call(isListening);
+  }
+}
+
 InventoryItem _item() {
   return InventoryItem.create(
     id: 'item-1',
@@ -209,6 +280,15 @@ Future<void> _openSearchEditor(WidgetTester tester) async {
     find.byKey(const Key('receipt_review_manual_launcher_search_field')),
   );
   await tester.pumpAndSettle();
+}
+
+Icon _voiceSearchIcon(WidgetTester tester) {
+  return tester.widget<Icon>(
+    find.descendant(
+      of: find.byKey(const Key('receipt_review_manual_voice_search_button')),
+      matching: find.byType(Icon),
+    ),
+  );
 }
 
 void main() {
@@ -396,6 +476,187 @@ void main() {
     expect(find.text('Booster'), findsOneWidget);
     expect(find.text('330 ml'), findsAtLeastNWidgets(1));
   });
+
+  testWidgets('voice search fills the query and triggers a lookup', (
+    tester,
+  ) async {
+    final speechService = _FakeManualProductSpeechService();
+    final offRepository =
+        _RecordingOffProductSearchRepository(const <OffProductSearchResult>[
+          OffProductSearchResult(
+            code: '4310000000001',
+            name: 'Chocolate Milk',
+            brand: 'Brand',
+            score: 100,
+          ),
+        ]);
+
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item().copyWith(name: 'Milk'),
+        offRepository: offRepository,
+        speechService: speechService,
+      ),
+    );
+    await tester.pump();
+
+    await _openSearchEditor(tester);
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+    );
+    await tester.pump();
+
+    expect(speechService.startCallCount, 1);
+
+    speechService.emitTranscript('Chocolate Milk');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pump();
+
+    final searchField = tester.widget<TextField>(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+    );
+
+    expect(searchField.controller?.text, 'Chocolate Milk');
+    expect(offRepository.lastQuery, 'Chocolate Milk');
+    expect(
+      find.byKey(
+        const Key('receipt_review_manual_search_result_4310000000001'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('voice search button is visible in the launcher', (tester) async {
+    final speechService = _FakeManualProductSpeechService();
+
+    await tester.pumpWidget(
+      _wrapPage(item: _item(), speechService: speechService),
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(speechService.startCallCount, 1);
+    expect(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('voice search can be stopped manually', (tester) async {
+    final speechService = _FakeManualProductSpeechService();
+
+    await tester.pumpWidget(
+      _wrapPage(item: _item(), speechService: speechService),
+    );
+    await tester.pump();
+
+    await _openSearchEditor(tester);
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+    );
+    await tester.pump();
+
+    expect(speechService.startCallCount, 1);
+    expect(_voiceSearchIcon(tester).icon, Icons.mic);
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+    );
+    await tester.pump();
+
+    expect(speechService.stopCallCount, 1);
+    expect(_voiceSearchIcon(tester).icon, Icons.mic_none);
+  });
+
+  testWidgets('voice search auto stop resets the microphone icon', (
+    tester,
+  ) async {
+    final speechService = _FakeManualProductSpeechService();
+
+    await tester.pumpWidget(
+      _wrapPage(item: _item(), speechService: speechService),
+    );
+    await tester.pump();
+
+    await _openSearchEditor(tester);
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+    );
+    await tester.pump();
+
+    expect(_voiceSearchIcon(tester).icon, Icons.mic);
+
+    speechService.emitListeningState(false);
+    await tester.pump();
+
+    expect(_voiceSearchIcon(tester).icon, Icons.mic_none);
+  });
+
+  testWidgets('voice search permission failure shows a snackbar', (
+    tester,
+  ) async {
+    final speechService = _FakeManualProductSpeechService()
+      ..startFailure = ManualProductSpeechFailure.permissionDenied;
+
+    await tester.pumpWidget(
+      _wrapPage(item: _item(), speechService: speechService),
+    );
+    await tester.pump();
+
+    await _openSearchEditor(tester);
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+    );
+    await tester.pump();
+
+    expect(
+      find.text(
+        'Bitte erlaube Mikrofonzugriff, um die Sprachsuche zu verwenden.',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+    'voice search error while listening resets ui and shows snackbar',
+    (tester) async {
+      final speechService = _FakeManualProductSpeechService();
+
+      await tester.pumpWidget(
+        _wrapPage(item: _item(), speechService: speechService),
+      );
+      await tester.pump();
+
+      await _openSearchEditor(tester);
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_voice_search_button')),
+      );
+      await tester.pump();
+
+      expect(_voiceSearchIcon(tester).icon, Icons.mic);
+
+      speechService.emitError(ManualProductSpeechFailure.error);
+      await tester.pump();
+
+      expect(_voiceSearchIcon(tester).icon, Icons.mic_none);
+      expect(
+        find.text(
+          'Sprachsuche konnte nicht gestartet werden. Bitte versuche es erneut.',
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets(
     'manual search field is prefilled with item name brand and store',
