@@ -130,6 +130,7 @@ class CaloriesSummaryCard extends ConsumerWidget {
               children: [
                 Expanded(
                   child: _MacroProgressCard(
+                    macroId: 'carbs',
                     label: carbsLabel,
                     current: totalCarbs,
                     target: macroGoals.carbs,
@@ -141,6 +142,7 @@ class CaloriesSummaryCard extends ConsumerWidget {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: _MacroProgressCard(
+                    macroId: 'protein',
                     label: proteinLabel,
                     current: totalProtein,
                     target: macroGoals.protein,
@@ -152,6 +154,7 @@ class CaloriesSummaryCard extends ConsumerWidget {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: _MacroProgressCard(
+                    macroId: 'fat',
                     label: fatLabel,
                     current: totalFat,
                     target: macroGoals.fat,
@@ -514,6 +517,7 @@ class _HeaderStat extends StatelessWidget {
 
 class _MacroProgressCard extends StatelessWidget {
   const _MacroProgressCard({
+    required this.macroId,
     required this.label,
     required this.current,
     required this.target,
@@ -522,6 +526,7 @@ class _MacroProgressCard extends StatelessWidget {
     required this.numberFormat,
   });
 
+  final String macroId;
   final String label;
   final double current;
   final double target;
@@ -548,6 +553,7 @@ class _MacroProgressCard extends StatelessWidget {
     );
 
     return DecoratedBox(
+      key: CaloriesPageKeys.summaryMacroCard(macroId),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.md),
@@ -590,6 +596,7 @@ class _MacroProgressCard extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               RichText(
+                key: CaloriesPageKeys.summaryMacroValue(macroId),
                 text: TextSpan(
                   children: [
                     TextSpan(
@@ -625,6 +632,7 @@ class _MacroProgressCard extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: FractionallySizedBox(
+                          key: CaloriesPageKeys.summaryMacroBar(macroId),
                           widthFactor: progress,
                           child: DecoratedBox(
                             decoration: BoxDecoration(

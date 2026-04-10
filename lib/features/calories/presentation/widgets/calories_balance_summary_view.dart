@@ -60,6 +60,52 @@ Color resolveCaloriesBalanceColorForScore(
   );
 }
 
+/// Resolves the visible fill and marker position for the balance bar.
+@visibleForTesting
+({double barLeft, double barWidth, double markerCenterX, double gradientWidth})
+resolveCaloriesBalanceBarLayoutMetrics({
+  required double totalWidth,
+  required double progress,
+  required bool isUnderPace,
+  required bool isOverPace,
+}) {
+  final halfWidth = totalWidth / 2;
+  final paddedHalfWidth = math.max(0.0, halfWidth - _balanceBarFillInset);
+  final visibleProgress = (isUnderPace || isOverPace)
+      ? progress.clamp(0.0, 1.0)
+      : 0.0;
+  final markerOffset = isUnderPace
+      ? -visibleProgress
+      : isOverPace
+      ? visibleProgress
+      : 0.0;
+  final markerCenterX = halfWidth + (paddedHalfWidth * markerOffset);
+
+  if (paddedHalfWidth <= 0 || visibleProgress <= 0) {
+    return (
+      barLeft: halfWidth,
+      barWidth: 0.0,
+      markerCenterX: markerCenterX,
+      gradientWidth: paddedHalfWidth,
+    );
+  }
+
+  final markerInsetProgress = (_balanceBarMarkerWidth / 2) / paddedHalfWidth;
+  final barVisibleProgress = math.max(
+    0.0,
+    visibleProgress - markerInsetProgress,
+  );
+  final barWidth = paddedHalfWidth * barVisibleProgress;
+  final barLeft = isUnderPace ? halfWidth - barWidth : halfWidth;
+
+  return (
+    barLeft: barLeft,
+    barWidth: barWidth,
+    markerCenterX: markerCenterX,
+    gradientWidth: paddedHalfWidth,
+  );
+}
+
 class CaloriesBalanceSummaryView extends StatelessWidget {
   const CaloriesBalanceSummaryView({
     super.key,
@@ -230,11 +276,6 @@ class _BalanceBar extends StatelessWidget {
     final gradientColors = _balanceBarGradientColors(
       brightness: colors.brightness,
     );
-    final markerOffset = data.isUnderPace
-        ? -data.barProgress
-        : data.isOverPace
-        ? data.barProgress
-        : 0.0;
     final centerColor = gradientColors.center;
     final edgeColor = gradientColors.edge;
     final markerColor = resolveCaloriesBalanceColorForScore(
@@ -246,19 +287,12 @@ class _BalanceBar extends StatelessWidget {
       label: semanticLabel,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final totalWidth = constraints.maxWidth;
-          final halfWidth = totalWidth / 2;
-          final paddedHalfWidth = halfWidth - _balanceBarFillInset;
-          final visibleProgress = (data.isUnderPace || data.isOverPace)
-              ? data.barProgress.clamp(0.0, 1.0)
-              : 0.0;
-          final markerInsetProgress =
-              (_balanceBarMarkerWidth / 2) / paddedHalfWidth;
-          final barVisibleProgress = math.max(
-            0.0,
-            visibleProgress - markerInsetProgress,
+          final layoutMetrics = resolveCaloriesBalanceBarLayoutMetrics(
+            totalWidth: constraints.maxWidth,
+            progress: data.barProgress,
+            isUnderPace: data.isUnderPace,
+            isOverPace: data.isOverPace,
           );
-          final markerCenterX = halfWidth + (paddedHalfWidth * markerOffset);
 
           return SizedBox(
             key: CaloriesPageKeys.summaryBalanceBar,
@@ -279,18 +313,16 @@ class _BalanceBar extends StatelessWidget {
                   ),
                   child: const SizedBox.expand(),
                 ),
-                if (barVisibleProgress > 0)
+                if (layoutMetrics.barWidth > 0)
                   Positioned(
                     top: _balanceBarFillInset,
                     bottom: _balanceBarFillInset,
-                    left: data.isUnderPace
-                        ? halfWidth - (paddedHalfWidth * barVisibleProgress)
-                        : halfWidth,
-                    width: paddedHalfWidth * barVisibleProgress,
+                    left: layoutMetrics.barLeft,
+                    width: layoutMetrics.barWidth,
                     child: ClipRect(
                       child: OverflowBox(
-                        minWidth: paddedHalfWidth,
-                        maxWidth: paddedHalfWidth,
+                        minWidth: layoutMetrics.gradientWidth,
+                        maxWidth: layoutMetrics.gradientWidth,
                         alignment: data.isUnderPace
                             ? Alignment.centerRight
                             : Alignment.centerLeft,
@@ -330,7 +362,9 @@ class _BalanceBar extends StatelessWidget {
                   child: const SizedBox(width: 2, height: 32),
                 ),
                 Positioned(
-                  left: markerCenterX - (_balanceBarMarkerWidth / 2),
+                  left:
+                      layoutMetrics.markerCenterX -
+                      (_balanceBarMarkerWidth / 2),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: Colors.white,

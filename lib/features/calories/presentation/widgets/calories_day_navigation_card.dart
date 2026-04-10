@@ -202,12 +202,14 @@ class _DiaryDayBalancePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final dayKey = _dayKey(day.date);
     final goalRatio = (day.goalKcal / chartMaxKcal).clamp(0.0, 1.0);
     final totalRatio = (day.totalKcal / chartMaxKcal).clamp(0.0, 1.0);
     final goalBottomOffset = (_miniWeekBalanceHeight * goalRatio).toDouble();
     final barHeight = (_miniWeekBalanceHeight * totalRatio).toDouble();
 
     return SizedBox(
+      key: CaloriesPageKeys.dayNavigationPreview(dayKey),
       width: _miniWeekBalanceWidth,
       height: _miniWeekBalanceHeight,
       child: Stack(
@@ -233,6 +235,7 @@ class _DiaryDayBalancePreview extends StatelessWidget {
             right: _miniWeekBalanceHorizontalInset,
             bottom: goalBottomOffset - 1,
             child: DecoratedBox(
+              key: CaloriesPageKeys.dayNavigationPreviewGoalLine(dayKey),
               decoration: BoxDecoration(
                 color: colors.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
@@ -247,6 +250,7 @@ class _DiaryDayBalancePreview extends StatelessWidget {
               bottom: 0,
               height: barHeight,
               child: DecoratedBox(
+                key: CaloriesPageKeys.dayNavigationPreviewBar(dayKey),
                 decoration: BoxDecoration(
                   color: _barColor(colors),
                   borderRadius: BorderRadius.circular(4),
@@ -327,4 +331,11 @@ bool _isSameDay(DateTime left, DateTime right) {
   return left.year == right.year &&
       left.month == right.month &&
       left.day == right.day;
+}
+
+String _dayKey(DateTime day) {
+  final normalizedDay = DateTime(day.year, day.month, day.day);
+  return '${normalizedDay.year}-'
+      '${normalizedDay.month}-'
+      '${normalizedDay.day}';
 }

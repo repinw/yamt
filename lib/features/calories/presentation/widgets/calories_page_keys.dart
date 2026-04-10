@@ -50,12 +50,36 @@ abstract final class CaloriesPageKeys {
     return Key('calories_summary_mode_$mode');
   }
 
+  static Key summaryMacroCard(String macro) {
+    return Key('calories_summary_macro_card_$macro');
+  }
+
+  static Key summaryMacroValue(String macro) {
+    return Key('calories_summary_macro_value_$macro');
+  }
+
+  static Key summaryMacroBar(String macro) {
+    return Key('calories_summary_macro_bar_$macro');
+  }
+
   static Key weekBalanceDayColumn(String dayKey) {
     return Key('calories_week_balance_day_$dayKey');
   }
 
   static Key weekBalanceBar(String dayKey) {
     return Key('calories_week_balance_bar_$dayKey');
+  }
+
+  static Key dayNavigationPreview(String dayKey) {
+    return Key('calories_day_navigation_preview_$dayKey');
+  }
+
+  static Key dayNavigationPreviewGoalLine(String dayKey) {
+    return Key('calories_day_navigation_preview_goal_line_$dayKey');
+  }
+
+  static Key dayNavigationPreviewBar(String dayKey) {
+    return Key('calories_day_navigation_preview_bar_$dayKey');
   }
 }
 
