@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/provider/app_version_provider.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_option_labels.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
@@ -31,12 +32,7 @@ class SettingsPage extends StatelessWidget {
         subtitle: l10n.settingsNotificationsSubtitle,
         message: l10n.commonNotImplementedYet,
       ),
-      _NotImplementedTile(
-        icon: Icons.info_outline,
-        title: l10n.settingsAboutTitle,
-        subtitle: l10n.settingsAboutSubtitle,
-        message: l10n.commonNotImplementedYet,
-      ),
+      const _AboutTile(),
     ];
 
     return ListView.separated(
@@ -44,6 +40,35 @@ class SettingsPage extends StatelessWidget {
       itemCount: tiles.length,
       itemBuilder: (context, index) => tiles[index],
       separatorBuilder: (context, index) => const Divider(height: 1),
+    );
+  }
+}
+
+class _AboutTile extends ConsumerWidget {
+  const _AboutTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final version = ref.watch(appVersionProvider);
+    final theme = Theme.of(context);
+
+    return ListTile(
+      leading: const Icon(Icons.info_outline),
+      title: Text(l10n.settingsAboutTitle),
+      subtitle: Text(l10n.settingsAboutSubtitle),
+      trailing: switch (version) {
+        AsyncData(:final value) => Text(
+          value,
+          style: theme.textTheme.bodySmall,
+        ),
+        AsyncLoading() => const SizedBox(
+          width: 16,
+          height: 16,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+        AsyncError() => null,
+      },
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/provider/app_version_provider.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
@@ -60,6 +61,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
           appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
         ],
         child: MaterialApp(
@@ -69,6 +71,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.language_outlined), findsOneWidget);
     expect(find.byIcon(Icons.notifications_outlined), findsOneWidget);
@@ -95,6 +98,7 @@ void main() {
     expect(find.text('Manage profile and sign-in'), findsOneWidget);
     expect(find.text('About'), findsOneWidget);
     expect(find.text('App version and information'), findsOneWidget);
+    expect(find.text('1.1.0+2'), findsOneWidget);
   });
 
   testWidgets('Household tile opens HouseholdPage', (tester) async {
@@ -121,6 +125,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
           authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
           appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
         ],
@@ -143,6 +148,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
           appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
         ],
         child: MaterialApp(
@@ -152,6 +158,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Language'));
     await tester.pumpAndSettle();
@@ -161,14 +168,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Not implemented yet'), findsOneWidget);
 
-    await tester.tap(find.text('About'));
-    await tester.pumpAndSettle();
-    expect(find.text('Not implemented yet'), findsOneWidget);
+    expect(find.text('1.1.0+2'), findsOneWidget);
   });
 
   testWidgets('theme dropdown updates theme mode provider', (tester) async {
     final container = ProviderContainer(
       overrides: [
+        appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
         appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
       ],
     );
@@ -184,6 +190,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     final dropdownFinder = find.byWidgetPredicate(
       (widget) => widget is DropdownButton<ThemeMode>,
@@ -203,6 +210,7 @@ void main() {
   testWidgets('color dropdown updates seed color provider', (tester) async {
     final container = ProviderContainer(
       overrides: [
+        appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
         appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
       ],
     );
@@ -218,6 +226,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     final colorDropdownFinder = find.byWidgetPredicate(
       (widget) => widget is DropdownButton<int>,
@@ -258,6 +267,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
           authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
           appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
         ],
@@ -268,6 +278,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Account').first);
     await tester.pumpAndSettle();
