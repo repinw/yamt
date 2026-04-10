@@ -91,6 +91,32 @@ class _FakeSpeechToText extends SpeechToText {
 }
 
 void main() {
+  test('startListening reports listening state and recognized words', () async {
+    final speechToText = _FakeSpeechToText();
+    final service = SpeechToTextManualProductSpeechService(
+      speechToText: speechToText,
+    );
+    final listeningStates = <bool>[];
+    ManualProductSpeechRecognition? recognition;
+
+    final failure = await service.startListening(
+      onResult: (value) {
+        recognition = value;
+      },
+      onListeningStateChanged: listeningStates.add,
+      onError: (_) {},
+    );
+
+    speechToText.emitResult('Hafermilch', isFinal: true);
+
+    expect(failure, isNull);
+    expect(service.isListening, isTrue);
+    expect(listeningStates, contains(true));
+    expect(recognition, isNotNull);
+    expect(recognition!.transcript, 'Hafermilch');
+    expect(recognition!.isFinal, isTrue);
+  });
+
   test('returns unavailable when speech plugin is missing', () async {
     final speechToText = _FakeSpeechToText()
       ..initializeThrowable = MissingPluginException('missing');

@@ -236,6 +236,11 @@ class _FakeManualProductSpeechService implements ManualProductSpeechService {
     _onListeningStateChanged?.call(false);
     _onError?.call(failure);
   }
+
+  void emitListeningState(bool isListening) {
+    _isListening = isListening;
+    _onListeningStateChanged?.call(isListening);
+  }
 }
 
 InventoryItem _item() {
@@ -570,6 +575,30 @@ void main() {
     await tester.pump();
 
     expect(speechService.stopCallCount, 1);
+    expect(_voiceSearchIcon(tester).icon, Icons.mic_none);
+  });
+
+  testWidgets('voice search auto stop resets the microphone icon', (
+    tester,
+  ) async {
+    final speechService = _FakeManualProductSpeechService();
+
+    await tester.pumpWidget(
+      _wrapPage(item: _item(), speechService: speechService),
+    );
+    await tester.pump();
+
+    await _openSearchEditor(tester);
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+    );
+    await tester.pump();
+
+    expect(_voiceSearchIcon(tester).icon, Icons.mic);
+
+    speechService.emitListeningState(false);
+    await tester.pump();
+
     expect(_voiceSearchIcon(tester).icon, Icons.mic_none);
   });
 
