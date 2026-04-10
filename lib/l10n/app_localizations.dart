@@ -2399,6 +2399,30 @@ abstract class AppLocalizations {
   /// **'Wait a bit before eating again'**
   String get caloriesBalanceStatusWaitNow;
 
+  /// No description provided for @caloriesBalanceStatusWaitUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Back on pace around {time}'**
+  String caloriesBalanceStatusWaitUntil(String time);
+
+  /// No description provided for @caloriesBalanceStatusWaitRestOfDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Likely off pace for the rest of today'**
+  String get caloriesBalanceStatusWaitRestOfDay;
+
+  /// No description provided for @caloriesBalanceStatusRecommendFast.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendation: fast today'**
+  String get caloriesBalanceStatusRecommendFast;
+
+  /// No description provided for @caloriesBalanceStatusRecommendFastRestOfDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendation: fast for the rest of today'**
+  String get caloriesBalanceStatusRecommendFastRestOfDay;
+
   /// No description provided for @caloriesBalanceStatusOnTrack.
   ///
   /// In en, this message translates to:

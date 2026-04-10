@@ -14,11 +14,20 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _buildHarness(
-        data: _summaryData(goalMode: CalorieGoalMode.gain, deltaKcal: 220),
+        data: _summaryData(
+          goalMode: CalorieGoalMode.gain,
+          deltaKcal: 220,
+          baseGoalKcal: 960,
+          flexibleGoalKcal: 960,
+          pacedGoalKcal: 480,
+          deadZoneKcal: 60,
+          rangeKcal: 400,
+        ),
       ),
     );
 
     expect(find.text('Wait a bit before eating again'), findsOneWidget);
+    expect(find.text('Back on pace around 16:40'), findsOneWidget);
   });
 
   testWidgets('shows an eat hint when the user is below the center', (
@@ -42,6 +51,58 @@ void main() {
 
     expect(find.text('Well balanced for now'), findsOneWidget);
   });
+
+  testWidgets(
+    'shows a fasting recommendation when the carryover exceeds the base goal',
+    (tester) async {
+      await tester.pumpWidget(
+        _buildHarness(
+          data: _summaryData(
+            goalMode: CalorieGoalMode.maintain,
+            deltaKcal: 0,
+            baseGoalKcal: 2000,
+            carryoverKcal: -2200,
+            flexibleGoalKcal: 0,
+            pacedGoalKcal: 0,
+          ),
+        ),
+      );
+
+      expect(find.text('Recommendation: fast today'), findsOneWidget);
+      expect(find.text('Wait a bit before eating again'), findsNothing);
+      expect(find.textContaining('Back on pace around'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'shows a fasting recommendation when todays flex goal is already exceeded',
+    (tester) async {
+      await tester.pumpWidget(
+        _buildHarness(
+          data: _summaryData(
+            goalMode: CalorieGoalMode.maintain,
+            deltaKcal: 523,
+            baseGoalKcal: 2427,
+            carryoverKcal: -1874,
+            flexibleGoalKcal: 553,
+            pacedGoalKcal: 92,
+            consumedKcal: 800,
+          ),
+        ),
+      );
+
+      expect(
+        find.text('Recommendation: fast for the rest of today'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Likely off pace for the rest of today'),
+        findsOneWidget,
+      );
+      expect(find.text('Wait a bit before eating again'), findsNothing);
+      expect(find.textContaining('Back on pace around'), findsNothing);
+    },
+  );
 
   testWidgets('uses goal-aware finished copy for historical gain days', (
     tester,
@@ -89,23 +150,32 @@ CalorieBalanceSummaryData _summaryData({
   required double deltaKcal,
   DateTime? selectedDay,
   DateTime? referenceNow,
+  double baseGoalKcal = 2000,
+  double carryoverKcal = 0,
+  double? flexibleGoalKcal,
+  double? pacedGoalKcal,
+  double? consumedKcal,
+  double deadZoneKcal = 60,
+  double rangeKcal = 600,
 }) {
   final resolvedNow = referenceNow ?? DateTime(2026, 4, 10, 14);
   final resolvedDay = selectedDay ?? normalizeDiaryDay(resolvedNow);
+  final resolvedFlexibleGoalKcal = flexibleGoalKcal ?? baseGoalKcal;
+  final resolvedPacedGoalKcal = pacedGoalKcal ?? (baseGoalKcal * 0.5);
   return CalorieBalanceSummaryData(
     selectedDay: resolvedDay,
     referenceNow: resolvedNow,
     windowStartDate: resolvedNow.subtract(const Duration(days: 6)),
     balanceStartDate: resolvedNow.subtract(const Duration(days: 6)),
-    baseGoalKcal: 2000,
-    carryoverKcal: 0,
+    baseGoalKcal: baseGoalKcal,
+    carryoverKcal: carryoverKcal,
     goalMode: goalMode,
-    flexibleGoalKcal: 2000,
-    pacedGoalKcal: 1000,
-    consumedKcal: 1000 + deltaKcal,
+    flexibleGoalKcal: resolvedFlexibleGoalKcal,
+    pacedGoalKcal: resolvedPacedGoalKcal,
+    consumedKcal: consumedKcal ?? (resolvedPacedGoalKcal + deltaKcal),
     deltaKcal: deltaKcal,
     paceRatio: 0.5,
-    deadZoneKcal: 60,
-    rangeKcal: 600,
+    deadZoneKcal: deadZoneKcal,
+    rangeKcal: rangeKcal,
   );
 }

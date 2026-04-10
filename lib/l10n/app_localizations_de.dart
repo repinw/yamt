@@ -1205,6 +1205,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesBalanceStatusWaitNow => 'Gedulde dich noch etwas mit dem Essen';
 
   @override
+  String caloriesBalanceStatusWaitUntil(String time) {
+    return 'Wieder im Takt ab etwa $time Uhr';
+  }
+
+  @override
+  String get caloriesBalanceStatusWaitRestOfDay => 'Heute vermutlich nicht mehr im Takt';
+
+  @override
+  String get caloriesBalanceStatusRecommendFast => 'Empfehlung: heute fasten';
+
+  @override
+  String get caloriesBalanceStatusRecommendFastRestOfDay => 'Empfehlung: restlichen Tag fasten';
+
+  @override
   String get caloriesBalanceStatusOnTrack => 'Genau im Takt';
 
   @override

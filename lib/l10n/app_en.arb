@@ -634,6 +634,20 @@
     }
   },
   "caloriesBalanceStatusWaitNow": "Wait a bit before eating again",
+  "caloriesBalanceStatusWaitUntil": "Back on pace around {time}",
+  "@caloriesBalanceStatusWaitUntil": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "caloriesBalanceStatusWaitRestOfDay":
+      "Likely off pace for the rest of today",
+  "caloriesBalanceStatusRecommendFast":
+      "Recommendation: fast today",
+  "caloriesBalanceStatusRecommendFastRestOfDay":
+      "Recommendation: fast for the rest of today",
   "caloriesBalanceStatusOnTrack": "Right on pace",
   "caloriesBalanceStatusBuffer": "{kcal} kcal under pace",
   "@caloriesBalanceStatusBuffer": {
