@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
@@ -5,6 +7,104 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_summary_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+const _balanceBarCornerRadius = 4.0;
+const _balanceBarCenterLineRadius = 2.0;
+const _balanceBarFillInset = 4.0;
+const _balanceBarMarkerRadius = 4.0;
+const _balanceBarMarkerWidth = 4.0;
+const _balanceBarMarkerHeight = 34.0;
+const _balanceBarGreenStop = 0.03;
+const _balanceBarRedStop = 0.4;
+const _balanceColorCurveExponent = 2.0;
+const _balanceDangerColor = Color(0xFFB71C1C);
+const _balanceDangerColorDark = Color(0xFF991B1B);
+const _balanceSafeColor = Color(0xFF006941);
+const _balanceSafeColorDark = Color(0xFF0B7A4B);
+
+Color _balanceSafeTone(Brightness brightness) {
+  return brightness == Brightness.dark
+      ? _balanceSafeColorDark
+      : _balanceSafeColor;
+}
+
+Color _balanceDangerTone(Brightness brightness) {
+  return brightness == Brightness.dark
+      ? _balanceDangerColorDark
+      : _balanceDangerColor;
+}
+
+/// Resolves the balance accent color for a normalized score from 0 to 1.
+@visibleForTesting
+Color resolveCaloriesBalanceColorForScore(
+  double score, {
+  required Brightness brightness,
+}) {
+  final adjustedScore = math.pow(
+    score.clamp(0.0, 1.0),
+    _balanceColorCurveExponent,
+  );
+  final safeColor = _balanceSafeTone(brightness);
+  final dangerColor = _balanceDangerTone(brightness);
+
+  return Color.lerp(dangerColor, safeColor, adjustedScore.toDouble()) ??
+      safeColor;
+}
+
+({Color center, Color edge}) _balanceBarGradientColors({
+  required Brightness brightness,
+}) {
+  return (
+    center: _balanceSafeTone(brightness),
+    edge: _balanceDangerTone(brightness),
+  );
+}
+
+/// Resolves the visible fill and marker position for the balance bar.
+@visibleForTesting
+({double barLeft, double barWidth, double markerCenterX, double gradientWidth})
+resolveCaloriesBalanceBarLayoutMetrics({
+  required double totalWidth,
+  required double progress,
+  required bool isUnderPace,
+  required bool isOverPace,
+}) {
+  final halfWidth = totalWidth / 2;
+  final paddedHalfWidth = math.max(0.0, halfWidth - _balanceBarFillInset);
+  final visibleProgress = (isUnderPace || isOverPace)
+      ? progress.clamp(0.0, 1.0)
+      : 0.0;
+  final markerOffset = isUnderPace
+      ? -visibleProgress
+      : isOverPace
+      ? visibleProgress
+      : 0.0;
+  final markerCenterX = halfWidth + (paddedHalfWidth * markerOffset);
+
+  if (paddedHalfWidth <= 0 || visibleProgress <= 0) {
+    return (
+      barLeft: halfWidth,
+      barWidth: 0.0,
+      markerCenterX: markerCenterX,
+      gradientWidth: paddedHalfWidth,
+    );
+  }
+
+  final markerInsetProgress = (_balanceBarMarkerWidth / 2) / paddedHalfWidth;
+  final barVisibleProgress = math.max(
+    0.0,
+    visibleProgress - markerInsetProgress,
+  );
+  final barWidth = paddedHalfWidth * barVisibleProgress;
+  final barLeft = isUnderPace ? halfWidth - barWidth : halfWidth;
+
+  return (
+    barLeft: barLeft,
+    barWidth: barWidth,
+    markerCenterX: markerCenterX,
+    gradientWidth: paddedHalfWidth,
+  );
+}
 
 class CaloriesBalanceSummaryView extends StatelessWidget {
   const CaloriesBalanceSummaryView({
@@ -22,8 +122,10 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
-    final statusColor = _accentColor(colors);
-    final carryoverColor = _carryoverColor(colors);
+    final statusColor = resolveCaloriesBalanceColorForScore(
+      resolveCalorieBalanceScore(data),
+      brightness: colors.brightness,
+    );
     final statusMessage = _statusMessage(l10n);
     final statusDetail = _statusDetailMessage(context, l10n);
     final semanticStatus = switch (statusDetail) {
@@ -34,28 +136,6 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _BalanceInfoChip(
-                label: l10n.caloriesBalanceCarryoverLabel,
-                value: _formatSignedKcal(data.carryoverKcal.round()),
-                accentColor: carryoverColor,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: _BalanceInfoChip(
-                label: l10n.caloriesBalanceFlexGoalLabel,
-                value:
-                    '${numberFormat.format(data.flexibleGoalKcal.round())} '
-                    '$kcalUnit',
-                accentColor: colors.primary,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xl),
         _BalanceBar(data: data, semanticLabel: semanticStatus),
         const SizedBox(height: AppSpacing.md),
         _BalanceScaleLabels(
@@ -109,29 +189,6 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  Color _accentColor(ColorScheme colors) {
-    return _colorForScore(resolveCalorieBalanceScore(data), colors: colors);
-  }
-
-  Color _carryoverColor(ColorScheme colors) {
-    if (data.carryoverKcal > 0) {
-      return AppInventoryEditorial.primary;
-    }
-    if (data.carryoverKcal < 0) {
-      return AppInventoryEditorial.warning;
-    }
-    return colors.onSurfaceVariant;
-  }
-
-  Color _colorForScore(double score, {required ColorScheme colors}) {
-    return Color.lerp(
-          colors.error,
-          AppInventoryEditorial.primary,
-          score.clamp(0.0, 1.0),
-        ) ??
-        colors.primary;
   }
 
   String _statusMessage(AppLocalizations l10n) {
@@ -205,13 +262,6 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
     final formattedTime = DateFormat.Hm(locale).format(recoveryTime.toLocal());
     return l10n.caloriesBalanceStatusWaitUntil(formattedTime);
   }
-
-  String _formatSignedKcal(int value) {
-    if (value > 0) {
-      return '+$value kcal';
-    }
-    return '$value kcal';
-  }
 }
 
 class _BalanceBar extends StatelessWidget {
@@ -223,29 +273,26 @@ class _BalanceBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final markerOffset = data.isUnderPace
-        ? -data.barProgress
-        : data.isOverPace
-        ? data.barProgress
-        : 0.0;
-    final centerColor = _colorForScore(
-      resolveCalorieBalanceCenterScore(data),
-      colors: colors,
+    final gradientColors = _balanceBarGradientColors(
+      brightness: colors.brightness,
     );
-    final edgeColor = _colorForScore(
+    final centerColor = gradientColors.center;
+    final edgeColor = gradientColors.edge;
+    final markerColor = resolveCaloriesBalanceColorForScore(
       resolveCalorieBalanceScore(data),
-      colors: colors,
+      brightness: colors.brightness,
     );
 
     return Semantics(
       label: semanticLabel,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final totalWidth = constraints.maxWidth;
-          final halfWidth = totalWidth / 2;
-          final fillWidth = halfWidth * data.barProgress;
-          final markerCenterX = halfWidth + (halfWidth * markerOffset);
-          final markerSize = AppSpacing.md;
+          final layoutMetrics = resolveCaloriesBalanceBarLayoutMetrics(
+            totalWidth: constraints.maxWidth,
+            progress: data.barProgress,
+            isUnderPace: data.isUnderPace,
+            isOverPace: data.isOverPace,
+          );
 
           return SizedBox(
             key: CaloriesPageKeys.summaryBalanceBar,
@@ -256,47 +303,75 @@ class _BalanceBar extends StatelessWidget {
               children: [
                 DecoratedBox(
                   decoration: BoxDecoration(
-                    color: colors.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(999),
+                    color: colors.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(
+                      _balanceBarCornerRadius,
+                    ),
+                    border: Border.all(
+                      color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+                    ),
                   ),
                   child: const SizedBox.expand(),
                 ),
-                Positioned(
-                  top: 0,
-                  bottom: 0,
-                  left: data.isUnderPace ? halfWidth - fillWidth : halfWidth,
-                  width: data.isUnderPace || data.isOverPace ? fillWidth : 0,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(999),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: data.isUnderPace
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
-                          end: data.isUnderPace
-                              ? Alignment.centerLeft
-                              : Alignment.centerRight,
-                          colors: [centerColor, edgeColor],
+                if (layoutMetrics.barWidth > 0)
+                  Positioned(
+                    top: _balanceBarFillInset,
+                    bottom: _balanceBarFillInset,
+                    left: layoutMetrics.barLeft,
+                    width: layoutMetrics.barWidth,
+                    child: ClipRect(
+                      child: OverflowBox(
+                        minWidth: layoutMetrics.gradientWidth,
+                        maxWidth: layoutMetrics.gradientWidth,
+                        alignment: data.isUnderPace
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            _balanceBarCornerRadius,
+                          ),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: data.isUnderPace
+                                    ? Alignment.centerRight
+                                    : Alignment.centerLeft,
+                                end: data.isUnderPace
+                                    ? Alignment.centerLeft
+                                    : Alignment.centerRight,
+                                colors: [centerColor, centerColor, edgeColor],
+                                stops: const [
+                                  0.0,
+                                  _balanceBarGreenStop,
+                                  _balanceBarRedStop,
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
                 DecoratedBox(
                   decoration: BoxDecoration(
                     color: colors.surface,
-                    borderRadius: BorderRadius.circular(999),
+                    borderRadius: BorderRadius.circular(
+                      _balanceBarCenterLineRadius,
+                    ),
                   ),
                   child: const SizedBox(width: 2, height: 32),
                 ),
                 Positioned(
-                  left: markerCenterX - (markerSize / 2),
+                  left:
+                      layoutMetrics.markerCenterX -
+                      (_balanceBarMarkerWidth / 2),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: colors.surface,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: edgeColor, width: 2),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(
+                        _balanceBarMarkerRadius,
+                      ),
+                      border: Border.all(color: markerColor, width: 2),
                       boxShadow: [
                         BoxShadow(
                           color: colors.onSurface.withValues(alpha: 0.12),
@@ -305,7 +380,10 @@ class _BalanceBar extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: SizedBox.square(dimension: markerSize),
+                    child: const SizedBox(
+                      width: _balanceBarMarkerWidth,
+                      height: _balanceBarMarkerHeight,
+                    ),
                   ),
                 ),
               ],
@@ -314,15 +392,6 @@ class _BalanceBar extends StatelessWidget {
         },
       ),
     );
-  }
-
-  Color _colorForScore(double score, {required ColorScheme colors}) {
-    return Color.lerp(
-          colors.error,
-          AppInventoryEditorial.primary,
-          score.clamp(0.0, 1.0),
-        ) ??
-        colors.primary;
   }
 }
 
@@ -383,60 +452,6 @@ class _BalanceScaleLabels extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _BalanceInfoChip extends StatelessWidget {
-  const _BalanceInfoChip({
-    required this.label,
-    required this.value,
-    required this.accentColor,
-  });
-
-  final String label;
-  final String value;
-  final Color accentColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label.toUpperCase(),
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: colors.onSurfaceVariant,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.05,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xxs),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: accentColor,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

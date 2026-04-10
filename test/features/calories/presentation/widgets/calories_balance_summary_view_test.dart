@@ -9,6 +9,78 @@ import 'package:yamt/features/calories/provider/calorie_balance_summary_provider
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
+  test('resolves balance bar layout metrics for under-pace progress', () {
+    final layoutMetrics = resolveCaloriesBalanceBarLayoutMetrics(
+      totalWidth: 200,
+      progress: 0.5,
+      isUnderPace: true,
+      isOverPace: false,
+    );
+
+    expect(layoutMetrics.gradientWidth, closeTo(96, 0.0001));
+    expect(layoutMetrics.barLeft, closeTo(54, 0.0001));
+    expect(layoutMetrics.barWidth, closeTo(46, 0.0001));
+    expect(layoutMetrics.markerCenterX, closeTo(52, 0.0001));
+  });
+
+  test('resolves balance bar layout metrics for over-pace progress', () {
+    final layoutMetrics = resolveCaloriesBalanceBarLayoutMetrics(
+      totalWidth: 200,
+      progress: 0.5,
+      isUnderPace: false,
+      isOverPace: true,
+    );
+
+    expect(layoutMetrics.gradientWidth, closeTo(96, 0.0001));
+    expect(layoutMetrics.barLeft, closeTo(100, 0.0001));
+    expect(layoutMetrics.barWidth, closeTo(46, 0.0001));
+    expect(layoutMetrics.markerCenterX, closeTo(148, 0.0001));
+  });
+
+  test('resolves empty fill when the balance bar has no usable width', () {
+    final layoutMetrics = resolveCaloriesBalanceBarLayoutMetrics(
+      totalWidth: 6,
+      progress: 1,
+      isUnderPace: true,
+      isOverPace: false,
+    );
+
+    expect(layoutMetrics.gradientWidth, 0);
+    expect(layoutMetrics.barLeft, 3);
+    expect(layoutMetrics.barWidth, 0);
+    expect(layoutMetrics.markerCenterX, 3);
+  });
+
+  test('resolves light theme balance colors from score', () {
+    expect(
+      resolveCaloriesBalanceColorForScore(0, brightness: Brightness.light),
+      const Color(0xFFB71C1C),
+    );
+    expect(
+      resolveCaloriesBalanceColorForScore(0.5, brightness: Brightness.light),
+      Color.lerp(const Color(0xFFB71C1C), const Color(0xFF006941), 0.25),
+    );
+    expect(
+      resolveCaloriesBalanceColorForScore(1, brightness: Brightness.light),
+      const Color(0xFF006941),
+    );
+  });
+
+  test('resolves dark theme balance colors from score', () {
+    expect(
+      resolveCaloriesBalanceColorForScore(0, brightness: Brightness.dark),
+      const Color(0xFF991B1B),
+    );
+    expect(
+      resolveCaloriesBalanceColorForScore(0.5, brightness: Brightness.dark),
+      Color.lerp(const Color(0xFF991B1B), const Color(0xFF0B7A4B), 0.25),
+    );
+    expect(
+      resolveCaloriesBalanceColorForScore(1, brightness: Brightness.dark),
+      const Color(0xFF0B7A4B),
+    );
+  });
+
   testWidgets('shows a wait hint when the user is above the center', (
     tester,
   ) async {
