@@ -202,7 +202,7 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
     }
 
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final formattedTime = DateFormat.Hm(locale).format(recoveryTime);
+    final formattedTime = DateFormat.Hm(locale).format(recoveryTime.toLocal());
     return l10n.caloriesBalanceStatusWaitUntil(formattedTime);
   }
 

@@ -82,7 +82,7 @@ CalorieBalanceNow calorieBalanceNow(Ref ref) {
 
 @riverpod
 Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
-  final now = ref.watch(calorieBalanceNowProvider)();
+  final now = ref.watch(calorieBalanceNowProvider)().toLocal();
   final selectedDay = ref.watch(calorieDayControllerProvider);
   final settings = await ref.watch(calorieGoalControllerProvider.future);
   final selectedEntries = await ref.watch(
@@ -229,7 +229,7 @@ double _resolvePacedGoalKcal({
     return flexibleGoalKcal;
   }
 
-  // Previous days are already complete, so their full carryover applies now.
+  // For the current day, previous days are already complete and count in full.
   return carryoverKcal + (baseGoalKcal * paceRatio);
 }
 
