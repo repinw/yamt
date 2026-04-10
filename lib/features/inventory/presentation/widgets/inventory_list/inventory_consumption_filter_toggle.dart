@@ -1,64 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_segmented_button_style.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-enum _InventoryConsumptionFilter { consumed, notConsumed }
-
-class InventoryConsumptionFilterToggle extends StatelessWidget {
-  const InventoryConsumptionFilterToggle({
+class InventoryConsumedItemsToggle extends StatelessWidget {
+  const InventoryConsumedItemsToggle({
     super.key,
-    required this.showConsumed,
-    required this.showNotConsumed,
+    required this.value,
+    required this.enabled,
     required this.l10n,
-    required this.onShowConsumedChanged,
-    required this.onShowNotConsumedChanged,
+    required this.onChanged,
   });
 
-  final bool showConsumed;
-  final bool showNotConsumed;
+  final bool value;
+  final bool enabled;
   final AppLocalizations l10n;
-  final ValueChanged<bool> onShowConsumedChanged;
-  final ValueChanged<bool> onShowNotConsumedChanged;
+  final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return SegmentedButton<_InventoryConsumptionFilter>(
-      expandedInsets: AppInsets.zero,
-      multiSelectionEnabled: true,
-      emptySelectionAllowed: false,
-      showSelectedIcon: false,
-      style: inventorySegmentedButtonStyle(context),
-      selected: <_InventoryConsumptionFilter>{
-        if (showConsumed) _InventoryConsumptionFilter.consumed,
-        if (showNotConsumed) _InventoryConsumptionFilter.notConsumed,
-      },
-      onSelectionChanged: (selection) {
-        final nextShowConsumed = selection.contains(
-          _InventoryConsumptionFilter.consumed,
-        );
-        final nextShowNotConsumed = selection.contains(
-          _InventoryConsumptionFilter.notConsumed,
-        );
+    final colors = Theme.of(context).colorScheme;
 
-        if (showConsumed != nextShowConsumed) {
-          onShowConsumedChanged(nextShowConsumed);
-        }
-        if (showNotConsumed != nextShowNotConsumed) {
-          onShowNotConsumedChanged(nextShowNotConsumed);
-        }
-      },
-      segments: [
-        ButtonSegment<_InventoryConsumptionFilter>(
-          value: _InventoryConsumptionFilter.consumed,
-          label: Text(l10n.inventoryFilterConsumed),
-        ),
-        ButtonSegment<_InventoryConsumptionFilter>(
-          value: _InventoryConsumptionFilter.notConsumed,
-          label: Text(l10n.inventoryFilterNotConsumed),
-        ),
-      ],
+    return MergeSemantics(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 220),
+            child: Text(
+              l10n.inventoryHideFullyConsumedItemsToggle,
+              textAlign: TextAlign.end,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: enabled
+                    ? colors.onSurface
+                    : colors.onSurface.withValues(alpha: 0.5),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Switch.adaptive(value: value, onChanged: enabled ? onChanged : null),
+        ],
+      ),
     );
   }
 }

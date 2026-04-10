@@ -264,16 +264,10 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     });
   }
 
-  void _onShowConsumedChanged(bool showConsumed) {
+  void _onHideFullyConsumedItemsChanged(bool hideFullyConsumedItems) {
     setState(() {
-      _consumptionFilter = _consumptionFilter.toggleConsumed(showConsumed);
-    });
-  }
-
-  void _onShowNotConsumedChanged(bool showNotConsumed) {
-    setState(() {
-      _consumptionFilter = _consumptionFilter.toggleNotConsumed(
-        showNotConsumed,
+      _consumptionFilter = _consumptionFilter.copyWith(
+        hideFullyConsumedItems: hideFullyConsumedItems,
       );
     });
   }
@@ -283,25 +277,29 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     required String title,
     required AppLocalizations l10n,
   }) {
+    var hideFullyConsumedItems = _consumptionFilter.hideFullyConsumedItems;
+
     return showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return InventoryFiltersSheet(
-          title: title,
-          consumptionToggle: InventoryConsumptionFilterToggle(
-            showConsumed: _consumptionFilter.showConsumed,
-            showNotConsumed: _consumptionFilter.showNotConsumed,
-            l10n: l10n,
-            onShowConsumedChanged: (showConsumed) {
-              _onShowConsumedChanged(showConsumed);
-              Navigator.of(context).pop();
-            },
-            onShowNotConsumedChanged: (showNotConsumed) {
-              _onShowNotConsumedChanged(showNotConsumed);
-              Navigator.of(context).pop();
-            },
-          ),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return InventoryFiltersSheet(
+              title: title,
+              consumptionToggle: InventoryConsumedItemsToggle(
+                value: hideFullyConsumedItems,
+                enabled: !widget.isSelectionMode,
+                l10n: l10n,
+                onChanged: (nextHideFullyConsumedItems) {
+                  setModalState(() {
+                    hideFullyConsumedItems = nextHideFullyConsumedItems;
+                  });
+                  _onHideFullyConsumedItemsChanged(nextHideFullyConsumedItems);
+                },
+              ),
+            );
+          },
         );
       },
     );

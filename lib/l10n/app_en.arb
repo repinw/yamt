@@ -119,6 +119,7 @@
   "inventoryNutritionCarbsShortLabel": "Carbs",
   "inventoryFilterConsumed": "Consumed",
   "inventoryFilterNotConsumed": "Not consumed",
+  "inventoryHideFullyConsumedItemsToggle": "Hide fully consumed items",
   "inventoryReceiptGroupTitle": "Receipt",
   "inventoryReceiptGroupNoReceipt": "No receipt",
   "inventoryReceiptGroupItems": "items",

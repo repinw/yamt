@@ -150,6 +150,14 @@ void main() {
       );
       expect(
         container
+            .read(inventoryItemsControllerProvider)
+            .value
+            ?.single
+            .lastConsumedAt,
+        _entry().loggedAt,
+      );
+      expect(
+        container
             .read(inventoryItemsControllerProvider.notifier)
             .hasPendingConsumption(pendingConsumption.id),
         isFalse,

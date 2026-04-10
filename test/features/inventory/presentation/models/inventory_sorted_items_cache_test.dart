@@ -7,15 +7,21 @@ InventoryItem _item({
   required String id,
   required String name,
   required String entryDate,
+  int quantity = 1,
+  int initialQuantity = 1,
+  String? lastConsumedAt,
 }) {
   return InventoryItem.create(
     id: id,
     name: name,
     entryDate: DateTime.parse(entryDate),
     storeName: 'Store',
-    quantity: 1,
-    initialQuantity: 1,
+    quantity: quantity,
+    initialQuantity: initialQuantity,
     unitPrice: 1.0,
+    lastConsumedAt: lastConsumedAt == null
+        ? null
+        : DateTime.parse(lastConsumedAt),
   );
 }
 
@@ -54,49 +60,80 @@ void main() {
   });
 
   test('materialize restores cached sorted order', () {
-    final a = _item(id: 'a', name: 'Banana', entryDate: '2026-02-20T08:00:00Z');
-    final b = _item(id: 'b', name: 'Apple', entryDate: '2026-02-20T08:00:00Z');
-    final c = _item(id: 'c', name: 'Apple', entryDate: '2026-02-21T08:00:00Z');
+    final a = _item(
+      id: 'a',
+      name: 'Banana',
+      entryDate: '2026-02-20T08:00:00Z',
+      quantity: 4,
+      initialQuantity: 4,
+    );
+    final b = _item(
+      id: 'b',
+      name: 'Apple',
+      entryDate: '2026-02-20T08:00:00Z',
+      quantity: 0,
+      initialQuantity: 4,
+      lastConsumedAt: '2026-02-22T08:00:00Z',
+    );
+    final c = _item(
+      id: 'c',
+      name: 'Apple',
+      entryDate: '2026-02-21T08:00:00Z',
+      quantity: 2,
+      initialQuantity: 4,
+      lastConsumedAt: '2026-02-21T12:00:00Z',
+    );
     final cache = InventorySortedItemsCache.fromItems(<InventoryItem>[a, b, c]);
 
     final materialized = cache.materialize(<InventoryItem>[c, a, b]);
-    expect(materialized.map((item) => item.id), <String>['c', 'b', 'a']);
+    expect(materialized.map((item) => item.id), <String>['c', 'a', 'b']);
   });
 
-  test('compare sort order is name then date then id', () {
-    final newerApple = _item(
-      id: 'apple-new',
-      name: 'Apple',
-      entryDate: '2026-02-21T08:00:00Z',
-    );
-    final olderAppleB = _item(
-      id: 'b-id',
+  test('compare sort order keeps partial items first and empty last', () {
+    final partialOlder = _item(
+      id: 'partial-older',
       name: 'Apple',
       entryDate: '2026-02-20T08:00:00Z',
+      quantity: 2,
+      initialQuantity: 4,
+      lastConsumedAt: '2026-02-21T08:00:00Z',
     );
-    final olderAppleA = _item(
-      id: 'a-id',
-      name: 'Apple',
-      entryDate: '2026-02-20T08:00:00Z',
-    );
-    final banana = _item(
-      id: 'banana',
+    final partialNewer = _item(
+      id: 'partial-newer',
       name: 'Banana',
       entryDate: '2026-02-22T08:00:00Z',
+      quantity: 1,
+      initialQuantity: 4,
+      lastConsumedAt: '2026-02-22T10:00:00Z',
+    );
+    final full = _item(
+      id: 'full',
+      name: 'Apricot',
+      entryDate: '2026-02-23T08:00:00Z',
+      quantity: 4,
+      initialQuantity: 4,
+    );
+    final empty = _item(
+      id: 'empty',
+      name: 'Cherry',
+      entryDate: '2026-02-24T08:00:00Z',
+      quantity: 0,
+      initialQuantity: 4,
+      lastConsumedAt: '2026-02-24T09:00:00Z',
     );
 
     final sorted = sortInventoryItems(<InventoryItem>[
-      banana,
-      olderAppleB,
-      newerApple,
-      olderAppleA,
+      empty,
+      full,
+      partialOlder,
+      partialNewer,
     ]);
 
     expect(sorted.map((item) => item.id), <String>[
-      'apple-new',
-      'a-id',
-      'b-id',
-      'banana',
+      'partial-newer',
+      'partial-older',
+      'full',
+      'empty',
     ]);
   });
 }

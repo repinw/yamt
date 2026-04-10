@@ -777,9 +777,10 @@ void main() {
     addTearDown(controllerSubscription.close);
 
     await container.read(inventoryItemsControllerProvider.future);
+    final consumedAt = DateTime.parse('2026-02-20T12:00:00Z');
     final updated = await container
         .read(inventoryItemsControllerProvider.notifier)
-        .eatItem('a', 2);
+        .eatItem('a', 2, consumedAt: consumedAt);
     await _waitForItems(
       container,
       (items) => items.length == 1 && items.single.quantity == 1,
@@ -788,6 +789,7 @@ void main() {
     expect(updated, isTrue);
     expect(repository.savedItems, hasLength(1));
     expect(repository.savedItems.single.quantity, 1);
+    expect(repository.savedItems.single.lastConsumedAt, consumedAt);
     expect(
       container.read(inventoryItemsControllerProvider).value,
       hasLength(1),
@@ -906,6 +908,7 @@ void main() {
             itemId: 'a',
             quantity: 5,
             currentAmount: 0,
+            consumedAt: DateTime.parse('2026-02-20T18:00:00Z'),
           );
 
       expect(finalized, isTrue);
@@ -916,6 +919,14 @@ void main() {
       expect(
         container.read(inventoryItemsControllerProvider).value?.single.brand,
         'Fresh brand',
+      );
+      expect(
+        container
+            .read(inventoryItemsControllerProvider)
+            .value
+            ?.single
+            .lastConsumedAt,
+        DateTime.parse('2026-02-20T18:00:00Z'),
       );
     },
   );
@@ -1244,7 +1255,12 @@ void main() {
 
   test('restoreConsumedItem increases quantity-based stock again', () async {
     final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <InventoryItem>[_item('a').copyWith(quantity: 0)],
+      onReadAll: () async => <InventoryItem>[
+        _item('a').copyWith(
+          quantity: 0,
+          lastConsumedAt: DateTime.parse('2026-02-20T12:00:00Z'),
+        ),
+      ],
     );
     addTearDown(repository.dispose);
     final container = ProviderContainer(
@@ -1263,6 +1279,7 @@ void main() {
 
     expect(restored, isTrue);
     expect(repository.savedItems.single.quantity, 1);
+    expect(repository.savedItems.single.lastConsumedAt, isNull);
     expect(
       container.read(inventoryItemsControllerProvider).value?.single.quantity,
       1,

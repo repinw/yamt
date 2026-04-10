@@ -41,9 +41,9 @@ final calorieEntryDeleteFlowProvider = Provider<CalorieEntryDeleteFlow>((ref) {
     restoreConsumedItem: ref
         .read(inventoryItemsControllerProvider.notifier)
         .restoreConsumedItem,
-    rollbackRestoredItem: ref
+    rollbackRestoredItem: (itemId, amount, {consumedAt}) => ref
         .read(inventoryItemsControllerProvider.notifier)
-        .eatItem,
+        .eatItem(itemId, amount, consumedAt: consumedAt),
     restorePreparedMealPortions: ref
         .read(preparedMealsControllerProvider.notifier)
         .restorePreparedMealPortions,
@@ -63,7 +63,11 @@ class CalorieEntryDeleteFlow {
     required Future<bool> Function(String entryId) deleteEntryById,
     required Future<bool> Function(String itemId, int amount)
     restoreConsumedItem,
-    required Future<bool> Function(String itemId, int amount)
+    required Future<bool> Function(
+      String itemId,
+      int amount, {
+      DateTime? consumedAt,
+    })
     rollbackRestoredItem,
     required Future<bool> Function({
       required String mealId,
@@ -83,7 +87,8 @@ class CalorieEntryDeleteFlow {
 
   final Future<bool> Function(String entryId) _deleteEntryById;
   final Future<bool> Function(String itemId, int amount) _restoreConsumedItem;
-  final Future<bool> Function(String itemId, int amount) _rollbackRestoredItem;
+  final Future<bool> Function(String itemId, int amount, {DateTime? consumedAt})
+  _rollbackRestoredItem;
   final Future<bool> Function({required String mealId, required int portions})
   _restorePreparedMealPortions;
   final Future<bool> Function({
@@ -151,6 +156,7 @@ class CalorieEntryDeleteFlow {
     final rolledBack = await _rollbackRestoredItem(
       sourceItemId,
       amountToRestore,
+      consumedAt: entry.loggedAt,
     );
     if (!rolledBack) {
       log(

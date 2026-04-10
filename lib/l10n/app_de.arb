@@ -119,6 +119,8 @@
   "inventoryNutritionCarbsShortLabel": "KH",
   "inventoryFilterConsumed": "Verbraucht",
   "inventoryFilterNotConsumed": "Nicht verbraucht",
+  "inventoryHideFullyConsumedItemsToggle":
+      "Komplett verbrauchte Artikel ausblenden",
   "inventoryReceiptGroupTitle": "Beleg",
   "inventoryReceiptGroupNoReceipt": "Ohne Beleg",
   "inventoryReceiptGroupItems": "Artikel",

@@ -295,6 +295,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryFilterNotConsumed => 'Not consumed';
 
   @override
+  String get inventoryHideFullyConsumedItemsToggle => 'Hide fully consumed items';
+
+  @override
   String get inventoryReceiptGroupTitle => 'Receipt';
 
   @override

@@ -79,6 +79,8 @@ class InventoryFiltersSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final bottomSheetFabClearance =
+        AppInventoryEditorial.contextFabSize + AppSpacing.xxxxl + AppSpacing.xl;
 
     return SafeArea(
       top: false,
@@ -87,25 +89,28 @@ class InventoryFiltersSheet extends StatelessWidget {
           AppSpacing.xl,
           AppSpacing.lg,
           AppSpacing.xl,
-          AppSpacing.xxxl,
+          0,
         ),
-        child: DecoratedBox(
-          decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
-            colors,
-            borderRadius: BorderRadius.circular(
-              AppInventoryEditorial.cardRadius,
+        child: Padding(
+          padding: EdgeInsets.only(bottom: bottomSheetFabClearance),
+          child: DecoratedBox(
+            decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+              colors,
+              borderRadius: BorderRadius.circular(
+                AppInventoryEditorial.cardRadius,
+              ),
             ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: AppSpacing.lg),
-                consumptionToggle,
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: AppSpacing.lg),
+                  consumptionToggle,
+                ],
+              ),
             ),
           ),
         ),

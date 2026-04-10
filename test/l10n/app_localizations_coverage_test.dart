@@ -61,6 +61,7 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.inventoryListModeAllItems,
     l10n.inventoryFilterConsumed,
     l10n.inventoryFilterNotConsumed,
+    l10n.inventoryHideFullyConsumedItemsToggle,
     l10n.inventoryReceiptGroupTitle,
     l10n.inventoryReceiptGroupNoReceipt,
     l10n.inventoryReceiptGroupItems,

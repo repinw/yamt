@@ -126,6 +126,7 @@ class FirestoreInventoryCalorieEntryCommitStore
         final committedItem = _buildCommittedItem(
           item: currentItem,
           amount: pendingConsumption.amount,
+          consumedAt: entry.loggedAt,
         );
         if (committedItem == null) {
           log(
@@ -239,10 +240,16 @@ class _UnavailableInventoryCalorieEntryCommitStore
 InventoryItem? _buildCommittedItem({
   required InventoryItem item,
   required int amount,
+  required DateTime consumedAt,
 }) {
   if (amount < 1) {
     return null;
   }
+
+  final nextLastConsumedAt = _latestConsumedAt(
+    current: item.lastConsumedAt,
+    candidate: consumedAt,
+  );
 
   if (item.usesAmountProgress) {
     if (item.currentAmount < amount) {
@@ -256,13 +263,17 @@ InventoryItem? _buildCommittedItem({
         item: item,
         currentAmount: nextCurrentAmount,
       ),
+      lastConsumedAt: nextLastConsumedAt,
     );
   }
 
   if (item.quantity < amount) {
     return null;
   }
-  return item.copyWith(quantity: item.quantity - amount);
+  return item.copyWith(
+    quantity: item.quantity - amount,
+    lastConsumedAt: nextLastConsumedAt,
+  );
 }
 
 int _quantityForCurrentAmount({
@@ -290,5 +301,16 @@ Map<String, dynamic> _buildInventoryUpdate(InventoryItem item) {
   return <String, dynamic>{
     'quantity': item.quantity,
     'current_amount': item.currentAmount,
+    'last_consumed_at': item.lastConsumedAt?.toIso8601String(),
   };
+}
+
+DateTime _latestConsumedAt({
+  required DateTime? current,
+  required DateTime candidate,
+}) {
+  if (current == null || candidate.isAfter(current)) {
+    return candidate;
+  }
+  return current;
 }

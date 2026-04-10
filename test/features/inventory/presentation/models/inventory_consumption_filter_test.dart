@@ -20,46 +20,47 @@ InventoryItem _item({
 }
 
 void main() {
-  test('apply filters by consumption flags', () {
+  test('apply shows fully consumed items by default', () {
     final items = <InventoryItem>[
       _item(id: 'fresh', quantity: 2, initialQuantity: 2),
       _item(id: 'partial', quantity: 1, initialQuantity: 2),
       _item(id: 'empty', quantity: 0, initialQuantity: 2),
     ];
 
-    const consumedOnly = InventoryConsumptionFilter(
-      showConsumed: true,
-      showNotConsumed: false,
-    );
-    const notConsumedOnly = InventoryConsumptionFilter(
-      showConsumed: false,
-      showNotConsumed: true,
-    );
+    const filter = InventoryConsumptionFilter();
+    final result = filter.apply(items);
 
-    final consumedResult = consumedOnly.apply(items);
-    final notConsumedResult = notConsumedOnly.apply(items);
-
-    expect(consumedResult.map((item) => item.id), <String>['partial', 'empty']);
-    expect(notConsumedResult.map((item) => item.id), <String>['fresh']);
+    expect(result.map((item) => item.id), <String>[
+      'fresh',
+      'partial',
+      'empty',
+    ]);
   });
 
-  test('toggleConsumed(false) keeps same instance if not-consumed is off', () {
-    const filter = InventoryConsumptionFilter(
-      showConsumed: true,
-      showNotConsumed: false,
-    );
+  test('apply hides fully consumed items when enabled', () {
+    final items = <InventoryItem>[
+      _item(id: 'fresh', quantity: 2, initialQuantity: 2),
+      _item(id: 'partial', quantity: 1, initialQuantity: 2),
+      _item(id: 'empty', quantity: 0, initialQuantity: 2),
+    ];
 
-    final next = filter.toggleConsumed(false);
-    expect(identical(next, filter), isTrue);
+    const filter = InventoryConsumptionFilter(hideFullyConsumedItems: true);
+    final result = filter.apply(items);
+
+    expect(result.map((item) => item.id), <String>['fresh', 'partial']);
   });
 
-  test('toggleNotConsumed(false) keeps same instance if consumed is off', () {
-    const filter = InventoryConsumptionFilter(
-      showConsumed: false,
-      showNotConsumed: true,
-    );
+  test('copyWith updates fully consumed visibility', () {
+    const filter = InventoryConsumptionFilter();
 
-    final next = filter.toggleNotConsumed(false);
-    expect(identical(next, filter), isTrue);
+    final next = filter.copyWith(hideFullyConsumedItems: true);
+
+    expect(next.hideFullyConsumedItems, isTrue);
+    expect(
+      const InventoryConsumptionFilter(
+        hideFullyConsumedItems: true,
+      ).hideFullyConsumedItems,
+      isTrue,
+    );
   });
 }

@@ -38,16 +38,19 @@ InventoryItem _amountItem({
 void main() {
   test('buildReducedItems reduces quantity by a valid amount', () {
     final originalItems = <InventoryItem>[_item(id: 'a', quantity: 5)];
+    final consumedAt = DateTime.parse('2026-02-20T12:00:00Z');
 
     final reducedItems = buildReducedItems(
       currentItems: originalItems,
       itemId: 'a',
       amount: 2,
+      consumedAt: consumedAt,
     );
 
     expect(reducedItems, isNotNull);
     expect(reducedItems, hasLength(1));
     expect(reducedItems?.single.quantity, 3);
+    expect(reducedItems?.single.lastConsumedAt, consumedAt);
     expect(originalItems.single.quantity, 5);
   });
 

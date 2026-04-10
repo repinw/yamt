@@ -659,6 +659,12 @@ abstract class AppLocalizations {
   /// **'Not consumed'**
   String get inventoryFilterNotConsumed;
 
+  /// No description provided for @inventoryHideFullyConsumedItemsToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide fully consumed items'**
+  String get inventoryHideFullyConsumedItemsToggle;
+
   /// No description provided for @inventoryReceiptGroupTitle.
   ///
   /// In en, this message translates to:

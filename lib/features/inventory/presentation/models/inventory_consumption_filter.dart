@@ -1,31 +1,14 @@
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 class InventoryConsumptionFilter {
-  const InventoryConsumptionFilter({
-    this.showConsumed = true,
-    this.showNotConsumed = true,
-  });
+  const InventoryConsumptionFilter({this.hideFullyConsumedItems = false});
 
-  final bool showConsumed;
-  final bool showNotConsumed;
+  final bool hideFullyConsumedItems;
 
-  InventoryConsumptionFilter toggleConsumed(bool value) {
-    if (!value && !showNotConsumed) {
-      return this;
-    }
+  InventoryConsumptionFilter copyWith({bool? hideFullyConsumedItems}) {
     return InventoryConsumptionFilter(
-      showConsumed: value,
-      showNotConsumed: showNotConsumed,
-    );
-  }
-
-  InventoryConsumptionFilter toggleNotConsumed(bool value) {
-    if (!value && !showConsumed) {
-      return this;
-    }
-    return InventoryConsumptionFilter(
-      showConsumed: showConsumed,
-      showNotConsumed: value,
+      hideFullyConsumedItems:
+          hideFullyConsumedItems ?? this.hideFullyConsumedItems,
     );
   }
 
@@ -34,9 +17,9 @@ class InventoryConsumptionFilter {
   }
 
   bool matches(InventoryItem item) {
-    if (item.isConsumed) {
-      return showConsumed;
+    if (item.isFullyConsumed) {
+      return !hideFullyConsumedItems;
     }
-    return showNotConsumed;
+    return true;
   }
 }
