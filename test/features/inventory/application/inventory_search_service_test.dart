@@ -67,6 +67,15 @@ void main() {
     expect(result, isTrue);
   });
 
+  test('matchesQuery treats separator-only queries like an empty search', () {
+    final result = service.matchesQuery(
+      haystack: 'Fresh Milk',
+      query: '-_/,.;:()',
+    );
+
+    expect(result, isTrue);
+  });
+
   test('compact voice query matches spaced inventory item with typo', () {
     final items = <InventoryItem>[
       _item(id: '1', name: 'Eiweiß Bort'),
@@ -95,6 +104,19 @@ void main() {
     final result = service.filterPreparedMeals(meals: meals, query: 'basil');
 
     expect(result.map((meal) => meal.name), <String>['Pasta Bowl']);
+  });
+
+  test('filterItems handles very long strings without failing', () {
+    final longName = '${List<String>.filled(200, 'hafer').join(' ')} brot';
+    final items = <InventoryItem>[
+      _item(id: '1', name: longName),
+      _item(id: '2', name: 'Toastbrot'),
+    ];
+
+    final longQuery = '${List<String>.filled(50, 'hafer').join()}brot';
+    final result = service.filterItems(items: items, query: longQuery);
+
+    expect(result.map((item) => item.name), <String>[longName]);
   });
 
   group('isWithinEditDistanceOne', () {

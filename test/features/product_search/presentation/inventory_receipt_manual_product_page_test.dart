@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_nutrition_ocr_repository.dart';
 import 'package:yamt/features/calories/data/'
@@ -13,8 +14,6 @@ import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_search/data/'
-    'manual_product_speech_service.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_manual_product_page.dart';
 import 'package:yamt/features/product_search/provider/'
@@ -27,7 +26,7 @@ Widget _wrapPage({
   OffProductSearchRepository? offRepository,
   CalorieNutritionOcrRepositoryContract? ocrRepository,
   InventoryItemRepository? inventoryRepository,
-  ManualProductSpeechService? speechService,
+  VoiceSearchService? speechService,
   bool includeStoreInSearch = true,
   bool includeWeightInSearch = true,
   Locale locale = const Locale('de'),
@@ -42,7 +41,7 @@ Widget _wrapPage({
       if (ocrRepository != null)
         calorieNutritionOcrRepositoryProvider.overrideWithValue(ocrRepository),
       if (speechService != null)
-        manualProductSpeechServiceProvider.overrideWithValue(speechService),
+        voiceSearchServiceProvider.overrideWithValue(speechService),
     ],
     child: MaterialApp(
       locale: locale,
@@ -177,24 +176,24 @@ class _FakeNutritionOcrRepository
   }
 }
 
-class _FakeManualProductSpeechService implements ManualProductSpeechService {
-  ManualProductSpeechFailure? startFailure;
+class _FakeManualProductSpeechService implements VoiceSearchService {
+  VoiceSearchFailure? startFailure;
   int startCallCount = 0;
   int stopCallCount = 0;
   int cancelCallCount = 0;
   bool _isListening = false;
-  ValueChanged<ManualProductSpeechRecognition>? _onResult;
+  ValueChanged<VoiceSearchRecognition>? _onResult;
   ValueChanged<bool>? _onListeningStateChanged;
-  ValueChanged<ManualProductSpeechFailure>? _onError;
+  ValueChanged<VoiceSearchFailure>? _onError;
 
   @override
   bool get isListening => _isListening;
 
   @override
-  Future<ManualProductSpeechFailure?> startListening({
-    required ValueChanged<ManualProductSpeechRecognition> onResult,
+  Future<VoiceSearchFailure?> startListening({
+    required ValueChanged<VoiceSearchRecognition> onResult,
     required ValueChanged<bool> onListeningStateChanged,
-    required ValueChanged<ManualProductSpeechFailure> onError,
+    required ValueChanged<VoiceSearchFailure> onError,
   }) async {
     startCallCount++;
     _onResult = onResult;
@@ -227,11 +226,11 @@ class _FakeManualProductSpeechService implements ManualProductSpeechService {
 
   void emitTranscript(String transcript, {bool isFinal = false}) {
     _onResult?.call(
-      ManualProductSpeechRecognition(transcript: transcript, isFinal: isFinal),
+      VoiceSearchRecognition(transcript: transcript, isFinal: isFinal),
     );
   }
 
-  void emitError(ManualProductSpeechFailure failure) {
+  void emitError(VoiceSearchFailure failure) {
     _isListening = false;
     _onListeningStateChanged?.call(false);
     _onError?.call(failure);
@@ -606,7 +605,7 @@ void main() {
     tester,
   ) async {
     final speechService = _FakeManualProductSpeechService()
-      ..startFailure = ManualProductSpeechFailure.permissionDenied;
+      ..startFailure = VoiceSearchFailure.permissionDenied;
 
     await tester.pumpWidget(
       _wrapPage(item: _item(), speechService: speechService),
@@ -645,7 +644,7 @@ void main() {
 
       expect(_voiceSearchIcon(tester).icon, Icons.mic);
 
-      speechService.emitError(ManualProductSpeechFailure.error);
+      speechService.emitError(VoiceSearchFailure.error);
       await tester.pump();
 
       expect(_voiceSearchIcon(tester).icon, Icons.mic_none);

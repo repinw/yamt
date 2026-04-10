@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_search/data/'
-    'manual_product_speech_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import 'inventory_receipt_manual_product_form_utils.dart';
-import 'text_voice_search_bar.dart';
 
 class InventoryReceiptManualProductPreviewData {
   const InventoryReceiptManualProductPreviewData({
@@ -129,8 +128,8 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.onRecentItemSelected,
     required this.onScanBarcode,
     this.onSearchChanged,
-    this.speechService,
-    this.searchBarKey,
+    this.voiceSearchService,
+    this.voiceSearchController,
     this.startVoiceSearchOnMount = false,
     required this.onWeightUnitChanged,
     required this.onScanNutritionLabel,
@@ -160,8 +159,8 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   final ValueChanged<InventoryItem> onRecentItemSelected;
   final VoidCallback onScanBarcode;
   final ValueChanged<String>? onSearchChanged;
-  final ManualProductSpeechService? speechService;
-  final GlobalKey<TextVoiceSearchBarState>? searchBarKey;
+  final VoiceSearchService? voiceSearchService;
+  final TextVoiceSearchController? voiceSearchController;
   final bool startVoiceSearchOnMount;
   final ValueChanged<InventoryAmountUnit> onWeightUnitChanged;
   final VoidCallback? onScanNutritionLabel;
@@ -187,7 +186,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextVoiceSearchBar(
-              key: searchBarKey,
               controller: searchController,
               label: l10n.inventoryReceiptReviewManualSearchLabel,
               isSearching: isSearching,
@@ -200,7 +198,8 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
               fieldKey: const Key('receipt_review_manual_search_field'),
               autofocus: autofocusSearch,
               onChanged: onSearchChanged,
-              speechService: speechService,
+              voiceSearchService: voiceSearchService,
+              voiceSearchController: voiceSearchController,
               startVoiceSearchOnMount: startVoiceSearchOnMount,
               trailingActions: <Widget>[
                 SizedBox(

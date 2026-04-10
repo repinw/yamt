@@ -59,15 +59,16 @@ class InventorySearchService {
     required String haystack,
     required String queryToken,
   }) {
-    final normalizedHaystack = _normalizeSearchText(haystack);
-    final haystackTokens = normalizedHaystack
+    final compactHaystackTokens = _normalizeSearchText(haystack)
         .split(' ')
+        .where((token) => token.isNotEmpty)
+        .map(_compactNormalizedToken)
         .where((token) => token.isNotEmpty)
         .toList(growable: false);
 
     return _hasApproximateCompactMatch(
       compactQueryToken: _compactSearchText(queryToken),
-      haystackTokens: haystackTokens,
+      compactHaystackTokens: compactHaystackTokens,
     );
   }
 
@@ -89,6 +90,7 @@ List<String> _buildSearchTokens(String query) {
   return normalizedQuery
       .split(' ')
       .where((token) => token.isNotEmpty)
+      .where((token) => _compactNormalizedToken(token).isNotEmpty)
       .toList(growable: false);
 }
 
@@ -101,14 +103,18 @@ bool _matchesSearchTokens({
       .split(' ')
       .where((token) => token.isNotEmpty)
       .toList(growable: false);
-  final compactHaystack = _compactSearchText(normalizedHaystack);
+  final compactHaystackTokens = haystackTokens
+      .map(_compactNormalizedToken)
+      .where((token) => token.isNotEmpty)
+      .toList(growable: false);
+  final compactHaystack = compactHaystackTokens.join();
 
   return queryTokens.every((queryToken) {
     if (normalizedHaystack.contains(queryToken)) {
       return true;
     }
 
-    final compactQueryToken = _compactSearchText(queryToken);
+    final compactQueryToken = _compactNormalizedToken(queryToken);
     if (compactQueryToken.isEmpty) {
       return true;
     }
@@ -118,7 +124,7 @@ bool _matchesSearchTokens({
 
     return _hasApproximateCompactMatch(
       compactQueryToken: compactQueryToken,
-      haystackTokens: haystackTokens,
+      compactHaystackTokens: compactHaystackTokens,
     );
   });
 }
@@ -151,28 +157,39 @@ String _normalizeSearchText(String value) {
 }
 
 String _compactSearchText(String value) {
-  return _normalizeSearchText(value).replaceAll(RegExp(r'[\s\-_/,.;:()]+'), '');
+  return _compactNormalizedToken(_normalizeSearchText(value));
+}
+
+String _compactNormalizedToken(String value) {
+  return value.replaceAll(RegExp(r'[\s\-_/,.;:()]+'), '');
 }
 
 bool _hasApproximateCompactMatch({
   required String compactQueryToken,
-  required List<String> haystackTokens,
+  required List<String> compactHaystackTokens,
 }) {
   if (compactQueryToken.length < 4) {
     return false;
   }
 
-  for (var start = 0; start < haystackTokens.length; start++) {
-    var candidate = '';
-    for (var end = start; end < haystackTokens.length; end++) {
-      candidate += _compactSearchText(haystackTokens[end]);
-      final lengthDifference = candidate.length - compactQueryToken.length;
+  for (var start = 0; start < compactHaystackTokens.length; start++) {
+    final candidateBuffer = StringBuffer();
+    var candidateLength = 0;
+
+    for (var end = start; end < compactHaystackTokens.length; end++) {
+      final compactToken = compactHaystackTokens[end];
+      candidateBuffer.write(compactToken);
+      candidateLength += compactToken.length;
+
+      final lengthDifference = candidateLength - compactQueryToken.length;
       if (lengthDifference > 1) {
         break;
       }
       if (lengthDifference.abs() > 1) {
         continue;
       }
+
+      final candidate = candidateBuffer.toString();
       if (_isWithinEditDistanceOne(candidate, compactQueryToken)) {
         return true;
       }

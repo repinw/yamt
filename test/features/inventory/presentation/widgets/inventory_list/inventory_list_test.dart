@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
+import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
-import 'package:yamt/features/product_search/data/'
-    'manual_product_speech_service.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -36,7 +35,7 @@ Widget _buildTestApp({required List<InventoryItem> items}) {
 Widget _buildInventoryTestApp({
   required List<InventoryItem> items,
   List<PreparedMeal> preparedMeals = const <PreparedMeal>[],
-  ManualProductSpeechService? speechService,
+  VoiceSearchService? speechService,
 }) {
   return ProviderScope(
     overrides: [
@@ -50,7 +49,7 @@ Widget _buildInventoryTestApp({
         const <ShoppingListItemMatchKey>{},
       ),
       if (speechService != null)
-        manualProductSpeechServiceProvider.overrideWithValue(speechService),
+        voiceSearchServiceProvider.overrideWithValue(speechService),
     ],
     child: MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -105,20 +104,20 @@ PreparedMeal _preparedMeal({required String id, required String name}) {
   );
 }
 
-class _FakeManualProductSpeechService implements ManualProductSpeechService {
+class _FakeManualProductSpeechService implements VoiceSearchService {
   bool _isListening = false;
-  ValueChanged<ManualProductSpeechRecognition>? _onResult;
+  ValueChanged<VoiceSearchRecognition>? _onResult;
   ValueChanged<bool>? _onListeningStateChanged;
-  ValueChanged<ManualProductSpeechFailure>? _onError;
+  ValueChanged<VoiceSearchFailure>? _onError;
 
   @override
   bool get isListening => _isListening;
 
   @override
-  Future<ManualProductSpeechFailure?> startListening({
-    required ValueChanged<ManualProductSpeechRecognition> onResult,
+  Future<VoiceSearchFailure?> startListening({
+    required ValueChanged<VoiceSearchRecognition> onResult,
     required ValueChanged<bool> onListeningStateChanged,
-    required ValueChanged<ManualProductSpeechFailure> onError,
+    required ValueChanged<VoiceSearchFailure> onError,
   }) async {
     _onResult = onResult;
     _onListeningStateChanged = onListeningStateChanged;
@@ -142,11 +141,11 @@ class _FakeManualProductSpeechService implements ManualProductSpeechService {
 
   void emitTranscript(String transcript) {
     _onResult?.call(
-      ManualProductSpeechRecognition(transcript: transcript, isFinal: true),
+      VoiceSearchRecognition(transcript: transcript, isFinal: true),
     );
   }
 
-  void emitError(ManualProductSpeechFailure failure) {
+  void emitError(VoiceSearchFailure failure) {
     _onError?.call(failure);
   }
 }

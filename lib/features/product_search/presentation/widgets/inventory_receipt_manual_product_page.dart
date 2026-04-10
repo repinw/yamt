@@ -4,6 +4,8 @@ import 'dart:developer' show log;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
@@ -11,12 +13,8 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
-import 'package:yamt/features/product_search/data/'
-    'manual_product_speech_service.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_manual_product_form.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'text_voice_search_bar.dart';
 import 'package:yamt/features/product_search/provider/'
     'inventory_receipt_manual_product_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -380,8 +378,8 @@ class _ManualBarcodeScanResult {
 
 class _InventoryReceiptManualProductEditorPageState
     extends ConsumerState<_InventoryReceiptManualProductEditorPage> {
-  late final ManualProductSpeechService _speechService;
-  final _searchBarKey = GlobalKey<TextVoiceSearchBarState>();
+  late final VoiceSearchService _voiceSearchService;
+  final _voiceSearchController = TextVoiceSearchController();
   late final TextEditingController _searchController;
   late final TextEditingController _weightAmountController;
   late final TextEditingController _kcalController;
@@ -405,7 +403,7 @@ class _InventoryReceiptManualProductEditorPageState
   @override
   void initState() {
     super.initState();
-    _speechService = ref.read(manualProductSpeechServiceProvider);
+    _voiceSearchService = ref.read(voiceSearchServiceProvider);
     _searchController = TextEditingController();
     _weightAmountController = TextEditingController();
     _weightAmountController.addListener(_handleWeightChanged);
@@ -490,9 +488,7 @@ class _InventoryReceiptManualProductEditorPageState
 
   @override
   void dispose() {
-    unawaited(
-      _searchBarKey.currentState?.cancelVoiceSearch() ?? Future<void>.value(),
-    );
+    _voiceSearchController.dispose();
     _stateSubscription?.close();
     _searchController.dispose();
     _weightAmountController.removeListener(_handleWeightChanged);
@@ -519,7 +515,6 @@ class _InventoryReceiptManualProductEditorPageState
       appBar: AppBar(title: Text(l10n.inventoryReceiptReviewManualDataTitle)),
       body: InventoryReceiptManualProductForm(
         preview: preview,
-        searchBarKey: _searchBarKey,
         searchController: _searchController,
         isSearching: state.isSearching,
         autofocusSearch: widget.autofocusSearch,
@@ -539,7 +534,8 @@ class _InventoryReceiptManualProductEditorPageState
         onSearchResultSelected: _handleSearchResultSelected,
         onRecentItemSelected: _controller.applyRecentItem,
         onSearchChanged: _controller.updateSearchQuery,
-        speechService: _speechService,
+        voiceSearchService: _voiceSearchService,
+        voiceSearchController: _voiceSearchController,
         startVoiceSearchOnMount: widget.initialStartVoiceSearch,
         onScanBarcode: () {
           unawaited(_openBarcodeScanner());
@@ -577,10 +573,7 @@ class _InventoryReceiptManualProductEditorPageState
   }
 
   void _handleSearchResultSelected(OffProductSearchResult product) {
-    unawaited(
-      _searchBarKey.currentState?.stopVoiceSearchIfNeeded() ??
-          Future<void>.value(),
-    );
+    unawaited(_voiceSearchController.stopVoiceSearchIfNeeded());
     if (widget.autofocusSearch) {
       unawaited(_openSelectedProductEditor(product));
       return;
@@ -644,8 +637,7 @@ class _InventoryReceiptManualProductEditorPageState
   }
 
   Future<void> _openBarcodeScanner() async {
-    await (_searchBarKey.currentState?.stopVoiceSearchIfNeeded() ??
-        Future<void>.value());
+    await _voiceSearchController.stopVoiceSearchIfNeeded();
     if (!mounted) {
       return;
     }
@@ -740,9 +732,7 @@ class _InventoryReceiptManualProductEditorPageState
       return;
     }
 
-    unawaited(
-      _searchBarKey.currentState?.cancelVoiceSearch() ?? Future<void>.value(),
-    );
+    unawaited(_voiceSearchController.cancelVoiceSearch());
     final router = GoRouter.maybeOf(context);
     if (router != null) {
       router.pop(result);

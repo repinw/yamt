@@ -2,9 +2,41 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/product_search/data/'
-    'manual_product_speech_service.dart';
+import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+/// Controller for interacting with [TextVoiceSearchBar] without a [GlobalKey].
+class TextVoiceSearchController {
+  Future<void> Function()? _stopVoiceSearchIfNeeded;
+  Future<void> Function()? _cancelVoiceSearch;
+
+  Future<void> stopVoiceSearchIfNeeded() {
+    return _stopVoiceSearchIfNeeded?.call() ?? Future<void>.value();
+  }
+
+  Future<void> cancelVoiceSearch() {
+    return _cancelVoiceSearch?.call() ?? Future<void>.value();
+  }
+
+  void dispose() {
+    unawaited(cancelVoiceSearch());
+    _stopVoiceSearchIfNeeded = null;
+    _cancelVoiceSearch = null;
+  }
+
+  void _attach({
+    required Future<void> Function() stopVoiceSearchIfNeeded,
+    required Future<void> Function() cancelVoiceSearch,
+  }) {
+    _stopVoiceSearchIfNeeded = stopVoiceSearchIfNeeded;
+    _cancelVoiceSearch = cancelVoiceSearch;
+  }
+
+  void _detach() {
+    _stopVoiceSearchIfNeeded = null;
+    _cancelVoiceSearch = null;
+  }
+}
 
 /// Shared search field with an optional built-in voice search button.
 class TextVoiceSearchBar extends StatefulWidget {
@@ -22,7 +54,8 @@ class TextVoiceSearchBar extends StatefulWidget {
     this.startVoiceSearchOnMount = false,
     this.onTap,
     this.onChanged,
-    this.speechService,
+    this.voiceSearchService,
+    this.voiceSearchController,
     this.onVoiceSearchPressed,
     this.trailingActions = const <Widget>[],
   });
@@ -39,38 +72,42 @@ class TextVoiceSearchBar extends StatefulWidget {
   final bool startVoiceSearchOnMount;
   final VoidCallback? onTap;
   final ValueChanged<String>? onChanged;
-  final ManualProductSpeechService? speechService;
+  final VoiceSearchService? voiceSearchService;
+  final TextVoiceSearchController? voiceSearchController;
   final VoidCallback? onVoiceSearchPressed;
   final List<Widget> trailingActions;
 
   @override
-  State<TextVoiceSearchBar> createState() => TextVoiceSearchBarState();
+  State<TextVoiceSearchBar> createState() => _TextVoiceSearchBarState();
 }
 
-/// State access for stopping or cancelling ongoing voice input externally.
-class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
+class _TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
   var _isListeningToSpeech = false;
   var _isStartingVoiceSearch = false;
   var _didTriggerInitialVoiceSearch = false;
   var _isDisposing = false;
 
   bool get _usesInternalVoiceSearch {
-    return widget.speechService != null && widget.onVoiceSearchPressed == null;
+    return widget.voiceSearchService != null &&
+        widget.onVoiceSearchPressed == null;
   }
 
   @override
   void initState() {
     super.initState();
-    widget.controller.addListener(_handleControllerChanged);
+    _attachVoiceSearchController();
     _maybeStartVoiceSearchOnMount();
   }
 
   @override
   void didUpdateWidget(covariant TextVoiceSearchBar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!identical(oldWidget.controller, widget.controller)) {
-      oldWidget.controller.removeListener(_handleControllerChanged);
-      widget.controller.addListener(_handleControllerChanged);
+    if (!identical(
+      oldWidget.voiceSearchController,
+      widget.voiceSearchController,
+    )) {
+      oldWidget.voiceSearchController?._detach();
+      _attachVoiceSearchController();
     }
     if (oldWidget.enabled && !widget.enabled) {
       unawaited(stopVoiceSearchIfNeeded());
@@ -81,25 +118,24 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
   @override
   void dispose() {
     _isDisposing = true;
-    widget.controller.removeListener(_handleControllerChanged);
-    final speechService = widget.speechService;
-    if (speechService != null) {
-      unawaited(speechService.cancelListening());
+    widget.voiceSearchController?._detach();
+    final voiceSearchService = widget.voiceSearchService;
+    if (voiceSearchService != null) {
+      unawaited(voiceSearchService.cancelListening());
     }
     super.dispose();
   }
 
-  /// Stops an active voice session while keeping the recognized query.
   Future<void> stopVoiceSearchIfNeeded() async {
-    final speechService = widget.speechService;
-    if (speechService == null) {
+    final voiceSearchService = widget.voiceSearchService;
+    if (voiceSearchService == null) {
       return;
     }
-    if (!_isListeningToSpeech && !speechService.isListening) {
+    if (!_isListeningToSpeech && !voiceSearchService.isListening) {
       return;
     }
 
-    await speechService.stopListening();
+    await voiceSearchService.stopListening();
     if (!mounted) {
       return;
     }
@@ -110,13 +146,12 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
     });
   }
 
-  /// Cancels an active voice session and resets the microphone state.
   Future<void> cancelVoiceSearch() async {
-    final speechService = widget.speechService;
-    if (speechService == null) {
+    final voiceSearchService = widget.voiceSearchService;
+    if (voiceSearchService == null) {
       return;
     }
-    await speechService.cancelListening();
+    await voiceSearchService.cancelListening();
     if (!mounted) {
       return;
     }
@@ -129,48 +164,22 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    final trailingIcons = <Widget>[
-      if (widget.isSearching)
-        const Padding(
-          padding: EdgeInsets.all(12),
-          child: SizedBox.square(
-            dimension: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        ),
-      if (widget.controller.text.trim().isNotEmpty)
-        IconButton(
-          key: widget.clearButtonKey,
-          onPressed: widget.enabled ? _handleClearPressed : null,
-          tooltip: AppLocalizations.of(context)!.inventorySearchClearAction,
-          icon: const Icon(Icons.cleaning_services_outlined),
-        ),
-    ];
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: TextField(
-            key: widget.fieldKey,
+          child: _TextVoiceSearchField(
             controller: widget.controller,
-            keyboardType: TextInputType.text,
+            label: widget.label,
+            fieldKey: widget.fieldKey,
+            clearButtonKey: widget.clearButtonKey,
             readOnly: widget.readOnly,
             autofocus: widget.autofocus,
             enabled: widget.enabled,
+            isSearching: widget.isSearching,
             onTap: widget.onTap,
             onChanged: widget.onChanged,
-            textInputAction: TextInputAction.search,
-            decoration: InputDecoration(
-              labelText: widget.label,
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon: trailingIcons.isEmpty
-                  ? null
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: trailingIcons,
-                    ),
-            ),
+            onClearPressed: _handleClearPressed,
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -213,8 +222,8 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
       return;
     }
 
-    final speechService = widget.speechService;
-    if (speechService == null) {
+    final voiceSearchService = widget.voiceSearchService;
+    if (voiceSearchService == null) {
       return;
     }
 
@@ -222,7 +231,7 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
       _isStartingVoiceSearch = true;
     });
 
-    final failure = await speechService.startListening(
+    final failure = await voiceSearchService.startListening(
       onResult: _handleSpeechResult,
       onListeningStateChanged: _handleSpeechListeningChanged,
       onError: _handleSpeechError,
@@ -247,14 +256,7 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
     unawaited(stopVoiceSearchIfNeeded());
   }
 
-  void _handleControllerChanged() {
-    if (_isDisposing || !mounted) {
-      return;
-    }
-    setState(() {});
-  }
-
-  void _handleSpeechResult(ManualProductSpeechRecognition result) {
+  void _handleSpeechResult(VoiceSearchRecognition result) {
     if (_isDisposing || !mounted) {
       return;
     }
@@ -287,7 +289,7 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
     });
   }
 
-  void _handleSpeechError(ManualProductSpeechFailure failure) {
+  void _handleSpeechError(VoiceSearchFailure failure) {
     if (_isDisposing || !mounted) {
       return;
     }
@@ -327,16 +329,15 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
 
   String _resolveSpeechErrorText(
     BuildContext context,
-    ManualProductSpeechFailure failure,
+    VoiceSearchFailure failure,
   ) {
     final l10n = AppLocalizations.of(context)!;
     return switch (failure) {
-      ManualProductSpeechFailure.unavailable =>
+      VoiceSearchFailure.unavailable =>
         l10n.inventoryManualAddVoiceSearchUnavailable,
-      ManualProductSpeechFailure.permissionDenied =>
+      VoiceSearchFailure.permissionDenied =>
         l10n.inventoryManualAddVoiceSearchPermissionDenied,
-      ManualProductSpeechFailure.error =>
-        l10n.inventoryManualAddVoiceSearchFailed,
+      VoiceSearchFailure.error => l10n.inventoryManualAddVoiceSearchFailed,
     };
   }
 
@@ -344,5 +345,117 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _attachVoiceSearchController() {
+    widget.voiceSearchController?._attach(
+      stopVoiceSearchIfNeeded: stopVoiceSearchIfNeeded,
+      cancelVoiceSearch: cancelVoiceSearch,
+    );
+  }
+}
+
+class _TextVoiceSearchField extends StatelessWidget {
+  const _TextVoiceSearchField({
+    required this.controller,
+    required this.label,
+    required this.fieldKey,
+    required this.clearButtonKey,
+    required this.readOnly,
+    required this.autofocus,
+    required this.enabled,
+    required this.isSearching,
+    required this.onTap,
+    required this.onChanged,
+    required this.onClearPressed,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final Key fieldKey;
+  final Key? clearButtonKey;
+  final bool readOnly;
+  final bool autofocus;
+  final bool enabled;
+  final bool isSearching;
+  final VoidCallback? onTap;
+  final ValueChanged<String>? onChanged;
+  final VoidCallback onClearPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller,
+      builder: (context, value, child) {
+        final hasText = value.text.trim().isNotEmpty;
+
+        return TextField(
+          key: fieldKey,
+          controller: controller,
+          keyboardType: TextInputType.text,
+          readOnly: readOnly,
+          autofocus: autofocus,
+          enabled: enabled,
+          onTap: onTap,
+          onChanged: onChanged,
+          textInputAction: TextInputAction.search,
+          decoration: InputDecoration(
+            labelText: label,
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: _TextVoiceSearchSuffixActions(
+              isSearching: isSearching,
+              hasText: hasText,
+              enabled: enabled,
+              clearButtonKey: clearButtonKey,
+              onClearPressed: onClearPressed,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _TextVoiceSearchSuffixActions extends StatelessWidget {
+  const _TextVoiceSearchSuffixActions({
+    required this.isSearching,
+    required this.hasText,
+    required this.enabled,
+    required this.clearButtonKey,
+    required this.onClearPressed,
+  });
+
+  final bool isSearching;
+  final bool hasText;
+  final bool enabled;
+  final Key? clearButtonKey;
+  final VoidCallback onClearPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!isSearching && !hasText) {
+      return const SizedBox.shrink();
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isSearching)
+          const Padding(
+            padding: EdgeInsets.all(12),
+            child: SizedBox.square(
+              dimension: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        if (hasText)
+          IconButton(
+            key: clearButtonKey,
+            onPressed: enabled ? onClearPressed : null,
+            tooltip: AppLocalizations.of(context)!.inventorySearchClearAction,
+            icon: const Icon(Icons.cleaning_services_outlined),
+          ),
+      ],
+    );
   }
 }

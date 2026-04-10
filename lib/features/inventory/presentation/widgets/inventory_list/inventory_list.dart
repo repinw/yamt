@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_search_service.dart';
@@ -31,10 +33,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_groups_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
-import 'package:yamt/features/product_search/data/'
-    'manual_product_speech_service.dart';
-import 'package:yamt/features/product_search/presentation/widgets/'
-    'text_voice_search_bar.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -116,10 +114,10 @@ class InventoryList extends ConsumerStatefulWidget {
 
 class _InventoryListState extends ConsumerState<InventoryList> {
   static const _searchService = InventorySearchService();
-  final _searchBarKey = GlobalKey<TextVoiceSearchBarState>();
+  final _voiceSearchController = TextVoiceSearchController();
   var _mode = InventoryListMode.allItems;
   var _consumptionFilter = const InventoryConsumptionFilter();
-  late final ManualProductSpeechService _speechService;
+  late final VoiceSearchService _voiceSearchService;
   late final TextEditingController _searchController;
   late List<InventoryItem> _visibleItems;
   late List<PreparedMeal> _visiblePreparedMeals;
@@ -128,7 +126,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   @override
   void initState() {
     super.initState();
-    _speechService = ref.read(manualProductSpeechServiceProvider);
+    _voiceSearchService = ref.read(voiceSearchServiceProvider);
     _searchController = TextEditingController();
     _recomputeVisibleContent();
   }
@@ -144,9 +142,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
 
   @override
   void dispose() {
-    unawaited(
-      _searchBarKey.currentState?.cancelVoiceSearch() ?? Future<void>.value(),
-    );
+    _voiceSearchController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -199,7 +195,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             ),
             sliver: SliverToBoxAdapter(
               child: TextVoiceSearchBar(
-                key: _searchBarKey,
                 controller: _searchController,
                 label: l10n.inventorySearchLabel,
                 fieldKey: const Key('inventory_list_search_field'),
@@ -207,7 +202,8 @@ class _InventoryListState extends ConsumerState<InventoryList> {
                 clearButtonKey: const Key('inventory_list_search_clear_button'),
                 enabled: !widget.isSelectionMode,
                 onChanged: _onSearchQueryChanged,
-                speechService: _speechService,
+                voiceSearchService: _voiceSearchService,
+                voiceSearchController: _voiceSearchController,
               ),
             ),
           ),

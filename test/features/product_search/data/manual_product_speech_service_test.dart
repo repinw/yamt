@@ -3,8 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:yamt/features/product_search/data/'
-    'manual_product_speech_service.dart';
+import 'package:yamt/core/device/voice_search_service.dart';
 
 class _FakeSpeechToText extends SpeechToText {
   _FakeSpeechToText() : super.withMethodChannel();
@@ -93,11 +92,9 @@ class _FakeSpeechToText extends SpeechToText {
 void main() {
   test('startListening reports listening state and recognized words', () async {
     final speechToText = _FakeSpeechToText();
-    final service = SpeechToTextManualProductSpeechService(
-      speechToText: speechToText,
-    );
+    final service = SpeechToTextVoiceSearchService(speechToText: speechToText);
     final listeningStates = <bool>[];
-    ManualProductSpeechRecognition? recognition;
+    VoiceSearchRecognition? recognition;
 
     final failure = await service.startListening(
       onResult: (value) {
@@ -120,9 +117,7 @@ void main() {
   test('returns unavailable when speech plugin is missing', () async {
     final speechToText = _FakeSpeechToText()
       ..initializeThrowable = MissingPluginException('missing');
-    final service = SpeechToTextManualProductSpeechService(
-      speechToText: speechToText,
-    );
+    final service = SpeechToTextVoiceSearchService(speechToText: speechToText);
 
     final failure = await service.startListening(
       onResult: (_) {},
@@ -130,7 +125,7 @@ void main() {
       onError: (_) {},
     );
 
-    expect(failure, ManualProductSpeechFailure.unavailable);
+    expect(failure, VoiceSearchFailure.unavailable);
   });
 
   test(
@@ -139,7 +134,7 @@ void main() {
       final speechToText = _FakeSpeechToText()
         ..initializeResult = false
         ..hasPermissionResult = false;
-      final service = SpeechToTextManualProductSpeechService(
+      final service = SpeechToTextVoiceSearchService(
         speechToText: speechToText,
       );
 
@@ -149,16 +144,14 @@ void main() {
         onError: (_) {},
       );
 
-      expect(failure, ManualProductSpeechFailure.permissionDenied);
+      expect(failure, VoiceSearchFailure.permissionDenied);
     },
   );
 
   test('maps not_authorized recognition errors to permissionDenied', () async {
     final speechToText = _FakeSpeechToText();
-    final service = SpeechToTextManualProductSpeechService(
-      speechToText: speechToText,
-    );
-    final failures = <ManualProductSpeechFailure>[];
+    final service = SpeechToTextVoiceSearchService(speechToText: speechToText);
+    final failures = <VoiceSearchFailure>[];
 
     final startFailure = await service.startListening(
       onResult: (_) {},
@@ -169,8 +162,6 @@ void main() {
     speechToText.emitError('not_authorized');
 
     expect(startFailure, isNull);
-    expect(failures, <ManualProductSpeechFailure>[
-      ManualProductSpeechFailure.permissionDenied,
-    ]);
+    expect(failures, <VoiceSearchFailure>[VoiceSearchFailure.permissionDenied]);
   });
 }
