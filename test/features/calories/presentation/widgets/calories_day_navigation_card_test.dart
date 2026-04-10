@@ -34,6 +34,40 @@ void _noop() {}
 void _noopSelectDay(DateTime _) {}
 
 void main() {
+  test('chart max kcal keeps the minimum when all days are zero', () {
+    final chartMaxKcal =
+        resolveCaloriesDayNavigationChartMaxKcal(<CalorieWeekDayOverview>[
+          CalorieWeekDayOverview(
+            date: DateTime(2026, 3, 23),
+            totalKcal: 0,
+            goalKcal: 0,
+            entryCount: 0,
+          ),
+        ]);
+
+    expect(chartMaxKcal, 800);
+  });
+
+  test('chart max kcal uses headroom above the highest day value', () {
+    final chartMaxKcal =
+        resolveCaloriesDayNavigationChartMaxKcal(<CalorieWeekDayOverview>[
+          CalorieWeekDayOverview(
+            date: DateTime(2026, 3, 23),
+            totalKcal: 7200,
+            goalKcal: 6400,
+            entryCount: 1,
+          ),
+          CalorieWeekDayOverview(
+            date: DateTime(2026, 3, 24),
+            totalKcal: 1800,
+            goalKcal: 8100,
+            entryCount: 1,
+          ),
+        ]);
+
+    expect(chartMaxKcal, closeTo(8910, 0.001));
+  });
+
   testWidgets('uses localized weekday label in German', (tester) async {
     await tester.pumpWidget(_buildHarness(const Locale('de')));
 

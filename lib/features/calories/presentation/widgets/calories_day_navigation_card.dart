@@ -19,6 +19,7 @@ class CaloriesDayNavigationCard extends StatelessWidget {
     super.key,
     required this.days,
     required this.selectedDay,
+    this.referenceNow,
     required this.onSelectDay,
     required this.onPreviousDay,
     required this.onNextDay,
@@ -26,13 +27,15 @@ class CaloriesDayNavigationCard extends StatelessWidget {
 
   final List<CalorieWeekDayOverview> days;
   final DateTime selectedDay;
+  final DateTime? referenceNow;
   final ValueChanged<DateTime> onSelectDay;
   final VoidCallback onPreviousDay;
   final VoidCallback onNextDay;
 
   @override
   Widget build(BuildContext context) {
-    final chartMaxKcal = _chartMaxKcal(days);
+    final chartMaxKcal = resolveCaloriesDayNavigationChartMaxKcal(days);
+    final resolvedNow = referenceNow ?? DateTime.now();
 
     return GestureDetector(
       key: CaloriesPageKeys.weekStrip,
@@ -52,7 +55,7 @@ class CaloriesDayNavigationCard extends StatelessWidget {
             Expanded(
               child: _DiaryDayButton(
                 day: day,
-                isToday: _isSameDay(day.date, DateTime.now()),
+                isToday: _isSameDay(day.date, resolvedNow),
                 isSelected: _isSameDay(day.date, selectedDay),
                 chartMaxKcal: chartMaxKcal,
                 onTap: () => onSelectDay(day.date),
@@ -62,16 +65,20 @@ class CaloriesDayNavigationCard extends StatelessWidget {
       ),
     );
   }
+}
 
-  double _chartMaxKcal(List<CalorieWeekDayOverview> days) {
-    final peakKcal = days.fold<double>(0, (peak, day) {
-      return math.max(peak, math.max(day.goalKcal, day.totalKcal));
-    });
-    return math.max(
-      _miniWeekBalanceChartMinKcal,
-      peakKcal * _miniWeekBalanceChartHeadroomFactor,
-    );
-  }
+/// Resolves the vertical chart range for the day navigation preview bars.
+@visibleForTesting
+double resolveCaloriesDayNavigationChartMaxKcal(
+  List<CalorieWeekDayOverview> days,
+) {
+  final peakKcal = days.fold<double>(0, (peak, day) {
+    return math.max(peak, math.max(day.goalKcal, day.totalKcal));
+  });
+  return math.max(
+    _miniWeekBalanceChartMinKcal,
+    peakKcal * _miniWeekBalanceChartHeadroomFactor,
+  );
 }
 
 class _DiaryDayButton extends StatelessWidget {

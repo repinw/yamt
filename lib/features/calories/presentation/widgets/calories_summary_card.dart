@@ -655,8 +655,14 @@ String _resolveMacroLabel({
     return label;
   }
 
+  final textPainter = TextPainter(
+    maxLines: 1,
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+  );
+
   if (_textFitsWidth(
-    context: context,
+    textPainter: textPainter,
     text: label,
     style: style,
     maxWidth: maxWidth,
@@ -664,33 +670,37 @@ String _resolveMacroLabel({
     return label;
   }
 
-  for (var end = label.length - 1; end > 1; end--) {
-    final shortenedLabel = '${label.substring(0, end).trimRight()}.';
+  var bestLabel = '${label.substring(0, 1)}.';
+  var low = 1;
+  var high = label.length - 1;
+
+  while (low <= high) {
+    final middle = low + ((high - low) ~/ 2);
+    final shortenedLabel = '${label.substring(0, middle).trimRight()}.';
     if (_textFitsWidth(
-      context: context,
+      textPainter: textPainter,
       text: shortenedLabel,
       style: style,
       maxWidth: maxWidth,
     )) {
-      return shortenedLabel;
+      bestLabel = shortenedLabel;
+      low = middle + 1;
+      continue;
     }
+    high = middle - 1;
   }
 
-  return label;
+  return bestLabel;
 }
 
 bool _textFitsWidth({
-  required BuildContext context,
+  required TextPainter textPainter,
   required String text,
   required TextStyle style,
   required double maxWidth,
 }) {
-  final textPainter = TextPainter(
-    text: TextSpan(text: text, style: style),
-    maxLines: 1,
-    textDirection: Directionality.of(context),
-    textScaler: MediaQuery.textScalerOf(context),
-  )..layout(maxWidth: maxWidth);
+  textPainter.text = TextSpan(text: text, style: style);
+  textPainter.layout(maxWidth: maxWidth);
 
   return !textPainter.didExceedMaxLines;
 }

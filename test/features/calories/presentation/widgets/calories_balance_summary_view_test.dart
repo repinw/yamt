@@ -9,6 +9,36 @@ import 'package:yamt/features/calories/provider/calorie_balance_summary_provider
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
+  test('resolves light theme balance colors from score', () {
+    expect(
+      resolveCaloriesBalanceColorForScore(0, brightness: Brightness.light),
+      const Color(0xFFB71C1C),
+    );
+    expect(
+      resolveCaloriesBalanceColorForScore(0.5, brightness: Brightness.light),
+      Color.lerp(const Color(0xFFB71C1C), const Color(0xFF006941), 0.25),
+    );
+    expect(
+      resolveCaloriesBalanceColorForScore(1, brightness: Brightness.light),
+      const Color(0xFF006941),
+    );
+  });
+
+  test('resolves dark theme balance colors from score', () {
+    expect(
+      resolveCaloriesBalanceColorForScore(0, brightness: Brightness.dark),
+      const Color(0xFF991B1B),
+    );
+    expect(
+      resolveCaloriesBalanceColorForScore(0.5, brightness: Brightness.dark),
+      Color.lerp(const Color(0xFF991B1B), const Color(0xFF0B7A4B), 0.25),
+    );
+    expect(
+      resolveCaloriesBalanceColorForScore(1, brightness: Brightness.dark),
+      const Color(0xFF0B7A4B),
+    );
+  });
+
   testWidgets('shows a wait hint when the user is above the center', (
     tester,
   ) async {

@@ -22,34 +22,42 @@ const _balanceDangerColorDark = Color(0xFF991B1B);
 const _balanceSafeColor = Color(0xFF006941);
 const _balanceSafeColorDark = Color(0xFF0B7A4B);
 
-Color _balanceSafeTone(ColorScheme colors) {
-  return colors.brightness == Brightness.dark
+Color _balanceSafeTone(Brightness brightness) {
+  return brightness == Brightness.dark
       ? _balanceSafeColorDark
       : _balanceSafeColor;
 }
 
-Color _balanceDangerTone(ColorScheme colors) {
-  return colors.brightness == Brightness.dark
+Color _balanceDangerTone(Brightness brightness) {
+  return brightness == Brightness.dark
       ? _balanceDangerColorDark
       : _balanceDangerColor;
 }
 
-Color _balanceColorForScore(double score, {required ColorScheme colors}) {
+/// Resolves the balance accent color for a normalized score from 0 to 1.
+@visibleForTesting
+Color resolveCaloriesBalanceColorForScore(
+  double score, {
+  required Brightness brightness,
+}) {
   final adjustedScore = math.pow(
     score.clamp(0.0, 1.0),
     _balanceColorCurveExponent,
   );
-  final safeColor = _balanceSafeTone(colors);
-  final dangerColor = _balanceDangerTone(colors);
+  final safeColor = _balanceSafeTone(brightness);
+  final dangerColor = _balanceDangerTone(brightness);
 
   return Color.lerp(dangerColor, safeColor, adjustedScore.toDouble()) ??
       safeColor;
 }
 
 ({Color center, Color edge}) _balanceBarGradientColors({
-  required ColorScheme colors,
+  required Brightness brightness,
 }) {
-  return (center: _balanceSafeTone(colors), edge: _balanceDangerTone(colors));
+  return (
+    center: _balanceSafeTone(brightness),
+    edge: _balanceDangerTone(brightness),
+  );
 }
 
 class CaloriesBalanceSummaryView extends StatelessWidget {
@@ -68,9 +76,9 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
-    final statusColor = _balanceColorForScore(
+    final statusColor = resolveCaloriesBalanceColorForScore(
       resolveCalorieBalanceScore(data),
-      colors: colors,
+      brightness: colors.brightness,
     );
     final statusMessage = _statusMessage(l10n);
     final statusDetail = _statusDetailMessage(context, l10n);
@@ -219,7 +227,9 @@ class _BalanceBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final gradientColors = _balanceBarGradientColors(colors: colors);
+    final gradientColors = _balanceBarGradientColors(
+      brightness: colors.brightness,
+    );
     final markerOffset = data.isUnderPace
         ? -data.barProgress
         : data.isOverPace
@@ -227,9 +237,9 @@ class _BalanceBar extends StatelessWidget {
         : 0.0;
     final centerColor = gradientColors.center;
     final edgeColor = gradientColors.edge;
-    final markerColor = _balanceColorForScore(
+    final markerColor = resolveCaloriesBalanceColorForScore(
       resolveCalorieBalanceScore(data),
-      colors: colors,
+      brightness: colors.brightness,
     );
 
     return Semantics(
