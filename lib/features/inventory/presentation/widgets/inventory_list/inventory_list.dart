@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ import 'package:yamt/features/inventory/presentation/models/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_all_items_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_consumption_filter_toggle.dart';
+    'inventory_consumed_items_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_mode_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -27,6 +28,10 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_groups_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
+import 'package:yamt/features/product_search/data/'
+    'manual_product_speech_service.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'text_voice_search_bar.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -107,8 +112,28 @@ class InventoryList extends ConsumerStatefulWidget {
 }
 
 class _InventoryListState extends ConsumerState<InventoryList> {
+  final _searchBarKey = GlobalKey<TextVoiceSearchBarState>();
   var _mode = InventoryListMode.allItems;
   var _consumptionFilter = const InventoryConsumptionFilter();
+  late final ManualProductSpeechService _speechService;
+  late final TextEditingController _searchController;
+  var _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _speechService = ref.read(manualProductSpeechServiceProvider);
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    unawaited(
+      _searchBarKey.currentState?.cancelVoiceSearch() ?? Future<void>.value(),
+    );
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,9 +147,15 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     final activeShoppingListItemKeys = ref.watch(
       activeShoppingListItemKeysProvider,
     );
-    final filteredItems = _consumptionFilter.apply(widget.items);
-    final hasPreparedMeals = widget.preparedMeals.isNotEmpty;
-    final hasSourceItems = widget.items.isNotEmpty || hasPreparedMeals;
+    final filteredItems = _applySearchToItems(
+      _consumptionFilter.apply(widget.items),
+    );
+    final filteredPreparedMeals = _applySearchToPreparedMeals(
+      widget.preparedMeals,
+    );
+    final hasPreparedMeals = filteredPreparedMeals.isNotEmpty;
+    final hasAnySourceItems =
+        widget.items.isNotEmpty || widget.preparedMeals.isNotEmpty;
     final hasFilteredItems = filteredItems.isNotEmpty;
     final modeToggle = InventoryListModeToggle(
       mode: _mode,
@@ -146,6 +177,28 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             child: InventoryModeToolbar(modeToggle: modeToggle),
           ),
         ),
+        if (hasAnySourceItems)
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl,
+              0,
+              AppSpacing.xl,
+              AppSpacing.lg,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: TextVoiceSearchBar(
+                key: _searchBarKey,
+                controller: _searchController,
+                label: l10n.inventorySearchLabel,
+                fieldKey: const Key('inventory_list_search_field'),
+                voiceButtonKey: const Key('inventory_list_voice_search_button'),
+                clearButtonKey: const Key('inventory_list_search_clear_button'),
+                enabled: !widget.isSelectionMode,
+                onChanged: _onSearchQueryChanged,
+                speechService: _speechService,
+              ),
+            ),
+          ),
         if (hasPreparedMeals) ...[
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
@@ -169,7 +222,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             ),
             sliver: SliverToBoxAdapter(
               child: Column(
-                children: widget.preparedMeals
+                children: filteredPreparedMeals
                     .map((meal) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.lg),
@@ -197,7 +250,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             ),
           ),
         ],
-        if (hasSourceItems && _mode == InventoryListMode.allItems)
+        if (hasAnySourceItems && _mode == InventoryListMode.allItems)
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.xl,
@@ -219,7 +272,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
               ),
             ),
           ),
-        if (!hasSourceItems)
+        if (!hasAnySourceItems)
           _buildEmptyStateSliver()
         else if (!hasFilteredItems && !hasPreparedMeals)
           _buildEmptyStateSliver(message: l10n.inventoryFilteredEmptyState)
@@ -272,6 +325,15 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     });
   }
 
+  void _onSearchQueryChanged(String value) {
+    if (_searchQuery == value) {
+      return;
+    }
+    setState(() {
+      _searchQuery = value;
+    });
+  }
+
   Future<void> _showFiltersSheet(
     BuildContext context, {
     required String title,
@@ -320,4 +382,209 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       ),
     );
   }
+
+  List<InventoryItem> _applySearchToItems(List<InventoryItem> items) {
+    final queryTokens = _buildSearchTokens(_searchQuery);
+    if (queryTokens.isEmpty) {
+      return items;
+    }
+
+    return items
+        .where((item) {
+          return _matchesSearchTokens(
+            haystack: _buildInventoryItemSearchText(item),
+            queryTokens: queryTokens,
+          );
+        })
+        .toList(growable: false);
+  }
+
+  List<PreparedMeal> _applySearchToPreparedMeals(List<PreparedMeal> meals) {
+    final queryTokens = _buildSearchTokens(_searchQuery);
+    if (queryTokens.isEmpty) {
+      return meals;
+    }
+
+    return meals
+        .where((meal) {
+          return _matchesSearchTokens(
+            haystack: _buildPreparedMealSearchText(meal),
+            queryTokens: queryTokens,
+          );
+        })
+        .toList(growable: false);
+  }
+}
+
+List<String> _buildSearchTokens(String query) {
+  final normalizedQuery = _normalizeSearchText(query);
+  if (normalizedQuery.isEmpty) {
+    return const <String>[];
+  }
+
+  return normalizedQuery
+      .split(' ')
+      .where((token) => token.isNotEmpty)
+      .toList(growable: false);
+}
+
+bool _matchesSearchTokens({
+  required String haystack,
+  required List<String> queryTokens,
+}) {
+  final normalizedHaystack = _normalizeSearchText(haystack);
+  final haystackTokens = normalizedHaystack
+      .split(' ')
+      .where((token) => token.isNotEmpty)
+      .toList(growable: false);
+  final compactHaystack = _compactSearchText(normalizedHaystack);
+
+  return queryTokens.every((queryToken) {
+    if (normalizedHaystack.contains(queryToken)) {
+      return true;
+    }
+
+    final compactQueryToken = _compactSearchText(queryToken);
+    if (compactQueryToken.isEmpty) {
+      return true;
+    }
+    if (compactHaystack.contains(compactQueryToken)) {
+      return true;
+    }
+
+    return _hasApproximateCompactMatch(
+      compactQueryToken: compactQueryToken,
+      haystackTokens: haystackTokens,
+    );
+  });
+}
+
+String _buildInventoryItemSearchText(InventoryItem item) {
+  return <String>[
+    item.name,
+    item.brand ?? '',
+    item.category ?? '',
+    item.storeName,
+    item.weight ?? '',
+    item.ocrName ?? '',
+    item.normalizedBarcode ?? '',
+  ].join(' ');
+}
+
+String _buildPreparedMealSearchText(PreparedMeal meal) {
+  return <String>[meal.name, ...meal.recipeIngredients].join(' ');
+}
+
+String _normalizeSearchText(String value) {
+  return value
+      .trim()
+      .toLowerCase()
+      .replaceAll('ß', 'ss')
+      .replaceAll('ä', 'ae')
+      .replaceAll('ö', 'oe')
+      .replaceAll('ü', 'ue')
+      .replaceAll(RegExp(r'\s+'), ' ');
+}
+
+String _compactSearchText(String value) {
+  return _normalizeSearchText(value).replaceAll(RegExp(r'[\s\-_/,.;:()]+'), '');
+}
+
+bool _hasApproximateCompactMatch({
+  required String compactQueryToken,
+  required List<String> haystackTokens,
+}) {
+  if (compactQueryToken.length < 4) {
+    return false;
+  }
+
+  for (var start = 0; start < haystackTokens.length; start++) {
+    var candidate = '';
+    for (var end = start; end < haystackTokens.length; end++) {
+      candidate += _compactSearchText(haystackTokens[end]);
+      final lengthDifference = candidate.length - compactQueryToken.length;
+      if (lengthDifference > 1) {
+        break;
+      }
+      if (lengthDifference.abs() > 1) {
+        continue;
+      }
+      if (_isWithinEditDistanceOne(candidate, compactQueryToken)) {
+        return true;
+      }
+      if (end - start >= 2) {
+        break;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool _isWithinEditDistanceOne(String left, String right) {
+  if (left == right) {
+    return true;
+  }
+
+  final lengthDifference = left.length - right.length;
+  if (lengthDifference.abs() > 1) {
+    return false;
+  }
+
+  if (left.length == right.length) {
+    return _isSingleReplacementOrSwap(left, right);
+  }
+
+  final longer = lengthDifference > 0 ? left : right;
+  final shorter = lengthDifference > 0 ? right : left;
+  return _isSingleInsertionOrDeletion(longer, shorter);
+}
+
+bool _isSingleReplacementOrSwap(String left, String right) {
+  final mismatches = <int>[];
+
+  for (var index = 0; index < left.length; index++) {
+    if (left[index] == right[index]) {
+      continue;
+    }
+    mismatches.add(index);
+    if (mismatches.length > 2) {
+      return false;
+    }
+  }
+
+  if (mismatches.isEmpty) {
+    return true;
+  }
+  if (mismatches.length == 1) {
+    return true;
+  }
+
+  final firstMismatch = mismatches[0];
+  final secondMismatch = mismatches[1];
+  return secondMismatch == firstMismatch + 1 &&
+      left[firstMismatch] == right[secondMismatch] &&
+      left[secondMismatch] == right[firstMismatch];
+}
+
+bool _isSingleInsertionOrDeletion(String longer, String shorter) {
+  var longerIndex = 0;
+  var shorterIndex = 0;
+  var skippedCharacter = false;
+
+  while (longerIndex < longer.length && shorterIndex < shorter.length) {
+    if (longer[longerIndex] == shorter[shorterIndex]) {
+      longerIndex++;
+      shorterIndex++;
+      continue;
+    }
+    if (skippedCharacter) {
+      return false;
+    }
+
+    skippedCharacter = true;
+    longerIndex++;
+  }
+
+  return true;
 }

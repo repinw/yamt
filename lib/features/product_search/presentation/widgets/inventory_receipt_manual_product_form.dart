@@ -5,9 +5,12 @@ import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/product_search/data/'
+    'manual_product_speech_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import 'inventory_receipt_manual_product_form_utils.dart';
+import 'text_voice_search_bar.dart';
 
 class InventoryReceiptManualProductPreviewData {
   const InventoryReceiptManualProductPreviewData({
@@ -57,17 +60,38 @@ class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _ManualProductSearchBar(
+            TextVoiceSearchBar(
               controller: searchController,
+              label: AppLocalizations.of(
+                context,
+              )!.inventoryReceiptReviewManualSearchLabel,
               isSearching: false,
-              isListeningToSpeech: false,
-              onScanBarcode: onScanBarcode,
-              onToggleVoiceSearch: onVoiceSearchTap,
+              voiceButtonKey: const Key(
+                'receipt_review_manual_voice_search_button',
+              ),
+              clearButtonKey: const Key(
+                'receipt_review_manual_launcher_search_clear_button',
+              ),
               fieldKey: const Key(
                 'receipt_review_manual_launcher_search_field',
               ),
               readOnly: true,
               onTap: onSearchTap,
+              onVoiceSearchPressed: onVoiceSearchTap,
+              trailingActions: <Widget>[
+                SizedBox(
+                  height: 56,
+                  width: 56,
+                  child: IconButton.outlined(
+                    key: const Key('receipt_review_manual_scan_button'),
+                    onPressed: onScanBarcode,
+                    tooltip: AppLocalizations.of(
+                      context,
+                    )!.inventoryBarcodeMissingPromptScanNow,
+                    icon: const Icon(Icons.qr_code_scanner_outlined),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.sm),
             _ManualProductRecentItems(
@@ -86,7 +110,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     super.key,
     required this.searchController,
     required this.isSearching,
-    this.isListeningToSpeech = false,
     this.autofocusSearch = false,
     required this.showDetails,
     required this.searchResults,
@@ -105,7 +128,10 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.onSearchResultSelected,
     required this.onRecentItemSelected,
     required this.onScanBarcode,
-    this.onToggleVoiceSearch,
+    this.onSearchChanged,
+    this.speechService,
+    this.searchBarKey,
+    this.startVoiceSearchOnMount = false,
     required this.onWeightUnitChanged,
     required this.onScanNutritionLabel,
     this.onEatImmediatelyChanged,
@@ -115,7 +141,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
 
   final TextEditingController searchController;
   final bool isSearching;
-  final bool isListeningToSpeech;
   final bool autofocusSearch;
   final bool showDetails;
   final List<OffProductSearchResult> searchResults;
@@ -134,7 +159,10 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   final ValueChanged<OffProductSearchResult> onSearchResultSelected;
   final ValueChanged<InventoryItem> onRecentItemSelected;
   final VoidCallback onScanBarcode;
-  final VoidCallback? onToggleVoiceSearch;
+  final ValueChanged<String>? onSearchChanged;
+  final ManualProductSpeechService? speechService;
+  final GlobalKey<TextVoiceSearchBarState>? searchBarKey;
+  final bool startVoiceSearchOnMount;
   final ValueChanged<InventoryAmountUnit> onWeightUnitChanged;
   final VoidCallback? onScanNutritionLabel;
   final ValueChanged<bool>? onEatImmediatelyChanged;
@@ -158,14 +186,34 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _ManualProductSearchBar(
+            TextVoiceSearchBar(
+              key: searchBarKey,
               controller: searchController,
+              label: l10n.inventoryReceiptReviewManualSearchLabel,
               isSearching: isSearching,
-              isListeningToSpeech: isListeningToSpeech,
-              onScanBarcode: onScanBarcode,
-              onToggleVoiceSearch: onToggleVoiceSearch,
+              voiceButtonKey: const Key(
+                'receipt_review_manual_voice_search_button',
+              ),
+              clearButtonKey: const Key(
+                'receipt_review_manual_search_clear_button',
+              ),
               fieldKey: const Key('receipt_review_manual_search_field'),
               autofocus: autofocusSearch,
+              onChanged: onSearchChanged,
+              speechService: speechService,
+              startVoiceSearchOnMount: startVoiceSearchOnMount,
+              trailingActions: <Widget>[
+                SizedBox(
+                  height: 56,
+                  width: 56,
+                  child: IconButton.outlined(
+                    key: const Key('receipt_review_manual_scan_button'),
+                    onPressed: onScanBarcode,
+                    tooltip: l10n.inventoryBarcodeMissingPromptScanNow,
+                    icon: const Icon(Icons.qr_code_scanner_outlined),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.sm),
             if (searchResults.isNotEmpty)
@@ -382,112 +430,18 @@ class _ManualProductWeightFields extends StatelessWidget {
   }
 }
 
-class _ManualProductSearchBar extends StatelessWidget {
-  const _ManualProductSearchBar({
-    required this.controller,
-    required this.isSearching,
-    required this.isListeningToSpeech,
-    required this.onScanBarcode,
-    required this.fieldKey,
-    this.readOnly = false,
-    this.autofocus = false,
-    this.onToggleVoiceSearch,
-    this.onTap,
-  });
-
-  final TextEditingController controller;
-  final bool isSearching;
-  final bool isListeningToSpeech;
-  final VoidCallback onScanBarcode;
-  final Key fieldKey;
-  final bool readOnly;
-  final bool autofocus;
-  final VoidCallback? onToggleVoiceSearch;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: _ManualProductTextField(
-            controller: controller,
-            label: l10n.inventoryReceiptReviewManualSearchLabel,
-            fieldKey: fieldKey,
-            keyboardType: TextInputType.text,
-            prefixIcon: const Icon(Icons.search),
-            readOnly: readOnly,
-            autofocus: autofocus,
-            onTap: onTap,
-            suffixIcon: isSearching
-                ? const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: SizedBox.square(
-                      dimension: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                : null,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        SizedBox(
-          height: 56,
-          width: 56,
-          child: IconButton.outlined(
-            key: const Key('receipt_review_manual_voice_search_button'),
-            onPressed: onToggleVoiceSearch,
-            tooltip: isListeningToSpeech
-                ? l10n.inventoryManualAddVoiceSearchStopTooltip
-                : l10n.inventoryManualAddVoiceSearchStartTooltip,
-            icon: Icon(
-              isListeningToSpeech ? Icons.mic : Icons.mic_none,
-              color: isListeningToSpeech
-                  ? Theme.of(context).colorScheme.primary
-                  : null,
-            ),
-          ),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        SizedBox(
-          height: 56,
-          width: 56,
-          child: IconButton.outlined(
-            key: const Key('receipt_review_manual_scan_button'),
-            onPressed: onScanBarcode,
-            tooltip: l10n.inventoryBarcodeMissingPromptScanNow,
-            icon: const Icon(Icons.qr_code_scanner_outlined),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _ManualProductTextField extends StatelessWidget {
   const _ManualProductTextField({
     required this.controller,
     required this.label,
     required this.fieldKey,
     required this.keyboardType,
-    this.readOnly = false,
-    this.autofocus = false,
-    this.onTap,
-    this.prefixIcon,
-    this.suffixIcon,
   });
 
   final TextEditingController controller;
   final String label;
   final Key fieldKey;
   final TextInputType keyboardType;
-  final bool readOnly;
-  final bool autofocus;
-  final VoidCallback? onTap;
-  final Widget? prefixIcon;
-  final Widget? suffixIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -495,14 +449,9 @@ class _ManualProductTextField extends StatelessWidget {
       key: fieldKey,
       controller: controller,
       keyboardType: keyboardType,
-      readOnly: readOnly,
-      autofocus: autofocus,
-      onTap: onTap,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
-        prefixIcon: prefixIcon,
-        suffixIcon: suffixIcon,
       ),
     );
   }

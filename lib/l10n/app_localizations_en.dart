@@ -277,6 +277,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryRecentSectionTitle => 'Recently added';
 
   @override
+  String get inventorySearchLabel => 'Search inventory';
+
+  @override
+  String get inventorySearchClearAction => 'Clear search';
+
+  @override
   String get inventoryFilterAction => 'Filter items';
 
   @override
@@ -468,7 +474,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryEmptyState => 'No items in your fridge yet. Scan a receipt or add foods manually.';
 
   @override
-  String get inventoryFilteredEmptyState => 'No items match the selected filters.';
+  String get inventoryFilteredEmptyState => 'No items match your search or active filters.';
 
   @override
   String get inventoryLoadFailed => 'Could not load inventory items.';

@@ -277,6 +277,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryRecentSectionTitle => 'Kürzlich hinzugefügt';
 
   @override
+  String get inventorySearchLabel => 'Im Vorrat suchen';
+
+  @override
+  String get inventorySearchClearAction => 'Suche leeren';
+
+  @override
   String get inventoryFilterAction => 'Artikel filtern';
 
   @override
@@ -468,7 +474,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryEmptyState => 'Noch keine Vorratsartikel vorhanden. Scanne einen Beleg oder füge Lebensmittel manuell hinzu.';
 
   @override
-  String get inventoryFilteredEmptyState => 'Keine Artikel entsprechen den ausgewählten Filtern.';
+  String get inventoryFilteredEmptyState => 'Keine Artikel passen zu deiner Suche oder den aktiven Filtern.';
 
   @override
   String get inventoryLoadFailed => 'Vorratsartikel konnten nicht geladen werden.';
