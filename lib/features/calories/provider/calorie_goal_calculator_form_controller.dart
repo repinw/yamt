@@ -68,7 +68,7 @@ class CalorieGoalCalculatorFormController
     );
   }
 
-  Future<bool> save() async {
+  Future<bool> save({required DateTime goalStartAt}) async {
     final profile = state.profile;
     if (profile == null) {
       return false;
@@ -77,7 +77,7 @@ class CalorieGoalCalculatorFormController
     state = state.copyWith(isSaving: true);
     final saved = await ref
         .read(calorieGoalControllerProvider.notifier)
-        .saveCalculatedGoal(profile);
+        .saveCalculatedGoal(profile, goalStartAt: goalStartAt);
     if (!ref.mounted) {
       return saved;
     }

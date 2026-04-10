@@ -296,6 +296,50 @@ void main() {
       expect(readCount, diaryVisibleDayCount);
     },
   );
+
+  test('calorieWeekOverview ignores days before a future goal start', () async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final tomorrow = today.add(const Duration(days: 1));
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'today',
+          loggedAt: today.add(const Duration(hours: 12)),
+          totalKcal: 900,
+        ),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2100,
+        calculatorProfile: null,
+        effectiveDate: tomorrow,
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+    final overview = await container.read(calorieWeekOverviewProvider.future);
+
+    expect(overview.goalStartsInFuture, isTrue);
+    expect(overview.nextGoalStartDate, tomorrow);
+    expect(overview.balanceStartDate, tomorrow);
+    expect(overview.totalConsumedKcal, 0);
+    expect(overview.totalGoalKcal, 0);
+    expect(overview.remainingKcal, 0);
+    expect(overview.carryoverBeforeTodayKcal, 0);
+    expect(overview.todayFlexibleGoalKcal, 0);
+    expect(overview.days.firstWhere((day) => day.date == today).goalKcal, 0);
+  });
 }
 
 class _DelayedCalorieSettingsRepository implements CalorieSettingsRepository {

@@ -998,10 +998,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesTodayAction => 'Today';
 
   @override
-  String get caloriesSetGoalAction => 'Set goal';
+  String get caloriesSetGoalAction => 'Set goal manually';
 
   @override
-  String get caloriesCalculatorAction => 'Calorie calculator';
+  String get caloriesShiftGoalStartAction => 'Move goal start';
+
+  @override
+  String get caloriesCalculatorAction => 'Recalculate goal';
 
   @override
   String get caloriesGoalDialogTitle => 'Set daily goal';
@@ -1023,6 +1026,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesGoalClearFailed => 'Could not clear calorie goal.';
+
+  @override
+  String get caloriesGoalStartDialogTitle => 'Move goal start';
+
+  @override
+  String get caloriesGoalStartDateLabel => 'Date';
+
+  @override
+  String get caloriesGoalStartTimeLabel => 'Time';
+
+  @override
+  String get caloriesGoalStartSaveFailed => 'Could not update goal start.';
 
   @override
   String get caloriesCalculatorSheetTitle => 'Calorie calculator';
@@ -1160,6 +1175,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesCalculatorDailyGoalLabel => 'Daily calorie target';
+
+  @override
+  String get caloriesCalculatorGoalStartLabel => 'Goal start';
+
+  @override
+  String get caloriesCalculatorGoalStartHint => 'Your calorie target history begins from this point.';
+
+  @override
+  String get caloriesCalculatorGoalStartChangeAction => 'Change';
+
+  @override
+  String get caloriesCalculatorGoalStartFutureError => 'Goal start can\'t be in the future.';
 
   @override
   String caloriesCalculatorMinimumGoalWarning(int minimumKcal) {
@@ -1334,6 +1361,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesWeekBalanceStable => 'You are balanced since your goal started. Today\'s target stays unchanged.';
+
+  @override
+  String caloriesWeekBalanceStartsLater(String date) {
+    return 'Your goal starts on $date. The balance will begin automatically then.';
+  }
 
   @override
   String get caloriesWeekBalanceStartedToday => 'Your goal starts today. The balance will build up from here.';

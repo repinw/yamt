@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
@@ -218,6 +219,53 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Calorie calculator'), findsOneWidget);
+  });
+
+  testWidgets('diary menu opens the shift goal start dialog', (tester) async {
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 4, 10, 16, 30),
+      ),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildHarness(settingsRepository: repository));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CaloriesPageKeys.appBarMenuButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CaloriesPageKeys.appBarMenuShiftGoalStartAction),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(CaloriesPageKeys.appBarMenuShiftGoalStartAction),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Move goal start'), findsOneWidget);
+  });
+
+  testWidgets('diary menu disables shift goal start without a goal', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildHarness(settingsRepository: repository));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CaloriesPageKeys.appBarMenuButton));
+    await tester.pumpAndSettle();
+
+    final item = tester.widget<PopupMenuItem<dynamic>>(
+      find.byKey(CaloriesPageKeys.appBarMenuShiftGoalStartAction),
+    );
+    expect(item.enabled, isFalse);
   });
 
   testWidgets('inventory tab hides shell fab when inventory is empty', (

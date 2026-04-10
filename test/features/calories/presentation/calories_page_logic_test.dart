@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/presentation/calories_page.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
@@ -27,6 +28,8 @@ CalorieWeekOverview _overview({
     balanceStartDate: DateTime(2026, 3, 27).subtract(Duration(days: dayOffset)),
     carryoverBeforeTodayKcal: remainingKcal,
     todayFlexibleGoalKcal: totalGoalKcal,
+    goalStartsInFuture: false,
+    nextGoalStartDate: null,
   );
 }
 
@@ -158,4 +161,38 @@ void main() {
       AppInventoryEditorial.primary.withValues(alpha: 0.08),
     );
   });
+
+  test(
+    'week balance banner content shows future-start state for upcoming goals',
+    () {
+      final sourceOverview = _overview(
+        dayOffset: 0,
+        totalConsumedKcal: 0,
+        totalGoalKcal: 2200,
+        remainingKcal: 0,
+      );
+      final overview = CalorieWeekOverview(
+        days: sourceOverview.days,
+        totalConsumedKcal: sourceOverview.totalConsumedKcal,
+        totalGoalKcal: sourceOverview.totalGoalKcal,
+        remainingKcal: sourceOverview.remainingKcal,
+        balanceStartDate: sourceOverview.balanceStartDate,
+        carryoverBeforeTodayKcal: sourceOverview.carryoverBeforeTodayKcal,
+        todayFlexibleGoalKcal: sourceOverview.todayFlexibleGoalKcal,
+        goalStartsInFuture: true,
+        nextGoalStartDate: DateTime(2026, 3, 28),
+      );
+
+      final content = resolveWeekBalanceSummaryBannerContent(
+        overview: overview,
+        l10n: l10n,
+        referenceNow: DateTime(2026, 3, 27, 10),
+      );
+
+      final startLabel = DateFormat.yMMMd(
+        l10n.localeName,
+      ).format(DateTime(2026, 3, 28));
+      expect(content.message, l10n.caloriesWeekBalanceStartsLater(startLabel));
+    },
+  );
 }

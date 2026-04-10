@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/firebase_options.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/provider/google_auth_controller.dart';
@@ -55,6 +56,7 @@ class AccountController extends _$AccountController {
   Future<void> signOut() async {
     if (!ref.mounted) return;
     state = const AsyncLoading();
+    await _pauseFirestoreBackedStreams();
     try {
       await ref.read(firebaseAuthProvider).signOut();
       if (!ref.mounted) return;
@@ -64,6 +66,10 @@ class AccountController extends _$AccountController {
         state = AsyncError(error, stackTrace);
       }
       rethrow;
+    } finally {
+      if (ref.mounted) {
+        ref.read(sessionShutdownControllerProvider.notifier).finish();
+      }
     }
   }
 
@@ -223,6 +229,7 @@ class AccountController extends _$AccountController {
   Future<void> deleteCurrentAccount() async {
     if (!ref.mounted) return;
     state = const AsyncLoading();
+    await _pauseFirestoreBackedStreams();
     try {
       final user = ref.read(firebaseAuthProvider).currentUser;
       if (user == null) {
@@ -240,7 +247,16 @@ class AccountController extends _$AccountController {
         state = AsyncError(error, stackTrace);
       }
       rethrow;
+    } finally {
+      if (ref.mounted) {
+        ref.read(sessionShutdownControllerProvider.notifier).finish();
+      }
     }
+  }
+
+  Future<void> _pauseFirestoreBackedStreams() async {
+    ref.read(sessionShutdownControllerProvider.notifier).begin();
+    await Future<void>.delayed(Duration.zero);
   }
 
   User _requireAnonymousCurrentUser(FirebaseAuth auth) {

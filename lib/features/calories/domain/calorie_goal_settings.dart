@@ -13,6 +13,7 @@ class CalorieGoalHistoryEntry {
     required this.dailyKcalGoal,
     required this.calculatorProfile,
     required this.effectiveDate,
+    required this.changedAt,
   });
 
   @NullableFlexibleDoubleConverter()
@@ -20,8 +21,11 @@ class CalorieGoalHistoryEntry {
   final CalorieCalculatorProfile? calculatorProfile;
   @FlexibleDateTimeConverter()
   final DateTime effectiveDate;
+  @NullableFlexibleDateTimeConverter()
+  final DateTime? changedAt;
 
   bool get hasGoal => dailyKcalGoal != null;
+  DateTime get effectiveChangedAt => changedAt ?? effectiveDate;
 
   factory CalorieGoalHistoryEntry.fromJson(Map<String, dynamic> json) {
     return _$CalorieGoalHistoryEntryFromJson(json);
@@ -60,6 +64,7 @@ class CalorieGoalSettings {
           dailyKcalGoal: dailyKcalGoal,
           calculatorProfile: calculatorProfile,
           effectiveDate: normalizeDiaryDay(effectiveDate),
+          changedAt: effectiveDate,
         ),
       ],
     );
@@ -98,8 +103,27 @@ class CalorieGoalSettings {
     return resolvedEntry;
   }
 
+  DateTime? nextGoalStartAfterDay(DateTime day) {
+    final normalizedDay = normalizeDiaryDay(day);
+    for (final entry in sortedGoalHistory) {
+      if (!entry.hasGoal) {
+        continue;
+      }
+      if (entry.effectiveDate.isAfter(normalizedDay)) {
+        return entry.effectiveDate;
+      }
+    }
+    return null;
+  }
+
   double goalKcalForDay(DateTime day) {
-    return goalEntryForDay(day)?.dailyKcalGoal ?? defaultDailyCalorieGoalKcal;
+    final entry = goalEntryForDay(day);
+    if (entry != null) {
+      return entry.dailyKcalGoal ?? 0.0;
+    }
+    return nextGoalStartAfterDay(day) == null
+        ? defaultDailyCalorieGoalKcal
+        : 0.0;
   }
 
   DateTime balanceStartForWindow(Iterable<DateTime> days) {
@@ -123,7 +147,16 @@ class CalorieGoalSettings {
       latestChangeInWindow = entry.effectiveDate;
     }
 
-    return latestChangeInWindow ?? windowStart;
+    if (latestChangeInWindow != null) {
+      return latestChangeInWindow;
+    }
+
+    final activeEntryAtWindowEnd = goalEntryForDay(windowEnd);
+    if (activeEntryAtWindowEnd?.hasGoal == true) {
+      return windowStart;
+    }
+
+    return nextGoalStartAfterDay(windowEnd) ?? windowStart;
   }
 
   factory CalorieGoalSettings.fromJson(Map<String, dynamic> json) {
@@ -132,19 +165,50 @@ class CalorieGoalSettings {
 
   Map<String, dynamic> toJson() => _$CalorieGoalSettingsToJson(this);
 
+  CalorieGoalSettings withoutLatestGoalEntry() {
+    final history = sortedGoalHistory;
+    final latestGoalIndex = history.lastIndexWhere((entry) => entry.hasGoal);
+    if (latestGoalIndex < 0) {
+      return this;
+    }
+
+    final nextHistory = List<CalorieGoalHistoryEntry>.from(history)
+      ..removeAt(latestGoalIndex);
+    final previousGoalIndex = nextHistory.lastIndexWhere(
+      (entry) => entry.hasGoal,
+    );
+    final previousGoal = previousGoalIndex >= 0
+        ? nextHistory[previousGoalIndex]
+        : null;
+
+    return CalorieGoalSettings(
+      dailyKcalGoal: previousGoal?.dailyKcalGoal,
+      calculatorProfile: previousGoal?.calculatorProfile,
+      updatedAt: updatedAt,
+      goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextHistory),
+    );
+  }
+
   CalorieGoalSettings applyGoalChange({
     required DateTime changedAt,
     required double? dailyKcalGoal,
     required CalorieCalculatorProfile? calculatorProfile,
+    bool replaceFutureHistory = false,
   }) {
     final effectiveDate = normalizeDiaryDay(changedAt);
     final nextHistory = <CalorieGoalHistoryEntry>[
       for (final entry in sortedGoalHistory)
-        if (!_isSameDay(entry.effectiveDate, effectiveDate)) entry,
+        if (_shouldKeepGoalHistoryEntry(
+          entry: entry,
+          effectiveDate: effectiveDate,
+          replaceFutureHistory: replaceFutureHistory,
+        ))
+          entry,
       CalorieGoalHistoryEntry(
         dailyKcalGoal: dailyKcalGoal,
         calculatorProfile: calculatorProfile,
         effectiveDate: effectiveDate,
+        changedAt: changedAt,
       ),
     ]..sort((left, right) => left.effectiveDate.compareTo(right.effectiveDate));
 
@@ -175,4 +239,18 @@ bool _isSameDay(DateTime left, DateTime right) {
   return left.year == right.year &&
       left.month == right.month &&
       left.day == right.day;
+}
+
+bool _shouldKeepGoalHistoryEntry({
+  required CalorieGoalHistoryEntry entry,
+  required DateTime effectiveDate,
+  required bool replaceFutureHistory,
+}) {
+  if (_isSameDay(entry.effectiveDate, effectiveDate)) {
+    return false;
+  }
+  if (!replaceFutureHistory) {
+    return true;
+  }
+  return entry.effectiveDate.isBefore(effectiveDate);
 }

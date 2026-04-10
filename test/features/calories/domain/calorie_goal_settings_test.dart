@@ -34,6 +34,7 @@ void main() {
     expect(decoded.updatedAt, DateTime(2026, 2, 25, 11));
     expect(decoded.goalHistory, hasLength(1));
     expect(decoded.goalHistory.single.effectiveDate, DateTime(2026, 2, 25));
+    expect(decoded.goalHistory.single.changedAt, DateTime(2026, 2, 25, 11));
   });
 
   test('resolves goal history by day and resets balance on latest change', () {
@@ -58,6 +59,78 @@ void main() {
         DateTime(2026, 2, 23),
         DateTime(2026, 2, 24),
         DateTime(2026, 2, 25),
+      ]),
+      DateTime(2026, 2, 24),
+    );
+  });
+
+  test(
+    'replaceFutureHistory drops later goal changes from the same timeline',
+    () {
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: DateTime(2026, 2, 20, 8),
+            dailyKcalGoal: 2400,
+            calculatorProfile: null,
+          )
+          .applyGoalChange(
+            changedAt: DateTime(2026, 2, 24, 9),
+            dailyKcalGoal: 1800,
+            calculatorProfile: null,
+          )
+          .applyGoalChange(
+            changedAt: DateTime(2026, 2, 22, 14),
+            dailyKcalGoal: 2100,
+            calculatorProfile: null,
+            replaceFutureHistory: true,
+          );
+
+      expect(settings.dailyKcalGoal, 2100);
+      expect(settings.goalHistory, hasLength(2));
+      expect(settings.goalKcalForDay(DateTime(2026, 2, 21)), 2400);
+      expect(settings.goalKcalForDay(DateTime(2026, 2, 23)), 2100);
+      expect(settings.goalKcalForDay(DateTime(2026, 2, 25)), 2100);
+    },
+  );
+
+  test('withoutLatestGoalEntry removes the active goal entry', () {
+    final settings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          changedAt: DateTime(2026, 2, 20, 8),
+          dailyKcalGoal: 2400,
+          calculatorProfile: null,
+        )
+        .applyGoalChange(
+          changedAt: DateTime(2026, 2, 24, 9),
+          dailyKcalGoal: 1800,
+          calculatorProfile: null,
+        )
+        .withoutLatestGoalEntry();
+
+    expect(settings.dailyKcalGoal, 2400);
+    expect(settings.goalHistory, hasLength(1));
+    expect(settings.goalKcalForDay(DateTime(2026, 2, 23)), 2400);
+    expect(settings.goalKcalForDay(DateTime(2026, 2, 25)), 2400);
+  });
+
+  test('future goal start keeps earlier days goal-free', () {
+    final settings = const CalorieGoalSettings.empty().applyGoalChange(
+      changedAt: DateTime(2026, 2, 24, 6),
+      dailyKcalGoal: 2100,
+      calculatorProfile: null,
+    );
+
+    expect(settings.goalKcalForDay(DateTime(2026, 2, 23)), 0);
+    expect(settings.goalKcalForDay(DateTime(2026, 2, 24)), 2100);
+    expect(
+      settings.balanceStartForWindow(<DateTime>[
+        DateTime(2026, 2, 17),
+        DateTime(2026, 2, 18),
+        DateTime(2026, 2, 19),
+        DateTime(2026, 2, 20),
+        DateTime(2026, 2, 21),
+        DateTime(2026, 2, 22),
+        DateTime(2026, 2, 23),
       ]),
       DateTime(2026, 2, 24),
     );

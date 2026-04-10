@@ -239,6 +239,12 @@ CalorieBalanceSummaryData _summaryData({
     referenceNow: resolvedNow,
     windowStartDate: resolvedNow.subtract(const Duration(days: 6)),
     balanceStartDate: resolvedNow.subtract(const Duration(days: 6)),
+    paceWindowStart: DateTime(
+      resolvedDay.year,
+      resolvedDay.month,
+      resolvedDay.day,
+      6,
+    ),
     baseGoalKcal: baseGoalKcal,
     carryoverKcal: carryoverKcal,
     goalMode: goalMode,

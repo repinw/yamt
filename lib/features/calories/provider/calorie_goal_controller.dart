@@ -48,14 +48,38 @@ class CalorieGoalController extends _$CalorieGoalController {
     return _persistSettings(nextSettings);
   }
 
-  Future<bool> saveCalculatedGoal(CalorieCalculatorProfile profile) {
+  Future<bool> saveCalculatedGoal(
+    CalorieCalculatorProfile profile, {
+    required DateTime goalStartAt,
+  }) {
     final calculation = CalorieGoalCalculator.calculate(profile);
-    final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
-    final now = DateTime.now();
-    final nextSettings = previous.applyGoalChange(
-      changedAt: now,
+    final previousSettings =
+        state.asData?.value ?? const CalorieGoalSettings.empty();
+    final baseSettings = previousSettings.withoutLatestGoalEntry();
+    final nextSettings = baseSettings.applyGoalChange(
+      changedAt: goalStartAt,
       dailyKcalGoal: calculation.finalGoalKcal,
       calculatorProfile: profile,
+      replaceFutureHistory: true,
+    );
+    return _persistSettings(nextSettings);
+  }
+
+  Future<bool> shiftGoalStart({required DateTime goalStartAt}) {
+    final previousSettings =
+        state.asData?.value ?? const CalorieGoalSettings.empty();
+    if (!previousSettings.hasGoal) {
+      return Future<bool>.value(false);
+    }
+
+    final currentDailyKcalGoal = previousSettings.dailyKcalGoal;
+    final currentCalculatorProfile = previousSettings.calculatorProfile;
+    final baseSettings = previousSettings.withoutLatestGoalEntry();
+    final nextSettings = baseSettings.applyGoalChange(
+      changedAt: goalStartAt,
+      dailyKcalGoal: currentDailyKcalGoal,
+      calculatorProfile: currentCalculatorProfile,
+      replaceFutureHistory: true,
     );
     return _persistSettings(nextSettings);
   }

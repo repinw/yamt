@@ -8,6 +8,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_input_controls.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_start_picker.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_results.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
@@ -46,6 +48,7 @@ class _CalorieGoalCalculatorFlowState
   late final TextEditingController _heightController;
   late final TextEditingController _ageController;
   late final TextEditingController _goalSpeedController;
+  late DateTime _goalStartAt;
   var _currentStep = _CalculatorOnboardingStep.sex;
 
   @override
@@ -60,6 +63,7 @@ class _CalorieGoalCalculatorFlowState
     _goalSpeedController = TextEditingController(
       text: initialState.goalSpeedKgPerWeekText,
     );
+    _goalStartAt = CalorieGoalStartPicker.roundToMinute(DateTime.now());
   }
 
   @override
@@ -90,7 +94,9 @@ class _CalorieGoalCalculatorFlowState
     final formProvider = calorieGoalCalculatorFormControllerProvider(
       widget.initialSettings.calculatorProfile,
     );
-    final saved = await ref.read(formProvider.notifier).save();
+    final saved = await ref
+        .read(formProvider.notifier)
+        .save(goalStartAt: _goalStartAt);
     if (!mounted) {
       return;
     }
@@ -121,6 +127,65 @@ class _CalorieGoalCalculatorFlowState
   void _setCurrentStep(_CalculatorOnboardingStep step) {
     setState(() {
       _currentStep = step;
+    });
+  }
+
+  Future<void> _pickGoalStart() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final now = CalorieGoalStartPicker.roundToMinute(DateTime.now());
+    final initialGoalStart = _goalStartAt;
+    final pickedDate = await CalorieGoalStartPicker.pickDate(
+      context,
+      initialGoalStartAt: initialGoalStart,
+      now: now,
+    );
+    if (pickedDate == null) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+
+    if (!DateUtils.isSameDay(pickedDate, now)) {
+      final resetGoalStart = CalorieGoalStartPicker.sixAm(pickedDate);
+      if (CalorieGoalStartPicker.isSameMinute(_goalStartAt, resetGoalStart)) {
+        return;
+      }
+      setState(() {
+        _goalStartAt = resetGoalStart;
+      });
+      return;
+    }
+
+    final pickedTime = await CalorieGoalStartPicker.pickTime(
+      context,
+      initialGoalStartAt: initialGoalStart,
+    );
+    if (pickedTime == null) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+
+    final pickedGoalStart = CalorieGoalStartPicker.combineDateAndTime(
+      date: pickedDate,
+      time: pickedTime,
+    );
+    if (pickedGoalStart.isAfter(now)) {
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.caloriesCalculatorGoalStartFutureError)),
+      );
+      return;
+    }
+
+    if (CalorieGoalStartPicker.isSameMinute(_goalStartAt, pickedGoalStart)) {
+      return;
+    }
+    setState(() {
+      _goalStartAt = pickedGoalStart;
     });
   }
 }

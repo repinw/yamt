@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
@@ -25,6 +26,7 @@ class CalorieBalanceSummaryData {
     required this.referenceNow,
     required this.windowStartDate,
     required this.balanceStartDate,
+    required this.paceWindowStart,
     required this.baseGoalKcal,
     required this.carryoverKcal,
     required this.goalMode,
@@ -41,6 +43,7 @@ class CalorieBalanceSummaryData {
   final DateTime referenceNow;
   final DateTime windowStartDate;
   final DateTime balanceStartDate;
+  final DateTime paceWindowStart;
   final double baseGoalKcal;
   final double carryoverKcal;
   final CalorieGoalMode goalMode;
@@ -114,20 +117,44 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
       })
       .fold<double>(0, (sum, day) => sum + settings.goalKcalForDay(day));
 
-  final consumedKcal = selectedEntries.fold<double>(
-    0,
-    (sum, entry) => sum + entry.totalKcal,
+  final goalEntry = settings.goalEntryForDay(selectedDay);
+  final dailyBaseGoalKcal = settings.goalKcalForDay(selectedDay);
+  final hasFutureGoalStart =
+      settings.nextGoalStartAfterDay(selectedDay) != null;
+  final shouldIgnoreSelectedDayForBalance =
+      goalEntry?.hasGoal != true &&
+      (goalEntry != null || hasFutureGoalStart) &&
+      dailyBaseGoalKcal <= 0;
+  final consumedKcal = shouldIgnoreSelectedDayForBalance
+      ? 0.0
+      : selectedEntries.fold<double>(0, (sum, entry) => sum + entry.totalKcal);
+  final initialGoalPacing = _resolveInitialGoalPacing(
+    settings: settings,
+    selectedDay: selectedDay,
+    now: now,
+    selectedEntries: selectedEntries,
+    dailyBaseGoalKcal: dailyBaseGoalKcal,
   );
-  final baseGoalKcal = settings.goalKcalForDay(selectedDay);
+  final baseGoalKcal =
+      initialGoalPacing?.adjustedBaseGoalKcal ?? dailyBaseGoalKcal;
   final goalMode =
-      settings.goalEntryForDay(selectedDay)?.calculatorProfile?.goalMode ??
+      goalEntry?.calculatorProfile?.goalMode ??
       settings.calculatorProfile?.goalMode ??
       CalorieGoalMode.maintain;
   final carryoverKcal = historyGoalKcal - historyConsumedKcal;
   final flexibleGoalKcal = math
       .max(0.0, baseGoalKcal + carryoverKcal)
       .toDouble();
-  final paceRatio = _paceRatioForDay(selectedDay: selectedDay, now: now);
+  final resolvedPaceWindowStart = _resolvePaceWindowStart(
+    selectedDay: selectedDay,
+    now: now,
+    customPaceWindowStart: initialGoalPacing?.paceWindowStart,
+  );
+  final paceRatio = _paceRatioForDay(
+    selectedDay: selectedDay,
+    now: now,
+    paceWindowStart: resolvedPaceWindowStart,
+  );
   final pacedGoalKcal = _resolvePacedGoalKcal(
     selectedDay: selectedDay,
     now: now,
@@ -146,6 +173,7 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
     referenceNow: now,
     windowStartDate: windowStartDate,
     balanceStartDate: balanceStartDate,
+    paceWindowStart: resolvedPaceWindowStart,
     baseGoalKcal: baseGoalKcal,
     carryoverKcal: carryoverKcal,
     goalMode: goalMode,
@@ -187,17 +215,14 @@ Future<List<CalorieEntry>> _readHistoryEntriesSafely({
 double _paceRatioForDay({
   required DateTime selectedDay,
   required DateTime now,
+  DateTime? paceWindowStart,
 }) {
   if (!_isSameDay(selectedDay, now)) {
     return 1.0;
   }
 
-  final paceWindowStart = DateTime(
-    now.year,
-    now.month,
-    now.day,
-    _paceWindowStartHour,
-  );
+  final resolvedPaceWindowStart =
+      paceWindowStart ?? _defaultPaceWindowStart(selectedDay);
   final paceWindowEnd = DateTime(
     now.year,
     now.month,
@@ -205,16 +230,104 @@ double _paceRatioForDay({
     _paceWindowEndHour,
   );
 
-  if (!now.isAfter(paceWindowStart)) {
+  if (!resolvedPaceWindowStart.isBefore(paceWindowEnd)) {
+    return 0.0;
+  }
+  if (!now.isAfter(resolvedPaceWindowStart)) {
     return 0.0;
   }
   if (!now.isBefore(paceWindowEnd)) {
     return 1.0;
   }
 
-  final elapsedSeconds = now.difference(paceWindowStart).inSeconds;
-  final paceWindowSeconds = paceWindowEnd.difference(paceWindowStart).inSeconds;
+  final elapsedSeconds = now.difference(resolvedPaceWindowStart).inSeconds;
+  final paceWindowSeconds = paceWindowEnd
+      .difference(resolvedPaceWindowStart)
+      .inSeconds;
   return (elapsedSeconds / paceWindowSeconds).clamp(0.0, 1.0).toDouble();
+}
+
+DateTime _resolvePaceWindowStart({
+  required DateTime selectedDay,
+  required DateTime now,
+  DateTime? customPaceWindowStart,
+}) {
+  if (_isSameDay(selectedDay, now)) {
+    return customPaceWindowStart ?? _defaultPaceWindowStart(selectedDay);
+  }
+  return _defaultPaceWindowStart(selectedDay);
+}
+
+_InitialGoalPacing? _resolveInitialGoalPacing({
+  required CalorieGoalSettings settings,
+  required DateTime selectedDay,
+  required DateTime now,
+  required List<CalorieEntry> selectedEntries,
+  required double dailyBaseGoalKcal,
+}) {
+  if (!_isSameDay(selectedDay, now)) {
+    return null;
+  }
+
+  final goalEntry = settings.goalEntryForDay(selectedDay);
+  final goalChangedAt = goalEntry?.effectiveChangedAt.toLocal();
+  if (goalChangedAt == null || !_isSameDay(goalChangedAt, selectedDay)) {
+    return null;
+  }
+
+  if (goalEntry?.hasGoal != true) {
+    return null;
+  }
+
+  final hadGoalBeforeToday = settings.sortedGoalHistory.any((entry) {
+    return entry.hasGoal && _isBeforeDay(entry.effectiveDate, selectedDay);
+  });
+  if (hadGoalBeforeToday) {
+    return null;
+  }
+
+  final hadEntriesBeforeGoal = selectedEntries.any((entry) {
+    return entry.loggedAt.toLocal().isBefore(goalChangedAt);
+  });
+  if (hadEntriesBeforeGoal) {
+    return null;
+  }
+
+  final defaultPaceWindowStart = DateTime(
+    now.year,
+    now.month,
+    now.day,
+    _paceWindowStartHour,
+  );
+  final paceWindowStart = goalChangedAt.isAfter(defaultPaceWindowStart)
+      ? goalChangedAt
+      : defaultPaceWindowStart;
+  final paceWindowEnd = DateTime(
+    now.year,
+    now.month,
+    now.day,
+    _paceWindowEndHour,
+  );
+  final defaultWindowSeconds = paceWindowEnd
+      .difference(defaultPaceWindowStart)
+      .inSeconds;
+  if (defaultWindowSeconds <= 0) {
+    return _InitialGoalPacing(
+      paceWindowStart: paceWindowStart,
+      adjustedBaseGoalKcal: dailyBaseGoalKcal,
+    );
+  }
+
+  final remainingWindowSeconds = paceWindowEnd
+      .difference(paceWindowStart)
+      .inSeconds;
+  final adjustedBaseGoalKcal = remainingWindowSeconds <= 0
+      ? 0.0
+      : dailyBaseGoalKcal * remainingWindowSeconds / defaultWindowSeconds;
+  return _InitialGoalPacing(
+    paceWindowStart: paceWindowStart,
+    adjustedBaseGoalKcal: adjustedBaseGoalKcal,
+  );
 }
 
 double _resolvePacedGoalKcal({
@@ -277,12 +390,7 @@ DateTime? resolveCalorieBalanceRecoveryTime(CalorieBalanceSummaryData data) {
     return null;
   }
 
-  final paceWindowStart = DateTime(
-    data.referenceNow.year,
-    data.referenceNow.month,
-    data.referenceNow.day,
-    _paceWindowStartHour,
-  );
+  final paceWindowStart = data.paceWindowStart;
   final paceWindowEnd = DateTime(
     data.referenceNow.year,
     data.referenceNow.month,
@@ -306,6 +414,10 @@ DateTime? resolveCalorieBalanceRecoveryTime(CalorieBalanceSummaryData data) {
   return paceWindowStart.add(Duration(milliseconds: recoveryMilliseconds));
 }
 
+DateTime _defaultPaceWindowStart(DateTime day) {
+  return DateTime(day.year, day.month, day.day, _paceWindowStartHour);
+}
+
 double _positiveScore(double progress) {
   return (0.72 + (progress * 0.28)).clamp(0.0, 1.0);
 }
@@ -316,4 +428,14 @@ double _negativeScore(double progress) {
 
 double _maintainScore(double progress) {
   return (1.0 - progress).clamp(0.0, 1.0);
+}
+
+class _InitialGoalPacing {
+  const _InitialGoalPacing({
+    required this.paceWindowStart,
+    required this.adjustedBaseGoalKcal,
+  });
+
+  final DateTime paceWindowStart;
+  final double adjustedBaseGoalKcal;
 }

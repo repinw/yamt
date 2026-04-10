@@ -32,16 +32,18 @@ void main() {
         goalMode: CalorieGoalMode.maintain,
         goalSpeedKgPerWeek: 0,
       );
+      final goalStartAt = DateTime(2026, 4, 10, 16, 30);
 
       final saved = await container
           .read(calorieGoalControllerProvider.notifier)
-          .saveCalculatedGoal(profile);
+          .saveCalculatedGoal(profile, goalStartAt: goalStartAt);
 
       expect(saved, isTrue);
       final settings = await repository.readSettings();
       expect(settings.dailyKcalGoal, 2136);
       expect(settings.calculatorProfile?.goalMode, CalorieGoalMode.maintain);
       expect(settings.calculatorProfile?.weightKg, 80);
+      expect(settings.goalHistory.single.changedAt, goalStartAt);
     },
   );
 
@@ -119,7 +121,7 @@ void main() {
 
       final saved = await container
           .read(calorieGoalControllerProvider.notifier)
-          .saveCalculatedGoal(profile);
+          .saveCalculatedGoal(profile, goalStartAt: DateTime(2026, 4, 10, 18));
 
       expect(saved, isFalse);
       final state = container.read(calorieGoalControllerProvider);
@@ -127,4 +129,179 @@ void main() {
       expect(state.asData?.value.calculatorProfile, isNull);
     },
   );
+
+  test(
+    'saveCalculatedGoal replaces later history from the selected goal start',
+    () async {
+      final initialSettings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: DateTime(2026, 4, 1, 9),
+            dailyKcalGoal: 2100,
+            calculatorProfile: null,
+          )
+          .applyGoalChange(
+            changedAt: DateTime(2026, 4, 5, 10),
+            dailyKcalGoal: 1900,
+            calculatorProfile: null,
+          );
+      final repository = FakeCalorieSettingsRepository(
+        initialSettings: initialSettings,
+      );
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(calorieGoalControllerProvider.future);
+
+      const profile = CalorieCalculatorProfile(
+        sex: CalorieCalculatorSex.male,
+        weightKg: 80,
+        heightCm: 180,
+        ageYears: 30,
+        activityLevel: 1.2,
+        goalMode: CalorieGoalMode.maintain,
+        goalSpeedKgPerWeek: 0,
+      );
+      final goalStartAt = DateTime(2026, 4, 3, 16);
+
+      final saved = await container
+          .read(calorieGoalControllerProvider.notifier)
+          .saveCalculatedGoal(profile, goalStartAt: goalStartAt);
+
+      expect(saved, isTrue);
+      final settings = await repository.readSettings();
+      expect(settings.goalHistory, hasLength(2));
+      expect(settings.goalHistory.last.changedAt, goalStartAt);
+      expect(settings.goalKcalForDay(DateTime(2026, 4, 2)), 2100);
+      expect(settings.goalKcalForDay(DateTime(2026, 4, 6)), 2136);
+    },
+  );
+
+  test(
+    'saveCalculatedGoal with a future start no longer keeps the current goal active',
+    () async {
+      final today = DateTime.now();
+      final initialSettings = CalorieGoalSettings.single(
+        dailyKcalGoal: 1900,
+        calculatorProfile: null,
+        effectiveDate: today,
+      );
+      final repository = FakeCalorieSettingsRepository(
+        initialSettings: initialSettings,
+      );
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(calorieGoalControllerProvider.future);
+
+      const profile = CalorieCalculatorProfile(
+        sex: CalorieCalculatorSex.male,
+        weightKg: 80,
+        heightCm: 180,
+        ageYears: 30,
+        activityLevel: 1.2,
+        goalMode: CalorieGoalMode.maintain,
+        goalSpeedKgPerWeek: 0,
+      );
+      final futureGoalStart = today.add(const Duration(days: 1));
+
+      final saved = await container
+          .read(calorieGoalControllerProvider.notifier)
+          .saveCalculatedGoal(profile, goalStartAt: futureGoalStart);
+
+      expect(saved, isTrue);
+      final settings = await repository.readSettings();
+      expect(settings.goalKcalForDay(today), 0);
+      expect(settings.goalKcalForDay(futureGoalStart), 2136);
+    },
+  );
+
+  test(
+    'shiftGoalStart moves the active goal start and keeps the goal',
+    () async {
+      final initialSettings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: DateTime(2026, 4, 1, 9),
+            dailyKcalGoal: 2100,
+            calculatorProfile: null,
+          )
+          .applyGoalChange(
+            changedAt: DateTime(2026, 4, 5, 10),
+            dailyKcalGoal: 1900,
+            calculatorProfile: null,
+          );
+      final repository = FakeCalorieSettingsRepository(
+        initialSettings: initialSettings,
+      );
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(calorieGoalControllerProvider.future);
+
+      final saved = await container
+          .read(calorieGoalControllerProvider.notifier)
+          .shiftGoalStart(goalStartAt: DateTime(2026, 4, 3, 6));
+
+      expect(saved, isTrue);
+      final settings = await repository.readSettings();
+      expect(settings.dailyKcalGoal, 1900);
+      expect(settings.goalHistory, hasLength(2));
+      expect(settings.goalHistory.last.changedAt, DateTime(2026, 4, 3, 6));
+      expect(settings.goalKcalForDay(DateTime(2026, 4, 2)), 2100);
+      expect(settings.goalKcalForDay(DateTime(2026, 4, 4)), 1900);
+    },
+  );
+
+  test('shiftGoalStart also allows moving the goal into the future', () async {
+    final today = DateTime.now();
+    final initialSettings = CalorieGoalSettings.single(
+      dailyKcalGoal: 1900,
+      calculatorProfile: null,
+      effectiveDate: today,
+    );
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: initialSettings,
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+
+    final futureGoalStart = DateTime.now().add(const Duration(days: 2));
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .shiftGoalStart(goalStartAt: futureGoalStart);
+
+    expect(saved, isTrue);
+    final settings = await repository.readSettings();
+    expect(settings.goalKcalForDay(today), 0);
+    expect(settings.goalHistory.last.changedAt, futureGoalStart);
+    expect(
+      settings.goalKcalForDay(futureGoalStart.add(const Duration(days: 1))),
+      1900,
+    );
+  });
 }

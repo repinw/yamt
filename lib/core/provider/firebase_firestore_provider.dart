@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/session_shutdown_controller.dart';
 
 part 'firebase_firestore_provider.g.dart';
 
@@ -50,6 +51,13 @@ void resetFirebaseFirestoreProviderDebugHooks() {
 
 @riverpod
 FirebaseFirestore? firebaseFirestore(Ref ref) {
+  final isSessionShutdownInProgress = ref.watch(
+    sessionShutdownControllerProvider,
+  );
+  if (isSessionShutdownInProgress) {
+    return null;
+  }
+
   try {
     return debugFirebaseFirestoreInstanceGetter();
   } catch (error, stackTrace) {

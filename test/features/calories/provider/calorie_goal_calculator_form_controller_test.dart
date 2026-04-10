@@ -157,10 +157,13 @@ void main() {
         );
         addTearDown(container.dispose);
         final provider = calorieGoalCalculatorFormControllerProvider(null);
+        final goalStartAt = DateTime(2026, 4, 10, 16, 30);
 
         await container.read(calorieGoalControllerProvider.future);
 
-        final saveFuture = container.read(provider.notifier).save();
+        final saveFuture = container
+            .read(provider.notifier)
+            .save(goalStartAt: goalStartAt);
 
         expect(container.read(provider).isSaving, isTrue);
         expect(repository.saveCallCount, 1);
@@ -173,6 +176,7 @@ void main() {
         final settings = await repository.readSettings();
         expect(settings.dailyKcalGoal, 2136);
         expect(settings.calculatorProfile?.goalMode, CalorieGoalMode.maintain);
+        expect(settings.goalHistory.single.changedAt, goalStartAt);
       },
     );
 
@@ -194,7 +198,9 @@ void main() {
 
         await container.read(calorieGoalControllerProvider.future);
 
-        final saveFuture = container.read(provider.notifier).save();
+        final saveFuture = container
+            .read(provider.notifier)
+            .save(goalStartAt: DateTime(2026, 4, 10, 18));
 
         expect(container.read(provider).isSaving, isTrue);
 
@@ -224,7 +230,9 @@ void main() {
 
         await container.read(calorieGoalControllerProvider.future);
 
-        final saveFuture = container.read(provider.notifier).save();
+        final saveFuture = container
+            .read(provider.notifier)
+            .save(goalStartAt: DateTime(2026, 4, 10, 18));
 
         expect(repository.saveCallCount, 1);
 

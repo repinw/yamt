@@ -7,8 +7,9 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/calorie_goal_dialog.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_start_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
-import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
@@ -25,7 +26,7 @@ const _diaryBranchIndex = 1;
 const _statisticsBranchIndex = 2;
 const _settingsBranchIndex = 3;
 
-enum _DiaryAppBarAction { today, setGoal, calculator }
+enum _DiaryAppBarAction { setGoal, shiftGoalStart, calculator }
 
 /// Shell page that hosts the main app tabs and shared home chrome.
 class HomePage extends ConsumerWidget {
@@ -112,6 +113,7 @@ class HomePage extends ConsumerWidget {
     WidgetRef ref,
     AppLocalizations l10n,
     PreparedMealSelectionState selectionState,
+    CalorieGoalSettings? currentCalorieSettings,
   ) {
     if (_currentTab() == HomeTabType.inventory &&
         selectionState.isSelectionMode) {
@@ -178,12 +180,14 @@ class HomePage extends ConsumerWidget {
             itemBuilder: (context) {
               return <PopupMenuEntry<_DiaryAppBarAction>>[
                 PopupMenuItem<_DiaryAppBarAction>(
-                  value: _DiaryAppBarAction.today,
-                  child: Text(l10n.caloriesTodayAction),
-                ),
-                PopupMenuItem<_DiaryAppBarAction>(
                   value: _DiaryAppBarAction.setGoal,
                   child: Text(l10n.caloriesSetGoalAction),
+                ),
+                PopupMenuItem<_DiaryAppBarAction>(
+                  key: CaloriesPageKeys.appBarMenuShiftGoalStartAction,
+                  value: _DiaryAppBarAction.shiftGoalStart,
+                  enabled: currentCalorieSettings?.hasGoal == true,
+                  child: Text(l10n.caloriesShiftGoalStartAction),
                 ),
                 PopupMenuItem<_DiaryAppBarAction>(
                   key: CaloriesPageKeys.appBarMenuCalculatorAction,
@@ -205,6 +209,10 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final currentTab = _currentTab();
+    final currentCalorieSettings = ref
+        .watch(calorieGoalControllerProvider)
+        .asData
+        ?.value;
     final floatingActionButton = switch (currentTab) {
       HomeTabType.inventory => _buildInventoryFab(ref),
       HomeTabType.diary || HomeTabType.statistics => null,
@@ -222,7 +230,13 @@ class HomePage extends ConsumerWidget {
                 currentTab == HomeTabType.statistics
             ? AppInventoryEditorial.primary
             : null,
-        actions: _buildActions(context, ref, l10n, selectionState),
+        actions: _buildActions(
+          context,
+          ref,
+          l10n,
+          selectionState,
+          currentCalorieSettings,
+        ),
       ),
       body: navigationShell,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -258,9 +272,6 @@ class HomePage extends ConsumerWidget {
     required AppLocalizations l10n,
   }) async {
     switch (action) {
-      case _DiaryAppBarAction.today:
-        ref.read(calorieDayControllerProvider.notifier).goToToday();
-        return;
       case _DiaryAppBarAction.setGoal:
         final currentGoal =
             ref
@@ -276,6 +287,27 @@ class HomePage extends ConsumerWidget {
           onClearGoal: ref
               .read(calorieGoalControllerProvider.notifier)
               .clearGoal,
+        );
+        return;
+      case _DiaryAppBarAction.shiftGoalStart:
+        final currentSettings = ref
+            .read(calorieGoalControllerProvider)
+            .asData
+            ?.value;
+        if (currentSettings == null || !currentSettings.hasGoal) {
+          return;
+        }
+        final currentGoalEntry = currentSettings.sortedGoalHistory.lastWhere(
+          (entry) => entry.hasGoal,
+        );
+        await showCalorieGoalStartDialog(
+          context: context,
+          initialGoalStartAt: currentGoalEntry.effectiveChangedAt,
+          onSaveGoalStart: (goalStartAt) {
+            return ref
+                .read(calorieGoalControllerProvider.notifier)
+                .shiftGoalStart(goalStartAt: goalStartAt);
+          },
         );
         return;
       case _DiaryAppBarAction.calculator:
