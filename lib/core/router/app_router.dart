@@ -36,90 +36,44 @@ import 'package:yamt/features/statistics/presentation/statistics_page.dart';
 
 part 'app_router.g.dart';
 
-GoRouter? _previousRouter;
-
 @Riverpod(keepAlive: true)
 GlobalKey<NavigatorState> navigatorKey(Ref ref) {
   return GlobalKey<NavigatorState>(debugLabel: 'rootNavigator');
 }
 
 @Riverpod(keepAlive: true)
+AppRouterRefreshListenable appRouterRefreshListenable(Ref ref) {
+  final listenable = AppRouterRefreshListenable();
+  ref.onDispose(listenable.dispose);
+  ref.listen(authStateChangesProvider, (previous, next) {
+    listenable.refresh();
+  });
+  ref.listen(authProfileSetupCompletedProvider, (previous, next) {
+    listenable.refresh();
+  });
+  ref.listen(calorieGoalOnboardingCompletedProvider, (previous, next) {
+    listenable.refresh();
+  });
+  return listenable;
+}
+
+@Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
-  final previousRouter = _previousRouter;
-  final authState = ref.watch(authStateChangesProvider);
-  final isAuthLoading = authState.isLoading;
-  final currentUser = authState.asData?.value;
-  final isAuthenticated = currentUser != null;
-  final hasCompletedProfileSetup = ref.watch(authProfileSetupCompletedProvider);
-  final needsGuestNameSetup = isAuthenticated && !hasCompletedProfileSetup;
-  final calorieGoalOnboardingState = isAuthenticated && hasCompletedProfileSetup
-      ? ref.watch(calorieGoalOnboardingCompletedProvider)
-      : const AsyncData<bool>(false);
-  final isCalorieGoalOnboardingLoading =
-      isAuthenticated &&
-      hasCompletedProfileSetup &&
-      calorieGoalOnboardingState.isLoading;
-  final hasCompletedCalorieGoalOnboarding =
-      calorieGoalOnboardingState.asData?.value ?? false;
-  final needsCalorieGoalSetup =
-      isAuthenticated &&
-      hasCompletedProfileSetup &&
-      !isCalorieGoalOnboardingLoading &&
-      !hasCompletedCalorieGoalOnboarding;
-  final initialLocation = _resolveRouterInitialLocation(previousRouter);
-
+  final navigatorKey = ref.watch(navigatorKeyProvider);
+  final refreshListenable = ref.watch(appRouterRefreshListenableProvider);
   final router = GoRouter(
-    navigatorKey: ref.watch(navigatorKeyProvider),
-    initialLocation: initialLocation,
-    redirect: (context, state) {
-      final path = state.matchedLocation;
-      final isStartupRoute = path == AppRoutes.root || path == AppRoutes.splash;
-
-      if (isAuthLoading) {
-        return path == AppRoutes.splash ? null : AppRoutes.splash;
-      }
-
-      if (!isAuthenticated) {
-        return path == AppRoutes.welcome ? null : AppRoutes.welcome;
-      }
-
-      if (needsGuestNameSetup) {
-        return path == AppRoutes.guestNameSetup
-            ? null
-            : AppRoutes.guestNameSetup;
-      }
-
-      if (isCalorieGoalOnboardingLoading) {
-        final shouldBlockOnboardingRoute =
-            isStartupRoute || path == AppRoutes.calorieGoalSetup;
-        return shouldBlockOnboardingRoute ? AppRoutes.splash : null;
-      }
-
-      if (needsCalorieGoalSetup) {
-        return path == AppRoutes.calorieGoalSetup
-            ? null
-            : AppRoutes.calorieGoalSetup;
-      }
-
-      if (path == AppRoutes.guestNameSetup) {
-        return AppRoutes.homeInventory;
-      }
-
-      if (path == AppRoutes.calorieGoalSetup) {
-        return AppRoutes.homeInventory;
-      }
-
-      if (path == AppRoutes.welcome || isStartupRoute) {
-        return AppRoutes.homeInventory;
-      }
-
-      return null;
-    },
+    navigatorKey: navigatorKey,
+    initialLocation: AppRoutes.root,
+    refreshListenable: refreshListenable,
+    redirect: (context, state) => _redirectForState(ref, state),
     routes: [
       GoRoute(
         path: AppRoutes.root,
-        redirect: (context, state) =>
-            isAuthenticated ? AppRoutes.homeInventory : AppRoutes.welcome,
+        redirect: (context, state) {
+          final authState = ref.read(authStateChangesProvider);
+          final isAuthenticated = authState.asData?.value != null;
+          return isAuthenticated ? AppRoutes.homeInventory : AppRoutes.welcome;
+        },
       ),
       GoRoute(
         path: AppRoutes.splash,
@@ -274,25 +228,76 @@ GoRouter appRouter(Ref ref) {
       ),
     ],
   );
-
-  _previousRouter = router;
+  ref.onDispose(router.dispose);
   return router;
 }
 
-String _resolveRouterInitialLocation(GoRouter? previousRouter) {
-  if (previousRouter == null) {
-    return AppRoutes.root;
+String? _redirectForState(Ref ref, GoRouterState state) {
+  final authState = ref.read(authStateChangesProvider);
+  final isAuthLoading = authState.isLoading;
+  final currentUser = authState.asData?.value;
+  final isAuthenticated = currentUser != null;
+  final hasCompletedProfileSetup = ref.read(authProfileSetupCompletedProvider);
+  final needsGuestNameSetup = isAuthenticated && !hasCompletedProfileSetup;
+  final calorieGoalOnboardingState = isAuthenticated && hasCompletedProfileSetup
+      ? ref.read(calorieGoalOnboardingCompletedProvider)
+      : const AsyncData<bool>(false);
+  final isCalorieGoalOnboardingLoading =
+      isAuthenticated &&
+      hasCompletedProfileSetup &&
+      calorieGoalOnboardingState.isLoading;
+  final hasCompletedCalorieGoalOnboarding =
+      calorieGoalOnboardingState.asData?.value ?? false;
+  final needsCalorieGoalSetup =
+      isAuthenticated &&
+      hasCompletedProfileSetup &&
+      !isCalorieGoalOnboardingLoading &&
+      !hasCompletedCalorieGoalOnboarding;
+  final path = state.matchedLocation;
+  final isStartupRoute = path == AppRoutes.root || path == AppRoutes.splash;
+
+  if (isAuthLoading) {
+    return path == AppRoutes.splash ? null : AppRoutes.splash;
   }
 
-  try {
-    final location = previousRouter.routeInformationProvider.value.uri
-        .toString();
-    if (location.isEmpty) {
-      return AppRoutes.root;
-    }
-    return location;
-  } catch (_) {
-    return AppRoutes.root;
+  if (!isAuthenticated) {
+    return path == AppRoutes.welcome ? null : AppRoutes.welcome;
+  }
+
+  if (needsGuestNameSetup) {
+    return path == AppRoutes.guestNameSetup ? null : AppRoutes.guestNameSetup;
+  }
+
+  if (isCalorieGoalOnboardingLoading) {
+    final shouldBlockOnboardingRoute =
+        isStartupRoute || path == AppRoutes.calorieGoalSetup;
+    return shouldBlockOnboardingRoute ? AppRoutes.splash : null;
+  }
+
+  if (needsCalorieGoalSetup) {
+    return path == AppRoutes.calorieGoalSetup
+        ? null
+        : AppRoutes.calorieGoalSetup;
+  }
+
+  if (path == AppRoutes.guestNameSetup) {
+    return AppRoutes.homeInventory;
+  }
+
+  if (path == AppRoutes.calorieGoalSetup) {
+    return AppRoutes.homeInventory;
+  }
+
+  if (path == AppRoutes.welcome || isStartupRoute) {
+    return AppRoutes.homeInventory;
+  }
+
+  return null;
+}
+
+class AppRouterRefreshListenable extends ChangeNotifier {
+  void refresh() {
+    notifyListeners();
   }
 }
 

@@ -56,6 +56,55 @@ final class NavigatorKeyProvider
 
 String _$navigatorKeyHash() => r'cca063af6cdf1e440f6eeb4ad84cf0449235735f';
 
+@ProviderFor(appRouterRefreshListenable)
+final appRouterRefreshListenableProvider =
+    AppRouterRefreshListenableProvider._();
+
+final class AppRouterRefreshListenableProvider
+    extends
+        $FunctionalProvider<
+          AppRouterRefreshListenable,
+          AppRouterRefreshListenable,
+          AppRouterRefreshListenable
+        >
+    with $Provider<AppRouterRefreshListenable> {
+  AppRouterRefreshListenableProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appRouterRefreshListenableProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appRouterRefreshListenableHash();
+
+  @$internal
+  @override
+  $ProviderElement<AppRouterRefreshListenable> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  AppRouterRefreshListenable create(Ref ref) {
+    return appRouterRefreshListenable(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AppRouterRefreshListenable value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AppRouterRefreshListenable>(value),
+    );
+  }
+}
+
+String _$appRouterRefreshListenableHash() =>
+    r'b3f3c4242815d0172c3eb3d5f58ad0b1f495ece5';
+
 @ProviderFor(appRouter)
 final appRouterProvider = AppRouterProvider._();
 
@@ -95,4 +144,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'0b86d94730e0a916377dc6c211683f9259c52e48';
+String _$appRouterHash() => r'20df27a6e454fe5669f89cf9a7dc167933880a9f';

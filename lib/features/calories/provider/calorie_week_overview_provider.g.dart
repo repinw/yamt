@@ -92,4 +92,4 @@ final class CalorieWeekOverviewProvider
 }
 
 String _$calorieWeekOverviewHash() =>
-    r'0dcf2721c81f1a6e9f701670df06920b05aa4900';
+    r'5e061bd277e0698ac1b78ad3b348308394e1c9f5';

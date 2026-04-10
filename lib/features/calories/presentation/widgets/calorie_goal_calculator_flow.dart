@@ -132,6 +132,7 @@ class _CalorieGoalCalculatorFlowState
 
   Future<void> _pickGoalStart() async {
     final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
     final now = CalorieGoalStartPicker.roundToMinute(DateTime.now());
     final initialGoalStart = _goalStartAt;
     final pickedDate = await CalorieGoalStartPicker.pickDate(
@@ -173,7 +174,6 @@ class _CalorieGoalCalculatorFlowState
       time: pickedTime,
     );
     if (pickedGoalStart.isAfter(now)) {
-      final messenger = ScaffoldMessenger.of(context);
       messenger.hideCurrentSnackBar();
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.caloriesCalculatorGoalStartFutureError)),
