@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -32,6 +33,8 @@ void main() {
         balanceStartDate: balanceStartDate,
         carryoverBeforeTodayKcal: 400,
         todayFlexibleGoalKcal: 2400,
+        goalStartsInFuture: false,
+        nextGoalStartDate: null,
       );
 
       await tester.pumpWidget(_buildHarness(overview: overview));
@@ -169,6 +172,47 @@ void main() {
     );
   });
 
+  testWidgets('shows the future-start summary for upcoming goals', (
+    tester,
+  ) async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final days = buildDiaryVisibleDays(anchorDay: today);
+    final nextGoalStartDate = today.add(const Duration(days: 1));
+
+    await tester.pumpWidget(
+      _buildHarness(
+        overview: CalorieWeekOverview(
+          days: List<CalorieWeekDayOverview>.unmodifiable([
+            for (final day in days)
+              CalorieWeekDayOverview(
+                date: day,
+                totalKcal: 0,
+                goalKcal: 2000,
+                entryCount: 0,
+              ),
+          ]),
+          totalConsumedKcal: 0,
+          totalGoalKcal: 14000,
+          remainingKcal: 14000,
+          balanceStartDate: today,
+          carryoverBeforeTodayKcal: 0,
+          todayFlexibleGoalKcal: 2000,
+          goalStartsInFuture: true,
+          nextGoalStartDate: nextGoalStartDate,
+        ),
+      ),
+    );
+
+    final expectedDate = DateFormat.yMMMd('en').format(nextGoalStartDate);
+    expect(
+      find.text(
+        'Your goal starts on $expectedDate. '
+        'The balance will begin automatically then.',
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('renders warning color for a day above goal', (tester) async {
     final today = normalizeDiaryDay(DateTime.now());
     final days = buildDiaryVisibleDays(anchorDay: today);
@@ -192,6 +236,8 @@ void main() {
           balanceStartDate: days.first,
           carryoverBeforeTodayKcal: 0,
           todayFlexibleGoalKcal: 2000,
+          goalStartsInFuture: false,
+          nextGoalStartDate: null,
         ),
       ),
     );
@@ -238,6 +284,8 @@ CalorieWeekOverview _overview({
     balanceStartDate: balanceStartDate,
     carryoverBeforeTodayKcal: carryoverBeforeTodayKcal,
     todayFlexibleGoalKcal: 2400,
+    goalStartsInFuture: false,
+    nextGoalStartDate: null,
   );
 }
 

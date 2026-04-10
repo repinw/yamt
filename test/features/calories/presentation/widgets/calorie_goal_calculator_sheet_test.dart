@@ -121,6 +121,10 @@ void main() {
       find.byKey(CalorieGoalCalculatorSheetKeys.resultsCard),
       findsOneWidget,
     );
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.goalStartCard),
+      findsOneWidget,
+    );
     expect(find.text('1,680 kcal'), findsOneWidget);
   });
 

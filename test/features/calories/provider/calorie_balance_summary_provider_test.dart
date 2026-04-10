@@ -211,6 +211,88 @@ void main() {
     },
   );
 
+  test('calorieBalanceSummary prorates todays goal from first goal time '
+      'when no earlier diary entries exist today', () async {
+    final now = DateTime(2026, 4, 10, 19);
+    final day = normalizeDiaryDay(now);
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'after-goal',
+          loggedAt: day.add(const Duration(hours: 18)),
+          totalKcal: 400,
+        ),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: null,
+        effectiveDate: day,
+        updatedAt: DateTime(2026, 4, 10, 16),
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+        calorieBalanceNowProvider.overrideWithValue(() => now),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(calorieDayControllerProvider.notifier).setDay(day);
+
+    final summary = await container.read(calorieBalanceSummaryProvider.future);
+
+    expect(summary.baseGoalKcal, closeTo(750, 0.001));
+    expect(summary.flexibleGoalKcal, closeTo(750, 0.001));
+    expect(summary.paceRatio, closeTo(0.5, 0.0001));
+    expect(summary.pacedGoalKcal, closeTo(375, 0.001));
+  });
+
+  test('calorieBalanceSummary keeps full-day pacing when diary already '
+      'had entries before goal was first set today', () async {
+    final now = DateTime(2026, 4, 10, 19);
+    final day = normalizeDiaryDay(now);
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'before-goal',
+          loggedAt: day.add(const Duration(hours: 12)),
+          totalKcal: 300,
+        ),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: null,
+        effectiveDate: day,
+        updatedAt: DateTime(2026, 4, 10, 16),
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+        calorieBalanceNowProvider.overrideWithValue(() => now),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(calorieDayControllerProvider.notifier).setDay(day);
+
+    final summary = await container.read(calorieBalanceSummaryProvider.future);
+
+    expect(summary.paceRatio, closeTo(13 / 16, 0.0001));
+    expect(summary.pacedGoalKcal, closeTo(1625, 0.001));
+  });
+
   test(
     'calorieBalanceSummary uses the final flexible goal for past days',
     () async {
@@ -301,6 +383,57 @@ void main() {
       expect(summary.carryoverKcal, 12000);
       expect(summary.flexibleGoalKcal, 14000);
       expect(summary.pacedGoalKcal, 13000);
+    },
+  );
+
+  test(
+    'calorieBalanceSummary stays neutral before a future goal start',
+    () async {
+      final now = DateTime(2026, 4, 10, 18, 30);
+      final day = normalizeDiaryDay(now);
+      final tomorrow = day.add(const Duration(days: 1));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'today',
+            loggedAt: day.add(const Duration(hours: 12)),
+            totalKcal: 900,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2100,
+          calculatorProfile: null,
+          effectiveDate: tomorrow,
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieBalanceNowProvider.overrideWithValue(() => now),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(calorieDayControllerProvider.notifier).setDay(day);
+
+      final summary = await container.read(
+        calorieBalanceSummaryProvider.future,
+      );
+
+      expect(summary.balanceStartDate, tomorrow);
+      expect(summary.baseGoalKcal, 0);
+      expect(summary.carryoverKcal, 0);
+      expect(summary.flexibleGoalKcal, 0);
+      expect(summary.pacedGoalKcal, 0);
+      expect(summary.consumedKcal, 0);
+      expect(summary.deltaKcal, 0);
     },
   );
 
@@ -449,6 +582,28 @@ void main() {
       DateTime(2026, 4, 10, 16, 40),
     );
   });
+
+  test(
+    'resolveCalorieBalanceRecoveryTime uses the effective pace window start',
+    () {
+      final summary = _summaryData(
+        goalMode: CalorieGoalMode.maintain,
+        deltaKcal: 200,
+        referenceNow: DateTime(2026, 4, 10, 18),
+        baseGoalKcal: 2000,
+        flexibleGoalKcal: 2000,
+        pacedGoalKcal: 0,
+        consumedKcal: 200,
+        paceRatio: 0,
+        deadZoneKcal: 0,
+      ).copyWithPaceWindowStart(DateTime(2026, 4, 10, 18));
+
+      expect(
+        resolveCalorieBalanceRecoveryTime(summary),
+        DateTime(2026, 4, 10, 18, 24),
+      );
+    },
+  );
 }
 
 List<CalorieEntry> _historyEntries(DateTime selectedDay) {
@@ -485,6 +640,12 @@ CalorieBalanceSummaryData _summaryData({
     referenceNow: now,
     windowStartDate: now.subtract(const Duration(days: 6)),
     balanceStartDate: now.subtract(const Duration(days: 6)),
+    paceWindowStart: DateTime(
+      resolvedSelectedDay.year,
+      resolvedSelectedDay.month,
+      resolvedSelectedDay.day,
+      6,
+    ),
     baseGoalKcal: baseGoalKcal,
     carryoverKcal: carryoverKcal,
     goalMode: goalMode,
@@ -496,4 +657,26 @@ CalorieBalanceSummaryData _summaryData({
     deadZoneKcal: deadZoneKcal,
     rangeKcal: rangeKcal,
   );
+}
+
+extension on CalorieBalanceSummaryData {
+  CalorieBalanceSummaryData copyWithPaceWindowStart(DateTime paceWindowStart) {
+    return CalorieBalanceSummaryData(
+      selectedDay: selectedDay,
+      referenceNow: referenceNow,
+      windowStartDate: windowStartDate,
+      balanceStartDate: balanceStartDate,
+      paceWindowStart: paceWindowStart,
+      baseGoalKcal: baseGoalKcal,
+      carryoverKcal: carryoverKcal,
+      goalMode: goalMode,
+      flexibleGoalKcal: flexibleGoalKcal,
+      pacedGoalKcal: pacedGoalKcal,
+      consumedKcal: consumedKcal,
+      deltaKcal: deltaKcal,
+      paceRatio: paceRatio,
+      deadZoneKcal: deadZoneKcal,
+      rangeKcal: rangeKcal,
+    );
+  }
 }

@@ -93,6 +93,12 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
                 message: l10n.caloriesCalculatorMinimumGoalWarning(1200),
               ),
             ],
+            const SizedBox(height: AppSpacing.md),
+            CalorieGoalCalculatorGoalStartCard(
+              goalStartAt: _goalStartAt,
+              enabled: !state.isSaving,
+              onChangeRequested: _pickGoalStart,
+            ),
           ],
         );
     }

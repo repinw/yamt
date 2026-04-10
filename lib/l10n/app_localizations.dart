@@ -2000,13 +2000,19 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesSetGoalAction.
   ///
   /// In en, this message translates to:
-  /// **'Set goal'**
+  /// **'Set goal manually'**
   String get caloriesSetGoalAction;
+
+  /// No description provided for @caloriesShiftGoalStartAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Move goal start'**
+  String get caloriesShiftGoalStartAction;
 
   /// No description provided for @caloriesCalculatorAction.
   ///
   /// In en, this message translates to:
-  /// **'Calorie calculator'**
+  /// **'Recalculate goal'**
   String get caloriesCalculatorAction;
 
   /// No description provided for @caloriesGoalDialogTitle.
@@ -2050,6 +2056,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not clear calorie goal.'**
   String get caloriesGoalClearFailed;
+
+  /// No description provided for @caloriesGoalStartDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move goal start'**
+  String get caloriesGoalStartDialogTitle;
+
+  /// No description provided for @caloriesGoalStartDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get caloriesGoalStartDateLabel;
+
+  /// No description provided for @caloriesGoalStartTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get caloriesGoalStartTimeLabel;
+
+  /// No description provided for @caloriesGoalStartSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update goal start.'**
+  String get caloriesGoalStartSaveFailed;
 
   /// No description provided for @caloriesCalculatorSheetTitle.
   ///
@@ -2320,6 +2350,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Daily calorie target'**
   String get caloriesCalculatorDailyGoalLabel;
+
+  /// No description provided for @caloriesCalculatorGoalStartLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal start'**
+  String get caloriesCalculatorGoalStartLabel;
+
+  /// No description provided for @caloriesCalculatorGoalStartHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your calorie target history begins from this point.'**
+  String get caloriesCalculatorGoalStartHint;
+
+  /// No description provided for @caloriesCalculatorGoalStartChangeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get caloriesCalculatorGoalStartChangeAction;
+
+  /// No description provided for @caloriesCalculatorGoalStartFutureError.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal start can\'t be in the future.'**
+  String get caloriesCalculatorGoalStartFutureError;
 
   /// No description provided for @caloriesCalculatorMinimumGoalWarning.
   ///
@@ -2596,6 +2650,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You are balanced since your goal started. Today\'s target stays unchanged.'**
   String get caloriesWeekBalanceStable;
+
+  /// No description provided for @caloriesWeekBalanceStartsLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Your goal starts on {date}. The balance will begin automatically then.'**
+  String caloriesWeekBalanceStartsLater(String date);
 
   /// No description provided for @caloriesWeekBalanceStartedToday.
   ///

@@ -430,7 +430,9 @@ CalorieDayViewData _buildCalorieDayViewData({
   required double goalKcal,
 }) {
   final aggregate = _aggregate(entries);
-  final remaining = goalKcal - aggregate.summary.totalKcal;
+  final remaining = goalKcal <= 0
+      ? 0.0
+      : goalKcal - aggregate.summary.totalKcal;
   final progress = goalKcal <= 0
       ? 0.0
       : (aggregate.summary.totalKcal / goalKcal).clamp(0.0, 1.0).toDouble();

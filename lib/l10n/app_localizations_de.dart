@@ -998,10 +998,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesTodayAction => 'Heute';
 
   @override
-  String get caloriesSetGoalAction => 'Ziel setzen';
+  String get caloriesSetGoalAction => 'Ziel manuell setzen';
 
   @override
-  String get caloriesCalculatorAction => 'Kalorienrechner';
+  String get caloriesShiftGoalStartAction => 'Zielstart verschieben';
+
+  @override
+  String get caloriesCalculatorAction => 'Ziel neu berechnen';
 
   @override
   String get caloriesGoalDialogTitle => 'Tagesziel setzen';
@@ -1023,6 +1026,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesGoalClearFailed => 'Kalorienziel konnte nicht gelöscht werden.';
+
+  @override
+  String get caloriesGoalStartDialogTitle => 'Zielstart verschieben';
+
+  @override
+  String get caloriesGoalStartDateLabel => 'Datum';
+
+  @override
+  String get caloriesGoalStartTimeLabel => 'Uhrzeit';
+
+  @override
+  String get caloriesGoalStartSaveFailed => 'Der Zielstart konnte nicht aktualisiert werden.';
 
   @override
   String get caloriesCalculatorSheetTitle => 'Kalorienrechner';
@@ -1160,6 +1175,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesCalculatorDailyGoalLabel => 'Tägliches Kalorienziel';
+
+  @override
+  String get caloriesCalculatorGoalStartLabel => 'Zielstart';
+
+  @override
+  String get caloriesCalculatorGoalStartHint => 'Dein Kalorienziel-Verlauf beginnt ab diesem Zeitpunkt.';
+
+  @override
+  String get caloriesCalculatorGoalStartChangeAction => 'Ändern';
+
+  @override
+  String get caloriesCalculatorGoalStartFutureError => 'Der Zielstart darf nicht in der Zukunft liegen.';
 
   @override
   String caloriesCalculatorMinimumGoalWarning(int minimumKcal) {
@@ -1334,6 +1361,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesWeekBalanceStable => 'Seit Zielstart bist du ausgeglichen. Dein heutiges Ziel bleibt unverändert.';
+
+  @override
+  String caloriesWeekBalanceStartsLater(String date) {
+    return 'Dein Ziel startet am $date. Die Bilanz beginnt dann automatisch.';
+  }
 
   @override
   String get caloriesWeekBalanceStartedToday => 'Dein Zielstart ist heute. Die Bilanz baut sich ab jetzt auf.';

@@ -36,6 +36,8 @@ import 'package:yamt/features/statistics/presentation/statistics_page.dart';
 
 part 'app_router.g.dart';
 
+GoRouter? _previousRouter;
+
 @Riverpod(keepAlive: true)
 GlobalKey<NavigatorState> navigatorKey(Ref ref) {
   return GlobalKey<NavigatorState>(debugLabel: 'rootNavigator');
@@ -43,6 +45,7 @@ GlobalKey<NavigatorState> navigatorKey(Ref ref) {
 
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
+  final previousRouter = _previousRouter;
   final authState = ref.watch(authStateChangesProvider);
   final isAuthLoading = authState.isLoading;
   final currentUser = authState.asData?.value;
@@ -63,10 +66,11 @@ GoRouter appRouter(Ref ref) {
       hasCompletedProfileSetup &&
       !isCalorieGoalOnboardingLoading &&
       !hasCompletedCalorieGoalOnboarding;
+  final initialLocation = _resolveRouterInitialLocation(previousRouter);
 
-  return GoRouter(
+  final router = GoRouter(
     navigatorKey: ref.watch(navigatorKeyProvider),
-    initialLocation: AppRoutes.root,
+    initialLocation: initialLocation,
     redirect: (context, state) {
       final path = state.matchedLocation;
       final isStartupRoute = path == AppRoutes.root || path == AppRoutes.splash;
@@ -86,7 +90,9 @@ GoRouter appRouter(Ref ref) {
       }
 
       if (isCalorieGoalOnboardingLoading) {
-        return path == AppRoutes.splash ? null : AppRoutes.splash;
+        final shouldBlockOnboardingRoute =
+            isStartupRoute || path == AppRoutes.calorieGoalSetup;
+        return shouldBlockOnboardingRoute ? AppRoutes.splash : null;
       }
 
       if (needsCalorieGoalSetup) {
@@ -268,6 +274,26 @@ GoRouter appRouter(Ref ref) {
       ),
     ],
   );
+
+  _previousRouter = router;
+  return router;
+}
+
+String _resolveRouterInitialLocation(GoRouter? previousRouter) {
+  if (previousRouter == null) {
+    return AppRoutes.root;
+  }
+
+  try {
+    final location = previousRouter.routeInformationProvider.value.uri
+        .toString();
+    if (location.isEmpty) {
+      return AppRoutes.root;
+    }
+    return location;
+  } catch (_) {
+    return AppRoutes.root;
+  }
 }
 
 class _AuthLoadingPage extends StatelessWidget {

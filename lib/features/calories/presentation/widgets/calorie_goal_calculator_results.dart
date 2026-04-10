@@ -107,6 +107,71 @@ class CalorieGoalCalculatorWarningCard extends StatelessWidget {
   }
 }
 
+class CalorieGoalCalculatorGoalStartCard extends StatelessWidget {
+  const CalorieGoalCalculatorGoalStartCard({
+    super.key,
+    required this.goalStartAt,
+    required this.onChangeRequested,
+    this.enabled = true,
+  });
+
+  final DateTime goalStartAt;
+  final VoidCallback onChangeRequested;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final dateFormat = DateFormat.yMMMd(locale).add_Hm();
+
+    return DecoratedBox(
+      key: CalorieGoalCalculatorSheetKeys.goalStartCard,
+      decoration: BoxDecoration(
+        border: Border.all(color: colors.outlineVariant),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+      ),
+      child: Padding(
+        padding: AppInsets.card,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.caloriesCalculatorGoalStartLabel,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              dateFormat.format(goalStartAt),
+              key: CalorieGoalCalculatorSheetKeys.goalStartValue,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              l10n.caloriesCalculatorGoalStartHint,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            OutlinedButton.icon(
+              key: CalorieGoalCalculatorSheetKeys.goalStartChangeButton,
+              onPressed: enabled ? onChangeRequested : null,
+              icon: const Icon(Icons.schedule_rounded),
+              label: Text(l10n.caloriesCalculatorGoalStartChangeAction),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _ResultRow extends StatelessWidget {
   const _ResultRow({required this.label, required this.value});
 

@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
@@ -390,7 +391,13 @@ WeekBalanceSummaryBannerContent resolveWeekBalanceSummaryBannerContent({
       ? AppInventoryEditorial.warning.withValues(alpha: 0.08)
       : AppInventoryEditorial.primary.withValues(alpha: 0.08);
   final absoluteCarryover = carryoverBeforeTodayKcal.abs().round();
+  final futureGoalStartLabel = _formatFutureGoalStartDate(
+    overview.nextGoalStartDate,
+    l10n.localeName,
+  );
   final message = switch ((isGoalStartToday, carryoverBeforeTodayKcal)) {
+    _ when overview.goalStartsInFuture && futureGoalStartLabel != null =>
+      l10n.caloriesWeekBalanceStartsLater(futureGoalStartLabel),
     (true, _) => l10n.caloriesWeekBalanceStartedToday,
     (_, > 0) => l10n.caloriesWeekBalanceSaved(absoluteCarryover),
     (_, < 0) => l10n.caloriesWeekBalanceOverspent(absoluteCarryover),
@@ -430,7 +437,16 @@ CalorieWeekOverview _fallbackWeekOverview({required double goalKcal}) {
     balanceStartDate: visibleDays.first,
     carryoverBeforeTodayKcal: 0,
     todayFlexibleGoalKcal: goalKcal,
+    goalStartsInFuture: false,
+    nextGoalStartDate: null,
   );
+}
+
+String? _formatFutureGoalStartDate(DateTime? date, String localeName) {
+  if (date == null) {
+    return null;
+  }
+  return DateFormat.yMMMd(localeName).format(date);
 }
 
 void _goToPreviousVisibleDay(WidgetRef ref) {

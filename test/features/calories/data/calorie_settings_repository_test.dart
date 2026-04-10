@@ -96,6 +96,7 @@ void main() {
     expect(readBack.calculatorProfile?.goalSpeedKgPerWeek, 0.5);
     expect(readBack.goalHistory, hasLength(1));
     expect(readBack.goalHistory.single.effectiveDate, DateTime(2026, 2, 25));
+    expect(readBack.goalHistory.single.changedAt, DateTime(2026, 2, 25, 11));
   });
 
   test('repository returns empty defaults when no user is signed in', () async {

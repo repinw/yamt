@@ -20,6 +20,9 @@ CalorieGoalHistoryEntry _$CalorieGoalHistoryEntryFromJson(
   effectiveDate: const FlexibleDateTimeConverter().fromJson(
     json['effective_date'],
   ),
+  changedAt: const NullableFlexibleDateTimeConverter().fromJson(
+    json['changed_at'],
+  ),
 );
 
 Map<String, dynamic> _$CalorieGoalHistoryEntryToJson(
@@ -31,6 +34,9 @@ Map<String, dynamic> _$CalorieGoalHistoryEntryToJson(
   'calculator_profile': instance.calculatorProfile?.toJson(),
   'effective_date': const FlexibleDateTimeConverter().toJson(
     instance.effectiveDate,
+  ),
+  'changed_at': const NullableFlexibleDateTimeConverter().toJson(
+    instance.changedAt,
   ),
 };
 

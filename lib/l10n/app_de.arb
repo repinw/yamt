@@ -547,8 +547,9 @@
   "caloriesRetryAction": "Erneut versuchen",
   "caloriesAuthRequired": "Bitte melde dich an, um Kalorien zu verwalten.",
   "caloriesTodayAction": "Heute",
-  "caloriesSetGoalAction": "Ziel setzen",
-  "caloriesCalculatorAction": "Kalorienrechner",
+  "caloriesSetGoalAction": "Ziel manuell setzen",
+  "caloriesShiftGoalStartAction": "Zielstart verschieben",
+  "caloriesCalculatorAction": "Ziel neu berechnen",
   "caloriesGoalDialogTitle": "Tagesziel setzen",
   "caloriesGoalFieldLabel": "Tagesziel in kcal",
   "caloriesGoalSaveAction": "Ziel speichern",
@@ -559,6 +560,11 @@
       "Kalorienziel konnte nicht gespeichert werden.",
   "caloriesGoalClearFailed":
       "Kalorienziel konnte nicht gelöscht werden.",
+  "caloriesGoalStartDialogTitle": "Zielstart verschieben",
+  "caloriesGoalStartDateLabel": "Datum",
+  "caloriesGoalStartTimeLabel": "Uhrzeit",
+  "caloriesGoalStartSaveFailed":
+      "Der Zielstart konnte nicht aktualisiert werden.",
   "caloriesCalculatorSheetTitle": "Kalorienrechner",
   "caloriesCalculatorStepProgress": "Schritt {current} von {total}",
   "@caloriesCalculatorStepProgress": {
@@ -629,6 +635,12 @@
   "caloriesCalculatorBmrLabel": "Grundumsatz",
   "caloriesCalculatorTdeeLabel": "Erhaltungskalorien",
   "caloriesCalculatorDailyGoalLabel": "Tägliches Kalorienziel",
+  "caloriesCalculatorGoalStartLabel": "Zielstart",
+  "caloriesCalculatorGoalStartHint":
+      "Dein Kalorienziel-Verlauf beginnt ab diesem Zeitpunkt.",
+  "caloriesCalculatorGoalStartChangeAction": "Ändern",
+  "caloriesCalculatorGoalStartFutureError":
+      "Der Zielstart darf nicht in der Zukunft liegen.",
   "caloriesCalculatorMinimumGoalWarning":
       "Beim Abnehmen darf das tägliche Ziel nicht unter {minimumKcal} kcal fallen. Das Ergebnis wurde auf dieses Minimum begrenzt.",
   "@caloriesCalculatorMinimumGoalWarning": {
@@ -820,6 +832,15 @@
   },
   "caloriesWeekBalanceStable":
       "Seit Zielstart bist du ausgeglichen. Dein heutiges Ziel bleibt unverändert.",
+  "caloriesWeekBalanceStartsLater":
+      "Dein Ziel startet am {date}. Die Bilanz beginnt dann automatisch.",
+  "@caloriesWeekBalanceStartsLater": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "caloriesWeekBalanceStartedToday":
       "Dein Zielstart ist heute. Die Bilanz baut sich ab jetzt auf.",
   "caloriesSectionEmptyState": "Noch keine Einträge.",

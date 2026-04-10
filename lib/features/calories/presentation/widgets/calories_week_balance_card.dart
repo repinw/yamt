@@ -56,6 +56,8 @@ class CaloriesWeekBalanceCard extends StatelessWidget {
             _WeekBalanceSummary(
               carryoverBeforeTodayKcal: overview.carryoverBeforeTodayKcal,
               balanceStartDate: overview.balanceStartDate,
+              goalStartsInFuture: overview.goalStartsInFuture,
+              nextGoalStartDate: overview.nextGoalStartDate,
             ),
           ],
         ),
@@ -247,10 +249,14 @@ class _WeekBalanceSummary extends StatelessWidget {
   const _WeekBalanceSummary({
     required this.carryoverBeforeTodayKcal,
     required this.balanceStartDate,
+    required this.goalStartsInFuture,
+    required this.nextGoalStartDate,
   });
 
   final double carryoverBeforeTodayKcal;
   final DateTime balanceStartDate;
+  final bool goalStartsInFuture;
+  final DateTime? nextGoalStartDate;
 
   @override
   Widget build(BuildContext context) {
@@ -265,8 +271,15 @@ class _WeekBalanceSummary extends StatelessWidget {
         ? AppInventoryEditorial.warning.withValues(alpha: 0.08)
         : AppInventoryEditorial.primary.withValues(alpha: 0.08);
     final absoluteCarryover = carryoverBeforeTodayKcal.abs().round();
+    final futureGoalStartLabel = nextGoalStartDate == null
+        ? null
+        : DateFormat.yMMMd(
+            Localizations.localeOf(context).toLanguageTag(),
+          ).format(nextGoalStartDate!);
 
     final message = switch ((isGoalStartToday, carryoverBeforeTodayKcal)) {
+      _ when goalStartsInFuture && futureGoalStartLabel != null =>
+        l10n.caloriesWeekBalanceStartsLater(futureGoalStartLabel),
       (true, _) => l10n.caloriesWeekBalanceStartedToday,
       (_, > 0) => l10n.caloriesWeekBalanceSaved(absoluteCarryover),
       (_, < 0) => l10n.caloriesWeekBalanceOverspent(absoluteCarryover),

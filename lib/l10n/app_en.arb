@@ -534,8 +534,9 @@
   "caloriesRetryAction": "Retry",
   "caloriesAuthRequired": "Please sign in to manage calories.",
   "caloriesTodayAction": "Today",
-  "caloriesSetGoalAction": "Set goal",
-  "caloriesCalculatorAction": "Calorie calculator",
+  "caloriesSetGoalAction": "Set goal manually",
+  "caloriesShiftGoalStartAction": "Move goal start",
+  "caloriesCalculatorAction": "Recalculate goal",
   "caloriesGoalDialogTitle": "Set daily goal",
   "caloriesGoalFieldLabel": "Daily kcal goal",
   "caloriesGoalSaveAction": "Save goal",
@@ -543,6 +544,10 @@
   "caloriesGoalInvalidValue": "Please enter a number greater than zero.",
   "caloriesGoalSaveFailed": "Could not save calorie goal.",
   "caloriesGoalClearFailed": "Could not clear calorie goal.",
+  "caloriesGoalStartDialogTitle": "Move goal start",
+  "caloriesGoalStartDateLabel": "Date",
+  "caloriesGoalStartTimeLabel": "Time",
+  "caloriesGoalStartSaveFailed": "Could not update goal start.",
   "caloriesCalculatorSheetTitle": "Calorie calculator",
   "caloriesCalculatorOnboardingTitle": "Set your calorie goal",
   "caloriesCalculatorOnboardingSubtitle":
@@ -608,6 +613,12 @@
   "caloriesCalculatorBmrLabel": "Basal metabolic rate",
   "caloriesCalculatorTdeeLabel": "Maintenance calories",
   "caloriesCalculatorDailyGoalLabel": "Daily calorie target",
+  "caloriesCalculatorGoalStartLabel": "Goal start",
+  "caloriesCalculatorGoalStartHint":
+      "Your calorie target history begins from this point.",
+  "caloriesCalculatorGoalStartChangeAction": "Change",
+  "caloriesCalculatorGoalStartFutureError":
+      "Goal start can't be in the future.",
   "caloriesCalculatorMinimumGoalWarning":
       "For weight loss, the daily target cannot go below {minimumKcal} kcal. The result was capped at this minimum.",
   "@caloriesCalculatorMinimumGoalWarning": {
@@ -795,6 +806,15 @@
   },
   "caloriesWeekBalanceStable":
       "You are balanced since your goal started. Today's target stays unchanged.",
+  "caloriesWeekBalanceStartsLater":
+      "Your goal starts on {date}. The balance will begin automatically then.",
+  "@caloriesWeekBalanceStartsLater": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "caloriesWeekBalanceStartedToday":
       "Your goal starts today. The balance will build up from here.",
   "caloriesSectionEmptyState": "No entries yet.",
