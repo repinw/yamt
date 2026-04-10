@@ -13,6 +13,8 @@ import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/product_search/data/'
+    'manual_product_speech_service.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_manual_product_page.dart';
 import 'package:yamt/features/scanner/provider/'
@@ -25,6 +27,7 @@ Widget _wrapPage({
   OffProductSearchRepository? offRepository,
   CalorieNutritionOcrRepositoryContract? ocrRepository,
   InventoryItemRepository? inventoryRepository,
+  ManualProductSpeechService? speechService,
   bool includeStoreInSearch = true,
   bool includeWeightInSearch = true,
   Locale locale = const Locale('de'),
@@ -38,6 +41,8 @@ Widget _wrapPage({
         offProductSearchRepositoryProvider.overrideWithValue(offRepository),
       if (ocrRepository != null)
         calorieNutritionOcrRepositoryProvider.overrideWithValue(ocrRepository),
+      if (speechService != null)
+        manualProductSpeechServiceProvider.overrideWithValue(speechService),
     ],
     child: MaterialApp(
       locale: locale,
@@ -169,6 +174,67 @@ class _FakeNutritionOcrRepository
     required String barcode,
   }) {
     return onScanNutritionLabel(barcode);
+  }
+}
+
+class _FakeManualProductSpeechService implements ManualProductSpeechService {
+  ManualProductSpeechFailure? startFailure;
+  int startCallCount = 0;
+  int stopCallCount = 0;
+  int cancelCallCount = 0;
+  bool _isListening = false;
+  ValueChanged<ManualProductSpeechRecognition>? _onResult;
+  ValueChanged<bool>? _onListeningStateChanged;
+  ValueChanged<ManualProductSpeechFailure>? _onError;
+
+  @override
+  bool get isListening => _isListening;
+
+  @override
+  Future<ManualProductSpeechFailure?> startListening({
+    required ValueChanged<ManualProductSpeechRecognition> onResult,
+    required ValueChanged<bool> onListeningStateChanged,
+    required ValueChanged<ManualProductSpeechFailure> onError,
+  }) async {
+    startCallCount++;
+    _onResult = onResult;
+    _onListeningStateChanged = onListeningStateChanged;
+    _onError = onError;
+
+    final failure = startFailure;
+    if (failure != null) {
+      return failure;
+    }
+
+    _isListening = true;
+    onListeningStateChanged(true);
+    return null;
+  }
+
+  @override
+  Future<void> stopListening() async {
+    stopCallCount++;
+    _isListening = false;
+    _onListeningStateChanged?.call(false);
+  }
+
+  @override
+  Future<void> cancelListening() async {
+    cancelCallCount++;
+    _isListening = false;
+    _onListeningStateChanged?.call(false);
+  }
+
+  void emitTranscript(String transcript, {bool isFinal = false}) {
+    _onResult?.call(
+      ManualProductSpeechRecognition(transcript: transcript, isFinal: isFinal),
+    );
+  }
+
+  void emitError(ManualProductSpeechFailure failure) {
+    _isListening = false;
+    _onListeningStateChanged?.call(false);
+    _onError?.call(failure);
   }
 }
 
@@ -395,6 +461,106 @@ void main() {
     expect(kcalField.controller?.text, '2');
     expect(find.text('Booster'), findsOneWidget);
     expect(find.text('330 ml'), findsAtLeastNWidgets(1));
+  });
+
+  testWidgets('voice search fills the query and triggers a lookup', (
+    tester,
+  ) async {
+    final speechService = _FakeManualProductSpeechService();
+    final offRepository =
+        _RecordingOffProductSearchRepository(const <OffProductSearchResult>[
+          OffProductSearchResult(
+            code: '4310000000001',
+            name: 'Chocolate Milk',
+            brand: 'Brand',
+            score: 100,
+          ),
+        ]);
+
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item().copyWith(name: 'Milk'),
+        offRepository: offRepository,
+        speechService: speechService,
+      ),
+    );
+    await tester.pump();
+
+    await _openSearchEditor(tester);
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+    );
+    await tester.pump();
+
+    expect(speechService.startCallCount, 1);
+
+    speechService.emitTranscript('Chocolate Milk');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pump();
+
+    final searchField = tester.widget<TextField>(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+    );
+
+    expect(searchField.controller?.text, 'Chocolate Milk');
+    expect(offRepository.lastQuery, 'Chocolate Milk');
+    expect(
+      find.byKey(
+        const Key('receipt_review_manual_search_result_4310000000001'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('voice search button is visible in the launcher', (tester) async {
+    final speechService = _FakeManualProductSpeechService();
+
+    await tester.pumpWidget(
+      _wrapPage(item: _item(), speechService: speechService),
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(speechService.startCallCount, 1);
+    expect(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('voice search permission failure shows a snackbar', (
+    tester,
+  ) async {
+    final speechService = _FakeManualProductSpeechService()
+      ..startFailure = ManualProductSpeechFailure.permissionDenied;
+
+    await tester.pumpWidget(
+      _wrapPage(item: _item(), speechService: speechService),
+    );
+    await tester.pump();
+
+    await _openSearchEditor(tester);
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+    );
+    await tester.pump();
+
+    expect(
+      find.text(
+        'Bitte erlaube Mikrofonzugriff, um die Sprachsuche zu verwenden.',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets(

@@ -47,7 +47,11 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs camera access to scan receipts.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs microphone access for voice-based product search.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app may access your photo library to select receipt images.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app uses speech recognition to fill product searches.</string>
 </dict>
 </plist>

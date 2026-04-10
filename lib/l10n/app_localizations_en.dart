@@ -438,6 +438,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryManualAddEatNowRequiresNutrition => 'Only available when nutrition values are present.';
 
   @override
+  String get inventoryManualAddVoiceSearchStartTooltip => 'Start voice search';
+
+  @override
+  String get inventoryManualAddVoiceSearchStopTooltip => 'Stop voice search';
+
+  @override
+  String get inventoryManualAddVoiceSearchUnavailable => 'Voice search is not currently supported on this device.';
+
+  @override
+  String get inventoryManualAddVoiceSearchPermissionDenied => 'Please allow microphone access to use voice search.';
+
+  @override
+  String get inventoryManualAddVoiceSearchFailed => 'Voice search could not be started. Please try again.';
+
+  @override
   String get inventoryManualAddStoreName => 'Added manually';
 
   @override
