@@ -4,17 +4,17 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:yamt/core/provider/app_version_provider.dart';
 
 void main() {
-  tearDown(resetAppVersionProviderDebugHooks);
-
-  test('returns version and build number when both are present', () async {
-    debugPackageInfoLoader = () async => PackageInfo(
+  setUp(() {
+    PackageInfo.setMockInitialValues(
       appName: 'YAMT',
       packageName: 'de.yamt.app',
       version: '1.0.0',
       buildNumber: '42',
       buildSignature: '',
     );
+  });
 
+  test('returns version and build number when both are present', () async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     final value = await container.read(appVersionProvider.future);
@@ -23,7 +23,7 @@ void main() {
   });
 
   test('returns only version when build number is empty', () async {
-    debugPackageInfoLoader = () async => PackageInfo(
+    PackageInfo.setMockInitialValues(
       appName: 'YAMT',
       packageName: 'de.yamt.app',
       version: '1.0.0',
@@ -39,7 +39,7 @@ void main() {
   });
 
   test('returns only version when build number equals version', () async {
-    debugPackageInfoLoader = () async => PackageInfo(
+    PackageInfo.setMockInitialValues(
       appName: 'YAMT',
       packageName: 'de.yamt.app',
       version: '1.0.0',
