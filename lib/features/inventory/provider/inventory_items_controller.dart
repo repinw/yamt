@@ -20,6 +20,7 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
@@ -50,9 +51,8 @@ List<InventoryItem>? buildReducedItems({
     return null;
   }
   final reducedAmount = amount > maxReducible ? maxReducible : amount;
-  final effectiveConsumedAt = _latestConsumedAt(
-    current: item.lastConsumedAt,
-    candidate: consumedAt ?? DateTime.now(),
+  final effectiveConsumedAt = item.latestConsumedAtOr(
+    consumedAt ?? DateTime.now(),
   );
 
   final nextItems = List<InventoryItem>.from(currentItems);
@@ -142,16 +142,6 @@ List<InventoryItem>? buildRestoredItems({
         : restoredItem.lastConsumedAt,
   );
   return nextItems;
-}
-
-DateTime _latestConsumedAt({
-  required DateTime? current,
-  required DateTime candidate,
-}) {
-  if (current == null || candidate.isAfter(current)) {
-    return candidate;
-  }
-  return current;
 }
 
 @visibleForTesting
@@ -736,10 +726,7 @@ class InventoryItemsController extends _$InventoryItemsController {
           currentAmount: currentAmount,
           lastConsumedAt: consumedAt == null
               ? currentItem.lastConsumedAt
-              : _latestConsumedAt(
-                  current: currentItem.lastConsumedAt,
-                  candidate: consumedAt,
-                ),
+              : currentItem.latestConsumedAtOr(consumedAt),
         );
         _persistedItems = nextItems;
         _publishVisibleItems();

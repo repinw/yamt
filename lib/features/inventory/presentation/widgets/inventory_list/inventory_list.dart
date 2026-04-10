@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_search_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -112,11 +115,14 @@ class InventoryList extends ConsumerStatefulWidget {
 }
 
 class _InventoryListState extends ConsumerState<InventoryList> {
+  static const _searchService = InventorySearchService();
   final _searchBarKey = GlobalKey<TextVoiceSearchBarState>();
   var _mode = InventoryListMode.allItems;
   var _consumptionFilter = const InventoryConsumptionFilter();
   late final ManualProductSpeechService _speechService;
   late final TextEditingController _searchController;
+  late List<InventoryItem> _visibleItems;
+  late List<PreparedMeal> _visiblePreparedMeals;
   var _searchQuery = '';
 
   @override
@@ -124,6 +130,16 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     super.initState();
     _speechService = ref.read(manualProductSpeechServiceProvider);
     _searchController = TextEditingController();
+    _recomputeVisibleContent();
+  }
+
+  @override
+  void didUpdateWidget(covariant InventoryList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!listEquals(oldWidget.items, widget.items) ||
+        !listEquals(oldWidget.preparedMeals, widget.preparedMeals)) {
+      _recomputeVisibleContent();
+    }
   }
 
   @override
@@ -147,12 +163,8 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     final activeShoppingListItemKeys = ref.watch(
       activeShoppingListItemKeysProvider,
     );
-    final filteredItems = _applySearchToItems(
-      _consumptionFilter.apply(widget.items),
-    );
-    final filteredPreparedMeals = _applySearchToPreparedMeals(
-      widget.preparedMeals,
-    );
+    final filteredItems = _visibleItems;
+    final filteredPreparedMeals = _visiblePreparedMeals;
     final hasPreparedMeals = filteredPreparedMeals.isNotEmpty;
     final hasAnySourceItems =
         widget.items.isNotEmpty || widget.preparedMeals.isNotEmpty;
@@ -322,6 +334,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       _consumptionFilter = _consumptionFilter.copyWith(
         hideFullyConsumedItems: hideFullyConsumedItems,
       );
+      _recomputeVisibleContent();
     });
   }
 
@@ -331,6 +344,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     }
     setState(() {
       _searchQuery = value;
+      _recomputeVisibleContent();
     });
   }
 
@@ -383,208 +397,14 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     );
   }
 
-  List<InventoryItem> _applySearchToItems(List<InventoryItem> items) {
-    final queryTokens = _buildSearchTokens(_searchQuery);
-    if (queryTokens.isEmpty) {
-      return items;
-    }
-
-    return items
-        .where((item) {
-          return _matchesSearchTokens(
-            haystack: _buildInventoryItemSearchText(item),
-            queryTokens: queryTokens,
-          );
-        })
-        .toList(growable: false);
-  }
-
-  List<PreparedMeal> _applySearchToPreparedMeals(List<PreparedMeal> meals) {
-    final queryTokens = _buildSearchTokens(_searchQuery);
-    if (queryTokens.isEmpty) {
-      return meals;
-    }
-
-    return meals
-        .where((meal) {
-          return _matchesSearchTokens(
-            haystack: _buildPreparedMealSearchText(meal),
-            queryTokens: queryTokens,
-          );
-        })
-        .toList(growable: false);
-  }
-}
-
-List<String> _buildSearchTokens(String query) {
-  final normalizedQuery = _normalizeSearchText(query);
-  if (normalizedQuery.isEmpty) {
-    return const <String>[];
-  }
-
-  return normalizedQuery
-      .split(' ')
-      .where((token) => token.isNotEmpty)
-      .toList(growable: false);
-}
-
-bool _matchesSearchTokens({
-  required String haystack,
-  required List<String> queryTokens,
-}) {
-  final normalizedHaystack = _normalizeSearchText(haystack);
-  final haystackTokens = normalizedHaystack
-      .split(' ')
-      .where((token) => token.isNotEmpty)
-      .toList(growable: false);
-  final compactHaystack = _compactSearchText(normalizedHaystack);
-
-  return queryTokens.every((queryToken) {
-    if (normalizedHaystack.contains(queryToken)) {
-      return true;
-    }
-
-    final compactQueryToken = _compactSearchText(queryToken);
-    if (compactQueryToken.isEmpty) {
-      return true;
-    }
-    if (compactHaystack.contains(compactQueryToken)) {
-      return true;
-    }
-
-    return _hasApproximateCompactMatch(
-      compactQueryToken: compactQueryToken,
-      haystackTokens: haystackTokens,
+  void _recomputeVisibleContent() {
+    _visibleItems = _searchService.filterItems(
+      items: _consumptionFilter.apply(widget.items),
+      query: _searchQuery,
     );
-  });
-}
-
-String _buildInventoryItemSearchText(InventoryItem item) {
-  return <String>[
-    item.name,
-    item.brand ?? '',
-    item.category ?? '',
-    item.storeName,
-    item.weight ?? '',
-    item.ocrName ?? '',
-    item.normalizedBarcode ?? '',
-  ].join(' ');
-}
-
-String _buildPreparedMealSearchText(PreparedMeal meal) {
-  return <String>[meal.name, ...meal.recipeIngredients].join(' ');
-}
-
-String _normalizeSearchText(String value) {
-  return value
-      .trim()
-      .toLowerCase()
-      .replaceAll('ß', 'ss')
-      .replaceAll('ä', 'ae')
-      .replaceAll('ö', 'oe')
-      .replaceAll('ü', 'ue')
-      .replaceAll(RegExp(r'\s+'), ' ');
-}
-
-String _compactSearchText(String value) {
-  return _normalizeSearchText(value).replaceAll(RegExp(r'[\s\-_/,.;:()]+'), '');
-}
-
-bool _hasApproximateCompactMatch({
-  required String compactQueryToken,
-  required List<String> haystackTokens,
-}) {
-  if (compactQueryToken.length < 4) {
-    return false;
+    _visiblePreparedMeals = _searchService.filterPreparedMeals(
+      meals: widget.preparedMeals,
+      query: _searchQuery,
+    );
   }
-
-  for (var start = 0; start < haystackTokens.length; start++) {
-    var candidate = '';
-    for (var end = start; end < haystackTokens.length; end++) {
-      candidate += _compactSearchText(haystackTokens[end]);
-      final lengthDifference = candidate.length - compactQueryToken.length;
-      if (lengthDifference > 1) {
-        break;
-      }
-      if (lengthDifference.abs() > 1) {
-        continue;
-      }
-      if (_isWithinEditDistanceOne(candidate, compactQueryToken)) {
-        return true;
-      }
-      if (end - start >= 2) {
-        break;
-      }
-    }
-  }
-
-  return false;
-}
-
-bool _isWithinEditDistanceOne(String left, String right) {
-  if (left == right) {
-    return true;
-  }
-
-  final lengthDifference = left.length - right.length;
-  if (lengthDifference.abs() > 1) {
-    return false;
-  }
-
-  if (left.length == right.length) {
-    return _isSingleReplacementOrSwap(left, right);
-  }
-
-  final longer = lengthDifference > 0 ? left : right;
-  final shorter = lengthDifference > 0 ? right : left;
-  return _isSingleInsertionOrDeletion(longer, shorter);
-}
-
-bool _isSingleReplacementOrSwap(String left, String right) {
-  final mismatches = <int>[];
-
-  for (var index = 0; index < left.length; index++) {
-    if (left[index] == right[index]) {
-      continue;
-    }
-    mismatches.add(index);
-    if (mismatches.length > 2) {
-      return false;
-    }
-  }
-
-  if (mismatches.isEmpty) {
-    return true;
-  }
-  if (mismatches.length == 1) {
-    return true;
-  }
-
-  final firstMismatch = mismatches[0];
-  final secondMismatch = mismatches[1];
-  return secondMismatch == firstMismatch + 1 &&
-      left[firstMismatch] == right[secondMismatch] &&
-      left[secondMismatch] == right[firstMismatch];
-}
-
-bool _isSingleInsertionOrDeletion(String longer, String shorter) {
-  var longerIndex = 0;
-  var shorterIndex = 0;
-  var skippedCharacter = false;
-
-  while (longerIndex < longer.length && shorterIndex < shorter.length) {
-    if (longer[longerIndex] == shorter[shorterIndex]) {
-      longerIndex++;
-      shorterIndex++;
-      continue;
-    }
-    if (skippedCharacter) {
-      return false;
-    }
-
-    skippedCharacter = true;
-    longerIndex++;
-  }
-
-  return true;
 }

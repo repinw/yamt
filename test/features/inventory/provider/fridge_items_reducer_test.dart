@@ -2,7 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 
-InventoryItem _item({required String id, required int quantity}) {
+InventoryItem _item({
+  required String id,
+  required int quantity,
+  DateTime? lastConsumedAt,
+}) {
   return InventoryItem.create(
     id: id,
     name: 'Milk',
@@ -11,6 +15,7 @@ InventoryItem _item({required String id, required int quantity}) {
     quantity: quantity,
     initialQuantity: quantity,
     unitPrice: 1.0,
+    lastConsumedAt: lastConsumedAt,
   );
 }
 
@@ -67,6 +72,27 @@ void main() {
     expect(reducedItems?.single.quantity, 0);
     expect(originalItems.single.quantity, 3);
   });
+
+  test(
+    'buildReducedItems keeps newer lastConsumedAt when candidate is older',
+    () {
+      final current = DateTime.parse('2026-02-21T12:00:00Z');
+      final olderCandidate = DateTime.parse('2026-02-20T12:00:00Z');
+      final originalItems = <InventoryItem>[
+        _item(id: 'a', quantity: 3, lastConsumedAt: current),
+      ];
+
+      final reducedItems = buildReducedItems(
+        currentItems: originalItems,
+        itemId: 'a',
+        amount: 1,
+        consumedAt: olderCandidate,
+      );
+
+      expect(reducedItems, isNotNull);
+      expect(reducedItems?.single.lastConsumedAt, current);
+    },
+  );
 
   test('buildReducedItems returns null when item is missing', () {
     final originalItems = <InventoryItem>[_item(id: 'a', quantity: 3)];

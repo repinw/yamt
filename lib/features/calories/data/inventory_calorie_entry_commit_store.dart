@@ -8,6 +8,7 @@ import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 
 const _commitStoreLogName = 'InventoryCalorieEntryCommitStore';
@@ -246,10 +247,7 @@ InventoryItem? _buildCommittedItem({
     return null;
   }
 
-  final nextLastConsumedAt = _latestConsumedAt(
-    current: item.lastConsumedAt,
-    candidate: consumedAt,
-  );
+  final nextLastConsumedAt = item.latestConsumedAtOr(consumedAt);
 
   if (item.usesAmountProgress) {
     if (item.currentAmount < amount) {
@@ -303,14 +301,4 @@ Map<String, dynamic> _buildInventoryUpdate(InventoryItem item) {
     'current_amount': item.currentAmount,
     'last_consumed_at': item.lastConsumedAt?.toIso8601String(),
   };
-}
-
-DateTime _latestConsumedAt({
-  required DateTime? current,
-  required DateTime candidate,
-}) {
-  if (current == null || candidate.isAfter(current)) {
-    return candidate;
-  }
-  return current;
 }
