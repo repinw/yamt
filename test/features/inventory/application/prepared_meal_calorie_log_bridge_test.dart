@@ -239,7 +239,7 @@ void main() {
       publishMeals: (meals) {
         publishedMeals.add(List<PreparedMeal>.from(meals));
       },
-      saveMeals: (_, __) async {
+      saveMeals: (previousMeals, nextMeals) async {
         fallbackSaveCalled = true;
         return true;
       },

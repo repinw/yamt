@@ -19,7 +19,7 @@ void main() {
 
     final snapshot = InventoryItemRowSnapshot.fromItem(item);
 
-    expect(snapshot.barcode, '4316268631570');
+    expect(snapshot.itemId, 'item-1');
     expect(
       snapshot.imageUrl,
       'https://images.openfoodfacts.org/images/products/'
