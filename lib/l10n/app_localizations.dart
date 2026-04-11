@@ -467,30 +467,6 @@ abstract class AppLocalizations {
   /// **'Please add a unit (e.g. g or ml).'**
   String get inventoryReceiptReviewInvalidWeightUnit;
 
-  /// No description provided for @inventoryReceiptReviewWeightConfirmTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Does the weight match?'**
-  String get inventoryReceiptReviewWeightConfirmTitle;
-
-  /// No description provided for @inventoryReceiptReviewWeightConfirmAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Yes'**
-  String get inventoryReceiptReviewWeightConfirmAction;
-
-  /// No description provided for @inventoryReceiptReviewWeightConfirmClearAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear weight'**
-  String get inventoryReceiptReviewWeightConfirmClearAction;
-
-  /// No description provided for @inventoryReceiptReviewWeightConfirmRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please confirm the weight.'**
-  String get inventoryReceiptReviewWeightConfirmRequired;
-
   /// No description provided for @inventoryReceiptReviewConfirmItemAction.
   ///
   /// In en, this message translates to:

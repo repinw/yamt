@@ -104,8 +104,6 @@ class DefaultReceiptToReviewItemDraftMapper
           final unitPrice = safeQuantity > 0 ? totalPrice / safeQuantity : 0.0;
           final weight = quantityAndWeight.weight;
           final currencyCode = _readCurrencyCode(payload) ?? rootCurrencyCode;
-          final requiresWeightConfirmation =
-              weight == null && isFood && !isDiscount;
 
           final inventoryItem = InventoryItem.create(
             id: _buildItemId(now, index),
@@ -136,7 +134,6 @@ class DefaultReceiptToReviewItemDraftMapper
           ).withDerivedAmount(weight: weight, quantity: safeQuantity);
           return ReceiptReviewItemDraft(
             item: inventoryItem,
-            requiresWeightConfirmation: requiresWeightConfirmation,
             ocrName: name,
             receiptTimeText: _firstNonBlankString(
               payload['t'],

@@ -199,18 +199,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewInvalidWeightUnit => 'Bitte eine Einheit angeben (z. B. g oder ml).';
 
   @override
-  String get inventoryReceiptReviewWeightConfirmTitle => 'Stimmt das Gewicht überein?';
-
-  @override
-  String get inventoryReceiptReviewWeightConfirmAction => 'Ja';
-
-  @override
-  String get inventoryReceiptReviewWeightConfirmClearAction => 'Gewicht leeren';
-
-  @override
-  String get inventoryReceiptReviewWeightConfirmRequired => 'Bitte bestätige das Gewicht.';
-
-  @override
   String get inventoryReceiptReviewConfirmItemAction => 'Artikel bestätigen';
 
   @override

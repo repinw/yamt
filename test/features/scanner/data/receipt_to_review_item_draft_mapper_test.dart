@@ -61,7 +61,6 @@ void main() {
     expect(item.isDeposit, isFalse);
     expect(item.isDiscount, isFalse);
     expect(drafts.single.canBeSavedToInventory, isTrue);
-    expect(drafts.single.requiresWeightConfirmation, isFalse);
   });
 
   test('normalizes Aldi store variants during mapping', () {
@@ -164,7 +163,6 @@ void main() {
     expect(item.initialAmount, 0);
     expect(item.currentAmount, 0);
     expect(item.amountUnit, isNull);
-    expect(mapper.map(extraction).single.requiresWeightConfirmation, isTrue);
   });
 
   test('reparses multipack volume from name', () {

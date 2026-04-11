@@ -81,13 +81,6 @@
   "inventoryReceiptReviewNoDate": "No date",
   "inventoryReceiptReviewInvalidNumber": "Please enter valid numbers.",
   "inventoryReceiptReviewInvalidWeightUnit": "Please add a unit (e.g. g or ml).",
-  "inventoryReceiptReviewWeightConfirmTitle":
-      "Does the weight match?",
-  "inventoryReceiptReviewWeightConfirmAction": "Yes",
-  "inventoryReceiptReviewWeightConfirmClearAction":
-      "Clear weight",
-  "inventoryReceiptReviewWeightConfirmRequired":
-      "Please confirm the weight.",
   "inventoryReceiptReviewConfirmItemAction": "Confirm item",
   "inventoryReceiptReviewUndoConfirmAction": "Undo confirmation",
   "inventoryReceiptReviewWeightMissingTag": "Weight?",

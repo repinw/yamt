@@ -42,16 +42,6 @@ bool shouldRequireReceiptWeightConfirmation(ReceiptReviewItemDraft draft) {
       itemAmount.unit != candidateAmount.unit;
 }
 
-String? receiptReviewWeightSuggestion(ReceiptReviewItemDraft draft) {
-  final candidateWeight = normalizeReceiptReviewWeight(
-    draft.selectedCandidate?.item.packageWeight,
-  );
-  if (candidateWeight != null) {
-    return candidateWeight;
-  }
-  return normalizeReceiptReviewWeight(draft.item.weight);
-}
-
 String? normalizeReceiptReviewWeight(String? value) {
   final trimmed = value?.trim();
   if (trimmed == null || trimmed.isEmpty) {

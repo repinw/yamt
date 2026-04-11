@@ -247,11 +247,7 @@ class ReceiptReviewResolutionService {
       selectedGlobalFoodItemId: _matcher.defaultSelectionFor(candidates),
       selectionNeedsReview: _matcher.defaultSelectionNeedsReviewFor(candidates),
     );
-    return updatedDraft.copyWith(
-      requiresWeightConfirmation: shouldRequireReceiptWeightConfirmation(
-        updatedDraft,
-      ),
-    );
+    return updatedDraft;
   }
 
   bool _shouldReuseSelectedCandidate(ReceiptReviewItemDraft draft) {

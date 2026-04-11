@@ -8,7 +8,6 @@ class ReceiptReviewItemDraft {
     this.candidates = const <GlobalFoodMatchCandidate>[],
     this.selectedGlobalFoodItemId,
     this.selectionNeedsReview = false,
-    this.requiresWeightConfirmation = false,
     this.isConfirmed = false,
     this.weightNeedsAttention = false,
     this.requestAiEnrichment = false,
@@ -20,7 +19,6 @@ class ReceiptReviewItemDraft {
   final List<GlobalFoodMatchCandidate> candidates;
   final String? selectedGlobalFoodItemId;
   final bool selectionNeedsReview;
-  final bool requiresWeightConfirmation;
   final bool isConfirmed;
   final bool weightNeedsAttention;
   final bool requestAiEnrichment;
@@ -32,7 +30,6 @@ class ReceiptReviewItemDraft {
     List<GlobalFoodMatchCandidate>? candidates,
     Object? selectedGlobalFoodItemId = _keepValue,
     bool? selectionNeedsReview,
-    bool? requiresWeightConfirmation,
     bool? isConfirmed,
     bool? weightNeedsAttention,
     bool? requestAiEnrichment,
@@ -46,8 +43,6 @@ class ReceiptReviewItemDraft {
           ? this.selectedGlobalFoodItemId
           : selectedGlobalFoodItemId as String?,
       selectionNeedsReview: selectionNeedsReview ?? this.selectionNeedsReview,
-      requiresWeightConfirmation:
-          requiresWeightConfirmation ?? this.requiresWeightConfirmation,
       isConfirmed: isConfirmed ?? this.isConfirmed,
       weightNeedsAttention: weightNeedsAttention ?? this.weightNeedsAttention,
       requestAiEnrichment: requestAiEnrichment ?? this.requestAiEnrichment,
@@ -124,7 +119,6 @@ class ReceiptReviewItemDraft {
             ) &&
             other.selectedGlobalFoodItemId == selectedGlobalFoodItemId &&
             other.selectionNeedsReview == selectionNeedsReview &&
-            other.requiresWeightConfirmation == requiresWeightConfirmation &&
             other.isConfirmed == isConfirmed &&
             other.weightNeedsAttention == weightNeedsAttention &&
             other.requestAiEnrichment == requestAiEnrichment &&
@@ -139,7 +133,6 @@ class ReceiptReviewItemDraft {
       const ListEquality<GlobalFoodMatchCandidate>().hash(candidates),
       selectedGlobalFoodItemId,
       selectionNeedsReview,
-      requiresWeightConfirmation,
       isConfirmed,
       weightNeedsAttention,
       requestAiEnrichment,

@@ -488,7 +488,6 @@ class _InventoryReceiptReviewSheetState
       return currentDraft.copyWith(
         isConfirmed: true,
         selectionNeedsReview: false,
-        requiresWeightConfirmation: false,
         weightNeedsAttention: false,
       );
     });
@@ -518,7 +517,6 @@ class _InventoryReceiptReviewSheetState
     return draft.copyWith(
       item: nextItem,
       isConfirmed: false,
-      requiresWeightConfirmation: false,
       weightNeedsAttention: needsWeightAttention,
     );
   }
@@ -592,7 +590,7 @@ class _InventoryReceiptReviewSheetState
       return;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
+      if (!mounted || !context.mounted) {
         return;
       }
       Scrollable.ensureVisible(

@@ -322,7 +322,6 @@ void main() {
     );
 
     expect(prepared.single.selectedGlobalFoodItemId, 'gouda');
-    expect(prepared.single.requiresWeightConfirmation, isTrue);
   });
 
   test('prepareDrafts skips matcher lookup for review-only drafts', () async {
