@@ -88,6 +88,9 @@
       "Gewicht leeren",
   "inventoryReceiptReviewWeightConfirmRequired":
       "Bitte bestätige das Gewicht.",
+  "inventoryReceiptReviewConfirmItemAction": "Artikel bestätigen",
+  "inventoryReceiptReviewUndoConfirmAction": "Bestätigung aufheben",
+  "inventoryReceiptReviewWeightMissingTag": "Gewicht?",
   "inventoryReceiptReviewInvalidDiscounts": "JSON oder key=value verwenden.",
   "inventoryReceiptReviewDetectedItems": "Erkannte Artikel",
   "inventoryReceiptReviewOriginalReceiptAction": "Original-Beleg ansehen",

@@ -491,6 +491,24 @@ abstract class AppLocalizations {
   /// **'Please confirm the weight.'**
   String get inventoryReceiptReviewWeightConfirmRequired;
 
+  /// No description provided for @inventoryReceiptReviewConfirmItemAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm item'**
+  String get inventoryReceiptReviewConfirmItemAction;
+
+  /// No description provided for @inventoryReceiptReviewUndoConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo confirmation'**
+  String get inventoryReceiptReviewUndoConfirmAction;
+
+  /// No description provided for @inventoryReceiptReviewWeightMissingTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight?'**
+  String get inventoryReceiptReviewWeightMissingTag;
+
   /// No description provided for @inventoryReceiptReviewInvalidDiscounts.
   ///
   /// In en, this message translates to:

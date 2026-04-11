@@ -10,6 +10,7 @@ import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -24,6 +25,7 @@ part 'receipt_review_resolution_service.g.dart';
 
 const Uuid _globalFoodItemUuid = Uuid();
 const _resolutionLogName = 'ReceiptReviewResolutionService';
+const _amountParser = InventoryAmountParser();
 
 class ReceiptReviewPersistResult {
   const ReceiptReviewPersistResult({
@@ -181,6 +183,11 @@ class ReceiptReviewResolutionService {
     required GlobalFoodItemStatus status,
     GlobalFoodItem? selectedProduct,
   }) {
+    final persistedWeight = _resolvePersistedWeight(
+      item: draft.item,
+      fallbackWeight: selectedProduct?.packageWeight,
+    );
+
     return GlobalFoodItem.create(
       id: _globalFoodItemIdGenerator(),
       name: draft.item.name,
@@ -189,7 +196,7 @@ class ReceiptReviewResolutionService {
       category: draft.item.category ?? selectedProduct?.category,
       barcode: draft.item.barcode ?? selectedProduct?.barcode,
       imageUrl: draft.item.imageUrl ?? selectedProduct?.imageUrl,
-      packageWeight: draft.item.weight ?? selectedProduct?.packageWeight,
+      packageWeight: persistedWeight.weight,
       foodFingerprint: draft.item.resolvedFoodFingerprint,
       nutrition: draft.item.nutrition ?? selectedProduct?.nutrition,
       status: status,
@@ -201,7 +208,17 @@ class ReceiptReviewResolutionService {
     required bool canReferenceGlobalItem,
   }) {
     final resolvedProduct = item.resolvedProduct;
-    return item.sourceItem.copyWith(
+    final persistedWeight = _resolvePersistedWeight(
+      item: item.sourceItem,
+      fallbackWeight: resolvedProduct.packageWeight,
+    );
+    final normalizedItem = item.sourceItem.withDerivedAmount(
+      weight: persistedWeight.weight,
+      quantity: item.sourceItem.quantity,
+      fallbackUnit: persistedWeight.fallbackUnit,
+    );
+
+    return normalizedItem.copyWith(
       globalFoodItemId: canReferenceGlobalItem
           ? resolvedProduct.id
           : buildPendingGlobalFoodItemId(
@@ -244,6 +261,45 @@ class ReceiptReviewResolutionService {
     }
     return selectedCandidate.requiresPersistence ||
         !draft.differsFromSelectedCandidate;
+  }
+
+  ({String? weight, InventoryAmountUnit? fallbackUnit})
+  _resolvePersistedWeight({
+    required InventoryItem item,
+    required String? fallbackWeight,
+  }) {
+    final itemWeight = normalizeReceiptReviewWeight(item.weight);
+    final itemParse = _amountParser.tryParse(
+      rawWeight: itemWeight,
+      quantity: item.quantity,
+      fallbackUnit: item.amountUnit,
+    );
+    if (itemParse != null) {
+      return (
+        weight: itemWeight,
+        fallbackUnit: item.amountUnit ?? itemParse.unit,
+      );
+    }
+
+    final normalizedFallbackWeight = normalizeReceiptReviewWeight(
+      fallbackWeight,
+    );
+    final fallbackParse = _amountParser.tryParse(
+      rawWeight: normalizedFallbackWeight,
+      quantity: item.quantity,
+      fallbackUnit: item.amountUnit,
+    );
+    if (fallbackParse != null) {
+      return (
+        weight: normalizedFallbackWeight,
+        fallbackUnit: fallbackParse.unit,
+      );
+    }
+
+    return (
+      weight: itemWeight ?? normalizedFallbackWeight,
+      fallbackUnit: item.amountUnit,
+    );
   }
 
   Future<void> _persistCalorieProfiles(

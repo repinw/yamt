@@ -88,6 +88,9 @@
       "Clear weight",
   "inventoryReceiptReviewWeightConfirmRequired":
       "Please confirm the weight.",
+  "inventoryReceiptReviewConfirmItemAction": "Confirm item",
+  "inventoryReceiptReviewUndoConfirmAction": "Undo confirmation",
+  "inventoryReceiptReviewWeightMissingTag": "Weight?",
   "inventoryReceiptReviewInvalidDiscounts": "Use JSON or key=value pairs.",
   "inventoryReceiptReviewDetectedItems": "Detected items",
   "inventoryReceiptReviewOriginalReceiptAction": "View original receipt",

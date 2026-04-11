@@ -35,9 +35,10 @@ class ReceiptReviewItemProcessor {
 
   ReceiptReviewProcessingResult process(List<ReceiptReviewItemDraft> items) {
     final mergedItems = _mergeDiscountItems(items);
-    final metadata = _deriveReceiptMetadata(mergedItems);
+    final sortedItems = _sortNonFoodItemsToBottom(mergedItems);
+    final metadata = _deriveReceiptMetadata(sortedItems);
     return ReceiptReviewProcessingResult(
-      items: mergedItems,
+      items: sortedItems,
       metadata: metadata,
     );
   }
@@ -95,6 +96,26 @@ class ReceiptReviewItemProcessor {
     );
   }
 
+  List<ReceiptReviewItemDraft> _sortNonFoodItemsToBottom(
+    List<ReceiptReviewItemDraft> items,
+  ) {
+    final regularItems = <ReceiptReviewItemDraft>[];
+    final nonFoodItems = <ReceiptReviewItemDraft>[];
+
+    for (final draft in items) {
+      if (_isLikelyNonFoodArticle(draft.item)) {
+        nonFoodItems.add(draft);
+        continue;
+      }
+      regularItems.add(draft);
+    }
+
+    return <ReceiptReviewItemDraft>[
+      ...regularItems,
+      ...nonFoodItems,
+    ];
+  }
+
   bool _looksLikeDiscountLine(InventoryItem item) {
     if (_looksLikeDepositLine(item) || item.unitPrice >= 0) {
       return false;
@@ -111,6 +132,13 @@ class ReceiptReviewItemProcessor {
     final hasBrand = (item.brand ?? '').trim().isNotEmpty;
     final hasCategory = (item.category ?? '').trim().isNotEmpty;
     return !hasBrand && !hasCategory;
+  }
+
+  bool _isLikelyNonFoodArticle(InventoryItem item) {
+    if (!item.isDeposit || item.isDiscount) {
+      return false;
+    }
+    return !_looksLikeDepositLine(item);
   }
 
   bool _looksLikeDepositLine(InventoryItem item) {

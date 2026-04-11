@@ -9,6 +9,8 @@ class ReceiptReviewItemDraft {
     this.selectedGlobalFoodItemId,
     this.selectionNeedsReview = false,
     this.requiresWeightConfirmation = false,
+    this.isConfirmed = false,
+    this.weightNeedsAttention = false,
     this.requestAiEnrichment = false,
     this.ocrName,
     this.receiptTimeText,
@@ -19,6 +21,8 @@ class ReceiptReviewItemDraft {
   final String? selectedGlobalFoodItemId;
   final bool selectionNeedsReview;
   final bool requiresWeightConfirmation;
+  final bool isConfirmed;
+  final bool weightNeedsAttention;
   final bool requestAiEnrichment;
   final String? ocrName;
   final String? receiptTimeText;
@@ -29,6 +33,8 @@ class ReceiptReviewItemDraft {
     Object? selectedGlobalFoodItemId = _keepValue,
     bool? selectionNeedsReview,
     bool? requiresWeightConfirmation,
+    bool? isConfirmed,
+    bool? weightNeedsAttention,
     bool? requestAiEnrichment,
     Object? ocrName = _keepValue,
     Object? receiptTimeText = _keepValue,
@@ -42,6 +48,8 @@ class ReceiptReviewItemDraft {
       selectionNeedsReview: selectionNeedsReview ?? this.selectionNeedsReview,
       requiresWeightConfirmation:
           requiresWeightConfirmation ?? this.requiresWeightConfirmation,
+      isConfirmed: isConfirmed ?? this.isConfirmed,
+      weightNeedsAttention: weightNeedsAttention ?? this.weightNeedsAttention,
       requestAiEnrichment: requestAiEnrichment ?? this.requestAiEnrichment,
       ocrName: ocrName == _keepValue ? this.ocrName : ocrName as String?,
       receiptTimeText: receiptTimeText == _keepValue
@@ -54,6 +62,7 @@ class ReceiptReviewItemDraft {
     return copyWith(
       selectedGlobalFoodItemId: globalFoodItemId,
       selectionNeedsReview: false,
+      isConfirmed: false,
       requestAiEnrichment: false,
     );
   }
@@ -62,6 +71,7 @@ class ReceiptReviewItemDraft {
     return copyWith(
       selectedGlobalFoodItemId: null,
       selectionNeedsReview: false,
+      isConfirmed: false,
       requestAiEnrichment: false,
     );
   }
@@ -70,6 +80,7 @@ class ReceiptReviewItemDraft {
     return copyWith(
       selectedGlobalFoodItemId: null,
       selectionNeedsReview: false,
+      isConfirmed: false,
       requestAiEnrichment: true,
     );
   }
@@ -114,6 +125,8 @@ class ReceiptReviewItemDraft {
             other.selectedGlobalFoodItemId == selectedGlobalFoodItemId &&
             other.selectionNeedsReview == selectionNeedsReview &&
             other.requiresWeightConfirmation == requiresWeightConfirmation &&
+            other.isConfirmed == isConfirmed &&
+            other.weightNeedsAttention == weightNeedsAttention &&
             other.requestAiEnrichment == requestAiEnrichment &&
             other.ocrName == ocrName &&
             other.receiptTimeText == receiptTimeText;
@@ -127,6 +140,8 @@ class ReceiptReviewItemDraft {
       selectedGlobalFoodItemId,
       selectionNeedsReview,
       requiresWeightConfirmation,
+      isConfirmed,
+      weightNeedsAttention,
       requestAiEnrichment,
       ocrName,
       receiptTimeText,

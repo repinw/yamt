@@ -38,6 +38,7 @@ InventoryItem _item({
   int quantity = 1,
   double unitPrice = 1.0,
   String? currencyCode,
+  GlobalFoodNutrition? nutrition,
   Map<String, double> discounts = const <String, double>{},
 }) {
   return InventoryItem.create(
@@ -50,12 +51,18 @@ InventoryItem _item({
     currencyCode: currencyCode,
     brand: brand,
     weight: weight,
+    nutrition: nutrition,
     discounts: discounts,
     isDeposit: isDeposit,
     isDiscount: isDiscount,
     receiptDate: receiptDate,
   );
 }
+
+const _testNutrition = GlobalFoodNutrition(
+  qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+  per100Kcal: 120,
+);
 
 Widget _wrap({
   List<InventoryItem>? items,
@@ -250,10 +257,20 @@ _FakeMobileScannerPlatform _fakeScannerPlatform() {
   return MobileScannerPlatform.instance as _FakeMobileScannerPlatform;
 }
 
+Future<void> _confirmReviewItem(WidgetTester tester, int index) async {
+  final button = find.byKey(Key('receipt_review_confirm_button_$index'));
+  expect(button, findsOneWidget);
+  await tester.ensureVisible(button);
+  await tester.tap(button);
+  await tester.pumpAndSettle();
+}
+
 GlobalFoodMatchCandidate _candidate({
   required String id,
   required String name,
   String? brand,
+  String? barcode,
+  String? imageUrl,
   String? packageWeight,
 }) {
   return GlobalFoodMatchCandidate(
@@ -262,6 +279,8 @@ GlobalFoodMatchCandidate _candidate({
       name: name,
       now: DateTime.parse('2026-02-19T10:00:00Z'),
       brand: brand,
+      barcode: barcode,
+      imageUrl: imageUrl,
       packageWeight: packageWeight,
       nutrition: const GlobalFoodNutrition(
         qualityStatus: GlobalFoodNutritionQualityStatus.verified,
@@ -440,9 +459,121 @@ void main() {
     expect(find.text('Gouda'), findsOneWidget);
   });
 
-  testWidgets('switching candidate with changed receipt weight opens dialog', (
+  testWidgets('preselected candidate data is kept on save after confirm', (
     tester,
   ) async {
+    List<InventoryItem>? savedItems;
+
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'OCR KAESE',
+              brand: 'OCR Brand',
+              weight: '500 g',
+            ),
+            candidates: <GlobalFoodMatchCandidate>[
+              _candidate(
+                id: 'gouda',
+                name: 'Gouda Jung',
+                brand: 'Milbona',
+                barcode: '4000123456789',
+                imageUrl: 'https://example.com/gouda.png',
+                packageWeight: '500 g',
+              ),
+            ],
+            selectedGlobalFoodItemId: 'gouda',
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (items) async {
+          savedItems = items;
+        },
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_confirm_button_0')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('receipt_review_save_button')));
+    await tester.pumpAndSettle();
+
+    expect(savedItems, isNotNull);
+    expect(savedItems!.single.name, 'Gouda Jung');
+    expect(savedItems!.single.brand, 'Milbona');
+    expect(savedItems!.single.barcode, '4000123456789');
+    expect(savedItems!.single.imageUrl, 'https://example.com/gouda.png');
+  });
+
+  testWidgets('switched candidate data is kept on save after confirm', (
+    tester,
+  ) async {
+    List<InventoryItem>? savedItems;
+
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'OCR KAESE',
+              brand: 'OCR Brand',
+              weight: '500 g',
+            ),
+            candidates: <GlobalFoodMatchCandidate>[
+              _candidate(
+                id: 'gouda',
+                name: 'Gouda Jung',
+                brand: 'Milbona',
+                barcode: '4000123456789',
+                packageWeight: '500 g',
+              ),
+              _candidate(
+                id: 'edamer',
+                name: 'Edamer Mild',
+                brand: 'Ja!',
+                barcode: '4000987654321',
+                imageUrl: 'https://example.com/edamer.png',
+                packageWeight: '500 g',
+              ),
+            ],
+            ocrName: 'KAESE SCHEIBEN',
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (items) async {
+          savedItems = items;
+        },
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_switch_button_0')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edamer Mild').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('receipt_review_confirm_button_0')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('receipt_review_save_button')));
+    await tester.pumpAndSettle();
+
+    expect(savedItems, isNotNull);
+    expect(savedItems!.single.name, 'Edamer Mild');
+    expect(savedItems!.single.brand, 'Ja!');
+    expect(savedItems!.single.barcode, '4000987654321');
+    expect(savedItems!.single.imageUrl, 'https://example.com/edamer.png');
+  });
+
+  testWidgets(
+    'switching candidate with changed receipt weight keeps receipt weight',
+    (tester) async {
     await tester.pumpWidget(
       _wrap(
         drafts: <ReceiptReviewItemDraft>[
@@ -469,76 +600,19 @@ void main() {
       ),
     );
 
-    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
-    final l10n = AppLocalizations.of(context)!;
-
     await tester.tap(find.byKey(const Key('receipt_review_switch_button_0')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Gouda').last);
     await tester.pumpAndSettle();
 
-    expect(
-      find.text(l10n.inventoryReceiptReviewWeightConfirmTitle),
-      findsOneWidget,
-    );
-
-    final weightField = tester.widget<TextField>(
-      find.byKey(const Key('receipt_review_weight_confirmation_field')),
-    );
-    expect(weightField.controller?.text, '800g');
+    expect(find.text('Gouda'), findsOneWidget);
+    expect(find.text('500g'), findsOneWidget);
+    expect(find.text('800g'), findsNothing);
   });
 
-  testWidgets('switching candidate with missing receipt weight opens dialog', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _wrap(
-        drafts: <ReceiptReviewItemDraft>[
-          ReceiptReviewItemDraft(
-            item: _item(
-              id: 'food',
-              isDeposit: false,
-              isDiscount: false,
-              name: 'KÄSE SCHEIBEN',
-            ),
-            candidates: <GlobalFoodMatchCandidate>[
-              _candidate(
-                id: 'gouda',
-                name: 'Gouda',
-                brand: 'Milbona',
-                packageWeight: '800g',
-              ),
-            ],
-            requiresWeightConfirmation: true,
-          ),
-        ],
-        onCancelTap: () {},
-        onSaveTap: (_) async {},
-      ),
-    );
-
-    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
-    final l10n = AppLocalizations.of(context)!;
-
-    await tester.tap(find.byKey(const Key('receipt_review_switch_button_0')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Gouda').last);
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text(l10n.inventoryReceiptReviewWeightConfirmTitle),
-      findsOneWidget,
-    );
-
-    final weightField = tester.widget<TextField>(
-      find.byKey(const Key('receipt_review_weight_confirmation_field')),
-    );
-    expect(weightField.controller?.text, '800g');
-  });
-
-  testWidgets('weight confirmation clear button clears and focuses field', (
-    tester,
-  ) async {
+  testWidgets(
+    'switching candidate with missing receipt weight uses candidate weight',
+    (tester) async {
     await tester.pumpWidget(
       _wrap(
         drafts: <ReceiptReviewItemDraft>[
@@ -570,24 +644,38 @@ void main() {
     await tester.tap(find.text('Gouda').last);
     await tester.pumpAndSettle();
 
-    final fieldFinder = find.byKey(
-      const Key('receipt_review_weight_confirmation_field'),
+    expect(find.text('Gouda'), findsOneWidget);
+    expect(find.text('800g'), findsOneWidget);
+  });
+
+  testWidgets('confirm button toggles between check and undo', (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        items: <InventoryItem>[
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            name: 'KÄSE SCHEIBEN',
+            weight: '800g',
+            nutrition: _testNutrition,
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
     );
-    final clearButton = find.byKey(
-      const Key('receipt_review_weight_confirmation_clear_button'),
-    );
-    final weightField = tester.widget<TextField>(fieldFinder);
 
-    expect(weightField.autofocus, isFalse);
-    expect(weightField.focusNode?.hasFocus, isFalse);
-    expect(weightField.controller?.text, '800g');
+    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byIcon(Icons.undo), findsNothing);
 
-    await tester.tap(clearButton);
-    await tester.pump();
+    await _confirmReviewItem(tester, 0);
 
-    final updatedField = tester.widget<TextField>(fieldFinder);
-    expect(updatedField.controller?.text, isEmpty);
-    expect(updatedField.focusNode?.hasFocus, isTrue);
+    expect(find.byIcon(Icons.undo), findsOneWidget);
+
+    await _confirmReviewItem(tester, 0);
+
+    expect(find.byIcon(Icons.check), findsOneWidget);
   });
 
   testWidgets('determine action fetches candidates and opens candidate sheet', (
@@ -783,6 +871,8 @@ void main() {
 
     expect(find.text('500 g'), findsOneWidget);
 
+    await _confirmReviewItem(tester, 0);
+
     final saveButton = find.byKey(const Key('receipt_review_save_button'));
     await tester.ensureVisible(saveButton);
     await tester.tap(saveButton);
@@ -893,6 +983,8 @@ void main() {
 
       expect(find.text('330 g'), findsOneWidget);
 
+      await _confirmReviewItem(tester, 0);
+
       final saveButton = find.byKey(const Key('receipt_review_save_button'));
       await tester.ensureVisible(saveButton);
       await tester.tap(saveButton);
@@ -997,7 +1089,7 @@ void main() {
     },
   );
 
-  testWidgets('selected OFF candidate weight overrides OCR weight pill', (
+  testWidgets('receipt weight stays preferred over candidate weight pill', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -1029,8 +1121,8 @@ void main() {
     );
 
     expect(find.text('1x'), findsOneWidget);
-    expect(find.text('800g'), findsOneWidget);
-    expect(find.text('500g'), findsNothing);
+    expect(find.text('500g'), findsOneWidget);
+    expect(find.text('800g'), findsNothing);
   });
 
   testWidgets('preview shows confirmed weight over candidate weight', (
@@ -1118,6 +1210,8 @@ void main() {
               id: 'food',
               isDeposit: false,
               isDiscount: false,
+              weight: '500 g',
+              nutrition: _testNutrition,
               receiptDate: receiptDate,
             ),
           ],
@@ -1151,6 +1245,8 @@ void main() {
       await tester.ensureVisible(applyButton);
       await tester.tap(applyButton);
       await tester.pumpAndSettle();
+
+      await _confirmReviewItem(tester, 0);
 
       final saveButton = find.byKey(const Key('receipt_review_save_button'));
       await tester.ensureVisible(saveButton);
@@ -1191,7 +1287,13 @@ void main() {
     await tester.pumpWidget(
       _wrap(
         items: <InventoryItem>[
-          _item(id: 'food', isDeposit: false, isDiscount: false),
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            weight: '500 g',
+            nutrition: _testNutrition,
+          ),
         ],
         onCancelTap: () {},
         onSaveTap: (_) => saveCompleter.future,
@@ -1200,6 +1302,8 @@ void main() {
 
     final context = tester.element(find.byType(InventoryReceiptReviewSheet));
     final l10n = AppLocalizations.of(context)!;
+
+    await _confirmReviewItem(tester, 0);
 
     await tester.tap(find.byKey(const Key('receipt_review_save_button')));
     await tester.pump();
@@ -1211,7 +1315,7 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('save confirms missing receipt weight before persisting', (
+  testWidgets('missing receipt weight needs explicit confirm before save', (
     tester,
   ) async {
     List<InventoryItem>? savedItems;
@@ -1245,21 +1349,14 @@ void main() {
       ),
     );
 
+    final saveButton = tester.widget<FilledButton>(
+      find.byKey(const Key('receipt_review_save_button')),
+    );
+    expect(saveButton.onPressed, isNull);
+
+    await _confirmReviewItem(tester, 0);
+
     await tester.tap(find.byKey(const Key('receipt_review_save_button')));
-    await tester.pumpAndSettle();
-
-    expect(savedItems, isNull);
-
-    final weightField = tester.widget<TextField>(
-      find.byKey(const Key('receipt_review_weight_confirmation_field')),
-    );
-    expect(weightField.controller?.text, '800g');
-
-    final confirmButton = find.byKey(
-      const Key('receipt_review_weight_confirmation_yes_button'),
-    );
-    await tester.ensureVisible(confirmButton);
-    await tester.tap(confirmButton);
     await tester.pumpAndSettle();
 
     expect(savedItems, isNotNull);
@@ -1275,7 +1372,13 @@ void main() {
     await tester.pumpWidget(
       _wrap(
         items: <InventoryItem>[
-          _item(id: 'food', isDeposit: false, isDiscount: false),
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            weight: '500 g',
+            nutrition: _testNutrition,
+          ),
         ],
         onCancelTap: () {},
         onSaveTap: (_) async {
@@ -1288,6 +1391,7 @@ void main() {
     final l10n = AppLocalizations.of(context)!;
 
     expect(find.text(l10n.inventoryReceiptReviewCancelAction), findsNothing);
+    await _confirmReviewItem(tester, 0);
     await tester.tap(find.byKey(const Key('receipt_review_save_button')));
     await tester.pumpAndSettle();
 
@@ -1320,12 +1424,16 @@ void main() {
             name: 'First item',
             isDeposit: false,
             isDiscount: false,
+            weight: '500 g',
+            nutrition: _testNutrition,
           ),
           _item(
             id: 'second',
             name: 'Second item',
             isDeposit: false,
             isDiscount: false,
+            weight: '600 g',
+            nutrition: _testNutrition,
           ),
         ],
         onCancelTap: () {},
@@ -1348,8 +1456,6 @@ void main() {
   testWidgets('edit interaction updates the tapped item index only', (
     tester,
   ) async {
-    List<InventoryItem>? savedItems;
-
     await tester.pumpWidget(
       _wrap(
         items: <InventoryItem>[
@@ -1367,9 +1473,7 @@ void main() {
           ),
         ],
         onCancelTap: () {},
-        onSaveTap: (items) async {
-          savedItems = items;
-        },
+        onSaveTap: (_) async {},
       ),
     );
 
@@ -1397,15 +1501,8 @@ void main() {
     await tester.tap(applyButton);
     await tester.pumpAndSettle();
 
-    final saveButton = find.byKey(const Key('receipt_review_save_button'));
-    await tester.ensureVisible(saveButton);
-    await tester.tap(saveButton);
-    await tester.pumpAndSettle();
-
-    expect(savedItems, isNotNull);
-    expect(savedItems, hasLength(2));
-    expect(savedItems![0].name, 'First item');
-    expect(savedItems![1].name, 'Edited second');
+    expect(find.text('First item'), findsOneWidget);
+    expect(find.text('Edited second'), findsOneWidget);
   });
 
   testWidgets('invalid item number input shows inline validation', (
@@ -1527,6 +1624,8 @@ void main() {
             isDeposit: false,
             isDiscount: false,
             brand: 'House Brand',
+            weight: '500 g',
+            nutrition: _testNutrition,
           ),
         ],
         onCancelTap: () {},
@@ -1550,6 +1649,8 @@ void main() {
     await tester.ensureVisible(applyButton);
     await tester.tap(applyButton);
     await tester.pumpAndSettle();
+
+    await _confirmReviewItem(tester, 0);
 
     final saveButton = find.byKey(const Key('receipt_review_save_button'));
     await tester.ensureVisible(saveButton);
@@ -1599,7 +1700,13 @@ void main() {
     await tester.pumpWidget(
       _wrap(
         items: <InventoryItem>[
-          _item(id: 'food', isDeposit: false, isDiscount: false),
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            weight: '500 g',
+            nutrition: _testNutrition,
+          ),
         ],
         onCancelTap: () {},
         onSaveTap: (items) async {
@@ -1619,6 +1726,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('receipt_review_field_name')), findsNothing);
+
+    await _confirmReviewItem(tester, 0);
 
     final saveButton = find.byKey(const Key('receipt_review_save_button'));
     await tester.ensureVisible(saveButton);
@@ -1750,7 +1859,13 @@ void main() {
     await tester.pumpWidget(
       _wrap(
         items: <InventoryItem>[
-          _item(id: 'food', isDeposit: false, isDiscount: false),
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            weight: '500 g',
+            nutrition: _testNutrition,
+          ),
           _item(
             id: 'discount',
             name: 'Coupon',
@@ -1777,6 +1892,8 @@ void main() {
     );
     expect(find.textContaining('Coupon'), findsOneWidget);
 
+    await _confirmReviewItem(tester, 0);
+
     await tester.tap(find.byKey(const Key('receipt_review_save_button')));
     await tester.pumpAndSettle();
 
@@ -1799,6 +1916,8 @@ void main() {
             isDeposit: false,
             isDiscount: false,
             unitPrice: 2.00,
+            weight: '500 g',
+            nutrition: _testNutrition,
           ),
           _item(
             id: 'gurke',
@@ -1806,6 +1925,8 @@ void main() {
             isDeposit: false,
             isDiscount: false,
             unitPrice: 1.50,
+            weight: '600 g',
+            nutrition: _testNutrition,
           ),
           _item(
             id: 'rabatt',
@@ -1837,6 +1958,9 @@ void main() {
     );
     expect(find.textContaining('Rabatt'), findsOneWidget);
 
+    await _confirmReviewItem(tester, 0);
+    await _confirmReviewItem(tester, 1);
+
     await tester.tap(find.byKey(const Key('receipt_review_save_button')));
     await tester.pumpAndSettle();
 
@@ -1857,6 +1981,8 @@ void main() {
             isDeposit: false,
             isDiscount: false,
             unitPrice: 2.00,
+            weight: '500 g',
+            nutrition: _testNutrition,
           ),
           _item(
             id: 'gurke',
@@ -1864,6 +1990,8 @@ void main() {
             isDeposit: false,
             isDiscount: false,
             unitPrice: 1.50,
+            weight: '600 g',
+            nutrition: _testNutrition,
           ),
           _item(
             id: 'rabatt',
@@ -1884,6 +2012,9 @@ void main() {
       find.byKey(const Key('receipt_review_discount_row_1_0')),
       findsOneWidget,
     );
+
+    await _confirmReviewItem(tester, 0);
+    await _confirmReviewItem(tester, 1);
 
     await tester.tap(find.byKey(const Key('receipt_review_save_button')));
     await tester.pumpAndSettle();
@@ -1907,6 +2038,8 @@ void main() {
             isDeposit: false,
             isDiscount: false,
             unitPrice: 2.00,
+            weight: '500 g',
+            nutrition: _testNutrition,
           ),
           _item(
             id: 'gurke',
@@ -1914,6 +2047,8 @@ void main() {
             isDeposit: false,
             isDiscount: false,
             unitPrice: 1.50,
+            weight: '600 g',
+            nutrition: _testNutrition,
           ),
           _item(
             id: 'leergut',
@@ -1935,6 +2070,9 @@ void main() {
       findsNothing,
     );
 
+    await _confirmReviewItem(tester, 0);
+    await _confirmReviewItem(tester, 1);
+
     await tester.tap(find.byKey(const Key('receipt_review_save_button')));
     await tester.pumpAndSettle();
 
@@ -1953,7 +2091,13 @@ void main() {
     await tester.pumpWidget(
       _wrap(
         items: <InventoryItem>[
-          _item(id: 'food', isDeposit: false, isDiscount: false),
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            weight: '500 g',
+            nutrition: _testNutrition,
+          ),
         ],
         onCancelTap: () {},
         onSaveTap: (items) async {
@@ -1987,6 +2131,8 @@ void main() {
       findsOneWidget,
     );
     expect(find.textContaining('Loyalty'), findsOneWidget);
+
+    await _confirmReviewItem(tester, 0);
 
     await tester.tap(find.byKey(const Key('receipt_review_save_button')));
     await tester.pumpAndSettle();
@@ -2034,7 +2180,13 @@ void main() {
     await tester.pumpWidget(
       _wrap(
         items: <InventoryItem>[
-          _item(id: 'food', isDeposit: false, isDiscount: false),
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            weight: '500 g',
+            nutrition: _testNutrition,
+          ),
         ],
         onCancelTap: () {},
         onSaveTap: (items) async {
@@ -2063,6 +2215,8 @@ void main() {
     await tester.tap(applyButton);
     await tester.pumpAndSettle();
 
+    await _confirmReviewItem(tester, 0);
+
     await tester.tap(find.byKey(const Key('receipt_review_save_button')));
     await tester.pumpAndSettle();
 
@@ -2083,6 +2237,8 @@ void main() {
             name: 'Gurken',
             isDeposit: false,
             isDiscount: false,
+            weight: '500 g',
+            nutrition: _testNutrition,
             discounts: const <String, double>{'Rabatt': -0.50},
           ),
         ],
@@ -2122,6 +2278,8 @@ void main() {
       find.byKey(const Key('receipt_review_discount_row_0_0')),
       findsNothing,
     );
+
+    await _confirmReviewItem(tester, 0);
 
     await tester.tap(find.byKey(const Key('receipt_review_save_button')));
     await tester.pumpAndSettle();
@@ -2195,7 +2353,12 @@ void main() {
     await tester.pumpWidget(
       _wrap(
         items: <InventoryItem>[
-          _item(id: 'food', isDeposit: false, isDiscount: false),
+          _item(
+            id: 'food',
+            isDeposit: false,
+            isDiscount: false,
+            nutrition: _testNutrition,
+          ),
         ],
         onCancelTap: () {},
         onSaveTap: (items) async {
@@ -2230,6 +2393,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Please add a unit (e.g. g or ml).'), findsNothing);
+
+    await _confirmReviewItem(tester, 0);
 
     final saveButton = find.byKey(const Key('receipt_review_save_button'));
     await tester.ensureVisible(saveButton);

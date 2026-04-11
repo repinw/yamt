@@ -211,6 +211,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewWeightConfirmRequired => 'Bitte bestätige das Gewicht.';
 
   @override
+  String get inventoryReceiptReviewConfirmItemAction => 'Artikel bestätigen';
+
+  @override
+  String get inventoryReceiptReviewUndoConfirmAction => 'Bestätigung aufheben';
+
+  @override
+  String get inventoryReceiptReviewWeightMissingTag => 'Gewicht?';
+
+  @override
   String get inventoryReceiptReviewInvalidDiscounts => 'JSON oder key=value verwenden.';
 
   @override

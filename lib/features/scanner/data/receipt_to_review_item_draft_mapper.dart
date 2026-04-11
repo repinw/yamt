@@ -22,7 +22,7 @@ final _nameValueWithUnitPattern = RegExp(
   caseSensitive: false,
 );
 final _namePiecePattern = RegExp(
-  r'(?:^|\b)(\d{1,3})\s*(stk|st\.?|stueck|stück|pc|piece|pieces)\b',
+  r'(?:^|\b)(\d{1,3})\s*(stk|st\.?|stueck|stück|pc|pcs|piece|pieces)\b',
   caseSensitive: false,
 );
 
