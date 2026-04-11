@@ -19,6 +19,8 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
     required this.currency,
     required this.onEditTap,
     required this.onSwitchTap,
+    required this.onConfirmTap,
+    required this.canConfirm,
     this.isActionLoading = false,
   });
 
@@ -27,15 +29,18 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
   final NumberFormat currency;
   final ValueChanged<String> onEditTap;
   final ValueChanged<String> onSwitchTap;
+  final VoidCallback onConfirmTap;
+  final bool canConfirm;
   final bool isActionLoading;
 
   @override
   Widget build(BuildContext context) {
+    final draft = this.draft;
     final item = draft.item;
     final textTheme = Theme.of(context).textTheme;
     final colors = Theme.of(context).colorScheme;
     final viewData = _ReceiptItemCardViewData.fromDraft(context, draft);
-    final muted = viewData.isMuted;
+    final muted = viewData.isMuted || draft.isConfirmed;
     final titleStyle = muted
         ? textTheme.titleMedium?.copyWith(
             color: Theme.of(context).disabledColor,
@@ -55,8 +60,10 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
         child: Ink(
           decoration: AppReceiptReviewSurfaces.panelDecoration(
             colors,
-            backgroundColor: muted
+            backgroundColor: viewData.isMuted
                 ? colors.surfaceContainerLow
+                : draft.isConfirmed
+                ? colors.primaryContainer.withValues(alpha: 0.34)
                 : colors.surface,
           ),
           child: Padding(
@@ -67,6 +74,7 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
                 _ReceiptItemLeading(
                   visualState: viewData.visualState,
                   display: viewData.display,
+                  quantityLabel: '${item.quantity}x',
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -79,9 +87,11 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
                         viewData: viewData,
                         titleStyle: titleStyle,
                         subtitleStyle: subtitleStyle,
+                        isConfirmed: draft.isConfirmed,
                       ),
-                      if (viewData.display.nutrition?.hasAnyNutritionValue ??
-                          false) ...[
+                      if (!draft.isConfirmed &&
+                          (viewData.display.nutrition?.hasAnyNutritionValue ??
+                              false)) ...[
                         const SizedBox(height: 10),
                         InventoryReceiptNutritionChips(
                           nutrition: viewData.display.nutrition!,
@@ -94,12 +104,15 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       _ReceiptItemFooter(
+                        draft: draft,
                         item: item,
                         itemId: item.id,
                         index: index,
                         viewData: viewData,
                         onSwitchTap: onSwitchTap,
                         isActionLoading: isActionLoading,
+                        canConfirm: canConfirm,
+                        onConfirmTap: onConfirmTap,
                       ),
                     ],
                   ),
@@ -120,6 +133,7 @@ class _ReceiptItemTopRow extends StatelessWidget {
     required this.viewData,
     required this.titleStyle,
     required this.subtitleStyle,
+    required this.isConfirmed,
   });
 
   final InventoryItem item;
@@ -127,6 +141,7 @@ class _ReceiptItemTopRow extends StatelessWidget {
   final _ReceiptItemCardViewData viewData;
   final TextStyle? titleStyle;
   final TextStyle? subtitleStyle;
+  final bool isConfirmed;
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +164,7 @@ class _ReceiptItemTopRow extends StatelessWidget {
                 style: titleStyle?.copyWith(
                   fontWeight: FontWeight.w800,
                   fontSize: 16,
-                  color: colors.onSurface,
+                  color: titleStyle?.color ?? colors.onSurface,
                 ),
               ),
               if (brand != null) ...[
@@ -188,7 +203,9 @@ class _ReceiptItemTopRow extends StatelessWidget {
           currency.format(item.unitPrice),
           style: textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w900,
-            color: colors.onSurface,
+            color: isConfirmed
+                ? Theme.of(context).disabledColor
+                : colors.onSurface,
           ),
         ),
       ],
@@ -198,28 +215,37 @@ class _ReceiptItemTopRow extends StatelessWidget {
 
 class _ReceiptItemFooter extends StatelessWidget {
   const _ReceiptItemFooter({
+    required this.draft,
     required this.item,
     required this.itemId,
     required this.index,
     required this.viewData,
     required this.onSwitchTap,
     required this.isActionLoading,
+    required this.canConfirm,
+    required this.onConfirmTap,
   });
 
+  final ReceiptReviewItemDraft draft;
   final InventoryItem item;
   final String itemId;
   final int index;
   final _ReceiptItemCardViewData viewData;
   final ValueChanged<String> onSwitchTap;
   final bool isActionLoading;
+  final bool canConfirm;
+  final VoidCallback onConfirmTap;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final displayedWeight =
-        viewData.display.packageWeight?.trim().isNotEmpty == true
-        ? viewData.display.packageWeight!.trim()
-        : item.weight?.trim();
+    final candidateWeight = viewData.display.packageWeight?.trim();
+    final itemWeight = item.weight?.trim();
+    final displayedWeight = itemWeight?.isNotEmpty == true
+        ? itemWeight
+        : candidateWeight;
+    final shouldHighlightWeight =
+        draft.weightNeedsAttention && !draft.isConfirmed;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -230,22 +256,36 @@ class _ReceiptItemFooter extends StatelessWidget {
             spacing: AppSpacing.xs,
             runSpacing: AppSpacing.xs,
             children: [
-              _QuantityPill(label: '${item.quantity}x'),
               if (displayedWeight case final weight? when weight.isNotEmpty)
-                _QuantityPill(label: weight),
+                _QuantityPill(
+                  label: weight,
+                  highlighted: shouldHighlightWeight,
+                ),
               if (viewData.isMuted)
                 _StatusPill(label: l10n.inventoryReceiptReviewExcludedTag),
             ],
           ),
         ),
-        if (viewData.actionLabel != null)
-          _ReceiptItemActionButton(
-            key: viewData.actionButtonKey(index),
-            visualState: viewData.visualState,
-            label: viewData.actionLabel!,
-            isLoading: isActionLoading,
-            onPressed: _handleAction,
-          ),
+        Wrap(
+          spacing: AppSpacing.xs,
+          runSpacing: AppSpacing.xs,
+          children: [
+            if (viewData.actionLabel != null)
+              _ReceiptItemActionButton(
+                key: viewData.actionButtonKey(index),
+                visualState: viewData.visualState,
+                isLoading: isActionLoading,
+                onPressed: _handleAction,
+              ),
+            if (draft.canBeSavedToInventory)
+              _ReceiptItemConfirmButton(
+                index: index,
+                isConfirmed: draft.isConfirmed,
+                isEnabled: canConfirm,
+                onPressed: onConfirmTap,
+              ),
+          ],
+        ),
       ],
     );
   }
@@ -259,43 +299,55 @@ class _ReceiptItemFooter extends StatelessWidget {
 }
 
 class _ReceiptItemLeading extends StatelessWidget {
-  const _ReceiptItemLeading({required this.visualState, required this.display});
+  const _ReceiptItemLeading({
+    required this.visualState,
+    required this.display,
+    required this.quantityLabel,
+  });
 
   final _ReceiptItemVisualState visualState;
   final _ReceiptDisplayData display;
+  final String quantityLabel;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return Stack(
-      clipBehavior: Clip.none,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        InventoryReceiptSelectionThumbnail(
-          imageUrl: display.imageUrl,
-          icon: Icons.inventory_2_outlined,
-          backgroundColor: colors.surfaceContainerHighest,
-          foregroundColor: colors.onSurfaceVariant,
-          dimension: 48,
-        ),
-        Positioned(
-          right: -4,
-          bottom: -4,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: colors.surface,
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            InventoryReceiptSelectionThumbnail(
+              imageUrl: display.imageUrl,
+              icon: Icons.inventory_2_outlined,
+              backgroundColor: colors.surfaceContainerHighest,
+              foregroundColor: colors.onSurfaceVariant,
+              dimension: 48,
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.xxs * 2),
-              child: Icon(
-                visualState.icon,
-                size: 20,
-                color: visualState.color(context),
+            Positioned(
+              right: -4,
+              bottom: -4,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: colors.surface,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.xxs * 2),
+                  child: Icon(
+                    visualState.icon,
+                    size: 20,
+                    color: visualState.color(context),
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
+        const SizedBox(height: AppSpacing.sm),
+        _QuantityPill(label: quantityLabel),
       ],
     );
   }
@@ -380,16 +432,13 @@ _ReceiptItemVisualState _visualStateForDraft(ReceiptReviewItemDraft draft) {
   if (!draft.canBeSavedToInventory) {
     return _ReceiptItemVisualState.excluded;
   }
+  if (draft.isConfirmed) {
+    return _ReceiptItemVisualState.matched;
+  }
   if (!draft.hasCandidates) {
     return _ReceiptItemVisualState.newProduct;
   }
-  if (draft.selectedCandidate == null) {
-    return _ReceiptItemVisualState.reviewNeeded;
-  }
-  if (draft.selectionNeedsReview || draft.differsFromSelectedCandidate) {
-    return _ReceiptItemVisualState.reviewNeeded;
-  }
-  return _ReceiptItemVisualState.matched;
+  return _ReceiptItemVisualState.reviewNeeded;
 }
 
 class _ReceiptDisplayData {
@@ -534,19 +583,27 @@ class _NutritionChip extends StatelessWidget {
 }
 
 class _QuantityPill extends StatelessWidget {
-  const _QuantityPill({required this.label});
+  const _QuantityPill({required this.label, this.highlighted = false});
 
   final String label;
+  final bool highlighted;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final background = highlighted
+        ? colors.tertiaryContainer
+        : colors.surfaceContainerLowest;
+    final foreground = highlighted
+        ? colors.onTertiaryContainer
+        : colors.onSurfaceVariant;
+    final border = highlighted ? colors.tertiary : colors.outlineVariant;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLowest,
+        color: background,
         borderRadius: BorderRadius.circular(AppReceiptReviewUi.chipRadius),
-        border: Border.all(color: colors.outlineVariant),
+        border: Border.all(color: border),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -554,7 +611,7 @@ class _QuantityPill extends StatelessWidget {
           label,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,
-            color: colors.onSurfaceVariant,
+            color: foreground,
             fontSize: 13,
           ),
         ),
@@ -615,52 +672,102 @@ class _ReceiptItemActionButton extends StatelessWidget {
   const _ReceiptItemActionButton({
     super.key,
     required this.visualState,
-    required this.label,
     required this.onPressed,
     required this.isLoading,
   });
 
   final _ReceiptItemVisualState visualState;
-  final String label;
   final VoidCallback onPressed;
   final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final isDetermine = visualState == _ReceiptItemVisualState.newProduct;
+    final tooltip = isDetermine
+        ? l10n.inventoryReceiptReviewCandidatesAction
+        : l10n.inventoryReceiptReviewSwitchAction;
 
-    return TextButton.icon(
-      onPressed: isLoading ? null : onPressed,
-      style: TextButton.styleFrom(
-        backgroundColor: isDetermine ? colors.primaryContainer : colors.surface,
-        foregroundColor: isDetermine
-            ? colors.onPrimaryContainer
-            : colors.onSurfaceVariant,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppReceiptReviewUi.buttonRadius),
-          side: isDetermine
-              ? BorderSide.none
-              : BorderSide(color: colors.outlineVariant),
+    return Tooltip(
+      message: tooltip,
+      child: TextButton(
+        onPressed: isLoading ? null : onPressed,
+        style: TextButton.styleFrom(
+          backgroundColor: isDetermine
+              ? colors.primaryContainer
+              : colors.surface,
+          foregroundColor: isDetermine
+              ? colors.onPrimaryContainer
+              : colors.onSurfaceVariant,
+          padding: const EdgeInsets.all(12),
+          minimumSize: const Size(44, 44),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              AppReceiptReviewUi.buttonRadius,
+            ),
+            side: isDetermine
+                ? BorderSide.none
+                : BorderSide(color: colors.outlineVariant),
+          ),
         ),
+        child: isLoading
+            ? SizedBox.square(
+                dimension: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: isDetermine
+                      ? colors.onPrimaryContainer
+                      : colors.onSurfaceVariant,
+                ),
+              )
+            : Icon(isDetermine ? Icons.search : Icons.swap_horiz, size: 20),
       ),
-      icon: isLoading
-          ? SizedBox.square(
-              dimension: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: isDetermine
-                    ? colors.onPrimaryContainer
-                    : colors.onSurfaceVariant,
-              ),
-            )
-          : Icon(isDetermine ? Icons.search : Icons.swap_horiz, size: 16),
-      label: Text(
-        label,
-        style: Theme.of(
-          context,
-        ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+    );
+  }
+}
+
+class _ReceiptItemConfirmButton extends StatelessWidget {
+  const _ReceiptItemConfirmButton({
+    required this.index,
+    required this.isConfirmed,
+    required this.isEnabled,
+    required this.onPressed,
+  });
+
+  final int index;
+  final bool isConfirmed;
+  final bool isEnabled;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+
+    return Tooltip(
+      message: isConfirmed
+          ? l10n.inventoryReceiptReviewUndoConfirmAction
+          : l10n.inventoryReceiptReviewConfirmItemAction,
+      child: FilledButton(
+        key: Key('receipt_review_confirm_button_$index'),
+        onPressed: isEnabled ? onPressed : null,
+        style: FilledButton.styleFrom(
+          backgroundColor: isConfirmed
+              ? colors.primaryContainer
+              : colors.primary,
+          foregroundColor: isConfirmed
+              ? colors.onPrimaryContainer
+              : colors.onPrimary,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          minimumSize: const Size(48, 44),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              AppReceiptReviewUi.buttonRadius,
+            ),
+          ),
+        ),
+        child: Icon(isConfirmed ? Icons.undo : Icons.check, size: 18),
       ),
     );
   }

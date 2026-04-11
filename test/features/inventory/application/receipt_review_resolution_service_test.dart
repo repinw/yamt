@@ -3,7 +3,6 @@ import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
-import 'package:yamt/features/inventory/application/receipt_review_resolution_service.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
@@ -12,6 +11,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/domain/'
     'receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/application/receipt_review_resolution_service.dart';
 import 'package:yamt/features/scanner/data/receipt_to_review_item_draft_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 
@@ -162,17 +162,23 @@ InventoryItem _item({
   required String id,
   required String name,
   String? brand,
+  String? weight,
   bool isDeposit = false,
 }) {
-  return InventoryItem.create(
+  final item = InventoryItem.create(
     id: id,
     name: name,
     brand: brand,
     entryDate: DateTime.parse('2026-03-01T12:00:00Z'),
     storeName: 'Store',
     quantity: 1,
+    weight: weight,
     isDeposit: isDeposit,
   );
+  if (weight == null) {
+    return item;
+  }
+  return item.withDerivedAmount(weight: weight, quantity: item.quantity);
 }
 
 GlobalFoodItem _product({
@@ -181,6 +187,7 @@ GlobalFoodItem _product({
   String? brand,
   String? barcode,
   String? imageUrl,
+  String? packageWeight,
   GlobalFoodNutrition? nutrition,
   GlobalFoodItemStatus status = GlobalFoodItemStatus.active,
 }) {
@@ -190,6 +197,7 @@ GlobalFoodItem _product({
     brand: brand,
     barcode: barcode,
     imageUrl: imageUrl,
+    packageWeight: packageWeight,
     now: DateTime.parse('2026-03-01T10:00:00Z'),
     nutrition: nutrition,
     status: status,
@@ -276,6 +284,45 @@ void main() {
       expect(prepared.single.selectionNeedsReview, isTrue);
     },
   );
+
+  test('prepareDrafts requires weight confirmation for default candidate '
+      'when receipt weight missing', () async {
+    final product = _product(
+      id: 'gouda',
+      name: 'Gouda',
+      brand: 'Milbona',
+      packageWeight: '800 g',
+    );
+    final draft = ReceiptReviewItemDraft(
+      item: _item(id: 'draft-1', name: 'KAESE SCHEIBEN', brand: 'Milbona'),
+    );
+    final service = ReceiptReviewResolutionService(
+      mapper: _FakeMapper(<ReceiptReviewItemDraft>[draft]),
+      matcher: _FakeMatcher(
+        candidatesByItemId: <String, List<GlobalFoodMatchCandidate>>{
+          'draft-1': <GlobalFoodMatchCandidate>[
+            GlobalFoodMatchCandidate(
+              item: product,
+              score: 42,
+              reason: GlobalFoodMatchReason.nameBrandStrong,
+            ),
+          ],
+        },
+        defaultSelections: <String, String?>{'gouda': 'gouda'},
+      ),
+      globalFoodItemRepository: _RecordingGlobalFoodItemRepository(),
+      inventoryItemRepository: _RecordingInventoryItemRepository(),
+    );
+
+    final prepared = await service.prepareDrafts(
+      const ReceiptAnalysisExtraction(
+        root: <String, dynamic>{},
+        items: <ReceiptAnalysisItem>[],
+      ),
+    );
+
+    expect(prepared.single.selectedGlobalFoodItemId, 'gouda');
+  });
 
   test('prepareDrafts skips matcher lookup for review-only drafts', () async {
     final matcher = _FakeMatcher(
@@ -402,6 +449,36 @@ void main() {
       );
     },
   );
+
+  test('persistReviewedItems keeps confirmed weight on new products', () async {
+    final globalRepository = _RecordingGlobalFoodItemRepository();
+    final inventoryRepository = _RecordingInventoryItemRepository();
+    final service = ReceiptReviewResolutionService(
+      mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
+      matcher: _FakeMatcher(
+        candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
+        defaultSelections: const <String, String?>{},
+      ),
+      globalFoodItemRepository: globalRepository,
+      inventoryItemRepository: inventoryRepository,
+      globalFoodItemIdGenerator: () => 'global-food-fixed',
+    );
+
+    final result = await service.persistReviewedItems(<ReceiptReviewItemDraft>[
+      ReceiptReviewItemDraft(
+        item: _item(id: 'draft-1', name: 'Milk', weight: '500 g'),
+      ),
+    ]);
+
+    expect(result.saved, isTrue);
+    expect(globalRepository.appendedItems.single.packageWeight, '500 g');
+    expect(inventoryRepository.appendedItems.single.weight, '500 g');
+    expect(inventoryRepository.appendedItems.single.initialAmount, 500);
+    expect(
+      inventoryRepository.appendedItems.single.amountUnit,
+      InventoryAmountUnit.gram,
+    );
+  });
 
   test(
     'persistReviewedItems saves unchanged external candidate before inventory',

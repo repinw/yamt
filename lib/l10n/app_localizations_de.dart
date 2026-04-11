@@ -199,6 +199,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewInvalidWeightUnit => 'Bitte eine Einheit angeben (z. B. g oder ml).';
 
   @override
+  String get inventoryReceiptReviewConfirmItemAction => 'Artikel bestätigen';
+
+  @override
+  String get inventoryReceiptReviewUndoConfirmAction => 'Bestätigung aufheben';
+
+  @override
+  String get inventoryReceiptReviewWeightMissingTag => 'Gewicht?';
+
+  @override
   String get inventoryReceiptReviewInvalidDiscounts => 'JSON oder key=value verwenden.';
 
   @override

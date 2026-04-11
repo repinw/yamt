@@ -5,7 +5,7 @@ import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository_contract.dart';
-import 'package:yamt/features/inventory/application/'
+import 'package:yamt/features/scanner/application/'
     'receipt_review_resolution_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';

@@ -511,27 +511,34 @@ class InventoryReceiptManualProductController
       fat: fat,
     );
     final ocrProfile = _resolvedOcrProfile();
-    final updatedItem = _config.item.copyWith(
-      name:
-          selectedProduct?.name ??
-          _resolvedNameFromOcr(ocrProfile) ??
-          _config.item.name,
-      brand: selectedProduct?.brand ?? ocrProfile?.brand ?? _config.item.brand,
-      barcode: barcode,
-      imageUrl: selectedProduct?.imageUrl ?? _config.item.imageUrl,
-      weight: resolvedWeight,
-      nutrition: hasNutrition
-          ? GlobalFoodNutrition(
-              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-              per100Kcal: kcal,
-              per100Protein: protein,
-              per100Carbs: carbs,
-              per100Fat: fat,
-            )
-          : selectedProduct?.nutrition ??
-                _nutritionFromProfile(ocrProfile) ??
-                _config.item.nutrition,
-    );
+    final updatedItem = _config.item
+        .copyWith(
+          name:
+              selectedProduct?.name ??
+              _resolvedNameFromOcr(ocrProfile) ??
+              _config.item.name,
+          brand:
+              selectedProduct?.brand ?? ocrProfile?.brand ?? _config.item.brand,
+          barcode: barcode,
+          imageUrl: selectedProduct?.imageUrl ?? _config.item.imageUrl,
+          weight: resolvedWeight,
+          nutrition: hasNutrition
+              ? GlobalFoodNutrition(
+                  qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+                  per100Kcal: kcal,
+                  per100Protein: protein,
+                  per100Carbs: carbs,
+                  per100Fat: fat,
+                )
+              : selectedProduct?.nutrition ??
+                    _nutritionFromProfile(ocrProfile) ??
+                    _config.item.nutrition,
+        )
+        .withDerivedAmount(
+          weight: resolvedWeight,
+          quantity: _config.item.quantity,
+          fallbackUnit: state.selectedWeightUnit,
+        );
     return (
       item: updatedItem,
       selectedProduct: selectedProduct?.externalProduct,

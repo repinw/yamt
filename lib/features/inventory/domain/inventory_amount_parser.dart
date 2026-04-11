@@ -52,6 +52,7 @@ class InventoryAmountParser {
     'litre': (base: InventoryAmountUnit.milliliter, multiplier: 1000.0),
     'litres': (base: InventoryAmountUnit.milliliter, multiplier: 1000.0),
     'pc': (base: InventoryAmountUnit.piece, multiplier: 1.0),
+    'pcs': (base: InventoryAmountUnit.piece, multiplier: 1.0),
     'piece': (base: InventoryAmountUnit.piece, multiplier: 1.0),
     'pieces': (base: InventoryAmountUnit.piece, multiplier: 1.0),
     'st': (base: InventoryAmountUnit.piece, multiplier: 1.0),
