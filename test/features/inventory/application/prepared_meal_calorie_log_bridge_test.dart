@@ -168,6 +168,7 @@ void main() {
         return true;
       },
       now: () => DateTime(2026, 4, 2, 18, 45, 30),
+      nextEntryId: () => 'entry-bridge-test',
     );
     final meal = PreparedMeal(
       id: 'meal-3',
@@ -197,5 +198,108 @@ void main() {
     expect(entry.loggedAt.hour, 18);
     expect(entry.loggedAt.minute, 45);
     expect(entry.createdAt, DateTime(2026, 4, 2, 18, 45, 30));
+  });
+
+  test('bridge restores optimistic meals when atomic save fails', () async {
+    final publishedMeals = <List<PreparedMeal>>[];
+    var fallbackSaveCalled = false;
+    var directSaveCalled = false;
+    final meal = PreparedMeal(
+      id: 'meal-4',
+      name: 'Soup',
+      imageAssetId: 'asset-4',
+      totalPortions: 2,
+      remainingPortions: 2,
+      totalKcal: 300,
+      totalProtein: 20,
+      totalCarbs: 30,
+      totalFat: 10,
+      createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      components: const <PreparedMealComponent>[],
+    );
+    final currentMeals = <PreparedMeal>[meal];
+    final nextMeals = <PreparedMeal>[meal.copyWith(remainingPortions: 1)];
+    final bridge = PreparedMealCalorieLogBridge(
+      saveEntry: (_) async {
+        directSaveCalled = true;
+        return true;
+      },
+      saveEntryAtomically: (_) async => false,
+      now: () => DateTime(2026, 4, 2, 18, 45, 30),
+      nextEntryId: () => 'entry-atomic-failure',
+    );
+
+    final saved = await bridge.consumePreparedMeal(
+      currentMeals: currentMeals,
+      nextMeals: nextMeals,
+      meal: meal,
+      consumedPortions: 1,
+      mealType: MealType.dinner,
+      publishMeals: (meals) {
+        publishedMeals.add(List<PreparedMeal>.from(meals));
+      },
+      saveMeals: (_, __) async {
+        fallbackSaveCalled = true;
+        return true;
+      },
+    );
+
+    expect(saved, isFalse);
+    expect(directSaveCalled, isFalse);
+    expect(fallbackSaveCalled, isFalse);
+    expect(
+      publishedMeals.map((meals) => meals.single.remainingPortions).toList(),
+      <int>[1, 2],
+    );
+  });
+
+  test('bridge returns false after fallback calorie save rollback', () async {
+    final saveCalls =
+        <({List<PreparedMeal> previousMeals, List<PreparedMeal> nextMeals})>[];
+    final meal = PreparedMeal(
+      id: 'meal-5',
+      name: 'Soup',
+      imageAssetId: 'asset-5',
+      totalPortions: 2,
+      remainingPortions: 2,
+      totalKcal: 300,
+      totalProtein: 20,
+      totalCarbs: 30,
+      totalFat: 10,
+      createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      components: const <PreparedMealComponent>[],
+    );
+    final currentMeals = <PreparedMeal>[meal];
+    final nextMeals = <PreparedMeal>[meal.copyWith(remainingPortions: 1)];
+    final bridge = PreparedMealCalorieLogBridge(
+      saveEntry: (_) async => false,
+      now: () => DateTime(2026, 4, 2, 18, 45, 30),
+      nextEntryId: () => 'entry-fallback-failure',
+    );
+
+    final saved = await bridge.consumePreparedMeal(
+      currentMeals: currentMeals,
+      nextMeals: nextMeals,
+      meal: meal,
+      consumedPortions: 1,
+      mealType: MealType.dinner,
+      publishMeals: (_) {},
+      saveMeals: (previousMeals, nextMeals) async {
+        saveCalls.add((
+          previousMeals: List<PreparedMeal>.from(previousMeals),
+          nextMeals: List<PreparedMeal>.from(nextMeals),
+        ));
+        return true;
+      },
+    );
+
+    expect(saved, isFalse);
+    expect(saveCalls, hasLength(2));
+    expect(saveCalls.first.previousMeals.single.remainingPortions, 2);
+    expect(saveCalls.first.nextMeals.single.remainingPortions, 1);
+    expect(saveCalls.last.previousMeals.single.remainingPortions, 1);
+    expect(saveCalls.last.nextMeals.single.remainingPortions, 2);
   });
 }

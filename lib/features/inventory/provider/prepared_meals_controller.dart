@@ -4,11 +4,7 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
-import 'package:yamt/features/calories/data/'
-    'prepared_meal_calorie_entry_commit_store.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
-import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/household/provider/'
     'household_access_recovery_utils.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
@@ -482,43 +478,28 @@ class PreparedMealsController extends _$PreparedMealsController {
         removedPortions: consumedPortions,
         keepDepletedMeal: true,
       );
-      final entry = buildConsumedPreparedMealCalorieEntry(
-        meal: meal,
-        consumedPortions: consumedPortions,
-        mealType: mealType,
-        now: DateTime.now,
-        loggedDay: loggedDay,
-      );
-      if (entry == null) {
-        log(
-          'consumePreparedMeal(): failed to build calorie entry '
-          '(mealId=$mealId)',
-          name: _preparedMealsControllerLogName,
-        );
-        return false;
-      }
-
-      final commitStore = ref.read(preparedMealCalorieEntryCommitStoreProvider);
-      if (commitStore != null) {
-        return _consumePreparedMealAtomically(
-          currentMeals: currentMeals,
-          nextMeals: nextMeals,
-          entry: entry,
-          mealId: mealId,
-          consumedPortions: consumedPortions,
-          commitStore: commitStore,
-        );
-      }
-
-      return _consumePreparedMealWithRollback(
-        currentMeals: currentMeals,
-        nextMeals: nextMeals,
-        meal: meal,
-        mealId: mealId,
-        consumedPortions: consumedPortions,
-        mealType: mealType,
-        loggedDay: loggedDay,
-      );
+      return ref
+          .read(preparedMealCalorieLogBridgeProvider)
+          .consumePreparedMeal(
+            currentMeals: currentMeals,
+            nextMeals: nextMeals,
+            meal: meal,
+            consumedPortions: consumedPortions,
+            mealType: mealType,
+            loggedDay: loggedDay,
+            publishMeals: (meals) {
+              if (!ref.mounted) {
+                return;
+              }
+              state = AsyncData(meals);
+            },
+            saveMeals: (previousMeals, nextMeals) {
+              return _saveMeals(
+                previousMeals: previousMeals,
+                nextMeals: nextMeals,
+              );
+            },
+          );
     }).whenComplete(keepAliveLink.close);
   }
 
@@ -869,95 +850,6 @@ class PreparedMealsController extends _$PreparedMealsController {
         stackTrace: stackTrace,
       );
     }
-  }
-
-  Future<bool> _consumePreparedMealAtomically({
-    required List<PreparedMeal> currentMeals,
-    required List<PreparedMeal> nextMeals,
-    required CalorieEntry entry,
-    required String mealId,
-    required int consumedPortions,
-    required PreparedMealCalorieEntryCommitStore commitStore,
-  }) async {
-    if (ref.mounted) {
-      state = AsyncData(nextMeals);
-    }
-
-    final saved = await ref
-        .read(calorieEntriesControllerProvider.notifier)
-        .saveEntry(
-          entry,
-          persistEntry: (persistedEntry) {
-            return commitStore.commitEntryAndPreparedMeal(
-              entry: persistedEntry,
-            );
-          },
-        );
-    if (saved) {
-      log(
-        'consumePreparedMeal(): atomic calorie + meal commit saved '
-        '(mealId=$mealId, consumedPortions=$consumedPortions)',
-        name: _preparedMealsControllerLogName,
-      );
-      return true;
-    }
-
-    if (ref.mounted) {
-      state = AsyncData(currentMeals);
-    }
-    log(
-      'consumePreparedMeal(): atomic commit failed, restored local '
-      'meal state (mealId=$mealId)',
-      name: _preparedMealsControllerLogName,
-    );
-    return false;
-  }
-
-  Future<bool> _consumePreparedMealWithRollback({
-    required List<PreparedMeal> currentMeals,
-    required List<PreparedMeal> nextMeals,
-    required PreparedMeal meal,
-    required String mealId,
-    required int consumedPortions,
-    required MealType mealType,
-    required DateTime? loggedDay,
-  }) async {
-    final savedMeals = await _saveMeals(
-      previousMeals: currentMeals,
-      nextMeals: nextMeals,
-    );
-    if (!savedMeals) {
-      log(
-        'consumePreparedMeal(): failed to save updated prepared meals '
-        '(mealId=$mealId)',
-        name: _preparedMealsControllerLogName,
-      );
-      return false;
-    }
-
-    final calorieSaved = await ref
-        .read(preparedMealCalorieLogBridgeProvider)
-        .logConsumedPreparedMeal(
-          meal: meal,
-          consumedPortions: consumedPortions,
-          mealType: mealType,
-          loggedDay: loggedDay,
-        );
-    if (calorieSaved) {
-      log(
-        'consumePreparedMeal(): calorie entry saved '
-        '(mealId=$mealId, consumedPortions=$consumedPortions)',
-        name: _preparedMealsControllerLogName,
-      );
-      return true;
-    }
-
-    log(
-      'consumePreparedMeal(): calorie entry save failed, restoring '
-      'previous meal state (mealId=$mealId)',
-      name: _preparedMealsControllerLogName,
-    );
-    return _saveMeals(previousMeals: nextMeals, nextMeals: currentMeals);
   }
 
   Future<bool> _runSerializedMutation(Future<bool> Function() mutation) {

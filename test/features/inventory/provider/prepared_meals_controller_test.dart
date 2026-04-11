@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/calories/data/'
-    'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
@@ -13,6 +11,8 @@ import 'package:yamt/features/calories/provider/calorie_entries_controller.dart'
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
@@ -921,6 +921,57 @@ void main() {
       expect(calorieLogRepository.entries.single.isBundle, isTrue);
     },
   );
+
+  test('consumePreparedMeal returns false and restores portions when calorie '
+      'save fails without atomic commit', () async {
+    final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
+    final inventoryRepository = _FakeInventoryItemRepository(
+      initialItems: [item],
+    );
+    final preparedMealRepository = _FakePreparedMealRepository(
+      initialMeals: [_meal(id: 'meal-1', name: 'Lunch box', item: item)],
+    );
+    final calorieLogRepository = FakeCalorieLogRepository()
+      ..saveShouldFail = true;
+    addTearDown(inventoryRepository.dispose);
+    addTearDown(preparedMealRepository.dispose);
+    addTearDown(calorieLogRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
+        preparedMealRepositoryProvider.overrideWithValue(
+          preparedMealRepository,
+        ),
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(preparedMealsControllerProvider.future);
+    final saved = await container
+        .read(preparedMealsControllerProvider.notifier)
+        .consumePreparedMeal(
+          mealId: 'meal-1',
+          consumedPortions: 1,
+          mealType: MealType.lunch,
+        );
+
+    expect(saved, isFalse);
+    expect(preparedMealRepository.savedMeals.single.remainingPortions, 4);
+    expect(calorieLogRepository.entries, isEmpty);
+    expect(
+      container
+          .read(preparedMealsControllerProvider)
+          .asData
+          ?.value
+          .single
+          .remainingPortions,
+      4,
+    );
+  });
 
   test('consumePreparedMeal uses atomic commit store when available', () async {
     final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
