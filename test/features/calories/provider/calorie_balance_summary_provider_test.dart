@@ -201,6 +201,84 @@ void main() {
   );
 
   test(
+    'calorieBalanceSummary stays at zero exactly at eating window start',
+    () async {
+      final now = DateTime(2026, 4, 10, 6);
+      final day = normalizeDiaryDay(now);
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: _historyEntries(day),
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: day.subtract(const Duration(days: 6)),
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieBalanceNowProvider.overrideWithValue(() => now),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(calorieDayControllerProvider.notifier).setDay(day);
+
+      final summary = await container.read(
+        calorieBalanceSummaryProvider.future,
+      );
+
+      expect(summary.paceRatio, 0.0);
+      expect(summary.pacedGoalKcal, 0.0);
+    },
+  );
+
+  test(
+    'calorieBalanceSummary is fully paced exactly at eating window end',
+    () async {
+      final now = DateTime(2026, 4, 10, 22);
+      final day = normalizeDiaryDay(now);
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: _historyEntries(day),
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: day.subtract(const Duration(days: 6)),
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieBalanceNowProvider.overrideWithValue(() => now),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(calorieDayControllerProvider.notifier).setDay(day);
+
+      final summary = await container.read(
+        calorieBalanceSummaryProvider.future,
+      );
+
+      expect(summary.paceRatio, 1.0);
+      expect(summary.pacedGoalKcal, 2000);
+    },
+  );
+
+  test(
     'calorieBalanceSummary adds full carryover to todays paced base goal',
     () async {
       final now = DateTime(2026, 4, 10, 14);

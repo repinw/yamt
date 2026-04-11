@@ -177,4 +177,22 @@ void main() {
     expect(settings.normalizedEatingWindowStartMinuteOfDay, (7 * 60) + 30);
     expect(settings.normalizedEatingWindowEndMinuteOfDay, 21 * 60);
   });
+
+  test('isValidEatingWindowMinutes rejects identical start and end', () {
+    final isValid = isValidEatingWindowMinutes(
+      startMinuteOfDay: 8 * 60,
+      endMinuteOfDay: 8 * 60,
+    );
+
+    expect(isValid, isFalse);
+  });
+
+  test('isValidEatingWindowMinutes rejects end before start', () {
+    final isValid = isValidEatingWindowMinutes(
+      startMinuteOfDay: 22 * 60,
+      endMinuteOfDay: 6 * 60,
+    );
+
+    expect(isValid, isFalse);
+  });
 }
