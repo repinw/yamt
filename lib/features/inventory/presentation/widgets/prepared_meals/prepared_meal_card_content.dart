@@ -72,38 +72,12 @@ class _PreparedMealCardHeader extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: colors.primaryContainer,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.md,
-                              vertical: AppSpacing.xs,
-                            ),
-                            child: Text(
-                              l10n.preparedMealPortionsRemaining(
-                                meal.remainingPortions,
-                                meal.totalPortions,
-                              ),
-                              style: Theme.of(context).textTheme.labelMedium
-                                  ?.copyWith(fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        InventoryExpandIndicator(
-                          isExpanded: isExpanded,
-                          enabled: enabled,
-                          rotationKey: Key(
-                            'prepared_meal_card_expand_indicator_${meal.id}',
-                          ),
-                        ),
-                      ],
+                    InventoryExpandIndicator(
+                      isExpanded: isExpanded,
+                      enabled: enabled,
+                      rotationKey: Key(
+                        'prepared_meal_card_expand_indicator_${meal.id}',
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     _PreparedMealPrimaryActionButton(
@@ -116,27 +90,15 @@ class _PreparedMealCardHeader extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                    child: LinearProgressIndicator(
-                      value: meal.remainingRatio,
-                      minHeight: 10,
-                      backgroundColor: colors.surfaceContainerHighest,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Text(
-                  '${meal.totalKcal.toStringAsFixed(0)} '
-                  '${l10n.caloriesUnitKcal}',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
-                ),
-              ],
+            RemainingProgressBar(
+              ratio: meal.remainingRatio,
+              stockLabel: l10n.preparedMealPortionsRemaining(
+                meal.remainingPortions,
+                meal.totalPortions,
+              ),
+              segmentedByUnits: true,
+              totalUnits: meal.totalPortions,
+              remainingUnits: meal.remainingPortions,
             ),
           ],
         ),

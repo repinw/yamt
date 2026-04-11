@@ -26,6 +26,8 @@ import 'package:yamt/features/inventory/presentation/widgets/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/remaining_progress_bar.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_nutrition_strip.dart';
