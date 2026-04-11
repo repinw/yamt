@@ -583,6 +583,7 @@ class _InventoryItemRowCard extends StatelessWidget {
   final VoidCallback? onPrimaryActionPressed;
   final VoidCallback onSwapCandidatePressed;
   final VoidCallback? onThrowAwayPressed;
+
   final VoidCallback? onStartSelection;
 
   @override
@@ -701,7 +702,7 @@ class _InventoryItemRowBody extends StatelessWidget {
                 '${layoutData.snapshot.itemId}',
               ),
             ),
-          SizedBox(height: isExpanded ? AppSpacing.md : 0),
+          SizedBox(height: isExpanded ? AppSpacing.xxs : 0),
           InventoryItemRowExpandSection(
             isExpanded: isExpanded,
             viewData: layoutData.viewData,

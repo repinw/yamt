@@ -15,18 +15,12 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/constants/'
-    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_discard_reason_dialog.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_expand_indicator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_constants.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/remaining_progress_bar.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -35,6 +29,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_segmented_button_frame.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_segmented_button_style.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_tile_header_layout.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_action_dialogs.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -183,7 +179,6 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
       locale: l10n.localeName,
       currencyCode: meal.currencyCode,
     );
-    final eatActionColors = AppInventoryEatActionColors.fromColorScheme(colors);
     final availableDisplayModes = _availableDisplayModes(meal);
     final selectedDisplayMode = availableDisplayModes.contains(_displayMode)
         ? _displayMode
@@ -218,11 +213,11 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
                   ingredientCount: ingredientCount,
                   isExpanded: _isExpanded,
                   canEat: canEat,
-                  actionColors: eatActionColors,
                   enabled: widget.enabled,
                   onTap: _toggleExpanded,
                   onEatPressed: _onEatPressed,
                 ),
+                SizedBox(height: _isExpanded ? AppSpacing.xxs : 0),
                 AnimatedSize(
                   duration: const Duration(milliseconds: 180),
                   curve: Curves.easeOutCubic,

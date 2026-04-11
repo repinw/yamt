@@ -16,6 +16,7 @@ class InventoryPrimaryActionButton extends StatelessWidget {
     required this.disabledBorderColor,
     required this.enabledForegroundColor,
     required this.disabledForegroundColor,
+    this.useGradientWhenShowText = true,
     this.icon,
     this.iconSize = AppSpacing.xxl,
   });
@@ -32,6 +33,7 @@ class InventoryPrimaryActionButton extends StatelessWidget {
   final Color disabledBorderColor;
   final Color enabledForegroundColor;
   final Color disabledForegroundColor;
+  final bool useGradientWhenShowText;
   final IconData? icon;
   final double iconSize;
 
@@ -39,7 +41,7 @@ class InventoryPrimaryActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final isEnabled = onPressed != null;
-    final usesSoulGradient = isEnabled && showText;
+    final usesSoulGradient = isEnabled && showText && useGradientWhenShowText;
     final backgroundColor = usesSoulGradient
         ? null
         : isEnabled

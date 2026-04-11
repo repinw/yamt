@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/brand_badge.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/category_icon.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_constants.dart';
@@ -11,13 +9,9 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_expand_indicator.dart';
+    'inventory_tile_header_layout.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/remaining_progress_bar.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/status_line.dart';
 
 class InventoryItemRowMainSection extends StatelessWidget {
   const InventoryItemRowMainSection({
@@ -41,94 +35,33 @@ class InventoryItemRowMainSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (showSelectionCheckbox) ...[
-              IgnorePointer(
-                child: Checkbox(
-                  value: isSelected,
-                  onChanged: (_) {},
-                  visualDensity: VisualDensity.compact,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-            ],
-            CategoryIcon(
-              name: item.category ?? item.name,
-              barcode: item.barcode,
-              imageUrl: item.imageUrl,
+    return InventoryTileHeaderLayout(
+      leading: CategoryIcon(
+        name: item.category ?? item.name,
+        barcode: item.barcode,
+        imageUrl: item.imageUrl,
+      ),
+      badgeText: viewData.hasBrand ? viewData.brand : null,
+      title: item.name,
+      titleStyle: viewData.nameTextStyle,
+      statusText: viewData.statusText,
+      statusColor: viewData.statusColor,
+      progressRatio: viewData.remainingRatio,
+      progressLabel: viewData.remainingLabel,
+      segmentedByUnits: viewData.segmentedByUnits,
+      totalUnits: item.initialQuantity,
+      remainingUnits: item.quantity,
+      action: showSelectionCheckbox
+          ? null
+          : _InventoryItemPrimaryActionButton(
+              viewData: viewData,
+              onPrimaryActionPressed: onPrimaryActionPressed,
             ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: _InventoryItemRowInfoColumn(
-                item: item,
-                viewData: viewData,
-              ),
-            ),
-            if (!showSelectionCheckbox) ...[
-              const SizedBox(width: AppSpacing.sm),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  InventoryExpandIndicator(
-                    isExpanded: isExpanded,
-                    rotationKey: expandIndicatorKey,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  _InventoryItemPrimaryActionButton(
-                    viewData: viewData,
-                    onPrimaryActionPressed: onPrimaryActionPressed,
-                  ),
-                ],
-              ),
-            ],
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        RemainingProgressBar(
-          ratio: viewData.remainingRatio,
-          stockLabel: viewData.remainingLabel,
-          segmentedByUnits: viewData.segmentedByUnits,
-          totalUnits: item.initialQuantity,
-          remainingUnits: item.quantity,
-        ),
-      ],
-    );
-  }
-}
-
-class _InventoryItemRowInfoColumn extends StatelessWidget {
-  const _InventoryItemRowInfoColumn({
-    required this.item,
-    required this.viewData,
-  });
-
-  final InventoryItemRowSnapshot item;
-  final InventoryItemRowViewData viewData;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (viewData.hasBrand) ...[
-          BrandBadge(brand: viewData.brand),
-          const SizedBox(height: AppSpacing.xxs),
-        ],
-        Text(
-          item.name,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: viewData.nameTextStyle,
-        ),
-        const SizedBox(height: AppSpacing.xxs),
-        if (viewData.statusText != null && viewData.statusColor != null)
-          StatusLine(text: viewData.statusText!, color: viewData.statusColor!),
-      ],
+      showSelectionCheckbox: showSelectionCheckbox,
+      isSelected: isSelected,
+      showExpandIndicator: !showSelectionCheckbox,
+      isExpanded: isExpanded,
+      expandIndicatorKey: expandIndicatorKey,
     );
   }
 }
@@ -144,12 +77,23 @@ class _InventoryItemPrimaryActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final buttonWidth = viewData.showPrimaryActionText
         ? InventoryItemRowConstants.primaryActionWidth
         : AppInventoryEditorial.actionTileSize;
     final buttonHeight = viewData.showPrimaryActionText
         ? InventoryItemRowConstants.primaryActionHeight
         : AppInventoryEditorial.actionTileSize;
+    final solidTextButton = viewData.showPrimaryActionText;
+    final enabledBackgroundColor = solidTextButton
+        ? colors.primary
+        : viewData.eatActionBackgroundColor;
+    final enabledBorderColor = solidTextButton
+        ? colors.primary
+        : viewData.eatActionBorderColor;
+    final enabledForegroundColor = solidTextButton
+        ? colors.onPrimary
+        : viewData.eatActionIconColor;
 
     return InventoryPrimaryActionButton(
       tooltip: viewData.primaryActionTooltip,
@@ -158,12 +102,13 @@ class _InventoryItemPrimaryActionButton extends StatelessWidget {
       label: viewData.primaryActionLabel,
       width: buttonWidth,
       height: buttonHeight,
-      enabledBackgroundColor: viewData.eatActionBackgroundColor,
+      enabledBackgroundColor: enabledBackgroundColor,
       disabledBackgroundColor: viewData.disabledActionBackgroundColor,
-      enabledBorderColor: viewData.eatActionBorderColor,
+      enabledBorderColor: enabledBorderColor,
       disabledBorderColor: viewData.disabledActionBorderColor,
-      enabledForegroundColor: viewData.eatActionIconColor,
+      enabledForegroundColor: enabledForegroundColor,
       disabledForegroundColor: viewData.disabledActionIconColor,
+      useGradientWhenShowText: false,
       icon: viewData.primaryActionIcon,
       iconSize: InventoryItemRowConstants.actionIconSize,
     );

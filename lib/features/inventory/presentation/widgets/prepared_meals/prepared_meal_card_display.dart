@@ -42,12 +42,10 @@ class _PreparedMealPrimaryActionButton extends StatelessWidget {
   const _PreparedMealPrimaryActionButton({
     required this.label,
     required this.onPressed,
-    required this.actionColors,
   });
 
   final String label;
   final VoidCallback? onPressed;
-  final AppInventoryEatActionColors actionColors;
 
   @override
   Widget build(BuildContext context) {
@@ -59,12 +57,13 @@ class _PreparedMealPrimaryActionButton extends StatelessWidget {
       label: label,
       width: InventoryItemRowConstants.primaryActionWidth,
       height: InventoryItemRowConstants.primaryActionHeight,
-      enabledBackgroundColor: actionColors.backgroundColor,
+      enabledBackgroundColor: colors.primary,
       disabledBackgroundColor: AppInventoryEditorialSurfaces.section(colors),
-      enabledBorderColor: actionColors.borderColor,
+      enabledBorderColor: colors.primary,
       disabledBorderColor: AppInventoryEditorialSurfaces.ghostBorder(colors),
-      enabledForegroundColor: actionColors.iconColor,
+      enabledForegroundColor: colors.onPrimary,
       disabledForegroundColor: colors.onSurfaceVariant,
+      useGradientWhenShowText: false,
     );
   }
 }

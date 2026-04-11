@@ -1,0 +1,178 @@
+import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_expand_indicator.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/brand_badge.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/remaining_progress_bar.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/status_line.dart';
+
+class InventoryTileHeaderLayout extends StatelessWidget {
+  const InventoryTileHeaderLayout({
+    super.key,
+    required this.leading,
+    required this.title,
+    required this.progressRatio,
+    required this.progressLabel,
+    required this.segmentedByUnits,
+    required this.totalUnits,
+    required this.remainingUnits,
+    required this.isExpanded,
+    this.titleStyle,
+    this.badgeText,
+    this.statusText,
+    this.statusColor,
+    this.action,
+    this.showSelectionCheckbox = false,
+    this.isSelected = false,
+    this.showExpandIndicator = true,
+    this.expandIndicatorEnabled = true,
+    this.expandIndicatorKey,
+  });
+
+  final Widget leading;
+  final String title;
+  final TextStyle? titleStyle;
+  final String? badgeText;
+  final String? statusText;
+  final Color? statusColor;
+  final double progressRatio;
+  final String progressLabel;
+  final bool segmentedByUnits;
+  final int totalUnits;
+  final int remainingUnits;
+  final Widget? action;
+  final bool showSelectionCheckbox;
+  final bool isSelected;
+  final bool showExpandIndicator;
+  final bool isExpanded;
+  final bool expandIndicatorEnabled;
+  final Key? expandIndicatorKey;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (showSelectionCheckbox) ...[
+          IgnorePointer(
+            child: Checkbox(
+              value: isSelected,
+              onChanged: (_) {},
+              visualDensity: VisualDensity.compact,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+        ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  leading,
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: _InventoryTileHeaderInfo(
+                      title: title,
+                      titleStyle: titleStyle,
+                      badgeText: badgeText,
+                      statusText: statusText,
+                      statusColor: statusColor,
+                    ),
+                  ),
+                  if (showExpandIndicator) ...[
+                    const SizedBox(width: AppSpacing.sm),
+                    _buildExpandIndicator(),
+                  ],
+                ],
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: RemainingProgressBar(
+                      ratio: progressRatio,
+                      stockLabel: progressLabel,
+                      segmentedByUnits: segmentedByUnits,
+                      totalUnits: totalUnits,
+                      remainingUnits: remainingUnits,
+                      labelLayout: RemainingProgressBarLabelLayout.aboveBar,
+                      trackColor: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.12),
+                    ),
+                  ),
+                  if (action != null) ...[
+                    const SizedBox(width: AppSpacing.md),
+                    action!,
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExpandIndicator() {
+    return InventoryExpandIndicator(
+      isExpanded: isExpanded,
+      enabled: expandIndicatorEnabled,
+      rotationKey: expandIndicatorKey,
+    );
+  }
+}
+
+class _InventoryTileHeaderInfo extends StatelessWidget {
+  const _InventoryTileHeaderInfo({
+    required this.title,
+    required this.titleStyle,
+    required this.badgeText,
+    required this.statusText,
+    required this.statusColor,
+  });
+
+  final String title;
+  final TextStyle? titleStyle;
+  final String? badgeText;
+  final String? statusText;
+  final Color? statusColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasBadge = badgeText != null && badgeText!.trim().isNotEmpty;
+    final hasStatus =
+        statusText != null &&
+        statusText!.trim().isNotEmpty &&
+        statusColor != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (hasBadge) ...[
+          BrandBadge(brand: badgeText!),
+          const SizedBox(height: AppSpacing.xxs),
+        ],
+        Text(
+          title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style:
+              titleStyle ??
+              Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        if (hasStatus) ...[
+          const SizedBox(height: AppSpacing.xxs),
+          StatusLine(text: statusText!, color: statusColor!),
+        ],
+      ],
+    );
+  }
+}
