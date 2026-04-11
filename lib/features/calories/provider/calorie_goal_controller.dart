@@ -51,17 +51,36 @@ class CalorieGoalController extends _$CalorieGoalController {
   Future<bool> saveCalculatedGoal(
     CalorieCalculatorProfile profile, {
     required DateTime goalStartAt,
+    int? eatingWindowStartMinuteOfDay,
+    int? eatingWindowEndMinuteOfDay,
   }) {
+    if (eatingWindowStartMinuteOfDay != null &&
+        eatingWindowEndMinuteOfDay != null &&
+        !isValidEatingWindowMinutes(
+          startMinuteOfDay: eatingWindowStartMinuteOfDay,
+          endMinuteOfDay: eatingWindowEndMinuteOfDay,
+        )) {
+      return Future<bool>.value(false);
+    }
+
     final calculation = CalorieGoalCalculator.calculate(profile);
     final previousSettings =
         state.asData?.value ?? const CalorieGoalSettings.empty();
     final baseSettings = previousSettings.withoutLatestGoalEntry();
-    final nextSettings = baseSettings.applyGoalChange(
+    var nextSettings = baseSettings.applyGoalChange(
       changedAt: goalStartAt,
       dailyKcalGoal: calculation.finalGoalKcal,
       calculatorProfile: profile,
       replaceFutureHistory: true,
     );
+    if (eatingWindowStartMinuteOfDay != null &&
+        eatingWindowEndMinuteOfDay != null) {
+      nextSettings = nextSettings.applyEatingWindowChange(
+        changedAt: goalStartAt,
+        startMinuteOfDay: eatingWindowStartMinuteOfDay,
+        endMinuteOfDay: eatingWindowEndMinuteOfDay,
+      );
+    }
     return _persistSettings(nextSettings);
   }
 
@@ -94,6 +113,27 @@ class CalorieGoalController extends _$CalorieGoalController {
         calculatorProfile: null,
       ),
     );
+  }
+
+  Future<bool> setEatingWindow({
+    required int startMinuteOfDay,
+    required int endMinuteOfDay,
+  }) async {
+    if (!isValidEatingWindowMinutes(
+      startMinuteOfDay: startMinuteOfDay,
+      endMinuteOfDay: endMinuteOfDay,
+    )) {
+      return false;
+    }
+
+    final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
+    final now = DateTime.now();
+    final nextSettings = previous.applyEatingWindowChange(
+      changedAt: now,
+      startMinuteOfDay: startMinuteOfDay,
+      endMinuteOfDay: endMinuteOfDay,
+    );
+    return _persistSettings(nextSettings);
   }
 
   Future<CalorieGoalSettings> _restartSubscription() {

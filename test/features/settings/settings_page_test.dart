@@ -12,10 +12,14 @@ import 'package:yamt/core/provider/app_version_provider.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/settings/account_page.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
 import 'package:yamt/features/settings/settings_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../calories/support/fake_calories_repositories.dart';
 
 class _MockUser extends Mock implements User {}
 
@@ -62,11 +66,18 @@ Future<void> _pumpSettingsPage(
   WidgetTester tester, {
   FutureOr<String> Function(Ref ref)? appVersionOverride,
   AsyncValue<String>? appVersionValueOverride,
+  CalorieGoalSettings? calorieSettings,
 }) async {
+  final settingsRepository = FakeCalorieSettingsRepository(
+    initialSettings: calorieSettings,
+  );
+  addTearDown(settingsRepository.dispose);
+
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
         if (appVersionValueOverride != null)
           appVersionProvider.overrideWithValue(appVersionValueOverride),
         if (appVersionOverride != null)
@@ -101,6 +112,7 @@ void main() {
     expect(find.byIcon(Icons.notifications_outlined), findsOneWidget);
     expect(find.byIcon(Icons.group_outlined), findsOneWidget);
     expect(find.byIcon(Icons.person_outline), findsOneWidget);
+    expect(find.byIcon(Icons.menu_book_outlined), findsOneWidget);
     expect(find.byIcon(Icons.palette_outlined), findsOneWidget);
     expect(find.byIcon(Icons.format_paint_outlined), findsOneWidget);
     expect(find.byIcon(Icons.info_outline), findsOneWidget);
@@ -120,13 +132,30 @@ void main() {
     );
     expect(find.text('Account'), findsOneWidget);
     expect(find.text('Manage profile and sign-in'), findsOneWidget);
+    expect(find.text('Diary'), findsOneWidget);
+    expect(find.textContaining('Eating window:'), findsOneWidget);
     expect(find.text('About'), findsOneWidget);
     expect(find.text('App version and information'), findsOneWidget);
     expect(find.text('1.1.0+2'), findsOneWidget);
   });
 
+  testWidgets('Diary tile opens the eating window dialog', (tester) async {
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Diary').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Set eating window'), findsOneWidget);
+  });
+
   testWidgets('Household tile opens HouseholdPage', (tester) async {
     final user = _MockUser();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(settingsRepository.dispose);
     when(() => user.isAnonymous).thenReturn(false);
     when(() => user.displayName).thenReturn('Jane Doe');
     when(() => user.email).thenReturn('jane@example.com');
@@ -152,6 +181,9 @@ void main() {
           appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
           authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
           appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
         ],
         child: MaterialApp.router(
           routerConfig: router,
@@ -187,10 +219,13 @@ void main() {
   });
 
   testWidgets('theme dropdown updates theme mode provider', (tester) async {
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(settingsRepository.dispose);
     final container = ProviderContainer(
       overrides: [
         appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
         appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       ],
     );
     addTearDown(container.dispose);
@@ -223,10 +258,13 @@ void main() {
   });
 
   testWidgets('color dropdown updates seed color provider', (tester) async {
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(settingsRepository.dispose);
     final container = ProviderContainer(
       overrides: [
         appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
         appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       ],
     );
     addTearDown(container.dispose);
@@ -289,6 +327,8 @@ void main() {
 
   testWidgets('Account tile opens AccountPage', (tester) async {
     final user = _MockUser();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(settingsRepository.dispose);
     when(() => user.isAnonymous).thenReturn(false);
     when(() => user.displayName).thenReturn('Jane Doe');
     when(() => user.email).thenReturn('jane@example.com');
@@ -314,6 +354,9 @@ void main() {
           appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
           authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
           appPreferencesProvider.overrideWithValue(_FakeAppPreferences()),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
         ],
         child: MaterialApp.router(
           routerConfig: router,

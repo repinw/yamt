@@ -245,6 +245,12 @@ CalorieBalanceSummaryData _summaryData({
       resolvedDay.day,
       6,
     ),
+    paceWindowEnd: DateTime(
+      resolvedDay.year,
+      resolvedDay.month,
+      resolvedDay.day,
+      22,
+    ),
     baseGoalKcal: baseGoalKcal,
     carryoverKcal: carryoverKcal,
     goalMode: goalMode,

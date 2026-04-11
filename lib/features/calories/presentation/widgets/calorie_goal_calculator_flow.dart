@@ -8,6 +8,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_input_controls.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_eating_window_dialog.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_picker.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_results.dart';
@@ -49,6 +51,8 @@ class _CalorieGoalCalculatorFlowState
   late final TextEditingController _ageController;
   late final TextEditingController _goalSpeedController;
   late DateTime _goalStartAt;
+  late int _eatingWindowStartMinuteOfDay;
+  late int _eatingWindowEndMinuteOfDay;
   var _currentStep = _CalculatorOnboardingStep.sex;
 
   @override
@@ -64,6 +68,10 @@ class _CalorieGoalCalculatorFlowState
       text: initialState.goalSpeedKgPerWeekText,
     );
     _goalStartAt = CalorieGoalStartPicker.roundToMinute(DateTime.now());
+    _eatingWindowStartMinuteOfDay =
+        widget.initialSettings.normalizedEatingWindowStartMinuteOfDay;
+    _eatingWindowEndMinuteOfDay =
+        widget.initialSettings.normalizedEatingWindowEndMinuteOfDay;
   }
 
   @override
@@ -96,7 +104,11 @@ class _CalorieGoalCalculatorFlowState
     );
     final saved = await ref
         .read(formProvider.notifier)
-        .save(goalStartAt: _goalStartAt);
+        .save(
+          goalStartAt: _goalStartAt,
+          eatingWindowStartMinuteOfDay: _eatingWindowStartMinuteOfDay,
+          eatingWindowEndMinuteOfDay: _eatingWindowEndMinuteOfDay,
+        );
     if (!mounted) {
       return;
     }
@@ -187,5 +199,23 @@ class _CalorieGoalCalculatorFlowState
     setState(() {
       _goalStartAt = pickedGoalStart;
     });
+  }
+
+  Future<void> _pickEatingWindow() async {
+    await showCalorieEatingWindowDialog(
+      context: context,
+      initialStartMinuteOfDay: _eatingWindowStartMinuteOfDay,
+      initialEndMinuteOfDay: _eatingWindowEndMinuteOfDay,
+      onSaveEatingWindow: (startMinuteOfDay, endMinuteOfDay) async {
+        if (!mounted) {
+          return false;
+        }
+        setState(() {
+          _eatingWindowStartMinuteOfDay = startMinuteOfDay;
+          _eatingWindowEndMinuteOfDay = endMinuteOfDay;
+        });
+        return true;
+      },
+    );
   }
 }

@@ -555,6 +555,7 @@
   "caloriesAuthRequired": "Bitte melde dich an, um Kalorien zu verwalten.",
   "caloriesTodayAction": "Heute",
   "caloriesSetGoalAction": "Ziel manuell setzen",
+  "caloriesSetEatingWindowAction": "Essensfenster setzen",
   "caloriesShiftGoalStartAction": "Zielstart verschieben",
   "caloriesCalculatorAction": "Ziel neu berechnen",
   "caloriesGoalDialogTitle": "Tagesziel setzen",
@@ -572,6 +573,13 @@
   "caloriesGoalStartTimeLabel": "Uhrzeit",
   "caloriesGoalStartSaveFailed":
       "Der Zielstart konnte nicht aktualisiert werden.",
+  "caloriesEatingWindowDialogTitle": "Essensfenster setzen",
+  "caloriesEatingWindowStartLabel": "Beginn",
+  "caloriesEatingWindowEndLabel": "Ende",
+  "caloriesEatingWindowInvalidRange":
+      "Die Endzeit muss nach der Startzeit liegen.",
+  "caloriesEatingWindowSaveFailed":
+      "Das Essensfenster konnte nicht aktualisiert werden.",
   "caloriesCalculatorSheetTitle": "Kalorienrechner",
   "caloriesCalculatorStepProgress": "Schritt {current} von {total}",
   "@caloriesCalculatorStepProgress": {
@@ -646,6 +654,9 @@
   "caloriesCalculatorGoalStartHint":
       "Dein Kalorienziel-Verlauf beginnt ab diesem Zeitpunkt.",
   "caloriesCalculatorGoalStartChangeAction": "Ändern",
+  "caloriesCalculatorEatingWindowLabel": "Essensfenster",
+  "caloriesCalculatorEatingWindowHint":
+      "Wird verwendet, um die heutige Tagebuch-Balance über den Tag zu takten.",
   "caloriesCalculatorGoalStartFutureError":
       "Der Zielstart darf nicht in der Zukunft liegen.",
   "caloriesCalculatorMinimumGoalWarning":
@@ -935,6 +946,15 @@
   "settingsThemeSystem": "System",
   "settingsThemeLight": "Hell",
   "settingsThemeDark": "Dunkel",
+  "settingsDiaryTitle": "Tagebuch",
+  "settingsDiarySubtitle": "Essensfenster: {window}",
+  "@settingsDiarySubtitle": {
+    "placeholders": {
+      "window": {
+        "type": "String"
+      }
+    }
+  },
   "settingsColorTitle": "Akzentfarbe",
   "settingsColorLime": "Limette",
   "settingsColorBlue": "Blau",

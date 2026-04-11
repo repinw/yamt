@@ -1019,6 +1019,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesSetGoalAction => 'Ziel manuell setzen';
 
   @override
+  String get caloriesSetEatingWindowAction => 'Essensfenster setzen';
+
+  @override
   String get caloriesShiftGoalStartAction => 'Zielstart verschieben';
 
   @override
@@ -1056,6 +1059,21 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesGoalStartSaveFailed => 'Der Zielstart konnte nicht aktualisiert werden.';
+
+  @override
+  String get caloriesEatingWindowDialogTitle => 'Essensfenster setzen';
+
+  @override
+  String get caloriesEatingWindowStartLabel => 'Beginn';
+
+  @override
+  String get caloriesEatingWindowEndLabel => 'Ende';
+
+  @override
+  String get caloriesEatingWindowInvalidRange => 'Die Endzeit muss nach der Startzeit liegen.';
+
+  @override
+  String get caloriesEatingWindowSaveFailed => 'Das Essensfenster konnte nicht aktualisiert werden.';
 
   @override
   String get caloriesCalculatorSheetTitle => 'Kalorienrechner';
@@ -1202,6 +1220,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesCalculatorGoalStartChangeAction => 'Ändern';
+
+  @override
+  String get caloriesCalculatorEatingWindowLabel => 'Essensfenster';
+
+  @override
+  String get caloriesCalculatorEatingWindowHint => 'Wird verwendet, um die heutige Tagebuch-Balance über den Tag zu takten.';
 
   @override
   String get caloriesCalculatorGoalStartFutureError => 'Der Zielstart darf nicht in der Zukunft liegen.';
@@ -1552,6 +1576,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsThemeDark => 'Dunkel';
+
+  @override
+  String get settingsDiaryTitle => 'Tagebuch';
+
+  @override
+  String settingsDiarySubtitle(String window) {
+    return 'Essensfenster: $window';
+  }
 
   @override
   String get settingsColorTitle => 'Akzentfarbe';

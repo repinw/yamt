@@ -36,7 +36,12 @@ void main() {
 
       final saved = await container
           .read(calorieGoalControllerProvider.notifier)
-          .saveCalculatedGoal(profile, goalStartAt: goalStartAt);
+          .saveCalculatedGoal(
+            profile,
+            goalStartAt: goalStartAt,
+            eatingWindowStartMinuteOfDay: 8 * 60,
+            eatingWindowEndMinuteOfDay: (20 * 60) + 30,
+          );
 
       expect(saved, isTrue);
       final settings = await repository.readSettings();
@@ -44,6 +49,8 @@ void main() {
       expect(settings.calculatorProfile?.goalMode, CalorieGoalMode.maintain);
       expect(settings.calculatorProfile?.weightKg, 80);
       expect(settings.goalHistory.single.changedAt, goalStartAt);
+      expect(settings.normalizedEatingWindowStartMinuteOfDay, 8 * 60);
+      expect(settings.normalizedEatingWindowEndMinuteOfDay, (20 * 60) + 30);
     },
   );
 
@@ -303,5 +310,31 @@ void main() {
       settings.goalKcalForDay(futureGoalStart.add(const Duration(days: 1))),
       1900,
     );
+  });
+
+  test('setEatingWindow persists the selected diary pacing window', () async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .setEatingWindow(
+          startMinuteOfDay: (7 * 60) + 15,
+          endMinuteOfDay: (21 * 60) + 45,
+        );
+
+    expect(saved, isTrue);
+    final settings = await repository.readSettings();
+    expect(settings.normalizedEatingWindowStartMinuteOfDay, (7 * 60) + 15);
+    expect(settings.normalizedEatingWindowEndMinuteOfDay, (21 * 60) + 45);
   });
 }

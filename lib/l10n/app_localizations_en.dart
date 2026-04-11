@@ -1019,6 +1019,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesSetGoalAction => 'Set goal manually';
 
   @override
+  String get caloriesSetEatingWindowAction => 'Set eating window';
+
+  @override
   String get caloriesShiftGoalStartAction => 'Move goal start';
 
   @override
@@ -1056,6 +1059,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesGoalStartSaveFailed => 'Could not update goal start.';
+
+  @override
+  String get caloriesEatingWindowDialogTitle => 'Set eating window';
+
+  @override
+  String get caloriesEatingWindowStartLabel => 'Start';
+
+  @override
+  String get caloriesEatingWindowEndLabel => 'End';
+
+  @override
+  String get caloriesEatingWindowInvalidRange => 'The end time must be later than the start time.';
+
+  @override
+  String get caloriesEatingWindowSaveFailed => 'Could not update the eating window.';
 
   @override
   String get caloriesCalculatorSheetTitle => 'Calorie calculator';
@@ -1202,6 +1220,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesCalculatorGoalStartChangeAction => 'Change';
+
+  @override
+  String get caloriesCalculatorEatingWindowLabel => 'Eating window';
+
+  @override
+  String get caloriesCalculatorEatingWindowHint => 'Used to pace today\'s diary balance throughout the day.';
 
   @override
   String get caloriesCalculatorGoalStartFutureError => 'Goal start can\'t be in the future.';
@@ -1552,6 +1576,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsDiaryTitle => 'Diary';
+
+  @override
+  String settingsDiarySubtitle(String window) {
+    return 'Eating window: $window';
+  }
 
   @override
   String get settingsColorTitle => 'Accent color';

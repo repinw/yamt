@@ -96,4 +96,4 @@ final class CalorieBalanceSummaryProvider
 }
 
 String _$calorieBalanceSummaryHash() =>
-    r'b524eb99eda92cfc31c1a93832ed5dd2500c00b4';
+    r'1d66c64093797527e5851cce4ae5b0198bcd23b1';

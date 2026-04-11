@@ -2039,6 +2039,12 @@ abstract class AppLocalizations {
   /// **'Set goal manually'**
   String get caloriesSetGoalAction;
 
+  /// No description provided for @caloriesSetEatingWindowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Set eating window'**
+  String get caloriesSetEatingWindowAction;
+
   /// No description provided for @caloriesShiftGoalStartAction.
   ///
   /// In en, this message translates to:
@@ -2116,6 +2122,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not update goal start.'**
   String get caloriesGoalStartSaveFailed;
+
+  /// No description provided for @caloriesEatingWindowDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set eating window'**
+  String get caloriesEatingWindowDialogTitle;
+
+  /// No description provided for @caloriesEatingWindowStartLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get caloriesEatingWindowStartLabel;
+
+  /// No description provided for @caloriesEatingWindowEndLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get caloriesEatingWindowEndLabel;
+
+  /// No description provided for @caloriesEatingWindowInvalidRange.
+  ///
+  /// In en, this message translates to:
+  /// **'The end time must be later than the start time.'**
+  String get caloriesEatingWindowInvalidRange;
+
+  /// No description provided for @caloriesEatingWindowSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update the eating window.'**
+  String get caloriesEatingWindowSaveFailed;
 
   /// No description provided for @caloriesCalculatorSheetTitle.
   ///
@@ -2404,6 +2440,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Change'**
   String get caloriesCalculatorGoalStartChangeAction;
+
+  /// No description provided for @caloriesCalculatorEatingWindowLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Eating window'**
+  String get caloriesCalculatorEatingWindowLabel;
+
+  /// No description provided for @caloriesCalculatorEatingWindowHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Used to pace today\'s diary balance throughout the day.'**
+  String get caloriesCalculatorEatingWindowHint;
 
   /// No description provided for @caloriesCalculatorGoalStartFutureError.
   ///
@@ -3016,6 +3064,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get settingsThemeDark;
+
+  /// No description provided for @settingsDiaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary'**
+  String get settingsDiaryTitle;
+
+  /// No description provided for @settingsDiarySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Eating window: {window}'**
+  String settingsDiarySubtitle(String window);
 
   /// No description provided for @settingsColorTitle.
   ///

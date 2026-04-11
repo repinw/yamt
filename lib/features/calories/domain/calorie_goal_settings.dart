@@ -6,6 +6,9 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 part 'calorie_goal_settings.g.dart';
 
 const defaultDailyCalorieGoalKcal = 2500.0;
+const defaultEatingWindowStartMinuteOfDay = 6 * 60;
+const defaultEatingWindowEndMinuteOfDay = 22 * 60;
+const _minutesPerDay = 24 * 60;
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CalorieGoalHistoryEntry {
@@ -41,19 +44,25 @@ class CalorieGoalSettings {
     required this.calculatorProfile,
     required this.updatedAt,
     required this.goalHistory,
+    required this.eatingWindowStartMinuteOfDay,
+    required this.eatingWindowEndMinuteOfDay,
   });
 
   const CalorieGoalSettings.empty()
     : dailyKcalGoal = null,
       calculatorProfile = null,
       updatedAt = null,
-      goalHistory = const <CalorieGoalHistoryEntry>[];
+      goalHistory = const <CalorieGoalHistoryEntry>[],
+      eatingWindowStartMinuteOfDay = defaultEatingWindowStartMinuteOfDay,
+      eatingWindowEndMinuteOfDay = defaultEatingWindowEndMinuteOfDay;
 
   factory CalorieGoalSettings.single({
     required double? dailyKcalGoal,
     required CalorieCalculatorProfile? calculatorProfile,
     required DateTime effectiveDate,
     DateTime? updatedAt,
+    int eatingWindowStartMinuteOfDay = defaultEatingWindowStartMinuteOfDay,
+    int eatingWindowEndMinuteOfDay = defaultEatingWindowEndMinuteOfDay,
   }) {
     return CalorieGoalSettings(
       dailyKcalGoal: dailyKcalGoal,
@@ -67,6 +76,8 @@ class CalorieGoalSettings {
           changedAt: effectiveDate,
         ),
       ],
+      eatingWindowStartMinuteOfDay: eatingWindowStartMinuteOfDay,
+      eatingWindowEndMinuteOfDay: eatingWindowEndMinuteOfDay,
     );
   }
 
@@ -77,9 +88,41 @@ class CalorieGoalSettings {
   final DateTime? updatedAt;
   @JsonKey(defaultValue: <CalorieGoalHistoryEntry>[])
   final List<CalorieGoalHistoryEntry> goalHistory;
+  @JsonKey(defaultValue: defaultEatingWindowStartMinuteOfDay)
+  final int eatingWindowStartMinuteOfDay;
+  @JsonKey(defaultValue: defaultEatingWindowEndMinuteOfDay)
+  final int eatingWindowEndMinuteOfDay;
 
   bool get hasGoal => dailyKcalGoal != null;
   bool get hasCalculatorProfile => calculatorProfile != null;
+
+  int get normalizedEatingWindowStartMinuteOfDay {
+    return _resolveEatingWindowMinutes(
+      startMinuteOfDay: eatingWindowStartMinuteOfDay,
+      endMinuteOfDay: eatingWindowEndMinuteOfDay,
+    ).startMinuteOfDay;
+  }
+
+  int get normalizedEatingWindowEndMinuteOfDay {
+    return _resolveEatingWindowMinutes(
+      startMinuteOfDay: eatingWindowStartMinuteOfDay,
+      endMinuteOfDay: eatingWindowEndMinuteOfDay,
+    ).endMinuteOfDay;
+  }
+
+  DateTime eatingWindowStartForDay(DateTime day) {
+    return _dateTimeForMinuteOfDay(
+      day: day,
+      minuteOfDay: normalizedEatingWindowStartMinuteOfDay,
+    );
+  }
+
+  DateTime eatingWindowEndForDay(DateTime day) {
+    return _dateTimeForMinuteOfDay(
+      day: day,
+      minuteOfDay: normalizedEatingWindowEndMinuteOfDay,
+    );
+  }
 
   List<CalorieGoalHistoryEntry> get sortedGoalHistory {
     final entries = List<CalorieGoalHistoryEntry>.from(goalHistory);
@@ -186,6 +229,8 @@ class CalorieGoalSettings {
       calculatorProfile: previousGoal?.calculatorProfile,
       updatedAt: updatedAt,
       goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextHistory),
+      eatingWindowStartMinuteOfDay: eatingWindowStartMinuteOfDay,
+      eatingWindowEndMinuteOfDay: eatingWindowEndMinuteOfDay,
     );
   }
 
@@ -217,6 +262,24 @@ class CalorieGoalSettings {
       calculatorProfile: calculatorProfile,
       updatedAt: changedAt,
       goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextHistory),
+      eatingWindowStartMinuteOfDay: eatingWindowStartMinuteOfDay,
+      eatingWindowEndMinuteOfDay: eatingWindowEndMinuteOfDay,
+    );
+  }
+
+  CalorieGoalSettings applyEatingWindowChange({
+    required DateTime changedAt,
+    required int startMinuteOfDay,
+    required int endMinuteOfDay,
+  }) {
+    final resolvedWindow = _resolveEatingWindowMinutes(
+      startMinuteOfDay: startMinuteOfDay,
+      endMinuteOfDay: endMinuteOfDay,
+    );
+    return copyWith(
+      updatedAt: changedAt,
+      eatingWindowStartMinuteOfDay: resolvedWindow.startMinuteOfDay,
+      eatingWindowEndMinuteOfDay: resolvedWindow.endMinuteOfDay,
     );
   }
 
@@ -225,14 +288,29 @@ class CalorieGoalSettings {
     CalorieCalculatorProfile? calculatorProfile,
     DateTime? updatedAt,
     List<CalorieGoalHistoryEntry>? goalHistory,
+    int? eatingWindowStartMinuteOfDay,
+    int? eatingWindowEndMinuteOfDay,
   }) {
     return CalorieGoalSettings(
       dailyKcalGoal: dailyKcalGoal ?? this.dailyKcalGoal,
       calculatorProfile: calculatorProfile ?? this.calculatorProfile,
       updatedAt: updatedAt ?? this.updatedAt,
       goalHistory: goalHistory ?? this.goalHistory,
+      eatingWindowStartMinuteOfDay:
+          eatingWindowStartMinuteOfDay ?? this.eatingWindowStartMinuteOfDay,
+      eatingWindowEndMinuteOfDay:
+          eatingWindowEndMinuteOfDay ?? this.eatingWindowEndMinuteOfDay,
     );
   }
+}
+
+bool isValidEatingWindowMinutes({
+  required int startMinuteOfDay,
+  required int endMinuteOfDay,
+}) {
+  final normalizedStart = _normalizeMinuteOfDay(startMinuteOfDay);
+  final normalizedEnd = _normalizeMinuteOfDay(endMinuteOfDay);
+  return normalizedStart < normalizedEnd;
 }
 
 bool _isSameDay(DateTime left, DateTime right) {
@@ -253,4 +331,32 @@ bool _shouldKeepGoalHistoryEntry({
     return true;
   }
   return entry.effectiveDate.isBefore(effectiveDate);
+}
+
+({int startMinuteOfDay, int endMinuteOfDay}) _resolveEatingWindowMinutes({
+  required int startMinuteOfDay,
+  required int endMinuteOfDay,
+}) {
+  final normalizedStart = _normalizeMinuteOfDay(startMinuteOfDay);
+  final normalizedEnd = _normalizeMinuteOfDay(endMinuteOfDay);
+  if (normalizedStart >= normalizedEnd) {
+    return (
+      startMinuteOfDay: defaultEatingWindowStartMinuteOfDay,
+      endMinuteOfDay: defaultEatingWindowEndMinuteOfDay,
+    );
+  }
+  return (startMinuteOfDay: normalizedStart, endMinuteOfDay: normalizedEnd);
+}
+
+int _normalizeMinuteOfDay(int value) {
+  return value.clamp(0, _minutesPerDay - 1).toInt();
+}
+
+DateTime _dateTimeForMinuteOfDay({
+  required DateTime day,
+  required int minuteOfDay,
+}) {
+  final hour = minuteOfDay ~/ 60;
+  final minute = minuteOfDay % 60;
+  return DateTime(day.year, day.month, day.day, hour, minute);
 }
