@@ -440,6 +440,156 @@ void main() {
     expect(find.text('Gouda'), findsOneWidget);
   });
 
+  testWidgets('switching candidate with changed receipt weight opens dialog', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'KAESE SCHEIBEN',
+              weight: '500g',
+            ),
+            candidates: <GlobalFoodMatchCandidate>[
+              _candidate(
+                id: 'gouda',
+                name: 'Gouda',
+                brand: 'Milbona',
+                packageWeight: '800g',
+              ),
+            ],
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+    final l10n = AppLocalizations.of(context)!;
+
+    await tester.tap(find.byKey(const Key('receipt_review_switch_button_0')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Gouda').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(l10n.inventoryReceiptReviewWeightConfirmTitle),
+      findsOneWidget,
+    );
+
+    final weightField = tester.widget<TextField>(
+      find.byKey(const Key('receipt_review_weight_confirmation_field')),
+    );
+    expect(weightField.controller?.text, '800g');
+  });
+
+  testWidgets('switching candidate with missing receipt weight opens dialog', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'KÄSE SCHEIBEN',
+            ),
+            candidates: <GlobalFoodMatchCandidate>[
+              _candidate(
+                id: 'gouda',
+                name: 'Gouda',
+                brand: 'Milbona',
+                packageWeight: '800g',
+              ),
+            ],
+            requiresWeightConfirmation: true,
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    final context = tester.element(find.byType(InventoryReceiptReviewSheet));
+    final l10n = AppLocalizations.of(context)!;
+
+    await tester.tap(find.byKey(const Key('receipt_review_switch_button_0')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Gouda').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(l10n.inventoryReceiptReviewWeightConfirmTitle),
+      findsOneWidget,
+    );
+
+    final weightField = tester.widget<TextField>(
+      find.byKey(const Key('receipt_review_weight_confirmation_field')),
+    );
+    expect(weightField.controller?.text, '800g');
+  });
+
+  testWidgets('weight confirmation clear button clears and focuses field', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'KÄSE SCHEIBEN',
+            ),
+            candidates: <GlobalFoodMatchCandidate>[
+              _candidate(
+                id: 'gouda',
+                name: 'Gouda',
+                brand: 'Milbona',
+                packageWeight: '800g',
+              ),
+            ],
+            requiresWeightConfirmation: true,
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_switch_button_0')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Gouda').last);
+    await tester.pumpAndSettle();
+
+    final fieldFinder = find.byKey(
+      const Key('receipt_review_weight_confirmation_field'),
+    );
+    final clearButton = find.byKey(
+      const Key('receipt_review_weight_confirmation_clear_button'),
+    );
+    final weightField = tester.widget<TextField>(fieldFinder);
+
+    expect(weightField.autofocus, isFalse);
+    expect(weightField.focusNode?.hasFocus, isFalse);
+    expect(weightField.controller?.text, '800g');
+
+    await tester.tap(clearButton);
+    await tester.pump();
+
+    final updatedField = tester.widget<TextField>(fieldFinder);
+    expect(updatedField.controller?.text, isEmpty);
+    expect(updatedField.focusNode?.hasFocus, isTrue);
+  });
+
   testWidgets('determine action fetches candidates and opens candidate sheet', (
     tester,
   ) async {
@@ -621,11 +771,17 @@ void main() {
       find.byKey(const Key('receipt_review_manual_kcal_field')),
       '120',
     );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_weight_field')),
+      '500',
+    );
     final manualSaveButton = tester.widget<FilledButton>(
       find.byKey(const Key('receipt_review_manual_save_button')),
     );
     manualSaveButton.onPressed!.call();
     await tester.pumpAndSettle();
+
+    expect(find.text('500 g'), findsOneWidget);
 
     final saveButton = find.byKey(const Key('receipt_review_save_button'));
     await tester.ensureVisible(saveButton);
@@ -724,12 +880,18 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('321'), findsOneWidget);
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_weight_field')),
+        '330',
+      );
 
       final manualSaveButton = tester.widget<FilledButton>(
         find.byKey(const Key('receipt_review_manual_save_button')),
       );
       manualSaveButton.onPressed!.call();
       await tester.pumpAndSettle();
+
+      expect(find.text('330 g'), findsOneWidget);
 
       final saveButton = find.byKey(const Key('receipt_review_save_button'));
       await tester.ensureVisible(saveButton);
@@ -858,6 +1020,7 @@ void main() {
               ),
             ],
             selectedGlobalFoodItemId: 'off-4043362046206',
+            requiresWeightConfirmation: true,
           ),
         ],
         onCancelTap: () {},
@@ -868,6 +1031,40 @@ void main() {
     expect(find.text('1x'), findsOneWidget);
     expect(find.text('800g'), findsOneWidget);
     expect(find.text('500g'), findsNothing);
+  });
+
+  testWidgets('preview shows confirmed weight over candidate weight', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'R-Hackfleisc',
+              weight: '750g',
+            ),
+            candidates: <GlobalFoodMatchCandidate>[
+              _candidate(
+                id: 'off-4043362046206',
+                name: 'Rinderhack',
+                brand: 'Gut Ponholz',
+                packageWeight: '800g',
+              ),
+            ],
+            selectedGlobalFoodItemId: 'off-4043362046206',
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (_) async {},
+      ),
+    );
+
+    expect(find.text('750g'), findsOneWidget);
+    expect(find.text('800g'), findsNothing);
   });
 
   testWidgets('receipt metadata is shown above price overview', (tester) async {
@@ -1012,6 +1209,64 @@ void main() {
 
     saveCompleter.complete();
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('save confirms missing receipt weight before persisting', (
+    tester,
+  ) async {
+    List<InventoryItem>? savedItems;
+
+    await tester.pumpWidget(
+      _wrap(
+        drafts: <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(
+              id: 'food',
+              isDeposit: false,
+              isDiscount: false,
+              name: 'KÄSE SCHEIBEN',
+            ),
+            candidates: <GlobalFoodMatchCandidate>[
+              _candidate(
+                id: 'gouda',
+                name: 'Gouda',
+                brand: 'Milbona',
+                packageWeight: '800g',
+              ),
+            ],
+            selectedGlobalFoodItemId: 'gouda',
+            requiresWeightConfirmation: true,
+          ),
+        ],
+        onCancelTap: () {},
+        onSaveTap: (items) async {
+          savedItems = items;
+        },
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('receipt_review_save_button')));
+    await tester.pumpAndSettle();
+
+    expect(savedItems, isNull);
+
+    final weightField = tester.widget<TextField>(
+      find.byKey(const Key('receipt_review_weight_confirmation_field')),
+    );
+    expect(weightField.controller?.text, '800g');
+
+    final confirmButton = find.byKey(
+      const Key('receipt_review_weight_confirmation_yes_button'),
+    );
+    await tester.ensureVisible(confirmButton);
+    await tester.tap(confirmButton);
+    await tester.pumpAndSettle();
+
+    expect(savedItems, isNotNull);
+    expect(savedItems, hasLength(1));
+    expect(savedItems!.single.weight, '800g');
+    expect(savedItems!.single.initialAmount, 800);
+    expect(savedItems!.single.amountUnit, InventoryAmountUnit.gram);
   });
 
   testWidgets('header keeps only save action visible', (tester) async {

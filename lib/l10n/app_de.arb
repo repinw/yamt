@@ -81,6 +81,13 @@
   "inventoryReceiptReviewNoDate": "Kein Datum",
   "inventoryReceiptReviewInvalidNumber": "Bitte gültige Zahlen eingeben.",
   "inventoryReceiptReviewInvalidWeightUnit": "Bitte eine Einheit angeben (z. B. g oder ml).",
+  "inventoryReceiptReviewWeightConfirmTitle":
+      "Stimmt das Gewicht überein?",
+  "inventoryReceiptReviewWeightConfirmAction": "Ja",
+  "inventoryReceiptReviewWeightConfirmClearAction":
+      "Gewicht leeren",
+  "inventoryReceiptReviewWeightConfirmRequired":
+      "Bitte bestätige das Gewicht.",
   "inventoryReceiptReviewInvalidDiscounts": "JSON oder key=value verwenden.",
   "inventoryReceiptReviewDetectedItems": "Erkannte Artikel",
   "inventoryReceiptReviewOriginalReceiptAction": "Original-Beleg ansehen",

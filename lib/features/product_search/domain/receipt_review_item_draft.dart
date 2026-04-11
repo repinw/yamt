@@ -8,6 +8,7 @@ class ReceiptReviewItemDraft {
     this.candidates = const <GlobalFoodMatchCandidate>[],
     this.selectedGlobalFoodItemId,
     this.selectionNeedsReview = false,
+    this.requiresWeightConfirmation = false,
     this.requestAiEnrichment = false,
     this.ocrName,
     this.receiptTimeText,
@@ -17,6 +18,7 @@ class ReceiptReviewItemDraft {
   final List<GlobalFoodMatchCandidate> candidates;
   final String? selectedGlobalFoodItemId;
   final bool selectionNeedsReview;
+  final bool requiresWeightConfirmation;
   final bool requestAiEnrichment;
   final String? ocrName;
   final String? receiptTimeText;
@@ -26,6 +28,7 @@ class ReceiptReviewItemDraft {
     List<GlobalFoodMatchCandidate>? candidates,
     Object? selectedGlobalFoodItemId = _keepValue,
     bool? selectionNeedsReview,
+    bool? requiresWeightConfirmation,
     bool? requestAiEnrichment,
     Object? ocrName = _keepValue,
     Object? receiptTimeText = _keepValue,
@@ -37,6 +40,8 @@ class ReceiptReviewItemDraft {
           ? this.selectedGlobalFoodItemId
           : selectedGlobalFoodItemId as String?,
       selectionNeedsReview: selectionNeedsReview ?? this.selectionNeedsReview,
+      requiresWeightConfirmation:
+          requiresWeightConfirmation ?? this.requiresWeightConfirmation,
       requestAiEnrichment: requestAiEnrichment ?? this.requestAiEnrichment,
       ocrName: ocrName == _keepValue ? this.ocrName : ocrName as String?,
       receiptTimeText: receiptTimeText == _keepValue
@@ -108,6 +113,7 @@ class ReceiptReviewItemDraft {
             ) &&
             other.selectedGlobalFoodItemId == selectedGlobalFoodItemId &&
             other.selectionNeedsReview == selectionNeedsReview &&
+            other.requiresWeightConfirmation == requiresWeightConfirmation &&
             other.requestAiEnrichment == requestAiEnrichment &&
             other.ocrName == ocrName &&
             other.receiptTimeText == receiptTimeText;
@@ -120,6 +126,7 @@ class ReceiptReviewItemDraft {
       const ListEquality<GlobalFoodMatchCandidate>().hash(candidates),
       selectedGlobalFoodItemId,
       selectionNeedsReview,
+      requiresWeightConfirmation,
       requestAiEnrichment,
       ocrName,
       receiptTimeText,

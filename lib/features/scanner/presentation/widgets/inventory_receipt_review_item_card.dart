@@ -94,6 +94,7 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       _ReceiptItemFooter(
+                        draft: draft,
                         item: item,
                         itemId: item.id,
                         index: index,
@@ -198,6 +199,7 @@ class _ReceiptItemTopRow extends StatelessWidget {
 
 class _ReceiptItemFooter extends StatelessWidget {
   const _ReceiptItemFooter({
+    required this.draft,
     required this.item,
     required this.itemId,
     required this.index,
@@ -206,6 +208,7 @@ class _ReceiptItemFooter extends StatelessWidget {
     required this.isActionLoading,
   });
 
+  final ReceiptReviewItemDraft draft;
   final InventoryItem item;
   final String itemId;
   final int index;
@@ -216,10 +219,14 @@ class _ReceiptItemFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final candidateWeight = viewData.display.packageWeight?.trim();
+    final itemWeight = item.weight?.trim();
     final displayedWeight =
-        viewData.display.packageWeight?.trim().isNotEmpty == true
-        ? viewData.display.packageWeight!.trim()
-        : item.weight?.trim();
+        draft.requiresWeightConfirmation && candidateWeight?.isNotEmpty == true
+        ? candidateWeight
+        : itemWeight?.isNotEmpty == true
+        ? itemWeight
+        : candidateWeight;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -386,7 +393,9 @@ _ReceiptItemVisualState _visualStateForDraft(ReceiptReviewItemDraft draft) {
   if (draft.selectedCandidate == null) {
     return _ReceiptItemVisualState.reviewNeeded;
   }
-  if (draft.selectionNeedsReview || draft.differsFromSelectedCandidate) {
+  if (draft.requiresWeightConfirmation ||
+      draft.selectionNeedsReview ||
+      draft.differsFromSelectedCandidate) {
     return _ReceiptItemVisualState.reviewNeeded;
   }
   return _ReceiptItemVisualState.matched;

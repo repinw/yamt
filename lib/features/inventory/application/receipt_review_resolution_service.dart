@@ -17,6 +17,8 @@ import 'package:yamt/features/product_search/domain/'
     'receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/data/receipt_to_review_item_draft_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
+import 'package:yamt/features/scanner/domain/'
+    'receipt_review_weight_confirmation.dart';
 
 part 'receipt_review_resolution_service.g.dart';
 
@@ -187,7 +189,7 @@ class ReceiptReviewResolutionService {
       category: draft.item.category ?? selectedProduct?.category,
       barcode: draft.item.barcode ?? selectedProduct?.barcode,
       imageUrl: draft.item.imageUrl ?? selectedProduct?.imageUrl,
-      packageWeight: selectedProduct?.packageWeight,
+      packageWeight: draft.item.weight ?? selectedProduct?.packageWeight,
       foodFingerprint: draft.item.resolvedFoodFingerprint,
       nutrition: draft.item.nutrition ?? selectedProduct?.nutrition,
       status: status,
@@ -223,10 +225,15 @@ class ReceiptReviewResolutionService {
     }
 
     final candidates = await _matcher.findCandidates(draft.item);
-    return draft.copyWith(
+    final updatedDraft = draft.copyWith(
       candidates: candidates,
       selectedGlobalFoodItemId: _matcher.defaultSelectionFor(candidates),
       selectionNeedsReview: _matcher.defaultSelectionNeedsReviewFor(candidates),
+    );
+    return updatedDraft.copyWith(
+      requiresWeightConfirmation: shouldRequireReceiptWeightConfirmation(
+        updatedDraft,
+      ),
     );
   }
 

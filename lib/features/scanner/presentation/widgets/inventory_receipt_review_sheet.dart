@@ -14,6 +14,8 @@ import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/'
     'receipt_review_item_processor.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_price_summary.dart';
+import 'package:yamt/features/scanner/domain/'
+    'receipt_review_weight_confirmation.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
@@ -32,6 +34,8 @@ import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_review_price_overview.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_item_editor_sheet.dart';
+import 'package:yamt/features/scanner/presentation/widgets/'
+    'inventory_receipt_weight_confirmation_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Main receipt review content shown inside the full-screen review flow.
@@ -189,23 +193,24 @@ class _InventoryReceiptReviewSheetState
   }
 
   Future<void> _openItemEditor(String itemId) async {
-    final index = _indexForItemId(itemId);
-    if (index < 0 || _items[index].item.isDiscount) {
+    final draft = _draftForItemId(itemId);
+    if (draft == null || draft.item.isDiscount) {
       return;
     }
 
-    final editedItem = await showModalBottomSheet<InventoryItem>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (sheetContext) {
-        return InventoryReceiptItemEditorSheet(item: _items[index].item);
-      },
-    );
+    final editedItem = await _showItemEditor(draft.item);
     if (!mounted || editedItem == null) {
       return;
     }
-    _replaceDraftByItemId(itemId, (draft) => draft.copyWith(item: editedItem));
+
+    _replaceDraftByItemId(itemId, (currentDraft) {
+      return currentDraft.copyWith(
+        item: editedItem,
+        requiresWeightConfirmation: currentDraft.requiresWeightConfirmation
+            ? !_hasWeight(editedItem)
+            : false,
+      );
+    });
   }
 
   Future<void> _openCandidatePicker(String itemId) async {
@@ -238,10 +243,17 @@ class _InventoryReceiptReviewSheetState
         if (candidateId == null) {
           return;
         }
-        _replaceDraftByItemId(
-          itemId,
-          (draft) => draft.selectCandidate(candidateId),
-        );
+        _replaceDraftByItemId(itemId, (draft) {
+          final updatedDraft = draft.selectCandidate(candidateId);
+          return updatedDraft.copyWith(
+            requiresWeightConfirmation: shouldRequireReceiptWeightConfirmation(
+              updatedDraft,
+            ),
+          );
+        });
+        if (_draftNeedsWeightConfirmation(_draftForItemId(itemId))) {
+          await _confirmWeight(itemId);
+        }
       case ReceiptCandidatePickerSelectionKind.manualEntry:
         await _openManualProductEntry(itemId);
       case ReceiptCandidatePickerSelectionKind.aiEnrichment:
@@ -275,7 +287,12 @@ class _InventoryReceiptReviewSheetState
       final selectedProduct = result.selectedProduct;
       final selectedGlobalFoodItemId = result.selectedGlobalFoodItemId;
       if (selectedProduct == null && selectedGlobalFoodItemId == null) {
-        return draft.copyWith(item: result.item).selectNewItem();
+        final updatedDraft = draft.copyWith(item: result.item).selectNewItem();
+        return updatedDraft.copyWith(
+          requiresWeightConfirmation: shouldRequireReceiptWeightConfirmation(
+            updatedDraft,
+          ),
+        );
       }
 
       final scannedCandidate = selectedProduct != null
@@ -290,12 +307,17 @@ class _InventoryReceiptReviewSheetState
           (candidate) => candidate.item.id != scannedCandidate.item.id,
         ),
       ];
-      return draft.copyWith(
+      final updatedDraft = draft.copyWith(
         item: result.item,
         candidates: mergedCandidates,
         selectedGlobalFoodItemId: scannedCandidate.item.id,
         selectionNeedsReview: false,
         requestAiEnrichment: false,
+      );
+      return updatedDraft.copyWith(
+        requiresWeightConfirmation: shouldRequireReceiptWeightConfirmation(
+          updatedDraft,
+        ),
       );
     });
   }
@@ -359,10 +381,15 @@ class _InventoryReceiptReviewSheetState
           candidates,
         ),
       );
+      final syncedDraft = updatedDraft.copyWith(
+        requiresWeightConfirmation: shouldRequireReceiptWeightConfirmation(
+          updatedDraft,
+        ),
+      );
       setState(() {
-        _items[currentIndex] = updatedDraft;
+        _items[currentIndex] = syncedDraft;
       });
-      return updatedDraft;
+      return syncedDraft;
     } finally {
       if (mounted) {
         setState(() {
@@ -374,6 +401,14 @@ class _InventoryReceiptReviewSheetState
 
   int _indexForItemId(String itemId) {
     return _items.indexWhere((draft) => draft.item.id == itemId);
+  }
+
+  ReceiptReviewItemDraft? _draftForItemId(String itemId) {
+    final index = _indexForItemId(itemId);
+    if (index < 0) {
+      return null;
+    }
+    return _items[index];
   }
 
   void _replaceDraftByItemId(
@@ -409,6 +444,17 @@ class _InventoryReceiptReviewSheetState
       return;
     }
 
+    while (true) {
+      final pendingItemId = _firstItemIdNeedingWeightConfirmation();
+      if (pendingItemId == null) {
+        break;
+      }
+      final confirmed = await _confirmWeight(pendingItemId);
+      if (!mounted || !confirmed) {
+        return;
+      }
+    }
+
     setState(() {
       _isSaving = true;
     });
@@ -429,5 +475,64 @@ class _InventoryReceiptReviewSheetState
         _items.map((draft) => draft.item.currencyCode),
       ),
     );
+  }
+
+  Future<bool> _confirmWeight(String itemId) async {
+    final draft = _draftForItemId(itemId);
+    if (draft == null || draft.item.isDiscount) {
+      return false;
+    }
+
+    final confirmedItem = await showInventoryReceiptWeightConfirmationDialog(
+      context: context,
+      item: draft.item,
+      initialWeight: _weightSuggestionFor(draft),
+    );
+    if (!mounted || confirmedItem == null) {
+      return false;
+    }
+
+    _replaceDraftByItemId(itemId, (currentDraft) {
+      return currentDraft.copyWith(
+        item: confirmedItem,
+        requiresWeightConfirmation: false,
+      );
+    });
+
+    return !_draftNeedsWeightConfirmation(_draftForItemId(itemId));
+  }
+
+  Future<InventoryItem?> _showItemEditor(InventoryItem item) async {
+    return showModalBottomSheet<InventoryItem>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheetContext) {
+        return InventoryReceiptItemEditorSheet(item: item);
+      },
+    );
+  }
+
+  String? _weightSuggestionFor(ReceiptReviewItemDraft draft) {
+    return receiptReviewWeightSuggestion(draft);
+  }
+
+  String? _firstItemIdNeedingWeightConfirmation() {
+    for (final draft in _items) {
+      if (_draftNeedsWeightConfirmation(draft)) {
+        return draft.item.id;
+      }
+    }
+    return null;
+  }
+
+  bool _draftNeedsWeightConfirmation(ReceiptReviewItemDraft? draft) {
+    return draft != null &&
+        draft.canBeSavedToInventory &&
+        draft.requiresWeightConfirmation;
+  }
+
+  bool _hasWeight(InventoryItem item) {
+    return normalizeReceiptReviewWeight(item.weight) != null;
   }
 }
