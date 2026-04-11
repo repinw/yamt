@@ -163,7 +163,11 @@ void main() {
 
         final saveFuture = container
             .read(provider.notifier)
-            .save(goalStartAt: goalStartAt);
+            .save(
+              goalStartAt: goalStartAt,
+              eatingWindowStartMinuteOfDay: defaultEatingWindowStartMinuteOfDay,
+              eatingWindowEndMinuteOfDay: defaultEatingWindowEndMinuteOfDay,
+            );
 
         expect(container.read(provider).isSaving, isTrue);
         expect(repository.saveCallCount, 1);
@@ -200,7 +204,11 @@ void main() {
 
         final saveFuture = container
             .read(provider.notifier)
-            .save(goalStartAt: DateTime(2026, 4, 10, 18));
+            .save(
+              goalStartAt: DateTime(2026, 4, 10, 18),
+              eatingWindowStartMinuteOfDay: defaultEatingWindowStartMinuteOfDay,
+              eatingWindowEndMinuteOfDay: defaultEatingWindowEndMinuteOfDay,
+            );
 
         expect(container.read(provider).isSaving, isTrue);
 
@@ -232,7 +240,11 @@ void main() {
 
         final saveFuture = container
             .read(provider.notifier)
-            .save(goalStartAt: DateTime(2026, 4, 10, 18));
+            .save(
+              goalStartAt: DateTime(2026, 4, 10, 18),
+              eatingWindowStartMinuteOfDay: defaultEatingWindowStartMinuteOfDay,
+              eatingWindowEndMinuteOfDay: defaultEatingWindowEndMinuteOfDay,
+            );
 
         expect(repository.saveCallCount, 1);
 

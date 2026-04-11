@@ -5,6 +5,9 @@ abstract final class CaloriesPageKeys {
   static const appBarMenuCalculatorAction = Key(
     'calories_app_bar_calculator_action',
   );
+  static const appBarMenuSetEatingWindowAction = Key(
+    'calories_app_bar_set_eating_window_action',
+  );
   static const appBarMenuShiftGoalStartAction = Key(
     'calories_app_bar_shift_goal_start_action',
   );
@@ -113,6 +116,13 @@ abstract final class CalorieGoalCalculatorSheetKeys {
   static const goalStartChangeButton = Key(
     'calorie_calculator_goal_start_change_button',
   );
+  static const eatingWindowCard = Key('calorie_calculator_eating_window_card');
+  static const eatingWindowValue = Key(
+    'calorie_calculator_eating_window_value',
+  );
+  static const eatingWindowChangeButton = Key(
+    'calorie_calculator_eating_window_change_button',
+  );
   static const warningCard = Key('calorie_calculator_warning_card');
   static const backButton = Key('calorie_calculator_back_button');
   static const nextButton = Key('calorie_calculator_next_button');
@@ -132,6 +142,14 @@ abstract final class CalorieEntryEditorKeys {
   static const per100CarbsField = Key('calorie_entry_per100_carbs_field');
   static const per100FatField = Key('calorie_entry_per100_fat_field');
   static const saveButton = Key('calorie_entry_save_button');
+}
+
+abstract final class CalorieEatingWindowDialogKeys {
+  static const changeStartButton = Key(
+    'calorie_eating_window_change_start_button',
+  );
+  static const changeEndButton = Key('calorie_eating_window_change_end_button');
+  static const saveButton = Key('calorie_eating_window_save_button');
 }
 
 abstract final class CalorieBarcodeScanKeys {

@@ -214,11 +214,33 @@ void main() {
       find.byKey(CaloriesPageKeys.appBarMenuCalculatorAction),
       findsOneWidget,
     );
+    expect(
+      find.byKey(CaloriesPageKeys.appBarMenuSetEatingWindowAction),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(CaloriesPageKeys.appBarMenuCalculatorAction));
     await tester.pumpAndSettle();
 
     expect(find.text('Calorie calculator'), findsOneWidget);
+  });
+
+  testWidgets('diary menu opens the eating window dialog', (tester) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildHarness(settingsRepository: repository));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CaloriesPageKeys.appBarMenuButton));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(CaloriesPageKeys.appBarMenuSetEatingWindowAction),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Set eating window'), findsOneWidget);
   });
 
   testWidgets('diary menu opens the shift goal start dialog', (tester) async {

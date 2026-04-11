@@ -61,6 +61,10 @@ CalorieGoalSettings _$CalorieGoalSettingsFromJson(Map<String, dynamic> json) =>
               )
               .toList() ??
           [],
+      eatingWindowStartMinuteOfDay:
+          (json['eating_window_start_minute_of_day'] as num?)?.toInt() ?? 360,
+      eatingWindowEndMinuteOfDay:
+          (json['eating_window_end_minute_of_day'] as num?)?.toInt() ?? 1320,
     );
 
 Map<String, dynamic> _$CalorieGoalSettingsToJson(
@@ -74,4 +78,6 @@ Map<String, dynamic> _$CalorieGoalSettingsToJson(
     instance.updatedAt,
   ),
   'goal_history': instance.goalHistory.map((e) => e.toJson()).toList(),
+  'eating_window_start_minute_of_day': instance.eatingWindowStartMinuteOfDay,
+  'eating_window_end_minute_of_day': instance.eatingWindowEndMinuteOfDay,
 };

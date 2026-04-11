@@ -542,6 +542,7 @@
   "caloriesAuthRequired": "Please sign in to manage calories.",
   "caloriesTodayAction": "Today",
   "caloriesSetGoalAction": "Set goal manually",
+  "caloriesSetEatingWindowAction": "Set eating window",
   "caloriesShiftGoalStartAction": "Move goal start",
   "caloriesCalculatorAction": "Recalculate goal",
   "caloriesGoalDialogTitle": "Set daily goal",
@@ -555,6 +556,13 @@
   "caloriesGoalStartDateLabel": "Date",
   "caloriesGoalStartTimeLabel": "Time",
   "caloriesGoalStartSaveFailed": "Could not update goal start.",
+  "caloriesEatingWindowDialogTitle": "Set eating window",
+  "caloriesEatingWindowStartLabel": "Start",
+  "caloriesEatingWindowEndLabel": "End",
+  "caloriesEatingWindowInvalidRange":
+      "The end time must be later than the start time.",
+  "caloriesEatingWindowSaveFailed":
+      "Could not update the eating window.",
   "caloriesCalculatorSheetTitle": "Calorie calculator",
   "caloriesCalculatorOnboardingTitle": "Set your calorie goal",
   "caloriesCalculatorOnboardingSubtitle":
@@ -624,6 +632,9 @@
   "caloriesCalculatorGoalStartHint":
       "Your calorie target history begins from this point.",
   "caloriesCalculatorGoalStartChangeAction": "Change",
+  "caloriesCalculatorEatingWindowLabel": "Eating window",
+  "caloriesCalculatorEatingWindowHint":
+      "Used to pace today's diary balance throughout the day.",
   "caloriesCalculatorGoalStartFutureError":
       "Goal start can't be in the future.",
   "caloriesCalculatorMinimumGoalWarning":
@@ -906,6 +917,15 @@
   "settingsThemeSystem": "System",
   "settingsThemeLight": "Light",
   "settingsThemeDark": "Dark",
+  "settingsDiaryTitle": "Diary",
+  "settingsDiarySubtitle": "Eating window: {window}",
+  "@settingsDiarySubtitle": {
+    "placeholders": {
+      "window": {
+        "type": "String"
+      }
+    }
+  },
   "settingsColorTitle": "Accent color",
   "settingsColorLime": "Lime",
   "settingsColorBlue": "Blue",

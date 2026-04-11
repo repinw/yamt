@@ -9,6 +9,14 @@ void main() {
     expect(settings.hasGoal, isFalse);
     expect(settings.dailyKcalGoal, isNull);
     expect(settings.updatedAt, isNull);
+    expect(
+      settings.normalizedEatingWindowStartMinuteOfDay,
+      defaultEatingWindowStartMinuteOfDay,
+    );
+    expect(
+      settings.normalizedEatingWindowEndMinuteOfDay,
+      defaultEatingWindowEndMinuteOfDay,
+    );
   });
 
   test('json conversion preserves goal values', () {
@@ -35,6 +43,23 @@ void main() {
     expect(decoded.goalHistory, hasLength(1));
     expect(decoded.goalHistory.single.effectiveDate, DateTime(2026, 2, 25));
     expect(decoded.goalHistory.single.changedAt, DateTime(2026, 2, 25, 11));
+    expect(decoded.normalizedEatingWindowStartMinuteOfDay, 360);
+    expect(decoded.normalizedEatingWindowEndMinuteOfDay, 1320);
+  });
+
+  test('json conversion preserves a custom eating window', () {
+    final settings = CalorieGoalSettings.single(
+      dailyKcalGoal: 2300,
+      calculatorProfile: null,
+      effectiveDate: DateTime(2026, 2, 25, 11),
+      eatingWindowStartMinuteOfDay: 8 * 60,
+      eatingWindowEndMinuteOfDay: (20 * 60) + 30,
+    );
+
+    final decoded = CalorieGoalSettings.fromJson(settings.toJson());
+
+    expect(decoded.normalizedEatingWindowStartMinuteOfDay, 8 * 60);
+    expect(decoded.normalizedEatingWindowEndMinuteOfDay, (20 * 60) + 30);
   });
 
   test('resolves goal history by day and resets balance on latest change', () {
@@ -134,5 +159,66 @@ void main() {
       ]),
       DateTime(2026, 2, 24),
     );
+  });
+
+  test('applyEatingWindowChange keeps goal history unchanged', () {
+    final settings =
+        CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: DateTime(2026, 2, 20, 8),
+        ).applyEatingWindowChange(
+          changedAt: DateTime(2026, 2, 21, 9),
+          startMinuteOfDay: (7 * 60) + 30,
+          endMinuteOfDay: 21 * 60,
+        );
+
+    expect(settings.goalHistory, hasLength(1));
+    expect(settings.normalizedEatingWindowStartMinuteOfDay, (7 * 60) + 30);
+    expect(settings.normalizedEatingWindowEndMinuteOfDay, 21 * 60);
+  });
+
+  test('negative eating window minutes clamp to start of day', () {
+    final settings = CalorieGoalSettings.single(
+      dailyKcalGoal: 2300,
+      calculatorProfile: null,
+      effectiveDate: DateTime(2026, 2, 25, 11),
+      eatingWindowStartMinuteOfDay: -10,
+      eatingWindowEndMinuteOfDay: 120,
+    );
+
+    expect(settings.normalizedEatingWindowStartMinuteOfDay, 0);
+    expect(settings.normalizedEatingWindowEndMinuteOfDay, 120);
+  });
+
+  test('eating window minutes above day range clamp to final minute', () {
+    final settings = CalorieGoalSettings.single(
+      dailyKcalGoal: 2300,
+      calculatorProfile: null,
+      effectiveDate: DateTime(2026, 2, 25, 11),
+      eatingWindowStartMinuteOfDay: 1200,
+      eatingWindowEndMinuteOfDay: 1500,
+    );
+
+    expect(settings.normalizedEatingWindowStartMinuteOfDay, 1200);
+    expect(settings.normalizedEatingWindowEndMinuteOfDay, 1439);
+  });
+
+  test('isValidEatingWindowMinutes rejects identical start and end', () {
+    final isValid = isValidEatingWindowMinutes(
+      startMinuteOfDay: 8 * 60,
+      endMinuteOfDay: 8 * 60,
+    );
+
+    expect(isValid, isFalse);
+  });
+
+  test('isValidEatingWindowMinutes rejects end before start', () {
+    final isValid = isValidEatingWindowMinutes(
+      startMinuteOfDay: 22 * 60,
+      endMinuteOfDay: 6 * 60,
+    );
+
+    expect(isValid, isFalse);
   });
 }

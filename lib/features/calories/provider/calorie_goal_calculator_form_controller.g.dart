@@ -69,7 +69,7 @@ final class CalorieGoalCalculatorFormControllerProvider
 }
 
 String _$calorieGoalCalculatorFormControllerHash() =>
-    r'8c0bbee052285f1d7c2efdafd48594bc4f130e16';
+    r'ba910593f54fe3a4bbe5463e68370cc30de839ba';
 
 final class CalorieGoalCalculatorFormControllerFamily extends $Family
     with

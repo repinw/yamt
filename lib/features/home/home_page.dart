@@ -5,6 +5,8 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_eating_window_dialog.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/calorie_goal_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -26,7 +28,7 @@ const _diaryBranchIndex = 1;
 const _statisticsBranchIndex = 2;
 const _settingsBranchIndex = 3;
 
-enum _DiaryAppBarAction { setGoal, shiftGoalStart, calculator }
+enum _DiaryAppBarAction { setGoal, setEatingWindow, shiftGoalStart, calculator }
 
 /// Shell page that hosts the main app tabs and shared home chrome.
 class HomePage extends ConsumerWidget {
@@ -184,6 +186,11 @@ class HomePage extends ConsumerWidget {
                   child: Text(l10n.caloriesSetGoalAction),
                 ),
                 PopupMenuItem<_DiaryAppBarAction>(
+                  key: CaloriesPageKeys.appBarMenuSetEatingWindowAction,
+                  value: _DiaryAppBarAction.setEatingWindow,
+                  child: Text(l10n.caloriesSetEatingWindowAction),
+                ),
+                PopupMenuItem<_DiaryAppBarAction>(
                   key: CaloriesPageKeys.appBarMenuShiftGoalStartAction,
                   value: _DiaryAppBarAction.shiftGoalStart,
                   enabled: currentCalorieSettings?.hasGoal == true,
@@ -287,6 +294,26 @@ class HomePage extends ConsumerWidget {
           onClearGoal: ref
               .read(calorieGoalControllerProvider.notifier)
               .clearGoal,
+        );
+        return;
+      case _DiaryAppBarAction.setEatingWindow:
+        final currentSettings =
+            ref.read(calorieGoalControllerProvider).asData?.value ??
+            const CalorieGoalSettings.empty();
+        await showCalorieEatingWindowDialog(
+          context: context,
+          initialStartMinuteOfDay:
+              currentSettings.normalizedEatingWindowStartMinuteOfDay,
+          initialEndMinuteOfDay:
+              currentSettings.normalizedEatingWindowEndMinuteOfDay,
+          onSaveEatingWindow: (startMinuteOfDay, endMinuteOfDay) {
+            return ref
+                .read(calorieGoalControllerProvider.notifier)
+                .setEatingWindow(
+                  startMinuteOfDay: startMinuteOfDay,
+                  endMinuteOfDay: endMinuteOfDay,
+                );
+          },
         );
         return;
       case _DiaryAppBarAction.shiftGoalStart:
