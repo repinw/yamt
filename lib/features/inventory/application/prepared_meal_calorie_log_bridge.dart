@@ -38,37 +38,56 @@ class PreparedMealCalorieLogBridge {
     required MealType mealType,
     DateTime? loggedDay,
   }) {
-    if (meal.totalPortions < 1 || consumedPortions < 1) {
+    final entry = buildConsumedPreparedMealCalorieEntry(
+      meal: meal,
+      consumedPortions: consumedPortions,
+      mealType: mealType,
+      now: _now,
+      loggedDay: loggedDay,
+    );
+    if (entry == null) {
       return Future<bool>.value(false);
     }
 
-    final now = _now();
-    final loggedAt = _resolveLoggedAt(now: now, loggedDay: loggedDay);
-    final portionRatio = consumedPortions / meal.totalPortions;
-    final entry = CalorieEntry.bundle(
-      id: _uuid.v4(),
-      userId: '',
-      name: meal.name,
-      imageAssetId: meal.imageAssetId,
-      mealType: mealType,
-      totalKcal: meal.totalKcal * portionRatio,
-      totalProtein: meal.totalProtein * portionRatio,
-      totalCarbs: meal.totalCarbs * portionRatio,
-      totalFat: meal.totalFat * portionRatio,
-      bundleSourcePreparedMealId: meal.id,
-      bundleConsumedPortions: consumedPortions,
-      bundleTotalPortions: meal.totalPortions,
-      bundleComponents: _buildBundleComponents(
-        meal: meal,
-        portionRatio: portionRatio,
-      ),
-      loggedAt: loggedAt,
-      createdAt: now,
-      updatedAt: now,
-    );
-
     return _saveEntry(entry);
   }
+}
+
+CalorieEntry? buildConsumedPreparedMealCalorieEntry({
+  required PreparedMeal meal,
+  required int consumedPortions,
+  required MealType mealType,
+  required DateTime Function() now,
+  DateTime? loggedDay,
+}) {
+  if (meal.totalPortions < 1 || consumedPortions < 1) {
+    return null;
+  }
+
+  final currentTime = now();
+  final loggedAt = _resolveLoggedAt(now: currentTime, loggedDay: loggedDay);
+  final portionRatio = consumedPortions / meal.totalPortions;
+  return CalorieEntry.bundle(
+    id: PreparedMealCalorieLogBridge._uuid.v4(),
+    userId: '',
+    name: meal.name,
+    imageAssetId: meal.imageAssetId,
+    mealType: mealType,
+    totalKcal: meal.totalKcal * portionRatio,
+    totalProtein: meal.totalProtein * portionRatio,
+    totalCarbs: meal.totalCarbs * portionRatio,
+    totalFat: meal.totalFat * portionRatio,
+    bundleSourcePreparedMealId: meal.id,
+    bundleConsumedPortions: consumedPortions,
+    bundleTotalPortions: meal.totalPortions,
+    bundleComponents: _buildBundleComponents(
+      meal: meal,
+      portionRatio: portionRatio,
+    ),
+    loggedAt: loggedAt,
+    createdAt: currentTime,
+    updatedAt: currentTime,
+  );
 }
 
 DateTime _resolveLoggedAt({
