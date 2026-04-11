@@ -11,6 +11,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_expand_indicator.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/remaining_progress_bar.dart';
@@ -22,48 +24,78 @@ class InventoryItemRowMainSection extends StatelessWidget {
     super.key,
     required this.item,
     required this.viewData,
+    required this.isExpanded,
     required this.onPrimaryActionPressed,
     required this.showSelectionCheckbox,
     required this.isSelected,
+    this.expandIndicatorKey,
   });
 
   final InventoryItemRowSnapshot item;
   final InventoryItemRowViewData viewData;
+  final bool isExpanded;
   final VoidCallback? onPrimaryActionPressed;
   final bool showSelectionCheckbox;
   final bool isSelected;
+  final Key? expandIndicatorKey;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (showSelectionCheckbox) ...[
-          IgnorePointer(
-            child: Checkbox(
-              value: isSelected,
-              onChanged: (_) {},
-              visualDensity: VisualDensity.compact,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (showSelectionCheckbox) ...[
+              IgnorePointer(
+                child: Checkbox(
+                  value: isSelected,
+                  onChanged: (_) {},
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+            ],
+            CategoryIcon(
+              name: item.category ?? item.name,
+              barcode: item.barcode,
+              imageUrl: item.imageUrl,
             ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-        ],
-        CategoryIcon(
-          name: item.category ?? item.name,
-          barcode: item.barcode,
-          imageUrl: item.imageUrl,
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: _InventoryItemRowInfoColumn(
+                item: item,
+                viewData: viewData,
+              ),
+            ),
+            if (!showSelectionCheckbox) ...[
+              const SizedBox(width: AppSpacing.sm),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  InventoryExpandIndicator(
+                    isExpanded: isExpanded,
+                    rotationKey: expandIndicatorKey,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  _InventoryItemPrimaryActionButton(
+                    viewData: viewData,
+                    onPrimaryActionPressed: onPrimaryActionPressed,
+                  ),
+                ],
+              ),
+            ],
+          ],
         ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _InventoryItemRowInfoColumn(item: item, viewData: viewData),
+        const SizedBox(height: AppSpacing.xs),
+        RemainingProgressBar(
+          ratio: viewData.remainingRatio,
+          stockLabel: viewData.remainingLabel,
+          segmentedByUnits: viewData.segmentedByUnits,
+          totalUnits: item.initialQuantity,
+          remainingUnits: item.quantity,
         ),
-        if (!showSelectionCheckbox) ...[
-          const SizedBox(width: AppSpacing.sm),
-          _InventoryItemPrimaryActionButton(
-            viewData: viewData,
-            onPrimaryActionPressed: onPrimaryActionPressed,
-          ),
-        ],
       ],
     );
   }
@@ -96,14 +128,6 @@ class _InventoryItemRowInfoColumn extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxs),
         if (viewData.statusText != null && viewData.statusColor != null)
           StatusLine(text: viewData.statusText!, color: viewData.statusColor!),
-        const SizedBox(height: AppSpacing.xs),
-        RemainingProgressBar(
-          ratio: viewData.remainingRatio,
-          stockLabel: viewData.remainingLabel,
-          segmentedByUnits: viewData.segmentedByUnits,
-          totalUnits: item.initialQuantity,
-          remainingUnits: item.quantity,
-        ),
       ],
     );
   }

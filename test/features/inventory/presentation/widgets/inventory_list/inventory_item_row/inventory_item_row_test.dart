@@ -7,6 +7,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/category_icon.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/remaining_progress_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _InventoryItemRowHost extends StatelessWidget {
@@ -68,7 +70,7 @@ class _InventoryItemRowHost extends StatelessWidget {
 }
 
 void main() {
-  testWidgets('positions expand indicator under the leading image', (
+  testWidgets('positions expand indicator in the top-right action column', (
     tester,
   ) async {
     final bucket = PageStorageBucket();
@@ -81,9 +83,31 @@ void main() {
 
     final iconCenter = tester.getCenter(find.byType(CategoryIcon));
     final indicatorCenter = tester.getCenter(find.byKey(indicatorKey));
+    final actionCenter = tester.getCenter(find.byType(IconButton));
 
-    expect(indicatorCenter.dx, closeTo(iconCenter.dx, 1));
-    expect(indicatorCenter.dy, greaterThan(iconCenter.dy));
+    expect(indicatorCenter.dx, greaterThan(iconCenter.dx));
+    expect(indicatorCenter.dy, lessThan(actionCenter.dy));
+  });
+
+  testWidgets('shows progress bar across full tile width', (tester) async {
+    final bucket = PageStorageBucket();
+
+    await tester.pumpWidget(
+      _InventoryItemRowHost(showRow: true, bucket: bucket),
+    );
+    await tester.pumpAndSettle();
+
+    final iconLeft = tester.getTopLeft(find.byType(CategoryIcon)).dx;
+    final actionRight = tester.getTopRight(find.byType(IconButton)).dx;
+    final progressLeft = tester
+        .getTopLeft(find.byType(RemainingProgressBar))
+        .dx;
+    final progressRight = tester
+        .getTopRight(find.byType(RemainingProgressBar))
+        .dx;
+
+    expect(progressLeft, lessThan(iconLeft));
+    expect(progressRight, greaterThan(actionRight));
   });
 
   testWidgets('shows expand indicator and rotates it on tap', (tester) async {
