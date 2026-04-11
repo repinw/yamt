@@ -23,6 +23,7 @@ class PreparedMealCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final radius =
         borderRadius ?? BorderRadius.circular(AppInventoryEditorial.cardRadius);
     final normalizedImageUrl = normalizeProductImageUrl(imageUrl);
@@ -33,8 +34,8 @@ class PreparedMealCover extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppInventoryEditorial.primary.withValues(alpha: 0.14),
-            Theme.of(context).colorScheme.surfaceContainerLow,
+            colors.primary.withValues(alpha: 0.14),
+            colors.surfaceContainerLow,
           ],
         ),
         borderRadius: radius,
@@ -75,12 +76,13 @@ class _PreparedMealCoverFallback extends StatelessWidget {
   Widget build(BuildContext context) {
     final trimmed = label.trim();
     final initial = trimmed.isEmpty ? '?' : trimmed.substring(0, 1);
+    final colors = Theme.of(context).colorScheme;
 
     return Center(
       child: Text(
         initial.toUpperCase(),
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: AppInventoryEditorial.primary,
+          color: colors.primary,
           fontWeight: FontWeight.w800,
         ),
       ),

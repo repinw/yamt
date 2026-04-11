@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_day_navigation_card.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
@@ -144,8 +143,13 @@ void main() {
       find.byKey(CaloriesPageKeys.dayNavigationPreviewBar(_dayKey(day))),
     );
     final decoration = bar.decoration as BoxDecoration;
+    final colors = Theme.of(
+      tester.element(
+        find.byKey(CaloriesPageKeys.dayNavigationPreviewBar(_dayKey(day))),
+      ),
+    ).colorScheme;
 
-    expect(decoration.color, AppInventoryEditorial.warning);
+    expect(decoration.color, colors.error);
   });
 
   testWidgets('renders the goal line inside the preview chart', (tester) async {

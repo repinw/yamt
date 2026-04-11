@@ -174,7 +174,7 @@ class _InventoryEmptyStateHighlightedAction extends StatelessWidget {
     final isLightTheme = Theme.of(context).brightness == Brightness.light;
     final haloColor = isLightTheme
         ? colors.shadow.withValues(alpha: 0.08)
-        : AppInventoryEditorial.primary.withValues(alpha: 0.12);
+        : colors.primary.withValues(alpha: 0.12);
     final haloShadowColor = isLightTheme
         ? colors.shadow.withValues(alpha: 0.18)
         : colors.primary.withValues(alpha: 0.28);

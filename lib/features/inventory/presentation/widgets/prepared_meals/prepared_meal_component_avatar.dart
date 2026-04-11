@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 
@@ -53,11 +52,12 @@ class _PreparedMealComponentAvatarFallback extends StatelessWidget {
   Widget build(BuildContext context) {
     final trimmed = label.trim();
     final initial = trimmed.isEmpty ? '?' : trimmed.substring(0, 1);
+    final colors = Theme.of(context).colorScheme;
 
     return DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppInventoryEditorial.primary.withValues(alpha: 0.12),
+        color: colors.primary.withValues(alpha: 0.12),
       ),
       child: SizedBox.square(
         dimension: size,
@@ -65,7 +65,7 @@ class _PreparedMealComponentAvatarFallback extends StatelessWidget {
           child: Text(
             initial.toUpperCase(),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppInventoryEditorial.primary,
+              color: colors.primary,
               fontWeight: FontWeight.w700,
             ),
           ),

@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:yamt/features/calories/presentation/calories_page.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+const _positiveAccentColor = Color(0xFF0D47A1);
+const _warningAccentColor = Color(0xFFB3261E);
 
 CalorieWeekOverview _overview({
   required int dayOffset,
@@ -35,6 +38,10 @@ CalorieWeekOverview _overview({
 
 void main() {
   final l10n = lookupAppLocalizations(const Locale('en'));
+
+  setUpAll(() async {
+    await initializeDateFormatting('en');
+  });
 
   test('resolveDisplayedWeekOverview keeps previous value during refresh', () {
     final previous = _overview(
@@ -79,13 +86,15 @@ void main() {
         overview: overview,
         l10n: l10n,
         referenceNow: DateTime(2026, 3, 27, 10),
+        positiveAccentColor: _positiveAccentColor,
+        warningColor: _warningAccentColor,
       );
 
       expect(content.message, l10n.caloriesWeekBalanceStartedToday);
-      expect(content.accentColor, AppInventoryEditorial.primary);
+      expect(content.accentColor, _positiveAccentColor);
       expect(
         content.backgroundColor,
-        AppInventoryEditorial.primary.withValues(alpha: 0.08),
+        _positiveAccentColor.withValues(alpha: 0.08),
       );
     },
   );
@@ -104,13 +113,15 @@ void main() {
         overview: overview,
         l10n: l10n,
         referenceNow: DateTime(2026, 3, 27, 10),
+        positiveAccentColor: _positiveAccentColor,
+        warningColor: _warningAccentColor,
       );
 
       expect(content.message, l10n.caloriesWeekBalanceSaved(420));
-      expect(content.accentColor, AppInventoryEditorial.primary);
+      expect(content.accentColor, _positiveAccentColor);
       expect(
         content.backgroundColor,
-        AppInventoryEditorial.primary.withValues(alpha: 0.08),
+        _positiveAccentColor.withValues(alpha: 0.08),
       );
     },
   );
@@ -129,13 +140,15 @@ void main() {
         overview: overview,
         l10n: l10n,
         referenceNow: DateTime(2026, 3, 27, 10),
+        positiveAccentColor: _positiveAccentColor,
+        warningColor: _warningAccentColor,
       );
 
       expect(content.message, l10n.caloriesWeekBalanceOverspent(250));
-      expect(content.accentColor, AppInventoryEditorial.warning);
+      expect(content.accentColor, _warningAccentColor);
       expect(
         content.backgroundColor,
-        AppInventoryEditorial.warning.withValues(alpha: 0.08),
+        _warningAccentColor.withValues(alpha: 0.08),
       );
     },
   );
@@ -152,13 +165,15 @@ void main() {
       overview: overview,
       l10n: l10n,
       referenceNow: DateTime(2026, 3, 27, 10),
+      positiveAccentColor: _positiveAccentColor,
+      warningColor: _warningAccentColor,
     );
 
     expect(content.message, l10n.caloriesWeekBalanceStable);
-    expect(content.accentColor, AppInventoryEditorial.primary);
+    expect(content.accentColor, _positiveAccentColor);
     expect(
       content.backgroundColor,
-      AppInventoryEditorial.primary.withValues(alpha: 0.08),
+      _positiveAccentColor.withValues(alpha: 0.08),
     );
   });
 
@@ -187,6 +202,8 @@ void main() {
         overview: overview,
         l10n: l10n,
         referenceNow: DateTime(2026, 3, 27, 10),
+        positiveAccentColor: _positiveAccentColor,
+        warningColor: _warningAccentColor,
       );
 
       final startLabel = DateFormat.yMMMd(

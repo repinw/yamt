@@ -11,6 +11,7 @@ class _InventoryItemEatSheetHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,7 +37,7 @@ class _InventoryItemEatSheetHeader extends StatelessWidget {
                   Text(
                     eyebrow.toUpperCase(),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppInventoryEditorial.primary,
+                      color: colors.primary,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 2.2,
                     ),
@@ -320,10 +321,7 @@ class _InventoryItemEatWhenCard extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.calendar_today_rounded,
-                color: AppInventoryEditorial.primary,
-              ),
+              Icon(Icons.calendar_today_rounded, color: colors.primary),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Text(
@@ -365,10 +363,7 @@ class _InventoryItemEatMealTypeSelector extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         child: Row(
           children: [
-            Icon(
-              Icons.restaurant_rounded,
-              color: AppInventoryEditorial.primary,
-            ),
+            Icon(Icons.restaurant_rounded, color: colors.primary),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: DropdownButtonHideUnderline(

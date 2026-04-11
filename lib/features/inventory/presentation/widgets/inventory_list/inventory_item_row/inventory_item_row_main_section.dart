@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/category_icon.dart';
+    'inventory_item_row/inventory_item_image_tile.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -36,11 +36,7 @@ class InventoryItemRowMainSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InventoryTileHeaderLayout(
-      leading: CategoryIcon(
-        name: item.category ?? item.name,
-        barcode: item.barcode,
-        imageUrl: item.imageUrl,
-      ),
+      leading: InventoryItemImageTile(imageUrl: item.imageUrl),
       badgeText: viewData.hasBrand ? viewData.brand : null,
       title: item.name,
       titleStyle: viewData.nameTextStyle,

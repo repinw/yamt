@@ -319,10 +319,13 @@ class _WeekBalanceSummaryBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
     final content = resolveWeekBalanceSummaryBannerContent(
       overview: overview,
       l10n: l10n,
       referenceNow: referenceNow,
+      positiveAccentColor: colors.primary,
+      warningColor: colors.error,
     );
 
     return DecoratedBox(
@@ -379,17 +382,19 @@ WeekBalanceSummaryBannerContent resolveWeekBalanceSummaryBannerContent({
   required CalorieWeekOverview overview,
   required AppLocalizations l10n,
   required DateTime referenceNow,
+  required Color positiveAccentColor,
+  required Color warningColor,
 }) {
   final isGoalStartToday =
       normalizeDiaryDay(overview.balanceStartDate) ==
       normalizeDiaryDay(referenceNow);
   final carryoverBeforeTodayKcal = overview.carryoverBeforeTodayKcal;
   final accentColor = carryoverBeforeTodayKcal < 0
-      ? AppInventoryEditorial.warning
-      : AppInventoryEditorial.primary;
+      ? warningColor
+      : positiveAccentColor;
   final backgroundColor = carryoverBeforeTodayKcal < 0
-      ? AppInventoryEditorial.warning.withValues(alpha: 0.08)
-      : AppInventoryEditorial.primary.withValues(alpha: 0.08);
+      ? warningColor.withValues(alpha: 0.08)
+      : positiveAccentColor.withValues(alpha: 0.08);
   final absoluteCarryover = carryoverBeforeTodayKcal.abs().round();
   final futureGoalStartLabel = _formatFutureGoalStartDate(
     overview.nextGoalStartDate,

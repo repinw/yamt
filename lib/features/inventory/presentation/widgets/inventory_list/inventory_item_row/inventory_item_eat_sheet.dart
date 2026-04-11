@@ -255,7 +255,7 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(AppRadius.xl),
                             ),
-                            backgroundColor: AppInventoryEditorial.primary,
+                            backgroundColor: colors.primary,
                           ),
                           child: Text(
                             l10n.inventoryItemEatSheetConfirmAction,

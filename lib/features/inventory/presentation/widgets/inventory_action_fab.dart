@@ -22,15 +22,9 @@ class InventoryActionFab extends ConsumerWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: AppInventoryEditorialSurfaces.soulGradient(colors),
+        color: colors.primaryContainer,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        boxShadow: [
-          AppInventoryEditorialSurfaces.ambientBoxShadow(
-            colors,
-            blurRadius: 28,
-            offset: const Offset(0, 16),
-          ),
-        ],
+        border: Border.all(color: colors.primary),
       ),
       child: SizedBox.square(
         dimension: AppInventoryEditorial.contextFabSize,
@@ -41,7 +35,12 @@ class InventoryActionFab extends ConsumerWidget {
             onTap: isBusy ? null : () => _onPressed(context, ref, l10n),
             child: Tooltip(
               message: l10n.inventoryFabTooltip,
-              child: Center(child: _InventoryActionFabChild(isBusy: isBusy)),
+              child: Center(
+                child: _InventoryActionFabChild(
+                  isBusy: isBusy,
+                  foregroundColor: colors.primary,
+                ),
+              ),
             ),
           ),
         ),
@@ -63,20 +62,24 @@ class InventoryActionFab extends ConsumerWidget {
 }
 
 class _InventoryActionFabChild extends StatelessWidget {
-  const _InventoryActionFabChild({required this.isBusy});
+  const _InventoryActionFabChild({
+    required this.isBusy,
+    required this.foregroundColor,
+  });
 
   final bool isBusy;
+  final Color foregroundColor;
 
   @override
   Widget build(BuildContext context) {
     if (!isBusy) {
-      return const Icon(Icons.add, color: Colors.white, size: 36);
+      return Icon(Icons.add, color: foregroundColor, size: 36);
     }
 
-    return const SizedBox.square(
+    return SizedBox.square(
       dimension: AppSizes.inlineProgressIndicator,
       child: CircularProgressIndicator(
-        color: Colors.white,
+        color: foregroundColor,
         strokeWidth: AppSizes.progressStrokeWidth,
       ),
     );

@@ -39,8 +39,7 @@ class RemainingProgressBar extends StatelessWidget {
         trackColor ?? colorScheme.surfaceContainerHighest;
     final isLowStock = safeRatio < 0.1;
     final resolvedFillColor =
-        fillColor ??
-        (isLowStock ? AppInventoryEditorial.warning : colorScheme.primary);
+        fillColor ?? (isLowStock ? colorScheme.error : colorScheme.primary);
     final percentage = (safeRatio * 100).round();
     final useSegmentedBar = segmentedByUnits && totalUnits <= _maxSegmentCount;
     final resolvedStockLabelStyle =

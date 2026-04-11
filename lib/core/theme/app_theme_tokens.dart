@@ -35,7 +35,7 @@ abstract final class AppInventoryEditorial {
   static const double glassBlur = 20;
 
   static const double cardRadius = AppRadius.xl;
-  static const double categoryTileSize = 56;
+  static const double imageTileSize = 56;
   static const double actionTileSize = 48;
   static const double contextFabSize = 64;
   static const double emptyStateActionHighlightSize = 96;
@@ -99,12 +99,17 @@ abstract final class AppInventoryEditorialSurfaces {
   }
 
   static LinearGradient soulGradient(ColorScheme colors) {
+    final primaryHsl = HSLColor.fromColor(colors.primary);
+    final dimLightness = colors.brightness == Brightness.dark
+        ? (primaryHsl.lightness - 0.1).clamp(0.0, 1.0)
+        : (primaryHsl.lightness - 0.08).clamp(0.0, 1.0);
+    final dimColor = primaryHsl.withLightness(dimLightness).toColor();
     final start = Color.alphaBlend(
-      AppInventoryEditorial.primary.withValues(alpha: 0.92),
+      colors.primary.withValues(alpha: 0.92),
       colors.primary,
     );
     final end = Color.alphaBlend(
-      AppInventoryEditorial.primaryDim.withValues(alpha: 0.92),
+      dimColor.withValues(alpha: 0.92),
       colors.primary,
     );
 
@@ -119,7 +124,7 @@ abstract final class AppInventoryEditorialSurfaces {
   static LinearGradient backdropGradient(ColorScheme colors) {
     final isDark = colors.brightness == Brightness.dark;
     final startColor = Color.alphaBlend(
-      AppInventoryEditorial.primary.withValues(alpha: isDark ? 0.2 : 0.12),
+      colors.primary.withValues(alpha: isDark ? 0.2 : 0.12),
       colors.surface,
     );
     final middleColor = Color.alphaBlend(
