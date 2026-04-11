@@ -478,42 +478,28 @@ class PreparedMealsController extends _$PreparedMealsController {
         removedPortions: consumedPortions,
         keepDepletedMeal: true,
       );
-      final savedMeals = await _saveMeals(
-        previousMeals: currentMeals,
-        nextMeals: nextMeals,
-      );
-      if (!savedMeals) {
-        log(
-          'consumePreparedMeal(): failed to save updated prepared meals '
-          '(mealId=$mealId)',
-          name: _preparedMealsControllerLogName,
-        );
-        return false;
-      }
-
-      final calorieSaved = await ref
+      return ref
           .read(preparedMealCalorieLogBridgeProvider)
-          .logConsumedPreparedMeal(
+          .consumePreparedMeal(
+            currentMeals: currentMeals,
+            nextMeals: nextMeals,
             meal: meal,
             consumedPortions: consumedPortions,
             mealType: mealType,
             loggedDay: loggedDay,
+            publishMeals: (meals) {
+              if (!ref.mounted) {
+                return;
+              }
+              state = AsyncData(meals);
+            },
+            saveMeals: (previousMeals, nextMeals) {
+              return _saveMeals(
+                previousMeals: previousMeals,
+                nextMeals: nextMeals,
+              );
+            },
           );
-      if (calorieSaved) {
-        log(
-          'consumePreparedMeal(): calorie entry saved '
-          '(mealId=$mealId, consumedPortions=$consumedPortions)',
-          name: _preparedMealsControllerLogName,
-        );
-        return true;
-      }
-
-      log(
-        'consumePreparedMeal(): calorie entry save failed, restoring '
-        'previous meal state (mealId=$mealId)',
-        name: _preparedMealsControllerLogName,
-      );
-      return _saveMeals(previousMeals: nextMeals, nextMeals: currentMeals);
     }).whenComplete(keepAliveLink.close);
   }
 

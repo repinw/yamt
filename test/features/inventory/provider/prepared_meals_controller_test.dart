@@ -3,11 +3,16 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
+import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
@@ -142,6 +147,20 @@ class _FakeInventoryDiscardEventRepository
     }
     savedEvents.add(event);
     return true;
+  }
+}
+
+class _FakePreparedMealCalorieEntryCommitStore
+    implements PreparedMealCalorieEntryCommitStore {
+  bool shouldSucceed = true;
+  CalorieEntry? committedEntry;
+  var commitCount = 0;
+
+  @override
+  Future<bool> commitEntryAndPreparedMeal({required CalorieEntry entry}) async {
+    commitCount += 1;
+    committedEntry = entry;
+    return shouldSucceed;
   }
 }
 
@@ -900,6 +919,198 @@ void main() {
       expect(saved, isTrue);
       expect(preparedMealRepository.savedMeals.single.remainingPortions, 3);
       expect(calorieLogRepository.entries.single.isBundle, isTrue);
+    },
+  );
+
+  test('consumePreparedMeal returns false and restores portions when calorie '
+      'save fails without atomic commit', () async {
+    final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
+    final inventoryRepository = _FakeInventoryItemRepository(
+      initialItems: [item],
+    );
+    final preparedMealRepository = _FakePreparedMealRepository(
+      initialMeals: [_meal(id: 'meal-1', name: 'Lunch box', item: item)],
+    );
+    final calorieLogRepository = FakeCalorieLogRepository()
+      ..saveShouldFail = true;
+    addTearDown(inventoryRepository.dispose);
+    addTearDown(preparedMealRepository.dispose);
+    addTearDown(calorieLogRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
+        preparedMealRepositoryProvider.overrideWithValue(
+          preparedMealRepository,
+        ),
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(preparedMealsControllerProvider.future);
+    final saved = await container
+        .read(preparedMealsControllerProvider.notifier)
+        .consumePreparedMeal(
+          mealId: 'meal-1',
+          consumedPortions: 1,
+          mealType: MealType.lunch,
+        );
+
+    expect(saved, isFalse);
+    expect(preparedMealRepository.savedMeals.single.remainingPortions, 4);
+    expect(calorieLogRepository.entries, isEmpty);
+    expect(
+      container
+          .read(preparedMealsControllerProvider)
+          .asData
+          ?.value
+          .single
+          .remainingPortions,
+      4,
+    );
+  });
+
+  test('consumePreparedMeal uses atomic commit store when available', () async {
+    final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
+    final inventoryRepository = _FakeInventoryItemRepository(
+      initialItems: [item],
+    );
+    final preparedMealRepository = _FakePreparedMealRepository(
+      initialMeals: [_meal(id: 'meal-1', name: 'Lunch box', item: item)],
+    );
+    final calorieLogRepository = FakeCalorieLogRepository();
+    final commitStore = _FakePreparedMealCalorieEntryCommitStore();
+    addTearDown(inventoryRepository.dispose);
+    addTearDown(preparedMealRepository.dispose);
+    addTearDown(calorieLogRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
+        preparedMealRepositoryProvider.overrideWithValue(
+          preparedMealRepository,
+        ),
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        preparedMealCalorieEntryCommitStoreProvider.overrideWithValue(
+          commitStore,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final mealsSubscription = _keepControllerAlive(container);
+    addTearDown(mealsSubscription.close);
+    final calorieSubscription = container.listen(
+      calorieEntriesControllerProvider,
+      (_, _) {},
+    );
+    addTearDown(calorieSubscription.close);
+
+    final loggedDay = DateTime(2026, 3, 20);
+    container.read(calorieDayControllerProvider.notifier).setDay(loggedDay);
+    await container.read(preparedMealsControllerProvider.future);
+    await container.read(calorieEntriesControllerProvider.future);
+
+    final saved = await container
+        .read(preparedMealsControllerProvider.notifier)
+        .consumePreparedMeal(
+          mealId: 'meal-1',
+          consumedPortions: 1,
+          mealType: MealType.dinner,
+          loggedDay: loggedDay,
+        );
+
+    expect(saved, isTrue);
+    expect(commitStore.commitCount, 1);
+    expect(commitStore.committedEntry?.bundleSourcePreparedMealId, 'meal-1');
+    expect(preparedMealRepository.savedMeals, isEmpty);
+    expect(
+      container
+          .read(preparedMealsControllerProvider)
+          .asData
+          ?.value
+          .single
+          .remainingPortions,
+      3,
+    );
+    expect(
+      container.read(calorieEntriesControllerProvider).asData?.value,
+      hasLength(1),
+    );
+  });
+
+  test(
+    'consumePreparedMeal restores local state when atomic commit fails',
+    () async {
+      final item = _item(id: 'rice', name: 'Rice', currentAmount: 100);
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: [item],
+      );
+      final preparedMealRepository = _FakePreparedMealRepository(
+        initialMeals: [_meal(id: 'meal-1', name: 'Lunch box', item: item)],
+      );
+      final calorieLogRepository = FakeCalorieLogRepository();
+      final commitStore = _FakePreparedMealCalorieEntryCommitStore()
+        ..shouldSucceed = false;
+      addTearDown(inventoryRepository.dispose);
+      addTearDown(preparedMealRepository.dispose);
+      addTearDown(calorieLogRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(
+            inventoryRepository,
+          ),
+          preparedMealRepositoryProvider.overrideWithValue(
+            preparedMealRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+          preparedMealCalorieEntryCommitStoreProvider.overrideWithValue(
+            commitStore,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final mealsSubscription = _keepControllerAlive(container);
+      addTearDown(mealsSubscription.close);
+      final calorieSubscription = container.listen(
+        calorieEntriesControllerProvider,
+        (_, _) {},
+      );
+      addTearDown(calorieSubscription.close);
+
+      final loggedDay = DateTime(2026, 3, 20);
+      container.read(calorieDayControllerProvider.notifier).setDay(loggedDay);
+      await container.read(preparedMealsControllerProvider.future);
+      await container.read(calorieEntriesControllerProvider.future);
+
+      final saved = await container
+          .read(preparedMealsControllerProvider.notifier)
+          .consumePreparedMeal(
+            mealId: 'meal-1',
+            consumedPortions: 1,
+            mealType: MealType.dinner,
+            loggedDay: loggedDay,
+          );
+
+      expect(saved, isFalse);
+      expect(commitStore.commitCount, 1);
+      expect(preparedMealRepository.savedMeals, isEmpty);
+      expect(
+        container
+            .read(preparedMealsControllerProvider)
+            .asData
+            ?.value
+            .single
+            .remainingPortions,
+        4,
+      );
+      expect(
+        container.read(calorieEntriesControllerProvider).asData?.value,
+        isEmpty,
+      );
     },
   );
 
