@@ -172,7 +172,7 @@ class _StatisticsHeroCard extends StatelessWidget {
               AppLocalizations.of(context)!.homeStatistics,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.w900,
-                color: AppInventoryEditorial.primary,
+                color: colors.primary,
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -237,7 +237,7 @@ class _StatisticsInfoBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppInventoryEditorial.primary),
+          Icon(icon, color: colors.primary),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(

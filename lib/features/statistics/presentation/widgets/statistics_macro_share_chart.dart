@@ -17,11 +17,7 @@ class StatisticsMacroShareChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final palette = <Color>[
-      colors.tertiary,
-      AppInventoryEditorial.primary,
-      AppInventoryEditorial.warning,
-    ];
+    final palette = <Color>[colors.tertiary, colors.primary, colors.error];
     final visibleItems = items.asMap().entries.where(
       (entry) => entry.value.share > 0,
     );

@@ -114,7 +114,7 @@ class CaloriesSummaryCard extends ConsumerWidget {
                   progress: progress,
                   color: remainingKcal < 0
                       ? colorScheme.error
-                      : AppInventoryEditorial.primary,
+                      : colorScheme.primary,
                   label: remainingLabel,
                   numberFormat: numberFormat,
                 ),

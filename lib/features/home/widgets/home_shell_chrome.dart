@@ -39,7 +39,7 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: colors.surface.withValues(alpha: 0.4),
+            color: AppInventoryEditorialSurfaces.glass(colors),
             border: Border(bottom: BorderSide(color: borderColor)),
           ),
           child: SafeArea(

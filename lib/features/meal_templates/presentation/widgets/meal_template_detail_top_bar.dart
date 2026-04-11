@@ -47,7 +47,7 @@ class _MealTemplateTopBar extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(
-                              color: AppInventoryEditorial.primary,
+                              color: colors.primary,
                               fontWeight: FontWeight.w800,
                             ),
                       ),

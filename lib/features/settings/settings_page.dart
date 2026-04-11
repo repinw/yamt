@@ -13,12 +13,21 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+TextStyle? _settingsDropdownTextStyle(BuildContext context) {
+  final colors = Theme.of(context).colorScheme;
+  return Theme.of(
+    context,
+  ).textTheme.labelLarge?.copyWith(color: colors.primary);
+}
+
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+    final panelRadius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
     final tiles = <Widget>[
       _HouseholdTile(l10n: l10n),
       _AccountTile(l10n: l10n),
@@ -40,11 +49,37 @@ class SettingsPage extends StatelessWidget {
       const _AboutTile(),
     ];
 
-    return ListView.separated(
-      padding: AppInsets.listVertical,
-      itemCount: tiles.length,
-      itemBuilder: (context, index) => tiles[index],
-      separatorBuilder: (context, index) => const Divider(height: 1),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.xl,
+        AppSpacing.xl,
+        AppSpacing.xl,
+      ),
+      child: DecoratedBox(
+        decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+          colors,
+          borderRadius: panelRadius,
+        ),
+        child: ClipRRect(
+          borderRadius: panelRadius,
+          child: Material(
+            color: Colors.transparent,
+            child: ListTileTheme(
+              iconColor: colors.primary,
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                itemCount: tiles.length,
+                itemBuilder: (context, index) => tiles[index],
+                separatorBuilder: (context, index) => Divider(
+                  height: 1,
+                  color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -117,6 +152,7 @@ class _ThemeModeTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final themeMode = ref.watch(themeModeControllerProvider);
+    final dropdownTextStyle = _settingsDropdownTextStyle(context);
 
     return ListTile(
       leading: const Icon(Icons.palette_outlined),
@@ -125,6 +161,8 @@ class _ThemeModeTile extends ConsumerWidget {
       trailing: DropdownButtonHideUnderline(
         child: DropdownButton<ThemeMode>(
           value: themeMode,
+          iconEnabledColor: Theme.of(context).colorScheme.primary,
+          style: dropdownTextStyle,
           onChanged: (selectedMode) {
             if (selectedMode == null) {
               return;
@@ -192,6 +230,7 @@ class _SeedColorTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final seedColor = ref.watch(seedColorControllerProvider);
+    final dropdownTextStyle = _settingsDropdownTextStyle(context);
 
     return ListTile(
       leading: const Icon(Icons.format_paint_outlined),
@@ -200,6 +239,8 @@ class _SeedColorTile extends ConsumerWidget {
       trailing: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           value: seedColor.toARGB32(),
+          iconEnabledColor: Theme.of(context).colorScheme.primary,
+          style: dropdownTextStyle,
           onChanged: (selectedColorValue) {
             if (selectedColorValue == null) {
               return;

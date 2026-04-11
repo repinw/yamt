@@ -104,9 +104,7 @@ class _DiaryDayButton extends StatelessWidget {
     final labelColor = isToday
         ? colorScheme.primary
         : colorScheme.onSurfaceVariant;
-    final numberBackground = isToday
-        ? AppInventoryEditorial.primary
-        : Colors.transparent;
+    final numberBackground = isToday ? colorScheme.primary : Colors.transparent;
     final numberColor = isToday ? colorScheme.onPrimary : colorScheme.onSurface;
 
     return InkWell(
@@ -148,17 +146,13 @@ class _DiaryDayButton extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: isSelected && !isToday
                     ? Border.all(
-                        color: AppInventoryEditorial.primary.withValues(
-                          alpha: 0.22,
-                        ),
+                        color: colorScheme.primary.withValues(alpha: 0.22),
                       )
                     : null,
                 boxShadow: isToday
                     ? [
                         BoxShadow(
-                          color: AppInventoryEditorial.primary.withValues(
-                            alpha: 0.26,
-                          ),
+                          color: colorScheme.primary.withValues(alpha: 0.26),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -267,9 +261,9 @@ class _DiaryDayBalancePreview extends StatelessWidget {
       return colors.primary;
     }
     if (day.isOverGoal) {
-      return AppInventoryEditorial.warning;
+      return colors.error;
     }
-    return AppInventoryEditorial.primary;
+    return colors.primary;
   }
 }
 
@@ -292,7 +286,7 @@ class _DiaryDayStatus extends StatelessWidget {
         width: 16,
         height: 4,
         decoration: BoxDecoration(
-          color: AppInventoryEditorial.primary.withValues(alpha: 0.24),
+          color: colorScheme.primary.withValues(alpha: 0.24),
           borderRadius: BorderRadius.circular(999),
         ),
       );
@@ -302,22 +296,16 @@ class _DiaryDayStatus extends StatelessWidget {
         width: 10,
         height: 10,
         decoration: BoxDecoration(
-          border: Border.all(
-            color: AppInventoryEditorial.primary.withValues(alpha: 0.4),
-          ),
+          border: Border.all(color: colorScheme.primary.withValues(alpha: 0.4)),
           shape: BoxShape.circle,
         ),
       );
     }
     if (day.isWithinGoal) {
-      return Icon(
-        Icons.check_circle,
-        size: 12,
-        color: AppInventoryEditorial.primary,
-      );
+      return Icon(Icons.check_circle, size: 12, color: colorScheme.primary);
     }
     final statusColor = day.isOverGoal
-        ? AppInventoryEditorial.warning
+        ? colorScheme.error
         : colorScheme.surfaceContainerHighest;
     return Container(
       width: 6,

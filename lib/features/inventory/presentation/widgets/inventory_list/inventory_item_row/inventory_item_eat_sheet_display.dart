@@ -40,9 +40,7 @@ class _InventoryItemEatQuickChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.xl),
         child: Ink(
           decoration: BoxDecoration(
-            color: isSelected
-                ? AppInventoryEditorial.primary
-                : colors.surfaceContainerHigh,
+            color: isSelected ? colors.primary : colors.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(AppRadius.xl),
           ),
           padding: const EdgeInsets.symmetric(

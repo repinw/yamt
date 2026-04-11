@@ -217,9 +217,9 @@ class _WeekBalanceDayColumn extends StatelessWidget {
       return colors.primary;
     }
     if (day.isOverGoal) {
-      return AppInventoryEditorial.warning;
+      return colors.error;
     }
-    return AppInventoryEditorial.primary;
+    return colors.primary;
   }
 
   String _semanticLabel(BuildContext context, {required bool isToday}) {
@@ -261,15 +261,16 @@ class _WeekBalanceSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
     final isGoalStartToday =
         normalizeDiaryDay(balanceStartDate) ==
         normalizeDiaryDay(DateTime.now());
     final accentColor = carryoverBeforeTodayKcal < 0
-        ? AppInventoryEditorial.warning
-        : AppInventoryEditorial.primary;
+        ? colors.error
+        : colors.primary;
     final backgroundColor = carryoverBeforeTodayKcal < 0
-        ? AppInventoryEditorial.warning.withValues(alpha: 0.08)
-        : AppInventoryEditorial.primary.withValues(alpha: 0.08);
+        ? colors.error.withValues(alpha: 0.08)
+        : colors.primary.withValues(alpha: 0.08);
     final absoluteCarryover = carryoverBeforeTodayKcal.abs().round();
     final futureGoalStartLabel = nextGoalStartDate == null
         ? null

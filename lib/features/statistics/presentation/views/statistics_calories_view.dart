@@ -31,6 +31,7 @@ class StatisticsCaloriesView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final calorieAsync = ref.watch(statisticsCalorieDataProvider(timeframe));
 
@@ -111,9 +112,7 @@ class StatisticsCaloriesView extends ConsumerWidget {
               title: l10n.statisticsCaloriesBufferTitle,
               value: _formatSignedKcal(balance),
               subtitle: l10n.statisticsCaloriesBufferSubtitle,
-              valueColor: balance >= 0
-                  ? AppInventoryEditorial.primary
-                  : AppInventoryEditorial.warning,
+              valueColor: balance >= 0 ? colors.primary : colors.error,
             ),
             const SizedBox(height: AppSpacing.lg),
             StatisticsMetricCard(

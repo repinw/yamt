@@ -24,6 +24,7 @@ class _PreparedMealCardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
 
     return InkWell(
       onTap: enabled ? onTap : null,
@@ -35,7 +36,7 @@ class _PreparedMealCardHeader extends StatelessWidget {
             label: meal.name,
             imageBytes: imageBytes,
             imageUrl: meal.imageUrl,
-            size: AppInventoryEditorial.categoryTileSize,
+            size: AppInventoryEditorial.imageTileSize,
           ),
           badgeText: l10n.preparedMealIngredientsCount(ingredientCount),
           title: meal.name,
@@ -45,9 +46,7 @@ class _PreparedMealCardHeader extends StatelessWidget {
           statusText: meal.hasPendingRecipeIngredients
               ? l10n.preparedMealIncompleteLabel
               : null,
-          statusColor: meal.hasPendingRecipeIngredients
-              ? AppInventoryEditorial.warning
-              : null,
+          statusColor: meal.hasPendingRecipeIngredients ? colors.error : null,
           progressRatio: meal.remainingRatio,
           progressLabel: l10n.preparedMealPortionsRemaining(
             meal.remainingPortions,

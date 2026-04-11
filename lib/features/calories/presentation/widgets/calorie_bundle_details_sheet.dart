@@ -170,14 +170,15 @@ class _BundleComponentThumb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppInventoryEditorial.primary.withValues(alpha: 0.14),
-            Theme.of(context).colorScheme.surfaceContainerLow,
+            colors.primary.withValues(alpha: 0.14),
+            colors.surfaceContainerLow,
           ],
         ),
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -211,12 +212,13 @@ class _BundleComponentThumbFallback extends StatelessWidget {
   Widget build(BuildContext context) {
     final trimmed = label.trim();
     final initial = trimmed.isEmpty ? '?' : trimmed.substring(0, 1);
+    final colors = Theme.of(context).colorScheme;
 
     return Center(
       child: Text(
         initial.toUpperCase(),
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: AppInventoryEditorial.primary,
+          color: colors.primary,
           fontWeight: FontWeight.w800,
         ),
       ),

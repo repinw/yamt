@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_eating_window_dialog.dart';
@@ -13,7 +12,6 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
-import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
@@ -117,6 +115,7 @@ class HomePage extends ConsumerWidget {
     PreparedMealSelectionState selectionState,
     CalorieGoalSettings? currentCalorieSettings,
   ) {
+    final colors = Theme.of(context).colorScheme;
     if (_currentTab() == HomeTabType.inventory &&
         selectionState.isSelectionMode) {
       return [
@@ -156,10 +155,8 @@ class HomePage extends ConsumerWidget {
             onPressed: () => context.push(AppRoutes.homeInventoryTemplates),
             icon: const Icon(Icons.bookmarks_rounded),
             style: IconButton.styleFrom(
-              backgroundColor: AppInventoryEditorial.primary.withValues(
-                alpha: 0.12,
-              ),
-              foregroundColor: AppInventoryEditorial.primary,
+              backgroundColor: colors.primary.withValues(alpha: 0.12),
+              foregroundColor: colors.primary,
             ),
           ),
           IconButton(
@@ -215,6 +212,7 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
     final currentTab = _currentTab();
     final currentCalorieSettings = ref
         .watch(calorieGoalControllerProvider)
@@ -223,20 +221,15 @@ class HomePage extends ConsumerWidget {
     final floatingActionButton = switch (currentTab) {
       HomeTabType.inventory => _buildInventoryFab(ref),
       HomeTabType.diary || HomeTabType.statistics => null,
-      HomeTabType.settings => const HomeContextFab(),
+      HomeTabType.settings => null,
     };
     final selectionState = ref.watch(preparedMealSelectionControllerProvider);
 
     return Scaffold(
-      extendBody: true,
+      extendBody: currentTab != HomeTabType.settings,
       appBar: HomeTopBar(
         title: _titleForTab(l10n, selectionState),
-        titleColor:
-            currentTab == HomeTabType.inventory ||
-                currentTab == HomeTabType.diary ||
-                currentTab == HomeTabType.statistics
-            ? AppInventoryEditorial.primary
-            : null,
+        titleColor: colors.primary,
         actions: _buildActions(
           context,
           ref,
