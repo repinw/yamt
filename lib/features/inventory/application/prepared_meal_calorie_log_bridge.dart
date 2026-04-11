@@ -43,7 +43,7 @@ final preparedMealCalorieLogBridgeProvider =
                     );
               },
         now: DateTime.now,
-        nextEntryId: Uuid().v4,
+        nextEntryId: const Uuid().v4,
       );
     });
 
@@ -127,6 +127,8 @@ class PreparedMealCalorieLogBridge {
       return true;
     }
 
+    // Fallback path cannot make meal rollback atomic with calorie save.
+    // Best-effort restore only.
     await saveMeals(nextMeals, currentMeals);
     return false;
   }

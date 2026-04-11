@@ -116,12 +116,11 @@ class FirestorePreparedMealCalorieEntryCommitStore
           return false;
         }
 
-        final committedAt = DateTime.now();
         final normalizedEntry = entry.copyWith(
           userId: entryUserId,
           imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
-          updatedAt: committedAt,
         );
+        final committedAt = normalizedEntry.updatedAt;
         final nextRemainingPortions =
             currentMeal.remainingPortions - consumedPortions;
 

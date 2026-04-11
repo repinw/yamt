@@ -93,11 +93,19 @@ void main() {
       ).doc('entry-1').get();
       expect(savedEntry.exists, isTrue);
       expect(savedEntry.data()?['bundle_source_prepared_meal_id'], 'meal-1');
+      expect(
+        savedEntry.data()?['updated_at'],
+        Timestamp.fromDate(_entry().updatedAt),
+      );
 
       final savedMeal = await _preparedMealCollection(
         firestore: firestore,
       ).doc('meal-1').get();
       expect(savedMeal.data()?['remaining_portions'], 2);
+      expect(
+        savedMeal.data()?['updated_at'],
+        _entry().updatedAt.toIso8601String(),
+      );
     },
   );
 
@@ -127,6 +135,63 @@ void main() {
       firestore: firestore,
     ).doc('meal-1').get();
     expect(savedMeal.data()?['remaining_portions'], 1);
+  });
+
+  test(
+    'commitEntryAndPreparedMeal returns false when meal is missing',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+
+      final store = FirestorePreparedMealCalorieEntryCommitStore(
+        firestore: firestore,
+        currentUserId: 'user-1',
+        preparedMealOwnerUserId: 'user-1',
+      );
+
+      final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
+
+      expect(saved, isFalse);
+
+      final savedEntry = await _entryCollection(
+        firestore: firestore,
+      ).doc('entry-1').get();
+      expect(savedEntry.exists, isFalse);
+    },
+  );
+
+  test('commitEntryAndPreparedMeal returns false for meals with pending '
+      'ingredients', () async {
+    final firestore = FakeFirebaseFirestore();
+    await _preparedMealCollection(firestore: firestore)
+        .doc('meal-1')
+        .set(
+          _meal()
+              .copyWith(pendingRecipeIngredients: const <String>['200 g Rice'])
+              .toJson(),
+        );
+
+    final store = FirestorePreparedMealCalorieEntryCommitStore(
+      firestore: firestore,
+      currentUserId: 'user-1',
+      preparedMealOwnerUserId: 'user-1',
+    );
+
+    final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
+
+    expect(saved, isFalse);
+
+    final savedEntry = await _entryCollection(
+      firestore: firestore,
+    ).doc('entry-1').get();
+    expect(savedEntry.exists, isFalse);
+
+    final savedMeal = await _preparedMealCollection(
+      firestore: firestore,
+    ).doc('meal-1').get();
+    expect(savedMeal.data()?['pending_recipe_ingredients'], const <String>[
+      '200 g Rice',
+    ]);
+    expect(savedMeal.data()?['remaining_portions'], 4);
   });
 
   test('commitEntryAndPreparedMeal uses shared meal owner and personal '
