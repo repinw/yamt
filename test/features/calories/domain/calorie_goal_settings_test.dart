@@ -178,6 +178,32 @@ void main() {
     expect(settings.normalizedEatingWindowEndMinuteOfDay, 21 * 60);
   });
 
+  test('negative eating window minutes clamp to start of day', () {
+    final settings = CalorieGoalSettings.single(
+      dailyKcalGoal: 2300,
+      calculatorProfile: null,
+      effectiveDate: DateTime(2026, 2, 25, 11),
+      eatingWindowStartMinuteOfDay: -10,
+      eatingWindowEndMinuteOfDay: 120,
+    );
+
+    expect(settings.normalizedEatingWindowStartMinuteOfDay, 0);
+    expect(settings.normalizedEatingWindowEndMinuteOfDay, 120);
+  });
+
+  test('eating window minutes above day range clamp to final minute', () {
+    final settings = CalorieGoalSettings.single(
+      dailyKcalGoal: 2300,
+      calculatorProfile: null,
+      effectiveDate: DateTime(2026, 2, 25, 11),
+      eatingWindowStartMinuteOfDay: 1200,
+      eatingWindowEndMinuteOfDay: 1500,
+    );
+
+    expect(settings.normalizedEatingWindowStartMinuteOfDay, 1200);
+    expect(settings.normalizedEatingWindowEndMinuteOfDay, 1439);
+  });
+
   test('isValidEatingWindowMinutes rejects identical start and end', () {
     final isValid = isValidEatingWindowMinutes(
       startMinuteOfDay: 8 * 60,
