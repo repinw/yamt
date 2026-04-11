@@ -7,7 +7,6 @@ class _PreparedMealCardHeader extends StatelessWidget {
     required this.ingredientCount,
     required this.isExpanded,
     required this.canEat,
-    required this.actionColors,
     required this.enabled,
     required this.onTap,
     required this.onEatPressed,
@@ -18,14 +17,12 @@ class _PreparedMealCardHeader extends StatelessWidget {
   final int ingredientCount;
   final bool isExpanded;
   final bool canEat;
-  final AppInventoryEatActionColors actionColors;
   final bool enabled;
   final VoidCallback onTap;
   final VoidCallback onEatPressed;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
     return InkWell(
@@ -33,112 +30,42 @@ class _PreparedMealCardHeader extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppRadius.md),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xxs),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                PreparedMealCover(
-                  label: meal.name,
-                  imageBytes: imageBytes,
-                  imageUrl: meal.imageUrl,
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        meal.name,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w800),
-                      ),
-                      const SizedBox(height: AppSpacing.xxs),
-                      Text(
-                        meal.hasPendingRecipeIngredients
-                            ? '${l10n.preparedMealIngredientsCount(ingredientCount)} • '
-                                  '${l10n.preparedMealIncompleteLabel}'
-                            : l10n.preparedMealIngredientsCount(
-                                ingredientCount,
-                              ),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: colors.primaryContainer,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.md,
-                              vertical: AppSpacing.xs,
-                            ),
-                            child: Text(
-                              l10n.preparedMealPortionsRemaining(
-                                meal.remainingPortions,
-                                meal.totalPortions,
-                              ),
-                              style: Theme.of(context).textTheme.labelMedium
-                                  ?.copyWith(fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        InventoryExpandIndicator(
-                          isExpanded: isExpanded,
-                          enabled: enabled,
-                          rotationKey: Key(
-                            'prepared_meal_card_expand_indicator_${meal.id}',
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    _PreparedMealPrimaryActionButton(
-                      label: l10n.inventoryItemEatAction,
-                      onPressed: canEat ? onEatPressed : null,
-                      actionColors: actionColors,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                    child: LinearProgressIndicator(
-                      value: meal.remainingRatio,
-                      minHeight: 10,
-                      backgroundColor: colors.surfaceContainerHighest,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Text(
-                  '${meal.totalKcal.toStringAsFixed(0)} '
-                  '${l10n.caloriesUnitKcal}',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
-                ),
-              ],
-            ),
-          ],
+        child: InventoryTileHeaderLayout(
+          leading: PreparedMealCover(
+            label: meal.name,
+            imageBytes: imageBytes,
+            imageUrl: meal.imageUrl,
+            size: AppInventoryEditorial.categoryTileSize,
+          ),
+          badgeText: l10n.preparedMealIngredientsCount(ingredientCount),
+          title: meal.name,
+          titleStyle: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+          statusText: meal.hasPendingRecipeIngredients
+              ? l10n.preparedMealIncompleteLabel
+              : null,
+          statusColor: meal.hasPendingRecipeIngredients
+              ? AppInventoryEditorial.warning
+              : null,
+          progressRatio: meal.remainingRatio,
+          progressLabel: l10n.preparedMealPortionsRemaining(
+            meal.remainingPortions,
+            meal.totalPortions,
+          ),
+          segmentedByUnits: true,
+          totalUnits: meal.totalPortions,
+          remainingUnits: meal.remainingPortions,
+          action: _PreparedMealPrimaryActionButton(
+            label: l10n.inventoryItemEatAction,
+            onPressed: canEat ? onEatPressed : null,
+          ),
+          isExpanded: isExpanded,
+          showExpandIndicator: true,
+          expandIndicatorEnabled: enabled,
+          expandIndicatorKey: Key(
+            'prepared_meal_card_expand_indicator_${meal.id}',
+          ),
         ),
       ),
     );
@@ -201,7 +128,7 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
     final canThrowAway = canRunSecondaryActions && meal.remainingPortions > 0;
 
     return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
+      padding: const EdgeInsets.only(top: AppSpacing.xs),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

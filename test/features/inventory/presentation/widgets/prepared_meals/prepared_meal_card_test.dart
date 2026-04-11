@@ -10,6 +10,10 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/remaining_progress_bar.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -226,6 +230,134 @@ void main() {
 
     expect(find.text('Eat prepared meal'), findsOneWidget);
     expect(find.text('Portions to use'), findsOneWidget);
+  });
+
+  testWidgets('PreparedMealCard shows portions progress under header bar', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal(),
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byType(RemainingProgressBar), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(RemainingProgressBar),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is RichText &&
+              widget.text.toPlainText().contains('/3 portions'),
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('67%'), findsOneWidget);
+    expect(find.text('300 kcal'), findsNothing);
+  });
+
+  testWidgets('PreparedMealCard shows ingredient count in header badge', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal(),
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('1 INGREDIENTS'), findsOneWidget);
+  });
+
+  testWidgets('PreparedMealCard uses theme primary color for eat button', (
+    tester,
+  ) async {
+    final theme = ThemeData(
+      colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: theme,
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal(),
+                onEatPressed:
+                    ({
+                      required mealId,
+                      required portions,
+                      required mealType,
+                      required loggedDay,
+                    }) async => true,
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, name, imageChanged, imageBytes) async =>
+                    true,
+                onSaveTemplatePressed: (meal) async => true,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final button = tester.widget<InventoryPrimaryActionButton>(
+      find.byType(InventoryPrimaryActionButton),
+    );
+
+    expect(button.enabledBackgroundColor, theme.colorScheme.primary);
+    expect(button.useGradientWhenShowText, isFalse);
   });
 
   testWidgets('PreparedMealCard expands to show ingredients and actions', (

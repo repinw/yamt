@@ -3,6 +3,8 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 
 const _maxSegmentCount = 12;
 
+enum RemainingProgressBarLabelLayout { belowBar, aboveBar }
+
 class RemainingProgressBar extends StatelessWidget {
   const RemainingProgressBar({
     super.key,
@@ -11,6 +13,11 @@ class RemainingProgressBar extends StatelessWidget {
     required this.segmentedByUnits,
     required this.totalUnits,
     required this.remainingUnits,
+    this.labelLayout = RemainingProgressBarLabelLayout.belowBar,
+    this.trackColor,
+    this.fillColor,
+    this.stockLabelStyle,
+    this.percentageStyle,
   });
 
   final double ratio;
@@ -18,59 +25,79 @@ class RemainingProgressBar extends StatelessWidget {
   final bool segmentedByUnits;
   final int totalUnits;
   final int remainingUnits;
+  final RemainingProgressBarLabelLayout labelLayout;
+  final Color? trackColor;
+  final Color? fillColor;
+  final TextStyle? stockLabelStyle;
+  final TextStyle? percentageStyle;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final safeRatio = ratio.clamp(0.0, 1.0);
-    final trackColor = colorScheme.surfaceContainerHighest;
+    final resolvedTrackColor =
+        trackColor ?? colorScheme.surfaceContainerHighest;
     final isLowStock = safeRatio < 0.1;
-    final resolvedFillColor = isLowStock
-        ? AppInventoryEditorial.warning
-        : colorScheme.primary;
+    final resolvedFillColor =
+        fillColor ??
+        (isLowStock ? AppInventoryEditorial.warning : colorScheme.primary);
     final percentage = (safeRatio * 100).round();
     final useSegmentedBar = segmentedByUnits && totalUnits <= _maxSegmentCount;
+    final resolvedStockLabelStyle =
+        stockLabelStyle ??
+        Theme.of(context).textTheme.labelSmall?.copyWith(
+          fontWeight: FontWeight.w500,
+          color: colorScheme.onSurfaceVariant,
+        );
+    final resolvedPercentageStyle =
+        percentageStyle ??
+        Theme.of(context).textTheme.labelSmall?.copyWith(
+          fontWeight: FontWeight.w700,
+          color: labelLayout == RemainingProgressBarLabelLayout.aboveBar
+              ? resolvedFillColor
+              : colorScheme.onSurfaceVariant,
+        );
+    final labelRow = Row(
+      children: [
+        _StockLabel(
+          stockLabel: stockLabel,
+          baseStyle: resolvedStockLabelStyle,
+          accentColor: resolvedFillColor,
+        ),
+        const Spacer(),
+        Text('$percentage%', style: resolvedPercentageStyle),
+      ],
+    );
+    final bar = Row(
+      children: [
+        Expanded(
+          child: useSegmentedBar
+              ? _buildSegmentedBar(
+                  trackColor: resolvedTrackColor,
+                  fillColor: resolvedFillColor,
+                  safeRatio: safeRatio,
+                )
+              : _buildSingleBar(
+                  trackColor: resolvedTrackColor,
+                  fillColor: resolvedFillColor,
+                  safeRatio: safeRatio,
+                ),
+        ),
+      ],
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: useSegmentedBar
-                  ? _buildSegmentedBar(
-                      trackColor: trackColor,
-                      fillColor: resolvedFillColor,
-                      safeRatio: safeRatio,
-                    )
-                  : _buildSingleBar(
-                      trackColor: trackColor,
-                      fillColor: resolvedFillColor,
-                      safeRatio: safeRatio,
-                    ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xxs * 2),
-        Row(
-          children: [
-            Text(
-              stockLabel,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.w500,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              '$percentage%',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
+        if (labelLayout == RemainingProgressBarLabelLayout.aboveBar) ...[
+          labelRow,
+          const SizedBox(height: AppSpacing.xxs * 2),
+          bar,
+        ] else ...[
+          bar,
+          const SizedBox(height: AppSpacing.xxs * 2),
+          labelRow,
+        ],
       ],
     );
   }
@@ -85,6 +112,7 @@ class RemainingProgressBar extends StatelessWidget {
       child: LinearProgressIndicator(
         value: safeRatio,
         minHeight: AppInventoryEditorial.progressHeight,
+        borderRadius: BorderRadius.circular(999),
         backgroundColor: trackColor,
         valueColor: AlwaysStoppedAnimation<Color>(fillColor),
       ),
@@ -116,6 +144,7 @@ class RemainingProgressBar extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: fillValue,
                 minHeight: AppInventoryEditorial.progressHeight,
+                borderRadius: BorderRadius.circular(999),
                 backgroundColor: trackColor,
                 valueColor: AlwaysStoppedAnimation<Color>(fillColor),
               ),
@@ -134,5 +163,46 @@ class RemainingProgressBar extends StatelessWidget {
       return 0.0;
     }
     return (exactFilled - segmentIndex).clamp(0.0, 1.0);
+  }
+}
+
+class _StockLabel extends StatelessWidget {
+  const _StockLabel({
+    required this.stockLabel,
+    required this.baseStyle,
+    required this.accentColor,
+  });
+
+  final String stockLabel;
+  final TextStyle? baseStyle;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final slashIndex = stockLabel.indexOf('/');
+    if (slashIndex <= 0) {
+      return Text(stockLabel, style: baseStyle);
+    }
+
+    final currentAmount = stockLabel.substring(0, slashIndex).trimRight();
+    final remainingLabel = stockLabel.substring(slashIndex);
+
+    return RichText(
+      text: TextSpan(
+        style: baseStyle,
+        children: [
+          TextSpan(
+            text: '$currentAmount ',
+            style: baseStyle?.copyWith(
+              color: accentColor,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          TextSpan(text: remainingLabel),
+        ],
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
   }
 }
