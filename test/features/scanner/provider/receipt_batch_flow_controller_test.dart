@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
-import 'package:yamt/features/inventory/application/'
+import 'package:yamt/features/scanner/application/'
     'receipt_review_resolution_service.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';

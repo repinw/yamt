@@ -3,7 +3,6 @@ import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
-import 'package:yamt/features/inventory/application/receipt_review_resolution_service.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
@@ -12,6 +11,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/domain/'
     'receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/application/receipt_review_resolution_service.dart';
 import 'package:yamt/features/scanner/data/receipt_to_review_item_draft_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 

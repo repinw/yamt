@@ -157,47 +157,50 @@ class _InventoryReceiptReviewSheetState
       );
     }
 
-    return ListView(
+    return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(14, 18, 14, 32),
-      children: [
-        InventoryReceiptReviewMetadataOverview(
-          storeName: _receiptMetadata.storeName,
-          receiptDate: _receiptMetadata.receiptDate,
-          receiptTimeText: _receiptMetadata.receiptTimeText,
-        ),
-        const SizedBox(height: 20),
-        Text(
-          l10n.inventoryReceiptReviewDetectedItems.toUpperCase(),
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: colors.onSurfaceVariant,
-            letterSpacing: 1.2,
-            fontWeight: FontWeight.w600,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          InventoryReceiptReviewMetadataOverview(
+            storeName: _receiptMetadata.storeName,
+            receiptDate: _receiptMetadata.receiptDate,
+            receiptTimeText: _receiptMetadata.receiptTimeText,
           ),
-        ),
-        const SizedBox(height: 12),
-        for (final entry in _items.indexed) ...[
-          InventoryReceiptReviewItemCard(
-            key: _itemKeyFor(entry.$2.item.id),
-            draft: entry.$2,
-            index: entry.$1,
-            currency: currency,
-            onEditTap: _openItemEditor,
-            onSwitchTap: _openCandidatePicker,
-            onConfirmTap: () => _toggleItemConfirmed(entry.$2.item.id),
-            canConfirm: _canConfirmDraft(entry.$2),
-            isActionLoading: _candidateLoadingItemId == entry.$2.item.id,
+          const SizedBox(height: 20),
+          Text(
+            l10n.inventoryReceiptReviewDetectedItems.toUpperCase(),
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: colors.onSurfaceVariant,
+              letterSpacing: 1.2,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 12),
+          for (final entry in _items.indexed) ...[
+            InventoryReceiptReviewItemCard(
+              key: _itemKeyFor(entry.$2.item.id),
+              draft: entry.$2,
+              index: entry.$1,
+              currency: currency,
+              onEditTap: _openItemEditor,
+              onSwitchTap: _openCandidatePicker,
+              onConfirmTap: () => _toggleItemConfirmed(entry.$2.item.id),
+              canConfirm: _canConfirmDraft(entry.$2),
+              isActionLoading: _candidateLoadingItemId == entry.$2.item.id,
+            ),
+            const SizedBox(height: 12),
+          ],
+          const SizedBox(height: 24),
+          InventoryReceiptReviewPriceOverview(
+            totalPrice: priceSummary.totalPrice,
+            storablePrice: priceSummary.storablePrice,
+            excludedPrice: priceSummary.excludedPrice,
+            currency: currency,
+          ),
+          const SizedBox(height: 40),
         ],
-        const SizedBox(height: 24),
-        InventoryReceiptReviewPriceOverview(
-          totalPrice: priceSummary.totalPrice,
-          storablePrice: priceSummary.storablePrice,
-          excludedPrice: priceSummary.excludedPrice,
-          currency: currency,
-        ),
-        const SizedBox(height: 40),
-      ],
+      ),
     );
   }
 

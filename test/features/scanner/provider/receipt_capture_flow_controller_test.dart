@@ -9,7 +9,7 @@ import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
-import 'package:yamt/features/inventory/application/'
+import 'package:yamt/features/scanner/application/'
     'receipt_review_resolution_service.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';

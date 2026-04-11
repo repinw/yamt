@@ -98,6 +98,41 @@ void main() {
     expect(result.items.last.item.isDiscount, isFalse);
   });
 
+  test('moves likely non-food rows to bottom but keeps deposit rows in place', () {
+    final result = processor.process(<ReceiptReviewItemDraft>[
+      _draft(id: 'food-1', name: 'Gurken', unitPrice: 2.0),
+      _draft(
+        id: 'non-food-1',
+        name: 'Toilettenpapier',
+        unitPrice: 4.0,
+        isDeposit: true,
+      ),
+      _draft(
+        id: 'deposit-1',
+        name: 'Pfand',
+        unitPrice: 0.25,
+        isDeposit: true,
+      ),
+    ]);
+
+    expect(
+      result.items.map((draft) => draft.item.name).toList(),
+      <String>['Gurken', 'Pfand', 'Toilettenpapier'],
+    );
+  });
+
+  test('keeps regular savable rows in place when not flagged as non-food', () {
+    final result = processor.process(<ReceiptReviewItemDraft>[
+      _draft(id: 'food-1', name: 'Gurken', unitPrice: 2.0),
+      _draft(id: 'food-2', name: 'Tomaten', unitPrice: 3.0),
+    ]);
+
+    expect(
+      result.items.map((draft) => draft.item.name).toList(),
+      <String>['Gurken', 'Tomaten'],
+    );
+  });
+
   test('derives store and receipt date metadata from processed items', () {
     final date = DateTime.parse('2026-03-01');
     final result = processor.process(<ReceiptReviewItemDraft>[

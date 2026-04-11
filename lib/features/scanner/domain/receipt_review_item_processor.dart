@@ -135,7 +135,11 @@ class ReceiptReviewItemProcessor {
   }
 
   bool _isLikelyNonFoodArticle(InventoryItem item) {
-    if (!item.isDeposit || item.isDiscount) {
+    // Receipt mapping currently uses `isDeposit` as the review-only marker
+    // for non-food lines. Real deposit rows are filtered out by keyword so
+    // only non-food articles get moved to the bottom.
+    final isReviewOnlyNonFoodCandidate = item.isDeposit && !item.isDiscount;
+    if (!isReviewOnlyNonFoodCandidate) {
       return false;
     }
     return !_looksLikeDepositLine(item);
