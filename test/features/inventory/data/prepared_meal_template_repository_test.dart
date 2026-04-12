@@ -45,8 +45,6 @@ class _FakePreparedMealTemplateStore implements PreparedMealTemplateStore {
 }
 
 void main() {
-  tearDown(resetSessionShutdownSignal);
-
   test('watchAll rethrows firestore permission denied errors', () async {
     final store = _FakePreparedMealTemplateStore()
       ..watchAllError = FirebaseException(
@@ -55,6 +53,7 @@ void main() {
       );
     final repository = FirestorePreparedMealTemplateRepository(
       session: const _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -71,7 +70,7 @@ void main() {
   });
 
   test('watchAll returns empty list during session shutdown', () async {
-    sessionShutdownSignal.begin();
+    final sessionShutdownSignal = SessionShutdownSignal()..begin();
     final store = _FakePreparedMealTemplateStore()
       ..watchAllError = FirebaseException(
         plugin: 'cloud_firestore',
@@ -79,6 +78,7 @@ void main() {
       );
     final repository = FirestorePreparedMealTemplateRepository(
       session: const _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: sessionShutdownSignal,
       store: store,
     );
 

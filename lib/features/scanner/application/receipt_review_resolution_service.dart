@@ -361,9 +361,9 @@ class ReceiptReviewResolutionService {
 
     final aliases = <GlobalFoodReceiptAlias>[
       for (final item in resolvedItems)
-        if (globalSaved || !item.requiresGlobalPersistence)
-          if (item.sourceDraft.shouldSaveReceiptAlias)
-            if (_buildReceiptAlias(item, now: now) case final alias?) alias,
+        if ((globalSaved || !item.requiresGlobalPersistence) &&
+            item.sourceDraft.shouldSaveReceiptAlias)
+          if (_buildReceiptAlias(item, now: now) case final alias?) alias,
     ];
     if (aliases.isEmpty) {
       return;

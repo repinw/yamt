@@ -13,11 +13,14 @@ const String _repositoryLogName = 'FirestoreInventoryItemRepository';
 class FirestoreInventoryItemRepository implements InventoryItemRepository {
   FirestoreInventoryItemRepository({
     required InventoryUserSession session,
+    required SessionShutdownSignal sessionShutdownSignal,
     required InventoryItemStore store,
   }) : _session = session,
+       _sessionShutdownSignal = sessionShutdownSignal,
        _store = store;
 
   final InventoryUserSession _session;
+  final SessionShutdownSignal _sessionShutdownSignal;
   final InventoryItemStore _store;
   Future<void> _writeBarrier = Future<void>.value();
 
@@ -71,7 +74,7 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
 
   Stream<List<InventoryItem>> _watchAllForUser(String userId) async* {
     final collectionPath = 'users/$userId/inventory_items';
-    final shutdownEpoch = sessionShutdownSignal.epoch;
+    final shutdownEpoch = _sessionShutdownSignal.epoch;
     try {
       await for (final documents in _store.watchAll(userId: userId)) {
         yield _decodeDocuments(documents);
@@ -216,7 +219,7 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
     required int shutdownEpoch,
   }) {
     return _isPermissionDenied(error) &&
-        (sessionShutdownSignal.isInProgress ||
-            sessionShutdownSignal.hasShutdownSince(shutdownEpoch));
+        (_sessionShutdownSignal.isInProgress ||
+            _sessionShutdownSignal.hasShutdownSince(shutdownEpoch));
   }
 }

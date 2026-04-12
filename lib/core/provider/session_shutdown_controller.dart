@@ -3,8 +3,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'session_shutdown_controller.g.dart';
 
-final SessionShutdownSignal sessionShutdownSignal = SessionShutdownSignal();
-
 class SessionShutdownSignal {
   bool _isInProgress = false;
   int _epoch = 0;
@@ -27,9 +25,14 @@ class SessionShutdownSignal {
 }
 
 @visibleForTesting
-void resetSessionShutdownSignal() {
-  sessionShutdownSignal._epoch = 0;
-  sessionShutdownSignal.finish();
+void resetSessionShutdownSignal(SessionShutdownSignal signal) {
+  signal._epoch = 0;
+  signal.finish();
+}
+
+@Riverpod(keepAlive: true)
+SessionShutdownSignal sessionShutdownSignal(Ref ref) {
+  return SessionShutdownSignal();
 }
 
 @Riverpod(keepAlive: true)
@@ -40,12 +43,12 @@ class SessionShutdownController extends _$SessionShutdownController {
   }
 
   void begin() {
-    sessionShutdownSignal.begin();
+    ref.read(sessionShutdownSignalProvider).begin();
     state = true;
   }
 
   void finish() {
-    sessionShutdownSignal.finish();
+    ref.read(sessionShutdownSignalProvider).finish();
     state = false;
   }
 }

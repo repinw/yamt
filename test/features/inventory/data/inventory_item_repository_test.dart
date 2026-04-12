@@ -159,13 +159,12 @@ InventoryItem _item(String id) {
 }
 
 void main() {
-  tearDown(resetSessionShutdownSignal);
-
   test('readAll returns empty list when user is signed out', () async {
     final store = _FakeInventoryItemStore();
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: null),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -189,6 +188,7 @@ void main() {
       addTearDown(store.dispose);
       final repository = FirestoreInventoryItemRepository(
         session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+        sessionShutdownSignal: SessionShutdownSignal(),
         store: store,
       );
 
@@ -209,6 +209,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -238,6 +239,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -258,6 +260,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -272,6 +275,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -288,6 +292,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -305,6 +310,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -321,7 +327,7 @@ void main() {
   });
 
   test('watchAll returns empty list during session shutdown', () async {
-    sessionShutdownSignal.begin();
+    final sessionShutdownSignal = SessionShutdownSignal()..begin();
     final store = _FakeInventoryItemStore()
       ..watchAllError = FirebaseException(
         plugin: 'cloud_firestore',
@@ -330,6 +336,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: sessionShutdownSignal,
       store: store,
     );
 
@@ -345,6 +352,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -368,6 +376,7 @@ void main() {
       addTearDown(store.dispose);
       final repository = FirestoreInventoryItemRepository(
         session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+        sessionShutdownSignal: SessionShutdownSignal(),
         store: store,
       );
 

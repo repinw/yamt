@@ -13,11 +13,14 @@ const String _repositoryLogName = 'FirestorePreparedMealRepository';
 class FirestorePreparedMealRepository implements PreparedMealRepository {
   FirestorePreparedMealRepository({
     required InventoryUserSession session,
+    required SessionShutdownSignal sessionShutdownSignal,
     required PreparedMealStore store,
   }) : _session = session,
+       _sessionShutdownSignal = sessionShutdownSignal,
        _store = store;
 
   final InventoryUserSession _session;
+  final SessionShutdownSignal _sessionShutdownSignal;
   final PreparedMealStore _store;
   Future<void> _writeBarrier = Future<void>.value();
 
@@ -62,7 +65,7 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
 
   Stream<List<PreparedMeal>> _watchAllForUser(String userId) async* {
     final collectionPath = 'users/$userId/prepared_meals';
-    final shutdownEpoch = sessionShutdownSignal.epoch;
+    final shutdownEpoch = _sessionShutdownSignal.epoch;
     try {
       await for (final documents in _store.watchAll(userId: userId)) {
         yield _decodeDocuments(documents);
@@ -158,7 +161,7 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
     required int shutdownEpoch,
   }) {
     return error.code == 'permission-denied' &&
-        (sessionShutdownSignal.isInProgress ||
-            sessionShutdownSignal.hasShutdownSince(shutdownEpoch));
+        (_sessionShutdownSignal.isInProgress ||
+            _sessionShutdownSignal.hasShutdownSince(shutdownEpoch));
   }
 }

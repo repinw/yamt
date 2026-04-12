@@ -9,6 +9,54 @@ part of 'session_shutdown_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(sessionShutdownSignal)
+final sessionShutdownSignalProvider = SessionShutdownSignalProvider._();
+
+final class SessionShutdownSignalProvider
+    extends
+        $FunctionalProvider<
+          SessionShutdownSignal,
+          SessionShutdownSignal,
+          SessionShutdownSignal
+        >
+    with $Provider<SessionShutdownSignal> {
+  SessionShutdownSignalProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sessionShutdownSignalProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$sessionShutdownSignalHash();
+
+  @$internal
+  @override
+  $ProviderElement<SessionShutdownSignal> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  SessionShutdownSignal create(Ref ref) {
+    return sessionShutdownSignal(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SessionShutdownSignal value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SessionShutdownSignal>(value),
+    );
+  }
+}
+
+String _$sessionShutdownSignalHash() =>
+    r'2effb4f7f3e0ab3d2cb57d4dd1a8b68fb60ef83e';
+
 @ProviderFor(SessionShutdownController)
 final sessionShutdownControllerProvider = SessionShutdownControllerProvider._();
 
@@ -42,7 +90,7 @@ final class SessionShutdownControllerProvider
 }
 
 String _$sessionShutdownControllerHash() =>
-    r'f5c01ec8170055e8eedf94cbe83d68a0e431fa95';
+    r'fff8e1eb265b45b392217631120de5a04497f196';
 
 abstract class _$SessionShutdownController extends $Notifier<bool> {
   bool build();
