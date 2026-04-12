@@ -29,6 +29,12 @@ Map<String, dynamic> _aliasData({
     'normalized_store_name': normalizedStoreName,
     'receipt_name': receiptName,
     'normalized_receipt_name': normalizedReceiptName,
+    'compact_receipt_name': normalizedReceiptName.replaceAll(' ', ''),
+    'receipt_search_tokens': <String>[
+      normalizedReceiptName,
+      normalizedReceiptName.replaceAll(' ', ''),
+      ...normalizedReceiptName.split(' ').where((token) => token.isNotEmpty),
+    ],
     'lookup_key': '$normalizedStoreName|$normalizedReceiptName',
     'selection_count': selectionCount,
     'created_at': createdAt,
@@ -64,11 +70,52 @@ void main() {
         );
 
     final store = FirestoreGlobalFoodReceiptAliasStore(firestore: firestore);
-    final documents = await store.searchCandidates(lookupKey: 'aldi|milch 3 5');
+    final documents = await store.searchCandidates(
+      normalizedStoreName: 'aldi',
+      lookupKey: 'aldi|milch 3 5',
+      compactReceiptName: 'milch35',
+      receiptSearchTokens: const <String>['milch 3 5', 'milch35', 'milch'],
+    );
 
     expect(documents, hasLength(1));
     expect(documents.single.id, 'alias-1');
   });
+
+  test(
+    'searchCandidates finds similar receipt names by token overlap',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      final collection = _aliasCollection(firestore: firestore);
+      await collection
+          .doc('alias-1')
+          .set(
+            _aliasData(
+              id: 'alias-1',
+              storeName: 'Aldi',
+              normalizedStoreName: 'aldi',
+              receiptName: 'KAESE SCHEIBEN 150G',
+              normalizedReceiptName: 'kaese scheiben 150g',
+              globalFoodItemId: 'cheese',
+            ),
+          );
+
+      final store = FirestoreGlobalFoodReceiptAliasStore(firestore: firestore);
+      final documents = await store.searchCandidates(
+        normalizedStoreName: 'aldi',
+        lookupKey: 'aldi|kaese scheiben',
+        compactReceiptName: 'kaesescheiben',
+        receiptSearchTokens: const <String>[
+          'kaese scheiben',
+          'kaesescheiben',
+          'kaese',
+          'scheiben',
+        ],
+      );
+
+      expect(documents, hasLength(1));
+      expect(documents.single.id, 'alias-1');
+    },
+  );
 
   test(
     'upsertAll increments the selection counter for a duplicate id',

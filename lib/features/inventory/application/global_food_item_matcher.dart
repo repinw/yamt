@@ -105,7 +105,7 @@ class GlobalFoodItemMatcher {
     final product = _externalCandidateSource.productFrom(result);
     return GlobalFoodMatchCandidate(
       item: product,
-      score: _scoreExternalCandidate(result.score),
+      score: result.score,
       reason: GlobalFoodMatchReason.externalSearch,
       requiresPersistence: true,
     );
@@ -126,12 +126,8 @@ class GlobalFoodItemMatcher {
     required List<GlobalFoodMatchCandidate> externalCandidates,
   }) {
     final finalizedLocal = _finalizeSourceBucket(localCandidates);
-    final finalizedExternal = _finalizeSourceBucket(externalCandidates);
+    final finalizedExternal = _finalizeExternalBucket(externalCandidates);
     return <GlobalFoodMatchCandidate>[...finalizedLocal, ...finalizedExternal];
-  }
-
-  double _scoreExternalCandidate(double rawScore) {
-    return (60 + (rawScore / 2)).clamp(60, 89).toDouble();
   }
 
   List<GlobalFoodMatchCandidate> _dedupeCandidates(
@@ -183,6 +179,14 @@ class GlobalFoodItemMatcher {
         .toList(growable: false);
   }
 
+  List<GlobalFoodMatchCandidate> _finalizeExternalBucket(
+    List<GlobalFoodMatchCandidate> candidates,
+  ) {
+    return candidates
+        .take(_globalFoodReviewCandidateLimitPerSource)
+        .toList(growable: false);
+  }
+
   Future<List<GlobalFoodMatchCandidate>> _findAliasMatches({
     required InventoryItem item,
     required _LocalMatchInput localInput,
@@ -207,12 +211,25 @@ class GlobalFoodItemMatcher {
       normalizedReceiptName: normalizedReceiptName,
       limit: _globalFoodCandidateQueryLimit,
     );
-    return _buildAliasMatches(localInput: localInput, aliases: aliases);
+    return _buildAliasMatches(
+      localInput: localInput,
+      aliases: aliases,
+      normalizedReceiptName: normalizedReceiptName,
+      compactReceiptName: compactGlobalFoodReceiptAliasText(
+        normalizedReceiptName,
+      ),
+      receiptSearchTokens: buildGlobalFoodReceiptAliasSearchTokens(
+        normalizedReceiptName,
+      ).toSet(),
+    );
   }
 
   List<GlobalFoodMatchCandidate> _buildAliasMatches({
     required _LocalMatchInput localInput,
     required List<GlobalFoodReceiptAlias> aliases,
+    required String normalizedReceiptName,
+    required String compactReceiptName,
+    required Set<String> receiptSearchTokens,
   }) {
     final products = aliases
         .map((alias) => alias.globalFoodItem)
@@ -228,13 +245,58 @@ class GlobalFoodItemMatcher {
         .map((alias) {
           final product = alias.globalFoodItem;
           final genericScore = scoredById[product.id]?.score ?? 0;
+          final aliasNameScore = _scoreAliasReceiptName(
+            alias: alias,
+            normalizedReceiptName: normalizedReceiptName,
+            compactReceiptName: compactReceiptName,
+            receiptSearchTokens: receiptSearchTokens,
+          );
+          if (aliasNameScore <= 0) {
+            return null;
+          }
           return GlobalFoodMatchCandidate(
             item: product,
-            score: 140 + genericScore + alias.selectionCount.toDouble(),
+            score:
+                120 +
+                genericScore +
+                alias.selectionCount.toDouble() +
+                aliasNameScore,
             reason: GlobalFoodMatchReason.receiptAliasExact,
           );
         })
+        .whereType<GlobalFoodMatchCandidate>()
         .toList(growable: false);
+  }
+
+  double _scoreAliasReceiptName({
+    required GlobalFoodReceiptAlias alias,
+    required String normalizedReceiptName,
+    required String compactReceiptName,
+    required Set<String> receiptSearchTokens,
+  }) {
+    var score = 0.0;
+    if (alias.normalizedReceiptName == normalizedReceiptName) {
+      score += 24;
+    }
+    if (alias.compactReceiptName == compactReceiptName &&
+        compactReceiptName.isNotEmpty) {
+      score += 16;
+    }
+
+    final overlap = alias.receiptSearchTokens
+        .where(receiptSearchTokens.contains)
+        .length;
+    if (overlap > 0) {
+      score += overlap * 6;
+    }
+
+    if (compactReceiptName.length >= 4 &&
+        alias.compactReceiptName.isNotEmpty &&
+        (alias.compactReceiptName.contains(compactReceiptName) ||
+            compactReceiptName.contains(alias.compactReceiptName))) {
+      score += 8;
+    }
+    return score;
   }
 
   Future<List<GlobalFoodMatchCandidate>> _findLocalMatches({

@@ -505,14 +505,104 @@ void main() {
       inventoryRepository.appendedItems.single.amountUnit,
       InventoryAmountUnit.gram,
     );
-    expect(aliasRepository.appendedAliases, hasLength(1));
-    expect(aliasRepository.appendedAliases.single.storeName, 'Store');
-    expect(aliasRepository.appendedAliases.single.receiptName, 'Milk');
-    expect(
-      aliasRepository.appendedAliases.single.globalFoodItem.id,
-      'global-food-fixed',
-    );
+    expect(aliasRepository.appendedAliases, isEmpty);
   });
+
+  test(
+    'persistReviewedItems skips alias learning for unchanged auto-selection',
+    () async {
+      final product = _product(id: 'milk', name: 'Milk', brand: 'Acme');
+      final globalRepository = _RecordingGlobalFoodItemRepository();
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      final aliasRepository = _RecordingGlobalFoodReceiptAliasRepository();
+      final service = ReceiptReviewResolutionService(
+        mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
+        matcher: _FakeMatcher(
+          candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
+          defaultSelections: const <String, String?>{},
+        ),
+        globalFoodItemRepository: globalRepository,
+        globalFoodReceiptAliasRepository: aliasRepository,
+        inventoryItemRepository: inventoryRepository,
+      );
+
+      final draft = ReceiptReviewItemDraft(
+        item: _item(id: 'draft-1', name: 'Milk', brand: 'Acme'),
+        candidates: <GlobalFoodMatchCandidate>[
+          GlobalFoodMatchCandidate(
+            item: product,
+            score: 100,
+            reason: GlobalFoodMatchReason.nameExact,
+          ),
+        ],
+      ).applyAutomaticSelection('milk');
+
+      final result = await service.persistReviewedItems(
+        <ReceiptReviewItemDraft>[draft],
+      );
+
+      expect(result.saved, isTrue);
+      expect(aliasRepository.appendedAliases, isEmpty);
+    },
+  );
+
+  test(
+    'persistReviewedItems writes alias only after explicit candidate change',
+    () async {
+      final autoProduct = _product(id: 'milk', name: 'Milk', brand: 'Acme');
+      final selectedProduct = _product(
+        id: 'oat-milk',
+        name: 'Oat Milk',
+        brand: 'Acme',
+      );
+      final globalRepository = _RecordingGlobalFoodItemRepository();
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      final aliasRepository = _RecordingGlobalFoodReceiptAliasRepository();
+      final service = ReceiptReviewResolutionService(
+        mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
+        matcher: _FakeMatcher(
+          candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
+          defaultSelections: const <String, String?>{},
+        ),
+        globalFoodItemRepository: globalRepository,
+        globalFoodReceiptAliasRepository: aliasRepository,
+        inventoryItemRepository: inventoryRepository,
+      );
+
+      final draft = ReceiptReviewItemDraft(
+        item: _item(
+          id: 'draft-1',
+          name: 'Oat Milk',
+          brand: 'Acme',
+        ).copyWith(productSnapshot: selectedProduct.toProductSnapshot()),
+        candidates: <GlobalFoodMatchCandidate>[
+          GlobalFoodMatchCandidate(
+            item: autoProduct,
+            score: 100,
+            reason: GlobalFoodMatchReason.nameExact,
+          ),
+          GlobalFoodMatchCandidate(
+            item: selectedProduct,
+            score: 96,
+            reason: GlobalFoodMatchReason.nameTokenMatch,
+          ),
+        ],
+      ).applyAutomaticSelection('milk').selectCandidate('oat-milk');
+
+      final result = await service.persistReviewedItems(
+        <ReceiptReviewItemDraft>[draft],
+      );
+
+      expect(result.saved, isTrue);
+      expect(aliasRepository.appendedAliases, hasLength(1));
+      expect(aliasRepository.appendedAliases.single.storeName, 'Store');
+      expect(aliasRepository.appendedAliases.single.receiptName, 'Oat Milk');
+      expect(
+        aliasRepository.appendedAliases.single.globalFoodItem.id,
+        'oat-milk',
+      );
+    },
+  );
 
   test(
     'persistReviewedItems saves unchanged external candidate before inventory',

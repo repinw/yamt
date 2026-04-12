@@ -291,12 +291,14 @@ class ReceiptReviewResolutionService {
     }
 
     final candidates = await _matcher.findCandidates(draft.item);
-    final updatedDraft = draft.copyWith(
-      candidates: candidates,
-      selectedGlobalFoodItemId: _matcher.defaultSelectionFor(candidates),
-      selectionNeedsReview: _matcher.defaultSelectionNeedsReviewFor(candidates),
-    );
-    return updatedDraft;
+    return draft
+        .copyWith(candidates: candidates)
+        .applyAutomaticSelection(
+          _matcher.defaultSelectionFor(candidates),
+          selectionNeedsReview: _matcher.defaultSelectionNeedsReviewFor(
+            candidates,
+          ),
+        );
   }
 
   bool _shouldReuseSelectedCandidate(ReceiptReviewItemDraft draft) {
@@ -360,7 +362,8 @@ class ReceiptReviewResolutionService {
     final aliases = <GlobalFoodReceiptAlias>[
       for (final item in resolvedItems)
         if (globalSaved || !item.requiresGlobalPersistence)
-          if (_buildReceiptAlias(item, now: now) case final alias?) alias,
+          if (item.sourceDraft.shouldSaveReceiptAlias)
+            if (_buildReceiptAlias(item, now: now) case final alias?) alias,
     ];
     if (aliases.isEmpty) {
       return;

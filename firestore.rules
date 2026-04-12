@@ -149,6 +149,8 @@ service cloud.firestore {
           'normalized_store_name',
           'receipt_name',
           'normalized_receipt_name',
+          'compact_receipt_name',
+          'receipt_search_tokens',
           'lookup_key',
           'selection_count',
           'global_food_item',
@@ -162,6 +164,8 @@ service cloud.firestore {
           'normalized_store_name',
           'receipt_name',
           'normalized_receipt_name',
+          'compact_receipt_name',
+          'receipt_search_tokens',
           'lookup_key',
           'selection_count',
           'global_food_item',
@@ -175,6 +179,8 @@ service cloud.firestore {
         && data.normalized_store_name is string
         && data.receipt_name is string
         && data.normalized_receipt_name is string
+        && data.compact_receipt_name is string
+        && data.receipt_search_tokens is list
         && data.lookup_key is string
         && data.lookup_key.size() > 0
         && data.selection_count is int

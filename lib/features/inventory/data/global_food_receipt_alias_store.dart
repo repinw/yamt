@@ -15,7 +15,10 @@ class GlobalFoodReceiptAliasDocument {
 
 abstract interface class GlobalFoodReceiptAliasStore {
   Future<List<GlobalFoodReceiptAliasDocument>> searchCandidates({
+    required String normalizedStoreName,
     required String lookupKey,
+    required String compactReceiptName,
+    List<String> receiptSearchTokens = const <String>[],
     int limit = 5,
   });
 
@@ -34,20 +37,63 @@ class FirestoreGlobalFoodReceiptAliasStore
 
   @override
   Future<List<GlobalFoodReceiptAliasDocument>> searchCandidates({
+    required String normalizedStoreName,
     required String lookupKey,
+    required String compactReceiptName,
+    List<String> receiptSearchTokens = const <String>[],
     int limit = 5,
   }) async {
+    final safeStoreName = normalizedStoreName.trim();
     final safeLookupKey = lookupKey.trim();
-    if (safeLookupKey.isEmpty) {
+    final safeCompactReceiptName = compactReceiptName.trim();
+    final safeReceiptSearchTokens = _normalizeSearchTokens(receiptSearchTokens);
+    if (safeStoreName.isEmpty ||
+        (safeLookupKey.isEmpty &&
+            safeCompactReceiptName.isEmpty &&
+            safeReceiptSearchTokens.isEmpty)) {
       return const <GlobalFoodReceiptAliasDocument>[];
     }
 
     final safeLimit = limit < 1 ? 1 : limit;
-    final snapshot = await _collection()
-        .where('lookup_key', isEqualTo: safeLookupKey)
-        .limit(safeLimit)
-        .get();
-    return _mapSnapshot(snapshot);
+    final queries = <Future<QuerySnapshot<Map<String, dynamic>>>>[];
+    if (safeLookupKey.isNotEmpty) {
+      queries.add(
+        _collection()
+            .where('lookup_key', isEqualTo: safeLookupKey)
+            .limit(safeLimit)
+            .get(),
+      );
+    }
+    if (safeCompactReceiptName.isNotEmpty) {
+      queries.add(
+        _collection()
+            .where('normalized_store_name', isEqualTo: safeStoreName)
+            .where('compact_receipt_name', isEqualTo: safeCompactReceiptName)
+            .limit(safeLimit)
+            .get(),
+      );
+    }
+    if (safeReceiptSearchTokens.isNotEmpty) {
+      queries.add(
+        _collection()
+            .where('normalized_store_name', isEqualTo: safeStoreName)
+            .where(
+              'receipt_search_tokens',
+              arrayContainsAny: safeReceiptSearchTokens,
+            )
+            .limit(safeLimit)
+            .get(),
+      );
+    }
+
+    final snapshots = await Future.wait(queries);
+    final documentsById = <String, GlobalFoodReceiptAliasDocument>{};
+    for (final snapshot in snapshots) {
+      for (final document in _mapSnapshot(snapshot)) {
+        documentsById[document.id] = document;
+      }
+    }
+    return documentsById.values.toList(growable: false);
   }
 
   @override
@@ -119,5 +165,20 @@ class FirestoreGlobalFoodReceiptAliasStore
       return safeValue < 1 ? 1 : safeValue;
     }
     return 1;
+  }
+
+  List<String> _normalizeSearchTokens(List<String> tokens) {
+    final normalized = <String>{};
+    for (final token in tokens) {
+      final trimmed = token.trim();
+      if (trimmed.isEmpty) {
+        continue;
+      }
+      normalized.add(trimmed);
+      if (normalized.length == 10) {
+        break;
+      }
+    }
+    return normalized.toList(growable: false);
   }
 }

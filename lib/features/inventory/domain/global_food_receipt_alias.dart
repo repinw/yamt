@@ -12,6 +12,8 @@ class GlobalFoodReceiptAlias {
     required this.normalizedStoreName,
     required this.receiptName,
     required this.normalizedReceiptName,
+    required this.compactReceiptName,
+    required this.receiptSearchTokens,
     required this.lookupKey,
     required this.selectionCount,
     required this.globalFoodItem,
@@ -55,6 +57,12 @@ class GlobalFoodReceiptAlias {
       normalizedStoreName: normalizedStoreName,
       receiptName: safeReceiptName,
       normalizedReceiptName: normalizedReceiptName,
+      compactReceiptName: compactGlobalFoodReceiptAliasText(
+        normalizedReceiptName,
+      ),
+      receiptSearchTokens: buildGlobalFoodReceiptAliasSearchTokens(
+        safeReceiptName,
+      ),
       lookupKey: buildGlobalFoodReceiptAliasLookupKey(
         normalizedStoreName: normalizedStoreName,
         normalizedReceiptName: normalizedReceiptName,
@@ -100,6 +108,12 @@ class GlobalFoodReceiptAlias {
       normalizedStoreName: normalizedStoreName,
       receiptName: receiptName,
       normalizedReceiptName: normalizedReceiptName,
+      compactReceiptName:
+          (json['compact_receipt_name'] as String?)?.trim() ??
+          compactGlobalFoodReceiptAliasText(normalizedReceiptName),
+      receiptSearchTokens:
+          _readStringList(json['receipt_search_tokens']) ??
+          buildGlobalFoodReceiptAliasSearchTokens(receiptName),
       lookupKey:
           (json['lookup_key'] as String?)?.trim() ??
           buildGlobalFoodReceiptAliasLookupKey(
@@ -122,6 +136,8 @@ class GlobalFoodReceiptAlias {
   final String normalizedStoreName;
   final String receiptName;
   final String normalizedReceiptName;
+  final String compactReceiptName;
+  final List<String> receiptSearchTokens;
   final String lookupKey;
   final int selectionCount;
   final GlobalFoodItem globalFoodItem;
@@ -136,6 +152,8 @@ class GlobalFoodReceiptAlias {
       'normalized_store_name': normalizedStoreName,
       'receipt_name': receiptName,
       'normalized_receipt_name': normalizedReceiptName,
+      'compact_receipt_name': compactReceiptName,
+      'receipt_search_tokens': receiptSearchTokens,
       'lookup_key': lookupKey,
       'selection_count': selectionCount,
       'global_food_item': globalFoodItem.toJson(),
@@ -151,6 +169,8 @@ class GlobalFoodReceiptAlias {
     String? normalizedStoreName,
     String? receiptName,
     String? normalizedReceiptName,
+    String? compactReceiptName,
+    List<String>? receiptSearchTokens,
     String? lookupKey,
     int? selectionCount,
     GlobalFoodItem? globalFoodItem,
@@ -165,6 +185,8 @@ class GlobalFoodReceiptAlias {
       receiptName: receiptName ?? this.receiptName,
       normalizedReceiptName:
           normalizedReceiptName ?? this.normalizedReceiptName,
+      compactReceiptName: compactReceiptName ?? this.compactReceiptName,
+      receiptSearchTokens: receiptSearchTokens ?? this.receiptSearchTokens,
       lookupKey: lookupKey ?? this.lookupKey,
       selectionCount: selectionCount ?? this.selectionCount,
       globalFoodItem: globalFoodItem ?? this.globalFoodItem,
@@ -183,6 +205,8 @@ class GlobalFoodReceiptAlias {
             other.normalizedStoreName == normalizedStoreName &&
             other.receiptName == receiptName &&
             other.normalizedReceiptName == normalizedReceiptName &&
+            other.compactReceiptName == compactReceiptName &&
+            _stringListsEqual(other.receiptSearchTokens, receiptSearchTokens) &&
             other.lookupKey == lookupKey &&
             other.selectionCount == selectionCount &&
             other.globalFoodItem == globalFoodItem &&
@@ -199,6 +223,8 @@ class GlobalFoodReceiptAlias {
       normalizedStoreName,
       receiptName,
       normalizedReceiptName,
+      compactReceiptName,
+      Object.hashAll(receiptSearchTokens),
       lookupKey,
       selectionCount,
       globalFoodItem,
@@ -246,6 +272,24 @@ String normalizeGlobalFoodReceiptAliasText(String rawValue) {
       .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
+}
+
+String compactGlobalFoodReceiptAliasText(String rawValue) {
+  return rawValue.replaceAll(' ', '');
+}
+
+List<String> buildGlobalFoodReceiptAliasSearchTokens(String rawValue) {
+  final normalized = normalizeGlobalFoodReceiptAliasText(rawValue);
+  if (normalized.isEmpty) {
+    return const <String>[];
+  }
+
+  final tokens = <String>{
+    normalized,
+    compactGlobalFoodReceiptAliasText(normalized),
+    ...normalized.split(' ').where((token) => token.isNotEmpty),
+  };
+  return tokens.toList(growable: false);
 }
 
 String buildGlobalFoodReceiptAliasLookupKey({
@@ -302,4 +346,27 @@ int _readSelectionCount(Object? value) {
     return safeValue < 1 ? 1 : safeValue;
   }
   return 1;
+}
+
+List<String>? _readStringList(Object? value) {
+  if (value is! List) {
+    return null;
+  }
+  return value
+      .whereType<String>()
+      .map((entry) => entry.trim())
+      .where((entry) => entry.isNotEmpty)
+      .toList(growable: false);
+}
+
+bool _stringListsEqual(List<String> left, List<String> right) {
+  if (left.length != right.length) {
+    return false;
+  }
+  for (var index = 0; index < left.length; index++) {
+    if (left[index] != right[index]) {
+      return false;
+    }
+  }
+  return true;
 }

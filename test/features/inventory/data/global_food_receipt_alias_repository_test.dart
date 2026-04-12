@@ -12,15 +12,24 @@ class _FakeGlobalFoodReceiptAliasStore implements GlobalFoodReceiptAliasStore {
 
   List<GlobalFoodReceiptAliasDocument> documents;
   String? lastLookupKey;
+  String? lastNormalizedStoreName;
+  String? lastCompactReceiptName;
+  List<String> lastReceiptSearchTokens = const <String>[];
   int? lastLimit;
   Map<String, Map<String, dynamic>>? lastDocumentsById;
 
   @override
   Future<List<GlobalFoodReceiptAliasDocument>> searchCandidates({
+    required String normalizedStoreName,
     required String lookupKey,
+    required String compactReceiptName,
+    List<String> receiptSearchTokens = const <String>[],
     int limit = 5,
   }) async {
+    lastNormalizedStoreName = normalizedStoreName;
     lastLookupKey = lookupKey;
+    lastCompactReceiptName = compactReceiptName;
+    lastReceiptSearchTokens = receiptSearchTokens;
     lastLimit = limit;
     return documents.take(limit).toList(growable: false);
   }
@@ -80,7 +89,13 @@ void main() {
         limit: 5,
       );
 
+      expect(store.lastNormalizedStoreName, 'aldi');
       expect(store.lastLookupKey, 'aldi|milch 3 5');
+      expect(store.lastCompactReceiptName, 'milch35');
+      expect(
+        store.lastReceiptSearchTokens,
+        containsAll(<String>['milch 3 5', 'milch35', 'milch']),
+      );
       expect(aliases.map((alias) => alias.globalFoodItem.id), <String>[
         'milk-new',
         'milk-old',
@@ -106,6 +121,11 @@ void main() {
     expect(document['lookup_key'], 'aldi|waffelhoernchen');
     expect(document['normalized_store_name'], 'aldi');
     expect(document['normalized_receipt_name'], 'waffelhoernchen');
+    expect(document['compact_receipt_name'], 'waffelhoernchen');
+    expect(
+      document['receipt_search_tokens'],
+      containsAll(<String>['waffelhoernchen']),
+    );
     expect(document['selection_count'], 1);
   });
 }

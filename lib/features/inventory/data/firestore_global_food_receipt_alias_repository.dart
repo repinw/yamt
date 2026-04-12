@@ -29,11 +29,19 @@ class FirestoreGlobalFoodReceiptAliasRepository
     }
 
     try {
+      final receiptSearchTokens = buildGlobalFoodReceiptAliasSearchTokens(
+        normalizedReceiptName,
+      );
       final documents = await _store.searchCandidates(
+        normalizedStoreName: normalizedStoreName,
         lookupKey: buildGlobalFoodReceiptAliasLookupKey(
           normalizedStoreName: normalizedStoreName,
           normalizedReceiptName: normalizedReceiptName,
         ),
+        compactReceiptName: compactGlobalFoodReceiptAliasText(
+          normalizedReceiptName,
+        ),
+        receiptSearchTokens: receiptSearchTokens,
         limit: limit,
       );
       return _decodeDocuments(documents);
@@ -115,6 +123,10 @@ class FirestoreGlobalFoodReceiptAliasRepository
       normalizedStoreName: normalizedStoreName,
       receiptName: receiptName,
       normalizedReceiptName: normalizedReceiptName,
+      compactReceiptName: compactGlobalFoodReceiptAliasText(
+        normalizedReceiptName,
+      ),
+      receiptSearchTokens: buildGlobalFoodReceiptAliasSearchTokens(receiptName),
       lookupKey: buildGlobalFoodReceiptAliasLookupKey(
         normalizedStoreName: normalizedStoreName,
         normalizedReceiptName: normalizedReceiptName,

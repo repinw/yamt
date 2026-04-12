@@ -39,7 +39,10 @@ class _UnavailableGlobalFoodReceiptAliasStore
 
   @override
   Future<List<GlobalFoodReceiptAliasDocument>> searchCandidates({
+    required String normalizedStoreName,
     required String lookupKey,
+    required String compactReceiptName,
+    List<String> receiptSearchTokens = const <String>[],
     int limit = 5,
   }) async {
     return const <GlobalFoodReceiptAliasDocument>[];

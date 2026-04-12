@@ -307,7 +307,7 @@ void main() {
     expect(candidates.first.item.id, 'off-4061458029995');
     expect(candidates.first.reason, GlobalFoodMatchReason.externalSearch);
     expect(candidates.first.requiresPersistence, isTrue);
-    expect(candidates.first.score, 77);
+    expect(candidates.first.score, 34.0);
     expect(candidates.first.item.imageUrl, isNotNull);
     expect(candidates.first.item.packageWeight, '110 ml');
     expect(candidates.first.item.nutrition?.per100Kcal, 215);
@@ -471,6 +471,43 @@ void main() {
     ]);
   });
 
+  test('findCandidates allows similar OCR names for learned aliases', () async {
+    final learnedItem = _globalItem(
+      id: 'cheese',
+      name: 'Gouda Scheiben',
+      storeName: 'Aldi',
+      brand: 'Milsani',
+    );
+    final aliasRepository = _FakeGlobalFoodReceiptAliasRepository(
+      fallbackResults: <GlobalFoodReceiptAlias>[
+        _receiptAlias(
+          id: 'alias-cheese',
+          receiptName: 'KAESE SCHEIBEN 150G',
+          item: learnedItem,
+          selectionCount: 4,
+        ),
+      ],
+    );
+    final matcher = GlobalFoodItemMatcher(
+      globalFoodReceiptAliasRepository: aliasRepository,
+      offProductSearchRepository: _FakeOffProductSearchRepository(),
+    );
+
+    final candidates = await matcher.findCandidates(
+      _inventoryItem(
+        id: 'item-1',
+        name: 'Kaese Scheiben',
+        ocrName: 'KAESE SCHEIBEN',
+        brand: 'Milsani',
+        storeName: 'Aldi',
+      ),
+    );
+
+    expect(candidates, isNotEmpty);
+    expect(candidates.first.item.id, 'cheese');
+    expect(candidates.first.reason, GlobalFoodMatchReason.receiptAliasExact);
+  });
+
   test(
     'findCandidates keeps local and OFF buckets separate even for same barcode',
     () async {
@@ -607,47 +644,22 @@ void main() {
     },
   );
 
-  test('findCandidates keeps only the strongest duplicate barcode', () async {
-    final repository = _FakeOffProductSearchRepository(
-      fallbackResults: <OffProductSearchResult>[
-        _offResult(
-          code: '4316268538503',
-          name: 'Sonnenblumenkerne',
-          brand: 'BioBio',
-          score: 10,
-        ),
-        _offResult(
-          code: '4316268538503',
-          name: 'Sonnenblumenkerne',
-          brand: 'BioBio',
-          score: 80,
-        ),
-      ],
-    );
-    final matcher = GlobalFoodItemMatcher(
-      offProductSearchRepository: repository,
-    );
-
-    final candidates = await matcher.findCandidates(
-      _inventoryItem(id: 'item-1', name: 'Sonnenblumenkerne'),
-    );
-
-    expect(candidates, hasLength(1));
-    expect(candidates.single.item.id, 'off-4316268538503');
-    expect(candidates.single.score, 89);
-  });
-
   test(
-    'findCandidates dedupes barcode-less results by name and brand',
+    'findCandidates preserves duplicate OFF barcode results in server order',
     () async {
       final repository = _FakeOffProductSearchRepository(
         fallbackResults: <OffProductSearchResult>[
-          _offResult(code: '', name: 'Bio Apfel', brand: 'NaturGut', score: 20),
           _offResult(
-            code: '   ',
-            name: 'BIO APFEL',
-            brand: 'naturgut',
-            score: 60,
+            code: '4316268538503',
+            name: 'Sonnenblumenkerne',
+            brand: 'BioBio',
+            score: 10,
+          ),
+          _offResult(
+            code: '4316268538503',
+            name: 'Sonnenblumenkerne',
+            brand: 'BioBio',
+            score: 80,
           ),
         ],
       );
@@ -656,15 +668,44 @@ void main() {
       );
 
       final candidates = await matcher.findCandidates(
-        _inventoryItem(id: 'item-1', name: 'Bio Apfel'),
+        _inventoryItem(id: 'item-1', name: 'Sonnenblumenkerne'),
       );
 
-      expect(candidates, hasLength(1));
-      expect(candidates.single.item.name, 'BIO APFEL');
-      expect(candidates.single.item.brand, 'naturgut');
-      expect(candidates.single.score, 89);
+      expect(candidates, hasLength(2));
+      expect(candidates.first.item.id, 'off-4316268538503');
+      expect(candidates.first.score, 10);
+      expect(candidates.last.score, 80);
     },
   );
+
+  test('findCandidates preserves duplicate barcode-less OFF results', () async {
+    final repository = _FakeOffProductSearchRepository(
+      fallbackResults: <OffProductSearchResult>[
+        _offResult(code: '', name: 'Bio Apfel', brand: 'NaturGut', score: 20),
+        _offResult(
+          code: '   ',
+          name: 'BIO APFEL',
+          brand: 'naturgut',
+          score: 60,
+        ),
+      ],
+    );
+    final matcher = GlobalFoodItemMatcher(
+      offProductSearchRepository: repository,
+    );
+
+    final candidates = await matcher.findCandidates(
+      _inventoryItem(id: 'item-1', name: 'Bio Apfel'),
+    );
+
+    expect(candidates, hasLength(2));
+    expect(candidates.first.item.name, 'Bio Apfel');
+    expect(candidates.first.item.brand, 'NaturGut');
+    expect(candidates.first.score, 20);
+    expect(candidates.last.item.name, 'BIO APFEL');
+    expect(candidates.last.item.brand, 'naturgut');
+    expect(candidates.last.score, 60);
+  });
 
   test(
     'findCandidates forwards Netto brand and weight to OFF search',
@@ -689,7 +730,7 @@ void main() {
       expect(repository.calls.single.store, 'Netto');
       expect(repository.calls.single.brand, 'Cucina');
       expect(repository.calls.single.weight, '1000 g');
-      expect(repository.calls.single.limit, 20);
+      expect(repository.calls.single.limit, 5);
     },
   );
 
