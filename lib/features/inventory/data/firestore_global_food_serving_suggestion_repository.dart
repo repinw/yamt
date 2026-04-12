@@ -241,9 +241,26 @@ class FirestoreGlobalFoodServingSuggestionRepository
     required String itemKey,
     required int limit,
   }) async {
-    final snapshot = await _globalCollection()
-        .where('item_key', isEqualTo: itemKey)
-        .get();
+    QuerySnapshot<Map<String, dynamic>> snapshot;
+    try {
+      snapshot = await _globalCollection()
+          .where('item_key', isEqualTo: itemKey)
+          .orderBy('unique_user_count', descending: true)
+          .orderBy('selection_count', descending: true)
+          .orderBy('updated_at', descending: true)
+          .limit(limit)
+          .get();
+    } on FirebaseException catch (error, stackTrace) {
+      log(
+        'Serving suggestion index missing, falling back to client-side sort.',
+        name: _repositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      snapshot = await _globalCollection()
+          .where('item_key', isEqualTo: itemKey)
+          .get();
+    }
 
     final suggestions = <GlobalFoodServingSuggestion>[];
     for (var index = 0; index < snapshot.docs.length; index++) {
