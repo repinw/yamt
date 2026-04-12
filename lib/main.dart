@@ -8,6 +8,10 @@ import 'package:yamt/app.dart';
 import 'package:yamt/core/config/firebase_config.dart';
 import 'package:yamt/core/debug/app_provider_observer.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_entry_post_persist_hook.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_calorie_entry_post_persist_hook.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +24,12 @@ void main() async {
       observers: kDebugMode
           ? const <ProviderObserver>[AppProviderObserver()]
           : const <ProviderObserver>[],
-      overrides: [appPreferencesProvider.overrideWithValue(appPreferences)],
+      overrides: [
+        appPreferencesProvider.overrideWithValue(appPreferences),
+        calorieEntryPostPersistHookProvider.overrideWith(
+          (ref) => ref.read(inventoryCalorieEntryPostPersistHookProvider),
+        ),
+      ],
       child: const YAMT(),
     ),
   );

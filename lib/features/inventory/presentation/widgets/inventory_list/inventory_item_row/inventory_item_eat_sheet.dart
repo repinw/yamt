@@ -1,10 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
-import 'package:yamt/features/inventory/application/inventory_item_eat_policy.dart';
+import 'package:yamt/features/inventory/application/'
+    'global_food_serving_suggestion_repository.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_item_eat_policy.dart';
+import 'package:yamt/features/inventory/application/serving_suggestion_resolver.dart';
+import 'package:yamt/features/inventory/domain/'
+    'global_food_serving_suggestion.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -37,7 +46,7 @@ Future<InventoryItemEatRequest?> showInventoryItemEatSheet({
   );
 }
 
-class _InventoryItemEatSheet extends StatefulWidget {
+class _InventoryItemEatSheet extends ConsumerStatefulWidget {
   const _InventoryItemEatSheet({
     required this.item,
     required this.maxAmount,
@@ -49,10 +58,14 @@ class _InventoryItemEatSheet extends StatefulWidget {
   final String invalidAmountMessage;
 
   @override
-  State<_InventoryItemEatSheet> createState() => _InventoryItemEatSheetState();
+  ConsumerState<_InventoryItemEatSheet> createState() =>
+      _InventoryItemEatSheetState();
 }
 
-class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
+class _InventoryItemEatSheetState
+    extends ConsumerState<_InventoryItemEatSheet> {
+  static const _servingResolver = ServingSuggestionResolver();
+
   late final TextEditingController _inventoryAmountController =
       TextEditingController(text: _defaultInventoryAmount.toString());
   late final FocusNode _inventoryAmountFocusNode = FocusNode();
@@ -70,6 +83,10 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
   String? _inventoryAmountErrorText;
   String? _inedibleAmountErrorText;
   String? _manualCalorieAmountErrorText;
+  var _didManuallyEditInventoryAmount = false;
+  var _didManuallyEditManualCalorieAmount = false;
+  GlobalFoodServingSuggestionSet _learnedServingSuggestions =
+      const GlobalFoodServingSuggestionSet.empty();
 
   void _updateState(VoidCallback callback) {
     setState(callback);
@@ -91,6 +108,7 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
     _inventoryAmountFocusNode.addListener(_selectAllInventoryAmount);
     _inedibleAmountFocusNode.addListener(_selectAllInedibleAmount);
     _manualCalorieAmountFocusNode.addListener(_selectAllManualCalorieAmount);
+    unawaited(_loadServingSuggestions());
   }
 
   @override
@@ -107,6 +125,23 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
     super.dispose();
   }
 
+  Future<void> _loadServingSuggestions() async {
+    final suggestions = await ref
+        .read(globalFoodServingSuggestionRepositoryProvider)
+        .readSuggestions(
+          foodFingerprint: widget.item.resolvedFoodFingerprint,
+          globalFoodItemId: widget.item.globalFoodItemId,
+        );
+    if (!mounted) {
+      return;
+    }
+
+    _updateState(() {
+      _learnedServingSuggestions = suggestions;
+      _applyLearnedDefaults();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -114,7 +149,13 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
     final material = MaterialLocalizations.of(context);
     final selectedAmount = int.tryParse(_inventoryAmountController.text.trim());
     final unitLabel = _inventoryUnitLabel(l10n);
-    final quickOptions = _buildQuickOptions(l10n, unitLabel);
+    final servingResolution = _resolveServingResolution();
+    final quickOptions = _buildQuickOptions(
+      l10n,
+      unitLabel,
+      servingResolution.inventoryServingOptions,
+    );
+    final manualServingSuggestions = servingResolution.manualServingSuggestions;
     final nutritionMetrics = _buildNutritionMetrics(l10n);
 
     return SafeArea(
@@ -215,6 +256,36 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
                           onAmountChanged: _clearManualCalorieAmountError,
                           onUnitChanged: _selectManualCalorieUnit,
                         ),
+                        if (manualServingSuggestions.isNotEmpty) ...[
+                          const SizedBox(height: AppSpacing.lg),
+                          _InventoryItemEatSectionLabel(
+                            text: l10n.inventoryItemEatSheetQuickSelectLabel,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          Wrap(
+                            spacing: AppSpacing.sm,
+                            runSpacing: AppSpacing.sm,
+                            children: [
+                              for (final suggestion in manualServingSuggestions)
+                                _InventoryItemEatQuickChip(
+                                  label: suggestion.label,
+                                  isSelected:
+                                      _selectedManualCalorieUnit ==
+                                          suggestion.unit &&
+                                      _manualCalorieAmountController.text
+                                              .trim() ==
+                                          formatInventoryNutritionValue(
+                                            suggestion.amount,
+                                          ),
+                                  onPressed: () =>
+                                      _applyManualServingSuggestion(
+                                        amount: suggestion.amount,
+                                        unit: suggestion.unit,
+                                      ),
+                                ),
+                            ],
+                          ),
+                        ],
                       ],
                       const SizedBox(height: AppSpacing.xxxl),
                       _InventoryItemEatSectionLabel(
@@ -288,11 +359,17 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
   List<({String label, int value})> _buildQuickOptions(
     AppLocalizations l10n,
     String? unitLabel,
+    List<({String label, int value})> servingOptions,
   ) {
     final values = <int>{widget.maxAmount};
     final options = <({String label, int value})>[
       (label: l10n.inventoryItemEatSheetAllAction, value: widget.maxAmount),
     ];
+    for (final suggestion in servingOptions) {
+      if (values.add(suggestion.value)) {
+        options.add(suggestion);
+      }
+    }
 
     if (widget.item.usesAmountProgress) {
       for (final value in const [50, 100, 250]) {
@@ -311,6 +388,42 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
       options.add((label: '$value', value: value));
     }
     return options;
+  }
+
+  ServingSuggestionResolution _resolveServingResolution() {
+    return _servingResolver.resolve(
+      item: widget.item,
+      learned: _learnedServingSuggestions,
+      maxAmount: widget.maxAmount,
+      requiresManualPortion: _requiresManualCaloriePortion,
+    );
+  }
+
+  void _applyLearnedDefaults() {
+    final resolution = _resolveServingResolution();
+    if (!_didManuallyEditInventoryAmount) {
+      final value = resolution.inventoryDefaultAmount;
+      if (value != null) {
+        _applyInventoryDefault(value);
+      }
+    }
+    if (!_didManuallyEditManualCalorieAmount) {
+      final suggestion = resolution.manualDefaultSuggestion;
+      if (suggestion != null) {
+        _applyManualDefault(suggestion);
+      }
+    }
+  }
+
+  void _applyInventoryDefault(int value) {
+    _inventoryAmountController.text = value.toString();
+  }
+
+  void _applyManualDefault(({double amount, ConsumedUnit unit}) suggestion) {
+    _manualCalorieAmountController.text = formatInventoryNutritionValue(
+      suggestion.amount,
+    );
+    _selectedManualCalorieUnit = suggestion.unit;
   }
 
   List<({String label, String value})> _buildNutritionMetrics(
@@ -351,6 +464,7 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
   }
 
   void _clearInventoryAmountError(String _) {
+    _didManuallyEditInventoryAmount = true;
     if (_inventoryAmountErrorText == null) {
       return;
     }
@@ -369,6 +483,7 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
   }
 
   void _clearManualCalorieAmountError(String _) {
+    _didManuallyEditManualCalorieAmount = true;
     if (_manualCalorieAmountErrorText == null) {
       return;
     }
@@ -378,6 +493,7 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
   }
 
   void _selectInventoryAmount(int amount) {
+    _didManuallyEditInventoryAmount = true;
     _updateState(() {
       _inventoryAmountController.text = amount.toString();
       _inventoryAmountErrorText = null;
@@ -385,6 +501,7 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
   }
 
   void _clearInventoryAmountAndFocus() {
+    _didManuallyEditInventoryAmount = true;
     _updateState(() {
       _inventoryAmountController.clear();
       _inventoryAmountErrorText = null;
@@ -393,8 +510,23 @@ class _InventoryItemEatSheetState extends State<_InventoryItemEatSheet> {
   }
 
   void _selectManualCalorieUnit(ConsumedUnit unit) {
+    _didManuallyEditManualCalorieAmount = true;
     _updateState(() {
       _selectedManualCalorieUnit = unit;
+    });
+  }
+
+  void _applyManualServingSuggestion({
+    required double amount,
+    required ConsumedUnit unit,
+  }) {
+    _didManuallyEditManualCalorieAmount = true;
+    _updateState(() {
+      _manualCalorieAmountController.text = formatInventoryNutritionValue(
+        amount,
+      );
+      _selectedManualCalorieUnit = unit;
+      _manualCalorieAmountErrorText = null;
     });
   }
 

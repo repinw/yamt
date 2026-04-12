@@ -142,6 +142,9 @@ class _InventoryManualAddPageState
       brand: globalProduct.brand,
       barcode: globalProduct.barcode,
       imageUrl: globalProduct.imageUrl,
+      servingSize: globalProduct.servingSize,
+      servingQuantity: globalProduct.servingQuantity,
+      servingQuantityUnit: globalProduct.servingQuantityUnit,
       nutrition: globalProduct.nutrition,
       weight: item.weight,
       foodFingerprint: globalProduct.resolvedFoodFingerprint,
@@ -165,6 +168,9 @@ class _InventoryManualAddPageState
     String? brand,
     String? imageUrl,
     String? weight,
+    String? servingSize,
+    double? servingQuantity,
+    String? servingQuantityUnit,
     GlobalFoodNutrition? nutrition,
   }) {
     return InventoryItem.create(
@@ -178,6 +184,9 @@ class _InventoryManualAddPageState
       brand: brand,
       barcode: scannedBarcode,
       imageUrl: imageUrl,
+      servingSize: servingSize,
+      servingQuantity: servingQuantity,
+      servingQuantityUnit: servingQuantityUnit,
       nutrition: nutrition,
       weight: weight,
     ).withDerivedAmount(weight: weight, quantity: 1);
@@ -200,6 +209,10 @@ class _InventoryManualAddPageState
       barcode: barcode,
       imageUrl: normalizeProductImageUrl(item.imageUrl),
       packageWeight: selectedProduct?.packageWeight ?? item.weight,
+      servingSize: item.servingSize ?? selectedProduct?.servingSize,
+      servingQuantity: item.servingQuantity ?? selectedProduct?.servingQuantity,
+      servingQuantityUnit:
+          item.servingQuantityUnit ?? selectedProduct?.servingQuantityUnit,
       nutrition: item.nutrition,
       status: GlobalFoodItemStatus.active,
     );

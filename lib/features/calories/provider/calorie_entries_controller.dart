@@ -9,8 +9,12 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/presentation/models/'
+    'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_entry_post_persist_hook.dart';
 
 part 'calorie_entries_controller.g.dart';
 
@@ -86,6 +90,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
 
   Future<bool> saveEntry(
     CalorieEntry entry, {
+    CalorieInventoryCreateContext? inventoryContext,
     CalorieScannedSourceRef? scannedSourceRef,
     Future<bool> Function(CalorieEntry entry)? persistEntry,
   }) {
@@ -98,6 +103,18 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       'scannedSource=${scannedSourceRef != null}).',
       name: _entriesControllerLogName,
     );
+    final postPersistCallbacks = <Future<void> Function()>[
+      () => ref.read(calorieEntryPostPersistHookProvider)(
+        entry: entry,
+        inventoryContext: inventoryContext,
+        scannedSourceRef: scannedSourceRef,
+      ),
+      if (scannedSourceRef != null)
+        () => _saveUserProductOverride(
+          entry: entry,
+          scannedSourceRef: scannedSourceRef,
+        ),
+    ];
     return _runOptimisticMutation(
       buildNextEntries: (previousEntries) {
         return _applySavedEntry(
@@ -134,12 +151,9 @@ class CalorieEntriesController extends _$CalorieEntriesController {
         return saved;
       },
       failureLogMessage: 'Failed to persist calorie entry ${entry.id}.',
-      onPersisted: scannedSourceRef == null
+      onPersisted: postPersistCallbacks.isEmpty
           ? null
-          : () => _saveUserProductOverride(
-              entry: entry,
-              scannedSourceRef: scannedSourceRef,
-            ),
+          : () => _runPostPersistCallbacks(postPersistCallbacks),
     ).whenComplete(keepAliveLink.close);
   }
 
@@ -213,6 +227,14 @@ class CalorieEntriesController extends _$CalorieEntriesController {
         error: error,
         stackTrace: stackTrace,
       );
+    }
+  }
+
+  Future<void> _runPostPersistCallbacks(
+    List<Future<void> Function()> callbacks,
+  ) async {
+    for (final callback in callbacks) {
+      await _runAfterPersistCallback(callback);
     }
   }
 

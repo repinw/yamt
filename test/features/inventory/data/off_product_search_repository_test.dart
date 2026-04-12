@@ -136,6 +136,9 @@ Score: 22 | token=10 | gram=12 | store=0 | 2 | [bofrost] Vanille
       "product_name": "Speisequark Magerstufe 0,3 % Fett",
       "brands": "Milsani",
       "weight": "500g",
+      "serving_size": "100 g",
+      "serving_quantity": 100,
+      "serving_quantity_unit": "g",
       "nutrition_quality_status": "verified",
       "energy-kcal_100g": 70.0,
       "proteins_100g": 11.8,
@@ -154,6 +157,9 @@ Score: 22 | token=10 | gram=12 | store=0 | 2 | [bofrost] Vanille
     final results = await repository.search(query: '4061462542046');
 
     expect(results, hasLength(1));
+    expect(results.single.servingSize, '100 g');
+    expect(results.single.servingQuantity, 100);
+    expect(results.single.servingQuantityUnit, 'g');
     expect(results.single.nutrition, isNotNull);
     expect(
       results.single.nutrition!.qualityStatus,

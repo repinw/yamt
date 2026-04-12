@@ -822,6 +822,9 @@ class InventoryItemsController extends _$InventoryItemsController {
       imageUrl: resolvedProduct.imageUrl,
       weight: weight,
       foodFingerprint: resolvedProduct.resolvedFoodFingerprint,
+      servingSize: resolvedProduct.servingSize,
+      servingQuantity: resolvedProduct.servingQuantity,
+      servingQuantityUnit: resolvedProduct.servingQuantityUnit,
       nutrition: resolvedProduct.nutrition,
     );
     return updatedItem.withDerivedAmount(

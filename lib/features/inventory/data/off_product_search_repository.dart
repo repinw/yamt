@@ -19,6 +19,9 @@ class OffProductSearchResult {
     this.brand,
     this.imageUrl,
     this.packageWeight,
+    this.servingSize,
+    this.servingQuantity,
+    this.servingQuantityUnit,
     this.nutrition,
   });
 
@@ -28,6 +31,9 @@ class OffProductSearchResult {
   final String? brand;
   final String? imageUrl;
   final String? packageWeight;
+  final String? servingSize;
+  final double? servingQuantity;
+  final String? servingQuantityUnit;
   final GlobalFoodNutrition? nutrition;
 }
 

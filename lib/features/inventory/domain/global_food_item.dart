@@ -22,6 +22,9 @@ class GlobalFoodItem {
     this.barcode,
     this.imageUrl,
     this.packageWeight,
+    this.servingSize,
+    this.servingQuantity,
+    this.servingQuantityUnit,
     this.nutrition,
     this.normalizedBrand,
     this.normalizedStoreName,
@@ -38,6 +41,9 @@ class GlobalFoodItem {
     String? barcode,
     String? imageUrl,
     String? packageWeight,
+    String? servingSize,
+    double? servingQuantity,
+    String? servingQuantityUnit,
     String? foodFingerprint,
     GlobalFoodNutrition? nutrition,
     GlobalFoodItemStatus status = GlobalFoodItemStatus.active,
@@ -64,6 +70,9 @@ class GlobalFoodItem {
       barcode: _normalizeOptional(barcode),
       imageUrl: _normalizeOptional(imageUrl),
       packageWeight: _normalizeOptional(packageWeight),
+      servingSize: _normalizeOptional(servingSize),
+      servingQuantity: _normalizeServingQuantity(servingQuantity),
+      servingQuantityUnit: _normalizeOptional(servingQuantityUnit),
       nutrition: nutrition,
       normalizedBrand: normalizeGlobalFoodText(brand ?? ''),
       normalizedStoreName: _normalizeOptionalLookupText(normalizedStoreName),
@@ -96,6 +105,15 @@ class GlobalFoodItem {
       packageWeight:
           _normalizeOptional(json['package_weight']) ??
           _normalizeOptional(json['weight']),
+      servingSize:
+          _normalizeOptional(json['serving_size']) ??
+          _normalizeOptional(json['servingSize']),
+      servingQuantity: _readDouble(
+        json['serving_quantity'] ?? json['servingQuantity'],
+      ),
+      servingQuantityUnit: _normalizeOptional(
+        json['serving_quantity_unit'] ?? json['servingQuantityUnit'],
+      ),
       nutrition: _readNutrition(json['nutrition']),
       normalizedBrand:
           _normalizeOptional(json['normalized_brand']) ??
@@ -116,6 +134,9 @@ class GlobalFoodItem {
   final String? barcode;
   final String? imageUrl;
   final String? packageWeight;
+  final String? servingSize;
+  final double? servingQuantity;
+  final String? servingQuantityUnit;
   final GlobalFoodNutrition? nutrition;
   final String normalizedName;
   final String? normalizedBrand;
@@ -137,6 +158,9 @@ class GlobalFoodItem {
       'barcode': barcode,
       'image_url': imageUrl,
       'package_weight': packageWeight,
+      'serving_size': servingSize,
+      'serving_quantity': servingQuantity,
+      'serving_quantity_unit': servingQuantityUnit,
       'nutrition': nutrition?.toJson(),
       'normalized_name': normalizedName,
       'normalized_brand': normalizedBrand,
@@ -159,6 +183,9 @@ class GlobalFoodItem {
     Object? barcode = _keepValue,
     Object? imageUrl = _keepValue,
     Object? packageWeight = _keepValue,
+    Object? servingSize = _keepValue,
+    Object? servingQuantity = _keepValue,
+    Object? servingQuantityUnit = _keepValue,
     Object? nutrition = _keepValue,
     String? normalizedName,
     Object? normalizedBrand = _keepValue,
@@ -183,6 +210,15 @@ class GlobalFoodItem {
       packageWeight: packageWeight == _keepValue
           ? this.packageWeight
           : packageWeight as String?,
+      servingSize: servingSize == _keepValue
+          ? this.servingSize
+          : servingSize as String?,
+      servingQuantity: servingQuantity == _keepValue
+          ? this.servingQuantity
+          : _normalizeServingQuantity(servingQuantity),
+      servingQuantityUnit: servingQuantityUnit == _keepValue
+          ? this.servingQuantityUnit
+          : servingQuantityUnit as String?,
       nutrition: nutrition == _keepValue
           ? this.nutrition
           : nutrition as GlobalFoodNutrition?,
@@ -221,6 +257,9 @@ class GlobalFoodItem {
       barcode: barcode,
       imageUrl: imageUrl,
       foodFingerprint: resolvedFoodFingerprint,
+      servingSize: servingSize,
+      servingQuantity: servingQuantity,
+      servingQuantityUnit: servingQuantityUnit,
       nutrition: nutrition,
     );
   }
@@ -238,6 +277,9 @@ class GlobalFoodItem {
             other.barcode == barcode &&
             other.imageUrl == imageUrl &&
             other.packageWeight == packageWeight &&
+            other.servingSize == servingSize &&
+            other.servingQuantity == servingQuantity &&
+            other.servingQuantityUnit == servingQuantityUnit &&
             other.nutrition == nutrition &&
             other.normalizedName == normalizedName &&
             other.normalizedBrand == normalizedBrand &&
@@ -254,7 +296,7 @@ class GlobalFoodItem {
 
   @override
   int get hashCode {
-    return Object.hash(
+    return Object.hashAll(<Object?>[
       id,
       foodFingerprint,
       name,
@@ -264,6 +306,9 @@ class GlobalFoodItem {
       barcode,
       imageUrl,
       packageWeight,
+      servingSize,
+      servingQuantity,
+      servingQuantityUnit,
       nutrition,
       normalizedName,
       normalizedBrand,
@@ -273,7 +318,7 @@ class GlobalFoodItem {
       mergedIntoId,
       createdAt,
       updatedAt,
-    );
+    ]);
   }
 }
 
@@ -339,6 +384,28 @@ String? _normalizeOptionalLookupText(Object? value) {
     return null;
   }
   return normalized;
+}
+
+double? _normalizeServingQuantity(Object? value) {
+  final parsed = _readDouble(value);
+  if (parsed == null || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+}
+
+double? _readDouble(Object? value) {
+  if (value is num) {
+    return value.toDouble();
+  }
+  if (value is String) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+    return double.tryParse(trimmed.replaceAll(',', '.'));
+  }
+  return null;
 }
 
 List<String> _readStringList(Object? value) {

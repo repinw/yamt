@@ -9,6 +9,9 @@ class InventoryItemProductSnapshot {
     this.barcode,
     this.imageUrl,
     this.foodFingerprint,
+    this.servingSize,
+    this.servingQuantity,
+    this.servingQuantityUnit,
     this.nutrition,
   });
 
@@ -18,6 +21,9 @@ class InventoryItemProductSnapshot {
   final String? barcode;
   final String? imageUrl;
   final String? foodFingerprint;
+  final String? servingSize;
+  final double? servingQuantity;
+  final String? servingQuantityUnit;
   final GlobalFoodNutrition? nutrition;
 
   factory InventoryItemProductSnapshot.fromJson(Map<String, dynamic> json) {
@@ -28,6 +34,15 @@ class InventoryItemProductSnapshot {
       barcode: _readTrimmedString(json['barcode']),
       imageUrl: _readTrimmedString(json['image_url']),
       foodFingerprint: _readTrimmedString(json['food_fingerprint']),
+      servingSize:
+          _readTrimmedString(json['serving_size']) ??
+          _readTrimmedString(json['servingSize']),
+      servingQuantity: _readDouble(
+        json['serving_quantity'] ?? json['servingQuantity'],
+      ),
+      servingQuantityUnit: _readTrimmedString(
+        json['serving_quantity_unit'] ?? json['servingQuantityUnit'],
+      ),
       nutrition: _readNutrition(json['nutrition']),
     );
   }
@@ -40,6 +55,9 @@ class InventoryItemProductSnapshot {
       'barcode': barcode,
       'image_url': imageUrl,
       'food_fingerprint': foodFingerprint,
+      'serving_size': servingSize,
+      'serving_quantity': servingQuantity,
+      'serving_quantity_unit': servingQuantityUnit,
       'nutrition': nutrition?.toJson(),
     };
   }
@@ -51,6 +69,9 @@ class InventoryItemProductSnapshot {
     Object? barcode = _keepValue,
     Object? imageUrl = _keepValue,
     Object? foodFingerprint = _keepValue,
+    Object? servingSize = _keepValue,
+    Object? servingQuantity = _keepValue,
+    Object? servingQuantityUnit = _keepValue,
     Object? nutrition = _keepValue,
   }) {
     return InventoryItemProductSnapshot(
@@ -62,6 +83,15 @@ class InventoryItemProductSnapshot {
       foodFingerprint: foodFingerprint == _keepValue
           ? this.foodFingerprint
           : foodFingerprint as String?,
+      servingSize: servingSize == _keepValue
+          ? this.servingSize
+          : servingSize as String?,
+      servingQuantity: servingQuantity == _keepValue
+          ? this.servingQuantity
+          : _readDouble(servingQuantity),
+      servingQuantityUnit: servingQuantityUnit == _keepValue
+          ? this.servingQuantityUnit
+          : servingQuantityUnit as String?,
       nutrition: nutrition == _keepValue
           ? this.nutrition
           : nutrition as GlobalFoodNutrition?,
@@ -94,6 +124,9 @@ class InventoryItemProductSnapshot {
             other.barcode == barcode &&
             other.imageUrl == imageUrl &&
             other.foodFingerprint == foodFingerprint &&
+            other.servingSize == servingSize &&
+            other.servingQuantity == servingQuantity &&
+            other.servingQuantityUnit == servingQuantityUnit &&
             other.nutrition == nutrition;
   }
 
@@ -106,6 +139,9 @@ class InventoryItemProductSnapshot {
       barcode,
       imageUrl,
       foodFingerprint,
+      servingSize,
+      servingQuantity,
+      servingQuantityUnit,
       nutrition,
     );
   }
@@ -120,6 +156,25 @@ String? _readTrimmedString(Object? value) {
     return null;
   }
   return trimmed;
+}
+
+double? _readDouble(Object? value) {
+  if (value is num) {
+    final parsed = value.toDouble();
+    return parsed > 0 ? parsed : null;
+  }
+  if (value is String) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+    final parsed = double.tryParse(trimmed.replaceAll(',', '.'));
+    if (parsed == null || parsed <= 0) {
+      return null;
+    }
+    return parsed;
+  }
+  return null;
 }
 
 GlobalFoodNutrition? _readNutrition(Object? value) {

@@ -136,6 +136,9 @@ InventoryItemCandidateSwapRequest _requestFromManualResult({
         item: result.item,
         id: candidate.item.id,
         packageWeight: selectedProduct.packageWeight,
+        servingSize: selectedProduct.servingSize,
+        servingQuantity: selectedProduct.servingQuantity,
+        servingQuantityUnit: selectedProduct.servingQuantityUnit,
       ),
       requiresGlobalPersistence: true,
       weight: result.item.weight,
@@ -150,6 +153,9 @@ InventoryItemCandidateSwapRequest _requestFromManualResult({
           selectedGlobalFoodItemId ??
           '$_swapGlobalFoodIdPrefix${const Uuid().v4()}',
       packageWeight: result.item.weight,
+      servingSize: result.item.servingSize,
+      servingQuantity: result.item.servingQuantity,
+      servingQuantityUnit: result.item.servingQuantityUnit,
     ),
     requiresGlobalPersistence: selectedGlobalFoodItemId == null,
     weight: result.item.weight,
@@ -169,6 +175,9 @@ GlobalFoodItem _productFromManualItem({
   required InventoryItem item,
   required String id,
   required String? packageWeight,
+  required String? servingSize,
+  required double? servingQuantity,
+  required String? servingQuantityUnit,
 }) {
   return GlobalFoodItem.create(
     id: id,
@@ -179,6 +188,9 @@ GlobalFoodItem _productFromManualItem({
     barcode: item.barcode,
     imageUrl: item.imageUrl,
     packageWeight: packageWeight,
+    servingSize: servingSize,
+    servingQuantity: servingQuantity,
+    servingQuantityUnit: servingQuantityUnit,
     foodFingerprint: item.resolvedFoodFingerprint,
     nutrition: item.nutrition,
   );

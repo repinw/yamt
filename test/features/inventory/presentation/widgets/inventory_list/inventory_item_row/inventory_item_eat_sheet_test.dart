@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/inventory/application/'
+    'global_food_serving_suggestion_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/'
+    'global_food_serving_suggestion.dart';
+import 'package:yamt/features/inventory/domain/'
+    'global_food_serving_suggestion_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
@@ -31,6 +39,56 @@ InventoryItem _amountItem() {
   );
 }
 
+class _FakeGlobalFoodServingSuggestionRepository
+    implements GlobalFoodServingSuggestionRepository {
+  GlobalFoodServingSuggestionSet nextResult =
+      const GlobalFoodServingSuggestionSet.empty();
+
+  @override
+  Future<GlobalFoodServingSuggestionSet> readSuggestions({
+    required String foodFingerprint,
+    String? globalFoodItemId,
+    int limit = 5,
+  }) async {
+    return nextResult;
+  }
+
+  @override
+  Future<void> recordSelection({
+    required String foodFingerprint,
+    String? globalFoodItemId,
+    required double amount,
+    required ConsumedUnit unit,
+    required DateTime selectedAt,
+  }) async {}
+}
+
+InventoryItem _amountItemWithServing() {
+  return InventoryItem.create(
+    id: 'item-1-serving',
+    name: 'Quark',
+    brand: 'Acme',
+    entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
+    storeName: 'Store',
+    quantity: 1,
+    initialQuantity: 1,
+    initialAmount: 500,
+    currentAmount: 500,
+    amountUnit: InventoryAmountUnit.gram,
+    weight: '500 g',
+    servingSize: '125 g',
+    servingQuantity: 125,
+    servingQuantityUnit: 'g',
+    nutrition: const GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+      per100Kcal: 64,
+      per100Protein: 3.3,
+      per100Carbs: 4.8,
+      per100Fat: 3.5,
+    ),
+  );
+}
+
 InventoryItem _pieceItem() {
   return InventoryItem.create(
     id: 'item-2',
@@ -46,6 +104,28 @@ InventoryItem _pieceItem() {
       per100Protein: 1.1,
       per100Carbs: 23.0,
       per100Fat: 0.3,
+    ),
+  );
+}
+
+InventoryItem _pieceItemWithServingSuggestion() {
+  return InventoryItem.create(
+    id: 'item-2-serving',
+    name: 'Wrap',
+    brand: 'Acme',
+    entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
+    storeName: 'Store',
+    quantity: 2,
+    initialQuantity: 2,
+    servingSize: '75 g',
+    servingQuantity: 75,
+    servingQuantityUnit: 'g',
+    nutrition: const GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+      per100Kcal: 250,
+      per100Protein: 8.0,
+      per100Carbs: 30.0,
+      per100Fat: 10.0,
     ),
   );
 }
@@ -82,17 +162,26 @@ Widget _buildTestApp({
   required InventoryItem item,
   required int maxAmount,
   required ValueChanged<InventoryItemEatRequest?> onResult,
+  GlobalFoodServingSuggestionRepository? servingSuggestionRepository,
 }) {
-  return MaterialApp(
-    locale: const Locale('en'),
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: Scaffold(
-      body: Center(
-        child: _OpenEatSheetButton(
-          item: item,
-          maxAmount: maxAmount,
-          onResult: onResult,
+  return ProviderScope(
+    overrides: [
+      if (servingSuggestionRepository != null)
+        globalFoodServingSuggestionRepositoryProvider.overrideWithValue(
+          servingSuggestionRepository,
+        ),
+    ],
+    child: MaterialApp(
+      locale: const Locale('en'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: Center(
+          child: _OpenEatSheetButton(
+            item: item,
+            maxAmount: maxAmount,
+            onResult: onResult,
+          ),
         ),
       ),
     ),
@@ -382,6 +471,124 @@ void main() {
       find.byKey(const Key('inventory_item_amount_dialog_field')),
     );
     expect(amountField.controller?.text, '50');
+  });
+
+  testWidgets('shows serving suggestion chip for fixed-unit items', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _amountItemWithServing(),
+        maxAmount: 500,
+        onResult: (_) {},
+      ),
+    );
+
+    await _openSheet(tester);
+    expect(find.text('125 g'), findsOneWidget);
+
+    await tester.tap(find.text('125 g'));
+    await tester.pump();
+
+    final amountField = tester.widget<TextField>(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+    );
+    expect(amountField.controller?.text, '125');
+  });
+
+  testWidgets('shows serving suggestion chip for manual portion input', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _pieceItemWithServingSuggestion(),
+        maxAmount: 2,
+        onResult: (_) {},
+      ),
+    );
+
+    await _openSheet(tester);
+    expect(find.text('75 g'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('75 g'));
+    await tester.tap(find.text('75 g'));
+    await tester.pump();
+
+    final manualField = tester.widget<TextField>(find.byType(TextField).at(1));
+    expect(manualField.controller?.text, '75');
+  });
+
+  testWidgets('prefills fixed-unit amount from learned personal suggestion', (
+    tester,
+  ) async {
+    final repository = _FakeGlobalFoodServingSuggestionRepository()
+      ..nextResult = const GlobalFoodServingSuggestionSet(
+        personalSuggestion: ServingSizeSuggestion(
+          amount: 135,
+          unit: ConsumedUnit.grams,
+        ),
+      );
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _amountItem().copyWith(globalFoodItemId: 'off-milk'),
+        maxAmount: 1000,
+        onResult: (_) {},
+        servingSuggestionRepository: repository,
+      ),
+    );
+
+    await _openSheet(tester);
+
+    final amountField = tester.widget<TextField>(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+    );
+    expect(amountField.controller?.text, '135');
+    expect(find.text('135 g'), findsOneWidget);
+  });
+
+  testWidgets('shows learned manual portion suggestions before metadata', (
+    tester,
+  ) async {
+    final repository = _FakeGlobalFoodServingSuggestionRepository()
+      ..nextResult = GlobalFoodServingSuggestionSet(
+        personalSuggestion: const ServingSizeSuggestion(
+          amount: 35,
+          unit: ConsumedUnit.grams,
+        ),
+        globalSuggestions: <GlobalFoodServingSuggestion>[
+          GlobalFoodServingSuggestion(
+            id: 'global_off-wrap_g_34000',
+            itemKey: 'global_off-wrap',
+            globalFoodItemId: 'off-wrap',
+            amount: 34,
+            unit: ConsumedUnit.grams,
+            selectionCount: 2,
+            uniqueUserCount: 2,
+            createdAt: DateTime.parse('2026-04-10T10:00:00.000Z'),
+            updatedAt: DateTime.parse('2026-04-10T10:00:00.000Z'),
+          ),
+        ],
+      );
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _pieceItemWithServingSuggestion().copyWith(
+          globalFoodItemId: 'off-wrap',
+        ),
+        maxAmount: 2,
+        onResult: (_) {},
+        servingSuggestionRepository: repository,
+      ),
+    );
+
+    await _openSheet(tester);
+
+    final manualField = tester.widget<TextField>(find.byType(TextField).at(1));
+    expect(manualField.controller?.text, '35');
+    expect(find.text('35 g'), findsOneWidget);
+    expect(find.text('34 g'), findsOneWidget);
+    expect(find.text('75 g'), findsOneWidget);
   });
 
   testWidgets('date picker updates loggedAt in the submitted request', (
