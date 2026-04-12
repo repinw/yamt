@@ -63,7 +63,9 @@ class PreparedMealTemplatesController
       effectiveHouseholdDataOwnerUserIdProvider,
     );
     ref.watch(preparedMealTemplateRepositoryProvider);
-    ref.onDispose(_disposeSubscription);
+    ref.onDispose(() {
+      unawaited(_disposeSubscription());
+    });
     return _restartSubscription();
   }
 
@@ -511,14 +513,14 @@ class PreparedMealTemplatesController
     }).whenComplete(keepAliveLink.close);
   }
 
-  Future<List<PreparedMeal>> _restartSubscription() {
+  Future<List<PreparedMeal>> _restartSubscription() async {
     final initialTemplates = Completer<List<PreparedMeal>>();
     _currentDataOwnerUserId = ref.read(
       effectiveHouseholdDataOwnerUserIdProvider,
     );
     final repository = ref.read(preparedMealTemplateRepositoryProvider);
     final generation = ++_subscriptionGeneration;
-    _disposeSubscription();
+    await _disposeSubscription();
 
     _templatesSubscription = repository.watchAll().listen(
       (templates) {
@@ -552,11 +554,11 @@ class PreparedMealTemplatesController
     return initialTemplates.future;
   }
 
-  void _disposeSubscription() {
+  Future<void> _disposeSubscription() async {
     final currentSubscription = _templatesSubscription;
     _templatesSubscription = null;
     if (currentSubscription != null) {
-      unawaited(currentSubscription.cancel());
+      await currentSubscription.cancel();
     }
   }
 

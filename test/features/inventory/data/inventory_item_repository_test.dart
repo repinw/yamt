@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
@@ -158,6 +159,8 @@ InventoryItem _item(String id) {
 }
 
 void main() {
+  tearDown(resetSessionShutdownSignal);
+
   test('readAll returns empty list when user is signed out', () async {
     final store = _FakeInventoryItemStore();
     addTearDown(store.dispose);
@@ -315,6 +318,22 @@ void main() {
         ),
       ),
     );
+  });
+
+  test('watchAll returns empty list during session shutdown', () async {
+    sessionShutdownSignal.begin();
+    final store = _FakeInventoryItemStore()
+      ..watchAllError = FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'permission-denied',
+      );
+    addTearDown(store.dispose);
+    final repository = FirestoreInventoryItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      store: store,
+    );
+
+    expect(repository.watchAll().first, completion(const <InventoryItem>[]));
   });
 
   test('watchAll rethrows non-permission firestore errors', () async {

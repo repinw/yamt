@@ -1,6 +1,7 @@
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 
 enum GlobalFoodMatchReason {
+  receiptAliasExact,
   fingerprintExact,
   nameExact,
   nameBrandStrong,

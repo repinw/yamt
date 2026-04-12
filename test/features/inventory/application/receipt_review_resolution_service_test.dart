@@ -4,10 +4,13 @@ import 'package:yamt/features/calories/data/'
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
+import 'package:yamt/features/inventory/data/'
+    'global_food_receipt_alias_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/domain/'
     'receipt_review_item_draft.dart';
@@ -85,6 +88,7 @@ class _RecordingGlobalFoodItemRepository implements GlobalFoodItemRepository {
   @override
   Future<List<GlobalFoodItem>> searchCandidates({
     String? normalizedName,
+    String? normalizedStoreName,
     String? barcode,
     String? foodFingerprint,
     List<String> searchTokens = const <String>[],
@@ -123,6 +127,27 @@ class _RecordingInventoryItemRepository implements InventoryItemRepository {
   Future<bool> appendAll(List<InventoryItem> items) async {
     appendedItems = List<InventoryItem>.from(items);
     return true;
+  }
+}
+
+class _RecordingGlobalFoodReceiptAliasRepository
+    implements GlobalFoodReceiptAliasRepository {
+  List<GlobalFoodReceiptAlias> appendedAliases =
+      const <GlobalFoodReceiptAlias>[];
+
+  @override
+  Future<bool> appendAll(List<GlobalFoodReceiptAlias> aliases) async {
+    appendedAliases = List<GlobalFoodReceiptAlias>.from(aliases);
+    return true;
+  }
+
+  @override
+  Future<List<GlobalFoodReceiptAlias>> searchCandidates({
+    required String normalizedStoreName,
+    required String normalizedReceiptName,
+    int limit = 5,
+  }) async {
+    return const <GlobalFoodReceiptAlias>[];
   }
 }
 
@@ -453,6 +478,7 @@ void main() {
   test('persistReviewedItems keeps confirmed weight on new products', () async {
     final globalRepository = _RecordingGlobalFoodItemRepository();
     final inventoryRepository = _RecordingInventoryItemRepository();
+    final aliasRepository = _RecordingGlobalFoodReceiptAliasRepository();
     final service = ReceiptReviewResolutionService(
       mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
       matcher: _FakeMatcher(
@@ -460,6 +486,7 @@ void main() {
         defaultSelections: const <String, String?>{},
       ),
       globalFoodItemRepository: globalRepository,
+      globalFoodReceiptAliasRepository: aliasRepository,
       inventoryItemRepository: inventoryRepository,
       globalFoodItemIdGenerator: () => 'global-food-fixed',
     );
@@ -477,6 +504,13 @@ void main() {
     expect(
       inventoryRepository.appendedItems.single.amountUnit,
       InventoryAmountUnit.gram,
+    );
+    expect(aliasRepository.appendedAliases, hasLength(1));
+    expect(aliasRepository.appendedAliases.single.storeName, 'Store');
+    expect(aliasRepository.appendedAliases.single.receiptName, 'Milk');
+    expect(
+      aliasRepository.appendedAliases.single.globalFoodItem.id,
+      'global-food-fixed',
     );
   });
 
@@ -582,6 +616,7 @@ void main() {
     expect(globalRepository.appendedItems, hasLength(1));
     expect(globalRepository.appendedItems.single.id, 'off-4061458029995');
     expect(globalRepository.appendedItems.single.barcode, '4061458029995');
+    expect(globalRepository.appendedItems.single.storeName, 'Store');
     expect(
       globalRepository.appendedItems.single.imageUrl,
       'https://example.com/waffel.png',

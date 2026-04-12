@@ -26,6 +26,7 @@ class _FakeGlobalFoodItemStore implements GlobalFoodItemStore {
   @override
   Future<List<GlobalFoodItemDocument>> searchCandidates({
     String? normalizedName,
+    String? normalizedStoreName,
     String? barcode,
     String? foodFingerprint,
     List<String> searchTokens = const <String>[],
@@ -43,6 +44,9 @@ class _FakeGlobalFoodItemStore implements GlobalFoodItemStore {
           (document) =>
               (normalizedName != null &&
                   document.data['normalized_name'] == normalizedName) ||
+              (normalizedStoreName != null &&
+                  document.data['normalized_store_name'] ==
+                      normalizedStoreName) ||
               (barcode != null && document.data['barcode'] == barcode) ||
               (foodFingerprint != null &&
                   document.data['food_fingerprint'] == foodFingerprint) ||
@@ -200,7 +204,9 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreGlobalFoodItemRepository(store: store);
 
-    final saved = await repository.appendAll(<GlobalFoodItem>[_item('milk')]);
+    final saved = await repository.appendAll(<GlobalFoodItem>[
+      _item('milk').copyWith(storeName: ' ALDI Süd '),
+    ]);
     final items = await repository.readAll();
 
     expect(saved, isTrue);
@@ -208,6 +214,8 @@ void main() {
     expect(items.single.name, 'Whole Milk');
     expect(items.single.normalizedName, 'whole milk');
     expect(items.single.normalizedBrand, 'acme');
+    expect(items.single.storeName, 'Aldi');
+    expect(items.single.normalizedStoreName, 'aldi');
     expect(items.single.barcode, '123456');
     expect(items.single.searchTokens, containsAll(<String>['whole', 'milk']));
     expect(items.single.foodFingerprint, items.single.resolvedFoodFingerprint);
@@ -271,6 +279,29 @@ void main() {
     expect(items, hasLength(1));
     expect(items.single.id, 'milk');
     expect(items.single.normalizedName, 'whole milk');
+  });
+
+  test('searchCandidates supports normalized store matches', () async {
+    final store = _FakeGlobalFoodItemStore(
+      initialDocuments: <GlobalFoodItemDocument>[
+        GlobalFoodItemDocument(
+          id: 'milk',
+          data: _item(
+            'milk',
+          ).copyWith(storeName: 'Aldi', normalizedStoreName: 'aldi').toJson(),
+        ),
+      ],
+    );
+    addTearDown(store.dispose);
+    final repository = FirestoreGlobalFoodItemRepository(store: store);
+
+    final items = await repository.searchCandidates(
+      normalizedStoreName: 'aldi',
+    );
+
+    expect(items, hasLength(1));
+    expect(items.single.id, 'milk');
+    expect(items.single.storeName, 'Aldi');
   });
 
   test('searchCandidates returns empty list when store search fails', () async {

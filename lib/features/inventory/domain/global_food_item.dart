@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:yamt/core/utils/store_name_normalizer.dart';
 import 'package:yamt/features/inventory/domain/food_fingerprint.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_product_snapshot.dart';
@@ -17,11 +18,13 @@ class GlobalFoodItem {
     required this.updatedAt,
     this.brand,
     this.category,
+    this.storeName,
     this.barcode,
     this.imageUrl,
     this.packageWeight,
     this.nutrition,
     this.normalizedBrand,
+    this.normalizedStoreName,
     this.mergedIntoId,
   });
 
@@ -31,6 +34,7 @@ class GlobalFoodItem {
     required DateTime now,
     String? brand,
     String? category,
+    String? storeName,
     String? barcode,
     String? imageUrl,
     String? packageWeight,
@@ -38,6 +42,7 @@ class GlobalFoodItem {
     GlobalFoodNutrition? nutrition,
     GlobalFoodItemStatus status = GlobalFoodItemStatus.active,
   }) {
+    final normalizedStoreName = _normalizedStoreNameValue(storeName);
     return GlobalFoodItem(
       id: id,
       foodFingerprint:
@@ -55,15 +60,18 @@ class GlobalFoodItem {
       updatedAt: now,
       brand: _normalizeOptional(brand),
       category: _normalizeOptional(category),
+      storeName: normalizedStoreName,
       barcode: _normalizeOptional(barcode),
       imageUrl: _normalizeOptional(imageUrl),
       packageWeight: _normalizeOptional(packageWeight),
       nutrition: nutrition,
       normalizedBrand: normalizeGlobalFoodText(brand ?? ''),
+      normalizedStoreName: _normalizeOptionalLookupText(normalizedStoreName),
     );
   }
 
   factory GlobalFoodItem.fromJson(Map<String, dynamic> json) {
+    final storeName = _normalizedStoreNameValue(json['store_name']);
     return GlobalFoodItem(
       id: json['id'] as String? ?? '',
       foodFingerprint:
@@ -82,6 +90,7 @@ class GlobalFoodItem {
       updatedAt: _readDateTime(json['updated_at']) ?? DateTime.now(),
       brand: _normalizeOptional(json['brand']),
       category: _normalizeOptional(json['category']),
+      storeName: storeName,
       barcode: _normalizeOptional(json['barcode']),
       imageUrl: _normalizeOptional(json['image_url']),
       packageWeight:
@@ -91,6 +100,9 @@ class GlobalFoodItem {
       normalizedBrand:
           _normalizeOptional(json['normalized_brand']) ??
           normalizeGlobalFoodText(_normalizeOptional(json['brand']) ?? ''),
+      normalizedStoreName:
+          _normalizeOptional(json['normalized_store_name']) ??
+          _normalizeOptionalLookupText(storeName),
       mergedIntoId: _normalizeOptional(json['merged_into_id']),
     );
   }
@@ -100,12 +112,14 @@ class GlobalFoodItem {
   final String name;
   final String? brand;
   final String? category;
+  final String? storeName;
   final String? barcode;
   final String? imageUrl;
   final String? packageWeight;
   final GlobalFoodNutrition? nutrition;
   final String normalizedName;
   final String? normalizedBrand;
+  final String? normalizedStoreName;
   final List<String> searchTokens;
   final GlobalFoodItemStatus status;
   final String? mergedIntoId;
@@ -119,12 +133,14 @@ class GlobalFoodItem {
       'name': name,
       'brand': brand,
       'category': category,
+      'store_name': storeName,
       'barcode': barcode,
       'image_url': imageUrl,
       'package_weight': packageWeight,
       'nutrition': nutrition?.toJson(),
       'normalized_name': normalizedName,
       'normalized_brand': normalizedBrand,
+      'normalized_store_name': normalizedStoreName,
       'search_tokens': searchTokens,
       'status': status.name,
       'merged_into_id': mergedIntoId,
@@ -139,12 +155,14 @@ class GlobalFoodItem {
     String? name,
     Object? brand = _keepValue,
     Object? category = _keepValue,
+    Object? storeName = _keepValue,
     Object? barcode = _keepValue,
     Object? imageUrl = _keepValue,
     Object? packageWeight = _keepValue,
     Object? nutrition = _keepValue,
     String? normalizedName,
     Object? normalizedBrand = _keepValue,
+    Object? normalizedStoreName = _keepValue,
     List<String>? searchTokens,
     GlobalFoodItemStatus? status,
     Object? mergedIntoId = _keepValue,
@@ -157,6 +175,9 @@ class GlobalFoodItem {
       name: name ?? this.name,
       brand: brand == _keepValue ? this.brand : brand as String?,
       category: category == _keepValue ? this.category : category as String?,
+      storeName: storeName == _keepValue
+          ? this.storeName
+          : storeName as String?,
       barcode: barcode == _keepValue ? this.barcode : barcode as String?,
       imageUrl: imageUrl == _keepValue ? this.imageUrl : imageUrl as String?,
       packageWeight: packageWeight == _keepValue
@@ -169,6 +190,9 @@ class GlobalFoodItem {
       normalizedBrand: normalizedBrand == _keepValue
           ? this.normalizedBrand
           : normalizedBrand as String?,
+      normalizedStoreName: normalizedStoreName == _keepValue
+          ? this.normalizedStoreName
+          : normalizedStoreName as String?,
       searchTokens: searchTokens ?? this.searchTokens,
       status: status ?? this.status,
       mergedIntoId: mergedIntoId == _keepValue
@@ -210,12 +234,14 @@ class GlobalFoodItem {
             other.name == name &&
             other.brand == brand &&
             other.category == category &&
+            other.storeName == storeName &&
             other.barcode == barcode &&
             other.imageUrl == imageUrl &&
             other.packageWeight == packageWeight &&
             other.nutrition == nutrition &&
             other.normalizedName == normalizedName &&
             other.normalizedBrand == normalizedBrand &&
+            other.normalizedStoreName == normalizedStoreName &&
             const ListEquality<String>().equals(
               other.searchTokens,
               searchTokens,
@@ -234,12 +260,14 @@ class GlobalFoodItem {
       name,
       brand,
       category,
+      storeName,
       barcode,
       imageUrl,
       packageWeight,
       nutrition,
       normalizedName,
       normalizedBrand,
+      normalizedStoreName,
       const ListEquality<String>().hash(searchTokens),
       status,
       mergedIntoId,
@@ -295,6 +323,22 @@ String? _normalizeOptional(Object? value) {
     return null;
   }
   return trimmed;
+}
+
+String? _normalizedStoreNameValue(Object? value) {
+  if (value is! String) {
+    return null;
+  }
+  final normalized = normalizeStoreName(value);
+  return _normalizeOptional(normalized);
+}
+
+String? _normalizeOptionalLookupText(Object? value) {
+  final normalized = normalizeGlobalFoodText(value is String ? value : '');
+  if (normalized.isEmpty) {
+    return null;
+  }
+  return normalized;
 }
 
 List<String> _readStringList(Object? value) {

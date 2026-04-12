@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 import 'inventory_user_session.dart';
@@ -62,11 +63,24 @@ class FirestorePreparedMealTemplateRepository
 
   Stream<List<PreparedMeal>> _watchAllForUser(String userId) async* {
     final collectionPath = 'users/$userId/prepared_meal_templates';
+    final shutdownEpoch = sessionShutdownSignal.epoch;
     try {
       await for (final documents in _store.watchAll(userId: userId)) {
         yield _decodeDocuments(documents);
       }
     } on FirebaseException catch (error, stackTrace) {
+      if (_isShutdownRelatedPermissionDenied(
+        error: error,
+        shutdownEpoch: shutdownEpoch,
+      )) {
+        log(
+          'Prepared meal template watch closed during session shutdown for '
+          '$collectionPath.',
+          name: _repositoryLogName,
+        );
+        yield const <PreparedMeal>[];
+        return;
+      }
       log(
         error.code == 'permission-denied'
             ? 'Prepared meal template watch denied by Firestore rules for '
@@ -140,5 +154,14 @@ class FirestorePreparedMealTemplateRepository
       onError: (Object error, StackTrace stackTrace) {},
     );
     return queuedOperation;
+  }
+
+  bool _isShutdownRelatedPermissionDenied({
+    required FirebaseException error,
+    required int shutdownEpoch,
+  }) {
+    return error.code == 'permission-denied' &&
+        (sessionShutdownSignal.isInProgress ||
+            sessionShutdownSignal.hasShutdownSince(shutdownEpoch));
   }
 }

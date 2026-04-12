@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/data/firestore_prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_store.dart';
@@ -44,6 +45,8 @@ class _FakePreparedMealTemplateStore implements PreparedMealTemplateStore {
 }
 
 void main() {
+  tearDown(resetSessionShutdownSignal);
+
   test('watchAll rethrows firestore permission denied errors', () async {
     final store = _FakePreparedMealTemplateStore()
       ..watchAllError = FirebaseException(
@@ -65,5 +68,20 @@ void main() {
         ),
       ),
     );
+  });
+
+  test('watchAll returns empty list during session shutdown', () async {
+    sessionShutdownSignal.begin();
+    final store = _FakePreparedMealTemplateStore()
+      ..watchAllError = FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'permission-denied',
+      );
+    final repository = FirestorePreparedMealTemplateRepository(
+      session: const _FakeInventoryUserSession(currentUserId: 'user-1'),
+      store: store,
+    );
+
+    await expectLater(repository.watchAll().first, completion(isEmpty));
   });
 }

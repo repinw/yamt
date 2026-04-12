@@ -1,5 +1,6 @@
 import 'dart:developer' show log;
 
+import 'package:yamt/core/utils/store_name_normalizer.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 
 import 'global_food_item_repository_contract.dart';
@@ -50,6 +51,7 @@ class FirestoreGlobalFoodItemRepository implements GlobalFoodItemRepository {
   @override
   Future<List<GlobalFoodItem>> searchCandidates({
     String? normalizedName,
+    String? normalizedStoreName,
     String? barcode,
     String? foodFingerprint,
     List<String> searchTokens = const <String>[],
@@ -57,6 +59,7 @@ class FirestoreGlobalFoodItemRepository implements GlobalFoodItemRepository {
   }) async {
     final hasQuery =
         (normalizedName?.trim().isNotEmpty ?? false) ||
+        (normalizedStoreName?.trim().isNotEmpty ?? false) ||
         (barcode?.trim().isNotEmpty ?? false) ||
         (foodFingerprint?.trim().isNotEmpty ?? false) ||
         searchTokens.any((token) => token.trim().isNotEmpty);
@@ -67,6 +70,7 @@ class FirestoreGlobalFoodItemRepository implements GlobalFoodItemRepository {
     try {
       final documents = await _store.searchCandidates(
         normalizedName: normalizedName,
+        normalizedStoreName: normalizedStoreName,
         barcode: barcode,
         foodFingerprint: foodFingerprint,
         searchTokens: searchTokens,
@@ -133,15 +137,21 @@ class FirestoreGlobalFoodItemRepository implements GlobalFoodItemRepository {
     final name = item.name.trim();
     final brand = _normalizeOptionalText(item.brand);
     final category = _normalizeOptionalText(item.category);
+    final storeName = _normalizeStoreName(item.storeName);
     final normalizedName = normalizeGlobalFoodText(name);
     final normalizedBrand = normalizeGlobalFoodText(brand ?? '');
+    final normalizedStoreName = normalizeGlobalFoodText(storeName ?? '');
     return item.copyWith(
       name: name,
       brand: brand,
       category: category,
+      storeName: storeName,
       foodFingerprint: item.resolvedFoodFingerprint,
       normalizedName: normalizedName,
       normalizedBrand: normalizedBrand.isEmpty ? null : normalizedBrand,
+      normalizedStoreName: normalizedStoreName.isEmpty
+          ? null
+          : normalizedStoreName,
       searchTokens: buildGlobalFoodSearchTokens(
         name: name,
         brand: brand,
@@ -157,6 +167,10 @@ class FirestoreGlobalFoodItemRepository implements GlobalFoodItemRepository {
       return null;
     }
     return trimmed;
+  }
+
+  String? _normalizeStoreName(String? value) {
+    return _normalizeOptionalText(normalizeStoreName(value));
   }
 
   Future<T> _runExclusiveWrite<T>(Future<T> Function() operation) {

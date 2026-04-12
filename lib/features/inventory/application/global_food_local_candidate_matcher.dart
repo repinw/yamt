@@ -9,12 +9,16 @@ class _GlobalFoodLocalCandidateMatcher {
     final normalizedName = normalizeGlobalFoodText(item.name);
     final normalizedBrand = normalizeGlobalFoodText(item.brand ?? '');
     final normalizedCategory = normalizeGlobalFoodText(item.category ?? '');
+    final normalizedStoreName = normalizeGlobalFoodText(
+      normalizeStoreName(item.storeName) ?? '',
+    );
     final foodFingerprint = _queryFoodFingerprintFor(item);
     final tokens = _queryNameTokensFor(item.name);
     return _LocalMatchInput(
       normalizedName: normalizedName,
       normalizedBrand: normalizedBrand,
       normalizedCategory: normalizedCategory,
+      normalizedStoreName: normalizedStoreName,
       foodFingerprint: foodFingerprint,
       nameTokens: tokens,
       nameTokenSet: tokens.toSet(),
@@ -38,6 +42,9 @@ class _GlobalFoodLocalCandidateMatcher {
 
     return _GlobalFoodMatcherQuery(
       normalizedName: normalizedName.isEmpty ? null : normalizedName,
+      normalizedStoreName: localMatchInput.normalizedStoreName.isEmpty
+          ? null
+          : localMatchInput.normalizedStoreName,
       barcode: barcode,
       foodFingerprint: foodFingerprint,
       searchTokens: searchTokens,
@@ -61,6 +68,7 @@ class _GlobalFoodLocalCandidateMatcher {
     }
     final best = candidates.first;
     return switch (best.reason) {
+      GlobalFoodMatchReason.receiptAliasExact => best.item.id,
       GlobalFoodMatchReason.fingerprintExact => best.item.id,
       GlobalFoodMatchReason.nameBrandStrong =>
         _hasConfidentLead(candidates) ? best.item.id : null,
@@ -116,6 +124,14 @@ class _GlobalFoodLocalCandidateMatcher {
     final productCategory = normalizeGlobalFoodText(product.category ?? '');
     if (itemCategory.isNotEmpty && productCategory == itemCategory) {
       score += 8;
+    }
+
+    final itemStoreName = item.normalizedStoreName;
+    final productStoreName = product.normalizedStoreName ?? '';
+    final isStoreMatch =
+        itemStoreName.isNotEmpty && productStoreName == itemStoreName;
+    if (isStoreMatch) {
+      score += isExactNameMatch ? 12 : 6;
     }
 
     final overlap = product.searchTokens
@@ -175,12 +191,14 @@ class _GlobalFoodLocalCandidateMatcher {
 class _GlobalFoodMatcherQuery {
   const _GlobalFoodMatcherQuery({
     required this.normalizedName,
+    required this.normalizedStoreName,
     required this.barcode,
     required this.foodFingerprint,
     required this.searchTokens,
   });
 
   final String? normalizedName;
+  final String? normalizedStoreName;
   final String? barcode;
   final String? foodFingerprint;
   final List<String> searchTokens;
@@ -191,6 +209,7 @@ class _LocalMatchInput {
     required this.normalizedName,
     required this.normalizedBrand,
     required this.normalizedCategory,
+    required this.normalizedStoreName,
     required this.foodFingerprint,
     required this.nameTokens,
     required this.nameTokenSet,
@@ -200,6 +219,7 @@ class _LocalMatchInput {
   final String normalizedName;
   final String normalizedBrand;
   final String normalizedCategory;
+  final String normalizedStoreName;
   final String? foodFingerprint;
   final List<String> nameTokens;
   final Set<String> nameTokenSet;

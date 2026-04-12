@@ -18,6 +18,7 @@ abstract interface class GlobalFoodItemStore {
 
   Future<List<GlobalFoodItemDocument>> searchCandidates({
     String? normalizedName,
+    String? normalizedStoreName,
     String? barcode,
     String? foodFingerprint,
     List<String> searchTokens = const <String>[],
@@ -54,6 +55,7 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
   @override
   Future<List<GlobalFoodItemDocument>> searchCandidates({
     String? normalizedName,
+    String? normalizedStoreName,
     String? barcode,
     String? foodFingerprint,
     List<String> searchTokens = const <String>[],
@@ -63,6 +65,9 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
     final queries = <Future<QuerySnapshot<Map<String, dynamic>>>>[];
     final normalizedSearchTokens = _normalizeSearchTokens(searchTokens);
     final normalizedNormalizedName = _normalizeQueryValue(normalizedName);
+    final normalizedNormalizedStoreName = _normalizeQueryValue(
+      normalizedStoreName,
+    );
     final normalizedBarcode = _normalizeQueryValue(barcode);
     final normalizedFingerprint = _normalizeQueryValue(foodFingerprint);
 
@@ -70,6 +75,18 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
       queries.add(
         _collection()
             .where('normalized_name', isEqualTo: normalizedNormalizedName)
+            .limit(safeLimit)
+            .get(),
+      );
+    }
+
+    if (normalizedNormalizedStoreName != null) {
+      queries.add(
+        _collection()
+            .where(
+              'normalized_store_name',
+              isEqualTo: normalizedNormalizedStoreName,
+            )
             .limit(safeLimit)
             .get(),
       );

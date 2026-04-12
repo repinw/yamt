@@ -108,7 +108,9 @@ class PreparedMealsController extends _$PreparedMealsController {
       effectiveHouseholdDataOwnerUserIdProvider,
     );
     ref.watch(preparedMealRepositoryProvider);
-    ref.onDispose(_disposeSubscription);
+    ref.onDispose(() {
+      unawaited(_disposeSubscription());
+    });
     return _restartSubscription();
   }
 
@@ -704,14 +706,14 @@ class PreparedMealsController extends _$PreparedMealsController {
     }).whenComplete(keepAliveLink.close);
   }
 
-  Future<List<PreparedMeal>> _restartSubscription() {
+  Future<List<PreparedMeal>> _restartSubscription() async {
     final initialMeals = Completer<List<PreparedMeal>>();
     _currentDataOwnerUserId = ref.read(
       effectiveHouseholdDataOwnerUserIdProvider,
     );
     final repository = ref.read(preparedMealRepositoryProvider);
     final generation = ++_subscriptionGeneration;
-    _disposeSubscription();
+    await _disposeSubscription();
 
     _mealsSubscription = repository.watchAll().listen(
       (meals) {
@@ -744,11 +746,11 @@ class PreparedMealsController extends _$PreparedMealsController {
     return initialMeals.future;
   }
 
-  void _disposeSubscription() {
+  Future<void> _disposeSubscription() async {
     final currentSubscription = _mealsSubscription;
     _mealsSubscription = null;
     if (currentSubscription != null) {
-      unawaited(currentSubscription.cancel());
+      await currentSubscription.cancel();
     }
   }
 
