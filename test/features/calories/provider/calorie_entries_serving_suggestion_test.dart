@@ -3,11 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
-import 'package:yamt/features/inventory/application/'
-    'global_food_serving_suggestion_repository.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/inventory/domain/global_food_serving_suggestion.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion_repository_contract.dart';
@@ -103,8 +105,24 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           calorieLogRepositoryProvider.overrideWithValue(logRepository),
-          globalFoodServingSuggestionRepositoryProvider.overrideWithValue(
-            servingRepository,
+          calorieEntryPostPersistHookProvider.overrideWith(
+            (ref) =>
+                ({
+                  required CalorieEntry entry,
+                  CalorieInventoryCreateContext? inventoryContext,
+                  CalorieScannedSourceRef? scannedSourceRef,
+                }) async {
+                  if (inventoryContext == null) {
+                    return;
+                  }
+                  await servingRepository.recordSelection(
+                    foodFingerprint: inventoryContext.foodFingerprint,
+                    globalFoodItemId: inventoryContext.globalFoodItemId,
+                    amount: entry.consumedAmount,
+                    unit: entry.consumedUnit,
+                    selectedAt: entry.updatedAt,
+                  );
+                },
           ),
         ],
       );
@@ -131,8 +149,24 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
-        globalFoodServingSuggestionRepositoryProvider.overrideWithValue(
-          servingRepository,
+        calorieEntryPostPersistHookProvider.overrideWith(
+          (ref) =>
+              ({
+                required CalorieEntry entry,
+                CalorieInventoryCreateContext? inventoryContext,
+                CalorieScannedSourceRef? scannedSourceRef,
+              }) async {
+                if (inventoryContext == null) {
+                  return;
+                }
+                await servingRepository.recordSelection(
+                  foodFingerprint: inventoryContext.foodFingerprint,
+                  globalFoodItemId: inventoryContext.globalFoodItemId,
+                  amount: entry.consumedAmount,
+                  unit: entry.consumedUnit,
+                  selectedAt: entry.updatedAt,
+                );
+              },
         ),
       ],
     );

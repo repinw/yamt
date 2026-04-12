@@ -11,10 +11,10 @@ import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
-import 'package:yamt/features/inventory/application/'
-    'global_food_serving_suggestion_repository.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_entry_post_persist_hook.dart';
 
 part 'calorie_entries_controller.g.dart';
 
@@ -104,11 +104,11 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       name: _entriesControllerLogName,
     );
     final postPersistCallbacks = <Future<void> Function()>[
-      if (inventoryContext != null)
-        () => _saveServingSuggestion(
-          entry: entry,
-          inventoryContext: inventoryContext,
-        ),
+      () => ref.read(calorieEntryPostPersistHookProvider)(
+        entry: entry,
+        inventoryContext: inventoryContext,
+        scannedSourceRef: scannedSourceRef,
+      ),
       if (scannedSourceRef != null)
         () => _saveUserProductOverride(
           entry: entry,
@@ -422,24 +422,6 @@ class CalorieEntriesController extends _$CalorieEntriesController {
         name: _entriesControllerLogName,
       );
     }
-  }
-
-  Future<void> _saveServingSuggestion({
-    required CalorieEntry entry,
-    required CalorieInventoryCreateContext inventoryContext,
-  }) async {
-    if (entry.consumedAmount <= 0) {
-      return;
-    }
-
-    final repository = ref.read(globalFoodServingSuggestionRepositoryProvider);
-    await repository.recordSelection(
-      foodFingerprint: inventoryContext.foodFingerprint,
-      globalFoodItemId: inventoryContext.globalFoodItemId,
-      amount: entry.consumedAmount,
-      unit: entry.consumedUnit,
-      selectedAt: entry.updatedAt,
-    );
   }
 }
 
