@@ -1,8 +1,12 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/store_name_normalizer.dart';
+import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'global_food_receipt_alias_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
+import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 part 'global_food_item_matcher.g.dart';
@@ -10,36 +14,63 @@ part 'global_food_local_candidate_matcher.dart';
 part 'off_product_candidate_source.dart';
 
 const int _globalFoodCandidateQueryLimit = 20;
-const int _globalFoodReviewCandidateLimit = 5;
+const int _globalFoodReviewCandidateLimitPerSource = 5;
 
 @Riverpod(keepAlive: true)
 GlobalFoodItemMatcher globalFoodItemMatcher(Ref ref) {
   return GlobalFoodItemMatcher(
+    globalFoodItemRepository: ref.watch(globalFoodItemRepositoryProvider),
+    globalFoodReceiptAliasRepository: ref.watch(
+      globalFoodReceiptAliasRepositoryProvider,
+    ),
     offProductSearchRepository: ref.watch(offProductSearchRepositoryProvider),
   );
 }
 
 class GlobalFoodItemMatcher {
   GlobalFoodItemMatcher({
+    GlobalFoodItemRepository? globalFoodItemRepository,
+    GlobalFoodReceiptAliasRepository? globalFoodReceiptAliasRepository,
     OffProductSearchRepository? offProductSearchRepository,
-  }) : _localCandidateMatcher = const _GlobalFoodLocalCandidateMatcher(),
+  }) : _globalFoodItemRepository = globalFoodItemRepository,
+       _globalFoodReceiptAliasRepository = globalFoodReceiptAliasRepository,
+       _localCandidateMatcher = const _GlobalFoodLocalCandidateMatcher(),
        _externalCandidateSource = _OffProductCandidateSource(
          repository: offProductSearchRepository,
        );
 
+  final GlobalFoodItemRepository? _globalFoodItemRepository;
+  final GlobalFoodReceiptAliasRepository? _globalFoodReceiptAliasRepository;
   final _GlobalFoodLocalCandidateMatcher _localCandidateMatcher;
   final _OffProductCandidateSource _externalCandidateSource;
 
   Future<List<GlobalFoodMatchCandidate>> findCandidates(
     InventoryItem item,
   ) async {
-    if (!_canSearch(item)) {
-      return const <GlobalFoodMatchCandidate>[];
-    }
+    final localInput = _localCandidateMatcher.buildLocalMatchInput(item);
+    final query = _GlobalFoodLocalCandidateMatcher.buildQuery(localInput);
+    final aliasMatchesFuture = _findAliasMatches(
+      item: item,
+      localInput: localInput,
+    );
+    final localMatchesFuture = query == null
+        ? Future<List<GlobalFoodMatchCandidate>>.value(
+            const <GlobalFoodMatchCandidate>[],
+          )
+        : _findLocalMatches(localInput: localInput, query: query);
+    final externalResultsFuture = _externalCandidateSource.search(item);
 
-    final externalResults = await _externalCandidateSource.search(item);
+    final aliasMatches = await aliasMatchesFuture;
+    final localMatches = await localMatchesFuture;
+    final externalResults = await externalResultsFuture;
     return _finalizeCandidates(
-      _buildExternalMatches(externalResults: externalResults),
+      localCandidates: <GlobalFoodMatchCandidate>[
+        ...aliasMatches,
+        ...localMatches,
+      ],
+      externalCandidates: _buildExternalMatches(
+        externalResults: externalResults,
+      ),
     );
   }
 
@@ -74,7 +105,7 @@ class GlobalFoodItemMatcher {
     final product = _externalCandidateSource.productFrom(result);
     return GlobalFoodMatchCandidate(
       item: product,
-      score: _scoreExternalCandidate(result.score),
+      score: result.score,
       reason: GlobalFoodMatchReason.externalSearch,
       requiresPersistence: true,
     );
@@ -90,22 +121,13 @@ class GlobalFoodItemMatcher {
         .toList(growable: false);
   }
 
-  bool _canSearch(InventoryItem item) {
-    final localInput = _localCandidateMatcher.buildLocalMatchInput(item);
-    final query = _GlobalFoodLocalCandidateMatcher.buildQuery(localInput);
-    return query != null && item.name.trim().isNotEmpty;
-  }
-
-  List<GlobalFoodMatchCandidate> _finalizeCandidates(
-    List<GlobalFoodMatchCandidate> candidates,
-  ) {
-    return _dedupeCandidates(
-      candidates,
-    ).take(_globalFoodReviewCandidateLimit).toList(growable: false);
-  }
-
-  double _scoreExternalCandidate(double rawScore) {
-    return (60 + (rawScore / 2)).clamp(60, 89).toDouble();
+  List<GlobalFoodMatchCandidate> _finalizeCandidates({
+    required List<GlobalFoodMatchCandidate> localCandidates,
+    required List<GlobalFoodMatchCandidate> externalCandidates,
+  }) {
+    final finalizedLocal = _finalizeSourceBucket(localCandidates);
+    final finalizedExternal = _finalizeExternalBucket(externalCandidates);
+    return <GlobalFoodMatchCandidate>[...finalizedLocal, ...finalizedExternal];
   }
 
   List<GlobalFoodMatchCandidate> _dedupeCandidates(
@@ -136,5 +158,164 @@ class GlobalFoodItemMatcher {
 
     return 'name:${candidate.item.normalizedName}'
         '|brand:${candidate.item.normalizedBrand ?? ''}';
+  }
+
+  List<GlobalFoodMatchCandidate> _finalizeSourceBucket(
+    List<GlobalFoodMatchCandidate> candidates,
+  ) {
+    final deduped = _dedupeCandidates(candidates);
+    deduped.sort((left, right) {
+      final byScore = right.score.compareTo(left.score);
+      if (byScore != 0) {
+        return byScore;
+      }
+      if (left.requiresPersistence != right.requiresPersistence) {
+        return left.requiresPersistence ? 1 : -1;
+      }
+      return left.item.id.compareTo(right.item.id);
+    });
+    return deduped
+        .take(_globalFoodReviewCandidateLimitPerSource)
+        .toList(growable: false);
+  }
+
+  List<GlobalFoodMatchCandidate> _finalizeExternalBucket(
+    List<GlobalFoodMatchCandidate> candidates,
+  ) {
+    return candidates
+        .take(_globalFoodReviewCandidateLimitPerSource)
+        .toList(growable: false);
+  }
+
+  Future<List<GlobalFoodMatchCandidate>> _findAliasMatches({
+    required InventoryItem item,
+    required _LocalMatchInput localInput,
+  }) async {
+    final repository = _globalFoodReceiptAliasRepository;
+    if (repository == null) {
+      return const <GlobalFoodMatchCandidate>[];
+    }
+
+    final normalizedStoreName = normalizeGlobalFoodReceiptAliasStoreName(
+      item.storeName,
+    );
+    final normalizedReceiptName = normalizeGlobalFoodReceiptObservedName(
+      item.ocrName ?? item.name,
+    );
+    if (normalizedStoreName == null || normalizedReceiptName == null) {
+      return const <GlobalFoodMatchCandidate>[];
+    }
+
+    final aliases = await repository.searchCandidates(
+      normalizedStoreName: normalizedStoreName,
+      normalizedReceiptName: normalizedReceiptName,
+      limit: _globalFoodCandidateQueryLimit,
+    );
+    return _buildAliasMatches(
+      localInput: localInput,
+      aliases: aliases,
+      normalizedReceiptName: normalizedReceiptName,
+      compactReceiptName: compactGlobalFoodReceiptAliasText(
+        normalizedReceiptName,
+      ),
+      receiptSearchTokens: buildGlobalFoodReceiptAliasSearchTokens(
+        normalizedReceiptName,
+      ).toSet(),
+    );
+  }
+
+  List<GlobalFoodMatchCandidate> _buildAliasMatches({
+    required _LocalMatchInput localInput,
+    required List<GlobalFoodReceiptAlias> aliases,
+    required String normalizedReceiptName,
+    required String compactReceiptName,
+    required Set<String> receiptSearchTokens,
+  }) {
+    final products = aliases
+        .map((alias) => alias.globalFoodItem)
+        .toList(growable: false);
+    final scoredMatches = _localCandidateMatcher.scoreCandidates(
+      localInput,
+      products,
+    );
+    final scoredById = <String, GlobalFoodMatchCandidate>{
+      for (final candidate in scoredMatches) candidate.item.id: candidate,
+    };
+    return aliases
+        .map((alias) {
+          final product = alias.globalFoodItem;
+          final genericScore = scoredById[product.id]?.score ?? 0;
+          final aliasNameScore = _scoreAliasReceiptName(
+            alias: alias,
+            normalizedReceiptName: normalizedReceiptName,
+            compactReceiptName: compactReceiptName,
+            receiptSearchTokens: receiptSearchTokens,
+          );
+          if (aliasNameScore <= 0) {
+            return null;
+          }
+          return GlobalFoodMatchCandidate(
+            item: product,
+            score:
+                120 +
+                genericScore +
+                alias.selectionCount.toDouble() +
+                aliasNameScore,
+            reason: GlobalFoodMatchReason.receiptAliasExact,
+          );
+        })
+        .whereType<GlobalFoodMatchCandidate>()
+        .toList(growable: false);
+  }
+
+  double _scoreAliasReceiptName({
+    required GlobalFoodReceiptAlias alias,
+    required String normalizedReceiptName,
+    required String compactReceiptName,
+    required Set<String> receiptSearchTokens,
+  }) {
+    var score = 0.0;
+    if (alias.normalizedReceiptName == normalizedReceiptName) {
+      score += 24;
+    }
+    if (alias.compactReceiptName == compactReceiptName &&
+        compactReceiptName.isNotEmpty) {
+      score += 16;
+    }
+
+    final overlap = alias.receiptSearchTokens
+        .where(receiptSearchTokens.contains)
+        .length;
+    if (overlap > 0) {
+      score += overlap * 6;
+    }
+
+    if (compactReceiptName.length >= 4 &&
+        alias.compactReceiptName.isNotEmpty &&
+        (alias.compactReceiptName.contains(compactReceiptName) ||
+            compactReceiptName.contains(alias.compactReceiptName))) {
+      score += 8;
+    }
+    return score;
+  }
+
+  Future<List<GlobalFoodMatchCandidate>> _findLocalMatches({
+    required _LocalMatchInput localInput,
+    required _GlobalFoodMatcherQuery query,
+  }) async {
+    final repository = _globalFoodItemRepository;
+    if (repository == null) {
+      return const <GlobalFoodMatchCandidate>[];
+    }
+
+    final products = await repository.searchCandidates(
+      normalizedName: query.normalizedName,
+      normalizedStoreName: query.normalizedStoreName,
+      barcode: query.barcode,
+      foodFingerprint: query.foodFingerprint,
+      searchTokens: query.searchTokens,
+      limit: _globalFoodCandidateQueryLimit,
+    );
+    return _localCandidateMatcher.scoreCandidates(localInput, products);
   }
 }

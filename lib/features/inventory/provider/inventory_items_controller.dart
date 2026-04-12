@@ -207,7 +207,9 @@ class InventoryItemsController extends _$InventoryItemsController {
       effectiveHouseholdDataOwnerUserIdProvider,
     );
     ref.watch(inventoryItemRepositoryProvider);
-    ref.onDispose(_disposeRealtimeSubscription);
+    ref.onDispose(() {
+      unawaited(_disposeRealtimeSubscription());
+    });
     return _restartRealtimeSubscription();
   }
 
@@ -220,14 +222,14 @@ class InventoryItemsController extends _$InventoryItemsController {
     state = nextState;
   }
 
-  Future<List<InventoryItem>> _restartRealtimeSubscription() {
+  Future<List<InventoryItem>> _restartRealtimeSubscription() async {
     final initialItems = Completer<List<InventoryItem>>();
     _currentDataOwnerUserId = ref.read(
       effectiveHouseholdDataOwnerUserIdProvider,
     );
     final repository = ref.read(inventoryItemRepositoryProvider);
     final generation = ++_subscriptionGeneration;
-    _disposeRealtimeSubscription();
+    await _disposeRealtimeSubscription();
     _persistedItems = null;
     _pendingDeletedItem = null;
     _pendingConsumptionsById.clear();
@@ -263,11 +265,11 @@ class InventoryItemsController extends _$InventoryItemsController {
     return initialItems.future;
   }
 
-  void _disposeRealtimeSubscription() {
+  Future<void> _disposeRealtimeSubscription() async {
     final currentSubscription = _itemsSubscription;
     _itemsSubscription = null;
     if (currentSubscription != null) {
-      unawaited(currentSubscription.cancel());
+      await currentSubscription.cancel();
     }
   }
 

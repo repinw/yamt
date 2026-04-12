@@ -21,7 +21,9 @@ class ShoppingListController extends _$ShoppingListController {
   @override
   FutureOr<List<ShoppingListItem>> build() {
     ref.watch(shoppingListRepositoryProvider);
-    ref.onDispose(_disposeRealtimeSubscription);
+    ref.onDispose(() {
+      unawaited(_disposeRealtimeSubscription());
+    });
     return _restartRealtimeSubscription();
   }
 
@@ -190,10 +192,10 @@ class ShoppingListController extends _$ShoppingListController {
     return _saveItems(previousItems: previousItems, nextItems: nextItems);
   }
 
-  Future<List<ShoppingListItem>> _restartRealtimeSubscription() {
+  Future<List<ShoppingListItem>> _restartRealtimeSubscription() async {
     final initialItems = Completer<List<ShoppingListItem>>();
     final repository = ref.read(shoppingListRepositoryProvider);
-    _disposeRealtimeSubscription();
+    await _disposeRealtimeSubscription();
 
     _itemsSubscription = repository.watchAll().listen(
       (items) {
@@ -214,11 +216,11 @@ class ShoppingListController extends _$ShoppingListController {
     return initialItems.future;
   }
 
-  void _disposeRealtimeSubscription() {
+  Future<void> _disposeRealtimeSubscription() async {
     final currentSubscription = _itemsSubscription;
     _itemsSubscription = null;
     if (currentSubscription != null) {
-      unawaited(currentSubscription.cancel());
+      await currentSubscription.cancel();
     }
   }
 

@@ -44,6 +44,7 @@ class _UnavailableGlobalFoodItemStore implements GlobalFoodItemStore {
   @override
   Future<List<GlobalFoodItemDocument>> searchCandidates({
     String? normalizedName,
+    String? normalizedStoreName,
     String? barcode,
     String? foodFingerprint,
     List<String> searchTokens = const <String>[],

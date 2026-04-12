@@ -9,10 +9,13 @@ import 'package:yamt/features/calories/data/'
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'global_food_receipt_alias_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/domain/'
     'receipt_review_item_draft.dart';
@@ -45,6 +48,9 @@ ReceiptReviewResolutionService receiptReviewResolutionService(Ref ref) {
     mapper: ref.watch(receiptToReviewItemDraftMapperProvider),
     matcher: ref.watch(globalFoodItemMatcherProvider),
     globalFoodItemRepository: ref.watch(globalFoodItemRepositoryProvider),
+    globalFoodReceiptAliasRepository: ref.watch(
+      globalFoodReceiptAliasRepositoryProvider,
+    ),
     inventoryItemRepository: ref.watch(inventoryItemRepositoryProvider),
     calorieProductCacheRepository: ref.watch(
       calorieProductCacheRepositoryProvider,
@@ -58,12 +64,14 @@ class ReceiptReviewResolutionService {
     required GlobalFoodItemMatcher matcher,
     required GlobalFoodItemRepository globalFoodItemRepository,
     required InventoryItemRepository inventoryItemRepository,
+    GlobalFoodReceiptAliasRepository? globalFoodReceiptAliasRepository,
     CalorieProductCacheRepositoryContract? calorieProductCacheRepository,
     String Function()? globalFoodItemIdGenerator,
   }) : _mapper = mapper,
        _matcher = matcher,
        _globalFoodItemRepository = globalFoodItemRepository,
        _inventoryItemRepository = inventoryItemRepository,
+       _globalFoodReceiptAliasRepository = globalFoodReceiptAliasRepository,
        _calorieProductCacheRepository = calorieProductCacheRepository,
        _globalFoodItemIdGenerator =
            globalFoodItemIdGenerator ?? _defaultGlobalFoodItemId;
@@ -72,6 +80,7 @@ class ReceiptReviewResolutionService {
   final GlobalFoodItemMatcher _matcher;
   final GlobalFoodItemRepository _globalFoodItemRepository;
   final InventoryItemRepository _inventoryItemRepository;
+  final GlobalFoodReceiptAliasRepository? _globalFoodReceiptAliasRepository;
   final CalorieProductCacheRepositoryContract? _calorieProductCacheRepository;
   final String Function() _globalFoodItemIdGenerator;
 
@@ -107,7 +116,13 @@ class ReceiptReviewResolutionService {
           reusedCandidate?.requiresPersistence ?? false;
 
       final resolvedProduct = reusedCandidate != null
-          ? reusedCandidate.item
+          ? (shouldPersistSelectedCandidate
+                ? _mergeSelectedProduct(
+                    draft: draft,
+                    now: now,
+                    selectedProduct: reusedCandidate.item,
+                  )
+                : reusedCandidate.item)
           : _buildProductFromDraft(
               draft: draft,
               now: now,
@@ -164,6 +179,11 @@ class ReceiptReviewResolutionService {
       inventoryItemsToSave,
     );
     if (inventorySaved) {
+      await _persistReceiptAliases(
+        resolvedItems,
+        globalSaved: globalSaved,
+        now: now,
+      );
       await _persistCalorieProfiles(inventoryItemsToSave, now: now);
     }
     return ReceiptReviewPersistResult(
@@ -194,12 +214,41 @@ class ReceiptReviewResolutionService {
       now: now,
       brand: draft.item.brand ?? selectedProduct?.brand,
       category: draft.item.category ?? selectedProduct?.category,
+      storeName: draft.item.storeName.isEmpty
+          ? selectedProduct?.storeName
+          : draft.item.storeName,
       barcode: draft.item.barcode ?? selectedProduct?.barcode,
       imageUrl: draft.item.imageUrl ?? selectedProduct?.imageUrl,
       packageWeight: persistedWeight.weight,
       foodFingerprint: draft.item.resolvedFoodFingerprint,
       nutrition: draft.item.nutrition ?? selectedProduct?.nutrition,
       status: status,
+    );
+  }
+
+  GlobalFoodItem _mergeSelectedProduct({
+    required ReceiptReviewItemDraft draft,
+    required DateTime now,
+    required GlobalFoodItem selectedProduct,
+  }) {
+    final persistedWeight = _resolvePersistedWeight(
+      item: draft.item,
+      fallbackWeight: selectedProduct.packageWeight,
+    );
+
+    return selectedProduct.copyWith(
+      name: draft.item.name,
+      brand: draft.item.brand ?? selectedProduct.brand,
+      category: draft.item.category ?? selectedProduct.category,
+      storeName: draft.item.storeName.isEmpty
+          ? selectedProduct.storeName
+          : draft.item.storeName,
+      barcode: draft.item.barcode ?? selectedProduct.barcode,
+      imageUrl: draft.item.imageUrl ?? selectedProduct.imageUrl,
+      packageWeight: persistedWeight.weight,
+      foodFingerprint: draft.item.resolvedFoodFingerprint,
+      nutrition: draft.item.nutrition ?? selectedProduct.nutrition,
+      updatedAt: now,
     );
   }
 
@@ -242,12 +291,14 @@ class ReceiptReviewResolutionService {
     }
 
     final candidates = await _matcher.findCandidates(draft.item);
-    final updatedDraft = draft.copyWith(
-      candidates: candidates,
-      selectedGlobalFoodItemId: _matcher.defaultSelectionFor(candidates),
-      selectionNeedsReview: _matcher.defaultSelectionNeedsReviewFor(candidates),
-    );
-    return updatedDraft;
+    return draft
+        .copyWith(candidates: candidates)
+        .applyAutomaticSelection(
+          _matcher.defaultSelectionFor(candidates),
+          selectionNeedsReview: _matcher.defaultSelectionNeedsReviewFor(
+            candidates,
+          ),
+        );
   }
 
   bool _shouldReuseSelectedCandidate(ReceiptReviewItemDraft draft) {
@@ -295,6 +346,51 @@ class ReceiptReviewResolutionService {
     return (
       weight: itemWeight ?? normalizedFallbackWeight,
       fallbackUnit: item.amountUnit,
+    );
+  }
+
+  Future<void> _persistReceiptAliases(
+    List<_ResolvedReviewItem> resolvedItems, {
+    required bool globalSaved,
+    required DateTime now,
+  }) async {
+    final repository = _globalFoodReceiptAliasRepository;
+    if (repository == null) {
+      return;
+    }
+
+    final aliases = <GlobalFoodReceiptAlias>[
+      for (final item in resolvedItems)
+        if ((globalSaved || !item.requiresGlobalPersistence) &&
+            item.sourceDraft.shouldSaveReceiptAlias)
+          if (_buildReceiptAlias(item, now: now) case final alias?) alias,
+    ];
+    if (aliases.isEmpty) {
+      return;
+    }
+
+    final saved = await repository.appendAll(aliases);
+    if (!saved) {
+      log(
+        'Failed to persist global food receipt aliases.',
+        name: _resolutionLogName,
+      );
+    }
+  }
+
+  GlobalFoodReceiptAlias? _buildReceiptAlias(
+    _ResolvedReviewItem item, {
+    required DateTime now,
+  }) {
+    final receiptName =
+        item.sourceDraft.ocrName ??
+        item.sourceItem.ocrName ??
+        item.sourceItem.name;
+    return GlobalFoodReceiptAlias.tryCreate(
+      storeName: item.sourceItem.storeName,
+      receiptName: receiptName,
+      globalFoodItem: item.resolvedProduct,
+      now: now,
     );
   }
 

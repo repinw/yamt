@@ -9,6 +9,7 @@ void main() {
       name: '  Whole Milk  ',
       brand: ' Acme ',
       category: ' Dairy ',
+      storeName: ' ALDI Süd ',
       barcode: ' 123456 ',
       now: now,
     );
@@ -16,9 +17,11 @@ void main() {
     expect(item.name, 'Whole Milk');
     expect(item.brand, 'Acme');
     expect(item.category, 'Dairy');
+    expect(item.storeName, 'Aldi');
     expect(item.barcode, '123456');
     expect(item.normalizedName, 'whole milk');
     expect(item.normalizedBrand, 'acme');
+    expect(item.normalizedStoreName, 'aldi');
     expect(item.searchTokens, containsAll(<String>['whole', 'milk']));
     expect(item.foodFingerprint, isNotEmpty);
   });
@@ -28,6 +31,7 @@ void main() {
       'id': 'milk',
       'name': 'Whole Milk',
       'brand': 'Acme',
+      'store_name': 'Kaufland',
       'status': 'active',
       'created_at': '2026-03-01T10:00:00.000Z',
       'updated_at': '2026-03-01T10:00:00.000Z',
@@ -37,6 +41,8 @@ void main() {
     expect(item.foodFingerprint, isNotEmpty);
     expect(item.normalizedName, 'whole milk');
     expect(item.normalizedBrand, 'acme');
+    expect(item.storeName, 'Kaufland');
+    expect(item.normalizedStoreName, 'kaufland');
     expect(item.searchTokens, isEmpty);
   });
 }

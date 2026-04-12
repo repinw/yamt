@@ -7,10 +7,12 @@ class ReceiptReviewItemDraft {
     required this.item,
     this.candidates = const <GlobalFoodMatchCandidate>[],
     this.selectedGlobalFoodItemId,
+    this.initialSelectedGlobalFoodItemId,
     this.selectionNeedsReview = false,
     this.isConfirmed = false,
     this.weightNeedsAttention = false,
     this.requestAiEnrichment = false,
+    this.shouldSaveReceiptAlias = false,
     this.ocrName,
     this.receiptTimeText,
   });
@@ -18,10 +20,12 @@ class ReceiptReviewItemDraft {
   final InventoryItem item;
   final List<GlobalFoodMatchCandidate> candidates;
   final String? selectedGlobalFoodItemId;
+  final String? initialSelectedGlobalFoodItemId;
   final bool selectionNeedsReview;
   final bool isConfirmed;
   final bool weightNeedsAttention;
   final bool requestAiEnrichment;
+  final bool shouldSaveReceiptAlias;
   final String? ocrName;
   final String? receiptTimeText;
 
@@ -29,10 +33,12 @@ class ReceiptReviewItemDraft {
     InventoryItem? item,
     List<GlobalFoodMatchCandidate>? candidates,
     Object? selectedGlobalFoodItemId = _keepValue,
+    Object? initialSelectedGlobalFoodItemId = _keepValue,
     bool? selectionNeedsReview,
     bool? isConfirmed,
     bool? weightNeedsAttention,
     bool? requestAiEnrichment,
+    bool? shouldSaveReceiptAlias,
     Object? ocrName = _keepValue,
     Object? receiptTimeText = _keepValue,
   }) {
@@ -42,14 +48,32 @@ class ReceiptReviewItemDraft {
       selectedGlobalFoodItemId: selectedGlobalFoodItemId == _keepValue
           ? this.selectedGlobalFoodItemId
           : selectedGlobalFoodItemId as String?,
+      initialSelectedGlobalFoodItemId:
+          initialSelectedGlobalFoodItemId == _keepValue
+          ? this.initialSelectedGlobalFoodItemId
+          : initialSelectedGlobalFoodItemId as String?,
       selectionNeedsReview: selectionNeedsReview ?? this.selectionNeedsReview,
       isConfirmed: isConfirmed ?? this.isConfirmed,
       weightNeedsAttention: weightNeedsAttention ?? this.weightNeedsAttention,
       requestAiEnrichment: requestAiEnrichment ?? this.requestAiEnrichment,
+      shouldSaveReceiptAlias:
+          shouldSaveReceiptAlias ?? this.shouldSaveReceiptAlias,
       ocrName: ocrName == _keepValue ? this.ocrName : ocrName as String?,
       receiptTimeText: receiptTimeText == _keepValue
           ? this.receiptTimeText
           : receiptTimeText as String?,
+    );
+  }
+
+  ReceiptReviewItemDraft applyAutomaticSelection(
+    String? globalFoodItemId, {
+    bool selectionNeedsReview = false,
+  }) {
+    return copyWith(
+      selectedGlobalFoodItemId: globalFoodItemId,
+      initialSelectedGlobalFoodItemId: globalFoodItemId,
+      selectionNeedsReview: selectionNeedsReview,
+      shouldSaveReceiptAlias: false,
     );
   }
 
@@ -59,6 +83,8 @@ class ReceiptReviewItemDraft {
       selectionNeedsReview: false,
       isConfirmed: false,
       requestAiEnrichment: false,
+      shouldSaveReceiptAlias:
+          globalFoodItemId != initialSelectedGlobalFoodItemId,
     );
   }
 
@@ -68,6 +94,7 @@ class ReceiptReviewItemDraft {
       selectionNeedsReview: false,
       isConfirmed: false,
       requestAiEnrichment: false,
+      shouldSaveReceiptAlias: true,
     );
   }
 
@@ -77,6 +104,7 @@ class ReceiptReviewItemDraft {
       selectionNeedsReview: false,
       isConfirmed: false,
       requestAiEnrichment: true,
+      shouldSaveReceiptAlias: false,
     );
   }
 
@@ -118,10 +146,13 @@ class ReceiptReviewItemDraft {
               candidates,
             ) &&
             other.selectedGlobalFoodItemId == selectedGlobalFoodItemId &&
+            other.initialSelectedGlobalFoodItemId ==
+                initialSelectedGlobalFoodItemId &&
             other.selectionNeedsReview == selectionNeedsReview &&
             other.isConfirmed == isConfirmed &&
             other.weightNeedsAttention == weightNeedsAttention &&
             other.requestAiEnrichment == requestAiEnrichment &&
+            other.shouldSaveReceiptAlias == shouldSaveReceiptAlias &&
             other.ocrName == ocrName &&
             other.receiptTimeText == receiptTimeText;
   }
@@ -132,10 +163,12 @@ class ReceiptReviewItemDraft {
       item,
       const ListEquality<GlobalFoodMatchCandidate>().hash(candidates),
       selectedGlobalFoodItemId,
+      initialSelectedGlobalFoodItemId,
       selectionNeedsReview,
       isConfirmed,
       weightNeedsAttention,
       requestAiEnrichment,
+      shouldSaveReceiptAlias,
       ocrName,
       receiptTimeText,
     );

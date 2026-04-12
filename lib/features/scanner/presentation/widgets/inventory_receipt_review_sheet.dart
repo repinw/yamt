@@ -308,13 +308,14 @@ class _InventoryReceiptReviewSheetState
           (candidate) => candidate.item.id != scannedCandidate.item.id,
         ),
       ];
-      final updatedDraft = draft.copyWith(
-        item: result.item,
-        candidates: mergedCandidates,
-        selectedGlobalFoodItemId: scannedCandidate.item.id,
-        selectionNeedsReview: false,
-        requestAiEnrichment: false,
-      );
+      final updatedDraft = draft
+          .copyWith(
+            item: result.item,
+            candidates: mergedCandidates,
+            selectionNeedsReview: false,
+            requestAiEnrichment: false,
+          )
+          .selectCandidate(scannedCandidate.item.id);
       return _prepareDraftForReview(updatedDraft);
     });
   }
@@ -371,13 +372,14 @@ class _InventoryReceiptReviewSheetState
         return null;
       }
 
-      final updatedDraft = draft.copyWith(
-        candidates: candidates,
-        selectedGlobalFoodItemId: matcher.defaultSelectionFor(candidates),
-        selectionNeedsReview: matcher.defaultSelectionNeedsReviewFor(
-          candidates,
-        ),
-      );
+      final updatedDraft = draft
+          .copyWith(candidates: candidates)
+          .applyAutomaticSelection(
+            matcher.defaultSelectionFor(candidates),
+            selectionNeedsReview: matcher.defaultSelectionNeedsReviewFor(
+              candidates,
+            ),
+          );
       final syncedDraft = _prepareDraftForReview(
         _syncDraftToSelectedCandidate(updatedDraft),
       );

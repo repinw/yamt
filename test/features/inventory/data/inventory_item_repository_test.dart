@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
@@ -163,6 +164,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: null),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -186,6 +188,7 @@ void main() {
       addTearDown(store.dispose);
       final repository = FirestoreInventoryItemRepository(
         session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+        sessionShutdownSignal: SessionShutdownSignal(),
         store: store,
       );
 
@@ -206,6 +209,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -235,6 +239,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -255,6 +260,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -269,6 +275,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -285,6 +292,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -302,6 +310,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -317,6 +326,23 @@ void main() {
     );
   });
 
+  test('watchAll returns empty list during session shutdown', () async {
+    final sessionShutdownSignal = SessionShutdownSignal()..begin();
+    final store = _FakeInventoryItemStore()
+      ..watchAllError = FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'permission-denied',
+      );
+    addTearDown(store.dispose);
+    final repository = FirestoreInventoryItemRepository(
+      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: sessionShutdownSignal,
+      store: store,
+    );
+
+    expect(repository.watchAll().first, completion(const <InventoryItem>[]));
+  });
+
   test('watchAll rethrows non-permission firestore errors', () async {
     final store = _FakeInventoryItemStore()
       ..watchAllError = FirebaseException(
@@ -326,6 +352,7 @@ void main() {
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
 
@@ -349,6 +376,7 @@ void main() {
       addTearDown(store.dispose);
       final repository = FirestoreInventoryItemRepository(
         session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+        sessionShutdownSignal: SessionShutdownSignal(),
         store: store,
       );
 

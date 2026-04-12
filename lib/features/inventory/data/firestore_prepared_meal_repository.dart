@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 import 'inventory_user_session.dart';
@@ -12,11 +13,14 @@ const String _repositoryLogName = 'FirestorePreparedMealRepository';
 class FirestorePreparedMealRepository implements PreparedMealRepository {
   FirestorePreparedMealRepository({
     required InventoryUserSession session,
+    required SessionShutdownSignal sessionShutdownSignal,
     required PreparedMealStore store,
   }) : _session = session,
+       _sessionShutdownSignal = sessionShutdownSignal,
        _store = store;
 
   final InventoryUserSession _session;
+  final SessionShutdownSignal _sessionShutdownSignal;
   final PreparedMealStore _store;
   Future<void> _writeBarrier = Future<void>.value();
 
@@ -61,11 +65,24 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
 
   Stream<List<PreparedMeal>> _watchAllForUser(String userId) async* {
     final collectionPath = 'users/$userId/prepared_meals';
+    final shutdownEpoch = _sessionShutdownSignal.epoch;
     try {
       await for (final documents in _store.watchAll(userId: userId)) {
         yield _decodeDocuments(documents);
       }
     } on FirebaseException catch (error, stackTrace) {
+      if (_isShutdownRelatedPermissionDenied(
+        error: error,
+        shutdownEpoch: shutdownEpoch,
+      )) {
+        log(
+          'Prepared meal watch closed during session shutdown for '
+          '$collectionPath.',
+          name: _repositoryLogName,
+        );
+        yield const <PreparedMeal>[];
+        return;
+      }
       log(
         error.code == 'permission-denied'
             ? 'Prepared meal watch denied by Firestore rules for '
@@ -137,5 +154,14 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
       onError: (Object error, StackTrace stackTrace) {},
     );
     return queuedOperation;
+  }
+
+  bool _isShutdownRelatedPermissionDenied({
+    required FirebaseException error,
+    required int shutdownEpoch,
+  }) {
+    return error.code == 'permission-denied' &&
+        (_sessionShutdownSignal.isInProgress ||
+            _sessionShutdownSignal.hasShutdownSince(shutdownEpoch));
   }
 }

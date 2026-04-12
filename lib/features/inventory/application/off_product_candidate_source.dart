@@ -45,7 +45,7 @@ class _OffProductCandidateSource {
       weight: isNettoSearch || isGeneralCollectionSearch
           ? effectiveWeight
           : null,
-      limit: _globalFoodCandidateQueryLimit,
+      limit: _globalFoodReviewCandidateLimitPerSource,
     );
   }
 

@@ -17,6 +17,8 @@ Future<void> _seedProduct({
   required String name,
   required String normalizedName,
   required List<String> searchTokens,
+  String? storeName,
+  String? normalizedStoreName,
   String? barcode,
   String? foodFingerprint,
 }) async {
@@ -30,6 +32,12 @@ Future<void> _seedProduct({
     'created_at': '2026-03-01T10:00:00.000Z',
     'updated_at': '2026-03-01T10:00:00.000Z',
   };
+  if (storeName != null) {
+    data['store_name'] = storeName;
+  }
+  if (normalizedStoreName != null) {
+    data['normalized_store_name'] = normalizedStoreName;
+  }
   if (barcode != null) {
     data['barcode'] = barcode;
   }
@@ -87,4 +95,24 @@ void main() {
       expect(documents.single.id, 'apple');
     },
   );
+
+  test('searchCandidates returns store matches when available', () async {
+    final firestore = FakeFirebaseFirestore();
+    final collection = _globalFoodCollection(firestore: firestore);
+    await _seedProduct(
+      collection: collection,
+      id: 'milk',
+      name: 'Whole Milk',
+      normalizedName: 'whole milk',
+      normalizedStoreName: 'aldi',
+      searchTokens: const <String>['whole milk', 'whole', 'milk'],
+      storeName: 'Aldi',
+    );
+
+    final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+    final documents = await store.searchCandidates(normalizedStoreName: 'aldi');
+
+    expect(documents, hasLength(1));
+    expect(documents.single.id, 'milk');
+  });
 }

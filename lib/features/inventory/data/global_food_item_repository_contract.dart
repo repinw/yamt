@@ -8,6 +8,7 @@ abstract interface class GlobalFoodItemRepository {
 
   Future<List<GlobalFoodItem>> searchCandidates({
     String? normalizedName,
+    String? normalizedStoreName,
     String? barcode,
     String? foodFingerprint,
     List<String> searchTokens = const <String>[],

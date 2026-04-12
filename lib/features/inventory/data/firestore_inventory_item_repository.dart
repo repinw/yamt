@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 import 'inventory_item_repository_contract.dart';
@@ -12,11 +13,14 @@ const String _repositoryLogName = 'FirestoreInventoryItemRepository';
 class FirestoreInventoryItemRepository implements InventoryItemRepository {
   FirestoreInventoryItemRepository({
     required InventoryUserSession session,
+    required SessionShutdownSignal sessionShutdownSignal,
     required InventoryItemStore store,
   }) : _session = session,
+       _sessionShutdownSignal = sessionShutdownSignal,
        _store = store;
 
   final InventoryUserSession _session;
+  final SessionShutdownSignal _sessionShutdownSignal;
   final InventoryItemStore _store;
   Future<void> _writeBarrier = Future<void>.value();
 
@@ -70,11 +74,24 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
 
   Stream<List<InventoryItem>> _watchAllForUser(String userId) async* {
     final collectionPath = 'users/$userId/inventory_items';
+    final shutdownEpoch = _sessionShutdownSignal.epoch;
     try {
       await for (final documents in _store.watchAll(userId: userId)) {
         yield _decodeDocuments(documents);
       }
     } on FirebaseException catch (error, stackTrace) {
+      if (_isShutdownRelatedPermissionDenied(
+        error: error,
+        shutdownEpoch: shutdownEpoch,
+      )) {
+        log(
+          'Inventory watch closed during session shutdown for '
+          '$collectionPath.',
+          name: _repositoryLogName,
+        );
+        yield const <InventoryItem>[];
+        return;
+      }
       log(
         _isPermissionDenied(error)
             ? 'Inventory watch denied by Firestore rules for '
@@ -195,5 +212,14 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
 
   bool _isPermissionDenied(FirebaseException error) {
     return error.code == 'permission-denied';
+  }
+
+  bool _isShutdownRelatedPermissionDenied({
+    required FirebaseException error,
+    required int shutdownEpoch,
+  }) {
+    return _isPermissionDenied(error) &&
+        (_sessionShutdownSignal.isInProgress ||
+            _sessionShutdownSignal.hasShutdownSince(shutdownEpoch));
   }
 }
