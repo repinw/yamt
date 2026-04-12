@@ -33,6 +33,7 @@ CalorieInventoryCreateContext _inventoryContext({
   return CalorieInventoryCreateContext(
     inventoryItemId: 'inventory-1',
     foodFingerprint: 'milk-1l',
+    globalFoodItemId: 'off-milk',
     pendingConsumptionId: pendingConsumptionId,
     inventoryAmountToRestore: 250,
     itemName: 'Milk',

@@ -85,6 +85,7 @@ class InventoryCalorieBridgeFlow {
     return CalorieInventoryCreateContext(
       inventoryItemId: item.id,
       foodFingerprint: item.resolvedFoodFingerprint,
+      globalFoodItemId: item.globalFoodItemId,
       pendingConsumptionId: pendingConsumptionId,
       inventoryAmountToRestore: request.inventoryAmount,
       itemName: item.name,
@@ -132,6 +133,7 @@ class InventoryCalorieBridgeFlow {
         .read(calorieEntriesControllerProvider.notifier)
         .saveEntry(
           entry,
+          inventoryContext: inventoryContext,
           scannedSourceRef: scannedSourceRef,
           persistEntry: (entry) {
             return ref

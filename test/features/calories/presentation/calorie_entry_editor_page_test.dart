@@ -448,7 +448,7 @@ void main() {
     );
   });
 
-  testWidgets('back navigation rolls back pending inventory consumption', (
+  testWidgets('back navigation discards pending inventory consumption', (
     tester,
   ) async {
     final logRepository = FakeCalorieLogRepository();
@@ -495,6 +495,7 @@ void main() {
           inventoryContext: CalorieInventoryCreateContext(
             inventoryItemId: 'inventory-1',
             foodFingerprint: 'milk',
+            globalFoodItemId: 'off-milk',
             pendingConsumptionId: pendingConsumption!.id,
             inventoryAmountToRestore: 2,
             itemName: 'Milk',
@@ -511,7 +512,13 @@ void main() {
 
     expect(
       container.read(inventoryItemsControllerProvider).value?.single.quantity,
-      1,
+      3,
+    );
+    expect(
+      container
+          .read(inventoryItemsControllerProvider.notifier)
+          .hasPendingConsumption(pendingConsumption.id),
+      isTrue,
     );
 
     await tester.pageBack();
@@ -548,6 +555,7 @@ void main() {
             inventoryContext: const CalorieInventoryCreateContext(
               inventoryItemId: 'inventory-1',
               foodFingerprint: 'milk',
+              globalFoodItemId: 'off-milk',
               pendingConsumptionId: 'pending-1',
               inventoryAmountToRestore: 2,
               itemName: 'Milk',
@@ -618,6 +626,7 @@ void main() {
             inventoryContext: const CalorieInventoryCreateContext(
               inventoryItemId: 'inventory-1',
               foodFingerprint: 'milk',
+              globalFoodItemId: 'off-milk',
               pendingConsumptionId: 'pending-1',
               inventoryAmountToRestore: 2,
               itemName: 'Milk',

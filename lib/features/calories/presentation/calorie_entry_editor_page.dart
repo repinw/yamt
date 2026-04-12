@@ -621,6 +621,7 @@ class _CalorieEntryEditorPageState
         .read(calorieEntriesControllerProvider.notifier)
         .saveEntry(
           entry,
+          inventoryContext: inventoryContext,
           scannedSourceRef: initialEntry == null
               ? widget.scannedSourceRef
               : null,

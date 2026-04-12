@@ -204,6 +204,114 @@ service cloud.firestore {
       ];
     }
 
+    function isAllowedServingSuggestionUnit(unit) {
+      return unit in ['g', 'ml'];
+    }
+
+    function isValidGlobalFoodServingSuggestion(data, suggestionId) {
+      return data.keys().hasOnly([
+          'id',
+          'item_key',
+          'global_food_item_id',
+          'amount',
+          'unit',
+          'selection_count',
+          'unique_user_count',
+          'created_at',
+          'updated_at',
+        ])
+        && data.keys().hasAll([
+          'id',
+          'item_key',
+          'global_food_item_id',
+          'amount',
+          'unit',
+          'selection_count',
+          'unique_user_count',
+          'created_at',
+          'updated_at',
+        ])
+        && data.id == suggestionId
+        && data.id is string
+        && data.item_key is string
+        && data.item_key.size() > 0
+        && data.global_food_item_id is string
+        && data.global_food_item_id.size() > 0
+        && exists(
+          /databases/$(database)/documents/global_food_items/$(data.global_food_item_id)
+        )
+        && data.amount is number
+        && data.amount > 0
+        && data.unit is string
+        && isAllowedServingSuggestionUnit(data.unit)
+        && data.selection_count is int
+        && data.selection_count > 0
+        && data.unique_user_count is int
+        && data.unique_user_count > 0
+        && data.created_at is string
+        && data.updated_at is string;
+    }
+
+    function isValidUserServingPreference(data, itemKey) {
+      return data.keys().hasOnly([
+          'item_key',
+          'global_food_item_id',
+          'food_fingerprint',
+          'amount',
+          'unit',
+          'updated_at',
+        ])
+        && data.keys().hasAll([
+          'item_key',
+          'food_fingerprint',
+          'amount',
+          'unit',
+          'updated_at',
+        ])
+        && data.item_key == itemKey
+        && data.item_key is string
+        && data.food_fingerprint is string
+        && data.food_fingerprint.size() > 0
+        && data.amount is number
+        && data.amount > 0
+        && data.unit is string
+        && isAllowedServingSuggestionUnit(data.unit)
+        && data.updated_at is string
+        && isOptionalString(data, 'global_food_item_id');
+    }
+
+    function isValidUserServingVote(data, suggestionId) {
+      return data.keys().hasOnly([
+          'item_key',
+          'suggestion_id',
+          'global_food_item_id',
+          'amount',
+          'unit',
+          'created_at',
+          'updated_at',
+        ])
+        && data.keys().hasAll([
+          'item_key',
+          'suggestion_id',
+          'global_food_item_id',
+          'amount',
+          'unit',
+          'created_at',
+          'updated_at',
+        ])
+        && data.suggestion_id == suggestionId
+        && data.item_key is string
+        && data.item_key.size() > 0
+        && data.global_food_item_id is string
+        && data.global_food_item_id.size() > 0
+        && data.amount is number
+        && data.amount > 0
+        && data.unit is string
+        && isAllowedServingSuggestionUnit(data.unit)
+        && data.created_at is string
+        && data.updated_at is string;
+    }
+
     function isValidCalorieProductCore(data) {
       return data.keys().hasAll([
           'barcode',
@@ -264,6 +372,36 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow create, update: if isSignedIn()
         && isValidGlobalFoodReceiptAlias(request.resource.data, aliasId);
+      allow delete: if false;
+    }
+
+    match /global_food_item_serving_sizes/{suggestionId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && !exists(
+          /databases/$(database)/documents/global_food_item_serving_sizes/$(suggestionId)
+        )
+        && isValidGlobalFoodServingSuggestion(
+          request.resource.data,
+          suggestionId
+        );
+      allow update: if isSignedIn()
+        && isValidGlobalFoodServingSuggestion(
+          request.resource.data,
+          suggestionId
+        )
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.item_key == resource.data.item_key
+        && request.resource.data.global_food_item_id
+          == resource.data.global_food_item_id
+        && request.resource.data.amount == resource.data.amount
+        && request.resource.data.unit == resource.data.unit
+        && request.resource.data.created_at == resource.data.created_at
+        && request.resource.data.selection_count
+          == resource.data.selection_count + 1
+        && request.resource.data.unique_user_count >= resource.data.unique_user_count
+        && request.resource.data.unique_user_count
+          <= resource.data.unique_user_count + 1;
       allow delete: if false;
     }
 
@@ -341,6 +479,29 @@ service cloud.firestore {
         && request.resource.data.reason is string
         && request.resource.data.source == 'user_override'
         && isValidCalorieProductCore(request.resource.data);
+      allow delete: if isOwner(uid);
+    }
+
+    match /users/{uid}/global_food_item_serving_prefs/{itemKey} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && isValidUserServingPreference(request.resource.data, itemKey);
+      allow delete: if isOwner(uid);
+    }
+
+    match /users/{uid}/global_food_item_serving_votes/{suggestionId} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid)
+        && isValidUserServingVote(request.resource.data, suggestionId);
+      allow update: if isOwner(uid)
+        && isValidUserServingVote(request.resource.data, suggestionId)
+        && request.resource.data.item_key == resource.data.item_key
+        && request.resource.data.suggestion_id == resource.data.suggestion_id
+        && request.resource.data.global_food_item_id
+          == resource.data.global_food_item_id
+        && request.resource.data.amount == resource.data.amount
+        && request.resource.data.unit == resource.data.unit
+        && request.resource.data.created_at == resource.data.created_at;
       allow delete: if isOwner(uid);
     }
 
