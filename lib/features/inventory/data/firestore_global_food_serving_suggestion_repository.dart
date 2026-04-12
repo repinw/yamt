@@ -2,10 +2,10 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/inventory/data/'
-    'global_food_serving_suggestion_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion.dart';
+import 'package:yamt/features/inventory/domain/'
+    'global_food_serving_suggestion_repository_contract.dart';
 
 const String _repositoryLogName =
     'FirestoreGlobalFoodServingSuggestionRepository';

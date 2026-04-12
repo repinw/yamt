@@ -11,7 +11,7 @@ import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
-import 'package:yamt/features/inventory/data/'
+import 'package:yamt/features/inventory/application/'
     'global_food_serving_suggestion_repository.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';

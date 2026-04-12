@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/inventory/data/'
+import 'package:yamt/features/inventory/application/'
     'global_food_serving_suggestion_repository.dart';
-import 'package:yamt/features/inventory/data/'
-    'global_food_serving_suggestion_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion.dart';
+import 'package:yamt/features/inventory/domain/'
+    'global_food_serving_suggestion_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';

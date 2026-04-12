@@ -6,11 +6,11 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
-import 'package:yamt/features/inventory/data/'
+import 'package:yamt/features/inventory/application/'
     'global_food_serving_suggestion_repository.dart';
-import 'package:yamt/features/inventory/data/'
-    'global_food_serving_suggestion_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/global_food_serving_suggestion.dart';
+import 'package:yamt/features/inventory/domain/'
+    'global_food_serving_suggestion_repository_contract.dart';
 
 import '../support/fake_calories_repositories.dart';
 

@@ -2,13 +2,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/inventory/domain/global_food_serving_suggestion.dart';
+import 'package:yamt/features/inventory/data/'
+    'firestore_global_food_serving_suggestion_repository.dart';
+import 'package:yamt/features/inventory/domain/'
+    'global_food_serving_suggestion.dart';
+import 'package:yamt/features/inventory/domain/'
+    'global_food_serving_suggestion_repository_contract.dart';
 
-import 'firestore_global_food_serving_suggestion_repository.dart';
-import 'global_food_serving_suggestion_repository_contract.dart';
-
-export 'firestore_global_food_serving_suggestion_repository.dart';
-export 'global_food_serving_suggestion_repository_contract.dart';
+export 'package:yamt/features/inventory/domain/'
+    'global_food_serving_suggestion_repository_contract.dart';
 
 final globalFoodServingSuggestionRepositoryProvider =
     Provider<GlobalFoodServingSuggestionRepository>((ref) {

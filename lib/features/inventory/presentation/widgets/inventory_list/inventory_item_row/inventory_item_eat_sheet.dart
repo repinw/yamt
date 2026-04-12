@@ -7,12 +7,13 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
-import 'package:yamt/features/inventory/application/inventory_item_eat_policy.dart';
-import 'package:yamt/features/inventory/data/'
+import 'package:yamt/features/inventory/application/'
     'global_food_serving_suggestion_repository.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_item_eat_policy.dart';
+import 'package:yamt/features/inventory/application/serving_suggestion_resolver.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion.dart';
-import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -63,7 +64,7 @@ class _InventoryItemEatSheet extends ConsumerStatefulWidget {
 
 class _InventoryItemEatSheetState
     extends ConsumerState<_InventoryItemEatSheet> {
-  static const _servingAmountParser = InventoryAmountParser();
+  static const _servingResolver = ServingSuggestionResolver();
 
   late final TextEditingController _inventoryAmountController =
       TextEditingController(text: _defaultInventoryAmount.toString());
@@ -148,8 +149,13 @@ class _InventoryItemEatSheetState
     final material = MaterialLocalizations.of(context);
     final selectedAmount = int.tryParse(_inventoryAmountController.text.trim());
     final unitLabel = _inventoryUnitLabel(l10n);
-    final quickOptions = _buildQuickOptions(l10n, unitLabel);
-    final manualServingSuggestions = _buildManualServingSuggestions();
+    final servingResolution = _resolveServingResolution();
+    final quickOptions = _buildQuickOptions(
+      l10n,
+      unitLabel,
+      servingResolution.inventoryServingOptions,
+    );
+    final manualServingSuggestions = servingResolution.manualServingSuggestions;
     final nutritionMetrics = _buildNutritionMetrics(l10n);
 
     return SafeArea(
@@ -353,12 +359,13 @@ class _InventoryItemEatSheetState
   List<({String label, int value})> _buildQuickOptions(
     AppLocalizations l10n,
     String? unitLabel,
+    List<({String label, int value})> servingOptions,
   ) {
     final values = <int>{widget.maxAmount};
     final options = <({String label, int value})>[
       (label: l10n.inventoryItemEatSheetAllAction, value: widget.maxAmount),
     ];
-    for (final suggestion in _buildInventoryServingQuickOptions()) {
+    for (final suggestion in servingOptions) {
       if (values.add(suggestion.value)) {
         options.add(suggestion);
       }
@@ -383,342 +390,40 @@ class _InventoryItemEatSheetState
     return options;
   }
 
-  List<({String label, int value})> _buildInventoryServingQuickOptions() {
-    if (!widget.item.usesAmountProgress || widget.item.amountUnit == null) {
-      return const <({String label, int value})>[];
-    }
-
-    final options = <({String label, int value})>[];
-    final seenValues = <int>{};
-    for (final suggestion in _inventoryServingSuggestions()) {
-      if (suggestion.unit != widget.item.amountUnit ||
-          !_isWholeNumber(suggestion.amount)) {
-        continue;
-      }
-
-      final value = suggestion.amount.round();
-      if (value < 1 || value > widget.maxAmount || !seenValues.add(value)) {
-        continue;
-      }
-      options.add((label: suggestion.label, value: value));
-    }
-    return options;
-  }
-
-  List<({String label, double amount, ConsumedUnit unit})>
-  _buildManualServingSuggestions() {
-    if (!_requiresManualCaloriePortion) {
-      return const <({String label, double amount, ConsumedUnit unit})>[];
-    }
-
-    final suggestions = <({String label, double amount, ConsumedUnit unit})>[];
-    final seenKeys = <String>{};
-    for (final suggestion in _manualServingSuggestions()) {
-      final key = _manualSuggestionKey(
-        amount: suggestion.amount,
-        unit: suggestion.unit,
-      );
-      if (!seenKeys.add(key)) {
-        continue;
-      }
-      suggestions.add(suggestion);
-    }
-    return suggestions;
-  }
-
-  ({String label, double amount, InventoryAmountUnit unit})?
-  _resolvedServingSuggestion() {
-    final structuredSuggestion = _suggestionFromStructuredServing();
-    if (structuredSuggestion != null &&
-        !_matchesPackageWeight(structuredSuggestion)) {
-      return structuredSuggestion;
-    }
-
-    final servingSize = widget.item.servingSize;
-    if (servingSize == null) {
-      return null;
-    }
-
-    final parsed = _servingAmountParser.tryParse(
-      rawWeight: servingSize,
-      quantity: 1,
+  ServingSuggestionResolution _resolveServingResolution() {
+    return _servingResolver.resolve(
+      item: widget.item,
+      learned: _learnedServingSuggestions,
+      maxAmount: widget.maxAmount,
+      requiresManualPortion: _requiresManualCaloriePortion,
     );
-    if (parsed == null || parsed.amount < 1) {
-      return null;
-    }
-
-    final suggestion = (
-      label: servingSize,
-      amount: parsed.amount.toDouble(),
-      unit: parsed.unit,
-    );
-    if (_matchesPackageWeight(suggestion)) {
-      return null;
-    }
-    return suggestion;
-  }
-
-  List<({String label, double amount, InventoryAmountUnit unit})>
-  _inventoryServingSuggestions() {
-    final suggestions =
-        <({String label, double amount, InventoryAmountUnit unit})>[];
-    final seenKeys = <String>{};
-
-    for (final suggestion in _buildLearnedInventoryServingSuggestions()) {
-      final key = _inventorySuggestionKey(
-        amount: suggestion.amount,
-        unit: suggestion.unit,
-      );
-      if (seenKeys.add(key)) {
-        suggestions.add(suggestion);
-      }
-    }
-
-    if (_resolvedServingSuggestion() case final structured?) {
-      final key = _inventorySuggestionKey(
-        amount: structured.amount,
-        unit: structured.unit,
-      );
-      if (seenKeys.add(key)) {
-        suggestions.add(structured);
-      }
-    }
-
-    return suggestions;
-  }
-
-  List<({String label, double amount, InventoryAmountUnit unit})>
-  _buildLearnedInventoryServingSuggestions() {
-    final suggestions =
-        <({String label, double amount, InventoryAmountUnit unit})>[];
-    final personal = _learnedServingSuggestions.personalSuggestion;
-    if (personal != null) {
-      final inventoryUnit = _inventoryUnitForConsumedUnit(personal.unit);
-      if (inventoryUnit != null) {
-        suggestions.add((
-          label: _formatLearnedServingLabel(
-            amount: personal.amount,
-            unit: personal.unit,
-          ),
-          amount: personal.amount,
-          unit: inventoryUnit,
-        ));
-      }
-    }
-
-    for (final suggestion in _learnedServingSuggestions.globalSuggestions) {
-      final inventoryUnit = _inventoryUnitForConsumedUnit(suggestion.unit);
-      if (inventoryUnit == null) {
-        continue;
-      }
-      suggestions.add((
-        label: _formatLearnedServingLabel(
-          amount: suggestion.amount,
-          unit: suggestion.unit,
-        ),
-        amount: suggestion.amount,
-        unit: inventoryUnit,
-      ));
-    }
-    return suggestions;
-  }
-
-  List<({String label, double amount, ConsumedUnit unit})>
-  _manualServingSuggestions() {
-    final suggestions = <({String label, double amount, ConsumedUnit unit})>[];
-    final personal = _learnedServingSuggestions.personalSuggestion;
-    if (personal != null) {
-      suggestions.add((
-        label: _formatLearnedServingLabel(
-          amount: personal.amount,
-          unit: personal.unit,
-        ),
-        amount: personal.amount,
-        unit: personal.unit,
-      ));
-    }
-
-    for (final suggestion in _learnedServingSuggestions.globalSuggestions) {
-      suggestions.add((
-        label: _formatLearnedServingLabel(
-          amount: suggestion.amount,
-          unit: suggestion.unit,
-        ),
-        amount: suggestion.amount,
-        unit: suggestion.unit,
-      ));
-    }
-
-    if (_resolvedServingSuggestion() case final structured?) {
-      final consumedUnit = switch (structured.unit) {
-        InventoryAmountUnit.gram => ConsumedUnit.grams,
-        InventoryAmountUnit.milliliter => ConsumedUnit.milliliters,
-        InventoryAmountUnit.piece => null,
-      };
-      if (consumedUnit != null) {
-        suggestions.add((
-          label: structured.label,
-          amount: structured.amount,
-          unit: consumedUnit,
-        ));
-      }
-    }
-
-    return suggestions.take(5).toList(growable: false);
-  }
-
-  ({String label, double amount, InventoryAmountUnit unit})?
-  _suggestionFromStructuredServing() {
-    final quantity = widget.item.servingQuantity;
-    final unit = widget.item.servingQuantityUnit;
-    if (quantity == null || unit == null || quantity <= 0) {
-      return null;
-    }
-
-    final normalizedUnit = unit.trim().toLowerCase();
-    final converted = switch (normalizedUnit) {
-      'g' ||
-      'gr' ||
-      'gram' ||
-      'grams' => (amount: quantity, unit: InventoryAmountUnit.gram),
-      'kg' ||
-      'kilogram' ||
-      'kilograms' => (amount: quantity * 1000, unit: InventoryAmountUnit.gram),
-      'mg' => (amount: quantity / 1000, unit: InventoryAmountUnit.gram),
-      'ml' => (amount: quantity, unit: InventoryAmountUnit.milliliter),
-      'cl' => (amount: quantity * 10, unit: InventoryAmountUnit.milliliter),
-      'dl' => (amount: quantity * 100, unit: InventoryAmountUnit.milliliter),
-      'l' || 'liter' || 'liters' || 'litre' || 'litres' => (
-        amount: quantity * 1000,
-        unit: InventoryAmountUnit.milliliter,
-      ),
-      'pc' ||
-      'piece' ||
-      'pieces' ||
-      'st' ||
-      'stk' => (amount: quantity, unit: InventoryAmountUnit.piece),
-      _ => null,
-    };
-    if (converted == null || converted.amount <= 0) {
-      return null;
-    }
-
-    return (
-      label:
-          widget.item.servingSize ??
-          _formatServingLabel(converted.amount, converted.unit),
-      amount: converted.amount,
-      unit: converted.unit,
-    );
-  }
-
-  bool _matchesPackageWeight(
-    ({String label, double amount, InventoryAmountUnit unit}) suggestion,
-  ) {
-    final weight = widget.item.weight;
-    if (weight == null) {
-      return false;
-    }
-
-    final parsedWeight = _servingAmountParser.tryParse(
-      rawWeight: weight,
-      quantity: 1,
-    );
-    if (parsedWeight != null &&
-        parsedWeight.unit == suggestion.unit &&
-        parsedWeight.amount.toDouble() == suggestion.amount) {
-      return true;
-    }
-
-    final normalizedWeight = _normalizeComparableAmountText(weight);
-    final normalizedServing = _normalizeComparableAmountText(suggestion.label);
-    return normalizedWeight.isNotEmpty && normalizedWeight == normalizedServing;
-  }
-
-  String _formatServingLabel(double amount, InventoryAmountUnit unit) {
-    final code = unit.code;
-    final value = formatInventoryNutritionValue(amount);
-    return code.isEmpty ? value : '$value $code';
-  }
-
-  String _normalizeComparableAmountText(String raw) {
-    return raw.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '');
-  }
-
-  bool _isWholeNumber(double value) {
-    return value == value.roundToDouble();
   }
 
   void _applyLearnedDefaults() {
-    final defaultSuggestion = _learnedServingSuggestions.defaultSuggestion;
-    if (defaultSuggestion == null) {
-      return;
-    }
-
+    final resolution = _resolveServingResolution();
     if (!_didManuallyEditInventoryAmount) {
-      _applyInventoryDefault(defaultSuggestion);
+      final value = resolution.inventoryDefaultAmount;
+      if (value != null) {
+        _applyInventoryDefault(value);
+      }
     }
     if (!_didManuallyEditManualCalorieAmount) {
-      _applyManualDefault(defaultSuggestion);
+      final suggestion = resolution.manualDefaultSuggestion;
+      if (suggestion != null) {
+        _applyManualDefault(suggestion);
+      }
     }
   }
 
-  void _applyInventoryDefault(ServingSizeSuggestion suggestion) {
-    if (!widget.item.usesAmountProgress || widget.item.amountUnit == null) {
-      return;
-    }
-
-    final inventoryUnit = _inventoryUnitForConsumedUnit(suggestion.unit);
-    if (inventoryUnit != widget.item.amountUnit ||
-        !_isWholeNumber(suggestion.amount)) {
-      return;
-    }
-
-    final value = suggestion.amount.round();
-    if (value < 1 || value > widget.maxAmount) {
-      return;
-    }
-
+  void _applyInventoryDefault(int value) {
     _inventoryAmountController.text = value.toString();
   }
 
-  void _applyManualDefault(ServingSizeSuggestion suggestion) {
-    if (!_requiresManualCaloriePortion) {
-      return;
-    }
-
+  void _applyManualDefault(({double amount, ConsumedUnit unit}) suggestion) {
     _manualCalorieAmountController.text = formatInventoryNutritionValue(
       suggestion.amount,
     );
     _selectedManualCalorieUnit = suggestion.unit;
-  }
-
-  InventoryAmountUnit? _inventoryUnitForConsumedUnit(ConsumedUnit unit) {
-    return switch (unit) {
-      ConsumedUnit.grams => InventoryAmountUnit.gram,
-      ConsumedUnit.milliliters => InventoryAmountUnit.milliliter,
-    };
-  }
-
-  String _formatLearnedServingLabel({
-    required double amount,
-    required ConsumedUnit unit,
-  }) {
-    return '${formatInventoryNutritionValue(amount)} ${unit.jsonValue}';
-  }
-
-  String _inventorySuggestionKey({
-    required double amount,
-    required InventoryAmountUnit unit,
-  }) {
-    return '${unit.code}:${buildServingSuggestionAmountKey(amount)}';
-  }
-
-  String _manualSuggestionKey({
-    required double amount,
-    required ConsumedUnit unit,
-  }) {
-    return '${unit.jsonValue}:${buildServingSuggestionAmountKey(amount)}';
   }
 
   List<({String label, String value})> _buildNutritionMetrics(
