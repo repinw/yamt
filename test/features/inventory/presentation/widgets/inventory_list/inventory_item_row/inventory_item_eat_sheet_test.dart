@@ -8,8 +8,6 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion.dart';
-import 'package:yamt/features/inventory/domain/'
-    'global_food_serving_suggestion_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
@@ -211,9 +209,11 @@ DateTime _targetLoggedAtDate() {
 }
 
 Future<void> _pickLoggedAtDate(WidgetTester tester, DateTime targetDate) async {
-  final todayButton = find.text('Today');
-  await tester.ensureVisible(todayButton);
-  await tester.tap(todayButton);
+  final loggedAtButton = find.byKey(
+    const Key('inventory_item_logged_at_button'),
+  );
+  await tester.ensureVisible(loggedAtButton);
+  await tester.tap(loggedAtButton);
   await tester.pumpAndSettle();
 
   final today = DateUtils.dateOnly(DateTime.now());
@@ -284,6 +284,38 @@ void main() {
       expect(result, isNull);
     },
   );
+
+  testWidgets('done on number keyboard unfocuses amount field', (tester) async {
+    InventoryItemEatRequest? result;
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _amountItem(),
+        maxAmount: 1000,
+        onResult: (value) {
+          result = value;
+        },
+      ),
+    );
+
+    await _openSheet(tester);
+
+    final amountField = find.byKey(
+      const Key('inventory_item_amount_dialog_field'),
+    );
+    await tester.tap(amountField);
+    await tester.pump();
+
+    final focusedTextField = tester.widget<TextField>(amountField);
+    expect(focusedTextField.focusNode?.hasFocus, isTrue);
+
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+
+    final unfocusedTextField = tester.widget<TextField>(amountField);
+    expect(unfocusedTextField.focusNode?.hasFocus, isFalse);
+    expect(result, isNull);
+    expect(amountField, findsOneWidget);
+  });
 
   testWidgets('submits valid input and pops with the expected request', (
     tester,
@@ -385,7 +417,7 @@ void main() {
         find.text('Please enter a number greater than zero.'),
         findsOneWidget,
       );
-      expect(find.text('Eat: Banana'), findsOneWidget);
+      expect(find.text('Banana'), findsOneWidget);
     },
   );
 
