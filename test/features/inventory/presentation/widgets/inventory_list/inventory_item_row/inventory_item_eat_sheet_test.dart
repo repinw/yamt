@@ -246,7 +246,31 @@ String _mealTypeLabel(MealType mealType) {
   };
 }
 
+String _formatMediumDate(WidgetTester tester, DateTime date) {
+  final context = tester.element(find.byType(Scaffold));
+  return MaterialLocalizations.of(context).formatMediumDate(date);
+}
+
 void main() {
+  testWidgets('hero shows fallback when product image cannot be resolved', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _amountItem().copyWith(imageUrl: 'not-a-valid-url'),
+        maxAmount: 1000,
+        onResult: (_) {},
+      ),
+    );
+
+    await _openSheet(tester);
+
+    expect(
+      find.byKey(const Key('inventory_item_eat_sheet_hero_fallback')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets(
     'amount field starts without autofocus and clear button clears and focuses',
     (tester) async {
@@ -621,6 +645,60 @@ void main() {
     expect(find.text('35 g'), findsOneWidget);
     expect(find.text('34 g'), findsOneWidget);
     expect(find.text('75 g'), findsOneWidget);
+  });
+
+  testWidgets('logged-at card switches between compact and labeled states', (
+    tester,
+  ) async {
+    final targetDate = _targetLoggedAtDate();
+    await tester.pumpWidget(
+      _buildTestApp(item: _amountItem(), maxAmount: 1000, onResult: (_) {}),
+    );
+
+    await _openSheet(tester);
+
+    expect(
+      find.byKey(const Key('inventory_item_logged_at_compact')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('inventory_item_logged_at_labeled')),
+      findsNothing,
+    );
+
+    await _pickLoggedAtDate(tester, targetDate);
+
+    expect(
+      find.byKey(const Key('inventory_item_logged_at_compact')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const Key('inventory_item_logged_at_labeled')),
+      findsOneWidget,
+    );
+    expect(find.text(_formatMediumDate(tester, targetDate)), findsOneWidget);
+  });
+
+  testWidgets('first nutrition metric uses highlight color', (tester) async {
+    await tester.pumpWidget(
+      _buildTestApp(item: _amountItem(), maxAmount: 1000, onResult: (_) {}),
+    );
+
+    await _openSheet(tester);
+
+    final context = tester.element(
+      find.byKey(const Key('inventory_item_nutrition_value_0')),
+    );
+    final colors = Theme.of(context).colorScheme;
+    final firstValue = tester.widget<Text>(
+      find.byKey(const Key('inventory_item_nutrition_value_0')),
+    );
+    final secondValue = tester.widget<Text>(
+      find.byKey(const Key('inventory_item_nutrition_value_1')),
+    );
+
+    expect(firstValue.style?.color, colors.primary);
+    expect(secondValue.style?.color, colors.onSurface);
   });
 
   testWidgets('date picker updates loggedAt in the submitted request', (

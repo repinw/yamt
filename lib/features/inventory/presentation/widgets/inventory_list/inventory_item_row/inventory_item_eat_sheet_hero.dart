@@ -12,7 +12,6 @@ class _InventoryItemEatHero extends StatelessWidget {
   final String? imageUrl;
 
   static const _heroHeight = 228.0;
-  static const _fallbackEmoji = '🍽️';
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +46,10 @@ class _InventoryItemEatHero extends StatelessWidget {
                   errorBuilder: (_, error, stackTrace) {
                     return Center(
                       child: Text(
-                        _fallbackEmoji,
+                        AppInventoryItemVisuals.fallbackEmoji,
+                        key: const Key(
+                          'inventory_item_eat_sheet_hero_fallback',
+                        ),
                         style: Theme.of(context).textTheme.displaySmall,
                       ),
                     );
@@ -58,7 +60,8 @@ class _InventoryItemEatHero extends StatelessWidget {
           else
             Center(
               child: Text(
-                _fallbackEmoji,
+                AppInventoryItemVisuals.fallbackEmoji,
+                key: const Key('inventory_item_eat_sheet_hero_fallback'),
                 style: Theme.of(context).textTheme.displaySmall,
               ),
             ),

@@ -68,16 +68,18 @@ class _InventoryItemEatFieldCard extends StatelessWidget {
 class _InventoryItemEatWhenCard extends StatelessWidget {
   const _InventoryItemEatWhenCard({
     required this.label,
+    required this.isToday,
     required this.onPressed,
   });
 
-  final String label;
+  final String? label;
+  final bool isToday;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final hasLabel = label.isNotEmpty;
+    final hasLabel = !isToday && label != null;
 
     return Material(
       color: Colors.transparent,
@@ -104,6 +106,7 @@ class _InventoryItemEatWhenCard extends StatelessWidget {
               ),
               child: hasLabel
                   ? Row(
+                      key: const Key('inventory_item_logged_at_labeled'),
                       children: [
                         const _InventoryItemEatLeadingIcon(
                           icon: Icons.calendar_today_rounded,
@@ -111,7 +114,7 @@ class _InventoryItemEatWhenCard extends StatelessWidget {
                         const SizedBox(width: AppSpacing.md),
                         Expanded(
                           child: Text(
-                            label,
+                            label!,
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(fontWeight: FontWeight.w700),
                           ),
@@ -123,6 +126,7 @@ class _InventoryItemEatWhenCard extends StatelessWidget {
                       ],
                     )
                   : Row(
+                      key: const Key('inventory_item_logged_at_compact'),
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const _InventoryItemEatLeadingIcon(
@@ -210,6 +214,7 @@ class _InventoryItemEatNutritionMetricsRow extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
               child: _InventoryItemEatNutritionMetric(
+                index: index,
                 label: metrics[index].label,
                 value: metrics[index].value,
                 isHighlighted: index == 0,

@@ -118,11 +118,13 @@ class _InventoryItemEatQuickChipScroller extends StatelessWidget {
 
 class _InventoryItemEatNutritionMetric extends StatelessWidget {
   const _InventoryItemEatNutritionMetric({
+    required this.index,
     required this.label,
     required this.value,
     this.isHighlighted = false,
   });
 
+  final int index;
   final String label;
   final String value;
   final bool isHighlighted;
@@ -132,6 +134,7 @@ class _InventoryItemEatNutritionMetric extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final valueColor = isHighlighted ? colors.primary : colors.onSurface;
     final valueText = Text(
+      key: Key('inventory_item_nutrition_value_$index'),
       value,
       maxLines: 1,
       softWrap: false,
@@ -152,6 +155,7 @@ class _InventoryItemEatNutritionMetric extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
+          key: Key('inventory_item_nutrition_label_$index'),
           label.toUpperCase(),
           maxLines: 1,
           softWrap: false,

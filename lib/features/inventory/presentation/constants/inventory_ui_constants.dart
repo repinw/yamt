@@ -55,6 +55,10 @@ abstract final class AppInventoryBuyAgainAction {
   static const double iconAlpha = 0.8;
 }
 
+abstract final class AppInventoryItemVisuals {
+  static const String fallbackEmoji = '🍽️';
+}
+
 class AppInventoryEatActionColors {
   const AppInventoryEatActionColors({
     required this.backgroundColor,

@@ -18,6 +18,8 @@ import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -28,6 +30,7 @@ part 'inventory_item_eat_sheet_components.dart';
 part 'inventory_item_eat_sheet_display.dart';
 part 'inventory_item_eat_sheet_hero.dart';
 part 'inventory_item_eat_sheet_input_sections.dart';
+part 'inventory_item_eat_sheet_models.dart';
 part 'inventory_item_eat_sheet_view.dart';
 
 Future<InventoryItemEatRequest?> showInventoryItemEatSheet({
@@ -161,49 +164,71 @@ class _InventoryItemEatSheetState
     );
     final manualServingSuggestions = servingResolution.manualServingSuggestions;
     final nutritionMetrics = _buildNutritionMetrics(l10n);
-    final loggedAtLabel = _loggedAtLabel(material);
+    final isLoggedAtToday = _isLoggedAtToday();
+    final loggedAtLabel = isLoggedAtToday
+        ? null
+        : material.formatMediumDate(_selectedLoggedAt);
 
-    return _InventoryItemEatSheetView(
-      itemName: widget.item.name,
-      imageUrl: widget.item.imageUrl,
-      eyebrow: l10n.inventoryItemEatSheetEyebrow,
+    final viewData = _InventoryItemEatSheetViewData(
       viewInsetsBottom: MediaQuery.viewInsetsOf(context).bottom,
-      amountLabel: l10n.inventoryItemEatSheetAmountLabel,
-      clearAmountTooltip: l10n.inventoryItemEatSheetClearAmountAction,
-      inventoryAmountController: _inventoryAmountController,
-      inventoryAmountFocusNode: _inventoryAmountFocusNode,
-      unitLabel: unitLabel,
-      inventoryAmountErrorText: _inventoryAmountErrorText,
-      onInventoryAmountChanged: _clearInventoryAmountError,
-      onInventoryAmountClearAndFocus: _clearInventoryAmountAndFocus,
-      onDismissKeyboard: _dismissKeyboard,
-      quickOptions: quickOptions,
-      selectedAmount: selectedAmount,
-      onInventoryQuickOptionSelected: _selectInventoryAmount,
-      requiresManualCaloriePortion: _requiresManualCaloriePortion,
-      manualPortionTitle: l10n.inventoryBarcodePortionDialogTitle,
-      manualCalorieAmountController: _manualCalorieAmountController,
-      manualCalorieAmountFocusNode: _manualCalorieAmountFocusNode,
-      manualCalorieAmountErrorText: _manualCalorieAmountErrorText,
-      selectedManualCalorieUnit: _selectedManualCalorieUnit,
-      onManualCalorieAmountChanged: _clearManualCalorieAmountError,
-      onManualCalorieUnitChanged: _selectManualCalorieUnit,
-      manualServingSuggestions: manualServingSuggestions,
-      onManualServingSuggestionPressed: _applyManualServingSuggestion,
+      hero: _InventoryItemEatSheetHeroData(
+        itemName: widget.item.name,
+        imageUrl: widget.item.imageUrl,
+        eyebrow: l10n.inventoryItemEatSheetEyebrow,
+      ),
+      amountSection: _InventoryItemEatSheetAmountSectionData(
+        label: l10n.inventoryItemEatSheetAmountLabel,
+        clearTooltip: l10n.inventoryItemEatSheetClearAmountAction,
+        controller: _inventoryAmountController,
+        focusNode: _inventoryAmountFocusNode,
+        unitLabel: unitLabel,
+        errorText: _inventoryAmountErrorText,
+        selectedAmount: selectedAmount,
+        quickOptions: quickOptions,
+        onChanged: _clearInventoryAmountError,
+        onClearAndFocus: _clearInventoryAmountAndFocus,
+        onSubmitted: _dismissKeyboard,
+        onQuickOptionSelected: _selectInventoryAmount,
+      ),
+      manualPortionSection: _requiresManualCaloriePortion
+          ? _InventoryItemEatSheetManualPortionSectionData(
+              title: l10n.inventoryBarcodePortionDialogTitle,
+              controller: _manualCalorieAmountController,
+              focusNode: _manualCalorieAmountFocusNode,
+              errorText: _manualCalorieAmountErrorText,
+              selectedUnit: _selectedManualCalorieUnit,
+              suggestions: manualServingSuggestions,
+              onAmountChanged: _clearManualCalorieAmountError,
+              onUnitChanged: _selectManualCalorieUnit,
+              onSubmitted: _dismissKeyboard,
+              onSuggestionPressed: _applyManualServingSuggestion,
+            )
+          : null,
       nutritionMetrics: nutritionMetrics,
-      loggedAtLabel: loggedAtLabel,
-      onPickLoggedAt: _pickLoggedAt,
-      selectedMealType: _selectedMealType,
-      onMealTypeSelected: _selectMealType,
-      supportsInedibleAmountAdjustment: _supportsInedibleAmountAdjustment,
-      inedibleAmountController: _inedibleAmountController,
-      inedibleAmountFocusNode: _inedibleAmountFocusNode,
-      inedibleAmountErrorText: _inedibleAmountErrorText,
-      onInedibleAmountChanged: _clearInedibleAmountError,
-      inedibleAmountUnitLabel: unitLabel ?? '',
-      confirmActionText: l10n.inventoryItemEatSheetConfirmAction,
-      onConfirm: _submit,
+      whenSection: _InventoryItemEatSheetWhenSectionData(
+        isToday: isLoggedAtToday,
+        label: loggedAtLabel,
+        selectedMealType: _selectedMealType,
+        onPickLoggedAt: _pickLoggedAt,
+        onMealTypeSelected: _selectMealType,
+      ),
+      inedibleSection: _supportsInedibleAmountAdjustment
+          ? _InventoryItemEatSheetInedibleSectionData(
+              controller: _inedibleAmountController,
+              focusNode: _inedibleAmountFocusNode,
+              errorText: _inedibleAmountErrorText,
+              unitLabel: unitLabel ?? '',
+              onChanged: _clearInedibleAmountError,
+              onSubmitted: _dismissKeyboard,
+            )
+          : null,
+      footer: _InventoryItemEatSheetFooterData(
+        confirmActionText: l10n.inventoryItemEatSheetConfirmAction,
+        onConfirm: _submit,
+      ),
     );
+
+    return _InventoryItemEatSheetView(data: viewData);
   }
 
   String? _inventoryUnitLabel(AppLocalizations l10n) {
@@ -564,13 +589,10 @@ class _InventoryItemEatSheetState
     );
   }
 
-  String _loggedAtLabel(MaterialLocalizations material) {
+  bool _isLoggedAtToday() {
     final today = DateUtils.dateOnly(DateTime.now());
     final selectedDay = DateUtils.dateOnly(_selectedLoggedAt);
-    if (selectedDay == today) {
-      return '';
-    }
-    return material.formatMediumDate(_selectedLoggedAt);
+    return selectedDay == today;
   }
 
   Future<void> _pickLoggedAt() async {
