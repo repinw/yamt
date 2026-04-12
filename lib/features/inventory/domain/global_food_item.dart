@@ -296,7 +296,7 @@ class GlobalFoodItem {
 
   @override
   int get hashCode {
-    return Object.hash(
+    return Object.hashAll(<Object?>[
       id,
       foodFingerprint,
       name,
@@ -318,7 +318,7 @@ class GlobalFoodItem {
       mergedIntoId,
       createdAt,
       updatedAt,
-    );
+    ]);
   }
 }
 
