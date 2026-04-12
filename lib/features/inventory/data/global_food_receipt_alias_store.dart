@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 const String _storeLogName = 'FirestoreGlobalFoodReceiptAliasStore';
 const String _globalFoodReceiptAliasesCollection =
     'global_food_item_receipt_aliases';
+const int _maxAliasDocumentsPerTransaction = 200;
 
 class GlobalFoodReceiptAliasDocument {
   const GlobalFoodReceiptAliasDocument({required this.id, required this.data});
@@ -121,26 +122,55 @@ class FirestoreGlobalFoodReceiptAliasStore
   Future<void> _createMissingDocuments(
     Map<String, Map<String, dynamic>> documentsById,
   ) async {
-    for (final entry in documentsById.entries) {
+    final entries = documentsById.entries.toList(growable: false);
+    for (final chunk in _chunkEntries(entries)) {
       await _firestore.runTransaction((transaction) async {
-        final reference = _collection().doc(entry.key);
-        final snapshot = await transaction.get(reference);
-        if (!snapshot.exists) {
-          transaction.set(reference, entry.value);
-          return;
+        final snapshotsById =
+            <String, DocumentSnapshot<Map<String, dynamic>>>{};
+
+        for (final entry in chunk) {
+          final reference = _collection().doc(entry.key);
+          snapshotsById[entry.key] = await transaction.get(reference);
         }
-        final currentData = snapshot.data() ?? const <String, dynamic>{};
-        final currentCount = _readSelectionCount(
-          currentData['selection_count'],
-        );
-        final nextCount = _readSelectionCount(entry.value['selection_count']);
-        final merged = Map<String, dynamic>.from(entry.value)
-          ..['created_at'] =
-              currentData['created_at'] ?? entry.value['created_at']
-          ..['selection_count'] = currentCount + nextCount;
-        transaction.set(reference, merged);
+
+        for (final entry in chunk) {
+          final reference = _collection().doc(entry.key);
+          final snapshot = snapshotsById[entry.key]!;
+          if (!snapshot.exists) {
+            transaction.set(reference, entry.value);
+            continue;
+          }
+
+          final currentData = snapshot.data() ?? const <String, dynamic>{};
+          final currentCount = _readSelectionCount(
+            currentData['selection_count'],
+          );
+          final nextCount = _readSelectionCount(entry.value['selection_count']);
+          final merged = Map<String, dynamic>.from(entry.value)
+            ..['created_at'] =
+                currentData['created_at'] ?? entry.value['created_at']
+            ..['selection_count'] = currentCount + nextCount;
+          transaction.set(reference, merged);
+        }
       });
     }
+  }
+
+  List<List<MapEntry<String, Map<String, dynamic>>>> _chunkEntries(
+    List<MapEntry<String, Map<String, dynamic>>> entries,
+  ) {
+    final chunks = <List<MapEntry<String, Map<String, dynamic>>>>[];
+    for (
+      var start = 0;
+      start < entries.length;
+      start += _maxAliasDocumentsPerTransaction
+    ) {
+      final end = start + _maxAliasDocumentsPerTransaction;
+      chunks.add(
+        entries.sublist(start, end > entries.length ? entries.length : end),
+      );
+    }
+    return chunks;
   }
 
   List<GlobalFoodReceiptAliasDocument> _mapSnapshot(
