@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion.dart';
+import 'package:yamt/features/inventory/domain/inventory_parsing_utils.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion_repository_contract.dart';
 
@@ -324,41 +325,17 @@ class FirestoreGlobalFoodServingSuggestionRepository
 }
 
 int? _readPositiveInt(Object? value) {
-  if (value is int) {
-    return value > 0 ? value : null;
-  }
-  if (value is num) {
-    final normalized = value.toInt();
-    return normalized > 0 ? normalized : null;
-  }
-  return null;
+  return readPositiveInt(value);
 }
 
 double? _readPositiveDouble(Object? value) {
-  if (value is num) {
-    final normalized = value.toDouble();
-    if (normalized > 0) {
-      return normalizeServingSuggestionAmount(normalized);
-    }
+  final parsed = readPositiveDouble(value);
+  if (parsed == null) {
+    return null;
   }
-  if (value is String) {
-    final parsed = double.tryParse(value.trim().replaceAll(',', '.'));
-    if (parsed != null && parsed > 0) {
-      return normalizeServingSuggestionAmount(parsed);
-    }
-  }
-  return null;
+  return normalizeServingSuggestionAmount(parsed);
 }
 
 DateTime? _readDateTime(Object? value) {
-  if (value is DateTime) {
-    return value;
-  }
-  if (value is Timestamp) {
-    return value.toDate();
-  }
-  if (value is String) {
-    return DateTime.tryParse(value);
-  }
-  return null;
+  return readDateTime(value);
 }

@@ -1,5 +1,6 @@
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_parsing_utils.dart';
 
 const String globalServingItemKeyPrefix = 'global';
 const String fingerprintServingItemKeyPrefix = 'fingerprint';
@@ -209,44 +210,19 @@ String? _readOptionalString(Object? value) {
 }
 
 double? _readPositiveDouble(Object? value) {
-  if (value is num) {
-    final normalized = value.toDouble();
-    if (normalized > 0) {
-      return normalizeServingSuggestionAmount(normalized);
-    }
+  final parsed = readPositiveDouble(value);
+  if (parsed == null) {
+    return null;
   }
-  if (value is String) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) {
-      return null;
-    }
-    final parsed = double.tryParse(trimmed.replaceAll(',', '.'));
-    if (parsed != null && parsed > 0) {
-      return normalizeServingSuggestionAmount(parsed);
-    }
-  }
-  return null;
+  return normalizeServingSuggestionAmount(parsed);
 }
 
 int? _readPositiveInt(Object? value) {
-  if (value is int) {
-    return value > 0 ? value : null;
-  }
-  if (value is num) {
-    final normalized = value.toInt();
-    return normalized > 0 ? normalized : null;
-  }
-  return null;
+  return readPositiveInt(value);
 }
 
 DateTime? _readDateTime(Object? value) {
-  if (value is DateTime) {
-    return value;
-  }
-  if (value is String) {
-    return DateTime.tryParse(value);
-  }
-  return null;
+  return readDateTime(value);
 }
 
 const Object _keepValue = Object();
