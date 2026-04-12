@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
@@ -16,6 +18,8 @@ import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -24,6 +28,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 part 'inventory_item_eat_sheet_components.dart';
 part 'inventory_item_eat_sheet_display.dart';
+part 'inventory_item_eat_sheet_hero.dart';
+part 'inventory_item_eat_sheet_input_sections.dart';
+part 'inventory_item_eat_sheet_models.dart';
+part 'inventory_item_eat_sheet_view.dart';
 
 Future<InventoryItemEatRequest?> showInventoryItemEatSheet({
   required BuildContext context,
@@ -145,7 +153,6 @@ class _InventoryItemEatSheetState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
     final material = MaterialLocalizations.of(context);
     final selectedAmount = int.tryParse(_inventoryAmountController.text.trim());
     final unitLabel = _inventoryUnitLabel(l10n);
@@ -157,196 +164,71 @@ class _InventoryItemEatSheetState
     );
     final manualServingSuggestions = servingResolution.manualServingSuggestions;
     final nutritionMetrics = _buildNutritionMetrics(l10n);
+    final isLoggedAtToday = _isLoggedAtToday();
+    final loggedAtLabel = isLoggedAtToday
+        ? null
+        : material.formatMediumDate(_selectedLoggedAt);
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: AppSpacing.xl,
-          right: AppSpacing.xl,
-          top: AppSpacing.lg,
-          bottom: MediaQuery.viewInsetsOf(context).bottom + AppSpacing.xxxl,
-        ),
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: DecoratedBox(
-              decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
-                colors,
-                borderRadius: BorderRadius.circular(
-                  AppInventoryEditorial.cardRadius,
-                ),
-              ),
-              child: Padding(
-                padding: AppInsets.card,
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _InventoryItemEatSheetHeader(
-                        title: l10n.inventoryItemEatSheetTitle(
-                          widget.item.name,
-                        ),
-                        eyebrow: l10n.inventoryItemEatSheetEyebrow,
-                      ),
-                      const SizedBox(height: AppSpacing.xxxl),
-                      _InventoryItemEatSectionLabel(
-                        text: l10n.inventoryItemEatSheetAmountLabel,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      _InventoryItemEatAmountCard(
-                        controller: _inventoryAmountController,
-                        focusNode: _inventoryAmountFocusNode,
-                        unitLabel: unitLabel,
-                        errorText: _inventoryAmountErrorText,
-                        clearTooltip:
-                            l10n.inventoryItemEatSheetClearAmountAction,
-                        onChanged: _clearInventoryAmountError,
-                        onClearAndFocus: _clearInventoryAmountAndFocus,
-                        onSubmitted: _submit,
-                      ),
-                      if (quickOptions.isNotEmpty) ...[
-                        const SizedBox(height: AppSpacing.xxxl),
-                        _InventoryItemEatSectionLabel(
-                          text: l10n.inventoryItemEatSheetQuickSelectLabel,
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        Wrap(
-                          spacing: AppSpacing.sm,
-                          runSpacing: AppSpacing.sm,
-                          children: [
-                            for (final option in quickOptions)
-                              _InventoryItemEatQuickChip(
-                                label: option.label,
-                                isSelected: selectedAmount == option.value,
-                                onPressed: () =>
-                                    _selectInventoryAmount(option.value),
-                              ),
-                          ],
-                        ),
-                      ],
-                      if (_supportsInedibleAmountAdjustment) ...[
-                        const SizedBox(height: AppSpacing.xxxl),
-                        _InventoryItemEatSectionLabel(
-                          text: l10n.inventoryItemEatSheetInedibleAmountLabel,
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        _InventoryItemEatInedibleAmountSection(
-                          amountController: _inedibleAmountController,
-                          amountFocusNode: _inedibleAmountFocusNode,
-                          amountErrorText: _inedibleAmountErrorText,
-                          unitLabel: unitLabel ?? '',
-                          onAmountChanged: _clearInedibleAmountError,
-                          onSubmitted: _submit,
-                        ),
-                      ],
-                      if (_requiresManualCaloriePortion) ...[
-                        const SizedBox(height: AppSpacing.xxxl),
-                        _InventoryItemEatSectionLabel(
-                          text: l10n.inventoryBarcodePortionDialogTitle,
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        _InventoryItemEatManualPortionSection(
-                          amountController: _manualCalorieAmountController,
-                          amountFocusNode: _manualCalorieAmountFocusNode,
-                          amountErrorText: _manualCalorieAmountErrorText,
-                          selectedUnit: _selectedManualCalorieUnit,
-                          onAmountChanged: _clearManualCalorieAmountError,
-                          onUnitChanged: _selectManualCalorieUnit,
-                        ),
-                        if (manualServingSuggestions.isNotEmpty) ...[
-                          const SizedBox(height: AppSpacing.lg),
-                          _InventoryItemEatSectionLabel(
-                            text: l10n.inventoryItemEatSheetQuickSelectLabel,
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          Wrap(
-                            spacing: AppSpacing.sm,
-                            runSpacing: AppSpacing.sm,
-                            children: [
-                              for (final suggestion in manualServingSuggestions)
-                                _InventoryItemEatQuickChip(
-                                  label: suggestion.label,
-                                  isSelected:
-                                      _selectedManualCalorieUnit ==
-                                          suggestion.unit &&
-                                      _manualCalorieAmountController.text
-                                              .trim() ==
-                                          formatInventoryNutritionValue(
-                                            suggestion.amount,
-                                          ),
-                                  onPressed: () =>
-                                      _applyManualServingSuggestion(
-                                        amount: suggestion.amount,
-                                        unit: suggestion.unit,
-                                      ),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ],
-                      const SizedBox(height: AppSpacing.xxxl),
-                      _InventoryItemEatSectionLabel(
-                        text: l10n.inventoryItemEatSheetWhenLabel,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      _InventoryItemEatWhenCard(
-                        label: _loggedAtLabel(material, l10n),
-                        onPressed: _pickLoggedAt,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      _InventoryItemEatMealTypeSelector(
-                        selectedMealType: _selectedMealType,
-                        onMealTypeSelected: _selectMealType,
-                      ),
-                      if (nutritionMetrics.isNotEmpty) ...[
-                        const SizedBox(height: AppSpacing.xxxl),
-                        _InventoryItemEatSectionLabel(
-                          text: l10n.inventoryItemEatSheetNutritionLabel,
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        _InventoryItemEatNutritionMetricsRow(
-                          metrics: nutritionMetrics,
-                        ),
-                      ],
-                      const SizedBox(height: AppSpacing.xxxl),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          key: const Key(
-                            'inventory_item_amount_dialog_confirm_button',
-                          ),
-                          onPressed: _submit,
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: AppSpacing.xxl,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppRadius.xl),
-                            ),
-                            backgroundColor: colors.primary,
-                          ),
-                          child: Text(
-                            l10n.inventoryItemEatSheetConfirmAction,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  color: colors.onPrimary,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
+    final viewData = _InventoryItemEatSheetViewData(
+      viewInsetsBottom: MediaQuery.viewInsetsOf(context).bottom,
+      hero: _InventoryItemEatSheetHeroData(
+        itemName: widget.item.name,
+        imageUrl: widget.item.imageUrl,
+        eyebrow: l10n.inventoryItemEatSheetEyebrow,
+      ),
+      amountSection: _InventoryItemEatSheetAmountSectionData(
+        label: l10n.inventoryItemEatSheetAmountLabel,
+        clearTooltip: l10n.inventoryItemEatSheetClearAmountAction,
+        controller: _inventoryAmountController,
+        focusNode: _inventoryAmountFocusNode,
+        unitLabel: unitLabel,
+        errorText: _inventoryAmountErrorText,
+        selectedAmount: selectedAmount,
+        quickOptions: quickOptions,
+        onChanged: _clearInventoryAmountError,
+        onClearAndFocus: _clearInventoryAmountAndFocus,
+        onSubmitted: _dismissKeyboard,
+        onQuickOptionSelected: _selectInventoryAmount,
+      ),
+      manualPortionSection: _requiresManualCaloriePortion
+          ? _InventoryItemEatSheetManualPortionSectionData(
+              title: l10n.inventoryBarcodePortionDialogTitle,
+              controller: _manualCalorieAmountController,
+              focusNode: _manualCalorieAmountFocusNode,
+              errorText: _manualCalorieAmountErrorText,
+              selectedUnit: _selectedManualCalorieUnit,
+              suggestions: manualServingSuggestions,
+              onAmountChanged: _clearManualCalorieAmountError,
+              onUnitChanged: _selectManualCalorieUnit,
+              onSubmitted: _dismissKeyboard,
+              onSuggestionPressed: _applyManualServingSuggestion,
+            )
+          : null,
+      nutritionMetrics: nutritionMetrics,
+      whenSection: _InventoryItemEatSheetWhenSectionData(
+        isToday: isLoggedAtToday,
+        label: loggedAtLabel,
+        selectedMealType: _selectedMealType,
+        onPickLoggedAt: _pickLoggedAt,
+        onMealTypeSelected: _selectMealType,
+      ),
+      inedibleSection: _supportsInedibleAmountAdjustment
+          ? _InventoryItemEatSheetInedibleSectionData(
+              controller: _inedibleAmountController,
+              focusNode: _inedibleAmountFocusNode,
+              errorText: _inedibleAmountErrorText,
+              unitLabel: unitLabel ?? '',
+              onChanged: _clearInedibleAmountError,
+              onSubmitted: _dismissKeyboard,
+            )
+          : null,
+      footer: _InventoryItemEatSheetFooterData(
+        confirmActionText: l10n.inventoryItemEatSheetConfirmAction,
+        onConfirm: _submit,
       ),
     );
+
+    return _InventoryItemEatSheetView(data: viewData);
   }
 
   String? _inventoryUnitLabel(AppLocalizations l10n) {
@@ -507,6 +389,10 @@ class _InventoryItemEatSheetState
       _inventoryAmountErrorText = null;
     });
     _inventoryAmountFocusNode.requestFocus();
+  }
+
+  void _dismissKeyboard() {
+    FocusManager.instance.primaryFocus?.unfocus();
   }
 
   void _selectManualCalorieUnit(ConsumedUnit unit) {
@@ -703,13 +589,10 @@ class _InventoryItemEatSheetState
     );
   }
 
-  String _loggedAtLabel(MaterialLocalizations material, AppLocalizations l10n) {
+  bool _isLoggedAtToday() {
     final today = DateUtils.dateOnly(DateTime.now());
     final selectedDay = DateUtils.dateOnly(_selectedLoggedAt);
-    if (selectedDay == today) {
-      return l10n.inventoryItemEatSheetNowValue;
-    }
-    return material.formatMediumDate(_selectedLoggedAt);
+    return selectedDay == today;
   }
 
   Future<void> _pickLoggedAt() async {

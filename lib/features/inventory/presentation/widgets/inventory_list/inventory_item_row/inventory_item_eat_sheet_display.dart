@@ -1,18 +1,52 @@
 part of 'inventory_item_eat_sheet.dart';
 
-class _InventoryItemEatSectionLabel extends StatelessWidget {
-  const _InventoryItemEatSectionLabel({required this.text});
+class _InventoryItemEatSectionCard extends StatelessWidget {
+  const _InventoryItemEatSectionCard({
+    required this.child,
+    this.padding = const EdgeInsets.all(AppSpacing.xl),
+  });
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppInventoryEditorial.cardRadius),
+        border: Border.all(
+          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+        ),
+        boxShadow: [
+          AppInventoryEditorialSurfaces.ambientBoxShadow(
+            colors,
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Padding(padding: padding, child: child),
+    );
+  }
+}
+
+class _InventoryItemEatCardTitle extends StatelessWidget {
+  const _InventoryItemEatCardTitle({required this.text});
 
   final String text;
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Text(
-      text.toUpperCase(),
-      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 1.8,
+      text,
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+        color: colors.onSurfaceVariant,
+        fontWeight: FontWeight.w600,
       ),
     );
   }
@@ -60,36 +94,76 @@ class _InventoryItemEatQuickChip extends StatelessWidget {
   }
 }
 
+class _InventoryItemEatQuickChipScroller extends StatelessWidget {
+  const _InventoryItemEatQuickChipScroller({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (var index = 0; index < children.length; index++) ...[
+            children[index],
+            if (index < children.length - 1)
+              const SizedBox(width: AppSpacing.sm),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 class _InventoryItemEatNutritionMetric extends StatelessWidget {
   const _InventoryItemEatNutritionMetric({
+    required this.index,
     required this.label,
     required this.value,
+    this.isHighlighted = false,
   });
 
+  final int index;
   final String label;
   final String value;
+  final bool isHighlighted;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final valueColor = isHighlighted ? colors.primary : colors.onSurface;
+    final valueText = Text(
+      key: Key('inventory_item_nutrition_value_$index'),
+      value,
+      maxLines: 1,
+      softWrap: false,
+      textAlign: TextAlign.center,
+      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+        color: valueColor,
+        fontWeight: FontWeight.w800,
+        height: 1.0,
+      ),
+    );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: colors.onSurface,
-            fontWeight: FontWeight.w800,
-          ),
+        SizedBox(
+          width: double.infinity,
+          child: FittedBox(fit: BoxFit.scaleDown, child: valueText),
         ),
-        const SizedBox(height: AppSpacing.xs),
+        const SizedBox(height: 6),
         Text(
-          label,
+          key: Key('inventory_item_nutrition_label_$index'),
+          label.toUpperCase(),
+          maxLines: 1,
+          softWrap: false,
+          textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: colors.onSurfaceVariant,
+            color: colors.onSurfaceVariant.withValues(alpha: 0.82),
             fontWeight: FontWeight.w700,
-            letterSpacing: 1.1,
+            letterSpacing: 1.35,
           ),
         ),
       ],

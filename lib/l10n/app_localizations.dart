@@ -734,7 +734,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryItemEatSheetEyebrow.
   ///
   /// In en, this message translates to:
-  /// **'Log'**
+  /// **'Log food'**
   String get inventoryItemEatSheetEyebrow;
 
   /// No description provided for @inventoryItemEatSheetTitle.

@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/features/inventory/presentation/constants/'
+    'inventory_ui_constants.dart';
 
 class InventoryItemImageTile extends StatelessWidget {
   const InventoryItemImageTile({super.key, this.imageUrl});
 
   static const _size = AppInventoryEditorial.imageTileSize;
-  static const _fallbackEmoji = '🍽️';
 
   final String? imageUrl;
 
@@ -35,7 +36,10 @@ class InventoryItemImageTile extends StatelessWidget {
           dimension: _size,
           child: Center(
             child: normalizedImageUrl == null
-                ? Text(_fallbackEmoji, style: emojiTextStyle)
+                ? Text(
+                    AppInventoryItemVisuals.fallbackEmoji,
+                    style: emojiTextStyle,
+                  )
                 : AppCachedNetworkImage(
                     imageUrl: normalizedImageUrl,
                     width: _size,
@@ -46,7 +50,10 @@ class InventoryItemImageTile extends StatelessWidget {
                     filterQuality: FilterQuality.low,
                     gaplessPlayback: true,
                     errorBuilder: (_, error, stackTrace) {
-                      return Text(_fallbackEmoji, style: emojiTextStyle);
+                      return Text(
+                        AppInventoryItemVisuals.fallbackEmoji,
+                        style: emojiTextStyle,
+                      );
                     },
                   ),
           ),

@@ -132,7 +132,7 @@
   "inventoryItemDeleteAction": "Löschen",
   "inventoryItemDeletedMessage": "Artikel gelöscht.",
   "inventoryItemEatAction": "Essen",
-  "inventoryItemEatSheetEyebrow": "Loggen",
+  "inventoryItemEatSheetEyebrow": "Essen loggen",
   "inventoryItemEatSheetTitle": "Essen: {name}",
   "@inventoryItemEatSheetTitle": {
     "placeholders": {

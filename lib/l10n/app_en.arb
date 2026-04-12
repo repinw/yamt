@@ -131,7 +131,7 @@
   "inventoryItemDeleteAction": "Delete",
   "inventoryItemDeletedMessage": "Item deleted.",
   "inventoryItemEatAction": "Eat",
-  "inventoryItemEatSheetEyebrow": "Log",
+  "inventoryItemEatSheetEyebrow": "Log food",
   "inventoryItemEatSheetTitle": "Eat: {name}",
   "@inventoryItemEatSheetTitle": {
     "placeholders": {

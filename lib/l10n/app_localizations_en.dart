@@ -331,7 +331,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemEatAction => 'Eat';
 
   @override
-  String get inventoryItemEatSheetEyebrow => 'Log';
+  String get inventoryItemEatSheetEyebrow => 'Log food';
 
   @override
   String inventoryItemEatSheetTitle(String name) {
