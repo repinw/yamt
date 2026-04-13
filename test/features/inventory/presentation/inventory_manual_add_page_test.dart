@@ -749,6 +749,11 @@ void main() {
       );
       await tester.ensureVisible(eatNowCheckbox);
       await _setCheckboxValue(tester, eatNowCheckbox, true);
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
+        '250',
+      );
+      await _pumpUi(tester);
 
       final manualSaveButton = find.byKey(
         const Key('receipt_review_manual_save_button'),
@@ -819,6 +824,11 @@ void main() {
       );
       await tester.ensureVisible(eatNowCheckbox);
       await _setCheckboxValue(tester, eatNowCheckbox, true);
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
+        '250',
+      );
+      await _pumpUi(tester);
 
       final manualSaveButton = find.byKey(
         const Key('receipt_review_manual_save_button'),
@@ -914,6 +924,11 @@ void main() {
     final manualSaveButton = find.byKey(
       const Key('receipt_review_manual_save_button'),
     );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_weight_field')),
+      '150',
+    );
+    await _pumpUi(tester);
     await tester.ensureVisible(manualSaveButton);
     await tester.tap(manualSaveButton);
     await _pumpUi(tester);

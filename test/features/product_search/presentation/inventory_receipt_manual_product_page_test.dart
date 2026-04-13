@@ -1177,6 +1177,37 @@ void main() {
     expect(saveButton().onPressed, isNotNull);
   });
 
+  testWidgets('save stays disabled until package size is entered', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item(),
+        selectedProduct: const OffProductSearchResult(
+          code: '4311596490202',
+          name: 'Booster Absolute Zero',
+          brand: 'Booster',
+          score: 100,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    FilledButton saveButton() => tester.widget<FilledButton>(
+      find.byKey(const Key('receipt_review_manual_save_button')),
+    );
+
+    expect(saveButton().onPressed, isNull);
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_weight_field')),
+      '330',
+    );
+    await tester.pump();
+
+    expect(saveButton().onPressed, isNotNull);
+  });
+
   testWidgets('save forwards eat now selection when nutrition is present', (
     tester,
   ) async {
@@ -1232,6 +1263,131 @@ void main() {
     expect(savedResult?.eatImmediately, isTrue);
     expect(savedResult?.item.weight, '330 ml');
     expect(savedResult?.eatNowWeight, '250 ml');
+  });
+
+  testWidgets('eat now requires numeric amount before save', (tester) async {
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item(),
+        selectedProduct: const OffProductSearchResult(
+          code: '4311596490202',
+          name: 'Booster Absolute Zero',
+          brand: 'Booster',
+          packageWeight: '330 ml',
+          score: 100,
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 2,
+            per100Protein: 0,
+            per100Carbs: 0,
+            per100Fat: 0,
+          ),
+        ),
+        showEatImmediatelyOption: true,
+      ),
+    );
+    await tester.pump();
+
+    FilledButton saveButton() => tester.widget<FilledButton>(
+      find.byKey(const Key('receipt_review_manual_save_button')),
+    );
+
+    expect(saveButton().onPressed, isNotNull);
+
+    final checkboxFinder = find.byKey(
+      const Key('receipt_review_manual_eat_now_checkbox'),
+    );
+    final checkbox = tester.widget<CheckboxListTile>(checkboxFinder);
+    checkbox.onChanged!(true);
+    await tester.pump();
+
+    expect(saveButton().onPressed, isNull);
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
+      'abc',
+    );
+    await tester.pump();
+
+    expect(saveButton().onPressed, isNull);
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
+          )
+          .controller
+          ?.text,
+      '',
+    );
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
+      '250',
+    );
+    await tester.pump();
+
+    expect(saveButton().onPressed, isNotNull);
+  });
+
+  testWidgets('nutrition fields only accept numeric characters', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item(),
+        selectedProduct: const OffProductSearchResult(
+          code: '4311596490202',
+          name: 'Booster Absolute Zero',
+          brand: 'Booster',
+          packageWeight: '330 ml',
+          score: 100,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_kcal_field')),
+      '12a,.b3',
+    );
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const Key('receipt_review_manual_kcal_field')),
+          )
+          .controller
+          ?.text,
+      '12,.3',
+    );
+
+    final addOptionalNutritionButton = find.byKey(
+      const Key('receipt_review_manual_add_optional_nutrition_button'),
+    );
+    await tester.ensureVisible(addOptionalNutritionButton);
+    await tester.tap(addOptionalNutritionButton);
+    await tester.pump();
+
+    await tester.enterText(
+      find.byKey(
+        const Key('receipt_review_manual_optional_nutrition_value_field'),
+      ),
+      '4x,5y',
+    );
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(
+              const Key('receipt_review_manual_optional_nutrition_value_field'),
+            ),
+          )
+          .controller
+          ?.text,
+      '4,5',
+    );
   });
 
   testWidgets('save stays enabled when selected product already has barcode', (

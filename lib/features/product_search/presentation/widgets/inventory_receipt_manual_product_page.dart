@@ -479,6 +479,7 @@ class _InventoryReceiptManualProductEditorPageState
     _optionalNutritionValueController.addListener(
       _handleOptionalNutritionValueChanged,
     );
+    _eatNowAmountController.addListener(_handleEatNowAmountChanged);
     final initialInfoMessage = widget.initialInfoMessage;
     if (initialInfoMessage != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -588,6 +589,7 @@ class _InventoryReceiptManualProductEditorPageState
     _brandController.dispose();
     _weightAmountController.removeListener(_handleWeightChanged);
     _weightAmountController.dispose();
+    _eatNowAmountController.removeListener(_handleEatNowAmountChanged);
     _eatNowAmountController.dispose();
     _kcalController.removeListener(_handleKcalChanged);
     _kcalController.dispose();
@@ -622,7 +624,7 @@ class _InventoryReceiptManualProductEditorPageState
     final state = ref.watch(_provider);
     final preview = _buildPreviewData();
     final canEatImmediately = _canEatImmediately(state);
-    final canSave = state.hasBarcode || state.hasNutritionInput;
+    final canSave = _canSave(state);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.inventoryReceiptReviewManualDataTitle)),
@@ -762,7 +764,7 @@ class _InventoryReceiptManualProductEditorPageState
 
   Future<void> _save() async {
     final state = ref.read(_provider);
-    if (state.isRunningNutritionOcr) {
+    if (state.isRunningNutritionOcr || !_canSave(state)) {
       return;
     }
     final payload = _controller.buildSavePayload();
@@ -893,6 +895,26 @@ class _InventoryReceiptManualProductEditorPageState
     return widget.config.item.nutrition?.hasAnyNutritionValue == true;
   }
 
+  bool _requiresEatNowAmount(InventoryReceiptManualProductState state) {
+    return widget.showEatImmediatelyOption &&
+        _eatImmediately &&
+        _canEatImmediately(state);
+  }
+
+  bool _hasValidEatNowAmount() {
+    return parseManualProductDouble(_eatNowAmountController.text) != null;
+  }
+
+  bool _canSave(InventoryReceiptManualProductState state) {
+    if (!state.canSave) {
+      return false;
+    }
+    if (!_requiresEatNowAmount(state)) {
+      return true;
+    }
+    return _hasValidEatNowAmount();
+  }
+
   InventoryAmountUnit _defaultEatNowUnit() {
     final parser = const InventoryAmountParser();
     final rawWeight =
@@ -906,11 +928,12 @@ class _InventoryReceiptManualProductEditorPageState
   }
 
   String? _resolvedEatNowWeight() {
-    final amount = normalizeManualProductText(_eatNowAmountController.text);
+    final amount = parseManualProductDouble(_eatNowAmountController.text);
     if (amount == null) {
       return null;
     }
-    return '$amount ${_weightUnitCode(_selectedEatNowUnit)}';
+    return '${formatManualProductDouble(amount)} '
+        '${_weightUnitCode(_selectedEatNowUnit)}';
   }
 
   String _weightUnitCode(InventoryAmountUnit unit) {
@@ -1036,6 +1059,13 @@ class _InventoryReceiptManualProductEditorPageState
     );
   }
 
+  void _handleEatNowAmountChanged() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+  }
+
   String? _resolveErrorText(
     AppLocalizations l10n,
     InventoryReceiptManualProductError? error,
@@ -1044,6 +1074,9 @@ class _InventoryReceiptManualProductEditorPageState
       null => null,
       InventoryReceiptManualProductError.requiredProductOrNutrition =>
         l10n.inventoryReceiptReviewManualDataRequired,
+      InventoryReceiptManualProductError.requiredPackageWeight =>
+        '${l10n.inventoryManualAddPackageSizeLabel}: '
+            '${l10n.caloriesRequiredField}',
     };
   }
 }

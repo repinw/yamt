@@ -91,7 +91,10 @@ class InventoryReceiptManualProductConfig {
   }
 }
 
-enum InventoryReceiptManualProductError { requiredProductOrNutrition }
+enum InventoryReceiptManualProductError {
+  requiredProductOrNutrition,
+  requiredPackageWeight,
+}
 
 enum InventoryReceiptManualProductNutritionScanOutcome {
   applied,
@@ -276,6 +279,10 @@ class InventoryReceiptManualProductState {
 
   bool get hasBarcode => normalizeBarcode(barcode).isNotEmpty;
 
+  bool get hasPackageWeightInput {
+    return parseManualProductDouble(weightAmount) != null;
+  }
+
   bool get hasNutritionInput {
     return normalizeManualProductText(kcalText) != null ||
         normalizeManualProductText(saturatedFatText) != null ||
@@ -304,6 +311,10 @@ class InventoryReceiptManualProductState {
         hasBarcode ||
         hasNutritionInput ||
         error != null;
+  }
+
+  bool get canSave {
+    return hasPackageWeightInput && (hasBarcode || hasNutritionInput);
   }
 
   bool get canScanNutritionLabel {
@@ -748,6 +759,12 @@ class InventoryReceiptManualProductController
     if (barcode == null && !hasNutrition) {
       state = state.copyWith(
         error: InventoryReceiptManualProductError.requiredProductOrNutrition,
+      );
+      return null;
+    }
+    if (!state.hasPackageWeightInput) {
+      state = state.copyWith(
+        error: InventoryReceiptManualProductError.requiredPackageWeight,
       );
       return null;
     }
