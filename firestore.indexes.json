@@ -1,4 +1,31 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "global_barcode_candidates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "barcode",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "unique_user_count",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "selection_count",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "completeness_score",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "updated_at",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
   "fieldOverrides": []
 }

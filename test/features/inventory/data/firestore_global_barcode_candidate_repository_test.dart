@@ -33,6 +33,17 @@ GlobalBarcodeCandidate _candidate({
     globalFoodItemId: globalFoodItemId,
     selectionCount: selectionCount,
     uniqueUserCount: uniqueUserCount,
+    completenessScore: computeGlobalBarcodeCandidateCompletenessScore(
+      GlobalFoodItem.create(
+        id: globalFoodItemId,
+        name: name,
+        now: now,
+        brand: brand,
+        barcode: barcode,
+        imageUrl: imageUrl,
+        nutrition: nutrition,
+      ),
+    ),
     globalFoodItem: GlobalFoodItem.create(
       id: globalFoodItemId,
       name: name,
@@ -93,59 +104,60 @@ void main() {
     },
   );
 
-  test('recordSelection increments total and unique vote counters', () async {
-    final firestore = FakeFirebaseFirestore();
-    final now = DateTime.parse('2026-04-13T10:00:00Z');
-    final product = GlobalFoodItem.create(
-      id: 'off-4006381333931',
-      name: 'Milk',
-      now: now,
-      barcode: '4006381333931',
-      nutrition: const GlobalFoodNutrition(
-        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-        per100Kcal: 100,
-      ),
-    );
+  test(
+    'recordSelection increments vote counters without rewriting payload',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      final now = DateTime.parse('2026-04-13T10:00:00Z');
+      final product = GlobalFoodItem.create(
+        id: 'off-4006381333931',
+        name: 'Milk',
+        now: now,
+        barcode: '4006381333931',
+        nutrition: const GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+          per100Kcal: 100,
+        ),
+      );
 
-    final firstRepository = FirestoreGlobalBarcodeCandidateRepository(
-      firestore: firestore,
-      currentUserId: 'user-1',
-    );
-    final secondRepository = FirestoreGlobalBarcodeCandidateRepository(
-      firestore: firestore,
-      currentUserId: 'user-2',
-    );
+      final firstRepository = FirestoreGlobalBarcodeCandidateRepository(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
+      final secondRepository = FirestoreGlobalBarcodeCandidateRepository(
+        firestore: firestore,
+        currentUserId: 'user-2',
+      );
 
-    await firstRepository.recordSelection(
-      barcode: '4006381333931',
-      globalFoodItem: product,
-      selectedAt: now,
-    );
-    await firstRepository.recordSelection(
-      barcode: '4006381333931',
-      globalFoodItem: product.copyWith(
-        imageUrl: 'https://example.com/milk.png',
-      ),
-      selectedAt: now.add(const Duration(minutes: 1)),
-    );
-    await secondRepository.recordSelection(
-      barcode: '4006381333931',
-      globalFoodItem: product.copyWith(
-        imageUrl: 'https://example.com/milk.png',
-      ),
-      selectedAt: now.add(const Duration(minutes: 2)),
-    );
+      await firstRepository.recordSelection(
+        barcode: '4006381333931',
+        globalFoodItem: product,
+        selectedAt: now,
+      );
+      await firstRepository.recordSelection(
+        barcode: '4006381333931',
+        globalFoodItem: product.copyWith(
+          imageUrl: 'https://example.com/milk.png',
+        ),
+        selectedAt: now.add(const Duration(minutes: 1)),
+      );
+      await secondRepository.recordSelection(
+        barcode: '4006381333931',
+        globalFoodItem: product.copyWith(
+          imageUrl: 'https://example.com/milk.png',
+        ),
+        selectedAt: now.add(const Duration(minutes: 2)),
+      );
 
-    final snapshot = await _candidateCollection(
-      firestore: firestore,
-    ).doc('barcode-4006381333931-off-4006381333931').get();
+      final snapshot = await _candidateCollection(
+        firestore: firestore,
+      ).doc('barcode-4006381333931-off-4006381333931').get();
 
-    expect(snapshot.exists, isTrue);
-    expect(snapshot.data()!['selection_count'], 3);
-    expect(snapshot.data()!['unique_user_count'], 2);
-    expect(
-      snapshot.data()!['global_food_item']['image_url'],
-      'https://example.com/milk.png',
-    );
-  });
+      expect(snapshot.exists, isTrue);
+      expect(snapshot.data()!['selection_count'], 3);
+      expect(snapshot.data()!['unique_user_count'], 2);
+      expect(snapshot.data()!['completeness_score'], 8);
+      expect(snapshot.data()!['global_food_item']['image_url'], isNull);
+    },
+  );
 }

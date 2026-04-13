@@ -192,7 +192,9 @@
   "inventoryManualAddSaveFailed":
       "Das Produkt konnte nicht zum Inventar hinzugefügt werden.",
   "inventoryManualAddSaved": "Produkt zum Inventar hinzugefügt.",
+  "inventoryManualAddPackageSizeLabel": "Packungsgröße",
   "inventoryManualAddEatNowOption": "Sofort essen",
+  "inventoryManualAddEatNowSizeLabel": "Sofort essen Menge",
   "inventoryManualAddEatNowRequiresNutrition":
       "Nur verfügbar, wenn Nährwerte vorhanden sind.",
   "inventoryManualAddVoiceSearchStartTooltip": "Sprachsuche starten",

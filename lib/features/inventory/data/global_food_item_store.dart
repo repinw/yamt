@@ -2,6 +2,8 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/data/firestore_atomic_replace_service.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/global_food_item_patch.dart';
 
 const String _storeLogName = 'FirestoreGlobalFoodItemStore';
 const String _globalFoodItemsCollection = 'global_food_items';
@@ -194,12 +196,16 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
         }
 
         final currentData = snapshot.data() ?? const <String, dynamic>{};
-        final merged = <String, dynamic>{
-          ...currentData,
-          ...entry.value,
-          'created_at': currentData['created_at'] ?? entry.value['created_at'],
-        };
-        transaction.set(reference, merged);
+        final currentItem = GlobalFoodItem.fromJson(currentData);
+        final patchItem = GlobalFoodItem.fromJson(entry.value);
+        final mergedItem = mergeGlobalFoodItemPatch(
+          currentItem: currentItem,
+          patchItem: patchItem,
+          updatedAt:
+              DateTime.tryParse(entry.value['updated_at'] as String? ?? '') ??
+              patchItem.updatedAt,
+        );
+        transaction.set(reference, mergedItem.toJson());
       });
     }
   }

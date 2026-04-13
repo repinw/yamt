@@ -1215,6 +1215,12 @@ void main() {
     checkbox.onChanged!(true);
     await tester.pump();
 
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
+      '250',
+    );
+    await tester.pump();
+
     final saveButton = tester.widget<FilledButton>(
       find.byKey(const Key('receipt_review_manual_save_button')),
     );
@@ -1224,6 +1230,8 @@ void main() {
 
     expect(savedResult, isNotNull);
     expect(savedResult?.eatImmediately, isTrue);
+    expect(savedResult?.item.weight, '330 ml');
+    expect(savedResult?.eatNowWeight, '250 ml');
   });
 
   testWidgets('save stays enabled when selected product already has barcode', (

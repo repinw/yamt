@@ -12,11 +12,14 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_manual_product_form.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'inventory_receipt_manual_product_form_utils.dart';
 import 'package:yamt/features/product_search/provider/'
     'inventory_receipt_manual_product_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -78,6 +81,7 @@ class InventoryReceiptManualProductResult {
     this.selectedGlobalFoodItemId,
     this.requiresGlobalPersistence = true,
     this.eatImmediately = false,
+    this.eatNowWeight,
   });
 
   final InventoryItem item;
@@ -85,6 +89,7 @@ class InventoryReceiptManualProductResult {
   final String? selectedGlobalFoodItemId;
   final bool requiresGlobalPersistence;
   final bool eatImmediately;
+  final String? eatNowWeight;
 }
 
 bool _shouldOpenEditorImmediately({
@@ -212,6 +217,7 @@ class _InventoryReceiptManualProductLauncherPageState
               return _InventoryReceiptManualProductEditorPage(
                 config: config,
                 showEatImmediatelyOption: widget.showEatImmediatelyOption,
+                onSaved: widget.onSaved,
                 autofocusSearch: autofocusSearch,
                 initialStartVoiceSearch: initialStartVoiceSearch,
                 initialRecentItem: initialRecentItem,
@@ -329,6 +335,8 @@ class _InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
     this.initialRecentItem,
     this.initialInfoMessage,
     this.initialEatImmediately = false,
+    this.initialEatNowAmount = '',
+    this.initialEatNowUnit,
   });
 
   final InventoryReceiptManualProductConfig config;
@@ -340,6 +348,8 @@ class _InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
   final InventoryItem? initialRecentItem;
   final String? initialInfoMessage;
   final bool initialEatImmediately;
+  final String initialEatNowAmount;
+  final InventoryAmountUnit? initialEatNowUnit;
 
   @override
   ConsumerState<_InventoryReceiptManualProductEditorPage> createState() =>
@@ -406,6 +416,7 @@ class _InventoryReceiptManualProductEditorPageState
   late final TextEditingController _nameController;
   late final TextEditingController _brandController;
   late final TextEditingController _weightAmountController;
+  late final TextEditingController _eatNowAmountController;
   late final TextEditingController _kcalController;
   late final TextEditingController _saturatedFatController;
   late final TextEditingController _polyunsaturatedFatController;
@@ -421,6 +432,8 @@ class _InventoryReceiptManualProductEditorPageState
   bool _didScheduleInitialRecentItem = false;
   bool _isSyncingControllers = false;
   late bool _eatImmediately = widget.initialEatImmediately;
+  late InventoryAmountUnit _selectedEatNowUnit =
+      widget.initialEatNowUnit ?? _defaultEatNowUnit();
 
   InventoryReceiptManualProductControllerProvider get _provider {
     return inventoryReceiptManualProductControllerProvider(widget.config);
@@ -438,6 +451,9 @@ class _InventoryReceiptManualProductEditorPageState
     _nameController = TextEditingController();
     _brandController = TextEditingController();
     _weightAmountController = TextEditingController();
+    _eatNowAmountController = TextEditingController(
+      text: widget.initialEatNowAmount,
+    );
     _nameController.addListener(_handleNameChanged);
     _brandController.addListener(_handleBrandChanged);
     _weightAmountController.addListener(_handleWeightChanged);
@@ -572,6 +588,7 @@ class _InventoryReceiptManualProductEditorPageState
     _brandController.dispose();
     _weightAmountController.removeListener(_handleWeightChanged);
     _weightAmountController.dispose();
+    _eatNowAmountController.dispose();
     _kcalController.removeListener(_handleKcalChanged);
     _kcalController.dispose();
     _saturatedFatController.removeListener(_handleSaturatedFatChanged);
@@ -623,6 +640,8 @@ class _InventoryReceiptManualProductEditorPageState
         recentItems: const <InventoryItem>[],
         weightAmountController: _weightAmountController,
         selectedWeightUnit: state.selectedWeightUnit,
+        eatNowAmountController: _eatNowAmountController,
+        selectedEatNowUnit: _selectedEatNowUnit,
         kcalController: _kcalController,
         saturatedFatController: _saturatedFatController,
         polyunsaturatedFatController: _polyunsaturatedFatController,
@@ -644,6 +663,10 @@ class _InventoryReceiptManualProductEditorPageState
         showEatImmediatelyOption: widget.showEatImmediatelyOption,
         eatImmediately: _eatImmediately && canEatImmediately,
         canEatImmediately: canEatImmediately,
+        showEatNowAmountField:
+            widget.showEatImmediatelyOption &&
+            _eatImmediately &&
+            canEatImmediately,
         onSearchResultSelected: _handleSearchResultSelected,
         onRecentItemSelected: _controller.applyRecentItem,
         onSearchChanged: _controller.updateSearchQuery,
@@ -668,6 +691,11 @@ class _InventoryReceiptManualProductEditorPageState
         onEatImmediatelyChanged: (value) {
           setState(() {
             _eatImmediately = value;
+          });
+        },
+        onEatNowUnitChanged: (value) {
+          setState(() {
+            _selectedEatNowUnit = value;
           });
         },
         onCancel: _closePage,
@@ -717,7 +745,10 @@ class _InventoryReceiptManualProductEditorPageState
               return _InventoryReceiptManualProductEditorPage(
                 config: config,
                 showEatImmediatelyOption: widget.showEatImmediatelyOption,
+                onSaved: widget.onSaved,
                 initialEatImmediately: _eatImmediately,
+                initialEatNowAmount: _eatNowAmountController.text,
+                initialEatNowUnit: _selectedEatNowUnit,
               );
             },
           ),
@@ -751,6 +782,7 @@ class _InventoryReceiptManualProductEditorPageState
       selectedGlobalFoodItemId: payload.selectedGlobalFoodItemId,
       requiresGlobalPersistence: payload.requiresGlobalPersistence,
       eatImmediately: eatImmediately,
+      eatNowWeight: eatImmediately ? _resolvedEatNowWeight() : null,
     );
     final onSaved = widget.onSaved;
     if (onSaved != null) {
@@ -859,6 +891,34 @@ class _InventoryReceiptManualProductEditorPageState
       return true;
     }
     return widget.config.item.nutrition?.hasAnyNutritionValue == true;
+  }
+
+  InventoryAmountUnit _defaultEatNowUnit() {
+    final parser = const InventoryAmountParser();
+    final rawWeight =
+        widget.config.selectedProduct?.packageWeight ??
+        widget.config.item.weight;
+    final parsed = parser.tryParse(rawWeight: rawWeight, quantity: 1);
+    if (parsed != null) {
+      return parsed.unit;
+    }
+    return widget.config.item.amountUnit ?? InventoryAmountUnit.gram;
+  }
+
+  String? _resolvedEatNowWeight() {
+    final amount = normalizeManualProductText(_eatNowAmountController.text);
+    if (amount == null) {
+      return null;
+    }
+    return '$amount ${_weightUnitCode(_selectedEatNowUnit)}';
+  }
+
+  String _weightUnitCode(InventoryAmountUnit unit) {
+    return switch (unit) {
+      InventoryAmountUnit.gram => 'g',
+      InventoryAmountUnit.milliliter => 'ml',
+      InventoryAmountUnit.piece => 'Stk',
+    };
   }
 
   void _showSnackBar(String message) {

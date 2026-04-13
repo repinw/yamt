@@ -12,10 +12,12 @@ import 'package:yamt/features/inventory/data/off_product_search_repository.dart'
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBarcodeScannerLogName = 'InventoryBarcodeScannerPage';
 const _inventoryBarcodeCandidateLimit = 5;
+const _barcodeAmountParser = InventoryAmountParser();
 const inventoryBarcodeCandidateSheetKey = Key(
   'inventory_barcode_candidate_sheet',
 );
@@ -247,7 +249,7 @@ class _InventoryBarcodeScannerViewState
       if (!mounted) {
         return;
       }
-      final candidates = _mergeBarcodeCandidates(
+      final candidates = mergeInventoryBarcodeCandidates(
         learnedCandidates: results[0]! as List<GlobalBarcodeCandidate>,
         offCandidates: results[1]! as List<OffProductSearchResult>,
       );
@@ -447,29 +449,29 @@ bool _isMobileBarcodeScanSupported() {
       defaultTargetPlatform == TargetPlatform.iOS;
 }
 
-List<InventoryBarcodeLookupCandidate> _mergeBarcodeCandidates({
+List<InventoryBarcodeLookupCandidate> mergeInventoryBarcodeCandidates({
   required List<GlobalBarcodeCandidate> learnedCandidates,
   required List<OffProductSearchResult> offCandidates,
 }) {
   final merged = <InventoryBarcodeLookupCandidate>[];
-  final seenKeys = <String>{};
-
-  void addCandidate(InventoryBarcodeLookupCandidate candidate) {
-    final key = _barcodeCandidateDedupeKey(candidate);
-    if (!seenKeys.add(key)) {
-      return;
-    }
-    merged.add(candidate);
-  }
+  final learnedKeys = <String>{};
+  final seenOffKeys = <String>{};
 
   for (final candidate in learnedCandidates) {
-    addCandidate(InventoryBarcodeLookupCandidate.fromLearned(candidate));
+    final resolved = InventoryBarcodeLookupCandidate.fromLearned(candidate);
+    learnedKeys.add(inventoryBarcodeCandidateDedupeKey(resolved));
+    merged.add(resolved);
     if (merged.length == _inventoryBarcodeCandidateLimit) {
       return merged;
     }
   }
   for (final candidate in offCandidates) {
-    addCandidate(InventoryBarcodeLookupCandidate.fromOffProduct(candidate));
+    final resolved = InventoryBarcodeLookupCandidate.fromOffProduct(candidate);
+    final key = inventoryBarcodeCandidateDedupeKey(resolved);
+    if (learnedKeys.contains(key) || !seenOffKeys.add(key)) {
+      continue;
+    }
+    merged.add(resolved);
     if (merged.length == _inventoryBarcodeCandidateLimit) {
       break;
     }
@@ -477,8 +479,25 @@ List<InventoryBarcodeLookupCandidate> _mergeBarcodeCandidates({
   return merged;
 }
 
-String _barcodeCandidateDedupeKey(InventoryBarcodeLookupCandidate candidate) {
+String inventoryBarcodeCandidateDedupeKey(
+  InventoryBarcodeLookupCandidate candidate,
+) {
   final normalizedName = candidate.name.trim().toLowerCase();
   final normalizedBrand = (candidate.brand ?? '').trim().toLowerCase();
-  return '${candidate.barcode}|$normalizedName|$normalizedBrand';
+  final normalizedWeight = _normalizedBarcodeCandidateWeight(
+    candidate.packageWeight,
+  );
+  return '${candidate.barcode}|$normalizedName|$normalizedBrand|'
+      '$normalizedWeight';
+}
+
+String _normalizedBarcodeCandidateWeight(String? rawWeight) {
+  final parsed = _barcodeAmountParser.tryParse(
+    rawWeight: rawWeight,
+    quantity: 1,
+  );
+  if (parsed != null) {
+    return '${parsed.amount}${parsed.unit.code}';
+  }
+  return rawWeight?.trim().toLowerCase() ?? '';
 }

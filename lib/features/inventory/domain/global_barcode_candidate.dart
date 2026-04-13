@@ -8,6 +8,7 @@ class GlobalBarcodeCandidate {
     required this.globalFoodItemId,
     required this.selectionCount,
     required this.uniqueUserCount,
+    required this.completenessScore,
     required this.globalFoodItem,
     required this.createdAt,
     required this.updatedAt,
@@ -41,6 +42,9 @@ class GlobalBarcodeCandidate {
       globalFoodItemId: globalFoodItemId,
       selectionCount: _readPositiveInt(json['selection_count']) ?? 1,
       uniqueUserCount: _readPositiveInt(json['unique_user_count']) ?? 1,
+      completenessScore:
+          _readNonNegativeInt(json['completeness_score']) ??
+          computeGlobalBarcodeCandidateCompletenessScore(globalFoodItem),
       globalFoodItem: globalFoodItem,
       createdAt: _readDateTime(json['created_at']) ?? updatedAt,
       updatedAt: updatedAt,
@@ -52,12 +56,10 @@ class GlobalBarcodeCandidate {
   final String globalFoodItemId;
   final int selectionCount;
   final int uniqueUserCount;
+  final int completenessScore;
   final GlobalFoodItem globalFoodItem;
   final DateTime createdAt;
   final DateTime updatedAt;
-
-  int get completenessScore =>
-      computeGlobalBarcodeCandidateCompletenessScore(globalFoodItem);
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
@@ -66,6 +68,7 @@ class GlobalBarcodeCandidate {
       'global_food_item_id': globalFoodItemId,
       'selection_count': selectionCount,
       'unique_user_count': uniqueUserCount,
+      'completeness_score': completenessScore,
       'global_food_item': globalFoodItem.toJson(),
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -78,6 +81,7 @@ class GlobalBarcodeCandidate {
     String? globalFoodItemId,
     int? selectionCount,
     int? uniqueUserCount,
+    int? completenessScore,
     GlobalFoodItem? globalFoodItem,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -88,6 +92,7 @@ class GlobalBarcodeCandidate {
       globalFoodItemId: globalFoodItemId ?? this.globalFoodItemId,
       selectionCount: selectionCount ?? this.selectionCount,
       uniqueUserCount: uniqueUserCount ?? this.uniqueUserCount,
+      completenessScore: completenessScore ?? this.completenessScore,
       globalFoodItem: globalFoodItem ?? this.globalFoodItem,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -103,6 +108,7 @@ class GlobalBarcodeCandidate {
             other.globalFoodItemId == globalFoodItemId &&
             other.selectionCount == selectionCount &&
             other.uniqueUserCount == uniqueUserCount &&
+            other.completenessScore == completenessScore &&
             other.globalFoodItem == globalFoodItem &&
             other.createdAt == createdAt &&
             other.updatedAt == updatedAt;
@@ -116,6 +122,7 @@ class GlobalBarcodeCandidate {
       globalFoodItemId,
       selectionCount,
       uniqueUserCount,
+      completenessScore,
       globalFoodItem,
       createdAt,
       updatedAt,
@@ -219,6 +226,17 @@ int? _readPositiveInt(Object? value) {
   if (value is num) {
     final normalized = value.toInt();
     return normalized < 1 ? 1 : normalized;
+  }
+  return null;
+}
+
+int? _readNonNegativeInt(Object? value) {
+  if (value is int) {
+    return value < 0 ? 0 : value;
+  }
+  if (value is num) {
+    final normalized = value.toInt();
+    return normalized < 0 ? 0 : normalized;
   }
   return null;
 }

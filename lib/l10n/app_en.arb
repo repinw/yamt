@@ -188,7 +188,9 @@
   "inventoryManualAddSaveFailed":
       "The product could not be added to the inventory.",
   "inventoryManualAddSaved": "Product added to inventory.",
+  "inventoryManualAddPackageSizeLabel": "Package size",
   "inventoryManualAddEatNowOption": "Eat now",
+  "inventoryManualAddEatNowSizeLabel": "Eat now amount",
   "inventoryManualAddEatNowRequiresNutrition":
       "Only available when nutrition values are present.",
   "inventoryManualAddVoiceSearchStartTooltip": "Start voice search",

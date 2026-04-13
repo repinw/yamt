@@ -650,6 +650,11 @@ void main() {
     );
     await tester.ensureVisible(eatNowCheckbox);
     await _setCheckboxValue(tester, eatNowCheckbox, true);
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
+      '250',
+    );
+    await _pumpUi(tester);
 
     final manualSaveButton = find.byKey(
       const Key('receipt_review_manual_save_button'),
@@ -661,6 +666,10 @@ void main() {
       find.byKey(const Key('inventory_item_amount_dialog_field')),
       findsOneWidget,
     );
+    final amountField = tester.widget<TextField>(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+    );
+    expect(amountField.controller?.text, '250');
     expect(
       find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
       findsOneWidget,
@@ -674,7 +683,7 @@ void main() {
     expect(find.text('home'), findsOneWidget);
     expect(inventoryCommitStore.pendingConsumption, isNotNull);
     expect(inventoryCommitStore.pendingConsumption?.itemId, isNotEmpty);
-    expect(inventoryCommitStore.pendingConsumption?.amount, 1);
+    expect(inventoryCommitStore.pendingConsumption?.amount, 250);
   });
 
   testWidgets(
@@ -930,12 +939,14 @@ void main() {
               globalFoodItemId: 'community-milk',
               selectionCount: 7,
               uniqueUserCount: 3,
+              completenessScore: 10,
               globalFoodItem: GlobalFoodItem.create(
                 id: 'community-milk',
                 name: 'Community Milk',
                 now: DateTime.parse('2026-04-13T10:00:00Z'),
                 brand: 'Acme',
                 barcode: '4006381333931',
+                packageWeight: '1 l',
                 nutrition: const GlobalFoodNutrition(
                   qualityStatus: GlobalFoodNutritionQualityStatus.verified,
                   per100Kcal: 100,
@@ -1000,7 +1011,115 @@ void main() {
       barcodeCandidateRepository.recordedSelections.single.globalFoodItem.id,
       'community-milk',
     );
+    expect(
+      barcodeCandidateRepository
+          .recordedSelections
+          .single
+          .globalFoodItem
+          .packageWeight,
+      '1000 ml',
+    );
   });
+
+  testWidgets(
+    'learned candidate keeps package size when eat now amount is smaller',
+    (tester) async {
+      _installFakeScannerPlatform(tester);
+
+      final offRepository =
+          _RecordingOffProductSearchRepository(<OffProductSearchResult>[
+            const OffProductSearchResult(
+              code: '4006381333931',
+              name: 'OFF Milk',
+              brand: 'OFF Brand',
+              score: 99,
+            ),
+          ]);
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      addTearDown(inventoryRepository.dispose);
+      final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+      final barcodeCandidateRepository =
+          _RecordingGlobalBarcodeCandidateRepository(
+            candidates: <GlobalBarcodeCandidate>[
+              GlobalBarcodeCandidate(
+                id: 'barcode-4006381333931-community-milk',
+                barcode: '4006381333931',
+                globalFoodItemId: 'community-milk',
+                selectionCount: 7,
+                uniqueUserCount: 3,
+                completenessScore: 10,
+                globalFoodItem: GlobalFoodItem.create(
+                  id: 'community-milk',
+                  name: 'Community Milk',
+                  now: DateTime.parse('2026-04-13T10:00:00Z'),
+                  brand: 'Acme',
+                  barcode: '4006381333931',
+                  packageWeight: '1 l',
+                  nutrition: const GlobalFoodNutrition(
+                    qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+                    per100Kcal: 100,
+                    per100Protein: 10,
+                    per100Carbs: 20,
+                    per100Fat: 3,
+                  ),
+                ),
+                createdAt: DateTime.parse('2026-04-13T10:00:00Z'),
+                updatedAt: DateTime.parse('2026-04-13T10:00:00Z'),
+              ),
+            ],
+          );
+
+      await tester.pumpWidget(
+        _buildHarness(
+          offRepository: offRepository,
+          inventoryRepository: inventoryRepository,
+          globalFoodRepository: globalFoodRepository,
+          barcodeCandidateRepository: barcodeCandidateRepository,
+        ),
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_scan_button')),
+      );
+      await _pumpUi(tester);
+
+      _fakeScannerPlatform().emitBarcode('4006381333931');
+      await _pumpUi(tester);
+
+      await tester.tap(find.text('Community Milk'));
+      await _pumpUi(tester);
+
+      final eatNowCheckbox = find.byKey(
+        const Key('receipt_review_manual_eat_now_checkbox'),
+      );
+      await tester.ensureVisible(eatNowCheckbox);
+      await _setCheckboxValue(tester, eatNowCheckbox, true);
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
+        '250',
+      );
+      await _pumpUi(tester);
+
+      final manualSaveButton = find.byKey(
+        const Key('receipt_review_manual_save_button'),
+      );
+      await tester.ensureVisible(manualSaveButton);
+      await tester.tap(manualSaveButton);
+      await _pumpUi(tester);
+
+      expect(globalFoodRepository.appendedItems, isEmpty);
+      expect(
+        barcodeCandidateRepository
+            .recordedSelections
+            .single
+            .globalFoodItem
+            .packageWeight,
+        '1000 ml',
+      );
+      expect(inventoryRepository.appendedItems.single.weight, '1000 ml');
+    },
+  );
 
   test('resolveInventoryManualAddEatFlowMaxAmount guards invalid items', () {
     final quantitylessItem = InventoryItem.create(

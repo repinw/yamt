@@ -37,17 +37,37 @@ class FirestoreGlobalBarcodeCandidateRepository
     try {
       final snapshot = await _candidateCollection()
           .where('barcode', isEqualTo: normalizedBarcode)
+          .orderBy('unique_user_count', descending: true)
+          .orderBy('selection_count', descending: true)
+          .orderBy('completeness_score', descending: true)
+          .orderBy('updated_at', descending: true)
+          .limit(safeLimit)
           .get();
-      final candidates = _decodeCandidates(snapshot.docs);
-      return candidates.take(safeLimit).toList(growable: false);
+      return _decodeCandidates(snapshot.docs);
     } on FirebaseException catch (error, stackTrace) {
       log(
-        'Failed to read barcode candidates for $normalizedBarcode.',
+        'Barcode candidate index missing, falling back to client-side sort.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
       );
-      return const <GlobalBarcodeCandidate>[];
+      try {
+        final snapshot = await _candidateCollection()
+            .where('barcode', isEqualTo: normalizedBarcode)
+            .limit(safeLimit * 10)
+            .get();
+        final candidates = _decodeCandidates(snapshot.docs);
+        candidates.sort(compareGlobalBarcodeCandidates);
+        return candidates.take(safeLimit).toList(growable: false);
+      } catch (fallbackError, fallbackStackTrace) {
+        log(
+          'Failed to read barcode candidates for $normalizedBarcode.',
+          name: _repositoryLogName,
+          error: fallbackError,
+          stackTrace: fallbackStackTrace,
+        );
+        return const <GlobalBarcodeCandidate>[];
+      }
     } catch (error, stackTrace) {
       log(
         'Failed to read barcode candidates for $normalizedBarcode.',
@@ -100,16 +120,26 @@ class FirestoreGlobalBarcodeCandidateRepository
       final nextUniqueUserCount =
           (currentUniqueUserCount ?? 0) + (voteSnapshot.exists ? 0 : 1);
       final createdAt = _readDateTime(currentData['created_at']) ?? selectedAt;
+      final patchItem = globalFoodItem.copyWith(
+        id: globalFoodItemId,
+        barcode: normalizedBarcode,
+      );
+      final currentItemJson = _readMap(currentData['global_food_item']);
+      final candidateItem = currentItemJson != null
+          ? GlobalFoodItem.fromJson(
+              currentItemJson,
+            ).copyWith(id: globalFoodItemId)
+          : patchItem;
       final candidate = GlobalBarcodeCandidate(
         id: candidateId,
         barcode: normalizedBarcode,
         globalFoodItemId: globalFoodItemId,
         selectionCount: nextSelectionCount,
         uniqueUserCount: nextUniqueUserCount,
-        globalFoodItem: globalFoodItem.copyWith(
-          id: globalFoodItemId,
-          barcode: normalizedBarcode,
-        ),
+        completenessScore:
+            _readNonNegativeInt(currentData['completeness_score']) ??
+            computeGlobalBarcodeCandidateCompletenessScore(candidateItem),
+        globalFoodItem: candidateItem,
         createdAt: createdAt,
         updatedAt: selectedAt,
       );
@@ -175,6 +205,17 @@ class FirestoreGlobalBarcodeCandidateRepository
     return null;
   }
 
+  int? _readNonNegativeInt(Object? value) {
+    if (value is int) {
+      return value < 0 ? 0 : value;
+    }
+    if (value is num) {
+      final normalized = value.toInt();
+      return normalized < 0 ? 0 : normalized;
+    }
+    return null;
+  }
+
   DateTime? _readDateTime(Object? value) {
     if (value is DateTime) {
       return value;
@@ -183,5 +224,14 @@ class FirestoreGlobalBarcodeCandidateRepository
       return null;
     }
     return DateTime.tryParse(value.trim());
+  }
+
+  Map<String, dynamic>? _readMap(Object? value) {
+    if (value is! Map) {
+      return null;
+    }
+    return value.map<String, dynamic>(
+      (key, item) => MapEntry<String, dynamic>(key.toString(), item),
+    );
   }
 }

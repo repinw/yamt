@@ -84,8 +84,176 @@ service cloud.firestore {
       return !(key in data) || data[key] == null || data[key] is number;
     }
 
+    function isMissingOptionalStringValue(data, key) {
+      return !(key in data)
+        || data[key] == null
+        || (data[key] is string && data[key].size() == 0);
+    }
+
+    function isMissingOptionalNumberValue(data, key) {
+      return !(key in data) || data[key] == null;
+    }
+
+    function canFillMissingStringField(next, current, changed, key) {
+      return !changed.hasAny([key])
+        || (
+          isMissingOptionalStringValue(current, key)
+          && next[key] is string
+          && next[key].size() > 0
+        );
+    }
+
+    function canFillMissingNumberField(next, current, changed, key) {
+      return !changed.hasAny([key])
+        || (
+          isMissingOptionalNumberValue(current, key)
+          && next[key] is number
+        );
+    }
+
     function isAllowedGlobalFoodStatus(status) {
       return status in ['active', 'candidate', 'merged'];
+    }
+
+    function isAllowedNutritionQualityStatus(status) {
+      return status in ['missing', 'unverified', 'verified'];
+    }
+
+    function nutritionQualityRank(status) {
+      return status == 'verified'
+        ? 2
+        : status == 'unverified'
+        ? 1
+        : status == 'missing'
+        ? 0
+        : -1;
+    }
+
+    function isValidGlobalFoodNutrition(data) {
+      return data.keys().hasOnly([
+          'quality_status',
+          'per_100_kcal',
+          'per_100_protein',
+          'per_100_carbs',
+          'per_100_fat',
+          'per_100_salt',
+          'per_100_saturated_fat',
+          'per_100_polyunsaturated_fat',
+          'per_100_sugar',
+          'per_100_fiber',
+        ])
+        && data.keys().hasAll(['quality_status'])
+        && data.quality_status is string
+        && isAllowedNutritionQualityStatus(data.quality_status)
+        && isOptionalNumber(data, 'per_100_kcal')
+        && isOptionalNumber(data, 'per_100_protein')
+        && isOptionalNumber(data, 'per_100_carbs')
+        && isOptionalNumber(data, 'per_100_fat')
+        && isOptionalNumber(data, 'per_100_salt')
+        && isOptionalNumber(data, 'per_100_saturated_fat')
+        && isOptionalNumber(data, 'per_100_polyunsaturated_fat')
+        && isOptionalNumber(data, 'per_100_sugar')
+        && isOptionalNumber(data, 'per_100_fiber');
+    }
+
+    function isValidOptionalGlobalFoodNutrition(data, key) {
+      return !(key in data)
+        || data[key] == null
+        || (
+          data[key] is map
+          && isValidGlobalFoodNutrition(data[key])
+        );
+    }
+
+    function canPatchGlobalFoodNutrition(next, current) {
+      let changed = next is map && current is map
+        ? next.diff(current).affectedKeys()
+        : null;
+      return (
+          next == null
+          && current == null
+        )
+        || (
+          current == null
+          && next is map
+          && isValidGlobalFoodNutrition(next)
+        )
+        || (
+          next is map
+          && current is map
+          && isValidGlobalFoodNutrition(next)
+          && changed.hasOnly([
+            'quality_status',
+            'per_100_kcal',
+            'per_100_protein',
+            'per_100_carbs',
+            'per_100_fat',
+            'per_100_salt',
+            'per_100_saturated_fat',
+            'per_100_polyunsaturated_fat',
+            'per_100_sugar',
+            'per_100_fiber',
+          ])
+          && (
+            !changed.hasAny(['quality_status'])
+            || nutritionQualityRank(next.quality_status)
+              >= nutritionQualityRank(current.quality_status)
+          )
+          && canFillMissingNumberField(
+            next,
+            current,
+            changed,
+            'per_100_kcal'
+          )
+          && canFillMissingNumberField(
+            next,
+            current,
+            changed,
+            'per_100_protein'
+          )
+          && canFillMissingNumberField(
+            next,
+            current,
+            changed,
+            'per_100_carbs'
+          )
+          && canFillMissingNumberField(
+            next,
+            current,
+            changed,
+            'per_100_fat'
+          )
+          && canFillMissingNumberField(
+            next,
+            current,
+            changed,
+            'per_100_salt'
+          )
+          && canFillMissingNumberField(
+            next,
+            current,
+            changed,
+            'per_100_saturated_fat'
+          )
+          && canFillMissingNumberField(
+            next,
+            current,
+            changed,
+            'per_100_polyunsaturated_fat'
+          )
+          && canFillMissingNumberField(
+            next,
+            current,
+            changed,
+            'per_100_sugar'
+          )
+          && canFillMissingNumberField(
+            next,
+            current,
+            changed,
+            'per_100_fiber'
+          )
+        );
     }
 
     function isValidGlobalFoodItem(data, itemId) {
@@ -148,7 +316,69 @@ service cloud.firestore {
         && isOptionalString(data, 'normalized_brand')
         && isOptionalString(data, 'normalized_store_name')
         && isOptionalString(data, 'merged_into_id')
-        && isOptionalMap(data, 'nutrition');
+        && isValidOptionalGlobalFoodNutrition(data, 'nutrition');
+    }
+
+    function canPatchGlobalFoodItem(next, current, itemId) {
+      let changed = next.diff(current).affectedKeys();
+      return next.id == itemId
+        && next.id == current.id
+        && changed.hasOnly([
+          'brand',
+          'category',
+          'store_name',
+          'barcode',
+          'image_url',
+          'package_weight',
+          'serving_size',
+          'serving_quantity',
+          'serving_quantity_unit',
+          'normalized_brand',
+          'normalized_store_name',
+          'nutrition',
+          'updated_at',
+        ])
+        && next.updated_at is string
+        && canFillMissingStringField(next, current, changed, 'brand')
+        && canFillMissingStringField(next, current, changed, 'category')
+        && canFillMissingStringField(next, current, changed, 'store_name')
+        && canFillMissingStringField(next, current, changed, 'barcode')
+        && canFillMissingStringField(next, current, changed, 'image_url')
+        && canFillMissingStringField(
+          next,
+          current,
+          changed,
+          'package_weight'
+        )
+        && canFillMissingStringField(next, current, changed, 'serving_size')
+        && canFillMissingNumberField(
+          next,
+          current,
+          changed,
+          'serving_quantity'
+        )
+        && canFillMissingStringField(
+          next,
+          current,
+          changed,
+          'serving_quantity_unit'
+        )
+        && canFillMissingStringField(
+          next,
+          current,
+          changed,
+          'normalized_brand'
+        )
+        && canFillMissingStringField(
+          next,
+          current,
+          changed,
+          'normalized_store_name'
+        )
+        && (
+          !changed.hasAny(['nutrition'])
+          || canPatchGlobalFoodNutrition(next.nutrition, current.nutrition)
+        );
     }
 
     function isValidGlobalBarcodeCandidate(data, candidateId) {
@@ -158,6 +388,7 @@ service cloud.firestore {
           'global_food_item_id',
           'selection_count',
           'unique_user_count',
+          'completeness_score',
           'global_food_item',
           'created_at',
           'updated_at',
@@ -168,6 +399,7 @@ service cloud.firestore {
           'global_food_item_id',
           'selection_count',
           'unique_user_count',
+          'completeness_score',
           'global_food_item',
           'created_at',
           'updated_at',
@@ -182,6 +414,9 @@ service cloud.firestore {
         && data.selection_count > 0
         && data.unique_user_count is int
         && data.unique_user_count > 0
+        && data.completeness_score is int
+        && data.completeness_score >= 0
+        && data.completeness_score <= 16
         && data.global_food_item is map
         && isValidGlobalFoodItem(
           data.global_food_item,
@@ -190,6 +425,20 @@ service cloud.firestore {
         && data.global_food_item.barcode == data.barcode
         && data.created_at is string
         && data.updated_at is string;
+    }
+
+    function isBarcodeCandidateVoteUpdate(next, current) {
+      return next.diff(current).affectedKeys().hasOnly([
+          'selection_count',
+          'unique_user_count',
+          'updated_at',
+        ])
+        && next.selection_count is int
+        && next.unique_user_count is int
+        && next.updated_at is string
+        && next.selection_count == current.selection_count + 1
+        && next.unique_user_count >= current.unique_user_count
+        && next.unique_user_count <= current.unique_user_count + 1;
     }
 
     function isValidUserBarcodeCandidateVote(data, candidateId) {
@@ -440,9 +689,11 @@ service cloud.firestore {
         && !exists(/databases/$(database)/documents/global_food_items/$(itemId))
         && isValidGlobalFoodItem(request.resource.data, itemId);
       allow update: if isSignedIn()
-        && isValidGlobalFoodItem(request.resource.data, itemId)
-        && request.resource.data.id == resource.data.id
-        && request.resource.data.created_at == resource.data.created_at;
+        && canPatchGlobalFoodItem(
+          request.resource.data,
+          resource.data,
+          itemId
+        );
       allow delete: if false;
     }
 
@@ -454,18 +705,10 @@ service cloud.firestore {
         )
         && isValidGlobalBarcodeCandidate(request.resource.data, candidateId);
       allow update: if isSignedIn()
-        && isValidGlobalBarcodeCandidate(request.resource.data, candidateId)
-        && request.resource.data.id == resource.data.id
-        && request.resource.data.barcode == resource.data.barcode
-        && request.resource.data.global_food_item_id
-          == resource.data.global_food_item_id
-        && request.resource.data.created_at == resource.data.created_at
-        && request.resource.data.selection_count
-          == resource.data.selection_count + 1
-        && request.resource.data.unique_user_count
-          >= resource.data.unique_user_count
-        && request.resource.data.unique_user_count
-          <= resource.data.unique_user_count + 1;
+        && isBarcodeCandidateVoteUpdate(
+          request.resource.data,
+          resource.data
+        );
       allow delete: if false;
     }
 
@@ -663,8 +906,10 @@ service cloud.firestore {
     // schemas are stable and covered with explicit rules.
     match /{document=**} {
       allow create: if isSignedIn()
+        && 'userId' in request.resource.data
         && request.resource.data.userId == request.auth.uid;
       allow read, update, delete: if isSignedIn()
+        && 'userId' in resource.data
         && resource.data.userId == request.auth.uid;
     }
   }

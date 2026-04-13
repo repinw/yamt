@@ -450,7 +450,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryManualAddSaved => 'Product added to inventory.';
 
   @override
+  String get inventoryManualAddPackageSizeLabel => 'Package size';
+
+  @override
   String get inventoryManualAddEatNowOption => 'Eat now';
+
+  @override
+  String get inventoryManualAddEatNowSizeLabel => 'Eat now amount';
 
   @override
   String get inventoryManualAddEatNowRequiresNutrition => 'Only available when nutrition values are present.';

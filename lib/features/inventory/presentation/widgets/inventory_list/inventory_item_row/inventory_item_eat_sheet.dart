@@ -38,6 +38,7 @@ Future<InventoryItemEatRequest?> showInventoryItemEatSheet({
   required InventoryItem item,
   required int maxAmount,
   required String invalidAmountMessage,
+  int? initialInventoryAmount,
 }) {
   return showModalBottomSheet<InventoryItemEatRequest>(
     context: context,
@@ -49,6 +50,7 @@ Future<InventoryItemEatRequest?> showInventoryItemEatSheet({
         item: item,
         maxAmount: maxAmount,
         invalidAmountMessage: invalidAmountMessage,
+        initialInventoryAmount: initialInventoryAmount,
       );
     },
   );
@@ -59,11 +61,13 @@ class _InventoryItemEatSheet extends ConsumerStatefulWidget {
     required this.item,
     required this.maxAmount,
     required this.invalidAmountMessage,
+    this.initialInventoryAmount,
   });
 
   final InventoryItem item;
   final int maxAmount;
   final String invalidAmountMessage;
+  final int? initialInventoryAmount;
 
   @override
   ConsumerState<_InventoryItemEatSheet> createState() =>
@@ -108,7 +112,16 @@ class _InventoryItemEatSheetState
     return inventoryItemUsesFixedCalorieUnit(widget.item);
   }
 
-  int get _defaultInventoryAmount => 1;
+  int get _defaultInventoryAmount {
+    final amount = widget.initialInventoryAmount;
+    if (amount == null || amount < 1) {
+      return 1;
+    }
+    if (amount > widget.maxAmount) {
+      return widget.maxAmount;
+    }
+    return amount;
+  }
 
   @override
   void initState() {

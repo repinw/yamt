@@ -398,7 +398,7 @@ void main() {
     expect(payload.item.imageUrl, 'https://example.com/olive-oil.png');
   });
 
-  test('buildSavePayload returns null for incomplete nutrition input', () {
+  test('buildSavePayload returns null without barcode or nutrition', () {
     final config = _config();
     final container = ProviderContainer();
     addTearDown(container.dispose);
@@ -411,12 +411,7 @@ void main() {
     );
     addTearDown(subscription.close);
 
-    final notifier = container.read(provider.notifier);
-    notifier.updateKcalText('120');
-
-    final payload = notifier.buildSavePayload();
-
-    expect(payload, isNull);
+    expect(container.read(provider.notifier).buildSavePayload(), isNull);
   });
 
   test('buildSavePayload keeps explicit zero nutrition values', () {
