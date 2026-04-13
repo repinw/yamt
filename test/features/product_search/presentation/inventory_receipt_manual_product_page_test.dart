@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -310,6 +312,11 @@ void main() {
               per100Protein: 18.3,
               per100Carbs: 22.8,
               per100Fat: 49.5,
+              per100SaturatedFat: 6.8,
+              per100PolyunsaturatedFat: 1.2,
+              per100Sugar: 4.1,
+              per100Fiber: 5.7,
+              per100Salt: 0.8,
             ),
           ),
         ),
@@ -349,17 +356,39 @@ void main() {
       final fatField = tester.widget<TextField>(
         find.byKey(const Key('receipt_review_manual_fat_field')),
       );
+      final saturatedFatField = tester.widget<TextField>(
+        find.byKey(const Key('receipt_review_manual_saturated_fat_field')),
+      );
+      final polyunsaturatedFatField = tester.widget<TextField>(
+        find.byKey(
+          const Key('receipt_review_manual_polyunsaturated_fat_field'),
+        ),
+      );
       final carbsField = tester.widget<TextField>(
         find.byKey(const Key('receipt_review_manual_carbs_field')),
+      );
+      final sugarField = tester.widget<TextField>(
+        find.byKey(const Key('receipt_review_manual_sugar_field')),
+      );
+      final fiberField = tester.widget<TextField>(
+        find.byKey(const Key('receipt_review_manual_fiber_field')),
       );
       final proteinField = tester.widget<TextField>(
         find.byKey(const Key('receipt_review_manual_protein_field')),
       );
+      final saltField = tester.widget<TextField>(
+        find.byKey(const Key('receipt_review_manual_salt_field')),
+      );
 
       expect(kcalField.controller?.text, '617');
       expect(fatField.controller?.text, '49.5');
+      expect(saturatedFatField.controller?.text, '6.8');
+      expect(polyunsaturatedFatField.controller?.text, '1.2');
       expect(carbsField.controller?.text, '22.8');
+      expect(sugarField.controller?.text, '4.1');
+      expect(fiberField.controller?.text, '5.7');
       expect(proteinField.controller?.text, '18.3');
+      expect(saltField.controller?.text, '0.8');
     },
   );
 
@@ -380,6 +409,11 @@ void main() {
             per100Protein: 18.3,
             per100Carbs: 22.8,
             per100Fat: 49.5,
+            per100SaturatedFat: 6.8,
+            per100PolyunsaturatedFat: 1.2,
+            per100Sugar: 4.1,
+            per100Fiber: 5.7,
+            per100Salt: 0.8,
           ),
         ),
       ),
@@ -393,16 +427,34 @@ void main() {
 
     final kcalY = tester.getTopLeft(find.text(l10n.caloriesPer100KcalLabel)).dy;
     final fatY = tester.getTopLeft(find.text(l10n.caloriesPer100FatLabel)).dy;
+    final saturatedFatY = tester
+        .getTopLeft(find.text(l10n.caloriesPer100SaturatedFatLabel))
+        .dy;
+    final polyunsaturatedFatY = tester
+        .getTopLeft(find.text(l10n.caloriesPer100PolyunsaturatedFatLabel))
+        .dy;
     final carbsY = tester
         .getTopLeft(find.text(l10n.caloriesPer100CarbsLabel))
+        .dy;
+    final sugarY = tester
+        .getTopLeft(find.text(l10n.caloriesPer100SugarLabel))
+        .dy;
+    final fiberY = tester
+        .getTopLeft(find.text(l10n.caloriesPer100FiberLabel))
         .dy;
     final proteinY = tester
         .getTopLeft(find.text(l10n.caloriesPer100ProteinLabel))
         .dy;
+    final saltY = tester.getTopLeft(find.text(l10n.caloriesPer100SaltLabel)).dy;
 
     expect(kcalY, lessThan(fatY));
-    expect(fatY, lessThan(carbsY));
-    expect(carbsY, lessThan(proteinY));
+    expect(fatY, lessThan(saturatedFatY));
+    expect(saturatedFatY, lessThan(carbsY));
+    expect(carbsY, lessThan(sugarY));
+    expect(sugarY, lessThan(proteinY));
+    expect(proteinY, lessThan(saltY));
+    expect(saltY, lessThan(polyunsaturatedFatY));
+    expect(polyunsaturatedFatY, lessThan(fiberY));
   });
 
   testWidgets('search as you type applies a selected product', (tester) async {
@@ -472,7 +524,13 @@ void main() {
     expect(weightField.controller?.text, '330');
     expect(weightUnitField.initialValue, InventoryAmountUnit.milliliter);
     expect(kcalField.controller?.text, '2');
-    expect(find.text('Booster'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('receipt_review_manual_preview')),
+        matching: find.text('Booster'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('330 ml'), findsAtLeastNWidgets(1));
   });
 
@@ -1062,4 +1120,346 @@ void main() {
     final l10n = AppLocalizations.of(context)!;
     expect(find.text(l10n.caloriesOcrFailed), findsOneWidget);
   });
+
+  testWidgets('save button is disabled while nutrition OCR is running', (
+    tester,
+  ) async {
+    final ocrCompleter = Completer<CalorieNutritionOcrResult>();
+
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item(),
+        selectedProduct: const OffProductSearchResult(
+          code: '4311596490202',
+          name: 'Booster Absolute Zero',
+          brand: 'Booster',
+          imageUrl: 'https://example.com/booster.png',
+          packageWeight: '330 ml',
+          score: 100,
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 2,
+            per100Protein: 0,
+            per100Carbs: 0,
+            per100Fat: 0,
+            per100SaturatedFat: 0,
+            per100Sugar: 0,
+            per100Salt: 0,
+          ),
+        ),
+        ocrRepository: _FakeNutritionOcrRepository(
+          onScanNutritionLabel: (_) => ocrCompleter.future,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    FilledButton saveButton() => tester.widget<FilledButton>(
+      find.byKey(const Key('receipt_review_manual_save_button')),
+    );
+
+    expect(saveButton().onPressed, isNotNull);
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_nutrition_ocr_button')),
+    );
+    await tester.pump();
+
+    expect(saveButton().onPressed, isNull);
+
+    ocrCompleter.complete(const CalorieNutritionOcrResult.canceled());
+    await tester.pumpAndSettle();
+
+    expect(saveButton().onPressed, isNotNull);
+  });
+
+  testWidgets('save button stays disabled until all nutrition fields are set', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item(),
+        selectedProduct: const OffProductSearchResult(
+          code: '4311596490202',
+          name: 'Booster Absolute Zero',
+          brand: 'Booster',
+          imageUrl: 'https://example.com/booster.png',
+          packageWeight: '330 ml',
+          score: 100,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    FilledButton saveButton() => tester.widget<FilledButton>(
+      find.byKey(const Key('receipt_review_manual_save_button')),
+    );
+
+    expect(saveButton().onPressed, isNull);
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_kcal_field')),
+      '0',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_saturated_fat_field')),
+      '0',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_protein_field')),
+      '0',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_carbs_field')),
+      '0',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_sugar_field')),
+      '0',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_fat_field')),
+      '0',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_salt_field')),
+      '0',
+    );
+    await tester.pump();
+
+    expect(saveButton().onPressed, isNotNull);
+  });
+
+  testWidgets(
+    'partial OCR fills found values and keeps missing required blank',
+    (tester) async {
+      await tester.pumpWidget(
+        _wrapPage(
+          item: _item(),
+          selectedProduct: const OffProductSearchResult(
+            code: '4311596490202',
+            name: 'Booster Absolute Zero',
+            brand: 'Booster',
+            imageUrl: 'https://example.com/booster.png',
+            packageWeight: '330 ml',
+            score: 100,
+          ),
+          ocrRepository: _FakeNutritionOcrRepository(
+            onScanNutritionLabel: (barcode) async {
+              return CalorieNutritionOcrResult.succeeded(
+                draft: CalorieNutritionOcrDraft(
+                  barcode: barcode,
+                  quantityLabel: '500 ml',
+                  per100Kcal: 11,
+                  per100SaturatedFat: null,
+                  per100PolyunsaturatedFat: null,
+                  per100Protein: null,
+                  per100Carbs: 2,
+                  per100Sugar: null,
+                  per100Fiber: null,
+                  per100Fat: 0,
+                  per100Salt: null,
+                ),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_nutrition_ocr_button')),
+      );
+      await tester.pumpAndSettle();
+
+      FilledButton saveButton() => tester.widget<FilledButton>(
+        find.byKey(const Key('receipt_review_manual_save_button')),
+      );
+
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(const Key('receipt_review_manual_kcal_field')),
+            )
+            .controller
+            ?.text,
+        '11',
+      );
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(
+                const Key('receipt_review_manual_saturated_fat_field'),
+              ),
+            )
+            .controller
+            ?.text,
+        '',
+      );
+      expect(
+        find.byKey(
+          const Key('receipt_review_manual_polyunsaturated_fat_field'),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.byKey(
+          const Key('receipt_review_manual_add_optional_nutrition_button'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(const Key('receipt_review_manual_protein_field')),
+            )
+            .controller
+            ?.text,
+        '',
+      );
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(const Key('receipt_review_manual_carbs_field')),
+            )
+            .controller
+            ?.text,
+        '2',
+      );
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(const Key('receipt_review_manual_sugar_field')),
+            )
+            .controller
+            ?.text,
+        '',
+      );
+      expect(
+        find.byKey(const Key('receipt_review_manual_fiber_field')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(
+          const Key('receipt_review_manual_add_optional_nutrition_button'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(const Key('receipt_review_manual_fat_field')),
+            )
+            .controller
+            ?.text,
+        '0',
+      );
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(const Key('receipt_review_manual_salt_field')),
+            )
+            .controller
+            ?.text,
+        '',
+      );
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(const Key('receipt_review_manual_weight_field')),
+            )
+            .controller
+            ?.text,
+        '500',
+      );
+      expect(find.text('Booster Absolute Zero'), findsWidgets);
+      expect(find.text('Booster'), findsWidgets);
+      expect(saveButton().onPressed, isNull);
+
+      final addOptionalNutritionButton = find.byKey(
+        const Key('receipt_review_manual_add_optional_nutrition_button'),
+      );
+      await tester.ensureVisible(addOptionalNutritionButton);
+      expect(
+        tester.widget<IconButton>(addOptionalNutritionButton).onPressed,
+        isNotNull,
+      );
+
+      await tester.tap(addOptionalNutritionButton);
+      await tester.pump();
+
+      expect(
+        find.byKey(
+          const Key('receipt_review_manual_optional_nutrition_value_field'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const Key('receipt_review_manual_optional_nutrition_type_field'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const Key('receipt_review_manual_optional_nutrition_unit_field'),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.enterText(
+        find.byKey(
+          const Key('receipt_review_manual_optional_nutrition_value_field'),
+        ),
+        '0',
+      );
+      await tester.pump();
+      final optionalNutritionConfirmButton = find.byKey(
+        const Key('receipt_review_manual_optional_nutrition_confirm_button'),
+      );
+      await tester.ensureVisible(optionalNutritionConfirmButton);
+      expect(
+        tester.widget<IconButton>(optionalNutritionConfirmButton).onPressed,
+        isNotNull,
+      );
+      await tester.tap(optionalNutritionConfirmButton);
+      await tester.pump();
+
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(
+                const Key('receipt_review_manual_polyunsaturated_fat_field'),
+              ),
+            )
+            .controller
+            ?.text,
+        '0',
+      );
+      expect(
+        find.byKey(const Key('receipt_review_manual_fiber_field')),
+        findsNothing,
+      );
+
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_saturated_fat_field')),
+        '0',
+      );
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_protein_field')),
+        '0',
+      );
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_sugar_field')),
+        '0',
+      );
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_salt_field')),
+        '0',
+      );
+      await tester.pump();
+
+      expect(saveButton().onPressed, isNotNull);
+    },
+  );
 }

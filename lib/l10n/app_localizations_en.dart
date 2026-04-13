@@ -1489,6 +1489,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesPer100FatLabel => 'Fat (g)';
 
   @override
+  String get caloriesPer100SaturatedFatLabel => 'Saturated fat (g)';
+
+  @override
+  String get caloriesPer100PolyunsaturatedFatLabel => 'Polyunsaturated fat (g)';
+
+  @override
+  String get caloriesPer100SugarLabel => 'Sugar (g)';
+
+  @override
+  String get caloriesPer100FiberLabel => 'Fiber (g)';
+
+  @override
+  String get caloriesPer100SaltLabel => 'Salt (g)';
+
+  @override
+  String get inventoryReceiptReviewManualAddNutritionAction => 'Add more nutrients';
+
+  @override
+  String get inventoryReceiptReviewManualNutritionValueLabel => 'Value';
+
+  @override
+  String get inventoryReceiptReviewManualNutritionUnitLabel => 'Unit';
+
+  @override
+  String get inventoryReceiptReviewManualNutritionTypeLabel => 'Nutrient';
+
+  @override
   String get caloriesEntryDateTimeLabel => 'Date and time';
 
   @override

@@ -571,9 +571,9 @@ void main() {
     expect(savedItems!.single.imageUrl, 'https://example.com/edamer.png');
   });
 
-  testWidgets(
-    'switching candidate with changed receipt weight keeps receipt weight',
-    (tester) async {
+  testWidgets('editing selected candidate updates preview card', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _wrap(
         drafts: <ReceiptReviewItemDraft>[
@@ -582,17 +582,21 @@ void main() {
               id: 'food',
               isDeposit: false,
               isDiscount: false,
-              name: 'KAESE SCHEIBEN',
-              weight: '500g',
+              name: 'OCR KAESE',
+              brand: 'OCR Brand',
+              weight: '500 g',
             ),
             candidates: <GlobalFoodMatchCandidate>[
               _candidate(
                 id: 'gouda',
-                name: 'Gouda',
+                name: 'Gouda Jung',
                 brand: 'Milbona',
-                packageWeight: '800g',
+                barcode: '4000123456789',
+                imageUrl: 'https://example.com/gouda.png',
+                packageWeight: '500 g',
               ),
             ],
+            selectedGlobalFoodItemId: 'gouda',
           ),
         ],
         onCancelTap: () {},
@@ -600,52 +604,105 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byKey(const Key('receipt_review_switch_button_0')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Gouda').last);
+    expect(find.text('Gouda Jung'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('receipt_review_edit_button_0')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Gouda'), findsOneWidget);
-    expect(find.text('500g'), findsOneWidget);
-    expect(find.text('800g'), findsNothing);
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_field_name')),
+      'Edited Gouda',
+    );
+    await tester.pumpAndSettle();
+
+    final applyButton = find.byKey(
+      const Key('receipt_review_apply_item_button'),
+    );
+    await tester.ensureVisible(applyButton);
+    await tester.tap(applyButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edited Gouda'), findsOneWidget);
+    expect(find.text('Gouda Jung'), findsNothing);
   });
+
+  testWidgets(
+    'switching candidate with changed receipt weight keeps receipt weight',
+    (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          drafts: <ReceiptReviewItemDraft>[
+            ReceiptReviewItemDraft(
+              item: _item(
+                id: 'food',
+                isDeposit: false,
+                isDiscount: false,
+                name: 'KAESE SCHEIBEN',
+                weight: '500g',
+              ),
+              candidates: <GlobalFoodMatchCandidate>[
+                _candidate(
+                  id: 'gouda',
+                  name: 'Gouda',
+                  brand: 'Milbona',
+                  packageWeight: '800g',
+                ),
+              ],
+            ),
+          ],
+          onCancelTap: () {},
+          onSaveTap: (_) async {},
+        ),
+      );
+
+      await tester.tap(find.byKey(const Key('receipt_review_switch_button_0')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Gouda').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Gouda'), findsOneWidget);
+      expect(find.text('500g'), findsOneWidget);
+      expect(find.text('800g'), findsNothing);
+    },
+  );
 
   testWidgets(
     'switching candidate with missing receipt weight uses candidate weight',
     (tester) async {
-    await tester.pumpWidget(
-      _wrap(
-        drafts: <ReceiptReviewItemDraft>[
-          ReceiptReviewItemDraft(
-            item: _item(
-              id: 'food',
-              isDeposit: false,
-              isDiscount: false,
-              name: 'KÄSE SCHEIBEN',
-            ),
-            candidates: <GlobalFoodMatchCandidate>[
-              _candidate(
-                id: 'gouda',
-                name: 'Gouda',
-                brand: 'Milbona',
-                packageWeight: '800g',
+      await tester.pumpWidget(
+        _wrap(
+          drafts: <ReceiptReviewItemDraft>[
+            ReceiptReviewItemDraft(
+              item: _item(
+                id: 'food',
+                isDeposit: false,
+                isDiscount: false,
+                name: 'KÄSE SCHEIBEN',
               ),
-            ],
-          ),
-        ],
-        onCancelTap: () {},
-        onSaveTap: (_) async {},
-      ),
-    );
+              candidates: <GlobalFoodMatchCandidate>[
+                _candidate(
+                  id: 'gouda',
+                  name: 'Gouda',
+                  brand: 'Milbona',
+                  packageWeight: '800g',
+                ),
+              ],
+            ),
+          ],
+          onCancelTap: () {},
+          onSaveTap: (_) async {},
+        ),
+      );
 
-    await tester.tap(find.byKey(const Key('receipt_review_switch_button_0')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Gouda').last);
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('receipt_review_switch_button_0')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Gouda').last);
+      await tester.pumpAndSettle();
 
-    expect(find.text('Gouda'), findsOneWidget);
-    expect(find.text('800g'), findsOneWidget);
-  });
+      expect(find.text('Gouda'), findsOneWidget);
+      expect(find.text('800g'), findsOneWidget);
+    },
+  );
 
   testWidgets('confirm button toggles between check and undo', (tester) async {
     await tester.pumpWidget(
@@ -859,6 +916,30 @@ void main() {
       '120',
     );
     await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_protein_field')),
+      '0',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_saturated_fat_field')),
+      '0',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_carbs_field')),
+      '0',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_sugar_field')),
+      '0',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_fat_field')),
+      '0',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_salt_field')),
+      '0',
+    );
+    await tester.enterText(
       find.byKey(const Key('receipt_review_manual_weight_field')),
       '500',
     );
@@ -883,7 +964,8 @@ void main() {
   });
 
   testWidgets(
-    'manual fallback enables nutrition OCR after barcode scan finds nothing',
+    'manual fallback keeps OCR nutrition and manual name brand after barcode '
+    'scan finds nothing',
     (tester) async {
       _installFakeScannerPlatform(tester);
 
@@ -897,17 +979,19 @@ void main() {
       final ocrRepository = _FakeNutritionOcrRepository(
         onScanNutritionLabel: (barcode) async {
           return CalorieNutritionOcrResult.succeeded(
-            profile: CalorieProductProfile(
+            draft: CalorieNutritionOcrDraft(
               barcode: barcode,
               name: 'Manual OCR Product',
               brand: 'OCR Brand',
               per100Kcal: 321,
+              per100SaturatedFat: 1.2,
               per100Protein: 12,
               per100Carbs: 22,
+              per100Sugar: 8,
               per100Fat: 7,
-              source: CalorieProductSource.ocr,
-              createdAt: DateTime.parse('2026-02-19T10:00:00Z'),
-              updatedAt: DateTime.parse('2026-02-19T10:00:00Z'),
+              per100Salt: 0.5,
+              per100PolyunsaturatedFat: null,
+              per100Fiber: null,
             ),
           );
         },
@@ -970,6 +1054,14 @@ void main() {
 
       expect(find.text('321'), findsOneWidget);
       await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_name_field')),
+        'Manual Product',
+      );
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_brand_field')),
+        'Manual Brand',
+      );
+      await tester.enterText(
         find.byKey(const Key('receipt_review_manual_weight_field')),
         '330',
       );
@@ -990,8 +1082,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(savedItems, isNotNull);
-      expect(savedItems!.single.name, 'Manual OCR Product');
-      expect(savedItems!.single.brand, 'OCR Brand');
+      expect(savedItems!.single.name, 'Manual Product');
+      expect(savedItems!.single.brand, 'Manual Brand');
       expect(savedItems!.single.barcode, '4006381333931');
       expect(savedItems!.single.nutrition?.per100Kcal, 321);
     },

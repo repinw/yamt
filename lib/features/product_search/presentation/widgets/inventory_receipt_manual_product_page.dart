@@ -381,11 +381,19 @@ class _InventoryReceiptManualProductEditorPageState
   late final VoiceSearchService _voiceSearchService;
   final _voiceSearchController = TextVoiceSearchController();
   late final TextEditingController _searchController;
+  late final TextEditingController _nameController;
+  late final TextEditingController _brandController;
   late final TextEditingController _weightAmountController;
   late final TextEditingController _kcalController;
+  late final TextEditingController _saturatedFatController;
+  late final TextEditingController _polyunsaturatedFatController;
   late final TextEditingController _proteinController;
   late final TextEditingController _carbsController;
+  late final TextEditingController _sugarController;
+  late final TextEditingController _fiberController;
   late final TextEditingController _fatController;
+  late final TextEditingController _saltController;
+  late final TextEditingController _optionalNutritionValueController;
   ProviderSubscription<InventoryReceiptManualProductState>? _stateSubscription;
   bool _didBindProviderState = false;
   bool _didScheduleInitialRecentItem = false;
@@ -405,16 +413,34 @@ class _InventoryReceiptManualProductEditorPageState
     super.initState();
     _voiceSearchService = ref.read(voiceSearchServiceProvider);
     _searchController = TextEditingController();
+    _nameController = TextEditingController();
+    _brandController = TextEditingController();
     _weightAmountController = TextEditingController();
+    _nameController.addListener(_handleNameChanged);
+    _brandController.addListener(_handleBrandChanged);
     _weightAmountController.addListener(_handleWeightChanged);
     _kcalController = TextEditingController();
+    _saturatedFatController = TextEditingController();
+    _polyunsaturatedFatController = TextEditingController();
     _proteinController = TextEditingController();
     _carbsController = TextEditingController();
+    _sugarController = TextEditingController();
+    _fiberController = TextEditingController();
     _fatController = TextEditingController();
+    _saltController = TextEditingController();
+    _optionalNutritionValueController = TextEditingController();
     _kcalController.addListener(_handleKcalChanged);
+    _saturatedFatController.addListener(_handleSaturatedFatChanged);
+    _polyunsaturatedFatController.addListener(_handlePolyunsaturatedFatChanged);
     _proteinController.addListener(_handleProteinChanged);
     _carbsController.addListener(_handleCarbsChanged);
+    _sugarController.addListener(_handleSugarChanged);
+    _fiberController.addListener(_handleFiberChanged);
     _fatController.addListener(_handleFatChanged);
+    _saltController.addListener(_handleSaltChanged);
+    _optionalNutritionValueController.addListener(
+      _handleOptionalNutritionValueChanged,
+    );
     final initialInfoMessage = widget.initialInfoMessage;
     if (initialInfoMessage != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -460,11 +486,25 @@ class _InventoryReceiptManualProductEditorPageState
       state.searchQuery,
       collapseSelectionToEnd: true,
     );
+    _replaceControllerText(_nameController, state.nameText);
+    _replaceControllerText(_brandController, state.brandText);
     _replaceControllerText(_weightAmountController, state.weightAmount);
     _replaceControllerText(_kcalController, state.kcalText);
+    _replaceControllerText(_saturatedFatController, state.saturatedFatText);
+    _replaceControllerText(
+      _polyunsaturatedFatController,
+      state.polyunsaturatedFatText,
+    );
     _replaceControllerText(_proteinController, state.proteinText);
     _replaceControllerText(_carbsController, state.carbsText);
+    _replaceControllerText(_sugarController, state.sugarText);
+    _replaceControllerText(_fiberController, state.fiberText);
     _replaceControllerText(_fatController, state.fatText);
+    _replaceControllerText(_saltController, state.saltText);
+    _replaceControllerText(
+      _optionalNutritionValueController,
+      state.optionalNutritionValueText,
+    );
     _isSyncingControllers = false;
   }
 
@@ -477,12 +517,25 @@ class _InventoryReceiptManualProductEditorPageState
       return;
     }
 
+    final selection = collapseSelectionToEnd
+        ? TextSelection.collapsed(offset: nextText.length)
+        : _clampSelection(controller.selection, nextText.length);
+
     controller.value = TextEditingValue(
       text: nextText,
-      selection: collapseSelectionToEnd
-          ? TextSelection.collapsed(offset: nextText.length)
-          : controller.selection,
+      selection: selection,
       composing: TextRange.empty,
+    );
+  }
+
+  TextSelection _clampSelection(TextSelection selection, int textLength) {
+    final baseOffset = selection.baseOffset.clamp(0, textLength);
+    final extentOffset = selection.extentOffset.clamp(0, textLength);
+    return TextSelection(
+      baseOffset: baseOffset,
+      extentOffset: extentOffset,
+      affinity: selection.affinity,
+      isDirectional: selection.isDirectional,
     );
   }
 
@@ -491,16 +544,36 @@ class _InventoryReceiptManualProductEditorPageState
     _voiceSearchController.dispose();
     _stateSubscription?.close();
     _searchController.dispose();
+    _nameController.removeListener(_handleNameChanged);
+    _nameController.dispose();
+    _brandController.removeListener(_handleBrandChanged);
+    _brandController.dispose();
     _weightAmountController.removeListener(_handleWeightChanged);
     _weightAmountController.dispose();
     _kcalController.removeListener(_handleKcalChanged);
     _kcalController.dispose();
+    _saturatedFatController.removeListener(_handleSaturatedFatChanged);
+    _saturatedFatController.dispose();
+    _polyunsaturatedFatController.removeListener(
+      _handlePolyunsaturatedFatChanged,
+    );
+    _polyunsaturatedFatController.dispose();
     _proteinController.removeListener(_handleProteinChanged);
     _proteinController.dispose();
     _carbsController.removeListener(_handleCarbsChanged);
     _carbsController.dispose();
+    _sugarController.removeListener(_handleSugarChanged);
+    _sugarController.dispose();
+    _fiberController.removeListener(_handleFiberChanged);
+    _fiberController.dispose();
     _fatController.removeListener(_handleFatChanged);
     _fatController.dispose();
+    _saltController.removeListener(_handleSaltChanged);
+    _saltController.dispose();
+    _optionalNutritionValueController.removeListener(
+      _handleOptionalNutritionValueChanged,
+    );
+    _optionalNutritionValueController.dispose();
     super.dispose();
   }
 
@@ -510,13 +583,18 @@ class _InventoryReceiptManualProductEditorPageState
     final state = ref.watch(_provider);
     final preview = _buildPreviewData();
     final canEatImmediately = _canEatImmediately(state);
+    final canSave = state.hasCompleteNutritionInput;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.inventoryReceiptReviewManualDataTitle)),
       body: InventoryReceiptManualProductForm(
         preview: preview,
         searchController: _searchController,
+        nameController: _nameController,
+        brandController: _brandController,
         isSearching: state.isSearching,
+        canSave: canSave,
+        isRunningNutritionOcr: state.isRunningNutritionOcr,
         autofocusSearch: widget.autofocusSearch,
         showDetails: state.showDetails,
         searchResults: state.searchResults,
@@ -524,9 +602,22 @@ class _InventoryReceiptManualProductEditorPageState
         weightAmountController: _weightAmountController,
         selectedWeightUnit: state.selectedWeightUnit,
         kcalController: _kcalController,
+        saturatedFatController: _saturatedFatController,
+        polyunsaturatedFatController: _polyunsaturatedFatController,
+        showPolyunsaturatedFatField: state.showPolyunsaturatedFatField,
         fatController: _fatController,
         carbsController: _carbsController,
+        sugarController: _sugarController,
+        fiberController: _fiberController,
+        showFiberField: state.showFiberField,
         proteinController: _proteinController,
+        saltController: _saltController,
+        canAddOptionalNutrition: state.canAddOptionalNutrition,
+        isAddingOptionalNutrition: state.isAddingOptionalNutrition,
+        optionalNutritionValueController: _optionalNutritionValueController,
+        optionalNutritionUnit: state.optionalNutritionUnit,
+        optionalNutritionType: state.resolvedOptionalNutritionType,
+        availableOptionalNutritionTypes: state.availableOptionalNutritionTypes,
         errorText: _resolveErrorText(l10n, state.error),
         showEatImmediatelyOption: widget.showEatImmediatelyOption,
         eatImmediately: _eatImmediately && canEatImmediately,
@@ -546,6 +637,12 @@ class _InventoryReceiptManualProductEditorPageState
                 unawaited(_scanNutritionLabel());
               }
             : null,
+        onStartAddingOptionalNutrition:
+            _controller.startAddingOptionalNutrition,
+        onOptionalNutritionUnitChanged: _controller.updateOptionalNutritionUnit,
+        onOptionalNutritionTypeChanged: _controller.updateOptionalNutritionType,
+        onApplyOptionalNutrition: _controller.applyOptionalNutrition,
+        onCancelOptionalNutrition: _controller.cancelAddingOptionalNutrition,
         onEatImmediatelyChanged: (value) {
           setState(() {
             _eatImmediately = value;
@@ -611,6 +708,10 @@ class _InventoryReceiptManualProductEditorPageState
   }
 
   Future<void> _save() async {
+    final state = ref.read(_provider);
+    if (state.isRunningNutritionOcr || !state.hasCompleteNutritionInput) {
+      return;
+    }
     final payload = _controller.buildSavePayload();
     if (payload == null) {
       return;
@@ -748,11 +849,41 @@ class _InventoryReceiptManualProductEditorPageState
     _controller.updateWeightAmount(_weightAmountController.text);
   }
 
+  void _handleNameChanged() {
+    if (_isSyncingControllers) {
+      return;
+    }
+    _controller.updateNameText(_nameController.text);
+  }
+
+  void _handleBrandChanged() {
+    if (_isSyncingControllers) {
+      return;
+    }
+    _controller.updateBrandText(_brandController.text);
+  }
+
   void _handleKcalChanged() {
     if (_isSyncingControllers) {
       return;
     }
     _controller.updateKcalText(_kcalController.text);
+  }
+
+  void _handleSaturatedFatChanged() {
+    if (_isSyncingControllers) {
+      return;
+    }
+    _controller.updateSaturatedFatText(_saturatedFatController.text);
+  }
+
+  void _handlePolyunsaturatedFatChanged() {
+    if (_isSyncingControllers) {
+      return;
+    }
+    _controller.updatePolyunsaturatedFatText(
+      _polyunsaturatedFatController.text,
+    );
   }
 
   void _handleProteinChanged() {
@@ -769,11 +900,41 @@ class _InventoryReceiptManualProductEditorPageState
     _controller.updateCarbsText(_carbsController.text);
   }
 
+  void _handleSugarChanged() {
+    if (_isSyncingControllers) {
+      return;
+    }
+    _controller.updateSugarText(_sugarController.text);
+  }
+
+  void _handleFiberChanged() {
+    if (_isSyncingControllers) {
+      return;
+    }
+    _controller.updateFiberText(_fiberController.text);
+  }
+
   void _handleFatChanged() {
     if (_isSyncingControllers) {
       return;
     }
     _controller.updateFatText(_fatController.text);
+  }
+
+  void _handleSaltChanged() {
+    if (_isSyncingControllers) {
+      return;
+    }
+    _controller.updateSaltText(_saltController.text);
+  }
+
+  void _handleOptionalNutritionValueChanged() {
+    if (_isSyncingControllers) {
+      return;
+    }
+    _controller.updateOptionalNutritionValueText(
+      _optionalNutritionValueController.text,
+    );
   }
 
   String? _resolveErrorText(

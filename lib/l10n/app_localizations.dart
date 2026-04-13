@@ -2891,6 +2891,60 @@ abstract class AppLocalizations {
   /// **'Fat (g)'**
   String get caloriesPer100FatLabel;
 
+  /// No description provided for @caloriesPer100SaturatedFatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturated fat (g)'**
+  String get caloriesPer100SaturatedFatLabel;
+
+  /// No description provided for @caloriesPer100PolyunsaturatedFatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Polyunsaturated fat (g)'**
+  String get caloriesPer100PolyunsaturatedFatLabel;
+
+  /// No description provided for @caloriesPer100SugarLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sugar (g)'**
+  String get caloriesPer100SugarLabel;
+
+  /// No description provided for @caloriesPer100FiberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fiber (g)'**
+  String get caloriesPer100FiberLabel;
+
+  /// No description provided for @caloriesPer100SaltLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Salt (g)'**
+  String get caloriesPer100SaltLabel;
+
+  /// No description provided for @inventoryReceiptReviewManualAddNutritionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add more nutrients'**
+  String get inventoryReceiptReviewManualAddNutritionAction;
+
+  /// No description provided for @inventoryReceiptReviewManualNutritionValueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get inventoryReceiptReviewManualNutritionValueLabel;
+
+  /// No description provided for @inventoryReceiptReviewManualNutritionUnitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get inventoryReceiptReviewManualNutritionUnitLabel;
+
+  /// No description provided for @inventoryReceiptReviewManualNutritionTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrient'**
+  String get inventoryReceiptReviewManualNutritionTypeLabel;
+
   /// No description provided for @caloriesEntryDateTimeLabel.
   ///
   /// In en, this message translates to:
