@@ -180,6 +180,8 @@
   "inventoryManualAddCandidateTitle": "Select product",
   "inventoryManualAddCandidateSubtitle":
       "Multiple matching products were found for this barcode.",
+  "inventoryManualAddCandidateSourceLearned": "Community",
+  "inventoryManualAddCandidateSourceOff": "OFF",
   "inventoryManualAddUnknownBrand": "Unknown brand",
   "inventoryManualAddNotFound":
       "No matching product was found for this barcode.",

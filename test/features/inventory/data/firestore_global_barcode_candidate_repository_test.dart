@@ -160,4 +160,57 @@ void main() {
       expect(snapshot.data()!['global_food_item']['image_url'], isNull);
     },
   );
+
+  test(
+    'readCandidates falls back to client-side sort when index query fails',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      final collection = _candidateCollection(firestore: firestore);
+      await collection
+          .doc('low')
+          .set(
+            _candidate(
+              id: 'low',
+              barcode: '4006381333931',
+              globalFoodItemId: 'milk-low',
+              selectionCount: 10,
+              uniqueUserCount: 1,
+              name: 'Milk',
+            ).toJson(),
+          );
+      await collection
+          .doc('high')
+          .set(
+            _candidate(
+              id: 'high',
+              barcode: '4006381333931',
+              globalFoodItemId: 'milk-high',
+              selectionCount: 3,
+              uniqueUserCount: 2,
+              name: 'Milk',
+              imageUrl: 'https://example.com/milk.png',
+            ).toJson(),
+          );
+
+      final repository = FirestoreGlobalBarcodeCandidateRepository(
+        firestore: firestore,
+        currentUserId: 'user-1',
+        indexedReaderOverride: (normalizedBarcode, limit) async {
+          throw FirebaseException(
+            plugin: 'cloud_firestore',
+            code: 'failed-precondition',
+            message: 'The query requires an index.',
+          );
+        },
+      );
+
+      final candidates = await repository.readCandidates(
+        barcode: '4006381333931',
+      );
+
+      expect(candidates, hasLength(2));
+      expect(candidates.first.globalFoodItemId, 'milk-high');
+      expect(candidates.last.globalFoodItemId, 'milk-low');
+    },
+  );
 }

@@ -14,11 +14,9 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import 'inventory_receipt_manual_product_form_utils.dart';
 
-List<TextInputFormatter> _numericInputFormatters() {
-  return <TextInputFormatter>[
-    FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-  ];
-}
+final _numericInputFormatters = <TextInputFormatter>[
+  FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+];
 
 class InventoryReceiptManualProductPreviewData {
   const InventoryReceiptManualProductPreviewData({
@@ -340,7 +338,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                inputFormatters: _numericInputFormatters(),
+                inputFormatters: _numericInputFormatters,
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
@@ -350,7 +348,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                inputFormatters: _numericInputFormatters(),
+                inputFormatters: _numericInputFormatters,
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
@@ -362,7 +360,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                inputFormatters: _numericInputFormatters(),
+                inputFormatters: _numericInputFormatters,
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
@@ -372,7 +370,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                inputFormatters: _numericInputFormatters(),
+                inputFormatters: _numericInputFormatters,
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
@@ -382,7 +380,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                inputFormatters: _numericInputFormatters(),
+                inputFormatters: _numericInputFormatters,
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
@@ -392,7 +390,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                inputFormatters: _numericInputFormatters(),
+                inputFormatters: _numericInputFormatters,
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
@@ -402,7 +400,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                inputFormatters: _numericInputFormatters(),
+                inputFormatters: _numericInputFormatters,
               ),
               const SizedBox(height: AppSpacing.md),
               if (showPolyunsaturatedFatField) ...[
@@ -415,7 +413,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  inputFormatters: _numericInputFormatters(),
+                  inputFormatters: _numericInputFormatters,
                 ),
                 const SizedBox(height: AppSpacing.md),
               ],
@@ -427,7 +425,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  inputFormatters: _numericInputFormatters(),
+                  inputFormatters: _numericInputFormatters,
                 ),
                 const SizedBox(height: AppSpacing.md),
               ],
@@ -613,7 +611,7 @@ class _OptionalNutritionComposer extends StatelessWidget {
             'receipt_review_manual_optional_nutrition_value_field',
           ),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: _numericInputFormatters(),
+          inputFormatters: _numericInputFormatters,
         ),
         const SizedBox(height: AppSpacing.md),
         Row(
@@ -742,7 +740,7 @@ class _ManualProductWeightFields extends StatelessWidget {
             label: amountLabel,
             fieldKey: amountFieldKey,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: _numericInputFormatters(),
+            inputFormatters: _numericInputFormatters,
           ),
         ),
         const SizedBox(width: AppSpacing.sm),

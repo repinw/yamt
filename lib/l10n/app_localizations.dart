@@ -935,6 +935,18 @@ abstract class AppLocalizations {
   /// **'Multiple matching products were found for this barcode.'**
   String get inventoryManualAddCandidateSubtitle;
 
+  /// No description provided for @inventoryManualAddCandidateSourceLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get inventoryManualAddCandidateSourceLearned;
+
+  /// No description provided for @inventoryManualAddCandidateSourceOff.
+  ///
+  /// In en, this message translates to:
+  /// **'OFF'**
+  String get inventoryManualAddCandidateSourceOff;
+
   /// No description provided for @inventoryManualAddUnknownBrand.
   ///
   /// In en, this message translates to:

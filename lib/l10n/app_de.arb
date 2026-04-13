@@ -184,6 +184,8 @@
   "inventoryManualAddCandidateTitle": "Produkt auswählen",
   "inventoryManualAddCandidateSubtitle":
       "Zu diesem Barcode wurden mehrere passende Produkte gefunden.",
+  "inventoryManualAddCandidateSourceLearned": "Community",
+  "inventoryManualAddCandidateSourceOff": "OFF",
   "inventoryManualAddUnknownBrand": "Unbekannte Marke",
   "inventoryManualAddNotFound":
       "Zu diesem Barcode wurde kein passendes Produkt gefunden.",

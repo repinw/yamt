@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
@@ -10,104 +11,24 @@ import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
-import 'package:yamt/features/inventory/domain/global_food_item.dart';
-import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
-import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import 'inventory_barcode_candidate_picker_sheet.dart';
+import 'inventory_barcode_lookup_candidate.dart';
+
+export 'inventory_barcode_candidate_picker_sheet.dart'
+    show inventoryBarcodeCandidateSheetKey;
+export 'inventory_barcode_lookup_candidate.dart'
+    show
+        InventoryBarcodeLookupCandidate,
+        InventoryBarcodeLookupCandidateSource,
+        InventoryBarcodeNotFoundCallback,
+        InventoryBarcodeProductSelectionCallback,
+        inventoryBarcodeCandidateDedupeKey,
+        mergeInventoryBarcodeCandidates;
 
 const _inventoryBarcodeScannerLogName = 'InventoryBarcodeScannerPage';
 const _inventoryBarcodeCandidateLimit = 5;
-const _barcodeAmountParser = InventoryAmountParser();
-const inventoryBarcodeCandidateSheetKey = Key(
-  'inventory_barcode_candidate_sheet',
-);
-
-enum InventoryBarcodeLookupCandidateSource { learned, off }
-
-class InventoryBarcodeLookupCandidate {
-  const InventoryBarcodeLookupCandidate._({
-    required this.source,
-    required this.barcode,
-    required this.name,
-    this.brand,
-    this.imageUrl,
-    this.packageWeight,
-    this.servingSize,
-    this.servingQuantity,
-    this.servingQuantityUnit,
-    this.nutrition,
-    this.globalFoodItemId,
-    this.globalFoodItem,
-    this.externalProduct,
-    this.selectionCount = 0,
-    this.uniqueUserCount = 0,
-  });
-
-  factory InventoryBarcodeLookupCandidate.fromLearned(
-    GlobalBarcodeCandidate candidate,
-  ) {
-    final item = candidate.globalFoodItem;
-    return InventoryBarcodeLookupCandidate._(
-      source: InventoryBarcodeLookupCandidateSource.learned,
-      barcode: candidate.barcode,
-      name: item.name,
-      brand: item.brand,
-      imageUrl: item.imageUrl,
-      packageWeight: item.packageWeight,
-      servingSize: item.servingSize,
-      servingQuantity: item.servingQuantity,
-      servingQuantityUnit: item.servingQuantityUnit,
-      nutrition: item.nutrition,
-      globalFoodItemId: candidate.globalFoodItemId,
-      globalFoodItem: item,
-      selectionCount: candidate.selectionCount,
-      uniqueUserCount: candidate.uniqueUserCount,
-    );
-  }
-
-  factory InventoryBarcodeLookupCandidate.fromOffProduct(
-    OffProductSearchResult product,
-  ) {
-    return InventoryBarcodeLookupCandidate._(
-      source: InventoryBarcodeLookupCandidateSource.off,
-      barcode: normalizeBarcode(product.code),
-      name: product.name,
-      brand: product.brand,
-      imageUrl: product.imageUrl,
-      packageWeight: product.packageWeight,
-      servingSize: product.servingSize,
-      servingQuantity: product.servingQuantity,
-      servingQuantityUnit: product.servingQuantityUnit,
-      nutrition: product.nutrition,
-      externalProduct: product,
-    );
-  }
-
-  final InventoryBarcodeLookupCandidateSource source;
-  final String barcode;
-  final String name;
-  final String? brand;
-  final String? imageUrl;
-  final String? packageWeight;
-  final String? servingSize;
-  final double? servingQuantity;
-  final String? servingQuantityUnit;
-  final GlobalFoodNutrition? nutrition;
-  final String? globalFoodItemId;
-  final GlobalFoodItem? globalFoodItem;
-  final OffProductSearchResult? externalProduct;
-  final int selectionCount;
-  final int uniqueUserCount;
-}
-
-typedef InventoryBarcodeProductSelectionCallback =
-    Future<bool> Function(
-      InventoryBarcodeLookupCandidate candidate,
-      String scannedBarcode,
-    );
-
-typedef InventoryBarcodeNotFoundCallback =
-    Future<bool> Function(String scannedBarcode);
 
 class InventoryBarcodeScannerPage extends StatelessWidget {
   const InventoryBarcodeScannerPage({
@@ -340,10 +261,13 @@ class _InventoryBarcodeScannerViewState
     return showModalBottomSheet<InventoryBarcodeLookupCandidate>(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
       builder: (sheetContext) {
-        return _InventoryBarcodeCandidatePickerSheet(
+        return InventoryBarcodeCandidatePickerSheet(
           candidates: candidates,
-          onSelect: (candidate) => Navigator.of(sheetContext).pop(candidate),
+          onSelect: (candidate) => _popRoute(sheetContext, candidate),
         );
       },
     );
@@ -380,6 +304,15 @@ class _InventoryBarcodeScannerViewState
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(message)));
   }
+
+  void _popRoute<T extends Object?>(BuildContext context, [T? result]) {
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      router.pop(result);
+      return;
+    }
+    Navigator.of(context).pop(result);
+  }
 }
 
 class _ScannerHintCard extends StatelessWidget {
@@ -406,130 +339,10 @@ class _ScannerHintCard extends StatelessWidget {
   }
 }
 
-class _InventoryBarcodeCandidatePickerSheet extends StatelessWidget {
-  const _InventoryBarcodeCandidatePickerSheet({
-    required this.candidates,
-    required this.onSelect,
-  });
-
-  final List<InventoryBarcodeLookupCandidate> candidates;
-  final ValueChanged<InventoryBarcodeLookupCandidate> onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return SafeArea(
-      child: Column(
-        key: inventoryBarcodeCandidateSheetKey,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          ListTile(
-            title: Text(l10n.inventoryManualAddCandidateTitle),
-            subtitle: Text(l10n.inventoryManualAddCandidateSubtitle),
-          ),
-          const Divider(height: 1),
-          Flexible(
-            child: ListView.separated(
-              shrinkWrap: true,
-              itemCount: candidates.length,
-              separatorBuilder: (context, index) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final candidate = candidates[index];
-                return ListTile(
-                  title: Text(candidate.name),
-                  subtitle: Text(
-                    candidate.brand?.trim().isNotEmpty == true
-                        ? candidate.brand!.trim()
-                        : l10n.inventoryManualAddUnknownBrand,
-                  ),
-                  trailing: _CandidateKcalLabel(candidate: candidate),
-                  onTap: () => onSelect(candidate),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CandidateKcalLabel extends StatelessWidget {
-  const _CandidateKcalLabel({required this.candidate});
-
-  final InventoryBarcodeLookupCandidate candidate;
-
-  @override
-  Widget build(BuildContext context) {
-    final kcal = candidate.nutrition?.per100Kcal;
-    if (kcal == null) {
-      return const SizedBox.shrink();
-    }
-
-    return Text(
-      '${kcal.toStringAsFixed(0)} '
-      '${AppLocalizations.of(context)!.caloriesUnitKcal}',
-    );
-  }
-}
-
 bool _isMobileBarcodeScanSupported() {
   if (kIsWeb) {
     return false;
   }
   return defaultTargetPlatform == TargetPlatform.android ||
       defaultTargetPlatform == TargetPlatform.iOS;
-}
-
-List<InventoryBarcodeLookupCandidate> mergeInventoryBarcodeCandidates({
-  required List<GlobalBarcodeCandidate> learnedCandidates,
-  required List<OffProductSearchResult> offCandidates,
-}) {
-  final merged = <InventoryBarcodeLookupCandidate>[];
-  final learnedKeys = <String>{};
-  final seenOffKeys = <String>{};
-
-  for (final candidate in learnedCandidates) {
-    final resolved = InventoryBarcodeLookupCandidate.fromLearned(candidate);
-    learnedKeys.add(inventoryBarcodeCandidateDedupeKey(resolved));
-    merged.add(resolved);
-    if (merged.length == _inventoryBarcodeCandidateLimit) {
-      return merged;
-    }
-  }
-  for (final candidate in offCandidates) {
-    final resolved = InventoryBarcodeLookupCandidate.fromOffProduct(candidate);
-    final key = inventoryBarcodeCandidateDedupeKey(resolved);
-    if (learnedKeys.contains(key) || !seenOffKeys.add(key)) {
-      continue;
-    }
-    merged.add(resolved);
-    if (merged.length == _inventoryBarcodeCandidateLimit) {
-      break;
-    }
-  }
-  return merged;
-}
-
-String inventoryBarcodeCandidateDedupeKey(
-  InventoryBarcodeLookupCandidate candidate,
-) {
-  final normalizedName = candidate.name.trim().toLowerCase();
-  final normalizedBrand = (candidate.brand ?? '').trim().toLowerCase();
-  final normalizedWeight = _normalizedBarcodeCandidateWeight(
-    candidate.packageWeight,
-  );
-  return '${candidate.barcode}|$normalizedName|$normalizedBrand|'
-      '$normalizedWeight';
-}
-
-String _normalizedBarcodeCandidateWeight(String? rawWeight) {
-  final parsed = _barcodeAmountParser.tryParse(
-    rawWeight: rawWeight,
-    quantity: 1,
-  );
-  if (parsed != null) {
-    return '${parsed.amount}${parsed.unit.code}';
-  }
-  return rawWeight?.trim().toLowerCase() ?? '';
 }

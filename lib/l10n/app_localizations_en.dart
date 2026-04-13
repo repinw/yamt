@@ -435,6 +435,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryManualAddCandidateSubtitle => 'Multiple matching products were found for this barcode.';
 
   @override
+  String get inventoryManualAddCandidateSourceLearned => 'Community';
+
+  @override
+  String get inventoryManualAddCandidateSourceOff => 'OFF';
+
+  @override
   String get inventoryManualAddUnknownBrand => 'Unknown brand';
 
   @override

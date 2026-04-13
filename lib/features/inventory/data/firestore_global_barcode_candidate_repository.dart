@@ -18,11 +18,22 @@ class FirestoreGlobalBarcodeCandidateRepository
   const FirestoreGlobalBarcodeCandidateRepository({
     required FirebaseFirestore firestore,
     required String? currentUserId,
+    Future<List<GlobalBarcodeCandidate>> Function(
+      String normalizedBarcode,
+      int limit,
+    )?
+    indexedReaderOverride,
   }) : _firestore = firestore,
-       _currentUserId = currentUserId;
+       _currentUserId = currentUserId,
+       _indexedReaderOverride = indexedReaderOverride;
 
   final FirebaseFirestore _firestore;
   final String? _currentUserId;
+  final Future<List<GlobalBarcodeCandidate>> Function(
+    String normalizedBarcode,
+    int limit,
+  )?
+  _indexedReaderOverride;
 
   @override
   Future<List<GlobalBarcodeCandidate>> readCandidates({
@@ -36,15 +47,14 @@ class FirestoreGlobalBarcodeCandidateRepository
 
     final safeLimit = limit < 1 ? 1 : limit;
     try {
-      final snapshot = await _candidateCollection()
-          .where('barcode', isEqualTo: normalizedBarcode)
-          .orderBy('unique_user_count', descending: true)
-          .orderBy('selection_count', descending: true)
-          .orderBy('completeness_score', descending: true)
-          .orderBy('updated_at', descending: true)
-          .limit(safeLimit)
-          .get();
-      return _decodeCandidates(snapshot.docs);
+      final indexedReader = _indexedReaderOverride;
+      if (indexedReader != null) {
+        return await indexedReader(normalizedBarcode, safeLimit);
+      }
+      return await _readCandidatesWithIndex(
+        normalizedBarcode: normalizedBarcode,
+        limit: safeLimit,
+      );
     } on FirebaseException catch (error, stackTrace) {
       log(
         'Barcode candidate index missing, falling back to client-side sort.',
@@ -53,13 +63,10 @@ class FirestoreGlobalBarcodeCandidateRepository
         stackTrace: stackTrace,
       );
       try {
-        final snapshot = await _candidateCollection()
-            .where('barcode', isEqualTo: normalizedBarcode)
-            .limit(safeLimit * 10)
-            .get();
-        final candidates = _decodeCandidates(snapshot.docs);
-        candidates.sort(compareGlobalBarcodeCandidates);
-        return candidates.take(safeLimit).toList(growable: false);
+        return _readCandidatesWithFallback(
+          normalizedBarcode: normalizedBarcode,
+          limit: safeLimit,
+        );
       } catch (fallbackError, fallbackStackTrace) {
         log(
           'Failed to read barcode candidates for $normalizedBarcode.',
@@ -78,6 +85,33 @@ class FirestoreGlobalBarcodeCandidateRepository
       );
       return const <GlobalBarcodeCandidate>[];
     }
+  }
+
+  Future<List<GlobalBarcodeCandidate>> _readCandidatesWithIndex({
+    required String normalizedBarcode,
+    required int limit,
+  }) async {
+    final snapshot = await _candidateCollection()
+        .where('barcode', isEqualTo: normalizedBarcode)
+        .orderBy('unique_user_count', descending: true)
+        .orderBy('selection_count', descending: true)
+        .orderBy('completeness_score', descending: true)
+        .orderBy('updated_at', descending: true)
+        .limit(limit)
+        .get();
+    return _decodeCandidates(snapshot.docs);
+  }
+
+  Future<List<GlobalBarcodeCandidate>> _readCandidatesWithFallback({
+    required String normalizedBarcode,
+    required int limit,
+  }) async {
+    final snapshot = await _candidateCollection()
+        .where('barcode', isEqualTo: normalizedBarcode)
+        .limit(limit * 10)
+        .get();
+    final candidates = _decodeCandidates(snapshot.docs);
+    return candidates.take(limit).toList(growable: false);
   }
 
   @override
@@ -146,7 +180,15 @@ class FirestoreGlobalBarcodeCandidateRepository
         updatedAt: selectedAt,
       );
 
-      transaction.set(candidateRef, candidate.toJson());
+      if (candidateSnapshot.exists) {
+        transaction.update(candidateRef, <String, dynamic>{
+          'selection_count': nextSelectionCount,
+          'unique_user_count': nextUniqueUserCount,
+          'updated_at': selectedAtText,
+        });
+      } else {
+        transaction.set(candidateRef, candidate.toJson());
+      }
       transaction.set(voteRef, <String, dynamic>{
         'barcode': normalizedBarcode,
         'global_food_item_id': globalFoodItemId,

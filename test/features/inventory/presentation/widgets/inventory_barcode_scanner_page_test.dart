@@ -67,31 +67,40 @@ void main() {
     );
   });
 
-  test('mergeInventoryBarcodeCandidates dedupes learned and OFF variants', () {
-    final merged = mergeInventoryBarcodeCandidates(
-      learnedCandidates: <GlobalBarcodeCandidate>[
-        _learnedCandidate(
-          id: 'candidate-a',
-          globalFoodItemId: 'milk-a',
-          barcode: '4006381333931',
-          name: 'Milk',
-          packageWeight: '1 l',
-        ),
-      ],
-      offCandidates: const <OffProductSearchResult>[
-        OffProductSearchResult(
-          code: '4006381333931',
-          name: 'Milk',
-          brand: '',
-          packageWeight: '1000 ml',
-          score: 100,
-        ),
-      ],
-    );
+  test(
+    'mergeInventoryBarcodeCandidates keeps learned and OFF source variants',
+    () {
+      final merged = mergeInventoryBarcodeCandidates(
+        learnedCandidates: <GlobalBarcodeCandidate>[
+          _learnedCandidate(
+            id: 'candidate-a',
+            globalFoodItemId: 'milk-a',
+            barcode: '4006381333931',
+            name: 'Milk',
+            packageWeight: '1 l',
+          ),
+        ],
+        offCandidates: const <OffProductSearchResult>[
+          OffProductSearchResult(
+            code: '4006381333931',
+            name: 'Milk',
+            brand: '',
+            packageWeight: '1000 ml',
+            score: 100,
+          ),
+        ],
+      );
 
-    expect(merged, hasLength(1));
-    expect(merged.single.source, InventoryBarcodeLookupCandidateSource.learned);
-  });
+      expect(merged, hasLength(2));
+      expect(
+        merged.map((candidate) => candidate.source),
+        <InventoryBarcodeLookupCandidateSource>[
+          InventoryBarcodeLookupCandidateSource.learned,
+          InventoryBarcodeLookupCandidateSource.off,
+        ],
+      );
+    },
+  );
 
   test(
     'inventoryBarcodeCandidateDedupeKey normalizes empty and missing brand',

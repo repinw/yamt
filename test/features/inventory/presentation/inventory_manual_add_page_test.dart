@@ -28,6 +28,8 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_barcode_scanner_page.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -866,6 +868,7 @@ void main() {
             name: 'Cashews Sour Creme & Onion',
             brand: 'Clarkys',
             score: 100,
+            packageWeight: '140 g',
             nutrition: GlobalFoodNutrition(
               qualityStatus: GlobalFoodNutritionQualityStatus.verified,
               per100Kcal: 550,
@@ -879,6 +882,7 @@ void main() {
             name: 'Cashews Paprika',
             brand: 'Clarkys',
             score: 90,
+            packageWeight: '150 g',
             nutrition: GlobalFoodNutrition(
               qualityStatus: GlobalFoodNutritionQualityStatus.verified,
               per100Kcal: 560,
@@ -914,6 +918,8 @@ void main() {
     _fakeScannerPlatform().emitBarcode('4316268671224');
     await _pumpUi(tester);
 
+    expect(find.byKey(inventoryBarcodeCandidateSheetKey), findsOneWidget);
+    expect(find.text('150 g'), findsOneWidget);
     expect(find.text('Cashews Paprika'), findsOneWidget);
 
     await tester.tap(find.text('Cashews Paprika'));
@@ -1010,6 +1016,8 @@ void main() {
 
     expect(find.text('Community Milk'), findsOneWidget);
     expect(find.text('OFF Milk'), findsOneWidget);
+    expect(find.text('Community'), findsOneWidget);
+    expect(find.text('OFF'), findsOneWidget);
 
     await tester.tap(find.text('Community Milk'));
     await _pumpUi(tester);
@@ -1049,6 +1057,73 @@ void main() {
       '1000 ml',
     );
   });
+
+  testWidgets(
+    'scanner shows picker when learned and OFF candidates look the same',
+    (tester) async {
+      _installFakeScannerPlatform(tester);
+
+      final offRepository =
+          _RecordingOffProductSearchRepository(<OffProductSearchResult>[
+            const OffProductSearchResult(
+              code: '4006381333931',
+              name: 'Milk',
+              brand: 'Acme',
+              score: 99,
+              packageWeight: '1 l',
+            ),
+          ]);
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      addTearDown(inventoryRepository.dispose);
+      final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+      final barcodeCandidateRepository =
+          _RecordingGlobalBarcodeCandidateRepository(
+            candidates: <GlobalBarcodeCandidate>[
+              GlobalBarcodeCandidate(
+                id: 'barcode-4006381333931-community-milk',
+                barcode: '4006381333931',
+                globalFoodItemId: 'community-milk',
+                selectionCount: 7,
+                uniqueUserCount: 3,
+                completenessScore: 10,
+                globalFoodItem: GlobalFoodItem.create(
+                  id: 'community-milk',
+                  name: 'Milk',
+                  now: DateTime.parse('2026-04-13T10:00:00Z'),
+                  brand: 'Acme',
+                  barcode: '4006381333931',
+                  packageWeight: '1000 ml',
+                ),
+                createdAt: DateTime.parse('2026-04-13T10:00:00Z'),
+                updatedAt: DateTime.parse('2026-04-13T10:00:00Z'),
+              ),
+            ],
+          );
+
+      await tester.pumpWidget(
+        _buildHarness(
+          offRepository: offRepository,
+          inventoryRepository: inventoryRepository,
+          globalFoodRepository: globalFoodRepository,
+          barcodeCandidateRepository: barcodeCandidateRepository,
+        ),
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_scan_button')),
+      );
+      await _pumpUi(tester);
+
+      _fakeScannerPlatform().emitBarcode('4006381333931');
+      await _pumpUi(tester);
+
+      expect(find.byKey(inventoryBarcodeCandidateSheetKey), findsOneWidget);
+      expect(find.text('Milk'), findsNWidgets(2));
+      expect(find.text('Community'), findsOneWidget);
+      expect(find.text('OFF'), findsOneWidget);
+    },
+  );
 
   testWidgets('scanner still shows learned candidates when OFF lookup fails', (
     tester,
