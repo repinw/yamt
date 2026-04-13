@@ -219,6 +219,20 @@ class _RecordingOffProductSearchRepository
   }
 }
 
+class _ThrowingBarcodeLookupOffProductSearchRepository
+    extends _RecordingOffProductSearchRepository {
+  _ThrowingBarcodeLookupOffProductSearchRepository()
+    : super(const <OffProductSearchResult>[]);
+
+  @override
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
+  }) async {
+    lastBarcode = barcode;
+    throw StateError('OFF lookup failed');
+  }
+}
+
 class _FakeMobileScannerPlatform extends MobileScannerPlatform {
   final StreamController<BarcodeCapture?> _barcodeController =
       StreamController<BarcodeCapture?>.broadcast();
@@ -1018,6 +1032,67 @@ void main() {
           .globalFoodItem
           .packageWeight,
       '1000 ml',
+    );
+  });
+
+  testWidgets('scanner still shows learned candidates when OFF lookup fails', (
+    tester,
+  ) async {
+    _installFakeScannerPlatform(tester);
+
+    final offRepository = _ThrowingBarcodeLookupOffProductSearchRepository();
+    final inventoryRepository = _RecordingInventoryItemRepository();
+    addTearDown(inventoryRepository.dispose);
+    final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+    final barcodeCandidateRepository =
+        _RecordingGlobalBarcodeCandidateRepository(
+          candidates: <GlobalBarcodeCandidate>[
+            GlobalBarcodeCandidate(
+              id: 'barcode-4006381333931-community-milk',
+              barcode: '4006381333931',
+              globalFoodItemId: 'community-milk',
+              selectionCount: 7,
+              uniqueUserCount: 3,
+              completenessScore: 10,
+              globalFoodItem: GlobalFoodItem.create(
+                id: 'community-milk',
+                name: 'Community Milk',
+                now: DateTime.parse('2026-04-13T10:00:00Z'),
+                brand: 'Acme',
+                barcode: '4006381333931',
+              ),
+              createdAt: DateTime.parse('2026-04-13T10:00:00Z'),
+              updatedAt: DateTime.parse('2026-04-13T10:00:00Z'),
+            ),
+          ],
+        );
+
+    await tester.pumpWidget(
+      _buildHarness(
+        offRepository: offRepository,
+        inventoryRepository: inventoryRepository,
+        globalFoodRepository: globalFoodRepository,
+        barcodeCandidateRepository: barcodeCandidateRepository,
+      ),
+    );
+    await _pumpUi(tester);
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_scan_button')),
+    );
+    await _pumpUi(tester);
+
+    _fakeScannerPlatform().emitBarcode('4006381333931');
+    await _pumpUi(tester);
+
+    expect(offRepository.lastBarcode, '4006381333931');
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(const Key('receipt_review_manual_preview_name')),
+          )
+          .data,
+      'Community Milk',
     );
   });
 

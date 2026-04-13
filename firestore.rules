@@ -427,7 +427,39 @@ service cloud.firestore {
         && data.updated_at is string;
     }
 
-    function isBarcodeCandidateVoteUpdate(next, current) {
+    function hasMatchingBarcodeCandidateVoteWrite(
+      candidateId,
+      next,
+      current
+    ) {
+      let voteExistsBefore = exists(
+        /databases/$(database)/documents/users/$(request.auth.uid)/global_barcode_candidate_votes/$(candidateId)
+      );
+      let voteExistsAfter = existsAfter(
+        /databases/$(database)/documents/users/$(request.auth.uid)/global_barcode_candidate_votes/$(candidateId)
+      );
+      let voteAfter = getAfter(
+        /databases/$(database)/documents/users/$(request.auth.uid)/global_barcode_candidate_votes/$(candidateId)
+      );
+
+      return voteExistsAfter
+        && voteAfter.data.barcode == next.barcode
+        && voteAfter.data.global_food_item_id == next.global_food_item_id
+        && voteAfter.data.candidate_id == candidateId
+        && voteAfter.data.updated_at == next.updated_at
+        && (
+          (!voteExistsBefore
+            && next.unique_user_count == current.unique_user_count + 1)
+          || (voteExistsBefore
+            && next.unique_user_count == current.unique_user_count
+            && voteAfter.data.updated_at
+              != get(
+                /databases/$(database)/documents/users/$(request.auth.uid)/global_barcode_candidate_votes/$(candidateId)
+              ).data.updated_at)
+        );
+    }
+
+    function isBarcodeCandidateVoteUpdate(candidateId, next, current) {
       return next.diff(current).affectedKeys().hasOnly([
           'selection_count',
           'unique_user_count',
@@ -437,8 +469,11 @@ service cloud.firestore {
         && next.unique_user_count is int
         && next.updated_at is string
         && next.selection_count == current.selection_count + 1
-        && next.unique_user_count >= current.unique_user_count
-        && next.unique_user_count <= current.unique_user_count + 1;
+        && hasMatchingBarcodeCandidateVoteWrite(
+          candidateId,
+          next,
+          current
+        );
     }
 
     function isValidUserBarcodeCandidateVote(data, candidateId) {
@@ -706,6 +741,7 @@ service cloud.firestore {
         && isValidGlobalBarcodeCandidate(request.resource.data, candidateId);
       allow update: if isSignedIn()
         && isBarcodeCandidateVoteUpdate(
+          candidateId,
           request.resource.data,
           resource.data
         );

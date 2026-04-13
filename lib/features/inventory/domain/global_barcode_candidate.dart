@@ -1,4 +1,5 @@
 import 'package:yamt/core/utils/barcode_utils.dart';
+import 'package:yamt/core/utils/json_parsing_utils.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 
 class GlobalBarcodeCandidate {
@@ -19,7 +20,7 @@ class GlobalBarcodeCandidate {
         _readOptionalString(json['global_food_item_id']) ??
         _readOptionalString(json['id']) ??
         '';
-    final productJson = _readMap(json['global_food_item']);
+    final productJson = readJsonMap(json['global_food_item']);
     if (productJson == null) {
       throw const FormatException('Missing barcode candidate payload.');
     }
@@ -30,7 +31,7 @@ class GlobalBarcodeCandidate {
     final globalFoodItem = GlobalFoodItem.fromJson(
       productJson,
     ).copyWith(id: globalFoodItemId);
-    final updatedAt = _readDateTime(json['updated_at']) ?? DateTime.now();
+    final updatedAt = readJsonDateTime(json['updated_at']) ?? DateTime.now();
     return GlobalBarcodeCandidate(
       id:
           _readOptionalString(json['id']) ??
@@ -40,13 +41,13 @@ class GlobalBarcodeCandidate {
           ),
       barcode: normalizeBarcode(json['barcode'] as String? ?? ''),
       globalFoodItemId: globalFoodItemId,
-      selectionCount: _readPositiveInt(json['selection_count']) ?? 1,
-      uniqueUserCount: _readPositiveInt(json['unique_user_count']) ?? 1,
+      selectionCount: readJsonPositiveInt(json['selection_count']) ?? 1,
+      uniqueUserCount: readJsonPositiveInt(json['unique_user_count']) ?? 1,
       completenessScore:
-          _readNonNegativeInt(json['completeness_score']) ??
+          readJsonNonNegativeInt(json['completeness_score']) ??
           computeGlobalBarcodeCandidateCompletenessScore(globalFoodItem),
       globalFoodItem: globalFoodItem,
-      createdAt: _readDateTime(json['created_at']) ?? updatedAt,
+      createdAt: readJsonDateTime(json['created_at']) ?? updatedAt,
       updatedAt: updatedAt,
     );
   }
@@ -189,15 +190,6 @@ int computeGlobalBarcodeCandidateCompletenessScore(GlobalFoodItem item) {
   return score;
 }
 
-Map<String, dynamic>? _readMap(Object? value) {
-  if (value is! Map) {
-    return null;
-  }
-  return value.map<String, dynamic>(
-    (key, item) => MapEntry<String, dynamic>(key.toString(), item),
-  );
-}
-
 String? _readOptionalString(Object? value) {
   if (value is! String) {
     return null;
@@ -207,36 +199,4 @@ String? _readOptionalString(Object? value) {
     return null;
   }
   return trimmed;
-}
-
-DateTime? _readDateTime(Object? value) {
-  if (value is DateTime) {
-    return value;
-  }
-  if (value is! String || value.trim().isEmpty) {
-    return null;
-  }
-  return DateTime.tryParse(value.trim());
-}
-
-int? _readPositiveInt(Object? value) {
-  if (value is int) {
-    return value < 1 ? 1 : value;
-  }
-  if (value is num) {
-    final normalized = value.toInt();
-    return normalized < 1 ? 1 : normalized;
-  }
-  return null;
-}
-
-int? _readNonNegativeInt(Object? value) {
-  if (value is int) {
-    return value < 0 ? 0 : value;
-  }
-  if (value is num) {
-    final normalized = value.toInt();
-    return normalized < 0 ? 0 : normalized;
-  }
-  return null;
 }

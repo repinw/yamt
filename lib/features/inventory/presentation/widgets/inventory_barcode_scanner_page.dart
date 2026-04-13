@@ -235,23 +235,16 @@ class _InventoryBarcodeScannerViewState
 
     var shouldRestartScanner = true;
     try {
-      final results = await Future.wait<Object?>(<Future<Object?>>[
-        ref
-            .read(globalBarcodeCandidateRepositoryProvider)
-            .readCandidates(
-              barcode: barcode,
-              limit: _inventoryBarcodeCandidateLimit,
-            ),
-        ref
-            .read(offProductSearchRepositoryProvider)
-            .lookupCandidatesByBarcode(barcode: barcode),
-      ]);
+      final learnedCandidatesFuture = _readLearnedCandidates(barcode);
+      final offCandidatesFuture = _readOffCandidates(barcode);
+      final learnedCandidates = await learnedCandidatesFuture;
+      final offCandidates = await offCandidatesFuture;
       if (!mounted) {
         return;
       }
       final candidates = mergeInventoryBarcodeCandidates(
-        learnedCandidates: results[0]! as List<GlobalBarcodeCandidate>,
-        offCandidates: results[1]! as List<OffProductSearchResult>,
+        learnedCandidates: learnedCandidates,
+        offCandidates: offCandidates,
       );
       shouldRestartScanner = await _handleCandidates(
         candidates: candidates,
@@ -266,6 +259,45 @@ class _InventoryBarcodeScannerViewState
           await _startScanner();
         }
       }
+    }
+  }
+
+  Future<List<GlobalBarcodeCandidate>> _readLearnedCandidates(
+    String barcode,
+  ) async {
+    try {
+      return await ref
+          .read(globalBarcodeCandidateRepositoryProvider)
+          .readCandidates(
+            barcode: barcode,
+            limit: _inventoryBarcodeCandidateLimit,
+          );
+    } catch (error, stackTrace) {
+      log(
+        'Learned barcode candidate lookup failed for $barcode.',
+        name: _inventoryBarcodeScannerLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <GlobalBarcodeCandidate>[];
+    }
+  }
+
+  Future<List<OffProductSearchResult>> _readOffCandidates(
+    String barcode,
+  ) async {
+    try {
+      return await ref
+          .read(offProductSearchRepositoryProvider)
+          .lookupCandidatesByBarcode(barcode: barcode);
+    } catch (error, stackTrace) {
+      log(
+        'OFF barcode candidate lookup failed for $barcode.',
+        name: _inventoryBarcodeScannerLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <OffProductSearchResult>[];
     }
   }
 

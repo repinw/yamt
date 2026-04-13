@@ -2,6 +2,7 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
+import 'package:yamt/core/utils/json_parsing_utils.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
@@ -110,21 +111,22 @@ class FirestoreGlobalBarcodeCandidateRepository
       final candidateSnapshot = await transaction.get(candidateRef);
       final voteSnapshot = await transaction.get(voteRef);
       final currentData = candidateSnapshot.data() ?? const <String, dynamic>{};
-      final currentSelectionCount = _readPositiveInt(
+      final currentSelectionCount = readJsonPositiveInt(
         currentData['selection_count'],
       );
-      final currentUniqueUserCount = _readPositiveInt(
+      final currentUniqueUserCount = readJsonPositiveInt(
         currentData['unique_user_count'],
       );
       final nextSelectionCount = (currentSelectionCount ?? 0) + 1;
       final nextUniqueUserCount =
           (currentUniqueUserCount ?? 0) + (voteSnapshot.exists ? 0 : 1);
-      final createdAt = _readDateTime(currentData['created_at']) ?? selectedAt;
+      final createdAt =
+          readJsonDateTime(currentData['created_at']) ?? selectedAt;
       final patchItem = globalFoodItem.copyWith(
         id: globalFoodItemId,
         barcode: normalizedBarcode,
       );
-      final currentItemJson = _readMap(currentData['global_food_item']);
+      final currentItemJson = readJsonMap(currentData['global_food_item']);
       final candidateItem = currentItemJson != null
           ? GlobalFoodItem.fromJson(
               currentItemJson,
@@ -137,7 +139,7 @@ class FirestoreGlobalBarcodeCandidateRepository
         selectionCount: nextSelectionCount,
         uniqueUserCount: nextUniqueUserCount,
         completenessScore:
-            _readNonNegativeInt(currentData['completeness_score']) ??
+            readJsonNonNegativeInt(currentData['completeness_score']) ??
             computeGlobalBarcodeCandidateCompletenessScore(candidateItem),
         globalFoodItem: candidateItem,
         createdAt: createdAt,
@@ -192,46 +194,5 @@ class FirestoreGlobalBarcodeCandidateRepository
     }
     candidates.sort(compareGlobalBarcodeCandidates);
     return candidates;
-  }
-
-  int? _readPositiveInt(Object? value) {
-    if (value is int) {
-      return value < 1 ? 1 : value;
-    }
-    if (value is num) {
-      final normalized = value.toInt();
-      return normalized < 1 ? 1 : normalized;
-    }
-    return null;
-  }
-
-  int? _readNonNegativeInt(Object? value) {
-    if (value is int) {
-      return value < 0 ? 0 : value;
-    }
-    if (value is num) {
-      final normalized = value.toInt();
-      return normalized < 0 ? 0 : normalized;
-    }
-    return null;
-  }
-
-  DateTime? _readDateTime(Object? value) {
-    if (value is DateTime) {
-      return value;
-    }
-    if (value is! String || value.trim().isEmpty) {
-      return null;
-    }
-    return DateTime.tryParse(value.trim());
-  }
-
-  Map<String, dynamic>? _readMap(Object? value) {
-    if (value is! Map) {
-      return null;
-    }
-    return value.map<String, dynamic>(
-      (key, item) => MapEntry<String, dynamic>(key.toString(), item),
-    );
   }
 }

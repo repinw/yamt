@@ -12,6 +12,7 @@ let doc;
 let getDoc;
 let setDoc;
 let updateDoc;
+let writeBatch;
 let testEnv;
 
 if (shouldRun) {
@@ -20,7 +21,9 @@ if (shouldRun) {
     assertFails,
     assertSucceeds,
   } = require('@firebase/rules-unit-testing'));
-  ({ doc, getDoc, setDoc, updateDoc } = require('firebase/firestore'));
+  ({ doc, getDoc, setDoc, updateDoc, writeBatch } = require(
+    'firebase/firestore',
+  ));
 }
 
 const projectId = process.env.GCLOUD_PROJECT ?? 'demo-yamt';
@@ -240,7 +243,7 @@ maybeTest(
 );
 
 maybeTest(
-  'global_barcode_candidates vote update allows counter-only change',
+  'global_barcode_candidates vote update denies counter change without vote write',
   async () => {
     const item = globalFoodItem({
       id: 'milk',
@@ -256,12 +259,104 @@ maybeTest(
     );
 
     const db = testEnv.authenticatedContext('user-1').firestore();
-    await assertSucceeds(
+    await assertFails(
       updateDoc(doc(db, 'global_barcode_candidates/barcode-4006381333931-milk'), {
         selection_count: 2,
         unique_user_count: 2,
         updated_at: '2026-04-13T11:00:00.000Z',
       }),
+    );
+  },
+);
+
+maybeTest(
+  'global_barcode_candidates vote update allows first vote in same batch',
+  async () => {
+    const item = globalFoodItem({
+      id: 'milk',
+      name: 'Milk',
+    });
+    await seedDocument(
+      'global_barcode_candidates/barcode-4006381333931-milk',
+      barcodeCandidate({
+        id: 'barcode-4006381333931-milk',
+        globalFoodItem: item,
+        completenessScore: 4,
+      }),
+    );
+
+    const db = testEnv.authenticatedContext('user-1').firestore();
+    const batch = writeBatch(db);
+    batch.update(doc(db, 'global_barcode_candidates/barcode-4006381333931-milk'), {
+      selection_count: 2,
+      unique_user_count: 2,
+      updated_at: '2026-04-13T11:00:00.000Z',
+    });
+    batch.set(
+      doc(
+        db,
+        'users/user-1/global_barcode_candidate_votes/barcode-4006381333931-milk',
+      ),
+      {
+        barcode: '4006381333931',
+        global_food_item_id: 'milk',
+        candidate_id: 'barcode-4006381333931-milk',
+        created_at: '2026-04-13T11:00:00.000Z',
+        updated_at: '2026-04-13T11:00:00.000Z',
+      },
+    );
+
+    await assertSucceeds(batch.commit());
+  },
+);
+
+maybeTest(
+  'global_barcode_candidates repeat vote keeps unique count flat',
+  async () => {
+    const item = globalFoodItem({
+      id: 'milk',
+      name: 'Milk',
+    });
+    await seedDocument(
+      'global_barcode_candidates/barcode-4006381333931-milk',
+      barcodeCandidate({
+        id: 'barcode-4006381333931-milk',
+        globalFoodItem: item,
+        selectionCount: 1,
+        uniqueUserCount: 1,
+        completenessScore: 4,
+      }),
+    );
+    await seedDocument(
+      'users/user-1/global_barcode_candidate_votes/barcode-4006381333931-milk',
+      {
+        barcode: '4006381333931',
+        global_food_item_id: 'milk',
+        candidate_id: 'barcode-4006381333931-milk',
+        created_at: '2026-04-13T10:00:00.000Z',
+        updated_at: '2026-04-13T10:00:00.000Z',
+      },
+    );
+
+    const db = testEnv.authenticatedContext('user-1').firestore();
+    const batch = writeBatch(db);
+    batch.update(doc(db, 'global_barcode_candidates/barcode-4006381333931-milk'), {
+      selection_count: 2,
+      unique_user_count: 1,
+      updated_at: '2026-04-13T11:00:00.000Z',
+    });
+    batch.update(
+      doc(
+        db,
+        'users/user-1/global_barcode_candidate_votes/barcode-4006381333931-milk',
+      ),
+      {
+        updated_at: '2026-04-13T11:00:00.000Z',
+      },
+    );
+
+    await assertSucceeds(
+      batch.commit(),
     );
   },
 );
