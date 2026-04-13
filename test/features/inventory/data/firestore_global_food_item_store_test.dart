@@ -115,4 +115,43 @@ void main() {
     expect(documents, hasLength(1));
     expect(documents.single.id, 'milk');
   });
+
+  test('upsertAll merges existing product documents', () async {
+    final firestore = FakeFirebaseFirestore();
+    final collection = _globalFoodCollection(firestore: firestore);
+    await collection.doc('milk').set(<String, dynamic>{
+      'id': 'milk',
+      'name': 'Milk',
+      'brand': 'Old Brand',
+      'food_fingerprint': 'milk__old_brand',
+      'normalized_name': 'milk',
+      'search_tokens': const <String>['milk'],
+      'status': 'active',
+      'created_at': '2026-03-01T10:00:00.000Z',
+      'updated_at': '2026-03-01T10:00:00.000Z',
+    });
+
+    final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+    await store.upsertAll(
+      documentsById: <String, Map<String, dynamic>>{
+        'milk': <String, dynamic>{
+          'id': 'milk',
+          'name': 'Milk',
+          'brand': 'New Brand',
+          'food_fingerprint': 'milk__new_brand',
+          'normalized_name': 'milk',
+          'search_tokens': const <String>['milk'],
+          'status': 'active',
+          'created_at': '2026-04-13T10:00:00.000Z',
+          'updated_at': '2026-04-13T10:00:00.000Z',
+        },
+      },
+    );
+
+    final snapshot = await collection.doc('milk').get();
+    expect(snapshot.data()!['brand'], 'New Brand');
+    expect(snapshot.data()!['food_fingerprint'], 'milk__new_brand');
+    expect(snapshot.data()!['created_at'], '2026-03-01T10:00:00.000Z');
+    expect(snapshot.data()!['updated_at'], '2026-04-13T10:00:00.000Z');
+  });
 }

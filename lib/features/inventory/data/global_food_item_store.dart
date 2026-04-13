@@ -164,7 +164,7 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     try {
-      await _createMissingDocuments(documentsById);
+      await _upsertDocuments(documentsById);
       return true;
     } catch (error, stackTrace) {
       log(
@@ -181,17 +181,25 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
     return _firestore.collection(_globalFoodItemsCollection);
   }
 
-  Future<void> _createMissingDocuments(
+  Future<void> _upsertDocuments(
     Map<String, Map<String, dynamic>> documentsById,
   ) async {
     for (final entry in documentsById.entries) {
       await _firestore.runTransaction((transaction) async {
         final reference = _collection().doc(entry.key);
         final snapshot = await transaction.get(reference);
-        if (snapshot.exists) {
+        if (!snapshot.exists) {
+          transaction.set(reference, entry.value);
           return;
         }
-        transaction.set(reference, entry.value);
+
+        final currentData = snapshot.data() ?? const <String, dynamic>{};
+        final merged = <String, dynamic>{
+          ...currentData,
+          ...entry.value,
+          'created_at': currentData['created_at'] ?? entry.value['created_at'],
+        };
+        transaction.set(reference, merged);
       });
     }
   }

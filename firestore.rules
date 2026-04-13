@@ -80,6 +80,10 @@ service cloud.firestore {
       return !(key in data) || data[key] == null || data[key] is map;
     }
 
+    function isOptionalNumber(data, key) {
+      return !(key in data) || data[key] == null || data[key] is number;
+    }
+
     function isAllowedGlobalFoodStatus(status) {
       return status in ['active', 'candidate', 'merged'];
     }
@@ -95,6 +99,9 @@ service cloud.firestore {
           'barcode',
           'image_url',
           'package_weight',
+          'serving_size',
+          'serving_quantity',
+          'serving_quantity_unit',
           'nutrition',
           'normalized_name',
           'normalized_brand',
@@ -135,10 +142,78 @@ service cloud.firestore {
         && isOptionalString(data, 'barcode')
         && isOptionalString(data, 'image_url')
         && isOptionalString(data, 'package_weight')
+        && isOptionalString(data, 'serving_size')
+        && isOptionalNumber(data, 'serving_quantity')
+        && isOptionalString(data, 'serving_quantity_unit')
         && isOptionalString(data, 'normalized_brand')
         && isOptionalString(data, 'normalized_store_name')
         && isOptionalString(data, 'merged_into_id')
         && isOptionalMap(data, 'nutrition');
+    }
+
+    function isValidGlobalBarcodeCandidate(data, candidateId) {
+      return data.keys().hasOnly([
+          'id',
+          'barcode',
+          'global_food_item_id',
+          'selection_count',
+          'unique_user_count',
+          'global_food_item',
+          'created_at',
+          'updated_at',
+        ])
+        && data.keys().hasAll([
+          'id',
+          'barcode',
+          'global_food_item_id',
+          'selection_count',
+          'unique_user_count',
+          'global_food_item',
+          'created_at',
+          'updated_at',
+        ])
+        && data.id == candidateId
+        && data.id is string
+        && data.barcode is string
+        && data.barcode.size() > 0
+        && data.global_food_item_id is string
+        && data.global_food_item_id.size() > 0
+        && data.selection_count is int
+        && data.selection_count > 0
+        && data.unique_user_count is int
+        && data.unique_user_count > 0
+        && data.global_food_item is map
+        && isValidGlobalFoodItem(
+          data.global_food_item,
+          data.global_food_item_id
+        )
+        && data.global_food_item.barcode == data.barcode
+        && data.created_at is string
+        && data.updated_at is string;
+    }
+
+    function isValidUserBarcodeCandidateVote(data, candidateId) {
+      return data.keys().hasOnly([
+          'barcode',
+          'global_food_item_id',
+          'candidate_id',
+          'created_at',
+          'updated_at',
+        ])
+        && data.keys().hasAll([
+          'barcode',
+          'global_food_item_id',
+          'candidate_id',
+          'created_at',
+          'updated_at',
+        ])
+        && data.barcode is string
+        && data.barcode.size() > 0
+        && data.global_food_item_id is string
+        && data.global_food_item_id.size() > 0
+        && data.candidate_id == candidateId
+        && data.created_at is string
+        && data.updated_at is string;
     }
 
     function isValidGlobalFoodReceiptAlias(data, aliasId) {
@@ -364,7 +439,33 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && !exists(/databases/$(database)/documents/global_food_items/$(itemId))
         && isValidGlobalFoodItem(request.resource.data, itemId);
-      allow update: if false;
+      allow update: if isSignedIn()
+        && isValidGlobalFoodItem(request.resource.data, itemId)
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.created_at == resource.data.created_at;
+      allow delete: if false;
+    }
+
+    match /global_barcode_candidates/{candidateId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && !exists(
+          /databases/$(database)/documents/global_barcode_candidates/$(candidateId)
+        )
+        && isValidGlobalBarcodeCandidate(request.resource.data, candidateId);
+      allow update: if isSignedIn()
+        && isValidGlobalBarcodeCandidate(request.resource.data, candidateId)
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.barcode == resource.data.barcode
+        && request.resource.data.global_food_item_id
+          == resource.data.global_food_item_id
+        && request.resource.data.created_at == resource.data.created_at
+        && request.resource.data.selection_count
+          == resource.data.selection_count + 1
+        && request.resource.data.unique_user_count
+          >= resource.data.unique_user_count
+        && request.resource.data.unique_user_count
+          <= resource.data.unique_user_count + 1;
       allow delete: if false;
     }
 
@@ -501,6 +602,26 @@ service cloud.firestore {
           == resource.data.global_food_item_id
         && request.resource.data.amount == resource.data.amount
         && request.resource.data.unit == resource.data.unit
+        && request.resource.data.created_at == resource.data.created_at;
+      allow delete: if isOwner(uid);
+    }
+
+    match /users/{uid}/global_barcode_candidate_votes/{candidateId} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid)
+        && isValidUserBarcodeCandidateVote(
+          request.resource.data,
+          candidateId
+        );
+      allow update: if isOwner(uid)
+        && isValidUserBarcodeCandidateVote(
+          request.resource.data,
+          candidateId
+        )
+        && request.resource.data.barcode == resource.data.barcode
+        && request.resource.data.global_food_item_id
+          == resource.data.global_food_item_id
+        && request.resource.data.candidate_id == resource.data.candidate_id
         && request.resource.data.created_at == resource.data.created_at;
       allow delete: if isOwner(uid);
     }

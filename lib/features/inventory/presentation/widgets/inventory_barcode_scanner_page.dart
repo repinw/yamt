@@ -6,17 +6,101 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
+import 'package:yamt/features/inventory/data/'
+    'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBarcodeScannerLogName = 'InventoryBarcodeScannerPage';
+const _inventoryBarcodeCandidateLimit = 5;
 const inventoryBarcodeCandidateSheetKey = Key(
   'inventory_barcode_candidate_sheet',
 );
 
+enum InventoryBarcodeLookupCandidateSource { learned, off }
+
+class InventoryBarcodeLookupCandidate {
+  const InventoryBarcodeLookupCandidate._({
+    required this.source,
+    required this.barcode,
+    required this.name,
+    this.brand,
+    this.imageUrl,
+    this.packageWeight,
+    this.servingSize,
+    this.servingQuantity,
+    this.servingQuantityUnit,
+    this.nutrition,
+    this.globalFoodItemId,
+    this.globalFoodItem,
+    this.externalProduct,
+    this.selectionCount = 0,
+    this.uniqueUserCount = 0,
+  });
+
+  factory InventoryBarcodeLookupCandidate.fromLearned(
+    GlobalBarcodeCandidate candidate,
+  ) {
+    final item = candidate.globalFoodItem;
+    return InventoryBarcodeLookupCandidate._(
+      source: InventoryBarcodeLookupCandidateSource.learned,
+      barcode: candidate.barcode,
+      name: item.name,
+      brand: item.brand,
+      imageUrl: item.imageUrl,
+      packageWeight: item.packageWeight,
+      servingSize: item.servingSize,
+      servingQuantity: item.servingQuantity,
+      servingQuantityUnit: item.servingQuantityUnit,
+      nutrition: item.nutrition,
+      globalFoodItemId: candidate.globalFoodItemId,
+      globalFoodItem: item,
+      selectionCount: candidate.selectionCount,
+      uniqueUserCount: candidate.uniqueUserCount,
+    );
+  }
+
+  factory InventoryBarcodeLookupCandidate.fromOffProduct(
+    OffProductSearchResult product,
+  ) {
+    return InventoryBarcodeLookupCandidate._(
+      source: InventoryBarcodeLookupCandidateSource.off,
+      barcode: normalizeBarcode(product.code),
+      name: product.name,
+      brand: product.brand,
+      imageUrl: product.imageUrl,
+      packageWeight: product.packageWeight,
+      servingSize: product.servingSize,
+      servingQuantity: product.servingQuantity,
+      servingQuantityUnit: product.servingQuantityUnit,
+      nutrition: product.nutrition,
+      externalProduct: product,
+    );
+  }
+
+  final InventoryBarcodeLookupCandidateSource source;
+  final String barcode;
+  final String name;
+  final String? brand;
+  final String? imageUrl;
+  final String? packageWeight;
+  final String? servingSize;
+  final double? servingQuantity;
+  final String? servingQuantityUnit;
+  final GlobalFoodNutrition? nutrition;
+  final String? globalFoodItemId;
+  final GlobalFoodItem? globalFoodItem;
+  final OffProductSearchResult? externalProduct;
+  final int selectionCount;
+  final int uniqueUserCount;
+}
+
 typedef InventoryBarcodeProductSelectionCallback =
     Future<bool> Function(
-      OffProductSearchResult candidate,
+      InventoryBarcodeLookupCandidate candidate,
       String scannedBarcode,
     );
 
@@ -149,12 +233,24 @@ class _InventoryBarcodeScannerViewState
 
     var shouldRestartScanner = true;
     try {
-      final candidates = await ref
-          .read(offProductSearchRepositoryProvider)
-          .lookupCandidatesByBarcode(barcode: barcode);
+      final results = await Future.wait<Object?>(<Future<Object?>>[
+        ref
+            .read(globalBarcodeCandidateRepositoryProvider)
+            .readCandidates(
+              barcode: barcode,
+              limit: _inventoryBarcodeCandidateLimit,
+            ),
+        ref
+            .read(offProductSearchRepositoryProvider)
+            .lookupCandidatesByBarcode(barcode: barcode),
+      ]);
       if (!mounted) {
         return;
       }
+      final candidates = _mergeBarcodeCandidates(
+        learnedCandidates: results[0]! as List<GlobalBarcodeCandidate>,
+        offCandidates: results[1]! as List<OffProductSearchResult>,
+      );
       shouldRestartScanner = await _handleCandidates(
         candidates: candidates,
         scannedBarcode: barcode,
@@ -172,7 +268,7 @@ class _InventoryBarcodeScannerViewState
   }
 
   Future<bool> _handleCandidates({
-    required List<OffProductSearchResult> candidates,
+    required List<InventoryBarcodeLookupCandidate> candidates,
     required String scannedBarcode,
   }) async {
     final l10n = AppLocalizations.of(context)!;
@@ -204,10 +300,10 @@ class _InventoryBarcodeScannerViewState
     return !handled;
   }
 
-  Future<OffProductSearchResult?> _pickCandidate(
-    List<OffProductSearchResult> candidates,
+  Future<InventoryBarcodeLookupCandidate?> _pickCandidate(
+    List<InventoryBarcodeLookupCandidate> candidates,
   ) {
-    return showModalBottomSheet<OffProductSearchResult>(
+    return showModalBottomSheet<InventoryBarcodeLookupCandidate>(
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) {
@@ -282,8 +378,8 @@ class _InventoryBarcodeCandidatePickerSheet extends StatelessWidget {
     required this.onSelect,
   });
 
-  final List<OffProductSearchResult> candidates;
-  final ValueChanged<OffProductSearchResult> onSelect;
+  final List<InventoryBarcodeLookupCandidate> candidates;
+  final ValueChanged<InventoryBarcodeLookupCandidate> onSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -327,7 +423,7 @@ class _InventoryBarcodeCandidatePickerSheet extends StatelessWidget {
 class _CandidateKcalLabel extends StatelessWidget {
   const _CandidateKcalLabel({required this.candidate});
 
-  final OffProductSearchResult candidate;
+  final InventoryBarcodeLookupCandidate candidate;
 
   @override
   Widget build(BuildContext context) {
@@ -349,4 +445,40 @@ bool _isMobileBarcodeScanSupported() {
   }
   return defaultTargetPlatform == TargetPlatform.android ||
       defaultTargetPlatform == TargetPlatform.iOS;
+}
+
+List<InventoryBarcodeLookupCandidate> _mergeBarcodeCandidates({
+  required List<GlobalBarcodeCandidate> learnedCandidates,
+  required List<OffProductSearchResult> offCandidates,
+}) {
+  final merged = <InventoryBarcodeLookupCandidate>[];
+  final seenKeys = <String>{};
+
+  void addCandidate(InventoryBarcodeLookupCandidate candidate) {
+    final key = _barcodeCandidateDedupeKey(candidate);
+    if (!seenKeys.add(key)) {
+      return;
+    }
+    merged.add(candidate);
+  }
+
+  for (final candidate in learnedCandidates) {
+    addCandidate(InventoryBarcodeLookupCandidate.fromLearned(candidate));
+    if (merged.length == _inventoryBarcodeCandidateLimit) {
+      return merged;
+    }
+  }
+  for (final candidate in offCandidates) {
+    addCandidate(InventoryBarcodeLookupCandidate.fromOffProduct(candidate));
+    if (merged.length == _inventoryBarcodeCandidateLimit) {
+      break;
+    }
+  }
+  return merged;
+}
+
+String _barcodeCandidateDedupeKey(InventoryBarcodeLookupCandidate candidate) {
+  final normalizedName = candidate.name.trim().toLowerCase();
+  final normalizedBrand = (candidate.brand ?? '').trim().toLowerCase();
+  return '${candidate.barcode}|$normalizedName|$normalizedBrand';
 }

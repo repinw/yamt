@@ -157,7 +157,8 @@ InventoryItemCandidateSwapRequest _requestFromManualResult({
       servingQuantity: result.item.servingQuantity,
       servingQuantityUnit: result.item.servingQuantityUnit,
     ),
-    requiresGlobalPersistence: selectedGlobalFoodItemId == null,
+    requiresGlobalPersistence:
+        result.requiresGlobalPersistence || selectedGlobalFoodItemId == null,
     weight: result.item.weight,
   );
 }

@@ -16,10 +16,13 @@ import 'package:yamt/features/calories/data/'
 import 'package:yamt/features/calories/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/inventory/data/'
+    'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -120,6 +123,34 @@ class _RecordingGlobalFoodItemRepository implements GlobalFoodItemRepository {
   @override
   Stream<List<GlobalFoodItem>> watchAll() {
     return const Stream<List<GlobalFoodItem>>.empty();
+  }
+}
+
+class _RecordingGlobalBarcodeCandidateRepository
+    implements GlobalBarcodeCandidateRepository {
+  _RecordingGlobalBarcodeCandidateRepository({
+    this.candidates = const <GlobalBarcodeCandidate>[],
+  });
+
+  final List<GlobalBarcodeCandidate> candidates;
+  final List<({String barcode, GlobalFoodItem globalFoodItem})>
+  recordedSelections = <({String barcode, GlobalFoodItem globalFoodItem})>[];
+
+  @override
+  Future<List<GlobalBarcodeCandidate>> readCandidates({
+    required String barcode,
+    int limit = 5,
+  }) async {
+    return candidates;
+  }
+
+  @override
+  Future<void> recordSelection({
+    required String barcode,
+    required GlobalFoodItem globalFoodItem,
+    required DateTime selectedAt,
+  }) async {
+    recordedSelections.add((barcode: barcode, globalFoodItem: globalFoodItem));
   }
 }
 
@@ -266,6 +297,7 @@ Widget _buildHarness({
   required OffProductSearchRepository offRepository,
   required InventoryItemRepository inventoryRepository,
   required GlobalFoodItemRepository globalFoodRepository,
+  GlobalBarcodeCandidateRepository? barcodeCandidateRepository,
   FirebaseAuth? auth,
   FakeCalorieLogRepository? calorieLogRepository,
   FakeCalorieProductCacheRepository? calorieProductCacheRepository,
@@ -291,6 +323,10 @@ Widget _buildHarness({
       offProductSearchRepositoryProvider.overrideWithValue(offRepository),
       inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
       globalFoodItemRepositoryProvider.overrideWithValue(globalFoodRepository),
+      if (barcodeCandidateRepository != null)
+        globalBarcodeCandidateRepositoryProvider.overrideWithValue(
+          barcodeCandidateRepository,
+        ),
       if (auth != null) firebaseAuthProvider.overrideWithValue(auth),
       if (calorieLogRepository != null)
         calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
@@ -352,6 +388,34 @@ Future<void> _pumpUi(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 400));
 }
 
+Future<void> _scrollIntoView(WidgetTester tester, Finder finder) async {
+  await tester.dragUntilVisible(
+    finder,
+    find.byType(Scrollable).first,
+    const Offset(0, -200),
+  );
+  await _pumpUi(tester);
+}
+
+Future<void> _pressFilledButton(WidgetTester tester, Finder finder) async {
+  final button = tester.widget<FilledButton>(finder);
+  expect(button.onPressed, isNotNull);
+  button.onPressed!.call();
+  await tester.pumpAndSettle();
+}
+
+Future<void> _setCheckboxValue(
+  WidgetTester tester,
+  Finder finder,
+  bool value,
+) async {
+  final checkbox = tester.widget<CheckboxListTile>(finder);
+  expect(checkbox.onChanged, isNotNull);
+  checkbox.onChanged!(value);
+  await _pumpUi(tester);
+  expect(tester.widget<CheckboxListTile>(finder).value, value);
+}
+
 void _installFakeScannerPlatform(WidgetTester tester) {
   final previousPlatform = MobileScannerPlatform.instance;
   final fakePlatform = _FakeMobileScannerPlatform();
@@ -395,12 +459,15 @@ void main() {
     final inventoryRepository = _RecordingInventoryItemRepository();
     addTearDown(inventoryRepository.dispose);
     final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+    final barcodeCandidateRepository =
+        _RecordingGlobalBarcodeCandidateRepository();
 
     await tester.pumpWidget(
       _buildHarness(
         offRepository: offRepository,
         inventoryRepository: inventoryRepository,
         globalFoodRepository: globalFoodRepository,
+        barcodeCandidateRepository: barcodeCandidateRepository,
       ),
     );
     await _pumpUi(tester);
@@ -453,10 +520,7 @@ void main() {
 
     expect(find.text('home'), findsOneWidget);
     expect(globalFoodRepository.appendedItems, hasLength(1));
-    expect(
-      globalFoodRepository.appendedItems.single.id,
-      'off-4006381333931-milk-brand',
-    );
+    expect(globalFoodRepository.appendedItems.single.id, 'off-4006381333931');
     expect(inventoryRepository.appendedItems, hasLength(1));
     expect(inventoryRepository.appendedItems.single.name, 'Milk');
     expect(
@@ -465,11 +529,16 @@ void main() {
     );
     expect(
       inventoryRepository.appendedItems.single.globalFoodItemId,
-      'off-4006381333931-milk-brand',
+      'off-4006381333931',
     );
     expect(
       inventoryRepository.appendedItems.single.origin,
       InventoryItemOrigin.manualAdd,
+    );
+    expect(barcodeCandidateRepository.recordedSelections, hasLength(1));
+    expect(
+      barcodeCandidateRepository.recordedSelections.single.barcode,
+      '4006381333931',
     );
   });
 
@@ -580,37 +649,22 @@ void main() {
       const Key('receipt_review_manual_eat_now_checkbox'),
     );
     await tester.ensureVisible(eatNowCheckbox);
-    await tester.tap(eatNowCheckbox);
-    await _pumpUi(tester);
+    await _setCheckboxValue(tester, eatNowCheckbox, true);
 
     final manualSaveButton = find.byKey(
       const Key('receipt_review_manual_save_button'),
     );
-    await tester.enterText(
-      find.byKey(const Key('receipt_review_manual_kcal_field')),
-      '100',
-    );
-    await tester.enterText(
-      find.byKey(const Key('receipt_review_manual_protein_field')),
-      '10',
-    );
-    await tester.enterText(
-      find.byKey(const Key('receipt_review_manual_carbs_field')),
-      '20',
-    );
-    await tester.enterText(
-      find.byKey(const Key('receipt_review_manual_fat_field')),
-      '3',
-    );
-    await _pumpUi(tester);
-    await tester.ensureVisible(eatNowCheckbox);
-    await tester.tap(eatNowCheckbox);
-    await _pumpUi(tester);
-    await tester.ensureVisible(manualSaveButton);
-    await tester.tap(manualSaveButton);
-    await tester.pumpAndSettle();
+    await _scrollIntoView(tester, manualSaveButton);
+    await _pressFilledButton(tester, manualSaveButton);
 
-    expect(find.text('Eat: Milk'), findsOneWidget);
+    expect(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+      findsOneWidget,
+    );
 
     final logButton = find.text('Log');
     await tester.ensureVisible(logButton);
@@ -671,37 +725,22 @@ void main() {
         const Key('receipt_review_manual_eat_now_checkbox'),
       );
       await tester.ensureVisible(eatNowCheckbox);
-      await tester.tap(eatNowCheckbox);
-      await _pumpUi(tester);
+      await _setCheckboxValue(tester, eatNowCheckbox, true);
 
       final manualSaveButton = find.byKey(
         const Key('receipt_review_manual_save_button'),
       );
-      await tester.enterText(
-        find.byKey(const Key('receipt_review_manual_kcal_field')),
-        '100',
-      );
-      await tester.enterText(
-        find.byKey(const Key('receipt_review_manual_protein_field')),
-        '10',
-      );
-      await tester.enterText(
-        find.byKey(const Key('receipt_review_manual_carbs_field')),
-        '20',
-      );
-      await tester.enterText(
-        find.byKey(const Key('receipt_review_manual_fat_field')),
-        '3',
-      );
-      await tester.ensureVisible(manualSaveButton);
-      await tester.tap(manualSaveButton);
-      await tester.pumpAndSettle();
+      await _scrollIntoView(tester, manualSaveButton);
+      await _pressFilledButton(tester, manualSaveButton);
 
       expect(
         find.text('The product could not be added to the inventory.'),
         findsOneWidget,
       );
-      expect(find.text('Eat: Milk'), findsNothing);
+      expect(
+        find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+        findsNothing,
+      );
     },
   );
 
@@ -756,37 +795,22 @@ void main() {
         const Key('receipt_review_manual_eat_now_checkbox'),
       );
       await tester.ensureVisible(eatNowCheckbox);
-      await tester.tap(eatNowCheckbox);
-      await _pumpUi(tester);
+      await _setCheckboxValue(tester, eatNowCheckbox, true);
 
       final manualSaveButton = find.byKey(
         const Key('receipt_review_manual_save_button'),
       );
-      await tester.enterText(
-        find.byKey(const Key('receipt_review_manual_kcal_field')),
-        '100',
-      );
-      await tester.enterText(
-        find.byKey(const Key('receipt_review_manual_protein_field')),
-        '10',
-      );
-      await tester.enterText(
-        find.byKey(const Key('receipt_review_manual_carbs_field')),
-        '20',
-      );
-      await tester.enterText(
-        find.byKey(const Key('receipt_review_manual_fat_field')),
-        '3',
-      );
-      await _pumpUi(tester);
-      await tester.ensureVisible(eatNowCheckbox);
-      await tester.tap(eatNowCheckbox);
-      await _pumpUi(tester);
-      await tester.ensureVisible(manualSaveButton);
-      await tester.tap(manualSaveButton);
-      await tester.pumpAndSettle();
+      await _scrollIntoView(tester, manualSaveButton);
+      await _pressFilledButton(tester, manualSaveButton);
 
-      expect(find.text('Eat: Milk'), findsOneWidget);
+      expect(
+        find.byKey(const Key('inventory_item_amount_dialog_field')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+        findsOneWidget,
+      );
 
       final logButton = find.text('Log');
       await tester.ensureVisible(logButton);
@@ -877,6 +901,104 @@ void main() {
     expect(
       inventoryRepository.appendedItems.single.origin,
       InventoryItemOrigin.manualAdd,
+    );
+  });
+
+  testWidgets('learned barcode candidate can be selected and voted', (
+    tester,
+  ) async {
+    _installFakeScannerPlatform(tester);
+
+    final offRepository =
+        _RecordingOffProductSearchRepository(<OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4006381333931',
+            name: 'OFF Milk',
+            brand: 'OFF Brand',
+            score: 99,
+          ),
+        ]);
+    final inventoryRepository = _RecordingInventoryItemRepository();
+    addTearDown(inventoryRepository.dispose);
+    final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+    final barcodeCandidateRepository =
+        _RecordingGlobalBarcodeCandidateRepository(
+          candidates: <GlobalBarcodeCandidate>[
+            GlobalBarcodeCandidate(
+              id: 'barcode-4006381333931-community-milk',
+              barcode: '4006381333931',
+              globalFoodItemId: 'community-milk',
+              selectionCount: 7,
+              uniqueUserCount: 3,
+              globalFoodItem: GlobalFoodItem.create(
+                id: 'community-milk',
+                name: 'Community Milk',
+                now: DateTime.parse('2026-04-13T10:00:00Z'),
+                brand: 'Acme',
+                barcode: '4006381333931',
+                nutrition: const GlobalFoodNutrition(
+                  qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+                  per100Kcal: 100,
+                  per100Protein: 10,
+                  per100Carbs: 20,
+                  per100Fat: 3,
+                ),
+              ),
+              createdAt: DateTime.parse('2026-04-13T10:00:00Z'),
+              updatedAt: DateTime.parse('2026-04-13T10:00:00Z'),
+            ),
+          ],
+        );
+
+    await tester.pumpWidget(
+      _buildHarness(
+        offRepository: offRepository,
+        inventoryRepository: inventoryRepository,
+        globalFoodRepository: globalFoodRepository,
+        barcodeCandidateRepository: barcodeCandidateRepository,
+      ),
+    );
+    await _pumpUi(tester);
+
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_scan_button')),
+    );
+    await _pumpUi(tester);
+
+    _fakeScannerPlatform().emitBarcode('4006381333931');
+    await _pumpUi(tester);
+
+    expect(find.text('Community Milk'), findsOneWidget);
+    expect(find.text('OFF Milk'), findsOneWidget);
+
+    await tester.tap(find.text('Community Milk'));
+    await _pumpUi(tester);
+
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(const Key('receipt_review_manual_preview_name')),
+          )
+          .data,
+      'Community Milk',
+    );
+
+    final manualSaveButton = find.byKey(
+      const Key('receipt_review_manual_save_button'),
+    );
+    await tester.ensureVisible(manualSaveButton);
+    await tester.tap(manualSaveButton);
+    await _pumpUi(tester);
+
+    expect(globalFoodRepository.appendedItems, isEmpty);
+    expect(
+      inventoryRepository.appendedItems.single.globalFoodItemId,
+      'community-milk',
+    );
+    expect(barcodeCandidateRepository.recordedSelections, hasLength(1));
+    expect(
+      barcodeCandidateRepository.recordedSelections.single.globalFoodItem.id,
+      'community-milk',
     );
   });
 

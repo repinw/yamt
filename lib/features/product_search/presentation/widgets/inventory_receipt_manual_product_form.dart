@@ -21,7 +21,7 @@ class InventoryReceiptManualProductPreviewData {
     this.weight,
   });
 
-  final String imageUrl;
+  final String? imageUrl;
   final String name;
   final String? brand;
   final String? weight;
@@ -1102,24 +1102,7 @@ class _ManualProductPreview extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.md),
-            child: AppCachedNetworkImage(
-              imageUrl: preview.imageUrl,
-              width: 72,
-              height: 72,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return ColoredBox(
-                  color: colors.surfaceContainerHighest,
-                  child: SizedBox.square(
-                    dimension: 72,
-                    child: Icon(
-                      Icons.inventory_2_outlined,
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                );
-              },
-            ),
+            child: _PreviewImage(imageUrl: preview.imageUrl),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -1162,6 +1145,49 @@ class _ManualProductPreview extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PreviewImage extends StatelessWidget {
+  const _PreviewImage({required this.imageUrl});
+
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final resolvedUrl = normalizeProductImageUrl(imageUrl);
+    if (resolvedUrl == null) {
+      return ColoredBox(
+        color: colors.surfaceContainerHighest,
+        child: SizedBox.square(
+          dimension: 72,
+          child: Icon(
+            Icons.inventory_2_outlined,
+            color: colors.onSurfaceVariant,
+          ),
+        ),
+      );
+    }
+
+    return AppCachedNetworkImage(
+      imageUrl: resolvedUrl,
+      width: 72,
+      height: 72,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return ColoredBox(
+          color: colors.surfaceContainerHighest,
+          child: SizedBox.square(
+            dimension: 72,
+            child: Icon(
+              Icons.inventory_2_outlined,
+              color: colors.onSurfaceVariant,
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/features/inventory/data/'
+    'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
@@ -89,6 +91,7 @@ class _InventoryManualAddPageState
       barcode: barcode,
       selectedProduct: result.selectedProduct,
       selectedGlobalFoodItemId: result.selectedGlobalFoodItemId,
+      requiresGlobalPersistence: result.requiresGlobalPersistence,
     );
     if (!mounted) {
       return;
@@ -99,6 +102,10 @@ class _InventoryManualAddPageState
     }
 
     if (result.eatImmediately) {
+      await _waitForPostSaveRouteSettle();
+      if (!mounted) {
+        return;
+      }
       await _openImmediateEatFlow(savedItem);
       if (!mounted) {
         return;
@@ -110,11 +117,19 @@ class _InventoryManualAddPageState
     }
   }
 
+  Future<void> _waitForPostSaveRouteSettle() async {
+    // Editor route pops right before this callback. Wait one frame so next
+    // modal sheet attaches to active route, not disappearing route.
+    await Future<void>.delayed(Duration.zero);
+    await WidgetsBinding.instance.endOfFrame;
+  }
+
   Future<InventoryItem?> _persistProduct({
     required InventoryItem item,
     required String barcode,
     OffProductSearchResult? selectedProduct,
     String? selectedGlobalFoodItemId,
+    required bool requiresGlobalPersistence,
   }) async {
     final now = DateTime.now();
     final l10n = AppLocalizations.of(context)!;
@@ -126,9 +141,11 @@ class _InventoryManualAddPageState
       selectedGlobalFoodItemId: selectedGlobalFoodItemId,
     );
 
-    final globalSaved = await ref
-        .read(globalFoodItemRepositoryProvider)
-        .appendAll(<GlobalFoodItem>[globalProduct]);
+    final globalSaved =
+        !requiresGlobalPersistence ||
+        await ref.read(globalFoodItemRepositoryProvider).appendAll(
+          <GlobalFoodItem>[globalProduct],
+        );
 
     final savedItem = InventoryItem.create(
       id: _inventoryManualAddItemId.v4(),
@@ -157,6 +174,15 @@ class _InventoryManualAddPageState
         .addItem(savedItem);
     if (!inventorySaved) {
       return null;
+    }
+    if (globalSaved) {
+      await ref
+          .read(globalBarcodeCandidateRepositoryProvider)
+          .recordSelection(
+            barcode: barcode,
+            globalFoodItem: globalProduct,
+            selectedAt: now,
+          );
     }
     return savedItem;
   }
@@ -202,6 +228,10 @@ class _InventoryManualAddPageState
     return GlobalFoodItem.create(
       id:
           selectedGlobalFoodItemId ??
+          _selectedProductGlobalFoodItemId(
+            selectedProduct: selectedProduct,
+            barcode: barcode,
+          ) ??
           _globalFoodItemIdFor(item, barcode: barcode),
       name: item.name,
       now: now,
@@ -216,6 +246,19 @@ class _InventoryManualAddPageState
       nutrition: item.nutrition,
       status: GlobalFoodItemStatus.active,
     );
+  }
+
+  String? _selectedProductGlobalFoodItemId({
+    required OffProductSearchResult? selectedProduct,
+    required String barcode,
+  }) {
+    if (selectedProduct == null) {
+      return null;
+    }
+    final normalizedBarcode = selectedProduct.code.trim().isEmpty
+        ? barcode
+        : selectedProduct.code;
+    return 'off-$normalizedBarcode';
   }
 
   String _globalFoodItemIdFor(InventoryItem item, {required String barcode}) {

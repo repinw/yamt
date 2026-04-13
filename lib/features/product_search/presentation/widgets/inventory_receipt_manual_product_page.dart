@@ -4,12 +4,14 @@ import 'dart:developer' show log;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
@@ -74,12 +76,14 @@ class InventoryReceiptManualProductResult {
     required this.item,
     this.selectedProduct,
     this.selectedGlobalFoodItemId,
+    this.requiresGlobalPersistence = true,
     this.eatImmediately = false,
   });
 
   final InventoryItem item;
   final OffProductSearchResult? selectedProduct;
   final String? selectedGlobalFoodItemId;
+  final bool requiresGlobalPersistence;
   final bool eatImmediately;
 }
 
@@ -242,7 +246,7 @@ class _InventoryReceiptManualProductLauncherPageState
             onProductSelected: (candidate, scannedBarcode) async {
               Navigator.of(sheetContext).pop(
                 _ManualBarcodeScanResult.selected(
-                  product: candidate,
+                  candidate: candidate,
                   scannedBarcode: scannedBarcode,
                 ),
               );
@@ -266,11 +270,29 @@ class _InventoryReceiptManualProductLauncherPageState
 
     switch (result.kind) {
       case _ManualBarcodeScanResultKind.selected:
-        final product = result.product;
-        if (product == null) {
+        final candidate = result.candidate;
+        if (candidate == null) {
           return;
         }
-        await _openEditor(selectedProduct: product);
+        final selectedProduct = candidate.externalProduct;
+        if (selectedProduct != null) {
+          await _openEditor(selectedProduct: selectedProduct);
+          return;
+        }
+
+        final globalFoodItem = candidate.globalFoodItem;
+        if (globalFoodItem == null) {
+          return;
+        }
+        final selectedItem = _inventoryItemFromBarcodeCandidate(
+          baseItem: widget.config.item,
+          globalFoodItem: globalFoodItem,
+          barcode: result.scannedBarcode ?? candidate.barcode,
+        );
+        await _openEditor(
+          itemOverride: selectedItem,
+          initialRecentItem: selectedItem,
+        );
       case _ManualBarcodeScanResultKind.notFound:
         final scannedBarcode = result.scannedBarcode;
         if (scannedBarcode == null || scannedBarcode.isEmpty) {
@@ -352,16 +374,16 @@ enum _ManualBarcodeScanResultKind { selected, notFound }
 class _ManualBarcodeScanResult {
   const _ManualBarcodeScanResult._({
     required this.kind,
-    this.product,
+    this.candidate,
     this.scannedBarcode,
   });
 
   const _ManualBarcodeScanResult.selected({
-    required OffProductSearchResult product,
+    required InventoryBarcodeLookupCandidate candidate,
     required String scannedBarcode,
   }) : this._(
          kind: _ManualBarcodeScanResultKind.selected,
-         product: product,
+         candidate: candidate,
          scannedBarcode: scannedBarcode,
        );
 
@@ -372,7 +394,7 @@ class _ManualBarcodeScanResult {
       );
 
   final _ManualBarcodeScanResultKind kind;
-  final OffProductSearchResult? product;
+  final InventoryBarcodeLookupCandidate? candidate;
   final String? scannedBarcode;
 }
 
@@ -583,7 +605,7 @@ class _InventoryReceiptManualProductEditorPageState
     final state = ref.watch(_provider);
     final preview = _buildPreviewData();
     final canEatImmediately = _canEatImmediately(state);
-    final canSave = state.hasCompleteNutritionInput;
+    final canSave = state.hasBarcode || state.hasNutritionInput;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.inventoryReceiptReviewManualDataTitle)),
@@ -709,7 +731,7 @@ class _InventoryReceiptManualProductEditorPageState
 
   Future<void> _save() async {
     final state = ref.read(_provider);
-    if (state.isRunningNutritionOcr || !state.hasCompleteNutritionInput) {
+    if (state.isRunningNutritionOcr) {
       return;
     }
     final payload = _controller.buildSavePayload();
@@ -727,6 +749,7 @@ class _InventoryReceiptManualProductEditorPageState
       item: payload.item,
       selectedProduct: payload.selectedProduct,
       selectedGlobalFoodItemId: payload.selectedGlobalFoodItemId,
+      requiresGlobalPersistence: payload.requiresGlobalPersistence,
       eatImmediately: eatImmediately,
     );
     final onSaved = widget.onSaved;
@@ -755,7 +778,7 @@ class _InventoryReceiptManualProductEditorPageState
             onProductSelected: (candidate, scannedBarcode) async {
               Navigator.of(sheetContext).pop(
                 _ManualBarcodeScanResult.selected(
-                  product: candidate,
+                  candidate: candidate,
                   scannedBarcode: scannedBarcode,
                 ),
               );
@@ -779,15 +802,31 @@ class _InventoryReceiptManualProductEditorPageState
 
     switch (result.kind) {
       case _ManualBarcodeScanResultKind.selected:
-        final product = result.product;
-        if (product == null) {
+        final candidate = result.candidate;
+        if (candidate == null) {
           return;
         }
-        if (widget.autofocusSearch) {
-          await _openSelectedProductEditor(product);
+        final selectedProduct = candidate.externalProduct;
+        if (selectedProduct != null && widget.autofocusSearch) {
+          await _openSelectedProductEditor(selectedProduct);
           return;
         }
-        _controller.applyScannedProduct(product);
+        if (selectedProduct != null) {
+          _controller.applyScannedProduct(selectedProduct);
+          return;
+        }
+
+        final globalFoodItem = candidate.globalFoodItem;
+        if (globalFoodItem == null) {
+          return;
+        }
+        _controller.applyRecentItem(
+          _inventoryItemFromBarcodeCandidate(
+            baseItem: widget.config.item,
+            globalFoodItem: globalFoodItem,
+            barcode: result.scannedBarcode ?? candidate.barcode,
+          ),
+        );
       case _ManualBarcodeScanResultKind.notFound:
         final scannedBarcode = result.scannedBarcode;
         if (scannedBarcode == null || scannedBarcode.isEmpty) {
@@ -947,6 +986,35 @@ class _InventoryReceiptManualProductEditorPageState
         l10n.inventoryReceiptReviewManualDataRequired,
     };
   }
+}
+
+InventoryItem _inventoryItemFromBarcodeCandidate({
+  required InventoryItem baseItem,
+  required GlobalFoodItem globalFoodItem,
+  required String barcode,
+}) {
+  final normalizedBarcode = normalizeBarcode(barcode);
+  final weight = globalFoodItem.packageWeight ?? baseItem.weight;
+  return baseItem
+      .copyWith(
+        globalFoodItemId: globalFoodItem.id,
+        name: globalFoodItem.name,
+        brand: globalFoodItem.brand,
+        category: globalFoodItem.category,
+        barcode: normalizedBarcode.isEmpty ? barcode : normalizedBarcode,
+        imageUrl: globalFoodItem.imageUrl,
+        weight: weight,
+        foodFingerprint: globalFoodItem.resolvedFoodFingerprint,
+        servingSize: globalFoodItem.servingSize,
+        servingQuantity: globalFoodItem.servingQuantity,
+        servingQuantityUnit: globalFoodItem.servingQuantityUnit,
+        nutrition: globalFoodItem.nutrition,
+      )
+      .withDerivedAmount(
+        weight: weight,
+        quantity: baseItem.quantity,
+        fallbackUnit: baseItem.amountUnit,
+      );
 }
 
 List<InventoryItem> _buildRecentItems(List<InventoryItem> items) {

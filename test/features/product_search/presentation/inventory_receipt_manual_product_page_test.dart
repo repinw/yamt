@@ -31,6 +31,8 @@ Widget _wrapPage({
   VoiceSearchService? speechService,
   bool includeStoreInSearch = true,
   bool includeWeightInSearch = true,
+  bool showEatImmediatelyOption = false,
+  Future<void> Function(InventoryReceiptManualProductResult result)? onSaved,
   Locale locale = const Locale('de'),
 }) {
   return ProviderScope(
@@ -54,6 +56,8 @@ Widget _wrapPage({
         selectedProduct: selectedProduct,
         includeStoreInSearch: includeStoreInSearch,
         includeWeightInSearch: includeWeightInSearch,
+        showEatImmediatelyOption: showEatImmediatelyOption,
+        onSaved: onSaved,
       ),
     ),
   );
@@ -1173,7 +1177,56 @@ void main() {
     expect(saveButton().onPressed, isNotNull);
   });
 
-  testWidgets('save button stays disabled until all nutrition fields are set', (
+  testWidgets('save forwards eat now selection when nutrition is present', (
+    tester,
+  ) async {
+    InventoryReceiptManualProductResult? savedResult;
+
+    await tester.pumpWidget(
+      _wrapPage(
+        item: _item(),
+        selectedProduct: const OffProductSearchResult(
+          code: '4311596490202',
+          name: 'Booster Absolute Zero',
+          brand: 'Booster',
+          packageWeight: '330 ml',
+          score: 100,
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 2,
+            per100Protein: 0,
+            per100Carbs: 0,
+            per100Fat: 0,
+          ),
+        ),
+        showEatImmediatelyOption: true,
+        onSaved: (result) async {
+          savedResult = result;
+        },
+      ),
+    );
+    await tester.pump();
+
+    final checkboxFinder = find.byKey(
+      const Key('receipt_review_manual_eat_now_checkbox'),
+    );
+    final checkbox = tester.widget<CheckboxListTile>(checkboxFinder);
+    expect(checkbox.onChanged, isNotNull);
+    checkbox.onChanged!(true);
+    await tester.pump();
+
+    final saveButton = tester.widget<FilledButton>(
+      find.byKey(const Key('receipt_review_manual_save_button')),
+    );
+    expect(saveButton.onPressed, isNotNull);
+    saveButton.onPressed!.call();
+    await tester.pumpAndSettle();
+
+    expect(savedResult, isNotNull);
+    expect(savedResult?.eatImmediately, isTrue);
+  });
+
+  testWidgets('save stays enabled when selected product already has barcode', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -1195,7 +1248,7 @@ void main() {
       find.byKey(const Key('receipt_review_manual_save_button')),
     );
 
-    expect(saveButton().onPressed, isNull);
+    expect(saveButton().onPressed, isNotNull);
 
     await tester.enterText(
       find.byKey(const Key('receipt_review_manual_kcal_field')),
@@ -1231,7 +1284,7 @@ void main() {
   });
 
   testWidgets(
-    'partial OCR fills found values and keeps missing required blank',
+    'partial OCR keeps save enabled and leaves missing fields blank',
     (tester) async {
       await tester.pumpWidget(
         _wrapPage(
@@ -1374,7 +1427,7 @@ void main() {
       );
       expect(find.text('Booster Absolute Zero'), findsWidgets);
       expect(find.text('Booster'), findsWidgets);
-      expect(saveButton().onPressed, isNull);
+      expect(saveButton().onPressed, isNotNull);
 
       final addOptionalNutritionButton = find.byKey(
         const Key('receipt_review_manual_add_optional_nutrition_button'),
