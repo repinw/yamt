@@ -1322,6 +1322,23 @@ void main() {
 
     await tester.enterText(
       find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
+      '1.2.3',
+    );
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
+          )
+          .controller
+          ?.text,
+      '1.23',
+    );
+    expect(saveButton().onPressed, isNotNull);
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
       '250',
     );
     await tester.pump();
@@ -1359,7 +1376,23 @@ void main() {
           )
           .controller
           ?.text,
-      '12,.3',
+      '12,3',
+    );
+
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_weight_field')),
+      '1.2.3',
+    );
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const Key('receipt_review_manual_weight_field')),
+          )
+          .controller
+          ?.text,
+      '1.23',
     );
 
     final addOptionalNutritionButton = find.byKey(

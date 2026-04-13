@@ -14,9 +14,42 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import 'inventory_receipt_manual_product_form_utils.dart';
 
+final TextInputFormatter _singleDecimalInputFormatter =
+    TextInputFormatter.withFunction((oldValue, newValue) {
+      final sanitizedText = _sanitizeDecimalInput(newValue.text);
+      if (sanitizedText == newValue.text) {
+        return newValue;
+      }
+      return TextEditingValue(
+        text: sanitizedText,
+        selection: TextSelection.collapsed(offset: sanitizedText.length),
+      );
+    });
+
 final _numericInputFormatters = <TextInputFormatter>[
-  FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+  _singleDecimalInputFormatter,
 ];
+
+String _sanitizeDecimalInput(String rawText) {
+  final buffer = StringBuffer();
+  var hasSeparator = false;
+
+  for (final codeUnit in rawText.codeUnits) {
+    final isDigit = codeUnit >= 48 && codeUnit <= 57;
+    if (isDigit) {
+      buffer.writeCharCode(codeUnit);
+      continue;
+    }
+
+    final isSeparator = codeUnit == 44 || codeUnit == 46;
+    if (!hasSeparator && isSeparator) {
+      hasSeparator = true;
+      buffer.writeCharCode(codeUnit);
+    }
+  }
+
+  return buffer.toString();
+}
 
 class InventoryReceiptManualProductPreviewData {
   const InventoryReceiptManualProductPreviewData({
