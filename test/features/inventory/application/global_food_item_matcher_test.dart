@@ -99,11 +99,12 @@ class _FakeOffProductSearchRepository implements OffProductSearchRepository {
 class _FakeGlobalFoodItemRepository implements GlobalFoodItemRepository {
   _FakeGlobalFoodItemRepository({
     this.fallbackResults = const <GlobalFoodItem>[],
-    this.onSearch,
-  });
+    Future<List<GlobalFoodItem>> Function(_GlobalSearchCall call)? onSearch,
+  }) : _onSearch = onSearch;
 
   final List<GlobalFoodItem> fallbackResults;
-  final Future<List<GlobalFoodItem>> Function(_GlobalSearchCall call)? onSearch;
+  final Future<List<GlobalFoodItem>> Function(_GlobalSearchCall call)?
+  _onSearch;
   final List<_GlobalSearchCall> calls = <_GlobalSearchCall>[];
 
   @override
@@ -124,7 +125,8 @@ class _FakeGlobalFoodItemRepository implements GlobalFoodItemRepository {
       limit: limit,
     );
     calls.add(call);
-    final results = onSearch == null ? fallbackResults : await onSearch!(call);
+    final onSearch = _onSearch;
+    final results = onSearch == null ? fallbackResults : await onSearch(call);
     return results.take(limit).toList(growable: false);
   }
 

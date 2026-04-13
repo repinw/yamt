@@ -421,7 +421,9 @@ class ReceiptReviewResolutionService {
       for (final item in resolvedItems)
         if ((globalSaved || !item.requiresGlobalPersistence) &&
             item.sourceDraft.shouldSaveReceiptAlias)
-          if (_buildReceiptAlias(item, now: now) case final alias?) alias,
+          if (_buildReceiptAlias(item, now: now) case final alias?) ...[
+            alias,
+          ],
     ];
     if (aliases.isEmpty) {
       return;
