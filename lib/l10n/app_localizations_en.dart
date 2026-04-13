@@ -435,6 +435,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryManualAddCandidateSubtitle => 'Multiple matching products were found for this barcode.';
 
   @override
+  String get inventoryManualAddCandidateSourceLearned => 'Community';
+
+  @override
+  String get inventoryManualAddCandidateSourceOff => 'OFF';
+
+  @override
   String get inventoryManualAddUnknownBrand => 'Unknown brand';
 
   @override
@@ -450,7 +456,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryManualAddSaved => 'Product added to inventory.';
 
   @override
+  String get inventoryManualAddPackageSizeLabel => 'Package size';
+
+  @override
   String get inventoryManualAddEatNowOption => 'Eat now';
+
+  @override
+  String get inventoryManualAddEatNowSizeLabel => 'Eat now amount';
 
   @override
   String get inventoryManualAddEatNowRequiresNutrition => 'Only available when nutrition values are present.';

@@ -13,6 +13,8 @@ import 'package:yamt/features/household/provider/'
     'household_permission_recovery.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/'
+    'global_barcode_candidate_repository.dart';
+import 'package:yamt/features/inventory/data/'
     'global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
@@ -613,7 +615,23 @@ class InventoryItemsController extends _$InventoryItemsController {
         weight: weight,
         canReferenceGlobalItem: canReferenceGlobalItem,
       );
-      return _saveItems(previousItems: currentItems, nextItems: nextItems);
+      final saved = await _saveItems(
+        previousItems: currentItems,
+        nextItems: nextItems,
+      );
+      if (saved && canReferenceGlobalItem) {
+        final barcode = resolvedProduct.normalizedBarcode;
+        if (barcode != null && barcode.isNotEmpty) {
+          await ref
+              .read(globalBarcodeCandidateRepositoryProvider)
+              .recordSelection(
+                barcode: barcode,
+                globalFoodItem: resolvedProduct,
+                selectedAt: DateTime.now(),
+              );
+        }
+      }
+      return saved;
     });
   }
 

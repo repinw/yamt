@@ -3,10 +3,13 @@ import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/data/'
+    'global_barcode_candidate_repository_contract.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/'
     'global_food_receipt_alias_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
+import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -148,6 +151,29 @@ class _RecordingGlobalFoodReceiptAliasRepository
     int limit = 5,
   }) async {
     return const <GlobalFoodReceiptAlias>[];
+  }
+}
+
+class _RecordingGlobalBarcodeCandidateRepository
+    implements GlobalBarcodeCandidateRepository {
+  final List<({String barcode, GlobalFoodItem globalFoodItem})>
+  recordedSelections = <({String barcode, GlobalFoodItem globalFoodItem})>[];
+
+  @override
+  Future<List<GlobalBarcodeCandidate>> readCandidates({
+    required String barcode,
+    int limit = 5,
+  }) async {
+    return const <GlobalBarcodeCandidate>[];
+  }
+
+  @override
+  Future<void> recordSelection({
+    required String barcode,
+    required GlobalFoodItem globalFoodItem,
+    required DateTime selectedAt,
+  }) async {
+    recordedSelections.add((barcode: barcode, globalFoodItem: globalFoodItem));
   }
 }
 
@@ -475,6 +501,63 @@ void main() {
     },
   );
 
+  test('persistReviewedItems patches selected candidate for missing nutrition '
+      'and records barcode vote', () async {
+    final selected = _product(
+      id: 'milk',
+      name: 'Milk',
+      brand: 'Acme',
+      barcode: '4006381333931',
+    );
+    final globalRepository = _RecordingGlobalFoodItemRepository();
+    final inventoryRepository = _RecordingInventoryItemRepository();
+    final barcodeRepository = _RecordingGlobalBarcodeCandidateRepository();
+    final service = ReceiptReviewResolutionService(
+      mapper: _FakeMapper(const <ReceiptReviewItemDraft>[]),
+      matcher: _FakeMatcher(
+        candidatesByItemId: const <String, List<GlobalFoodMatchCandidate>>{},
+        defaultSelections: const <String, String?>{},
+      ),
+      globalFoodItemRepository: globalRepository,
+      globalBarcodeCandidateRepository: barcodeRepository,
+      inventoryItemRepository: inventoryRepository,
+    );
+
+    final result = await service.persistReviewedItems(<ReceiptReviewItemDraft>[
+      ReceiptReviewItemDraft(
+        item: _item(id: 'draft-1', name: 'Milk', brand: 'Acme').copyWith(
+          barcode: '4006381333931',
+          nutrition: const GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 100,
+            per100Protein: 10,
+            per100Carbs: 20,
+            per100Fat: 3,
+          ),
+        ),
+        candidates: <GlobalFoodMatchCandidate>[
+          GlobalFoodMatchCandidate(
+            item: selected,
+            score: 100,
+            reason: GlobalFoodMatchReason.nameExact,
+          ),
+        ],
+        selectedGlobalFoodItemId: 'milk',
+      ),
+    ]);
+
+    expect(result.saved, isTrue);
+    expect(globalRepository.appendedItems, hasLength(1));
+    expect(globalRepository.appendedItems.single.id, 'milk');
+    expect(globalRepository.appendedItems.single.nutrition?.per100Kcal, 100);
+    expect(inventoryRepository.appendedItems.single.globalFoodItemId, 'milk');
+    expect(barcodeRepository.recordedSelections, hasLength(1));
+    expect(
+      barcodeRepository.recordedSelections.single.barcode,
+      '4006381333931',
+    );
+  });
+
   test('persistReviewedItems keeps confirmed weight on new products', () async {
     final globalRepository = _RecordingGlobalFoodItemRepository();
     final inventoryRepository = _RecordingInventoryItemRepository();
@@ -704,7 +787,11 @@ void main() {
 
     expect(result.saved, isTrue);
     expect(globalRepository.appendedItems, hasLength(1));
-    expect(globalRepository.appendedItems.single.id, 'off-4061458029995');
+    expect(globalRepository.appendedItems.single.id, 'global-food-fixed');
+    expect(
+      globalRepository.appendedItems.single.status,
+      GlobalFoodItemStatus.candidate,
+    );
     expect(globalRepository.appendedItems.single.barcode, '4061458029995');
     expect(globalRepository.appendedItems.single.storeName, 'Store');
     expect(

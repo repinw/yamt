@@ -2,6 +2,8 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/data/firestore_atomic_replace_service.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/global_food_item_patch.dart';
 
 const String _storeLogName = 'FirestoreGlobalFoodItemStore';
 const String _globalFoodItemsCollection = 'global_food_items';
@@ -164,7 +166,7 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     try {
-      await _createMissingDocuments(documentsById);
+      await _upsertDocuments(documentsById);
       return true;
     } catch (error, stackTrace) {
       log(
@@ -181,17 +183,29 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
     return _firestore.collection(_globalFoodItemsCollection);
   }
 
-  Future<void> _createMissingDocuments(
+  Future<void> _upsertDocuments(
     Map<String, Map<String, dynamic>> documentsById,
   ) async {
     for (final entry in documentsById.entries) {
       await _firestore.runTransaction((transaction) async {
         final reference = _collection().doc(entry.key);
         final snapshot = await transaction.get(reference);
-        if (snapshot.exists) {
+        if (!snapshot.exists) {
+          transaction.set(reference, entry.value);
           return;
         }
-        transaction.set(reference, entry.value);
+
+        final currentData = snapshot.data() ?? const <String, dynamic>{};
+        final currentItem = GlobalFoodItem.fromJson(currentData);
+        final patchItem = GlobalFoodItem.fromJson(entry.value);
+        final mergedItem = mergeGlobalFoodItemPatch(
+          currentItem: currentItem,
+          patchItem: patchItem,
+          updatedAt:
+              DateTime.tryParse(entry.value['updated_at'] as String? ?? '') ??
+              patchItem.updatedAt,
+        );
+        transaction.set(reference, mergedItem.toJson());
       });
     }
   }

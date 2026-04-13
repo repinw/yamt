@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
@@ -13,6 +14,43 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import 'inventory_receipt_manual_product_form_utils.dart';
 
+final TextInputFormatter _singleDecimalInputFormatter =
+    TextInputFormatter.withFunction((oldValue, newValue) {
+      final sanitizedText = _sanitizeDecimalInput(newValue.text);
+      if (sanitizedText == newValue.text) {
+        return newValue;
+      }
+      return TextEditingValue(
+        text: sanitizedText,
+        selection: TextSelection.collapsed(offset: sanitizedText.length),
+      );
+    });
+
+final _numericInputFormatters = <TextInputFormatter>[
+  _singleDecimalInputFormatter,
+];
+
+String _sanitizeDecimalInput(String rawText) {
+  final buffer = StringBuffer();
+  var hasSeparator = false;
+
+  for (final codeUnit in rawText.codeUnits) {
+    final isDigit = codeUnit >= 48 && codeUnit <= 57;
+    if (isDigit) {
+      buffer.writeCharCode(codeUnit);
+      continue;
+    }
+
+    final isSeparator = codeUnit == 44 || codeUnit == 46;
+    if (!hasSeparator && isSeparator) {
+      hasSeparator = true;
+      buffer.writeCharCode(codeUnit);
+    }
+  }
+
+  return buffer.toString();
+}
+
 class InventoryReceiptManualProductPreviewData {
   const InventoryReceiptManualProductPreviewData({
     required this.imageUrl,
@@ -21,7 +59,7 @@ class InventoryReceiptManualProductPreviewData {
     this.weight,
   });
 
-  final String imageUrl;
+  final String? imageUrl;
   final String name;
   final String? brand;
   final String? weight;
@@ -121,6 +159,8 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.recentItems,
     required this.weightAmountController,
     required this.selectedWeightUnit,
+    required this.eatNowAmountController,
+    required this.selectedEatNowUnit,
     required this.kcalController,
     required this.saturatedFatController,
     required this.polyunsaturatedFatController,
@@ -143,6 +183,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     this.showEatImmediatelyOption = false,
     this.eatImmediately = false,
     this.canEatImmediately = false,
+    this.showEatNowAmountField = false,
     required this.onSearchResultSelected,
     required this.onRecentItemSelected,
     required this.onScanBarcode,
@@ -158,6 +199,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.onApplyOptionalNutrition,
     required this.onCancelOptionalNutrition,
     this.onEatImmediatelyChanged,
+    required this.onEatNowUnitChanged,
     required this.onCancel,
     required this.onSave,
   });
@@ -174,6 +216,8 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   final List<InventoryItem> recentItems;
   final TextEditingController weightAmountController;
   final InventoryAmountUnit selectedWeightUnit;
+  final TextEditingController eatNowAmountController;
+  final InventoryAmountUnit selectedEatNowUnit;
   final TextEditingController kcalController;
   final TextEditingController saturatedFatController;
   final TextEditingController polyunsaturatedFatController;
@@ -197,6 +241,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   final bool showEatImmediatelyOption;
   final bool eatImmediately;
   final bool canEatImmediately;
+  final bool showEatNowAmountField;
   final ValueChanged<OffProductSearchResult> onSearchResultSelected;
   final ValueChanged<InventoryItem> onRecentItemSelected;
   final VoidCallback onScanBarcode;
@@ -213,6 +258,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   final VoidCallback onApplyOptionalNutrition;
   final VoidCallback onCancelOptionalNutrition;
   final ValueChanged<bool>? onEatImmediatelyChanged;
+  final ValueChanged<InventoryAmountUnit> onEatNowUnitChanged;
   final VoidCallback onCancel;
   final VoidCallback onSave;
 
@@ -297,6 +343,11 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 amountController: weightAmountController,
                 selectedUnit: selectedWeightUnit,
                 onUnitChanged: onWeightUnitChanged,
+                amountFieldKey: const Key('receipt_review_manual_weight_field'),
+                unitFieldKey: const Key(
+                  'receipt_review_manual_weight_unit_field',
+                ),
+                amountLabel: l10n.inventoryManualAddPackageSizeLabel,
               ),
               const SizedBox(height: AppSpacing.sm),
               Align(
@@ -320,6 +371,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: _numericInputFormatters,
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
@@ -329,6 +381,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: _numericInputFormatters,
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
@@ -340,6 +393,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: _numericInputFormatters,
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
@@ -349,6 +403,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: _numericInputFormatters,
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
@@ -358,6 +413,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: _numericInputFormatters,
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
@@ -367,6 +423,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: _numericInputFormatters,
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
@@ -376,6 +433,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: _numericInputFormatters,
               ),
               const SizedBox(height: AppSpacing.md),
               if (showPolyunsaturatedFatField) ...[
@@ -388,6 +446,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  inputFormatters: _numericInputFormatters,
                 ),
                 const SizedBox(height: AppSpacing.md),
               ],
@@ -399,6 +458,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  inputFormatters: _numericInputFormatters,
                 ),
                 const SizedBox(height: AppSpacing.md),
               ],
@@ -429,6 +489,21 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                   enabled: canEatImmediately,
                   onChanged: onEatImmediatelyChanged,
                 ),
+                if (showEatNowAmountField) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  _ManualProductWeightFields(
+                    amountController: eatNowAmountController,
+                    selectedUnit: selectedEatNowUnit,
+                    onUnitChanged: onEatNowUnitChanged,
+                    amountFieldKey: const Key(
+                      'receipt_review_manual_eat_now_weight_field',
+                    ),
+                    unitFieldKey: const Key(
+                      'receipt_review_manual_eat_now_weight_unit_field',
+                    ),
+                    amountLabel: l10n.inventoryManualAddEatNowSizeLabel,
+                  ),
+                ],
               ],
               if (errorText case final String message) ...[
                 const SizedBox(height: AppSpacing.md),
@@ -569,6 +644,7 @@ class _OptionalNutritionComposer extends StatelessWidget {
             'receipt_review_manual_optional_nutrition_value_field',
           ),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: _numericInputFormatters,
         ),
         const SizedBox(height: AppSpacing.md),
         Row(
@@ -672,11 +748,17 @@ class _ManualProductWeightFields extends StatelessWidget {
     required this.amountController,
     required this.selectedUnit,
     required this.onUnitChanged,
+    required this.amountFieldKey,
+    required this.unitFieldKey,
+    required this.amountLabel,
   });
 
   final TextEditingController amountController;
   final InventoryAmountUnit selectedUnit;
   final ValueChanged<InventoryAmountUnit> onUnitChanged;
+  final Key amountFieldKey;
+  final Key unitFieldKey;
+  final String amountLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -688,16 +770,17 @@ class _ManualProductWeightFields extends StatelessWidget {
           flex: 3,
           child: _ManualProductTextField(
             controller: amountController,
-            label: l10n.inventoryReceiptReviewFieldWeight,
-            fieldKey: const Key('receipt_review_manual_weight_field'),
+            label: amountLabel,
+            fieldKey: amountFieldKey,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: _numericInputFormatters,
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           flex: 2,
           child: DropdownButtonFormField<InventoryAmountUnit>(
-            key: const Key('receipt_review_manual_weight_unit_field'),
+            key: unitFieldKey,
             initialValue: selectedUnit,
             decoration: InputDecoration(
               labelText: l10n.inventoryReceiptReviewFieldWeightUnit,
@@ -748,12 +831,14 @@ class _ManualProductTextField extends StatelessWidget {
     required this.label,
     required this.fieldKey,
     required this.keyboardType,
+    this.inputFormatters,
   });
 
   final TextEditingController controller;
   final String label;
   final Key fieldKey;
   final TextInputType keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
@@ -761,6 +846,7 @@ class _ManualProductTextField extends StatelessWidget {
       key: fieldKey,
       controller: controller,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -1102,24 +1188,7 @@ class _ManualProductPreview extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.md),
-            child: AppCachedNetworkImage(
-              imageUrl: preview.imageUrl,
-              width: 72,
-              height: 72,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return ColoredBox(
-                  color: colors.surfaceContainerHighest,
-                  child: SizedBox.square(
-                    dimension: 72,
-                    child: Icon(
-                      Icons.inventory_2_outlined,
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                );
-              },
-            ),
+            child: _PreviewImage(imageUrl: preview.imageUrl),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -1162,6 +1231,49 @@ class _ManualProductPreview extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PreviewImage extends StatelessWidget {
+  const _PreviewImage({required this.imageUrl});
+
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final resolvedUrl = normalizeProductImageUrl(imageUrl);
+    if (resolvedUrl == null) {
+      return ColoredBox(
+        color: colors.surfaceContainerHighest,
+        child: SizedBox.square(
+          dimension: 72,
+          child: Icon(
+            Icons.inventory_2_outlined,
+            color: colors.onSurfaceVariant,
+          ),
+        ),
+      );
+    }
+
+    return AppCachedNetworkImage(
+      imageUrl: resolvedUrl,
+      width: 72,
+      height: 72,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return ColoredBox(
+          color: colors.surfaceContainerHighest,
+          child: SizedBox.square(
+            dimension: 72,
+            child: Icon(
+              Icons.inventory_2_outlined,
+              color: colors.onSurfaceVariant,
+            ),
+          ),
+        );
+      },
     );
   }
 }

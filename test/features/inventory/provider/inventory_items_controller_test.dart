@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/data/global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -106,6 +108,29 @@ class _FakeGlobalFoodItemRepository implements GlobalFoodItemRepository {
   @override
   Stream<List<GlobalFoodItem>> watchAll() {
     return const Stream<List<GlobalFoodItem>>.empty();
+  }
+}
+
+class _FakeGlobalBarcodeCandidateRepository
+    implements GlobalBarcodeCandidateRepository {
+  final List<({String barcode, GlobalFoodItem globalFoodItem})>
+  recordedSelections = <({String barcode, GlobalFoodItem globalFoodItem})>[];
+
+  @override
+  Future<List<GlobalBarcodeCandidate>> readCandidates({
+    required String barcode,
+    int limit = 5,
+  }) async {
+    return const <GlobalBarcodeCandidate>[];
+  }
+
+  @override
+  Future<void> recordSelection({
+    required String barcode,
+    required GlobalFoodItem globalFoodItem,
+    required DateTime selectedAt,
+  }) async {
+    recordedSelections.add((barcode: barcode, globalFoodItem: globalFoodItem));
   }
 }
 
@@ -319,12 +344,16 @@ void main() {
         ],
       );
       final globalRepository = _FakeGlobalFoodItemRepository();
+      final barcodeRepository = _FakeGlobalBarcodeCandidateRepository();
       addTearDown(repository.dispose);
 
       final container = ProviderContainer(
         overrides: [
           inventoryItemRepositoryProvider.overrideWithValue(repository),
           globalFoodItemRepositoryProvider.overrideWithValue(globalRepository),
+          globalBarcodeCandidateRepositoryProvider.overrideWithValue(
+            barcodeRepository,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -358,6 +387,11 @@ void main() {
       expect(items?.single.weight, '1000 g');
       expect(items?.single.initialAmount, 2000);
       expect(items?.single.currentAmount, 2000);
+      expect(barcodeRepository.recordedSelections, hasLength(1));
+      expect(
+        barcodeRepository.recordedSelections.single.barcode,
+        '4061458029995',
+      );
     },
   );
 

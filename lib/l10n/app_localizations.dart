@@ -935,6 +935,18 @@ abstract class AppLocalizations {
   /// **'Multiple matching products were found for this barcode.'**
   String get inventoryManualAddCandidateSubtitle;
 
+  /// No description provided for @inventoryManualAddCandidateSourceLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get inventoryManualAddCandidateSourceLearned;
+
+  /// No description provided for @inventoryManualAddCandidateSourceOff.
+  ///
+  /// In en, this message translates to:
+  /// **'OFF'**
+  String get inventoryManualAddCandidateSourceOff;
+
   /// No description provided for @inventoryManualAddUnknownBrand.
   ///
   /// In en, this message translates to:
@@ -965,11 +977,23 @@ abstract class AppLocalizations {
   /// **'Product added to inventory.'**
   String get inventoryManualAddSaved;
 
+  /// No description provided for @inventoryManualAddPackageSizeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Package size'**
+  String get inventoryManualAddPackageSizeLabel;
+
   /// No description provided for @inventoryManualAddEatNowOption.
   ///
   /// In en, this message translates to:
   /// **'Eat now'**
   String get inventoryManualAddEatNowOption;
+
+  /// No description provided for @inventoryManualAddEatNowSizeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat now amount'**
+  String get inventoryManualAddEatNowSizeLabel;
 
   /// No description provided for @inventoryManualAddEatNowRequiresNutrition.
   ///

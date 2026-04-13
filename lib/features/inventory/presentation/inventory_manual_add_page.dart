@@ -3,11 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/features/inventory/data/'
+    'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
@@ -19,6 +22,7 @@ import 'package:yamt/features/product_search/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryManualAddItemId = Uuid();
+const _inventoryAmountParser = InventoryAmountParser();
 
 @visibleForTesting
 int? resolveInventoryManualAddEatFlowMaxAmount(InventoryItem item) {
@@ -89,6 +93,8 @@ class _InventoryManualAddPageState
       barcode: barcode,
       selectedProduct: result.selectedProduct,
       selectedGlobalFoodItemId: result.selectedGlobalFoodItemId,
+      requiresGlobalPersistence: result.requiresGlobalPersistence,
+      eatNowWeight: result.eatNowWeight,
     );
     if (!mounted) {
       return;
@@ -98,8 +104,16 @@ class _InventoryManualAddPageState
       return;
     }
 
+    await _closeEditorIfNeeded();
+    if (!mounted) {
+      return;
+    }
+
     if (result.eatImmediately) {
-      await _openImmediateEatFlow(savedItem);
+      await _openImmediateEatFlow(
+        savedItem,
+        initialEatWeight: result.eatNowWeight,
+      );
       if (!mounted) {
         return;
       }
@@ -110,11 +124,21 @@ class _InventoryManualAddPageState
     }
   }
 
+  Future<void> _closeEditorIfNeeded() async {
+    final route = ModalRoute.of(context);
+    if (route?.isCurrent ?? false) {
+      return;
+    }
+    await Navigator.of(context).maybePop();
+  }
+
   Future<InventoryItem?> _persistProduct({
     required InventoryItem item,
     required String barcode,
     OffProductSearchResult? selectedProduct,
     String? selectedGlobalFoodItemId,
+    required bool requiresGlobalPersistence,
+    String? eatNowWeight,
   }) async {
     final now = DateTime.now();
     final l10n = AppLocalizations.of(context)!;
@@ -126,10 +150,16 @@ class _InventoryManualAddPageState
       selectedGlobalFoodItemId: selectedGlobalFoodItemId,
     );
 
-    final globalSaved = await ref
-        .read(globalFoodItemRepositoryProvider)
-        .appendAll(<GlobalFoodItem>[globalProduct]);
+    final globalSaved =
+        !requiresGlobalPersistence ||
+        await ref.read(globalFoodItemRepositoryProvider).appendAll(
+          <GlobalFoodItem>[globalProduct],
+        );
 
+    final inventoryWeight = _resolveInventoryWeight(
+      packageWeight: item.weight,
+      eatNowWeight: eatNowWeight,
+    );
     final savedItem = InventoryItem.create(
       id: _inventoryManualAddItemId.v4(),
       globalFoodItemId: globalSaved ? globalProduct.id : null,
@@ -146,17 +176,26 @@ class _InventoryManualAddPageState
       servingQuantity: globalProduct.servingQuantity,
       servingQuantityUnit: globalProduct.servingQuantityUnit,
       nutrition: globalProduct.nutrition,
-      weight: item.weight,
+      weight: inventoryWeight,
       foodFingerprint: globalProduct.resolvedFoodFingerprint,
       barcodeCandidates: <String>[barcode],
       barcodeResolvedAt: now,
-    ).withDerivedAmount(weight: item.weight, quantity: 1);
+    ).withDerivedAmount(weight: inventoryWeight, quantity: 1);
 
     final inventorySaved = await ref
         .read(inventoryItemsControllerProvider.notifier)
         .addItem(savedItem);
     if (!inventorySaved) {
       return null;
+    }
+    if (globalSaved) {
+      await ref
+          .read(globalBarcodeCandidateRepositoryProvider)
+          .recordSelection(
+            barcode: barcode,
+            globalFoodItem: globalProduct,
+            selectedAt: now,
+          );
     }
     return savedItem;
   }
@@ -202,6 +241,10 @@ class _InventoryManualAddPageState
     return GlobalFoodItem.create(
       id:
           selectedGlobalFoodItemId ??
+          _selectedProductGlobalFoodItemId(
+            selectedProduct: selectedProduct,
+            barcode: barcode,
+          ) ??
           _globalFoodItemIdFor(item, barcode: barcode),
       name: item.name,
       now: now,
@@ -218,6 +261,19 @@ class _InventoryManualAddPageState
     );
   }
 
+  String? _selectedProductGlobalFoodItemId({
+    required OffProductSearchResult? selectedProduct,
+    required String barcode,
+  }) {
+    if (selectedProduct == null) {
+      return null;
+    }
+    final normalizedBarcode = selectedProduct.code.trim().isEmpty
+        ? barcode
+        : selectedProduct.code;
+    return 'off-$normalizedBarcode';
+  }
+
   String _globalFoodItemIdFor(InventoryItem item, {required String barcode}) {
     final normalizedName = normalizeGlobalFoodText(item.name);
     final normalizedBrand = normalizeGlobalFoodText(item.brand ?? '');
@@ -231,7 +287,10 @@ class _InventoryManualAddPageState
     return 'off-$barcode-$suffix';
   }
 
-  Future<void> _openImmediateEatFlow(InventoryItem item) async {
+  Future<void> _openImmediateEatFlow(
+    InventoryItem item, {
+    String? initialEatWeight,
+  }) async {
     final l10n = AppLocalizations.of(context)!;
     final maxAmount = resolveInventoryManualAddEatFlowMaxAmount(item);
     if (maxAmount == null) {
@@ -244,6 +303,10 @@ class _InventoryManualAddPageState
       item: item,
       maxAmount: maxAmount,
       invalidAmountMessage: l10n.inventoryReceiptReviewInvalidNumber,
+      initialInventoryAmount: _resolveInitialEatAmount(
+        item: item,
+        rawWeight: initialEatWeight,
+      ),
     );
     if (!mounted || request == null) {
       return;
@@ -280,5 +343,39 @@ class _InventoryManualAddPageState
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  String? _resolveInventoryWeight({
+    required String? packageWeight,
+    required String? eatNowWeight,
+  }) {
+    final normalizedPackageWeight = packageWeight?.trim();
+    if (normalizedPackageWeight != null && normalizedPackageWeight.isNotEmpty) {
+      return normalizedPackageWeight;
+    }
+    final normalizedEatNowWeight = eatNowWeight?.trim();
+    if (normalizedEatNowWeight == null || normalizedEatNowWeight.isEmpty) {
+      return null;
+    }
+    return normalizedEatNowWeight;
+  }
+
+  int? _resolveInitialEatAmount({
+    required InventoryItem item,
+    required String? rawWeight,
+  }) {
+    final amountUnit = item.amountUnit;
+    if (amountUnit == null) {
+      return null;
+    }
+    final parsed = _inventoryAmountParser.tryParse(
+      rawWeight: rawWeight,
+      quantity: 1,
+      fallbackUnit: amountUnit,
+    );
+    if (parsed == null || parsed.unit != amountUnit || parsed.amount < 1) {
+      return null;
+    }
+    return parsed.amount;
   }
 }

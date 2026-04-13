@@ -4,17 +4,22 @@ import 'dart:developer' show log;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_manual_product_form.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'inventory_receipt_manual_product_form_utils.dart';
 import 'package:yamt/features/product_search/provider/'
     'inventory_receipt_manual_product_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -74,13 +79,17 @@ class InventoryReceiptManualProductResult {
     required this.item,
     this.selectedProduct,
     this.selectedGlobalFoodItemId,
+    this.requiresGlobalPersistence = true,
     this.eatImmediately = false,
+    this.eatNowWeight,
   });
 
   final InventoryItem item;
   final OffProductSearchResult? selectedProduct;
   final String? selectedGlobalFoodItemId;
+  final bool requiresGlobalPersistence;
   final bool eatImmediately;
+  final String? eatNowWeight;
 }
 
 bool _shouldOpenEditorImmediately({
@@ -208,6 +217,7 @@ class _InventoryReceiptManualProductLauncherPageState
               return _InventoryReceiptManualProductEditorPage(
                 config: config,
                 showEatImmediatelyOption: widget.showEatImmediatelyOption,
+                onSaved: widget.onSaved,
                 autofocusSearch: autofocusSearch,
                 initialStartVoiceSearch: initialStartVoiceSearch,
                 initialRecentItem: initialRecentItem,
@@ -242,7 +252,7 @@ class _InventoryReceiptManualProductLauncherPageState
             onProductSelected: (candidate, scannedBarcode) async {
               Navigator.of(sheetContext).pop(
                 _ManualBarcodeScanResult.selected(
-                  product: candidate,
+                  candidate: candidate,
                   scannedBarcode: scannedBarcode,
                 ),
               );
@@ -266,11 +276,29 @@ class _InventoryReceiptManualProductLauncherPageState
 
     switch (result.kind) {
       case _ManualBarcodeScanResultKind.selected:
-        final product = result.product;
-        if (product == null) {
+        final candidate = result.candidate;
+        if (candidate == null) {
           return;
         }
-        await _openEditor(selectedProduct: product);
+        final selectedProduct = candidate.externalProduct;
+        if (selectedProduct != null) {
+          await _openEditor(selectedProduct: selectedProduct);
+          return;
+        }
+
+        final globalFoodItem = candidate.globalFoodItem;
+        if (globalFoodItem == null) {
+          return;
+        }
+        final selectedItem = _inventoryItemFromBarcodeCandidate(
+          baseItem: widget.config.item,
+          globalFoodItem: globalFoodItem,
+          barcode: result.scannedBarcode ?? candidate.barcode,
+        );
+        await _openEditor(
+          itemOverride: selectedItem,
+          initialRecentItem: selectedItem,
+        );
       case _ManualBarcodeScanResultKind.notFound:
         final scannedBarcode = result.scannedBarcode;
         if (scannedBarcode == null || scannedBarcode.isEmpty) {
@@ -307,6 +335,8 @@ class _InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
     this.initialRecentItem,
     this.initialInfoMessage,
     this.initialEatImmediately = false,
+    this.initialEatNowAmount = '',
+    this.initialEatNowUnit,
   });
 
   final InventoryReceiptManualProductConfig config;
@@ -318,6 +348,8 @@ class _InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
   final InventoryItem? initialRecentItem;
   final String? initialInfoMessage;
   final bool initialEatImmediately;
+  final String initialEatNowAmount;
+  final InventoryAmountUnit? initialEatNowUnit;
 
   @override
   ConsumerState<_InventoryReceiptManualProductEditorPage> createState() =>
@@ -352,16 +384,16 @@ enum _ManualBarcodeScanResultKind { selected, notFound }
 class _ManualBarcodeScanResult {
   const _ManualBarcodeScanResult._({
     required this.kind,
-    this.product,
+    this.candidate,
     this.scannedBarcode,
   });
 
   const _ManualBarcodeScanResult.selected({
-    required OffProductSearchResult product,
+    required InventoryBarcodeLookupCandidate candidate,
     required String scannedBarcode,
   }) : this._(
          kind: _ManualBarcodeScanResultKind.selected,
-         product: product,
+         candidate: candidate,
          scannedBarcode: scannedBarcode,
        );
 
@@ -372,7 +404,7 @@ class _ManualBarcodeScanResult {
       );
 
   final _ManualBarcodeScanResultKind kind;
-  final OffProductSearchResult? product;
+  final InventoryBarcodeLookupCandidate? candidate;
   final String? scannedBarcode;
 }
 
@@ -384,6 +416,7 @@ class _InventoryReceiptManualProductEditorPageState
   late final TextEditingController _nameController;
   late final TextEditingController _brandController;
   late final TextEditingController _weightAmountController;
+  late final TextEditingController _eatNowAmountController;
   late final TextEditingController _kcalController;
   late final TextEditingController _saturatedFatController;
   late final TextEditingController _polyunsaturatedFatController;
@@ -399,6 +432,8 @@ class _InventoryReceiptManualProductEditorPageState
   bool _didScheduleInitialRecentItem = false;
   bool _isSyncingControllers = false;
   late bool _eatImmediately = widget.initialEatImmediately;
+  late InventoryAmountUnit _selectedEatNowUnit =
+      widget.initialEatNowUnit ?? _defaultEatNowUnit();
 
   InventoryReceiptManualProductControllerProvider get _provider {
     return inventoryReceiptManualProductControllerProvider(widget.config);
@@ -416,6 +451,9 @@ class _InventoryReceiptManualProductEditorPageState
     _nameController = TextEditingController();
     _brandController = TextEditingController();
     _weightAmountController = TextEditingController();
+    _eatNowAmountController = TextEditingController(
+      text: widget.initialEatNowAmount,
+    );
     _nameController.addListener(_handleNameChanged);
     _brandController.addListener(_handleBrandChanged);
     _weightAmountController.addListener(_handleWeightChanged);
@@ -441,6 +479,7 @@ class _InventoryReceiptManualProductEditorPageState
     _optionalNutritionValueController.addListener(
       _handleOptionalNutritionValueChanged,
     );
+    _eatNowAmountController.addListener(_handleEatNowAmountChanged);
     final initialInfoMessage = widget.initialInfoMessage;
     if (initialInfoMessage != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -550,6 +589,8 @@ class _InventoryReceiptManualProductEditorPageState
     _brandController.dispose();
     _weightAmountController.removeListener(_handleWeightChanged);
     _weightAmountController.dispose();
+    _eatNowAmountController.removeListener(_handleEatNowAmountChanged);
+    _eatNowAmountController.dispose();
     _kcalController.removeListener(_handleKcalChanged);
     _kcalController.dispose();
     _saturatedFatController.removeListener(_handleSaturatedFatChanged);
@@ -583,7 +624,7 @@ class _InventoryReceiptManualProductEditorPageState
     final state = ref.watch(_provider);
     final preview = _buildPreviewData();
     final canEatImmediately = _canEatImmediately(state);
-    final canSave = state.hasCompleteNutritionInput;
+    final canSave = _canSave(state);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.inventoryReceiptReviewManualDataTitle)),
@@ -601,6 +642,8 @@ class _InventoryReceiptManualProductEditorPageState
         recentItems: const <InventoryItem>[],
         weightAmountController: _weightAmountController,
         selectedWeightUnit: state.selectedWeightUnit,
+        eatNowAmountController: _eatNowAmountController,
+        selectedEatNowUnit: _selectedEatNowUnit,
         kcalController: _kcalController,
         saturatedFatController: _saturatedFatController,
         polyunsaturatedFatController: _polyunsaturatedFatController,
@@ -622,6 +665,10 @@ class _InventoryReceiptManualProductEditorPageState
         showEatImmediatelyOption: widget.showEatImmediatelyOption,
         eatImmediately: _eatImmediately && canEatImmediately,
         canEatImmediately: canEatImmediately,
+        showEatNowAmountField:
+            widget.showEatImmediatelyOption &&
+            _eatImmediately &&
+            canEatImmediately,
         onSearchResultSelected: _handleSearchResultSelected,
         onRecentItemSelected: _controller.applyRecentItem,
         onSearchChanged: _controller.updateSearchQuery,
@@ -646,6 +693,11 @@ class _InventoryReceiptManualProductEditorPageState
         onEatImmediatelyChanged: (value) {
           setState(() {
             _eatImmediately = value;
+          });
+        },
+        onEatNowUnitChanged: (value) {
+          setState(() {
+            _selectedEatNowUnit = value;
           });
         },
         onCancel: _closePage,
@@ -695,7 +747,10 @@ class _InventoryReceiptManualProductEditorPageState
               return _InventoryReceiptManualProductEditorPage(
                 config: config,
                 showEatImmediatelyOption: widget.showEatImmediatelyOption,
+                onSaved: widget.onSaved,
                 initialEatImmediately: _eatImmediately,
+                initialEatNowAmount: _eatNowAmountController.text,
+                initialEatNowUnit: _selectedEatNowUnit,
               );
             },
           ),
@@ -709,7 +764,7 @@ class _InventoryReceiptManualProductEditorPageState
 
   Future<void> _save() async {
     final state = ref.read(_provider);
-    if (state.isRunningNutritionOcr || !state.hasCompleteNutritionInput) {
+    if (state.isRunningNutritionOcr || !_canSave(state)) {
       return;
     }
     final payload = _controller.buildSavePayload();
@@ -727,7 +782,9 @@ class _InventoryReceiptManualProductEditorPageState
       item: payload.item,
       selectedProduct: payload.selectedProduct,
       selectedGlobalFoodItemId: payload.selectedGlobalFoodItemId,
+      requiresGlobalPersistence: payload.requiresGlobalPersistence,
       eatImmediately: eatImmediately,
+      eatNowWeight: eatImmediately ? _resolvedEatNowWeight() : null,
     );
     final onSaved = widget.onSaved;
     if (onSaved != null) {
@@ -755,7 +812,7 @@ class _InventoryReceiptManualProductEditorPageState
             onProductSelected: (candidate, scannedBarcode) async {
               Navigator.of(sheetContext).pop(
                 _ManualBarcodeScanResult.selected(
-                  product: candidate,
+                  candidate: candidate,
                   scannedBarcode: scannedBarcode,
                 ),
               );
@@ -779,15 +836,31 @@ class _InventoryReceiptManualProductEditorPageState
 
     switch (result.kind) {
       case _ManualBarcodeScanResultKind.selected:
-        final product = result.product;
-        if (product == null) {
+        final candidate = result.candidate;
+        if (candidate == null) {
           return;
         }
-        if (widget.autofocusSearch) {
-          await _openSelectedProductEditor(product);
+        final selectedProduct = candidate.externalProduct;
+        if (selectedProduct != null && widget.autofocusSearch) {
+          await _openSelectedProductEditor(selectedProduct);
           return;
         }
-        _controller.applyScannedProduct(product);
+        if (selectedProduct != null) {
+          _controller.applyScannedProduct(selectedProduct);
+          return;
+        }
+
+        final globalFoodItem = candidate.globalFoodItem;
+        if (globalFoodItem == null) {
+          return;
+        }
+        _controller.applyRecentItem(
+          _inventoryItemFromBarcodeCandidate(
+            baseItem: widget.config.item,
+            globalFoodItem: globalFoodItem,
+            barcode: result.scannedBarcode ?? candidate.barcode,
+          ),
+        );
       case _ManualBarcodeScanResultKind.notFound:
         final scannedBarcode = result.scannedBarcode;
         if (scannedBarcode == null || scannedBarcode.isEmpty) {
@@ -820,6 +893,55 @@ class _InventoryReceiptManualProductEditorPageState
       return true;
     }
     return widget.config.item.nutrition?.hasAnyNutritionValue == true;
+  }
+
+  bool _requiresEatNowAmount(InventoryReceiptManualProductState state) {
+    return widget.showEatImmediatelyOption &&
+        _eatImmediately &&
+        _canEatImmediately(state);
+  }
+
+  bool _hasValidEatNowAmount() {
+    return parseManualProductDouble(_eatNowAmountController.text) != null;
+  }
+
+  bool _canSave(InventoryReceiptManualProductState state) {
+    if (!state.canSave) {
+      return false;
+    }
+    if (!_requiresEatNowAmount(state)) {
+      return true;
+    }
+    return _hasValidEatNowAmount();
+  }
+
+  InventoryAmountUnit _defaultEatNowUnit() {
+    final parser = const InventoryAmountParser();
+    final rawWeight =
+        widget.config.selectedProduct?.packageWeight ??
+        widget.config.item.weight;
+    final parsed = parser.tryParse(rawWeight: rawWeight, quantity: 1);
+    if (parsed != null) {
+      return parsed.unit;
+    }
+    return widget.config.item.amountUnit ?? InventoryAmountUnit.gram;
+  }
+
+  String? _resolvedEatNowWeight() {
+    final amount = parseManualProductDouble(_eatNowAmountController.text);
+    if (amount == null) {
+      return null;
+    }
+    return '${formatManualProductDouble(amount)} '
+        '${_weightUnitCode(_selectedEatNowUnit)}';
+  }
+
+  String _weightUnitCode(InventoryAmountUnit unit) {
+    return switch (unit) {
+      InventoryAmountUnit.gram => 'g',
+      InventoryAmountUnit.milliliter => 'ml',
+      InventoryAmountUnit.piece => 'Stk',
+    };
   }
 
   void _showSnackBar(String message) {
@@ -937,6 +1059,13 @@ class _InventoryReceiptManualProductEditorPageState
     );
   }
 
+  void _handleEatNowAmountChanged() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+  }
+
   String? _resolveErrorText(
     AppLocalizations l10n,
     InventoryReceiptManualProductError? error,
@@ -945,8 +1074,40 @@ class _InventoryReceiptManualProductEditorPageState
       null => null,
       InventoryReceiptManualProductError.requiredProductOrNutrition =>
         l10n.inventoryReceiptReviewManualDataRequired,
+      InventoryReceiptManualProductError.requiredPackageWeight =>
+        '${l10n.inventoryManualAddPackageSizeLabel}: '
+            '${l10n.caloriesRequiredField}',
     };
   }
+}
+
+InventoryItem _inventoryItemFromBarcodeCandidate({
+  required InventoryItem baseItem,
+  required GlobalFoodItem globalFoodItem,
+  required String barcode,
+}) {
+  final normalizedBarcode = normalizeBarcode(barcode);
+  final weight = globalFoodItem.packageWeight ?? baseItem.weight;
+  return baseItem
+      .copyWith(
+        globalFoodItemId: globalFoodItem.id,
+        name: globalFoodItem.name,
+        brand: globalFoodItem.brand,
+        category: globalFoodItem.category,
+        barcode: normalizedBarcode.isEmpty ? barcode : normalizedBarcode,
+        imageUrl: globalFoodItem.imageUrl,
+        weight: weight,
+        foodFingerprint: globalFoodItem.resolvedFoodFingerprint,
+        servingSize: globalFoodItem.servingSize,
+        servingQuantity: globalFoodItem.servingQuantity,
+        servingQuantityUnit: globalFoodItem.servingQuantityUnit,
+        nutrition: globalFoodItem.nutrition,
+      )
+      .withDerivedAmount(
+        weight: weight,
+        quantity: baseItem.quantity,
+        fallbackUnit: baseItem.amountUnit,
+      );
 }
 
 List<InventoryItem> _buildRecentItems(List<InventoryItem> items) {

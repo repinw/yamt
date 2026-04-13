@@ -11,6 +11,9 @@ import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/'
+    'global_food_item_edit_policy.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -88,7 +91,10 @@ class InventoryReceiptManualProductConfig {
   }
 }
 
-enum InventoryReceiptManualProductError { requiredProductOrNutrition }
+enum InventoryReceiptManualProductError {
+  requiredProductOrNutrition,
+  requiredPackageWeight,
+}
 
 enum InventoryReceiptManualProductNutritionScanOutcome {
   applied,
@@ -273,6 +279,10 @@ class InventoryReceiptManualProductState {
 
   bool get hasBarcode => normalizeBarcode(barcode).isNotEmpty;
 
+  bool get hasPackageWeightInput {
+    return parseManualProductDouble(weightAmount) != null;
+  }
+
   bool get hasNutritionInput {
     return normalizeManualProductText(kcalText) != null ||
         normalizeManualProductText(saturatedFatText) != null ||
@@ -301,6 +311,10 @@ class InventoryReceiptManualProductState {
         hasBarcode ||
         hasNutritionInput ||
         error != null;
+  }
+
+  bool get canSave {
+    return hasPackageWeightInput && (hasBarcode || hasNutritionInput);
   }
 
   bool get canScanNutritionLabel {
@@ -467,18 +481,13 @@ class InventoryReceiptManualProductController
     );
   }
 
-  ({String imageUrl, String name, String? brand, String? weight})?
+  ({String? imageUrl, String name, String? brand, String? weight})?
   buildPreviewData() {
     final matchedProduct = _currentMatchedProduct();
-    final imageUrl = normalizeProductImageUrl(
-      matchedProduct?.imageUrl ?? _config.item.imageUrl,
-    );
-    if (imageUrl == null) {
-      return null;
-    }
-
     return (
-      imageUrl: imageUrl,
+      imageUrl: normalizeProductImageUrl(
+        matchedProduct?.imageUrl ?? _config.item.imageUrl,
+      ),
       name: _resolvedManualName(
         fallbackName: matchedProduct?.name ?? _config.item.name,
       ),
@@ -721,11 +730,9 @@ class InventoryReceiptManualProductController
     InventoryItem item,
     OffProductSearchResult? selectedProduct,
     String? selectedGlobalFoodItemId,
+    bool requiresGlobalPersistence,
   })?
   buildSavePayload() {
-    if (!state.hasCompleteNutritionInput) {
-      return null;
-    }
     final barcode = normalizeManualProductText(state.barcode);
     final kcal = parseManualProductDouble(state.kcalText);
     final saturatedFat = parseManualProductDouble(state.saturatedFatText);
@@ -755,22 +762,15 @@ class InventoryReceiptManualProductController
       );
       return null;
     }
+    if (!state.hasPackageWeightInput) {
+      state = state.copyWith(
+        error: InventoryReceiptManualProductError.requiredPackageWeight,
+      );
+      return null;
+    }
 
-    final selectedProduct = _effectiveSelectedProductSelection(
-      barcode: barcode,
-      name: _resolvedManualName(fallbackName: _config.item.name),
-      brand: _resolvedManualBrand(),
-      kcal: kcal,
-      saturatedFat: saturatedFat,
-      polyunsaturatedFat: polyunsaturatedFat,
-      protein: protein,
-      carbs: carbs,
-      sugar: sugar,
-      fiber: fiber,
-      fat: fat,
-      salt: salt,
-    );
     final matchedProduct = _currentMatchedProduct();
+    final selectedProduct = state.selectedProduct;
     final updatedItem = _config.item
         .copyWith(
           name: _resolvedManualName(
@@ -809,10 +809,20 @@ class InventoryReceiptManualProductController
           quantity: _config.item.quantity,
           fallbackUnit: state.selectedWeightUnit,
         );
+    final selectedEditKind = _selectedProductEditKindForItem(updatedItem);
+    final effectiveSelectedProduct =
+        selectedProduct == null ||
+            selectedEditKind == GlobalFoodItemEditKind.createNewCandidate
+        ? null
+        : selectedProduct;
     return (
       item: updatedItem,
-      selectedProduct: selectedProduct?.externalProduct,
-      selectedGlobalFoodItemId: selectedProduct?.globalFoodItemId,
+      selectedProduct: effectiveSelectedProduct?.externalProduct,
+      selectedGlobalFoodItemId: effectiveSelectedProduct?.globalFoodItemId,
+      requiresGlobalPersistence: _requiresGlobalPersistenceForSelection(
+        selection: effectiveSelectedProduct,
+        editKind: selectedEditKind,
+      ),
     );
   }
 
@@ -942,55 +952,24 @@ class InventoryReceiptManualProductController
     );
   }
 
-  InventoryReceiptManualProductSelection? _effectiveSelectedProductSelection({
-    required String? barcode,
-    required String name,
-    required String? brand,
-    required double? kcal,
-    required double? saturatedFat,
-    required double? polyunsaturatedFat,
-    required double? protein,
-    required double? carbs,
-    required double? sugar,
-    required double? fiber,
-    required double? fat,
-    required double? salt,
-  }) {
+  GlobalFoodItemEditKind _selectedProductEditKindForItem(InventoryItem item) {
     final selectedProduct = state.selectedProduct;
     if (selectedProduct == null) {
-      return null;
+      return GlobalFoodItemEditKind.createNewCandidate;
     }
 
-    final normalizedBarcode = barcode == null ? '' : normalizeBarcode(barcode);
-    if (normalizedBarcode != normalizeBarcode(selectedProduct.barcode)) {
-      return null;
-    }
-
-    if (normalizeManualProductText(name) !=
-        normalizeManualProductText(selectedProduct.name)) {
-      return null;
-    }
-
-    if (normalizeManualProductText(brand ?? '') !=
-        normalizeManualProductText(selectedProduct.brand ?? '')) {
-      return null;
-    }
-
-    final nutrition = selectedProduct.nutrition;
-    final matchesOriginalNutrition =
-        kcal == nutrition?.per100Kcal &&
-        saturatedFat == nutrition?.per100SaturatedFat &&
-        polyunsaturatedFat == nutrition?.per100PolyunsaturatedFat &&
-        protein == nutrition?.per100Protein &&
-        carbs == nutrition?.per100Carbs &&
-        sugar == nutrition?.per100Sugar &&
-        fiber == nutrition?.per100Fiber &&
-        fat == nutrition?.per100Fat &&
-        salt == nutrition?.per100Salt;
-    if (!matchesOriginalNutrition) {
-      return null;
-    }
-    return selectedProduct;
+    return classifyGlobalFoodItemEdit(
+      currentItem: _globalFoodItemFromSelection(selectedProduct),
+      name: item.name,
+      brand: item.brand,
+      barcode: item.barcode,
+      imageUrl: normalizeProductImageUrl(item.imageUrl),
+      packageWeight: item.weight,
+      servingSize: item.servingSize,
+      servingQuantity: item.servingQuantity,
+      servingQuantityUnit: item.servingQuantityUnit,
+      nutrition: item.nutrition,
+    );
   }
 
   String _resolvedManualName({required String fallbackName}) {
@@ -1015,6 +994,37 @@ class InventoryReceiptManualProductController
       return null;
     }
     return selectedProduct;
+  }
+
+  bool _requiresGlobalPersistenceForSelection({
+    required InventoryReceiptManualProductSelection? selection,
+    required GlobalFoodItemEditKind editKind,
+  }) {
+    if (selection == null) {
+      return true;
+    }
+    if (selection.externalProduct != null) {
+      return true;
+    }
+    return editKind == GlobalFoodItemEditKind.patchExisting;
+  }
+
+  GlobalFoodItem _globalFoodItemFromSelection(
+    InventoryReceiptManualProductSelection selection,
+  ) {
+    return GlobalFoodItem.create(
+      id: selection.globalFoodItemId ?? '',
+      name: selection.name,
+      now: DateTime.fromMillisecondsSinceEpoch(0),
+      brand: selection.brand,
+      barcode: selection.barcode,
+      imageUrl: normalizeProductImageUrl(selection.imageUrl),
+      packageWeight: selection.packageWeight,
+      servingSize: selection.servingSize,
+      servingQuantity: selection.servingQuantity,
+      servingQuantityUnit: selection.servingQuantityUnit,
+      nutrition: selection.nutrition,
+    );
   }
 
   ({String amount, InventoryAmountUnit unit})? _resolveOcrWeightInput(
