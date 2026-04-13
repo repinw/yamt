@@ -10,6 +10,10 @@ class GlobalFoodNutrition {
     this.per100Carbs,
     this.per100Fat,
     this.per100Salt,
+    this.per100SaturatedFat,
+    this.per100PolyunsaturatedFat,
+    this.per100Sugar,
+    this.per100Fiber,
   });
 
   final GlobalFoodNutritionQualityStatus qualityStatus;
@@ -18,6 +22,10 @@ class GlobalFoodNutrition {
   final double? per100Carbs;
   final double? per100Fat;
   final double? per100Salt;
+  final double? per100SaturatedFat;
+  final double? per100PolyunsaturatedFat;
+  final double? per100Sugar;
+  final double? per100Fiber;
 
   factory GlobalFoodNutrition.fromJson(Map<String, dynamic> json) {
     return GlobalFoodNutrition(
@@ -43,6 +51,25 @@ class GlobalFoodNutrition {
         'per_100_salt',
         'salt_100g',
       ]),
+      per100SaturatedFat: _readFirstDouble(json, const <String>[
+        'per_100_saturated_fat',
+        'saturated-fat_100g',
+        'saturated_fat_100g',
+      ]),
+      per100PolyunsaturatedFat: _readFirstDouble(json, const <String>[
+        'per_100_polyunsaturated_fat',
+        'polyunsaturated-fat_100g',
+        'polyunsaturated_fat_100g',
+      ]),
+      per100Sugar: _readFirstDouble(json, const <String>[
+        'per_100_sugar',
+        'sugars_100g',
+      ]),
+      per100Fiber: _readFirstDouble(json, const <String>[
+        'per_100_fiber',
+        'fiber_100g',
+        'fibre_100g',
+      ]),
     );
   }
 
@@ -54,6 +81,10 @@ class GlobalFoodNutrition {
       'per_100_carbs': per100Carbs,
       'per_100_fat': per100Fat,
       'per_100_salt': per100Salt,
+      'per_100_saturated_fat': per100SaturatedFat,
+      'per_100_polyunsaturated_fat': per100PolyunsaturatedFat,
+      'per_100_sugar': per100Sugar,
+      'per_100_fiber': per100Fiber,
     };
   }
 
@@ -64,6 +95,10 @@ class GlobalFoodNutrition {
     Object? per100Carbs = _keepValue,
     Object? per100Fat = _keepValue,
     Object? per100Salt = _keepValue,
+    Object? per100SaturatedFat = _keepValue,
+    Object? per100PolyunsaturatedFat = _keepValue,
+    Object? per100Sugar = _keepValue,
+    Object? per100Fiber = _keepValue,
   }) {
     return GlobalFoodNutrition(
       qualityStatus: qualityStatus ?? this.qualityStatus,
@@ -82,6 +117,18 @@ class GlobalFoodNutrition {
       per100Salt: per100Salt == _keepValue
           ? this.per100Salt
           : per100Salt as double?,
+      per100SaturatedFat: per100SaturatedFat == _keepValue
+          ? this.per100SaturatedFat
+          : per100SaturatedFat as double?,
+      per100PolyunsaturatedFat: per100PolyunsaturatedFat == _keepValue
+          ? this.per100PolyunsaturatedFat
+          : per100PolyunsaturatedFat as double?,
+      per100Sugar: per100Sugar == _keepValue
+          ? this.per100Sugar
+          : per100Sugar as double?,
+      per100Fiber: per100Fiber == _keepValue
+          ? this.per100Fiber
+          : per100Fiber as double?,
     );
   }
 
@@ -92,6 +139,10 @@ class GlobalFoodNutrition {
       per100Carbs,
       per100Fat,
       per100Salt,
+      per100SaturatedFat,
+      per100PolyunsaturatedFat,
+      per100Sugar,
+      per100Fiber,
     ].any((value) => value != null);
   }
 
@@ -102,6 +153,10 @@ class GlobalFoodNutrition {
       per100Carbs,
       per100Fat,
       per100Salt,
+      per100SaturatedFat,
+      per100PolyunsaturatedFat,
+      per100Sugar,
+      per100Fiber,
     ].whereType<double>();
     if (values.isEmpty) {
       return false;
@@ -118,7 +173,11 @@ class GlobalFoodNutrition {
             other.per100Protein == per100Protein &&
             other.per100Carbs == per100Carbs &&
             other.per100Fat == per100Fat &&
-            other.per100Salt == per100Salt;
+            other.per100Salt == per100Salt &&
+            other.per100SaturatedFat == per100SaturatedFat &&
+            other.per100PolyunsaturatedFat == per100PolyunsaturatedFat &&
+            other.per100Sugar == per100Sugar &&
+            other.per100Fiber == per100Fiber;
   }
 
   @override
@@ -130,6 +189,10 @@ class GlobalFoodNutrition {
       per100Carbs,
       per100Fat,
       per100Salt,
+      per100SaturatedFat,
+      per100PolyunsaturatedFat,
+      per100Sugar,
+      per100Fiber,
     );
   }
 
@@ -141,7 +204,11 @@ class GlobalFoodNutrition {
         'per100Protein: $per100Protein, '
         'per100Carbs: $per100Carbs, '
         'per100Fat: $per100Fat, '
-        'per100Salt: $per100Salt'
+        'per100Salt: $per100Salt, '
+        'per100SaturatedFat: $per100SaturatedFat, '
+        'per100PolyunsaturatedFat: $per100PolyunsaturatedFat, '
+        'per100Sugar: $per100Sugar, '
+        'per100Fiber: $per100Fiber'
         ')';
   }
 }

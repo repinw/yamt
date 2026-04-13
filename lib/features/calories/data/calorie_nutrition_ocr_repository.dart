@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:developer' show log;
 
 import 'package:firebase_ai/firebase_ai.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
@@ -17,8 +16,7 @@ import 'package:yamt/features/calories/domain/'
 part 'calorie_nutrition_ocr_repository.g.dart';
 
 const _ocrLogName = 'CalorieNutritionOcrRepository';
-const _ocrTemplateConfigKey = 'nutrition_label_template_id';
-const _ocrTemplateIdFallback = 'testtemplate';
+const _ocrTemplateId = 'nutrition-template-id';
 const _vertexLocation = 'global';
 const _defaultMimeType = 'application/octet-stream';
 const _lookupHeaderLength = 32;
@@ -61,8 +59,8 @@ ImagePicker calorieNutritionImagePicker(Ref ref) {
 CalorieNutritionTemplateConfigClient calorieNutritionTemplateConfigClient(
   Ref ref,
 ) {
-  return _FirebaseCalorieNutritionTemplateConfigClient(
-    remoteConfig: FirebaseRemoteConfig.instance,
+  return const _StaticCalorieNutritionTemplateConfigClient(
+    templateId: _ocrTemplateId,
   );
 }
 
@@ -77,36 +75,15 @@ CalorieNutritionTemplateModelClient calorieNutritionTemplateModelClient(
   );
 }
 
-class _FirebaseCalorieNutritionTemplateConfigClient
+class _StaticCalorieNutritionTemplateConfigClient
     implements CalorieNutritionTemplateConfigClient {
-  _FirebaseCalorieNutritionTemplateConfigClient({
-    required FirebaseRemoteConfig remoteConfig,
-  }) : _remoteConfig = remoteConfig;
+  const _StaticCalorieNutritionTemplateConfigClient({required this.templateId});
 
-  final FirebaseRemoteConfig _remoteConfig;
-  Future<void>? _initialization;
+  final String templateId;
 
   @override
   Future<String> loadTemplateId() async {
-    await _ensureInitialized();
-    return _ocrTemplateIdFallback;
-  }
-
-  Future<void> _ensureInitialized() {
-    final current = _initialization;
-    if (current != null) {
-      return current;
-    }
-    final initialized = _initializeRemoteConfig();
-    _initialization = initialized;
-    return initialized;
-  }
-
-  Future<void> _initializeRemoteConfig() async {
-    await _remoteConfig.setDefaults(const <String, Object>{
-      _ocrTemplateConfigKey: _ocrTemplateIdFallback,
-    });
-    await _remoteConfig.fetchAndActivate();
+    return templateId;
   }
 }
 
@@ -149,7 +126,12 @@ class _FirebaseCalorieNutritionOcrRepository
   Future<CalorieNutritionOcrResult> scanNutritionLabel({
     required String barcode,
   }) async {
+    log(
+      'Starting nutrition label OCR for barcode $barcode.',
+      name: _ocrLogName,
+    );
     if (!_isCameraSupported()) {
+      log('Nutrition label OCR not supported on platform.', name: _ocrLogName);
       return const CalorieNutritionOcrResult.failed(
         errorCode: CalorieNutritionOcrErrorCodes.cameraNotSupported,
       );
@@ -158,18 +140,29 @@ class _FirebaseCalorieNutritionOcrRepository
     try {
       final image = await _imagePicker.pickImage(source: ImageSource.camera);
       if (image == null) {
+        log(
+          'Nutrition label OCR canceled before image capture.',
+          name: _ocrLogName,
+        );
         return const CalorieNutritionOcrResult.canceled();
       }
 
       final bytes = await image.readAsBytes();
       final mimeType = _detectMimeType(fileName: image.name, bytes: bytes);
+      log(
+        'Captured nutrition label image. '
+        'mimeType=$mimeType bytes=${bytes.length}',
+        name: _ocrLogName,
+      );
       final templateId = await _loadTemplateId();
       if (templateId == null) {
+        log('Nutrition label OCR missing template id.', name: _ocrLogName);
         return const CalorieNutritionOcrResult.failed(
           errorCode: CalorieNutritionOcrErrorCodes.templateConfigFailed,
         );
       }
 
+      log('Calling OCR model with template "$templateId".', name: _ocrLogName);
       final responseText = await _modelClient.generateContent(
         templateId: templateId,
         inputs: <String, Object?>{
@@ -177,13 +170,34 @@ class _FirebaseCalorieNutritionOcrRepository
           'imageData': base64Encode(bytes),
         },
       );
-      final profile = _parseProfile(responseText, barcode: barcode);
-      if (profile == null) {
+      final draft = _parseDraft(responseText, barcode: barcode);
+      if (draft == null) {
+        log(
+          'Nutrition label OCR response could not be parsed.',
+          name: _ocrLogName,
+        );
         return const CalorieNutritionOcrResult.failed(
           errorCode: CalorieNutritionOcrErrorCodes.parseFailed,
         );
       }
-      return CalorieNutritionOcrResult.succeeded(profile: profile);
+      final profile = draft.toProfile(now: _now());
+      if (profile == null) {
+        log(
+          'Nutrition label OCR returned partial values for barcode $barcode. '
+          'kcal=${draft.per100Kcal}',
+          name: _ocrLogName,
+        );
+      } else {
+        log(
+          'Nutrition label OCR succeeded for barcode $barcode. '
+          'kcal=${profile.per100Kcal}',
+          name: _ocrLogName,
+        );
+      }
+      return CalorieNutritionOcrResult.succeeded(
+        profile: profile,
+        draft: draft,
+      );
     } on Exception catch (error, stackTrace) {
       log(
         'OCR nutrition label failed for barcode $barcode.',
@@ -207,7 +221,9 @@ class _FirebaseCalorieNutritionOcrRepository
 
   Future<String?> _loadTemplateId() async {
     try {
-      return await _configClient.loadTemplateId();
+      final templateId = await _configClient.loadTemplateId();
+      log('Resolved OCR template id: $templateId', name: _ocrLogName);
+      return templateId;
     } catch (error, stackTrace) {
       log(
         'Failed to load OCR template id.',
@@ -219,7 +235,7 @@ class _FirebaseCalorieNutritionOcrRepository
     }
   }
 
-  CalorieProductProfile? _parseProfile(
+  CalorieNutritionOcrDraft? _parseDraft(
     String? responseText, {
     required String barcode,
   }) {
@@ -239,6 +255,18 @@ class _FirebaseCalorieNutritionOcrRepository
       'title',
     ]);
     final brand = _extractString(flat, const <String>['b', 'brand']);
+    final quantityLabel = _extractString(flat, const <String>[
+      'q',
+      'quantity',
+      'quantity_label',
+      'package_size',
+      'package_weight',
+    ]);
+    final servingSizeLabel = _extractString(flat, const <String>[
+      'ss',
+      'serving_size',
+      'serving_size_label',
+    ]);
     final kcal = _extractDouble(flat, const <String>[
       'kcal',
       'calories',
@@ -256,25 +284,38 @@ class _FirebaseCalorieNutritionOcrRepository
       'per100_carbs',
     ]);
     final fat = _extractDouble(flat, const <String>['fat', 'per100_fat']);
+    final salt = _extractDouble(flat, const <String>['salt', 'per100_salt']);
+    final saturatedFat = _extractDouble(flat, const <String>[
+      'saturated_fat',
+      'saturates',
+      'saturated',
+    ]);
+    final polyunsaturatedFat = _extractDouble(flat, const <String>[
+      'polyunsaturated_fat',
+    ]);
+    final sugar = _extractDouble(flat, const <String>['sugar', 'sugars']);
+    final fiber = _extractDouble(flat, const <String>['fiber', 'fibre']);
 
-    if ((name == null || name.isEmpty) && kcal <= 0) {
-      return null;
-    }
-
-    final now = _now();
-    return CalorieProductProfile(
+    final draft = CalorieNutritionOcrDraft(
       barcode: barcode,
-      name: name?.trim().isNotEmpty == true ? name!.trim() : barcode,
-      brand: brand?.trim().isNotEmpty == true ? brand!.trim() : null,
+      name: name,
+      brand: brand,
+      quantityLabel: quantityLabel,
+      servingSizeLabel: servingSizeLabel,
       per100Kcal: kcal,
       per100Protein: protein,
       per100Carbs: carbs,
       per100Fat: fat,
-      source: CalorieProductSource.ocr,
-      offProductId: null,
-      createdAt: now,
-      updatedAt: now,
+      per100Salt: salt,
+      per100SaturatedFat: saturatedFat,
+      per100PolyunsaturatedFat: polyunsaturatedFat,
+      per100Sugar: sugar,
+      per100Fiber: fiber,
     );
+    if (!draft.hasAnyDetectedValue) {
+      return null;
+    }
+    return draft;
   }
 
   Map<String, dynamic>? _decodeJsonPayload(String responseText) {
@@ -325,7 +366,7 @@ class _FirebaseCalorieNutritionOcrRepository
     return null;
   }
 
-  double _extractDouble(Map<String, Object?> payload, List<String> keys) {
+  double? _extractDouble(Map<String, Object?> payload, List<String> keys) {
     for (final key in keys) {
       final value = payload[key];
       final parsed = _toDouble(value);
@@ -333,7 +374,7 @@ class _FirebaseCalorieNutritionOcrRepository
         return parsed;
       }
     }
-    return 0;
+    return null;
   }
 
   double? _toDouble(Object? value) {

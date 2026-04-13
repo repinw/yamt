@@ -191,6 +191,13 @@ class _OffProductSearchResponseParser {
       'carbohydrates_100g',
       'fat_100g',
       'salt_100g',
+      'saturated-fat_100g',
+      'saturated_fat_100g',
+      'polyunsaturated-fat_100g',
+      'polyunsaturated_fat_100g',
+      'sugars_100g',
+      'fiber_100g',
+      'fibre_100g',
     ]) {
       final value = item[key];
       if (value != null && !nutritionJson.containsKey(key)) {

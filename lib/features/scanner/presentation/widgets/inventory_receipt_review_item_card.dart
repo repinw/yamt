@@ -451,22 +451,11 @@ class _ReceiptDisplayData {
   });
 
   factory _ReceiptDisplayData.fromDraft(ReceiptReviewItemDraft draft) {
-    final selectedCandidate = draft.selectedCandidate;
-    if (selectedCandidate != null) {
-      return _ReceiptDisplayData(
-        name: selectedCandidate.item.name,
-        brand: selectedCandidate.item.brand,
-        imageUrl: selectedCandidate.item.imageUrl,
-        packageWeight: selectedCandidate.item.packageWeight,
-        nutrition: selectedCandidate.item.nutrition,
-      );
-    }
-
     return _ReceiptDisplayData(
       name: draft.item.name,
       brand: draft.item.brand,
       imageUrl: draft.item.imageUrl,
-      packageWeight: null,
+      packageWeight: draft.selectedCandidate?.item.packageWeight,
       nutrition: draft.item.nutrition,
     );
   }

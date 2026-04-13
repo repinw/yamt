@@ -586,6 +586,26 @@ void main() {
     final manualSaveButton = find.byKey(
       const Key('receipt_review_manual_save_button'),
     );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_kcal_field')),
+      '100',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_protein_field')),
+      '10',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_carbs_field')),
+      '20',
+    );
+    await tester.enterText(
+      find.byKey(const Key('receipt_review_manual_fat_field')),
+      '3',
+    );
+    await _pumpUi(tester);
+    await tester.ensureVisible(eatNowCheckbox);
+    await tester.tap(eatNowCheckbox);
+    await _pumpUi(tester);
     await tester.ensureVisible(manualSaveButton);
     await tester.tap(manualSaveButton);
     await tester.pumpAndSettle();
@@ -657,6 +677,22 @@ void main() {
       final manualSaveButton = find.byKey(
         const Key('receipt_review_manual_save_button'),
       );
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_kcal_field')),
+        '100',
+      );
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_protein_field')),
+        '10',
+      );
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_carbs_field')),
+        '20',
+      );
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_fat_field')),
+        '3',
+      );
       await tester.ensureVisible(manualSaveButton);
       await tester.tap(manualSaveButton);
       await tester.pumpAndSettle();
@@ -726,6 +762,26 @@ void main() {
       final manualSaveButton = find.byKey(
         const Key('receipt_review_manual_save_button'),
       );
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_kcal_field')),
+        '100',
+      );
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_protein_field')),
+        '10',
+      );
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_carbs_field')),
+        '20',
+      );
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_fat_field')),
+        '3',
+      );
+      await _pumpUi(tester);
+      await tester.ensureVisible(eatNowCheckbox);
+      await tester.tap(eatNowCheckbox);
+      await _pumpUi(tester);
       await tester.ensureVisible(manualSaveButton);
       await tester.tap(manualSaveButton);
       await tester.pumpAndSettle();
@@ -753,12 +809,26 @@ void main() {
             name: 'Cashews Sour Creme & Onion',
             brand: 'Clarkys',
             score: 100,
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 550,
+              per100Protein: 8,
+              per100Carbs: 30,
+              per100Fat: 40,
+            ),
           ),
           const OffProductSearchResult(
             code: '4316268671225',
             name: 'Cashews Paprika',
             brand: 'Clarkys',
             score: 90,
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 560,
+              per100Protein: 7,
+              per100Carbs: 31,
+              per100Fat: 41,
+            ),
           ),
         ]);
     final inventoryRepository = _RecordingInventoryItemRepository();

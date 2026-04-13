@@ -102,6 +102,8 @@ enum InventoryReceiptManualProductSelectionSource {
   recentInventory,
 }
 
+enum InventoryReceiptOptionalNutritionType { polyunsaturatedFat, fiber }
+
 class InventoryReceiptManualProductSelection {
   const InventoryReceiptManualProductSelection({
     required this.source,
@@ -212,33 +214,60 @@ String? buildManualProductInitialSearchQuery(
 class InventoryReceiptManualProductState {
   const InventoryReceiptManualProductState({
     this.searchQuery = '',
+    this.nameText = '',
+    this.brandText = '',
     this.barcode = '',
     this.weightAmount = '',
     this.selectedWeightUnit = InventoryAmountUnit.gram,
     this.kcalText = '',
+    this.saturatedFatText = '',
+    this.polyunsaturatedFatText = '',
     this.proteinText = '',
     this.carbsText = '',
+    this.sugarText = '',
+    this.fiberText = '',
     this.fatText = '',
+    this.saltText = '',
+    this.showPolyunsaturatedFatField = false,
+    this.showFiberField = false,
+    this.isAddingOptionalNutrition = false,
+    this.optionalNutritionValueText = '',
+    this.optionalNutritionUnit = InventoryAmountUnit.gram,
+    this.optionalNutritionType =
+        InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
     this.isSearching = false,
     this.searchResults = const <OffProductSearchResult>[],
     this.selectedProduct,
-    this.ocrProfile,
+    this.ocrDraft,
     this.isRunningNutritionOcr = false,
     this.error,
   });
 
   final String searchQuery;
+  final String nameText;
+  final String brandText;
   final String barcode;
   final String weightAmount;
   final InventoryAmountUnit selectedWeightUnit;
   final String kcalText;
+  final String saturatedFatText;
+  final String polyunsaturatedFatText;
   final String proteinText;
   final String carbsText;
+  final String sugarText;
+  final String fiberText;
   final String fatText;
+  final String saltText;
+  final bool showPolyunsaturatedFatField;
+  final bool showFiberField;
+  final bool isAddingOptionalNutrition;
+  final String optionalNutritionValueText;
+  final InventoryAmountUnit optionalNutritionUnit;
+  final InventoryReceiptOptionalNutritionType optionalNutritionType;
   final bool isSearching;
   final List<OffProductSearchResult> searchResults;
   final InventoryReceiptManualProductSelection? selectedProduct;
-  final CalorieProductProfile? ocrProfile;
+  final CalorieNutritionOcrDraft? ocrDraft;
   final bool isRunningNutritionOcr;
   final InventoryReceiptManualProductError? error;
 
@@ -246,14 +275,29 @@ class InventoryReceiptManualProductState {
 
   bool get hasNutritionInput {
     return normalizeManualProductText(kcalText) != null ||
+        normalizeManualProductText(saturatedFatText) != null ||
+        normalizeManualProductText(polyunsaturatedFatText) != null ||
         normalizeManualProductText(proteinText) != null ||
         normalizeManualProductText(carbsText) != null ||
-        normalizeManualProductText(fatText) != null;
+        normalizeManualProductText(sugarText) != null ||
+        normalizeManualProductText(fiberText) != null ||
+        normalizeManualProductText(fatText) != null ||
+        normalizeManualProductText(saltText) != null;
+  }
+
+  bool get hasCompleteNutritionInput {
+    return parseManualProductDouble(kcalText) != null &&
+        parseManualProductDouble(saturatedFatText) != null &&
+        parseManualProductDouble(proteinText) != null &&
+        parseManualProductDouble(carbsText) != null &&
+        parseManualProductDouble(sugarText) != null &&
+        parseManualProductDouble(fatText) != null &&
+        parseManualProductDouble(saltText) != null;
   }
 
   bool get showDetails {
     return selectedProduct != null ||
-        ocrProfile != null ||
+        ocrDraft != null ||
         hasBarcode ||
         hasNutritionInput ||
         error != null;
@@ -263,39 +307,98 @@ class InventoryReceiptManualProductState {
     return !isRunningNutritionOcr && hasBarcode;
   }
 
+  List<InventoryReceiptOptionalNutritionType>
+  get availableOptionalNutritionTypes {
+    final types = <InventoryReceiptOptionalNutritionType>[];
+    if (!showPolyunsaturatedFatField) {
+      types.add(InventoryReceiptOptionalNutritionType.polyunsaturatedFat);
+    }
+    if (!showFiberField) {
+      types.add(InventoryReceiptOptionalNutritionType.fiber);
+    }
+    return types;
+  }
+
+  bool get canAddOptionalNutrition {
+    return availableOptionalNutritionTypes.isNotEmpty;
+  }
+
+  InventoryReceiptOptionalNutritionType? get resolvedOptionalNutritionType {
+    final availableTypes = availableOptionalNutritionTypes;
+    if (availableTypes.isEmpty) {
+      return null;
+    }
+    if (availableTypes.contains(optionalNutritionType)) {
+      return optionalNutritionType;
+    }
+    return availableTypes.first;
+  }
+
   InventoryReceiptManualProductState copyWith({
     String? searchQuery,
+    String? nameText,
+    String? brandText,
     String? barcode,
     String? weightAmount,
     InventoryAmountUnit? selectedWeightUnit,
     String? kcalText,
+    String? saturatedFatText,
+    String? polyunsaturatedFatText,
     String? proteinText,
     String? carbsText,
+    String? sugarText,
+    String? fiberText,
     String? fatText,
+    String? saltText,
+    bool? showPolyunsaturatedFatField,
+    bool? showFiberField,
+    bool? isAddingOptionalNutrition,
+    String? optionalNutritionValueText,
+    InventoryAmountUnit? optionalNutritionUnit,
+    InventoryReceiptOptionalNutritionType? optionalNutritionType,
     bool? isSearching,
     List<OffProductSearchResult>? searchResults,
     Object? selectedProduct = _keepValue,
-    Object? ocrProfile = _keepValue,
+    Object? ocrDraft = _keepValue,
     bool? isRunningNutritionOcr,
     Object? error = _keepValue,
   }) {
     return InventoryReceiptManualProductState(
       searchQuery: searchQuery ?? this.searchQuery,
+      nameText: nameText ?? this.nameText,
+      brandText: brandText ?? this.brandText,
       barcode: barcode ?? this.barcode,
       weightAmount: weightAmount ?? this.weightAmount,
       selectedWeightUnit: selectedWeightUnit ?? this.selectedWeightUnit,
       kcalText: kcalText ?? this.kcalText,
+      saturatedFatText: saturatedFatText ?? this.saturatedFatText,
+      polyunsaturatedFatText:
+          polyunsaturatedFatText ?? this.polyunsaturatedFatText,
       proteinText: proteinText ?? this.proteinText,
       carbsText: carbsText ?? this.carbsText,
+      sugarText: sugarText ?? this.sugarText,
+      fiberText: fiberText ?? this.fiberText,
       fatText: fatText ?? this.fatText,
+      saltText: saltText ?? this.saltText,
+      showPolyunsaturatedFatField:
+          showPolyunsaturatedFatField ?? this.showPolyunsaturatedFatField,
+      showFiberField: showFiberField ?? this.showFiberField,
+      isAddingOptionalNutrition:
+          isAddingOptionalNutrition ?? this.isAddingOptionalNutrition,
+      optionalNutritionValueText:
+          optionalNutritionValueText ?? this.optionalNutritionValueText,
+      optionalNutritionUnit:
+          optionalNutritionUnit ?? this.optionalNutritionUnit,
+      optionalNutritionType:
+          optionalNutritionType ?? this.optionalNutritionType,
       isSearching: isSearching ?? this.isSearching,
       searchResults: searchResults ?? this.searchResults,
       selectedProduct: selectedProduct == _keepValue
           ? this.selectedProduct
           : selectedProduct as InventoryReceiptManualProductSelection?,
-      ocrProfile: ocrProfile == _keepValue
-          ? this.ocrProfile
-          : ocrProfile as CalorieProductProfile?,
+      ocrDraft: ocrDraft == _keepValue
+          ? this.ocrDraft
+          : ocrDraft as CalorieNutritionOcrDraft?,
       isRunningNutritionOcr:
           isRunningNutritionOcr ?? this.isRunningNutritionOcr,
       error: error == _keepValue
@@ -333,14 +436,29 @@ class InventoryReceiptManualProductController
 
     return InventoryReceiptManualProductState(
       searchQuery: buildManualProductInitialSearchQuery(config) ?? '',
+      nameText: config.selectedProduct?.name ?? config.item.name,
+      brandText: config.selectedProduct?.brand ?? config.item.brand ?? '',
       barcode:
           config.item.normalizedBarcode ?? config.selectedProduct?.code ?? '',
       weightAmount: weightInput.amount,
       selectedWeightUnit: weightInput.unit,
       kcalText: formatManualProductDouble(nutrition?.per100Kcal),
+      saturatedFatText: formatManualProductDouble(
+        nutrition?.per100SaturatedFat,
+      ),
+      polyunsaturatedFatText: formatManualProductDouble(
+        nutrition?.per100PolyunsaturatedFat,
+      ),
       proteinText: formatManualProductDouble(nutrition?.per100Protein),
       carbsText: formatManualProductDouble(nutrition?.per100Carbs),
+      sugarText: formatManualProductDouble(nutrition?.per100Sugar),
+      fiberText: formatManualProductDouble(nutrition?.per100Fiber),
       fatText: formatManualProductDouble(nutrition?.per100Fat),
+      saltText: formatManualProductDouble(nutrition?.per100Salt),
+      showPolyunsaturatedFatField: nutrition?.per100PolyunsaturatedFat != null,
+      showFiberField: nutrition?.per100Fiber != null,
+      isAddingOptionalNutrition: false,
+      optionalNutritionValueText: '',
       selectedProduct: config.selectedProduct == null
           ? null
           : InventoryReceiptManualProductSelection.fromSearchResult(
@@ -351,22 +469,20 @@ class InventoryReceiptManualProductController
 
   ({String imageUrl, String name, String? brand, String? weight})?
   buildPreviewData() {
-    final selectedProduct = _currentPreviewProduct();
+    final matchedProduct = _currentMatchedProduct();
     final imageUrl = normalizeProductImageUrl(
-      selectedProduct?.imageUrl ?? _config.item.imageUrl,
+      matchedProduct?.imageUrl ?? _config.item.imageUrl,
     );
     if (imageUrl == null) {
       return null;
     }
 
-    final ocrProfile = _resolvedOcrProfile();
     return (
       imageUrl: imageUrl,
-      name:
-          selectedProduct?.name ??
-          _resolvedNameFromOcr(ocrProfile) ??
-          _config.item.name,
-      brand: selectedProduct?.brand ?? ocrProfile?.brand ?? _config.item.brand,
+      name: _resolvedManualName(
+        fallbackName: matchedProduct?.name ?? _config.item.name,
+      ),
+      brand: _resolvedManualBrand(),
       weight: resolvedWeight,
     );
   }
@@ -401,6 +517,14 @@ class InventoryReceiptManualProductController
     state = state.copyWith(barcode: value, error: null);
   }
 
+  void updateNameText(String value) {
+    state = state.copyWith(nameText: value, error: null);
+  }
+
+  void updateBrandText(String value) {
+    state = state.copyWith(brandText: value, error: null);
+  }
+
   void updateWeightAmount(String value) {
     state = state.copyWith(weightAmount: value, error: null);
   }
@@ -413,6 +537,14 @@ class InventoryReceiptManualProductController
     state = state.copyWith(kcalText: value, error: null);
   }
 
+  void updateSaturatedFatText(String value) {
+    state = state.copyWith(saturatedFatText: value, error: null);
+  }
+
+  void updatePolyunsaturatedFatText(String value) {
+    state = state.copyWith(polyunsaturatedFatText: value, error: null);
+  }
+
   void updateProteinText(String value) {
     state = state.copyWith(proteinText: value, error: null);
   }
@@ -421,8 +553,81 @@ class InventoryReceiptManualProductController
     state = state.copyWith(carbsText: value, error: null);
   }
 
+  void updateSugarText(String value) {
+    state = state.copyWith(sugarText: value, error: null);
+  }
+
+  void updateFiberText(String value) {
+    state = state.copyWith(fiberText: value, error: null);
+  }
+
+  void startAddingOptionalNutrition() {
+    final nutritionType = state.resolvedOptionalNutritionType;
+    if (nutritionType == null) {
+      return;
+    }
+    state = state.copyWith(
+      isAddingOptionalNutrition: true,
+      optionalNutritionValueText: '',
+      optionalNutritionType: nutritionType,
+      optionalNutritionUnit: InventoryAmountUnit.gram,
+      error: null,
+    );
+  }
+
+  void cancelAddingOptionalNutrition() {
+    state = state.copyWith(
+      isAddingOptionalNutrition: false,
+      optionalNutritionValueText: '',
+      error: null,
+    );
+  }
+
+  void updateOptionalNutritionValueText(String value) {
+    state = state.copyWith(optionalNutritionValueText: value, error: null);
+  }
+
+  void updateOptionalNutritionUnit(InventoryAmountUnit unit) {
+    state = state.copyWith(optionalNutritionUnit: unit, error: null);
+  }
+
+  void updateOptionalNutritionType(InventoryReceiptOptionalNutritionType type) {
+    state = state.copyWith(optionalNutritionType: type, error: null);
+  }
+
+  void applyOptionalNutrition() {
+    final nutritionType = state.resolvedOptionalNutritionType;
+    final valueText = state.optionalNutritionValueText;
+    if (nutritionType == null || parseManualProductDouble(valueText) == null) {
+      return;
+    }
+
+    switch (nutritionType) {
+      case InventoryReceiptOptionalNutritionType.polyunsaturatedFat:
+        state = state.copyWith(
+          showPolyunsaturatedFatField: true,
+          polyunsaturatedFatText: valueText,
+          isAddingOptionalNutrition: false,
+          optionalNutritionValueText: '',
+          error: null,
+        );
+      case InventoryReceiptOptionalNutritionType.fiber:
+        state = state.copyWith(
+          showFiberField: true,
+          fiberText: valueText,
+          isAddingOptionalNutrition: false,
+          optionalNutritionValueText: '',
+          error: null,
+        );
+    }
+  }
+
   void updateFatText(String value) {
     state = state.copyWith(fatText: value, error: null);
+  }
+
+  void updateSaltText(String value) {
+    state = state.copyWith(saltText: value, error: null);
   }
 
   void applySearchResult(OffProductSearchResult product) {
@@ -448,12 +653,23 @@ class InventoryReceiptManualProductController
   void applyScannedBarcodeOnly(String barcode) {
     state = state.copyWith(
       barcode: barcode,
+      nameText: _config.item.name,
+      brandText: _config.item.brand ?? '',
       selectedProduct: null,
-      ocrProfile: null,
+      ocrDraft: null,
       kcalText: '',
+      saturatedFatText: '',
+      polyunsaturatedFatText: '',
       proteinText: '',
       carbsText: '',
+      sugarText: '',
+      fiberText: '',
       fatText: '',
+      saltText: '',
+      showPolyunsaturatedFatField: false,
+      showFiberField: false,
+      isAddingOptionalNutrition: false,
+      optionalNutritionValueText: '',
       error: null,
     );
   }
@@ -482,11 +698,12 @@ class InventoryReceiptManualProductController
 
       switch (result.status) {
         case CalorieNutritionOcrStatus.succeeded:
-          final profile = result.profile;
-          if (profile == null) {
+          final draft =
+              result.draft ?? _buildOcrDraftFromProfile(result.profile);
+          if (draft == null) {
             return InventoryReceiptManualProductNutritionScanOutcome.canceled;
           }
-          _applyOcrProfile(profile);
+          _applyOcrDraft(draft);
           return InventoryReceiptManualProductNutritionScanOutcome.applied;
         case CalorieNutritionOcrStatus.canceled:
           return InventoryReceiptManualProductNutritionScanOutcome.canceled;
@@ -506,13 +723,31 @@ class InventoryReceiptManualProductController
     String? selectedGlobalFoodItemId,
   })?
   buildSavePayload() {
+    if (!state.hasCompleteNutritionInput) {
+      return null;
+    }
     final barcode = normalizeManualProductText(state.barcode);
     final kcal = parseManualProductDouble(state.kcalText);
+    final saturatedFat = parseManualProductDouble(state.saturatedFatText);
+    final polyunsaturatedFat = parseManualProductDouble(
+      state.polyunsaturatedFatText,
+    );
     final protein = parseManualProductDouble(state.proteinText);
     final carbs = parseManualProductDouble(state.carbsText);
+    final sugar = parseManualProductDouble(state.sugarText);
+    final fiber = parseManualProductDouble(state.fiberText);
     final fat = parseManualProductDouble(state.fatText);
+    final salt = parseManualProductDouble(state.saltText);
     final hasNutrition =
-        kcal != null || protein != null || carbs != null || fat != null;
+        kcal != null ||
+        saturatedFat != null ||
+        polyunsaturatedFat != null ||
+        protein != null ||
+        carbs != null ||
+        sugar != null ||
+        fiber != null ||
+        fat != null ||
+        salt != null;
 
     if (barcode == null && !hasNutrition) {
       state = state.copyWith(
@@ -523,40 +758,51 @@ class InventoryReceiptManualProductController
 
     final selectedProduct = _effectiveSelectedProductSelection(
       barcode: barcode,
+      name: _resolvedManualName(fallbackName: _config.item.name),
+      brand: _resolvedManualBrand(),
       kcal: kcal,
+      saturatedFat: saturatedFat,
+      polyunsaturatedFat: polyunsaturatedFat,
       protein: protein,
       carbs: carbs,
+      sugar: sugar,
+      fiber: fiber,
       fat: fat,
+      salt: salt,
     );
-    final ocrProfile = _resolvedOcrProfile();
+    final matchedProduct = _currentMatchedProduct();
     final updatedItem = _config.item
         .copyWith(
-          name:
-              selectedProduct?.name ??
-              _resolvedNameFromOcr(ocrProfile) ??
-              _config.item.name,
-          brand:
-              selectedProduct?.brand ?? ocrProfile?.brand ?? _config.item.brand,
+          name: _resolvedManualName(
+            fallbackName: matchedProduct?.name ?? _config.item.name,
+          ),
+          brand: _resolvedManualBrand(),
           barcode: barcode,
-          imageUrl: selectedProduct?.imageUrl ?? _config.item.imageUrl,
+          imageUrl: matchedProduct?.imageUrl ?? _config.item.imageUrl,
           weight: resolvedWeight,
-          servingSize: selectedProduct?.servingSize ?? _config.item.servingSize,
+          servingSize:
+              matchedProduct?.servingSize ??
+              state.ocrDraft?.servingSizeLabel ??
+              _config.item.servingSize,
           servingQuantity:
-              selectedProduct?.servingQuantity ?? _config.item.servingQuantity,
+              matchedProduct?.servingQuantity ?? _config.item.servingQuantity,
           servingQuantityUnit:
-              selectedProduct?.servingQuantityUnit ??
+              matchedProduct?.servingQuantityUnit ??
               _config.item.servingQuantityUnit,
           nutrition: hasNutrition
               ? GlobalFoodNutrition(
                   qualityStatus: GlobalFoodNutritionQualityStatus.verified,
                   per100Kcal: kcal,
+                  per100SaturatedFat: saturatedFat,
+                  per100PolyunsaturatedFat: polyunsaturatedFat,
                   per100Protein: protein,
                   per100Carbs: carbs,
+                  per100Sugar: sugar,
+                  per100Fiber: fiber,
                   per100Fat: fat,
+                  per100Salt: salt,
                 )
-              : selectedProduct?.nutrition ??
-                    _nutritionFromProfile(ocrProfile) ??
-                    _config.item.nutrition,
+              : selectedProduct?.nutrition ?? _config.item.nutrition,
         )
         .withDerivedAmount(
           weight: resolvedWeight,
@@ -618,37 +864,97 @@ class InventoryReceiptManualProductController
     );
     state = state.copyWith(
       searchQuery: product.name,
+      nameText: product.name,
+      brandText: product.brand ?? '',
       barcode: product.barcode,
       weightAmount: weightInput.amount,
       selectedWeightUnit: weightInput.unit,
       kcalText: formatManualProductDouble(nutrition?.per100Kcal),
+      saturatedFatText: formatManualProductDouble(
+        nutrition?.per100SaturatedFat,
+      ),
+      polyunsaturatedFatText: formatManualProductDouble(
+        nutrition?.per100PolyunsaturatedFat,
+      ),
       proteinText: formatManualProductDouble(nutrition?.per100Protein),
       carbsText: formatManualProductDouble(nutrition?.per100Carbs),
+      sugarText: formatManualProductDouble(nutrition?.per100Sugar),
+      fiberText: formatManualProductDouble(nutrition?.per100Fiber),
       fatText: formatManualProductDouble(nutrition?.per100Fat),
+      saltText: formatManualProductDouble(nutrition?.per100Salt),
+      showPolyunsaturatedFatField: nutrition?.per100PolyunsaturatedFat != null,
+      showFiberField: nutrition?.per100Fiber != null,
+      isAddingOptionalNutrition: false,
+      optionalNutritionValueText: '',
       selectedProduct: product,
-      ocrProfile: null,
+      ocrDraft: null,
       searchResults: const <OffProductSearchResult>[],
       error: null,
     );
   }
 
-  void _applyOcrProfile(CalorieProductProfile profile) {
+  void _applyOcrDraft(CalorieNutritionOcrDraft draft) {
+    final ocrWeightInput = _resolveOcrWeightInput(draft.quantityLabel);
     state = state.copyWith(
-      ocrProfile: profile,
-      kcalText: formatManualProductDouble(profile.per100Kcal),
-      proteinText: formatManualProductDouble(profile.per100Protein),
-      carbsText: formatManualProductDouble(profile.per100Carbs),
-      fatText: formatManualProductDouble(profile.per100Fat),
+      ocrDraft: draft,
+      weightAmount: ocrWeightInput?.amount ?? state.weightAmount,
+      selectedWeightUnit: ocrWeightInput?.unit ?? state.selectedWeightUnit,
+      kcalText: formatManualProductDouble(draft.per100Kcal),
+      saturatedFatText: formatManualProductDouble(draft.per100SaturatedFat),
+      polyunsaturatedFatText: formatManualProductDouble(
+        draft.per100PolyunsaturatedFat,
+      ),
+      proteinText: formatManualProductDouble(draft.per100Protein),
+      carbsText: formatManualProductDouble(draft.per100Carbs),
+      sugarText: formatManualProductDouble(draft.per100Sugar),
+      fiberText: formatManualProductDouble(draft.per100Fiber),
+      fatText: formatManualProductDouble(draft.per100Fat),
+      saltText: formatManualProductDouble(draft.per100Salt),
+      showPolyunsaturatedFatField:
+          state.showPolyunsaturatedFatField ||
+          draft.per100PolyunsaturatedFat != null,
+      showFiberField: state.showFiberField || draft.per100Fiber != null,
+      isAddingOptionalNutrition: false,
+      optionalNutritionValueText: '',
       error: null,
+    );
+  }
+
+  CalorieNutritionOcrDraft? _buildOcrDraftFromProfile(
+    CalorieProductProfile? profile,
+  ) {
+    if (profile == null) {
+      return null;
+    }
+    return CalorieNutritionOcrDraft(
+      barcode: profile.barcode,
+      name: profile.name,
+      brand: profile.brand,
+      per100Kcal: profile.per100Kcal,
+      per100SaturatedFat: null,
+      per100PolyunsaturatedFat: null,
+      per100Protein: profile.per100Protein,
+      per100Carbs: profile.per100Carbs,
+      per100Sugar: null,
+      per100Fiber: null,
+      per100Fat: profile.per100Fat,
+      per100Salt: null,
     );
   }
 
   InventoryReceiptManualProductSelection? _effectiveSelectedProductSelection({
     required String? barcode,
+    required String name,
+    required String? brand,
     required double? kcal,
+    required double? saturatedFat,
+    required double? polyunsaturatedFat,
     required double? protein,
     required double? carbs,
+    required double? sugar,
+    required double? fiber,
     required double? fat,
+    required double? salt,
   }) {
     final selectedProduct = state.selectedProduct;
     if (selectedProduct == null) {
@@ -660,19 +966,42 @@ class InventoryReceiptManualProductController
       return null;
     }
 
+    if (normalizeManualProductText(name) !=
+        normalizeManualProductText(selectedProduct.name)) {
+      return null;
+    }
+
+    if (normalizeManualProductText(brand ?? '') !=
+        normalizeManualProductText(selectedProduct.brand ?? '')) {
+      return null;
+    }
+
     final nutrition = selectedProduct.nutrition;
     final matchesOriginalNutrition =
         kcal == nutrition?.per100Kcal &&
+        saturatedFat == nutrition?.per100SaturatedFat &&
+        polyunsaturatedFat == nutrition?.per100PolyunsaturatedFat &&
         protein == nutrition?.per100Protein &&
         carbs == nutrition?.per100Carbs &&
-        fat == nutrition?.per100Fat;
+        sugar == nutrition?.per100Sugar &&
+        fiber == nutrition?.per100Fiber &&
+        fat == nutrition?.per100Fat &&
+        salt == nutrition?.per100Salt;
     if (!matchesOriginalNutrition) {
       return null;
     }
     return selectedProduct;
   }
 
-  InventoryReceiptManualProductSelection? _currentPreviewProduct() {
+  String _resolvedManualName({required String fallbackName}) {
+    return normalizeManualProductText(state.nameText) ?? fallbackName;
+  }
+
+  String? _resolvedManualBrand() {
+    return normalizeManualProductText(state.brandText);
+  }
+
+  InventoryReceiptManualProductSelection? _currentMatchedProduct() {
     final selectedProduct = state.selectedProduct;
     if (selectedProduct == null) {
       return null;
@@ -688,41 +1017,21 @@ class InventoryReceiptManualProductController
     return selectedProduct;
   }
 
-  CalorieProductProfile? _resolvedOcrProfile() {
-    final profile = state.ocrProfile;
-    if (profile == null) {
+  ({String amount, InventoryAmountUnit unit})? _resolveOcrWeightInput(
+    String? rawWeight,
+  ) {
+    final weight = normalizeManualProductText(rawWeight ?? '');
+    if (weight == null) {
       return null;
     }
-
-    final barcode = normalizeBarcode(state.barcode);
-    if (barcode.isEmpty || barcode != normalizeBarcode(profile.barcode)) {
-      return null;
-    }
-    return profile;
-  }
-
-  String? _resolvedNameFromOcr(CalorieProductProfile? profile) {
-    if (profile == null) {
-      return null;
-    }
-    final name = profile.name.trim();
-    if (name.isEmpty || name == profile.barcode) {
-      return null;
-    }
-    return name;
-  }
-
-  GlobalFoodNutrition? _nutritionFromProfile(CalorieProductProfile? profile) {
-    if (profile == null) {
-      return null;
-    }
-    return GlobalFoodNutrition(
-      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-      per100Kcal: profile.per100Kcal,
-      per100Protein: profile.per100Protein,
-      per100Carbs: profile.per100Carbs,
-      per100Fat: profile.per100Fat,
+    final resolved = _resolveWeightInput(
+      weight,
+      fallbackUnit: state.selectedWeightUnit,
     );
+    if (resolved.amount.isEmpty) {
+      return null;
+    }
+    return resolved;
   }
 
   String? _resolvedSearchStore() {

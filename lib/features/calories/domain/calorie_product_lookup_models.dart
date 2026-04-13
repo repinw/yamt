@@ -124,6 +124,97 @@ class CalorieProductCandidate {
   final int completenessScore;
 }
 
+class CalorieNutritionOcrDraft {
+  const CalorieNutritionOcrDraft({
+    required this.barcode,
+    this.name,
+    this.brand,
+    this.quantityLabel,
+    this.servingSizeLabel,
+    this.per100Kcal,
+    this.per100Protein,
+    this.per100Carbs,
+    this.per100Fat,
+    this.per100Salt,
+    this.per100SaturatedFat,
+    this.per100PolyunsaturatedFat,
+    this.per100Sugar,
+    this.per100Fiber,
+  });
+
+  final String barcode;
+  final String? name;
+  final String? brand;
+  final String? quantityLabel;
+  final String? servingSizeLabel;
+  final double? per100Kcal;
+  final double? per100Protein;
+  final double? per100Carbs;
+  final double? per100Fat;
+  final double? per100Salt;
+  final double? per100SaturatedFat;
+  final double? per100PolyunsaturatedFat;
+  final double? per100Sugar;
+  final double? per100Fiber;
+
+  bool get hasAnyNutritionValue {
+    return <double?>[
+      per100Kcal,
+      per100Protein,
+      per100Carbs,
+      per100Fat,
+      per100Salt,
+      per100SaturatedFat,
+      per100PolyunsaturatedFat,
+      per100Sugar,
+      per100Fiber,
+    ].any((value) => value != null);
+  }
+
+  bool get hasAnyDetectedValue {
+    return hasAnyNutritionValue ||
+        _hasText(name) ||
+        _hasText(brand) ||
+        _hasText(quantityLabel) ||
+        _hasText(servingSizeLabel);
+  }
+
+  CalorieProductProfile? toProfile({required DateTime now}) {
+    if (per100Kcal == null ||
+        per100Protein == null ||
+        per100Carbs == null ||
+        per100Fat == null) {
+      return null;
+    }
+
+    return CalorieProductProfile(
+      barcode: barcode,
+      name: _normalizedText(name) ?? barcode,
+      brand: _normalizedText(brand),
+      per100Kcal: per100Kcal!,
+      per100Protein: per100Protein!,
+      per100Carbs: per100Carbs!,
+      per100Fat: per100Fat!,
+      source: CalorieProductSource.ocr,
+      offProductId: null,
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+
+  static bool _hasText(String? value) {
+    return _normalizedText(value) != null;
+  }
+
+  static String? _normalizedText(String? value) {
+    final trimmed = value?.trim();
+    if (trimmed == null || trimmed.isEmpty) {
+      return null;
+    }
+    return trimmed;
+  }
+}
+
 enum CalorieLookupStatus { foundSingle, foundMultiple, notFound, failed }
 
 class CalorieLookupOutcome {
@@ -171,16 +262,23 @@ class CalorieNutritionOcrResult {
   const CalorieNutritionOcrResult._({
     required this.status,
     this.profile,
+    this.draft,
     this.errorCode,
   });
 
   final CalorieNutritionOcrStatus status;
   final CalorieProductProfile? profile;
+  final CalorieNutritionOcrDraft? draft;
   final String? errorCode;
 
   const CalorieNutritionOcrResult.succeeded({
-    required CalorieProductProfile profile,
-  }) : this._(status: CalorieNutritionOcrStatus.succeeded, profile: profile);
+    CalorieProductProfile? profile,
+    CalorieNutritionOcrDraft? draft,
+  }) : this._(
+         status: CalorieNutritionOcrStatus.succeeded,
+         profile: profile,
+         draft: draft,
+       );
 
   const CalorieNutritionOcrResult.canceled()
     : this._(status: CalorieNutritionOcrStatus.canceled);
