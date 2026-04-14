@@ -47,174 +47,59 @@ class _InventoryItemFilterSheetState extends State<InventoryItemFilterSheet> {
     final l10n = AppLocalizations.of(context)!;
     final selectedCriterion = _sortCriterionFor(_sortMode);
     final sortAscending = _isSortAscending(_sortMode);
+    final sortOptions = <_InventoryItemSortOptionConfig>[
+      _InventoryItemSortOptionConfig(
+        criterion: _InventoryItemSortCriterion.added,
+        optionKey: const Key('inventory_items_sort_added_option'),
+        directionButtonKey: const Key(
+          'inventory_items_sort_added_direction_button',
+        ),
+        title: l10n.inventorySortAdded,
+        icon: Icons.access_time_rounded,
+      ),
+      _InventoryItemSortOptionConfig(
+        criterion: _InventoryItemSortCriterion.eaten,
+        optionKey: const Key('inventory_items_sort_eaten_option'),
+        directionButtonKey: const Key(
+          'inventory_items_sort_eaten_direction_button',
+        ),
+        title: l10n.inventorySortEaten,
+        icon: Icons.restaurant_rounded,
+      ),
+      _InventoryItemSortOptionConfig(
+        criterion: _InventoryItemSortCriterion.alphabetical,
+        optionKey: const Key('inventory_items_sort_alphabetical_option'),
+        directionButtonKey: const Key(
+          'inventory_items_sort_alphabetical_direction_button',
+        ),
+        title: l10n.inventorySortAlphabetical,
+        icon: Icons.sort_by_alpha_rounded,
+      ),
+      _InventoryItemSortOptionConfig(
+        criterion: _InventoryItemSortCriterion.quantity,
+        optionKey: const Key('inventory_items_sort_quantity_option'),
+        directionButtonKey: const Key(
+          'inventory_items_sort_quantity_direction_button',
+        ),
+        title: l10n.inventorySortQuantity,
+        icon: Icons.inventory_2_rounded,
+      ),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InventoryFiltersSectionLabel(label: l10n.inventorySortSectionTitle),
         const SizedBox(height: AppSpacing.md),
-        InventorySortOptionCard(
-          key: const Key('inventory_items_sort_added_option'),
-          title: l10n.inventorySortAdded,
-          icon: Icons.access_time_rounded,
-          isSelected: selectedCriterion == _InventoryItemSortCriterion.added,
-          enabled: widget.enabled,
-          directionLabel: selectedCriterion == _InventoryItemSortCriterion.added
-              ? _sortDirectionLabel(
-                  l10n,
-                  criterion: _InventoryItemSortCriterion.added,
-                  ascending: sortAscending,
-                )
-              : null,
-          directionButtonKey: const Key(
-            'inventory_items_sort_added_direction_button',
+        for (var index = 0; index < sortOptions.length; index++) ...[
+          if (index > 0) const SizedBox(height: AppSpacing.xs),
+          _buildSortOptionCard(
+            l10n: l10n,
+            config: sortOptions[index],
+            selectedCriterion: selectedCriterion,
+            sortAscending: sortAscending,
           ),
-          sortDirectionAscending: sortAscending,
-          onSelect: () {
-            _updateSortMode(
-              _sortModeFor(
-                _InventoryItemSortCriterion.added,
-                ascending: _defaultAscendingForCriterion(
-                  _InventoryItemSortCriterion.added,
-                ),
-              ),
-            );
-          },
-          onToggleDirection:
-              selectedCriterion == _InventoryItemSortCriterion.added
-              ? () {
-                  _updateSortMode(
-                    _sortModeFor(
-                      _InventoryItemSortCriterion.added,
-                      ascending: !sortAscending,
-                    ),
-                  );
-                }
-              : null,
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        InventorySortOptionCard(
-          key: const Key('inventory_items_sort_eaten_option'),
-          title: l10n.inventorySortEaten,
-          icon: Icons.restaurant_rounded,
-          isSelected: selectedCriterion == _InventoryItemSortCriterion.eaten,
-          enabled: widget.enabled,
-          directionLabel: selectedCriterion == _InventoryItemSortCriterion.eaten
-              ? _sortDirectionLabel(
-                  l10n,
-                  criterion: _InventoryItemSortCriterion.eaten,
-                  ascending: sortAscending,
-                )
-              : null,
-          directionButtonKey: const Key(
-            'inventory_items_sort_eaten_direction_button',
-          ),
-          sortDirectionAscending: sortAscending,
-          onSelect: () {
-            _updateSortMode(
-              _sortModeFor(
-                _InventoryItemSortCriterion.eaten,
-                ascending: _defaultAscendingForCriterion(
-                  _InventoryItemSortCriterion.eaten,
-                ),
-              ),
-            );
-          },
-          onToggleDirection:
-              selectedCriterion == _InventoryItemSortCriterion.eaten
-              ? () {
-                  _updateSortMode(
-                    _sortModeFor(
-                      _InventoryItemSortCriterion.eaten,
-                      ascending: !sortAscending,
-                    ),
-                  );
-                }
-              : null,
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        InventorySortOptionCard(
-          key: const Key('inventory_items_sort_alphabetical_option'),
-          title: l10n.inventorySortAlphabetical,
-          icon: Icons.sort_by_alpha_rounded,
-          isSelected:
-              selectedCriterion == _InventoryItemSortCriterion.alphabetical,
-          enabled: widget.enabled,
-          directionLabel:
-              selectedCriterion == _InventoryItemSortCriterion.alphabetical
-              ? _sortDirectionLabel(
-                  l10n,
-                  criterion: _InventoryItemSortCriterion.alphabetical,
-                  ascending: sortAscending,
-                )
-              : null,
-          directionButtonKey: const Key(
-            'inventory_items_sort_alphabetical_direction_button',
-          ),
-          sortDirectionAscending: sortAscending,
-          onSelect: () {
-            _updateSortMode(
-              _sortModeFor(
-                _InventoryItemSortCriterion.alphabetical,
-                ascending: _defaultAscendingForCriterion(
-                  _InventoryItemSortCriterion.alphabetical,
-                ),
-              ),
-            );
-          },
-          onToggleDirection:
-              selectedCriterion == _InventoryItemSortCriterion.alphabetical
-              ? () {
-                  _updateSortMode(
-                    _sortModeFor(
-                      _InventoryItemSortCriterion.alphabetical,
-                      ascending: !sortAscending,
-                    ),
-                  );
-                }
-              : null,
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        InventorySortOptionCard(
-          key: const Key('inventory_items_sort_quantity_option'),
-          title: l10n.inventorySortQuantity,
-          icon: Icons.inventory_2_rounded,
-          isSelected: selectedCriterion == _InventoryItemSortCriterion.quantity,
-          enabled: widget.enabled,
-          directionLabel:
-              selectedCriterion == _InventoryItemSortCriterion.quantity
-              ? _sortDirectionLabel(
-                  l10n,
-                  criterion: _InventoryItemSortCriterion.quantity,
-                  ascending: sortAscending,
-                )
-              : null,
-          directionButtonKey: const Key(
-            'inventory_items_sort_quantity_direction_button',
-          ),
-          sortDirectionAscending: sortAscending,
-          onSelect: () {
-            _updateSortMode(
-              _sortModeFor(
-                _InventoryItemSortCriterion.quantity,
-                ascending: _defaultAscendingForCriterion(
-                  _InventoryItemSortCriterion.quantity,
-                ),
-              ),
-            );
-          },
-          onToggleDirection:
-              selectedCriterion == _InventoryItemSortCriterion.quantity
-              ? () {
-                  _updateSortMode(
-                    _sortModeFor(
-                      _InventoryItemSortCriterion.quantity,
-                      ascending: !sortAscending,
-                    ),
-                  );
-                }
-              : null,
-        ),
+        ],
         Padding(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
           child: Divider(
@@ -238,6 +123,47 @@ class _InventoryItemFilterSheetState extends State<InventoryItemFilterSheet> {
           onChanged: _updateHideFullyConsumedItems,
         ),
       ],
+    );
+  }
+
+  Widget _buildSortOptionCard({
+    required AppLocalizations l10n,
+    required _InventoryItemSortOptionConfig config,
+    required _InventoryItemSortCriterion selectedCriterion,
+    required bool sortAscending,
+  }) {
+    final isSelected = selectedCriterion == config.criterion;
+
+    return InventorySortOptionCard(
+      key: config.optionKey,
+      title: config.title,
+      icon: config.icon,
+      isSelected: isSelected,
+      enabled: widget.enabled,
+      directionLabel: isSelected
+          ? _sortDirectionLabel(
+              l10n,
+              criterion: config.criterion,
+              ascending: sortAscending,
+            )
+          : null,
+      directionButtonKey: config.directionButtonKey,
+      sortDirectionAscending: sortAscending,
+      onSelect: () {
+        _updateSortMode(
+          _sortModeFor(
+            config.criterion,
+            ascending: _defaultAscendingForCriterion(config.criterion),
+          ),
+        );
+      },
+      onToggleDirection: isSelected
+          ? () {
+              _updateSortMode(
+                _sortModeFor(config.criterion, ascending: !sortAscending),
+              );
+            }
+          : null,
     );
   }
 
@@ -335,4 +261,20 @@ class _InventoryItemFilterSheetState extends State<InventoryItemFilterSheet> {
         ? l10n.inventorySortDirectionAscending
         : l10n.inventorySortDirectionDescending;
   }
+}
+
+class _InventoryItemSortOptionConfig {
+  const _InventoryItemSortOptionConfig({
+    required this.criterion,
+    required this.optionKey,
+    required this.directionButtonKey,
+    required this.title,
+    required this.icon,
+  });
+
+  final _InventoryItemSortCriterion criterion;
+  final Key optionKey;
+  final Key directionButtonKey;
+  final String title;
+  final IconData icon;
 }

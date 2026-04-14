@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_view_preferences.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'prepared_meal_sorter.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_filter_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_sections.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-enum _PreparedMealSortCriterion { added, eaten, alphabetical, quantity }
 
 class PreparedMealFilterSheet extends StatefulWidget {
   const PreparedMealFilterSheet({
@@ -36,6 +36,7 @@ class PreparedMealFilterSheet extends StatefulWidget {
 }
 
 class _PreparedMealFilterSheetState extends State<PreparedMealFilterSheet> {
+  static const _sorter = PreparedMealSorter();
   late PreparedMealCompletionFilter _completionFilter;
   late PreparedMealConsumptionFilter _consumptionFilter;
   late PreparedMealSortMode _sortMode;
@@ -51,8 +52,8 @@ class _PreparedMealFilterSheetState extends State<PreparedMealFilterSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final selectedCriterion = _sortCriterionFor(_sortMode);
-    final sortAscending = _isSortAscending(_sortMode);
+    final selectedCriterion = _sorter.criterionFor(_sortMode);
+    final sortAscending = _sorter.isAscending(_sortMode);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,12 +64,12 @@ class _PreparedMealFilterSheetState extends State<PreparedMealFilterSheet> {
           key: const Key('prepared_meals_sort_added_option'),
           title: l10n.inventorySortAdded,
           icon: Icons.access_time_rounded,
-          isSelected: selectedCriterion == _PreparedMealSortCriterion.added,
+          isSelected: selectedCriterion == PreparedMealSortCriterion.added,
           enabled: widget.enabled,
-          directionLabel: selectedCriterion == _PreparedMealSortCriterion.added
+          directionLabel: selectedCriterion == PreparedMealSortCriterion.added
               ? _sortDirectionLabel(
                   l10n,
-                  criterion: _PreparedMealSortCriterion.added,
+                  criterion: PreparedMealSortCriterion.added,
                   ascending: sortAscending,
                 )
               : null,
@@ -78,20 +79,20 @@ class _PreparedMealFilterSheetState extends State<PreparedMealFilterSheet> {
           sortDirectionAscending: sortAscending,
           onSelect: () {
             _updateSortMode(
-              _sortModeFor(
-                _PreparedMealSortCriterion.added,
-                ascending: _defaultAscendingForCriterion(
-                  _PreparedMealSortCriterion.added,
+              _sorter.modeFor(
+                PreparedMealSortCriterion.added,
+                ascending: _sorter.defaultAscendingForCriterion(
+                  PreparedMealSortCriterion.added,
                 ),
               ),
             );
           },
           onToggleDirection:
-              selectedCriterion == _PreparedMealSortCriterion.added
+              selectedCriterion == PreparedMealSortCriterion.added
               ? () {
                   _updateSortMode(
-                    _sortModeFor(
-                      _PreparedMealSortCriterion.added,
+                    _sorter.modeFor(
+                      PreparedMealSortCriterion.added,
                       ascending: !sortAscending,
                     ),
                   );
@@ -103,12 +104,12 @@ class _PreparedMealFilterSheetState extends State<PreparedMealFilterSheet> {
           key: const Key('prepared_meals_sort_eaten_option'),
           title: l10n.inventorySortEaten,
           icon: Icons.restaurant_rounded,
-          isSelected: selectedCriterion == _PreparedMealSortCriterion.eaten,
+          isSelected: selectedCriterion == PreparedMealSortCriterion.eaten,
           enabled: widget.enabled,
-          directionLabel: selectedCriterion == _PreparedMealSortCriterion.eaten
+          directionLabel: selectedCriterion == PreparedMealSortCriterion.eaten
               ? _sortDirectionLabel(
                   l10n,
-                  criterion: _PreparedMealSortCriterion.eaten,
+                  criterion: PreparedMealSortCriterion.eaten,
                   ascending: sortAscending,
                 )
               : null,
@@ -118,20 +119,20 @@ class _PreparedMealFilterSheetState extends State<PreparedMealFilterSheet> {
           sortDirectionAscending: sortAscending,
           onSelect: () {
             _updateSortMode(
-              _sortModeFor(
-                _PreparedMealSortCriterion.eaten,
-                ascending: _defaultAscendingForCriterion(
-                  _PreparedMealSortCriterion.eaten,
+              _sorter.modeFor(
+                PreparedMealSortCriterion.eaten,
+                ascending: _sorter.defaultAscendingForCriterion(
+                  PreparedMealSortCriterion.eaten,
                 ),
               ),
             );
           },
           onToggleDirection:
-              selectedCriterion == _PreparedMealSortCriterion.eaten
+              selectedCriterion == PreparedMealSortCriterion.eaten
               ? () {
                   _updateSortMode(
-                    _sortModeFor(
-                      _PreparedMealSortCriterion.eaten,
+                    _sorter.modeFor(
+                      PreparedMealSortCriterion.eaten,
                       ascending: !sortAscending,
                     ),
                   );
@@ -144,13 +145,13 @@ class _PreparedMealFilterSheetState extends State<PreparedMealFilterSheet> {
           title: l10n.inventorySortAlphabetical,
           icon: Icons.sort_by_alpha_rounded,
           isSelected:
-              selectedCriterion == _PreparedMealSortCriterion.alphabetical,
+              selectedCriterion == PreparedMealSortCriterion.alphabetical,
           enabled: widget.enabled,
           directionLabel:
-              selectedCriterion == _PreparedMealSortCriterion.alphabetical
+              selectedCriterion == PreparedMealSortCriterion.alphabetical
               ? _sortDirectionLabel(
                   l10n,
-                  criterion: _PreparedMealSortCriterion.alphabetical,
+                  criterion: PreparedMealSortCriterion.alphabetical,
                   ascending: sortAscending,
                 )
               : null,
@@ -160,20 +161,20 @@ class _PreparedMealFilterSheetState extends State<PreparedMealFilterSheet> {
           sortDirectionAscending: sortAscending,
           onSelect: () {
             _updateSortMode(
-              _sortModeFor(
-                _PreparedMealSortCriterion.alphabetical,
-                ascending: _defaultAscendingForCriterion(
-                  _PreparedMealSortCriterion.alphabetical,
+              _sorter.modeFor(
+                PreparedMealSortCriterion.alphabetical,
+                ascending: _sorter.defaultAscendingForCriterion(
+                  PreparedMealSortCriterion.alphabetical,
                 ),
               ),
             );
           },
           onToggleDirection:
-              selectedCriterion == _PreparedMealSortCriterion.alphabetical
+              selectedCriterion == PreparedMealSortCriterion.alphabetical
               ? () {
                   _updateSortMode(
-                    _sortModeFor(
-                      _PreparedMealSortCriterion.alphabetical,
+                    _sorter.modeFor(
+                      PreparedMealSortCriterion.alphabetical,
                       ascending: !sortAscending,
                     ),
                   );
@@ -185,13 +186,13 @@ class _PreparedMealFilterSheetState extends State<PreparedMealFilterSheet> {
           key: const Key('prepared_meals_sort_quantity_option'),
           title: l10n.inventorySortQuantity,
           icon: Icons.inventory_2_rounded,
-          isSelected: selectedCriterion == _PreparedMealSortCriterion.quantity,
+          isSelected: selectedCriterion == PreparedMealSortCriterion.quantity,
           enabled: widget.enabled,
           directionLabel:
-              selectedCriterion == _PreparedMealSortCriterion.quantity
+              selectedCriterion == PreparedMealSortCriterion.quantity
               ? _sortDirectionLabel(
                   l10n,
-                  criterion: _PreparedMealSortCriterion.quantity,
+                  criterion: PreparedMealSortCriterion.quantity,
                   ascending: sortAscending,
                 )
               : null,
@@ -201,20 +202,20 @@ class _PreparedMealFilterSheetState extends State<PreparedMealFilterSheet> {
           sortDirectionAscending: sortAscending,
           onSelect: () {
             _updateSortMode(
-              _sortModeFor(
-                _PreparedMealSortCriterion.quantity,
-                ascending: _defaultAscendingForCriterion(
-                  _PreparedMealSortCriterion.quantity,
+              _sorter.modeFor(
+                PreparedMealSortCriterion.quantity,
+                ascending: _sorter.defaultAscendingForCriterion(
+                  PreparedMealSortCriterion.quantity,
                 ),
               ),
             );
           },
           onToggleDirection:
-              selectedCriterion == _PreparedMealSortCriterion.quantity
+              selectedCriterion == PreparedMealSortCriterion.quantity
               ? () {
                   _updateSortMode(
-                    _sortModeFor(
-                      _PreparedMealSortCriterion.quantity,
+                    _sorter.modeFor(
+                      PreparedMealSortCriterion.quantity,
                       ascending: !sortAscending,
                     ),
                   );
@@ -319,73 +320,12 @@ class _PreparedMealFilterSheetState extends State<PreparedMealFilterSheet> {
     widget.onSortModeChanged(nextSortMode);
   }
 
-  _PreparedMealSortCriterion _sortCriterionFor(PreparedMealSortMode sortMode) {
-    return switch (sortMode) {
-      PreparedMealSortMode.addedDescending ||
-      PreparedMealSortMode.addedAscending => _PreparedMealSortCriterion.added,
-      PreparedMealSortMode.eatenDescending ||
-      PreparedMealSortMode.eatenAscending => _PreparedMealSortCriterion.eaten,
-      PreparedMealSortMode.alphabeticalAscending ||
-      PreparedMealSortMode.alphabeticalDescending =>
-        _PreparedMealSortCriterion.alphabetical,
-      PreparedMealSortMode.quantityAscending ||
-      PreparedMealSortMode.quantityDescending =>
-        _PreparedMealSortCriterion.quantity,
-    };
-  }
-
-  bool _isSortAscending(PreparedMealSortMode sortMode) {
-    return switch (sortMode) {
-      PreparedMealSortMode.addedAscending ||
-      PreparedMealSortMode.eatenAscending ||
-      PreparedMealSortMode.alphabeticalAscending ||
-      PreparedMealSortMode.quantityAscending => true,
-      PreparedMealSortMode.addedDescending ||
-      PreparedMealSortMode.eatenDescending ||
-      PreparedMealSortMode.alphabeticalDescending ||
-      PreparedMealSortMode.quantityDescending => false,
-    };
-  }
-
-  bool _defaultAscendingForCriterion(_PreparedMealSortCriterion criterion) {
-    return switch (criterion) {
-      _PreparedMealSortCriterion.added ||
-      _PreparedMealSortCriterion.eaten => false,
-      _PreparedMealSortCriterion.alphabetical ||
-      _PreparedMealSortCriterion.quantity => true,
-    };
-  }
-
-  PreparedMealSortMode _sortModeFor(
-    _PreparedMealSortCriterion criterion, {
-    required bool ascending,
-  }) {
-    return switch ((criterion, ascending)) {
-      (_PreparedMealSortCriterion.added, true) =>
-        PreparedMealSortMode.addedAscending,
-      (_PreparedMealSortCriterion.added, false) =>
-        PreparedMealSortMode.addedDescending,
-      (_PreparedMealSortCriterion.eaten, true) =>
-        PreparedMealSortMode.eatenAscending,
-      (_PreparedMealSortCriterion.eaten, false) =>
-        PreparedMealSortMode.eatenDescending,
-      (_PreparedMealSortCriterion.alphabetical, true) =>
-        PreparedMealSortMode.alphabeticalAscending,
-      (_PreparedMealSortCriterion.alphabetical, false) =>
-        PreparedMealSortMode.alphabeticalDescending,
-      (_PreparedMealSortCriterion.quantity, true) =>
-        PreparedMealSortMode.quantityAscending,
-      (_PreparedMealSortCriterion.quantity, false) =>
-        PreparedMealSortMode.quantityDescending,
-    };
-  }
-
   String _sortDirectionLabel(
     AppLocalizations l10n, {
-    required _PreparedMealSortCriterion criterion,
+    required PreparedMealSortCriterion criterion,
     required bool ascending,
   }) {
-    if (criterion == _PreparedMealSortCriterion.alphabetical) {
+    if (criterion == PreparedMealSortCriterion.alphabetical) {
       return ascending
           ? l10n.inventorySortDirectionAlphaAscending
           : l10n.inventorySortDirectionAlphaDescending;

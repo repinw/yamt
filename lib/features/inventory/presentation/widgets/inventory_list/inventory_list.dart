@@ -25,6 +25,8 @@ import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_view_preferences.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'prepared_meal_sorter.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_all_items_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -46,8 +48,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-enum _PreparedMealSortCriterion { added, eaten, alphabetical, quantity }
 
 enum _InventoryItemSortCriterion { added, eaten, alphabetical, quantity }
 
@@ -128,6 +128,7 @@ class InventoryList extends ConsumerStatefulWidget {
 
 class _InventoryListState extends ConsumerState<InventoryList> {
   static const _searchService = InventorySearchService();
+  static const _preparedMealSorter = PreparedMealSorter();
   static const _viewPreferencesStore = InventoryListViewPreferencesStore();
   final _voiceSearchController = TextVoiceSearchController();
   var _mode = InventoryListMode.allItems;
@@ -537,7 +538,10 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       query: _searchQuery,
     );
     _visiblePreparedMeals = _searchService.filterPreparedMeals(
-      meals: _sortPreparedMeals(_applyPreparedMealFilter(widget.preparedMeals)),
+      meals: _preparedMealSorter.sort(
+        _applyPreparedMealFilter(widget.preparedMeals),
+        sortMode: _preparedMealSortMode,
+      ),
       query: _searchQuery,
     );
   }
@@ -587,8 +591,8 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   }
 
   String _preparedMealSortModeLabel(AppLocalizations l10n) {
-    final criterion = _preparedMealSortCriterionFor(_preparedMealSortMode);
-    final ascending = _isPreparedMealSortAscending(_preparedMealSortMode);
+    final criterion = _preparedMealSorter.criterionFor(_preparedMealSortMode);
+    final ascending = _preparedMealSorter.isAscending(_preparedMealSortMode);
 
     return '${_preparedMealSortCriterionLabel(l10n, criterion)} - '
         '${_preparedMealSortDirectionLabel(l10n, criterion: criterion, ascending: ascending)}';
@@ -655,42 +659,12 @@ class _InventoryListState extends ConsumerState<InventoryList> {
         : l10n.inventorySortDirectionDescending;
   }
 
-  _PreparedMealSortCriterion _preparedMealSortCriterionFor(
-    PreparedMealSortMode sortMode,
-  ) {
-    return switch (sortMode) {
-      PreparedMealSortMode.addedDescending ||
-      PreparedMealSortMode.addedAscending => _PreparedMealSortCriterion.added,
-      PreparedMealSortMode.eatenDescending ||
-      PreparedMealSortMode.eatenAscending => _PreparedMealSortCriterion.eaten,
-      PreparedMealSortMode.alphabeticalAscending ||
-      PreparedMealSortMode.alphabeticalDescending =>
-        _PreparedMealSortCriterion.alphabetical,
-      PreparedMealSortMode.quantityAscending ||
-      PreparedMealSortMode.quantityDescending =>
-        _PreparedMealSortCriterion.quantity,
-    };
-  }
-
-  bool _isPreparedMealSortAscending(PreparedMealSortMode sortMode) {
-    return switch (sortMode) {
-      PreparedMealSortMode.addedAscending ||
-      PreparedMealSortMode.eatenAscending ||
-      PreparedMealSortMode.alphabeticalAscending ||
-      PreparedMealSortMode.quantityAscending => true,
-      PreparedMealSortMode.addedDescending ||
-      PreparedMealSortMode.eatenDescending ||
-      PreparedMealSortMode.alphabeticalDescending ||
-      PreparedMealSortMode.quantityDescending => false,
-    };
-  }
-
   String _preparedMealSortDirectionLabel(
     AppLocalizations l10n, {
-    required _PreparedMealSortCriterion criterion,
+    required PreparedMealSortCriterion criterion,
     required bool ascending,
   }) {
-    if (criterion == _PreparedMealSortCriterion.alphabetical) {
+    if (criterion == PreparedMealSortCriterion.alphabetical) {
       return ascending
           ? l10n.inventorySortDirectionAlphaAscending
           : l10n.inventorySortDirectionAlphaDescending;
@@ -703,67 +677,13 @@ class _InventoryListState extends ConsumerState<InventoryList> {
 
   String _preparedMealSortCriterionLabel(
     AppLocalizations l10n,
-    _PreparedMealSortCriterion criterion,
+    PreparedMealSortCriterion criterion,
   ) {
     return switch (criterion) {
-      _PreparedMealSortCriterion.added => l10n.inventorySortAdded,
-      _PreparedMealSortCriterion.eaten => l10n.inventorySortEaten,
-      _PreparedMealSortCriterion.alphabetical => l10n.inventorySortAlphabetical,
-      _PreparedMealSortCriterion.quantity => l10n.inventorySortQuantity,
+      PreparedMealSortCriterion.added => l10n.inventorySortAdded,
+      PreparedMealSortCriterion.eaten => l10n.inventorySortEaten,
+      PreparedMealSortCriterion.alphabetical => l10n.inventorySortAlphabetical,
+      PreparedMealSortCriterion.quantity => l10n.inventorySortQuantity,
     };
-  }
-
-  List<PreparedMeal> _sortPreparedMeals(List<PreparedMeal> meals) {
-    final normalizedNames = <String, String>{
-      for (final meal in meals) meal.id: meal.name.toLowerCase(),
-    };
-
-    meals.sort((left, right) {
-      final normalizedLeftName = normalizedNames[left.id]!;
-      final normalizedRightName = normalizedNames[right.id]!;
-      final nameCompare = normalizedLeftName.compareTo(normalizedRightName);
-      final dateCompare = left.createdAt.compareTo(right.createdAt);
-      final updatedCompare = left.updatedAt.compareTo(right.updatedAt);
-      final ratioCompare = left.remainingRatio.compareTo(right.remainingRatio);
-      final portionsCompare = left.remainingPortions.compareTo(
-        right.remainingPortions,
-      );
-
-      return switch (_preparedMealSortMode) {
-        PreparedMealSortMode.addedDescending =>
-          dateCompare != 0 ? -dateCompare : nameCompare,
-        PreparedMealSortMode.addedAscending =>
-          dateCompare != 0 ? dateCompare : nameCompare,
-        PreparedMealSortMode.eatenDescending =>
-          updatedCompare != 0
-              ? -updatedCompare
-              : dateCompare != 0
-              ? -dateCompare
-              : nameCompare,
-        PreparedMealSortMode.eatenAscending =>
-          updatedCompare != 0
-              ? updatedCompare
-              : dateCompare != 0
-              ? dateCompare
-              : nameCompare,
-        PreparedMealSortMode.alphabeticalAscending =>
-          nameCompare != 0 ? nameCompare : -dateCompare,
-        PreparedMealSortMode.alphabeticalDescending =>
-          nameCompare != 0 ? -nameCompare : -dateCompare,
-        PreparedMealSortMode.quantityAscending =>
-          ratioCompare != 0
-              ? ratioCompare
-              : portionsCompare != 0
-              ? portionsCompare
-              : nameCompare,
-        PreparedMealSortMode.quantityDescending =>
-          ratioCompare != 0
-              ? -ratioCompare
-              : portionsCompare != 0
-              ? -portionsCompare
-              : nameCompare,
-      };
-    });
-    return meals;
   }
 }
