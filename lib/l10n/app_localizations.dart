@@ -638,7 +638,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryRecentSectionTitle.
   ///
   /// In en, this message translates to:
-  /// **'Recently added'**
+  /// **'Foods'**
   String get inventoryRecentSectionTitle;
 
   /// No description provided for @inventorySearchLabel.
@@ -662,8 +662,80 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryFiltersTitle.
   ///
   /// In en, this message translates to:
-  /// **'Filter items'**
+  /// **'Adjust view'**
   String get inventoryFiltersTitle;
+
+  /// No description provided for @inventoryFiltersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort and filter your foods'**
+  String get inventoryFiltersSubtitle;
+
+  /// No description provided for @inventoryFiltersShowResultsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Show results'**
+  String get inventoryFiltersShowResultsAction;
+
+  /// No description provided for @inventorySortSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get inventorySortSectionTitle;
+
+  /// No description provided for @inventoryFilterSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get inventoryFilterSectionTitle;
+
+  /// No description provided for @inventorySortAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get inventorySortAdded;
+
+  /// No description provided for @inventorySortEaten.
+  ///
+  /// In en, this message translates to:
+  /// **'Eaten'**
+  String get inventorySortEaten;
+
+  /// No description provided for @inventorySortAlphabetical.
+  ///
+  /// In en, this message translates to:
+  /// **'Alphabetical'**
+  String get inventorySortAlphabetical;
+
+  /// No description provided for @inventorySortQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get inventorySortQuantity;
+
+  /// No description provided for @inventorySortDirectionAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Ascending'**
+  String get inventorySortDirectionAscending;
+
+  /// No description provided for @inventorySortDirectionDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Descending'**
+  String get inventorySortDirectionDescending;
+
+  /// No description provided for @inventorySortDirectionAlphaAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'A to Z'**
+  String get inventorySortDirectionAlphaAscending;
+
+  /// No description provided for @inventorySortDirectionAlphaDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Z to A'**
+  String get inventorySortDirectionAlphaDescending;
 
   /// No description provided for @inventoryNutritionCaloriesShortLabel.
   ///
@@ -689,6 +761,18 @@ abstract class AppLocalizations {
   /// **'Not consumed'**
   String get inventoryFilterNotConsumed;
 
+  /// No description provided for @inventoryHideConsumedFilterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide consumed'**
+  String get inventoryHideConsumedFilterTitle;
+
+  /// No description provided for @inventoryHideConsumedFilterSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide completely empty items'**
+  String get inventoryHideConsumedFilterSubtitle;
+
   /// No description provided for @inventoryHideFullyConsumedItemsToggle.
   ///
   /// In en, this message translates to:
@@ -704,14 +788,14 @@ abstract class AppLocalizations {
   /// No description provided for @preparedMealFiltersTitle.
   ///
   /// In en, this message translates to:
-  /// **'Filter meals'**
+  /// **'Adjust view'**
   String get preparedMealFiltersTitle;
 
-  /// No description provided for @preparedMealSortNewestFirst.
+  /// No description provided for @preparedMealFiltersSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Newest first'**
-  String get preparedMealSortNewestFirst;
+  /// **'Sort and filter your meals'**
+  String get preparedMealFiltersSubtitle;
 
   /// No description provided for @preparedMealShowReadyOnlyToggle.
   ///

@@ -17,6 +17,7 @@ class InventoryPreparedMealsSection extends StatelessWidget {
     required this.meals,
     required this.expandedPreparedMealId,
     required this.isExpanded,
+    required this.subtitle,
     required this.isSelectionMode,
     required this.onShowFilters,
     required this.onToggleExpanded,
@@ -33,6 +34,7 @@ class InventoryPreparedMealsSection extends StatelessWidget {
   final List<PreparedMeal> meals;
   final String? expandedPreparedMealId;
   final bool isExpanded;
+  final String subtitle;
   final bool isSelectionMode;
   final VoidCallback onShowFilters;
   final VoidCallback onToggleExpanded;
@@ -87,6 +89,7 @@ class InventoryPreparedMealsSection extends StatelessWidget {
           children: [
             InventorySectionHeader(
               title: l10n.preparedMealSectionTitle,
+              subtitle: subtitle,
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

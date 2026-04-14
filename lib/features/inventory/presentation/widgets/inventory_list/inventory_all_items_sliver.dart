@@ -3,6 +3,8 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_sort_mode.dart';
+import 'package:yamt/features/inventory/presentation/models/'
     'inventory_sorted_items_cache.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
@@ -21,6 +23,7 @@ class InventoryAllItemsSliver extends StatefulWidget {
     required this.l10n,
     required this.showBarcodeMarkers,
     required this.activeShoppingListItemKeys,
+    required this.sortMode,
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
@@ -34,6 +37,7 @@ class InventoryAllItemsSliver extends StatefulWidget {
   final AppLocalizations l10n;
   final bool showBarcodeMarkers;
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
+  final InventoryItemSortMode sortMode;
   final Future<bool> Function(String itemId) onDeleteItem;
   final Future<bool> Function(String itemId, InventoryItemEatRequest request)
   onEatItem;
@@ -60,17 +64,24 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
   @override
   void initState() {
     super.initState();
-    _sortedItemsCache = InventorySortedItemsCache.fromItems(widget.items);
+    _sortedItemsCache = InventorySortedItemsCache.fromItems(
+      widget.items,
+      sortMode: widget.sortMode,
+    );
     _sortedItems = _sortedItemsCache.materialize(widget.items);
   }
 
   @override
   void didUpdateWidget(covariant InventoryAllItemsSliver oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (identical(oldWidget.items, widget.items)) {
+    if (identical(oldWidget.items, widget.items) &&
+        oldWidget.sortMode == widget.sortMode) {
       return;
     }
-    _sortedItemsCache = _sortedItemsCache.update(widget.items);
+    _sortedItemsCache = _sortedItemsCache.update(
+      widget.items,
+      sortMode: widget.sortMode,
+    );
     _sortedItems = _sortedItemsCache.materialize(widget.items);
   }
 

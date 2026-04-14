@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show listEquals;
@@ -8,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
@@ -18,17 +20,25 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_consumption_filter.dart';
 import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_sort_mode.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_list_view_preferences.dart';
+import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'prepared_meal_sorter.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_all_items_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_filter_toggle.dart';
+    'inventory_item_filter_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_mode_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_top_controls_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_prepared_meals_section.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'prepared_meal_filter_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -39,7 +49,7 @@ import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-enum _PreparedMealSortOrder { newestFirst, oldestFirst }
+enum _InventoryItemSortCriterion { added, eaten, alphabetical, quantity }
 
 class InventoryList extends ConsumerStatefulWidget {
   const InventoryList({
@@ -118,18 +128,18 @@ class InventoryList extends ConsumerStatefulWidget {
 
 class _InventoryListState extends ConsumerState<InventoryList> {
   static const _searchService = InventorySearchService();
-  static const _preparedMealsSectionStorageKey =
-      'inventory_prepared_meals_section_expanded';
+  static const _preparedMealSorter = PreparedMealSorter();
+  static const _viewPreferencesStore = InventoryListViewPreferencesStore();
   final _voiceSearchController = TextVoiceSearchController();
   var _mode = InventoryListMode.allItems;
   var _consumptionFilter = const InventoryConsumptionFilter();
-  var _hideFullyConsumedPreparedMeals = false;
-  var _showOnlyDepletedPreparedMeals = false;
-  var _showOnlyReadyPreparedMeals = false;
-  var _showOnlyIncompletePreparedMeals = false;
-  var _preparedMealSortOrder = _PreparedMealSortOrder.newestFirst;
+  var _inventoryItemSortMode = InventoryItemSortMode.recentlyAddedDescending;
+  var _preparedMealCompletionFilter = PreparedMealCompletionFilter.all;
+  var _preparedMealConsumptionFilter = PreparedMealConsumptionFilter.all;
+  var _preparedMealSortMode = PreparedMealSortMode.addedDescending;
+  var _isRecentItemsSectionExpanded = true;
   var _isPreparedMealsSectionExpanded = true;
-  var _didRestorePreparedMealsSectionExpanded = false;
+  late final AppPreferences _preferences;
   late final VoiceSearchService _voiceSearchService;
   late final TextEditingController _searchController;
   late List<InventoryItem> _visibleItems;
@@ -139,8 +149,10 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   @override
   void initState() {
     super.initState();
+    _preferences = ref.read(appPreferencesProvider);
     _voiceSearchService = ref.read(voiceSearchServiceProvider);
     _searchController = TextEditingController();
+    _restorePersistedViewPreferences();
     _recomputeVisibleContent();
   }
 
@@ -150,22 +162,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     if (!listEquals(oldWidget.items, widget.items) ||
         !listEquals(oldWidget.preparedMeals, widget.preparedMeals)) {
       _recomputeVisibleContent();
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_didRestorePreparedMealsSectionExpanded) {
-      return;
-    }
-    _didRestorePreparedMealsSectionExpanded = true;
-
-    final restoredState = PageStorage.maybeOf(
-      context,
-    )?.readState(context, identifier: _preparedMealsSectionStorageKey);
-    if (restoredState is bool) {
-      _isPreparedMealsSectionExpanded = restoredState;
     }
   }
 
@@ -190,8 +186,13 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     );
     final filteredItems = _visibleItems;
     final filteredPreparedMeals = _visiblePreparedMeals;
+    final hasItemSource = widget.items.isNotEmpty;
     final hasPreparedMealSource = widget.preparedMeals.isNotEmpty;
+    final hasRecentItems = filteredItems.isNotEmpty;
     final hasPreparedMeals = filteredPreparedMeals.isNotEmpty;
+    final showRecentItemsSection =
+        _mode == InventoryListMode.allItems &&
+        (hasItemSource || hasRecentItems || _hasInventoryItemFiltersActive);
     final showPreparedMealsSection =
         hasPreparedMeals ||
         (hasPreparedMealSource && _hasPreparedMealFiltersActive);
@@ -222,6 +223,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             meals: filteredPreparedMeals,
             expandedPreparedMealId: widget.expandedPreparedMealId,
             isExpanded: _isPreparedMealsSectionExpanded,
+            subtitle: _preparedMealSortModeLabel(l10n),
             isSelectionMode: widget.isSelectionMode,
             onShowFilters: () =>
                 _showPreparedMealFiltersSheet(context, l10n: l10n),
@@ -237,7 +239,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             onSavePreparedMealTemplate: widget.onSavePreparedMealTemplate,
             l10n: l10n,
           ),
-        if (hasAnySourceItems && _mode == InventoryListMode.allItems)
+        if (showRecentItemsSection)
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.xl,
@@ -248,10 +250,28 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             sliver: SliverToBoxAdapter(
               child: InventorySectionHeader(
                 title: l10n.inventoryRecentSectionTitle,
-                trailing: InventoryFilterButton(
-                  enabled: !widget.isSelectionMode,
-                  onPressed: () =>
-                      _showInventoryFiltersSheet(context, l10n: l10n),
+                subtitle: _inventoryItemSortModeLabel(l10n),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    InventoryFilterButton(
+                      key: const Key('inventory_items_filter_button'),
+                      enabled: !widget.isSelectionMode,
+                      onPressed: () =>
+                          _showInventoryFiltersSheet(context, l10n: l10n),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    InventorySectionExpandButton(
+                      key: const Key('inventory_items_section_expand_button'),
+                      isExpanded: _isRecentItemsSectionExpanded,
+                      semanticLabel: l10n.inventoryRecentSectionTitle,
+                      enabled: !widget.isSelectionMode,
+                      rotationKey: const Key(
+                        'inventory_items_section_expand_indicator',
+                      ),
+                      onPressed: _toggleRecentItemsSection,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -274,12 +294,13 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             onItemLongPress: widget.onItemLongPress,
             onSelectionToggle: widget.onSelectionToggle,
           )
-        else if (hasFilteredItems)
+        else if (hasFilteredItems && _isRecentItemsSectionExpanded)
           InventoryAllItemsSliver(
             items: filteredItems,
             l10n: l10n,
             showBarcodeMarkers: showBarcodeMarkers,
             activeShoppingListItemKeys: activeShoppingListItemKeys,
+            sortMode: _inventoryItemSortMode,
             onDeleteItem: widget.onDeleteItem,
             onEatItem: widget.onEatItem,
             onThrowAwayItem: widget.onThrowAwayItem,
@@ -289,6 +310,45 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             onSelectionToggle: widget.onSelectionToggle,
           ),
       ],
+    );
+  }
+
+  void _restorePersistedViewPreferences() {
+    final preferences = _viewPreferencesStore.readSync(_preferences);
+    _consumptionFilter = preferences.consumptionFilter;
+    _inventoryItemSortMode = preferences.inventoryItemSortMode;
+    _preparedMealCompletionFilter = preferences.preparedMealCompletionFilter;
+    _preparedMealConsumptionFilter = preferences.preparedMealConsumptionFilter;
+    _preparedMealSortMode = preferences.preparedMealSortMode;
+    _isRecentItemsSectionExpanded = preferences.isRecentItemsSectionExpanded;
+    _isPreparedMealsSectionExpanded =
+        preferences.isPreparedMealsSectionExpanded;
+  }
+
+  Future<void> _persistViewPreferences() {
+    return _viewPreferencesStore.save(
+      _preferences,
+      InventoryListViewPreferences(
+        consumptionFilter: _consumptionFilter,
+        inventoryItemSortMode: _inventoryItemSortMode,
+        preparedMealCompletionFilter: _preparedMealCompletionFilter,
+        preparedMealConsumptionFilter: _preparedMealConsumptionFilter,
+        preparedMealSortMode: _preparedMealSortMode,
+        isRecentItemsSectionExpanded: _isRecentItemsSectionExpanded,
+        isPreparedMealsSectionExpanded: _isPreparedMealsSectionExpanded,
+      ),
+    );
+  }
+
+  void _persistViewPreferencesSafely() {
+    unawaited(
+      _persistViewPreferences().catchError((Object error, StackTrace stack) {
+        log(
+          'Failed to persist inventory list view preferences.',
+          error: error,
+          stackTrace: stack,
+        );
+      }),
     );
   }
 
@@ -311,76 +371,56 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       );
       _recomputeVisibleContent();
     });
+    _persistViewPreferencesSafely();
   }
 
-  void _onHideFullyConsumedPreparedMealsChanged(
-    bool hideFullyConsumedPreparedMeals,
+  void _onInventoryItemSortModeChanged(InventoryItemSortMode sortMode) {
+    if (_inventoryItemSortMode == sortMode) {
+      return;
+    }
+    setState(() {
+      _inventoryItemSortMode = sortMode;
+    });
+    _persistViewPreferencesSafely();
+  }
+
+  void _onPreparedMealConsumptionFilterChanged(
+    PreparedMealConsumptionFilter filter,
   ) {
-    if (_hideFullyConsumedPreparedMeals == hideFullyConsumedPreparedMeals) {
+    if (_preparedMealConsumptionFilter == filter) {
       return;
     }
     setState(() {
-      _hideFullyConsumedPreparedMeals = hideFullyConsumedPreparedMeals;
-      if (hideFullyConsumedPreparedMeals) {
-        _showOnlyDepletedPreparedMeals = false;
-      }
+      _preparedMealConsumptionFilter = filter;
       _recomputeVisibleContent();
     });
+    _persistViewPreferencesSafely();
   }
 
-  void _onShowOnlyDepletedPreparedMealsChanged(
-    bool showOnlyDepletedPreparedMeals,
+  void _onPreparedMealCompletionFilterChanged(
+    PreparedMealCompletionFilter filter,
   ) {
-    if (_showOnlyDepletedPreparedMeals == showOnlyDepletedPreparedMeals) {
+    if (_preparedMealCompletionFilter == filter) {
       return;
     }
     setState(() {
-      _showOnlyDepletedPreparedMeals = showOnlyDepletedPreparedMeals;
-      if (showOnlyDepletedPreparedMeals) {
-        _hideFullyConsumedPreparedMeals = false;
-      }
+      _preparedMealCompletionFilter = filter;
       _recomputeVisibleContent();
     });
+    _persistViewPreferencesSafely();
   }
 
-  void _onShowOnlyReadyPreparedMealsChanged(bool showOnlyReadyPreparedMeals) {
-    if (_showOnlyReadyPreparedMeals == showOnlyReadyPreparedMeals) {
-      return;
-    }
-    setState(() {
-      _showOnlyReadyPreparedMeals = showOnlyReadyPreparedMeals;
-      if (showOnlyReadyPreparedMeals) {
-        _showOnlyIncompletePreparedMeals = false;
-      }
-      _recomputeVisibleContent();
-    });
-  }
-
-  void _onShowOnlyIncompletePreparedMealsChanged(
-    bool showOnlyIncompletePreparedMeals,
+  void _onPreparedMealSortModeChanged(
+    PreparedMealSortMode preparedMealSortMode,
   ) {
-    if (_showOnlyIncompletePreparedMeals == showOnlyIncompletePreparedMeals) {
+    if (_preparedMealSortMode == preparedMealSortMode) {
       return;
     }
     setState(() {
-      _showOnlyIncompletePreparedMeals = showOnlyIncompletePreparedMeals;
-      if (showOnlyIncompletePreparedMeals) {
-        _showOnlyReadyPreparedMeals = false;
-      }
+      _preparedMealSortMode = preparedMealSortMode;
       _recomputeVisibleContent();
     });
-  }
-
-  void _onPreparedMealSortOrderChanged(
-    _PreparedMealSortOrder preparedMealSortOrder,
-  ) {
-    if (_preparedMealSortOrder == preparedMealSortOrder) {
-      return;
-    }
-    setState(() {
-      _preparedMealSortOrder = preparedMealSortOrder;
-      _recomputeVisibleContent();
-    });
+    _persistViewPreferencesSafely();
   }
 
   void _onSearchQueryChanged(String value) {
@@ -393,6 +433,16 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     });
   }
 
+  void _toggleRecentItemsSection() {
+    if (widget.isSelectionMode) {
+      return;
+    }
+    setState(() {
+      _isRecentItemsSectionExpanded = !_isRecentItemsSectionExpanded;
+    });
+    _persistViewPreferencesSafely();
+  }
+
   void _togglePreparedMealsSection() {
     if (widget.isSelectionMode) {
       return;
@@ -400,38 +450,26 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     setState(() {
       _isPreparedMealsSectionExpanded = !_isPreparedMealsSectionExpanded;
     });
-    PageStorage.maybeOf(context)?.writeState(
-      context,
-      _isPreparedMealsSectionExpanded,
-      identifier: _preparedMealsSectionStorageKey,
-    );
+    _persistViewPreferencesSafely();
   }
 
   Future<void> _showInventoryFiltersSheet(
     BuildContext context, {
     required AppLocalizations l10n,
   }) {
-    var hideFullyConsumedItems = _consumptionFilter.hideFullyConsumedItems;
-
     return _showFiltersSheet(
       context,
       title: l10n.inventoryFiltersTitle,
-      childrenBuilder: (setModalState) {
-        return <Widget>[
-          InventoryFilterToggle(
-            key: const Key('inventory_items_hide_consumed_toggle'),
-            value: hideFullyConsumedItems,
-            enabled: !widget.isSelectionMode,
-            label: l10n.inventoryHideFullyConsumedItemsToggle,
-            onChanged: (nextHideFullyConsumedItems) {
-              setModalState(() {
-                hideFullyConsumedItems = nextHideFullyConsumedItems;
-              });
-              _onHideFullyConsumedItemsChanged(nextHideFullyConsumedItems);
-            },
-          ),
-        ];
-      },
+      subtitle: l10n.inventoryFiltersSubtitle,
+      actionLabel: l10n.inventoryFiltersShowResultsAction,
+      child: InventoryItemFilterSheet(
+        initialSortMode: _inventoryItemSortMode,
+        initialHideFullyConsumedItems:
+            _consumptionFilter.hideFullyConsumedItems,
+        enabled: !widget.isSelectionMode,
+        onSortModeChanged: _onInventoryItemSortModeChanged,
+        onHideFullyConsumedItemsChanged: _onHideFullyConsumedItemsChanged,
+      ),
     );
   }
 
@@ -439,131 +477,42 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     BuildContext context, {
     required AppLocalizations l10n,
   }) {
-    var hideFullyConsumedPreparedMeals = _hideFullyConsumedPreparedMeals;
-    var showOnlyDepletedPreparedMeals = _showOnlyDepletedPreparedMeals;
-    var showOnlyReadyPreparedMeals = _showOnlyReadyPreparedMeals;
-    var showOnlyIncompletePreparedMeals = _showOnlyIncompletePreparedMeals;
-    var preparedMealSortOrder = _preparedMealSortOrder;
-
     return _showFiltersSheet(
       context,
       title: l10n.preparedMealFiltersTitle,
-      childrenBuilder: (setModalState) {
-        return <Widget>[
-          InventoryFilterToggle(
-            key: const Key('prepared_meals_sort_newest_button'),
-            value: preparedMealSortOrder == _PreparedMealSortOrder.newestFirst,
-            enabled: !widget.isSelectionMode,
-            label: l10n.preparedMealSortNewestFirst,
-            onChanged: (newestFirst) {
-              final nextSortOrder = newestFirst
-                  ? _PreparedMealSortOrder.newestFirst
-                  : _PreparedMealSortOrder.oldestFirst;
-              setModalState(() {
-                preparedMealSortOrder = nextSortOrder;
-              });
-              _onPreparedMealSortOrderChanged(nextSortOrder);
-            },
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          InventoryFilterToggle(
-            key: const Key('prepared_meals_ready_only_toggle'),
-            value: showOnlyReadyPreparedMeals,
-            enabled: !widget.isSelectionMode,
-            label: l10n.preparedMealShowReadyOnlyToggle,
-            onChanged: (nextShowOnlyReadyPreparedMeals) {
-              setModalState(() {
-                showOnlyReadyPreparedMeals = nextShowOnlyReadyPreparedMeals;
-                if (nextShowOnlyReadyPreparedMeals) {
-                  showOnlyIncompletePreparedMeals = false;
-                }
-              });
-              _onShowOnlyReadyPreparedMealsChanged(
-                nextShowOnlyReadyPreparedMeals,
-              );
-            },
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          InventoryFilterToggle(
-            key: const Key('prepared_meals_incomplete_only_toggle'),
-            value: showOnlyIncompletePreparedMeals,
-            enabled: !widget.isSelectionMode,
-            label: l10n.preparedMealShowIncompleteOnlyToggle,
-            onChanged: (nextShowOnlyIncompletePreparedMeals) {
-              setModalState(() {
-                showOnlyIncompletePreparedMeals =
-                    nextShowOnlyIncompletePreparedMeals;
-                if (nextShowOnlyIncompletePreparedMeals) {
-                  showOnlyReadyPreparedMeals = false;
-                }
-              });
-              _onShowOnlyIncompletePreparedMealsChanged(
-                nextShowOnlyIncompletePreparedMeals,
-              );
-            },
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          InventoryFilterToggle(
-            key: const Key('prepared_meals_depleted_only_toggle'),
-            value: showOnlyDepletedPreparedMeals,
-            enabled: !widget.isSelectionMode,
-            label: l10n.preparedMealShowDepletedOnlyToggle,
-            onChanged: (nextShowOnlyDepletedPreparedMeals) {
-              setModalState(() {
-                showOnlyDepletedPreparedMeals =
-                    nextShowOnlyDepletedPreparedMeals;
-                if (nextShowOnlyDepletedPreparedMeals) {
-                  hideFullyConsumedPreparedMeals = false;
-                }
-              });
-              _onShowOnlyDepletedPreparedMealsChanged(
-                nextShowOnlyDepletedPreparedMeals,
-              );
-            },
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          InventoryFilterToggle(
-            key: const Key('prepared_meals_hide_consumed_toggle'),
-            value: hideFullyConsumedPreparedMeals,
-            enabled: !widget.isSelectionMode,
-            label: l10n.preparedMealHideFullyConsumedItemsToggle,
-            onChanged: (nextHideFullyConsumedPreparedMeals) {
-              setModalState(() {
-                hideFullyConsumedPreparedMeals =
-                    nextHideFullyConsumedPreparedMeals;
-                if (nextHideFullyConsumedPreparedMeals) {
-                  showOnlyDepletedPreparedMeals = false;
-                }
-              });
-              _onHideFullyConsumedPreparedMealsChanged(
-                nextHideFullyConsumedPreparedMeals,
-              );
-            },
-          ),
-        ];
-      },
+      subtitle: l10n.preparedMealFiltersSubtitle,
+      actionLabel: l10n.inventoryFiltersShowResultsAction,
+      child: PreparedMealFilterSheet(
+        initialCompletionFilter: _preparedMealCompletionFilter,
+        initialConsumptionFilter: _preparedMealConsumptionFilter,
+        initialSortMode: _preparedMealSortMode,
+        enabled: !widget.isSelectionMode,
+        onCompletionFilterChanged: _onPreparedMealCompletionFilterChanged,
+        onConsumptionFilterChanged: _onPreparedMealConsumptionFilterChanged,
+        onSortModeChanged: _onPreparedMealSortModeChanged,
+      ),
     );
   }
 
   Future<void> _showFiltersSheet(
     BuildContext context, {
     required String title,
-    required List<Widget> Function(StateSetter setModalState) childrenBuilder,
+    required String subtitle,
+    required String actionLabel,
+    required Widget child,
   }) {
     return showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return InventoryFiltersSheet(
-              title: title,
-              children: childrenBuilder(setModalState),
-            );
-          },
-        );
-      },
+      barrierColor: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.38),
+      builder: (context) => InventoryFiltersSheet(
+        title: title,
+        subtitle: subtitle,
+        actionLabel: actionLabel,
+        children: [child],
+      ),
     );
   }
 
@@ -589,7 +538,10 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       query: _searchQuery,
     );
     _visiblePreparedMeals = _searchService.filterPreparedMeals(
-      meals: _sortPreparedMeals(_applyPreparedMealFilter(widget.preparedMeals)),
+      meals: _preparedMealSorter.sort(
+        _applyPreparedMealFilter(widget.preparedMeals),
+        sortMode: _preparedMealSortMode,
+      ),
       query: _searchQuery,
     );
   }
@@ -597,43 +549,141 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   List<PreparedMeal> _applyPreparedMealFilter(List<PreparedMeal> meals) {
     final filteredMeals = List<PreparedMeal>.from(meals);
 
-    if (_showOnlyReadyPreparedMeals) {
-      filteredMeals.removeWhere((meal) => meal.hasPendingRecipeIngredients);
+    switch (_preparedMealCompletionFilter) {
+      case PreparedMealCompletionFilter.all:
+        break;
+      case PreparedMealCompletionFilter.readyOnly:
+        filteredMeals.removeWhere((meal) => meal.hasPendingRecipeIngredients);
+        break;
+      case PreparedMealCompletionFilter.incompleteOnly:
+        filteredMeals.removeWhere((meal) => !meal.hasPendingRecipeIngredients);
+        break;
     }
-    if (_showOnlyIncompletePreparedMeals) {
-      filteredMeals.removeWhere((meal) => !meal.hasPendingRecipeIngredients);
-    }
-    if (_showOnlyDepletedPreparedMeals) {
-      filteredMeals.removeWhere((meal) => !meal.isDepleted);
-    }
-    if (_hideFullyConsumedPreparedMeals) {
-      filteredMeals.removeWhere((meal) => meal.isDepleted);
+
+    switch (_preparedMealConsumptionFilter) {
+      case PreparedMealConsumptionFilter.all:
+        break;
+      case PreparedMealConsumptionFilter.hideConsumed:
+        filteredMeals.removeWhere((meal) => meal.isDepleted);
+        break;
+      case PreparedMealConsumptionFilter.depletedOnly:
+        filteredMeals.removeWhere((meal) => !meal.isDepleted);
+        break;
     }
     return filteredMeals;
   }
 
   bool get _hasPreparedMealFiltersActive {
-    return _hideFullyConsumedPreparedMeals ||
-        _showOnlyDepletedPreparedMeals ||
-        _showOnlyReadyPreparedMeals ||
-        _showOnlyIncompletePreparedMeals;
+    return _preparedMealCompletionFilter != PreparedMealCompletionFilter.all ||
+        _preparedMealConsumptionFilter != PreparedMealConsumptionFilter.all;
   }
 
-  List<PreparedMeal> _sortPreparedMeals(List<PreparedMeal> meals) {
-    meals.sort((left, right) {
-      final dateCompare = switch (_preparedMealSortOrder) {
-        _PreparedMealSortOrder.newestFirst => right.createdAt.compareTo(
-          left.createdAt,
-        ),
-        _PreparedMealSortOrder.oldestFirst => left.createdAt.compareTo(
-          right.createdAt,
-        ),
-      };
-      if (dateCompare != 0) {
-        return dateCompare;
-      }
-      return left.name.toLowerCase().compareTo(right.name.toLowerCase());
-    });
-    return meals;
+  bool get _hasInventoryItemFiltersActive {
+    return _consumptionFilter.hideFullyConsumedItems;
+  }
+
+  String _inventoryItemSortModeLabel(AppLocalizations l10n) {
+    final criterion = _inventoryItemSortCriterionFor(_inventoryItemSortMode);
+    final ascending = _isInventoryItemSortAscending(_inventoryItemSortMode);
+
+    return '${_inventoryItemSortCriterionLabel(l10n, criterion)} - '
+        '${_inventoryItemSortDirectionLabel(l10n, criterion: criterion, ascending: ascending)}';
+  }
+
+  String _preparedMealSortModeLabel(AppLocalizations l10n) {
+    final criterion = _preparedMealSorter.criterionFor(_preparedMealSortMode);
+    final ascending = _preparedMealSorter.isAscending(_preparedMealSortMode);
+
+    return '${_preparedMealSortCriterionLabel(l10n, criterion)} - '
+        '${_preparedMealSortDirectionLabel(l10n, criterion: criterion, ascending: ascending)}';
+  }
+
+  _InventoryItemSortCriterion _inventoryItemSortCriterionFor(
+    InventoryItemSortMode sortMode,
+  ) {
+    return switch (sortMode) {
+      InventoryItemSortMode.recentlyAddedDescending ||
+      InventoryItemSortMode.recentlyAddedAscending =>
+        _InventoryItemSortCriterion.added,
+      InventoryItemSortMode.recentlyEatenDescending ||
+      InventoryItemSortMode.recentlyEatenAscending =>
+        _InventoryItemSortCriterion.eaten,
+      InventoryItemSortMode.alphabeticalAscending ||
+      InventoryItemSortMode.alphabeticalDescending =>
+        _InventoryItemSortCriterion.alphabetical,
+      InventoryItemSortMode.availableAmountAscending ||
+      InventoryItemSortMode.availableAmountDescending =>
+        _InventoryItemSortCriterion.quantity,
+    };
+  }
+
+  bool _isInventoryItemSortAscending(InventoryItemSortMode sortMode) {
+    return switch (sortMode) {
+      InventoryItemSortMode.recentlyAddedAscending ||
+      InventoryItemSortMode.recentlyEatenAscending ||
+      InventoryItemSortMode.alphabeticalAscending ||
+      InventoryItemSortMode.availableAmountAscending => true,
+      InventoryItemSortMode.recentlyAddedDescending ||
+      InventoryItemSortMode.recentlyEatenDescending ||
+      InventoryItemSortMode.alphabeticalDescending ||
+      InventoryItemSortMode.availableAmountDescending => false,
+    };
+  }
+
+  String _inventoryItemSortCriterionLabel(
+    AppLocalizations l10n,
+    _InventoryItemSortCriterion criterion,
+  ) {
+    return switch (criterion) {
+      _InventoryItemSortCriterion.added => l10n.inventorySortAdded,
+      _InventoryItemSortCriterion.eaten => l10n.inventorySortEaten,
+      _InventoryItemSortCriterion.alphabetical =>
+        l10n.inventorySortAlphabetical,
+      _InventoryItemSortCriterion.quantity => l10n.inventorySortQuantity,
+    };
+  }
+
+  String _inventoryItemSortDirectionLabel(
+    AppLocalizations l10n, {
+    required _InventoryItemSortCriterion criterion,
+    required bool ascending,
+  }) {
+    if (criterion == _InventoryItemSortCriterion.alphabetical) {
+      return ascending
+          ? l10n.inventorySortDirectionAlphaAscending
+          : l10n.inventorySortDirectionAlphaDescending;
+    }
+
+    return ascending
+        ? l10n.inventorySortDirectionAscending
+        : l10n.inventorySortDirectionDescending;
+  }
+
+  String _preparedMealSortDirectionLabel(
+    AppLocalizations l10n, {
+    required PreparedMealSortCriterion criterion,
+    required bool ascending,
+  }) {
+    if (criterion == PreparedMealSortCriterion.alphabetical) {
+      return ascending
+          ? l10n.inventorySortDirectionAlphaAscending
+          : l10n.inventorySortDirectionAlphaDescending;
+    }
+
+    return ascending
+        ? l10n.inventorySortDirectionAscending
+        : l10n.inventorySortDirectionDescending;
+  }
+
+  String _preparedMealSortCriterionLabel(
+    AppLocalizations l10n,
+    PreparedMealSortCriterion criterion,
+  ) {
+    return switch (criterion) {
+      PreparedMealSortCriterion.added => l10n.inventorySortAdded,
+      PreparedMealSortCriterion.eaten => l10n.inventorySortEaten,
+      PreparedMealSortCriterion.alphabetical => l10n.inventorySortAlphabetical,
+      PreparedMealSortCriterion.quantity => l10n.inventorySortQuantity,
+    };
   }
 }
