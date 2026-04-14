@@ -392,7 +392,10 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(
-      find.byKey(const Key('prepared_meals_sort_newest_button')),
+      find.descendant(
+        of: find.byKey(const Key('prepared_meals_sort_newest_button')),
+        matching: find.byType(Switch),
+      ),
     );
     await tester.pumpAndSettle();
 

@@ -22,7 +22,7 @@ import 'package:yamt/features/inventory/presentation/models/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_all_items_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_consumed_items_toggle.dart';
+    'inventory_filter_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_mode_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -422,7 +422,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       title: l10n.inventoryFiltersTitle,
       childrenBuilder: (setModalState) {
         return <Widget>[
-          InventoryConsumedItemsToggle(
+          InventoryFilterToggle(
             key: const Key('inventory_items_hide_consumed_toggle'),
             value: hideFullyConsumedItems,
             enabled: !widget.isSelectionMode,
@@ -454,7 +454,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       title: l10n.preparedMealFiltersTitle,
       childrenBuilder: (setModalState) {
         return <Widget>[
-          InventoryConsumedItemsToggle(
+          InventoryFilterToggle(
             key: const Key('prepared_meals_sort_newest_button'),
             value: preparedMealSortOrder == _PreparedMealSortOrder.newestFirst,
             enabled: !widget.isSelectionMode,
@@ -470,7 +470,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             },
           ),
           const SizedBox(height: AppSpacing.lg),
-          InventoryConsumedItemsToggle(
+          InventoryFilterToggle(
             key: const Key('prepared_meals_ready_only_toggle'),
             value: showOnlyReadyPreparedMeals,
             enabled: !widget.isSelectionMode,
@@ -488,7 +488,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             },
           ),
           const SizedBox(height: AppSpacing.lg),
-          InventoryConsumedItemsToggle(
+          InventoryFilterToggle(
             key: const Key('prepared_meals_incomplete_only_toggle'),
             value: showOnlyIncompletePreparedMeals,
             enabled: !widget.isSelectionMode,
@@ -507,7 +507,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             },
           ),
           const SizedBox(height: AppSpacing.lg),
-          InventoryConsumedItemsToggle(
+          InventoryFilterToggle(
             key: const Key('prepared_meals_depleted_only_toggle'),
             value: showOnlyDepletedPreparedMeals,
             enabled: !widget.isSelectionMode,
@@ -526,7 +526,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             },
           ),
           const SizedBox(height: AppSpacing.lg),
-          InventoryConsumedItemsToggle(
+          InventoryFilterToggle(
             key: const Key('prepared_meals_hide_consumed_toggle'),
             value: hideFullyConsumedPreparedMeals,
             enabled: !widget.isSelectionMode,

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 
-class InventoryConsumedItemsToggle extends StatelessWidget {
-  const InventoryConsumedItemsToggle({
+class InventoryFilterToggle extends StatelessWidget {
+  const InventoryFilterToggle({
     super.key,
     required this.value,
     required this.enabled,
