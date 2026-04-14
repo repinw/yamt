@@ -126,6 +126,10 @@
   "inventoryFilterNotConsumed": "Nicht verbraucht",
   "inventoryHideFullyConsumedItemsToggle":
       "Komplett verbrauchte Artikel ausblenden",
+  "preparedMealFilterAction": "Mahlzeiten filtern",
+  "preparedMealFiltersTitle": "Mahlzeiten filtern",
+  "preparedMealHideFullyConsumedItemsToggle":
+      "Komplett verbrauchte Mahlzeiten ausblenden",
   "inventoryReceiptGroupTitle": "Beleg",
   "inventoryReceiptGroupNoReceipt": "Ohne Beleg",
   "inventoryReceiptGroupItems": "Artikel",

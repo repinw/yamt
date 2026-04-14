@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 
 class InventoryConsumedItemsToggle extends StatelessWidget {
   const InventoryConsumedItemsToggle({
     super.key,
     required this.value,
     required this.enabled,
-    required this.l10n,
+    required this.label,
     required this.onChanged,
   });
 
   final bool value;
   final bool enabled;
-  final AppLocalizations l10n;
+  final String label;
   final ValueChanged<bool> onChanged;
 
   @override
@@ -27,7 +26,7 @@ class InventoryConsumedItemsToggle extends StatelessWidget {
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 220),
             child: Text(
-              l10n.inventoryHideFullyConsumedItemsToggle,
+              label,
               textAlign: TextAlign.end,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 color: enabled

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_expand_indicator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_segmented_button_frame.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -47,10 +49,12 @@ class InventoryFilterButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     this.enabled = true,
+    this.tooltip,
   });
 
   final VoidCallback onPressed;
   final bool enabled;
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +62,7 @@ class InventoryFilterButton extends StatelessWidget {
 
     return IconButton(
       onPressed: enabled ? onPressed : null,
-      tooltip: l10n.inventoryFilterAction,
+      tooltip: tooltip ?? l10n.inventoryFilterAction,
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.zero,
       icon: const Icon(Icons.filter_list_rounded, size: 18),
@@ -70,11 +74,11 @@ class InventoryFiltersSheet extends StatelessWidget {
   const InventoryFiltersSheet({
     super.key,
     required this.title,
-    required this.consumptionToggle,
+    required this.children,
   });
 
   final String title;
-  final Widget consumptionToggle;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
@@ -108,10 +112,49 @@ class InventoryFiltersSheet extends StatelessWidget {
                 children: [
                   Text(title, style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: AppSpacing.lg),
-                  consumptionToggle,
+                  ...children,
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class InventorySectionExpandButton extends StatelessWidget {
+  const InventorySectionExpandButton({
+    super.key,
+    required this.isExpanded,
+    required this.semanticLabel,
+    required this.onPressed,
+    this.rotationKey,
+    this.enabled = true,
+  });
+
+  final bool isExpanded;
+  final String semanticLabel;
+  final VoidCallback onPressed;
+  final Key? rotationKey;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      expanded: isExpanded,
+      label: semanticLabel,
+      child: InkResponse(
+        onTap: enabled ? onPressed : null,
+        radius: 24,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xxs),
+          child: InventoryExpandIndicator(
+            isExpanded: isExpanded,
+            enabled: enabled,
+            rotationKey: rotationKey,
           ),
         ),
       ),

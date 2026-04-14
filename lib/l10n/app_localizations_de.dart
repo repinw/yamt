@@ -313,6 +313,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryHideFullyConsumedItemsToggle => 'Komplett verbrauchte Artikel ausblenden';
 
   @override
+  String get preparedMealFilterAction => 'Mahlzeiten filtern';
+
+  @override
+  String get preparedMealFiltersTitle => 'Mahlzeiten filtern';
+
+  @override
+  String get preparedMealHideFullyConsumedItemsToggle => 'Komplett verbrauchte Mahlzeiten ausblenden';
+
+  @override
   String get inventoryReceiptGroupTitle => 'Beleg';
 
   @override

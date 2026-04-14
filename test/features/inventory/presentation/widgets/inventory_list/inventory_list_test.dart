@@ -233,6 +233,71 @@ void main() {
     expect(find.text('Pasta Bowl'), findsNothing);
   });
 
+  testWidgets('prepared meals filter hides fully consumed meals', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildInventoryTestApp(
+        items: const <InventoryItem>[],
+        preparedMeals: <PreparedMeal>[
+          _preparedMeal(id: 'meal-1', name: 'Fresh Pasta'),
+          _preparedMeal(
+            id: 'meal-2',
+            name: 'Gone Soup',
+          ).copyWith(remainingPortions: 0),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Fresh Pasta'), findsOneWidget);
+    expect(find.text('Gone Soup'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
+    await tester.pumpAndSettle();
+
+    final before = tester.widget<Switch>(find.byType(Switch));
+    expect(before.value, isFalse);
+
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+
+    Navigator.of(tester.element(find.byType(InventoryList))).pop();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Fresh Pasta'), findsOneWidget);
+    expect(find.text('Gone Soup'), findsNothing);
+  });
+
+  testWidgets('prepared meals section can be collapsed', (tester) async {
+    await tester.pumpWidget(
+      _buildInventoryTestApp(
+        items: const <InventoryItem>[],
+        preparedMeals: <PreparedMeal>[
+          _preparedMeal(id: 'meal-1', name: 'Pasta Bowl'),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final initialRotation = tester.widget<AnimatedRotation>(
+      find.byKey(const Key('prepared_meals_section_expand_indicator')),
+    );
+    expect(initialRotation.turns, 0.5);
+    expect(find.text('Pasta Bowl'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const Key('prepared_meals_section_expand_button')),
+    );
+    await tester.pumpAndSettle();
+
+    final collapsedRotation = tester.widget<AnimatedRotation>(
+      find.byKey(const Key('prepared_meals_section_expand_indicator')),
+    );
+    expect(collapsedRotation.turns, 0);
+    expect(find.text('Pasta Bowl'), findsNothing);
+  });
+
   testWidgets(
     'inventory search matches compact voice query against spaced OCR name',
     (tester) async {
