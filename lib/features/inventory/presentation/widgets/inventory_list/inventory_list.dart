@@ -27,13 +27,15 @@ import 'package:yamt/features/inventory/presentation/models/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_all_items_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_filter_toggle.dart';
+    'inventory_item_filter_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_mode_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_top_controls_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_prepared_meals_section.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'prepared_meal_filter_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -441,226 +443,19 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     BuildContext context, {
     required AppLocalizations l10n,
   }) {
-    var hideFullyConsumedItems = _consumptionFilter.hideFullyConsumedItems;
-    var inventoryItemSortMode = _inventoryItemSortMode;
-
     return _showFiltersSheet(
       context,
       title: l10n.inventoryFiltersTitle,
       subtitle: l10n.inventoryFiltersSubtitle,
       actionLabel: l10n.inventoryFiltersShowResultsAction,
-      childrenBuilder: (setModalState) {
-        void updateSortMode(InventoryItemSortMode nextSortMode) {
-          setModalState(() {
-            inventoryItemSortMode = nextSortMode;
-          });
-          _onInventoryItemSortModeChanged(nextSortMode);
-        }
-
-        final selectedCriterion = _inventoryItemSortCriterionFor(
-          inventoryItemSortMode,
-        );
-        final sortAscending = _isInventoryItemSortAscending(
-          inventoryItemSortMode,
-        );
-
-        return <Widget>[
-          InventoryFiltersSectionLabel(label: l10n.inventorySortSectionTitle),
-          const SizedBox(height: AppSpacing.md),
-          InventorySortOptionCard(
-            key: const Key('inventory_items_sort_added_option'),
-            title: l10n.inventorySortAdded,
-            icon: Icons.access_time_rounded,
-            isSelected: selectedCriterion == _InventoryItemSortCriterion.added,
-            enabled: !widget.isSelectionMode,
-            directionLabel:
-                selectedCriterion == _InventoryItemSortCriterion.added
-                ? _inventoryItemSortDirectionLabel(
-                    l10n,
-                    criterion: _InventoryItemSortCriterion.added,
-                    ascending: sortAscending,
-                  )
-                : null,
-            directionButtonKey: const Key(
-              'inventory_items_sort_added_direction_button',
-            ),
-            sortDirectionAscending: sortAscending,
-            onSelect: () {
-              updateSortMode(
-                _inventoryItemSortModeFor(
-                  _InventoryItemSortCriterion.added,
-                  ascending: _defaultAscendingForCriterion(
-                    _InventoryItemSortCriterion.added,
-                  ),
-                ),
-              );
-            },
-            onToggleDirection:
-                selectedCriterion == _InventoryItemSortCriterion.added
-                ? () {
-                    updateSortMode(
-                      _inventoryItemSortModeFor(
-                        _InventoryItemSortCriterion.added,
-                        ascending: !sortAscending,
-                      ),
-                    );
-                  }
-                : null,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          InventorySortOptionCard(
-            key: const Key('inventory_items_sort_eaten_option'),
-            title: l10n.inventorySortEaten,
-            icon: Icons.restaurant_rounded,
-            isSelected: selectedCriterion == _InventoryItemSortCriterion.eaten,
-            enabled: !widget.isSelectionMode,
-            directionLabel:
-                selectedCriterion == _InventoryItemSortCriterion.eaten
-                ? _inventoryItemSortDirectionLabel(
-                    l10n,
-                    criterion: _InventoryItemSortCriterion.eaten,
-                    ascending: sortAscending,
-                  )
-                : null,
-            directionButtonKey: const Key(
-              'inventory_items_sort_eaten_direction_button',
-            ),
-            sortDirectionAscending: sortAscending,
-            onSelect: () {
-              updateSortMode(
-                _inventoryItemSortModeFor(
-                  _InventoryItemSortCriterion.eaten,
-                  ascending: _defaultAscendingForCriterion(
-                    _InventoryItemSortCriterion.eaten,
-                  ),
-                ),
-              );
-            },
-            onToggleDirection:
-                selectedCriterion == _InventoryItemSortCriterion.eaten
-                ? () {
-                    updateSortMode(
-                      _inventoryItemSortModeFor(
-                        _InventoryItemSortCriterion.eaten,
-                        ascending: !sortAscending,
-                      ),
-                    );
-                  }
-                : null,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          InventorySortOptionCard(
-            key: const Key('inventory_items_sort_alphabetical_option'),
-            title: l10n.inventorySortAlphabetical,
-            icon: Icons.sort_by_alpha_rounded,
-            isSelected:
-                selectedCriterion == _InventoryItemSortCriterion.alphabetical,
-            enabled: !widget.isSelectionMode,
-            directionLabel:
-                selectedCriterion == _InventoryItemSortCriterion.alphabetical
-                ? _inventoryItemSortDirectionLabel(
-                    l10n,
-                    criterion: _InventoryItemSortCriterion.alphabetical,
-                    ascending: sortAscending,
-                  )
-                : null,
-            directionButtonKey: const Key(
-              'inventory_items_sort_alphabetical_direction_button',
-            ),
-            sortDirectionAscending: sortAscending,
-            onSelect: () {
-              updateSortMode(
-                _inventoryItemSortModeFor(
-                  _InventoryItemSortCriterion.alphabetical,
-                  ascending: _defaultAscendingForCriterion(
-                    _InventoryItemSortCriterion.alphabetical,
-                  ),
-                ),
-              );
-            },
-            onToggleDirection:
-                selectedCriterion == _InventoryItemSortCriterion.alphabetical
-                ? () {
-                    updateSortMode(
-                      _inventoryItemSortModeFor(
-                        _InventoryItemSortCriterion.alphabetical,
-                        ascending: !sortAscending,
-                      ),
-                    );
-                  }
-                : null,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          InventorySortOptionCard(
-            key: const Key('inventory_items_sort_quantity_option'),
-            title: l10n.inventorySortQuantity,
-            icon: Icons.inventory_2_rounded,
-            isSelected:
-                selectedCriterion == _InventoryItemSortCriterion.quantity,
-            enabled: !widget.isSelectionMode,
-            directionLabel:
-                selectedCriterion == _InventoryItemSortCriterion.quantity
-                ? _inventoryItemSortDirectionLabel(
-                    l10n,
-                    criterion: _InventoryItemSortCriterion.quantity,
-                    ascending: sortAscending,
-                  )
-                : null,
-            directionButtonKey: const Key(
-              'inventory_items_sort_quantity_direction_button',
-            ),
-            sortDirectionAscending: sortAscending,
-            onSelect: () {
-              updateSortMode(
-                _inventoryItemSortModeFor(
-                  _InventoryItemSortCriterion.quantity,
-                  ascending: _defaultAscendingForCriterion(
-                    _InventoryItemSortCriterion.quantity,
-                  ),
-                ),
-              );
-            },
-            onToggleDirection:
-                selectedCriterion == _InventoryItemSortCriterion.quantity
-                ? () {
-                    updateSortMode(
-                      _inventoryItemSortModeFor(
-                        _InventoryItemSortCriterion.quantity,
-                        ascending: !sortAscending,
-                      ),
-                    );
-                  }
-                : null,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
-            child: Divider(
-              height: 1,
-              color: Theme.of(
-                context,
-              ).colorScheme.outlineVariant.withValues(alpha: 0.45),
-            ),
-          ),
-          InventoryFiltersSectionLabel(label: l10n.inventoryFilterSectionTitle),
-          const SizedBox(height: AppSpacing.md),
-          InventoryFilterToggle(
-            key: const Key('inventory_items_hide_consumed_toggle'),
-            value: hideFullyConsumedItems,
-            enabled: !widget.isSelectionMode,
-            label: l10n.inventoryHideConsumedFilterTitle,
-            description: l10n.inventoryHideConsumedFilterSubtitle,
-            icon: hideFullyConsumedItems
-                ? Icons.visibility_off_rounded
-                : Icons.visibility_rounded,
-            onChanged: (nextHideFullyConsumedItems) {
-              setModalState(() {
-                hideFullyConsumedItems = nextHideFullyConsumedItems;
-              });
-              _onHideFullyConsumedItemsChanged(nextHideFullyConsumedItems);
-            },
-          ),
-        ];
-      },
+      child: InventoryItemFilterSheet(
+        initialSortMode: _inventoryItemSortMode,
+        initialHideFullyConsumedItems:
+            _consumptionFilter.hideFullyConsumedItems,
+        enabled: !widget.isSelectionMode,
+        onSortModeChanged: _onInventoryItemSortModeChanged,
+        onHideFullyConsumedItemsChanged: _onHideFullyConsumedItemsChanged,
+      ),
     );
   }
 
@@ -668,286 +463,20 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     BuildContext context, {
     required AppLocalizations l10n,
   }) {
-    var preparedMealConsumptionFilter = _preparedMealConsumptionFilter;
-    var preparedMealCompletionFilter = _preparedMealCompletionFilter;
-    var preparedMealSortMode = _preparedMealSortMode;
-
     return _showFiltersSheet(
       context,
       title: l10n.preparedMealFiltersTitle,
       subtitle: l10n.preparedMealFiltersSubtitle,
       actionLabel: l10n.inventoryFiltersShowResultsAction,
-      childrenBuilder: (setModalState) {
-        void updatePreparedMealSortMode(PreparedMealSortMode nextSortMode) {
-          setModalState(() {
-            preparedMealSortMode = nextSortMode;
-          });
-          _onPreparedMealSortModeChanged(nextSortMode);
-        }
-
-        final selectedCriterion = _preparedMealSortCriterionFor(
-          preparedMealSortMode,
-        );
-        final sortAscending = _isPreparedMealSortAscending(
-          preparedMealSortMode,
-        );
-
-        return <Widget>[
-          InventoryFiltersSectionLabel(label: l10n.inventorySortSectionTitle),
-          const SizedBox(height: AppSpacing.md),
-          InventorySortOptionCard(
-            key: const Key('prepared_meals_sort_added_option'),
-            title: l10n.inventorySortAdded,
-            icon: Icons.access_time_rounded,
-            isSelected: selectedCriterion == _PreparedMealSortCriterion.added,
-            enabled: !widget.isSelectionMode,
-            directionLabel:
-                selectedCriterion == _PreparedMealSortCriterion.added
-                ? _preparedMealSortDirectionLabel(
-                    l10n,
-                    criterion: _PreparedMealSortCriterion.added,
-                    ascending: sortAscending,
-                  )
-                : null,
-            directionButtonKey: const Key(
-              'prepared_meals_sort_added_direction_button',
-            ),
-            sortDirectionAscending: sortAscending,
-            onSelect: () {
-              updatePreparedMealSortMode(
-                _preparedMealSortModeFor(
-                  _PreparedMealSortCriterion.added,
-                  ascending: _defaultAscendingForPreparedMealSortCriterion(
-                    _PreparedMealSortCriterion.added,
-                  ),
-                ),
-              );
-            },
-            onToggleDirection:
-                selectedCriterion == _PreparedMealSortCriterion.added
-                ? () {
-                    updatePreparedMealSortMode(
-                      _preparedMealSortModeFor(
-                        _PreparedMealSortCriterion.added,
-                        ascending: !sortAscending,
-                      ),
-                    );
-                  }
-                : null,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          InventorySortOptionCard(
-            key: const Key('prepared_meals_sort_eaten_option'),
-            title: l10n.inventorySortEaten,
-            icon: Icons.restaurant_rounded,
-            isSelected: selectedCriterion == _PreparedMealSortCriterion.eaten,
-            enabled: !widget.isSelectionMode,
-            directionLabel:
-                selectedCriterion == _PreparedMealSortCriterion.eaten
-                ? _preparedMealSortDirectionLabel(
-                    l10n,
-                    criterion: _PreparedMealSortCriterion.eaten,
-                    ascending: sortAscending,
-                  )
-                : null,
-            directionButtonKey: const Key(
-              'prepared_meals_sort_eaten_direction_button',
-            ),
-            sortDirectionAscending: sortAscending,
-            onSelect: () {
-              updatePreparedMealSortMode(
-                _preparedMealSortModeFor(
-                  _PreparedMealSortCriterion.eaten,
-                  ascending: _defaultAscendingForPreparedMealSortCriterion(
-                    _PreparedMealSortCriterion.eaten,
-                  ),
-                ),
-              );
-            },
-            onToggleDirection:
-                selectedCriterion == _PreparedMealSortCriterion.eaten
-                ? () {
-                    updatePreparedMealSortMode(
-                      _preparedMealSortModeFor(
-                        _PreparedMealSortCriterion.eaten,
-                        ascending: !sortAscending,
-                      ),
-                    );
-                  }
-                : null,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          InventorySortOptionCard(
-            key: const Key('prepared_meals_sort_alphabetical_option'),
-            title: l10n.inventorySortAlphabetical,
-            icon: Icons.sort_by_alpha_rounded,
-            isSelected:
-                selectedCriterion == _PreparedMealSortCriterion.alphabetical,
-            enabled: !widget.isSelectionMode,
-            directionLabel:
-                selectedCriterion == _PreparedMealSortCriterion.alphabetical
-                ? _preparedMealSortDirectionLabel(
-                    l10n,
-                    criterion: _PreparedMealSortCriterion.alphabetical,
-                    ascending: sortAscending,
-                  )
-                : null,
-            directionButtonKey: const Key(
-              'prepared_meals_sort_alphabetical_direction_button',
-            ),
-            sortDirectionAscending: sortAscending,
-            onSelect: () {
-              updatePreparedMealSortMode(
-                _preparedMealSortModeFor(
-                  _PreparedMealSortCriterion.alphabetical,
-                  ascending: _defaultAscendingForPreparedMealSortCriterion(
-                    _PreparedMealSortCriterion.alphabetical,
-                  ),
-                ),
-              );
-            },
-            onToggleDirection:
-                selectedCriterion == _PreparedMealSortCriterion.alphabetical
-                ? () {
-                    updatePreparedMealSortMode(
-                      _preparedMealSortModeFor(
-                        _PreparedMealSortCriterion.alphabetical,
-                        ascending: !sortAscending,
-                      ),
-                    );
-                  }
-                : null,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          InventorySortOptionCard(
-            key: const Key('prepared_meals_sort_quantity_option'),
-            title: l10n.inventorySortQuantity,
-            icon: Icons.inventory_2_rounded,
-            isSelected:
-                selectedCriterion == _PreparedMealSortCriterion.quantity,
-            enabled: !widget.isSelectionMode,
-            directionLabel:
-                selectedCriterion == _PreparedMealSortCriterion.quantity
-                ? _preparedMealSortDirectionLabel(
-                    l10n,
-                    criterion: _PreparedMealSortCriterion.quantity,
-                    ascending: sortAscending,
-                  )
-                : null,
-            directionButtonKey: const Key(
-              'prepared_meals_sort_quantity_direction_button',
-            ),
-            sortDirectionAscending: sortAscending,
-            onSelect: () {
-              updatePreparedMealSortMode(
-                _preparedMealSortModeFor(
-                  _PreparedMealSortCriterion.quantity,
-                  ascending: _defaultAscendingForPreparedMealSortCriterion(
-                    _PreparedMealSortCriterion.quantity,
-                  ),
-                ),
-              );
-            },
-            onToggleDirection:
-                selectedCriterion == _PreparedMealSortCriterion.quantity
-                ? () {
-                    updatePreparedMealSortMode(
-                      _preparedMealSortModeFor(
-                        _PreparedMealSortCriterion.quantity,
-                        ascending: !sortAscending,
-                      ),
-                    );
-                  }
-                : null,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
-            child: Divider(
-              height: 1,
-              color: Theme.of(
-                context,
-              ).colorScheme.outlineVariant.withValues(alpha: 0.45),
-            ),
-          ),
-          InventoryFiltersSectionLabel(label: l10n.inventoryFilterSectionTitle),
-          const SizedBox(height: AppSpacing.md),
-          InventoryFilterToggle(
-            key: const Key('prepared_meals_ready_only_toggle'),
-            value:
-                preparedMealCompletionFilter ==
-                PreparedMealCompletionFilter.readyOnly,
-            enabled: !widget.isSelectionMode,
-            label: l10n.preparedMealShowReadyOnlyToggle,
-            icon: Icons.check_circle_outline_rounded,
-            onChanged: (isEnabled) {
-              final nextFilter = isEnabled
-                  ? PreparedMealCompletionFilter.readyOnly
-                  : PreparedMealCompletionFilter.all;
-              setModalState(() {
-                preparedMealCompletionFilter = nextFilter;
-              });
-              _onPreparedMealCompletionFilterChanged(nextFilter);
-            },
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          InventoryFilterToggle(
-            key: const Key('prepared_meals_incomplete_only_toggle'),
-            value:
-                preparedMealCompletionFilter ==
-                PreparedMealCompletionFilter.incompleteOnly,
-            enabled: !widget.isSelectionMode,
-            label: l10n.preparedMealShowIncompleteOnlyToggle,
-            icon: Icons.rule_folder_outlined,
-            onChanged: (isEnabled) {
-              final nextFilter = isEnabled
-                  ? PreparedMealCompletionFilter.incompleteOnly
-                  : PreparedMealCompletionFilter.all;
-              setModalState(() {
-                preparedMealCompletionFilter = nextFilter;
-              });
-              _onPreparedMealCompletionFilterChanged(nextFilter);
-            },
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          InventoryFilterToggle(
-            key: const Key('prepared_meals_depleted_only_toggle'),
-            value:
-                preparedMealConsumptionFilter ==
-                PreparedMealConsumptionFilter.depletedOnly,
-            enabled: !widget.isSelectionMode,
-            label: l10n.preparedMealShowDepletedOnlyToggle,
-            icon: Icons.remove_circle_outline_rounded,
-            onChanged: (isEnabled) {
-              final nextFilter = isEnabled
-                  ? PreparedMealConsumptionFilter.depletedOnly
-                  : PreparedMealConsumptionFilter.all;
-              setModalState(() {
-                preparedMealConsumptionFilter = nextFilter;
-              });
-              _onPreparedMealConsumptionFilterChanged(nextFilter);
-            },
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          InventoryFilterToggle(
-            key: const Key('prepared_meals_hide_consumed_toggle'),
-            value:
-                preparedMealConsumptionFilter ==
-                PreparedMealConsumptionFilter.hideConsumed,
-            enabled: !widget.isSelectionMode,
-            label: l10n.preparedMealHideFullyConsumedItemsToggle,
-            icon: Icons.visibility_off_rounded,
-            onChanged: (isEnabled) {
-              final nextFilter = isEnabled
-                  ? PreparedMealConsumptionFilter.hideConsumed
-                  : PreparedMealConsumptionFilter.all;
-              setModalState(() {
-                preparedMealConsumptionFilter = nextFilter;
-              });
-              _onPreparedMealConsumptionFilterChanged(nextFilter);
-            },
-          ),
-        ];
-      },
+      child: PreparedMealFilterSheet(
+        initialCompletionFilter: _preparedMealCompletionFilter,
+        initialConsumptionFilter: _preparedMealConsumptionFilter,
+        initialSortMode: _preparedMealSortMode,
+        enabled: !widget.isSelectionMode,
+        onCompletionFilterChanged: _onPreparedMealCompletionFilterChanged,
+        onConsumptionFilterChanged: _onPreparedMealConsumptionFilterChanged,
+        onSortModeChanged: _onPreparedMealSortModeChanged,
+      ),
     );
   }
 
@@ -956,7 +485,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     required String title,
     required String subtitle,
     required String actionLabel,
-    required List<Widget> Function(StateSetter setModalState) childrenBuilder,
+    required Widget child,
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -964,18 +493,12 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.38),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return InventoryFiltersSheet(
-              title: title,
-              subtitle: subtitle,
-              actionLabel: actionLabel,
-              children: childrenBuilder(setModalState),
-            );
-          },
-        );
-      },
+      builder: (context) => InventoryFiltersSheet(
+        title: title,
+        subtitle: subtitle,
+        actionLabel: actionLabel,
+        children: [child],
+      ),
     );
   }
 
@@ -1090,39 +613,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     };
   }
 
-  bool _defaultAscendingForCriterion(_InventoryItemSortCriterion criterion) {
-    return switch (criterion) {
-      _InventoryItemSortCriterion.added ||
-      _InventoryItemSortCriterion.eaten => false,
-      _InventoryItemSortCriterion.alphabetical ||
-      _InventoryItemSortCriterion.quantity => true,
-    };
-  }
-
-  InventoryItemSortMode _inventoryItemSortModeFor(
-    _InventoryItemSortCriterion criterion, {
-    required bool ascending,
-  }) {
-    return switch ((criterion, ascending)) {
-      (_InventoryItemSortCriterion.added, true) =>
-        InventoryItemSortMode.recentlyAddedAscending,
-      (_InventoryItemSortCriterion.added, false) =>
-        InventoryItemSortMode.recentlyAddedDescending,
-      (_InventoryItemSortCriterion.eaten, true) =>
-        InventoryItemSortMode.recentlyEatenAscending,
-      (_InventoryItemSortCriterion.eaten, false) =>
-        InventoryItemSortMode.recentlyEatenDescending,
-      (_InventoryItemSortCriterion.alphabetical, true) =>
-        InventoryItemSortMode.alphabeticalAscending,
-      (_InventoryItemSortCriterion.alphabetical, false) =>
-        InventoryItemSortMode.alphabeticalDescending,
-      (_InventoryItemSortCriterion.quantity, true) =>
-        InventoryItemSortMode.availableAmountAscending,
-      (_InventoryItemSortCriterion.quantity, false) =>
-        InventoryItemSortMode.availableAmountDescending,
-    };
-  }
-
   String _inventoryItemSortCriterionLabel(
     AppLocalizations l10n,
     _InventoryItemSortCriterion criterion,
@@ -1179,41 +669,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       PreparedMealSortMode.eatenDescending ||
       PreparedMealSortMode.alphabeticalDescending ||
       PreparedMealSortMode.quantityDescending => false,
-    };
-  }
-
-  bool _defaultAscendingForPreparedMealSortCriterion(
-    _PreparedMealSortCriterion criterion,
-  ) {
-    return switch (criterion) {
-      _PreparedMealSortCriterion.added ||
-      _PreparedMealSortCriterion.eaten => false,
-      _PreparedMealSortCriterion.alphabetical => true,
-      _PreparedMealSortCriterion.quantity => true,
-    };
-  }
-
-  PreparedMealSortMode _preparedMealSortModeFor(
-    _PreparedMealSortCriterion criterion, {
-    required bool ascending,
-  }) {
-    return switch ((criterion, ascending)) {
-      (_PreparedMealSortCriterion.added, true) =>
-        PreparedMealSortMode.addedAscending,
-      (_PreparedMealSortCriterion.added, false) =>
-        PreparedMealSortMode.addedDescending,
-      (_PreparedMealSortCriterion.eaten, true) =>
-        PreparedMealSortMode.eatenAscending,
-      (_PreparedMealSortCriterion.eaten, false) =>
-        PreparedMealSortMode.eatenDescending,
-      (_PreparedMealSortCriterion.alphabetical, true) =>
-        PreparedMealSortMode.alphabeticalAscending,
-      (_PreparedMealSortCriterion.alphabetical, false) =>
-        PreparedMealSortMode.alphabeticalDescending,
-      (_PreparedMealSortCriterion.quantity, true) =>
-        PreparedMealSortMode.quantityAscending,
-      (_PreparedMealSortCriterion.quantity, false) =>
-        PreparedMealSortMode.quantityDescending,
     };
   }
 
