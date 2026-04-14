@@ -167,7 +167,7 @@ class InventoryListViewPreferencesStore {
   }
 
   T _enumFromName<T extends Enum>(
-    List<T> values,
+    Iterable<T> values,
     String? storedName,
     T fallback,
   ) {
@@ -175,11 +175,6 @@ class InventoryListViewPreferencesStore {
       return fallback;
     }
 
-    for (final value in values) {
-      if (value.name == storedName) {
-        return value;
-      }
-    }
-    return fallback;
+    return values.asNameMap()[storedName] ?? fallback;
   }
 }
