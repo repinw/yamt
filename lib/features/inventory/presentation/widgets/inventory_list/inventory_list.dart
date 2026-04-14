@@ -316,8 +316,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   void _onHideFullyConsumedPreparedMealsChanged(
     bool hideFullyConsumedPreparedMeals,
   ) {
-    if (_hideFullyConsumedPreparedMeals == hideFullyConsumedPreparedMeals &&
-        (!hideFullyConsumedPreparedMeals || !_showOnlyDepletedPreparedMeals)) {
+    if (_hideFullyConsumedPreparedMeals == hideFullyConsumedPreparedMeals) {
       return;
     }
     setState(() {
@@ -332,8 +331,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   void _onShowOnlyDepletedPreparedMealsChanged(
     bool showOnlyDepletedPreparedMeals,
   ) {
-    if (_showOnlyDepletedPreparedMeals == showOnlyDepletedPreparedMeals &&
-        (!showOnlyDepletedPreparedMeals || !_hideFullyConsumedPreparedMeals)) {
+    if (_showOnlyDepletedPreparedMeals == showOnlyDepletedPreparedMeals) {
       return;
     }
     setState(() {
@@ -346,8 +344,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   }
 
   void _onShowOnlyReadyPreparedMealsChanged(bool showOnlyReadyPreparedMeals) {
-    if (_showOnlyReadyPreparedMeals == showOnlyReadyPreparedMeals &&
-        (!showOnlyReadyPreparedMeals || !_showOnlyIncompletePreparedMeals)) {
+    if (_showOnlyReadyPreparedMeals == showOnlyReadyPreparedMeals) {
       return;
     }
     setState(() {
@@ -362,8 +359,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   void _onShowOnlyIncompletePreparedMealsChanged(
     bool showOnlyIncompletePreparedMeals,
   ) {
-    if (_showOnlyIncompletePreparedMeals == showOnlyIncompletePreparedMeals &&
-        (!showOnlyIncompletePreparedMeals || !_showOnlyReadyPreparedMeals)) {
+    if (_showOnlyIncompletePreparedMeals == showOnlyIncompletePreparedMeals) {
       return;
     }
     setState(() {

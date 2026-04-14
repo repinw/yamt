@@ -325,7 +325,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealShowReadyOnlyToggle => 'Nur fertige anzeigen';
 
   @override
-  String get preparedMealShowIncompleteOnlyToggle => 'Nur unvollständige anzeigen';
+  String get preparedMealShowIncompleteOnlyToggle => 'Vollständige ausblenden';
 
   @override
   String get preparedMealShowDepletedOnlyToggle => 'Nur aufgebrauchte anzeigen';

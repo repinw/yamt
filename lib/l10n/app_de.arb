@@ -130,7 +130,7 @@
   "preparedMealFiltersTitle": "Filter",
   "preparedMealSortNewestFirst": "Neueste zuerst",
   "preparedMealShowReadyOnlyToggle": "Nur fertige anzeigen",
-  "preparedMealShowIncompleteOnlyToggle": "Nur unvollständige anzeigen",
+  "preparedMealShowIncompleteOnlyToggle": "Vollständige ausblenden",
   "preparedMealShowDepletedOnlyToggle": "Nur aufgebrauchte anzeigen",
   "preparedMealHideFullyConsumedItemsToggle":
       "Komplett verbrauchte ausblenden",
