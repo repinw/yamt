@@ -6,6 +6,8 @@ import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row_list_entry.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
@@ -117,6 +119,15 @@ PreparedMeal _preparedMeal({
     updatedAt: timestamp,
     components: const [],
   );
+}
+
+List<String> _visibleInventoryItemNames(WidgetTester tester) {
+  return tester
+      .widgetList<InventoryItemRowListEntry>(
+        find.byType(InventoryItemRowListEntry),
+      )
+      .map((entry) => entry.item.name)
+      .toList(growable: false);
 }
 
 class _FakeManualProductSpeechService implements VoiceSearchService {
@@ -240,7 +251,7 @@ void main() {
     expect(find.text('Open milk'), findsOneWidget);
     expect(find.text('Empty jar'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.filter_list_rounded));
+    await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
     await tester.pumpAndSettle();
 
     final before = tester.widget<Switch>(
@@ -310,6 +321,169 @@ void main() {
     expect(find.text('Apple Juice'), findsNothing);
     expect(find.text('Pasta Bowl'), findsNothing);
   });
+
+  testWidgets(
+    'inventory items sort can switch between added descending and ascending',
+    (tester) async {
+      await tester.pumpWidget(
+        _buildTestApp(
+          items: <InventoryItem>[
+            _item(
+              id: 'apple',
+              name: 'Apple',
+              quantity: 1,
+              initialQuantity: 1,
+            ).copyWith(entryDate: DateTime.parse('2026-02-20T08:00:00Z')),
+            _item(
+              id: 'zucchini',
+              name: 'Zucchini',
+              quantity: 1,
+              initialQuantity: 1,
+            ).copyWith(entryDate: DateTime.parse('2026-02-21T08:00:00Z')),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Foods'), findsOneWidget);
+      expect(find.text('Recently added descending'), findsOneWidget);
+      expect(_visibleInventoryItemNames(tester), <String>['Zucchini', 'Apple']);
+
+      await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(
+          const Key('inventory_items_sort_recently_added_ascending_option'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      Navigator.of(tester.element(find.byType(InventoryList))).pop();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Foods'), findsOneWidget);
+      expect(find.text('Recently added ascending'), findsOneWidget);
+      expect(_visibleInventoryItemNames(tester), <String>['Apple', 'Zucchini']);
+    },
+  );
+
+  testWidgets(
+    'inventory items sort can switch between eaten descending and ascending',
+    (tester) async {
+      await tester.pumpWidget(
+        _buildTestApp(
+          items: <InventoryItem>[
+            _item(
+              id: 'old',
+              name: 'Old',
+              quantity: 1,
+              initialQuantity: 1,
+            ).copyWith(lastConsumedAt: DateTime.parse('2026-02-21T08:00:00Z')),
+            _item(
+              id: 'recent',
+              name: 'Recent',
+              quantity: 1,
+              initialQuantity: 1,
+            ).copyWith(lastConsumedAt: DateTime.parse('2026-02-22T08:00:00Z')),
+            _item(id: 'never', name: 'Never', quantity: 1, initialQuantity: 1),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(
+          const Key('inventory_items_sort_recently_eaten_descending_option'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      Navigator.of(tester.element(find.byType(InventoryList))).pop();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Recently eaten descending'), findsOneWidget);
+      expect(_visibleInventoryItemNames(tester), <String>[
+        'Recent',
+        'Old',
+        'Never',
+      ]);
+
+      await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(
+          const Key('inventory_items_sort_recently_eaten_ascending_option'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      Navigator.of(tester.element(find.byType(InventoryList))).pop();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Recently eaten ascending'), findsOneWidget);
+      expect(_visibleInventoryItemNames(tester), <String>[
+        'Old',
+        'Recent',
+        'Never',
+      ]);
+    },
+  );
+
+  testWidgets(
+    'inventory items sort can switch by available amount percentage',
+    (tester) async {
+      await tester.pumpWidget(
+        _buildTestApp(
+          items: <InventoryItem>[
+            _item(id: 'full', name: 'Full', quantity: 4, initialQuantity: 4),
+            _item(id: 'half', name: 'Half', quantity: 2, initialQuantity: 4),
+            _item(id: 'empty', name: 'Empty', quantity: 0, initialQuantity: 4),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(
+          const Key('inventory_items_sort_available_amount_ascending_option'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      Navigator.of(tester.element(find.byType(InventoryList))).pop();
+      await tester.pumpAndSettle();
+
+      expect(_visibleInventoryItemNames(tester), <String>[
+        'Empty',
+        'Half',
+        'Full',
+      ]);
+      expect(find.text('Available amount ascending'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(
+          const Key('inventory_items_sort_available_amount_descending_option'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      Navigator.of(tester.element(find.byType(InventoryList))).pop();
+      await tester.pumpAndSettle();
+
+      expect(_visibleInventoryItemNames(tester), <String>[
+        'Full',
+        'Half',
+        'Empty',
+      ]);
+      expect(find.text('Available amount descending'), findsOneWidget);
+    },
+  );
 
   testWidgets('prepared meals filter hides fully consumed meals', (
     tester,
@@ -559,6 +733,103 @@ void main() {
     expect(find.text('Ready Meal'), findsNothing);
     expect(find.text('Depleted Meal'), findsOneWidget);
   });
+
+  testWidgets('inventory items section can be collapsed', (tester) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        items: <InventoryItem>[
+          _item(id: 'milk', name: 'Open milk', quantity: 1, initialQuantity: 2),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final initialRotation = tester.widget<AnimatedRotation>(
+      find.byKey(const Key('inventory_items_section_expand_indicator')),
+    );
+    expect(initialRotation.turns, 0.5);
+    expect(find.text('Open milk'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const Key('inventory_items_section_expand_button')),
+    );
+    await tester.pumpAndSettle();
+
+    final collapsedRotation = tester.widget<AnimatedRotation>(
+      find.byKey(const Key('inventory_items_section_expand_indicator')),
+    );
+    expect(collapsedRotation.turns, 0);
+    expect(find.text('Open milk'), findsNothing);
+  });
+
+  testWidgets(
+    'inventory items section restores collapse state from page storage',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            barcodeBackfillFeatureFlagsProvider.overrideWithValue(
+              const BarcodeBackfillFeatureFlags(
+                showInventoryBarcodeMarkers: false,
+                enableQueueBackfill: false,
+              ),
+            ),
+            activeShoppingListItemKeysProvider.overrideWithValue(
+              const <ShoppingListItemMatchKey>{},
+            ),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: _InventoryListPageStorageHarness(
+                items: <InventoryItem>[
+                  _item(
+                    id: 'milk',
+                    name: 'Open milk',
+                    quantity: 1,
+                    initialQuantity: 2,
+                  ),
+                ],
+                preparedMeals: const <PreparedMeal>[],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const Key('inventory_items_section_expand_button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        tester
+            .widget<AnimatedRotation>(
+              find.byKey(const Key('inventory_items_section_expand_indicator')),
+            )
+            .turns,
+        0,
+      );
+      expect(find.text('Open milk'), findsNothing);
+
+      await tester.tap(find.byKey(const Key('toggle_inventory_list_mount')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('toggle_inventory_list_mount')));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester
+            .widget<AnimatedRotation>(
+              find.byKey(const Key('inventory_items_section_expand_indicator')),
+            )
+            .turns,
+        0,
+      );
+      expect(find.text('Open milk'), findsNothing);
+    },
+  );
 
   testWidgets('prepared meals section can be collapsed', (tester) async {
     await tester.pumpWidget(

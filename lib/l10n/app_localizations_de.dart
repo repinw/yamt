@@ -283,7 +283,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryListModeAllItems => 'Alle Lebensmittel';
 
   @override
-  String get inventoryRecentSectionTitle => 'Kürzlich hinzugefügt';
+  String get inventoryRecentSectionTitle => 'Lebensmittel';
 
   @override
   String get inventorySearchLabel => 'Im Vorrat suchen';
@@ -296,6 +296,30 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryFiltersTitle => 'Artikel filtern';
+
+  @override
+  String get inventorySortSectionTitle => 'Sortierung';
+
+  @override
+  String get inventorySortRecentlyAddedDescending => 'Kürzlich hinzugefügt absteigend';
+
+  @override
+  String get inventorySortRecentlyAddedAscending => 'Kürzlich hinzugefügt aufsteigend';
+
+  @override
+  String get inventorySortRecentlyEatenDescending => 'Kürzlich gegessen absteigend';
+
+  @override
+  String get inventorySortRecentlyEatenAscending => 'Kürzlich gegessen aufsteigend';
+
+  @override
+  String get inventorySortAlphabetical => 'Alphabetisch';
+
+  @override
+  String get inventorySortAvailableAmountAscending => 'Nach verfügbarer Menge aufsteigend';
+
+  @override
+  String get inventorySortAvailableAmountDescending => 'Nach verfügbarer Menge absteigend';
 
   @override
   String get inventoryNutritionCaloriesShortLabel => 'Kcal';

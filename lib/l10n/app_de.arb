@@ -115,11 +115,23 @@
   "inventoryReceiptSaveFailed": "Positionen konnten nicht gespeichert werden.",
   "inventoryListModeByReceipt": "Nach Beleg",
   "inventoryListModeAllItems": "Alle Lebensmittel",
-  "inventoryRecentSectionTitle": "Kürzlich hinzugefügt",
+  "inventoryRecentSectionTitle": "Lebensmittel",
   "inventorySearchLabel": "Im Vorrat suchen",
   "inventorySearchClearAction": "Suche leeren",
   "inventoryFilterAction": "Artikel filtern",
   "inventoryFiltersTitle": "Artikel filtern",
+  "inventorySortSectionTitle": "Sortierung",
+  "inventorySortRecentlyAddedDescending":
+      "Kürzlich hinzugefügt absteigend",
+  "inventorySortRecentlyAddedAscending":
+      "Kürzlich hinzugefügt aufsteigend",
+  "inventorySortRecentlyEatenDescending": "Kürzlich gegessen absteigend",
+  "inventorySortRecentlyEatenAscending": "Kürzlich gegessen aufsteigend",
+  "inventorySortAlphabetical": "Alphabetisch",
+  "inventorySortAvailableAmountAscending":
+      "Nach verfügbarer Menge aufsteigend",
+  "inventorySortAvailableAmountDescending":
+      "Nach verfügbarer Menge absteigend",
   "inventoryNutritionCaloriesShortLabel": "Kcal",
   "inventoryNutritionCarbsShortLabel": "KH",
   "inventoryFilterConsumed": "Verbraucht",

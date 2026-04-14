@@ -1,27 +1,38 @@
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_sort_mode.dart';
 
 class InventorySortedItemsCache {
   const InventorySortedItemsCache({
     required this.signature,
     required this.sortedItemIds,
+    required this.sortMode,
   });
 
-  factory InventorySortedItemsCache.fromItems(List<InventoryItem> items) {
+  factory InventorySortedItemsCache.fromItems(
+    List<InventoryItem> items, {
+    required InventoryItemSortMode sortMode,
+  }) {
     return InventorySortedItemsCache(
-      signature: _inventorySortSignature(items),
-      sortedItemIds: _sortedInventoryItemIds(items),
+      signature: _inventorySortSignature(items, sortMode: sortMode),
+      sortedItemIds: _sortedInventoryItemIds(items, sortMode: sortMode),
+      sortMode: sortMode,
     );
   }
 
   final String signature;
   final List<String> sortedItemIds;
+  final InventoryItemSortMode sortMode;
 
-  InventorySortedItemsCache update(List<InventoryItem> items) {
-    final nextSignature = _inventorySortSignature(items);
+  InventorySortedItemsCache update(
+    List<InventoryItem> items, {
+    required InventoryItemSortMode sortMode,
+  }) {
+    final nextSignature = _inventorySortSignature(items, sortMode: sortMode);
     if (nextSignature == signature) {
       return this;
     }
-    return InventorySortedItemsCache.fromItems(items);
+    return InventorySortedItemsCache.fromItems(items, sortMode: sortMode);
   }
 
   List<InventoryItem> materialize(List<InventoryItem> items) {
@@ -34,54 +45,130 @@ class InventorySortedItemsCache {
       'InventorySortedItemsCache received inconsistent item ids.',
     );
     if (!hasConsistentIds) {
-      return sortInventoryItems(items);
+      return sortInventoryItems(items, sortMode: sortMode);
     }
 
     return sortedItemIds.map((itemId) => byId[itemId]!).toList(growable: false);
   }
 }
 
-List<InventoryItem> sortInventoryItems(List<InventoryItem> source) {
+List<InventoryItem> sortInventoryItems(
+  List<InventoryItem> source, {
+  required InventoryItemSortMode sortMode,
+}) {
   final sorted = List<InventoryItem>.from(source)
-    ..sort(_compareInventoryItemSortOrder);
+    ..sort(
+      (left, right) =>
+          _compareInventoryItemSortOrder(left, right, sortMode: sortMode),
+    );
   return sorted;
 }
 
-List<String> _sortedInventoryItemIds(List<InventoryItem> source) {
+List<String> _sortedInventoryItemIds(
+  List<InventoryItem> source, {
+  required InventoryItemSortMode sortMode,
+}) {
   return sortInventoryItems(
     source,
+    sortMode: sortMode,
   ).map((item) => item.id).toList(growable: false);
 }
 
-int _compareInventoryItemSortOrder(InventoryItem a, InventoryItem b) {
-  final bucketCompare = _sortBucket(a).compareTo(_sortBucket(b));
-  if (bucketCompare != 0) {
-    return bucketCompare;
+int _compareInventoryItemSortOrder(
+  InventoryItem a,
+  InventoryItem b, {
+  required InventoryItemSortMode sortMode,
+}) {
+  switch (sortMode) {
+    case InventoryItemSortMode.recentlyAddedDescending:
+      final dateCompare = _compareInventoryItemEntryDate(
+        a,
+        b,
+        descending: true,
+      );
+      if (dateCompare != 0) {
+        return dateCompare;
+      }
+      return _compareInventoryItemName(a, b);
+    case InventoryItemSortMode.recentlyAddedAscending:
+      final dateCompare = _compareInventoryItemEntryDate(
+        a,
+        b,
+        descending: false,
+      );
+      if (dateCompare != 0) {
+        return dateCompare;
+      }
+      return _compareInventoryItemName(a, b);
+    case InventoryItemSortMode.recentlyEatenDescending:
+      final consumedCompare = _compareNullableDate(
+        a.lastConsumedAt,
+        b.lastConsumedAt,
+        descending: true,
+      );
+      if (consumedCompare != 0) {
+        return consumedCompare;
+      }
+      final dateCompare = _compareInventoryItemEntryDate(
+        a,
+        b,
+        descending: true,
+      );
+      if (dateCompare != 0) {
+        return dateCompare;
+      }
+      return _compareInventoryItemName(a, b);
+    case InventoryItemSortMode.recentlyEatenAscending:
+      final consumedCompare = _compareNullableDate(
+        a.lastConsumedAt,
+        b.lastConsumedAt,
+        descending: false,
+      );
+      if (consumedCompare != 0) {
+        return consumedCompare;
+      }
+      final dateCompare = _compareInventoryItemEntryDate(
+        a,
+        b,
+        descending: false,
+      );
+      if (dateCompare != 0) {
+        return dateCompare;
+      }
+      return _compareInventoryItemName(a, b);
+    case InventoryItemSortMode.alphabetical:
+      final nameCompare = _compareInventoryItemName(a, b);
+      if (nameCompare != 0) {
+        return nameCompare;
+      }
+      return b.entryDate.compareTo(a.entryDate);
+    case InventoryItemSortMode.availableAmountAscending:
+      final ratioCompare = _availableAmountRatio(
+        a,
+      ).compareTo(_availableAmountRatio(b));
+      if (ratioCompare != 0) {
+        return ratioCompare;
+      }
+      return _compareInventoryItemName(a, b);
+    case InventoryItemSortMode.availableAmountDescending:
+      final ratioCompare = _availableAmountRatio(
+        b,
+      ).compareTo(_availableAmountRatio(a));
+      if (ratioCompare != 0) {
+        return ratioCompare;
+      }
+      return _compareInventoryItemName(a, b);
   }
-
-  final consumedAtCompare = _compareNullableDateDesc(
-    a.lastConsumedAt,
-    b.lastConsumedAt,
-  );
-  if (consumedAtCompare != 0) {
-    return consumedAtCompare;
-  }
-
-  final dateCompare = b.entryDate.compareTo(a.entryDate);
-  if (dateCompare != 0) {
-    return dateCompare;
-  }
-
-  final nameCompare = a.name.toLowerCase().compareTo(b.name.toLowerCase());
-  if (nameCompare != 0) {
-    return nameCompare;
-  }
-
-  return a.id.compareTo(b.id);
 }
 
-String _inventorySortSignature(List<InventoryItem> items) {
-  final buffer = StringBuffer()..write(items.length);
+String _inventorySortSignature(
+  List<InventoryItem> items, {
+  required InventoryItemSortMode sortMode,
+}) {
+  final buffer = StringBuffer()
+    ..write(sortMode.name)
+    ..write(':')
+    ..write(items.length);
 
   for (final item in items) {
     buffer
@@ -108,25 +195,59 @@ String _inventorySortSignature(List<InventoryItem> items) {
   return buffer.toString();
 }
 
-int _sortBucket(InventoryItem item) {
-  if (item.isFullyConsumed) {
-    return 2;
+int _compareInventoryItemName(InventoryItem a, InventoryItem b) {
+  final nameCompare = a.name.toLowerCase().compareTo(b.name.toLowerCase());
+  if (nameCompare != 0) {
+    return nameCompare;
   }
-  if (item.isConsumed) {
-    return 0;
-  }
-  return 1;
+  return a.id.compareTo(b.id);
 }
 
-int _compareNullableDateDesc(DateTime? left, DateTime? right) {
+int _compareInventoryItemEntryDate(
+  InventoryItem a,
+  InventoryItem b, {
+  required bool descending,
+}) {
+  if (descending) {
+    return b.entryDate.compareTo(a.entryDate);
+  }
+  return a.entryDate.compareTo(b.entryDate);
+}
+
+int _compareNullableDate(
+  DateTime? left,
+  DateTime? right, {
+  required bool descending,
+}) {
   if (left != null && right != null) {
-    return right.compareTo(left);
+    if (descending) {
+      return right.compareTo(left);
+    }
+    return left.compareTo(right);
   }
-  if (left != null) {
-    return -1;
+  if (left == null && right == null) {
+    return 0;
   }
-  if (right != null) {
+  if (left == null) {
     return 1;
   }
-  return 0;
+  return -1;
+}
+
+double _availableAmountRatio(InventoryItem item) {
+  if (item.usesAmountProgress) {
+    final initialAmount = item.initialAmount;
+    if (initialAmount <= 0) {
+      return 0;
+    }
+    final remainingAmount = item.currentAmount.clamp(0, initialAmount);
+    return remainingAmount / initialAmount;
+  }
+
+  final initialQuantity = item.effectiveInitialQuantity;
+  if (initialQuantity <= 0) {
+    return 0;
+  }
+  final remainingQuantity = item.quantity.clamp(0, initialQuantity);
+  return remainingQuantity / initialQuantity;
 }

@@ -18,9 +18,15 @@ class InventoryModeToolbar extends StatelessWidget {
 }
 
 class InventorySectionHeader extends StatelessWidget {
-  const InventorySectionHeader({super.key, required this.title, this.trailing});
+  const InventorySectionHeader({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+  });
 
   final String title;
+  final String? subtitle;
   final Widget? trailing;
 
   @override
@@ -28,17 +34,40 @@ class InventorySectionHeader extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return Row(
+      crossAxisAlignment: subtitle == null
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: colors.onSurface,
-              fontWeight: FontWeight.w800,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: colors.onSurface,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (subtitle != null) ...[
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  subtitle!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
-        ...?(trailing == null ? null : <Widget>[trailing!]),
+        ...?(trailing == null
+            ? null
+            : <Widget>[
+                if (subtitle != null) const SizedBox(width: AppSpacing.md),
+                trailing!,
+              ]),
       ],
     );
   }
@@ -116,6 +145,63 @@ class InventoryFiltersSheet extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class InventoryFilterRadioOption<T> extends StatelessWidget {
+  const InventoryFilterRadioOption({
+    super.key,
+    required this.value,
+    required this.groupValue,
+    required this.enabled,
+    required this.label,
+    required this.onChanged,
+  });
+
+  final T value;
+  final T groupValue;
+  final bool enabled;
+  final String label;
+  final ValueChanged<T> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final isSelected = value == groupValue;
+
+    return MergeSemantics(
+      child: Semantics(
+        selected: isSelected,
+        child: InkWell(
+          onTap: enabled ? () => onChanged(value) : null,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: enabled
+                        ? colors.onSurface
+                        : colors.onSurface.withValues(alpha: 0.5),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Icon(
+                isSelected
+                    ? Icons.radio_button_checked_rounded
+                    : Icons.radio_button_unchecked_rounded,
+                size: 20,
+                color: enabled
+                    ? (isSelected ? colors.primary : colors.onSurfaceVariant)
+                    : colors.onSurface.withValues(alpha: 0.5),
+              ),
+            ],
           ),
         ),
       ),

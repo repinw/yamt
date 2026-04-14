@@ -638,7 +638,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryRecentSectionTitle.
   ///
   /// In en, this message translates to:
-  /// **'Recently added'**
+  /// **'Foods'**
   String get inventoryRecentSectionTitle;
 
   /// No description provided for @inventorySearchLabel.
@@ -664,6 +664,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Filter items'**
   String get inventoryFiltersTitle;
+
+  /// No description provided for @inventorySortSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get inventorySortSectionTitle;
+
+  /// No description provided for @inventorySortRecentlyAddedDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently added descending'**
+  String get inventorySortRecentlyAddedDescending;
+
+  /// No description provided for @inventorySortRecentlyAddedAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently added ascending'**
+  String get inventorySortRecentlyAddedAscending;
+
+  /// No description provided for @inventorySortRecentlyEatenDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently eaten descending'**
+  String get inventorySortRecentlyEatenDescending;
+
+  /// No description provided for @inventorySortRecentlyEatenAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently eaten ascending'**
+  String get inventorySortRecentlyEatenAscending;
+
+  /// No description provided for @inventorySortAlphabetical.
+  ///
+  /// In en, this message translates to:
+  /// **'Alphabetical'**
+  String get inventorySortAlphabetical;
+
+  /// No description provided for @inventorySortAvailableAmountAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Available amount ascending'**
+  String get inventorySortAvailableAmountAscending;
+
+  /// No description provided for @inventorySortAvailableAmountDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Available amount descending'**
+  String get inventorySortAvailableAmountDescending;
 
   /// No description provided for @inventoryNutritionCaloriesShortLabel.
   ///

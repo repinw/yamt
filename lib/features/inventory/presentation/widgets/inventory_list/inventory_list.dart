@@ -18,6 +18,8 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_consumption_filter.dart';
 import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_sort_mode.dart';
+import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_all_items_sliver.dart';
@@ -118,18 +120,22 @@ class InventoryList extends ConsumerStatefulWidget {
 
 class _InventoryListState extends ConsumerState<InventoryList> {
   static const _searchService = InventorySearchService();
+  static const _recentItemsSectionStorageKey =
+      'inventory_recent_items_section_expanded';
   static const _preparedMealsSectionStorageKey =
       'inventory_prepared_meals_section_expanded';
   final _voiceSearchController = TextVoiceSearchController();
   var _mode = InventoryListMode.allItems;
   var _consumptionFilter = const InventoryConsumptionFilter();
+  var _inventoryItemSortMode = InventoryItemSortMode.recentlyAddedDescending;
   var _hideFullyConsumedPreparedMeals = false;
   var _showOnlyDepletedPreparedMeals = false;
   var _showOnlyReadyPreparedMeals = false;
   var _showOnlyIncompletePreparedMeals = false;
   var _preparedMealSortOrder = _PreparedMealSortOrder.newestFirst;
+  var _isRecentItemsSectionExpanded = true;
   var _isPreparedMealsSectionExpanded = true;
-  var _didRestorePreparedMealsSectionExpanded = false;
+  var _didRestoreSectionExpandedStates = false;
   late final VoiceSearchService _voiceSearchService;
   late final TextEditingController _searchController;
   late List<InventoryItem> _visibleItems;
@@ -156,16 +162,26 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_didRestorePreparedMealsSectionExpanded) {
+    if (_didRestoreSectionExpandedStates) {
       return;
     }
-    _didRestorePreparedMealsSectionExpanded = true;
+    _didRestoreSectionExpandedStates = true;
 
-    final restoredState = PageStorage.maybeOf(
+    final pageStorage = PageStorage.maybeOf(context);
+    final restoredRecentItemsState = pageStorage?.readState(
       context,
-    )?.readState(context, identifier: _preparedMealsSectionStorageKey);
-    if (restoredState is bool) {
-      _isPreparedMealsSectionExpanded = restoredState;
+      identifier: _recentItemsSectionStorageKey,
+    );
+    if (restoredRecentItemsState is bool) {
+      _isRecentItemsSectionExpanded = restoredRecentItemsState;
+    }
+
+    final restoredPreparedMealsState = pageStorage?.readState(
+      context,
+      identifier: _preparedMealsSectionStorageKey,
+    );
+    if (restoredPreparedMealsState is bool) {
+      _isPreparedMealsSectionExpanded = restoredPreparedMealsState;
     }
   }
 
@@ -190,8 +206,13 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     );
     final filteredItems = _visibleItems;
     final filteredPreparedMeals = _visiblePreparedMeals;
+    final hasItemSource = widget.items.isNotEmpty;
     final hasPreparedMealSource = widget.preparedMeals.isNotEmpty;
+    final hasRecentItems = filteredItems.isNotEmpty;
     final hasPreparedMeals = filteredPreparedMeals.isNotEmpty;
+    final showRecentItemsSection =
+        _mode == InventoryListMode.allItems &&
+        (hasItemSource || hasRecentItems || _hasInventoryItemFiltersActive);
     final showPreparedMealsSection =
         hasPreparedMeals ||
         (hasPreparedMealSource && _hasPreparedMealFiltersActive);
@@ -237,7 +258,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             onSavePreparedMealTemplate: widget.onSavePreparedMealTemplate,
             l10n: l10n,
           ),
-        if (hasAnySourceItems && _mode == InventoryListMode.allItems)
+        if (showRecentItemsSection)
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.xl,
@@ -248,10 +269,28 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             sliver: SliverToBoxAdapter(
               child: InventorySectionHeader(
                 title: l10n.inventoryRecentSectionTitle,
-                trailing: InventoryFilterButton(
-                  enabled: !widget.isSelectionMode,
-                  onPressed: () =>
-                      _showInventoryFiltersSheet(context, l10n: l10n),
+                subtitle: _inventoryItemSortModeLabel(l10n),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    InventoryFilterButton(
+                      key: const Key('inventory_items_filter_button'),
+                      enabled: !widget.isSelectionMode,
+                      onPressed: () =>
+                          _showInventoryFiltersSheet(context, l10n: l10n),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    InventorySectionExpandButton(
+                      key: const Key('inventory_items_section_expand_button'),
+                      isExpanded: _isRecentItemsSectionExpanded,
+                      semanticLabel: l10n.inventoryRecentSectionTitle,
+                      enabled: !widget.isSelectionMode,
+                      rotationKey: const Key(
+                        'inventory_items_section_expand_indicator',
+                      ),
+                      onPressed: _toggleRecentItemsSection,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -274,12 +313,13 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             onItemLongPress: widget.onItemLongPress,
             onSelectionToggle: widget.onSelectionToggle,
           )
-        else if (hasFilteredItems)
+        else if (hasFilteredItems && _isRecentItemsSectionExpanded)
           InventoryAllItemsSliver(
             items: filteredItems,
             l10n: l10n,
             showBarcodeMarkers: showBarcodeMarkers,
             activeShoppingListItemKeys: activeShoppingListItemKeys,
+            sortMode: _inventoryItemSortMode,
             onDeleteItem: widget.onDeleteItem,
             onEatItem: widget.onEatItem,
             onThrowAwayItem: widget.onThrowAwayItem,
@@ -310,6 +350,15 @@ class _InventoryListState extends ConsumerState<InventoryList> {
         hideFullyConsumedItems: hideFullyConsumedItems,
       );
       _recomputeVisibleContent();
+    });
+  }
+
+  void _onInventoryItemSortModeChanged(InventoryItemSortMode sortMode) {
+    if (_inventoryItemSortMode == sortMode) {
+      return;
+    }
+    setState(() {
+      _inventoryItemSortMode = sortMode;
     });
   }
 
@@ -393,6 +442,20 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     });
   }
 
+  void _toggleRecentItemsSection() {
+    if (widget.isSelectionMode) {
+      return;
+    }
+    setState(() {
+      _isRecentItemsSectionExpanded = !_isRecentItemsSectionExpanded;
+    });
+    PageStorage.maybeOf(context)?.writeState(
+      context,
+      _isRecentItemsSectionExpanded,
+      identifier: _recentItemsSectionStorageKey,
+    );
+  }
+
   void _togglePreparedMealsSection() {
     if (widget.isSelectionMode) {
       return;
@@ -412,12 +475,128 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     required AppLocalizations l10n,
   }) {
     var hideFullyConsumedItems = _consumptionFilter.hideFullyConsumedItems;
+    var inventoryItemSortMode = _inventoryItemSortMode;
 
     return _showFiltersSheet(
       context,
       title: l10n.inventoryFiltersTitle,
       childrenBuilder: (setModalState) {
         return <Widget>[
+          Text(
+            l10n.inventorySortSectionTitle,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          InventoryFilterRadioOption<InventoryItemSortMode>(
+            key: const Key(
+              'inventory_items_sort_recently_added_descending_option',
+            ),
+            value: InventoryItemSortMode.recentlyAddedDescending,
+            groupValue: inventoryItemSortMode,
+            enabled: !widget.isSelectionMode,
+            label: l10n.inventorySortRecentlyAddedDescending,
+            onChanged: (nextSortMode) {
+              setModalState(() {
+                inventoryItemSortMode = nextSortMode;
+              });
+              _onInventoryItemSortModeChanged(nextSortMode);
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          InventoryFilterRadioOption<InventoryItemSortMode>(
+            key: const Key(
+              'inventory_items_sort_recently_added_ascending_option',
+            ),
+            value: InventoryItemSortMode.recentlyAddedAscending,
+            groupValue: inventoryItemSortMode,
+            enabled: !widget.isSelectionMode,
+            label: l10n.inventorySortRecentlyAddedAscending,
+            onChanged: (nextSortMode) {
+              setModalState(() {
+                inventoryItemSortMode = nextSortMode;
+              });
+              _onInventoryItemSortModeChanged(nextSortMode);
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          InventoryFilterRadioOption<InventoryItemSortMode>(
+            key: const Key(
+              'inventory_items_sort_recently_eaten_descending_option',
+            ),
+            value: InventoryItemSortMode.recentlyEatenDescending,
+            groupValue: inventoryItemSortMode,
+            enabled: !widget.isSelectionMode,
+            label: l10n.inventorySortRecentlyEatenDescending,
+            onChanged: (nextSortMode) {
+              setModalState(() {
+                inventoryItemSortMode = nextSortMode;
+              });
+              _onInventoryItemSortModeChanged(nextSortMode);
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          InventoryFilterRadioOption<InventoryItemSortMode>(
+            key: const Key(
+              'inventory_items_sort_recently_eaten_ascending_option',
+            ),
+            value: InventoryItemSortMode.recentlyEatenAscending,
+            groupValue: inventoryItemSortMode,
+            enabled: !widget.isSelectionMode,
+            label: l10n.inventorySortRecentlyEatenAscending,
+            onChanged: (nextSortMode) {
+              setModalState(() {
+                inventoryItemSortMode = nextSortMode;
+              });
+              _onInventoryItemSortModeChanged(nextSortMode);
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          InventoryFilterRadioOption<InventoryItemSortMode>(
+            key: const Key('inventory_items_sort_alphabetical_option'),
+            value: InventoryItemSortMode.alphabetical,
+            groupValue: inventoryItemSortMode,
+            enabled: !widget.isSelectionMode,
+            label: l10n.inventorySortAlphabetical,
+            onChanged: (nextSortMode) {
+              setModalState(() {
+                inventoryItemSortMode = nextSortMode;
+              });
+              _onInventoryItemSortModeChanged(nextSortMode);
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          InventoryFilterRadioOption<InventoryItemSortMode>(
+            key: const Key(
+              'inventory_items_sort_available_amount_ascending_option',
+            ),
+            value: InventoryItemSortMode.availableAmountAscending,
+            groupValue: inventoryItemSortMode,
+            enabled: !widget.isSelectionMode,
+            label: l10n.inventorySortAvailableAmountAscending,
+            onChanged: (nextSortMode) {
+              setModalState(() {
+                inventoryItemSortMode = nextSortMode;
+              });
+              _onInventoryItemSortModeChanged(nextSortMode);
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          InventoryFilterRadioOption<InventoryItemSortMode>(
+            key: const Key(
+              'inventory_items_sort_available_amount_descending_option',
+            ),
+            value: InventoryItemSortMode.availableAmountDescending,
+            groupValue: inventoryItemSortMode,
+            enabled: !widget.isSelectionMode,
+            label: l10n.inventorySortAvailableAmountDescending,
+            onChanged: (nextSortMode) {
+              setModalState(() {
+                inventoryItemSortMode = nextSortMode;
+              });
+              _onInventoryItemSortModeChanged(nextSortMode);
+            },
+          ),
+          const SizedBox(height: AppSpacing.lg),
           InventoryFilterToggle(
             key: const Key('inventory_items_hide_consumed_toggle'),
             value: hideFullyConsumedItems,
@@ -617,6 +796,28 @@ class _InventoryListState extends ConsumerState<InventoryList> {
         _showOnlyDepletedPreparedMeals ||
         _showOnlyReadyPreparedMeals ||
         _showOnlyIncompletePreparedMeals;
+  }
+
+  bool get _hasInventoryItemFiltersActive {
+    return _consumptionFilter.hideFullyConsumedItems;
+  }
+
+  String _inventoryItemSortModeLabel(AppLocalizations l10n) {
+    return switch (_inventoryItemSortMode) {
+      InventoryItemSortMode.recentlyAddedDescending =>
+        l10n.inventorySortRecentlyAddedDescending,
+      InventoryItemSortMode.recentlyAddedAscending =>
+        l10n.inventorySortRecentlyAddedAscending,
+      InventoryItemSortMode.recentlyEatenDescending =>
+        l10n.inventorySortRecentlyEatenDescending,
+      InventoryItemSortMode.recentlyEatenAscending =>
+        l10n.inventorySortRecentlyEatenAscending,
+      InventoryItemSortMode.alphabetical => l10n.inventorySortAlphabetical,
+      InventoryItemSortMode.availableAmountAscending =>
+        l10n.inventorySortAvailableAmountAscending,
+      InventoryItemSortMode.availableAmountDescending =>
+        l10n.inventorySortAvailableAmountDescending,
+    };
   }
 
   List<PreparedMeal> _sortPreparedMeals(List<PreparedMeal> meals) {
