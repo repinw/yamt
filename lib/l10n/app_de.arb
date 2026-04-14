@@ -126,10 +126,14 @@
   "inventoryFilterNotConsumed": "Nicht verbraucht",
   "inventoryHideFullyConsumedItemsToggle":
       "Komplett verbrauchte Artikel ausblenden",
-  "preparedMealFilterAction": "Mahlzeiten filtern",
-  "preparedMealFiltersTitle": "Mahlzeiten filtern",
+  "preparedMealFilterAction": "Filtern",
+  "preparedMealFiltersTitle": "Filter",
+  "preparedMealSortNewestFirst": "Neueste zuerst",
+  "preparedMealShowReadyOnlyToggle": "Nur fertige anzeigen",
+  "preparedMealShowIncompleteOnlyToggle": "Nur unvollständige anzeigen",
+  "preparedMealShowDepletedOnlyToggle": "Nur aufgebrauchte anzeigen",
   "preparedMealHideFullyConsumedItemsToggle":
-      "Komplett verbrauchte Mahlzeiten ausblenden",
+      "Komplett verbrauchte ausblenden",
   "inventoryReceiptGroupTitle": "Beleg",
   "inventoryReceiptGroupNoReceipt": "Ohne Beleg",
   "inventoryReceiptGroupItems": "Artikel",

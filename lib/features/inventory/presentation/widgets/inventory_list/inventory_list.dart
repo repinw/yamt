@@ -39,6 +39,8 @@ import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+enum _PreparedMealSortOrder { newestFirst, oldestFirst }
+
 class InventoryList extends ConsumerStatefulWidget {
   const InventoryList({
     super.key,
@@ -116,11 +118,18 @@ class InventoryList extends ConsumerStatefulWidget {
 
 class _InventoryListState extends ConsumerState<InventoryList> {
   static const _searchService = InventorySearchService();
+  static const _preparedMealsSectionStorageKey =
+      'inventory_prepared_meals_section_expanded';
   final _voiceSearchController = TextVoiceSearchController();
   var _mode = InventoryListMode.allItems;
   var _consumptionFilter = const InventoryConsumptionFilter();
   var _hideFullyConsumedPreparedMeals = false;
+  var _showOnlyDepletedPreparedMeals = false;
+  var _showOnlyReadyPreparedMeals = false;
+  var _showOnlyIncompletePreparedMeals = false;
+  var _preparedMealSortOrder = _PreparedMealSortOrder.newestFirst;
   var _isPreparedMealsSectionExpanded = true;
+  var _didRestorePreparedMealsSectionExpanded = false;
   late final VoiceSearchService _voiceSearchService;
   late final TextEditingController _searchController;
   late List<InventoryItem> _visibleItems;
@@ -141,6 +150,22 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     if (!listEquals(oldWidget.items, widget.items) ||
         !listEquals(oldWidget.preparedMeals, widget.preparedMeals)) {
       _recomputeVisibleContent();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didRestorePreparedMealsSectionExpanded) {
+      return;
+    }
+    _didRestorePreparedMealsSectionExpanded = true;
+
+    final restoredState = PageStorage.maybeOf(
+      context,
+    )?.readState(context, identifier: _preparedMealsSectionStorageKey);
+    if (restoredState is bool) {
+      _isPreparedMealsSectionExpanded = restoredState;
     }
   }
 
@@ -169,7 +194,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     final hasPreparedMeals = filteredPreparedMeals.isNotEmpty;
     final showPreparedMealsSection =
         hasPreparedMeals ||
-        (hasPreparedMealSource && _hideFullyConsumedPreparedMeals);
+        (hasPreparedMealSource && _hasPreparedMealFiltersActive);
     final hasAnySourceItems =
         widget.items.isNotEmpty || widget.preparedMeals.isNotEmpty;
     final hasFilteredItems = filteredItems.isNotEmpty;
@@ -291,11 +316,73 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   void _onHideFullyConsumedPreparedMealsChanged(
     bool hideFullyConsumedPreparedMeals,
   ) {
-    if (_hideFullyConsumedPreparedMeals == hideFullyConsumedPreparedMeals) {
+    if (_hideFullyConsumedPreparedMeals == hideFullyConsumedPreparedMeals &&
+        (!hideFullyConsumedPreparedMeals || !_showOnlyDepletedPreparedMeals)) {
       return;
     }
     setState(() {
       _hideFullyConsumedPreparedMeals = hideFullyConsumedPreparedMeals;
+      if (hideFullyConsumedPreparedMeals) {
+        _showOnlyDepletedPreparedMeals = false;
+      }
+      _recomputeVisibleContent();
+    });
+  }
+
+  void _onShowOnlyDepletedPreparedMealsChanged(
+    bool showOnlyDepletedPreparedMeals,
+  ) {
+    if (_showOnlyDepletedPreparedMeals == showOnlyDepletedPreparedMeals &&
+        (!showOnlyDepletedPreparedMeals || !_hideFullyConsumedPreparedMeals)) {
+      return;
+    }
+    setState(() {
+      _showOnlyDepletedPreparedMeals = showOnlyDepletedPreparedMeals;
+      if (showOnlyDepletedPreparedMeals) {
+        _hideFullyConsumedPreparedMeals = false;
+      }
+      _recomputeVisibleContent();
+    });
+  }
+
+  void _onShowOnlyReadyPreparedMealsChanged(bool showOnlyReadyPreparedMeals) {
+    if (_showOnlyReadyPreparedMeals == showOnlyReadyPreparedMeals &&
+        (!showOnlyReadyPreparedMeals || !_showOnlyIncompletePreparedMeals)) {
+      return;
+    }
+    setState(() {
+      _showOnlyReadyPreparedMeals = showOnlyReadyPreparedMeals;
+      if (showOnlyReadyPreparedMeals) {
+        _showOnlyIncompletePreparedMeals = false;
+      }
+      _recomputeVisibleContent();
+    });
+  }
+
+  void _onShowOnlyIncompletePreparedMealsChanged(
+    bool showOnlyIncompletePreparedMeals,
+  ) {
+    if (_showOnlyIncompletePreparedMeals == showOnlyIncompletePreparedMeals &&
+        (!showOnlyIncompletePreparedMeals || !_showOnlyReadyPreparedMeals)) {
+      return;
+    }
+    setState(() {
+      _showOnlyIncompletePreparedMeals = showOnlyIncompletePreparedMeals;
+      if (showOnlyIncompletePreparedMeals) {
+        _showOnlyReadyPreparedMeals = false;
+      }
+      _recomputeVisibleContent();
+    });
+  }
+
+  void _onPreparedMealSortOrderChanged(
+    _PreparedMealSortOrder preparedMealSortOrder,
+  ) {
+    if (_preparedMealSortOrder == preparedMealSortOrder) {
+      return;
+    }
+    setState(() {
+      _preparedMealSortOrder = preparedMealSortOrder;
       _recomputeVisibleContent();
     });
   }
@@ -317,6 +404,11 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     setState(() {
       _isPreparedMealsSectionExpanded = !_isPreparedMealsSectionExpanded;
     });
+    PageStorage.maybeOf(context)?.writeState(
+      context,
+      _isPreparedMealsSectionExpanded,
+      identifier: _preparedMealsSectionStorageKey,
+    );
   }
 
   Future<void> _showInventoryFiltersSheet(
@@ -331,6 +423,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       childrenBuilder: (setModalState) {
         return <Widget>[
           InventoryConsumedItemsToggle(
+            key: const Key('inventory_items_hide_consumed_toggle'),
             value: hideFullyConsumedItems,
             enabled: !widget.isSelectionMode,
             label: l10n.inventoryHideFullyConsumedItemsToggle,
@@ -351,6 +444,10 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     required AppLocalizations l10n,
   }) {
     var hideFullyConsumedPreparedMeals = _hideFullyConsumedPreparedMeals;
+    var showOnlyDepletedPreparedMeals = _showOnlyDepletedPreparedMeals;
+    var showOnlyReadyPreparedMeals = _showOnlyReadyPreparedMeals;
+    var showOnlyIncompletePreparedMeals = _showOnlyIncompletePreparedMeals;
+    var preparedMealSortOrder = _preparedMealSortOrder;
 
     return _showFiltersSheet(
       context,
@@ -358,6 +455,79 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       childrenBuilder: (setModalState) {
         return <Widget>[
           InventoryConsumedItemsToggle(
+            key: const Key('prepared_meals_sort_newest_button'),
+            value: preparedMealSortOrder == _PreparedMealSortOrder.newestFirst,
+            enabled: !widget.isSelectionMode,
+            label: l10n.preparedMealSortNewestFirst,
+            onChanged: (newestFirst) {
+              final nextSortOrder = newestFirst
+                  ? _PreparedMealSortOrder.newestFirst
+                  : _PreparedMealSortOrder.oldestFirst;
+              setModalState(() {
+                preparedMealSortOrder = nextSortOrder;
+              });
+              _onPreparedMealSortOrderChanged(nextSortOrder);
+            },
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          InventoryConsumedItemsToggle(
+            key: const Key('prepared_meals_ready_only_toggle'),
+            value: showOnlyReadyPreparedMeals,
+            enabled: !widget.isSelectionMode,
+            label: l10n.preparedMealShowReadyOnlyToggle,
+            onChanged: (nextShowOnlyReadyPreparedMeals) {
+              setModalState(() {
+                showOnlyReadyPreparedMeals = nextShowOnlyReadyPreparedMeals;
+                if (nextShowOnlyReadyPreparedMeals) {
+                  showOnlyIncompletePreparedMeals = false;
+                }
+              });
+              _onShowOnlyReadyPreparedMealsChanged(
+                nextShowOnlyReadyPreparedMeals,
+              );
+            },
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          InventoryConsumedItemsToggle(
+            key: const Key('prepared_meals_incomplete_only_toggle'),
+            value: showOnlyIncompletePreparedMeals,
+            enabled: !widget.isSelectionMode,
+            label: l10n.preparedMealShowIncompleteOnlyToggle,
+            onChanged: (nextShowOnlyIncompletePreparedMeals) {
+              setModalState(() {
+                showOnlyIncompletePreparedMeals =
+                    nextShowOnlyIncompletePreparedMeals;
+                if (nextShowOnlyIncompletePreparedMeals) {
+                  showOnlyReadyPreparedMeals = false;
+                }
+              });
+              _onShowOnlyIncompletePreparedMealsChanged(
+                nextShowOnlyIncompletePreparedMeals,
+              );
+            },
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          InventoryConsumedItemsToggle(
+            key: const Key('prepared_meals_depleted_only_toggle'),
+            value: showOnlyDepletedPreparedMeals,
+            enabled: !widget.isSelectionMode,
+            label: l10n.preparedMealShowDepletedOnlyToggle,
+            onChanged: (nextShowOnlyDepletedPreparedMeals) {
+              setModalState(() {
+                showOnlyDepletedPreparedMeals =
+                    nextShowOnlyDepletedPreparedMeals;
+                if (nextShowOnlyDepletedPreparedMeals) {
+                  hideFullyConsumedPreparedMeals = false;
+                }
+              });
+              _onShowOnlyDepletedPreparedMealsChanged(
+                nextShowOnlyDepletedPreparedMeals,
+              );
+            },
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          InventoryConsumedItemsToggle(
+            key: const Key('prepared_meals_hide_consumed_toggle'),
             value: hideFullyConsumedPreparedMeals,
             enabled: !widget.isSelectionMode,
             label: l10n.preparedMealHideFullyConsumedItemsToggle,
@@ -365,6 +535,9 @@ class _InventoryListState extends ConsumerState<InventoryList> {
               setModalState(() {
                 hideFullyConsumedPreparedMeals =
                     nextHideFullyConsumedPreparedMeals;
+                if (nextHideFullyConsumedPreparedMeals) {
+                  showOnlyDepletedPreparedMeals = false;
+                }
               });
               _onHideFullyConsumedPreparedMealsChanged(
                 nextHideFullyConsumedPreparedMeals,
@@ -383,6 +556,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   }) {
     return showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
         return StatefulBuilder(
@@ -419,15 +593,60 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       query: _searchQuery,
     );
     _visiblePreparedMeals = _searchService.filterPreparedMeals(
-      meals: _applyPreparedMealFilter(widget.preparedMeals),
+      meals: _sortPreparedMeals(_applyPreparedMealFilter(widget.preparedMeals)),
       query: _searchQuery,
     );
   }
 
   List<PreparedMeal> _applyPreparedMealFilter(List<PreparedMeal> meals) {
-    if (!_hideFullyConsumedPreparedMeals) {
-      return meals;
+    var filteredMeals = meals;
+
+    if (_showOnlyReadyPreparedMeals) {
+      filteredMeals = filteredMeals
+          .where((meal) => !meal.hasPendingRecipeIngredients)
+          .toList(growable: false);
     }
-    return meals.where((meal) => !meal.isDepleted).toList(growable: false);
+    if (_showOnlyIncompletePreparedMeals) {
+      filteredMeals = filteredMeals
+          .where((meal) => meal.hasPendingRecipeIngredients)
+          .toList(growable: false);
+    }
+    if (_showOnlyDepletedPreparedMeals) {
+      filteredMeals = filteredMeals
+          .where((meal) => meal.isDepleted)
+          .toList(growable: false);
+    }
+    if (_hideFullyConsumedPreparedMeals) {
+      filteredMeals = filteredMeals
+          .where((meal) => !meal.isDepleted)
+          .toList(growable: false);
+    }
+    return filteredMeals;
+  }
+
+  bool get _hasPreparedMealFiltersActive {
+    return _hideFullyConsumedPreparedMeals ||
+        _showOnlyDepletedPreparedMeals ||
+        _showOnlyReadyPreparedMeals ||
+        _showOnlyIncompletePreparedMeals;
+  }
+
+  List<PreparedMeal> _sortPreparedMeals(List<PreparedMeal> meals) {
+    final sortedMeals = List<PreparedMeal>.from(meals);
+    sortedMeals.sort((left, right) {
+      final dateCompare = switch (_preparedMealSortOrder) {
+        _PreparedMealSortOrder.newestFirst => right.createdAt.compareTo(
+          left.createdAt,
+        ),
+        _PreparedMealSortOrder.oldestFirst => left.createdAt.compareTo(
+          right.createdAt,
+        ),
+      };
+      if (dateCompare != 0) {
+        return dateCompare;
+      }
+      return left.name.toLowerCase().compareTo(right.name.toLowerCase());
+    });
+    return sortedMeals;
   }
 }

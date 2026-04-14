@@ -21,13 +21,10 @@ class InventoryConsumedItemsToggle extends StatelessWidget {
 
     return MergeSemantics(
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 220),
+          Expanded(
             child: Text(
               label,
-              textAlign: TextAlign.end,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 color: enabled
                     ? colors.onSurface

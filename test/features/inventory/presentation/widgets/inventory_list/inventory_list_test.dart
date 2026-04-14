@@ -7,6 +7,8 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_card.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -88,7 +90,12 @@ Widget _buildInventoryTestApp({
   );
 }
 
-PreparedMeal _preparedMeal({required String id, required String name}) {
+PreparedMeal _preparedMeal({
+  required String id,
+  required String name,
+  DateTime? createdAt,
+}) {
+  final timestamp = createdAt ?? DateTime.parse('2026-02-20T08:00:00Z');
   return PreparedMeal(
     id: id,
     name: name,
@@ -98,8 +105,8 @@ PreparedMeal _preparedMeal({required String id, required String name}) {
     totalProtein: 20,
     totalCarbs: 50,
     totalFat: 15,
-    createdAt: DateTime.parse('2026-02-20T08:00:00Z'),
-    updatedAt: DateTime.parse('2026-02-20T08:00:00Z'),
+    createdAt: timestamp,
+    updatedAt: timestamp,
     components: const [],
   );
 }
@@ -180,13 +187,28 @@ void main() {
     await tester.tap(find.byIcon(Icons.filter_list_rounded));
     await tester.pumpAndSettle();
 
-    final before = tester.widget<Switch>(find.byType(Switch));
+    final before = tester.widget<Switch>(
+      find.descendant(
+        of: find.byKey(const Key('inventory_items_hide_consumed_toggle')),
+        matching: find.byType(Switch),
+      ),
+    );
     expect(before.value, isFalse);
 
-    await tester.tap(find.byType(Switch));
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('inventory_items_hide_consumed_toggle')),
+        matching: find.byType(Switch),
+      ),
+    );
     await tester.pumpAndSettle();
 
-    final after = tester.widget<Switch>(find.byType(Switch));
+    final after = tester.widget<Switch>(
+      find.descendant(
+        of: find.byKey(const Key('inventory_items_hide_consumed_toggle')),
+        matching: find.byType(Switch),
+      ),
+    );
     expect(after.value, isTrue);
 
     Navigator.of(tester.element(find.byType(InventoryList))).pop();
@@ -256,10 +278,20 @@ void main() {
     await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
     await tester.pumpAndSettle();
 
-    final before = tester.widget<Switch>(find.byType(Switch));
+    final before = tester.widget<Switch>(
+      find.descendant(
+        of: find.byKey(const Key('prepared_meals_hide_consumed_toggle')),
+        matching: find.byType(Switch),
+      ),
+    );
     expect(before.value, isFalse);
 
-    await tester.tap(find.byType(Switch));
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('prepared_meals_hide_consumed_toggle')),
+        matching: find.byType(Switch),
+      ),
+    );
     await tester.pumpAndSettle();
 
     Navigator.of(tester.element(find.byType(InventoryList))).pop();
@@ -267,6 +299,159 @@ void main() {
 
     expect(find.text('Fresh Pasta'), findsOneWidget);
     expect(find.text('Gone Soup'), findsNothing);
+  });
+
+  testWidgets('prepared meals sort can switch between newest and oldest', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildInventoryTestApp(
+        items: const <InventoryItem>[],
+        preparedMeals: <PreparedMeal>[
+          _preparedMeal(
+            id: 'old-meal',
+            name: 'Old Meal',
+            createdAt: DateTime.parse('2026-02-18T08:00:00Z'),
+          ),
+          _preparedMeal(
+            id: 'new-meal',
+            name: 'New Meal',
+            createdAt: DateTime.parse('2026-02-21T08:00:00Z'),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    List<String> visibleMealNames() {
+      return tester
+          .widgetList<PreparedMealCard>(find.byType(PreparedMealCard))
+          .map((card) => card.meal.name)
+          .toList(growable: false);
+    }
+
+    expect(visibleMealNames(), <String>['New Meal', 'Old Meal']);
+
+    await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const Key('prepared_meals_sort_newest_button')),
+    );
+    await tester.pumpAndSettle();
+
+    Navigator.of(tester.element(find.byType(InventoryList))).pop();
+    await tester.pumpAndSettle();
+
+    expect(visibleMealNames(), <String>['Old Meal', 'New Meal']);
+  });
+
+  testWidgets('prepared meals ready-only filter hides incomplete meals', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildInventoryTestApp(
+        items: const <InventoryItem>[],
+        preparedMeals: <PreparedMeal>[
+          _preparedMeal(id: 'ready-meal', name: 'Ready Meal'),
+          _preparedMeal(
+            id: 'incomplete-meal',
+            name: 'Incomplete Meal',
+          ).copyWith(pendingRecipeIngredients: const <String>['Cheese']),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ready Meal'), findsOneWidget);
+    expect(find.text('Incomplete Meal'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('prepared_meals_ready_only_toggle')),
+        matching: find.byType(Switch),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    Navigator.of(tester.element(find.byType(InventoryList))).pop();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ready Meal'), findsOneWidget);
+    expect(find.text('Incomplete Meal'), findsNothing);
+  });
+
+  testWidgets('prepared meals incomplete-only filter hides ready meals', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildInventoryTestApp(
+        items: const <InventoryItem>[],
+        preparedMeals: <PreparedMeal>[
+          _preparedMeal(id: 'ready-meal', name: 'Ready Meal'),
+          _preparedMeal(
+            id: 'incomplete-meal',
+            name: 'Incomplete Meal',
+          ).copyWith(pendingRecipeIngredients: const <String>['Cheese']),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('prepared_meals_incomplete_only_toggle')),
+        matching: find.byType(Switch),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    Navigator.of(tester.element(find.byType(InventoryList))).pop();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ready Meal'), findsNothing);
+    expect(find.text('Incomplete Meal'), findsOneWidget);
+  });
+
+  testWidgets('prepared meals depleted-only filter hides remaining meals', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildInventoryTestApp(
+        items: const <InventoryItem>[],
+        preparedMeals: <PreparedMeal>[
+          _preparedMeal(id: 'ready-meal', name: 'Ready Meal'),
+          _preparedMeal(
+            id: 'depleted-meal',
+            name: 'Depleted Meal',
+          ).copyWith(remainingPortions: 0),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('prepared_meals_depleted_only_toggle')),
+        matching: find.byType(Switch),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    Navigator.of(tester.element(find.byType(InventoryList))).pop();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ready Meal'), findsNothing);
+    expect(find.text('Depleted Meal'), findsOneWidget);
   });
 
   testWidgets('prepared meals section can be collapsed', (tester) async {

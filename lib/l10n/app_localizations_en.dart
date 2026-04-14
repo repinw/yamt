@@ -319,6 +319,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealFiltersTitle => 'Filter meals';
 
   @override
+  String get preparedMealSortNewestFirst => 'Newest first';
+
+  @override
+  String get preparedMealShowReadyOnlyToggle => 'Only ready meals';
+
+  @override
+  String get preparedMealShowIncompleteOnlyToggle => 'Only incomplete meals';
+
+  @override
+  String get preparedMealShowDepletedOnlyToggle => 'Only fully consumed';
+
+  @override
   String get preparedMealHideFullyConsumedItemsToggle => 'Hide fully consumed meals';
 
   @override
