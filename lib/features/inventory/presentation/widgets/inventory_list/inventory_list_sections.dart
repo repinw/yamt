@@ -103,45 +103,151 @@ class InventoryFiltersSheet extends StatelessWidget {
   const InventoryFiltersSheet({
     super.key,
     required this.title,
+    required this.subtitle,
+    required this.actionLabel,
     required this.children,
   });
 
   final String title;
+  final String subtitle;
+  final String actionLabel;
   final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final bottomSheetFabClearance =
-        AppInventoryEditorial.contextFabSize + AppSpacing.xxxxl + AppSpacing.xl;
+    final mediaQuery = MediaQuery.of(context);
+    final isCompact = mediaQuery.size.width < 640;
+    final borderRadius = isCompact
+        ? BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xl + AppSpacing.xs),
+          )
+        : BorderRadius.circular(AppRadius.xl + AppSpacing.md);
+    final outerPadding = EdgeInsets.fromLTRB(
+      AppSpacing.sm,
+      AppSpacing.md,
+      AppSpacing.sm,
+      isCompact ? 0 : AppSpacing.sm + mediaQuery.padding.bottom,
+    );
+    final footerPadding = EdgeInsets.fromLTRB(
+      AppSpacing.lg,
+      AppSpacing.lg,
+      AppSpacing.lg,
+      AppSpacing.lg + (isCompact ? mediaQuery.padding.bottom : 0),
+    );
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          AppSpacing.lg,
-          AppSpacing.xl,
-          0,
-        ),
-        child: Padding(
-          padding: EdgeInsets.only(bottom: bottomSheetFabClearance),
+    return Padding(
+      padding: outerPadding,
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 520,
+            maxHeight: mediaQuery.size.height * (isCompact ? 0.92 : 0.84),
+          ),
           child: DecoratedBox(
             decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
               colors,
-              borderRadius: BorderRadius.circular(
-                AppInventoryEditorial.cardRadius,
-              ),
+              borderRadius: borderRadius,
+              blurRadius: 28,
+              shadowOffset: const Offset(0, 16),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
+            child: ClipRRect(
+              borderRadius: borderRadius,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: AppSpacing.lg),
-                  ...children,
+                  if (isCompact)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: AppSpacing.sm,
+                        bottom: AppSpacing.xxs,
+                      ),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: colors.outlineVariant.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                        ),
+                        child: const SizedBox(width: 44, height: 5),
+                      ),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.xxl,
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                style: Theme.of(context).textTheme.headlineSmall
+                                    ?.copyWith(
+                                      color: colors.onSurface,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              Text(
+                                subtitle,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: colors.onSurfaceVariant),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          tooltip: MaterialLocalizations.of(
+                            context,
+                          ).closeButtonTooltip,
+                          style: IconButton.styleFrom(
+                            backgroundColor: colors.surfaceContainerLow,
+                            foregroundColor: colors.onSurfaceVariant,
+                          ),
+                          icon: const Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        0,
+                        AppSpacing.lg,
+                        AppSpacing.lg,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: children,
+                      ),
+                    ),
+                  ),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: colors.surfaceContainerLowest,
+                      border: Border(
+                        top: BorderSide(
+                          color: colors.outlineVariant.withValues(alpha: 0.4),
+                        ),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: footerPadding,
+                      child: _InventoryFiltersPrimaryButton(
+                        label: actionLabel,
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -152,56 +258,252 @@ class InventoryFiltersSheet extends StatelessWidget {
   }
 }
 
-class InventoryFilterRadioOption<T> extends StatelessWidget {
-  const InventoryFilterRadioOption({
-    super.key,
-    required this.value,
-    required this.groupValue,
-    required this.enabled,
-    required this.label,
-    required this.onChanged,
-  });
+class InventoryFiltersSectionLabel extends StatelessWidget {
+  const InventoryFiltersSectionLabel({super.key, required this.label});
 
-  final T value;
-  final T groupValue;
-  final bool enabled;
   final String label;
-  final ValueChanged<T> onChanged;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isSelected = value == groupValue;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      child: Text(
+        label.toUpperCase(),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: colors.onSurfaceVariant,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.1,
+        ),
+      ),
+    );
+  }
+}
+
+class InventorySortOptionCard extends StatelessWidget {
+  const InventorySortOptionCard({
+    super.key,
+    required this.title,
+    required this.icon,
+    required this.isSelected,
+    required this.enabled,
+    required this.onSelect,
+    this.directionLabel,
+    this.onToggleDirection,
+    this.directionButtonKey,
+    this.sortDirectionAscending,
+  });
+
+  final String title;
+  final IconData icon;
+  final bool isSelected;
+  final bool enabled;
+  final VoidCallback onSelect;
+  final String? directionLabel;
+  final VoidCallback? onToggleDirection;
+  final Key? directionButtonKey;
+  final bool? sortDirectionAscending;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final borderColor = isSelected
+        ? colors.primary.withValues(alpha: 0.18)
+        : Colors.transparent;
+    final backgroundColor = isSelected
+        ? Color.alphaBlend(
+            colors.primary.withValues(alpha: 0.08),
+            AppInventoryEditorialSurfaces.section(colors),
+          )
+        : Colors.transparent;
+    final iconBackground = isSelected
+        ? colors.primary.withValues(alpha: 0.14)
+        : colors.surfaceContainerLow;
+    final iconColor = isSelected ? colors.primary : colors.onSurfaceVariant;
 
     return MergeSemantics(
       child: Semantics(
         selected: isSelected,
         child: InkWell(
-          onTap: enabled ? () => onChanged(value) : null,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: enabled
-                        ? colors.onSurface
-                        : colors.onSurface.withValues(alpha: 0.5),
+          onTap: enabled ? onSelect : null,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              border: Border.all(color: borderColor),
+              boxShadow: isSelected
+                  ? [
+                      AppInventoryEditorialSurfaces.ambientBoxShadow(
+                        colors,
+                        blurRadius: 18,
+                        offset: const Offset(0, 10),
+                      ),
+                    ]
+                  : null,
+            ),
+            padding: const EdgeInsets.all(AppSpacing.xs),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: enabled ? onSelect : null,
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.transparent,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.xs,
+                        vertical: AppSpacing.sm,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: iconBackground,
+                            borderRadius: BorderRadius.circular(AppRadius.lg),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppSpacing.sm),
+                            child: Icon(icon, size: 18, color: iconColor),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
+                                  color: enabled
+                                      ? colors.onSurface
+                                      : colors.onSurface.withValues(alpha: 0.5),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Icon(
-                isSelected
-                    ? Icons.radio_button_checked_rounded
-                    : Icons.radio_button_unchecked_rounded,
-                size: 20,
-                color: enabled
-                    ? (isSelected ? colors.primary : colors.onSurfaceVariant)
-                    : colors.onSurface.withValues(alpha: 0.5),
-              ),
-            ],
+                if (isSelected && directionLabel != null) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  TextButton(
+                    key: directionButtonKey,
+                    onPressed: enabled ? onToggleDirection : null,
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.sm,
+                        AppSpacing.xs,
+                        AppSpacing.xs,
+                        AppSpacing.xs,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: colors.primary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(AppRadius.md),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xs,
+                            ),
+                            child: Text(
+                              directionLabel!,
+                              style: Theme.of(context).textTheme.labelMedium
+                                  ?.copyWith(
+                                    color: colors.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: colors.surfaceContainerLowest,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: colors.primary.withValues(alpha: 0.16),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppSpacing.xs),
+                            child: Icon(
+                              sortDirectionAscending == true
+                                  ? Icons.arrow_upward_rounded
+                                  : Icons.arrow_downward_rounded,
+                              size: 16,
+                              color: colors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _InventoryFiltersPrimaryButton extends StatelessWidget {
+  const _InventoryFiltersPrimaryButton({
+    required this.label,
+    required this.onPressed,
+  });
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: AppInventoryEditorialSurfaces.soulGradient(colors),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        boxShadow: [
+          AppInventoryEditorialSurfaces.ambientBoxShadow(
+            colors,
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        child: TextButton(
+          onPressed: onPressed,
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            foregroundColor: colors.onPrimary,
+          ),
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: colors.onPrimary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
       ),

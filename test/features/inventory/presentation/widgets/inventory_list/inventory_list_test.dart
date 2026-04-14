@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -40,9 +41,12 @@ Widget _buildInventoryTestApp({
   required List<InventoryItem> items,
   List<PreparedMeal> preparedMeals = const <PreparedMeal>[],
   VoiceSearchService? speechService,
+  AppPreferences? preferences,
 }) {
   return ProviderScope(
     overrides: [
+      if (preferences != null)
+        appPreferencesProvider.overrideWithValue(preferences),
       barcodeBackfillFeatureFlagsProvider.overrideWithValue(
         const BarcodeBackfillFeatureFlags(
           showInventoryBarcodeMarkers: false,
@@ -104,13 +108,15 @@ PreparedMeal _preparedMeal({
   required String id,
   required String name,
   DateTime? createdAt,
+  int totalPortions = 2,
+  int remainingPortions = 1,
 }) {
   final timestamp = createdAt ?? DateTime.parse('2026-02-20T08:00:00Z');
   return PreparedMeal(
     id: id,
     name: name,
-    totalPortions: 2,
-    remainingPortions: 1,
+    totalPortions: totalPortions,
+    remainingPortions: remainingPortions,
     totalKcal: 500,
     totalProtein: 20,
     totalCarbs: 50,
@@ -128,6 +134,12 @@ List<String> _visibleInventoryItemNames(WidgetTester tester) {
       )
       .map((entry) => entry.item.name)
       .toList(growable: false);
+}
+
+Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
+  await tester.ensureVisible(finder);
+  await tester.tap(finder, warnIfMissed: false);
+  await tester.pumpAndSettle();
 }
 
 class _FakeManualProductSpeechService implements VoiceSearchService {
@@ -176,8 +188,37 @@ class _FakeManualProductSpeechService implements VoiceSearchService {
   }
 }
 
-class _InventoryListPageStorageHarness extends StatefulWidget {
-  const _InventoryListPageStorageHarness({
+class _MemoryAppPreferences implements AppPreferences {
+  final Map<String, String> _strings = <String, String>{};
+  final Map<String, int> _ints = <String, int>{};
+
+  @override
+  String? getStringSync(String key) => _strings[key];
+
+  @override
+  int? getIntSync(String key) => _ints[key];
+
+  @override
+  Future<String?> getString(String key) async => _strings[key];
+
+  @override
+  Future<int?> getInt(String key) async => _ints[key];
+
+  @override
+  Future<bool> setString(String key, String value) async {
+    _strings[key] = value;
+    return true;
+  }
+
+  @override
+  Future<bool> setInt(String key, int value) async {
+    _ints[key] = value;
+    return true;
+  }
+}
+
+class _InventoryListPersistenceHarness extends StatefulWidget {
+  const _InventoryListPersistenceHarness({
     required this.items,
     required this.preparedMeals,
   });
@@ -186,40 +227,36 @@ class _InventoryListPageStorageHarness extends StatefulWidget {
   final List<PreparedMeal> preparedMeals;
 
   @override
-  State<_InventoryListPageStorageHarness> createState() =>
-      _InventoryListPageStorageHarnessState();
+  State<_InventoryListPersistenceHarness> createState() =>
+      _InventoryListPersistenceHarnessState();
 }
 
-class _InventoryListPageStorageHarnessState
-    extends State<_InventoryListPageStorageHarness> {
-  final _bucket = PageStorageBucket();
+class _InventoryListPersistenceHarnessState
+    extends State<_InventoryListPersistenceHarness> {
   var _showList = true;
 
   @override
   Widget build(BuildContext context) {
-    return PageStorage(
-      bucket: _bucket,
-      child: Column(
-        children: [
-          TextButton(
-            key: const Key('toggle_inventory_list_mount'),
-            onPressed: () {
-              setState(() {
-                _showList = !_showList;
-              });
-            },
-            child: const Text('toggle'),
-          ),
-          Expanded(
-            child: _showList
-                ? _buildInventoryListBody(
-                    items: widget.items,
-                    preparedMeals: widget.preparedMeals,
-                  )
-                : const SizedBox.shrink(),
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        TextButton(
+          key: const Key('toggle_inventory_list_mount'),
+          onPressed: () {
+            setState(() {
+              _showList = !_showList;
+            });
+          },
+          child: const Text('toggle'),
+        ),
+        Expanded(
+          child: _showList
+              ? _buildInventoryListBody(
+                  items: widget.items,
+                  preparedMeals: widget.preparedMeals,
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
     );
   }
 }
@@ -262,13 +299,13 @@ void main() {
     );
     expect(before.value, isFalse);
 
-    await tester.tap(
+    await _tapVisible(
+      tester,
       find.descendant(
         of: find.byKey(const Key('inventory_items_hide_consumed_toggle')),
         matching: find.byType(Switch),
       ),
     );
-    await tester.pumpAndSettle();
 
     final after = tester.widget<Switch>(
       find.descendant(
@@ -346,23 +383,21 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Foods'), findsOneWidget);
-      expect(find.text('Recently added descending'), findsOneWidget);
+      expect(find.text('Added - Descending'), findsOneWidget);
       expect(_visibleInventoryItemNames(tester), <String>['Zucchini', 'Apple']);
 
       await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(
-          const Key('inventory_items_sort_recently_added_ascending_option'),
-        ),
+      await _tapVisible(
+        tester,
+        find.byKey(const Key('inventory_items_sort_added_direction_button')),
       );
-      await tester.pumpAndSettle();
 
       Navigator.of(tester.element(find.byType(InventoryList))).pop();
       await tester.pumpAndSettle();
 
       expect(find.text('Foods'), findsOneWidget);
-      expect(find.text('Recently added ascending'), findsOneWidget);
+      expect(find.text('Added - Ascending'), findsOneWidget);
       expect(_visibleInventoryItemNames(tester), <String>['Apple', 'Zucchini']);
     },
   );
@@ -393,17 +428,15 @@ void main() {
 
       await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(
-          const Key('inventory_items_sort_recently_eaten_descending_option'),
-        ),
+      await _tapVisible(
+        tester,
+        find.byKey(const Key('inventory_items_sort_eaten_option')),
       );
-      await tester.pumpAndSettle();
 
       Navigator.of(tester.element(find.byType(InventoryList))).pop();
       await tester.pumpAndSettle();
 
-      expect(find.text('Recently eaten descending'), findsOneWidget);
+      expect(find.text('Eaten - Descending'), findsOneWidget);
       expect(_visibleInventoryItemNames(tester), <String>[
         'Recent',
         'Old',
@@ -412,17 +445,15 @@ void main() {
 
       await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(
-          const Key('inventory_items_sort_recently_eaten_ascending_option'),
-        ),
+      await _tapVisible(
+        tester,
+        find.byKey(const Key('inventory_items_sort_eaten_direction_button')),
       );
-      await tester.pumpAndSettle();
 
       Navigator.of(tester.element(find.byType(InventoryList))).pop();
       await tester.pumpAndSettle();
 
-      expect(find.text('Recently eaten ascending'), findsOneWidget);
+      expect(find.text('Eaten - Ascending'), findsOneWidget);
       expect(_visibleInventoryItemNames(tester), <String>[
         'Old',
         'Recent',
@@ -447,12 +478,10 @@ void main() {
 
       await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(
-          const Key('inventory_items_sort_available_amount_ascending_option'),
-        ),
+      await _tapVisible(
+        tester,
+        find.byKey(const Key('inventory_items_sort_quantity_option')),
       );
-      await tester.pumpAndSettle();
 
       Navigator.of(tester.element(find.byType(InventoryList))).pop();
       await tester.pumpAndSettle();
@@ -462,16 +491,14 @@ void main() {
         'Half',
         'Full',
       ]);
-      expect(find.text('Available amount ascending'), findsOneWidget);
+      expect(find.text('Amount - Ascending'), findsOneWidget);
 
       await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(
-          const Key('inventory_items_sort_available_amount_descending_option'),
-        ),
+      await _tapVisible(
+        tester,
+        find.byKey(const Key('inventory_items_sort_quantity_direction_button')),
       );
-      await tester.pumpAndSettle();
 
       Navigator.of(tester.element(find.byType(InventoryList))).pop();
       await tester.pumpAndSettle();
@@ -481,7 +508,7 @@ void main() {
         'Half',
         'Empty',
       ]);
-      expect(find.text('Available amount descending'), findsOneWidget);
+      expect(find.text('Amount - Descending'), findsOneWidget);
     },
   );
 
@@ -505,8 +532,15 @@ void main() {
     expect(find.text('Fresh Pasta'), findsOneWidget);
     expect(find.text('Gone Soup'), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
-    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('prepared_meals_filter_button')),
+      -300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await _tapVisible(
+      tester,
+      find.byKey(const Key('prepared_meals_filter_button')),
+    );
 
     final before = tester.widget<Switch>(
       find.descendant(
@@ -516,13 +550,13 @@ void main() {
     );
     expect(before.value, isFalse);
 
-    await tester.tap(
+    await _tapVisible(
+      tester,
       find.descendant(
         of: find.byKey(const Key('prepared_meals_hide_consumed_toggle')),
         matching: find.byType(Switch),
       ),
     );
-    await tester.pumpAndSettle();
 
     Navigator.of(tester.element(find.byType(InventoryList))).pop();
     await tester.pumpAndSettle();
@@ -531,7 +565,192 @@ void main() {
     expect(find.text('Gone Soup'), findsNothing);
   });
 
-  testWidgets('prepared meals sort can switch between newest and oldest', (
+  testWidgets(
+    'prepared meals sort can switch between added descending and ascending',
+    (tester) async {
+      await tester.pumpWidget(
+        _buildInventoryTestApp(
+          items: const <InventoryItem>[],
+          preparedMeals: <PreparedMeal>[
+            _preparedMeal(
+              id: 'old-meal',
+              name: 'Old Meal',
+              createdAt: DateTime.parse('2026-02-18T08:00:00Z'),
+            ),
+            _preparedMeal(
+              id: 'new-meal',
+              name: 'New Meal',
+              createdAt: DateTime.parse('2026-02-21T08:00:00Z'),
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      List<String> visibleMealNames() {
+        return tester
+            .widgetList<PreparedMealCard>(find.byType(PreparedMealCard))
+            .map((card) => card.meal.name)
+            .toList(growable: false);
+      }
+
+      expect(visibleMealNames(), <String>['New Meal', 'Old Meal']);
+      expect(find.text('Added - Descending'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
+      await tester.pumpAndSettle();
+
+      await _tapVisible(
+        tester,
+        find.byKey(const Key('prepared_meals_sort_added_direction_button')),
+      );
+
+      Navigator.of(tester.element(find.byType(InventoryList))).pop();
+      await tester.pumpAndSettle();
+
+      expect(visibleMealNames(), <String>['Old Meal', 'New Meal']);
+      expect(find.text('Added - Ascending'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'prepared meals sort can switch between eaten descending and ascending',
+    (tester) async {
+      await tester.pumpWidget(
+        _buildInventoryTestApp(
+          items: const <InventoryItem>[],
+          preparedMeals: <PreparedMeal>[
+            _preparedMeal(
+              id: 'old-eaten',
+              name: 'Old Eaten',
+              createdAt: DateTime.parse('2026-02-22T08:00:00Z'),
+            ).copyWith(updatedAt: DateTime.parse('2026-02-19T08:00:00Z')),
+            _preparedMeal(
+              id: 'new-eaten',
+              name: 'New Eaten',
+              createdAt: DateTime.parse('2026-02-18T08:00:00Z'),
+            ).copyWith(updatedAt: DateTime.parse('2026-02-22T08:00:00Z')),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      List<String> visibleMealNames() {
+        return tester
+            .widgetList<PreparedMealCard>(find.byType(PreparedMealCard))
+            .map((card) => card.meal.name)
+            .toList(growable: false);
+      }
+
+      expect(visibleMealNames(), <String>['Old Eaten', 'New Eaten']);
+
+      await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
+      await tester.pumpAndSettle();
+
+      await _tapVisible(
+        tester,
+        find.byKey(const Key('prepared_meals_sort_eaten_option')),
+      );
+
+      Navigator.of(tester.element(find.byType(InventoryList))).pop();
+      await tester.pumpAndSettle();
+
+      expect(visibleMealNames(), <String>['New Eaten', 'Old Eaten']);
+
+      await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
+      await tester.pumpAndSettle();
+
+      await _tapVisible(
+        tester,
+        find.byKey(const Key('prepared_meals_sort_eaten_direction_button')),
+      );
+
+      Navigator.of(tester.element(find.byType(InventoryList))).pop();
+      await tester.pumpAndSettle();
+
+      expect(visibleMealNames(), <String>['Old Eaten', 'New Eaten']);
+    },
+  );
+
+  testWidgets(
+    'prepared meals sort can switch between alphabetical directions',
+    (tester) async {
+      await tester.pumpWidget(
+        _buildInventoryTestApp(
+          items: const <InventoryItem>[],
+          preparedMeals: <PreparedMeal>[
+            _preparedMeal(
+              id: 'meal-b',
+              name: 'Banana Bowl',
+              createdAt: DateTime.parse('2026-02-18T08:00:00Z'),
+            ),
+            _preparedMeal(
+              id: 'meal-a',
+              name: 'Apple Pie',
+              createdAt: DateTime.parse('2026-02-21T08:00:00Z'),
+            ),
+            _preparedMeal(
+              id: 'meal-c',
+              name: 'Carrot Soup',
+              createdAt: DateTime.parse('2026-02-17T08:00:00Z'),
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      List<String> visibleMealNames() {
+        return tester
+            .widgetList<PreparedMealCard>(find.byType(PreparedMealCard))
+            .map((card) => card.meal.name)
+            .toList(growable: false);
+      }
+
+      expect(visibleMealNames(), <String>[
+        'Apple Pie',
+        'Banana Bowl',
+        'Carrot Soup',
+      ]);
+
+      await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
+      await tester.pumpAndSettle();
+
+      await _tapVisible(
+        tester,
+        find.byKey(const Key('prepared_meals_sort_alphabetical_option')),
+      );
+
+      Navigator.of(tester.element(find.byType(InventoryList))).pop();
+      await tester.pumpAndSettle();
+
+      expect(visibleMealNames(), <String>[
+        'Apple Pie',
+        'Banana Bowl',
+        'Carrot Soup',
+      ]);
+
+      await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
+      await tester.pumpAndSettle();
+
+      await _tapVisible(
+        tester,
+        find.byKey(
+          const Key('prepared_meals_sort_alphabetical_direction_button'),
+        ),
+      );
+
+      Navigator.of(tester.element(find.byType(InventoryList))).pop();
+      await tester.pumpAndSettle();
+
+      expect(visibleMealNames(), <String>[
+        'Carrot Soup',
+        'Banana Bowl',
+        'Apple Pie',
+      ]);
+    },
+  );
+
+  testWidgets('prepared meals sort can switch between quantity directions', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -539,14 +758,22 @@ void main() {
         items: const <InventoryItem>[],
         preparedMeals: <PreparedMeal>[
           _preparedMeal(
-            id: 'old-meal',
-            name: 'Old Meal',
-            createdAt: DateTime.parse('2026-02-18T08:00:00Z'),
+            id: 'meal-low',
+            name: 'Low Meal',
+            totalPortions: 4,
+            remainingPortions: 1,
           ),
           _preparedMeal(
-            id: 'new-meal',
-            name: 'New Meal',
-            createdAt: DateTime.parse('2026-02-21T08:00:00Z'),
+            id: 'meal-mid',
+            name: 'Mid Meal',
+            totalPortions: 4,
+            remainingPortions: 2,
+          ),
+          _preparedMeal(
+            id: 'meal-high',
+            name: 'High Meal',
+            totalPortions: 4,
+            remainingPortions: 4,
           ),
         ],
       ),
@@ -560,23 +787,171 @@ void main() {
           .toList(growable: false);
     }
 
-    expect(visibleMealNames(), <String>['New Meal', 'Old Meal']);
-
-    await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
-    await tester.pumpAndSettle();
-
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const Key('prepared_meals_sort_newest_button')),
-        matching: find.byType(Switch),
-      ),
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('prepared_meals_filter_button')),
+      -300,
+      scrollable: find.byType(Scrollable).first,
     );
-    await tester.pumpAndSettle();
+    await _tapVisible(
+      tester,
+      find.byKey(const Key('prepared_meals_filter_button')),
+    );
+
+    await _tapVisible(
+      tester,
+      find.byKey(const Key('prepared_meals_sort_quantity_option')),
+    );
 
     Navigator.of(tester.element(find.byType(InventoryList))).pop();
     await tester.pumpAndSettle();
 
-    expect(visibleMealNames(), <String>['Old Meal', 'New Meal']);
+    expect(visibleMealNames(), <String>['Low Meal', 'Mid Meal', 'High Meal']);
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('prepared_meals_filter_button')),
+      -300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await _tapVisible(
+      tester,
+      find.byKey(const Key('prepared_meals_filter_button')),
+    );
+
+    await _tapVisible(
+      tester,
+      find.byKey(const Key('prepared_meals_sort_quantity_direction_button')),
+    );
+
+    Navigator.of(tester.element(find.byType(InventoryList))).pop();
+    await tester.pumpAndSettle();
+
+    expect(visibleMealNames(), <String>['High Meal', 'Mid Meal', 'Low Meal']);
+  });
+
+  testWidgets('inventory view preferences persist across remount', (
+    tester,
+  ) async {
+    final preferences = _MemoryAppPreferences();
+    final items = <InventoryItem>[
+      _item(id: 'apple', name: 'Apple', quantity: 1, initialQuantity: 2),
+      _item(id: 'banana', name: 'Banana', quantity: 1, initialQuantity: 2),
+      _item(id: 'gone', name: 'Gone Milk', quantity: 0, initialQuantity: 2),
+    ];
+
+    await tester.pumpWidget(
+      _buildInventoryTestApp(items: items, preferences: preferences),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('inventory_items_filter_button')),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byKey(const Key('inventory_items_filter_button')));
+    await tester.pumpAndSettle();
+
+    await _tapVisible(
+      tester,
+      find.byKey(const Key('inventory_items_sort_alphabetical_option')),
+    );
+    await _tapVisible(
+      tester,
+      find.byKey(
+        const Key('inventory_items_sort_alphabetical_direction_button'),
+      ),
+    );
+    await _tapVisible(
+      tester,
+      find.descendant(
+        of: find.byKey(const Key('inventory_items_hide_consumed_toggle')),
+        matching: find.byType(Switch),
+      ),
+    );
+
+    Navigator.of(tester.element(find.byType(InventoryList))).pop();
+    await tester.pumpAndSettle();
+
+    await tester.pumpWidget(
+      _buildInventoryTestApp(items: items, preferences: preferences),
+    );
+    await tester.pumpAndSettle();
+
+    expect(_visibleInventoryItemNames(tester), <String>['Banana', 'Apple']);
+    expect(find.text('Gone Milk'), findsNothing);
+  });
+
+  testWidgets('prepared meal view preferences persist across remount', (
+    tester,
+  ) async {
+    final preferences = _MemoryAppPreferences();
+    final preparedMeals = <PreparedMeal>[
+      _preparedMeal(
+        id: 'meal-low',
+        name: 'Ready Low',
+        totalPortions: 4,
+        remainingPortions: 1,
+      ),
+      _preparedMeal(
+        id: 'meal-high',
+        name: 'Ready High',
+        totalPortions: 4,
+        remainingPortions: 4,
+      ),
+      _preparedMeal(
+        id: 'meal-incomplete',
+        name: 'Incomplete Meal',
+      ).copyWith(pendingRecipeIngredients: const <String>['Cheese']),
+    ];
+
+    await tester.pumpWidget(
+      _buildInventoryTestApp(
+        items: const <InventoryItem>[],
+        preparedMeals: preparedMeals,
+        preferences: preferences,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
+    await tester.pumpAndSettle();
+
+    await _tapVisible(
+      tester,
+      find.byKey(const Key('prepared_meals_sort_quantity_option')),
+    );
+    await _tapVisible(
+      tester,
+      find.byKey(const Key('prepared_meals_sort_quantity_direction_button')),
+    );
+    await _tapVisible(
+      tester,
+      find.descendant(
+        of: find.byKey(const Key('prepared_meals_ready_only_toggle')),
+        matching: find.byType(Switch),
+      ),
+    );
+
+    Navigator.of(tester.element(find.byType(InventoryList))).pop();
+    await tester.pumpAndSettle();
+
+    await tester.pumpWidget(
+      _buildInventoryTestApp(
+        items: const <InventoryItem>[],
+        preparedMeals: preparedMeals,
+        preferences: preferences,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widgetList<PreparedMealCard>(find.byType(PreparedMealCard))
+          .map((card) => card.meal.name)
+          .toList(growable: false),
+      <String>['Ready High', 'Ready Low'],
+    );
+    expect(find.text('Incomplete Meal'), findsNothing);
   });
 
   testWidgets('prepared meals ready-only filter hides incomplete meals', (
@@ -602,13 +977,13 @@ void main() {
     await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
     await tester.pumpAndSettle();
 
-    await tester.tap(
+    await _tapVisible(
+      tester,
       find.descendant(
         of: find.byKey(const Key('prepared_meals_ready_only_toggle')),
         matching: find.byType(Switch),
       ),
     );
-    await tester.pumpAndSettle();
 
     Navigator.of(tester.element(find.byType(InventoryList))).pop();
     await tester.pumpAndSettle();
@@ -651,14 +1026,12 @@ void main() {
       );
     }
 
-    await tester.tap(readySwitch());
-    await tester.pumpAndSettle();
+    await _tapVisible(tester, readySwitch());
 
     expect(tester.widget<Switch>(readySwitch()).value, isTrue);
     expect(tester.widget<Switch>(incompleteSwitch()).value, isFalse);
 
-    await tester.tap(incompleteSwitch());
-    await tester.pumpAndSettle();
+    await _tapVisible(tester, incompleteSwitch());
 
     expect(tester.widget<Switch>(readySwitch()).value, isFalse);
     expect(tester.widget<Switch>(incompleteSwitch()).value, isTrue);
@@ -684,13 +1057,13 @@ void main() {
     await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
     await tester.pumpAndSettle();
 
-    await tester.tap(
+    await _tapVisible(
+      tester,
       find.descendant(
         of: find.byKey(const Key('prepared_meals_incomplete_only_toggle')),
         matching: find.byType(Switch),
       ),
     );
-    await tester.pumpAndSettle();
 
     Navigator.of(tester.element(find.byType(InventoryList))).pop();
     await tester.pumpAndSettle();
@@ -719,13 +1092,13 @@ void main() {
     await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
     await tester.pumpAndSettle();
 
-    await tester.tap(
+    await _tapVisible(
+      tester,
       find.descendant(
         of: find.byKey(const Key('prepared_meals_depleted_only_toggle')),
         matching: find.byType(Switch),
       ),
     );
-    await tester.pumpAndSettle();
 
     Navigator.of(tester.element(find.byType(InventoryList))).pop();
     await tester.pumpAndSettle();
@@ -763,11 +1136,14 @@ void main() {
   });
 
   testWidgets(
-    'inventory items section restores collapse state from page storage',
+    'inventory items section restores collapse state from preferences',
     (tester) async {
+      final preferences = _MemoryAppPreferences();
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            appPreferencesProvider.overrideWithValue(preferences),
             barcodeBackfillFeatureFlagsProvider.overrideWithValue(
               const BarcodeBackfillFeatureFlags(
                 showInventoryBarcodeMarkers: false,
@@ -782,7 +1158,7 @@ void main() {
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
-              body: _InventoryListPageStorageHarness(
+              body: _InventoryListPersistenceHarness(
                 items: <InventoryItem>[
                   _item(
                     id: 'milk',
@@ -861,11 +1237,14 @@ void main() {
   });
 
   testWidgets(
-    'prepared meals section restores collapse state from page storage',
+    'prepared meals section restores collapse state from preferences',
     (tester) async {
+      final preferences = _MemoryAppPreferences();
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            appPreferencesProvider.overrideWithValue(preferences),
             barcodeBackfillFeatureFlagsProvider.overrideWithValue(
               const BarcodeBackfillFeatureFlags(
                 showInventoryBarcodeMarkers: false,
@@ -880,7 +1259,7 @@ void main() {
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
-              body: _InventoryListPageStorageHarness(
+              body: _InventoryListPersistenceHarness(
                 items: const <InventoryItem>[],
                 preparedMeals: <PreparedMeal>[
                   _preparedMeal(id: 'meal-1', name: 'Pasta Bowl'),

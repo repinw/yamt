@@ -136,8 +136,14 @@ int _compareInventoryItemSortOrder(
         return dateCompare;
       }
       return _compareInventoryItemName(a, b);
-    case InventoryItemSortMode.alphabetical:
+    case InventoryItemSortMode.alphabeticalAscending:
       final nameCompare = _compareInventoryItemName(a, b);
+      if (nameCompare != 0) {
+        return nameCompare;
+      }
+      return b.entryDate.compareTo(a.entryDate);
+    case InventoryItemSortMode.alphabeticalDescending:
+      final nameCompare = _compareInventoryItemName(b, a);
       if (nameCompare != 0) {
         return nameCompare;
       }

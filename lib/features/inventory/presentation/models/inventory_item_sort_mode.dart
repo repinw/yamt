@@ -3,7 +3,8 @@ enum InventoryItemSortMode {
   recentlyAddedAscending,
   recentlyEatenDescending,
   recentlyEatenAscending,
-  alphabetical,
+  alphabeticalAscending,
+  alphabeticalDescending,
   availableAmountAscending,
   availableAmountDescending,
 }

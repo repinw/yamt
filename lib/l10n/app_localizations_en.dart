@@ -295,31 +295,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryFilterAction => 'Filter items';
 
   @override
-  String get inventoryFiltersTitle => 'Filter items';
+  String get inventoryFiltersTitle => 'Adjust view';
+
+  @override
+  String get inventoryFiltersSubtitle => 'Sort and filter your foods';
+
+  @override
+  String get inventoryFiltersShowResultsAction => 'Show results';
 
   @override
   String get inventorySortSectionTitle => 'Sort';
 
   @override
-  String get inventorySortRecentlyAddedDescending => 'Recently added descending';
+  String get inventoryFilterSectionTitle => 'Filter';
 
   @override
-  String get inventorySortRecentlyAddedAscending => 'Recently added ascending';
+  String get inventorySortAdded => 'Added';
 
   @override
-  String get inventorySortRecentlyEatenDescending => 'Recently eaten descending';
-
-  @override
-  String get inventorySortRecentlyEatenAscending => 'Recently eaten ascending';
+  String get inventorySortEaten => 'Eaten';
 
   @override
   String get inventorySortAlphabetical => 'Alphabetical';
 
   @override
-  String get inventorySortAvailableAmountAscending => 'Available amount ascending';
+  String get inventorySortQuantity => 'Amount';
 
   @override
-  String get inventorySortAvailableAmountDescending => 'Available amount descending';
+  String get inventorySortDirectionAscending => 'Ascending';
+
+  @override
+  String get inventorySortDirectionDescending => 'Descending';
+
+  @override
+  String get inventorySortDirectionAlphaAscending => 'A to Z';
+
+  @override
+  String get inventorySortDirectionAlphaDescending => 'Z to A';
 
   @override
   String get inventoryNutritionCaloriesShortLabel => 'Kcal';
@@ -334,16 +346,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryFilterNotConsumed => 'Not consumed';
 
   @override
+  String get inventoryHideConsumedFilterTitle => 'Hide consumed';
+
+  @override
+  String get inventoryHideConsumedFilterSubtitle => 'Hide completely empty items';
+
+  @override
   String get inventoryHideFullyConsumedItemsToggle => 'Hide fully consumed items';
 
   @override
   String get preparedMealFilterAction => 'Filter meals';
 
   @override
-  String get preparedMealFiltersTitle => 'Filter meals';
+  String get preparedMealFiltersTitle => 'Adjust view';
 
   @override
-  String get preparedMealSortNewestFirst => 'Newest first';
+  String get preparedMealFiltersSubtitle => 'Sort and filter your meals';
 
   @override
   String get preparedMealShowReadyOnlyToggle => 'Only ready meals';

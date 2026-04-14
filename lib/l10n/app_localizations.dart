@@ -662,8 +662,20 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryFiltersTitle.
   ///
   /// In en, this message translates to:
-  /// **'Filter items'**
+  /// **'Adjust view'**
   String get inventoryFiltersTitle;
+
+  /// No description provided for @inventoryFiltersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort and filter your foods'**
+  String get inventoryFiltersSubtitle;
+
+  /// No description provided for @inventoryFiltersShowResultsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Show results'**
+  String get inventoryFiltersShowResultsAction;
 
   /// No description provided for @inventorySortSectionTitle.
   ///
@@ -671,29 +683,23 @@ abstract class AppLocalizations {
   /// **'Sort'**
   String get inventorySortSectionTitle;
 
-  /// No description provided for @inventorySortRecentlyAddedDescending.
+  /// No description provided for @inventoryFilterSectionTitle.
   ///
   /// In en, this message translates to:
-  /// **'Recently added descending'**
-  String get inventorySortRecentlyAddedDescending;
+  /// **'Filter'**
+  String get inventoryFilterSectionTitle;
 
-  /// No description provided for @inventorySortRecentlyAddedAscending.
+  /// No description provided for @inventorySortAdded.
   ///
   /// In en, this message translates to:
-  /// **'Recently added ascending'**
-  String get inventorySortRecentlyAddedAscending;
+  /// **'Added'**
+  String get inventorySortAdded;
 
-  /// No description provided for @inventorySortRecentlyEatenDescending.
+  /// No description provided for @inventorySortEaten.
   ///
   /// In en, this message translates to:
-  /// **'Recently eaten descending'**
-  String get inventorySortRecentlyEatenDescending;
-
-  /// No description provided for @inventorySortRecentlyEatenAscending.
-  ///
-  /// In en, this message translates to:
-  /// **'Recently eaten ascending'**
-  String get inventorySortRecentlyEatenAscending;
+  /// **'Eaten'**
+  String get inventorySortEaten;
 
   /// No description provided for @inventorySortAlphabetical.
   ///
@@ -701,17 +707,35 @@ abstract class AppLocalizations {
   /// **'Alphabetical'**
   String get inventorySortAlphabetical;
 
-  /// No description provided for @inventorySortAvailableAmountAscending.
+  /// No description provided for @inventorySortQuantity.
   ///
   /// In en, this message translates to:
-  /// **'Available amount ascending'**
-  String get inventorySortAvailableAmountAscending;
+  /// **'Amount'**
+  String get inventorySortQuantity;
 
-  /// No description provided for @inventorySortAvailableAmountDescending.
+  /// No description provided for @inventorySortDirectionAscending.
   ///
   /// In en, this message translates to:
-  /// **'Available amount descending'**
-  String get inventorySortAvailableAmountDescending;
+  /// **'Ascending'**
+  String get inventorySortDirectionAscending;
+
+  /// No description provided for @inventorySortDirectionDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Descending'**
+  String get inventorySortDirectionDescending;
+
+  /// No description provided for @inventorySortDirectionAlphaAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'A to Z'**
+  String get inventorySortDirectionAlphaAscending;
+
+  /// No description provided for @inventorySortDirectionAlphaDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Z to A'**
+  String get inventorySortDirectionAlphaDescending;
 
   /// No description provided for @inventoryNutritionCaloriesShortLabel.
   ///
@@ -737,6 +761,18 @@ abstract class AppLocalizations {
   /// **'Not consumed'**
   String get inventoryFilterNotConsumed;
 
+  /// No description provided for @inventoryHideConsumedFilterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide consumed'**
+  String get inventoryHideConsumedFilterTitle;
+
+  /// No description provided for @inventoryHideConsumedFilterSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide completely empty items'**
+  String get inventoryHideConsumedFilterSubtitle;
+
   /// No description provided for @inventoryHideFullyConsumedItemsToggle.
   ///
   /// In en, this message translates to:
@@ -752,14 +788,14 @@ abstract class AppLocalizations {
   /// No description provided for @preparedMealFiltersTitle.
   ///
   /// In en, this message translates to:
-  /// **'Filter meals'**
+  /// **'Adjust view'**
   String get preparedMealFiltersTitle;
 
-  /// No description provided for @preparedMealSortNewestFirst.
+  /// No description provided for @preparedMealFiltersSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Newest first'**
-  String get preparedMealSortNewestFirst;
+  /// **'Sort and filter your meals'**
+  String get preparedMealFiltersSubtitle;
 
   /// No description provided for @preparedMealShowReadyOnlyToggle.
   ///

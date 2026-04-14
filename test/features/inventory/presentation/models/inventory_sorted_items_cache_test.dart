@@ -68,7 +68,7 @@ void main() {
     ], sortMode: InventoryItemSortMode.recentlyAddedDescending);
     final differentSortMode = cache.update(
       base,
-      sortMode: InventoryItemSortMode.alphabetical,
+      sortMode: InventoryItemSortMode.alphabeticalAscending,
     );
 
     expect(identical(added, cache), isFalse);
@@ -169,14 +169,20 @@ void main() {
     ]);
   });
 
-  test('alphabetical sort orders by item name ascending', () {
-    final sorted = sortInventoryItems(<InventoryItem>[
+  test('alphabetical sort orders by item name both directions', () {
+    final ascending = sortInventoryItems(<InventoryItem>[
       _item(id: 'b', name: 'Banana', entryDate: '2026-02-22T08:00:00Z'),
       _item(id: 'a', name: 'Apple', entryDate: '2026-02-20T08:00:00Z'),
       _item(id: 'c', name: 'Cherry', entryDate: '2026-02-21T08:00:00Z'),
-    ], sortMode: InventoryItemSortMode.alphabetical);
+    ], sortMode: InventoryItemSortMode.alphabeticalAscending);
+    final descending = sortInventoryItems(<InventoryItem>[
+      _item(id: 'b', name: 'Banana', entryDate: '2026-02-22T08:00:00Z'),
+      _item(id: 'a', name: 'Apple', entryDate: '2026-02-20T08:00:00Z'),
+      _item(id: 'c', name: 'Cherry', entryDate: '2026-02-21T08:00:00Z'),
+    ], sortMode: InventoryItemSortMode.alphabeticalDescending);
 
-    expect(sorted.map((item) => item.id), <String>['a', 'b', 'c']);
+    expect(ascending.map((item) => item.id), <String>['a', 'b', 'c']);
+    expect(descending.map((item) => item.id), <String>['c', 'b', 'a']);
   });
 
   test('available amount sorts by remaining ratio', () {
