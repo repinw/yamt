@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show listEquals;
@@ -338,6 +339,18 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     );
   }
 
+  void _persistViewPreferencesSafely() {
+    unawaited(
+      _persistViewPreferences().catchError((Object error, StackTrace stack) {
+        log(
+          'Failed to persist inventory list view preferences.',
+          error: error,
+          stackTrace: stack,
+        );
+      }),
+    );
+  }
+
   void _onModeChanged(InventoryListMode mode) {
     if (widget.isSelectionMode) {
       return;
@@ -357,7 +370,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       );
       _recomputeVisibleContent();
     });
-    unawaited(_persistViewPreferences());
+    _persistViewPreferencesSafely();
   }
 
   void _onInventoryItemSortModeChanged(InventoryItemSortMode sortMode) {
@@ -367,7 +380,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     setState(() {
       _inventoryItemSortMode = sortMode;
     });
-    unawaited(_persistViewPreferences());
+    _persistViewPreferencesSafely();
   }
 
   void _onPreparedMealConsumptionFilterChanged(
@@ -380,7 +393,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       _preparedMealConsumptionFilter = filter;
       _recomputeVisibleContent();
     });
-    unawaited(_persistViewPreferences());
+    _persistViewPreferencesSafely();
   }
 
   void _onPreparedMealCompletionFilterChanged(
@@ -393,7 +406,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       _preparedMealCompletionFilter = filter;
       _recomputeVisibleContent();
     });
-    unawaited(_persistViewPreferences());
+    _persistViewPreferencesSafely();
   }
 
   void _onPreparedMealSortModeChanged(
@@ -406,7 +419,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       _preparedMealSortMode = preparedMealSortMode;
       _recomputeVisibleContent();
     });
-    unawaited(_persistViewPreferences());
+    _persistViewPreferencesSafely();
   }
 
   void _onSearchQueryChanged(String value) {
@@ -426,7 +439,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     setState(() {
       _isRecentItemsSectionExpanded = !_isRecentItemsSectionExpanded;
     });
-    unawaited(_persistViewPreferences());
+    _persistViewPreferencesSafely();
   }
 
   void _togglePreparedMealsSection() {
@@ -436,7 +449,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     setState(() {
       _isPreparedMealsSectionExpanded = !_isPreparedMealsSectionExpanded;
     });
-    unawaited(_persistViewPreferences());
+    _persistViewPreferencesSafely();
   }
 
   Future<void> _showInventoryFiltersSheet(
@@ -701,9 +714,13 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   }
 
   List<PreparedMeal> _sortPreparedMeals(List<PreparedMeal> meals) {
+    final normalizedNames = <String, String>{
+      for (final meal in meals) meal.id: meal.name.toLowerCase(),
+    };
+
     meals.sort((left, right) {
-      final normalizedLeftName = left.name.toLowerCase();
-      final normalizedRightName = right.name.toLowerCase();
+      final normalizedLeftName = normalizedNames[left.id]!;
+      final normalizedRightName = normalizedNames[right.id]!;
       final nameCompare = normalizedLeftName.compareTo(normalizedRightName);
       final dateCompare = left.createdAt.compareTo(right.createdAt);
       final updatedCompare = left.updatedAt.compareTo(right.updatedAt);
