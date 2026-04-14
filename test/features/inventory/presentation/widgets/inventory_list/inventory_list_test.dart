@@ -57,36 +57,44 @@ Widget _buildInventoryTestApp({
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
-        body: InventoryList(
+        body: _buildInventoryListBody(
           items: items,
           preparedMeals: preparedMeals,
-          emptyStateActionButton: const SizedBox.shrink(),
-          onDeleteItem: (itemId) async => true,
-          onEatItem: (itemId, request) async => true,
-          onThrowAwayItem: (itemId, amount, reason) async => true,
-          onEatPreparedMeal:
-              ({
-                required mealId,
-                required portions,
-                required mealType,
-                required loggedDay,
-              }) async => true,
-          onThrowAwayPreparedMeal: (mealId, portions, reason) async => true,
-          onFillPendingPreparedMealIngredient:
-              (mealId, ingredient, inventoryItemIds) async => true,
-          onIgnorePendingPreparedMealIngredient: (mealId, ingredient) async =>
-              true,
-          onUnbundlePreparedMeal: (mealId) async => true,
-          onEditPreparedMeal: (mealId, name, imageChanged, imageBytes) async =>
-              true,
-          onSavePreparedMealTemplate: (meal) async => true,
-          isSelectionMode: false,
-          selectedItemIds: const <String>{},
-          onItemLongPress: (itemId) {},
-          onSelectionToggle: (itemId) {},
         ),
       ),
     ),
+  );
+}
+
+Widget _buildInventoryListBody({
+  required List<InventoryItem> items,
+  required List<PreparedMeal> preparedMeals,
+}) {
+  return InventoryList(
+    items: items,
+    preparedMeals: preparedMeals,
+    emptyStateActionButton: const SizedBox.shrink(),
+    onDeleteItem: (itemId) async => true,
+    onEatItem: (itemId, request) async => true,
+    onThrowAwayItem: (itemId, amount, reason) async => true,
+    onEatPreparedMeal:
+        ({
+          required mealId,
+          required portions,
+          required mealType,
+          required loggedDay,
+        }) async => true,
+    onThrowAwayPreparedMeal: (mealId, portions, reason) async => true,
+    onFillPendingPreparedMealIngredient:
+        (mealId, ingredient, inventoryItemIds) async => true,
+    onIgnorePendingPreparedMealIngredient: (mealId, ingredient) async => true,
+    onUnbundlePreparedMeal: (mealId) async => true,
+    onEditPreparedMeal: (mealId, name, imageChanged, imageBytes) async => true,
+    onSavePreparedMealTemplate: (meal) async => true,
+    isSelectionMode: false,
+    selectedItemIds: const <String>{},
+    onItemLongPress: (itemId) {},
+    onSelectionToggle: (itemId) {},
   );
 }
 
@@ -154,6 +162,54 @@ class _FakeManualProductSpeechService implements VoiceSearchService {
 
   void emitError(VoiceSearchFailure failure) {
     _onError?.call(failure);
+  }
+}
+
+class _InventoryListPageStorageHarness extends StatefulWidget {
+  const _InventoryListPageStorageHarness({
+    required this.items,
+    required this.preparedMeals,
+  });
+
+  final List<InventoryItem> items;
+  final List<PreparedMeal> preparedMeals;
+
+  @override
+  State<_InventoryListPageStorageHarness> createState() =>
+      _InventoryListPageStorageHarnessState();
+}
+
+class _InventoryListPageStorageHarnessState
+    extends State<_InventoryListPageStorageHarness> {
+  final _bucket = PageStorageBucket();
+  var _showList = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return PageStorage(
+      bucket: _bucket,
+      child: Column(
+        children: [
+          TextButton(
+            key: const Key('toggle_inventory_list_mount'),
+            onPressed: () {
+              setState(() {
+                _showList = !_showList;
+              });
+            },
+            child: const Text('toggle'),
+          ),
+          Expanded(
+            child: _showList
+                ? _buildInventoryListBody(
+                    items: widget.items,
+                    preparedMeals: widget.preparedMeals,
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -384,6 +440,53 @@ void main() {
     expect(find.text('Incomplete Meal'), findsNothing);
   });
 
+  testWidgets('prepared meals filter toggles are mutually exclusive', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildInventoryTestApp(
+        items: const <InventoryItem>[],
+        preparedMeals: <PreparedMeal>[
+          _preparedMeal(id: 'ready-meal', name: 'Ready Meal'),
+          _preparedMeal(
+            id: 'incomplete-meal',
+            name: 'Incomplete Meal',
+          ).copyWith(pendingRecipeIngredients: const <String>['Cheese']),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
+    await tester.pumpAndSettle();
+
+    Finder readySwitch() {
+      return find.descendant(
+        of: find.byKey(const Key('prepared_meals_ready_only_toggle')),
+        matching: find.byType(Switch),
+      );
+    }
+
+    Finder incompleteSwitch() {
+      return find.descendant(
+        of: find.byKey(const Key('prepared_meals_incomplete_only_toggle')),
+        matching: find.byType(Switch),
+      );
+    }
+
+    await tester.tap(readySwitch());
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<Switch>(readySwitch()).value, isTrue);
+    expect(tester.widget<Switch>(incompleteSwitch()).value, isFalse);
+
+    await tester.tap(incompleteSwitch());
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<Switch>(readySwitch()).value, isFalse);
+    expect(tester.widget<Switch>(incompleteSwitch()).value, isTrue);
+  });
+
   testWidgets('prepared meals incomplete-only filter hides ready meals', (
     tester,
   ) async {
@@ -482,6 +585,70 @@ void main() {
     expect(collapsedRotation.turns, 0);
     expect(find.text('Pasta Bowl'), findsNothing);
   });
+
+  testWidgets(
+    'prepared meals section restores collapse state from page storage',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            barcodeBackfillFeatureFlagsProvider.overrideWithValue(
+              const BarcodeBackfillFeatureFlags(
+                showInventoryBarcodeMarkers: false,
+                enableQueueBackfill: false,
+              ),
+            ),
+            activeShoppingListItemKeysProvider.overrideWithValue(
+              const <ShoppingListItemMatchKey>{},
+            ),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: _InventoryListPageStorageHarness(
+                items: const <InventoryItem>[],
+                preparedMeals: <PreparedMeal>[
+                  _preparedMeal(id: 'meal-1', name: 'Pasta Bowl'),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const Key('prepared_meals_section_expand_button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        tester
+            .widget<AnimatedRotation>(
+              find.byKey(const Key('prepared_meals_section_expand_indicator')),
+            )
+            .turns,
+        0,
+      );
+      expect(find.text('Pasta Bowl'), findsNothing);
+
+      await tester.tap(find.byKey(const Key('toggle_inventory_list_mount')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('toggle_inventory_list_mount')));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester
+            .widget<AnimatedRotation>(
+              find.byKey(const Key('prepared_meals_section_expand_indicator')),
+            )
+            .turns,
+        0,
+      );
+      expect(find.text('Pasta Bowl'), findsNothing);
+    },
+  );
 
   testWidgets(
     'inventory search matches compact voice query against spaced OCR name',

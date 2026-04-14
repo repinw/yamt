@@ -599,27 +599,19 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   }
 
   List<PreparedMeal> _applyPreparedMealFilter(List<PreparedMeal> meals) {
-    var filteredMeals = meals;
+    final filteredMeals = List<PreparedMeal>.from(meals);
 
     if (_showOnlyReadyPreparedMeals) {
-      filteredMeals = filteredMeals
-          .where((meal) => !meal.hasPendingRecipeIngredients)
-          .toList(growable: false);
+      filteredMeals.removeWhere((meal) => meal.hasPendingRecipeIngredients);
     }
     if (_showOnlyIncompletePreparedMeals) {
-      filteredMeals = filteredMeals
-          .where((meal) => meal.hasPendingRecipeIngredients)
-          .toList(growable: false);
+      filteredMeals.removeWhere((meal) => !meal.hasPendingRecipeIngredients);
     }
     if (_showOnlyDepletedPreparedMeals) {
-      filteredMeals = filteredMeals
-          .where((meal) => meal.isDepleted)
-          .toList(growable: false);
+      filteredMeals.removeWhere((meal) => !meal.isDepleted);
     }
     if (_hideFullyConsumedPreparedMeals) {
-      filteredMeals = filteredMeals
-          .where((meal) => !meal.isDepleted)
-          .toList(growable: false);
+      filteredMeals.removeWhere((meal) => meal.isDepleted);
     }
     return filteredMeals;
   }
@@ -632,8 +624,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   }
 
   List<PreparedMeal> _sortPreparedMeals(List<PreparedMeal> meals) {
-    final sortedMeals = List<PreparedMeal>.from(meals);
-    sortedMeals.sort((left, right) {
+    meals.sort((left, right) {
       final dateCompare = switch (_preparedMealSortOrder) {
         _PreparedMealSortOrder.newestFirst => right.createdAt.compareTo(
           left.createdAt,
@@ -647,6 +638,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       }
       return left.name.toLowerCase().compareTo(right.name.toLowerCase());
     });
-    return sortedMeals;
+    return meals;
   }
 }
