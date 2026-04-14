@@ -695,6 +695,48 @@ abstract class AppLocalizations {
   /// **'Hide fully consumed items'**
   String get inventoryHideFullyConsumedItemsToggle;
 
+  /// No description provided for @preparedMealFilterAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter meals'**
+  String get preparedMealFilterAction;
+
+  /// No description provided for @preparedMealFiltersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter meals'**
+  String get preparedMealFiltersTitle;
+
+  /// No description provided for @preparedMealSortNewestFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get preparedMealSortNewestFirst;
+
+  /// No description provided for @preparedMealShowReadyOnlyToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Only ready meals'**
+  String get preparedMealShowReadyOnlyToggle;
+
+  /// No description provided for @preparedMealShowIncompleteOnlyToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Only incomplete meals'**
+  String get preparedMealShowIncompleteOnlyToggle;
+
+  /// No description provided for @preparedMealShowDepletedOnlyToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Only fully consumed'**
+  String get preparedMealShowDepletedOnlyToggle;
+
+  /// No description provided for @preparedMealHideFullyConsumedItemsToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide fully consumed meals'**
+  String get preparedMealHideFullyConsumedItemsToggle;
+
   /// No description provided for @inventoryReceiptGroupTitle.
   ///
   /// In en, this message translates to:

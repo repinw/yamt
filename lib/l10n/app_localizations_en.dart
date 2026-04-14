@@ -313,6 +313,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryHideFullyConsumedItemsToggle => 'Hide fully consumed items';
 
   @override
+  String get preparedMealFilterAction => 'Filter meals';
+
+  @override
+  String get preparedMealFiltersTitle => 'Filter meals';
+
+  @override
+  String get preparedMealSortNewestFirst => 'Newest first';
+
+  @override
+  String get preparedMealShowReadyOnlyToggle => 'Only ready meals';
+
+  @override
+  String get preparedMealShowIncompleteOnlyToggle => 'Only incomplete meals';
+
+  @override
+  String get preparedMealShowDepletedOnlyToggle => 'Only fully consumed';
+
+  @override
+  String get preparedMealHideFullyConsumedItemsToggle => 'Hide fully consumed meals';
+
+  @override
   String get inventoryReceiptGroupTitle => 'Receipt';
 
   @override

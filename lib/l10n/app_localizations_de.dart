@@ -313,6 +313,27 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryHideFullyConsumedItemsToggle => 'Komplett verbrauchte Artikel ausblenden';
 
   @override
+  String get preparedMealFilterAction => 'Filtern';
+
+  @override
+  String get preparedMealFiltersTitle => 'Filter';
+
+  @override
+  String get preparedMealSortNewestFirst => 'Neueste zuerst';
+
+  @override
+  String get preparedMealShowReadyOnlyToggle => 'Nur fertige anzeigen';
+
+  @override
+  String get preparedMealShowIncompleteOnlyToggle => 'Vollständige ausblenden';
+
+  @override
+  String get preparedMealShowDepletedOnlyToggle => 'Nur aufgebrauchte anzeigen';
+
+  @override
+  String get preparedMealHideFullyConsumedItemsToggle => 'Komplett verbrauchte ausblenden';
+
+  @override
   String get inventoryReceiptGroupTitle => 'Beleg';
 
   @override
