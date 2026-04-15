@@ -15,6 +15,8 @@ import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_entry_post_persist_hook.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_overview_revision_provider.dart';
 
 part 'calorie_entries_controller.g.dart';
 
@@ -205,6 +207,10 @@ class CalorieEntriesController extends _$CalorieEntriesController {
         );
         _restoreEntries(previousEntries);
         return false;
+      }
+
+      if (ref.mounted) {
+        ref.read(calorieOverviewRevisionProvider.notifier).markChanged();
       }
 
       if (onPersisted != null) {
