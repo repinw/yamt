@@ -3,13 +3,13 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:path_provider/path_provider.dart';
-
-import 'local_image_store.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 
 const _localImageStoreLogName = 'LocalImageStore';
 const _localImageRootFolderName = 'local_images';
 const _localImageFileExtension = '.bin';
 
+/// Creates `dart:io` local image store implementation.
 LocalImageStore createPlatformLocalImageStore() {
   return _IoLocalImageStore();
 }
@@ -24,17 +24,14 @@ class _IoLocalImageStore implements LocalImageStore {
   }) async {
     try {
       final sourceFile = await _resolveFile(sourceRef);
-      if (!await sourceFile.exists()) {
+      if (!sourceFile.existsSync()) {
         await deleteImage(targetRef);
         return;
       }
 
       final targetFile = await _resolveFile(targetRef);
-      await targetFile.writeAsBytes(
-        await sourceFile.readAsBytes(),
-        flush: true,
-      );
-    } catch (error, stackTrace) {
+      targetFile.writeAsBytesSync(sourceFile.readAsBytesSync(), flush: true);
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to copy local image '
         'from ${sourceRef.storageKey} to ${targetRef.storageKey}.',
@@ -49,10 +46,10 @@ class _IoLocalImageStore implements LocalImageStore {
   Future<void> deleteImage(LocalImageRef imageRef) async {
     try {
       final file = await _resolveFile(imageRef);
-      if (await file.exists()) {
-        await file.delete();
+      if (file.existsSync()) {
+        file.deleteSync();
       }
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to delete local image ${imageRef.storageKey}.',
         name: _localImageStoreLogName,
@@ -66,11 +63,11 @@ class _IoLocalImageStore implements LocalImageStore {
   Future<Uint8List?> readBytes(LocalImageRef imageRef) async {
     try {
       final file = await _resolveFile(imageRef);
-      if (!await file.exists()) {
+      if (!file.existsSync()) {
         return null;
       }
-      return await file.readAsBytes();
-    } catch (error, stackTrace) {
+      return file.readAsBytesSync();
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read local image ${imageRef.storageKey}.',
         name: _localImageStoreLogName,
@@ -88,8 +85,8 @@ class _IoLocalImageStore implements LocalImageStore {
   }) async {
     try {
       final file = await _resolveFile(imageRef);
-      await file.writeAsBytes(bytes, flush: true);
-    } catch (error, stackTrace) {
+      file.writeAsBytesSync(bytes, flush: true);
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to save local image ${imageRef.storageKey}.',
         name: _localImageStoreLogName,
@@ -104,8 +101,8 @@ class _IoLocalImageStore implements LocalImageStore {
     final folder = Directory(
       '${rootDirectory.path}/${imageRef.storageFolder}',
     );
-    if (!await folder.exists()) {
-      await folder.create(recursive: true);
+    if (!folder.existsSync()) {
+      folder.createSync(recursive: true);
     }
     return File('${folder.path}/${imageRef.entityId}$_localImageFileExtension');
   }
@@ -120,8 +117,8 @@ class _IoLocalImageStore implements LocalImageStore {
     final rootDirectory = Directory(
       '${documentsDirectory.path}/$_localImageRootFolderName',
     );
-    if (!await rootDirectory.exists()) {
-      await rootDirectory.create(recursive: true);
+    if (!rootDirectory.existsSync()) {
+      rootDirectory.createSync(recursive: true);
     }
     _cachedRootDirectory = rootDirectory;
     return rootDirectory;

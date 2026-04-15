@@ -1,7 +1,8 @@
 import 'dart:typed_data';
 
-import 'local_image_store.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 
+/// Creates in-memory fallback local image store.
 LocalImageStore createPlatformLocalImageStore() {
   return _InMemoryLocalImageStore();
 }

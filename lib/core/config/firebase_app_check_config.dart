@@ -10,13 +10,12 @@ const _isFirebaseAppCheckEnabled = bool.fromEnvironment(
 );
 const _firebaseAppCheckDebugProviderOverride = String.fromEnvironment(
   'USE_FIREBASE_APP_CHECK_DEBUG_PROVIDER',
-  defaultValue: '',
 );
 const _firebaseAppCheckWebSiteKey = String.fromEnvironment(
   'FIREBASE_APP_CHECK_WEB_RECAPTCHA_SITE_KEY',
-  defaultValue: '',
 );
 
+/// Initializes Firebase App Check when it is enabled for this build.
 Future<void> setupFirebaseAppCheck() async {
   if (!_isFirebaseAppCheckEnabled) {
     _trace('Firebase App Check disabled by dart-define.');
@@ -45,18 +44,22 @@ Future<void> setupFirebaseAppCheck() async {
         _firebaseAppCheckWebSiteKey,
       ),
       providerAndroid: resolveFirebaseAppCheckAndroidProvider(
-        shouldUseDebugProvider,
+        useDebugProvider: shouldUseDebugProvider,
       ),
       providerApple: resolveFirebaseAppCheckAppleProvider(
-        shouldUseDebugProvider,
+        useDebugProvider: shouldUseDebugProvider,
       ),
     );
     await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
     _trace(
       'Firebase App Check activated for '
-      '${describeFirebaseAppCheckMode(isWeb: kIsWeb, platform: defaultTargetPlatform, shouldUseDebugProvider: shouldUseDebugProvider)}.',
+      '${describeFirebaseAppCheckMode(
+        isWeb: kIsWeb,
+        platform: defaultTargetPlatform,
+        shouldUseDebugProvider: shouldUseDebugProvider,
+      )}.',
     );
-  } catch (error, stackTrace) {
+  } on Object catch (error, stackTrace) {
     _trace(
       'Firebase App Check activation failed.',
       error: error,
@@ -96,9 +99,9 @@ bool useFirebaseAppCheckDebugProvider({
 }
 
 /// Chooses the Android App Check provider for the current build mode.
-AndroidAppCheckProvider resolveFirebaseAppCheckAndroidProvider(
-  bool useDebugProvider,
-) {
+AndroidAppCheckProvider resolveFirebaseAppCheckAndroidProvider({
+  required bool useDebugProvider,
+}) {
   if (useDebugProvider) {
     return const AndroidDebugProvider();
   }
@@ -106,9 +109,9 @@ AndroidAppCheckProvider resolveFirebaseAppCheckAndroidProvider(
 }
 
 /// Chooses the Apple App Check provider for the current build mode.
-AppleAppCheckProvider resolveFirebaseAppCheckAppleProvider(
-  bool useDebugProvider,
-) {
+AppleAppCheckProvider resolveFirebaseAppCheckAppleProvider({
+  required bool useDebugProvider,
+}) {
   if (useDebugProvider) {
     return const AppleDebugProvider();
   }

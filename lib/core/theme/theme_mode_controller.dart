@@ -6,6 +6,7 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 
 part 'theme_mode_controller.g.dart';
 
+/// Manages persisted theme mode selection.
 @Riverpod(keepAlive: true)
 class ThemeModeController extends _$ThemeModeController {
   static const String _themeModeKey = 'preferred_theme_mode';
@@ -22,6 +23,7 @@ class ThemeModeController extends _$ThemeModeController {
     return ThemeMode.system;
   }
 
+  /// Updates UI immediately without persisting mode yet.
   void previewThemeMode(ThemeMode mode) {
     if (state == mode) {
       return;
@@ -29,6 +31,7 @@ class ThemeModeController extends _$ThemeModeController {
     state = mode;
   }
 
+  /// Persists chosen theme mode.
   Future<void> setThemeMode(ThemeMode mode) async {
     state = mode;
     await ref.read(appPreferencesProvider).setString(_themeModeKey, mode.name);

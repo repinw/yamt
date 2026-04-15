@@ -1,3 +1,4 @@
+/// Normalizes noisy store names into stable display values.
 String? normalizeStoreName(String? rawValue) {
   final collapsed = _collapseWhitespace(rawValue);
   if (collapsed == null) {
@@ -57,7 +58,7 @@ String _normalizeStoreKey(String value) {
       .replaceAll('ö', 'oe')
       .replaceAll('ü', 'ue')
       .replaceAll('ß', 'ss')
-      .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
+      .replaceAll(RegExp('[^a-z0-9]+'), ' ')
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
 }

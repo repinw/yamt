@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_version_provider.g.dart';
 
+/// Returns app version string with build number when present.
 @riverpod
 Future<String> appVersion(Ref ref) async {
   final packageInfo = await PackageInfo.fromPlatform();

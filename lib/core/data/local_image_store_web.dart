@@ -3,12 +3,12 @@ import 'dart:developer' show log;
 import 'dart:typed_data';
 
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'local_image_store.dart';
+import 'package:yamt/core/data/local_image_store.dart';
 
 const _localImageStoreLogName = 'LocalImageStore';
 const _localImagePreferencePrefix = 'local_image_store:';
 
+/// Creates web local image store backed by shared preferences.
 LocalImageStore createPlatformLocalImageStore() {
   return _WebLocalImageStore();
 }
@@ -27,7 +27,7 @@ class _WebLocalImageStore implements LocalImageStore {
         return;
       }
       await preferences.setString(_storageKey(targetRef), sourceValue);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to copy local web image '
         'from ${sourceRef.storageKey} to ${targetRef.storageKey}.',
@@ -43,7 +43,7 @@ class _WebLocalImageStore implements LocalImageStore {
     try {
       final preferences = await SharedPreferences.getInstance();
       await preferences.remove(_storageKey(imageRef));
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to delete local web image ${imageRef.storageKey}.',
         name: _localImageStoreLogName,
@@ -62,7 +62,7 @@ class _WebLocalImageStore implements LocalImageStore {
         return null;
       }
       return Uint8List.fromList(base64Decode(storedValue));
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read local web image ${imageRef.storageKey}.',
         name: _localImageStoreLogName,
@@ -81,7 +81,7 @@ class _WebLocalImageStore implements LocalImageStore {
     try {
       final preferences = await SharedPreferences.getInstance();
       await preferences.setString(_storageKey(imageRef), base64Encode(bytes));
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to save local web image ${imageRef.storageKey}.',
         name: _localImageStoreLogName,

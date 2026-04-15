@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Returns localized label for one theme mode.
 String localizedThemeModeLabel(AppLocalizations l10n, ThemeMode mode) {
   return switch (mode) {
     ThemeMode.system => l10n.settingsThemeSystem,
@@ -10,6 +11,7 @@ String localizedThemeModeLabel(AppLocalizations l10n, ThemeMode mode) {
   };
 }
 
+/// Returns localized label for one supported seed color.
 String localizedSeedColorLabel(AppLocalizations l10n, Color color) {
   final colorValue = color.toARGB32();
   if (colorValue == AppSeedColors.lime.toARGB32()) {

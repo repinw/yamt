@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/theme/app_theme_tokens.dart';
 
-/// Globaler App-Hintergrund mit dem zentralen Editorial-Verlauf.
+/// Global app background with central editorial gradient.
 class AppBackground extends StatelessWidget {
+  /// Creates app background wrapper.
   const AppBackground({super.key, this.child});
 
+  /// Content placed above the shared background.
   final Widget? child;
 
   @override

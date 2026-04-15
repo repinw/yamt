@@ -1,4 +1,4 @@
-final _barcodeCharacters = RegExp(r'[^0-9]');
+final _barcodeCharacters = RegExp('[^0-9]');
 
 /// Removes non-digit characters from a scanned barcode string.
 String normalizeBarcode(String rawBarcode) {

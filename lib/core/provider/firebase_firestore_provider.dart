@@ -9,7 +9,10 @@ part 'firebase_firestore_provider.g.dart';
 
 const _providerLogName = 'FirebaseFirestoreProvider';
 
+/// Returns a Firestore instance for tests and production.
 typedef FirebaseFirestoreInstanceGetter = FirebaseFirestore Function();
+
+/// Structured logger used by the Firestore provider.
 typedef FirebaseFirestoreLogWriter =
     void Function(
       String message, {
@@ -49,6 +52,7 @@ void resetFirebaseFirestoreProviderDebugHooks() {
   debugFirebaseFirestoreLogWriter = _defaultFirebaseFirestoreLogWriter;
 }
 
+/// Returns Firestore instance unless session shutdown is already in progress.
 @riverpod
 FirebaseFirestore? firebaseFirestore(Ref ref) {
   final isSessionShutdownInProgress = ref.watch(
@@ -60,7 +64,7 @@ FirebaseFirestore? firebaseFirestore(Ref ref) {
 
   try {
     return debugFirebaseFirestoreInstanceGetter();
-  } catch (error, stackTrace) {
+  } on Object catch (error, stackTrace) {
     debugFirebaseFirestoreLogWriter(
       'Falling back to unavailable Firestore instance.',
       name: _providerLogName,

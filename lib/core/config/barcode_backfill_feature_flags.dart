@@ -1,5 +1,3 @@
-// ignore_for_file: experimental_member_use
-
 import 'dart:developer' as developer;
 
 import 'package:firebase_remote_config/firebase_remote_config.dart';
@@ -10,21 +8,28 @@ part 'barcode_backfill_feature_flags.g.dart';
 const _markerFlagKey = 'feature_inventory_barcode_markers';
 const _queueFlagKey = 'feature_inventory_barcode_queue';
 
+/// Remote-config-backed feature flags for barcode backfill experiments.
 class BarcodeBackfillFeatureFlags {
+  /// Creates barcode backfill feature flags.
   const BarcodeBackfillFeatureFlags({
     required this.showInventoryBarcodeMarkers,
     required this.enableQueueBackfill,
   });
 
+  /// Whether inventory barcode marker UI should be visible.
   final bool showInventoryBarcodeMarkers;
+
+  /// Whether queue-based barcode backfill is enabled.
   final bool enableQueueBackfill;
 
+  /// Safe fallback values when remote config is unavailable.
   static const defaults = BarcodeBackfillFeatureFlags(
     showInventoryBarcodeMarkers: true,
     enableQueueBackfill: true,
   );
 }
 
+/// Resolves barcode backfill feature flags from Firebase Remote Config.
 @riverpod
 BarcodeBackfillFeatureFlags barcodeBackfillFeatureFlags(Ref ref) {
   try {
@@ -42,7 +47,7 @@ BarcodeBackfillFeatureFlags barcodeBackfillFeatureFlags(Ref ref) {
         fallback: BarcodeBackfillFeatureFlags.defaults.enableQueueBackfill,
       ),
     );
-  } catch (error, stackTrace) {
+  } on Object catch (error, stackTrace) {
     developer.log(
       'Falling back to default barcode feature flags.',
       name: 'BarcodeBackfillFeatureFlags',

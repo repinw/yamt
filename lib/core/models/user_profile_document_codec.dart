@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/models/user_profile.dart';
 
+/// Decodes Firestore user profile document into normalized model.
 UserProfile decodeUserProfileDocument(
   Map<String, dynamic> data,
   String documentId,
@@ -22,6 +23,7 @@ UserProfile decodeUserProfileDocument(
   return UserProfile.fromJson(normalizedData);
 }
 
+/// Reads normalized household id from user profile snapshot.
 String? householdIdFromUserProfileSnapshot(
   DocumentSnapshot<Map<String, dynamic>> snapshot,
 ) {
@@ -30,6 +32,7 @@ String? householdIdFromUserProfileSnapshot(
   );
 }
 
+/// Trims empty optional profile strings down to `null`.
 String? normalizeOptionalUserProfileValue(String? value) {
   final normalized = value?.trim();
   if (normalized == null || normalized.isEmpty) {
@@ -38,6 +41,7 @@ String? normalizeOptionalUserProfileValue(String? value) {
   return normalized;
 }
 
+/// Returns whether profile represents standalone guest without household.
 bool isStandaloneGuestUserProfile(UserProfile profile) {
   return profile.isAnonymous &&
       normalizeOptionalUserProfileValue(profile.householdId) == null;

@@ -7,6 +7,7 @@ import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 part 'seed_color_controller.g.dart';
 
+/// Manages persisted seed color selection.
 @Riverpod(keepAlive: true)
 class SeedColorController extends _$SeedColorController {
   static const String _seedColorKey = 'preferred_seed_color';
@@ -27,6 +28,7 @@ class SeedColorController extends _$SeedColorController {
     return AppColors.seed;
   }
 
+  /// Updates UI immediately without persisting color yet.
   void previewSeedColor(Color color) {
     if (state.toARGB32() == color.toARGB32()) {
       return;
@@ -34,6 +36,7 @@ class SeedColorController extends _$SeedColorController {
     state = color;
   }
 
+  /// Persists chosen seed color.
   Future<void> setSeedColor(Color color) async {
     state = color;
     await ref
