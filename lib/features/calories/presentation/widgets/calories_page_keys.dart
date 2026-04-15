@@ -21,10 +21,26 @@ abstract final class CaloriesPageKeys {
   static const summaryCard = Key('calories_summary_card');
   static const summaryModeToggle = Key('calories_summary_mode_toggle');
   static const summaryBalanceBar = Key('calories_summary_balance_bar');
+  static const summaryActivityDeltaNote = Key(
+    'calories_summary_activity_delta_note',
+  );
   static const reloadProgressIndicator = Key(
     'calories_reload_progress_indicator',
   );
   static const retryButton = Key('calories_retry_button');
+  static const weeklyCheckInHintCard = Key('calories_weekly_checkin_hint_card');
+  static const weeklyCheckInSuccessCard = Key(
+    'calories_weekly_checkin_success_card',
+  );
+  static const weeklyCheckInContinueButton = Key(
+    'calories_weekly_checkin_continue_button',
+  );
+  static const weeklyCheckInOpenTrendsButton = Key(
+    'calories_weekly_checkin_open_trends_button',
+  );
+  static const weeklyCheckInSkipDayButton = Key(
+    'calories_weekly_checkin_skip_day_button',
+  );
   static const addOptionsManualButton = Key('calories_add_options_manual');
   static const addOptionsBarcodeButton = Key('calories_add_options_barcode');
 
@@ -131,6 +147,21 @@ abstract final class CalorieGoalCalculatorSheetKeys {
   static Key activityLevelOption(String optionId) {
     return Key('calorie_calculator_activity_level_option_$optionId');
   }
+}
+
+abstract final class CalorieWeeklyCheckInDialogKeys {
+  static const dialog = Key('calorie_weekly_checkin_dialog');
+  static const laterButton = Key('calorie_weekly_checkin_later_button');
+  static const applyButton = Key('calorie_weekly_checkin_apply_button');
+  static const openTrendsButton = Key(
+    'calorie_weekly_checkin_open_trends_button',
+  );
+}
+
+abstract final class CalorieLearnedTdeeSheetKeys {
+  static const sheet = Key('calorie_learned_tdee_sheet');
+  static const saveButton = Key('calorie_learned_tdee_save_button');
+  static const fullResetButton = Key('calorie_learned_tdee_full_reset_button');
 }
 
 abstract final class CalorieEntryEditorKeys {

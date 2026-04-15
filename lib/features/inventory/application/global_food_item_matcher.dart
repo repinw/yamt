@@ -16,7 +16,7 @@ part 'off_product_candidate_source.dart';
 const int _globalFoodCandidateQueryLimit = 20;
 const int _globalFoodReviewCandidateLimitPerSource = 5;
 
-@Riverpod(keepAlive: true)
+@riverpod
 GlobalFoodItemMatcher globalFoodItemMatcher(Ref ref) {
   return GlobalFoodItemMatcher(
     globalFoodItemRepository: ref.watch(globalFoodItemRepositoryProvider),

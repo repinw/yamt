@@ -102,6 +102,10 @@ class CaloriesSummaryCard extends ConsumerWidget {
                 ),
               ],
             ),
+            _SummaryActivityDeltaNote(
+              numberFormat: numberFormat,
+              kcalUnit: kcalUnit,
+            ),
             const SizedBox(height: AppSpacing.xl),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 220),
@@ -447,6 +451,46 @@ class _BalanceFlexGoalHeaderStat extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _SummaryActivityDeltaNote extends ConsumerWidget {
+  const _SummaryActivityDeltaNote({
+    required this.numberFormat,
+    required this.kcalUnit,
+  });
+
+  final NumberFormat numberFormat;
+  final String kcalUnit;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+    final balanceState = ref.watch(calorieBalanceSummaryProvider);
+    final data = balanceState.value;
+    if (data == null || !data.usedLearnedTdee) {
+      return const SizedBox.shrink();
+    }
+
+    final roundedDelta = data.activityDeltaKcal.round();
+    final sign = roundedDelta > 0 ? '+' : '';
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.xs),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Text(
+          '${l10n.caloriesWeeklyCheckInDialogTodayDeltaLabel}: '
+          '$sign${numberFormat.format(roundedDelta)} $kcalUnit',
+          key: CaloriesPageKeys.summaryActivityDeltaNote,
+          textAlign: TextAlign.right,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: colors.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
     );
   }
 }

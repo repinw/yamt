@@ -7,6 +7,8 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_day_navigation_pager.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_day_navigation_pager_support.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -71,6 +73,68 @@ List<CalorieWeekDayOverview> _days(DateTime end) {
 }
 
 void main() {
+  testWidgets('pager avoids reading very old day overviews on initial load', (
+    tester,
+  ) async {
+    final windowEnd = DateTime(2026, 3, 20);
+    final days = _days(windowEnd);
+    final requestedDays = <DateTime>[];
+    final logRepository = FakeCalorieLogRepository()
+      ..onReadEntriesForDay = (day) async {
+        requestedDays.add(day);
+        return const [];
+      };
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: days.first.date,
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SizedBox(
+              width: 700,
+              child: CaloriesDayNavigationPager(
+                selectedDay: days.last.date,
+                visibleWindowEnd: windowEnd,
+                goalKcal: 2200,
+                visibleDaysOverview: days,
+                referenceNow: windowEnd,
+                onSelectDay: (_) {},
+                onWindowSettled: (_) {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final earliestExpectedDay = days.first.date.subtract(
+      const Duration(days: caloriesDayNavigationPrefetchDayCount),
+    );
+    expect(requestedDays, isNotEmpty);
+    expect(
+      requestedDays.every((day) => !day.isBefore(earliestExpectedDay)),
+      isTrue,
+    );
+  });
+
   testWidgets('pager selects tapped visible day', (tester) async {
     final windowEnd = DateTime(2026, 3, 20);
     final days = _days(windowEnd);

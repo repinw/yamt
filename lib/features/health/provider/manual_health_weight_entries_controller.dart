@@ -13,7 +13,7 @@ part 'manual_health_weight_entries_controller.g.dart';
 
 const _logName = 'ManualHealthWeightEntriesController';
 
-@Riverpod(keepAlive: true)
+@riverpod
 class ManualHealthWeightEntriesController
     extends _$ManualHealthWeightEntriesController {
   @override

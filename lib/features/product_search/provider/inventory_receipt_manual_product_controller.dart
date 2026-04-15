@@ -492,11 +492,11 @@ class InventoryReceiptManualProductController
         fallbackName: matchedProduct?.name ?? _config.item.name,
       ),
       brand: _resolvedManualBrand(),
-      weight: resolvedWeight,
+      weight: _resolvedWeight,
     );
   }
 
-  String? get resolvedWeight {
+  String? get _resolvedWeight {
     final amountText = normalizeManualProductText(state.weightAmount);
     if (amountText == null) {
       return null;
@@ -779,7 +779,7 @@ class InventoryReceiptManualProductController
           brand: _resolvedManualBrand(),
           barcode: barcode,
           imageUrl: matchedProduct?.imageUrl ?? _config.item.imageUrl,
-          weight: resolvedWeight,
+          weight: _resolvedWeight,
           servingSize:
               matchedProduct?.servingSize ??
               state.ocrDraft?.servingSizeLabel ??
@@ -805,7 +805,7 @@ class InventoryReceiptManualProductController
               : selectedProduct?.nutrition ?? _config.item.nutrition,
         )
         .withDerivedAmount(
-          weight: resolvedWeight,
+          weight: _resolvedWeight,
           quantity: _config.item.quantity,
           fallbackUnit: state.selectedWeightUnit,
         );

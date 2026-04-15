@@ -6,7 +6,7 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 
 part 'auth_profile_setup_status_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 bool authProfileSetupCompleted(Ref ref) {
   final authState = ref.watch(authStateChangesProvider);
   final userId = authState.asData?.value?.uid;

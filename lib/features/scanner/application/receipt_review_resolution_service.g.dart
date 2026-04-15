@@ -27,7 +27,7 @@ final class ReceiptReviewResolutionServiceProvider
         argument: null,
         retry: null,
         name: r'receiptReviewResolutionServiceProvider',
-        isAutoDispose: false,
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -58,4 +58,4 @@ final class ReceiptReviewResolutionServiceProvider
 }
 
 String _$receiptReviewResolutionServiceHash() =>
-    r'f84337e13b23a9a3bb1a87ea7260f9f66de25c0d';
+    r'e7d84c2804bc2fe1dce0915b1e9abb4aa85cade6';

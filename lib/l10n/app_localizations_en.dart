@@ -1317,6 +1317,132 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesCalculatorSaveFailed => 'Could not save the calculated calorie target.';
 
   @override
+  String get caloriesLearnedTdeeSheetTitle => 'Recalculate from learned TDEE';
+
+  @override
+  String get caloriesLearnedTdeeSheetSubtitle => 'Use your last successful weekly check-in instead of an activity estimate.';
+
+  @override
+  String get caloriesLearnedTdeeLabel => 'Learned TDEE';
+
+  @override
+  String get caloriesLearnedTdeeResultLabel => 'New daily target';
+
+  @override
+  String get caloriesLearnedTdeeUseProfileResetAction => 'Use profile reset';
+
+  @override
+  String get caloriesLearnedTdeeSaveFailed => 'Could not save the learned TDEE target.';
+
+  @override
+  String get caloriesWeeklyCheckInDialogTitle => 'Weekly check-in';
+
+  @override
+  String get caloriesWeeklyCheckInDialogReadyBody => 'Review your last 7 completed days and apply an updated target from today.';
+
+  @override
+  String get caloriesWeeklyCheckInDialogBlockedBody => 'We still need a bit more data before we can update your target.';
+
+  @override
+  String get caloriesWeeklyCheckInDialogWindowLabel => 'Window';
+
+  @override
+  String get caloriesWeeklyCheckInDialogTrendLabel => 'Weight trend';
+
+  @override
+  String get caloriesWeeklyCheckInDialogTrueTdeeLabel => 'Learned TDEE';
+
+  @override
+  String get caloriesWeeklyCheckInDialogNewTargetLabel => 'New target';
+
+  @override
+  String get caloriesWeeklyCheckInDialogTodayDeltaLabel => 'Today activity delta';
+
+  @override
+  String get caloriesWeeklyCheckInDialogLowConfidence => 'Low confidence: only start and end weights were available.';
+
+  @override
+  String get caloriesWeeklyCheckInBlockedUnstableWeight => 'Weight data was too noisy this week for a reliable TDEE update. Add steadier weigh-ins and try again.';
+
+  @override
+  String get caloriesWeeklyCheckInApplyAction => 'Apply target';
+
+  @override
+  String get caloriesWeeklyCheckInLaterAction => 'Later';
+
+  @override
+  String get caloriesWeeklyCheckInApplyFailed => 'Could not apply the weekly check-in.';
+
+  @override
+  String get caloriesWeeklyCheckInHintReadyTitle => 'Weekly check-in ready';
+
+  @override
+  String get caloriesWeeklyCheckInHintReadyBody => 'Your last 7 completed days are ready for a target refresh.';
+
+  @override
+  String get caloriesWeeklyCheckInHintBlockedTitle => 'Weekly check-in needs data';
+
+  @override
+  String get caloriesWeeklyCheckInHintBlockedBody => 'Finish the missing intake or weight data to refresh your target.';
+
+  @override
+  String get caloriesWeeklyCheckInHintContinueAction => 'Continue';
+
+  @override
+  String get caloriesWeeklyCheckInHintStaleTitle => 'Target getting stale';
+
+  @override
+  String get caloriesWeeklyCheckInHintStaleBody => 'Use your next weekly check-in to keep your target current.';
+
+  @override
+  String get caloriesWeeklyCheckInHintUrgentTitle => 'Target needs refresh';
+
+  @override
+  String get caloriesWeeklyCheckInHintUrgentBody => 'You have been using older target data for a while now.';
+
+  @override
+  String get caloriesWeeklyCheckInSkipDayAction => 'Mark day as skipped';
+
+  @override
+  String get caloriesWeeklyCheckInUnskipDayAction => 'Undo skipped day';
+
+  @override
+  String get caloriesWeeklyCheckInAutoAdjustedHint => 'Target updated from weekly check-in:';
+
+  @override
+  String get caloriesWeeklyCheckInOpenHealthTrendsAction => 'Open health trends';
+
+  @override
+  String get caloriesWeeklyCheckInBlockedMissingIntake => 'One or more days in this window have no intake yet. Log them or mark 1 or 2 empty days as skipped.';
+
+  @override
+  String get caloriesWeeklyCheckInBlockedTooManyMissingIntake => 'This window has 3 or more missing intake days. We will keep your last learned target until you log more complete days.';
+
+  @override
+  String get caloriesWeeklyCheckInBlockedSkippedWithoutAverage => 'A skipped day needs earlier logged intake in the same window before we can estimate it.';
+
+  @override
+  String get caloriesWeeklyCheckInBlockedMissingStartWeight => 'Add a weight for the first day of this window to continue.';
+
+  @override
+  String get caloriesWeeklyCheckInBlockedMissingEndWeight => 'Add a weight for the last day of this window to continue.';
+
+  @override
+  String caloriesWeeklyCheckInBlockedMissingStartWeightOn(Object date) {
+    return 'Add a weight for the first day of this window ($date) to continue.';
+  }
+
+  @override
+  String caloriesWeeklyCheckInBlockedMissingEndWeightOn(Object date) {
+    return 'Add a weight for the last day of this window ($date) to continue.';
+  }
+
+  @override
+  String caloriesWeeklyCheckInBlockedMissingWeightDates(Object dates) {
+    return 'Add weights for these dates to continue: $dates.';
+  }
+
+  @override
   String get caloriesConsumedLabel => 'Consumed';
 
   @override

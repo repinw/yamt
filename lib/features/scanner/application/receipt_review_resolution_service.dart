@@ -46,7 +46,7 @@ class ReceiptReviewPersistResult {
   final List<InventoryItem> itemsNeedingEnrichment;
 }
 
-@Riverpod(keepAlive: true)
+@riverpod
 ReceiptReviewResolutionService receiptReviewResolutionService(Ref ref) {
   return ReceiptReviewResolutionService(
     mapper: ref.watch(receiptToReviewItemDraftMapperProvider),

@@ -6,7 +6,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
@@ -17,6 +16,8 @@ import 'package:yamt/features/calories/provider/'
     'calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_resolved_goal_provider.dart';
 
 part 'calorie_entries_controller.g.dart';
 
@@ -106,6 +107,9 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       name: _entriesControllerLogName,
     );
     final postPersistCallbacks = <Future<void> Function()>[
+      () => ref
+          .read(calorieGoalControllerProvider.notifier)
+          .clearSkippedIntakeDay(entry.loggedAt),
       () => ref.read(calorieEntryPostPersistHookProvider)(
         entry: entry,
         inventoryContext: inventoryContext,
@@ -440,16 +444,29 @@ Future<CalorieEntry?> calorieEntryById(Ref ref, String entryId) async {
 AsyncValue<CalorieDayViewData> calorieDayViewData(Ref ref) {
   final selectedDay = ref.watch(calorieDayControllerProvider);
   final entriesState = ref.watch(calorieEntriesControllerProvider);
-  final goalState = ref.watch(calorieGoalControllerProvider);
-  final settings = goalState.asData?.value ?? const CalorieGoalSettings.empty();
-  final goalKcal = settings.goalKcalForDay(selectedDay);
-  return entriesState.whenData(
-    (entries) => _buildCalorieDayViewData(
-      selectedDay: selectedDay,
-      entries: entries,
-      goalKcal: goalKcal,
-    ),
+  final resolvedGoalState = ref.watch(
+    resolvedCalorieGoalForDayProvider(selectedDay),
   );
+  final entries = entriesState.asData?.value;
+  final resolvedGoal = resolvedGoalState.asData?.value;
+  if (entries != null && resolvedGoal != null) {
+    return AsyncData(
+      _buildCalorieDayViewData(
+        selectedDay: selectedDay,
+        entries: entries,
+        goalKcal: resolvedGoal.goalKcal,
+      ),
+    );
+  }
+  final entriesError = entriesState.asError;
+  if (entriesError != null) {
+    return AsyncError(entriesError.error, entriesError.stackTrace);
+  }
+  final goalError = resolvedGoalState.asError;
+  if (goalError != null) {
+    return AsyncError(goalError.error, goalError.stackTrace);
+  }
+  return const AsyncLoading();
 }
 
 CalorieDayViewData _buildCalorieDayViewData({

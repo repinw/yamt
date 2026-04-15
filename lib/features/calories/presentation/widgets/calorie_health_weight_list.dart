@@ -57,7 +57,6 @@ class CalorieHealthWeightList extends ConsumerWidget {
             ),
             onTap: () => _editWeightForDay(
               context: context,
-              ref: ref,
               point: snapshot.points[index],
               dayLabel: dateFormat.format(snapshot.points[index].day),
             ),
@@ -70,10 +69,13 @@ class CalorieHealthWeightList extends ConsumerWidget {
 
   Future<void> _editWeightForDay({
     required BuildContext context,
-    required WidgetRef ref,
     required CalorieHealthTrendPoint point,
     required String dayLabel,
   }) {
+    final container = ProviderScope.containerOf(context, listen: false);
+    final controller = container.read(
+      manualHealthWeightEntriesControllerProvider.notifier,
+    );
     return showCalorieHealthWeightDialog(
       context: context,
       dayLabel: dayLabel,
@@ -81,22 +83,16 @@ class CalorieHealthWeightList extends ConsumerWidget {
       hasManualWeight:
           point.weightSource == CalorieHealthTrendWeightSource.manual,
       onSaveWeight: (weightKg) async {
-        final controller = ref.read(
-          manualHealthWeightEntriesControllerProvider.notifier,
-        );
         final saved = await controller.saveEntry(
           day: point.day,
           weightKg: weightKg,
         );
-        ref.invalidate(calorieHealthTrendSnapshotProvider);
+        container.invalidate(calorieHealthTrendSnapshotProvider);
         return saved;
       },
       onClearWeight: () async {
-        final controller = ref.read(
-          manualHealthWeightEntriesControllerProvider.notifier,
-        );
         final deleted = await controller.deleteEntryForDay(point.day);
-        ref.invalidate(calorieHealthTrendSnapshotProvider);
+        container.invalidate(calorieHealthTrendSnapshotProvider);
         return deleted;
       },
     );

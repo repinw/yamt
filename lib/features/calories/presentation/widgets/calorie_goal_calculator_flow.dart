@@ -1,3 +1,6 @@
+import 'dart:developer' show log;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
@@ -61,6 +64,28 @@ class _CalorieGoalCalculatorFlowState
     final initialState = CalorieGoalCalculatorFormState.initial(
       widget.initialSettings.calculatorProfile,
     );
+    if (!kReleaseMode) {
+      final source = widget.initialSettings.calculatorProfile == null
+          ? 'defaults'
+          : 'saved_profile';
+      final calculation = initialState.calculation;
+      final message =
+          'CALC_FLOW_DEBUG '
+          'init source=$source '
+          'hasGoal=${widget.initialSettings.hasGoal} '
+          'dailyGoalKcal=${widget.initialSettings.dailyKcalGoal} '
+          'sex=${initialState.sex.name} '
+          'weightKg=${initialState.weightKgText} '
+          'heightCm=${initialState.heightCmText} '
+          'ageYears=${initialState.ageYearsText} '
+          'activityLevel=${initialState.activityLevelOption.palValue} '
+          'goalMode=${initialState.goalMode.name} '
+          'goalSpeedKgPerWeek=${initialState.goalSpeedKgPerWeekText} '
+          'tdeeKcal=${calculation?.tdeeKcal.toStringAsFixed(2) ?? 'null'} '
+          'finalGoalKcal='
+          '${calculation?.finalGoalKcal.toStringAsFixed(2) ?? 'null'}';
+      log(message, name: 'CalorieGoalCalculatorFlow');
+    }
     _weightController = TextEditingController(text: initialState.weightKgText);
     _heightController = TextEditingController(text: initialState.heightCmText);
     _ageController = TextEditingController(text: initialState.ageYearsText);

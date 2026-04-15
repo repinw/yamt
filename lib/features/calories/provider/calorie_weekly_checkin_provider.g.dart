@@ -1,0 +1,53 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'calorie_weekly_checkin_provider.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(calorieWeeklyCheckInViewModel)
+final calorieWeeklyCheckInViewModelProvider =
+    CalorieWeeklyCheckInViewModelProvider._();
+
+final class CalorieWeeklyCheckInViewModelProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<CalorieWeeklyCheckInViewModel>,
+          CalorieWeeklyCheckInViewModel,
+          FutureOr<CalorieWeeklyCheckInViewModel>
+        >
+    with
+        $FutureModifier<CalorieWeeklyCheckInViewModel>,
+        $FutureProvider<CalorieWeeklyCheckInViewModel> {
+  CalorieWeeklyCheckInViewModelProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'calorieWeeklyCheckInViewModelProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$calorieWeeklyCheckInViewModelHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<CalorieWeeklyCheckInViewModel> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<CalorieWeeklyCheckInViewModel> create(Ref ref) {
+    return calorieWeeklyCheckInViewModel(ref);
+  }
+}
+
+String _$calorieWeeklyCheckInViewModelHash() =>
+    r'5f6ebab5adc104e1933d9fc33adfb3677e4cef59';

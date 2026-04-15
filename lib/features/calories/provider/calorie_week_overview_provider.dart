@@ -11,6 +11,8 @@ import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/provider/'
+    'calorie_resolved_goal_provider.dart';
+import 'package:yamt/features/calories/provider/'
     'calorie_visible_window_controller.dart';
 
 part 'calorie_week_overview_provider.g.dart';
@@ -150,13 +152,20 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
   );
   final goalState = ref.watch(calorieGoalControllerProvider);
   final settings = goalState.asData?.value ?? const CalorieGoalSettings.empty();
+  final resolvedGoals = await Future.wait(
+    snapshot.days.map(
+      (day) => ref.watch(resolvedCalorieGoalForDayProvider(day.date).future),
+    ),
+  );
   final overviews = snapshot.days
+      .asMap()
+      .entries
       .map(
-        (day) => CalorieWeekDayOverview(
-          date: day.date,
-          totalKcal: day.totalKcal,
-          goalKcal: settings.goalKcalForDay(day.date),
-          entryCount: day.entryCount,
+        (entry) => CalorieWeekDayOverview(
+          date: entry.value.date,
+          totalKcal: entry.value.totalKcal,
+          goalKcal: resolvedGoals[entry.key].goalKcal,
+          entryCount: entry.value.entryCount,
         ),
       )
       .toList(growable: false);
@@ -202,7 +211,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
   );
 }
 
-@Riverpod(keepAlive: true)
+@riverpod
 Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
   Ref ref,
   DateTime day,
@@ -211,16 +220,17 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
   final normalizedDay = normalizeDiaryDay(day);
   final repository = ref.watch(calorieLogRepositoryProvider);
   final entries = await _readEntriesForDaySafely(repository, normalizedDay);
-  final goalState = ref.watch(calorieGoalControllerProvider);
-  final settings = goalState.asData?.value ?? const CalorieGoalSettings.empty();
   final totalKcal = entries.fold<double>(
     0,
     (sum, entry) => sum + entry.totalKcal,
   );
+  final resolvedGoal = await ref.watch(
+    resolvedCalorieGoalForDayProvider(normalizedDay).future,
+  );
   return CalorieWeekDayOverview(
     date: normalizedDay,
     totalKcal: totalKcal,
-    goalKcal: settings.goalKcalForDay(normalizedDay),
+    goalKcal: resolvedGoal.goalKcal,
     entryCount: entries.length,
   );
 }

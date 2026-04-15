@@ -27,7 +27,7 @@ final class ManualHealthWeightRepositoryProvider
         argument: null,
         retry: null,
         name: r'manualHealthWeightRepositoryProvider',
-        isAutoDispose: false,
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -56,4 +56,4 @@ final class ManualHealthWeightRepositoryProvider
 }
 
 String _$manualHealthWeightRepositoryHash() =>
-    r'a51c1cdca3f254d4f81f047488e4c7a84d8c7aed';
+    r'2aeca9c83a1a934800be11a61d7cb51d135b0f42';

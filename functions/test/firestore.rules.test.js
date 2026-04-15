@@ -138,6 +138,32 @@ after(async () => {
 });
 
 maybeTest(
+  'users health_weights allows owner and denies other users',
+  async () => {
+    const ownerDb = testEnv.authenticatedContext('user-1').firestore();
+    const otherDb = testEnv.authenticatedContext('user-2').firestore();
+    const ownerDoc = doc(
+      ownerDb,
+      'users/user-1/health_weights/2026-04-15',
+    );
+    const otherDoc = doc(
+      otherDb,
+      'users/user-1/health_weights/2026-04-15',
+    );
+
+    await assertSucceeds(
+      setDoc(ownerDoc, {
+        day: '2026-04-15',
+        weightKg: 71.2,
+        updatedAt: '2026-04-15T10:00:00.000Z',
+      }),
+    );
+    await assertSucceeds(getDoc(ownerDoc));
+    await assertFails(getDoc(otherDoc));
+  },
+);
+
+maybeTest(
   'global_food_items update denies overwriting existing identity fields',
   async () => {
     const item = globalFoodItem({

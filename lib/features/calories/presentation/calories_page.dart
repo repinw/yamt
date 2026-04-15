@@ -16,6 +16,10 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_bundle_details_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_weekly_checkin_dialog.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_weekly_checkin_hint_card.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calories_day_navigation_pager.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_meal_section_card.dart';
@@ -30,8 +34,15 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/'
+    'calorie_health_trends_window_controller.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/provider/'
     'calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_weekly_checkin_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_weekly_checkin_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class CaloriesPage extends ConsumerStatefulWidget {
@@ -45,11 +56,15 @@ class CaloriesPage extends ConsumerStatefulWidget {
 
 class _CaloriesPageState extends ConsumerState<CaloriesPage> {
   CalorieDayViewData? _lastResolvedDayView;
+  CalorieWeeklyCheckInViewModel? _lastWeeklyCheckInViewModel;
+  String? _autoOpenedWeeklyCheckInWindowKey;
+  var _weeklyCheckInDialogOpen = false;
 
   @override
   Widget build(BuildContext context) {
     ref.listen(calorieEntriesControllerProvider, _logEntriesLoadErrorOnce);
     ref.listen(calorieDayViewDataProvider, _cacheResolvedDayView);
+    ref.listen(calorieWeeklyCheckInViewModelProvider, _cacheWeeklyCheckInView);
 
     final l10n = AppLocalizations.of(context)!;
     final dayController = ref.read(calorieDayControllerProvider.notifier);
@@ -57,6 +72,8 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
     final visibleWindowEnd = ref.watch(calorieVisibleWindowControllerProvider);
     final dayViewState = ref.watch(calorieDayViewDataProvider);
     final weekOverviewState = ref.watch(calorieWeekOverviewProvider);
+    final weeklyCheckInState = ref.watch(calorieWeeklyCheckInViewModelProvider);
+    final goalSettings = ref.watch(calorieGoalControllerProvider).asData?.value;
     final referenceNow = widget.referenceNow ?? DateTime.now();
     final dayView = dayViewState.value ?? _lastResolvedDayView;
     if (dayView == null) {
@@ -77,6 +94,12 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
       goalKcal: dayView.goalKcal,
       visibleWindowEnd: visibleWindowEnd,
     );
+    final weeklyCheckIn =
+        weeklyCheckInState.asData?.value ?? _lastWeeklyCheckInViewModel;
+    final latestGoalEntry = goalSettings?.latestGoalEntry;
+    final showWeeklySuccessCard =
+        latestGoalEntry?.isWeeklyCheckIn == true &&
+        DateUtils.isSameDay(latestGoalEntry?.effectiveDate, referenceNow);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -123,6 +146,31 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
           overview: weekOverview,
           referenceNow: referenceNow,
         ),
+        if (weeklyCheckIn != null && weeklyCheckIn.showDiaryHint) ...<Widget>[
+          const SizedBox(height: AppSpacing.md),
+          CalorieWeeklyCheckInHintCard(
+            viewModel: weeklyCheckIn,
+            selectedDay: selectedDay,
+            selectedDayHasEntries: dayView.summary.entryCount > 0,
+            onContinue: () => _openWeeklyCheckInDialog(weeklyCheckIn),
+            onOpenHealthTrends: () => _openHealthTrendsPage(
+              visibleWindowEnd:
+                  weeklyCheckIn.pendingWeeklyCheckIn?.windowEndDate,
+            ),
+            onToggleSelectedDaySkipped: (isSkipped) {
+              return _toggleSkippedSelectedDay(
+                selectedDay: selectedDay,
+                isSkipped: isSkipped,
+              );
+            },
+          ),
+        ],
+        if (showWeeklySuccessCard) ...<Widget>[
+          const SizedBox(height: AppSpacing.md),
+          CalorieWeeklyCheckInSuccessCard(
+            goalKcal: latestGoalEntry?.dailyKcalGoal ?? dayView.goalKcal,
+          ),
+        ],
         const SizedBox(height: AppSpacing.xl),
         ...dayView.sections.map(
           (section) => Padding(
@@ -159,6 +207,18 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
       return;
     }
     _lastResolvedDayView = nextValue;
+  }
+
+  void _cacheWeeklyCheckInView(
+    AsyncValue<CalorieWeeklyCheckInViewModel>? previous,
+    AsyncValue<CalorieWeeklyCheckInViewModel> next,
+  ) {
+    final nextValue = next.asData?.value;
+    if (nextValue == null) {
+      return;
+    }
+    _lastWeeklyCheckInViewModel = nextValue;
+    _maybeOpenWeeklyCheckInDialog(previous, next);
   }
 
   void _logEntriesLoadErrorOnce(
@@ -313,6 +373,112 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
       null => l10n.caloriesDeleteFailed,
     };
     messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _maybeOpenWeeklyCheckInDialog(
+    AsyncValue<CalorieWeeklyCheckInViewModel>? previous,
+    AsyncValue<CalorieWeeklyCheckInViewModel> next,
+  ) {
+    final viewModel = next.asData?.value;
+    final pending = viewModel?.pendingWeeklyCheckIn;
+    if (!mounted ||
+        viewModel == null ||
+        pending == null ||
+        !viewModel.shouldAutoOpen ||
+        _weeklyCheckInDialogOpen) {
+      return;
+    }
+
+    if (_autoOpenedWeeklyCheckInWindowKey == pending.windowKey) {
+      return;
+    }
+    _autoOpenedWeeklyCheckInWindowKey = pending.windowKey;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _openWeeklyCheckInDialog(viewModel);
+    });
+  }
+
+  Future<void> _openWeeklyCheckInDialog(
+    CalorieWeeklyCheckInViewModel viewModel,
+  ) async {
+    final pending = viewModel.pendingWeeklyCheckIn;
+    if (!mounted || pending == null || _weeklyCheckInDialogOpen) {
+      return;
+    }
+
+    _weeklyCheckInDialogOpen = true;
+    final controller = ref.read(
+      calorieWeeklyCheckInControllerProvider.notifier,
+    );
+    await controller.syncPendingWeeklyCheckIn(pending);
+    if (!mounted) {
+      _weeklyCheckInDialogOpen = false;
+      return;
+    }
+
+    try {
+      final action = await showCalorieWeeklyCheckInDialog(
+        context,
+        viewModel: viewModel,
+      );
+      if (!mounted) {
+        return;
+      }
+
+      switch (action) {
+        case CalorieWeeklyCheckInDialogAction.apply:
+          final saved = await controller.applyWeeklyCheckIn(viewModel);
+          if (!mounted || saved) {
+            return;
+          }
+          final l10n = AppLocalizations.of(context)!;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.caloriesWeeklyCheckInApplyFailed)),
+          );
+          return;
+        case CalorieWeeklyCheckInDialogAction.openHealthTrends:
+          await controller.dismissPendingWeeklyCheckIn(pending);
+          if (!mounted) {
+            return;
+          }
+          _openHealthTrendsPage(visibleWindowEnd: pending.windowEndDate);
+          return;
+        case CalorieWeeklyCheckInDialogAction.later:
+        case null:
+          await controller.dismissPendingWeeklyCheckIn(pending);
+          return;
+      }
+    } finally {
+      _weeklyCheckInDialogOpen = false;
+    }
+  }
+
+  void _openHealthTrendsPage({DateTime? visibleWindowEnd}) {
+    final resolvedWindowEnd =
+        visibleWindowEnd ?? ref.read(calorieVisibleWindowControllerProvider);
+    ref
+        .read(calorieHealthTrendsWindowControllerProvider.notifier)
+        .setWindowEnd(resolvedWindowEnd);
+    context.push(AppRoutes.homeStatisticsWeight);
+  }
+
+  Future<void> _toggleSkippedSelectedDay({
+    required DateTime selectedDay,
+    required bool isSkipped,
+  }) async {
+    final saved = await ref
+        .read(calorieWeeklyCheckInControllerProvider.notifier)
+        .setSkippedIntakeDay(day: selectedDay, isSkipped: isSkipped);
+    if (!mounted || saved) {
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.caloriesGoalSaveFailed)));
   }
 }
 

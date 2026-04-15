@@ -158,7 +158,7 @@ void main() {
     await tester.tap(find.text('Retry'));
     await tester.pump();
 
-    expect(inventoryController.refreshCount, 1);
+    expect(inventoryController._refreshCount, 1);
   });
 
   testWidgets('shows error card when calorie statistics provider fails', (
@@ -398,14 +398,12 @@ class _InventoryItemsDataController extends InventoryItemsController {
   _InventoryItemsDataController(this.items);
 
   final List<InventoryItem> items;
-  int refreshCount = 0;
 
   @override
   FutureOr<List<InventoryItem>> build() => items;
 
   @override
   Future<void> refresh() async {
-    refreshCount += 1;
     state = AsyncData(items);
   }
 }
@@ -418,7 +416,7 @@ class _InventoryItemsLoadingController extends InventoryItemsController {
 }
 
 class _InventoryItemsErrorController extends InventoryItemsController {
-  int refreshCount = 0;
+  var _refreshCount = 0;
 
   @override
   FutureOr<List<InventoryItem>> build() {
@@ -427,7 +425,7 @@ class _InventoryItemsErrorController extends InventoryItemsController {
 
   @override
   Future<void> refresh() async {
-    refreshCount += 1;
+    _refreshCount += 1;
   }
 }
 
@@ -435,14 +433,12 @@ class _PreparedMealsDataController extends PreparedMealsController {
   _PreparedMealsDataController(this.meals);
 
   final List<PreparedMeal> meals;
-  int refreshCount = 0;
 
   @override
   FutureOr<List<PreparedMeal>> build() => meals;
 
   @override
   Future<void> refresh() async {
-    refreshCount += 1;
     state = AsyncData(meals);
   }
 }

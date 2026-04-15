@@ -2627,6 +2627,246 @@ abstract class AppLocalizations {
   /// **'Could not save the calculated calorie target.'**
   String get caloriesCalculatorSaveFailed;
 
+  /// No description provided for @caloriesLearnedTdeeSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recalculate from learned TDEE'**
+  String get caloriesLearnedTdeeSheetTitle;
+
+  /// No description provided for @caloriesLearnedTdeeSheetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your last successful weekly check-in instead of an activity estimate.'**
+  String get caloriesLearnedTdeeSheetSubtitle;
+
+  /// No description provided for @caloriesLearnedTdeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Learned TDEE'**
+  String get caloriesLearnedTdeeLabel;
+
+  /// No description provided for @caloriesLearnedTdeeResultLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New daily target'**
+  String get caloriesLearnedTdeeResultLabel;
+
+  /// No description provided for @caloriesLearnedTdeeUseProfileResetAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Use profile reset'**
+  String get caloriesLearnedTdeeUseProfileResetAction;
+
+  /// No description provided for @caloriesLearnedTdeeSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the learned TDEE target.'**
+  String get caloriesLearnedTdeeSaveFailed;
+
+  /// No description provided for @caloriesWeeklyCheckInDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly check-in'**
+  String get caloriesWeeklyCheckInDialogTitle;
+
+  /// No description provided for @caloriesWeeklyCheckInDialogReadyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Review your last 7 completed days and apply an updated target from today.'**
+  String get caloriesWeeklyCheckInDialogReadyBody;
+
+  /// No description provided for @caloriesWeeklyCheckInDialogBlockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We still need a bit more data before we can update your target.'**
+  String get caloriesWeeklyCheckInDialogBlockedBody;
+
+  /// No description provided for @caloriesWeeklyCheckInDialogWindowLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Window'**
+  String get caloriesWeeklyCheckInDialogWindowLabel;
+
+  /// No description provided for @caloriesWeeklyCheckInDialogTrendLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight trend'**
+  String get caloriesWeeklyCheckInDialogTrendLabel;
+
+  /// No description provided for @caloriesWeeklyCheckInDialogTrueTdeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Learned TDEE'**
+  String get caloriesWeeklyCheckInDialogTrueTdeeLabel;
+
+  /// No description provided for @caloriesWeeklyCheckInDialogNewTargetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New target'**
+  String get caloriesWeeklyCheckInDialogNewTargetLabel;
+
+  /// No description provided for @caloriesWeeklyCheckInDialogTodayDeltaLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Today activity delta'**
+  String get caloriesWeeklyCheckInDialogTodayDeltaLabel;
+
+  /// No description provided for @caloriesWeeklyCheckInDialogLowConfidence.
+  ///
+  /// In en, this message translates to:
+  /// **'Low confidence: only start and end weights were available.'**
+  String get caloriesWeeklyCheckInDialogLowConfidence;
+
+  /// No description provided for @caloriesWeeklyCheckInBlockedUnstableWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight data was too noisy this week for a reliable TDEE update. Add steadier weigh-ins and try again.'**
+  String get caloriesWeeklyCheckInBlockedUnstableWeight;
+
+  /// No description provided for @caloriesWeeklyCheckInApplyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply target'**
+  String get caloriesWeeklyCheckInApplyAction;
+
+  /// No description provided for @caloriesWeeklyCheckInLaterAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get caloriesWeeklyCheckInLaterAction;
+
+  /// No description provided for @caloriesWeeklyCheckInApplyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not apply the weekly check-in.'**
+  String get caloriesWeeklyCheckInApplyFailed;
+
+  /// No description provided for @caloriesWeeklyCheckInHintReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly check-in ready'**
+  String get caloriesWeeklyCheckInHintReadyTitle;
+
+  /// No description provided for @caloriesWeeklyCheckInHintReadyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your last 7 completed days are ready for a target refresh.'**
+  String get caloriesWeeklyCheckInHintReadyBody;
+
+  /// No description provided for @caloriesWeeklyCheckInHintBlockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly check-in needs data'**
+  String get caloriesWeeklyCheckInHintBlockedTitle;
+
+  /// No description provided for @caloriesWeeklyCheckInHintBlockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the missing intake or weight data to refresh your target.'**
+  String get caloriesWeeklyCheckInHintBlockedBody;
+
+  /// No description provided for @caloriesWeeklyCheckInHintContinueAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get caloriesWeeklyCheckInHintContinueAction;
+
+  /// No description provided for @caloriesWeeklyCheckInHintStaleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Target getting stale'**
+  String get caloriesWeeklyCheckInHintStaleTitle;
+
+  /// No description provided for @caloriesWeeklyCheckInHintStaleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your next weekly check-in to keep your target current.'**
+  String get caloriesWeeklyCheckInHintStaleBody;
+
+  /// No description provided for @caloriesWeeklyCheckInHintUrgentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Target needs refresh'**
+  String get caloriesWeeklyCheckInHintUrgentTitle;
+
+  /// No description provided for @caloriesWeeklyCheckInHintUrgentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You have been using older target data for a while now.'**
+  String get caloriesWeeklyCheckInHintUrgentBody;
+
+  /// No description provided for @caloriesWeeklyCheckInSkipDayAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark day as skipped'**
+  String get caloriesWeeklyCheckInSkipDayAction;
+
+  /// No description provided for @caloriesWeeklyCheckInUnskipDayAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo skipped day'**
+  String get caloriesWeeklyCheckInUnskipDayAction;
+
+  /// No description provided for @caloriesWeeklyCheckInAutoAdjustedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Target updated from weekly check-in:'**
+  String get caloriesWeeklyCheckInAutoAdjustedHint;
+
+  /// No description provided for @caloriesWeeklyCheckInOpenHealthTrendsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open health trends'**
+  String get caloriesWeeklyCheckInOpenHealthTrendsAction;
+
+  /// No description provided for @caloriesWeeklyCheckInBlockedMissingIntake.
+  ///
+  /// In en, this message translates to:
+  /// **'One or more days in this window have no intake yet. Log them or mark 1 or 2 empty days as skipped.'**
+  String get caloriesWeeklyCheckInBlockedMissingIntake;
+
+  /// No description provided for @caloriesWeeklyCheckInBlockedTooManyMissingIntake.
+  ///
+  /// In en, this message translates to:
+  /// **'This window has 3 or more missing intake days. We will keep your last learned target until you log more complete days.'**
+  String get caloriesWeeklyCheckInBlockedTooManyMissingIntake;
+
+  /// No description provided for @caloriesWeeklyCheckInBlockedSkippedWithoutAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'A skipped day needs earlier logged intake in the same window before we can estimate it.'**
+  String get caloriesWeeklyCheckInBlockedSkippedWithoutAverage;
+
+  /// No description provided for @caloriesWeeklyCheckInBlockedMissingStartWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a weight for the first day of this window to continue.'**
+  String get caloriesWeeklyCheckInBlockedMissingStartWeight;
+
+  /// No description provided for @caloriesWeeklyCheckInBlockedMissingEndWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a weight for the last day of this window to continue.'**
+  String get caloriesWeeklyCheckInBlockedMissingEndWeight;
+
+  /// No description provided for @caloriesWeeklyCheckInBlockedMissingStartWeightOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a weight for the first day of this window ({date}) to continue.'**
+  String caloriesWeeklyCheckInBlockedMissingStartWeightOn(Object date);
+
+  /// No description provided for @caloriesWeeklyCheckInBlockedMissingEndWeightOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a weight for the last day of this window ({date}) to continue.'**
+  String caloriesWeeklyCheckInBlockedMissingEndWeightOn(Object date);
+
+  /// No description provided for @caloriesWeeklyCheckInBlockedMissingWeightDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Add weights for these dates to continue: {dates}.'**
+  String caloriesWeeklyCheckInBlockedMissingWeightDates(Object dates);
+
   /// No description provided for @caloriesConsumedLabel.
   ///
   /// In en, this message translates to:

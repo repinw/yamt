@@ -202,7 +202,7 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 CalorieSettingsRepository calorieSettingsRepository(Ref ref) {
   final authState = ref.watch(authStateChangesProvider);
   final currentUserId = authState.asData?.value?.uid;

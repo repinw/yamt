@@ -50,4 +50,4 @@ final class CalorieHealthTrendSnapshotProvider
 }
 
 String _$calorieHealthTrendSnapshotHash() =>
-    r'5e6c00f55c9045e95f50affb14ede8d617479d49';
+    r'e78bf868637d17a2fee6f336ab8b59d0eb8dde5c';

@@ -26,7 +26,7 @@ final class CalorieSettingsRepositoryProvider
         argument: null,
         retry: null,
         name: r'calorieSettingsRepositoryProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -55,4 +55,4 @@ final class CalorieSettingsRepositoryProvider
 }
 
 String _$calorieSettingsRepositoryHash() =>
-    r'5ae47e0d3f40f26dfa2abef327f594f3ef1b64fe';
+    r'e13ca88ed5f3917d1666c8f142c62e3a43be967c';

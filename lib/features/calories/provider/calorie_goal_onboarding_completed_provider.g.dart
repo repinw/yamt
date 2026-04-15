@@ -22,7 +22,7 @@ final class CalorieGoalOnboardingCompletedProvider
         argument: null,
         retry: null,
         name: r'calorieGoalOnboardingCompletedProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -42,4 +42,4 @@ final class CalorieGoalOnboardingCompletedProvider
 }
 
 String _$calorieGoalOnboardingCompletedHash() =>
-    r'019bdda1c1d6049c57a6fb2770b6da0d80914be4';
+    r'dfb7c7819184e1a1fd314f59a69b7200fdb964bc';

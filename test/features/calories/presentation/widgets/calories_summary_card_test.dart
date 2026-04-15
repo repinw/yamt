@@ -176,6 +176,26 @@ void main() {
     expect(_currentValueColor(carbsValue), const Color(0xFF3B82F6));
     expect(_macroBar(tester, 'carbs').widthFactor, 1.0);
   });
+
+  testWidgets('shows learned-TDEE activity delta in diary summary card', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildHarness(
+        balanceData: _balanceData(
+          activityDeltaKcal: 135,
+          usedLearnedTdee: true,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CaloriesPageKeys.summaryActivityDeltaNote),
+      findsOneWidget,
+    );
+    expect(find.text('Today activity delta: +135 kcal'), findsOneWidget);
+  });
 }
 
 Widget _buildHarness({
@@ -246,7 +266,10 @@ Color? _currentValueColor(RichText value) {
   return (children.first as TextSpan).style?.color;
 }
 
-CalorieBalanceSummaryData _balanceData() {
+CalorieBalanceSummaryData _balanceData({
+  double activityDeltaKcal = 0,
+  bool usedLearnedTdee = false,
+}) {
   final now = DateTime(2026, 4, 10, 14);
   return CalorieBalanceSummaryData(
     selectedDay: DateTime(2026, 4, 10),
@@ -265,5 +288,7 @@ CalorieBalanceSummaryData _balanceData() {
     paceRatio: 0.5,
     deadZoneKcal: 60,
     rangeKcal: 600,
+    activityDeltaKcal: activityDeltaKcal,
+    usedLearnedTdee: usedLearnedTdee,
   );
 }
