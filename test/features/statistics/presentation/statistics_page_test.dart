@@ -9,10 +9,14 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_health_trend_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/'
     'calorie_health_trends_page.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_health_trend_provider.dart';
+import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
@@ -194,6 +198,69 @@ void main() {
     expect(find.byType(StatisticsErrorCard), findsOneWidget);
   });
 
+  testWidgets('weight card shows latest weight value from trend snapshot', (
+    tester,
+  ) async {
+    final inventoryController = _InventoryItemsDataController(
+      const <InventoryItem>[],
+    );
+    final mealsController = _PreparedMealsDataController(
+      const <PreparedMeal>[],
+    );
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry('breakfast', loggedAt: DateTime.now()),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: null,
+        effectiveDate: DateTime.now().subtract(const Duration(days: 6)),
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        inventoryController: inventoryController,
+        mealsController: mealsController,
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        overrides: [
+          calorieHealthTrendSnapshotProvider.overrideWith((ref) async {
+            return CalorieHealthTrendSnapshot(
+              points: [
+                CalorieHealthTrendPoint(
+                  day: DateTime(2026, 3, 20),
+                  intakeKcal: 1800,
+                  burnedKcal: 400,
+                  weightKg: 71.3,
+                  weightSource: CalorieHealthTrendWeightSource.health,
+                ),
+              ],
+              healthAccessState: HealthDataAccessState.ready,
+              healthPlatform: HealthPlatform.android,
+            );
+          }),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Calories'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(StatisticsPageKeys.weightCard),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('71.3 kg'), findsOneWidget);
+  });
+
   testWidgets('weight card opens trends page from statistics', (tester) async {
     final inventoryController = _InventoryItemsDataController(
       const <InventoryItem>[],
@@ -246,6 +313,7 @@ Widget _buildHarness({
   required PreparedMealsController mealsController,
   required CalorieLogRepositoryContract logRepository,
   required CalorieSettingsRepository settingsRepository,
+  List<dynamic> overrides = const <dynamic>[],
 }) {
   return ProviderScope(
     overrides: [
@@ -256,6 +324,7 @@ Widget _buildHarness({
       inventoryDiscardEventRepositoryProvider.overrideWithValue(
         const _FakeInventoryDiscardEventRepository(<InventoryDiscardEvent>[]),
       ),
+      ...overrides,
     ],
     child: MaterialApp(
       locale: const Locale('en'),
@@ -271,6 +340,7 @@ Widget _buildRouterHarness({
   required PreparedMealsController mealsController,
   required CalorieLogRepositoryContract logRepository,
   required CalorieSettingsRepository settingsRepository,
+  List<dynamic> overrides = const <dynamic>[],
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeStatistics,
@@ -295,6 +365,7 @@ Widget _buildRouterHarness({
       inventoryDiscardEventRepositoryProvider.overrideWithValue(
         const _FakeInventoryDiscardEventRepository(<InventoryDiscardEvent>[]),
       ),
+      ...overrides,
     ],
     child: MaterialApp.router(
       locale: const Locale('en'),

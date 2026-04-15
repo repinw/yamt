@@ -169,8 +169,11 @@ void main() {
     expect(healthWeightService.lastRecordedAt?.year, 2026);
     expect(healthWeightService.lastRecordedAt?.month, 3);
     expect(healthWeightService.lastRecordedAt?.day, 20);
-    expect(healthWeightService.lastRecordedAt?.hour, 23);
-    expect(healthWeightService.lastRecordedAt?.minute, 59);
+    expect(healthWeightService.lastRecordedAt?.hour, 12);
+    expect(healthWeightService.lastRecordedAt?.minute, 0);
+    expect(healthWeightService.lastRecordedAt?.second, 0);
+    expect(healthWeightService.lastRecordedAt?.millisecond, 0);
+    expect(healthWeightService.lastRecordedAt?.microsecond, 0);
     expect(repository.saveCallCount, 0);
     expect(repository.deleteCallCount, 1);
     expect(repository.entries, isEmpty);
@@ -232,6 +235,38 @@ void main() {
     expect(repository.entries.single.day, DateTime(2026, 3, 20));
     expect(repository.entries.single.weightKg, 71.2);
   });
+
+  test(
+    'saveEntry keeps success when health save works and fallback cleanup fails',
+    () async {
+      final repository = _FakeManualHealthWeightRepository(
+        entries: [
+          ManualHealthWeightEntry(day: DateTime(2026, 3, 20), weightKg: 72.1),
+        ],
+        shouldDeleteFail: true,
+      );
+      final healthWeightService = _FakeHealthWeightService();
+      final container = buildContainer(
+        repository: repository,
+        status: _readyStatus,
+        healthWeightService: healthWeightService,
+      );
+      addTearDown(container.dispose);
+
+      await container.read(manualHealthWeightEntriesControllerProvider.future);
+      final saved = await container
+          .read(manualHealthWeightEntriesControllerProvider.notifier)
+          .saveEntry(day: DateTime(2026, 3, 20, 18), weightKg: 71.2);
+
+      expect(saved, isTrue);
+      expect(healthWeightService.saveCallCount, 1);
+      expect(repository.deleteCallCount, 1);
+      final stateEntries = container
+          .read(manualHealthWeightEntriesControllerProvider)
+          .requireValue;
+      expect(stateEntries, isEmpty);
+    },
+  );
 
   test('saveEntry reverts state when repository save fails', () async {
     final repository = _FakeManualHealthWeightRepository(

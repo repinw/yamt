@@ -180,15 +180,7 @@ class ManualHealthWeightEntriesController
 }
 
 DateTime _weightRecordedAtForDay(DateTime day) {
-  final now = DateTime.now();
-  return DateTime(
-    day.year,
-    day.month,
-    day.day,
-    23,
-    59,
-    now.second,
-    now.millisecond,
-    now.microsecond,
-  );
+  // Stable midday timestamp avoids creating near-duplicate manual samples
+  // for same day when user edits weight multiple times.
+  return DateTime(day.year, day.month, day.day, 12);
 }

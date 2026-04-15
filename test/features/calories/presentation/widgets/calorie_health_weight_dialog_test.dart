@@ -69,6 +69,36 @@ void main() {
     expect(find.byType(AlertDialog), findsNothing);
   });
 
+  testWidgets('dialog shows snackbar when save fails', (tester) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        onOpen: (context) {
+          return showCalorieHealthWeightDialog(
+            context: context,
+            dayLabel: 'Mar 20, 2026',
+            initialWeightKg: null,
+            hasManualWeight: false,
+            onSaveWeight: (weightKg) async => false,
+            onClearWeight: () async => true,
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(CalorieHealthTrendsPageKeys.weightDialogField),
+      '71.4',
+    );
+    await tester.tap(
+      find.byKey(CalorieHealthTrendsPageKeys.weightDialogSaveButton),
+    );
+    await tester.pump();
+
+    expect(find.text('Could not save weight.'), findsOneWidget);
+  });
+
   testWidgets('dialog exposes clear action for manual override', (
     tester,
   ) async {
@@ -94,11 +124,74 @@ void main() {
 
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
+    expect(find.text('71.2'), findsOneWidget);
     await tester.tap(
       find.byKey(CalorieHealthTrendsPageKeys.weightDialogClearButton),
     );
     await tester.pumpAndSettle();
 
     expect(clearCallCount, 1);
+  });
+
+  testWidgets('dialog shows snackbar when clear fails', (tester) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        onOpen: (context) {
+          return showCalorieHealthWeightDialog(
+            context: context,
+            dayLabel: 'Mar 20, 2026',
+            initialWeightKg: 71.2,
+            hasManualWeight: true,
+            onSaveWeight: (weightKg) async => true,
+            onClearWeight: () async => false,
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieHealthTrendsPageKeys.weightDialogClearButton),
+    );
+    await tester.pump();
+
+    expect(find.text('Could not clear manual weight.'), findsOneWidget);
+  });
+
+  testWidgets('dialog cancel does not call save or clear callbacks', (
+    tester,
+  ) async {
+    var saveCallCount = 0;
+    var clearCallCount = 0;
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        onOpen: (context) {
+          return showCalorieHealthWeightDialog(
+            context: context,
+            dayLabel: 'Mar 20, 2026',
+            initialWeightKg: 71.2,
+            hasManualWeight: true,
+            onSaveWeight: (weightKg) async {
+              saveCallCount += 1;
+              return true;
+            },
+            onClearWeight: () async {
+              clearCallCount += 1;
+              return true;
+            },
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(saveCallCount, 0);
+    expect(clearCallCount, 0);
   });
 }
