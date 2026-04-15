@@ -12,6 +12,7 @@ const _androidAuthorizationTypes = <HealthDataType>[
   HealthDataType.STEPS,
   HealthDataType.ACTIVE_ENERGY_BURNED,
   HealthDataType.TOTAL_CALORIES_BURNED,
+  HealthDataType.WEIGHT,
   HealthDataType.DISTANCE_DELTA,
   HealthDataType.WORKOUT,
 ];
@@ -19,6 +20,7 @@ const _androidAuthorizationTypes = <HealthDataType>[
 const _iosAuthorizationTypes = <HealthDataType>[
   HealthDataType.STEPS,
   HealthDataType.ACTIVE_ENERGY_BURNED,
+  HealthDataType.WEIGHT,
   HealthDataType.WORKOUT,
 ];
 
@@ -177,10 +179,14 @@ class MobileHealthConnectionService implements HealthConnectionService {
       Platform.isAndroid ? _androidAuthorizationTypes : _iosAuthorizationTypes;
 
   List<HealthDataAccess> get _authorizationPermissions =>
-      List<HealthDataAccess>.filled(
-        _authorizationTypes.length,
-        HealthDataAccess.READ,
-      );
+      _authorizationTypes.map(_authorizationAccessForType).toList();
+
+  HealthDataAccess _authorizationAccessForType(HealthDataType type) {
+    return switch (type) {
+      HealthDataType.WEIGHT => HealthDataAccess.READ_WRITE,
+      _ => HealthDataAccess.READ,
+    };
+  }
 
   Future<void> _ensureConfigured() async {
     if (_isConfigured) {

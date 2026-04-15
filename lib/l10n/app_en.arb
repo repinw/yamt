@@ -873,6 +873,39 @@
   },
   "caloriesWeekBalanceStartedToday":
       "Your goal starts today. The balance will build up from here.",
+  "caloriesHealthTrendsOpenAction": "Open",
+  "caloriesHealthTrendsPageTitle": "Health trends",
+  "caloriesHealthTrendsChartTitle": "7-day health chart",
+  "caloriesHealthTrendsChartSubtitle":
+      "Shows weight, burned calories, and calorie intake for the visible 7 diary days.",
+  "caloriesHealthTrendsLegendWeight": "Weight",
+  "caloriesHealthTrendsLegendBurned": "Burned",
+  "caloriesHealthTrendsLegendIntake": "Intake",
+  "caloriesHealthTrendsEmpty": "No trend data yet for this 7-day window.",
+  "caloriesHealthTrendsHealthHint":
+      "Connect health access to show burned calories and weight on this chart.",
+  "caloriesHealthTrendsWeightsTitle": "Daily weights",
+  "caloriesHealthTrendsWeightsSubtitle":
+      "Tap a visible day to add or edit a manual weight. Manual values override imported values for the same day.",
+  "caloriesHealthTrendsWeightAddAction": "Add",
+  "caloriesHealthTrendsWeightEditAction": "Edit",
+  "caloriesHealthTrendsWeightDialogTitle": "Set weight for {date}",
+  "@caloriesHealthTrendsWeightDialogTitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "caloriesHealthTrendsWeightSaveAction": "Save",
+  "caloriesHealthTrendsWeightClearAction": "Clear override",
+  "caloriesHealthTrendsWeightSaveFailed": "Could not save weight.",
+  "caloriesHealthTrendsWeightClearFailed":
+      "Could not clear manual weight.",
+  "caloriesHealthTrendsWeightSourceManual": "Manual",
+  "caloriesHealthTrendsWeightSourceHealthConnect": "Health Connect",
+  "caloriesHealthTrendsWeightSourceAppleHealth": "Apple Health",
+  "caloriesHealthTrendsWeightMissing": "No weight yet",
   "caloriesSectionEmptyState": "No entries yet.",
   "caloriesDeleteEntryDialogTitle": "Delete entry?",
   "caloriesDeleteEntryDialogMessage": "Delete \"{name}\" from this day?",
@@ -944,6 +977,7 @@
   "caloriesWeekdayShortSaturday": "Sat",
   "caloriesWeekdayShortSunday": "Sun",
   "caloriesUnitKcal": "kcal",
+  "caloriesUnitKg": "kg",
   "caloriesUnitGram": "g",
   "caloriesUnitMilliliter": "ml",
   "caloriesBundlePortions": "{consumed}/{total} portions",

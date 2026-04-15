@@ -1521,6 +1521,74 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeekBalanceStartedToday => 'Dein Zielstart ist heute. Die Bilanz baut sich ab jetzt auf.';
 
   @override
+  String get caloriesHealthTrendsOpenAction => 'Öffnen';
+
+  @override
+  String get caloriesHealthTrendsPageTitle => 'Gesundheitstrends';
+
+  @override
+  String get caloriesHealthTrendsChartTitle => '7-Tage-Gesundheitschart';
+
+  @override
+  String get caloriesHealthTrendsChartSubtitle => 'Zeigt Gewicht, verbrannte Kalorien und Kalorienaufnahme für die sichtbaren 7 Tage im Tagebuch.';
+
+  @override
+  String get caloriesHealthTrendsLegendWeight => 'Gewicht';
+
+  @override
+  String get caloriesHealthTrendsLegendBurned => 'Verbrannt';
+
+  @override
+  String get caloriesHealthTrendsLegendIntake => 'Aufnahme';
+
+  @override
+  String get caloriesHealthTrendsEmpty => 'Für dieses sichtbare 7-Tage-Fenster sind noch keine Trenddaten vorhanden.';
+
+  @override
+  String get caloriesHealthTrendsHealthHint => 'Verbinde den Gesundheitszugriff, um verbrannte Kalorien und Gewicht in diesem Chart zu sehen.';
+
+  @override
+  String get caloriesHealthTrendsWeightsTitle => 'Tagesgewichte';
+
+  @override
+  String get caloriesHealthTrendsWeightsSubtitle => 'Tippe auf einen sichtbaren Tag, um ein manuelles Gewicht hinzuzufügen oder zu bearbeiten. Manuelle Werte überschreiben importierte Werte für denselben Tag.';
+
+  @override
+  String get caloriesHealthTrendsWeightAddAction => 'Hinzufügen';
+
+  @override
+  String get caloriesHealthTrendsWeightEditAction => 'Bearbeiten';
+
+  @override
+  String caloriesHealthTrendsWeightDialogTitle(String date) {
+    return 'Gewicht für $date setzen';
+  }
+
+  @override
+  String get caloriesHealthTrendsWeightSaveAction => 'Speichern';
+
+  @override
+  String get caloriesHealthTrendsWeightClearAction => 'Überschreibung löschen';
+
+  @override
+  String get caloriesHealthTrendsWeightSaveFailed => 'Gewicht konnte nicht gespeichert werden.';
+
+  @override
+  String get caloriesHealthTrendsWeightClearFailed => 'Manuelles Gewicht konnte nicht gelöscht werden.';
+
+  @override
+  String get caloriesHealthTrendsWeightSourceManual => 'Manuell';
+
+  @override
+  String get caloriesHealthTrendsWeightSourceHealthConnect => 'Health Connect';
+
+  @override
+  String get caloriesHealthTrendsWeightSourceAppleHealth => 'Apple Health';
+
+  @override
+  String get caloriesHealthTrendsWeightMissing => 'Noch kein Gewicht';
+
+  @override
   String get caloriesSectionEmptyState => 'Noch keine Einträge.';
 
   @override
@@ -1679,6 +1747,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesUnitKcal => 'kcal';
+
+  @override
+  String get caloriesUnitKg => 'kg';
 
   @override
   String get caloriesUnitGram => 'g';

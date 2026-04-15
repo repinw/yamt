@@ -3,12 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/presentation/'
+    'calorie_health_trends_page.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
@@ -17,6 +21,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/statistics/presentation/statistics_page.dart';
+import 'package:yamt/features/statistics/presentation/statistics_page_keys.dart';
 import 'package:yamt/features/statistics/presentation/widgets/'
     'statistics_error_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -188,6 +193,52 @@ void main() {
 
     expect(find.byType(StatisticsErrorCard), findsOneWidget);
   });
+
+  testWidgets('weight card opens trends page from statistics', (tester) async {
+    final inventoryController = _InventoryItemsDataController(
+      const <InventoryItem>[],
+    );
+    final mealsController = _PreparedMealsDataController(
+      const <PreparedMeal>[],
+    );
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry('breakfast', loggedAt: DateTime.now()),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: null,
+        effectiveDate: DateTime.now().subtract(const Duration(days: 6)),
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildRouterHarness(
+        inventoryController: inventoryController,
+        mealsController: mealsController,
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Calories'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(StatisticsPageKeys.weightCard),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(StatisticsPageKeys.weightCard));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CalorieHealthTrendsPage), findsOneWidget);
+  });
 }
 
 Widget _buildHarness({
@@ -203,9 +254,7 @@ Widget _buildHarness({
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       inventoryDiscardEventRepositoryProvider.overrideWithValue(
-        const _FakeInventoryDiscardEventRepository(
-          <InventoryDiscardEvent>[],
-        ),
+        const _FakeInventoryDiscardEventRepository(<InventoryDiscardEvent>[]),
       ),
     ],
     child: MaterialApp(
@@ -213,6 +262,45 @@ Widget _buildHarness({
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: const Scaffold(body: StatisticsPage()),
+    ),
+  );
+}
+
+Widget _buildRouterHarness({
+  required InventoryItemsController inventoryController,
+  required PreparedMealsController mealsController,
+  required CalorieLogRepositoryContract logRepository,
+  required CalorieSettingsRepository settingsRepository,
+}) {
+  final router = GoRouter(
+    initialLocation: AppRoutes.homeStatistics,
+    routes: <RouteBase>[
+      GoRoute(
+        path: AppRoutes.homeStatistics,
+        builder: (context, state) => const Scaffold(body: StatisticsPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.homeStatisticsWeight,
+        builder: (context, state) => const CalorieHealthTrendsPage(),
+      ),
+    ],
+  );
+
+  return ProviderScope(
+    overrides: [
+      inventoryItemsControllerProvider.overrideWith(() => inventoryController),
+      preparedMealsControllerProvider.overrideWith(() => mealsController),
+      calorieLogRepositoryProvider.overrideWithValue(logRepository),
+      calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      inventoryDiscardEventRepositoryProvider.overrideWithValue(
+        const _FakeInventoryDiscardEventRepository(<InventoryDiscardEvent>[]),
+      ),
+    ],
+    child: MaterialApp.router(
+      locale: const Locale('en'),
+      routerConfig: router,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
     ),
   );
 }

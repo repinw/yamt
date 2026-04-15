@@ -13,6 +13,7 @@ void main() {
     expect(AppRoutes.homeInventoryTemplates, '/home/inventory/templates');
     expect(AppRoutes.homeShopping, '/home/shopping');
     expect(AppRoutes.homeCalories, '/home/calories');
+    expect(AppRoutes.homeStatisticsWeight, '/home/statistics/weight');
     expect(AppRoutes.homeSettings, '/home/settings');
     expect(AppRoutes.homeSettingsAccount, '/home/settings/account');
   });
