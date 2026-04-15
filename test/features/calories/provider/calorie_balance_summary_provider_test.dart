@@ -779,6 +779,8 @@ CalorieBalanceSummaryData _summaryData({
     paceRatio: paceRatio,
     deadZoneKcal: deadZoneKcal,
     rangeKcal: rangeKcal,
+    activityDeltaKcal: 0,
+    usedLearnedTdee: false,
   );
 }
 
@@ -801,6 +803,8 @@ extension on CalorieBalanceSummaryData {
       paceRatio: paceRatio,
       deadZoneKcal: deadZoneKcal,
       rangeKcal: rangeKcal,
+      activityDeltaKcal: activityDeltaKcal,
+      usedLearnedTdee: usedLearnedTdee,
     );
   }
 }

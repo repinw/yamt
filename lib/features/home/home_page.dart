@@ -317,9 +317,12 @@ class HomePage extends ConsumerWidget {
         if (currentSettings == null || !currentSettings.hasGoal) {
           return;
         }
-        final currentGoalEntry = currentSettings.sortedGoalHistory.lastWhere(
-          (entry) => entry.hasGoal,
-        );
+        final currentGoalEntry =
+            currentSettings.cycleAnchorEntryForDay(DateTime.now()) ??
+            currentSettings.latestGoalEntry;
+        if (currentGoalEntry == null) {
+          return;
+        }
         await showCalorieGoalStartDialog(
           context: context,
           initialGoalStartAt: currentGoalEntry.effectiveChangedAt,

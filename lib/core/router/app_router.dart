@@ -44,7 +44,7 @@ GlobalKey<NavigatorState> navigatorKey(Ref ref) {
 }
 
 @Riverpod(keepAlive: true)
-AppRouterRefreshListenable appRouterRefreshListenable(Ref ref) {
+Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
   final listenable = AppRouterRefreshListenable();
   ref.onDispose(listenable.dispose);
   ref.listen(authStateChangesProvider, (previous, next) {
@@ -60,7 +60,7 @@ AppRouterRefreshListenable appRouterRefreshListenable(Ref ref) {
 }
 
 @Riverpod(keepAlive: true)
-GoRouter appRouter(Ref ref) {
+Raw<GoRouter> appRouter(Ref ref) {
   final navigatorKey = ref.watch(navigatorKeyProvider);
   final refreshListenable = ref.watch(appRouterRefreshListenableProvider);
   final router = GoRouter(

@@ -698,6 +698,86 @@
   "caloriesCalculatorSaveAction": "Ziel speichern",
   "caloriesCalculatorSaveFailed":
       "Das berechnete Kalorienziel konnte nicht gespeichert werden.",
+  "caloriesLearnedTdeeSheetTitle": "Ziel aus gelerntem TDEE neu berechnen",
+  "caloriesLearnedTdeeSheetSubtitle":
+      "Verwende deinen letzten erfolgreichen Wochen-Check-in statt einer Aktivitätsschätzung.",
+  "caloriesLearnedTdeeLabel": "Gelernter TDEE",
+  "caloriesLearnedTdeeResultLabel": "Neues Tagesziel",
+  "caloriesLearnedTdeeUseProfileResetAction":
+      "Profilbasierten Reset nutzen",
+  "caloriesLearnedTdeeSaveFailed":
+      "Das Ziel aus dem gelernten TDEE konnte nicht gespeichert werden.",
+  "caloriesWeeklyCheckInDialogTitle": "Wochen-Check-in",
+  "caloriesWeeklyCheckInDialogReadyBody":
+      "Prüfe deine letzten 7 abgeschlossenen Tage und übernimm ab heute ein aktualisiertes Ziel.",
+  "caloriesWeeklyCheckInDialogBlockedBody":
+      "Uns fehlen noch ein paar Daten, bevor wir dein Ziel aktualisieren können.",
+  "caloriesWeeklyCheckInDialogWindowLabel": "Zeitraum",
+  "caloriesWeeklyCheckInDialogTrendLabel": "Gewichtstrend",
+  "caloriesWeeklyCheckInDialogTrueTdeeLabel": "Gelernter TDEE",
+  "caloriesWeeklyCheckInDialogNewTargetLabel": "Neues Ziel",
+  "caloriesWeeklyCheckInDialogTodayDeltaLabel": "Aktivitätsdelta heute",
+  "caloriesWeeklyCheckInDialogLowConfidence":
+      "Niedrige Sicherheit: Es lagen nur Start- und Endgewicht vor.",
+  "caloriesWeeklyCheckInBlockedUnstableWeight":
+      "Die Gewichtsdaten waren diese Woche zu unruhig für ein verlässliches TDEE-Update. Füge gleichmäßigere Wiegewerte hinzu und versuche es erneut.",
+  "caloriesWeeklyCheckInApplyAction": "Ziel übernehmen",
+  "caloriesWeeklyCheckInLaterAction": "Später",
+  "caloriesWeeklyCheckInApplyFailed":
+      "Der Wochen-Check-in konnte nicht übernommen werden.",
+  "caloriesWeeklyCheckInHintReadyTitle": "Wochen-Check-in bereit",
+  "caloriesWeeklyCheckInHintReadyBody":
+      "Deine letzten 7 abgeschlossenen Tage sind für ein Ziel-Update bereit.",
+  "caloriesWeeklyCheckInHintBlockedTitle":
+      "Wochen-Check-in braucht Daten",
+  "caloriesWeeklyCheckInHintBlockedBody":
+      "Ergänze fehlende Aufnahme- oder Gewichtsdaten, um dein Ziel zu aktualisieren.",
+  "caloriesWeeklyCheckInHintContinueAction": "Fortsetzen",
+  "caloriesWeeklyCheckInHintStaleTitle": "Ziel wird alt",
+  "caloriesWeeklyCheckInHintStaleBody":
+      "Nutze den nächsten Wochen-Check-in, damit dein Ziel aktuell bleibt.",
+  "caloriesWeeklyCheckInHintUrgentTitle":
+      "Ziel braucht Aktualisierung",
+  "caloriesWeeklyCheckInHintUrgentBody":
+      "Du verwendest schon länger ältere Zieldaten.",
+  "caloriesWeeklyCheckInSkipDayAction": "Tag als ausgelassen markieren",
+  "caloriesWeeklyCheckInUnskipDayAction":
+      "Ausgelassen-Markierung entfernen",
+  "caloriesWeeklyCheckInAutoAdjustedHint":
+      "Ziel durch Wochen-Check-in aktualisiert:",
+  "caloriesWeeklyCheckInOpenHealthTrendsAction":
+      "Gesundheitstrends öffnen",
+  "caloriesWeeklyCheckInBlockedMissingIntake":
+      "Mindestens ein Tag in diesem Zeitraum hat noch keine Aufnahme. Trage ihn ein oder markiere 1 oder 2 leere Tage als ausgelassen.",
+  "caloriesWeeklyCheckInBlockedTooManyMissingIntake":
+      "Dieser Zeitraum hat 3 oder mehr fehlende Aufnahmetage. Wir behalten dein letztes gelerntes Ziel, bis du wieder mehr vollständige Tage geloggt hast.",
+  "caloriesWeeklyCheckInBlockedSkippedWithoutAverage":
+      "Ein ausgelassener Tag braucht frühere geloggte Aufnahme im selben Zeitraum, bevor wir ihn schätzen können.",
+  "caloriesWeeklyCheckInBlockedMissingStartWeight":
+      "Füge ein Gewicht für den ersten Tag dieses Zeitraums hinzu, um fortzufahren.",
+  "caloriesWeeklyCheckInBlockedMissingEndWeight":
+      "Füge ein Gewicht für den letzten Tag dieses Zeitraums hinzu, um fortzufahren.",
+  "caloriesWeeklyCheckInBlockedMissingStartWeightOn":
+      "Füge ein Gewicht für den ersten Tag dieses Zeitraums ({date}) hinzu, um fortzufahren.",
+  "@caloriesWeeklyCheckInBlockedMissingStartWeightOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "caloriesWeeklyCheckInBlockedMissingEndWeightOn":
+      "Füge ein Gewicht für den letzten Tag dieses Zeitraums ({date}) hinzu, um fortzufahren.",
+  "@caloriesWeeklyCheckInBlockedMissingEndWeightOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "caloriesWeeklyCheckInBlockedMissingWeightDates":
+      "Füge Gewichte für diese Daten hinzu, um fortzufahren: {dates}.",
+  "@caloriesWeeklyCheckInBlockedMissingWeightDates": {
+    "placeholders": {
+      "dates": {}
+    }
+  },
   "caloriesConsumedLabel": "Verbraucht",
   "caloriesGoalLabel": "Ziel",
   "caloriesRemainingLabel": "Verbleibend",

@@ -103,7 +103,7 @@ class _FakeFridgeItemRepository implements InventoryItemRepository {
 
 class _RecordingShoppingListController extends ShoppingListController {
   ({String name, String? brand, int quantity, double estimatedUnitPrice})?
-  addItemInput;
+  _addItemInput;
 
   @override
   FutureOr<List<ShoppingListItem>> build() {
@@ -117,7 +117,7 @@ class _RecordingShoppingListController extends ShoppingListController {
     int quantity = 1,
     double estimatedUnitPrice = 0.0,
   }) async {
-    addItemInput = (
+    _addItemInput = (
       name: name,
       brand: brand,
       quantity: quantity,
@@ -564,11 +564,14 @@ void main() {
           );
 
       expect(result, isTrue);
-      expect(shoppingListController.addItemInput, isNotNull);
-      expect(shoppingListController.addItemInput!.name, 'Milk');
-      expect(shoppingListController.addItemInput!.brand, 'Acme');
-      expect(shoppingListController.addItemInput!.quantity, 1);
-      expect(shoppingListController.addItemInput!.estimatedUnitPrice, 2.5);
+      expect(shoppingListController._addItemInput, isNotNull);
+      expect(shoppingListController._addItemInput!.name, 'Milk');
+      expect(shoppingListController._addItemInput!.brand, 'Acme');
+      expect(shoppingListController._addItemInput!.quantity, 1);
+      expect(
+        shoppingListController._addItemInput!.estimatedUnitPrice,
+        2.5,
+      );
     },
   );
 

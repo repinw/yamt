@@ -835,6 +835,10 @@ service cloud.firestore {
       allow read, create, update, delete: if isOwner(uid);
     }
 
+    match /users/{uid}/health_weights/{weightId} {
+      allow read, create, update, delete: if isOwner(uid);
+    }
+
     match /users/{uid}/calorie_product_overrides/{barcode} {
       allow read: if isOwner(uid);
       allow create, update: if isOwner(uid)

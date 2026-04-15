@@ -2,6 +2,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_health_trend_snapshot.dart';
 import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_health_trends_window_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
@@ -16,8 +20,13 @@ part 'calorie_health_trend_provider.g.dart';
 
 @riverpod
 Future<CalorieHealthTrendSnapshot> calorieHealthTrendSnapshot(Ref ref) async {
+  final trendsWindowEnd = ref.watch(
+    calorieHealthTrendsWindowControllerProvider,
+  );
+  final DateTime visibleWindowEnd =
+      trendsWindowEnd ?? ref.watch(calorieVisibleWindowControllerProvider);
   final intakeSnapshot = await ref.watch(
-    calorieWeekConsumptionSnapshotProvider.future,
+    calorieWeekConsumptionSnapshotForWindowProvider(visibleWindowEnd).future,
   );
   final status = await ref.watch(healthConnectionControllerProvider.future);
   final manualEntries = await ref.watch(

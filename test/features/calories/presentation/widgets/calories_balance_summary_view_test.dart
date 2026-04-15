@@ -261,5 +261,7 @@ CalorieBalanceSummaryData _summaryData({
     paceRatio: 0.5,
     deadZoneKcal: deadZoneKcal,
     rangeKcal: rangeKcal,
+    activityDeltaKcal: 0,
+    usedLearnedTdee: false,
   );
 }

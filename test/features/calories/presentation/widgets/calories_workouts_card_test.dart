@@ -107,7 +107,7 @@ void main() {
     await tester.tap(find.text('Connect health'));
     await tester.pump();
 
-    expect(controller.requestAuthorizationCallCount, 1);
+    expect(controller._requestAuthorizationCallCount, 1);
   });
 }
 
@@ -122,14 +122,14 @@ class _FakeHealthConnectionController extends HealthConnectionController {
   _FakeHealthConnectionController({required this.status});
 
   final HealthConnectionStatus status;
-  int requestAuthorizationCallCount = 0;
+  var _requestAuthorizationCallCount = 0;
 
   @override
   FutureOr<HealthConnectionStatus> build() => status;
 
   @override
   Future<HealthConnectionStatus> requestAuthorization() async {
-    requestAuthorizationCallCount += 1;
+    _requestAuthorizationCallCount += 1;
     state = AsyncData(status);
     return status;
   }

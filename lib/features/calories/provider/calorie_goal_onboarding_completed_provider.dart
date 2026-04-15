@@ -10,7 +10,7 @@ import 'package:yamt/features/calories/domain/'
 
 part 'calorie_goal_onboarding_completed_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 FutureOr<bool> calorieGoalOnboardingCompleted(Ref ref) async {
   String? userId;
   try {

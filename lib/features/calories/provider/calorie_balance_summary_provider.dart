@@ -11,6 +11,8 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_resolved_goal_provider.dart';
 
 part 'calorie_balance_summary_provider.g.dart';
 
@@ -36,6 +38,8 @@ class CalorieBalanceSummaryData {
     required this.paceRatio,
     required this.deadZoneKcal,
     required this.rangeKcal,
+    required this.activityDeltaKcal,
+    required this.usedLearnedTdee,
   });
 
   final DateTime selectedDay;
@@ -54,6 +58,8 @@ class CalorieBalanceSummaryData {
   final double paceRatio;
   final double deadZoneKcal;
   final double rangeKcal;
+  final double activityDeltaKcal;
+  final bool usedLearnedTdee;
 
   bool get isCurrentDay => _isSameDay(selectedDay, referenceNow);
 
@@ -118,7 +124,10 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
       .fold<double>(0, (sum, day) => sum + settings.goalKcalForDay(day));
 
   final goalEntry = settings.goalEntryForDay(selectedDay);
-  final dailyBaseGoalKcal = settings.goalKcalForDay(selectedDay);
+  final resolvedGoal = await ref.watch(
+    resolvedCalorieGoalForDayProvider(selectedDay).future,
+  );
+  final dailyBaseGoalKcal = resolvedGoal.goalKcal;
   final hasFutureGoalStart =
       settings.nextGoalStartAfterDay(selectedDay) != null;
   final shouldIgnoreSelectedDayForBalance =
@@ -189,6 +198,8 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
     paceRatio: paceRatio,
     deadZoneKcal: deadZoneKcal,
     rangeKcal: rangeKcal,
+    activityDeltaKcal: resolvedGoal.activityDeltaKcal,
+    usedLearnedTdee: resolvedGoal.usedLearnedTdee,
   );
 }
 

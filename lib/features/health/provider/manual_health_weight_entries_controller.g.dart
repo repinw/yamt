@@ -25,7 +25,7 @@ final class ManualHealthWeightEntriesControllerProvider
         argument: null,
         retry: null,
         name: r'manualHealthWeightEntriesControllerProvider',
-        isAutoDispose: false,
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -41,7 +41,7 @@ final class ManualHealthWeightEntriesControllerProvider
 }
 
 String _$manualHealthWeightEntriesControllerHash() =>
-    r'56f07fa22847c75a6bbaa7db6acbaabc5d6f5b80';
+    r'b7ad22b94b8ce7b3bbf7d06a1f977f7cff9b11fe';
 
 abstract class _$ManualHealthWeightEntriesController
     extends $AsyncNotifier<List<ManualHealthWeightEntry>> {

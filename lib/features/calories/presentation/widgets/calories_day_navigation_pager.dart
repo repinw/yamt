@@ -102,7 +102,10 @@ class _CaloriesDayNavigationPagerState
                 itemBuilder: (context, index) {
                   final date = _dayForIndex(index);
                   final cachedOverview = visibleDaysByKey[diaryDayKey(date)];
-                  final overviewState = cachedOverview == null
+                  final shouldWatchOverview =
+                      cachedOverview != null || _isWithinActiveBuffer(date);
+                  final overviewState =
+                      cachedOverview == null && shouldWatchOverview
                       ? ref.watch(calorieWeekDayOverviewForDateProvider(date))
                       : null;
                   final overview =
@@ -264,6 +267,24 @@ class _CaloriesDayNavigationPagerState
 
   DateTime _dayForIndex(int index) {
     return _earliestDay.add(Duration(days: index));
+  }
+
+  bool _isWithinActiveBuffer(DateTime day) {
+    final visibleDays = buildDiaryVisibleDays(
+      anchorDay: widget.visibleWindowEnd,
+    );
+    final bufferStart = visibleDays.first.subtract(
+      const Duration(days: caloriesDayNavigationPrefetchDayCount),
+    );
+    final bufferEnd = visibleDays.last.add(
+      const Duration(days: caloriesDayNavigationPrefetchDayCount),
+    );
+    final normalizedDay = normalizeDiaryDay(day);
+    if (normalizedDay.isBefore(normalizeDiaryDay(bufferStart))) {
+      return false;
+    }
+    return !normalizedDay.isAfter(_referenceToday) &&
+        !normalizedDay.isAfter(normalizeDiaryDay(bufferEnd));
   }
 
   void _setInteractionState({bool? isPressEnabled, bool? isSnapping}) {

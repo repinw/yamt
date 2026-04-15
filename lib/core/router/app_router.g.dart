@@ -63,11 +63,11 @@ final appRouterRefreshListenableProvider =
 final class AppRouterRefreshListenableProvider
     extends
         $FunctionalProvider<
-          AppRouterRefreshListenable,
-          AppRouterRefreshListenable,
-          AppRouterRefreshListenable
+          Raw<AppRouterRefreshListenable>,
+          Raw<AppRouterRefreshListenable>,
+          Raw<AppRouterRefreshListenable>
         >
-    with $Provider<AppRouterRefreshListenable> {
+    with $Provider<Raw<AppRouterRefreshListenable>> {
   AppRouterRefreshListenableProvider._()
     : super(
         from: null,
@@ -84,33 +84,35 @@ final class AppRouterRefreshListenableProvider
 
   @$internal
   @override
-  $ProviderElement<AppRouterRefreshListenable> $createElement(
+  $ProviderElement<Raw<AppRouterRefreshListenable>> $createElement(
     $ProviderPointer pointer,
   ) => $ProviderElement(pointer);
 
   @override
-  AppRouterRefreshListenable create(Ref ref) {
+  Raw<AppRouterRefreshListenable> create(Ref ref) {
     return appRouterRefreshListenable(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AppRouterRefreshListenable value) {
+  Override overrideWithValue(Raw<AppRouterRefreshListenable> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<AppRouterRefreshListenable>(value),
+      providerOverride: $SyncValueProvider<Raw<AppRouterRefreshListenable>>(
+        value,
+      ),
     );
   }
 }
 
 String _$appRouterRefreshListenableHash() =>
-    r'b3f3c4242815d0172c3eb3d5f58ad0b1f495ece5';
+    r'490fc1cbea874d41749de65d39070ae29b5f24b1';
 
 @ProviderFor(appRouter)
 final appRouterProvider = AppRouterProvider._();
 
 final class AppRouterProvider
-    extends $FunctionalProvider<GoRouter, GoRouter, GoRouter>
-    with $Provider<GoRouter> {
+    extends $FunctionalProvider<Raw<GoRouter>, Raw<GoRouter>, Raw<GoRouter>>
+    with $Provider<Raw<GoRouter>> {
   AppRouterProvider._()
     : super(
         from: null,
@@ -127,21 +129,21 @@ final class AppRouterProvider
 
   @$internal
   @override
-  $ProviderElement<GoRouter> $createElement($ProviderPointer pointer) =>
+  $ProviderElement<Raw<GoRouter>> $createElement($ProviderPointer pointer) =>
       $ProviderElement(pointer);
 
   @override
-  GoRouter create(Ref ref) {
+  Raw<GoRouter> create(Ref ref) {
     return appRouter(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(GoRouter value) {
+  Override overrideWithValue(Raw<GoRouter> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<GoRouter>(value),
+      providerOverride: $SyncValueProvider<Raw<GoRouter>>(value),
     );
   }
 }
 
-String _$appRouterHash() => r'f06c1b51d3cb29d632811440e3b8e22c14053acc';
+String _$appRouterHash() => r'c80c1d571d129a1397236f3504b2ccecfb7fed75';

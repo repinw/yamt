@@ -674,6 +674,82 @@
   "caloriesCalculatorSaveAction": "Save target",
   "caloriesCalculatorSaveFailed":
       "Could not save the calculated calorie target.",
+  "caloriesLearnedTdeeSheetTitle": "Recalculate from learned TDEE",
+  "caloriesLearnedTdeeSheetSubtitle":
+      "Use your last successful weekly check-in instead of an activity estimate.",
+  "caloriesLearnedTdeeLabel": "Learned TDEE",
+  "caloriesLearnedTdeeResultLabel": "New daily target",
+  "caloriesLearnedTdeeUseProfileResetAction": "Use profile reset",
+  "caloriesLearnedTdeeSaveFailed":
+      "Could not save the learned TDEE target.",
+  "caloriesWeeklyCheckInDialogTitle": "Weekly check-in",
+  "caloriesWeeklyCheckInDialogReadyBody":
+      "Review your last 7 completed days and apply an updated target from today.",
+  "caloriesWeeklyCheckInDialogBlockedBody":
+      "We still need a bit more data before we can update your target.",
+  "caloriesWeeklyCheckInDialogWindowLabel": "Window",
+  "caloriesWeeklyCheckInDialogTrendLabel": "Weight trend",
+  "caloriesWeeklyCheckInDialogTrueTdeeLabel": "Learned TDEE",
+  "caloriesWeeklyCheckInDialogNewTargetLabel": "New target",
+  "caloriesWeeklyCheckInDialogTodayDeltaLabel": "Today activity delta",
+  "caloriesWeeklyCheckInDialogLowConfidence":
+      "Low confidence: only start and end weights were available.",
+  "caloriesWeeklyCheckInBlockedUnstableWeight":
+      "Weight data was too noisy this week for a reliable TDEE update. Add steadier weigh-ins and try again.",
+  "caloriesWeeklyCheckInApplyAction": "Apply target",
+  "caloriesWeeklyCheckInLaterAction": "Later",
+  "caloriesWeeklyCheckInApplyFailed":
+      "Could not apply the weekly check-in.",
+  "caloriesWeeklyCheckInHintReadyTitle": "Weekly check-in ready",
+  "caloriesWeeklyCheckInHintReadyBody":
+      "Your last 7 completed days are ready for a target refresh.",
+  "caloriesWeeklyCheckInHintBlockedTitle": "Weekly check-in needs data",
+  "caloriesWeeklyCheckInHintBlockedBody":
+      "Finish the missing intake or weight data to refresh your target.",
+  "caloriesWeeklyCheckInHintContinueAction": "Continue",
+  "caloriesWeeklyCheckInHintStaleTitle": "Target getting stale",
+  "caloriesWeeklyCheckInHintStaleBody":
+      "Use your next weekly check-in to keep your target current.",
+  "caloriesWeeklyCheckInHintUrgentTitle": "Target needs refresh",
+  "caloriesWeeklyCheckInHintUrgentBody":
+      "You have been using older target data for a while now.",
+  "caloriesWeeklyCheckInSkipDayAction": "Mark day as skipped",
+  "caloriesWeeklyCheckInUnskipDayAction": "Undo skipped day",
+  "caloriesWeeklyCheckInAutoAdjustedHint":
+      "Target updated from weekly check-in:",
+  "caloriesWeeklyCheckInOpenHealthTrendsAction":
+      "Open health trends",
+  "caloriesWeeklyCheckInBlockedMissingIntake":
+      "One or more days in this window have no intake yet. Log them or mark 1 or 2 empty days as skipped.",
+  "caloriesWeeklyCheckInBlockedTooManyMissingIntake":
+      "This window has 3 or more missing intake days. We will keep your last learned target until you log more complete days.",
+  "caloriesWeeklyCheckInBlockedSkippedWithoutAverage":
+      "A skipped day needs earlier logged intake in the same window before we can estimate it.",
+  "caloriesWeeklyCheckInBlockedMissingStartWeight":
+      "Add a weight for the first day of this window to continue.",
+  "caloriesWeeklyCheckInBlockedMissingEndWeight":
+      "Add a weight for the last day of this window to continue.",
+  "caloriesWeeklyCheckInBlockedMissingStartWeightOn":
+      "Add a weight for the first day of this window ({date}) to continue.",
+  "@caloriesWeeklyCheckInBlockedMissingStartWeightOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "caloriesWeeklyCheckInBlockedMissingEndWeightOn":
+      "Add a weight for the last day of this window ({date}) to continue.",
+  "@caloriesWeeklyCheckInBlockedMissingEndWeightOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "caloriesWeeklyCheckInBlockedMissingWeightDates":
+      "Add weights for these dates to continue: {dates}.",
+  "@caloriesWeeklyCheckInBlockedMissingWeightDates": {
+    "placeholders": {
+      "dates": {}
+    }
+  },
   "caloriesConsumedLabel": "Consumed",
   "caloriesGoalLabel": "Goal",
   "caloriesRemainingLabel": "Remaining",

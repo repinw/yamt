@@ -71,7 +71,7 @@ void main() {
     await tester.tap(find.text('Connect health'));
     await tester.pump();
 
-    expect(controller.requestAuthorizationCallCount, 1);
+    expect(controller._requestAuthorizationCallCount, 1);
   });
 
   testWidgets('activity card uses controller loading state for prompt', (
@@ -115,7 +115,7 @@ class _FakeHealthConnectionController extends HealthConnectionController {
 
   final HealthConnectionStatus status;
   final Completer<HealthConnectionStatus>? pendingBuild;
-  int requestAuthorizationCallCount = 0;
+  var _requestAuthorizationCallCount = 0;
 
   @override
   FutureOr<HealthConnectionStatus> build() {
@@ -128,7 +128,7 @@ class _FakeHealthConnectionController extends HealthConnectionController {
 
   @override
   Future<HealthConnectionStatus> requestAuthorization() async {
-    requestAuthorizationCallCount += 1;
+    _requestAuthorizationCallCount += 1;
     state = AsyncData(status);
     return status;
   }

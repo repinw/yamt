@@ -21,8 +21,18 @@ import 'package:yamt/features/calories/presentation/models/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_day_navigation_pager.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_balance_summary_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_health_trends_window_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
+import 'package:yamt/features/health/provider/'
+    'health_connection_service_provider.dart';
+import 'package:yamt/features/health/provider/'
+    'manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -98,6 +108,53 @@ CalorieEntry _bundleEntry(
     createdAt: loggedAt,
     updatedAt: loggedAt,
   );
+}
+
+DateTime _normalizeDay(DateTime day) {
+  return DateTime(day.year, day.month, day.day);
+}
+
+List<CalorieEntry> _weeklyCheckInEntries(DateTime dueDay) {
+  final windowStart = _normalizeDay(dueDay).subtract(const Duration(days: 7));
+  return <CalorieEntry>[
+    for (var index = 0; index < 7; index += 1)
+      _entry(
+        'weekly-$index',
+        loggedAt: windowStart.add(Duration(days: index, hours: 8)),
+        mealType: MealType.breakfast,
+        name: 'Weekly $index',
+      ),
+  ];
+}
+
+List<ManualHealthWeightEntry> _weeklyCheckInWeights(
+  DateTime dueDay, {
+  bool includeStart = true,
+  bool includeEnd = true,
+}) {
+  final windowStart = _normalizeDay(dueDay).subtract(const Duration(days: 7));
+  final windowEnd = windowStart.add(const Duration(days: 6));
+  return <ManualHealthWeightEntry>[
+    if (includeStart)
+      ManualHealthWeightEntry(day: windowStart, weightKg: 84.0),
+    if (includeEnd)
+      ManualHealthWeightEntry(day: windowEnd, weightKg: 83.4),
+  ];
+}
+
+List<dynamic> _weeklyCheckInOverrides({
+  required DateTime today,
+  required List<ManualHealthWeightEntry> weights,
+}) {
+  return <dynamic>[
+    calorieBalanceNowProvider.overrideWithValue(() => today),
+    healthConnectionServiceProvider.overrideWithValue(
+      FakeHealthConnectionService(const HealthConnectionStatus.unsupported()),
+    ),
+    manualHealthWeightRepositoryProvider.overrideWithValue(
+      FakeManualHealthWeightRepository(weights),
+    ),
+  ];
 }
 
 Widget _buildHarness({
@@ -204,14 +261,25 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   }
 }
 
-Finder get _pageScrollable => find.byWidgetPredicate(
-  (widget) =>
-      widget is Scrollable && widget.axisDirection == AxisDirection.down,
-);
+Finder get _pageListView => find.byType(ListView).first;
 
 Future<void> _scrollUntilVisible(WidgetTester tester, Finder finder) async {
-  await tester.scrollUntilVisible(finder, 300, scrollable: _pageScrollable);
-  await tester.pumpAndSettle();
+  for (var attempt = 0; attempt < 12; attempt++) {
+    if (finder.evaluate().isNotEmpty) {
+      await tester.ensureVisible(finder.first);
+      await tester.pumpAndSettle();
+      return;
+    }
+
+    await tester.drag(
+      _pageListView,
+      const Offset(0, -300),
+      warnIfMissed: false,
+    );
+    await tester.pumpAndSettle();
+  }
+
+  expect(finder, findsOneWidget);
 }
 
 void main() {
@@ -396,11 +464,264 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(find.text('Open'), findsNothing);
+  });
+
+  testWidgets('weekly check-in dialog auto-opens on due diary day', (
+    tester,
+  ) async {
+    final today = DateTime(2026, 3, 20);
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: _weeklyCheckInEntries(today),
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 3, 13, 9),
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        overrides: _weeklyCheckInOverrides(
+          today: today,
+          weights: _weeklyCheckInWeights(today),
+        ),
+        referenceNow: today,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CalorieWeeklyCheckInDialogKeys.dialog),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(CalorieWeeklyCheckInDialogKeys.applyButton),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('weekly check-in Apply saves without disposed controller crash', (
+    tester,
+  ) async {
+    final today = DateTime(2026, 3, 20);
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: _weeklyCheckInEntries(today),
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 3, 13, 9),
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        overrides: _weeklyCheckInOverrides(
+          today: today,
+          weights: _weeklyCheckInWeights(today),
+        ),
+        referenceNow: today,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CalorieWeeklyCheckInDialogKeys.applyButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CalorieWeeklyCheckInDialogKeys.dialog),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+
+    final settings = await settingsRepository.readSettings();
+    expect(settings.latestGoalEntry?.source, CalorieGoalSource.weeklyCheckIn);
+    expect(settings.pendingWeeklyCheckIn, isNull);
+  });
+
+  testWidgets('weekly check-in Later leaves hint and can reopen dialog', (
+    tester,
+  ) async {
+    final today = DateTime(2026, 3, 20);
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: _weeklyCheckInEntries(today),
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 3, 13, 9),
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        overrides: _weeklyCheckInOverrides(
+          today: today,
+          weights: _weeklyCheckInWeights(today),
+        ),
+        referenceNow: today,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CalorieWeeklyCheckInDialogKeys.laterButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CalorieWeeklyCheckInDialogKeys.dialog),
+      findsNothing,
+    );
     await _scrollUntilVisible(
       tester,
-      find.byKey(CaloriesPageKeys.weekBalanceSummary),
+      find.byKey(CaloriesPageKeys.weeklyCheckInHintCard),
     );
-    expect(find.text('Open'), findsNothing);
+    expect(find.byKey(CaloriesPageKeys.weeklyCheckInHintCard), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(CaloriesPageKeys.weeklyCheckInContinueButton),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CalorieWeeklyCheckInDialogKeys.dialog),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('blocked weekly check-in offers trends when end weight missing', (
+    tester,
+  ) async {
+    final today = DateTime(2026, 3, 20);
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: _weeklyCheckInEntries(today),
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 3, 13, 9),
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+        ..._weeklyCheckInOverrides(
+          today: today,
+          weights: _weeklyCheckInWeights(today, includeEnd: false),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(_buildHarnessWithContainer(container: container));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CalorieWeeklyCheckInDialogKeys.applyButton),
+      findsNothing,
+    );
+    expect(
+      find.byKey(CalorieWeeklyCheckInDialogKeys.openTrendsButton),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Mar 19, 2026'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(CalorieWeeklyCheckInDialogKeys.openTrendsButton),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Trends'), findsOneWidget);
+    expect(
+      container.read(calorieHealthTrendsWindowControllerProvider),
+      DateTime(2026, 3, 19),
+    );
+  });
+
+  testWidgets('Diary hint skip action toggles skipped intake day', (
+    tester,
+  ) async {
+    final today = DateTime(2026, 4, 15);
+    final selectedDay = DateTime(2026, 4, 11);
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry('entry-0', loggedAt: DateTime(2026, 4, 8, 8), mealType: MealType.breakfast),
+        _entry('entry-1', loggedAt: DateTime(2026, 4, 9, 8), mealType: MealType.breakfast),
+        _entry('entry-2', loggedAt: DateTime(2026, 4, 10, 8), mealType: MealType.breakfast),
+        _entry('entry-4', loggedAt: DateTime(2026, 4, 12, 8), mealType: MealType.breakfast),
+        _entry('entry-5', loggedAt: DateTime(2026, 4, 13, 8), mealType: MealType.breakfast),
+        _entry('entry-6', loggedAt: DateTime(2026, 4, 14, 8), mealType: MealType.breakfast),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 4, 8, 9),
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+        ..._weeklyCheckInOverrides(
+          today: today,
+          weights: _weeklyCheckInWeights(today),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(calorieDayControllerProvider.notifier).setDay(selectedDay);
+
+    await tester.pumpWidget(_buildHarnessWithContainer(container: container));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CalorieWeeklyCheckInDialogKeys.laterButton));
+    await tester.pumpAndSettle();
+
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.weeklyCheckInSkipDayButton),
+    );
+    await tester.tap(find.byKey(CaloriesPageKeys.weeklyCheckInSkipDayButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      (await settingsRepository.readSettings()).isSkippedIntakeDay(selectedDay),
+      isTrue,
+    );
+
+    await tester.tap(find.byKey(CaloriesPageKeys.weeklyCheckInSkipDayButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      (await settingsRepository.readSettings()).isSkippedIntakeDay(selectedDay),
+      isFalse,
+    );
   });
 
   testWidgets(

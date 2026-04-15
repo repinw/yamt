@@ -22,7 +22,7 @@ final class PendingSharedReceiptIntentProvider
         argument: null,
         retry: null,
         name: r'pendingSharedReceiptIntentProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -44,7 +44,7 @@ final class PendingSharedReceiptIntentProvider
 }
 
 String _$pendingSharedReceiptIntentHash() =>
-    r'13371643008ce927a2cf48ca49d8b12895507390';
+    r'7c6ac203e753704c7aff69a3d5b176e2d5b450a8';
 
 abstract class _$PendingSharedReceiptIntent
     extends $Notifier<SharedReceiptIntent?> {

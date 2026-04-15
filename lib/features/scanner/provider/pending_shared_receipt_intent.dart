@@ -4,7 +4,7 @@ import 'package:yamt/features/scanner/domain/shared_receipt_intent.dart';
 
 part 'pending_shared_receipt_intent.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class PendingSharedReceiptIntent extends _$PendingSharedReceiptIntent {
   @override
   SharedReceiptIntent? build() {

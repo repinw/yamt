@@ -11,6 +11,15 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/health/data/diary_health_service.dart';
+import 'package:yamt/features/health/data/health_connection_service.dart';
+import 'package:yamt/features/health/data/health_weight_service.dart';
+import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
+import 'package:yamt/features/health/domain/diary_health_day_data.dart';
+import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/health_weight_sample.dart';
+import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
 class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   FakeCalorieLogRepository({List<CalorieEntry>? initialEntries})
@@ -257,6 +266,90 @@ class FakeCalorieSettingsRepository implements CalorieSettingsRepository {
 
   Future<void> dispose() {
     return _controller.close();
+  }
+}
+
+class FakeHealthConnectionService implements HealthConnectionService {
+  FakeHealthConnectionService(this.status);
+
+  final HealthConnectionStatus status;
+
+  @override
+  Future<HealthDisconnectResult> disconnect() async {
+    return HealthDisconnectResult.disconnected;
+  }
+
+  @override
+  Future<void> installHealthConnect() async {}
+
+  @override
+  Future<HealthConnectionStatus> loadStatus() async => status;
+
+  @override
+  Future<HealthConnectionStatus> requestAuthorization() async => status;
+
+  @override
+  Future<HealthConnectionStatus> requestHistoryAuthorization() async => status;
+}
+
+class FakeDiaryHealthService implements DiaryHealthService {
+  FakeDiaryHealthService(this.dataByDay);
+
+  final Map<String, DiaryHealthDayData> dataByDay;
+
+  @override
+  Future<DiaryHealthDayData> loadDayData({required DateTime day}) async {
+    return dataByDay[diaryDayKey(day)] ??
+        const DiaryHealthDayData(totalSteps: 0, workouts: []);
+  }
+}
+
+class FakeHealthWeightService implements HealthWeightService {
+  FakeHealthWeightService(this.samples);
+
+  final List<HealthWeightSample> samples;
+
+  @override
+  Future<List<HealthWeightSample>> loadWeightSamples({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async {
+    return samples
+        .where(
+          (sample) =>
+              !sample.recordedAt.isBefore(startInclusive) &&
+              sample.recordedAt.isBefore(endExclusive),
+        )
+        .toList(growable: false);
+  }
+
+  @override
+  Future<bool> saveWeightSample({
+    required DateTime recordedAt,
+    required double weightKg,
+  }) async {
+    return true;
+  }
+}
+
+class FakeManualHealthWeightRepository implements ManualHealthWeightRepository {
+  FakeManualHealthWeightRepository(this.entries);
+
+  final List<ManualHealthWeightEntry> entries;
+
+  @override
+  Future<bool> deleteEntryForDay(DateTime day) async => true;
+
+  @override
+  Future<List<ManualHealthWeightEntry>> readEntries() async => entries;
+
+  @override
+  Future<bool> saveEntry(ManualHealthWeightEntry entry) async {
+    entries
+      ..removeWhere((existing) => isSameDiaryDay(existing.day, entry.day))
+      ..add(entry)
+      ..sort((left, right) => left.day.compareTo(right.day));
+    return true;
   }
 }
 

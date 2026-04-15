@@ -1,8 +1,12 @@
+import 'dart:developer' show log;
+
+import 'package:flutter/foundation.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 
 const minimumCalorieGoalKcal = 1200.0;
 const _kcalPerKilogram = 7000.0;
 const _daysPerWeek = 7.0;
+const _calculatorLogName = 'CalorieGoalCalculator';
 
 class CalorieGoalCalculationResult {
   const CalorieGoalCalculationResult({
@@ -40,7 +44,7 @@ abstract final class CalorieGoalCalculator {
         profile.goalMode == CalorieGoalMode.lose &&
         adjustedGoalKcal < minimumCalorieGoalKcal;
 
-    return CalorieGoalCalculationResult(
+    final result = CalorieGoalCalculationResult(
       bmrKcal: bmrKcal,
       tdeeKcal: tdeeKcal,
       dailyAdjustmentKcal: dailyAdjustmentKcal,
@@ -49,6 +53,24 @@ abstract final class CalorieGoalCalculator {
           : adjustedGoalKcal,
       wasClampedToMinimum: wasClampedToMinimum,
     );
+    if (!kReleaseMode) {
+      final message =
+          'CALC_RESULT_DEBUG '
+          'sex=${profile.sex.name} '
+          'weightKg=${_format(profile.weightKg)} '
+          'heightCm=${_format(profile.heightCm)} '
+          'ageYears=${profile.ageYears} '
+          'activityLevel=${_format(profile.activityLevel)} '
+          'goalMode=${profile.goalMode.name} '
+          'goalSpeedKgPerWeek=${_format(profile.goalSpeedKgPerWeek)} '
+          '-> bmrKcal=${_format(result.bmrKcal)} '
+          'tdeeKcal=${_format(result.tdeeKcal)} '
+          'dailyAdjustmentKcal=${_format(result.dailyAdjustmentKcal)} '
+          'finalGoalKcal=${_format(result.finalGoalKcal)} '
+          'wasClampedToMinimum=${result.wasClampedToMinimum}';
+      log(message, name: _calculatorLogName);
+    }
+    return result;
   }
 
   static double _calculateBmr(CalorieCalculatorProfile profile) {
@@ -60,5 +82,9 @@ abstract final class CalorieGoalCalculator {
       CalorieCalculatorSex.male => base + 5,
       CalorieCalculatorSex.female => base - 161,
     };
+  }
+
+  static String _format(double value) {
+    return value.toStringAsFixed(2);
   }
 }

@@ -22,7 +22,7 @@ final class FileShareIntentProvider
         argument: null,
         retry: null,
         name: r'fileShareIntentProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -49,7 +49,7 @@ final class FileShareIntentProvider
   }
 }
 
-String _$fileShareIntentHash() => r'65394a6e885527bd2436bd6da386ca3671143feb';
+String _$fileShareIntentHash() => r'877187683456d9af03382b9e455b4597e4390f94';
 
 @ProviderFor(SharedReceiptService)
 final sharedReceiptServiceProvider = SharedReceiptServiceProvider._();

@@ -243,7 +243,7 @@ final class CalorieWeekOverviewForWindowProvider
 }
 
 String _$calorieWeekOverviewForWindowHash() =>
-    r'bc256aa5f37728cf08d40b117edfca66a633bb39';
+    r'2911dec303d6f41887881e5fde5bca2900b096ce';
 
 final class CalorieWeekOverviewForWindowFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<CalorieWeekOverview>, DateTime> {
@@ -286,7 +286,7 @@ final class CalorieWeekDayOverviewForDateProvider
   }) : super(
          retry: null,
          name: r'calorieWeekDayOverviewForDateProvider',
-         isAutoDispose: false,
+         isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
@@ -326,7 +326,7 @@ final class CalorieWeekDayOverviewForDateProvider
 }
 
 String _$calorieWeekDayOverviewForDateHash() =>
-    r'a61bfc7e60c295b6f8865b4c446076900745a305';
+    r'11fb87947b528e41e92c3392708e876550a5fe8d';
 
 final class CalorieWeekDayOverviewForDateFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<CalorieWeekDayOverview>, DateTime> {
@@ -336,7 +336,7 @@ final class CalorieWeekDayOverviewForDateFamily extends $Family
         name: r'calorieWeekDayOverviewForDateProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
-        isAutoDispose: false,
+        isAutoDispose: true,
       );
 
   CalorieWeekDayOverviewForDateProvider call(DateTime day) =>

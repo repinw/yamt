@@ -13,7 +13,7 @@ part 'shared_receipt_service.g.dart';
 
 const String _sharedReceiptServiceLogName = 'SharedReceiptService';
 
-@riverpod
+@Riverpod(keepAlive: true)
 FileShareIntent fileShareIntent(Ref ref) {
   return FileShareIntent.instance;
 }

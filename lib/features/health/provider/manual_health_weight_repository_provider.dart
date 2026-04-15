@@ -7,7 +7,7 @@ import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 
 part 'manual_health_weight_repository_provider.g.dart';
 
-@Riverpod(keepAlive: true)
+@riverpod
 ManualHealthWeightRepository manualHealthWeightRepository(Ref ref) {
   String? currentUserId;
   try {

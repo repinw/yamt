@@ -1317,6 +1317,132 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorSaveFailed => 'Das berechnete Kalorienziel konnte nicht gespeichert werden.';
 
   @override
+  String get caloriesLearnedTdeeSheetTitle => 'Ziel aus gelerntem TDEE neu berechnen';
+
+  @override
+  String get caloriesLearnedTdeeSheetSubtitle => 'Verwende deinen letzten erfolgreichen Wochen-Check-in statt einer Aktivitätsschätzung.';
+
+  @override
+  String get caloriesLearnedTdeeLabel => 'Gelernter TDEE';
+
+  @override
+  String get caloriesLearnedTdeeResultLabel => 'Neues Tagesziel';
+
+  @override
+  String get caloriesLearnedTdeeUseProfileResetAction => 'Profilbasierten Reset nutzen';
+
+  @override
+  String get caloriesLearnedTdeeSaveFailed => 'Das Ziel aus dem gelernten TDEE konnte nicht gespeichert werden.';
+
+  @override
+  String get caloriesWeeklyCheckInDialogTitle => 'Wochen-Check-in';
+
+  @override
+  String get caloriesWeeklyCheckInDialogReadyBody => 'Prüfe deine letzten 7 abgeschlossenen Tage und übernimm ab heute ein aktualisiertes Ziel.';
+
+  @override
+  String get caloriesWeeklyCheckInDialogBlockedBody => 'Uns fehlen noch ein paar Daten, bevor wir dein Ziel aktualisieren können.';
+
+  @override
+  String get caloriesWeeklyCheckInDialogWindowLabel => 'Zeitraum';
+
+  @override
+  String get caloriesWeeklyCheckInDialogTrendLabel => 'Gewichtstrend';
+
+  @override
+  String get caloriesWeeklyCheckInDialogTrueTdeeLabel => 'Gelernter TDEE';
+
+  @override
+  String get caloriesWeeklyCheckInDialogNewTargetLabel => 'Neues Ziel';
+
+  @override
+  String get caloriesWeeklyCheckInDialogTodayDeltaLabel => 'Aktivitätsdelta heute';
+
+  @override
+  String get caloriesWeeklyCheckInDialogLowConfidence => 'Niedrige Sicherheit: Es lagen nur Start- und Endgewicht vor.';
+
+  @override
+  String get caloriesWeeklyCheckInBlockedUnstableWeight => 'Die Gewichtsdaten waren diese Woche zu unruhig für ein verlässliches TDEE-Update. Füge gleichmäßigere Wiegewerte hinzu und versuche es erneut.';
+
+  @override
+  String get caloriesWeeklyCheckInApplyAction => 'Ziel übernehmen';
+
+  @override
+  String get caloriesWeeklyCheckInLaterAction => 'Später';
+
+  @override
+  String get caloriesWeeklyCheckInApplyFailed => 'Der Wochen-Check-in konnte nicht übernommen werden.';
+
+  @override
+  String get caloriesWeeklyCheckInHintReadyTitle => 'Wochen-Check-in bereit';
+
+  @override
+  String get caloriesWeeklyCheckInHintReadyBody => 'Deine letzten 7 abgeschlossenen Tage sind für ein Ziel-Update bereit.';
+
+  @override
+  String get caloriesWeeklyCheckInHintBlockedTitle => 'Wochen-Check-in braucht Daten';
+
+  @override
+  String get caloriesWeeklyCheckInHintBlockedBody => 'Ergänze fehlende Aufnahme- oder Gewichtsdaten, um dein Ziel zu aktualisieren.';
+
+  @override
+  String get caloriesWeeklyCheckInHintContinueAction => 'Fortsetzen';
+
+  @override
+  String get caloriesWeeklyCheckInHintStaleTitle => 'Ziel wird alt';
+
+  @override
+  String get caloriesWeeklyCheckInHintStaleBody => 'Nutze den nächsten Wochen-Check-in, damit dein Ziel aktuell bleibt.';
+
+  @override
+  String get caloriesWeeklyCheckInHintUrgentTitle => 'Ziel braucht Aktualisierung';
+
+  @override
+  String get caloriesWeeklyCheckInHintUrgentBody => 'Du verwendest schon länger ältere Zieldaten.';
+
+  @override
+  String get caloriesWeeklyCheckInSkipDayAction => 'Tag als ausgelassen markieren';
+
+  @override
+  String get caloriesWeeklyCheckInUnskipDayAction => 'Ausgelassen-Markierung entfernen';
+
+  @override
+  String get caloriesWeeklyCheckInAutoAdjustedHint => 'Ziel durch Wochen-Check-in aktualisiert:';
+
+  @override
+  String get caloriesWeeklyCheckInOpenHealthTrendsAction => 'Gesundheitstrends öffnen';
+
+  @override
+  String get caloriesWeeklyCheckInBlockedMissingIntake => 'Mindestens ein Tag in diesem Zeitraum hat noch keine Aufnahme. Trage ihn ein oder markiere 1 oder 2 leere Tage als ausgelassen.';
+
+  @override
+  String get caloriesWeeklyCheckInBlockedTooManyMissingIntake => 'Dieser Zeitraum hat 3 oder mehr fehlende Aufnahmetage. Wir behalten dein letztes gelerntes Ziel, bis du wieder mehr vollständige Tage geloggt hast.';
+
+  @override
+  String get caloriesWeeklyCheckInBlockedSkippedWithoutAverage => 'Ein ausgelassener Tag braucht frühere geloggte Aufnahme im selben Zeitraum, bevor wir ihn schätzen können.';
+
+  @override
+  String get caloriesWeeklyCheckInBlockedMissingStartWeight => 'Füge ein Gewicht für den ersten Tag dieses Zeitraums hinzu, um fortzufahren.';
+
+  @override
+  String get caloriesWeeklyCheckInBlockedMissingEndWeight => 'Füge ein Gewicht für den letzten Tag dieses Zeitraums hinzu, um fortzufahren.';
+
+  @override
+  String caloriesWeeklyCheckInBlockedMissingStartWeightOn(Object date) {
+    return 'Füge ein Gewicht für den ersten Tag dieses Zeitraums ($date) hinzu, um fortzufahren.';
+  }
+
+  @override
+  String caloriesWeeklyCheckInBlockedMissingEndWeightOn(Object date) {
+    return 'Füge ein Gewicht für den letzten Tag dieses Zeitraums ($date) hinzu, um fortzufahren.';
+  }
+
+  @override
+  String caloriesWeeklyCheckInBlockedMissingWeightDates(Object dates) {
+    return 'Füge Gewichte für diese Daten hinzu, um fortzufahren: $dates.';
+  }
+
+  @override
   String get caloriesConsumedLabel => 'Verbraucht';
 
   @override

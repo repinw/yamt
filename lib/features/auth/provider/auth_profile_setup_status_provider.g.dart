@@ -21,7 +21,7 @@ final class AuthProfileSetupCompletedProvider
         argument: null,
         retry: null,
         name: r'authProfileSetupCompletedProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -49,4 +49,4 @@ final class AuthProfileSetupCompletedProvider
 }
 
 String _$authProfileSetupCompletedHash() =>
-    r'871c952ff27e8693522cdbcca1ac6f4930aaeba3';
+    r'4cfd2e7d68052015c1168037a63df4060ee36798';

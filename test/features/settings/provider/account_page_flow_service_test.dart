@@ -9,10 +9,10 @@ import 'package:yamt/features/settings/provider/account_page_flow_service.dart';
 class _MockAuthCredential extends Fake implements AuthCredential {}
 
 class _RecordingAccountController extends AccountController {
-  var overwriteCalls = 0;
-  var deleteCalls = 0;
-  AuthCredential? overwriteCredential;
-  AuthCredential? deleteCredential;
+  var _overwriteCalls = 0;
+  var _deleteCalls = 0;
+  AuthCredential? _overwriteCredential;
+  AuthCredential? _deleteCredential;
 
   @override
   FutureOr<void> build() {}
@@ -21,16 +21,16 @@ class _RecordingAccountController extends AccountController {
   Future<void> overwriteExistingGoogleAccountWithGuest(
     AuthCredential credential,
   ) async {
-    overwriteCalls += 1;
-    overwriteCredential = credential;
+    _overwriteCalls += 1;
+    _overwriteCredential = credential;
   }
 
   @override
   Future<void> deleteGuestAndSignInWithGoogleCredential(
     AuthCredential credential,
   ) async {
-    deleteCalls += 1;
-    deleteCredential = credential;
+    _deleteCalls += 1;
+    _deleteCredential = credential;
   }
 }
 
@@ -111,10 +111,10 @@ void main() {
         credential: credential,
       );
 
-      expect(controller.overwriteCalls, 1);
-      expect(controller.deleteCalls, 0);
-      expect(controller.overwriteCredential, same(credential));
-      expect(controller.deleteCredential, isNull);
+      expect(controller._overwriteCalls, 1);
+      expect(controller._deleteCalls, 0);
+      expect(controller._overwriteCredential, same(credential));
+      expect(controller._deleteCredential, isNull);
     },
   );
 
@@ -140,10 +140,10 @@ void main() {
         credential: credential,
       );
 
-      expect(controller.deleteCalls, 1);
-      expect(controller.overwriteCalls, 0);
-      expect(controller.deleteCredential, same(credential));
-      expect(controller.overwriteCredential, isNull);
+      expect(controller._deleteCalls, 1);
+      expect(controller._overwriteCalls, 0);
+      expect(controller._deleteCredential, same(credential));
+      expect(controller._overwriteCredential, isNull);
     },
   );
 }
