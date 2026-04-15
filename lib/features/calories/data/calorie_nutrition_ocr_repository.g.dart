@@ -151,7 +151,7 @@ final class CalorieNutritionTemplateConfigClientProvider
 }
 
 String _$calorieNutritionTemplateConfigClientHash() =>
-    r'ccf18a5b495ed92fdfece978825cfa1bbff901cb';
+    r'0d917734b7c4d4aeed01839741429999c7f87960';
 
 @ProviderFor(calorieNutritionTemplateModelClient)
 final calorieNutritionTemplateModelClientProvider =

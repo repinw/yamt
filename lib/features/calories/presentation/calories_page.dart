@@ -10,6 +10,8 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/calories_page_logic.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_activity_card.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_week_balance_summary_banner.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_bundle_details_sheet.dart';
@@ -23,6 +25,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calories_state_views.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_summary_card.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_workouts_card.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/'
@@ -139,6 +143,9 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
             ),
           ),
         ),
+        const CaloriesActivityCard(),
+        const SizedBox(height: AppSpacing.xl),
+        const CaloriesWorkoutsCard(),
       ],
     );
   }

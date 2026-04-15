@@ -10,7 +10,11 @@ import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_eating_window_dialog.dart';
+import 'package:yamt/features/calories/provider/'
+    'diary_activity_summary_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/provider/health_connection_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 TextStyle? _settingsDropdownTextStyle(BuildContext context) {
@@ -32,6 +36,7 @@ class SettingsPage extends StatelessWidget {
       _HouseholdTile(l10n: l10n),
       _AccountTile(l10n: l10n),
       const _DiaryTile(),
+      const _HealthConnectTile(),
       const _ThemeModeTile(),
       const _SeedColorTile(),
       _NotImplementedTile(
@@ -259,6 +264,222 @@ class _SeedColorTile extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+class _HealthConnectTile extends ConsumerStatefulWidget {
+  const _HealthConnectTile();
+
+  @override
+  ConsumerState<_HealthConnectTile> createState() => _HealthConnectTileState();
+}
+
+class _HealthConnectTileState extends ConsumerState<_HealthConnectTile> {
+  bool _isBusy = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final statusAsync = ref.watch(healthConnectionControllerProvider);
+    final status = statusAsync.asData?.value;
+    final accessState = status?.accessState;
+    final isUnsupported = accessState == HealthDataAccessState.unsupported;
+    final showsInstall = accessState == HealthDataAccessState.installRequired;
+    final showsConnect =
+        status == null ||
+        accessState == HealthDataAccessState.permissionRequired ||
+        accessState == HealthDataAccessState.historyRequired;
+    final needsHistoryOnly = status?.needsHistoryOnly ?? false;
+
+    return ListTile(
+      leading: Icon(
+        isUnsupported
+            ? Icons.block_outlined
+            : showsInstall
+            ? Icons.download_for_offline_outlined
+            : showsConnect
+            ? Icons.favorite_outline
+            : Icons.link_off,
+      ),
+      title: Text(_tileTitle(l10n, status)),
+      subtitle: Text(
+        isUnsupported
+            ? l10n.healthUnsupportedHint
+            : showsInstall
+            ? l10n.settingsHealthInstallSubtitle
+            : showsConnect
+            ? needsHistoryOnly
+                  ? l10n.settingsHealthHistorySubtitle
+                  : _connectSubtitle(l10n, status)
+            : _disconnectSubtitle(l10n, status),
+      ),
+      trailing: _isBusy
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : null,
+      enabled: !_isBusy,
+      onTap: _isBusy
+          ? null
+          : isUnsupported
+          ? null
+          : showsInstall
+          ? _installHealthConnect
+          : showsConnect
+          ? _connectHealth
+          : _confirmDisconnect,
+    );
+  }
+
+  Future<void> _connectHealth() async {
+    await _runHealthAction(() {
+      final controller = ref.read(healthConnectionControllerProvider.notifier);
+      return _needsHistoryOnly()
+          ? controller.requestHistoryAuthorization()
+          : controller.requestAuthorization();
+    }, showFailure: true);
+  }
+
+  Future<void> _installHealthConnect() async {
+    await _runHealthAction(
+      () => ref
+          .read(healthConnectionControllerProvider.notifier)
+          .installHealthConnect(),
+      showFailure: false,
+    );
+  }
+
+  bool _needsHistoryOnly() {
+    final status = ref.read(healthConnectionControllerProvider).asData?.value;
+    return status?.needsHistoryOnly ?? false;
+  }
+
+  Future<void> _confirmDisconnect() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.settingsHealthDisconnectDialogTitle),
+          content: Text(l10n.settingsHealthDisconnectDialogBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.inventoryReceiptReviewCancelAction),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(l10n.settingsHealthDisconnectAction),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _isBusy = true;
+    });
+    try {
+      final result = await ref
+          .read(healthConnectionControllerProvider.notifier)
+          .disconnect();
+      _invalidateHealthProviders();
+      if (!mounted) {
+        return;
+      }
+      _showSnackBar(switch (result) {
+        HealthDisconnectResult.disconnected =>
+          l10n.settingsHealthDisconnectSuccess,
+        HealthDisconnectResult.openedSettings =>
+          l10n.settingsHealthDisconnectOpenedSettings,
+        HealthDisconnectResult.unsupported => l10n.healthUnsupportedHint,
+      });
+    } catch (_) {
+      if (mounted) {
+        _showSnackBar(l10n.settingsHealthDisconnectFailed);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBusy = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _runHealthAction(
+    Future<HealthConnectionStatus> Function() action, {
+    required bool showFailure,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() {
+      _isBusy = true;
+    });
+    try {
+      final status = await action();
+      _invalidateHealthProviders();
+      if (!mounted || !showFailure) {
+        return;
+      }
+      if (status.accessState == HealthDataAccessState.permissionRequired ||
+          status.accessState == HealthDataAccessState.installRequired ||
+          status.accessState == HealthDataAccessState.unsupported) {
+        _showSnackBar(l10n.settingsHealthConnectFailed);
+      }
+    } catch (_) {
+      if (mounted && showFailure) {
+        _showSnackBar(l10n.settingsHealthConnectFailed);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBusy = false;
+        });
+      }
+    }
+  }
+
+  void _invalidateHealthProviders() {
+    ref.invalidate(healthConnectionControllerProvider);
+    ref.invalidate(diaryActivitySummaryProvider);
+  }
+
+  void _showSnackBar(String message) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  String _tileTitle(AppLocalizations l10n, HealthConnectionStatus? status) {
+    return switch (status?.platform) {
+      HealthPlatform.ios => l10n.settingsAppleHealthTitle,
+      _ => l10n.settingsHealthConnectPlatformTitle,
+    };
+  }
+
+  String _connectSubtitle(
+    AppLocalizations l10n,
+    HealthConnectionStatus? status,
+  ) {
+    return switch (status?.platform) {
+      HealthPlatform.ios => l10n.settingsAppleHealthConnectSubtitle,
+      _ => l10n.settingsHealthConnectSubtitle,
+    };
+  }
+
+  String _disconnectSubtitle(
+    AppLocalizations l10n,
+    HealthConnectionStatus? status,
+  ) {
+    return switch (status?.platform) {
+      HealthPlatform.ios => l10n.settingsAppleHealthDisconnectSubtitle,
+      _ => l10n.settingsHealthDisconnectSubtitle,
+    };
   }
 }
 
