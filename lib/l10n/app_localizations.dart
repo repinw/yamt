@@ -2963,6 +2963,138 @@ abstract class AppLocalizations {
   /// **'Your goal starts today. The balance will build up from here.'**
   String get caloriesWeekBalanceStartedToday;
 
+  /// No description provided for @caloriesHealthTrendsOpenAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get caloriesHealthTrendsOpenAction;
+
+  /// No description provided for @caloriesHealthTrendsPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Health trends'**
+  String get caloriesHealthTrendsPageTitle;
+
+  /// No description provided for @caloriesHealthTrendsChartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'7-day health chart'**
+  String get caloriesHealthTrendsChartTitle;
+
+  /// No description provided for @caloriesHealthTrendsChartSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows weight, burned calories, and calorie intake for the visible 7 diary days.'**
+  String get caloriesHealthTrendsChartSubtitle;
+
+  /// No description provided for @caloriesHealthTrendsLegendWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get caloriesHealthTrendsLegendWeight;
+
+  /// No description provided for @caloriesHealthTrendsLegendBurned.
+  ///
+  /// In en, this message translates to:
+  /// **'Burned'**
+  String get caloriesHealthTrendsLegendBurned;
+
+  /// No description provided for @caloriesHealthTrendsLegendIntake.
+  ///
+  /// In en, this message translates to:
+  /// **'Intake'**
+  String get caloriesHealthTrendsLegendIntake;
+
+  /// No description provided for @caloriesHealthTrendsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No trend data yet for this 7-day window.'**
+  String get caloriesHealthTrendsEmpty;
+
+  /// No description provided for @caloriesHealthTrendsHealthHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect health access to show burned calories and weight on this chart.'**
+  String get caloriesHealthTrendsHealthHint;
+
+  /// No description provided for @caloriesHealthTrendsWeightsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily weights'**
+  String get caloriesHealthTrendsWeightsTitle;
+
+  /// No description provided for @caloriesHealthTrendsWeightsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a visible day to add or edit a manual weight. Manual values override imported values for the same day.'**
+  String get caloriesHealthTrendsWeightsSubtitle;
+
+  /// No description provided for @caloriesHealthTrendsWeightAddAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get caloriesHealthTrendsWeightAddAction;
+
+  /// No description provided for @caloriesHealthTrendsWeightEditAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get caloriesHealthTrendsWeightEditAction;
+
+  /// No description provided for @caloriesHealthTrendsWeightDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set weight for {date}'**
+  String caloriesHealthTrendsWeightDialogTitle(String date);
+
+  /// No description provided for @caloriesHealthTrendsWeightSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get caloriesHealthTrendsWeightSaveAction;
+
+  /// No description provided for @caloriesHealthTrendsWeightClearAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear override'**
+  String get caloriesHealthTrendsWeightClearAction;
+
+  /// No description provided for @caloriesHealthTrendsWeightSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save weight.'**
+  String get caloriesHealthTrendsWeightSaveFailed;
+
+  /// No description provided for @caloriesHealthTrendsWeightClearFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not clear manual weight.'**
+  String get caloriesHealthTrendsWeightClearFailed;
+
+  /// No description provided for @caloriesHealthTrendsWeightSourceManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get caloriesHealthTrendsWeightSourceManual;
+
+  /// No description provided for @caloriesHealthTrendsWeightSourceHealthConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Health Connect'**
+  String get caloriesHealthTrendsWeightSourceHealthConnect;
+
+  /// No description provided for @caloriesHealthTrendsWeightSourceAppleHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple Health'**
+  String get caloriesHealthTrendsWeightSourceAppleHealth;
+
+  /// No description provided for @caloriesHealthTrendsWeightMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'No weight yet'**
+  String get caloriesHealthTrendsWeightMissing;
+
   /// No description provided for @caloriesSectionEmptyState.
   ///
   /// In en, this message translates to:
@@ -3274,6 +3406,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'kcal'**
   String get caloriesUnitKcal;
+
+  /// No description provided for @caloriesUnitKg.
+  ///
+  /// In en, this message translates to:
+  /// **'kg'**
+  String get caloriesUnitKg;
 
   /// No description provided for @caloriesUnitGram.
   ///

@@ -11,6 +11,8 @@ import 'package:yamt/features/calories/presentation/'
     'calorie_goal_onboarding_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_barcode_scan_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
+import 'package:yamt/features/calories/presentation/'
+    'calorie_health_trends_page.dart';
 import 'package:yamt/features/calories/presentation/calories_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
@@ -102,6 +104,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.homeSettingsHousehold,
         builder: (context, state) => const HouseholdPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.homeStatisticsWeight,
+        builder: (context, state) => const CalorieHealthTrendsPage(),
       ),
       GoRoute(
         path: AppRoutes.homeCaloriesEntryCreate,

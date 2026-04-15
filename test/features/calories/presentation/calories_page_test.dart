@@ -129,6 +129,10 @@ Widget _buildHarness({
         path: AppRoutes.homeCaloriesEntryEdit,
         builder: (context, state) => const Scaffold(body: Text('Edit')),
       ),
+      GoRoute(
+        path: AppRoutes.homeStatisticsWeight,
+        builder: (context, state) => const Scaffold(body: Text('Trends')),
+      ),
     ],
   );
 
@@ -168,6 +172,10 @@ Widget _buildHarnessWithContainer({required ProviderContainer container}) {
       GoRoute(
         path: AppRoutes.homeCaloriesEntryEdit,
         builder: (context, state) => const Scaffold(body: Text('Edit')),
+      ),
+      GoRoute(
+        path: AppRoutes.homeStatisticsWeight,
+        builder: (context, state) => const Scaffold(body: Text('Trends')),
       ),
     ],
   );
@@ -354,6 +362,45 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Edit'), findsOneWidget);
+  });
+
+  testWidgets('week balance banner no longer shows open chart button', (
+    tester,
+  ) async {
+    final today = DateTime(2026, 3, 20);
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'trend-entry',
+          loggedAt: DateTime(today.year, today.month, today.day, 8),
+          mealType: MealType.breakfast,
+        ),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: DateTime(today.year, today.month, today.day, 9),
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        referenceNow: today,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.weekBalanceSummary),
+    );
+    expect(find.text('Open'), findsNothing);
   });
 
   testWidgets(

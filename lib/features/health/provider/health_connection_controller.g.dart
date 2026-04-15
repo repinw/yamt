@@ -39,7 +39,7 @@ final class HealthConnectionControllerProvider
 }
 
 String _$healthConnectionControllerHash() =>
-    r'85ade5f498a98583a36fc9d865d2be95752e545f';
+    r'a1d22ffc7d8a25e706891d4f472adb449b68d202';
 
 abstract class _$HealthConnectionController
     extends $AsyncNotifier<HealthConnectionStatus> {

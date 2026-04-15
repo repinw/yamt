@@ -903,6 +903,41 @@
   },
   "caloriesWeekBalanceStartedToday":
       "Dein Zielstart ist heute. Die Bilanz baut sich ab jetzt auf.",
+  "caloriesHealthTrendsOpenAction": "Öffnen",
+  "caloriesHealthTrendsPageTitle": "Gesundheitstrends",
+  "caloriesHealthTrendsChartTitle": "7-Tage-Gesundheitschart",
+  "caloriesHealthTrendsChartSubtitle":
+      "Zeigt Gewicht, verbrannte Kalorien und Kalorienaufnahme für die sichtbaren 7 Tage im Tagebuch.",
+  "caloriesHealthTrendsLegendWeight": "Gewicht",
+  "caloriesHealthTrendsLegendBurned": "Verbrannt",
+  "caloriesHealthTrendsLegendIntake": "Aufnahme",
+  "caloriesHealthTrendsEmpty":
+      "Für dieses sichtbare 7-Tage-Fenster sind noch keine Trenddaten vorhanden.",
+  "caloriesHealthTrendsHealthHint":
+      "Verbinde den Gesundheitszugriff, um verbrannte Kalorien und Gewicht in diesem Chart zu sehen.",
+  "caloriesHealthTrendsWeightsTitle": "Tagesgewichte",
+  "caloriesHealthTrendsWeightsSubtitle":
+      "Tippe auf einen sichtbaren Tag, um ein manuelles Gewicht hinzuzufügen oder zu bearbeiten. Manuelle Werte überschreiben importierte Werte für denselben Tag.",
+  "caloriesHealthTrendsWeightAddAction": "Hinzufügen",
+  "caloriesHealthTrendsWeightEditAction": "Bearbeiten",
+  "caloriesHealthTrendsWeightDialogTitle": "Gewicht für {date} setzen",
+  "@caloriesHealthTrendsWeightDialogTitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "caloriesHealthTrendsWeightSaveAction": "Speichern",
+  "caloriesHealthTrendsWeightClearAction": "Überschreibung löschen",
+  "caloriesHealthTrendsWeightSaveFailed":
+      "Gewicht konnte nicht gespeichert werden.",
+  "caloriesHealthTrendsWeightClearFailed":
+      "Manuelles Gewicht konnte nicht gelöscht werden.",
+  "caloriesHealthTrendsWeightSourceManual": "Manuell",
+  "caloriesHealthTrendsWeightSourceHealthConnect": "Health Connect",
+  "caloriesHealthTrendsWeightSourceAppleHealth": "Apple Health",
+  "caloriesHealthTrendsWeightMissing": "Noch kein Gewicht",
   "caloriesSectionEmptyState": "Noch keine Einträge.",
   "caloriesDeleteEntryDialogTitle": "Eintrag löschen?",
   "caloriesDeleteEntryDialogMessage":
@@ -977,6 +1012,7 @@
   "caloriesWeekdayShortSaturday": "Sa",
   "caloriesWeekdayShortSunday": "So",
   "caloriesUnitKcal": "kcal",
+  "caloriesUnitKg": "kg",
   "caloriesUnitGram": "g",
   "caloriesUnitMilliliter": "ml",
   "caloriesBundlePortions": "{consumed}/{total} Portionen",

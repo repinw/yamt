@@ -1521,6 +1521,74 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesWeekBalanceStartedToday => 'Your goal starts today. The balance will build up from here.';
 
   @override
+  String get caloriesHealthTrendsOpenAction => 'Open';
+
+  @override
+  String get caloriesHealthTrendsPageTitle => 'Health trends';
+
+  @override
+  String get caloriesHealthTrendsChartTitle => '7-day health chart';
+
+  @override
+  String get caloriesHealthTrendsChartSubtitle => 'Shows weight, burned calories, and calorie intake for the visible 7 diary days.';
+
+  @override
+  String get caloriesHealthTrendsLegendWeight => 'Weight';
+
+  @override
+  String get caloriesHealthTrendsLegendBurned => 'Burned';
+
+  @override
+  String get caloriesHealthTrendsLegendIntake => 'Intake';
+
+  @override
+  String get caloriesHealthTrendsEmpty => 'No trend data yet for this 7-day window.';
+
+  @override
+  String get caloriesHealthTrendsHealthHint => 'Connect health access to show burned calories and weight on this chart.';
+
+  @override
+  String get caloriesHealthTrendsWeightsTitle => 'Daily weights';
+
+  @override
+  String get caloriesHealthTrendsWeightsSubtitle => 'Tap a visible day to add or edit a manual weight. Manual values override imported values for the same day.';
+
+  @override
+  String get caloriesHealthTrendsWeightAddAction => 'Add';
+
+  @override
+  String get caloriesHealthTrendsWeightEditAction => 'Edit';
+
+  @override
+  String caloriesHealthTrendsWeightDialogTitle(String date) {
+    return 'Set weight for $date';
+  }
+
+  @override
+  String get caloriesHealthTrendsWeightSaveAction => 'Save';
+
+  @override
+  String get caloriesHealthTrendsWeightClearAction => 'Clear override';
+
+  @override
+  String get caloriesHealthTrendsWeightSaveFailed => 'Could not save weight.';
+
+  @override
+  String get caloriesHealthTrendsWeightClearFailed => 'Could not clear manual weight.';
+
+  @override
+  String get caloriesHealthTrendsWeightSourceManual => 'Manual';
+
+  @override
+  String get caloriesHealthTrendsWeightSourceHealthConnect => 'Health Connect';
+
+  @override
+  String get caloriesHealthTrendsWeightSourceAppleHealth => 'Apple Health';
+
+  @override
+  String get caloriesHealthTrendsWeightMissing => 'No weight yet';
+
+  @override
   String get caloriesSectionEmptyState => 'No entries yet.';
 
   @override
@@ -1679,6 +1747,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesUnitKcal => 'kcal';
+
+  @override
+  String get caloriesUnitKg => 'kg';
 
   @override
   String get caloriesUnitGram => 'g';

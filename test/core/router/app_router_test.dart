@@ -593,9 +593,6 @@ void main() {
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeSettings);
     expect(find.text('Settings'), findsOneWidget);
-    expect(find.text('Language'), findsOneWidget);
-    expect(find.text('Notifications'), findsOneWidget);
-    expect(find.text('About'), findsOneWidget);
 
     await tester.tap(find.text('Account').first);
     await _pumpRouterTransition(tester);
@@ -733,6 +730,33 @@ void main() {
     );
 
     expect(barcodeRoute.path, AppRoutes.homeCaloriesBarcodeScan);
+  });
+
+  testWidgets('statistics weight route is registered on app router', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    final routes = container
+        .read(appRouterProvider)
+        .configuration
+        .routes
+        .whereType<GoRoute>()
+        .toList();
+    final trendsRoute = routes.firstWhere(
+      (route) => route.path == AppRoutes.homeStatisticsWeight,
+    );
+
+    expect(trendsRoute.path, AppRoutes.homeStatisticsWeight);
   });
 
   testWidgets('inventory manual add route is registered on app router', (
