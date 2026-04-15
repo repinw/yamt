@@ -123,20 +123,15 @@ void main() {
     expect(physics.createBallisticSimulation(metrics, 5000), isNotNull);
   });
 
-  test('restore press helper restores only when idle', () {
+  test('restore press helper reports true only when idle', () {
     final controller = ScrollController();
-    var restored = false;
-
-    restoreCaloriesDayNavigationPressIfIdle(
+    final shouldRestore = shouldRestoreCaloriesDayNavigationPress(
       isSnapping: false,
       isPressEnabled: false,
       scrollController: controller,
-      onRestore: () {
-        restored = true;
-      },
     );
 
-    expect(restored, isTrue);
+    expect(shouldRestore, isTrue);
   });
 
   testWidgets('prefetch helper normalizes buffer end when today is far ahead', (

@@ -77,20 +77,19 @@ class CaloriesDayNavigationScrollPhysics extends ClampingScrollPhysics {
   }
 }
 
-void restoreCaloriesDayNavigationPressIfIdle({
+bool shouldRestoreCaloriesDayNavigationPress({
   required bool isSnapping,
   required bool isPressEnabled,
   required ScrollController scrollController,
-  required VoidCallback onRestore,
 }) {
   if (isSnapping || isPressEnabled) {
-    return;
+    return false;
   }
   if (scrollController.hasClients &&
       scrollController.position.isScrollingNotifier.value) {
-    return;
+    return false;
   }
-  onRestore();
+  return true;
 }
 
 Future<void> animateCaloriesDayNavigationToTargetIfNeeded({

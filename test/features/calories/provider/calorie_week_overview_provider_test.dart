@@ -9,6 +9,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
+import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_visible_window_controller.dart';
@@ -376,6 +377,99 @@ void main() {
       expect(overview.totalKcal, 750);
       expect(overview.goalKcal, 2100);
       expect(overview.entryCount, 1);
+    },
+  );
+
+  test(
+    'cached day and week overviews refresh after past-day diary mutation',
+    () async {
+      final windowEnd = DateTime(2026, 3, 20);
+      final mutatedDay = DateTime(2026, 3, 18);
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'existing',
+            loggedAt: mutatedDay.add(const Duration(hours: 8)),
+            totalKcal: 400,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: windowEnd.subtract(const Duration(days: 6)),
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(calorieDayControllerProvider.notifier).setDay(windowEnd);
+      container
+          .read(calorieVisibleWindowControllerProvider.notifier)
+          .setWindowEnd(windowEnd);
+      await container.read(calorieGoalControllerProvider.future);
+      await container.read(calorieEntriesControllerProvider.future);
+
+      final initialDayOverview = await container.read(
+        calorieWeekDayOverviewForDateProvider(mutatedDay).future,
+      );
+      final initialWeekOverview = await container.read(
+        calorieWeekOverviewProvider.future,
+      );
+
+      expect(initialDayOverview.totalKcal, 400);
+      expect(initialWeekOverview.totalConsumedKcal, 400);
+
+      final saved = await container
+          .read(calorieEntriesControllerProvider.notifier)
+          .saveEntry(
+            _entry(
+              'new-entry',
+              loggedAt: mutatedDay.add(const Duration(hours: 12)),
+              totalKcal: 500,
+            ),
+          );
+
+      expect(saved, isTrue);
+
+      final updatedDayOverview = await container.read(
+        calorieWeekDayOverviewForDateProvider(mutatedDay).future,
+      );
+      final updatedWeekOverview = await container.read(
+        calorieWeekOverviewProvider.future,
+      );
+
+      expect(updatedDayOverview.totalKcal, 900);
+      expect(updatedDayOverview.entryCount, 2);
+      expect(updatedWeekOverview.totalConsumedKcal, 900);
+
+      final deleted = await container
+          .read(calorieEntriesControllerProvider.notifier)
+          .deleteEntry('new-entry');
+
+      expect(deleted, isTrue);
+
+      final deletedDayOverview = await container.read(
+        calorieWeekDayOverviewForDateProvider(mutatedDay).future,
+      );
+      final deletedWeekOverview = await container.read(
+        calorieWeekOverviewProvider.future,
+      );
+
+      expect(deletedDayOverview.totalKcal, 400);
+      expect(deletedDayOverview.entryCount, 1);
+      expect(deletedWeekOverview.totalConsumedKcal, 400);
     },
   );
 

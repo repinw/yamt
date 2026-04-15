@@ -9,6 +9,8 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
+    'calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/provider/'
     'calorie_visible_window_controller.dart';
 
 part 'calorie_week_overview_provider.g.dart';
@@ -98,6 +100,7 @@ Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshotForWindow(
   Ref ref,
   DateTime visibleWindowEnd,
 ) async {
+  ref.watch(calorieOverviewRevisionProvider);
   final repository = ref.watch(calorieLogRepositoryProvider);
   final days = buildDiaryVisibleDays(anchorDay: visibleWindowEnd);
 
@@ -204,6 +207,7 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
   Ref ref,
   DateTime day,
 ) async {
+  ref.watch(calorieOverviewRevisionProvider);
   final normalizedDay = normalizeDiaryDay(day);
   final repository = ref.watch(calorieLogRepositoryProvider);
   final entries = await _readEntriesForDaySafely(repository, normalizedDay);

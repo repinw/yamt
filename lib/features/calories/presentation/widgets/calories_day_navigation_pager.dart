@@ -186,12 +186,14 @@ class _CaloriesDayNavigationPagerState
   }
 
   void _restorePressIfIdle() {
-    restoreCaloriesDayNavigationPressIfIdle(
+    if (!shouldRestoreCaloriesDayNavigationPress(
       isSnapping: _isSnapping,
       isPressEnabled: _isPressEnabled,
       scrollController: _scrollController,
-      onRestore: () => _setInteractionState(isPressEnabled: true),
-    );
+    )) {
+      return;
+    }
+    _setInteractionState(isPressEnabled: true);
   }
 
   void _syncScrollPosition(double itemWidth) {

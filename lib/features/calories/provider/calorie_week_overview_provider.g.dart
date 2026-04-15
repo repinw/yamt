@@ -113,7 +113,7 @@ final class CalorieWeekConsumptionSnapshotForWindowProvider
 }
 
 String _$calorieWeekConsumptionSnapshotForWindowHash() =>
-    r'67fb98ad77ec1594e23aa4fa55aa8b57a6dd0a82';
+    r'ceb8e50f957df9ea2c52fd25afc0995625a90724';
 
 final class CalorieWeekConsumptionSnapshotForWindowFamily extends $Family
     with
@@ -326,7 +326,7 @@ final class CalorieWeekDayOverviewForDateProvider
 }
 
 String _$calorieWeekDayOverviewForDateHash() =>
-    r'2165532d537c32f005c83ecc34327536f1108d00';
+    r'a61bfc7e60c295b6f8865b4c446076900745a305';
 
 final class CalorieWeekDayOverviewForDateFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<CalorieWeekDayOverview>, DateTime> {

@@ -43,7 +43,7 @@ final class CalorieVisibleWindowControllerProvider
 }
 
 String _$calorieVisibleWindowControllerHash() =>
-    r'd018260c231fcba0ffba2826b0f915a7e806ff48';
+    r'7079a54d9164464d711cf2476013548787b19769';
 
 abstract class _$CalorieVisibleWindowController extends $Notifier<DateTime> {
   DateTime build();
