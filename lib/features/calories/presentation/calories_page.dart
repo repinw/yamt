@@ -3,17 +3,18 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/presentation/calories_page_logic.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_week_balance_summary_banner.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_bundle_details_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
-    'calories_day_navigation_card.dart';
+    'calories_day_navigation_pager.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_meal_section_card.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -24,6 +25,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calories_summary_card.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -47,6 +50,7 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
     final l10n = AppLocalizations.of(context)!;
     final dayController = ref.read(calorieDayControllerProvider.notifier);
     final selectedDay = ref.watch(calorieDayControllerProvider);
+    final visibleWindowEnd = ref.watch(calorieVisibleWindowControllerProvider);
     final dayViewState = ref.watch(calorieDayViewDataProvider);
     final weekOverviewState = ref.watch(calorieWeekOverviewProvider);
     final referenceNow = widget.referenceNow ?? DateTime.now();
@@ -67,6 +71,7 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
     final weekOverview = resolveDisplayedWeekOverview(
       weekOverviewState,
       goalKcal: dayView.goalKcal,
+      visibleWindowEnd: visibleWindowEnd,
     );
 
     return ListView(
@@ -77,13 +82,15 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
         140,
       ),
       children: <Widget>[
-        CaloriesDayNavigationCard(
-          days: weekOverview.days,
+        CaloriesDayNavigationPager(
           selectedDay: selectedDay,
+          visibleWindowEnd: visibleWindowEnd,
+          goalKcal: dayView.goalKcal,
+          visibleDaysOverview: weekOverview.days,
           referenceNow: referenceNow,
           onSelectDay: dayController.setDay,
-          onPreviousDay: () => _goToPreviousVisibleDay(ref),
-          onNextDay: () => _goToNextVisibleDay(ref),
+          onWindowSettled: (windowEnd) =>
+              handleVisibleWindowSettled(ref, windowEnd),
         ),
         if (dayViewState.isLoading) ...const <Widget>[
           SizedBox(height: AppSpacing.md),
@@ -108,7 +115,7 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
           fatLabel: l10n.caloriesFatLabel,
         ),
         const SizedBox(height: AppSpacing.md),
-        _WeekBalanceSummaryBanner(
+        CalorieWeekBalanceSummaryBanner(
           overview: weekOverview,
           referenceNow: referenceNow,
         ),
@@ -213,12 +220,13 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
 
       final messenger = ScaffoldMessenger.of(context);
       messenger.hideCurrentSnackBar();
-      final message = switch (result.failureReason) {
-        CalorieEntryDeleteFailureReason.restoreFailed =>
-          l10n.caloriesReturnPreparedMealFailed,
-        CalorieEntryDeleteFailureReason.deleteFailed ||
-        null => l10n.caloriesDeleteFailed,
-      };
+      late final String message;
+      if (result.failureReason ==
+          CalorieEntryDeleteFailureReason.restoreFailed) {
+        message = l10n.caloriesReturnPreparedMealFailed;
+      } else {
+        message = l10n.caloriesDeleteFailed;
+      }
       messenger.showSnackBar(SnackBar(content: Text(message)));
       return;
     }
@@ -305,163 +313,4 @@ class _CalorieEntryDeleteDialogResult {
   const _CalorieEntryDeleteDialogResult({required this.restoreToInventory});
 
   final bool restoreToInventory;
-}
-
-class _WeekBalanceSummaryBanner extends StatelessWidget {
-  const _WeekBalanceSummaryBanner({
-    required this.overview,
-    required this.referenceNow,
-  });
-
-  final CalorieWeekOverview overview;
-  final DateTime referenceNow;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
-    final content = resolveWeekBalanceSummaryBannerContent(
-      overview: overview,
-      l10n: l10n,
-      referenceNow: referenceNow,
-      positiveAccentColor: colors.primary,
-      warningColor: colors.error,
-    );
-
-    return DecoratedBox(
-      key: CaloriesPageKeys.weekBalanceSummary,
-      decoration: BoxDecoration(
-        color: content.backgroundColor,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              Icons.info_outline,
-              key: CaloriesPageKeys.weekBalanceSummaryIcon,
-              size: 18,
-              color: content.accentColor,
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                content.message,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: content.accentColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Resolved presentation for the compact week balance banner.
-@visibleForTesting
-class WeekBalanceSummaryBannerContent {
-  const WeekBalanceSummaryBannerContent({
-    required this.message,
-    required this.accentColor,
-    required this.backgroundColor,
-  });
-
-  final String message;
-  final Color accentColor;
-  final Color backgroundColor;
-}
-
-/// Builds the message and colors for the compact week balance banner.
-@visibleForTesting
-WeekBalanceSummaryBannerContent resolveWeekBalanceSummaryBannerContent({
-  required CalorieWeekOverview overview,
-  required AppLocalizations l10n,
-  required DateTime referenceNow,
-  required Color positiveAccentColor,
-  required Color warningColor,
-}) {
-  final isGoalStartToday =
-      normalizeDiaryDay(overview.balanceStartDate) ==
-      normalizeDiaryDay(referenceNow);
-  final carryoverBeforeTodayKcal = overview.carryoverBeforeTodayKcal;
-  final accentColor = carryoverBeforeTodayKcal < 0
-      ? warningColor
-      : positiveAccentColor;
-  final backgroundColor = carryoverBeforeTodayKcal < 0
-      ? warningColor.withValues(alpha: 0.08)
-      : positiveAccentColor.withValues(alpha: 0.08);
-  final absoluteCarryover = carryoverBeforeTodayKcal.abs().round();
-  final futureGoalStartLabel = _formatFutureGoalStartDate(
-    overview.nextGoalStartDate,
-    l10n.localeName,
-  );
-  final message = switch ((isGoalStartToday, carryoverBeforeTodayKcal)) {
-    _ when overview.goalStartsInFuture && futureGoalStartLabel != null =>
-      l10n.caloriesWeekBalanceStartsLater(futureGoalStartLabel),
-    (true, _) => l10n.caloriesWeekBalanceStartedToday,
-    (_, > 0) => l10n.caloriesWeekBalanceSaved(absoluteCarryover),
-    (_, < 0) => l10n.caloriesWeekBalanceOverspent(absoluteCarryover),
-    _ => l10n.caloriesWeekBalanceStable,
-  };
-
-  return WeekBalanceSummaryBannerContent(
-    message: message,
-    accentColor: accentColor,
-    backgroundColor: backgroundColor,
-  );
-}
-
-CalorieWeekOverview resolveDisplayedWeekOverview(
-  AsyncValue<CalorieWeekOverview> weekOverviewState, {
-  required double goalKcal,
-}) {
-  return weekOverviewState.value ?? _fallbackWeekOverview(goalKcal: goalKcal);
-}
-
-CalorieWeekOverview _fallbackWeekOverview({required double goalKcal}) {
-  final visibleDays = buildDiaryVisibleDays();
-  return CalorieWeekOverview(
-    days: List<CalorieWeekDayOverview>.unmodifiable(
-      visibleDays.map(
-        (day) => CalorieWeekDayOverview(
-          date: day,
-          totalKcal: 0,
-          goalKcal: goalKcal,
-          entryCount: 0,
-        ),
-      ),
-    ),
-    totalConsumedKcal: 0,
-    totalGoalKcal: goalKcal * visibleDays.length,
-    remainingKcal: goalKcal * visibleDays.length,
-    balanceStartDate: visibleDays.first,
-    carryoverBeforeTodayKcal: 0,
-    todayFlexibleGoalKcal: goalKcal,
-    goalStartsInFuture: false,
-    nextGoalStartDate: null,
-  );
-}
-
-String? _formatFutureGoalStartDate(DateTime? date, String localeName) {
-  if (date == null) {
-    return null;
-  }
-  return DateFormat.yMMMd(localeName).format(date);
-}
-
-void _goToPreviousVisibleDay(WidgetRef ref) {
-  final controller = ref.read(calorieDayControllerProvider.notifier);
-  final selectedDay = ref.read(calorieDayControllerProvider);
-  controller.setDay(previousDiaryVisibleDay(selectedDay));
-}
-
-void _goToNextVisibleDay(WidgetRef ref) {
-  final controller = ref.read(calorieDayControllerProvider.notifier);
-  final selectedDay = ref.read(calorieDayControllerProvider);
-  controller.setDay(nextDiaryVisibleDay(selectedDay));
 }

@@ -8,7 +8,10 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 
 import '../support/fake_calories_repositories.dart';
@@ -36,6 +39,32 @@ CalorieEntry _entry(
 }
 
 void main() {
+  test('CalorieWeekDayOverview getters report entry state', () {
+    final withinGoal = CalorieWeekDayOverview(
+      date: DateTime(2026, 3, 20),
+      totalKcal: 1800,
+      goalKcal: 2200,
+      entryCount: 1,
+    );
+    final overGoal = CalorieWeekDayOverview(
+      date: DateTime(2026, 3, 20),
+      totalKcal: 2500,
+      goalKcal: 2200,
+      entryCount: 1,
+    );
+    final empty = CalorieWeekDayOverview(
+      date: DateTime(2026, 3, 20),
+      totalKcal: 0,
+      goalKcal: 2200,
+      entryCount: 0,
+    );
+
+    expect(withinGoal.hasEntries, isTrue);
+    expect(withinGoal.isWithinGoal, isTrue);
+    expect(overGoal.isOverGoal, isTrue);
+    expect(empty.isWithinGoal, isFalse);
+  });
+
   test('calorieWeekOverview aggregates rolling seven-day totals', () async {
     final today = normalizeDiaryDay(DateTime.now());
     final fourDaysAgo = today.subtract(const Duration(days: 4));
@@ -87,6 +116,114 @@ void main() {
     expect(overview.totalGoalKcal, 14000);
     expect(overview.remainingKcal, 13000);
   });
+
+  test(
+    'calorieWeekOverview anchors the visible window to window controller',
+    () async {
+      final today = normalizeDiaryDay(DateTime.now());
+      final selectedDay = today.subtract(const Duration(days: 1));
+      final firstVisibleDay = selectedDay.subtract(const Duration(days: 6));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'selected-day',
+            loggedAt: selectedDay.add(const Duration(hours: 8)),
+            totalKcal: 600,
+          ),
+          _entry(
+            'first-visible-day',
+            loggedAt: firstVisibleDay.add(const Duration(hours: 12)),
+            totalKcal: 400,
+          ),
+          _entry(
+            'outside-window',
+            loggedAt: today.add(const Duration(hours: 12)),
+            totalKcal: 900,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: firstVisibleDay,
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(calorieDayControllerProvider.notifier).setDay(selectedDay);
+      container
+          .read(calorieVisibleWindowControllerProvider.notifier)
+          .setWindowEnd(selectedDay);
+      await container.read(calorieGoalControllerProvider.future);
+      final overview = await container.read(calorieWeekOverviewProvider.future);
+
+      expect(overview.days, hasLength(diaryVisibleDayCount));
+      expect(overview.days.last.date, selectedDay);
+      expect(overview.days.first.date, firstVisibleDay);
+      expect(overview.totalConsumedKcal, 1000);
+    },
+  );
+
+  test(
+    'calorieWeekOverview does not shift visible window when only selected day changes',
+    () async {
+      final today = normalizeDiaryDay(DateTime.now());
+      final yesterday = today.subtract(const Duration(days: 1));
+      final firstVisibleDay = today.subtract(const Duration(days: 6));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'today',
+            loggedAt: today.add(const Duration(hours: 8)),
+            totalKcal: 600,
+          ),
+          _entry(
+            'first-visible-day',
+            loggedAt: firstVisibleDay.add(const Duration(hours: 12)),
+            totalKcal: 400,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: firstVisibleDay,
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(calorieDayControllerProvider.notifier).setDay(yesterday);
+      await container.read(calorieGoalControllerProvider.future);
+      final overview = await container.read(calorieWeekOverviewProvider.future);
+
+      expect(overview.days.last.date, today);
+      expect(overview.days.first.date, firstVisibleDay);
+    },
+  );
 
   test('calorieWeekOverview keeps working when one day read throws', () async {
     final today = normalizeDiaryDay(DateTime.now());
@@ -148,6 +285,99 @@ void main() {
     expect(overview.totalGoalKcal, 14000);
     expect(overview.remainingKcal, 13400);
   });
+
+  test(
+    'calorieWeekConsumptionSnapshot follows visible window controller',
+    () async {
+      final windowEnd = DateTime(2026, 3, 20);
+      final firstVisibleDay = windowEnd.subtract(const Duration(days: 6));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'first-visible',
+            loggedAt: firstVisibleDay.add(const Duration(hours: 8)),
+            totalKcal: 400,
+          ),
+          _entry(
+            'window-end',
+            loggedAt: windowEnd.add(const Duration(hours: 12)),
+            totalKcal: 600,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository();
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container
+          .read(calorieVisibleWindowControllerProvider.notifier)
+          .setWindowEnd(windowEnd);
+
+      final snapshot = await container.read(
+        calorieWeekConsumptionSnapshotProvider.future,
+      );
+
+      expect(snapshot.days.first.date, firstVisibleDay);
+      expect(snapshot.days.last.date, windowEnd);
+      expect(snapshot.totalConsumedKcal, 1000);
+    },
+  );
+
+  test(
+    'calorieWeekDayOverviewForDate returns normalized day overview',
+    () async {
+      final day = DateTime(2026, 3, 20, 18, 45);
+      final normalizedDay = DateTime(2026, 3, 20);
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'day-entry',
+            loggedAt: normalizedDay.add(const Duration(hours: 8)),
+            totalKcal: 750,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2100,
+          calculatorProfile: null,
+          effectiveDate: normalizedDay,
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(calorieGoalControllerProvider.future);
+      final overview = await container.read(
+        calorieWeekDayOverviewForDateProvider(day).future,
+      );
+
+      expect(overview.date, normalizedDay);
+      expect(overview.totalKcal, 750);
+      expect(overview.goalKcal, 2100);
+      expect(overview.entryCount, 1);
+    },
+  );
 
   test('calorieWeekOverview uses day-specific goals and resets buffer '
       'on the latest goal change', () async {

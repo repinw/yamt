@@ -27,6 +27,21 @@ List<DateTime> buildDiaryVisibleDays({DateTime? anchorDay}) {
   ]);
 }
 
+/// Returns whether two timestamps belong to same local calendar day.
+bool isSameDiaryDay(DateTime left, DateTime right) {
+  return left.year == right.year &&
+      left.month == right.month &&
+      left.day == right.day;
+}
+
+/// Returns stable string key for one local calendar day.
+String diaryDayKey(DateTime day) {
+  final normalizedDay = normalizeDiaryDay(day);
+  return '${normalizedDay.year}-'
+      '${normalizedDay.month}-'
+      '${normalizedDay.day}';
+}
+
 /// Moves the selected day one step left inside the visible diary window.
 DateTime previousDiaryVisibleDay(DateTime selectedDay, {DateTime? anchorDay}) {
   final previousDay = normalizeDiaryDay(
@@ -47,4 +62,28 @@ DateTime nextDiaryVisibleDay(DateTime selectedDay, {DateTime? anchorDay}) {
     return latestVisibleDay;
   }
   return nextDay;
+}
+
+/// Resolves next selected day after visible 7-day window changed.
+///
+/// Keeps current selection when still visible. Otherwise selects new
+/// outer edge based on scroll direction.
+DateTime resolveSelectedDiaryDayForVisibleWindowChange({
+  required DateTime previousWindowEnd,
+  required DateTime nextWindowEnd,
+  required DateTime selectedDay,
+}) {
+  final visibleDays = buildDiaryVisibleDays(anchorDay: nextWindowEnd);
+  final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
+  final selectedDayStillVisible = visibleDays.any(
+    (day) => isSameDiaryDay(day, normalizedSelectedDay),
+  );
+  if (selectedDayStillVisible) {
+    return normalizedSelectedDay;
+  }
+
+  final movedToOlderWindow = normalizeDiaryDay(
+    nextWindowEnd,
+  ).isBefore(normalizeDiaryDay(previousWindowEnd));
+  return movedToOlderWindow ? visibleDays.last : visibleDays.first;
 }

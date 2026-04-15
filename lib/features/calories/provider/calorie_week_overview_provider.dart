@@ -8,6 +8,8 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_visible_window_controller.dart';
 
 part 'calorie_week_overview_provider.g.dart';
 
@@ -56,7 +58,7 @@ class CalorieWeekDayOverview {
   bool get isOverGoal => hasEntries && totalKcal > goalKcal;
 }
 
-/// Overview for the rolling 7-day diary strip ending today.
+/// Overview for the rolling 7-day diary strip ending at the visible window end.
 class CalorieWeekOverview {
   const CalorieWeekOverview({
     required this.days,
@@ -85,8 +87,19 @@ class CalorieWeekOverview {
 Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshot(
   Ref ref,
 ) async {
+  final visibleWindowEnd = ref.watch(calorieVisibleWindowControllerProvider);
+  return ref.watch(
+    calorieWeekConsumptionSnapshotForWindowProvider(visibleWindowEnd).future,
+  );
+}
+
+@riverpod
+Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshotForWindow(
+  Ref ref,
+  DateTime visibleWindowEnd,
+) async {
   final repository = ref.watch(calorieLogRepositoryProvider);
-  final days = buildDiaryVisibleDays();
+  final days = buildDiaryVisibleDays(anchorDay: visibleWindowEnd);
 
   final entriesByDay = await Future.wait(
     days.map((day) => _readEntriesForDaySafely(repository, day)),
@@ -118,8 +131,19 @@ Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshot(
 
 @riverpod
 Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
+  final visibleWindowEnd = ref.watch(calorieVisibleWindowControllerProvider);
+  return ref.watch(
+    calorieWeekOverviewForWindowProvider(visibleWindowEnd).future,
+  );
+}
+
+@riverpod
+Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
+  Ref ref,
+  DateTime visibleWindowEnd,
+) async {
   final snapshot = await ref.watch(
-    calorieWeekConsumptionSnapshotProvider.future,
+    calorieWeekConsumptionSnapshotForWindowProvider(visibleWindowEnd).future,
   );
   final goalState = ref.watch(calorieGoalControllerProvider);
   final settings = goalState.asData?.value ?? const CalorieGoalSettings.empty();
@@ -172,6 +196,28 @@ Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
     todayFlexibleGoalKcal: todayFlexibleGoalKcal,
     goalStartsInFuture: goalStartsInFuture,
     nextGoalStartDate: nextGoalStartDate,
+  );
+}
+
+@Riverpod(keepAlive: true)
+Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
+  Ref ref,
+  DateTime day,
+) async {
+  final normalizedDay = normalizeDiaryDay(day);
+  final repository = ref.watch(calorieLogRepositoryProvider);
+  final entries = await _readEntriesForDaySafely(repository, normalizedDay);
+  final goalState = ref.watch(calorieGoalControllerProvider);
+  final settings = goalState.asData?.value ?? const CalorieGoalSettings.empty();
+  final totalKcal = entries.fold<double>(
+    0,
+    (sum, entry) => sum + entry.totalKcal,
+  );
+  return CalorieWeekDayOverview(
+    date: normalizedDay,
+    totalKcal: totalKcal,
+    goalKcal: settings.goalKcalForDay(normalizedDay),
+    entryCount: entries.length,
   );
 }
 
