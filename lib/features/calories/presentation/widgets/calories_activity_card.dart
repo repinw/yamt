@@ -8,24 +8,14 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/provider/'
     'diary_activity_summary_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/provider/health_connection_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class CaloriesActivityCard extends ConsumerStatefulWidget {
+class CaloriesActivityCard extends ConsumerWidget {
   const CaloriesActivityCard({super.key});
 
   @override
-  ConsumerState<CaloriesActivityCard> createState() =>
-      _CaloriesActivityCardState();
-}
-
-class _CaloriesActivityCardState extends ConsumerState<CaloriesActivityCard> {
-  bool _isBusy = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(diaryActivitySummaryProvider);
-    final status = ref.watch(healthConnectionControllerProvider).asData?.value;
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final numberFormat = NumberFormat.decimalPattern(locale);
@@ -45,19 +35,13 @@ class _CaloriesActivityCardState extends ConsumerState<CaloriesActivityCard> {
           return DiaryHealthCardFrame(
             title: l10n.caloriesActivitiesTitle,
             subtitle: l10n.caloriesActivitiesSubtitle,
-            child: DiaryHealthAccessPrompt(
+            child: DiaryHealthConnectionPrompt(
               accessState: summary.accessState,
-              isBusy: _isBusy,
-              permissionBody: switch (status?.platform) {
-                HealthPlatform.ios => l10n.settingsAppleHealthConnectSubtitle,
-                _ => l10n.settingsHealthConnectSubtitle,
-              },
+              androidPermissionBody: l10n.settingsHealthConnectSubtitle,
+              iosPermissionBody: l10n.settingsAppleHealthConnectSubtitle,
               historyBody: l10n.settingsHealthHistorySubtitle,
               installBody: l10n.settingsHealthInstallSubtitle,
               unsupportedBody: l10n.healthUnsupportedHint,
-              onGrantAccess: _requestHealthAccess,
-              onGrantHistoryAccess: _requestHistoryAccess,
-              onInstallHealthConnect: _installHealthConnect,
             ),
           );
         }
@@ -128,71 +112,6 @@ class _CaloriesActivityCardState extends ConsumerState<CaloriesActivityCard> {
           ),
         );
       },
-    );
-  }
-
-  Future<void> _requestHealthAccess() async {
-    await _runHealthAction(
-      () => ref
-          .read(healthConnectionControllerProvider.notifier)
-          .requestAuthorization(),
-    );
-  }
-
-  Future<void> _requestHistoryAccess() async {
-    await _runHealthAction(
-      () => ref
-          .read(healthConnectionControllerProvider.notifier)
-          .requestHistoryAuthorization(),
-    );
-  }
-
-  Future<void> _installHealthConnect() async {
-    await _runHealthAction(
-      () => ref
-          .read(healthConnectionControllerProvider.notifier)
-          .installHealthConnect(),
-      showFailure: false,
-    );
-  }
-
-  Future<void> _runHealthAction(
-    Future<HealthConnectionStatus> Function() action, {
-    bool showFailure = true,
-  }) async {
-    setState(() {
-      _isBusy = true;
-    });
-    try {
-      final status = await action();
-      ref.invalidate(diaryActivitySummaryProvider);
-      if (!mounted || !showFailure) {
-        return;
-      }
-      if (status.accessState == HealthDataAccessState.permissionRequired ||
-          status.accessState == HealthDataAccessState.installRequired ||
-          status.accessState == HealthDataAccessState.unsupported) {
-        _showFailureSnackBar();
-      }
-    } catch (_) {
-      if (mounted && showFailure) {
-        _showFailureSnackBar();
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isBusy = false;
-        });
-      }
-    }
-  }
-
-  void _showFailureSnackBar() {
-    final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(content: Text(l10n.settingsHealthConnectFailed)),
     );
   }
 }

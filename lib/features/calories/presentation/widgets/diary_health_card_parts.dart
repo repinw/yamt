@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/provider/health_connection_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class DiaryHealthCardFrame extends StatelessWidget {
@@ -65,9 +67,9 @@ class DiaryHealthAccessPrompt extends StatelessWidget {
   final String historyBody;
   final String installBody;
   final String unsupportedBody;
-  final Future<void> Function() onGrantAccess;
-  final Future<void> Function() onGrantHistoryAccess;
-  final Future<void> Function() onInstallHealthConnect;
+  final Future<Object?> Function() onGrantAccess;
+  final Future<Object?> Function() onGrantHistoryAccess;
+  final Future<Object?> Function() onInstallHealthConnect;
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +117,47 @@ class DiaryHealthAccessPrompt extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+class DiaryHealthConnectionPrompt extends ConsumerWidget {
+  const DiaryHealthConnectionPrompt({
+    super.key,
+    required this.accessState,
+    required this.androidPermissionBody,
+    required this.iosPermissionBody,
+    required this.historyBody,
+    required this.installBody,
+    required this.unsupportedBody,
+  });
+
+  final HealthDataAccessState accessState;
+  final String androidPermissionBody;
+  final String iosPermissionBody;
+  final String historyBody;
+  final String installBody;
+  final String unsupportedBody;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statusAsync = ref.watch(healthConnectionControllerProvider);
+    final status = statusAsync.asData?.value;
+    final controller = ref.read(healthConnectionControllerProvider.notifier);
+
+    return DiaryHealthAccessPrompt(
+      accessState: accessState,
+      isBusy: statusAsync.isLoading,
+      permissionBody: switch (status?.platform) {
+        HealthPlatform.ios => iosPermissionBody,
+        _ => androidPermissionBody,
+      },
+      historyBody: historyBody,
+      installBody: installBody,
+      unsupportedBody: unsupportedBody,
+      onGrantAccess: () => controller.requestAuthorization(),
+      onGrantHistoryAccess: () => controller.requestHistoryAuthorization(),
+      onInstallHealthConnect: () => controller.installHealthConnect(),
     );
   }
 }

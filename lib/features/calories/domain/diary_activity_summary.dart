@@ -3,6 +3,8 @@ import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 
 const int diaryActivityStepGoal = 10000;
+// Rough fallback: about 40 kcal per 1,000 casual walking steps.
+// Keep simple until estimate can use profile data like body weight.
 const double _estimatedCaloriesPerOutsideStep = 0.04;
 
 class DiaryActivitySummary {
