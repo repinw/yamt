@@ -811,6 +811,19 @@
   "caloriesProteinLabel": "Protein",
   "caloriesCarbsLabel": "Carbs",
   "caloriesFatLabel": "Fat",
+  "caloriesActivitiesTitle": "Activity",
+  "caloriesActivitiesSubtitle":
+      "Daily steps and estimated burned calories from workouts.",
+  "caloriesActivitiesStepsDuringWorkoutsLabel": "Steps during workouts",
+  "caloriesActivitiesStepsOutsideWorkoutsLabel": "Steps outside workouts",
+  "caloriesActivitiesCaloriesBurnedLabel": "Calories burned",
+  "caloriesWorkoutsTitle": "Workouts",
+  "caloriesWorkoutsSubtitle":
+      "Sessions imported from Health Connect for selected diary day.",
+  "caloriesWorkoutsEmpty": "No workouts found for this day.",
+  "caloriesWorkoutsFallbackTitle": "Workout",
+  "caloriesWorkoutsSourceLabel": "Source",
+  "caloriesWorkoutsMinuteUnit": "min",
   "caloriesWeekBufferTitle": "Weekly balance",
   "caloriesWeekBufferRemaining": "{kcal} kcal left this week",
   "@caloriesWeekBufferRemaining": {
@@ -972,6 +985,33 @@
   "settingsHouseholdSubtitle": "Invite members and manage shared access",
   "settingsAccountTitle": "Account",
   "settingsAccountSubtitle": "Manage profile and sign-in",
+  "settingsHealthConnectPlatformTitle": "Health Connect",
+  "settingsHealthConnectTitle": "Connect health",
+  "settingsHealthConnectSubtitle":
+      "Allow YAMT to read steps, workouts, and burned calories from Health Connect.",
+  "settingsAppleHealthTitle": "Apple Health",
+  "settingsAppleHealthConnectSubtitle":
+      "Allow YAMT to read steps, workouts, and burned calories from Apple Health.",
+  "settingsHealthHistorySubtitle":
+      "Allow older Health Connect history so past diary days can load activity data.",
+  "settingsHealthInstallSubtitle":
+      "Install Health Connect before you can connect health data here.",
+  "settingsHealthDisconnectTitle": "Disconnect health",
+  "settingsHealthDisconnectSubtitle":
+      "Remove Health Connect access for YAMT.",
+  "settingsAppleHealthDisconnectSubtitle":
+      "Remove Apple Health access for YAMT.",
+  "settingsHealthDisconnectDialogTitle": "Disconnect health access?",
+  "settingsHealthDisconnectDialogBody":
+      "YAMT will lose access to Health Connect until you connect it again.",
+  "settingsHealthDisconnectAction": "Disconnect",
+  "settingsHealthDisconnectSuccess":
+      "Health access disconnected. Restart YAMT before reconnecting Health Connect.",
+  "settingsHealthDisconnectOpenedSettings":
+      "Opened Settings so you can manage Apple Health access.",
+  "settingsHealthDisconnectFailed":
+      "Health access could not be disconnected.",
+  "settingsHealthConnectFailed": "Health access could not be connected.",
   "accountPageNoSession": "No active account session.",
   "accountPageGuestTitle": "Guest account",
   "accountPageGuestDescription": "Link your guest account with Google to keep access across devices.",
@@ -980,6 +1020,10 @@
   "accountPageLinkEmailPasswordTitle": "Link guest account",
   "accountPageLinkEmailPasswordDescription": "Create email sign-in credentials for this guest account.",
   "accountPageLinkEmailPasswordConfirmAction": "Link account",
+  "healthInstallAction": "Install Health Connect",
+  "healthHistoryAction": "Allow older history",
+  "healthUnsupportedHint":
+      "Health Connect or Apple Health is not available on this device.",
   "accountPageLinkSuccess": "Account linked successfully.",
   "accountPageLinkNotCompleted": "Account linking was not completed. Please try again.",
   "accountPageLinkConflictTitle": "Account already in use",

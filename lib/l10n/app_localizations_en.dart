@@ -1451,6 +1451,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesFatLabel => 'Fat';
 
   @override
+  String get caloriesActivitiesTitle => 'Activity';
+
+  @override
+  String get caloriesActivitiesSubtitle => 'Daily steps and estimated burned calories from workouts.';
+
+  @override
+  String get caloriesActivitiesStepsDuringWorkoutsLabel => 'Steps during workouts';
+
+  @override
+  String get caloriesActivitiesStepsOutsideWorkoutsLabel => 'Steps outside workouts';
+
+  @override
+  String get caloriesActivitiesCaloriesBurnedLabel => 'Calories burned';
+
+  @override
+  String get caloriesWorkoutsTitle => 'Workouts';
+
+  @override
+  String get caloriesWorkoutsSubtitle => 'Sessions imported from Health Connect for selected diary day.';
+
+  @override
+  String get caloriesWorkoutsEmpty => 'No workouts found for this day.';
+
+  @override
+  String get caloriesWorkoutsFallbackTitle => 'Workout';
+
+  @override
+  String get caloriesWorkoutsSourceLabel => 'Source';
+
+  @override
+  String get caloriesWorkoutsMinuteUnit => 'min';
+
+  @override
   String get caloriesWeekBufferTitle => 'Weekly balance';
 
   @override
@@ -1724,6 +1757,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAccountSubtitle => 'Manage profile and sign-in';
 
   @override
+  String get settingsHealthConnectPlatformTitle => 'Health Connect';
+
+  @override
+  String get settingsHealthConnectTitle => 'Connect health';
+
+  @override
+  String get settingsHealthConnectSubtitle => 'Allow YAMT to read steps, workouts, and burned calories from Health Connect.';
+
+  @override
+  String get settingsAppleHealthTitle => 'Apple Health';
+
+  @override
+  String get settingsAppleHealthConnectSubtitle => 'Allow YAMT to read steps, workouts, and burned calories from Apple Health.';
+
+  @override
+  String get settingsHealthHistorySubtitle => 'Allow older Health Connect history so past diary days can load activity data.';
+
+  @override
+  String get settingsHealthInstallSubtitle => 'Install Health Connect before you can connect health data here.';
+
+  @override
+  String get settingsHealthDisconnectTitle => 'Disconnect health';
+
+  @override
+  String get settingsHealthDisconnectSubtitle => 'Remove Health Connect access for YAMT.';
+
+  @override
+  String get settingsAppleHealthDisconnectSubtitle => 'Remove Apple Health access for YAMT.';
+
+  @override
+  String get settingsHealthDisconnectDialogTitle => 'Disconnect health access?';
+
+  @override
+  String get settingsHealthDisconnectDialogBody => 'YAMT will lose access to Health Connect until you connect it again.';
+
+  @override
+  String get settingsHealthDisconnectAction => 'Disconnect';
+
+  @override
+  String get settingsHealthDisconnectSuccess => 'Health access disconnected. Restart YAMT before reconnecting Health Connect.';
+
+  @override
+  String get settingsHealthDisconnectOpenedSettings => 'Opened Settings so you can manage Apple Health access.';
+
+  @override
+  String get settingsHealthDisconnectFailed => 'Health access could not be disconnected.';
+
+  @override
+  String get settingsHealthConnectFailed => 'Health access could not be connected.';
+
+  @override
   String get accountPageNoSession => 'No active account session.';
 
   @override
@@ -1746,6 +1830,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountPageLinkEmailPasswordConfirmAction => 'Link account';
+
+  @override
+  String get healthInstallAction => 'Install Health Connect';
+
+  @override
+  String get healthHistoryAction => 'Allow older history';
+
+  @override
+  String get healthUnsupportedHint => 'Health Connect or Apple Health is not available on this device.';
 
   @override
   String get accountPageLinkSuccess => 'Account linked successfully.';

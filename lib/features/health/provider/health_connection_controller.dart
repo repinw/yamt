@@ -1,0 +1,136 @@
+import 'dart:async';
+import 'dart:developer' show log;
+
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
+
+part 'health_connection_controller.g.dart';
+
+const _logName = 'HealthConnectionController';
+
+@riverpod
+class HealthConnectionController extends _$HealthConnectionController {
+  @override
+  FutureOr<HealthConnectionStatus> build() async {
+    return _loadStatusFallback(previousStatus: null);
+  }
+
+  Future<HealthConnectionStatus> refresh() async {
+    return _runStatusAction(
+      () => ref.read(healthConnectionServiceProvider).loadStatus(),
+    );
+  }
+
+  Future<HealthConnectionStatus> connect() async {
+    final currentStatus = state.asData?.value;
+    if (currentStatus?.needsHistoryOnly ?? false) {
+      return requestHistoryAuthorization();
+    }
+    return requestAuthorization();
+  }
+
+  Future<HealthConnectionStatus> requestAuthorization() async {
+    return _runStatusAction(
+      () => ref.read(healthConnectionServiceProvider).requestAuthorization(),
+    );
+  }
+
+  Future<HealthConnectionStatus> requestHistoryAuthorization() async {
+    return _runStatusAction(
+      () => ref
+          .read(healthConnectionServiceProvider)
+          .requestHistoryAuthorization(),
+    );
+  }
+
+  Future<HealthConnectionStatus> installHealthConnect() async {
+    return _runStatusAction(() async {
+      final service = ref.read(healthConnectionServiceProvider);
+      await service.installHealthConnect();
+      return service.loadStatus();
+    });
+  }
+
+  Future<HealthDisconnectResult> disconnect() async {
+    final previousStatus = state.asData?.value;
+    state = const AsyncLoading<HealthConnectionStatus>();
+
+    try {
+      final service = ref.read(healthConnectionServiceProvider);
+      final result = await service.disconnect();
+      final nextStatus = await _loadStatusFallback(
+        previousStatus: previousStatus,
+      );
+      if (ref.mounted) {
+        state = AsyncData(nextStatus);
+      }
+      return result;
+    } catch (error, stackTrace) {
+      final fallback = _buildFallbackStatus(
+        previousStatus: previousStatus,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (ref.mounted) {
+        state = AsyncData(fallback);
+      }
+      return HealthDisconnectResult.unsupported;
+    }
+  }
+
+  Future<HealthConnectionStatus> _loadStatusFallback({
+    required HealthConnectionStatus? previousStatus,
+  }) async {
+    try {
+      return await ref.read(healthConnectionServiceProvider).loadStatus();
+    } catch (error, stackTrace) {
+      return _buildFallbackStatus(
+        previousStatus: previousStatus,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<HealthConnectionStatus> _runStatusAction(
+    Future<HealthConnectionStatus> Function() action,
+  ) async {
+    final previousStatus = state.asData?.value;
+    state = const AsyncLoading<HealthConnectionStatus>();
+
+    try {
+      final nextStatus = await action();
+      if (ref.mounted) {
+        state = AsyncData(nextStatus);
+      }
+      return nextStatus;
+    } catch (error, stackTrace) {
+      final fallback = _buildFallbackStatus(
+        previousStatus: previousStatus,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (ref.mounted) {
+        state = AsyncData(fallback);
+      }
+      return fallback;
+    }
+  }
+
+  HealthConnectionStatus _buildFallbackStatus({
+    required HealthConnectionStatus? previousStatus,
+    required Object error,
+    required StackTrace stackTrace,
+  }) {
+    log(
+      'Health connection action failed.',
+      name: _logName,
+      error: error,
+      stackTrace: stackTrace,
+    );
+
+    return (previousStatus ?? const HealthConnectionStatus.unsupported())
+        .copyWith(errorMessage: error.toString());
+  }
+}

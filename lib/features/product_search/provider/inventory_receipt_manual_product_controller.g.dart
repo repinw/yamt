@@ -69,7 +69,7 @@ final class InventoryReceiptManualProductControllerProvider
 }
 
 String _$inventoryReceiptManualProductControllerHash() =>
-    r'307e523ccc8f68452a98281b2de544de57ffe6ab';
+    r'dc77b3f506193d9873b2737a622ec52538f4aa24';
 
 final class InventoryReceiptManualProductControllerFamily extends $Family
     with

@@ -47,6 +47,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs camera access to scan receipts.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>This app reads Apple Health data to show diary activity and workouts in YAMT.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs microphone access for voice-based product search.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

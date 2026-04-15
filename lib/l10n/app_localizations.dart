@@ -2843,6 +2843,72 @@ abstract class AppLocalizations {
   /// **'Fat'**
   String get caloriesFatLabel;
 
+  /// No description provided for @caloriesActivitiesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get caloriesActivitiesTitle;
+
+  /// No description provided for @caloriesActivitiesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily steps and estimated burned calories from workouts.'**
+  String get caloriesActivitiesSubtitle;
+
+  /// No description provided for @caloriesActivitiesStepsDuringWorkoutsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps during workouts'**
+  String get caloriesActivitiesStepsDuringWorkoutsLabel;
+
+  /// No description provided for @caloriesActivitiesStepsOutsideWorkoutsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps outside workouts'**
+  String get caloriesActivitiesStepsOutsideWorkoutsLabel;
+
+  /// No description provided for @caloriesActivitiesCaloriesBurnedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories burned'**
+  String get caloriesActivitiesCaloriesBurnedLabel;
+
+  /// No description provided for @caloriesWorkoutsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts'**
+  String get caloriesWorkoutsTitle;
+
+  /// No description provided for @caloriesWorkoutsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions imported from Health Connect for selected diary day.'**
+  String get caloriesWorkoutsSubtitle;
+
+  /// No description provided for @caloriesWorkoutsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No workouts found for this day.'**
+  String get caloriesWorkoutsEmpty;
+
+  /// No description provided for @caloriesWorkoutsFallbackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout'**
+  String get caloriesWorkoutsFallbackTitle;
+
+  /// No description provided for @caloriesWorkoutsSourceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get caloriesWorkoutsSourceLabel;
+
+  /// No description provided for @caloriesWorkoutsMinuteUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'min'**
+  String get caloriesWorkoutsMinuteUnit;
+
   /// No description provided for @caloriesWeekBufferTitle.
   ///
   /// In en, this message translates to:
@@ -3353,6 +3419,108 @@ abstract class AppLocalizations {
   /// **'Manage profile and sign-in'**
   String get settingsAccountSubtitle;
 
+  /// No description provided for @settingsHealthConnectPlatformTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Health Connect'**
+  String get settingsHealthConnectPlatformTitle;
+
+  /// No description provided for @settingsHealthConnectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect health'**
+  String get settingsHealthConnectTitle;
+
+  /// No description provided for @settingsHealthConnectSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow YAMT to read steps, workouts, and burned calories from Health Connect.'**
+  String get settingsHealthConnectSubtitle;
+
+  /// No description provided for @settingsAppleHealthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple Health'**
+  String get settingsAppleHealthTitle;
+
+  /// No description provided for @settingsAppleHealthConnectSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow YAMT to read steps, workouts, and burned calories from Apple Health.'**
+  String get settingsAppleHealthConnectSubtitle;
+
+  /// No description provided for @settingsHealthHistorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow older Health Connect history so past diary days can load activity data.'**
+  String get settingsHealthHistorySubtitle;
+
+  /// No description provided for @settingsHealthInstallSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Install Health Connect before you can connect health data here.'**
+  String get settingsHealthInstallSubtitle;
+
+  /// No description provided for @settingsHealthDisconnectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect health'**
+  String get settingsHealthDisconnectTitle;
+
+  /// No description provided for @settingsHealthDisconnectSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Health Connect access for YAMT.'**
+  String get settingsHealthDisconnectSubtitle;
+
+  /// No description provided for @settingsAppleHealthDisconnectSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Apple Health access for YAMT.'**
+  String get settingsAppleHealthDisconnectSubtitle;
+
+  /// No description provided for @settingsHealthDisconnectDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect health access?'**
+  String get settingsHealthDisconnectDialogTitle;
+
+  /// No description provided for @settingsHealthDisconnectDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'YAMT will lose access to Health Connect until you connect it again.'**
+  String get settingsHealthDisconnectDialogBody;
+
+  /// No description provided for @settingsHealthDisconnectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get settingsHealthDisconnectAction;
+
+  /// No description provided for @settingsHealthDisconnectSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Health access disconnected. Restart YAMT before reconnecting Health Connect.'**
+  String get settingsHealthDisconnectSuccess;
+
+  /// No description provided for @settingsHealthDisconnectOpenedSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Opened Settings so you can manage Apple Health access.'**
+  String get settingsHealthDisconnectOpenedSettings;
+
+  /// No description provided for @settingsHealthDisconnectFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Health access could not be disconnected.'**
+  String get settingsHealthDisconnectFailed;
+
+  /// No description provided for @settingsHealthConnectFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Health access could not be connected.'**
+  String get settingsHealthConnectFailed;
+
   /// No description provided for @accountPageNoSession.
   ///
   /// In en, this message translates to:
@@ -3400,6 +3568,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Link account'**
   String get accountPageLinkEmailPasswordConfirmAction;
+
+  /// No description provided for @healthInstallAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Install Health Connect'**
+  String get healthInstallAction;
+
+  /// No description provided for @healthHistoryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow older history'**
+  String get healthHistoryAction;
+
+  /// No description provided for @healthUnsupportedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Health Connect or Apple Health is not available on this device.'**
+  String get healthUnsupportedHint;
 
   /// No description provided for @accountPageLinkSuccess.
   ///
