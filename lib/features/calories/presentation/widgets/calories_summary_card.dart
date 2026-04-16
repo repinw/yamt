@@ -108,9 +108,7 @@ class CaloriesSummaryCard extends ConsumerWidget {
       includeCarryover: includeClassicCarryover,
     );
     final availableClassicActivityDeltaKcal =
-        balanceData != null && balanceData.usedLearnedTdee
-        ? balanceData.activityDeltaKcal
-        : 0.0;
+        balanceData?.activityDeltaKcal ?? 0.0;
     final availableClassicCarryoverKcal = balanceData?.carryoverKcal ?? 0.0;
     final classicActivityDeltaKcal = includeClassicActivityDelta
         ? availableClassicActivityDeltaKcal

@@ -481,6 +481,8 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.authErrorProviderAlreadyLinked,
     l10n.authErrorGoogleSignInCanceled,
     l10n.authErrorGoogleIdTokenMissing,
+    l10n.caloriesActivityWorkoutBonusLabel,
+    l10n.caloriesActivityLearningHint,
   ];
 
   expect(values.every((text) => text.isNotEmpty), isTrue);
@@ -497,5 +499,18 @@ void main() {
       () => lookupAppLocalizations(const Locale('fr')),
       throwsA(isA<FlutterError>()),
     );
+  });
+
+  test('delegate reports support, loads, and does not reload', () async {
+    const delegate = AppLocalizations.delegate;
+
+    expect(delegate.isSupported(const Locale('en')), isTrue);
+    expect(delegate.isSupported(const Locale('de')), isTrue);
+    expect(delegate.isSupported(const Locale('fr')), isFalse);
+    expect(
+      await delegate.load(const Locale('en')),
+      isA<AppLocalizationsEn>(),
+    );
+    expect(delegate.shouldReload(delegate), isFalse);
   });
 }

@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
+import 'package:yamt/features/calories/domain/calorie_activity_adjustment.dart';
 
 /// The minimum resolved daily calorie goal kcal.
 const minimumResolvedDailyCalorieGoalKcal = 1500.0;
@@ -86,9 +87,18 @@ abstract final class CalorieWeeklyCheckInCalculator {
     required int todayActiveKcal,
     required List<CalorieWeeklyCheckInWeightPoint> weightPoints,
   }) {
-    assert(intakeKcalByDay.length == weeklyCheckInWindowLengthDays);
-    assert(lastWeekActiveKcalByDay.length == weeklyCheckInWindowLengthDays);
-    assert(weightPoints.length >= 2);
+    assert(
+      intakeKcalByDay.length == weeklyCheckInWindowLengthDays,
+      'Weekly check-in requires exactly 7 intake values.',
+    );
+    assert(
+      lastWeekActiveKcalByDay.length == weeklyCheckInWindowLengthDays,
+      'Weekly check-in requires exactly 7 activity values.',
+    );
+    assert(
+      weightPoints.length >= 2,
+      'Weekly check-in requires at least 2 weight points.',
+    );
 
     final smoothedWeightPoints = _smoothWeightPoints(weightPoints);
     final trendWeightChangePerDay = _calculateSlope(smoothedWeightPoints);
@@ -103,10 +113,14 @@ abstract final class CalorieWeeklyCheckInCalculator {
       newGoalKcal: rawNewGoalKcal,
     );
     final lastWeekAverageActiveKcal = _averageInt(lastWeekActiveKcalByDay);
-    final activityDeltaKcal = todayActiveKcal - lastWeekAverageActiveKcal;
-    final dynamicGoalTodayKcal = (newGoalKcal + activityDeltaKcal)
-        .clamp(minimumResolvedDailyCalorieGoalKcal, double.infinity)
-        ;
+    final activityDeltaKcal = calculateLearnedActivityBonusKcal(
+      todayActiveKcal: todayActiveKcal,
+      averageActiveKcal: lastWeekAverageActiveKcal,
+    );
+    final dynamicGoalTodayKcal = (newGoalKcal + activityDeltaKcal).clamp(
+      minimumResolvedDailyCalorieGoalKcal,
+      double.infinity,
+    );
     if (!kReleaseMode) {
       final weightPointsLabel = weightPoints
           .map((point) {

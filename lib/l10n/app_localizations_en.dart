@@ -1359,6 +1359,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesWeeklyCheckInDialogTodayDeltaLabel => 'Today activity delta';
 
   @override
+  String get caloriesActivityWorkoutBonusLabel => 'Workout bonus';
+
+  @override
+  String get caloriesActivityLearningHint => 'We are still learning your activity pattern.';
+
+  @override
   String get caloriesWeeklyCheckInDialogLowConfidence => 'Low confidence: only start and end weights were available.';
 
   @override

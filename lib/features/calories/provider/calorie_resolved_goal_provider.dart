@@ -2,6 +2,8 @@ import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/domain/calorie_activity_adjustment.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -26,6 +28,7 @@ class ResolvedCalorieGoalData {
     required this.lastWeekAverageActiveKcal,
     required this.todayActiveKcal,
     required this.usedLearnedTdee,
+    required this.usesBootstrapActivityBonus,
     required this.wasClampedToMinimum,
   });
 
@@ -49,6 +52,9 @@ class ResolvedCalorieGoalData {
 
   /// The used learned tdee.
   final bool usedLearnedTdee;
+
+  /// Whether using the temporary bootstrap workout bonus.
+  final bool usesBootstrapActivityBonus;
 
   /// Whether clamped to minimum.
   final bool wasClampedToMinimum;
@@ -78,9 +84,7 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
     log(message, name: _resolvedGoalLogName);
   }
 
-  if (!isSameDiaryDay(normalizedDay, now) ||
-      storedGoalKcal <= 0 ||
-      !settings.hasLearnedTdee) {
+  if (!isSameDiaryDay(normalizedDay, now) || storedGoalKcal <= 0) {
     return ResolvedCalorieGoalData(
       day: normalizedDay,
       storedGoalKcal: storedGoalKcal,
@@ -89,7 +93,51 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
       lastWeekAverageActiveKcal: 0,
       todayActiveKcal: 0,
       usedLearnedTdee: false,
+      usesBootstrapActivityBonus: false,
       wasClampedToMinimum: false,
+    );
+  }
+
+  final todayActivity = await _loadTodayActivityData(ref, normalizedDay);
+  if (!settings.hasLearnedTdee) {
+    final activityDeltaKcal =
+        _isBootstrapWorkoutBonusEligible(
+          settings: settings,
+          day: normalizedDay,
+        )
+        ? calculateBootstrapWorkoutBonusKcal(
+            workoutCalories: todayActivity.totalWorkoutCalories,
+          )
+        : 0.0;
+    final resolvedGoalKcal = (storedGoalKcal + activityDeltaKcal).clamp(
+      minimumResolvedDailyCalorieGoalKcal,
+      double.infinity,
+    );
+    if (!kReleaseMode) {
+      final message =
+          'CALC_GOAL_DEBUG '
+          'day=${diaryDayKey(normalizedDay)} '
+          'totalWorkoutCalories=${todayActivity.totalWorkoutCalories} '
+          'todayActiveKcal=${todayActivity.todayActiveKcal} '
+          'bootstrapActivityBonusKcal='
+          '${activityDeltaKcal.toStringAsFixed(2)} '
+          'resolvedGoalKcal=${resolvedGoalKcal.toStringAsFixed(2)}';
+      log(message, name: _resolvedGoalLogName);
+    }
+
+    return ResolvedCalorieGoalData(
+      day: normalizedDay,
+      storedGoalKcal: storedGoalKcal,
+      goalKcal: resolvedGoalKcal,
+      activityDeltaKcal: activityDeltaKcal,
+      lastWeekAverageActiveKcal: 0,
+      todayActiveKcal: todayActivity.todayActiveKcal,
+      usedLearnedTdee: false,
+      usesBootstrapActivityBonus: activityDeltaKcal > 0,
+      wasClampedToMinimum:
+          resolvedGoalKcal == minimumResolvedDailyCalorieGoalKcal &&
+          storedGoalKcal + activityDeltaKcal <
+              minimumResolvedDailyCalorieGoalKcal,
     );
   }
 
@@ -99,17 +147,20 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
           ?.weeklyCheckInSnapshot
           ?.averageActiveKcal ??
       0;
-  final todayActiveKcal = await _loadTodayActiveKcal(ref, normalizedDay);
-  final activityDeltaKcal = todayActiveKcal - averageActiveKcal;
-  final resolvedGoalKcal = (storedGoalKcal + activityDeltaKcal)
-      .clamp(minimumResolvedDailyCalorieGoalKcal, double.infinity)
-      ;
+  final activityDeltaKcal = calculateLearnedActivityBonusKcal(
+    todayActiveKcal: todayActivity.todayActiveKcal,
+    averageActiveKcal: averageActiveKcal,
+  );
+  final resolvedGoalKcal = (storedGoalKcal + activityDeltaKcal).clamp(
+    minimumResolvedDailyCalorieGoalKcal,
+    double.infinity,
+  );
   if (!kReleaseMode) {
     final message =
         'CALC_GOAL_DEBUG '
         'day=${diaryDayKey(normalizedDay)} '
         'averageActiveKcal=${averageActiveKcal.toStringAsFixed(2)} '
-        'todayActiveKcal=$todayActiveKcal '
+        'todayActiveKcal=${todayActivity.todayActiveKcal} '
         'activityDeltaKcal=${activityDeltaKcal.toStringAsFixed(2)} '
         'resolvedGoalKcal=${resolvedGoalKcal.toStringAsFixed(2)}';
     log(message, name: _resolvedGoalLogName);
@@ -121,8 +172,9 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
     goalKcal: resolvedGoalKcal,
     activityDeltaKcal: activityDeltaKcal,
     lastWeekAverageActiveKcal: averageActiveKcal,
-    todayActiveKcal: todayActiveKcal,
+    todayActiveKcal: todayActivity.todayActiveKcal,
     usedLearnedTdee: true,
+    usesBootstrapActivityBonus: false,
     wasClampedToMinimum:
         resolvedGoalKcal == minimumResolvedDailyCalorieGoalKcal &&
         storedGoalKcal + activityDeltaKcal <
@@ -130,20 +182,70 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
   );
 }
 
-Future<int> _loadTodayActiveKcal(Ref ref, DateTime today) async {
+class _ResolvedTodayActivityData {
+  const _ResolvedTodayActivityData({
+    required this.todayActiveKcal,
+    required this.totalWorkoutCalories,
+  });
+
+  final int todayActiveKcal;
+  final int totalWorkoutCalories;
+}
+
+Future<_ResolvedTodayActivityData> _loadTodayActivityData(
+  Ref ref,
+  DateTime today,
+) async {
   final status = await ref.watch(healthConnectionControllerProvider.future);
   if (status.accessState != HealthDataAccessState.ready) {
-    return 0;
+    return const _ResolvedTodayActivityData(
+      todayActiveKcal: 0,
+      totalWorkoutCalories: 0,
+    );
   }
   final dayData = await ref
       .watch(diaryHealthServiceProvider)
       .loadDayData(day: today);
   final summary = buildDiaryActivitySummary(day: today, dayData: dayData);
-  return calculateDiaryBurnedCalories(
-        stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
-        workoutCalories: summary.workouts.map(
-          (workout) => workout.totalCalories,
-        ),
-      ) ??
-      0;
+  final totalWorkoutCalories = summary.workouts.fold<int>(
+    0,
+    (sum, workout) => sum + (workout.totalCalories ?? 0),
+  );
+  return _ResolvedTodayActivityData(
+    todayActiveKcal:
+        calculateDiaryBurnedCalories(
+          stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
+          workoutCalories: summary.workouts.map(
+            (workout) => workout.totalCalories,
+          ),
+        ) ??
+        0,
+    totalWorkoutCalories: totalWorkoutCalories,
+  );
+}
+
+bool _isBootstrapWorkoutBonusEligible({
+  required CalorieGoalSettings settings,
+  required DateTime day,
+}) {
+  final anchorEntry =
+      settings.cycleAnchorEntryForDay(day) ?? settings.goalEntryForDay(day);
+  if (anchorEntry?.hasGoal != true) {
+    return false;
+  }
+
+  final changedAt = anchorEntry!.effectiveChangedAt.toLocal();
+  if (!isSameDiaryDay(changedAt, day)) {
+    return true;
+  }
+
+  return !_startsOnPartialDiaryDay(changedAt);
+}
+
+bool _startsOnPartialDiaryDay(DateTime changedAt) {
+  return changedAt.hour != 0 ||
+      changedAt.minute != 0 ||
+      changedAt.second != 0 ||
+      changedAt.millisecond != 0 ||
+      changedAt.microsecond != 0;
 }

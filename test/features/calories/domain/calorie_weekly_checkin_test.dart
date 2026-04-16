@@ -24,8 +24,8 @@ void main() {
     expect(result.calculatedTrueTdeeKcal, closeTo(2909.64, 0.01));
     expect(result.newGoalKcal, closeTo(2571.79, 0.01));
     expect(result.lastWeekAverageActiveKcal, closeTo(292.57, 0.01));
-    expect(result.activityDeltaKcal, closeTo(-142.57, 0.01));
-    expect(result.dynamicGoalTodayKcal, closeTo(2429.22, 0.01));
+    expect(result.activityDeltaKcal, 0);
+    expect(result.dynamicGoalTodayKcal, closeTo(2571.79, 0.01));
   });
 
   test('caps weekly goal movement to keep one check-in stable', () {
@@ -49,7 +49,7 @@ void main() {
     expect(result.newGoalKcal, 2400);
   });
 
-  test('clamps dynamic today goal to minimum floor', () {
+  test('does not lower dynamic today goal when activity is below baseline', () {
     final result = CalorieWeeklyCheckInCalculator.calculate(
       previousGoalKcal: 1600,
       intakeKcalByDay: const <double>[1600, 1600, 1600, 1600, 1600, 1600, 1600],
@@ -61,8 +61,36 @@ void main() {
       ],
     );
 
-    expect(result.dynamicGoalTodayKcal, minimumResolvedDailyCalorieGoalKcal);
+    expect(result.activityDeltaKcal, 0);
+    expect(result.dynamicGoalTodayKcal, 1600);
   });
+
+  test(
+    'clamps dynamic today goal to minimum floor when stored goal is lower',
+    () {
+      final result = CalorieWeeklyCheckInCalculator.calculate(
+        previousGoalKcal: 1400,
+        intakeKcalByDay: const <double>[
+          1400,
+          1400,
+          1400,
+          1400,
+          1400,
+          1400,
+          1400,
+        ],
+        lastWeekActiveKcalByDay: const <int>[0, 0, 0, 0, 0, 0, 0],
+        todayActiveKcal: 0,
+        weightPoints: const <CalorieWeeklyCheckInWeightPoint>[
+          CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 80),
+          CalorieWeeklyCheckInWeightPoint(dayIndex: 6, weightKg: 80),
+        ],
+      );
+
+      expect(result.activityDeltaKcal, 0);
+      expect(result.dynamicGoalTodayKcal, minimumResolvedDailyCalorieGoalKcal);
+    },
+  );
 
   test('calculates manual rerun goal from learned TDEE', () {
     expect(
