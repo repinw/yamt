@@ -83,7 +83,7 @@ ProviderContainer _createContainer({
 void main() {
   test('day 8 creates pending weekly check-in and ready calculation', () async {
     final today = DateTime(2026, 4, 15);
-    final goalStart = DateTime(2026, 4, 8, 9);
+    final goalStart = DateTime(2026, 4, 8);
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2400,
@@ -140,9 +140,103 @@ void main() {
     expect(viewModel.calculation?.newGoalKcal, greaterThan(0));
   });
 
+  test(
+    'mid-day start waits for seven full days before first weekly check-in',
+    () async {
+      final today = DateTime(2026, 4, 15);
+      final goalStart = DateTime(2026, 4, 8, 18);
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2400,
+          calculatorProfile: null,
+          effectiveDate: goalStart,
+        ),
+      );
+      final logRepository = FakeCalorieLogRepository();
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[],
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = _createContainer(
+        today: today,
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        manualRepository: manualRepository,
+      );
+      addTearDown(container.dispose);
+
+      final viewModel = await container.read(
+        calorieWeeklyCheckInViewModelProvider.future,
+      );
+
+      expect(viewModel.hasPending, isFalse);
+      expect(viewModel.shouldAutoOpen, isFalse);
+      expect(viewModel.calculation, isNull);
+    },
+  );
+
+  test(
+    'mid-day start uses start-day weight as baseline for shifted first window',
+    () async {
+      final today = DateTime(2026, 4, 16);
+      final goalStart = DateTime(2026, 4, 8, 18);
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2400,
+          calculatorProfile: null,
+          effectiveDate: goalStart,
+        ),
+      );
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          for (var index = 0; index < 7; index += 1)
+            _entry(
+              'entry-$index',
+              DateTime(2026, 4, 9).add(Duration(days: index, hours: 8)),
+              2100 + (index * 10),
+            ),
+        ],
+      );
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[
+          ManualHealthWeightEntry(day: goalStart, weightKg: 82),
+          ManualHealthWeightEntry(day: DateTime(2026, 4, 15), weightKg: 81.4),
+        ],
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = _createContainer(
+        today: today,
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        manualRepository: manualRepository,
+      );
+      addTearDown(container.dispose);
+
+      final viewModel = await container.read(
+        calorieWeeklyCheckInViewModelProvider.future,
+      );
+
+      expect(viewModel.isReady, isTrue);
+      expect(
+        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        DateTime(2026, 4, 9),
+      );
+      expect(
+        viewModel.pendingWeeklyCheckIn?.windowEndDate,
+        DateTime(2026, 4, 15),
+      );
+      expect(viewModel.days.first.day, DateTime(2026, 4, 9));
+      expect(viewModel.days.first.weightKg, 82);
+    },
+  );
+
   test('3 missing intake days block new learning', () async {
     final today = DateTime(2026, 4, 15);
-    final goalStart = DateTime(2026, 4, 8, 9);
+    final goalStart = DateTime(2026, 4, 8);
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2400,
@@ -197,7 +291,7 @@ void main() {
     'uses calculator start weight on anchor day when no real weight exists',
     () async {
       final today = DateTime(2026, 4, 15);
-      final goalStart = DateTime(2026, 4, 8, 9);
+      final goalStart = DateTime(2026, 4, 8);
       final settingsRepository = FakeCalorieSettingsRepository(
         initialSettings: CalorieGoalSettings.single(
           dailyKcalGoal: 2400,
@@ -262,7 +356,7 @@ void main() {
         historyAccess: HealthHistoryAccess.granted,
       );
       final today = DateTime(2026, 4, 15);
-      final goalStart = DateTime(2026, 4, 8, 9);
+      final goalStart = DateTime(2026, 4, 8);
       final settingsRepository = FakeCalorieSettingsRepository(
         initialSettings: CalorieGoalSettings.single(
           dailyKcalGoal: 2426.88,
@@ -361,7 +455,7 @@ void main() {
     'dismissed pending window keeps hint but suppresses auto-open',
     () async {
       final today = DateTime(2026, 4, 15);
-      final goalStart = DateTime(2026, 4, 8, 9);
+      final goalStart = DateTime(2026, 4, 8);
       final settingsRepository = FakeCalorieSettingsRepository(
         initialSettings:
             CalorieGoalSettings.single(
@@ -521,7 +615,7 @@ void main() {
     'first unresolved overdue window stays pending when multiple exist',
     () async {
       final today = DateTime(2026, 4, 22);
-      final goalStart = DateTime(2026, 4, 1, 9);
+      final goalStart = DateTime(2026, 4, 1);
       final settings = const CalorieGoalSettings.empty()
           .applyGoalChange(
             changedAt: goalStart,
@@ -592,7 +686,7 @@ void main() {
     final today = DateTime(2026, 4, 27);
     final initialSettings = const CalorieGoalSettings.empty()
         .applyGoalChange(
-          changedAt: DateTime(2026, 4, 1, 9),
+          changedAt: DateTime(2026, 4, 1),
           dailyKcalGoal: 2400,
           calculatorProfile: null,
         )
@@ -611,7 +705,7 @@ void main() {
           ),
         )
         .applyGoalChange(
-          changedAt: DateTime(2026, 4, 20, 8),
+          changedAt: DateTime(2026, 4, 20),
           dailyKcalGoal: 2100,
           calculatorProfile: const CalorieCalculatorProfile.defaults(),
           source: CalorieGoalSource.calculator,
@@ -665,7 +759,7 @@ void main() {
     'skipped intake day uses prior average and still allows calculation',
     () async {
       final today = DateTime(2026, 4, 15);
-      final goalStart = DateTime(2026, 4, 8, 9);
+      final goalStart = DateTime(2026, 4, 8);
       final settingsRepository = FakeCalorieSettingsRepository(
         initialSettings: CalorieGoalSettings.single(
           dailyKcalGoal: 2400,

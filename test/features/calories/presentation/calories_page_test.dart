@@ -406,7 +406,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        effectiveDate: DateTime(today.year, today.month, today.day, 9),
+        effectiveDate: DateTime(today.year, today.month, today.day),
       ),
     );
     addTearDown(logRepository.dispose);
@@ -492,7 +492,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        effectiveDate: DateTime(today.year, today.month, today.day, 9),
+        effectiveDate: DateTime(today.year, today.month, today.day),
       ),
     );
     addTearDown(logRepository.dispose);
@@ -521,7 +521,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        effectiveDate: DateTime(2026, 3, 13, 9),
+        effectiveDate: DateTime(2026, 3, 13),
       ),
     );
     addTearDown(logRepository.dispose);
@@ -561,7 +561,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        effectiveDate: DateTime(2026, 3, 13, 9),
+        effectiveDate: DateTime(2026, 3, 13),
       ),
     );
     addTearDown(logRepository.dispose);
@@ -605,7 +605,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        effectiveDate: DateTime(2026, 3, 13, 9),
+        effectiveDate: DateTime(2026, 3, 13),
       ),
     );
     addTearDown(logRepository.dispose);
@@ -659,7 +659,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        effectiveDate: DateTime(2026, 3, 13, 9),
+        effectiveDate: DateTime(2026, 3, 13),
       ),
     );
     addTearDown(logRepository.dispose);
@@ -745,7 +745,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        effectiveDate: DateTime(2026, 4, 8, 9),
+        effectiveDate: DateTime(2026, 4, 8),
       ),
     );
     addTearDown(logRepository.dispose);
@@ -809,7 +809,7 @@ void main() {
         initialSettings: CalorieGoalSettings.single(
           dailyKcalGoal: 2200,
           calculatorProfile: null,
-          effectiveDate: DateTime(today.year, today.month, today.day, 9),
+          effectiveDate: DateTime(today.year, today.month, today.day),
         ),
       );
       addTearDown(logRepository.dispose);
@@ -1708,7 +1708,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        effectiveDate: DateTime(today.year, today.month, today.day, 9),
+        effectiveDate: DateTime(today.year, today.month, today.day),
       ),
     );
     addTearDown(logRepository.dispose);
