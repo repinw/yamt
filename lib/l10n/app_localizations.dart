@@ -2711,6 +2711,18 @@ abstract class AppLocalizations {
   /// **'Today activity delta'**
   String get caloriesWeeklyCheckInDialogTodayDeltaLabel;
 
+  /// No description provided for @caloriesActivityTodayVsUsualLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Today vs usual'**
+  String get caloriesActivityTodayVsUsualLabel;
+
+  /// No description provided for @caloriesActivityVsUsualLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity vs usual'**
+  String get caloriesActivityVsUsualLabel;
+
   /// No description provided for @caloriesActivityWorkoutBonusLabel.
   ///
   /// In en, this message translates to:

@@ -481,6 +481,8 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.authErrorProviderAlreadyLinked,
     l10n.authErrorGoogleSignInCanceled,
     l10n.authErrorGoogleIdTokenMissing,
+    l10n.caloriesActivityTodayVsUsualLabel,
+    l10n.caloriesActivityVsUsualLabel,
     l10n.caloriesActivityWorkoutBonusLabel,
     l10n.caloriesActivityLearningHint,
   ];

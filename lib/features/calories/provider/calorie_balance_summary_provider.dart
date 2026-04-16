@@ -45,6 +45,7 @@ class CalorieBalanceSummaryData {
     required this.rangeKcal,
     required this.activityDeltaKcal,
     required this.usedLearnedTdee,
+    this.activityComparisonKcal = 0,
   });
 
   /// The selected day.
@@ -97,6 +98,9 @@ class CalorieBalanceSummaryData {
 
   /// The activity delta kcal.
   final double activityDeltaKcal;
+
+  /// The signed activity comparison against the learned baseline.
+  final double activityComparisonKcal;
 
   /// The used learned tdee.
   final bool usedLearnedTdee;
@@ -241,6 +245,7 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
     deadZoneKcal: deadZoneKcal,
     rangeKcal: rangeKcal,
     activityDeltaKcal: resolvedGoal.activityDeltaKcal,
+    activityComparisonKcal: resolvedGoal.activityComparisonKcal,
     usedLearnedTdee: resolvedGoal.usedLearnedTdee,
   );
 }

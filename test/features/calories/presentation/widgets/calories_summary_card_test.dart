@@ -182,13 +182,14 @@ void main() {
     expect(_macroBar(tester, 'carbs').widthFactor, 1.0);
   });
 
-  testWidgets('shows learned-TDEE activity delta in diary summary card', (
+  testWidgets('shows learned activity comparison in diary summary card', (
     tester,
   ) async {
     await tester.pumpWidget(
       _buildHarness(
         balanceData: _balanceData(
           activityDeltaKcal: 135,
+          activityComparisonKcal: 135,
           carryoverKcal: 240,
           usedLearnedTdee: true,
         ),
@@ -200,10 +201,31 @@ void main() {
       find.byKey(CaloriesPageKeys.summaryActivityDeltaNote),
       findsOneWidget,
     );
-    expect(find.text('Today activity delta: +135 kcal'), findsOneWidget);
+    expect(find.text('Today vs usual: +135 kcal'), findsOneWidget);
     expect(find.byKey(CaloriesPageKeys.summaryCarryoverNote), findsOneWidget);
     expect(find.text('Carryover: +240 kcal'), findsOneWidget);
   });
+
+  testWidgets(
+    'shows negative learned activity comparison even when no bonus is applied',
+    (tester) async {
+      await tester.pumpWidget(
+        _buildHarness(
+          balanceData: _balanceData(
+            activityComparisonKcal: -120,
+            usedLearnedTdee: true,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(CaloriesPageKeys.summaryActivityDeltaNote),
+        findsOneWidget,
+      );
+      expect(find.text('Today vs usual: -120 kcal'), findsOneWidget);
+    },
+  );
 
   testWidgets('shows carryover in diary summary card without activity delta', (
     tester,
@@ -282,6 +304,7 @@ void main() {
         _buildHarness(
           balanceData: _balanceData(
             activityDeltaKcal: 135,
+            activityComparisonKcal: 135,
             carryoverKcal: 240,
             usedLearnedTdee: true,
           ),
@@ -352,6 +375,7 @@ void main() {
           preferences: preferences,
           balanceData: _balanceData(
             activityDeltaKcal: 135,
+            activityComparisonKcal: 135,
             carryoverKcal: 240,
             usedLearnedTdee: true,
           ),
@@ -460,6 +484,7 @@ Color? _currentValueColor(RichText value) {
 
 CalorieBalanceSummaryData _balanceData({
   double activityDeltaKcal = 0,
+  double activityComparisonKcal = 0,
   double carryoverKcal = 0,
   bool usedLearnedTdee = false,
 }) {
@@ -482,6 +507,7 @@ CalorieBalanceSummaryData _balanceData({
     deadZoneKcal: 60,
     rangeKcal: 600,
     activityDeltaKcal: activityDeltaKcal,
+    activityComparisonKcal: activityComparisonKcal,
     usedLearnedTdee: usedLearnedTdee,
   );
 }

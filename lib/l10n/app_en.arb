@@ -692,6 +692,8 @@
   "caloriesWeeklyCheckInDialogTrueTdeeLabel": "Learned TDEE",
   "caloriesWeeklyCheckInDialogNewTargetLabel": "New target",
   "caloriesWeeklyCheckInDialogTodayDeltaLabel": "Today activity delta",
+  "caloriesActivityTodayVsUsualLabel": "Today vs usual",
+  "caloriesActivityVsUsualLabel": "Activity vs usual",
   "caloriesActivityWorkoutBonusLabel": "Workout bonus",
   "caloriesActivityLearningHint":
       "We are still learning your activity pattern.",

@@ -717,6 +717,8 @@
   "caloriesWeeklyCheckInDialogTrueTdeeLabel": "Gelernter TDEE",
   "caloriesWeeklyCheckInDialogNewTargetLabel": "Neues Ziel",
   "caloriesWeeklyCheckInDialogTodayDeltaLabel": "Aktivitätsdelta heute",
+  "caloriesActivityTodayVsUsualLabel": "Heute vs. üblich",
+  "caloriesActivityVsUsualLabel": "Aktivität vs. üblich",
   "caloriesActivityWorkoutBonusLabel": "Trainingsbonus",
   "caloriesActivityLearningHint":
       "Wir lernen dein Aktivitätsmuster noch.",

@@ -334,14 +334,14 @@ class CalorieGoalSettings {
 
   /// The sorted goal history.
   List<CalorieGoalHistoryEntry> get sortedGoalHistory {
-    final entries = List<CalorieGoalHistoryEntry>.from(goalHistory);
-    entries.sort((left, right) {
-      final byDay = left.effectiveDate.compareTo(right.effectiveDate);
-      if (byDay != 0) {
-        return byDay;
-      }
-      return left.effectiveChangedAt.compareTo(right.effectiveChangedAt);
-    });
+    final entries = List<CalorieGoalHistoryEntry>.from(goalHistory)
+      ..sort((left, right) {
+        final byDay = left.effectiveDate.compareTo(right.effectiveDate);
+        if (byDay != 0) {
+          return byDay;
+        }
+        return left.effectiveChangedAt.compareTo(right.effectiveChangedAt);
+      });
     return List<CalorieGoalHistoryEntry>.unmodifiable(entries);
   }
 
@@ -385,6 +385,23 @@ class CalorieGoalSettings {
   /// The latest learned tdee changed at.
   DateTime? get latestLearnedTdeeChangedAt {
     return latestLearnedTdeeEntry?.effectiveChangedAt;
+  }
+
+  /// Learned TDEE entry effective for the given day.
+  CalorieGoalHistoryEntry? learnedTdeeEntryForDay(DateTime day) {
+    final normalizedDay = normalizeDiaryDay(day);
+    CalorieGoalHistoryEntry? resolvedEntry;
+
+    for (final entry in sortedGoalHistory) {
+      if (entry.effectiveDate.isAfter(normalizedDay)) {
+        break;
+      }
+      if (entry.hasLearnedTdee) {
+        resolvedEntry = entry;
+      }
+    }
+
+    return resolvedEntry;
   }
 
   /// Cycle anchor entry for day.
