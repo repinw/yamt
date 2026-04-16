@@ -8,6 +8,10 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_summary_card.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_summary_card_classic.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_summary_card_classic_gauge.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_balance_summary_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -108,19 +112,20 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(CaloriesPageKeys.summaryBalanceBar), findsOneWidget);
-    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byType(ClassicSummaryHero), findsNothing);
 
     await tester.tap(find.byKey(CaloriesPageKeys.summaryModeOption('classic')));
     await tester.pumpAndSettle();
 
     expect(find.byKey(CaloriesPageKeys.summaryBalanceBar), findsNothing);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(ClassicSummaryHero), findsOneWidget);
+    expect(find.byType(ClassicSummaryGauge), findsOneWidget);
 
     await tester.tap(find.byKey(CaloriesPageKeys.summaryModeOption('balance')));
     await tester.pumpAndSettle();
 
     expect(find.byKey(CaloriesPageKeys.summaryBalanceBar), findsOneWidget);
-    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byType(ClassicSummaryHero), findsNothing);
   });
 
   testWidgets('renders macro progress cards with current values and progress', (
@@ -246,16 +251,28 @@ void main() {
         find.byKey(CaloriesPageKeys.summaryCarryoverToggle),
         findsOneWidget,
       );
+      expect(find.byType(ClassicSummaryHero), findsOneWidget);
+      expect(find.byType(ClassicSummaryGauge), findsOneWidget);
+      expect(find.text('+135'), findsOneWidget);
       expect(find.text('400'), findsOneWidget);
 
+      await tester.ensureVisible(
+        find.byKey(CaloriesPageKeys.summaryCarryoverToggle),
+      );
       await tester.tap(find.byKey(CaloriesPageKeys.summaryCarryoverToggle));
       await tester.pumpAndSettle();
 
+      expect(find.byType(ClassicSummaryGauge), findsOneWidget);
+      expect(find.text('+240'), findsOneWidget);
       expect(find.text('640'), findsOneWidget);
 
+      await tester.ensureVisible(
+        find.byKey(CaloriesPageKeys.summaryActivityDeltaToggle),
+      );
       await tester.tap(find.byKey(CaloriesPageKeys.summaryActivityDeltaToggle));
       await tester.pumpAndSettle();
 
+      expect(find.byType(ClassicSummaryGauge), findsOneWidget);
       expect(find.text('505'), findsOneWidget);
 
       final macroBottom = tester.getBottomLeft(
@@ -265,6 +282,49 @@ void main() {
         find.byKey(CaloriesPageKeys.summaryMetaSection),
       );
       expect(metaTop.dy, greaterThan(macroBottom.dy));
+    },
+  );
+
+  testWidgets(
+    'classic summary restores persisted global toggle selections',
+    (tester) async {
+      final preferences = MemoryAppPreferences(
+        initialStrings: <String, String>{
+          'calories_summary_classic_include_activity_delta': 'false',
+          'calories_summary_classic_include_carryover': 'true',
+        },
+      );
+
+      await tester.pumpWidget(
+        _buildHarness(
+          preferences: preferences,
+          balanceData: _balanceData(
+            activityDeltaKcal: 135,
+            carryoverKcal: 240,
+            usedLearnedTdee: true,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(CaloriesPageKeys.summaryModeOption('classic')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('+240'), findsOneWidget);
+      expect(find.text('+135'), findsNothing);
+      expect(find.text('505'), findsOneWidget);
+
+      final activityToggle = tester.widget<Checkbox>(
+        find.byKey(CaloriesPageKeys.summaryActivityDeltaToggle),
+      );
+      final carryoverToggle = tester.widget<Checkbox>(
+        find.byKey(CaloriesPageKeys.summaryCarryoverToggle),
+      );
+
+      expect(activityToggle.value, isFalse);
+      expect(carryoverToggle.value, isTrue);
     },
   );
 }
@@ -294,23 +354,25 @@ Widget _buildHarness({
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
-        body: Center(
-          child: SizedBox(
-            width: 520,
-            child: CaloriesSummaryCard(
-              consumedKcal: 1600,
-              goalKcal: 2000,
-              remainingKcal: 400,
-              progress: 0.8,
-              totalProtein: totalProtein,
-              totalCarbs: totalCarbs,
-              totalFat: totalFat,
-              consumedLabel: 'Consumed',
-              goalLabel: 'Goal',
-              remainingLabel: 'Remaining',
-              proteinLabel: 'Protein',
-              carbsLabel: 'Carbs',
-              fatLabel: 'Fat',
+        body: SingleChildScrollView(
+          child: Center(
+            child: SizedBox(
+              width: 520,
+              child: CaloriesSummaryCard(
+                consumedKcal: 1600,
+                goalKcal: 2000,
+                remainingKcal: 400,
+                progress: 0.8,
+                totalProtein: totalProtein,
+                totalCarbs: totalCarbs,
+                totalFat: totalFat,
+                consumedLabel: 'Consumed',
+                goalLabel: 'Goal',
+                remainingLabel: 'Remaining',
+                proteinLabel: 'Protein',
+                carbsLabel: 'Carbs',
+                fatLabel: 'Fat',
+              ),
             ),
           ),
         ),
