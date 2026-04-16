@@ -21,11 +21,13 @@ Map<String, CalorieWeekDayOverview> buildPrefetchedCaloriesDayOverviews({
   required List<CalorieWeekDayOverview> visibleDaysOverview,
 }) {
   final visibleDays = buildDiaryVisibleDays(anchorDay: visibleWindowEnd);
-  final bufferStart = visibleDays.first.subtract(
-    const Duration(days: caloriesDayNavigationPrefetchDayCount),
+  final bufferStart = addDiaryDays(
+    visibleDays.first,
+    -caloriesDayNavigationPrefetchDayCount,
   );
-  final bufferEnd = visibleDays.last.add(
-    const Duration(days: caloriesDayNavigationPrefetchDayCount),
+  final bufferEnd = addDiaryDays(
+    visibleDays.last,
+    caloriesDayNavigationPrefetchDayCount,
   );
   final normalizedStart = bufferStart.isBefore(earliestDay)
       ? earliestDay
@@ -41,7 +43,7 @@ Map<String, CalorieWeekDayOverview> buildPrefetchedCaloriesDayOverviews({
   for (
     var day = normalizedStart;
     !day.isAfter(normalizedEnd);
-    day = day.add(const Duration(days: 1))
+    day = nextDiaryDay(day)
   ) {
     final overview = ref
         .watch(calorieWeekDayOverviewForDateProvider(day))

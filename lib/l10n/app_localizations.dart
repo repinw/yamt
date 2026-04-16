@@ -3182,19 +3182,19 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesWeekBalanceSaved.
   ///
   /// In en, this message translates to:
-  /// **'You saved {kcal} kcal since your goal started. Today\'s target was increased.'**
+  /// **'You saved {kcal} kcal since your goal started.'**
   String caloriesWeekBalanceSaved(int kcal);
 
   /// No description provided for @caloriesWeekBalanceOverspent.
   ///
   /// In en, this message translates to:
-  /// **'You are {kcal} kcal over since your goal started.'**
+  /// **'You went over by {kcal} kcal since your goal started.'**
   String caloriesWeekBalanceOverspent(int kcal);
 
   /// No description provided for @caloriesWeekBalanceStable.
   ///
   /// In en, this message translates to:
-  /// **'You are balanced since your goal started. Today\'s target stays unchanged.'**
+  /// **'Balanced since your goal started.'**
   String get caloriesWeekBalanceStable;
 
   /// No description provided for @caloriesWeekBalanceStartsLater.

@@ -24,10 +24,18 @@ Future<CalorieHealthTrendSnapshot> calorieHealthTrendSnapshot(Ref ref) async {
   final trendsWindowEnd = ref.watch(
     calorieHealthTrendsWindowControllerProvider,
   );
-  final DateTime visibleWindowEnd =
-      trendsWindowEnd ?? ref.watch(calorieVisibleWindowControllerProvider);
+  final DateTime resolvedVisibleWindowEnd;
+  if (trendsWindowEnd != null) {
+    resolvedVisibleWindowEnd = trendsWindowEnd;
+  } else {
+    resolvedVisibleWindowEnd = ref.watch(
+      calorieVisibleWindowControllerProvider,
+    );
+  }
   final intakeSnapshotFuture = ref.watch(
-    calorieWeekConsumptionSnapshotForWindowProvider(visibleWindowEnd).future,
+    calorieWeekConsumptionSnapshotForWindowProvider(
+      resolvedVisibleWindowEnd,
+    ).future,
   );
   final statusFuture = ref.watch(healthConnectionControllerProvider.future);
   final manualEntriesFuture = ref.watch(
@@ -62,7 +70,7 @@ Future<CalorieHealthTrendSnapshot> calorieHealthTrendSnapshot(Ref ref) async {
     };
 
     final startInclusive = days.first;
-    final endExclusive = days.last.add(const Duration(days: 1));
+    final endExclusive = nextDiaryDay(days.last);
     final weightSamples = await healthWeightService.loadWeightSamples(
       startInclusive: startInclusive,
       endExclusive: endExclusive,

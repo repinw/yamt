@@ -1630,16 +1630,16 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String caloriesWeekBalanceSaved(int kcal) {
-    return 'Du hast seit Zielstart $kcal kcal gespart. Dein heutiges Ziel wurde erhöht.';
+    return 'Seit Zielstart $kcal kcal gespart.';
   }
 
   @override
   String caloriesWeekBalanceOverspent(int kcal) {
-    return 'Seit Zielstart $kcal kcal im Überschuss.';
+    return 'Seit Zielstart $kcal kcal überschritten.';
   }
 
   @override
-  String get caloriesWeekBalanceStable => 'Seit Zielstart bist du ausgeglichen. Dein heutiges Ziel bleibt unverändert.';
+  String get caloriesWeekBalanceStable => 'Seit Zielstart ausgeglichen.';
 
   @override
   String caloriesWeekBalanceStartsLater(String date) {

@@ -407,7 +407,7 @@ double _calculateCarryoverKcal({
   for (
     var day = normalizeDiaryDay(cycleStartDate);
     day.isBefore(normalizeDiaryDay(endExclusive));
-    day = day.add(const Duration(days: 1))
+    day = nextDiaryDay(day)
   ) {
     final dayEntries = entriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
     final storedGoalKcal = settings.goalKcalForDay(day);

@@ -79,9 +79,27 @@ class CaloriesSummaryCard extends ConsumerStatefulWidget {
 }
 
 class _CaloriesSummaryCardState extends ConsumerState<CaloriesSummaryCard> {
+  ProviderSubscription<AsyncValue<CalorieBalanceSummaryData>>?
+  _balanceSummarySubscription;
   var _includeClassicActivityDelta = false;
   var _includeClassicCarryover = false;
   String? _classicAdjustmentSeed;
+
+  @override
+  void initState() {
+    super.initState();
+    _applyClassicAdjustmentState(ref.read(calorieBalanceSummaryProvider).value);
+    _balanceSummarySubscription = ref.listenManual(
+      calorieBalanceSummaryProvider,
+      _handleBalanceSummaryChanged,
+    );
+  }
+
+  @override
+  void dispose() {
+    _balanceSummarySubscription?.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,9 +110,10 @@ class _CaloriesSummaryCardState extends ConsumerState<CaloriesSummaryCard> {
     final kcalUnit = l10n.caloriesUnitKcal;
     final gramUnit = l10n.caloriesUnitGram;
     final macroGoals = _MacroGoals.fromGoalKcal(widget.goalKcal);
+    final consumedValue =
+        '${numberFormat.format(widget.consumedKcal.round())} $kcalUnit';
     final viewMode = ref.watch(calorieSummaryViewModeControllerProvider);
     final balanceData = ref.watch(calorieBalanceSummaryProvider).value;
-    _syncClassicAdjustmentState(balanceData);
     final classicGoalKcal = _resolveClassicGoalKcal(
       goalKcal: widget.goalKcal,
       balanceData: balanceData,
@@ -138,9 +157,7 @@ class _CaloriesSummaryCardState extends ConsumerState<CaloriesSummaryCard> {
                         ),
                       CalorieSummaryViewMode.classic => _ClassicHeaderStats(
                         consumedLabel: widget.consumedLabel,
-                        consumedValue:
-                            '${numberFormat.format(widget.consumedKcal.round())} '
-                            '$kcalUnit',
+                        consumedValue: consumedValue,
                         goalLabel: widget.goalLabel,
                         goalValue:
                             '${numberFormat.format(classicGoalKcal.round())} '
@@ -245,7 +262,17 @@ class _CaloriesSummaryCardState extends ConsumerState<CaloriesSummaryCard> {
     );
   }
 
-  void _syncClassicAdjustmentState(CalorieBalanceSummaryData? data) {
+  void _handleBalanceSummaryChanged(
+    AsyncValue<CalorieBalanceSummaryData>? previous,
+    AsyncValue<CalorieBalanceSummaryData> next,
+  ) {
+    if (!_applyClassicAdjustmentState(next.value) || !mounted) {
+      return;
+    }
+    setState(() {});
+  }
+
+  bool _applyClassicAdjustmentState(CalorieBalanceSummaryData? data) {
     final nextSeed = switch (data) {
       final resolvedData? =>
         '${resolvedData.selectedDay.toIso8601String()}:'
@@ -255,12 +282,13 @@ class _CaloriesSummaryCardState extends ConsumerState<CaloriesSummaryCard> {
       null => 'none',
     };
     if (_classicAdjustmentSeed == nextSeed) {
-      return;
+      return false;
     }
 
     _classicAdjustmentSeed = nextSeed;
     _includeClassicActivityDelta = data?.usedLearnedTdee == true;
     _includeClassicCarryover = false;
+    return true;
   }
 }
 
@@ -599,9 +627,16 @@ class _ClassicSummaryMetaToggles extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final resolvedData = data;
+    final l10n = AppLocalizations.of(context)!;
     if (resolvedData == null || !_hasSummaryMeta(resolvedData)) {
       return const SizedBox.shrink();
     }
+    final activityDeltaValue = numberFormat.format(
+      resolvedData.activityDeltaKcal.round(),
+    );
+    final carryoverValue = numberFormat.format(
+      resolvedData.carryoverKcal.round(),
+    );
 
     return DecoratedBox(
       key: CaloriesPageKeys.summaryMetaSection,
@@ -622,10 +657,9 @@ class _ClassicSummaryMetaToggles extends StatelessWidget {
                 value: includeActivityDelta,
                 onChanged: onToggleActivityDelta,
                 label:
-                    '${AppLocalizations.of(context)!.caloriesWeeklyCheckInDialogTodayDeltaLabel}: '
+                    '${l10n.caloriesWeeklyCheckInDialogTodayDeltaLabel}: '
                     '${resolvedData.activityDeltaKcal.round() > 0 ? '+' : ''}'
-                    '${numberFormat.format(resolvedData.activityDeltaKcal.round())} '
-                    '$kcalUnit',
+                    '$activityDeltaValue $kcalUnit',
                 toggleKey: CaloriesPageKeys.summaryActivityDeltaToggle,
                 textKey: CaloriesPageKeys.summaryActivityDeltaNote,
               ),
@@ -637,10 +671,9 @@ class _ClassicSummaryMetaToggles extends StatelessWidget {
                 value: includeCarryover,
                 onChanged: onToggleCarryover,
                 label:
-                    '${AppLocalizations.of(context)!.caloriesBalanceCarryoverNoteLabel}: '
+                    '${l10n.caloriesBalanceCarryoverNoteLabel}: '
                     '${resolvedData.carryoverKcal.round() > 0 ? '+' : ''}'
-                    '${numberFormat.format(resolvedData.carryoverKcal.round())} '
-                    '$kcalUnit',
+                    '$carryoverValue $kcalUnit',
                 toggleKey: CaloriesPageKeys.summaryCarryoverToggle,
                 textKey: CaloriesPageKeys.summaryCarryoverNote,
               ),

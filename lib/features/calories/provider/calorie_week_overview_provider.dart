@@ -377,7 +377,7 @@ _calculateCycleTotals({
     for (
       var day = normalizeDiaryDay(cycleStartDate);
       day.isBefore(normalizeDiaryDay(visibleWindowStart));
-      day = day.add(const Duration(days: 1))
+      day = nextDiaryDay(day)
     ) {
       final dayEntries =
           historicalEntriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];

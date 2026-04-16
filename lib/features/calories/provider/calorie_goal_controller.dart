@@ -351,7 +351,7 @@ class CalorieGoalController extends _$CalorieGoalController {
         state = AsyncData(previous);
       }
       return saved;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to persist calorie goal settings.',
         name: _goalControllerLogName,
@@ -402,7 +402,7 @@ class CalorieGoalController extends _$CalorieGoalController {
           .read(healthWeightServiceProvider)
           .loadWeightSamples(
             startInclusive: normalizedDay,
-            endExclusive: normalizedDay.add(const Duration(days: 1)),
+            endExclusive: nextDiaryDay(normalizedDay),
           );
       if (!ref.mounted) {
         return;

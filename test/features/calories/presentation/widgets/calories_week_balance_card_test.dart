@@ -75,17 +75,12 @@ void main() {
     );
 
     expect(
-      find.text(
-        'Du hast seit Zielstart 400 kcal gespart. '
-        'Dein heutiges Ziel wurde erhöht.',
-      ),
+      find.text('Seit Zielstart 400 kcal gespart.'),
       findsOneWidget,
     );
     _expectSummaryAccentColor(
       tester,
-      message:
-          'Du hast seit Zielstart 400 kcal gespart. '
-          'Dein heutiges Ziel wurde erhöht.',
+      message: 'Seit Zielstart 400 kcal gespart.',
       color: _themeColor(tester).primary,
     );
   });
@@ -106,12 +101,12 @@ void main() {
     );
 
     expect(
-      find.text('You are 250 kcal over since your goal started.'),
+      find.text('You went over by 250 kcal since your goal started.'),
       findsOneWidget,
     );
     _expectSummaryAccentColor(
       tester,
-      message: 'You are 250 kcal over since your goal started.',
+      message: 'You went over by 250 kcal since your goal started.',
       color: _themeColor(tester).error,
     );
   });
@@ -134,12 +129,12 @@ void main() {
       );
 
       expect(
-        find.text('You are 150 kcal over since your goal started.'),
+        find.text('You went over by 150 kcal since your goal started.'),
         findsOneWidget,
       );
       _expectSummaryAccentColor(
         tester,
-        message: 'You are 150 kcal over since your goal started.',
+        message: 'You went over by 150 kcal since your goal started.',
         color: _themeColor(tester).error,
       );
     },
@@ -161,17 +156,12 @@ void main() {
     );
 
     expect(
-      find.text(
-        'You are balanced since your goal started. '
-        "Today's target stays unchanged.",
-      ),
+      find.text('Balanced since your goal started.'),
       findsOneWidget,
     );
     _expectSummaryAccentColor(
       tester,
-      message:
-          'You are balanced since your goal started. '
-          "Today's target stays unchanged.",
+      message: 'Balanced since your goal started.',
       color: _themeColor(tester).primary,
     );
   });
