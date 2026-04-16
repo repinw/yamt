@@ -4,9 +4,11 @@ import 'package:yamt/core/theme/app_theme_tokens.dart';
 
 /// Centralized app themes generated from a single seed color.
 abstract final class AppTheme {
+  /// Builds light app theme for given seed color.
   static ThemeData light({required Color seedColor}) =>
       _buildTheme(Brightness.light, seedColor: seedColor);
 
+  /// Builds dark app theme for given seed color.
   static ThemeData dark({required Color seedColor}) =>
       _buildTheme(Brightness.dark, seedColor: seedColor);
 

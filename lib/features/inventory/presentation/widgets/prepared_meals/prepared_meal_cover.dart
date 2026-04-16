@@ -5,7 +5,9 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 
+/// Defines prepared meal cover.
 class PreparedMealCover extends StatelessWidget {
+  /// The prepared meal cover.
   const PreparedMealCover({
     super.key,
     required this.label,
@@ -15,10 +17,19 @@ class PreparedMealCover extends StatelessWidget {
     this.borderRadius,
   });
 
+  /// The label.
   final String label;
+
+  /// The image bytes.
   final Uint8List? imageBytes;
+
+  /// The image url.
   final String? imageUrl;
+
+  /// The size.
   final double size;
+
+  /// The border radius.
   final BorderRadius? borderRadius;
 
   @override

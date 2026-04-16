@@ -11,6 +11,7 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 export 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository_contract.dart';
 
+/// The global barcode candidate repository provider.
 final globalBarcodeCandidateRepositoryProvider =
     Provider<GlobalBarcodeCandidateRepository>((ref) {
       final firestore = ref.watch(firebaseFirestoreProvider);

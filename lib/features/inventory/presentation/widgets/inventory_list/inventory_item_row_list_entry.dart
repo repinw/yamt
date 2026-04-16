@@ -9,9 +9,10 @@ import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines inventory item row list entry.
 class InventoryItemRowListEntry extends StatelessWidget {
+  /// The inventory item row list entry.
   const InventoryItemRowListEntry({
-    super.key,
     required this.item,
     required this.keyPrefix,
     required this.bottomSpacing,
@@ -21,30 +22,56 @@ class InventoryItemRowListEntry extends StatelessWidget {
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
+    super.key,
     this.isSelectionMode = false,
     this.isSelected = false,
     this.onItemLongPress,
     this.onSelectionToggle,
   });
 
+  /// The item.
   final InventoryItem item;
+
+  /// The key prefix.
   final String keyPrefix;
+
+  /// The bottom spacing.
   final double bottomSpacing;
+
+  /// The l10n.
   final AppLocalizations l10n;
+
+  /// The show barcode markers.
   final bool showBarcodeMarkers;
+
+  /// The active shopping list item keys.
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
+
+  /// The on delete item.
   final Future<bool> Function(String itemId) onDeleteItem;
+
+  /// Documented member.
   final Future<bool> Function(String itemId, InventoryItemEatRequest request)
   onEatItem;
+
+  /// The on throw away item.
   final Future<bool> Function(
     String itemId,
     int amount,
     InventoryDiscardReason reason,
   )
   onThrowAwayItem;
+
+  /// Whether selection mode.
   final bool isSelectionMode;
+
+  /// Whether selected.
   final bool isSelected;
+
+  /// The on item long press.
   final VoidCallback? onItemLongPress;
+
+  /// The on selection toggle.
   final VoidCallback? onSelectionToggle;
 
   @override

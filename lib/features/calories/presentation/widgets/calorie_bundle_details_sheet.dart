@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Show calorie bundle details sheet.
 Future<void> showCalorieBundleDetailsSheet(
   BuildContext context, {
   required CalorieEntry entry,

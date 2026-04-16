@@ -4,20 +4,27 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
-import 'package:yamt/firebase_options.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/provider/google_auth_controller.dart';
+import 'package:yamt/firebase_options.dart';
 
 part 'account_controller.g.dart';
 
+/// Secondary auth client.
 @riverpod
 SecondaryAuthClient secondaryAuthClient(Ref ref) {
   return const _FirebaseSecondaryAuthClient();
 }
 
+/// Defines secondary auth client.
 abstract interface class SecondaryAuthClient {
+  /// Create app.
   Future<FirebaseApp> createApp(String appName);
+
+  /// Auth for app.
   FirebaseAuth authForApp(FirebaseApp app);
+
+  /// Dispose app.
   Future<void> disposeApp(FirebaseApp app);
 }
 
@@ -48,11 +55,13 @@ class _FirebaseSecondaryAuthClient implements SecondaryAuthClient {
 }
 // coverage:ignore-end
 
+/// Defines account controller.
 @riverpod
 class AccountController extends _$AccountController {
   @override
   FutureOr<void> build() {}
 
+  /// Sign out.
   Future<void> signOut() async {
     if (!ref.mounted) return;
     state = const AsyncLoading();
@@ -73,6 +82,7 @@ class AccountController extends _$AccountController {
     }
   }
 
+  /// Link guest with google.
   Future<bool> linkGuestWithGoogle() async {
     if (!ref.mounted) return false;
     state = const AsyncLoading();
@@ -100,6 +110,7 @@ class AccountController extends _$AccountController {
     }
   }
 
+  /// Link guest with email password.
   Future<bool> linkGuestWithEmailPassword({
     required String email,
     required String password,
@@ -160,6 +171,7 @@ class AccountController extends _$AccountController {
     );
   }
 
+  /// Overwrite existing google account with guest.
   Future<void> overwriteExistingGoogleAccountWithGuest(
     AuthCredential credential,
   ) async {
@@ -205,6 +217,7 @@ class AccountController extends _$AccountController {
     }
   }
 
+  /// Delete guest and sign in with google credential.
   Future<void> deleteGuestAndSignInWithGoogleCredential(
     AuthCredential credential,
   ) async {
@@ -226,6 +239,7 @@ class AccountController extends _$AccountController {
     }
   }
 
+  /// Delete current account.
   Future<void> deleteCurrentAccount() async {
     if (!ref.mounted) return;
     state = const AsyncLoading();

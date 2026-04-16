@@ -5,17 +5,25 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Footer summary that shows total, savable, and excluded receipt prices.
 class InventoryReceiptReviewPriceOverview extends StatelessWidget {
+  /// The inventory receipt review price overview.
   const InventoryReceiptReviewPriceOverview({
-    super.key,
     required this.totalPrice,
     required this.storablePrice,
     required this.excludedPrice,
     required this.currency,
+    super.key,
   });
 
+  /// The total price.
   final double totalPrice;
+
+  /// The storable price.
   final double storablePrice;
+
+  /// The excluded price.
   final double excludedPrice;
+
+  /// The currency.
   final NumberFormat currency;
 
   @override

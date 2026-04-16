@@ -14,12 +14,12 @@ import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'global_food_receipt_alias_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
-import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_item_edit_policy.dart';
-import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
+import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/domain/'
     'receipt_review_item_draft.dart';
@@ -34,18 +34,26 @@ const Uuid _globalFoodItemUuid = Uuid();
 const _resolutionLogName = 'ReceiptReviewResolutionService';
 const _amountParser = InventoryAmountParser();
 
+/// Defines receipt review persist result.
 class ReceiptReviewPersistResult {
+  /// The receipt review persist result.
   const ReceiptReviewPersistResult({
     required this.saved,
     required this.inventoryItems,
     this.itemsNeedingEnrichment = const <InventoryItem>[],
   });
 
+  /// The saved.
   final bool saved;
+
+  /// The inventory items.
   final List<InventoryItem> inventoryItems;
+
+  /// The items needing enrichment.
   final List<InventoryItem> itemsNeedingEnrichment;
 }
 
+/// Receipt review resolution service.
 @riverpod
 ReceiptReviewResolutionService receiptReviewResolutionService(Ref ref) {
   return ReceiptReviewResolutionService(
@@ -65,7 +73,9 @@ ReceiptReviewResolutionService receiptReviewResolutionService(Ref ref) {
   );
 }
 
+/// Defines receipt review resolution service.
 class ReceiptReviewResolutionService {
+  /// Creates an instance.
   ReceiptReviewResolutionService({
     required ReceiptToReviewItemDraftMapper mapper,
     required GlobalFoodItemMatcher matcher,
@@ -94,6 +104,7 @@ class ReceiptReviewResolutionService {
   final CalorieProductCacheRepositoryContract? _calorieProductCacheRepository;
   final String Function() _globalFoodItemIdGenerator;
 
+  /// Prepare drafts.
   Future<List<ReceiptReviewItemDraft>> prepareDrafts(
     ReceiptAnalysisExtraction extraction,
   ) async {
@@ -107,6 +118,7 @@ class ReceiptReviewResolutionService {
     return resolvedDrafts;
   }
 
+  /// Persist reviewed items.
   Future<ReceiptReviewPersistResult> persistReviewedItems(
     List<ReceiptReviewItemDraft> reviewedItems,
   ) async {

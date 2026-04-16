@@ -11,9 +11,10 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines inventory prepared meals section.
 class InventoryPreparedMealsSection extends StatelessWidget {
+  /// The inventory prepared meals section.
   const InventoryPreparedMealsSection({
-    super.key,
     required this.meals,
     required this.expandedPreparedMealId,
     required this.isExpanded,
@@ -29,15 +30,31 @@ class InventoryPreparedMealsSection extends StatelessWidget {
     required this.onEditPreparedMeal,
     required this.onSavePreparedMealTemplate,
     required this.l10n,
+    super.key,
   });
 
+  /// The meals.
   final List<PreparedMeal> meals;
+
+  /// The expanded prepared meal id.
   final String? expandedPreparedMealId;
+
+  /// Whether expanded.
   final bool isExpanded;
+
+  /// The subtitle.
   final String subtitle;
+
+  /// Whether selection mode.
   final bool isSelectionMode;
+
+  /// The on show filters.
   final VoidCallback onShowFilters;
+
+  /// The on toggle expanded.
   final VoidCallback onToggleExpanded;
+
+  /// The on eat prepared meal.
   final Future<bool> Function({
     required String mealId,
     required int portions,
@@ -45,21 +62,31 @@ class InventoryPreparedMealsSection extends StatelessWidget {
     required DateTime loggedDay,
   })
   onEatPreparedMeal;
+
+  /// The on throw away prepared meal.
   final Future<bool> Function(
     String mealId,
     int portions,
     InventoryDiscardReason reason,
   )
   onThrowAwayPreparedMeal;
+
+  /// The on fill pending prepared meal ingredient.
   final Future<bool> Function(
     String mealId,
     String ingredient,
     List<String> inventoryItemIds,
   )
   onFillPendingPreparedMealIngredient;
+
+  /// The on ignore pending prepared meal ingredient.
   final Future<bool> Function(String mealId, String ingredient)
   onIgnorePendingPreparedMealIngredient;
+
+  /// The on unbundle prepared meal.
   final Future<bool> Function(String mealId) onUnbundlePreparedMeal;
+
+  /// The on edit prepared meal.
   final Future<bool> Function(
     String mealId,
     String name,
@@ -67,7 +94,11 @@ class InventoryPreparedMealsSection extends StatelessWidget {
     Uint8List? imageBytes,
   )
   onEditPreparedMeal;
+
+  /// The on save prepared meal template.
   final Future<bool> Function(PreparedMeal meal) onSavePreparedMealTemplate;
+
+  /// The l10n.
   final AppLocalizations l10n;
 
   @override

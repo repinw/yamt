@@ -1,12 +1,23 @@
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
-import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 
-enum GlobalFoodItemEditKind { unchanged, patchExisting, createNewCandidate }
+/// Defines global food item edit kind.
+enum GlobalFoodItemEditKind {
+  /// Unchanged.
+  unchanged,
+
+  /// Patch existing.
+  patchExisting,
+
+  /// Create new candidate.
+  createNewCandidate,
+}
 
 const _amountParser = InventoryAmountParser();
 
+/// Classify global food item edit.
 GlobalFoodItemEditKind classifyGlobalFoodItemEdit({
   required GlobalFoodItem currentItem,
   required String name,

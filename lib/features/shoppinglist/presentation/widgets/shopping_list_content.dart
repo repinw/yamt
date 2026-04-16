@@ -11,18 +11,27 @@ import 'package:yamt/features/shoppinglist/presentation/widgets/'
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines shopping list content.
 class ShoppingListContent extends StatelessWidget {
+  /// The shopping list content.
   const ShoppingListContent({
-    super.key,
     required this.items,
     required this.controller,
     required this.l10n,
     required this.currency,
+    super.key,
   });
 
+  /// The items.
   final List<ShoppingListItem> items;
+
+  /// The controller.
   final ShoppingListController controller;
+
+  /// The l10n.
   final AppLocalizations l10n;
+
+  /// The currency.
   final NumberFormat currency;
 
   @override

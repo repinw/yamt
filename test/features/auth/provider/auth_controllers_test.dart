@@ -1,9 +1,10 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
@@ -11,11 +12,10 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/features/auth/provider/auth_form_controller.dart';
 import 'package:yamt/features/auth/provider/auth_repository.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/provider/google_auth_controller.dart';
 import 'package:yamt/features/auth/provider/guest_auth_controller.dart';
 import 'package:yamt/features/auth/provider/guest_name_setup_controller.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/memory_app_preferences.dart';

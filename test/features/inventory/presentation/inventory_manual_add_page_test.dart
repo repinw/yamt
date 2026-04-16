@@ -6,8 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -23,8 +23,8 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
-import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_page.dart';
@@ -456,7 +456,7 @@ void main() {
 
     final offRepository =
         _RecordingOffProductSearchRepository(<OffProductSearchResult>[
-          OffProductSearchResult(
+          const OffProductSearchResult(
             code: '4006381333931',
             name: 'Milk',
             brand: 'Brand',

@@ -1,28 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/scanner/presentation/models/receipt_item_editor_draft.dart';
+import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_discount_rows_field.dart';
+import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_form_field_metadata.dart';
+import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_weight_unit_fallback_option.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-import '../models/receipt_item_editor_draft.dart';
-import 'receipt_item_editor_discount_rows_field.dart';
-import 'receipt_item_editor_form_field_metadata.dart';
-import 'receipt_item_editor_weight_unit_fallback_option.dart';
 
+/// Defines receipt item editor form section.
 class ReceiptItemEditorFormSection extends StatelessWidget {
+  /// The receipt item editor form section.
   const ReceiptItemEditorFormSection({
-    super.key,
     required this.onSubmit,
     required this.numberValidator,
     required this.weightValidator,
     required this.initialDiscountEntries,
     required this.onDiscountEntriesChanged,
     required this.discountsErrorText,
+    super.key,
   });
 
+  /// The on submit.
   final VoidCallback onSubmit;
+
+  /// The number validator.
   final String? Function(String? value) numberValidator;
+
+  /// The weight validator.
   final String? Function(String? value) weightValidator;
+
+  /// The initial discount entries.
   final List<MapEntry<String, String>> initialDiscountEntries;
+
+  /// The on discount entries changed.
   final ValueChanged<List<MapEntry<String, String>>> onDiscountEntriesChanged;
+
+  /// The discounts error text.
   final String? discountsErrorText;
 
   @override

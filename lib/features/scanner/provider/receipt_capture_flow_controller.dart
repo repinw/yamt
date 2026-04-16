@@ -1,24 +1,25 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository_contract.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/application/'
     'receipt_review_resolution_service.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
 
 part 'receipt_capture_flow_controller.g.dart';
 
+/// Defines receipt capture flow controller.
 @riverpod
 class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
   Future<ReceiptCaptureFlowResult>? _activeRun;
@@ -28,6 +29,7 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     return null;
   }
 
+  /// Run.
   Future<ReceiptCaptureFlowResult> run({
     required ReceiptInputSource source,
   }) async {
@@ -47,6 +49,7 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     }
   }
 
+  /// Run selection.
   Future<ReceiptCaptureFlowResult> runSelection({
     required ReceiptInputSelection selection,
   }) async {
@@ -216,6 +219,7 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
     return resolutionService.prepareDrafts(extraction);
   }
 
+  /// Persist reviewed items.
   Future<bool> persistReviewedItems(
     List<ReceiptReviewItemDraft> reviewedItems,
   ) async {

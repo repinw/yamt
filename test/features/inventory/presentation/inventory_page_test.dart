@@ -6,26 +6,27 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/calories/presentation/models/'
+    'calorie_entry_create_args.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
-import 'package:yamt/features/calories/presentation/models/'
-    'calorie_entry_create_args.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
-import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
 import '../../shoppinglist/support/fake_shopping_list_repository.dart';
 
 class _FakeInventoryDiscardEventRepository
@@ -55,13 +56,13 @@ class _FakeFridgeItemRepository implements InventoryItemRepository {
 
   @override
   Stream<List<InventoryItem>> watchAll() {
-    return Stream<List<InventoryItem>>.multi((controller) {
+    return Stream<List<InventoryItem>>.multi((controller) async {
       final watchSubscription = _watchController.stream.listen(
         controller.add,
         onError: controller.addError,
         onDone: controller.close,
       );
-      _loadItems().then(controller.add, onError: controller.addError);
+      await _loadItems().then(controller.add, onError: controller.addError);
       controller.onCancel = () {
         unawaited(watchSubscription.cancel());
       };
@@ -248,7 +249,7 @@ InventoryItem _item(
     storeName: 'Store',
     quantity: quantity,
     initialQuantity: initialQuantity,
-    unitPrice: 1.0,
+    unitPrice: 1,
     weight: weight,
     initialAmount: initialAmount,
     currentAmount: currentAmount,
@@ -282,8 +283,7 @@ InventoryItem _itemWithNutrition(
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
-    unitPrice: 1.0,
+    unitPrice: 1,
     weight: '1000g',
     initialAmount: initialAmount,
     currentAmount: currentAmount,
@@ -299,8 +299,7 @@ InventoryItem _amountItemWithoutNutrition(String id) {
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
-    unitPrice: 1.0,
+    unitPrice: 1,
     weight: '1000g',
     initialAmount: 1000,
     currentAmount: 1000,
@@ -323,7 +322,7 @@ ShoppingListItem _shoppingItem(
     normalizedName: normalizedName,
     normalizedBrand: normalizedBrand,
     quantity: quantity,
-    estimatedUnitPrice: 1.0,
+    estimatedUnitPrice: 1,
   );
 }
 
@@ -338,7 +337,7 @@ Widget _buildTestApp(
     GoRoute(
       path: AppRoutes.root,
       builder: (context, state) {
-        final page = const InventoryPage();
+        const page = InventoryPage();
         if (shellBuilder == null) {
           return const Scaffold(body: InventoryPage());
         }
@@ -530,8 +529,8 @@ void main() {
   ) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
-        _item('a', name: 'Apple', quantity: 0, initialQuantity: 2),
-        _item('b', name: 'Banana', quantity: 2, initialQuantity: 2),
+        _item('a', name: 'Apple', quantity: 0),
+        _item('b', name: 'Banana'),
       ],
     );
     addTearDown(repository.dispose);
@@ -566,7 +565,6 @@ void main() {
       onReadAll: () async => <InventoryItem>[
         _item(
           'a',
-          initialQuantity: 2,
           quantity: 1,
           weight: '500g',
           initialAmount: 1000,
@@ -590,7 +588,7 @@ void main() {
   ) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
-        _item('a', quantity: 2, initialQuantity: 2),
+        _item('a'),
       ],
     );
     addTearDown(repository.dispose);
@@ -620,7 +618,7 @@ void main() {
   ) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
-        _item('a', quantity: 2, initialQuantity: 2).copyWith(
+        _item('a').copyWith(
           barcode: '4006381333931',
           barcodeResolvedAt: DateTime.parse('2026-02-20T10:05:00Z'),
           barcodeLookupUncertain: true,
@@ -658,22 +656,21 @@ void main() {
           'a',
           name: 'Milk',
           ocrName: 'MILCH 3,5%',
-          quantity: 2,
-          initialQuantity: 2,
         ),
       ],
     );
     final globalRepository = _RecordingGlobalFoodItemRepository();
-    final offRepository =
-        _RecordingOffProductSearchRepository(<OffProductSearchResult>[
-          const OffProductSearchResult(
-            code: '4061458029995',
-            name: 'Oat Drink',
-            brand: 'Oatly',
-            packageWeight: '1000 ml',
-            score: 34,
-          ),
-        ]);
+    final offRepository = _RecordingOffProductSearchRepository(
+      <OffProductSearchResult>[
+        const OffProductSearchResult(
+          code: '4061458029995',
+          name: 'Oat Drink',
+          brand: 'Oatly',
+          packageWeight: '1000 ml',
+          score: 34,
+        ),
+      ],
+    );
     final matcher = GlobalFoodItemMatcher(
       offProductSearchRepository: offRepository,
     );
@@ -722,7 +719,7 @@ void main() {
     (tester) async {
       final repository = _FakeFridgeItemRepository(
         onReadAll: () async => <InventoryItem>[
-          _item('a', name: 'Milk', quantity: 1, initialQuantity: 2),
+          _item('a', name: 'Milk', quantity: 1),
         ],
       );
       addTearDown(repository.dispose);
@@ -746,7 +743,7 @@ void main() {
   ) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
-        _item('a', name: 'Milk', quantity: 2, initialQuantity: 2),
+        _item('a', name: 'Milk'),
       ],
     );
     addTearDown(repository.dispose);

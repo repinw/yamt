@@ -6,8 +6,19 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-enum CalorieWeeklyCheckInDialogAction { later, apply, openHealthTrends }
+/// Defines calorie weekly check in dialog action.
+enum CalorieWeeklyCheckInDialogAction {
+  /// Later.
+  later,
 
+  /// Apply.
+  apply,
+
+  /// Open health trends.
+  openHealthTrends,
+}
+
+/// Show calorie weekly check in dialog.
 Future<CalorieWeeklyCheckInDialogAction?> showCalorieWeeklyCheckInDialog(
   BuildContext context, {
   required CalorieWeeklyCheckInViewModel viewModel,

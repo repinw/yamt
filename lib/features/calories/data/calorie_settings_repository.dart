@@ -12,23 +12,33 @@ const _usersCollection = 'users';
 const _calorieSettingsCollection = 'calorie_settings';
 const _defaultSettingsDocumentId = 'default';
 
+/// Defines calorie settings repository.
 abstract interface class CalorieSettingsRepository {
+  /// Watch settings.
   Stream<CalorieGoalSettings> watchSettings();
 
+  /// Read settings.
   Future<CalorieGoalSettings> readSettings();
 
+  /// Save settings.
   Future<bool> saveSettings(CalorieGoalSettings settings);
 
+  /// Set daily goal.
   Future<bool> setDailyGoal(double dailyKcalGoal);
 
+  /// Clear daily goal.
   Future<bool> clearDailyGoal();
 }
 
+/// Defines calorie settings user session.
 abstract interface class CalorieSettingsUserSession {
+  /// The current user id.
   String? get currentUserId;
 }
 
+/// Defines firestore calorie settings repository.
 class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
+  /// Creates an instance.
   FirestoreCalorieSettingsRepository({
     required CalorieSettingsUserSession session,
     required FirebaseFirestore firestore,
@@ -202,6 +212,7 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
   }
 }
 
+/// Calorie settings repository.
 @Riverpod(keepAlive: true)
 CalorieSettingsRepository calorieSettingsRepository(Ref ref) {
   final authState = ref.watch(authStateChangesProvider);

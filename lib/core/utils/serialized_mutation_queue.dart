@@ -5,6 +5,7 @@ import 'dart:async';
 class SerializedMutationQueue {
   Future<void> _queue = Future<void>.value();
 
+  /// Runs one mutation after all previously queued mutations complete.
   Future<T> run<T>({
     required Future<T> Function() operation,
     required T fallbackValue,
@@ -15,7 +16,7 @@ class SerializedMutationQueue {
       try {
         final value = await operation();
         result.complete(value);
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         onError(error, stackTrace);
         result.complete(fallbackValue);
       }

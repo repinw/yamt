@@ -1,5 +1,6 @@
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
+/// Resolve inventory items by id.
 List<InventoryItem> resolveInventoryItemsById({
   required List<String> inventoryItemIds,
   required List<InventoryItem> inventoryItems,
@@ -17,6 +18,7 @@ List<InventoryItem> resolveInventoryItemsById({
       .toList(growable: false);
 }
 
+/// Match inventory items for ingredient.
 List<InventoryItem> matchInventoryItemsForIngredient({
   required String ingredient,
   required List<InventoryItem> inventoryItems,
@@ -39,6 +41,7 @@ List<InventoryItem> matchInventoryItemsForIngredient({
       .toList(growable: false);
 }
 
+/// Rank inventory items for ingredient.
 List<InventoryItem> rankInventoryItemsForIngredient({
   required String ingredient,
   required List<InventoryItem> inventoryItems,
@@ -71,6 +74,7 @@ List<InventoryItem> rankInventoryItemsForIngredient({
   return sortedCandidates;
 }
 
+/// Ingredient inventory match score.
 int ingredientInventoryMatchScore({
   required String ingredient,
   required InventoryItem item,

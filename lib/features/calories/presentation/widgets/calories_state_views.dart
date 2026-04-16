@@ -4,6 +4,7 @@ import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.d
 
 /// Loading view shown while calorie entries are being loaded.
 class CaloriesLoadingView extends StatelessWidget {
+  /// The calories loading view.
   const CaloriesLoadingView({super.key});
 
   @override
@@ -21,6 +22,7 @@ class CaloriesLoadingView extends StatelessWidget {
 
 /// Error view shown when calorie entries could not be loaded.
 class CaloriesErrorView extends StatelessWidget {
+  /// The calories error view.
   const CaloriesErrorView({
     super.key,
     required this.onRetry,
@@ -28,8 +30,13 @@ class CaloriesErrorView extends StatelessWidget {
     required this.retryLabel,
   });
 
+  /// The on retry.
   final VoidCallback onRetry;
+
+  /// The message.
   final String message;
+
+  /// The retry label.
   final String retryLabel;
 
   @override

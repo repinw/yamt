@@ -1,9 +1,21 @@
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 
-enum StatisticsMacroType { carbs, protein, fat }
+/// Defines statistics macro type.
+enum StatisticsMacroType {
+  /// Carbs.
+  carbs,
 
+  /// Protein.
+  protein,
+
+  /// Fat.
+  fat,
+}
+
+/// Defines statistics calorie day summary.
 class StatisticsCalorieDaySummary {
+  /// The statistics calorie day summary.
   const StatisticsCalorieDaySummary({
     required this.date,
     required this.entryCount,
@@ -11,29 +23,47 @@ class StatisticsCalorieDaySummary {
     required this.goalKcal,
   });
 
+  /// The date.
   final DateTime date;
+
+  /// The entry count.
   final int entryCount;
+
+  /// The total kcal.
   final double totalKcal;
+
+  /// The goal kcal.
   final double goalKcal;
 
+  /// Whether entries.
   bool get hasEntries => entryCount > 0;
 
+  /// Whether within goal.
   bool get isWithinGoal => hasEntries && totalKcal <= goalKcal;
 }
 
+/// Defines statistics macro share.
 class StatisticsMacroShare {
+  /// The statistics macro share.
   const StatisticsMacroShare({
     required this.type,
     required this.grams,
     required this.share,
   });
 
+  /// The type.
   final StatisticsMacroType type;
+
+  /// The grams.
   final double grams;
+
+  /// The share.
   final double share;
 }
 
+/// Defines statistics calorie snapshot.
 class StatisticsCalorieSnapshot {
+  /// The statistics calorie snapshot.
   const StatisticsCalorieSnapshot({
     required this.days,
     required this.totalEntries,
@@ -44,15 +74,29 @@ class StatisticsCalorieSnapshot {
     required this.macroShares,
   });
 
+  /// The days.
   final List<StatisticsCalorieDaySummary> days;
+
+  /// The total entries.
   final int totalEntries;
+
+  /// The balance remaining kcal.
   final double balanceRemainingKcal;
+
+  /// The tracked day count.
   final int trackedDayCount;
+
+  /// The goal met day count.
   final int goalMetDayCount;
+
+  /// The average tracked kcal.
   final double averageTrackedKcal;
+
+  /// The macro shares.
   final List<StatisticsMacroShare> macroShares;
 }
 
+/// Build statistics calorie snapshot.
 StatisticsCalorieSnapshot buildStatisticsCalorieSnapshot({
   required List<CalorieEntry> entries,
   required CalorieGoalSettings settings,

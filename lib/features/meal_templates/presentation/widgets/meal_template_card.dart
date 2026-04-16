@@ -10,18 +10,27 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines prepared meal template card.
 class PreparedMealTemplateCard extends ConsumerWidget {
+  /// The prepared meal template card.
   const PreparedMealTemplateCard({
-    super.key,
     required this.template,
     required this.onOpenPressed,
     required this.onEditPressed,
     required this.onDeletePressed,
+    super.key,
   });
 
+  /// The template.
   final PreparedMeal template;
+
+  /// The on open pressed.
   final VoidCallback onOpenPressed;
+
+  /// The on edit pressed.
   final Future<bool> Function(PreparedMeal template) onEditPressed;
+
+  /// The on delete pressed.
   final Future<bool> Function(String templateId) onDeletePressed;
 
   @override

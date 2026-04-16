@@ -1,5 +1,6 @@
 const _offImageHost = 'world.openfoodfacts.org';
 
+/// Normalizes product image URLs into absolute HTTPS URLs.
 String? normalizeProductImageUrl(String? value) {
   if (value == null) {
     return null;

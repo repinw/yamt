@@ -4,6 +4,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Floating action button for shell-level home actions.
 class HomeContextFab extends StatelessWidget {
+  /// The home context fab.
   const HomeContextFab({super.key});
 
   @override

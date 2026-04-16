@@ -13,7 +13,9 @@ import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dar
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines receipt batch flow runner.
 class ReceiptBatchFlowRunner {
+  /// Creates an instance.
   ReceiptBatchFlowRunner({
     required this.context,
     required this.ref,
@@ -30,9 +32,16 @@ class ReceiptBatchFlowRunner {
          ),
        );
 
+  /// The context.
   final BuildContext context;
+
+  /// The ref.
   final WidgetRef ref;
+
+  /// The l10n.
   final AppLocalizations l10n;
+
+  /// The on items saved.
   final VoidCallback onItemsSaved;
   final ReceiptBatchFlowController _batchController;
   final NavigatorState _rootNavigator;
@@ -42,10 +51,12 @@ class ReceiptBatchFlowRunner {
   Future<void>? _progressDialog;
   bool _isDialogClosed = true;
 
+  /// Run.
   Future<void> run() async {
     await _runWith(() => _batchController.runFileBatch());
   }
 
+  /// Run selections.
   Future<void> runSelections(List<ReceiptInputSelection> selections) async {
     await _runWith(() => _batchController.runSelections(selections));
   }

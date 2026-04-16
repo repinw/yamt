@@ -1,8 +1,20 @@
 import 'package:collection/collection.dart';
 
-enum GlobalFoodNutritionQualityStatus { missing, unverified, verified }
+/// Defines global food nutrition quality status.
+enum GlobalFoodNutritionQualityStatus {
+  /// Missing.
+  missing,
 
+  /// Unverified.
+  unverified,
+
+  /// Verified.
+  verified,
+}
+
+/// Defines global food nutrition.
 class GlobalFoodNutrition {
+  /// The global food nutrition.
   const GlobalFoodNutrition({
     required this.qualityStatus,
     this.per100Kcal,
@@ -16,17 +28,37 @@ class GlobalFoodNutrition {
     this.per100Fiber,
   });
 
+  /// The quality status.
   final GlobalFoodNutritionQualityStatus qualityStatus;
+
+  /// The per100 kcal.
   final double? per100Kcal;
+
+  /// The per100 protein.
   final double? per100Protein;
+
+  /// The per100 carbs.
   final double? per100Carbs;
+
+  /// The per100 fat.
   final double? per100Fat;
+
+  /// The per100 salt.
   final double? per100Salt;
+
+  /// The per100 saturated fat.
   final double? per100SaturatedFat;
+
+  /// The per100 polyunsaturated fat.
   final double? per100PolyunsaturatedFat;
+
+  /// The per100 sugar.
   final double? per100Sugar;
+
+  /// The per100 fiber.
   final double? per100Fiber;
 
+  /// Creates a [GlobalFoodNutrition] for from json.
   factory GlobalFoodNutrition.fromJson(Map<String, dynamic> json) {
     return GlobalFoodNutrition(
       qualityStatus: _nutritionQualityFromJson(json['quality_status']),
@@ -73,6 +105,7 @@ class GlobalFoodNutrition {
     );
   }
 
+  /// To json.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'quality_status': qualityStatus.name,
@@ -88,6 +121,7 @@ class GlobalFoodNutrition {
     };
   }
 
+  /// Copy with.
   GlobalFoodNutrition copyWith({
     GlobalFoodNutritionQualityStatus? qualityStatus,
     Object? per100Kcal = _keepValue,
@@ -132,6 +166,7 @@ class GlobalFoodNutrition {
     );
   }
 
+  /// Whether any nutrition value.
   bool get hasAnyNutritionValue {
     return <double?>[
       per100Kcal,
@@ -146,6 +181,7 @@ class GlobalFoodNutrition {
     ].any((value) => value != null);
   }
 
+  /// Whether all zero.
   bool get isAllZero {
     final values = <double?>[
       per100Kcal,

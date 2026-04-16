@@ -1,15 +1,29 @@
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 
+/// Defines global food match reason.
 enum GlobalFoodMatchReason {
+  /// Documented member.
   receiptAliasExact,
+
+  /// Documented member.
   fingerprintExact,
+
+  /// Documented member.
   nameExact,
+
+  /// Documented member.
   nameBrandStrong,
+
+  /// Documented member.
   nameTokenMatch,
+
+  /// Documented member.
   externalSearch,
 }
 
+/// Defines global food match candidate.
 class GlobalFoodMatchCandidate {
+  /// The global food match candidate.
   const GlobalFoodMatchCandidate({
     required this.item,
     required this.score,
@@ -17,9 +31,16 @@ class GlobalFoodMatchCandidate {
     this.requiresPersistence = false,
   });
 
+  /// The item.
   final GlobalFoodItem item;
+
+  /// The score.
   final double score;
+
+  /// The reason.
   final GlobalFoodMatchReason reason;
+
+  /// The requires persistence.
   final bool requiresPersistence;
 
   @override

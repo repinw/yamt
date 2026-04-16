@@ -51,7 +51,9 @@ String _sanitizeDecimalInput(String rawText) {
   return buffer.toString();
 }
 
+/// Defines inventory receipt manual product preview data.
 class InventoryReceiptManualProductPreviewData {
+  /// The inventory receipt manual product preview data.
   const InventoryReceiptManualProductPreviewData({
     required this.imageUrl,
     required this.name,
@@ -59,28 +61,48 @@ class InventoryReceiptManualProductPreviewData {
     this.weight,
   });
 
+  /// The image url.
   final String? imageUrl;
+
+  /// The name.
   final String name;
+
+  /// The brand.
   final String? brand;
+
+  /// The weight.
   final String? weight;
 }
 
+/// Defines inventory receipt manual product launcher content.
 class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
+  /// The inventory receipt manual product launcher content.
   const InventoryReceiptManualProductLauncherContent({
-    super.key,
     required this.searchController,
     required this.recentItems,
     required this.onSearchTap,
     required this.onVoiceSearchTap,
     required this.onRecentItemSelected,
     required this.onScanBarcode,
+    super.key,
   });
 
+  /// The search controller.
   final TextEditingController searchController;
+
+  /// The recent items.
   final List<InventoryItem> recentItems;
+
+  /// The on search tap.
   final VoidCallback onSearchTap;
+
+  /// The on voice search tap.
   final VoidCallback onVoiceSearchTap;
+
+  /// The on recent item selected.
   final ValueChanged<InventoryItem> onRecentItemSelected;
+
+  /// The on scan barcode.
   final VoidCallback onScanBarcode;
 
   @override
@@ -144,16 +166,16 @@ class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
   }
 }
 
+/// Defines inventory receipt manual product form.
 class InventoryReceiptManualProductForm extends StatelessWidget {
+  /// The inventory receipt manual product form.
   const InventoryReceiptManualProductForm({
-    super.key,
     required this.searchController,
     required this.nameController,
     required this.brandController,
     required this.isSearching,
     required this.canSave,
     required this.isRunningNutritionOcr,
-    this.autofocusSearch = false,
     required this.showDetails,
     required this.searchResults,
     required this.recentItems,
@@ -180,17 +202,9 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.availableOptionalNutritionTypes,
     required this.preview,
     required this.errorText,
-    this.showEatImmediatelyOption = false,
-    this.eatImmediately = false,
-    this.canEatImmediately = false,
-    this.showEatNowAmountField = false,
     required this.onSearchResultSelected,
     required this.onRecentItemSelected,
     required this.onScanBarcode,
-    this.onSearchChanged,
-    this.voiceSearchService,
-    this.voiceSearchController,
-    this.startVoiceSearchOnMount = false,
     required this.onWeightUnitChanged,
     required this.onScanNutritionLabel,
     required this.onStartAddingOptionalNutrition,
@@ -198,68 +212,187 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.onOptionalNutritionTypeChanged,
     required this.onApplyOptionalNutrition,
     required this.onCancelOptionalNutrition,
-    this.onEatImmediatelyChanged,
     required this.onEatNowUnitChanged,
     required this.onCancel,
     required this.onSave,
+    super.key,
+    this.autofocusSearch = false,
+    this.showEatImmediatelyOption = false,
+    this.eatImmediately = false,
+    this.canEatImmediately = false,
+    this.showEatNowAmountField = false,
+    this.onSearchChanged,
+    this.voiceSearchService,
+    this.voiceSearchController,
+    this.startVoiceSearchOnMount = false,
+    this.onEatImmediatelyChanged,
   });
 
+  /// The search controller.
   final TextEditingController searchController;
+
+  /// The name controller.
   final TextEditingController nameController;
+
+  /// The brand controller.
   final TextEditingController brandController;
+
+  /// Whether searching.
   final bool isSearching;
+
+  /// Whether save.
   final bool canSave;
+
+  /// Whether running nutrition ocr.
   final bool isRunningNutritionOcr;
+
+  /// The autofocus search.
   final bool autofocusSearch;
+
+  /// The show details.
   final bool showDetails;
+
+  /// The search results.
   final List<OffProductSearchResult> searchResults;
+
+  /// The recent items.
   final List<InventoryItem> recentItems;
+
+  /// The weight amount controller.
   final TextEditingController weightAmountController;
+
+  /// The selected weight unit.
   final InventoryAmountUnit selectedWeightUnit;
+
+  /// The eat now amount controller.
   final TextEditingController eatNowAmountController;
+
+  /// The selected eat now unit.
   final InventoryAmountUnit selectedEatNowUnit;
+
+  /// The kcal controller.
   final TextEditingController kcalController;
+
+  /// The saturated fat controller.
   final TextEditingController saturatedFatController;
+
+  /// The polyunsaturated fat controller.
   final TextEditingController polyunsaturatedFatController;
+
+  /// The show polyunsaturated fat field.
   final bool showPolyunsaturatedFatField;
+
+  /// The fat controller.
   final TextEditingController fatController;
+
+  /// The carbs controller.
   final TextEditingController carbsController;
+
+  /// The sugar controller.
   final TextEditingController sugarController;
+
+  /// The fiber controller.
   final TextEditingController fiberController;
+
+  /// The show fiber field.
   final bool showFiberField;
+
+  /// The protein controller.
   final TextEditingController proteinController;
+
+  /// The salt controller.
   final TextEditingController saltController;
+
+  /// Whether add optional nutrition.
   final bool canAddOptionalNutrition;
+
+  /// Whether adding optional nutrition.
   final bool isAddingOptionalNutrition;
+
+  /// The optional nutrition value controller.
   final TextEditingController optionalNutritionValueController;
+
+  /// The optional nutrition unit.
   final InventoryAmountUnit optionalNutritionUnit;
+
+  /// The optional nutrition type.
   final InventoryReceiptOptionalNutritionType? optionalNutritionType;
+
+  /// Documented member.
   final List<InventoryReceiptOptionalNutritionType>
   availableOptionalNutritionTypes;
+
+  /// The preview.
   final InventoryReceiptManualProductPreviewData? preview;
+
+  /// The error text.
   final String? errorText;
+
+  /// The show eat immediately option.
   final bool showEatImmediatelyOption;
+
+  /// The eat immediately.
   final bool eatImmediately;
+
+  /// Whether eat immediately.
   final bool canEatImmediately;
+
+  /// The show eat now amount field.
   final bool showEatNowAmountField;
+
+  /// The on search result selected.
   final ValueChanged<OffProductSearchResult> onSearchResultSelected;
+
+  /// The on recent item selected.
   final ValueChanged<InventoryItem> onRecentItemSelected;
+
+  /// The on scan barcode.
   final VoidCallback onScanBarcode;
+
+  /// The on search changed.
   final ValueChanged<String>? onSearchChanged;
+
+  /// The voice search service.
   final VoiceSearchService? voiceSearchService;
+
+  /// The voice search controller.
   final TextVoiceSearchController? voiceSearchController;
+
+  /// The start voice search on mount.
   final bool startVoiceSearchOnMount;
+
+  /// The on weight unit changed.
   final ValueChanged<InventoryAmountUnit> onWeightUnitChanged;
+
+  /// The on scan nutrition label.
   final VoidCallback? onScanNutritionLabel;
+
+  /// The on start adding optional nutrition.
   final VoidCallback onStartAddingOptionalNutrition;
+
+  /// The on optional nutrition unit changed.
   final ValueChanged<InventoryAmountUnit> onOptionalNutritionUnitChanged;
+
+  /// Documented member.
   final ValueChanged<InventoryReceiptOptionalNutritionType>
   onOptionalNutritionTypeChanged;
+
+  /// The on apply optional nutrition.
   final VoidCallback onApplyOptionalNutrition;
+
+  /// The on cancel optional nutrition.
   final VoidCallback onCancelOptionalNutrition;
+
+  /// The on eat immediately changed.
   final ValueChanged<bool>? onEatImmediatelyChanged;
+
+  /// The on eat now unit changed.
   final ValueChanged<InventoryAmountUnit> onEatNowUnitChanged;
+
+  /// The on cancel.
   final VoidCallback onCancel;
+
+  /// The on save.
   final VoidCallback onSave;
 
   @override

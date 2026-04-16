@@ -10,7 +10,9 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines calories activity card.
 class CaloriesActivityCard extends ConsumerWidget {
+  /// The calories activity card.
   const CaloriesActivityCard({super.key});
 
   @override

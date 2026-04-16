@@ -3,9 +3,11 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines save calorie eating window typedef.
 typedef SaveCalorieEatingWindow =
     Future<bool> Function(int startMinuteOfDay, int endMinuteOfDay);
 
+/// Show calorie eating window dialog.
 Future<void> showCalorieEatingWindowDialog({
   required BuildContext context,
   required int initialStartMinuteOfDay,
@@ -141,6 +143,7 @@ Future<void> showCalorieEatingWindowDialog({
   );
 }
 
+/// Format eating window label.
 String formatEatingWindowLabel(
   BuildContext context, {
   required int startMinuteOfDay,
@@ -151,6 +154,7 @@ String formatEatingWindowLabel(
   return '$start - $end';
 }
 
+/// Format minute of day.
 String formatMinuteOfDay(BuildContext context, {required int minuteOfDay}) {
   final time = timeOfDayFromMinuteOfDay(minuteOfDay);
   return MaterialLocalizations.of(context).formatTimeOfDay(
@@ -159,11 +163,13 @@ String formatMinuteOfDay(BuildContext context, {required int minuteOfDay}) {
   );
 }
 
+/// Time of day from minute of day.
 TimeOfDay timeOfDayFromMinuteOfDay(int minuteOfDay) {
   final normalizedMinute = minuteOfDay.clamp(0, (24 * 60) - 1).toInt();
   return TimeOfDay(hour: normalizedMinute ~/ 60, minute: normalizedMinute % 60);
 }
 
+/// Minute of day from time of day.
 int minuteOfDayFromTimeOfDay(TimeOfDay time) {
   return (time.hour * 60) + time.minute;
 }

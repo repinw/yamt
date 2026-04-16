@@ -11,9 +11,9 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_entry_post_persist_hook.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/provider/'
@@ -23,7 +23,9 @@ part 'calorie_entries_controller.g.dart';
 
 const _entriesControllerLogName = 'CalorieEntriesController';
 
+/// Defines calorie day summary.
 class CalorieDaySummary {
+  /// The calorie day summary.
   const CalorieDaySummary({
     required this.entryCount,
     required this.totalKcal,
@@ -32,26 +34,44 @@ class CalorieDaySummary {
     required this.totalFat,
   });
 
+  /// The entry count.
   final int entryCount;
+
+  /// The total kcal.
   final double totalKcal;
+
+  /// The total protein.
   final double totalProtein;
+
+  /// The total carbs.
   final double totalCarbs;
+
+  /// The total fat.
   final double totalFat;
 }
 
+/// Defines calorie meal section.
 class CalorieMealSection {
+  /// The calorie meal section.
   const CalorieMealSection({
     required this.mealType,
     required this.entries,
     required this.totalKcal,
   });
 
+  /// The meal type.
   final MealType mealType;
+
+  /// The entries.
   final List<CalorieEntry> entries;
+
+  /// The total kcal.
   final double totalKcal;
 }
 
+/// Defines calorie day view data.
 class CalorieDayViewData {
+  /// The calorie day view data.
   const CalorieDayViewData({
     required this.selectedDay,
     required this.summary,
@@ -61,14 +81,26 @@ class CalorieDayViewData {
     required this.progress,
   });
 
+  /// The selected day.
   final DateTime selectedDay;
+
+  /// The summary.
   final CalorieDaySummary summary;
+
+  /// The sections.
   final List<CalorieMealSection> sections;
+
+  /// The goal kcal.
   final double goalKcal;
+
+  /// The remaining kcal.
   final double remainingKcal;
+
+  /// The progress.
   final double progress;
 }
 
+/// Defines calorie entries controller.
 @riverpod
 class CalorieEntriesController extends _$CalorieEntriesController {
   StreamSubscription<List<CalorieEntry>>? _entriesSubscription;
@@ -82,6 +114,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     return _restartSubscription();
   }
 
+  /// Refresh.
   Future<void> refresh() async {
     state = const AsyncLoading();
     final next = await AsyncValue.guard(_restartSubscription);
@@ -91,6 +124,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     state = next;
   }
 
+  /// Save entry.
   Future<bool> saveEntry(
     CalorieEntry entry, {
     CalorieInventoryCreateContext? inventoryContext,
@@ -163,6 +197,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     ).whenComplete(keepAliveLink.close);
   }
 
+  /// Delete entry.
   Future<bool> deleteEntry(String entryId) {
     final keepAliveLink = ref.keepAlive();
     return _runOptimisticMutation(
@@ -435,11 +470,13 @@ class CalorieEntriesController extends _$CalorieEntriesController {
   }
 }
 
+/// Calorie entry by id.
 @riverpod
 Future<CalorieEntry?> calorieEntryById(Ref ref, String entryId) async {
   return ref.read(calorieLogRepositoryProvider).getById(entryId);
 }
 
+/// Calorie day view data.
 @riverpod
 AsyncValue<CalorieDayViewData> calorieDayViewData(Ref ref) {
   final selectedDay = ref.watch(calorieDayControllerProvider);

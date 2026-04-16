@@ -18,6 +18,7 @@ export 'inventory_user_session.dart';
 
 part 'inventory_item_repository.g.dart';
 
+/// Inventory item repository.
 @riverpod
 InventoryItemRepository inventoryItemRepository(Ref ref) {
   ref.watch(authStateChangesProvider);

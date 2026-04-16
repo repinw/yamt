@@ -7,14 +7,21 @@ const String _globalFoodReceiptAliasesCollection =
     'global_food_item_receipt_aliases';
 const int _maxAliasDocumentsPerTransaction = 200;
 
+/// Defines global food receipt alias document.
 class GlobalFoodReceiptAliasDocument {
+  /// The global food receipt alias document.
   const GlobalFoodReceiptAliasDocument({required this.id, required this.data});
 
+  /// The id.
   final String id;
+
+  /// The data.
   final Map<String, dynamic> data;
 }
 
+/// Defines global food receipt alias store.
 abstract interface class GlobalFoodReceiptAliasStore {
+  /// Search candidates.
   Future<List<GlobalFoodReceiptAliasDocument>> searchCandidates({
     required String normalizedStoreName,
     required String lookupKey,
@@ -23,13 +30,16 @@ abstract interface class GlobalFoodReceiptAliasStore {
     int limit = 5,
   });
 
+  /// Upsert all.
   Future<bool> upsertAll({
     required Map<String, Map<String, dynamic>> documentsById,
   });
 }
 
+/// Defines firestore global food receipt alias store.
 class FirestoreGlobalFoodReceiptAliasStore
     implements GlobalFoodReceiptAliasStore {
+  /// The firestore global food receipt alias store.
   const FirestoreGlobalFoodReceiptAliasStore({
     required FirebaseFirestore firestore,
   }) : _firestore = firestore;

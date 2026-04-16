@@ -8,6 +8,7 @@ import 'package:yamt/features/inventory/provider/inventory_items_controller.dart
 
 const _flowLogName = 'InventoryBackedCalorieEntrySaveFlow';
 
+/// The inventory backed calorie entry save flow provider.
 final inventoryBackedCalorieEntrySaveFlowProvider =
     Provider<InventoryBackedCalorieEntrySaveFlow>((ref) {
       return InventoryBackedCalorieEntrySaveFlow(
@@ -18,7 +19,9 @@ final inventoryBackedCalorieEntrySaveFlowProvider =
       );
     });
 
+/// Defines inventory backed calorie entry save flow.
 class InventoryBackedCalorieEntrySaveFlow {
+  /// The inventory backed calorie entry save flow.
   const InventoryBackedCalorieEntrySaveFlow({
     required InventoryItemsController inventoryController,
     required InventoryCalorieEntryCommitStore commitStore,
@@ -28,6 +31,7 @@ class InventoryBackedCalorieEntrySaveFlow {
   final InventoryItemsController _inventoryController;
   final InventoryCalorieEntryCommitStore _commitStore;
 
+  /// Save entry.
   Future<bool> saveEntry({
     required CalorieEntry entry,
     required String pendingConsumptionId,

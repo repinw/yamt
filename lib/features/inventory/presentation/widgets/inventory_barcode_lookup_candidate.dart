@@ -8,8 +8,16 @@ import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 const _barcodeAmountParser = InventoryAmountParser();
 const _defaultInventoryBarcodeCandidateLimit = 5;
 
-enum InventoryBarcodeLookupCandidateSource { learned, off }
+/// Defines inventory barcode lookup candidate source.
+enum InventoryBarcodeLookupCandidateSource {
+  /// Learned.
+  learned,
 
+  /// Off.
+  off,
+}
+
+/// Defines inventory barcode lookup candidate.
 class InventoryBarcodeLookupCandidate {
   const InventoryBarcodeLookupCandidate._({
     required this.source,
@@ -29,6 +37,7 @@ class InventoryBarcodeLookupCandidate {
     this.uniqueUserCount = 0,
   });
 
+  /// Creates a [InventoryBarcodeLookupCandidate] for from learned.
   factory InventoryBarcodeLookupCandidate.fromLearned(
     GlobalBarcodeCandidate candidate,
   ) {
@@ -51,6 +60,7 @@ class InventoryBarcodeLookupCandidate {
     );
   }
 
+  /// Creates a [InventoryBarcodeLookupCandidate] for from off product.
   factory InventoryBarcodeLookupCandidate.fromOffProduct(
     OffProductSearchResult product,
   ) {
@@ -69,32 +79,64 @@ class InventoryBarcodeLookupCandidate {
     );
   }
 
+  /// The source.
   final InventoryBarcodeLookupCandidateSource source;
+
+  /// The barcode.
   final String barcode;
+
+  /// The name.
   final String name;
+
+  /// The brand.
   final String? brand;
+
+  /// The image url.
   final String? imageUrl;
+
+  /// The package weight.
   final String? packageWeight;
+
+  /// The serving size.
   final String? servingSize;
+
+  /// The serving quantity.
   final double? servingQuantity;
+
+  /// The serving quantity unit.
   final String? servingQuantityUnit;
+
+  /// The nutrition.
   final GlobalFoodNutrition? nutrition;
+
+  /// The global food item id.
   final String? globalFoodItemId;
+
+  /// The global food item.
   final GlobalFoodItem? globalFoodItem;
+
+  /// The external product.
   final OffProductSearchResult? externalProduct;
+
+  /// The selection count.
   final int selectionCount;
+
+  /// The unique user count.
   final int uniqueUserCount;
 }
 
+/// Defines inventory barcode product selection callback typedef.
 typedef InventoryBarcodeProductSelectionCallback =
     Future<bool> Function(
       InventoryBarcodeLookupCandidate candidate,
       String scannedBarcode,
     );
 
+/// Defines inventory barcode not found callback typedef.
 typedef InventoryBarcodeNotFoundCallback =
     Future<bool> Function(String scannedBarcode);
 
+/// Merge inventory barcode candidates.
 List<InventoryBarcodeLookupCandidate> mergeInventoryBarcodeCandidates({
   required List<GlobalBarcodeCandidate> learnedCandidates,
   required List<OffProductSearchResult> offCandidates,
@@ -124,6 +166,7 @@ List<InventoryBarcodeLookupCandidate> mergeInventoryBarcodeCandidates({
   return merged;
 }
 
+/// Inventory barcode candidate dedupe key.
 String inventoryBarcodeCandidateDedupeKey(
   InventoryBarcodeLookupCandidate candidate,
 ) {

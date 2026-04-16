@@ -9,6 +9,7 @@ part 'health_connection_controller.g.dart';
 
 const _logName = 'HealthConnectionController';
 
+/// Defines health connection controller.
 @riverpod
 class HealthConnectionController extends _$HealthConnectionController {
   @override
@@ -16,12 +17,14 @@ class HealthConnectionController extends _$HealthConnectionController {
     return _loadStatusFallback(previousStatus: null);
   }
 
+  /// Refresh.
   Future<HealthConnectionStatus> refresh() async {
     return _runStatusAction(
       () => ref.read(healthConnectionServiceProvider).loadStatus(),
     );
   }
 
+  /// Connect.
   Future<HealthConnectionStatus> connect() async {
     final currentStatus = state.asData?.value;
     if (currentStatus?.needsHistoryOnly ?? false) {
@@ -30,12 +33,14 @@ class HealthConnectionController extends _$HealthConnectionController {
     return requestAuthorization();
   }
 
+  /// Request authorization.
   Future<HealthConnectionStatus> requestAuthorization() async {
     return _runStatusAction(
       () => ref.read(healthConnectionServiceProvider).requestAuthorization(),
     );
   }
 
+  /// Request history authorization.
   Future<HealthConnectionStatus> requestHistoryAuthorization() async {
     return _runStatusAction(
       () => ref
@@ -44,6 +49,7 @@ class HealthConnectionController extends _$HealthConnectionController {
     );
   }
 
+  /// Install health connect.
   Future<HealthConnectionStatus> installHealthConnect() async {
     return _runStatusAction(() async {
       final service = ref.read(healthConnectionServiceProvider);
@@ -52,6 +58,7 @@ class HealthConnectionController extends _$HealthConnectionController {
     });
   }
 
+  /// Disconnect.
   Future<HealthDisconnectResult> disconnect() async {
     final previousStatus = state.asData?.value;
     state = const AsyncLoading<HealthConnectionStatus>();

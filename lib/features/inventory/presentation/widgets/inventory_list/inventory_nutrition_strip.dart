@@ -5,14 +5,19 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
 
+/// Defines inventory nutrition strip.
 class InventoryNutritionStrip extends StatelessWidget {
+  /// The inventory nutrition strip.
   const InventoryNutritionStrip({
     super.key,
     required this.metrics,
     required this.colorScheme,
   });
 
+  /// The metrics.
   final List<InventoryNutritionMetric> metrics;
+
+  /// The color scheme.
   final ColorScheme colorScheme;
 
   @override
@@ -108,6 +113,7 @@ class _InventoryNutritionMetricCell extends StatelessWidget {
   }
 }
 
+/// Format inventory nutrition value.
 String formatInventoryNutritionValue(double value) {
   final hasFraction = value % 1 != 0;
   return hasFraction ? value.toStringAsFixed(1) : value.toStringAsFixed(0);

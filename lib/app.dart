@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
@@ -8,9 +9,10 @@ import 'package:yamt/core/widgets/app_background.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'shared_receipt_listener.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-import 'package:yamt/core/router/app_router.dart';
 
+/// Root application widget.
 class YAMT extends ConsumerWidget {
+  /// Creates app root.
   const YAMT({super.key}); // coverage:ignore-line
 
   @override

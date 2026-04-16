@@ -11,6 +11,7 @@ part 'guest_auth_controller.g.dart';
 
 const _guestAuthLogName = 'GuestAuthController';
 
+/// Defines guest auth controller.
 @riverpod
 class GuestAuthController extends _$GuestAuthController {
   int _operationId = 0;
@@ -21,6 +22,7 @@ class GuestAuthController extends _$GuestAuthController {
     ref.onDispose(_cancelLoadingTimeout);
   }
 
+  /// Sign in anonymously.
   Future<void> signInAnonymously() async {
     final operationId = ++_operationId;
     final repository = ref.read(authRepositoryProvider);

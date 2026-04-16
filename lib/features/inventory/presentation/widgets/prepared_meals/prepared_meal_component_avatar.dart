@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 
+/// Defines prepared meal component avatar.
 class PreparedMealComponentAvatar extends StatelessWidget {
+  /// The prepared meal component avatar.
   const PreparedMealComponentAvatar({
     super.key,
     required this.label,
@@ -10,8 +12,13 @@ class PreparedMealComponentAvatar extends StatelessWidget {
     this.size = 24,
   });
 
+  /// The label.
   final String label;
+
+  /// The image url.
   final String? imageUrl;
+
+  /// The size.
   final double size;
 
   @override

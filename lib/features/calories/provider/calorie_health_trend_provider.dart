@@ -7,8 +7,8 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/calories/provider/'
     'calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
+import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
@@ -18,6 +18,7 @@ import 'package:yamt/features/health/provider/'
 
 part 'calorie_health_trend_provider.g.dart';
 
+/// Calorie health trend snapshot.
 @riverpod
 Future<CalorieHealthTrendSnapshot> calorieHealthTrendSnapshot(Ref ref) async {
   final trendsWindowEnd = ref.watch(

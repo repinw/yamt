@@ -2,7 +2,9 @@ import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/utils/json_parsing_utils.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 
+/// Defines global barcode candidate.
 class GlobalBarcodeCandidate {
+  /// The global barcode candidate.
   const GlobalBarcodeCandidate({
     required this.id,
     required this.barcode,
@@ -15,6 +17,7 @@ class GlobalBarcodeCandidate {
     required this.updatedAt,
   });
 
+  /// Creates a [GlobalBarcodeCandidate] for from json.
   factory GlobalBarcodeCandidate.fromJson(Map<String, dynamic> json) {
     final globalFoodItemId =
         _readOptionalString(json['global_food_item_id']) ??
@@ -52,16 +55,34 @@ class GlobalBarcodeCandidate {
     );
   }
 
+  /// The id.
   final String id;
+
+  /// The barcode.
   final String barcode;
+
+  /// The global food item id.
   final String globalFoodItemId;
+
+  /// The selection count.
   final int selectionCount;
+
+  /// The unique user count.
   final int uniqueUserCount;
+
+  /// The completeness score.
   final int completenessScore;
+
+  /// The global food item.
   final GlobalFoodItem globalFoodItem;
+
+  /// The created at.
   final DateTime createdAt;
+
+  /// The updated at.
   final DateTime updatedAt;
 
+  /// To json.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
@@ -76,6 +97,7 @@ class GlobalBarcodeCandidate {
     };
   }
 
+  /// Copy with.
   GlobalBarcodeCandidate copyWith({
     String? id,
     String? barcode,
@@ -131,6 +153,7 @@ class GlobalBarcodeCandidate {
   }
 }
 
+/// Build global barcode candidate id.
 String buildGlobalBarcodeCandidateId({
   required String barcode,
   required String globalFoodItemId,
@@ -140,6 +163,7 @@ String buildGlobalBarcodeCandidateId({
   return 'barcode-$normalizedBarcode-$normalizedId';
 }
 
+/// Compare global barcode candidates.
 int compareGlobalBarcodeCandidates(
   GlobalBarcodeCandidate left,
   GlobalBarcodeCandidate right,
@@ -161,6 +185,7 @@ int compareGlobalBarcodeCandidates(
   return right.updatedAt.compareTo(left.updatedAt);
 }
 
+/// Compute global barcode candidate completeness score.
 int computeGlobalBarcodeCandidateCompletenessScore(GlobalFoodItem item) {
   var score = 0;
   if (item.name.trim().isNotEmpty) {

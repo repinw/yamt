@@ -15,9 +15,11 @@ import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines inventory item eat flow.
 class InventoryItemEatFlow {
   const InventoryItemEatFlow._();
 
+  /// Should await completion.
   static bool shouldAwaitCompletion(
     InventoryItem item,
     InventoryItemEatRequest request,
@@ -25,6 +27,7 @@ class InventoryItemEatFlow {
     return canDirectlySaveInventoryItemEatRequest(item, request);
   }
 
+  /// Complete.
   static Future<void> complete({
     required BuildContext context,
     required WidgetRef ref,

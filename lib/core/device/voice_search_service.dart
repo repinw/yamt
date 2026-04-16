@@ -8,37 +8,60 @@ import 'package:speech_to_text/speech_to_text.dart';
 
 const _voiceSearchServiceLogName = 'VoiceSearchService';
 
-enum VoiceSearchFailure { unavailable, permissionDenied, error }
+/// Failures that can happen while starting or using voice search.
+enum VoiceSearchFailure {
+  /// Voice recognition is unavailable on this device or platform.
+  unavailable,
 
+  /// Microphone or speech permission was denied.
+  permissionDenied,
+
+  /// Unknown voice recognition failure.
+  error,
+}
+
+/// One speech recognition update emitted to listeners.
 class VoiceSearchRecognition {
+  /// Creates voice recognition update.
   const VoiceSearchRecognition({
     required this.transcript,
     required this.isFinal,
   });
 
+  /// Recognized speech transcript.
   final String transcript;
+
+  /// Whether the recognition result is final.
   final bool isFinal;
 }
 
+/// Service contract for microphone-based voice search.
 abstract class VoiceSearchService {
+  /// Whether the service is currently listening.
   bool get isListening;
 
+  /// Starts listening and streams recognition updates through callbacks.
   Future<VoiceSearchFailure?> startListening({
     required ValueChanged<VoiceSearchRecognition> onResult,
     required ValueChanged<bool> onListeningStateChanged,
     required ValueChanged<VoiceSearchFailure> onError,
   });
 
+  /// Stops active listening session.
   Future<void> stopListening();
 
+  /// Cancels active listening session.
   Future<void> cancelListening();
 }
 
+/// Provides app voice search service implementation.
 final voiceSearchServiceProvider = Provider<VoiceSearchService>(
   (ref) => SpeechToTextVoiceSearchService(),
 );
 
+/// `speech_to_text`-backed voice search service.
 class SpeechToTextVoiceSearchService implements VoiceSearchService {
+  /// Creates speech-to-text voice search service.
   SpeechToTextVoiceSearchService({SpeechToText? speechToText})
     : _speechToText = speechToText ?? SpeechToText();
 
@@ -73,7 +96,6 @@ class SpeechToTextVoiceSearchService implements VoiceSearchService {
         pauseFor: const Duration(seconds: 4),
         listenOptions: SpeechListenOptions(
           cancelOnError: true,
-          partialResults: true,
           listenMode: ListenMode.search,
         ),
       );
@@ -85,7 +107,7 @@ class SpeechToTextVoiceSearchService implements VoiceSearchService {
         stackTrace: stackTrace,
       );
       return VoiceSearchFailure.error;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Unexpected speech recognition startup failure.',
         name: _voiceSearchServiceLogName,
@@ -120,7 +142,6 @@ class SpeechToTextVoiceSearchService implements VoiceSearchService {
       final initialized = await _speechToText.initialize(
         onError: _handleError,
         onStatus: _handleStatus,
-        debugLogging: false,
       );
       _isInitialized = initialized;
       if (initialized) {
@@ -144,7 +165,7 @@ class SpeechToTextVoiceSearchService implements VoiceSearchService {
         stackTrace: stackTrace,
       );
       return _mapPlatformFailure(error);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Unexpected speech recognition initialization failure.',
         name: _voiceSearchServiceLogName,
@@ -161,7 +182,7 @@ class SpeechToTextVoiceSearchService implements VoiceSearchService {
       return hasPermission
           ? VoiceSearchFailure.unavailable
           : VoiceSearchFailure.permissionDenied;
-    } catch (_) {
+    } on Object {
       return VoiceSearchFailure.unavailable;
     }
   }

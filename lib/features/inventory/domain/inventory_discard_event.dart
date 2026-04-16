@@ -2,12 +2,22 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines inventory discard reason.
 enum InventoryDiscardReason {
+  /// Documented member.
   expired,
-  spoiled,
-  cookedTooMuch,
-  other;
 
+  /// Documented member.
+  spoiled,
+
+  /// Documented member.
+  cookedTooMuch,
+
+  /// Documented member.
+  other
+  ;
+
+  /// Localized label.
   String localizedLabel(AppLocalizations l10n) {
     return switch (this) {
       InventoryDiscardReason.expired => l10n.inventoryDiscardReasonExpired,
@@ -19,9 +29,18 @@ enum InventoryDiscardReason {
   }
 }
 
-enum InventoryDiscardSourceType { inventoryItem, preparedMeal }
+/// Defines inventory discard source type.
+enum InventoryDiscardSourceType {
+  /// Inventory item.
+  inventoryItem,
 
+  /// Prepared meal.
+  preparedMeal,
+}
+
+/// Defines inventory discard event.
 class InventoryDiscardEvent {
+  /// The inventory discard event.
   const InventoryDiscardEvent({
     required this.id,
     required this.sourceType,
@@ -34,6 +53,7 @@ class InventoryDiscardEvent {
     this.currencyCode,
   });
 
+  /// Creates a [InventoryDiscardEvent] for from json.
   factory InventoryDiscardEvent.fromJson(Map<String, dynamic> json) {
     return InventoryDiscardEvent(
       id: _readString(json['id']),
@@ -48,6 +68,7 @@ class InventoryDiscardEvent {
     );
   }
 
+  /// Creates a [InventoryDiscardEvent] for from inventory item.
   factory InventoryDiscardEvent.fromInventoryItem({
     required String id,
     required InventoryItem item,
@@ -68,6 +89,7 @@ class InventoryDiscardEvent {
     );
   }
 
+  /// Creates a [InventoryDiscardEvent] for from prepared meal.
   factory InventoryDiscardEvent.fromPreparedMeal({
     required String id,
     required PreparedMeal meal,
@@ -90,16 +112,34 @@ class InventoryDiscardEvent {
     );
   }
 
+  /// The id.
   final String id;
+
+  /// The source type.
   final InventoryDiscardSourceType sourceType;
+
+  /// The source id.
   final String sourceId;
+
+  /// The name.
   final String name;
+
+  /// The reason.
   final InventoryDiscardReason reason;
+
+  /// The discarded at.
   final DateTime discardedAt;
+
+  /// The discarded amount.
   final int discardedAmount;
+
+  /// The discarded value.
   final double discardedValue;
+
+  /// The currency code.
   final String? currencyCode;
 
+  /// To json.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,

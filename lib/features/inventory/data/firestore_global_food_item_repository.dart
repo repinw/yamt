@@ -8,7 +8,9 @@ import 'global_food_item_store.dart';
 
 const String _repositoryLogName = 'FirestoreGlobalFoodItemRepository';
 
+/// Defines firestore global food item repository.
 class FirestoreGlobalFoodItemRepository implements GlobalFoodItemRepository {
+  /// Creates an instance.
   FirestoreGlobalFoodItemRepository({required GlobalFoodItemStore store})
     : _store = store;
 

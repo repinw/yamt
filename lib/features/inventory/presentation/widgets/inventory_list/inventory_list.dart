@@ -20,11 +20,11 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_consumption_filter.dart';
 import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_view_preferences.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'prepared_meal_sorter.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -34,29 +34,29 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_mode_toggle.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_list_sections.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_top_controls_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_prepared_meals_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'prepared_meal_filter_sheet.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_list_sections.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_groups_sliver.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'prepared_meal_filter_sheet.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 enum _InventoryItemSortCriterion { added, eaten, alphabetical, quantity }
 
+/// Defines inventory list.
 class InventoryList extends ConsumerStatefulWidget {
+  /// The inventory list.
   const InventoryList({
-    super.key,
     required this.items,
     required this.preparedMeals,
-    this.expandedPreparedMealId,
     required this.emptyStateActionButton,
     required this.onDeleteItem,
     required this.onEatItem,
@@ -72,21 +72,38 @@ class InventoryList extends ConsumerStatefulWidget {
     required this.selectedItemIds,
     required this.onItemLongPress,
     required this.onSelectionToggle,
+    super.key,
+    this.expandedPreparedMealId,
   });
 
+  /// The items.
   final List<InventoryItem> items;
+
+  /// The prepared meals.
   final List<PreparedMeal> preparedMeals;
+
+  /// The expanded prepared meal id.
   final String? expandedPreparedMealId;
+
+  /// The empty state action button.
   final Widget emptyStateActionButton;
+
+  /// The on delete item.
   final Future<bool> Function(String itemId) onDeleteItem;
+
+  /// The on eat item.
   final Future<bool> Function(String itemId, InventoryItemEatRequest request)
   onEatItem;
+
+  /// The on throw away item.
   final Future<bool> Function(
     String itemId,
     int amount,
     InventoryDiscardReason reason,
   )
   onThrowAwayItem;
+
+  /// The on eat prepared meal.
   final Future<bool> Function({
     required String mealId,
     required int portions,
@@ -94,32 +111,54 @@ class InventoryList extends ConsumerStatefulWidget {
     required DateTime loggedDay,
   })
   onEatPreparedMeal;
+
+  /// The on throw away prepared meal.
   final Future<bool> Function(
     String mealId,
     int portions,
     InventoryDiscardReason reason,
   )
   onThrowAwayPreparedMeal;
+
+  /// The on fill pending prepared meal ingredient.
   final Future<bool> Function(
     String mealId,
     String ingredient,
     List<String> inventoryItemIds,
   )
   onFillPendingPreparedMealIngredient;
+
+  /// The on ignore pending prepared meal ingredient.
   final Future<bool> Function(String mealId, String ingredient)
   onIgnorePendingPreparedMealIngredient;
+
+  /// The on unbundle prepared meal.
   final Future<bool> Function(String mealId) onUnbundlePreparedMeal;
+
+  /// The function.
   final Future<bool> Function(
     String mealId,
     String name,
     bool imageChanged,
     Uint8List? imageBytes,
+
+    /// Documented member.
   )
   onEditPreparedMeal;
+
+  /// The on save prepared meal template.
   final Future<bool> Function(PreparedMeal meal) onSavePreparedMealTemplate;
+
+  /// Whether selection mode.
   final bool isSelectionMode;
+
+  /// The selected item ids.
   final Set<String> selectedItemIds;
+
+  /// The on item long press.
   final ValueChanged<String> onItemLongPress;
+
+  /// The on selection toggle.
   final ValueChanged<String> onSelectionToggle;
 
   @override

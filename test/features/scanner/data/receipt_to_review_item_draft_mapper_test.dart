@@ -9,14 +9,14 @@ void main() {
   final mapper = DefaultReceiptToReviewItemDraftMapper(now: () => fixedNow);
 
   test('maps minified receipt payload with root fallbacks', () {
-    final extraction = ReceiptAnalysisExtraction(
+    const extraction = ReceiptAnalysisExtraction(
       root: <String, dynamic>{
         's': 'Lidl',
         'rd': '2026-02-18T12:00:00.000Z',
         'l': 'de_DE',
         'currency': 'EUR',
       },
-      items: const <ReceiptAnalysisItem>[
+      items: <ReceiptAnalysisItem>[
         ReceiptAnalysisItem(
           name: 'Milk',
           rawPayload: <String, dynamic>{
@@ -64,9 +64,9 @@ void main() {
   });
 
   test('normalizes Aldi store variants during mapping', () {
-    final extraction = ReceiptAnalysisExtraction(
+    const extraction = ReceiptAnalysisExtraction(
       root: <String, dynamic>{'s': 'Aldi Süd'},
-      items: const <ReceiptAnalysisItem>[
+      items: <ReceiptAnalysisItem>[
         ReceiptAnalysisItem(
           name: 'Lasagne',
           rawPayload: <String, dynamic>{
@@ -84,9 +84,9 @@ void main() {
   });
 
   test('keeps non-food discount lines as review-only drafts', () {
-    final extraction = ReceiptAnalysisExtraction(
-      root: const <String, dynamic>{},
-      items: const <ReceiptAnalysisItem>[
+    const extraction = ReceiptAnalysisExtraction(
+      root: <String, dynamic>{},
+      items: <ReceiptAnalysisItem>[
         ReceiptAnalysisItem(
           name: 'Ignored fallback',
           rawPayload: <String, dynamic>{
@@ -121,9 +121,9 @@ void main() {
   });
 
   test('normalizes savable zero quantity to one', () {
-    final extraction = ReceiptAnalysisExtraction(
-      root: const <String, dynamic>{},
-      items: const <ReceiptAnalysisItem>[
+    const extraction = ReceiptAnalysisExtraction(
+      root: <String, dynamic>{},
+      items: <ReceiptAnalysisItem>[
         ReceiptAnalysisItem(
           name: 'Milk',
           rawPayload: <String, dynamic>{
@@ -145,9 +145,9 @@ void main() {
   });
 
   test('reparses piece amount from name when weight is missing', () {
-    final extraction = ReceiptAnalysisExtraction(
-      root: const <String, dynamic>{},
-      items: const <ReceiptAnalysisItem>[
+    const extraction = ReceiptAnalysisExtraction(
+      root: <String, dynamic>{},
+      items: <ReceiptAnalysisItem>[
         ReceiptAnalysisItem(
           name: 'bunte eier bh 10st',
           rawPayload: <String, dynamic>{'n': 'bunte eier bh 10st', 'p': '2,49'},
@@ -166,9 +166,9 @@ void main() {
   });
 
   test('reparses multipack volume from name', () {
-    final extraction = ReceiptAnalysisExtraction(
-      root: const <String, dynamic>{},
-      items: const <ReceiptAnalysisItem>[
+    const extraction = ReceiptAnalysisExtraction(
+      root: <String, dynamic>{},
+      items: <ReceiptAnalysisItem>[
         ReceiptAnalysisItem(
           name: 'Wasser 6x 1.5l',
           rawPayload: <String, dynamic>{'n': 'Wasser 6x 1.5l', 'p': '5,99'},
@@ -187,9 +187,9 @@ void main() {
   });
 
   test('item currency overrides root currency during mapping', () {
-    final extraction = ReceiptAnalysisExtraction(
-      root: const <String, dynamic>{'currency': 'EUR'},
-      items: const <ReceiptAnalysisItem>[
+    const extraction = ReceiptAnalysisExtraction(
+      root: <String, dynamic>{'currency': 'EUR'},
+      items: <ReceiptAnalysisItem>[
         ReceiptAnalysisItem(
           name: 'Imported snack',
           rawPayload: <String, dynamic>{

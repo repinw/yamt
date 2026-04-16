@@ -5,11 +5,14 @@ import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
 
+/// Defines inventory item image tile.
 class InventoryItemImageTile extends StatelessWidget {
+  /// The inventory item image tile.
   const InventoryItemImageTile({super.key, this.imageUrl});
 
   static const _size = AppInventoryEditorial.imageTileSize;
 
+  /// The image url.
   final String? imageUrl;
 
   int _resolveImageCacheDimension(BuildContext context) {

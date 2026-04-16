@@ -90,10 +90,10 @@ Widget _wrap({
       authStateChangesProvider.overrideWith((ref) => authStream),
       accountControllerProvider.overrideWith(() => controller),
     ],
-    child: MaterialApp(
+    child: const MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const AccountPage(),
+      home: AccountPage(),
     ),
   );
 }
@@ -206,7 +206,7 @@ void main() {
         authStream: Stream<User?>.value(user),
         controller: _FakeAccountController(
           onLinkGuestWithEmailPassword:
-              ({required String email, required String password}) async {
+              ({required email, required password}) async {
                 capturedEmail = email;
                 capturedPassword = password;
                 return true;
@@ -256,7 +256,7 @@ void main() {
         authStream: Stream<User?>.value(user),
         controller: _FakeAccountController(
           onLinkGuestWithEmailPassword:
-              ({required String email, required String password}) async {
+              ({required email, required password}) async {
                 called = true;
                 return true;
               },
@@ -310,7 +310,7 @@ void main() {
           authStream: Stream<User?>.value(user),
           controller: _FakeAccountController(
             onLinkGuestWithEmailPassword:
-                ({required String email, required String password}) async {
+                ({required email, required password}) async {
                   throw FirebaseAuthException(code: 'weak-password');
                 },
           ),
@@ -358,7 +358,7 @@ void main() {
         authStream: Stream<User?>.value(user),
         controller: _FakeAccountController(
           onLinkGuestWithEmailPassword:
-              ({required String email, required String password}) async {
+              ({required email, required password}) async {
                 throw FirebaseAuthException(
                   code: 'email-already-in-use',
                   credential: credential,

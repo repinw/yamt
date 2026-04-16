@@ -12,7 +12,9 @@ import 'package:yamt/features/scanner/presentation/'
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines receipt review flow runner.
 class ReceiptReviewFlowRunner {
+  /// Creates an instance.
   ReceiptReviewFlowRunner({
     required this.context,
     required this.ref,
@@ -27,18 +29,25 @@ class ReceiptReviewFlowRunner {
        ),
        _rootNavigator = Navigator.of(context, rootNavigator: true);
 
+  /// The context.
   final BuildContext context;
+
+  /// The ref.
   final WidgetRef ref;
+
+  /// The l10n.
   final AppLocalizations l10n;
   final ReceiptCaptureFlowController _captureController;
   final ProviderSubscription<AsyncValue<ReceiptCaptureFlowResult?>>
   _captureFlowSubscription;
   final NavigatorState _rootNavigator;
 
+  /// Dispose.
   void dispose() {
     _captureFlowSubscription.close();
   }
 
+  /// Handle capture result.
   Future<void> handleCaptureResult({
     required ReceiptCaptureFlowResult result,
     required VoidCallback onItemsSaved,
@@ -58,6 +67,7 @@ class ReceiptReviewFlowRunner {
     }
   }
 
+  /// Run selection.
   Future<void> runSelection({
     required ReceiptInputSelection selection,
     required VoidCallback onItemsSaved,
@@ -96,6 +106,7 @@ class ReceiptReviewFlowRunner {
     await handleCaptureResult(result: result, onItemsSaved: onItemsSaved);
   }
 
+  /// Open review page.
   Future<bool> openReviewPage({
     required List<ReceiptReviewItemDraft> reviewDrafts,
     required Uint8List? receiptPreviewBytes,
@@ -133,6 +144,7 @@ class ReceiptReviewFlowRunner {
     return saved ?? false;
   }
 
+  /// Feedback message for.
   String? feedbackMessageFor(ReceiptCaptureFlowResult result) {
     return switch (result.status) {
       ReceiptCaptureFlowStatus.completed => null,
@@ -146,6 +158,7 @@ class ReceiptReviewFlowRunner {
     };
   }
 
+  /// Show snack bar.
   void showSnackBar(String message) {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();

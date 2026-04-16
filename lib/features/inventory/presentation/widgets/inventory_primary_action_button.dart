@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 
+/// Defines inventory primary action button.
 class InventoryPrimaryActionButton extends StatelessWidget {
+  /// The inventory primary action button.
   const InventoryPrimaryActionButton({
-    super.key,
     required this.tooltip,
     required this.onPressed,
     required this.showText,
@@ -16,25 +17,55 @@ class InventoryPrimaryActionButton extends StatelessWidget {
     required this.disabledBorderColor,
     required this.enabledForegroundColor,
     required this.disabledForegroundColor,
+    super.key,
     this.useGradientWhenShowText = true,
     this.icon,
     this.iconSize = AppSpacing.xxl,
   });
 
+  /// The tooltip.
   final String tooltip;
+
+  /// The on pressed.
   final VoidCallback? onPressed;
+
+  /// The show text.
   final bool showText;
+
+  /// The label.
   final String label;
+
+  /// The width.
   final double width;
+
+  /// The height.
   final double height;
+
+  /// The enabled background color.
   final Color enabledBackgroundColor;
+
+  /// The disabled background color.
   final Color disabledBackgroundColor;
+
+  /// The enabled border color.
   final Color enabledBorderColor;
+
+  /// The disabled border color.
   final Color disabledBorderColor;
+
+  /// The enabled foreground color.
   final Color enabledForegroundColor;
+
+  /// The disabled foreground color.
   final Color disabledForegroundColor;
+
+  /// Whether gradient when show text.
   final bool useGradientWhenShowText;
+
+  /// The icon.
   final IconData? icon;
+
+  /// The icon size.
   final double iconSize;
 
   @override

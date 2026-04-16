@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/auth/domain/auth_profile_setup_preferences.dart';
 import 'package:yamt/features/auth/provider/'
     'auth_profile_setup_status_provider.dart';
@@ -13,23 +13,32 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 
 part 'guest_name_setup_controller.g.dart';
 
+/// Defines guest name setup form defaults.
 class GuestNameSetupFormDefaults {
+  /// The guest name setup form defaults.
   const GuestNameSetupFormDefaults({
     required this.prefilledName,
     required this.seedColor,
     required this.themeMode,
   });
 
+  /// The prefilled name.
   final String? prefilledName;
+
+  /// The seed color.
   final Color seedColor;
+
+  /// The theme mode.
   final ThemeMode themeMode;
 }
 
+/// Defines guest name setup controller.
 @riverpod
 class GuestNameSetupController extends _$GuestNameSetupController {
   @override
   FutureOr<void> build() {}
 
+  /// Initial form defaults.
   GuestNameSetupFormDefaults initialFormDefaults() {
     final authState = ref.read(authStateChangesProvider);
     final currentUser =
@@ -54,6 +63,7 @@ class GuestNameSetupController extends _$GuestNameSetupController {
     );
   }
 
+  /// Save display name.
   Future<void> saveDisplayName(
     String displayName, {
     required Color seedColor,
@@ -86,8 +96,9 @@ class GuestNameSetupController extends _$GuestNameSetupController {
       return;
     }
     if (!nextState.hasError) {
-      ref.invalidate(authProfileSetupCompletedProvider);
-      ref.invalidate(authStateChangesProvider);
+      ref
+        ..invalidate(authProfileSetupCompletedProvider)
+        ..invalidate(authStateChangesProvider);
     }
     state = nextState;
   }

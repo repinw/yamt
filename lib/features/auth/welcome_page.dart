@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/auth/auth_ui_constants.dart';
 import 'package:yamt/features/auth/provider/auth_error_view_model.dart';
@@ -19,7 +19,9 @@ part 'widgets/welcome_page_mobile_layout.dart';
 
 enum _AuthFormMode { login, register }
 
+/// Defines welcome page.
 class WelcomePage extends ConsumerStatefulWidget {
+  /// The welcome page.
   const WelcomePage({super.key});
 
   @override
@@ -56,18 +58,19 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
   }
 
   void _listenForAuthErrors(BuildContext context, AppLocalizations l10n) {
-    ref.listen<AsyncValue<void>>(authFormControllerProvider, (previous, next) {
-      _handleAsyncError(next, context, l10n);
-    });
-    ref.listen<AsyncValue<void>>(guestAuthControllerProvider, (previous, next) {
-      _handleAsyncError(next, context, l10n);
-    });
-    ref.listen<AsyncValue<void>>(googleAuthControllerProvider, (
-      previous,
-      next,
-    ) {
-      _handleAsyncError(next, context, l10n);
-    });
+    ref
+      ..listen<AsyncValue<void>>(authFormControllerProvider, (previous, next) {
+        _handleAsyncError(next, context, l10n);
+      })
+      ..listen<AsyncValue<void>>(guestAuthControllerProvider, (previous, next) {
+        _handleAsyncError(next, context, l10n);
+      })
+      ..listen<AsyncValue<void>>(googleAuthControllerProvider, (
+        previous,
+        next,
+      ) {
+        _handleAsyncError(next, context, l10n);
+      });
   }
 
   void _showLoginMode() {
@@ -171,7 +174,7 @@ class _AuthLayoutMetrics {
 
     final widthScale = maxWidth < 390 ? maxWidth / 390 : 1.0;
     final heightScale = maxHeight < 780 ? maxHeight / 780 : 1.0;
-    final scale = math.min(widthScale, heightScale).clamp(0.82, 1.0).toDouble();
+    final scale = math.min(widthScale, heightScale).clamp(0.82, 1.0);
 
     return _AuthLayoutMetrics(
       heroBadgeSize: AppAuthUi.heroBadgeSize * scale,

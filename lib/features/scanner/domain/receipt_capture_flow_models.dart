@@ -7,14 +7,25 @@ import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 part 'receipt_capture_flow_models.freezed.dart';
 
+/// Defines receipt capture flow status.
 enum ReceiptCaptureFlowStatus {
+  /// Documented member.
   completed,
+
+  /// Documented member.
   inputCanceled,
+
+  /// Documented member.
   inputUnsupported,
+
+  /// Documented member.
   inputFailed,
+
+  /// Documented member.
   analysisFailed,
 }
 
+/// Defines receipt capture flow result.
 @freezed
 sealed class ReceiptCaptureFlowResult with _$ReceiptCaptureFlowResult {
   const ReceiptCaptureFlowResult._();
@@ -45,6 +56,7 @@ sealed class ReceiptCaptureFlowResult with _$ReceiptCaptureFlowResult {
     required String errorCode,
   }) = ReceiptCaptureFlowAnalysisFailed;
 
+  /// The status.
   ReceiptCaptureFlowStatus get status => switch (this) {
     ReceiptCaptureFlowCompleted() => ReceiptCaptureFlowStatus.completed,
     ReceiptCaptureFlowInputCanceled() => ReceiptCaptureFlowStatus.inputCanceled,
@@ -55,6 +67,7 @@ sealed class ReceiptCaptureFlowResult with _$ReceiptCaptureFlowResult {
       ReceiptCaptureFlowStatus.analysisFailed,
   };
 
+  /// The error code.
   String? get errorCode => switch (this) {
     ReceiptCaptureFlowInputUnsupported(:final errorCode) => errorCode,
     ReceiptCaptureFlowInputFailed(:final errorCode) => errorCode,
@@ -62,6 +75,7 @@ sealed class ReceiptCaptureFlowResult with _$ReceiptCaptureFlowResult {
     ReceiptCaptureFlowCompleted() || ReceiptCaptureFlowInputCanceled() => null,
   };
 
+  /// The extraction.
   ReceiptAnalysisExtraction? get extraction => switch (this) {
     ReceiptCaptureFlowCompleted(:final extraction) => extraction,
     ReceiptCaptureFlowInputCanceled() ||
@@ -70,6 +84,7 @@ sealed class ReceiptCaptureFlowResult with _$ReceiptCaptureFlowResult {
     ReceiptCaptureFlowAnalysisFailed() => null,
   };
 
+  /// The review drafts.
   List<ReceiptReviewItemDraft>? get reviewDrafts => switch (this) {
     ReceiptCaptureFlowCompleted(:final reviewDrafts) => reviewDrafts,
     ReceiptCaptureFlowInputCanceled() ||
@@ -78,6 +93,7 @@ sealed class ReceiptCaptureFlowResult with _$ReceiptCaptureFlowResult {
     ReceiptCaptureFlowAnalysisFailed() => null,
   };
 
+  /// The receipt preview bytes.
   Uint8List? get receiptPreviewBytes => switch (this) {
     ReceiptCaptureFlowCompleted(:final receiptPreviewBytes) =>
       receiptPreviewBytes,
@@ -87,12 +103,28 @@ sealed class ReceiptCaptureFlowResult with _$ReceiptCaptureFlowResult {
     ReceiptCaptureFlowAnalysisFailed() => null,
   };
 
+  /// Whether completed.
   bool get isCompleted => status == ReceiptCaptureFlowStatus.completed;
 }
 
-enum ReceiptBatchItemStatus { queued, processing, succeeded, failed }
+/// Defines receipt batch item status.
+enum ReceiptBatchItemStatus {
+  /// Queued.
+  queued,
 
+  /// Processing.
+  processing,
+
+  /// Succeeded.
+  succeeded,
+
+  /// Failed.
+  failed,
+}
+
+/// Defines receipt batch item progress.
 class ReceiptBatchItemProgress {
+  /// The receipt batch item progress.
   const ReceiptBatchItemProgress({
     required this.fileName,
     required this.status,
@@ -100,11 +132,19 @@ class ReceiptBatchItemProgress {
     this.reviewDraftCount = 0,
   });
 
+  /// The file name.
   final String fileName;
+
+  /// The status.
   final ReceiptBatchItemStatus status;
+
+  /// The error code.
   final String? errorCode;
+
+  /// The review draft count.
   final int reviewDraftCount;
 
+  /// Copy with.
   ReceiptBatchItemProgress copyWith({
     ReceiptBatchItemStatus? status,
     String? errorCode,
@@ -119,36 +159,47 @@ class ReceiptBatchItemProgress {
     );
   }
 
+  /// Whether finished.
   bool get isFinished =>
       status == ReceiptBatchItemStatus.succeeded ||
       status == ReceiptBatchItemStatus.failed;
 }
 
+/// Defines receipt batch progress.
 class ReceiptBatchProgress {
+  /// The receipt batch progress.
   const ReceiptBatchProgress({required this.items});
 
+  /// The items.
   final List<ReceiptBatchItemProgress> items;
 
+  /// The total count.
   int get totalCount => items.length;
 
+  /// The processed count.
   int get processedCount {
     return _countWhere((item) => item.isFinished);
   }
 
+  /// The succeeded count.
   int get succeededCount {
     return _countWhere(
       (item) => item.status == ReceiptBatchItemStatus.succeeded,
     );
   }
 
+  /// The failed count.
   int get failedCount {
     return _countWhere((item) => item.status == ReceiptBatchItemStatus.failed);
   }
 
+  /// Whether failures.
   bool get hasFailures => failedCount > 0;
 
+  /// Whether successes.
   bool get hasSuccesses => succeededCount > 0;
 
+  /// Update item.
   ReceiptBatchProgress updateItem(int index, ReceiptBatchItemProgress item) {
     final nextItems = List<ReceiptBatchItemProgress>.of(items);
     nextItems[index] = item;
@@ -166,9 +217,21 @@ class ReceiptBatchProgress {
   }
 }
 
-enum ReceiptBatchRunStatus { completed, inputCanceled, inputFailed }
+/// Defines receipt batch run status.
+enum ReceiptBatchRunStatus {
+  /// Completed.
+  completed,
 
+  /// Input canceled.
+  inputCanceled,
+
+  /// Input failed.
+  inputFailed,
+}
+
+/// Defines receipt batch run result.
 class ReceiptBatchRunResult {
+  /// The receipt batch run result.
   const ReceiptBatchRunResult({
     required this.status,
     required this.progress,
@@ -176,6 +239,7 @@ class ReceiptBatchRunResult {
     this.errorCode,
   });
 
+  /// Creates a [ReceiptBatchRunResult] for completed.
   const ReceiptBatchRunResult.completed({
     required ReceiptBatchProgress progress,
     required List<ReceiptReviewItemDraft> reviewDrafts,
@@ -185,6 +249,7 @@ class ReceiptBatchRunResult {
          reviewDrafts: reviewDrafts,
        );
 
+  /// The receipt batch progress.
   const ReceiptBatchRunResult.inputCanceled()
     : this(
         status: ReceiptBatchRunStatus.inputCanceled,
@@ -192,6 +257,7 @@ class ReceiptBatchRunResult {
         reviewDrafts: const <ReceiptReviewItemDraft>[],
       );
 
+  /// Creates a [ReceiptBatchRunResult] for input failed.
   const ReceiptBatchRunResult.inputFailed({required String errorCode})
     : this(
         status: ReceiptBatchRunStatus.inputFailed,
@@ -200,8 +266,15 @@ class ReceiptBatchRunResult {
         errorCode: errorCode,
       );
 
+  /// The status.
   final ReceiptBatchRunStatus status;
+
+  /// The progress.
   final ReceiptBatchProgress progress;
+
+  /// The review drafts.
   final List<ReceiptReviewItemDraft> reviewDrafts;
+
+  /// The error code.
   final String? errorCode;
 }

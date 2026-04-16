@@ -4,9 +4,10 @@ import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines inventory list top controls sliver.
 class InventoryListTopControlsSliver extends StatelessWidget {
+  /// The inventory list top controls sliver.
   const InventoryListTopControlsSliver({
-    super.key,
     required this.modeToggle,
     required this.showSearch,
     required this.searchController,
@@ -15,15 +16,31 @@ class InventoryListTopControlsSliver extends StatelessWidget {
     required this.voiceSearchService,
     required this.voiceSearchController,
     required this.l10n,
+    super.key,
   });
 
+  /// The mode toggle.
   final Widget modeToggle;
+
+  /// The show search.
   final bool showSearch;
+
+  /// The search controller.
   final TextEditingController searchController;
+
+  /// The enabled.
   final bool enabled;
+
+  /// The on search changed.
   final ValueChanged<String> onSearchChanged;
+
+  /// The voice search service.
   final VoiceSearchService voiceSearchService;
+
+  /// The voice search controller.
   final TextVoiceSearchController voiceSearchController;
+
+  /// The l10n.
   final AppLocalizations l10n;
 
   @override

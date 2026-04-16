@@ -3,7 +3,9 @@ import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines inventory receipt group.
 class InventoryReceiptGroup {
+  /// The inventory receipt group.
   const InventoryReceiptGroup({
     required this.key,
     required this.receiptId,
@@ -14,6 +16,7 @@ class InventoryReceiptGroup {
     required this.currencyCode,
   });
 
+  /// Creates a [InventoryReceiptGroup] for from items.
   factory InventoryReceiptGroup.fromItems(
     String key,
     List<InventoryItem> items,
@@ -59,19 +62,34 @@ class InventoryReceiptGroup {
     );
   }
 
+  /// The key.
   final String key;
+
+  /// The receipt id.
   final String? receiptId;
+
+  /// The receipt date.
   final DateTime? receiptDate;
+
+  /// The store name.
   final String storeName;
+
+  /// The items.
   final List<InventoryItem> items;
+
+  /// The total value.
   final double totalValue;
+
+  /// The currency code.
   final String? currencyCode;
 
+  /// Whether receipt.
   bool get hasReceipt {
     final id = receiptId;
     return id != null && id.isNotEmpty;
   }
 
+  /// Title.
   String title({
     required AppLocalizations l10n,
     required DateFormat dateFormat,
@@ -94,6 +112,7 @@ class InventoryReceiptGroup {
     return '${l10n.inventoryReceiptGroupTitle} #$shortId';
   }
 
+  /// Subtitle.
   String subtitle({
     required AppLocalizations l10n,
     required String localeName,
@@ -110,6 +129,7 @@ class InventoryReceiptGroup {
   }
 }
 
+/// Group inventory items by receipt.
 List<InventoryReceiptGroup> groupInventoryItemsByReceipt(
   List<InventoryItem> source,
 ) {

@@ -3,53 +3,93 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_sorted_items_cache.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-const _inventoryListBottomPadding = AppSpacing.xxxxl * 4 + AppSpacing.xxxl;
+const double _inventoryListBottomPadding =
+    AppSpacing.xxxxl * 4 + AppSpacing.xxxl;
 
+/// Defines inventory all items sliver.
 class InventoryAllItemsSliver extends StatefulWidget {
+  /// The inventory all items sliver.
   const InventoryAllItemsSliver({
-    super.key,
     required this.items,
     required this.l10n,
     required this.showBarcodeMarkers,
+
+    /// Documented member.
     required this.activeShoppingListItemKeys,
+
+    /// Documented member.
     required this.sortMode,
+
+    /// Documented member.
     required this.onDeleteItem,
+
+    /// Documented member.
     required this.onEatItem,
+
+    /// Documented member.
     required this.onThrowAwayItem,
+
+    /// Documented member.
     required this.isSelectionMode,
     required this.selectedItemIds,
+
+    /// Documented member.
     required this.onItemLongPress,
     required this.onSelectionToggle,
+    super.key,
   });
 
+  /// The items.
   final List<InventoryItem> items;
+
+  /// The l10n.
   final AppLocalizations l10n;
+
+  /// The show barcode markers.
   final bool showBarcodeMarkers;
+
+  /// The active shopping list item keys.
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
+
+  /// The sort mode.
   final InventoryItemSortMode sortMode;
+
+  /// The on delete item.
   final Future<bool> Function(String itemId) onDeleteItem;
+
+  /// The on eat item.
   final Future<bool> Function(String itemId, InventoryItemEatRequest request)
   onEatItem;
+
+  /// The on throw away item.
   final Future<bool> Function(
     String itemId,
     int amount,
     InventoryDiscardReason reason,
   )
   onThrowAwayItem;
+
+  /// Whether selection mode.
   final bool isSelectionMode;
+
+  /// The selected item ids.
   final Set<String> selectedItemIds;
+
+  /// The on item long press.
   final ValueChanged<String> onItemLongPress;
+
+  /// The on selection toggle.
   final ValueChanged<String> onSelectionToggle;
 
   @override

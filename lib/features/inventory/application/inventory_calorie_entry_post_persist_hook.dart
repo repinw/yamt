@@ -8,6 +8,7 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/inventory/application/'
     'global_food_serving_suggestion_repository.dart';
 
+/// The inventory calorie entry post persist hook provider.
 final inventoryCalorieEntryPostPersistHookProvider =
     Provider<CalorieEntryPostPersistHook>((ref) {
       final repository = ref.read(

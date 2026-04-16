@@ -1,3 +1,4 @@
+/// Normalize manual product text.
 String? normalizeManualProductText(String value) {
   final trimmed = value.trim();
   if (trimmed.isEmpty) {
@@ -6,6 +7,7 @@ String? normalizeManualProductText(String value) {
   return trimmed;
 }
 
+/// Parse manual product double.
 double? parseManualProductDouble(String value) {
   final trimmed = value.trim();
   if (trimmed.isEmpty) {
@@ -14,6 +16,7 @@ double? parseManualProductDouble(String value) {
   return double.tryParse(trimmed.replaceAll(',', '.'));
 }
 
+/// Format manual product double.
 String formatManualProductDouble(double? value) {
   if (value == null) {
     return '';

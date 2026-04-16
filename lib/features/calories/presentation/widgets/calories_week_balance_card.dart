@@ -15,9 +15,12 @@ const _weekBalanceGoalLineHeight = 2.0;
 const _weekBalanceGoalLineAdjustment = 1.0;
 const _weekBalanceSummaryIconSize = 18.0;
 
+/// Defines calories week balance card.
 class CaloriesWeekBalanceCard extends StatelessWidget {
+  /// The calories week balance card.
   const CaloriesWeekBalanceCard({super.key, required this.overview});
 
+  /// The overview.
   final CalorieWeekOverview overview;
 
   @override

@@ -6,11 +6,11 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const _discardReasonDialogLogName = 'InventoryDiscardReasonDialog';
 
+/// Show inventory discard reason dialog.
 Future<InventoryDiscardReason?> showInventoryDiscardReasonDialog(
   BuildContext context, {
   bool useRootNavigator = false,
-}
-) {
+}) {
   final l10n = AppLocalizations.of(context)!;
   log(
     'showInventoryDiscardReasonDialog(): opening',

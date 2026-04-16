@@ -14,9 +14,10 @@ import 'package:yamt/features/shoppinglist/application/'
 const _inventoryReceiptGroupsBottomPadding =
     AppSpacing.xxxxl * 4 + AppSpacing.xxxl;
 
+/// Defines inventory receipt groups sliver.
 class InventoryReceiptGroupsSliver extends StatelessWidget {
+  /// The inventory receipt groups sliver.
   const InventoryReceiptGroupsSliver({
-    super.key,
     required this.groups,
     required this.dateFormat,
     required this.showBarcodeMarkers,
@@ -28,24 +29,46 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
     required this.selectedItemIds,
     required this.onItemLongPress,
     required this.onSelectionToggle,
+    super.key,
   });
 
+  /// The groups.
   final List<InventoryReceiptGroup> groups;
+
+  /// The date format.
   final DateFormat dateFormat;
+
+  /// The show barcode markers.
   final bool showBarcodeMarkers;
+
+  /// The active shopping list item keys.
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
+
+  /// The on delete item.
   final Future<bool> Function(String itemId) onDeleteItem;
+
+  /// Documented member.
   final Future<bool> Function(String itemId, InventoryItemEatRequest request)
   onEatItem;
+
+  /// The on throw away item.
   final Future<bool> Function(
     String itemId,
     int amount,
     InventoryDiscardReason reason,
   )
   onThrowAwayItem;
+
+  /// Whether selection mode.
   final bool isSelectionMode;
+
+  /// The selected item ids.
   final Set<String> selectedItemIds;
+
+  /// The on item long press.
   final ValueChanged<String> onItemLongPress;
+
+  /// The on selection toggle.
   final ValueChanged<String> onSelectionToggle;
 
   @override

@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_summary_card.dart';
-import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_balance_summary_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -127,7 +127,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _buildHarness(totalCarbs: 100, totalProtein: 90, totalFat: 40),
+      _buildHarness(totalCarbs: 100),
     );
     await tester.pumpAndSettle();
 
@@ -166,7 +166,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _buildHarness(totalCarbs: 280, totalProtein: 90, totalFat: 40),
+      _buildHarness(totalCarbs: 280),
     );
     await tester.pumpAndSettle();
 

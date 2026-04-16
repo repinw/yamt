@@ -22,13 +22,18 @@ class _IngredientRowData {
   final RecipeIngredientAmountConversion? amountConversion;
 }
 
+/// Defines meal template ingredient assignment selection.
 class MealTemplateIngredientAssignmentSelection {
+  /// The meal template ingredient assignment selection.
   const MealTemplateIngredientAssignmentSelection({
     this.inventoryItemIds = const <String>[],
     this.amountConversion,
   });
 
+  /// The inventory item ids.
   final List<String> inventoryItemIds;
+
+  /// The amount conversion.
   final RecipeIngredientAmountConversion? amountConversion;
 }
 

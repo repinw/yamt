@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// Defines calorie goal start picker.
 abstract final class CalorieGoalStartPicker {
+  /// Pick date.
   static Future<DateTime?> pickDate(
     BuildContext context, {
     required DateTime initialGoalStartAt,
@@ -19,6 +21,7 @@ abstract final class CalorieGoalStartPicker {
     return pickedDate;
   }
 
+  /// Pick time.
   static Future<TimeOfDay?> pickTime(
     BuildContext context, {
     required DateTime initialGoalStartAt,
@@ -33,6 +36,7 @@ abstract final class CalorieGoalStartPicker {
     return pickedTime;
   }
 
+  /// Round to minute.
   static DateTime roundToMinute(DateTime value) {
     return DateTime(
       value.year,
@@ -43,6 +47,7 @@ abstract final class CalorieGoalStartPicker {
     );
   }
 
+  /// Combine date and time.
   static DateTime combineDateAndTime({
     required DateTime date,
     required TimeOfDay time,
@@ -50,10 +55,12 @@ abstract final class CalorieGoalStartPicker {
     return DateTime(date.year, date.month, date.day, time.hour, time.minute);
   }
 
+  /// Six am.
   static DateTime sixAm(DateTime date) {
     return DateTime(date.year, date.month, date.day, 6);
   }
 
+  /// Is same minute.
   static bool isSameMinute(DateTime left, DateTime right) {
     return left.year == right.year &&
         left.month == right.month &&

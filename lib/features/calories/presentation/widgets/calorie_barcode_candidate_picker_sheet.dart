@@ -3,14 +3,19 @@ import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines calorie barcode candidate picker sheet.
 class CalorieBarcodeCandidatePickerSheet extends StatelessWidget {
+  /// The calorie barcode candidate picker sheet.
   const CalorieBarcodeCandidatePickerSheet({
     super.key,
     required this.candidates,
     required this.onSelect,
   });
 
+  /// The candidates.
   final List<CalorieProductCandidate> candidates;
+
+  /// The on select.
   final ValueChanged<CalorieProductCandidate> onSelect;
 
   @override

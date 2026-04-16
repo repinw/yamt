@@ -10,14 +10,17 @@ class TextVoiceSearchController {
   Future<void> Function()? _stopVoiceSearchIfNeeded;
   Future<void> Function()? _cancelVoiceSearch;
 
+  /// Stops voice search if a session is active.
   Future<void> stopVoiceSearchIfNeeded() {
     return _stopVoiceSearchIfNeeded?.call() ?? Future<void>.value();
   }
 
+  /// Cancels any active voice search session.
   Future<void> cancelVoiceSearch() {
     return _cancelVoiceSearch?.call() ?? Future<void>.value();
   }
 
+  /// Releases callbacks and cancels any active voice search.
   void dispose() {
     unawaited(cancelVoiceSearch());
     _stopVoiceSearchIfNeeded = null;
@@ -40,11 +43,12 @@ class TextVoiceSearchController {
 
 /// Shared search field with an optional built-in voice search button.
 class TextVoiceSearchBar extends StatefulWidget {
+  /// Creates shared text search bar with optional voice search.
   const TextVoiceSearchBar({
-    super.key,
     required this.controller,
     required this.label,
     required this.fieldKey,
+    super.key,
     this.voiceButtonKey,
     this.clearButtonKey,
     this.readOnly = false,
@@ -60,21 +64,52 @@ class TextVoiceSearchBar extends StatefulWidget {
     this.trailingActions = const <Widget>[],
   });
 
+  /// Controller that holds current search text.
   final TextEditingController controller;
+
+  /// Localized field label.
   final String label;
+
+  /// Widget key for the text field.
   final Key fieldKey;
+
+  /// Optional key for the voice button.
   final Key? voiceButtonKey;
+
+  /// Optional key for the clear button.
   final Key? clearButtonKey;
+
+  /// Whether text field should be read-only.
   final bool readOnly;
+
+  /// Whether text field should autofocus.
   final bool autofocus;
+
+  /// Whether all controls are enabled.
   final bool enabled;
+
+  /// Whether a search request is currently in progress.
   final bool isSearching;
+
+  /// Whether voice search should auto-start after first frame.
   final bool startVoiceSearchOnMount;
+
+  /// Optional tap callback for the text field.
   final VoidCallback? onTap;
+
+  /// Optional change callback for the text field.
   final ValueChanged<String>? onChanged;
+
+  /// Optional internal voice search service implementation.
   final VoiceSearchService? voiceSearchService;
+
+  /// Optional controller for external coordination.
   final TextVoiceSearchController? voiceSearchController;
+
+  /// Optional external voice button handler.
   final VoidCallback? onVoiceSearchPressed;
+
+  /// Extra trailing actions rendered after the voice button.
   final List<Widget> trailingActions;
 
   @override
@@ -267,7 +302,6 @@ class _TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
     widget.controller.value = TextEditingValue(
       text: result.transcript,
       selection: TextSelection.collapsed(offset: result.transcript.length),
-      composing: TextRange.empty,
     );
     widget.onChanged?.call(result.transcript);
   }
@@ -342,9 +376,9 @@ class _TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
   }
 
   void _showSnackBar(String message) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _attachVoiceSearchController() {

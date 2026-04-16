@@ -5,16 +5,23 @@ import 'package:yamt/features/shoppinglist/presentation/widgets/'
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines shopping list clear crossed off action.
 class ShoppingListClearCrossedOffAction extends StatelessWidget {
+  /// The shopping list clear crossed off action.
   const ShoppingListClearCrossedOffAction({
-    super.key,
     required this.crossedOffCount,
     required this.controller,
     required this.l10n,
+    super.key,
   });
 
+  /// The crossed off count.
   final int crossedOffCount;
+
+  /// The controller.
   final ShoppingListController controller;
+
+  /// The l10n.
   final AppLocalizations l10n;
 
   @override

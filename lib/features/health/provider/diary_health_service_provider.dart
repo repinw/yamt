@@ -6,6 +6,7 @@ import 'package:yamt/features/health/data/diary_health_service_stub.dart'
 
 part 'diary_health_service_provider.g.dart';
 
+/// Diary health service.
 @Riverpod(keepAlive: true)
 DiaryHealthService diaryHealthService(Ref ref) {
   return implementation.createDiaryHealthService();

@@ -4,8 +4,8 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
@@ -16,11 +16,13 @@ import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 
+/// Defines inventory calorie bridge flow.
 class InventoryCalorieBridgeFlow {
   const InventoryCalorieBridgeFlow._();
 
   static const _uuid = Uuid();
 
+  /// Build profile from inventory item.
   static CalorieProductProfile? buildProfileFromInventoryItem(
     InventoryItem item,
   ) {
@@ -47,6 +49,7 @@ class InventoryCalorieBridgeFlow {
     );
   }
 
+  /// Build scanned source ref.
   static CalorieScannedSourceRef? buildScannedSourceRef({
     required InventoryItem item,
     required CalorieProductProfile profile,
@@ -63,6 +66,7 @@ class InventoryCalorieBridgeFlow {
     );
   }
 
+  /// Build inventory context.
   static CalorieInventoryCreateContext buildInventoryContext({
     required InventoryItem item,
     required String pendingConsumptionId,
@@ -95,6 +99,7 @@ class InventoryCalorieBridgeFlow {
     );
   }
 
+  /// Save direct entry.
   static Future<bool> saveDirectEntry({
     required WidgetRef ref,
     required CalorieProductProfile profile,
@@ -146,6 +151,7 @@ class InventoryCalorieBridgeFlow {
         );
   }
 
+  /// Discard pending consumption.
   static Future<void> discardPendingConsumption({
     required WidgetRef ref,
     required String pendingConsumptionId,

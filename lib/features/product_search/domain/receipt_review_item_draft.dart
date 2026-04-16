@@ -2,7 +2,9 @@ import 'package:collection/collection.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
+/// Defines receipt review item draft.
 class ReceiptReviewItemDraft {
+  /// The receipt review item draft.
   const ReceiptReviewItemDraft({
     required this.item,
     this.candidates = const <GlobalFoodMatchCandidate>[],
@@ -17,18 +19,40 @@ class ReceiptReviewItemDraft {
     this.receiptTimeText,
   });
 
+  /// The item.
   final InventoryItem item;
+
+  /// The candidates.
   final List<GlobalFoodMatchCandidate> candidates;
+
+  /// The selected global food item id.
   final String? selectedGlobalFoodItemId;
+
+  /// The initial selected global food item id.
   final String? initialSelectedGlobalFoodItemId;
+
+  /// The selection needs review.
   final bool selectionNeedsReview;
+
+  /// Whether confirmed.
   final bool isConfirmed;
+
+  /// The weight needs attention.
   final bool weightNeedsAttention;
+
+  /// The request ai enrichment.
   final bool requestAiEnrichment;
+
+  /// Whether save receipt alias.
   final bool shouldSaveReceiptAlias;
+
+  /// The ocr name.
   final String? ocrName;
+
+  /// The receipt time text.
   final String? receiptTimeText;
 
+  /// Copy with.
   ReceiptReviewItemDraft copyWith({
     InventoryItem? item,
     List<GlobalFoodMatchCandidate>? candidates,
@@ -65,6 +89,7 @@ class ReceiptReviewItemDraft {
     );
   }
 
+  /// Apply automatic selection.
   ReceiptReviewItemDraft applyAutomaticSelection(
     String? globalFoodItemId, {
     bool selectionNeedsReview = false,
@@ -77,6 +102,7 @@ class ReceiptReviewItemDraft {
     );
   }
 
+  /// Select candidate.
   ReceiptReviewItemDraft selectCandidate(String globalFoodItemId) {
     return copyWith(
       selectedGlobalFoodItemId: globalFoodItemId,
@@ -88,6 +114,7 @@ class ReceiptReviewItemDraft {
     );
   }
 
+  /// Select new item.
   ReceiptReviewItemDraft selectNewItem() {
     return copyWith(
       selectedGlobalFoodItemId: null,
@@ -98,6 +125,7 @@ class ReceiptReviewItemDraft {
     );
   }
 
+  /// Mark for ai enrichment.
   ReceiptReviewItemDraft markForAiEnrichment() {
     return copyWith(
       selectedGlobalFoodItemId: null,
@@ -108,6 +136,7 @@ class ReceiptReviewItemDraft {
     );
   }
 
+  /// The selected candidate.
   GlobalFoodMatchCandidate? get selectedCandidate {
     final selectedId = selectedGlobalFoodItemId;
     if (selectedId == null) {
@@ -118,12 +147,16 @@ class ReceiptReviewItemDraft {
     );
   }
 
+  /// Whether new item selection.
   bool get isNewItemSelection => selectedGlobalFoodItemId == null;
 
+  /// Whether be saved to inventory.
   bool get canBeSavedToInventory => item.canBeSavedToInventory;
 
+  /// Whether candidates.
   bool get hasCandidates => candidates.isNotEmpty;
 
+  /// The differs from selected candidate.
   bool get differsFromSelectedCandidate {
     final candidate = selectedCandidate;
     if (candidate == null) {

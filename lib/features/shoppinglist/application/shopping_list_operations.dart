@@ -3,11 +3,13 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 
+/// Defines shopping list item match key typedef.
 typedef ShoppingListItemMatchKey = ({
   String normalizedName,
   String normalizedBrand,
 });
 
+/// Defines shopping list add item typedef.
 typedef ShoppingListAddItem =
     Future<bool> Function({
       required String name,
@@ -16,6 +18,7 @@ typedef ShoppingListAddItem =
       double estimatedUnitPrice,
     });
 
+/// The active shopping list item keys provider.
 final activeShoppingListItemKeysProvider =
     Provider<Set<ShoppingListItemMatchKey>>((ref) {
       final items = ref.watch(shoppingListControllerProvider).asData?.value;
@@ -25,6 +28,7 @@ final activeShoppingListItemKeysProvider =
       return computeActiveShoppingListItemKeys(items);
     });
 
+/// Whether inventory item in active shopping list provider.
 final isInventoryItemInActiveShoppingListProvider =
     Provider.family<bool, InventoryItem>((ref, item) {
       return ref.watch(
@@ -37,6 +41,7 @@ final isInventoryItemInActiveShoppingListProvider =
       );
     });
 
+/// Add inventory item to shopping list.
 Future<bool> addInventoryItemToShoppingList({
   required InventoryItem item,
   required ShoppingListAddItem addItem,
@@ -54,10 +59,12 @@ int _normalizeInventoryQuantityForShopping(int initialQuantity) {
   return initialQuantity > 0 ? initialQuantity : 1;
 }
 
+/// Normalize shopping list value.
 String normalizeShoppingListValue(String value) {
   return value.trim().toLowerCase();
 }
 
+/// Compute active shopping list item keys.
 Set<ShoppingListItemMatchKey> computeActiveShoppingListItemKeys(
   List<ShoppingListItem> items,
 ) {
@@ -81,6 +88,7 @@ ShoppingListItemMatchKey? _inventoryItemMatchKey(InventoryItem item) {
   return (normalizedName: normalizedName, normalizedBrand: normalizedBrand);
 }
 
+/// Is inventory item in active shopping list.
 bool isInventoryItemInActiveShoppingList({
   required InventoryItem item,
   required Set<ShoppingListItemMatchKey> activeItemKeys,

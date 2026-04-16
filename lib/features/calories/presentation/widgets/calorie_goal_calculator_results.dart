@@ -10,11 +10,13 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Result card showing BMR, TDEE, and the final daily target.
 class CalorieGoalCalculatorResultsCard extends StatelessWidget {
+  /// The calorie goal calculator results card.
   const CalorieGoalCalculatorResultsCard({
-    super.key,
     required this.calculation,
+    super.key,
   });
 
+  /// The calculation.
   final CalorieGoalCalculationResult calculation;
 
   @override
@@ -72,8 +74,10 @@ class CalorieGoalCalculatorResultsCard extends StatelessWidget {
 
 /// Warning card shown when the calculated target is clamped for safety.
 class CalorieGoalCalculatorWarningCard extends StatelessWidget {
-  const CalorieGoalCalculatorWarningCard({super.key, required this.message});
+  /// The calorie goal calculator warning card.
+  const CalorieGoalCalculatorWarningCard({required this.message, super.key});
 
+  /// The message.
   final String message;
 
   @override
@@ -109,16 +113,23 @@ class CalorieGoalCalculatorWarningCard extends StatelessWidget {
   }
 }
 
+/// Defines calorie goal calculator goal start card.
 class CalorieGoalCalculatorGoalStartCard extends StatelessWidget {
+  /// The calorie goal calculator goal start card.
   const CalorieGoalCalculatorGoalStartCard({
-    super.key,
     required this.goalStartAt,
     required this.onChangeRequested,
+    super.key,
     this.enabled = true,
   });
 
+  /// The goal start at.
   final DateTime goalStartAt;
+
+  /// The on change requested.
   final VoidCallback onChangeRequested;
+
+  /// The enabled.
   final bool enabled;
 
   @override
@@ -174,18 +185,27 @@ class CalorieGoalCalculatorGoalStartCard extends StatelessWidget {
   }
 }
 
+/// Defines calorie goal calculator eating window card.
 class CalorieGoalCalculatorEatingWindowCard extends StatelessWidget {
+  /// The calorie goal calculator eating window card.
   const CalorieGoalCalculatorEatingWindowCard({
-    super.key,
     required this.startMinuteOfDay,
     required this.endMinuteOfDay,
     required this.onChangeRequested,
+    super.key,
     this.enabled = true,
   });
 
+  /// The start minute of day.
   final int startMinuteOfDay;
+
+  /// The end minute of day.
   final int endMinuteOfDay;
+
+  /// The on change requested.
   final VoidCallback onChangeRequested;
+
+  /// The enabled.
   final bool enabled;
 
   @override

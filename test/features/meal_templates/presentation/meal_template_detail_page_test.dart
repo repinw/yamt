@@ -124,11 +124,11 @@ Widget _buildHarness({
           shoppingListRepository,
         ),
     ],
-    child: MaterialApp(
-      locale: const Locale('en'),
+    child: const MaterialApp(
+      locale: Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const MealTemplateDetailPage(templateId: 'template-1'),
+      home: MealTemplateDetailPage(templateId: 'template-1'),
     ),
   );
 }

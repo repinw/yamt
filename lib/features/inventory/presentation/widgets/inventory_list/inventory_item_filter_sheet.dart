@@ -10,20 +10,31 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 enum _InventoryItemSortCriterion { added, eaten, alphabetical, quantity }
 
+/// Defines inventory item filter sheet.
 class InventoryItemFilterSheet extends StatefulWidget {
+  /// The inventory item filter sheet.
   const InventoryItemFilterSheet({
-    super.key,
     required this.initialSortMode,
     required this.initialHideFullyConsumedItems,
     required this.enabled,
     required this.onSortModeChanged,
     required this.onHideFullyConsumedItemsChanged,
+    super.key,
   });
 
+  /// The initial sort mode.
   final InventoryItemSortMode initialSortMode;
+
+  /// The initial hide fully consumed items.
   final bool initialHideFullyConsumedItems;
+
+  /// The enabled.
   final bool enabled;
+
+  /// The on sort mode changed.
   final ValueChanged<InventoryItemSortMode> onSortModeChanged;
+
+  /// The on hide fully consumed items changed.
   final ValueChanged<bool> onHideFullyConsumedItemsChanged;
 
   @override

@@ -13,8 +13,10 @@ const String _usersCollection = 'users';
 const String _candidatesCollection = 'global_barcode_candidates';
 const String _votesCollection = 'global_barcode_candidate_votes';
 
+/// Defines firestore global barcode candidate repository.
 class FirestoreGlobalBarcodeCandidateRepository
     implements GlobalBarcodeCandidateRepository {
+  /// The firestore global barcode candidate repository.
   const FirestoreGlobalBarcodeCandidateRepository({
     required FirebaseFirestore firestore,
     required String? currentUserId,

@@ -16,6 +16,7 @@ const _usersCollection = 'users';
 const _calorieEntriesCollection = 'calorie_entries';
 const _inventoryItemsCollection = 'inventory_items';
 
+/// The inventory calorie entry commit store provider.
 final inventoryCalorieEntryCommitStoreProvider =
     Provider<InventoryCalorieEntryCommitStore>((ref) {
       final currentUserId = ref
@@ -38,27 +39,38 @@ final inventoryCalorieEntryCommitStoreProvider =
       );
     });
 
+/// Defines inventory calorie entry commit store.
 abstract interface class InventoryCalorieEntryCommitStore {
+  /// Commit entry and inventory.
   Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
     required CalorieEntry entry,
     required PendingInventoryConsumption pendingConsumption,
   });
 }
 
+/// Defines inventory calorie entry commit result.
 class InventoryCalorieEntryCommitResult {
+  /// The inventory calorie entry commit result.
   const InventoryCalorieEntryCommitResult({
     required this.itemId,
     required this.quantity,
     required this.currentAmount,
   });
 
+  /// The item id.
   final String itemId;
+
+  /// The quantity.
   final int quantity;
+
+  /// The current amount.
   final int currentAmount;
 }
 
+/// Defines firestore inventory calorie entry commit store.
 class FirestoreInventoryCalorieEntryCommitStore
     implements InventoryCalorieEntryCommitStore {
+  /// The firestore inventory calorie entry commit store.
   const FirestoreInventoryCalorieEntryCommitStore({
     required FirebaseFirestore firestore,
     required String? currentUserId,

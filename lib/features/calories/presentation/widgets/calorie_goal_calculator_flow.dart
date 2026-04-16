@@ -7,15 +7,15 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_eating_window_dialog.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_activity_level_selector.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_input_controls.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_eating_window_dialog.dart';
+    'calorie_goal_calculator_results.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_picker.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_goal_calculator_results.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/'
@@ -27,18 +27,31 @@ import 'package:yamt/l10n/app_localizations.dart';
 part 'calorie_goal_calculator_flow_layout.dart';
 part 'calorie_goal_calculator_flow_steps.dart';
 
-enum CalorieGoalCalculatorFlowPresentation { bottomSheet, onboarding }
+/// Defines calorie goal calculator flow presentation.
+enum CalorieGoalCalculatorFlowPresentation {
+  /// Bottom sheet.
+  bottomSheet,
 
+  /// Onboarding.
+  onboarding,
+}
+
+/// Defines calorie goal calculator flow.
 class CalorieGoalCalculatorFlow extends ConsumerStatefulWidget {
+  /// The calorie goal calculator flow.
   const CalorieGoalCalculatorFlow({
     super.key,
     required this.initialSettings,
     required this.presentation,
   });
 
+  /// The initial settings.
   final CalorieGoalSettings initialSettings;
+
+  /// The presentation.
   final CalorieGoalCalculatorFlowPresentation presentation;
 
+  /// Whether onboarding.
   bool get isOnboarding =>
       presentation == CalorieGoalCalculatorFlowPresentation.onboarding;
 

@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _providerObserverLogName = 'RiverpodDebug';
 
+/// Logs provider lifecycle changes in debug builds.
 final class AppProviderObserver extends ProviderObserver {
+  /// Creates provider observer.
   const AppProviderObserver();
 
   @override

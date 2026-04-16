@@ -11,6 +11,7 @@ part 'shopping_list_controller.g.dart';
 
 const _controllerLogName = 'ShoppingListController';
 
+/// Defines shopping list controller.
 @riverpod
 class ShoppingListController extends _$ShoppingListController {
   static const _uuid = Uuid();
@@ -27,6 +28,7 @@ class ShoppingListController extends _$ShoppingListController {
     return _restartRealtimeSubscription();
   }
 
+  /// Refresh.
   Future<void> refresh() async {
     state = const AsyncLoading();
     final nextState = await AsyncValue.guard(_restartRealtimeSubscription);
@@ -36,6 +38,7 @@ class ShoppingListController extends _$ShoppingListController {
     state = nextState;
   }
 
+  /// Add item.
   Future<bool> addItem({
     required String name,
     String? brand,
@@ -61,6 +64,7 @@ class ShoppingListController extends _$ShoppingListController {
     });
   }
 
+  /// Remove item.
   Future<bool> removeItem(String itemId) {
     return _runListMutation((previousItems) {
       final nextItems = previousItems
@@ -73,14 +77,17 @@ class ShoppingListController extends _$ShoppingListController {
     });
   }
 
+  /// Increment quantity.
   Future<bool> incrementQuantity(String itemId) {
     return _runListMutation(_buildQuantityMutation(itemId, (q) => q + 1));
   }
 
+  /// Decrement quantity.
   Future<bool> decrementQuantity(String itemId) {
     return _runListMutation(_buildQuantityMutation(itemId, (q) => q - 1));
   }
 
+  /// Clear crossed off items.
   Future<bool> clearCrossedOffItems() {
     return _runListMutation((previousItems) {
       final nextItems = previousItems

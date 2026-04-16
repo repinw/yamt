@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 
 const _coordinatorLogName = 'InventoryItemRowActionCoordinator';
 
+/// Defines inventory item row action coordinator.
 class InventoryItemRowActionCoordinator {
+  /// The inventory item row action coordinator.
   const InventoryItemRowActionCoordinator({
     required this.isWorking,
     required this.setWorking,
@@ -13,12 +15,22 @@ class InventoryItemRowActionCoordinator {
     required this.defaultFailureMessage,
   });
 
+  /// Whether working.
   final bool Function() isWorking;
+
+  /// The set working.
   final void Function(bool isWorking) setWorking;
+
+  /// Whether mounted.
   final bool Function() isMounted;
+
+  /// The show snack bar.
   final void Function(String message) showSnackBar;
+
+  /// The default failure message.
   final String defaultFailureMessage;
 
+  /// Creates an instance.
   Future<void> runAction(
     Future<bool> Function() action, {
     String? successMessage,

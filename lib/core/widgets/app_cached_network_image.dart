@@ -6,9 +6,10 @@ import 'package:flutter/material.dart';
 /// Uses the shared network image cache so remote images stay fast and
 /// consistent across the app.
 class AppCachedNetworkImage extends StatelessWidget {
+  /// Creates cached network image widget.
   const AppCachedNetworkImage({
-    super.key,
     required this.imageUrl,
+    super.key,
     this.width,
     this.height,
     this.fit,
@@ -20,15 +21,34 @@ class AppCachedNetworkImage extends StatelessWidget {
     this.errorBuilder,
   });
 
+  /// Remote image URL.
   final String imageUrl;
+
+  /// Target width.
   final double? width;
+
+  /// Target height.
   final double? height;
+
+  /// Box fit applied to the image.
   final BoxFit? fit;
+
+  /// In-memory cache width.
   final int? cacheWidth;
+
+  /// In-memory cache height.
   final int? cacheHeight;
+
+  /// Filter quality used while painting image.
   final FilterQuality filterQuality;
+
+  /// Whether old image should stay visible during URL changes.
   final bool gaplessPlayback;
+
+  /// Alignment used while painting image.
   final Alignment alignment;
+
+  /// Optional error widget builder.
   final ImageErrorWidgetBuilder? errorBuilder;
 
   @override

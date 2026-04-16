@@ -3,8 +3,10 @@ import 'package:recipe_scraper/recipe_scraper.dart';
 
 /// Formats scraped recipe data into strings shown in the app.
 class PreparedMealRecipeImportFormatter {
+  /// The prepared meal recipe import formatter.
   const PreparedMealRecipeImportFormatter();
 
+  /// Format ingredient line.
   String formatIngredientLine(Ingredient ingredient, {String? localeName}) {
     final parts = <String>[];
     final quantity = formatQuantity(
@@ -25,6 +27,7 @@ class PreparedMealRecipeImportFormatter {
     return parts.join(' ').trim();
   }
 
+  /// Format quantity.
   String formatQuantity(num value, {String? localeName}) {
     if (value == value.roundToDouble()) {
       return value.toInt().toString();
@@ -36,6 +39,7 @@ class PreparedMealRecipeImportFormatter {
     return formatter.format(value);
   }
 
+  /// Normalize recipe image url.
   String? normalizeRecipeImageUrl(String? value) {
     if (value == null) {
       return null;

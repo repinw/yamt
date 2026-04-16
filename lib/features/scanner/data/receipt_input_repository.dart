@@ -11,16 +11,19 @@ part 'receipt_input_repository.g.dart';
 
 const int _maxBatchSelectionCount = 20;
 
+/// Image picker.
 @riverpod
 ImagePicker imagePicker(Ref ref) {
   return ImagePicker();
 }
 
+/// File picker.
 @riverpod
 FilePicker filePicker(Ref ref) {
   return FilePicker.platform;
 }
 
+/// Receipt input repository.
 @riverpod
 ReceiptInputRepository receiptInputRepository(Ref ref) {
   return DeviceReceiptInputRepository(
@@ -31,10 +34,13 @@ ReceiptInputRepository receiptInputRepository(Ref ref) {
 
 /// Abstraction for receipt input sources used by the controller layer.
 abstract interface class ReceiptInputRepository {
+  /// Pick from camera.
   Future<ReceiptInputResult> pickFromCamera();
 
+  /// Pick from file.
   Future<ReceiptInputResult> pickFromFile();
 
+  /// Pick from files.
   Future<ReceiptInputBatchResult> pickFromFiles();
 }
 
@@ -44,6 +50,7 @@ abstract interface class ReceiptInputRepository {
 /// flow through controller tests with a fake [ReceiptInputRepository], while
 /// end-to-end plugin behavior is validated in integration/manual testing.
 class DeviceReceiptInputRepository implements ReceiptInputRepository {
+  /// Creates an instance.
   DeviceReceiptInputRepository({
     required ImagePicker imagePicker,
     required FilePicker filePicker,

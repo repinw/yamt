@@ -10,14 +10,20 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Resolved presentation for the compact week balance banner.
 class WeekBalanceSummaryBannerContent {
+  /// The week balance summary banner content.
   const WeekBalanceSummaryBannerContent({
     required this.message,
     required this.accentColor,
     required this.backgroundColor,
   });
 
+  /// The message.
   final String message;
+
+  /// The accent color.
   final Color accentColor;
+
+  /// The background color.
   final Color backgroundColor;
 }
 
@@ -60,6 +66,7 @@ WeekBalanceSummaryBannerContent resolveWeekBalanceSummaryBannerContent({
   );
 }
 
+/// Resolve displayed week overview.
 CalorieWeekOverview resolveDisplayedWeekOverview(
   AsyncValue<CalorieWeekOverview> weekOverviewState, {
   required double goalKcal,
@@ -72,6 +79,7 @@ CalorieWeekOverview resolveDisplayedWeekOverview(
       );
 }
 
+/// Handle visible window settled.
 void handleVisibleWindowSettled(WidgetRef ref, DateTime visibleWindowEnd) {
   final previousWindowEnd = ref.read(calorieVisibleWindowControllerProvider);
   final normalizedWindowEnd = normalizeDiaryDay(visibleWindowEnd);

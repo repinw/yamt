@@ -4,21 +4,41 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 
 /// Tabs shown in the shared home shell.
-enum HomeTabType { inventory, diary, statistics, settings }
+enum HomeTabType {
+  /// Inventory.
+  inventory,
+
+  /// Diary.
+  diary,
+
+  /// Statistics.
+  statistics,
+
+  /// Settings.
+  settings,
+}
 
 /// Top app bar used by the home shell pages.
 class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
+  /// The home top bar.
   const HomeTopBar({
-    super.key,
     required this.title,
     required this.actions,
+    super.key,
     this.titleColor,
     this.titleIcon,
   });
 
+  /// The title.
   final String title;
+
+  /// The actions.
   final List<Widget> actions;
+
+  /// The title color.
   final Color? titleColor;
+
+  /// The title icon.
   final IconData? titleIcon;
 
   @override
@@ -88,29 +108,41 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
 
 /// Data needed to render one item in the home bottom navigation.
 class HomeNavItem {
+  /// The home nav item.
   const HomeNavItem({required this.icon, required this.label});
 
+  /// The icon.
   final IconData icon;
+
+  /// The label.
   final String label;
 }
 
 /// UI state and action for a single home navigation entry.
 class HomeNavEntry {
+  /// The home nav entry.
   const HomeNavEntry({
     required this.item,
     required this.isSelected,
     required this.onTap,
   });
 
+  /// The item.
   final HomeNavItem item;
+
+  /// Whether selected.
   final bool isSelected;
+
+  /// The on tap.
   final VoidCallback onTap;
 }
 
 /// Bottom glass navigation bar used by the home shell pages.
 class HomeBottomNavBar extends StatelessWidget {
-  const HomeBottomNavBar({super.key, required this.entries});
+  /// The home bottom nav bar.
+  const HomeBottomNavBar({required this.entries, super.key});
 
+  /// The entries.
   final List<HomeNavEntry> entries;
 
   @override

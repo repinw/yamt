@@ -7,18 +7,24 @@ import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_product_selection_widgets.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// The inventory barcode candidate sheet key.
 const inventoryBarcodeCandidateSheetKey = Key(
   'inventory_barcode_candidate_sheet',
 );
 
+/// Defines inventory barcode candidate picker sheet.
 class InventoryBarcodeCandidatePickerSheet extends StatelessWidget {
+  /// The inventory barcode candidate picker sheet.
   const InventoryBarcodeCandidatePickerSheet({
-    super.key,
     required this.candidates,
     required this.onSelect,
+    super.key,
   });
 
+  /// The candidates.
   final List<InventoryBarcodeLookupCandidate> candidates;
+
+  /// The on select.
   final ValueChanged<InventoryBarcodeLookupCandidate> onSelect;
 
   @override

@@ -25,8 +25,8 @@ Uri? resolveOffProductSearchUri() {
 
 /// Returns the configured timeout for OFF product search requests.
 Duration offProductSearchTimeout() {
-  final seconds = _offProductSearchTimeoutSeconds < 1
+  const seconds = _offProductSearchTimeoutSeconds < 1
       ? 1
       : _offProductSearchTimeoutSeconds;
-  return Duration(seconds: seconds);
+  return const Duration(seconds: seconds);
 }

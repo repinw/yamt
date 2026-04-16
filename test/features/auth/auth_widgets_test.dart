@@ -6,10 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:yamt/features/auth/provider/auth_repository.dart';
-import 'package:yamt/features/auth/provider/google_auth_controller.dart';
-import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/auth_ui_constants.dart';
+import 'package:yamt/features/auth/provider/auth_repository.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/auth/provider/google_auth_controller.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
 import 'package:yamt/features/auth/widgets/login_form.dart';
 import 'package:yamt/features/auth/widgets/register_form.dart';
@@ -85,10 +85,10 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const Scaffold(body: LoginForm()),
+          home: Scaffold(body: LoginForm()),
         ),
       ),
     );
@@ -208,10 +208,10 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const Scaffold(body: RegisterForm()),
+          home: Scaffold(body: RegisterForm()),
         ),
       ),
     );
@@ -254,10 +254,10 @@ void main() {
             (ref) => const Stream<User?>.empty(),
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const WelcomePage(),
+          home: WelcomePage(),
         ),
       ),
     );
@@ -280,10 +280,10 @@ void main() {
             (ref) => const Stream<User?>.empty(),
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const WelcomePage(),
+          home: WelcomePage(),
         ),
       ),
     );
@@ -304,10 +304,10 @@ void main() {
             (ref) => const Stream<User?>.empty(),
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const WelcomePage(),
+          home: WelcomePage(),
         ),
       ),
     );
@@ -344,16 +344,16 @@ void main() {
               (ref) => const Stream<User?>.empty(),
             ),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: MediaQuery(
-              data: const MediaQueryData(
+              data: MediaQueryData(
                 size: Size(320, 560),
                 padding: EdgeInsets.only(top: 44, bottom: 16),
                 viewPadding: EdgeInsets.only(top: 44, bottom: 16),
               ),
-              child: const WelcomePage(),
+              child: WelcomePage(),
             ),
           ),
         ),
@@ -389,10 +389,10 @@ void main() {
             (ref) => const Stream<User?>.empty(),
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const WelcomePage(),
+          home: WelcomePage(),
         ),
       ),
     );
@@ -432,10 +432,10 @@ void main() {
             (ref) => const Stream<User?>.empty(),
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const WelcomePage(),
+          home: WelcomePage(),
         ),
       ),
     );
@@ -467,10 +467,10 @@ void main() {
               (ref) => Future<GoogleSignIn>.value(mockGoogleSignIn),
             ),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const WelcomePage(),
+            home: WelcomePage(),
           ),
         ),
       );
@@ -500,10 +500,10 @@ void main() {
               (ref) => Future<GoogleSignIn>.value(mockGoogleSignIn),
             ),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const WelcomePage(),
+            home: WelcomePage(),
           ),
         ),
       );

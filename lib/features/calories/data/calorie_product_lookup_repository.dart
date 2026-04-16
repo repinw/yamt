@@ -1,18 +1,18 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository.dart';
-import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
+import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_lookup_repository_contract.dart';
-import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
 
@@ -25,20 +25,18 @@ const _lookupErrorUnavailable = 'off_lookup_unavailable';
 const _lookupErrorUnauthenticated = 'unauthenticated';
 const _functionsRegion = 'europe-west1';
 const _lookupCallableName = 'resolveOffProductByBarcode';
-const _lookupCallableTimeout = Duration(seconds: 60);
 const _useFunctionsEmulator = bool.fromEnvironment(
   'USE_FUNCTIONS_EMULATOR',
-  defaultValue: false,
 );
 const _functionsEmulatorHostFromDefine = String.fromEnvironment(
   'FUNCTIONS_EMULATOR_HOST',
-  defaultValue: '',
 );
 const _functionsEmulatorPort = int.fromEnvironment(
   'FUNCTIONS_EMULATOR_PORT',
   defaultValue: 5001,
 );
 
+/// Calorie lookup functions.
 @riverpod
 FirebaseFunctions? calorieLookupFunctions(Ref ref) {
   try {
@@ -64,6 +62,7 @@ FirebaseFunctions? calorieLookupFunctions(Ref ref) {
   }
 }
 
+/// Calorie off lookup client.
 @riverpod
 CalorieOffLookupClient calorieOffLookupClient(Ref ref) {
   final functions = ref.watch(calorieLookupFunctionsProvider);
@@ -73,6 +72,7 @@ CalorieOffLookupClient calorieOffLookupClient(Ref ref) {
   return _FirebaseCallableCalorieOffLookupClient(functions: functions);
 }
 
+/// Calorie product lookup repository.
 @riverpod
 CalorieProductLookupRepositoryContract calorieProductLookupRepository(Ref ref) {
   return OffBackedCalorieProductLookupRepository(
@@ -81,31 +81,51 @@ CalorieProductLookupRepositoryContract calorieProductLookupRepository(Ref ref) {
   );
 }
 
+/// Defines calorie off lookup client.
 abstract interface class CalorieOffLookupClient {
+  /// Lookup by barcode.
   Future<CalorieOffLookupResult> lookupByBarcode(String barcode);
 }
 
-enum CalorieOffLookupStatus { found, notFound, failed }
+/// Defines calorie off lookup status.
+enum CalorieOffLookupStatus {
+  /// Found.
+  found,
 
+  /// Not found.
+  notFound,
+
+  /// Failed.
+  failed,
+}
+
+/// Defines calorie off lookup result.
 class CalorieOffLookupResult {
+  /// Creates a [CalorieOffLookupResult] for found.
+  const CalorieOffLookupResult.found(CalorieProductProfile product)
+    : this._(status: CalorieOffLookupStatus.found, product: product);
+
+  /// Creates a [CalorieOffLookupResult] for not found.
+  const CalorieOffLookupResult.notFound()
+    : this._(status: CalorieOffLookupStatus.notFound);
+
+  /// Creates a [CalorieOffLookupResult] for failed.
+  const CalorieOffLookupResult.failed({required String errorCode})
+    : this._(status: CalorieOffLookupStatus.failed, errorCode: errorCode);
   const CalorieOffLookupResult._({
     required this.status,
     this.product,
     this.errorCode,
   });
 
+  /// The status.
   final CalorieOffLookupStatus status;
+
+  /// The product.
   final CalorieProductProfile? product;
+
+  /// The error code.
   final String? errorCode;
-
-  const CalorieOffLookupResult.found(CalorieProductProfile product)
-    : this._(status: CalorieOffLookupStatus.found, product: product);
-
-  const CalorieOffLookupResult.notFound()
-    : this._(status: CalorieOffLookupStatus.notFound);
-
-  const CalorieOffLookupResult.failed({required String errorCode})
-    : this._(status: CalorieOffLookupStatus.failed, errorCode: errorCode);
 }
 
 class _FirebaseCallableCalorieOffLookupClient
@@ -132,7 +152,7 @@ class _FirebaseCallableCalorieOffLookupClient
     try {
       final callable = _functions.httpsCallable(
         _lookupCallableName,
-        options: HttpsCallableOptions(timeout: _lookupCallableTimeout),
+        options: HttpsCallableOptions(),
       );
       final result = await callable.call(<String, Object?>{'barcode': barcode});
       final payload = _normalizeStringMap(result.data);
@@ -161,14 +181,15 @@ class _FirebaseCallableCalorieOffLookupClient
         );
       }
 
-      final normalizedProduct = <String, dynamic>{...productMap};
-      normalizedProduct.putIfAbsent(
-        'source',
-        () => CalorieProductSource.offBarcode.jsonValue,
-      );
+      final normalizedProduct = <String, dynamic>{...productMap}
+        ..putIfAbsent(
+          'source',
+          () => CalorieProductSource.offBarcode.jsonValue,
+        );
       final nowIso = DateTime.now().toIso8601String();
-      normalizedProduct.putIfAbsent('created_at', () => nowIso);
-      normalizedProduct.putIfAbsent('updated_at', () => nowIso);
+      normalizedProduct
+        ..putIfAbsent('created_at', () => nowIso)
+        ..putIfAbsent('updated_at', () => nowIso);
 
       final profile = CalorieProductProfile.fromJson(normalizedProduct);
       return CalorieOffLookupResult.found(profile);
@@ -223,8 +244,10 @@ class _UnavailableCalorieOffLookupClient implements CalorieOffLookupClient {
   }
 }
 
+/// Defines off backed calorie product lookup repository.
 class OffBackedCalorieProductLookupRepository
     implements CalorieProductLookupRepositoryContract {
+  /// Creates an instance.
   OffBackedCalorieProductLookupRepository({
     required CalorieProductCacheRepositoryContract cacheRepository,
     required CalorieOffLookupClient offLookupClient,

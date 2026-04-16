@@ -4,13 +4,21 @@ import 'package:yamt/features/scanner/domain/receipt_item_input_parser.dart';
 import 'package:yamt/features/scanner/domain/'
     'receipt_item_quantity_normalizer.dart';
 
+/// Defines receipt item editor apply error.
 enum ReceiptItemEditorApplyError {
+  /// Documented member.
   invalidNumber,
+
+  /// Documented member.
   invalidDiscounts,
+
+  /// Documented member.
   invalidWeightUnit,
 }
 
+/// Defines receipt item editor form data.
 class ReceiptItemEditorFormData {
+  /// The receipt item editor form data.
   const ReceiptItemEditorFormData({
     required this.name,
     required this.entryDate,
@@ -26,43 +34,76 @@ class ReceiptItemEditorFormData {
     required this.isDiscount,
   });
 
+  /// The name.
   final String name;
+
+  /// The entry date.
   final DateTime entryDate;
+
+  /// The store name.
   final String storeName;
+
+  /// The quantity text.
   final String quantityText;
+
+  /// The unit price text.
   final String unitPriceText;
+
+  /// The weight text.
   final String weightText;
+
+  /// The brand text.
   final String brandText;
+
+  /// The category text.
   final String categoryText;
+
+  /// The discount entries.
   final List<MapEntry<String, String>> discountEntries;
+
+  /// The receipt date.
   final DateTime? receiptDate;
+
+  /// Whether deposit.
   final bool isDeposit;
+
+  /// Whether discount.
   final bool isDiscount;
 }
 
+/// Defines receipt item editor apply result.
 sealed class ReceiptItemEditorApplyResult {
   const ReceiptItemEditorApplyResult();
 }
 
+/// Defines receipt item editor apply success.
 final class ReceiptItemEditorApplySuccess extends ReceiptItemEditorApplyResult {
+  /// The receipt item editor apply success.
   const ReceiptItemEditorApplySuccess(this.item);
 
+  /// The item.
   final InventoryItem item;
 }
 
+/// Defines receipt item editor apply failure.
 final class ReceiptItemEditorApplyFailure extends ReceiptItemEditorApplyResult {
+  /// The receipt item editor apply failure.
   const ReceiptItemEditorApplyFailure(this.error);
 
+  /// The error.
   final ReceiptItemEditorApplyError error;
 }
 
+/// Defines receipt item editor updater.
 class ReceiptItemEditorUpdater {
+  /// The receipt item editor updater.
   const ReceiptItemEditorUpdater({
     ReceiptItemInputParser inputParser = const ReceiptItemInputParser(),
   }) : _inputParser = inputParser;
 
   final ReceiptItemInputParser _inputParser;
 
+  /// Apply.
   ReceiptItemEditorApplyResult apply({
     required InventoryItem sourceItem,
     required ReceiptItemEditorFormData formData,

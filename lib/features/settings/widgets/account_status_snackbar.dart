@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 
+/// Show account status snack bar.
 void showAccountStatusSnackBar(
   BuildContext context, {
   required String message,

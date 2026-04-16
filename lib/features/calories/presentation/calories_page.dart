@@ -10,15 +10,15 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/calories_page_logic.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
-    'calories_activity_card.dart';
+    'calorie_bundle_details_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_week_balance_summary_banner.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_bundle_details_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_weekly_checkin_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_weekly_checkin_hint_card.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_activity_card.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_day_navigation_pager.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -33,9 +33,9 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calories_workouts_card.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_health_trends_window_controller.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
@@ -45,9 +45,12 @@ import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines calories page.
 class CaloriesPage extends ConsumerStatefulWidget {
+  /// The calories page.
   const CaloriesPage({super.key, this.referenceNow});
 
+  /// The reference now.
   final DateTime? referenceNow;
 
   @override

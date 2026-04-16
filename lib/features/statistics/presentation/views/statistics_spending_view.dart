@@ -16,7 +16,9 @@ import 'package:yamt/features/statistics/presentation/widgets/'
     'statistics_vertical_bar_chart.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines statistics spending view.
 class StatisticsSpendingView extends StatelessWidget {
+  /// The statistics spending view.
   const StatisticsSpendingView({
     super.key,
     required this.timeframe,
@@ -24,8 +26,13 @@ class StatisticsSpendingView extends StatelessWidget {
     required this.onRetry,
   });
 
+  /// The timeframe.
   final StatisticsTimeframe timeframe;
+
+  /// The inventory async.
   final AsyncValue<List<InventoryItem>> inventoryAsync;
+
+  /// The on retry.
   final VoidCallback onRetry;
 
   @override

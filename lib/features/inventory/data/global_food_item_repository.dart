@@ -13,6 +13,7 @@ export 'global_food_item_store.dart';
 
 part 'global_food_item_repository.g.dart';
 
+/// Global food item repository.
 @riverpod
 GlobalFoodItemRepository globalFoodItemRepository(Ref ref) {
   final store = _resolveStore();

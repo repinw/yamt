@@ -18,9 +18,12 @@ part 'calorie_balance_summary_provider.g.dart';
 
 const _balanceSummaryLogName = 'CalorieBalanceSummaryProvider';
 
+/// Defines calorie balance now typedef.
 typedef CalorieBalanceNow = DateTime Function();
 
+/// Defines calorie balance summary data.
 class CalorieBalanceSummaryData {
+  /// The calorie balance summary data.
   const CalorieBalanceSummaryData({
     required this.selectedDay,
     required this.referenceNow,
@@ -42,53 +45,98 @@ class CalorieBalanceSummaryData {
     required this.usedLearnedTdee,
   });
 
+  /// The selected day.
   final DateTime selectedDay;
+
+  /// The reference now.
   final DateTime referenceNow;
+
+  /// The window start date.
   final DateTime windowStartDate;
+
+  /// The balance start date.
   final DateTime balanceStartDate;
+
+  /// The pace window start.
   final DateTime paceWindowStart;
+
+  /// The pace window end.
   final DateTime paceWindowEnd;
+
+  /// The base goal kcal.
   final double baseGoalKcal;
+
+  /// The carryover kcal.
   final double carryoverKcal;
+
+  /// The goal mode.
   final CalorieGoalMode goalMode;
+
+  /// The flexible goal kcal.
   final double flexibleGoalKcal;
+
+  /// The paced goal kcal.
   final double pacedGoalKcal;
+
+  /// The consumed kcal.
   final double consumedKcal;
+
+  /// The delta kcal.
   final double deltaKcal;
+
+  /// The pace ratio.
   final double paceRatio;
+
+  /// The dead zone kcal.
   final double deadZoneKcal;
+
+  /// The range kcal.
   final double rangeKcal;
+
+  /// The activity delta kcal.
   final double activityDeltaKcal;
+
+  /// The used learned tdee.
   final bool usedLearnedTdee;
 
+  /// Whether current day.
   bool get isCurrentDay => _isSameDay(selectedDay, referenceNow);
 
+  /// The uncapped flexible goal kcal.
   double get uncappedFlexibleGoalKcal => baseGoalKcal + carryoverKcal;
 
+  /// The recommends fasting today.
   bool get recommendsFastingToday =>
       isCurrentDay && uncappedFlexibleGoalKcal <= 0;
 
+  /// The recommends fasting rest of day.
   bool get recommendsFastingRestOfDay =>
       isCurrentDay &&
       !recommendsFastingToday &&
       flexibleGoalKcal > 0 &&
       consumedKcal >= flexibleGoalKcal;
 
+  /// Whether within dead zone.
   bool get isWithinDeadZone => deltaKcal.abs() <= deadZoneKcal;
 
+  /// Whether under pace.
   bool get isUnderPace => deltaKcal < -deadZoneKcal;
 
+  /// Whether over pace.
   bool get isOverPace => deltaKcal > deadZoneKcal;
 
+  /// The bar progress.
   double get barProgress =>
       (deltaKcal.abs() / rangeKcal).clamp(0.0, 1.0).toDouble();
 }
 
+/// Calorie balance now.
 @Riverpod(keepAlive: true)
 CalorieBalanceNow calorieBalanceNow(Ref ref) {
   return DateTime.now;
 }
 
+/// Calorie balance summary.
 @riverpod
 Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
   final now = ref.watch(calorieBalanceNowProvider)().toLocal();
@@ -357,6 +405,7 @@ bool _isSameDay(DateTime left, DateTime right) {
   return normalizedLeft == normalizedRight;
 }
 
+/// Resolve calorie balance score.
 double resolveCalorieBalanceScore(CalorieBalanceSummaryData data) {
   if (!data.isUnderPace && !data.isOverPace) {
     return 1.0;
@@ -375,6 +424,7 @@ double resolveCalorieBalanceScore(CalorieBalanceSummaryData data) {
   };
 }
 
+/// Resolve calorie balance center score.
 double resolveCalorieBalanceCenterScore(CalorieBalanceSummaryData data) {
   return switch (data.goalMode) {
     CalorieGoalMode.maintain => 1.0,
@@ -382,6 +432,7 @@ double resolveCalorieBalanceCenterScore(CalorieBalanceSummaryData data) {
   };
 }
 
+/// Resolve calorie balance recovery time.
 DateTime? resolveCalorieBalanceRecoveryTime(CalorieBalanceSummaryData data) {
   if (!data.isCurrentDay || !data.isOverPace || data.baseGoalKcal <= 0) {
     return null;

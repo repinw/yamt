@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 
+/// Inventory segmented button style.
 ButtonStyle inventorySegmentedButtonStyle(BuildContext context) {
   final colors = Theme.of(context).colorScheme;
   final textTheme = Theme.of(context).textTheme;

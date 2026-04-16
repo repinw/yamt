@@ -12,8 +12,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Receipt review list row that shows one mapped or unresolved item.
 class InventoryReceiptReviewItemCard extends StatelessWidget {
+  /// The inventory receipt review item card.
   const InventoryReceiptReviewItemCard({
-    super.key,
     required this.draft,
     required this.index,
     required this.currency,
@@ -21,16 +21,32 @@ class InventoryReceiptReviewItemCard extends StatelessWidget {
     required this.onSwitchTap,
     required this.onConfirmTap,
     required this.canConfirm,
+    super.key,
     this.isActionLoading = false,
   });
 
+  /// The draft.
   final ReceiptReviewItemDraft draft;
+
+  /// The index.
   final int index;
+
+  /// The currency.
   final NumberFormat currency;
+
+  /// The on edit tap.
   final ValueChanged<String> onEditTap;
+
+  /// The on switch tap.
   final ValueChanged<String> onSwitchTap;
+
+  /// The on confirm tap.
   final VoidCallback onConfirmTap;
+
+  /// Whether confirm.
   final bool canConfirm;
+
+  /// Whether action loading.
   final bool isActionLoading;
 
   @override
@@ -483,13 +499,17 @@ String? _ocrHintForDraft({
 
 /// Compact nutrition badges shown for a selected or suggested product.
 class InventoryReceiptNutritionChips extends StatelessWidget {
+  /// The inventory receipt nutrition chips.
   const InventoryReceiptNutritionChips({
-    super.key,
     required this.nutrition,
+    super.key,
     this.leadingLabel,
   });
 
+  /// The nutrition.
   final GlobalFoodNutrition nutrition;
+
+  /// The leading label.
   final String? leadingLabel;
 
   @override
@@ -659,10 +679,10 @@ String? _actionLabelFor({
 
 class _ReceiptItemActionButton extends StatelessWidget {
   const _ReceiptItemActionButton({
-    super.key,
     required this.visualState,
     required this.onPressed,
     required this.isLoading,
+    super.key,
   });
 
   final _ReceiptItemVisualState visualState;
@@ -825,19 +845,29 @@ class _ReceiptItemDiscountRows extends StatelessWidget {
 
 /// Thumbnail that only shows the image already present on the selected product.
 class InventoryReceiptSelectionThumbnail extends StatelessWidget {
+  /// The inventory receipt selection thumbnail.
   const InventoryReceiptSelectionThumbnail({
-    super.key,
     required this.imageUrl,
+    super.key,
     this.icon = Icons.inventory_2_outlined,
     this.backgroundColor,
     this.foregroundColor,
     this.dimension = 28,
   });
 
+  /// The image url.
   final String? imageUrl;
+
+  /// The icon.
   final IconData icon;
+
+  /// The background color.
   final Color? backgroundColor;
+
+  /// The foreground color.
   final Color? foregroundColor;
+
+  /// The dimension.
   final double dimension;
 
   @override

@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines receipt item editor action row.
 class ReceiptItemEditorActionRow extends StatelessWidget {
+  /// The receipt item editor action row.
   const ReceiptItemEditorActionRow({
     super.key,
     required this.onCancelTap,
     required this.onApplyTap,
   });
 
+  /// The on cancel tap.
   final VoidCallback onCancelTap;
+
+  /// The on apply tap.
   final VoidCallback onApplyTap;
 
   @override

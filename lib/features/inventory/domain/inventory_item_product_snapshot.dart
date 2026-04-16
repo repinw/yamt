@@ -1,7 +1,9 @@
 import 'package:yamt/features/inventory/domain/food_fingerprint.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 
+/// Defines inventory item product snapshot.
 class InventoryItemProductSnapshot {
+  /// The inventory item product snapshot.
   const InventoryItemProductSnapshot({
     required this.name,
     this.brand,
@@ -15,17 +17,37 @@ class InventoryItemProductSnapshot {
     this.nutrition,
   });
 
+  /// The name.
   final String name;
+
+  /// The brand.
   final String? brand;
+
+  /// The category.
   final String? category;
+
+  /// The barcode.
   final String? barcode;
+
+  /// The image url.
   final String? imageUrl;
+
+  /// The food fingerprint.
   final String? foodFingerprint;
+
+  /// The serving size.
   final String? servingSize;
+
+  /// The serving quantity.
   final double? servingQuantity;
+
+  /// The serving quantity unit.
   final String? servingQuantityUnit;
+
+  /// The nutrition.
   final GlobalFoodNutrition? nutrition;
 
+  /// Creates a [InventoryItemProductSnapshot] for from json.
   factory InventoryItemProductSnapshot.fromJson(Map<String, dynamic> json) {
     return InventoryItemProductSnapshot(
       name: json['name'] as String? ?? '',
@@ -47,6 +69,7 @@ class InventoryItemProductSnapshot {
     );
   }
 
+  /// To json.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'name': name,
@@ -62,6 +85,7 @@ class InventoryItemProductSnapshot {
     };
   }
 
+  /// Copy with.
   InventoryItemProductSnapshot copyWith({
     String? name,
     Object? brand = _keepValue,
@@ -98,6 +122,7 @@ class InventoryItemProductSnapshot {
     );
   }
 
+  /// The resolved food fingerprint.
   String get resolvedFoodFingerprint {
     final value = foodFingerprint?.trim();
     if (value != null && value.isNotEmpty) {
@@ -106,6 +131,7 @@ class InventoryItemProductSnapshot {
     return computeFoodFingerprint(name: name, brand: brand);
   }
 
+  /// The normalized barcode.
   String? get normalizedBarcode {
     final value = barcode?.trim();
     if (value == null || value.isEmpty) {

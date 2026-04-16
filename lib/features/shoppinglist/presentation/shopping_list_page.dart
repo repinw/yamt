@@ -6,13 +6,15 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_content.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
-    'shopping_quick_add_dialog.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_state_views.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/'
+    'shopping_quick_add_dialog.dart';
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines shopping list page.
 class ShoppingListPage extends ConsumerWidget {
+  /// The shopping list page.
   const ShoppingListPage({super.key});
 
   @override

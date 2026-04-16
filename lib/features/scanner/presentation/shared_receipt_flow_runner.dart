@@ -6,7 +6,9 @@ import 'package:yamt/features/scanner/presentation/receipt_batch_flow_runner.dar
 import 'package:yamt/features/scanner/presentation/receipt_review_flow_runner.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines shared receipt flow runner.
 class SharedReceiptFlowRunner {
+  /// Creates an instance.
   SharedReceiptFlowRunner({
     required this.context,
     required this.ref,
@@ -17,15 +19,22 @@ class SharedReceiptFlowRunner {
          l10n: l10n,
        );
 
+  /// The context.
   final BuildContext context;
+
+  /// The ref.
   final WidgetRef ref;
+
+  /// The l10n.
   final AppLocalizations l10n;
   final ReceiptReviewFlowRunner _reviewFlow;
 
+  /// Dispose.
   void dispose() {
     _reviewFlow.dispose();
   }
 
+  /// Confirm scan.
   Future<bool> confirmScan(SharedReceiptIntent pendingIntent) async {
     final shouldScan = await showSharedReceiptConfirmationDialog(
       context: context,
@@ -35,6 +44,7 @@ class SharedReceiptFlowRunner {
     return shouldScan == true;
   }
 
+  /// Run confirmed.
   Future<void> runConfirmed(SharedReceiptIntent pendingIntent) async {
     if (pendingIntent.isBatch) {
       final runner = ReceiptBatchFlowRunner(
@@ -58,6 +68,7 @@ class SharedReceiptFlowRunner {
   }
 }
 
+/// Show shared receipt confirmation dialog.
 Future<bool?> showSharedReceiptConfirmationDialog({
   required BuildContext context,
   required AppLocalizations l10n,

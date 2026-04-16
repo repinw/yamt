@@ -2,12 +2,15 @@ import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 
+/// The diary activity step goal.
 const int diaryActivityStepGoal = 10000;
 // Rough fallback: about 40 kcal per 1,000 casual walking steps.
 // Keep simple until estimate can use profile data like body weight.
 const double _estimatedCaloriesPerOutsideStep = 0.04;
 
+/// Defines diary activity summary.
 class DiaryActivitySummary {
+  /// The diary activity summary.
   const DiaryActivitySummary({
     required this.day,
     required this.stepGoal,
@@ -18,6 +21,7 @@ class DiaryActivitySummary {
     required this.workouts,
   });
 
+  /// Creates a [DiaryActivitySummary] for locked.
   factory DiaryActivitySummary.locked({
     required DateTime day,
     required HealthDataAccessState accessState,
@@ -34,16 +38,31 @@ class DiaryActivitySummary {
     );
   }
 
+  /// The day.
   final DateTime day;
+
+  /// The step goal.
   final int stepGoal;
+
+  /// The access state.
   final HealthDataAccessState accessState;
+
+  /// The total steps.
   final int? totalSteps;
+
+  /// The steps during workouts.
   final int? stepsDuringWorkouts;
+
+  /// The steps outside workouts.
   final int? stepsOutsideWorkouts;
+
+  /// The workouts.
   final List<HealthWorkoutSession> workouts;
 
+  /// The workout count.
   int get workoutCount => workouts.length;
 
+  /// The progress.
   double get progress {
     final totalSteps = this.totalSteps;
     if (totalSteps == null || stepGoal <= 0) {
@@ -59,12 +78,14 @@ class DiaryActivitySummary {
     return rawProgress;
   }
 
+  /// Whether workout split.
   bool get hasWorkoutSplit =>
       accessState == HealthDataAccessState.ready &&
       stepsDuringWorkouts != null &&
       stepsOutsideWorkouts != null;
 }
 
+/// Build diary activity summary.
 DiaryActivitySummary buildDiaryActivitySummary({
   required DateTime day,
   required DiaryHealthDayData dayData,
@@ -98,6 +119,7 @@ DiaryActivitySummary buildDiaryActivitySummary({
   );
 }
 
+/// Estimate outside activity step calories.
 int estimateOutsideActivityStepCalories(int stepsOutsideWorkouts) {
   if (stepsOutsideWorkouts <= 0) {
     return 0;
@@ -105,6 +127,7 @@ int estimateOutsideActivityStepCalories(int stepsOutsideWorkouts) {
   return (stepsOutsideWorkouts * _estimatedCaloriesPerOutsideStep).round();
 }
 
+/// Calculate diary burned calories.
 int? calculateDiaryBurnedCalories({
   required int? stepsOutsideWorkouts,
   required Iterable<int?> workoutCalories,

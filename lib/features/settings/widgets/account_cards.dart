@@ -3,18 +3,27 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines account guest card.
 class AccountGuestCard extends StatelessWidget {
+  /// The account guest card.
   const AccountGuestCard({
-    super.key,
     required this.l10n,
     required this.isActionLoading,
     required this.onLinkWithGoogle,
     required this.onLinkWithEmailPassword,
+    super.key,
   });
 
+  /// The l10n.
   final AppLocalizations l10n;
+
+  /// Whether action loading.
   final bool isActionLoading;
+
+  /// The on link with google.
   final VoidCallback onLinkWithGoogle;
+
+  /// The on link with email password.
   final VoidCallback onLinkWithEmailPassword;
 
   @override
@@ -50,14 +59,19 @@ class AccountGuestCard extends StatelessWidget {
   }
 }
 
+/// Defines account user info card.
 class AccountUserInfoCard extends StatelessWidget {
+  /// The account user info card.
   const AccountUserInfoCard({
-    super.key,
     required this.user,
     required this.l10n,
+    super.key,
   });
 
+  /// The user.
   final User user;
+
+  /// The l10n.
   final AppLocalizations l10n;
 
   @override

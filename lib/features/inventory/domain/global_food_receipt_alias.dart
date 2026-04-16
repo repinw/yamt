@@ -5,6 +5,7 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 
 /// Learns how a store-specific OCR receipt name maps to a global food item.
 class GlobalFoodReceiptAlias {
+  /// The global food receipt alias.
   const GlobalFoodReceiptAlias({
     required this.id,
     required this.globalFoodItemId,
@@ -74,6 +75,7 @@ class GlobalFoodReceiptAlias {
     );
   }
 
+  /// Creates a [GlobalFoodReceiptAlias] for from json.
   factory GlobalFoodReceiptAlias.fromJson(Map<String, dynamic> json) {
     final globalFoodItemId = (json['global_food_item_id'] as String? ?? '')
         .trim();
@@ -130,20 +132,46 @@ class GlobalFoodReceiptAlias {
     );
   }
 
+  /// The id.
   final String id;
+
+  /// The global food item id.
   final String globalFoodItemId;
+
+  /// The store name.
   final String storeName;
+
+  /// The normalized store name.
   final String normalizedStoreName;
+
+  /// The receipt name.
   final String receiptName;
+
+  /// The normalized receipt name.
   final String normalizedReceiptName;
+
+  /// The compact receipt name.
   final String compactReceiptName;
+
+  /// The receipt search tokens.
   final List<String> receiptSearchTokens;
+
+  /// The lookup key.
   final String lookupKey;
+
+  /// The selection count.
   final int selectionCount;
+
+  /// The global food item.
   final GlobalFoodItem globalFoodItem;
+
+  /// The created at.
   final DateTime createdAt;
+
+  /// The updated at.
   final DateTime updatedAt;
 
+  /// To json.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
@@ -162,6 +190,7 @@ class GlobalFoodReceiptAlias {
     };
   }
 
+  /// Copy with.
   GlobalFoodReceiptAlias copyWith({
     String? id,
     String? globalFoodItemId,
@@ -234,6 +263,7 @@ class GlobalFoodReceiptAlias {
   }
 }
 
+/// Normalize global food receipt alias store name.
 String? normalizeGlobalFoodReceiptAliasStoreName(String? rawValue) {
   final safeStoreName = normalizeStoreName(rawValue);
   if (safeStoreName == null || safeStoreName == 'Unknown') {
@@ -246,6 +276,7 @@ String? normalizeGlobalFoodReceiptAliasStoreName(String? rawValue) {
   return normalized;
 }
 
+/// Normalize global food receipt observed name.
 String? normalizeGlobalFoodReceiptObservedName(String? rawValue) {
   final trimmed = rawValue?.trim();
   if (trimmed == null || trimmed.isEmpty) {
@@ -258,6 +289,7 @@ String? normalizeGlobalFoodReceiptObservedName(String? rawValue) {
   return normalized;
 }
 
+/// Normalize global food receipt alias text.
 String normalizeGlobalFoodReceiptAliasText(String rawValue) {
   final lower = rawValue.trim().toLowerCase();
   if (lower.isEmpty) {
@@ -274,10 +306,12 @@ String normalizeGlobalFoodReceiptAliasText(String rawValue) {
       .trim();
 }
 
+/// Compact global food receipt alias text.
 String compactGlobalFoodReceiptAliasText(String rawValue) {
   return rawValue.replaceAll(' ', '');
 }
 
+/// Build global food receipt alias search tokens.
 List<String> buildGlobalFoodReceiptAliasSearchTokens(String rawValue) {
   final normalized = normalizeGlobalFoodReceiptAliasText(rawValue);
   if (normalized.isEmpty) {
@@ -292,6 +326,7 @@ List<String> buildGlobalFoodReceiptAliasSearchTokens(String rawValue) {
   return tokens.toList(growable: false);
 }
 
+/// Build global food receipt alias lookup key.
 String buildGlobalFoodReceiptAliasLookupKey({
   required String normalizedStoreName,
   required String normalizedReceiptName,
@@ -299,6 +334,7 @@ String buildGlobalFoodReceiptAliasLookupKey({
   return '$normalizedStoreName|$normalizedReceiptName';
 }
 
+/// Build global food receipt alias id.
 String buildGlobalFoodReceiptAliasId({
   required String normalizedStoreName,
   required String normalizedReceiptName,

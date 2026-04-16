@@ -17,6 +17,7 @@ export 'prepared_meal_store.dart';
 
 part 'prepared_meal_repository.g.dart';
 
+/// Prepared meal repository.
 @riverpod
 PreparedMealRepository preparedMealRepository(Ref ref) {
   ref.watch(authStateChangesProvider);

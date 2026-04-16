@@ -9,9 +9,9 @@ import 'package:yamt/core/models/user_profile.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/household/presentation/widgets/'
     'household_sharing_card.dart';
-import 'package:yamt/features/household/provider/household_members_provider.dart';
 import 'package:yamt/features/household/provider/'
     'household_invite_code_controller.dart';
+import 'package:yamt/features/household/provider/household_members_provider.dart';
 import 'package:yamt/features/household/provider/'
     'household_membership_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -82,11 +82,10 @@ void main() {
 
   testWidgets('verified leader sees join and invite sections', (tester) async {
     final user = buildUser(uid: 'host-1', isAnonymous: false);
-    final profile = UserProfile(
+    const profile = UserProfile(
       uid: 'host-1',
       email: 'host@example.com',
       displayName: 'Host',
-      isAnonymous: false,
     );
 
     await tester.pumpWidget(
@@ -102,7 +101,7 @@ void main() {
 
   testWidgets('anonymous users see the verification hint', (tester) async {
     final user = buildUser(uid: 'guest-1', isAnonymous: true);
-    final profile = UserProfile(
+    const profile = UserProfile(
       uid: 'guest-1',
       displayName: 'Guest',
       isAnonymous: true,
@@ -120,18 +119,16 @@ void main() {
 
   testWidgets('guest members see members and the leave action', (tester) async {
     final user = buildUser(uid: 'guest-1', isAnonymous: false);
-    final host = UserProfile(
+    const host = UserProfile(
       uid: 'host-1',
       email: 'host@example.com',
       displayName: 'Host',
-      isAnonymous: false,
     );
-    final guest = UserProfile(
+    const guest = UserProfile(
       uid: 'guest-1',
       householdId: 'host-1',
       email: 'guest@example.com',
       displayName: 'Guest',
-      isAnonymous: false,
     );
 
     await tester.pumpWidget(
@@ -148,18 +145,16 @@ void main() {
 
   testWidgets('leaders can remove members from the list', (tester) async {
     final user = buildUser(uid: 'host-1', isAnonymous: false);
-    final host = UserProfile(
+    const host = UserProfile(
       uid: 'host-1',
       email: 'host@example.com',
       displayName: 'Host',
-      isAnonymous: false,
     );
-    final guest = UserProfile(
+    const guest = UserProfile(
       uid: 'guest-1',
       householdId: 'host-1',
       email: 'guest@example.com',
       displayName: 'Guest',
-      isAnonymous: false,
     );
     String? removedUserId;
 
@@ -190,11 +185,10 @@ void main() {
     tester,
   ) async {
     final user = buildUser(uid: 'host-1', isAnonymous: false);
-    final profile = UserProfile(
+    const profile = UserProfile(
       uid: 'host-1',
       email: 'host@example.com',
       displayName: 'Host',
-      isAnonymous: false,
     );
 
     await tester.pumpWidget(
@@ -208,10 +202,10 @@ void main() {
             ),
           ),
           householdInviteCodeControllerProvider.overrideWith(
-            () => _FakeHouseholdInviteCodeController(),
+            _FakeHouseholdInviteCodeController.new,
           ),
           householdMembershipControllerProvider.overrideWith(
-            () => _FakeHouseholdMembershipController(),
+            _FakeHouseholdMembershipController.new,
           ),
         ],
         child: MaterialApp(

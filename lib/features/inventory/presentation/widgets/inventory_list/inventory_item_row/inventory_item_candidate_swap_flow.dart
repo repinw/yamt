@@ -18,14 +18,20 @@ const _swapGlobalFoodIdPrefix = 'global-food-';
 
 /// Describes the product data that should replace an inventory item.
 class InventoryItemCandidateSwapRequest {
+  /// The inventory item candidate swap request.
   const InventoryItemCandidateSwapRequest({
     required this.resolvedProduct,
     required this.requiresGlobalPersistence,
     required this.weight,
   });
 
+  /// The resolved product.
   final GlobalFoodItem resolvedProduct;
+
+  /// The requires global persistence.
   final bool requiresGlobalPersistence;
+
+  /// The weight.
   final String? weight;
 }
 

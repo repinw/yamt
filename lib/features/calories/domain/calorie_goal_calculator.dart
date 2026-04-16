@@ -3,12 +3,15 @@ import 'dart:developer' show log;
 import 'package:flutter/foundation.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 
+/// The minimum calorie goal kcal.
 const minimumCalorieGoalKcal = 1200.0;
 const _kcalPerKilogram = 7000.0;
 const _daysPerWeek = 7.0;
 const _calculatorLogName = 'CalorieGoalCalculator';
 
+/// Defines calorie goal calculation result.
 class CalorieGoalCalculationResult {
+  /// The calorie goal calculation result.
   const CalorieGoalCalculationResult({
     required this.bmrKcal,
     required this.tdeeKcal,
@@ -17,14 +20,25 @@ class CalorieGoalCalculationResult {
     required this.wasClampedToMinimum,
   });
 
+  /// The bmr kcal.
   final double bmrKcal;
+
+  /// The tdee kcal.
   final double tdeeKcal;
+
+  /// The daily adjustment kcal.
   final double dailyAdjustmentKcal;
+
+  /// The final goal kcal.
   final double finalGoalKcal;
+
+  /// Whether clamped to minimum.
   final bool wasClampedToMinimum;
 }
 
+/// Defines calorie goal calculator.
 abstract final class CalorieGoalCalculator {
+  /// Calculate.
   static CalorieGoalCalculationResult calculate(
     CalorieCalculatorProfile profile,
   ) {

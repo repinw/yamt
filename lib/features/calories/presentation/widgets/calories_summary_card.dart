@@ -1,5 +1,5 @@
-import 'dart:ui' as ui;
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +14,9 @@ import 'package:yamt/features/calories/provider/'
     'calorie_summary_view_mode_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines calories summary card.
 class CaloriesSummaryCard extends ConsumerWidget {
+  /// The calories summary card.
   const CaloriesSummaryCard({
     super.key,
     required this.consumedKcal,
@@ -32,18 +34,43 @@ class CaloriesSummaryCard extends ConsumerWidget {
     required this.fatLabel,
   });
 
+  /// The consumed kcal.
   final double consumedKcal;
+
+  /// The goal kcal.
   final double goalKcal;
+
+  /// The remaining kcal.
   final double remainingKcal;
+
+  /// The progress.
   final double progress;
+
+  /// The total protein.
   final double totalProtein;
+
+  /// The total carbs.
   final double totalCarbs;
+
+  /// The total fat.
   final double totalFat;
+
+  /// The consumed label.
   final String consumedLabel;
+
+  /// The goal label.
   final String goalLabel;
+
+  /// The remaining label.
   final String remainingLabel;
+
+  /// The protein label.
   final String proteinLabel;
+
+  /// The carbs label.
   final String carbsLabel;
+
+  /// The fat label.
   final String fatLabel;
 
   @override
@@ -713,6 +740,7 @@ String _resolveMacroLabel({
   );
 }
 
+/// Resolve macro label for width.
 @visibleForTesting
 String resolveMacroLabelForWidth({
   required String label,
@@ -763,6 +791,7 @@ String resolveMacroLabelForWidth({
   return bestLabel;
 }
 
+/// Does calories summary text fit width.
 @visibleForTesting
 bool doesCaloriesSummaryTextFitWidth({
   TextPainter? textPainter,

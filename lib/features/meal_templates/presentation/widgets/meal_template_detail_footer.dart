@@ -296,25 +296,40 @@ class _FooterOutlineActionButton extends StatelessWidget {
   }
 }
 
+/// Defines meal template footer test harness.
 @visibleForTesting
 class MealTemplateFooterTestHarness extends StatelessWidget {
+  /// The meal template footer test harness.
   const MealTemplateFooterTestHarness({
-    super.key,
     required this.hasAssignmentChanges,
     required this.isCreatingMeal,
     required this.isSavingTemplate,
     required this.canCreateMeal,
+    super.key,
     this.onSaveTemplatePressed,
     this.onAddIngredientsToShoppingListPressed,
     this.onCreateMealPressed,
   });
 
+  /// Whether assignment changes.
   final bool hasAssignmentChanges;
+
+  /// Whether creating meal.
   final bool isCreatingMeal;
+
+  /// Whether saving template.
   final bool isSavingTemplate;
+
+  /// Whether create meal.
   final bool canCreateMeal;
+
+  /// The on save template pressed.
   final Future<void> Function()? onSaveTemplatePressed;
+
+  /// The on add ingredients to shopping list pressed.
   final Future<void> Function()? onAddIngredientsToShoppingListPressed;
+
+  /// The on create meal pressed.
   final Future<void> Function()? onCreateMealPressed;
 
   @override

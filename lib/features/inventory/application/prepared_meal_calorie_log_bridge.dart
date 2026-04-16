@@ -10,13 +10,17 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart'
     show InventoryAmountUnit, InventoryAmountUnitCode;
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
+/// Defines prepared meal state publisher typedef.
 typedef PreparedMealStatePublisher = void Function(List<PreparedMeal> meals);
+
+/// Defines prepared meal save callback typedef.
 typedef PreparedMealSaveCallback =
     Future<bool> Function(
       List<PreparedMeal> previousMeals,
       List<PreparedMeal> nextMeals,
     );
 
+/// The prepared meal calorie log bridge provider.
 final preparedMealCalorieLogBridgeProvider =
     Provider<PreparedMealCalorieLogBridge>((ref) {
       final commitStore = ref.watch(
@@ -47,7 +51,9 @@ final preparedMealCalorieLogBridgeProvider =
       );
     });
 
+/// Defines prepared meal calorie log bridge.
 class PreparedMealCalorieLogBridge {
+  /// Creates an instance.
   PreparedMealCalorieLogBridge({
     required Future<bool> Function(CalorieEntry entry) saveEntry,
     Future<bool> Function(CalorieEntry entry)? saveEntryAtomically,
@@ -63,6 +69,7 @@ class PreparedMealCalorieLogBridge {
   final DateTime Function() _now;
   final String Function() _nextEntryId;
 
+  /// Log consumed prepared meal.
   Future<bool> logConsumedPreparedMeal({
     required PreparedMeal meal,
     required int consumedPortions,
@@ -84,6 +91,7 @@ class PreparedMealCalorieLogBridge {
     return _saveEntry(entry);
   }
 
+  /// Consume prepared meal.
   Future<bool> consumePreparedMeal({
     required List<PreparedMeal> currentMeals,
     required List<PreparedMeal> nextMeals,
@@ -134,6 +142,7 @@ class PreparedMealCalorieLogBridge {
   }
 }
 
+/// Build consumed prepared meal calorie entry.
 CalorieEntry? buildConsumedPreparedMealCalorieEntry({
   required PreparedMeal meal,
   required int consumedPortions,

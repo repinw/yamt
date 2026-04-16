@@ -3,19 +3,27 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'prepared_meal_selection_controller.g.dart';
 
+/// Defines prepared meal selection state.
 class PreparedMealSelectionState {
+  /// The prepared meal selection state.
   const PreparedMealSelectionState({
     this.selectedItemIds = const <String>{},
     this.bindRequestToken = 0,
   });
 
+  /// The selected item ids.
   final Set<String> selectedItemIds;
+
+  /// The bind request token.
   final int bindRequestToken;
 
+  /// Whether selection mode.
   bool get isSelectionMode => selectedItemIds.isNotEmpty;
 
+  /// The selected count.
   int get selectedCount => selectedItemIds.length;
 
+  /// Copy with.
   PreparedMealSelectionState copyWith({
     Set<String>? selectedItemIds,
     int? bindRequestToken,
@@ -46,6 +54,7 @@ class PreparedMealSelectionState {
   }
 }
 
+/// Defines prepared meal selection controller.
 @riverpod
 class PreparedMealSelectionController
     extends _$PreparedMealSelectionController {
@@ -54,6 +63,7 @@ class PreparedMealSelectionController
     return const PreparedMealSelectionState();
   }
 
+  /// Enter selection.
   void enterSelection(String itemId) {
     final trimmedItemId = itemId.trim();
     if (trimmedItemId.isEmpty) {
@@ -65,6 +75,7 @@ class PreparedMealSelectionController
     );
   }
 
+  /// Toggle selection.
   void toggleSelection(String itemId) {
     final trimmedItemId = itemId.trim();
     if (trimmedItemId.isEmpty) {
@@ -77,6 +88,7 @@ class PreparedMealSelectionController
     state = state.copyWith(selectedItemIds: nextSelection);
   }
 
+  /// Clear selection.
   void clearSelection() {
     if (state.selectedItemIds.isEmpty) {
       return;
@@ -84,6 +96,7 @@ class PreparedMealSelectionController
     state = state.copyWith(selectedItemIds: const <String>{});
   }
 
+  /// Request create meal.
   void requestCreateMeal() {
     state = state.copyWith(bindRequestToken: state.bindRequestToken + 1);
   }

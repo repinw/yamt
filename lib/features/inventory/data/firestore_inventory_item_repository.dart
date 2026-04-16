@@ -10,7 +10,9 @@ import 'inventory_user_session.dart';
 
 const String _repositoryLogName = 'FirestoreInventoryItemRepository';
 
+/// Defines firestore inventory item repository.
 class FirestoreInventoryItemRepository implements InventoryItemRepository {
+  /// Creates an instance.
   FirestoreInventoryItemRepository({
     required InventoryUserSession session,
     required SessionShutdownSignal sessionShutdownSignal,

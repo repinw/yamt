@@ -15,20 +15,31 @@ const _miniWeekBalanceWidth = 30.0;
 const _miniWeekBalanceGoalLineHeight = 3.0;
 const _miniWeekBalanceHorizontalInset = 4.0;
 
+/// Defines calories day navigation card.
 class CaloriesDayNavigationCard extends StatelessWidget {
+  /// The calories day navigation card.
   const CaloriesDayNavigationCard({
-    super.key,
     required this.days,
     required this.selectedDay,
-    this.referenceNow,
     required this.onSelectDay,
+    super.key,
+    this.referenceNow,
     this.isPressEnabled = true,
   });
 
+  /// The days.
   final List<CalorieWeekDayOverview> days;
+
+  /// The selected day.
   final DateTime selectedDay;
+
+  /// The reference now.
   final DateTime? referenceNow;
+
+  /// The on select day.
   final ValueChanged<DateTime> onSelectDay;
+
+  /// Whether press enabled.
   final bool isPressEnabled;
 
   @override
@@ -68,22 +79,35 @@ double resolveCaloriesDayNavigationChartMaxKcal(
   );
 }
 
+/// Defines calories day navigation day tile.
 class CaloriesDayNavigationDayTile extends StatelessWidget {
+  /// The calories day navigation day tile.
   const CaloriesDayNavigationDayTile({
-    super.key,
     required this.day,
     required this.isToday,
     required this.isSelected,
     required this.chartMaxKcal,
     required this.onTap,
     required this.isPressEnabled,
+    super.key,
   });
 
+  /// The day.
   final CalorieWeekDayOverview day;
+
+  /// Whether today.
   final bool isToday;
+
+  /// Whether selected.
   final bool isSelected;
+
+  /// The chart max kcal.
   final double chartMaxKcal;
+
+  /// The on tap.
   final VoidCallback onTap;
+
+  /// Whether press enabled.
   final bool isPressEnabled;
 
   @override

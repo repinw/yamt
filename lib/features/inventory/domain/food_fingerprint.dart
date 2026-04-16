@@ -1,3 +1,4 @@
+/// Compute food fingerprint.
 String computeFoodFingerprint({required String name, String? brand}) {
   final normalizedName = _normalizeToken(name);
   final normalizedBrand = _normalizeToken(brand ?? '');

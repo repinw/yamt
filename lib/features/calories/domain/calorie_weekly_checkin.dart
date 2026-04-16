@@ -2,10 +2,19 @@ import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
 
+/// The minimum resolved daily calorie goal kcal.
 const minimumResolvedDailyCalorieGoalKcal = 1500.0;
+
+/// The weekly check in window length days.
 const weeklyCheckInWindowLengthDays = 7;
+
+/// The weekly check in missing intake block threshold.
 const weeklyCheckInMissingIntakeBlockThreshold = 3;
+
+/// The learned tdee stale after days.
 const learnedTdeeStaleAfterDays = 14;
+
+/// The learned tdee urgent stale after days.
 const learnedTdeeUrgentStaleAfterDays = 28;
 const _emaHistoryWeight = 0.7;
 const _emaNewDataWeight = 0.3;
@@ -13,17 +22,24 @@ const _kcalPerKilogram = 7000.0;
 const _maxWeeklyGoalAdjustmentKcal = 200.0;
 const _weeklyCheckInLogName = 'CalorieWeeklyCheckInCalculator';
 
+/// Defines calorie weekly check in weight point.
 class CalorieWeeklyCheckInWeightPoint {
+  /// The calorie weekly check in weight point.
   const CalorieWeeklyCheckInWeightPoint({
     required this.dayIndex,
     required this.weightKg,
   });
 
+  /// The day index.
   final int dayIndex;
+
+  /// The weight kg.
   final double weightKg;
 }
 
+/// Defines calorie weekly check in calculation.
 class CalorieWeeklyCheckInCalculation {
+  /// The calorie weekly check in calculation.
   const CalorieWeeklyCheckInCalculation({
     required this.trendWeightChangePerDay,
     required this.averageIntakeKcal,
@@ -35,17 +51,34 @@ class CalorieWeeklyCheckInCalculation {
     required this.dynamicGoalTodayKcal,
   });
 
+  /// The trend weight change per day.
   final double trendWeightChangePerDay;
+
+  /// The average intake kcal.
   final double averageIntakeKcal;
+
+  /// The calculated true tdee kcal.
   final double calculatedTrueTdeeKcal;
+
+  /// The new goal kcal.
   final double newGoalKcal;
+
+  /// The last week average active kcal.
   final double lastWeekAverageActiveKcal;
+
+  /// The today active kcal.
   final int todayActiveKcal;
+
+  /// The activity delta kcal.
   final double activityDeltaKcal;
+
+  /// The dynamic goal today kcal.
   final double dynamicGoalTodayKcal;
 }
 
+/// Defines calorie weekly check in calculator.
 abstract final class CalorieWeeklyCheckInCalculator {
+  /// Calculate.
   static CalorieWeeklyCheckInCalculation calculate({
     required double previousGoalKcal,
     required List<double> intakeKcalByDay,
@@ -117,6 +150,7 @@ abstract final class CalorieWeeklyCheckInCalculator {
     );
   }
 
+  /// Calculate goal from learned tdee.
   static double calculateGoalFromLearnedTdee({
     required double learnedTdeeKcal,
     required double goalSpeedKgPerWeek,

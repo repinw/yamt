@@ -1,10 +1,11 @@
 import 'package:intl/intl.dart';
 
+/// Default currency code used when no receipt currency is known.
 const String appDefaultCurrencyCode = 'EUR';
 
 const Map<String, String> _currencySymbolCodes = <String, String>{
   '€': 'EUR',
-  '\$': 'USD',
+  r'$': 'USD',
   '£': 'GBP',
   '¥': 'JPY',
   '￥': 'JPY',

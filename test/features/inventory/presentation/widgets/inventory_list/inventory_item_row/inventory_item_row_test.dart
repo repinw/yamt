@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/inventory_item_row.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_image_tile.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/inventory_item_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/remaining_progress_bar.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'

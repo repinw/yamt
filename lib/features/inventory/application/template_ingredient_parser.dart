@@ -1,13 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
+/// The template ingredient parser provider.
 final templateIngredientParserProvider = Provider<TemplateIngredientParser>((
   ref,
 ) {
   return const TemplateIngredientParser();
 });
 
+/// Defines template ingredient requirement.
 class TemplateIngredientRequirement {
+  /// The template ingredient requirement.
   const TemplateIngredientRequirement({
     required this.amount,
     required this.unit,
@@ -16,16 +19,28 @@ class TemplateIngredientRequirement {
     this.allowsDirectPieceInventoryMatch = true,
   });
 
+  /// The amount.
   final int amount;
+
+  /// The unit.
   final InventoryAmountUnit unit;
+
+  /// The name.
   final String name;
+
+  /// The count measure label.
   final String? countMeasureLabel;
+
+  /// Whether direct piece inventory match.
   final bool allowsDirectPieceInventoryMatch;
 }
 
+/// Defines template ingredient parser.
 class TemplateIngredientParser {
+  /// The template ingredient parser.
   const TemplateIngredientParser();
 
+  /// Parse requirement.
   TemplateIngredientRequirement? parseRequirement({
     required String ingredient,
     required int selectedPortions,
@@ -82,6 +97,7 @@ class TemplateIngredientParser {
     );
   }
 
+  /// Pending ingredient label.
   String pendingIngredientLabel({
     required String originalIngredient,
     required TemplateIngredientRequirement? requirement,
@@ -97,6 +113,7 @@ class TemplateIngredientParser {
     );
   }
 
+  /// Format pending ingredient.
   String formatPendingIngredient({
     required int amount,
     required InventoryAmountUnit unit,

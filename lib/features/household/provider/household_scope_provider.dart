@@ -4,16 +4,22 @@ import 'package:yamt/features/household/provider/household_members_provider.dart
 
 part 'household_scope_provider.g.dart';
 
+/// Defines household data owner recovery state.
 class HouseholdDataOwnerRecoveryState {
+  /// The household data owner recovery state.
   const HouseholdDataOwnerRecoveryState({
     required this.staleOwnerUserId,
     required this.personalUserId,
   });
 
+  /// The stale owner user id.
   final String staleOwnerUserId;
+
+  /// The personal user id.
   final String personalUserId;
 }
 
+/// Household data owner user id.
 @riverpod
 String? householdDataOwnerUserId(Ref ref) {
   final user = ref.watch(authStateChangesProvider).asData?.value;
@@ -29,6 +35,7 @@ String? householdDataOwnerUserId(Ref ref) {
   return user.uid;
 }
 
+/// Defines household data owner recovery.
 @riverpod
 class HouseholdDataOwnerRecovery extends _$HouseholdDataOwnerRecovery {
   @override
@@ -36,6 +43,7 @@ class HouseholdDataOwnerRecovery extends _$HouseholdDataOwnerRecovery {
     return null;
   }
 
+  /// Recover to personal scope.
   void recoverToPersonalScope({
     required String staleOwnerUserId,
     required String personalUserId,
@@ -53,11 +61,13 @@ class HouseholdDataOwnerRecovery extends _$HouseholdDataOwnerRecovery {
     );
   }
 
+  /// Clear.
   void clear() {
     state = null;
   }
 }
 
+/// Effective household data owner user id.
 @riverpod
 String? effectiveHouseholdDataOwnerUserId(Ref ref) {
   final actualDataOwnerUserId = ref.watch(householdDataOwnerUserIdProvider);
@@ -79,6 +89,7 @@ String? effectiveHouseholdDataOwnerUserId(Ref ref) {
   return normalizedActualDataOwnerUserId;
 }
 
+/// Household has additional members.
 @riverpod
 bool householdHasAdditionalMembers(Ref ref) {
   final members = ref.watch(householdMembersProvider).asData?.value;

@@ -9,9 +9,10 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/status_line.dart';
 
+/// Defines inventory tile header layout.
 class InventoryTileHeaderLayout extends StatelessWidget {
+  /// The inventory tile header layout.
   const InventoryTileHeaderLayout({
-    super.key,
     required this.leading,
     required this.title,
     required this.progressRatio,
@@ -20,6 +21,7 @@ class InventoryTileHeaderLayout extends StatelessWidget {
     required this.totalUnits,
     required this.remainingUnits,
     required this.isExpanded,
+    super.key,
     this.titleStyle,
     this.badgeText,
     this.statusText,
@@ -32,23 +34,58 @@ class InventoryTileHeaderLayout extends StatelessWidget {
     this.expandIndicatorKey,
   });
 
+  /// The leading.
   final Widget leading;
+
+  /// The title.
   final String title;
+
+  /// The title style.
   final TextStyle? titleStyle;
+
+  /// The badge text.
   final String? badgeText;
+
+  /// The status text.
   final String? statusText;
+
+  /// The status color.
   final Color? statusColor;
+
+  /// The progress ratio.
   final double progressRatio;
+
+  /// The progress label.
   final String progressLabel;
+
+  /// The segmented by units.
   final bool segmentedByUnits;
+
+  /// The total units.
   final int totalUnits;
+
+  /// The remaining units.
   final int remainingUnits;
+
+  /// The action.
   final Widget? action;
+
+  /// The show selection checkbox.
   final bool showSelectionCheckbox;
+
+  /// Whether selected.
   final bool isSelected;
+
+  /// The show expand indicator.
   final bool showExpandIndicator;
+
+  /// Whether expanded.
   final bool isExpanded;
+
+  /// The expand indicator enabled.
   final bool expandIndicatorEnabled;
+
+  /// The expand indicator key.
   final Key? expandIndicatorKey;
 
   @override

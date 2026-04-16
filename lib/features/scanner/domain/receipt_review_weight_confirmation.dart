@@ -3,6 +3,7 @@ import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 const _amountParser = InventoryAmountParser();
 
+/// Should require receipt weight confirmation.
 bool shouldRequireReceiptWeightConfirmation(ReceiptReviewItemDraft draft) {
   if (!draft.canBeSavedToInventory) {
     return false;
@@ -42,6 +43,7 @@ bool shouldRequireReceiptWeightConfirmation(ReceiptReviewItemDraft draft) {
       itemAmount.unit != candidateAmount.unit;
 }
 
+/// Normalize receipt review weight.
 String? normalizeReceiptReviewWeight(String? value) {
   final trimmed = value?.trim();
   if (trimmed == null || trimmed.isEmpty) {

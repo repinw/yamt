@@ -8,11 +8,13 @@ part 'auth_form_controller.g.dart';
 
 const _authFormControllerLogName = 'AuthFormController';
 
+/// Defines auth form controller.
 @riverpod
 class AuthFormController extends _$AuthFormController {
   @override
   FutureOr<void> build() {}
 
+  /// Sign in with email and password.
   Future<void> signInWithEmailAndPassword({
     required String email,
     required String password,
@@ -29,6 +31,7 @@ class AuthFormController extends _$AuthFormController {
     state = result;
   }
 
+  /// Create user with email and password.
   Future<void> createUserWithEmailAndPassword({
     required String email,
     required String password,

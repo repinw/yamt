@@ -3,19 +3,28 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/shared/widgets/email_password_credentials_form.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines link email password dialog.
 class LinkEmailPasswordDialog extends StatefulWidget {
+  /// The link email password dialog.
   const LinkEmailPasswordDialog({
-    super.key,
     required this.l10n,
     required this.onSubmitCredentials,
     required this.errorMessageFor,
+    super.key,
     this.shouldBubbleSubmitError,
   });
 
+  /// The l10n.
   final AppLocalizations l10n;
+
+  /// Documented member.
   final Future<void> Function({required String email, required String password})
   onSubmitCredentials;
+
+  /// The error message for.
   final String Function(Object error) errorMessageFor;
+
+  /// Whether bubble submit error.
   final bool Function(Object error)? shouldBubbleSubmitError;
 
   @override

@@ -2,13 +2,16 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 
+/// Defines inventory sorted items cache.
 class InventorySortedItemsCache {
+  /// The inventory sorted items cache.
   const InventorySortedItemsCache({
     required this.signature,
     required this.sortedItemIds,
     required this.sortMode,
   });
 
+  /// Creates a [InventorySortedItemsCache] for from items.
   factory InventorySortedItemsCache.fromItems(
     List<InventoryItem> items, {
     required InventoryItemSortMode sortMode,
@@ -20,10 +23,16 @@ class InventorySortedItemsCache {
     );
   }
 
+  /// The signature.
   final String signature;
+
+  /// The sorted item ids.
   final List<String> sortedItemIds;
+
+  /// The sort mode.
   final InventoryItemSortMode sortMode;
 
+  /// Update.
   InventorySortedItemsCache update(
     List<InventoryItem> items, {
     required InventoryItemSortMode sortMode,
@@ -35,6 +44,7 @@ class InventorySortedItemsCache {
     return InventorySortedItemsCache.fromItems(items, sortMode: sortMode);
   }
 
+  /// Materialize.
   List<InventoryItem> materialize(List<InventoryItem> items) {
     final byId = <String, InventoryItem>{
       for (final item in items) item.id: item,
@@ -52,6 +62,7 @@ class InventorySortedItemsCache {
   }
 }
 
+/// Sort inventory items.
 List<InventoryItem> sortInventoryItems(
   List<InventoryItem> source, {
   required InventoryItemSortMode sortMode,

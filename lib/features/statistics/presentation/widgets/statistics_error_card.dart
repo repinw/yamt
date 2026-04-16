@@ -4,9 +4,12 @@ import 'package:yamt/features/statistics/presentation/widgets/'
     'statistics_surface_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines statistics error card.
 class StatisticsErrorCard extends StatelessWidget {
+  /// The statistics error card.
   const StatisticsErrorCard({super.key, required this.onRetry});
 
+  /// The on retry.
   final VoidCallback onRetry;
 
   @override

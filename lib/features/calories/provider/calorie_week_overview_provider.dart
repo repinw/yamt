@@ -19,30 +19,43 @@ part 'calorie_week_overview_provider.g.dart';
 
 const _weekOverviewLogName = 'CalorieWeekOverviewProvider';
 
+/// Defines calorie week consumption day snapshot.
 class CalorieWeekConsumptionDaySnapshot {
+  /// The calorie week consumption day snapshot.
   const CalorieWeekConsumptionDaySnapshot({
     required this.date,
     required this.totalKcal,
     required this.entryCount,
   });
 
+  /// The date.
   final DateTime date;
+
+  /// The total kcal.
   final double totalKcal;
+
+  /// The entry count.
   final int entryCount;
 }
 
+/// Defines calorie week consumption snapshot.
 class CalorieWeekConsumptionSnapshot {
+  /// The calorie week consumption snapshot.
   const CalorieWeekConsumptionSnapshot({
     required this.days,
     required this.totalConsumedKcal,
   });
 
+  /// The days.
   final List<CalorieWeekConsumptionDaySnapshot> days;
+
+  /// The total consumed kcal.
   final double totalConsumedKcal;
 }
 
 /// Aggregate data for one visible day in the diary week strip.
 class CalorieWeekDayOverview {
+  /// The calorie week day overview.
   const CalorieWeekDayOverview({
     required this.date,
     required this.totalKcal,
@@ -50,20 +63,31 @@ class CalorieWeekDayOverview {
     required this.entryCount,
   });
 
+  /// The date.
   final DateTime date;
+
+  /// The total kcal.
   final double totalKcal;
+
+  /// The goal kcal.
   final double goalKcal;
+
+  /// The entry count.
   final int entryCount;
 
+  /// Whether entries.
   bool get hasEntries => entryCount > 0;
 
+  /// Whether within goal.
   bool get isWithinGoal => hasEntries && totalKcal <= goalKcal;
 
+  /// Whether over goal.
   bool get isOverGoal => hasEntries && totalKcal > goalKcal;
 }
 
 /// Overview for the rolling 7-day diary strip ending at the visible window end.
 class CalorieWeekOverview {
+  /// The calorie week overview.
   const CalorieWeekOverview({
     required this.days,
     required this.totalConsumedKcal,
@@ -76,17 +100,35 @@ class CalorieWeekOverview {
     required this.nextGoalStartDate,
   });
 
+  /// The days.
   final List<CalorieWeekDayOverview> days;
+
+  /// The total consumed kcal.
   final double totalConsumedKcal;
+
+  /// The total goal kcal.
   final double totalGoalKcal;
+
+  /// The remaining kcal.
   final double remainingKcal;
+
+  /// The balance start date.
   final DateTime balanceStartDate;
+
+  /// The carryover before today kcal.
   final double carryoverBeforeTodayKcal;
+
+  /// The today flexible goal kcal.
   final double todayFlexibleGoalKcal;
+
+  /// The goal starts in future.
   final bool goalStartsInFuture;
+
+  /// The next goal start date.
   final DateTime? nextGoalStartDate;
 }
 
+/// Calorie week consumption snapshot.
 @riverpod
 Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshot(
   Ref ref,
@@ -97,6 +139,7 @@ Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshot(
   );
 }
 
+/// Calorie week consumption snapshot for window.
 @riverpod
 Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshotForWindow(
   Ref ref,
@@ -134,6 +177,7 @@ Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshotForWindow(
   );
 }
 
+/// Calorie week overview.
 @riverpod
 Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
   final visibleWindowEnd = ref.watch(calorieVisibleWindowControllerProvider);
@@ -142,6 +186,7 @@ Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
   );
 }
 
+/// Calorie week overview for window.
 @riverpod
 Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
   Ref ref,
@@ -211,6 +256,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
   );
 }
 
+/// Calorie week day overview for date.
 @riverpod
 Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
   Ref ref,

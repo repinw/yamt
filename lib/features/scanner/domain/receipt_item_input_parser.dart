@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 /// Parses and validates editable receipt item inputs from the review UI.
 class ReceiptItemInputParser {
+  /// The receipt item input parser.
   const ReceiptItemInputParser();
 
   /// Parses [quantityText] and [unitPriceText].

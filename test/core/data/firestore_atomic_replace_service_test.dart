@@ -50,6 +50,65 @@ Future<void> _seedStaleDocuments({
 }
 
 void main() {
+  test('replaceAll stays atomic exactly at transaction write limit', () async {
+    final firestore = _HookedFakeFirebaseFirestore();
+    final collection = _itemsCollectionRef(
+      firestore: firestore,
+      userId: 'user-atomic-limit',
+    );
+    await collection.doc('stale').set(<String, dynamic>{'name': 'Old'});
+
+    var sawUpsertBeforeDeleteCallback = false;
+    final service = FirestoreAtomicReplaceService(
+      firestore: firestore,
+      maxFirestoreTransactionWrites: 2,
+    );
+    await service.replaceAll(
+      collection: collection,
+      documentsById: <String, Map<String, dynamic>>{
+        'keep': <String, dynamic>{'name': 'Fresh'},
+      },
+      onBeforeDeleteStaleDocuments: () async {
+        sawUpsertBeforeDeleteCallback =
+            (await collection.doc('keep').get()).exists;
+      },
+    );
+
+    expect(sawUpsertBeforeDeleteCallback, isFalse);
+    expect(firestore.runTransactionCalls, 1);
+  });
+
+  test(
+    'replaceAll falls back when transaction write limit is exceeded',
+    () async {
+      final firestore = _HookedFakeFirebaseFirestore();
+      final collection = _itemsCollectionRef(
+        firestore: firestore,
+        userId: 'user-fallback-limit',
+      );
+      await collection.doc('stale').set(<String, dynamic>{'name': 'Old'});
+
+      var sawUpsertBeforeDeleteCallback = false;
+      final service = FirestoreAtomicReplaceService(
+        firestore: firestore,
+        maxFirestoreTransactionWrites: 1,
+      );
+      await service.replaceAll(
+        collection: collection,
+        documentsById: <String, Map<String, dynamic>>{
+          'keep': <String, dynamic>{'name': 'Fresh'},
+        },
+        onBeforeDeleteStaleDocuments: () async {
+          sawUpsertBeforeDeleteCallback =
+              (await collection.doc('keep').get()).exists;
+        },
+      );
+
+      expect(sawUpsertBeforeDeleteCallback, isTrue);
+      expect(firestore.runTransactionCalls, 1);
+    },
+  );
+
   test('replaceAll uses atomic transaction under write limit', () async {
     final firestore = _HookedFakeFirebaseFirestore();
     final collection = _itemsCollectionRef(

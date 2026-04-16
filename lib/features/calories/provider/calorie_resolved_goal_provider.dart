@@ -15,7 +15,9 @@ part 'calorie_resolved_goal_provider.g.dart';
 
 const _resolvedGoalLogName = 'ResolvedCalorieGoalProvider';
 
+/// Defines resolved calorie goal data.
 class ResolvedCalorieGoalData {
+  /// The resolved calorie goal data.
   const ResolvedCalorieGoalData({
     required this.day,
     required this.storedGoalKcal,
@@ -27,16 +29,32 @@ class ResolvedCalorieGoalData {
     required this.wasClampedToMinimum,
   });
 
+  /// The day.
   final DateTime day;
+
+  /// The stored goal kcal.
   final double storedGoalKcal;
+
+  /// The goal kcal.
   final double goalKcal;
+
+  /// The activity delta kcal.
   final double activityDeltaKcal;
+
+  /// The last week average active kcal.
   final double lastWeekAverageActiveKcal;
+
+  /// The today active kcal.
   final int todayActiveKcal;
+
+  /// The used learned tdee.
   final bool usedLearnedTdee;
+
+  /// Whether clamped to minimum.
   final bool wasClampedToMinimum;
 }
 
+/// Resolved calorie goal for day.
 @riverpod
 Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
   Ref ref,

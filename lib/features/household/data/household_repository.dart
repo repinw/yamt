@@ -13,6 +13,7 @@ const _invitesCollection = 'household_invites';
 const _inviteCodeLifetime = Duration(days: 1);
 const _maxInviteCodeGenerationAttempts = 10;
 
+/// Household repository.
 @riverpod
 HouseholdRepository householdRepository(Ref ref) {
   final user = ref.watch(authStateChangesProvider).asData?.value;
@@ -31,7 +32,9 @@ HouseholdRepository householdRepository(Ref ref) {
   );
 }
 
+/// Defines household repository.
 class HouseholdRepository {
+  /// Creates an instance.
   HouseholdRepository({
     required FirebaseFirestore firestore,
     required String currentUserId,
@@ -55,6 +58,7 @@ class HouseholdRepository {
   final String? _currentHouseholdId;
   final Random _random;
 
+  /// Generate invite code.
   Future<String> generateInviteCode() async {
     _assertVerifiedLeader();
 
@@ -73,6 +77,7 @@ class HouseholdRepository {
     throw const HouseholdInviteCodeGenerationFailedException();
   }
 
+  /// Join household.
   Future<void> joinHousehold(String code) async {
     if (_currentHouseholdId != null) {
       throw const HouseholdLeaveRequiredException();
@@ -104,6 +109,7 @@ class HouseholdRepository {
     }, SetOptions(merge: true));
   }
 
+  /// Leave household.
   Future<void> leaveHousehold() {
     if (_currentHouseholdId == null) {
       throw const HouseholdMembershipRequiredException();
@@ -115,6 +121,7 @@ class HouseholdRepository {
     }, SetOptions(merge: true));
   }
 
+  /// Remove member.
   Future<void> removeMember(String userId) async {
     _assertVerifiedLeader();
     final normalizedUserId = userId.trim();

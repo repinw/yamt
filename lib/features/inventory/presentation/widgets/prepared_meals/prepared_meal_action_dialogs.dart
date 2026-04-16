@@ -9,6 +9,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const _defaultPreparedMealPortions = 1;
 const _preparedMealDialogsLogName = 'PreparedMealDialogs';
+
+/// Defines prepared meal day picker typedef.
 typedef PreparedMealDayPicker =
     Future<DateTime?> Function({
       required BuildContext context,
@@ -17,18 +19,26 @@ typedef PreparedMealDayPicker =
       required DateTime lastDate,
     });
 
+/// Defines prepared meal eat dialog result.
 class PreparedMealEatDialogResult {
+  /// The prepared meal eat dialog result.
   const PreparedMealEatDialogResult({
     required this.portions,
     required this.mealType,
     required this.loggedDay,
   });
 
+  /// The portions.
   final int portions;
+
+  /// The meal type.
   final MealType mealType;
+
+  /// The logged day.
   final DateTime loggedDay;
 }
 
+/// Show prepared meal eat dialog.
 Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
   BuildContext context,
   PreparedMeal meal, {
@@ -47,6 +57,7 @@ Future<PreparedMealEatDialogResult?> showPreparedMealEatDialog(
   );
 }
 
+/// Show prepared meal portion dialog.
 Future<int?> showPreparedMealPortionDialog({
   required BuildContext context,
   required PreparedMeal meal,

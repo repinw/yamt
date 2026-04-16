@@ -4,13 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
-import 'package:yamt/core/theme/theme_option_labels.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
+import 'package:yamt/core/theme/theme_option_labels.dart';
 import 'package:yamt/features/auth/provider/auth_error_view_model.dart';
 import 'package:yamt/features/auth/provider/guest_name_setup_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines guest name setup page.
 class GuestNameSetupPage extends ConsumerStatefulWidget {
+  /// The guest name setup page.
   const GuestNameSetupPage({super.key});
 
   @override
@@ -18,7 +20,7 @@ class GuestNameSetupPage extends ConsumerStatefulWidget {
 }
 
 class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
-  static const _colorPreviewSize = AppSpacing.xl;
+  static const double _colorPreviewSize = AppSpacing.xl;
 
   final _nameController = TextEditingController();
   String? _errorText;

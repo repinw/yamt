@@ -4,22 +4,35 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines shopping list item tile.
 class ShoppingListItemTile extends StatelessWidget {
+  /// The shopping list item tile.
   const ShoppingListItemTile({
-    super.key,
     required this.item,
     required this.l10n,
     required this.currency,
     required this.onDismissed,
     required this.onIncrement,
     required this.onDecrement,
+    super.key,
   });
 
+  /// The item.
   final ShoppingListItem item;
+
+  /// The l10n.
   final AppLocalizations l10n;
+
+  /// The currency.
   final NumberFormat currency;
+
+  /// The on dismissed.
   final ValueChanged<String> onDismissed;
+
+  /// The on increment.
   final ValueChanged<String> onIncrement;
+
+  /// The on decrement.
   final ValueChanged<String> onDecrement;
 
   @override

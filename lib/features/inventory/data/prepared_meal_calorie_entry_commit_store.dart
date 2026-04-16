@@ -14,6 +14,7 @@ const _usersCollection = 'users';
 const _calorieEntriesCollection = 'calorie_entries';
 const _preparedMealsCollection = 'prepared_meals';
 
+/// The prepared meal calorie entry commit store provider.
 final preparedMealCalorieEntryCommitStoreProvider =
     Provider<PreparedMealCalorieEntryCommitStore?>((ref) {
       final currentUserId = ref
@@ -36,12 +37,16 @@ final preparedMealCalorieEntryCommitStoreProvider =
       );
     });
 
+/// Defines prepared meal calorie entry commit store.
 abstract interface class PreparedMealCalorieEntryCommitStore {
+  /// Commit entry and prepared meal.
   Future<bool> commitEntryAndPreparedMeal({required CalorieEntry entry});
 }
 
+/// Defines firestore prepared meal calorie entry commit store.
 class FirestorePreparedMealCalorieEntryCommitStore
     implements PreparedMealCalorieEntryCommitStore {
+  /// The firestore prepared meal calorie entry commit store.
   const FirestorePreparedMealCalorieEntryCommitStore({
     required FirebaseFirestore firestore,
     required String? currentUserId,

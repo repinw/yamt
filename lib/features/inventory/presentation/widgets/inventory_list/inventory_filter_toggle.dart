@@ -1,22 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 
+/// Defines inventory filter toggle.
 class InventoryFilterToggle extends StatelessWidget {
+  /// The inventory filter toggle.
   const InventoryFilterToggle({
-    super.key,
     required this.value,
     required this.enabled,
     required this.label,
     required this.onChanged,
+    super.key,
     this.description,
     this.icon,
   });
 
+  /// The value.
   final bool value;
+
+  /// The enabled.
   final bool enabled;
+
+  /// The label.
   final String label;
+
+  /// The on changed.
   final ValueChanged<bool> onChanged;
+
+  /// The description.
   final String? description;
+
+  /// The icon.
   final IconData? icon;
 
   @override

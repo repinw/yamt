@@ -26,6 +26,7 @@ abstract final class _ReceiptAnalysisRepositoryFailures {
   );
 }
 
+/// Receipt analysis repository.
 @riverpod
 ReceiptAnalysisRepository receiptAnalysisRepository(Ref ref) {
   return DeviceReceiptAnalysisRepository(
@@ -34,7 +35,9 @@ ReceiptAnalysisRepository receiptAnalysisRepository(Ref ref) {
   );
 }
 
+/// Defines device receipt analysis repository.
 class DeviceReceiptAnalysisRepository implements ReceiptAnalysisRepository {
+  /// Creates an instance.
   DeviceReceiptAnalysisRepository({
     required ReceiptTemplateModelClient templateModelClient,
     required ReceiptAnalysisParser parser,

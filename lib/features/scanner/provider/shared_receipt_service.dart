@@ -13,11 +13,13 @@ part 'shared_receipt_service.g.dart';
 
 const String _sharedReceiptServiceLogName = 'SharedReceiptService';
 
+/// File share intent.
 @Riverpod(keepAlive: true)
 FileShareIntent fileShareIntent(Ref ref) {
   return FileShareIntent.instance;
 }
 
+/// Defines shared receipt service.
 @Riverpod(keepAlive: true)
 class SharedReceiptService extends _$SharedReceiptService {
   StreamSubscription<List<SharedMediaFile>>? _mediaSubscription;

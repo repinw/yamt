@@ -11,6 +11,7 @@ export 'firestore_global_food_receipt_alias_repository.dart';
 export 'global_food_receipt_alias_repository_contract.dart';
 export 'global_food_receipt_alias_store.dart';
 
+/// The global food receipt alias repository provider.
 final globalFoodReceiptAliasRepositoryProvider =
     Provider<GlobalFoodReceiptAliasRepository>((ref) {
       final store = _resolveStore();

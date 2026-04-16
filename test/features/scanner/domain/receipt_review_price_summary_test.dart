@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/domain/receipt_review_price_summary.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
+import 'package:yamt/features/scanner/domain/receipt_review_price_summary.dart';
 
 InventoryItem _item({
   required String id,

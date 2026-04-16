@@ -3,7 +3,9 @@ import 'package:recipe_scraper/recipe_scraper.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_recipe_import_formatter.dart';
 
+/// Defines prepared meal recipe import.
 class PreparedMealRecipeImport {
+  /// The prepared meal recipe import.
   const PreparedMealRecipeImport({
     required this.recipeUrl,
     this.imageUrl,
@@ -13,21 +15,36 @@ class PreparedMealRecipeImport {
     this.instructionsPreview = const <String>[],
   });
 
+  /// The recipe url.
   final String recipeUrl;
+
+  /// The image url.
   final String? imageUrl;
+
+  /// The title.
   final String title;
+
+  /// The servings.
   final int servings;
+
+  /// The ingredients.
   final List<String> ingredients;
+
+  /// The instructions preview.
   final List<String> instructionsPreview;
 }
 
+/// Defines prepared meal recipe importer.
 class PreparedMealRecipeImporter {
+  /// The prepared meal recipe importer.
   const PreparedMealRecipeImporter({
     this.formatter = const PreparedMealRecipeImportFormatter(),
   });
 
+  /// The formatter.
   final PreparedMealRecipeImportFormatter formatter;
 
+  /// Import recipe.
   Future<PreparedMealRecipeImport?> importRecipe(
     String recipeUrl, {
     String? localeName,
@@ -61,6 +78,7 @@ class PreparedMealRecipeImporter {
   }
 }
 
+/// The prepared meal recipe importer provider.
 final preparedMealRecipeImporterProvider = Provider<PreparedMealRecipeImporter>(
   (ref) {
     return const PreparedMealRecipeImporter();

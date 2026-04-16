@@ -2,15 +2,23 @@ import 'dart:developer' show log;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 
 const _deleteFlowLogName = 'CalorieEntryDeleteFlow';
 
-enum CalorieEntryDeleteFailureReason { deleteFailed, restoreFailed }
+/// Defines calorie entry delete failure reason.
+enum CalorieEntryDeleteFailureReason {
+  /// Delete failed.
+  deleteFailed,
 
+  /// Restore failed.
+  restoreFailed,
+}
+
+/// Defines calorie entry delete result.
 class CalorieEntryDeleteResult {
   const CalorieEntryDeleteResult._({
     required this.isSuccess,
@@ -18,9 +26,11 @@ class CalorieEntryDeleteResult {
     this.failureReason,
   });
 
+  /// Creates a [CalorieEntryDeleteResult] for success.
   const CalorieEntryDeleteResult.success({required bool restoredToInventory})
     : this._(isSuccess: true, restoredToInventory: restoredToInventory);
 
+  /// Creates a [CalorieEntryDeleteResult] for failure.
   const CalorieEntryDeleteResult.failure(CalorieEntryDeleteFailureReason reason)
     : this._(
         isSuccess: false,
@@ -28,11 +38,17 @@ class CalorieEntryDeleteResult {
         failureReason: reason,
       );
 
+  /// Whether success.
   final bool isSuccess;
+
+  /// The restored to inventory.
   final bool restoredToInventory;
+
+  /// The failure reason.
   final CalorieEntryDeleteFailureReason? failureReason;
 }
 
+/// The calorie entry delete flow provider.
 final calorieEntryDeleteFlowProvider = Provider<CalorieEntryDeleteFlow>((ref) {
   return CalorieEntryDeleteFlow(
     deleteEntryById: ref
@@ -58,7 +74,9 @@ final calorieEntryDeleteFlowProvider = Provider<CalorieEntryDeleteFlow>((ref) {
   );
 });
 
+/// Defines calorie entry delete flow.
 class CalorieEntryDeleteFlow {
+  /// The calorie entry delete flow.
   const CalorieEntryDeleteFlow({
     required Future<bool> Function(String entryId) deleteEntryById,
     required Future<bool> Function(String itemId, int amount)
@@ -97,6 +115,7 @@ class CalorieEntryDeleteFlow {
   })
   _rollbackRestoredPreparedMeal;
 
+  /// Delete entry.
   Future<CalorieEntryDeleteResult> deleteEntry({
     required CalorieEntry entry,
     required bool restoreToInventory,

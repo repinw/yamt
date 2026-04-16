@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// Read positive int.
 int? readPositiveInt(Object? value) {
   if (value is int) {
     return value > 0 ? value : null;
@@ -11,6 +12,7 @@ int? readPositiveInt(Object? value) {
   return null;
 }
 
+/// Read positive double.
 double? readPositiveDouble(Object? value) {
   if (value is num) {
     final normalized = value.toDouble();
@@ -25,6 +27,7 @@ double? readPositiveDouble(Object? value) {
   return null;
 }
 
+/// Read date time.
 DateTime? readDateTime(Object? value) {
   if (value is DateTime) {
     return value;

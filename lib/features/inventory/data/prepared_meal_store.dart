@@ -7,25 +7,36 @@ const String _storeLogName = 'FirestorePreparedMealStore';
 const String _usersCollection = 'users';
 const String _preparedMealsCollection = 'prepared_meals';
 
+/// Defines prepared meal document.
 class PreparedMealDocument {
+  /// The prepared meal document.
   const PreparedMealDocument({required this.id, required this.data});
 
+  /// The id.
   final String id;
+
+  /// The data.
   final Map<String, dynamic> data;
 }
 
+/// Defines prepared meal store.
 abstract interface class PreparedMealStore {
+  /// Read all.
   Future<List<PreparedMealDocument>> readAll({required String userId});
 
+  /// Watch all.
   Stream<List<PreparedMealDocument>> watchAll({required String userId});
 
+  /// Replace all.
   Future<bool> replaceAll({
     required String userId,
     required Map<String, Map<String, dynamic>> documentsById,
   });
 }
 
+/// Defines firestore prepared meal store.
 class FirestorePreparedMealStore implements PreparedMealStore {
+  /// The firestore prepared meal store.
   const FirestorePreparedMealStore({required FirebaseFirestore firestore})
     : _firestore = firestore;
 

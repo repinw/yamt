@@ -1,6 +1,7 @@
 import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 
+/// Create diary health service.
 DiaryHealthService createDiaryHealthService() {
   return const _UnsupportedDiaryHealthService();
 }

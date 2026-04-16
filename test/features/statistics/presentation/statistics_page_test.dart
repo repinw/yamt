@@ -9,8 +9,8 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/calorie_health_trend_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_health_trend_snapshot.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/'
     'calorie_health_trends_page.dart';
@@ -223,12 +223,23 @@ void main() {
     addTearDown(settingsRepository.dispose);
 
     await tester.pumpWidget(
-      _buildHarness(
-        inventoryController: inventoryController,
-        mealsController: mealsController,
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
+      ProviderScope(
         overrides: [
+          inventoryItemsControllerProvider.overrideWith(
+            () => inventoryController,
+          ),
+          preparedMealsControllerProvider.overrideWith(
+            () => mealsController,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          inventoryDiscardEventRepositoryProvider.overrideWithValue(
+            const _FakeInventoryDiscardEventRepository(
+              <InventoryDiscardEvent>[],
+            ),
+          ),
           calorieHealthTrendSnapshotProvider.overrideWith((ref) async {
             return CalorieHealthTrendSnapshot(
               points: [
@@ -245,6 +256,12 @@ void main() {
             );
           }),
         ],
+        child: const MaterialApp(
+          locale: Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: StatisticsPage()),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -313,7 +330,6 @@ Widget _buildHarness({
   required PreparedMealsController mealsController,
   required CalorieLogRepositoryContract logRepository,
   required CalorieSettingsRepository settingsRepository,
-  List<dynamic> overrides = const <dynamic>[],
 }) {
   return ProviderScope(
     overrides: [
@@ -324,13 +340,12 @@ Widget _buildHarness({
       inventoryDiscardEventRepositoryProvider.overrideWithValue(
         const _FakeInventoryDiscardEventRepository(<InventoryDiscardEvent>[]),
       ),
-      ...overrides,
     ],
-    child: MaterialApp(
-      locale: const Locale('en'),
+    child: const MaterialApp(
+      locale: Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const Scaffold(body: StatisticsPage()),
+      home: Scaffold(body: StatisticsPage()),
     ),
   );
 }
@@ -340,7 +355,6 @@ Widget _buildRouterHarness({
   required PreparedMealsController mealsController,
   required CalorieLogRepositoryContract logRepository,
   required CalorieSettingsRepository settingsRepository,
-  List<dynamic> overrides = const <dynamic>[],
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeStatistics,
@@ -365,7 +379,6 @@ Widget _buildRouterHarness({
       inventoryDiscardEventRepositoryProvider.overrideWithValue(
         const _FakeInventoryDiscardEventRepository(<InventoryDiscardEvent>[]),
       ),
-      ...overrides,
     ],
     child: MaterialApp.router(
       locale: const Locale('en'),

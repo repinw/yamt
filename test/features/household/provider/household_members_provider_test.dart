@@ -10,11 +10,10 @@ import 'package:yamt/features/household/provider/household_members_provider.dart
 void main() {
   test('householdMembersProvider returns the leader first', () async {
     final firestore = FakeFirebaseFirestore();
-    final hostProfile = UserProfile(
+    const hostProfile = UserProfile(
       uid: 'host-1',
       email: 'host@example.com',
       displayName: 'Host',
-      isAnonymous: false,
     );
     await firestore.collection('users').doc('host-1').set({
       'uid': 'host-1',
@@ -48,7 +47,7 @@ void main() {
   test('householdMembersProvider returns only the standalone guest '
       'without querying members', () async {
     final firestore = FakeFirebaseFirestore();
-    final guestProfile = UserProfile(uid: 'guest-1', isAnonymous: true);
+    const guestProfile = UserProfile(uid: 'guest-1', isAnonymous: true);
 
     final container = ProviderContainer(
       overrides: [
@@ -92,7 +91,6 @@ void main() {
         latestProfile: const UserProfile(
           uid: 'member-1',
           householdId: 'host-1',
-          isAnonymous: false,
         ),
       ),
       isFalse,

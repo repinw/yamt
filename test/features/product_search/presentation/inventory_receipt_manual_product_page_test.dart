@@ -1092,7 +1092,7 @@ void main() {
   });
 
   testWidgets('failed OCR scan shows a snackbar message', (tester) async {
-    final selectedProduct = const OffProductSearchResult(
+    const selectedProduct = OffProductSearchResult(
       code: '4311596490202',
       name: 'Booster Absolute Zero',
       brand: 'Booster',
@@ -1501,14 +1501,8 @@ void main() {
                   barcode: barcode,
                   quantityLabel: '500 ml',
                   per100Kcal: 11,
-                  per100SaturatedFat: null,
-                  per100PolyunsaturatedFat: null,
-                  per100Protein: null,
                   per100Carbs: 2,
-                  per100Sugar: null,
-                  per100Fiber: null,
                   per100Fat: 0,
-                  per100Salt: null,
                 ),
               );
             },

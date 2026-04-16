@@ -2,6 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 /// Parses numeric JSON values from `num` or locale-like `String` input.
 class FlexibleDoubleConverter implements JsonConverter<double, Object?> {
+  /// The flexible double converter.
   const FlexibleDoubleConverter();
 
   @override
@@ -25,8 +26,10 @@ class FlexibleDoubleConverter implements JsonConverter<double, Object?> {
   }
 }
 
+/// Defines nullable flexible double converter.
 class NullableFlexibleDoubleConverter
     implements JsonConverter<double?, Object?> {
+  /// The nullable flexible double converter.
   const NullableFlexibleDoubleConverter();
 
   @override
@@ -43,7 +46,9 @@ class NullableFlexibleDoubleConverter
   }
 }
 
+/// Defines flexible date time converter.
 class FlexibleDateTimeConverter implements JsonConverter<DateTime, Object?> {
+  /// The flexible date time converter.
   const FlexibleDateTimeConverter();
 
   @override
@@ -69,8 +74,10 @@ class FlexibleDateTimeConverter implements JsonConverter<DateTime, Object?> {
   }
 }
 
+/// Defines nullable flexible date time converter.
 class NullableFlexibleDateTimeConverter
     implements JsonConverter<DateTime?, Object?> {
+  /// The nullable flexible date time converter.
   const NullableFlexibleDateTimeConverter();
 
   @override

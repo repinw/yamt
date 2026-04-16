@@ -2,13 +2,21 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_parsing_utils.dart';
 
+/// The global serving item key prefix.
 const String globalServingItemKeyPrefix = 'global';
+
+/// The fingerprint serving item key prefix.
 const String fingerprintServingItemKeyPrefix = 'fingerprint';
 
+/// Defines serving size suggestion.
 class ServingSizeSuggestion {
+  /// The serving size suggestion.
   const ServingSizeSuggestion({required this.amount, required this.unit});
 
+  /// The amount.
   final double amount;
+
+  /// The unit.
   final ConsumedUnit unit;
 
   @override
@@ -23,7 +31,9 @@ class ServingSizeSuggestion {
   int get hashCode => Object.hash(amount, unit);
 }
 
+/// Defines global food serving suggestion.
 class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
+  /// The global food serving suggestion.
   const GlobalFoodServingSuggestion({
     required this.id,
     required this.itemKey,
@@ -36,6 +46,7 @@ class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
     this.globalFoodItemId,
   });
 
+  /// Creates a [GlobalFoodServingSuggestion] for from json.
   factory GlobalFoodServingSuggestion.fromJson(Map<String, dynamic> json) {
     final amount = _readPositiveDouble(json['amount']) ?? 0;
     final unit = ConsumedUnit.fromJsonValue(json['unit'] as String?);
@@ -53,14 +64,28 @@ class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
     );
   }
 
+  /// The id.
   final String id;
+
+  /// The item key.
   final String itemKey;
+
+  /// The global food item id.
   final String? globalFoodItemId;
+
+  /// The selection count.
   final int selectionCount;
+
+  /// The unique user count.
   final int uniqueUserCount;
+
+  /// The created at.
   final DateTime createdAt;
+
+  /// The updated at.
   final DateTime updatedAt;
 
+  /// To json.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
@@ -75,6 +100,7 @@ class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
     };
   }
 
+  /// Copy with.
   GlobalFoodServingSuggestion copyWith({
     String? id,
     String? itemKey,
@@ -132,25 +158,33 @@ class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
   }
 }
 
+/// Defines global food serving suggestion set.
 class GlobalFoodServingSuggestionSet {
+  /// The global food serving suggestion set.
   const GlobalFoodServingSuggestionSet({
     this.personalSuggestion,
     this.globalSuggestions = const <GlobalFoodServingSuggestion>[],
   });
 
+  /// Creates a [GlobalFoodServingSuggestionSet] for empty.
   const GlobalFoodServingSuggestionSet.empty()
     : personalSuggestion = null,
       globalSuggestions = const <GlobalFoodServingSuggestion>[];
 
+  /// The personal suggestion.
   final ServingSizeSuggestion? personalSuggestion;
+
+  /// The global suggestions.
   final List<GlobalFoodServingSuggestion> globalSuggestions;
 
+  /// The default suggestion.
   ServingSizeSuggestion? get defaultSuggestion {
     return personalSuggestion ??
         (globalSuggestions.isEmpty ? null : globalSuggestions.first);
   }
 }
 
+/// Build global serving item key.
 String? buildGlobalServingItemKey(String? globalFoodItemId) {
   final normalizedId = _readOptionalString(globalFoodItemId);
   if (normalizedId == null || isPendingGlobalFoodItemId(normalizedId)) {
@@ -159,6 +193,7 @@ String? buildGlobalServingItemKey(String? globalFoodItemId) {
   return '${globalServingItemKeyPrefix}_$normalizedId';
 }
 
+/// Build fingerprint serving item key.
 String? buildFingerprintServingItemKey(String? foodFingerprint) {
   final normalized = _readOptionalString(foodFingerprint);
   if (normalized == null) {
@@ -167,6 +202,7 @@ String? buildFingerprintServingItemKey(String? foodFingerprint) {
   return '${fingerprintServingItemKeyPrefix}_$normalized';
 }
 
+/// Build serving suggestion document id.
 String buildServingSuggestionDocumentId({
   required String itemKey,
   required double amount,
@@ -175,14 +211,17 @@ String buildServingSuggestionDocumentId({
   return '${itemKey}_${unit.jsonValue}_${buildServingSuggestionAmountKey(amount)}';
 }
 
+/// Build serving suggestion amount key.
 int buildServingSuggestionAmountKey(double amount) {
   return (normalizeServingSuggestionAmount(amount) * 1000).round();
 }
 
+/// Normalize serving suggestion amount.
 double normalizeServingSuggestionAmount(double amount) {
   return ((amount * 1000).roundToDouble()) / 1000;
 }
 
+/// Compare serving suggestions.
 int compareServingSuggestions(
   GlobalFoodServingSuggestion left,
   GlobalFoodServingSuggestion right,

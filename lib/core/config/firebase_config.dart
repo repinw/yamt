@@ -8,17 +8,10 @@ import 'package:yamt/core/config/firebase_app_check_config.dart';
 import 'package:yamt/firebase_options.dart';
 
 const _firebaseConfigLogName = 'FirebaseConfig';
-const _useAuthEmulator = bool.fromEnvironment(
-  'USE_AUTH_EMULATOR',
-  defaultValue: false,
-);
-const _useFirestoreEmulator = bool.fromEnvironment(
-  'USE_FIRESTORE_EMULATOR',
-  defaultValue: false,
-);
+const _useAuthEmulator = bool.fromEnvironment('USE_AUTH_EMULATOR');
+const _useFirestoreEmulator = bool.fromEnvironment('USE_FIRESTORE_EMULATOR');
 const _emulatorHostFromDefine = String.fromEnvironment(
   'FIREBASE_EMULATOR_HOST',
-  defaultValue: '',
 );
 const _authEmulatorPort = int.fromEnvironment(
   'AUTH_EMULATOR_PORT',
@@ -30,6 +23,7 @@ const _firestoreEmulatorPort = int.fromEnvironment(
 );
 
 // coverage:ignore-file
+/// Initializes Firebase, App Check, and optional local emulators.
 Future<void> setupFirebase() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await setupFirebaseAppCheck();
@@ -42,7 +36,7 @@ Future<void> _configureFirebaseEmulators() async {
     try {
       await FirebaseAuth.instance.useAuthEmulator(host, _authEmulatorPort);
       _trace('Auth emulator enabled at $host:$_authEmulatorPort.');
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       _trace(
         'Auth emulator setup failed.',
         error: error,
@@ -58,7 +52,7 @@ Future<void> _configureFirebaseEmulators() async {
         _firestoreEmulatorPort,
       );
       _trace('Firestore emulator enabled at $host:$_firestoreEmulatorPort.');
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       _trace(
         'Firestore emulator setup failed.',
         error: error,

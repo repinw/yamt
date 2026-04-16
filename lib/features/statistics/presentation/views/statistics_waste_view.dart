@@ -11,14 +11,19 @@ import 'package:yamt/features/statistics/provider/'
     'statistics_waste_data_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines statistics waste view.
 class StatisticsWasteView extends ConsumerWidget {
+  /// The statistics waste view.
   const StatisticsWasteView({
     super.key,
     required this.timeframe,
     required this.onRetry,
   });
 
+  /// The timeframe.
   final StatisticsTimeframe timeframe;
+
+  /// The on retry.
   final VoidCallback onRetry;
 
   @override

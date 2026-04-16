@@ -6,25 +6,33 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 
 part 'auth_repository.g.dart';
 
+/// Defines auth repository.
 abstract interface class AuthRepository {
+  /// The current user id.
   String? get currentUserId;
 
+  /// Sign in with email and password.
   Future<void> signInWithEmailAndPassword({
     required String email,
     required String password,
   });
 
+  /// Create user with email and password.
   Future<void> createUserWithEmailAndPassword({
     required String email,
     required String password,
   });
 
+  /// Sign in anonymously.
   Future<void> signInAnonymously();
 
+  /// Update current user display name.
   Future<void> updateCurrentUserDisplayName({required String displayName});
 }
 
+/// Defines firebase auth repository.
 class FirebaseAuthRepository implements AuthRepository {
+  /// The firebase auth repository.
   const FirebaseAuthRepository(this._auth);
 
   final FirebaseAuth _auth;
@@ -80,6 +88,7 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 }
 
+/// Auth repository.
 @riverpod
 AuthRepository authRepository(Ref ref) {
   return FirebaseAuthRepository(ref.watch(firebaseAuthProvider));

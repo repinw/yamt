@@ -11,14 +11,19 @@ const _discardEventRepositoryLogName = 'InventoryDiscardEventRepository';
 const _usersCollection = 'users';
 const _discardEventsCollection = 'inventory_discard_events';
 
+/// Defines inventory discard event repository.
 abstract interface class InventoryDiscardEventRepository {
+  /// Read all.
   Future<List<InventoryDiscardEvent>> readAll();
 
+  /// Save event.
   Future<bool> saveEvent(InventoryDiscardEvent event);
 }
 
+/// Defines firestore inventory discard event repository.
 class FirestoreInventoryDiscardEventRepository
     implements InventoryDiscardEventRepository {
+  /// Creates an instance.
   FirestoreInventoryDiscardEventRepository({
     required FirebaseFirestore firestore,
     required String? currentUserId,
@@ -152,10 +157,13 @@ class _UnavailableInventoryDiscardEventRepository
   }
 }
 
+/// The inventory discard event repository provider.
 final inventoryDiscardEventRepositoryProvider =
     Provider<InventoryDiscardEventRepository>((ref) {
       ref.watch(authStateChangesProvider);
-      final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
+      final currentUserId = ref.watch(
+        effectiveHouseholdDataOwnerUserIdProvider,
+      );
       final firestore = ref.watch(firebaseFirestoreProvider);
       if (firestore == null) {
         log(

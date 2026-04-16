@@ -10,6 +10,7 @@ import 'package:yamt/features/statistics/domain/statistics_models.dart';
 
 const _statisticsCalorieLogName = 'StatisticsCalorieDataProvider';
 
+/// The statistics calorie data provider.
 final statisticsCalorieDataProvider =
     FutureProvider.family<StatisticsCalorieSnapshot, StatisticsTimeframe>((
       ref,

@@ -1,45 +1,71 @@
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
+/// Defines statistics store value.
 class StatisticsStoreValue {
+  /// The statistics store value.
   const StatisticsStoreValue({
     required this.storeName,
     required this.value,
     required this.itemCount,
   });
 
+  /// The store name.
   final String storeName;
+
+  /// The value.
   final double value;
+
+  /// The item count.
   final int itemCount;
 }
 
+/// Defines statistics expensive entry.
 class StatisticsExpensiveEntry {
+  /// The statistics expensive entry.
   const StatisticsExpensiveEntry({required this.title, required this.value});
 
+  /// The title.
   final String title;
+
+  /// The value.
   final double value;
 }
 
+/// Defines statistics price trend.
 class StatisticsPriceTrend {
+  /// The statistics price trend.
   const StatisticsPriceTrend({
     required this.title,
     required this.latestPrice,
     required this.changeRatio,
   });
 
+  /// The title.
   final String title;
+
+  /// The latest price.
   final double latestPrice;
+
+  /// The change ratio.
   final double changeRatio;
 }
 
+/// Defines statistics spending day value.
 class StatisticsSpendingDayValue {
+  /// The statistics spending day value.
   const StatisticsSpendingDayValue({required this.date, required this.value});
 
+  /// The date.
   final DateTime date;
+
+  /// The value.
   final double value;
 }
 
+/// Defines statistics spending snapshot.
 class StatisticsSpendingSnapshot {
+  /// The statistics spending snapshot.
   const StatisticsSpendingSnapshot({
     required this.currencyCode,
     required this.totalValue,
@@ -49,14 +75,26 @@ class StatisticsSpendingSnapshot {
     required this.dailySpendValues,
   });
 
+  /// The currency code.
   final String? currencyCode;
+
+  /// The total value.
   final double totalValue;
+
+  /// The top stores.
   final List<StatisticsStoreValue> topStores;
+
+  /// The expensive entries.
   final List<StatisticsExpensiveEntry> expensiveEntries;
+
+  /// The price trends.
   final List<StatisticsPriceTrend> priceTrends;
+
+  /// The daily spend values.
   final List<StatisticsSpendingDayValue> dailySpendValues;
 }
 
+/// Calculate purchased inventory value.
 double calculatePurchasedInventoryValue(InventoryItem item) {
   final quantity = item.effectiveInitialQuantity;
   if (quantity <= 0) {
@@ -70,6 +108,7 @@ double calculatePurchasedInventoryValue(InventoryItem item) {
   return (quantity * item.unitPrice) + discountTotal;
 }
 
+/// Build statistics spending snapshot.
 StatisticsSpendingSnapshot buildStatisticsSpendingSnapshot({
   required List<InventoryItem> items,
   required DateTime startDate,
@@ -154,6 +193,7 @@ StatisticsSpendingSnapshot buildStatisticsSpendingSnapshot({
   );
 }
 
+/// Resolve visible spending start date.
 DateTime resolveVisibleSpendingStartDate({
   required Iterable<DateTime> spendingDates,
   required int? maxVisibleDays,

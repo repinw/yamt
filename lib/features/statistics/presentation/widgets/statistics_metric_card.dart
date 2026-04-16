@@ -5,6 +5,7 @@ import 'package:yamt/features/statistics/presentation/widgets/'
 
 /// KPI card used throughout the statistics overview.
 class StatisticsMetricCard extends StatelessWidget {
+  /// The statistics metric card.
   const StatisticsMetricCard({
     super.key,
     required this.title,
@@ -13,9 +14,16 @@ class StatisticsMetricCard extends StatelessWidget {
     this.valueColor,
   });
 
+  /// The title.
   final String title;
+
+  /// The value.
   final String value;
+
+  /// The subtitle.
   final String subtitle;
+
+  /// The value color.
   final Color? valueColor;
 
   @override

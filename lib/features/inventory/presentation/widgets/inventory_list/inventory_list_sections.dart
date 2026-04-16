@@ -6,9 +6,12 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_segmented_button_frame.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines inventory mode toolbar.
 class InventoryModeToolbar extends StatelessWidget {
-  const InventoryModeToolbar({super.key, required this.modeToggle});
+  /// The inventory mode toolbar.
+  const InventoryModeToolbar({required this.modeToggle, super.key});
 
+  /// The mode toggle.
   final Widget modeToggle;
 
   @override
@@ -17,16 +20,23 @@ class InventoryModeToolbar extends StatelessWidget {
   }
 }
 
+/// Defines inventory section header.
 class InventorySectionHeader extends StatelessWidget {
+  /// The inventory section header.
   const InventorySectionHeader({
-    super.key,
     required this.title,
+    super.key,
     this.subtitle,
     this.trailing,
   });
 
+  /// The title.
   final String title;
+
+  /// The subtitle.
   final String? subtitle;
+
+  /// The trailing.
   final Widget? trailing;
 
   @override
@@ -73,16 +83,23 @@ class InventorySectionHeader extends StatelessWidget {
   }
 }
 
+/// Defines inventory filter button.
 class InventoryFilterButton extends StatelessWidget {
+  /// The inventory filter button.
   const InventoryFilterButton({
-    super.key,
     required this.onPressed,
+    super.key,
     this.enabled = true,
     this.tooltip,
   });
 
+  /// The on pressed.
   final VoidCallback onPressed;
+
+  /// The enabled.
   final bool enabled;
+
+  /// The tooltip.
   final String? tooltip;
 
   @override
@@ -99,18 +116,27 @@ class InventoryFilterButton extends StatelessWidget {
   }
 }
 
+/// Defines inventory filters sheet.
 class InventoryFiltersSheet extends StatelessWidget {
+  /// The inventory filters sheet.
   const InventoryFiltersSheet({
-    super.key,
     required this.title,
     required this.subtitle,
     required this.actionLabel,
     required this.children,
+    super.key,
   });
 
+  /// The title.
   final String title;
+
+  /// The subtitle.
   final String subtitle;
+
+  /// The action label.
   final String actionLabel;
+
+  /// The children.
   final List<Widget> children;
 
   @override
@@ -119,7 +145,7 @@ class InventoryFiltersSheet extends StatelessWidget {
     final mediaQuery = MediaQuery.of(context);
     final isCompact = mediaQuery.size.width < 640;
     final borderRadius = isCompact
-        ? BorderRadius.vertical(
+        ? const BorderRadius.vertical(
             top: Radius.circular(AppRadius.xl + AppSpacing.xs),
           )
         : BorderRadius.circular(AppRadius.xl + AppSpacing.md);
@@ -258,9 +284,12 @@ class InventoryFiltersSheet extends StatelessWidget {
   }
 }
 
+/// Defines inventory filters section label.
 class InventoryFiltersSectionLabel extends StatelessWidget {
-  const InventoryFiltersSectionLabel({super.key, required this.label});
+  /// The inventory filters section label.
+  const InventoryFiltersSectionLabel({required this.label, super.key});
 
+  /// The label.
   final String label;
 
   @override
@@ -281,28 +310,47 @@ class InventoryFiltersSectionLabel extends StatelessWidget {
   }
 }
 
+/// Defines inventory sort option card.
 class InventorySortOptionCard extends StatelessWidget {
+  /// The inventory sort option card.
   const InventorySortOptionCard({
-    super.key,
     required this.title,
     required this.icon,
     required this.isSelected,
     required this.enabled,
     required this.onSelect,
+    super.key,
     this.directionLabel,
     this.onToggleDirection,
     this.directionButtonKey,
     this.sortDirectionAscending,
   });
 
+  /// The title.
   final String title;
+
+  /// The icon.
   final IconData icon;
+
+  /// Whether selected.
   final bool isSelected;
+
+  /// The enabled.
   final bool enabled;
+
+  /// The on select.
   final VoidCallback onSelect;
+
+  /// The direction label.
   final String? directionLabel;
+
+  /// The on toggle direction.
   final VoidCallback? onToggleDirection;
+
+  /// The direction button key.
   final Key? directionButtonKey;
+
+  /// The sort direction ascending.
   final bool? sortDirectionAscending;
 
   @override
@@ -511,20 +559,31 @@ class _InventoryFiltersPrimaryButton extends StatelessWidget {
   }
 }
 
+/// Defines inventory section expand button.
 class InventorySectionExpandButton extends StatelessWidget {
+  /// The inventory section expand button.
   const InventorySectionExpandButton({
-    super.key,
     required this.isExpanded,
     required this.semanticLabel,
     required this.onPressed,
+    super.key,
     this.rotationKey,
     this.enabled = true,
   });
 
+  /// Whether expanded.
   final bool isExpanded;
+
+  /// The semantic label.
   final String semanticLabel;
+
+  /// The on pressed.
   final VoidCallback onPressed;
+
+  /// The rotation key.
   final Key? rotationKey;
+
+  /// The enabled.
   final bool enabled;
 
   @override
@@ -550,14 +609,19 @@ class InventorySectionExpandButton extends StatelessWidget {
   }
 }
 
+/// Defines inventory empty state.
 class InventoryEmptyState extends StatelessWidget {
+  /// The inventory empty state.
   const InventoryEmptyState({
-    super.key,
     required this.actionButton,
+    super.key,
     this.message,
   });
 
+  /// The action button.
   final Widget actionButton;
+
+  /// The message.
   final String? message;
 
   @override

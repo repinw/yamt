@@ -1,15 +1,23 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+/// Defines inventory amount unit.
 enum InventoryAmountUnit {
+  /// Creates an instance.
   @JsonValue('g')
   gram,
+
+  /// Creates an instance.
   @JsonValue('ml')
   milliliter,
+
+  /// Documented member.
   @JsonValue('pc')
   piece,
 }
 
+/// Defines inventory amount unit code extension.
 extension InventoryAmountUnitCode on InventoryAmountUnit {
+  /// The code.
   String get code {
     return switch (this) {
       InventoryAmountUnit.gram => 'g',
@@ -19,14 +27,21 @@ extension InventoryAmountUnitCode on InventoryAmountUnit {
   }
 }
 
+/// Defines inventory amount parse result.
 class InventoryAmountParseResult {
+  /// The inventory amount parse result.
   const InventoryAmountParseResult({required this.amount, required this.unit});
 
+  /// The amount.
   final int amount;
+
+  /// The unit.
   final InventoryAmountUnit unit;
 }
 
+/// Defines inventory amount parser.
 class InventoryAmountParser {
+  /// The inventory amount parser.
   const InventoryAmountParser();
 
   static final RegExp _packPattern = RegExp(r'^(\d+)[x\u00D7](.+)$');
@@ -59,6 +74,7 @@ class InventoryAmountParser {
     'stk': (base: InventoryAmountUnit.piece, multiplier: 1.0),
   };
 
+  /// Try parse.
   InventoryAmountParseResult? tryParse({
     required String? rawWeight,
     required int quantity,
