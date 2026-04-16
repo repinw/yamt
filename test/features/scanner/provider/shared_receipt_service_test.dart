@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:file_share_intent/file_share_intent.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/scanner/provider/'
     'pending_shared_receipt_intent.dart';
 import 'package:yamt/features/scanner/provider/shared_receipt_service.dart';

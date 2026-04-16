@@ -20,25 +20,28 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/'
     'inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_templates_controller.dart';
+import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/shoppinglist/provider/'
     'shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-part 'meal_template_detail_content.dart';
-part 'meal_template_detail_ingredient_card.dart';
 part 'meal_template_detail_actions.dart';
+part 'meal_template_detail_content.dart';
 part 'meal_template_detail_helpers.dart';
+part 'meal_template_detail_ingredient_card.dart';
 part 'widgets/meal_template_detail_empty_ingredients_card.dart';
 part 'widgets/meal_template_detail_footer.dart';
 part 'widgets/meal_template_detail_hero_section.dart';
 part 'widgets/meal_template_detail_top_bar.dart';
 
+/// Defines meal template detail page.
 class MealTemplateDetailPage extends ConsumerStatefulWidget {
+  /// The meal template detail page.
   const MealTemplateDetailPage({super.key, required this.templateId});
 
+  /// The template id.
   final String templateId;
 
   @override

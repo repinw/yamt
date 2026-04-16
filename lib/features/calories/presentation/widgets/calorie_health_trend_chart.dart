@@ -5,9 +5,12 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_health_trend_snapshot.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines calorie health trend chart.
 class CalorieHealthTrendChart extends StatelessWidget {
+  /// The calorie health trend chart.
   const CalorieHealthTrendChart({super.key, required this.snapshot});
 
+  /// The snapshot.
   final CalorieHealthTrendSnapshot snapshot;
 
   @override

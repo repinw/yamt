@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'calorie_visible_window_controller.g.dart';
 
+/// Defines calorie visible window controller.
 @riverpod
 class CalorieVisibleWindowController extends _$CalorieVisibleWindowController {
   @override
@@ -9,6 +10,7 @@ class CalorieVisibleWindowController extends _$CalorieVisibleWindowController {
     return _normalize(DateTime.now());
   }
 
+  /// Set window end.
   void setWindowEnd(DateTime value) {
     state = _clampToToday(_normalize(value));
   }

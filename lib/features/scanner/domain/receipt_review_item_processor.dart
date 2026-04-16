@@ -1,29 +1,43 @@
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
+/// Defines receipt review metadata.
 class ReceiptReviewMetadata {
+  /// The receipt review metadata.
   const ReceiptReviewMetadata({
     required this.storeName,
     required this.receiptDate,
     required this.receiptTimeText,
   });
 
+  /// The store name.
   final String storeName;
+
+  /// The receipt date.
   final DateTime? receiptDate;
+
+  /// The receipt time text.
   final String? receiptTimeText;
 }
 
+/// Defines receipt review processing result.
 class ReceiptReviewProcessingResult {
+  /// The receipt review processing result.
   const ReceiptReviewProcessingResult({
     required this.items,
     required this.metadata,
   });
 
+  /// The items.
   final List<ReceiptReviewItemDraft> items;
+
+  /// The metadata.
   final ReceiptReviewMetadata metadata;
 }
 
+/// Defines receipt review item processor.
 class ReceiptReviewItemProcessor {
+  /// The receipt review item processor.
   const ReceiptReviewItemProcessor({
     Set<String> discountKeywords = _defaultDiscountKeywords,
     Set<String> depositKeywords = _defaultDepositKeywords,
@@ -33,6 +47,7 @@ class ReceiptReviewItemProcessor {
   final Set<String> _discountKeywords;
   final Set<String> _depositKeywords;
 
+  /// Process.
   ReceiptReviewProcessingResult process(List<ReceiptReviewItemDraft> items) {
     final mergedItems = _mergeDiscountItems(items);
     final sortedItems = _sortNonFoodItemsToBottom(mergedItems);

@@ -6,7 +6,9 @@ import 'package:yamt/features/household/presentation/widgets/'
     'household_sharing_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines household page.
 class HouseholdPage extends ConsumerWidget {
+  /// The household page.
   const HouseholdPage({super.key});
 
   @override

@@ -6,18 +6,23 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
+/// The manual health weight entries preference key.
 const manualHealthWeightEntriesPreferenceKey =
     'manual_health_weight_entries_v1';
 const _logName = 'ManualHealthWeightRepository';
 
+/// Defines app preferences manual health weight repository.
 class AppPreferencesManualHealthWeightRepository
     implements ManualHealthWeightRepository {
+  /// Creates an instance.
   AppPreferencesManualHealthWeightRepository({
     required AppPreferences preferences,
     this.storageKey = manualHealthWeightEntriesPreferenceKey,
   }) : _preferences = preferences;
 
   final AppPreferences _preferences;
+
+  /// The storage key.
   final String storageKey;
 
   @override

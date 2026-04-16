@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_state.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 part 'calorie_goal_calculator_form_controller.g.dart';
 
+/// Defines calorie goal calculator form controller.
 @riverpod
 class CalorieGoalCalculatorFormController
     extends _$CalorieGoalCalculatorFormController {
@@ -19,26 +20,32 @@ class CalorieGoalCalculatorFormController
     return CalorieGoalCalculatorFormState.initial(initialProfile);
   }
 
+  /// Update sex.
   void updateSex(CalorieCalculatorSex sex) {
     state = state.copyWith(sex: sex);
   }
 
+  /// Update weight kg.
   void updateWeightKg(String value) {
     state = state.copyWith(weightKgText: value);
   }
 
+  /// Update height cm.
   void updateHeightCm(String value) {
     state = state.copyWith(heightCmText: value);
   }
 
+  /// Update age years.
   void updateAgeYears(String value) {
     state = state.copyWith(ageYearsText: value);
   }
 
+  /// Update activity level.
   void updateActivityLevel(CalorieActivityLevelOption option) {
     state = state.copyWith(activityLevelOption: option);
   }
 
+  /// Update goal mode.
   void updateGoalMode(CalorieGoalMode goalMode) {
     if (goalMode == CalorieGoalMode.maintain) {
       final lastGoalSpeed = state.goalSpeedKgPerWeekText.trim() == '0'
@@ -61,6 +68,7 @@ class CalorieGoalCalculatorFormController
     );
   }
 
+  /// Update goal speed kg per week.
   void updateGoalSpeedKgPerWeek(String value) {
     state = state.copyWith(
       goalSpeedKgPerWeekText: value,
@@ -68,6 +76,7 @@ class CalorieGoalCalculatorFormController
     );
   }
 
+  /// Save.
   Future<bool> save({
     required DateTime goalStartAt,
     required int eatingWindowStartMinuteOfDay,

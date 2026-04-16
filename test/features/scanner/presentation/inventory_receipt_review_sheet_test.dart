@@ -1,8 +1,9 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:riverpod/src/framework.dart' show Override;
@@ -65,10 +66,10 @@ const _testNutrition = GlobalFoodNutrition(
 );
 
 Widget _wrap({
-  List<InventoryItem>? items,
-  List<ReceiptReviewItemDraft>? drafts,
   required VoidCallback onCancelTap,
   required Future<void> Function(List<InventoryItem> items) onSaveTap,
+  List<InventoryItem>? items,
+  List<ReceiptReviewItemDraft>? drafts,
   Uint8List? receiptPreviewBytes,
   List<Override> overrides = const <Override>[],
 }) {
@@ -737,24 +738,25 @@ void main() {
   testWidgets('determine action fetches candidates and opens candidate sheet', (
     tester,
   ) async {
-    final externalRepository =
-        _RecordingOffProductSearchRepository(<OffProductSearchResult>[
-          const OffProductSearchResult(
-            code: '4061458029995',
-            name: 'Waffelhörnchen Haselnuss-Vanille',
-            brand: 'Aldi, Froneri, Mucci',
-            packageWeight: '110 ml',
-            nutrition: GlobalFoodNutrition(
-              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-              per100Kcal: 215,
-              per100Protein: 4.2,
-              per100Carbs: 24.8,
-              per100Fat: 9.6,
-              per100Salt: 0.4,
-            ),
-            score: 34,
+    final externalRepository = _RecordingOffProductSearchRepository(
+      <OffProductSearchResult>[
+        const OffProductSearchResult(
+          code: '4061458029995',
+          name: 'Waffelhörnchen Haselnuss-Vanille',
+          brand: 'Aldi, Froneri, Mucci',
+          packageWeight: '110 ml',
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 215,
+            per100Protein: 4.2,
+            per100Carbs: 24.8,
+            per100Fat: 9.6,
+            per100Salt: 0.4,
           ),
-        ]);
+          score: 34,
+        ),
+      ],
+    );
     final matcher = GlobalFoodItemMatcher(
       offProductSearchRepository: externalRepository,
     );

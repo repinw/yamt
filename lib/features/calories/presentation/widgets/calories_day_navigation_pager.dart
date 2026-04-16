@@ -12,24 +12,39 @@ const _dayNavigationStripHeight = 208.0;
 const _dayNavigationPastDayCount = 3650;
 const _dayNavigationSnapDuration = Duration(milliseconds: 180);
 
+/// Defines calories day navigation pager.
 class CaloriesDayNavigationPager extends ConsumerStatefulWidget {
+  /// The calories day navigation pager.
   const CaloriesDayNavigationPager({
-    super.key,
     required this.selectedDay,
     required this.visibleWindowEnd,
     required this.goalKcal,
     required this.visibleDaysOverview,
-    this.referenceNow,
     required this.onSelectDay,
     required this.onWindowSettled,
+    super.key,
+    this.referenceNow,
   });
 
+  /// The selected day.
   final DateTime selectedDay;
+
+  /// The visible window end.
   final DateTime visibleWindowEnd;
+
+  /// The goal kcal.
   final double goalKcal;
+
+  /// The visible days overview.
   final List<CalorieWeekDayOverview> visibleDaysOverview;
+
+  /// The reference now.
   final DateTime? referenceNow;
+
+  /// The on select day.
   final ValueChanged<DateTime> onSelectDay;
+
+  /// The on window settled.
   final ValueChanged<DateTime> onWindowSettled;
 
   @override

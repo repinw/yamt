@@ -3,27 +3,42 @@ import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines shopping list stats card keys.
 class ShoppingListStatsCardKeys {
   const ShoppingListStatsCardKeys._();
 
+  /// The entries value.
   static const entriesValue = Key('shopping_list_stats_entries_value');
+
+  /// The quantity value.
   static const quantityValue = Key('shopping_list_stats_quantity_value');
 }
 
+/// Defines shopping list stats card.
 class ShoppingListStatsCard extends StatelessWidget {
+  /// The shopping list stats card.
   const ShoppingListStatsCard({
-    super.key,
     required this.entryCount,
     required this.totalQuantity,
     required this.estimatedTotal,
     required this.currency,
     required this.l10n,
+    super.key,
   });
 
+  /// The entry count.
   final int entryCount;
+
+  /// The total quantity.
   final int totalQuantity;
+
+  /// The estimated total.
   final double estimatedTotal;
+
+  /// The currency.
   final NumberFormat currency;
+
+  /// The l10n.
   final AppLocalizations l10n;
 
   @override

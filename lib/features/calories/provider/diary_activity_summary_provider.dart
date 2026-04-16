@@ -7,6 +7,7 @@ import 'package:yamt/features/health/provider/health_connection_controller.dart'
 
 part 'diary_activity_summary_provider.g.dart';
 
+/// Diary activity summary.
 @riverpod
 Future<DiaryActivitySummary> diaryActivitySummary(Ref ref) async {
   final selectedDay = ref.watch(calorieDayControllerProvider);

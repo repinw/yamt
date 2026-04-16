@@ -8,8 +8,8 @@ import 'package:yamt/features/household/provider/'
     'household_permission_recovery.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
-import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';

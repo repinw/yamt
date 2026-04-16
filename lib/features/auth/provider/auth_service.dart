@@ -11,16 +11,19 @@ part 'auth_service.g.dart';
 
 const _usersCollection = 'users';
 
+/// Firebase auth.
 @Riverpod(keepAlive: true)
 FirebaseAuth firebaseAuth(Ref ref) {
   return FirebaseAuth.instance;
 }
 
+/// Auth state changes.
 @Riverpod(keepAlive: true)
 Stream<User?> authStateChanges(Ref ref) {
   return ref.watch(firebaseAuthProvider).userChanges();
 }
 
+/// User profile.
 @riverpod
 Stream<UserProfile?> userProfile(Ref ref) {
   final user = ref.watch(authStateChangesProvider).asData?.value;

@@ -16,6 +16,7 @@ part 'off_product_candidate_source.dart';
 const int _globalFoodCandidateQueryLimit = 20;
 const int _globalFoodReviewCandidateLimitPerSource = 5;
 
+/// Global food item matcher.
 @riverpod
 GlobalFoodItemMatcher globalFoodItemMatcher(Ref ref) {
   return GlobalFoodItemMatcher(
@@ -27,7 +28,9 @@ GlobalFoodItemMatcher globalFoodItemMatcher(Ref ref) {
   );
 }
 
+/// Defines global food item matcher.
 class GlobalFoodItemMatcher {
+  /// Creates an instance.
   GlobalFoodItemMatcher({
     GlobalFoodItemRepository? globalFoodItemRepository,
     GlobalFoodReceiptAliasRepository? globalFoodReceiptAliasRepository,
@@ -44,6 +47,7 @@ class GlobalFoodItemMatcher {
   final _GlobalFoodLocalCandidateMatcher _localCandidateMatcher;
   final _OffProductCandidateSource _externalCandidateSource;
 
+  /// Find candidates.
   Future<List<GlobalFoodMatchCandidate>> findCandidates(
     InventoryItem item,
   ) async {
@@ -74,6 +78,7 @@ class GlobalFoodItemMatcher {
     );
   }
 
+  /// Find candidates by item id.
   Future<Map<String, List<GlobalFoodMatchCandidate>>> findCandidatesByItemId(
     Iterable<InventoryItem> items,
   ) async {
@@ -88,6 +93,7 @@ class GlobalFoodItemMatcher {
     return Map<String, List<GlobalFoodMatchCandidate>>.fromEntries(entries);
   }
 
+  /// Default selection for.
   String? defaultSelectionFor(List<GlobalFoodMatchCandidate> candidates) {
     if (candidates.isEmpty) {
       return null;
@@ -95,10 +101,12 @@ class GlobalFoodItemMatcher {
     return candidates.first.item.id;
   }
 
+  /// Default selection needs review for.
   bool defaultSelectionNeedsReviewFor(List<GlobalFoodMatchCandidate> _) {
     return false;
   }
 
+  /// Candidate from external result.
   GlobalFoodMatchCandidate candidateFromExternalResult(
     OffProductSearchResult result,
   ) {

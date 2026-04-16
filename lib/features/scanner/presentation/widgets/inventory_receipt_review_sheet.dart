@@ -6,9 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_match_candidate.dart';
-import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/'
@@ -18,6 +18,8 @@ import 'package:yamt/features/scanner/domain/'
     'receipt_review_weight_confirmation.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
+import 'package:yamt/features/scanner/presentation/widgets/'
+    'inventory_receipt_item_editor_sheet.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_manual_product_page.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
@@ -32,23 +34,29 @@ import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_review_metadata_overview.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_review_price_overview.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
-    'inventory_receipt_item_editor_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Main receipt review content shown inside the full-screen review flow.
 class InventoryReceiptReviewSheet extends ConsumerStatefulWidget {
+  /// The inventory receipt review sheet.
   const InventoryReceiptReviewSheet({
-    super.key,
     required this.items,
     required this.onCancelTap,
     required this.onSaveTap,
+    super.key,
     this.receiptPreviewBytes,
   });
 
+  /// The items.
   final List<ReceiptReviewItemDraft> items;
+
+  /// The on cancel tap.
   final VoidCallback onCancelTap;
+
+  /// The on save tap.
   final Future<void> Function(List<ReceiptReviewItemDraft> items) onSaveTap;
+
+  /// The receipt preview bytes.
   final Uint8List? receiptPreviewBytes;
 
   @override

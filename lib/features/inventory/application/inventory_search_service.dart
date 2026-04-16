@@ -4,8 +4,10 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 /// Filters inventory content with tolerant text matching.
 class InventorySearchService {
+  /// The inventory search service.
   const InventorySearchService();
 
+  /// Filter items.
   List<InventoryItem> filterItems({
     required List<InventoryItem> items,
     required String query,
@@ -25,6 +27,7 @@ class InventorySearchService {
         .toList(growable: false);
   }
 
+  /// Filter prepared meals.
   List<PreparedMeal> filterPreparedMeals({
     required List<PreparedMeal> meals,
     required String query,
@@ -44,6 +47,7 @@ class InventorySearchService {
         .toList(growable: false);
   }
 
+  /// Matches query.
   @visibleForTesting
   bool matchesQuery({required String haystack, required String query}) {
     final queryTokens = _buildSearchTokens(query);
@@ -54,6 +58,7 @@ class InventorySearchService {
     return _matchesSearchTokens(haystack: haystack, queryTokens: queryTokens);
   }
 
+  /// Has approximate compact match.
   @visibleForTesting
   bool hasApproximateCompactMatch({
     required String haystack,
@@ -72,6 +77,7 @@ class InventorySearchService {
     );
   }
 
+  /// Is within edit distance one.
   @visibleForTesting
   bool isWithinEditDistanceOne(String left, String right) {
     return _isWithinEditDistanceOne(

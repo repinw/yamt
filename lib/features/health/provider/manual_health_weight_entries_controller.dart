@@ -3,8 +3,8 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
 import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
 import 'package:yamt/features/health/provider/manual_health_weight_repository_provider.dart';
@@ -13,6 +13,7 @@ part 'manual_health_weight_entries_controller.g.dart';
 
 const _logName = 'ManualHealthWeightEntriesController';
 
+/// Defines manual health weight entries controller.
 @riverpod
 class ManualHealthWeightEntriesController
     extends _$ManualHealthWeightEntriesController {
@@ -21,6 +22,7 @@ class ManualHealthWeightEntriesController
     return ref.read(manualHealthWeightRepositoryProvider).readEntries();
   }
 
+  /// Save entry.
   Future<bool> saveEntry({
     required DateTime day,
     required double weightKg,
@@ -45,6 +47,7 @@ class ManualHealthWeightEntriesController
     );
   }
 
+  /// Delete entry for day.
   Future<bool> deleteEntryForDay(DateTime day) async {
     final previousEntries = await _loadCurrentEntries();
     final normalizedDay = normalizeDiaryDay(day);

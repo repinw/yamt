@@ -515,8 +515,10 @@ class _IngredientPreviewThumbnail extends StatelessWidget {
   }
 }
 
+/// Defines meal template ingredient card test harness.
 @visibleForTesting
 class MealTemplateIngredientCardTestHarness extends StatelessWidget {
+  /// The meal template ingredient card test harness.
   const MealTemplateIngredientCardTestHarness({
     super.key,
     required this.name,
@@ -531,16 +533,35 @@ class MealTemplateIngredientCardTestHarness extends StatelessWidget {
     this.onAssignmentChanged,
   });
 
+  /// The name.
   final String name;
+
+  /// The amount label.
   final String amountLabel;
+
+  /// The raw ingredient.
   final String? rawIngredient;
+
+  /// Whether ignored.
   final bool isIgnored;
+
+  /// The assigned inventory item ids.
   final List<String> assignedInventoryItemIds;
+
+  /// The inventory items.
   final List<InventoryItem> inventoryItems;
+
+  /// The on add to shopping list pressed.
   final Future<void> Function()? onAddToShoppingListPressed;
+
+  /// The on toggle ignored pressed.
   final Future<void> Function()? onToggleIgnoredPressed;
+
+  /// Documented member.
   final void Function(MealTemplateIngredientAssignmentSelection selection)?
   onAssignmentChanged;
+
+  /// The amount conversion.
   final RecipeIngredientAmountConversion? amountConversion;
 
   @override

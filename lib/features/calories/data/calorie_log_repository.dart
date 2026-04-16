@@ -13,11 +13,15 @@ const _repositoryLogName = 'FirestoreCalorieLogRepository';
 const _usersCollection = 'users';
 const _calorieEntriesCollection = 'calorie_entries';
 
+/// Defines calorie log user session.
 abstract interface class CalorieLogUserSession {
+  /// The current user id.
   String? get currentUserId;
 }
 
+/// Defines firestore calorie log repository.
 class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
+  /// Creates an instance.
   FirestoreCalorieLogRepository({
     required CalorieLogUserSession session,
     required FirebaseFirestore firestore,
@@ -300,6 +304,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 }
 
+/// Calorie log repository.
 @riverpod
 CalorieLogRepositoryContract calorieLogRepository(Ref ref) {
   final authState = ref.watch(authStateChangesProvider);

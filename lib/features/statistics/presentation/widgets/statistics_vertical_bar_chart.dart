@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 
+/// Defines statistics bar chart datum.
 class StatisticsBarChartDatum {
+  /// The statistics bar chart datum.
   const StatisticsBarChartDatum({
     required this.label,
     required this.value,
@@ -9,21 +11,32 @@ class StatisticsBarChartDatum {
     this.valueLabel,
   });
 
+  /// The label.
   final String label;
+
+  /// The value.
   final double value;
+
+  /// The goal value.
   final double? goalValue;
+
+  /// The value label.
   final String? valueLabel;
 }
 
 /// Lightweight bar chart for the statistics MVP.
 class StatisticsVerticalBarChart extends StatelessWidget {
+  /// The statistics vertical bar chart.
   const StatisticsVerticalBarChart({
     super.key,
     required this.data,
     this.height = 180,
   });
 
+  /// The data.
   final List<StatisticsBarChartDatum> data;
+
+  /// The height.
   final double height;
 
   @override

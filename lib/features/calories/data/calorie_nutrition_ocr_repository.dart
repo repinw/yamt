@@ -21,25 +21,40 @@ const _vertexLocation = 'global';
 const _defaultMimeType = 'application/octet-stream';
 const _lookupHeaderLength = 32;
 
+/// Defines calorie nutrition ocr error codes.
 abstract final class CalorieNutritionOcrErrorCodes {
+  /// The camera not supported.
   static const cameraNotSupported = 'ocr_camera_not_supported';
+
+  /// The camera pick failed.
   static const cameraPickFailed = 'ocr_camera_pick_failed';
+
+  /// The template config failed.
   static const templateConfigFailed = 'ocr_template_config_failed';
+
+  /// The ai request failed.
   static const aiRequestFailed = 'ocr_ai_request_failed';
+
+  /// The parse failed.
   static const parseFailed = 'ocr_parse_failed';
 }
 
+/// Defines calorie nutrition template config client.
 abstract interface class CalorieNutritionTemplateConfigClient {
+  /// Load template id.
   Future<String> loadTemplateId();
 }
 
+/// Defines calorie nutrition template model client.
 abstract interface class CalorieNutritionTemplateModelClient {
+  /// Generate content.
   Future<String?> generateContent({
     required String templateId,
     required Map<String, Object?> inputs,
   });
 }
 
+/// Calorie nutrition ocr repository.
 @riverpod
 CalorieNutritionOcrRepositoryContract calorieNutritionOcrRepository(Ref ref) {
   final imagePicker = ref.watch(calorieNutritionImagePickerProvider);
@@ -50,11 +65,13 @@ CalorieNutritionOcrRepositoryContract calorieNutritionOcrRepository(Ref ref) {
   );
 }
 
+/// Calorie nutrition image picker.
 @riverpod
 ImagePicker calorieNutritionImagePicker(Ref ref) {
   return ImagePicker();
 }
 
+/// Calorie nutrition template config client.
 @riverpod
 CalorieNutritionTemplateConfigClient calorieNutritionTemplateConfigClient(
   Ref ref,
@@ -64,6 +81,7 @@ CalorieNutritionTemplateConfigClient calorieNutritionTemplateConfigClient(
   );
 }
 
+/// Calorie nutrition template model client.
 @riverpod
 CalorieNutritionTemplateModelClient calorieNutritionTemplateModelClient(
   Ref ref,

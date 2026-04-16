@@ -7,11 +7,13 @@ import 'package:yamt/features/household/provider/household_scope_provider.dart';
 
 part 'household_membership_controller.g.dart';
 
+/// Defines household membership controller.
 @riverpod
 class HouseholdMembershipController extends _$HouseholdMembershipController {
   @override
   FutureOr<void> build() {}
 
+  /// Join household.
   Future<void> joinHousehold(String code) async {
     await _runAction(() async {
       await ref.read(householdRepositoryProvider).joinHousehold(code);
@@ -20,6 +22,7 @@ class HouseholdMembershipController extends _$HouseholdMembershipController {
     });
   }
 
+  /// Leave household.
   Future<void> leaveHousehold() async {
     await _runAction(() async {
       await ref.read(householdRepositoryProvider).leaveHousehold();
@@ -28,6 +31,7 @@ class HouseholdMembershipController extends _$HouseholdMembershipController {
     });
   }
 
+  /// Remove member.
   Future<void> removeMember(String userId) async {
     await _runAction(() async {
       await ref.read(householdRepositoryProvider).removeMember(userId);

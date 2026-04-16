@@ -17,9 +17,9 @@ import 'package:yamt/features/inventory/application/serving_suggestion_resolver.
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -33,6 +33,7 @@ part 'inventory_item_eat_sheet_input_sections.dart';
 part 'inventory_item_eat_sheet_models.dart';
 part 'inventory_item_eat_sheet_view.dart';
 
+/// Show inventory item eat sheet.
 Future<InventoryItemEatRequest?> showInventoryItemEatSheet({
   required BuildContext context,
   required InventoryItem item,

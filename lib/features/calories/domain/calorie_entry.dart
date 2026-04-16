@@ -4,15 +4,22 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 
 part 'calorie_entry.g.dart';
 
+/// Defines consumed unit.
 @JsonEnum(valueField: 'jsonValue')
 enum ConsumedUnit {
+  /// Grams.
   grams('g'),
-  milliliters('ml');
+
+  /// Milliliters.
+  milliliters('ml')
+  ;
 
   const ConsumedUnit(this.jsonValue);
 
+  /// The json value.
   final String jsonValue;
 
+  /// From json value.
   static ConsumedUnit fromJsonValue(String? value) {
     return switch (value) {
       'ml' => ConsumedUnit.milliliters,
@@ -21,8 +28,10 @@ enum ConsumedUnit {
   }
 }
 
+/// Defines calorie entry bundle component.
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CalorieEntryBundleComponent {
+  /// The calorie entry bundle component.
   const CalorieEntryBundleComponent({
     required this.name,
     required this.amountLabel,
@@ -34,25 +43,43 @@ class CalorieEntryBundleComponent {
     this.imageUrl,
   });
 
+  /// The name.
   final String name;
+
+  /// The amount label.
   final String amountLabel;
+
+  /// The brand.
   final String? brand;
+
+  /// The image url.
   final String? imageUrl;
+
+  /// The total kcal.
   @FlexibleDoubleConverter()
   final double totalKcal;
+
+  /// The total protein.
   @FlexibleDoubleConverter()
   final double totalProtein;
+
+  /// The total carbs.
   @FlexibleDoubleConverter()
   final double totalCarbs;
+
+  /// The total fat.
   @FlexibleDoubleConverter()
   final double totalFat;
 
+  /// Creates a [CalorieEntryBundleComponent] for from json.
   factory CalorieEntryBundleComponent.fromJson(Map<String, dynamic> json) {
     return _$CalorieEntryBundleComponentFromJson(json);
   }
 
+  /// To json.
   Map<String, dynamic> toJson() => _$CalorieEntryBundleComponentToJson(this);
 
+  /// Copy with.
   CalorieEntryBundleComponent copyWith({
     String? name,
     String? amountLabel,
@@ -76,8 +103,10 @@ class CalorieEntryBundleComponent {
   }
 }
 
+/// Defines calorie entry.
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CalorieEntry {
+  /// The calorie entry.
   const CalorieEntry({
     required this.id,
     required this.userId,
@@ -107,6 +136,7 @@ class CalorieEntry {
     this.bundleComponents = const <CalorieEntryBundleComponent>[],
   });
 
+  /// Creates a [CalorieEntry] for create.
   factory CalorieEntry.create({
     required String id,
     required String userId,
@@ -156,6 +186,7 @@ class CalorieEntry {
     );
   }
 
+  /// Creates a [CalorieEntry] for bundle.
   factory CalorieEntry.bundle({
     required String id,
     required String userId,
@@ -206,57 +237,110 @@ class CalorieEntry {
     );
   }
 
+  /// Creates a [CalorieEntry] for from json.
   factory CalorieEntry.fromJson(Map<String, dynamic> json) {
     return _$CalorieEntryFromJson(json);
   }
 
+  /// The id.
   final String id;
+
+  /// The user id.
   final String userId;
+
+  /// The name.
   final String name;
+
+  /// The brand.
   final String? brand;
+
+  /// The image url.
   final String? imageUrl;
+
+  /// The image asset id.
   final String? imageAssetId;
+
+  /// The source inventory item id.
   final String? sourceInventoryItemId;
+
+  /// The source inventory amount to restore.
   final int? sourceInventoryAmountToRestore;
+
+  /// The bundle source prepared meal id.
   final String? bundleSourcePreparedMealId;
+
+  /// The bundle consumed portions.
   final int? bundleConsumedPortions;
+
+  /// The bundle total portions.
   final int? bundleTotalPortions;
+
+  /// The bundle components.
   @JsonKey(defaultValue: <CalorieEntryBundleComponent>[])
   final List<CalorieEntryBundleComponent> bundleComponents;
+
+  /// The meal type.
   @JsonKey(defaultValue: MealType.snack, unknownEnumValue: MealType.snack)
   final MealType mealType;
+
+  /// The consumed amount.
   @FlexibleDoubleConverter()
   final double consumedAmount;
   @JsonKey(
     defaultValue: ConsumedUnit.grams,
     unknownEnumValue: ConsumedUnit.grams,
   )
+  /// The consumed unit.
   final ConsumedUnit consumedUnit;
+
+  /// The per100 kcal.
   @FlexibleDoubleConverter()
   final double per100Kcal;
+
+  /// The per100 protein.
   @FlexibleDoubleConverter()
   final double per100Protein;
+
+  /// The per100 carbs.
   @FlexibleDoubleConverter()
   final double per100Carbs;
+
+  /// The per100 fat.
   @FlexibleDoubleConverter()
   final double per100Fat;
+
+  /// The total kcal.
   @FlexibleDoubleConverter()
   final double totalKcal;
+
+  /// The total protein.
   @FlexibleDoubleConverter()
   final double totalProtein;
+
+  /// The total carbs.
   @FlexibleDoubleConverter()
   final double totalCarbs;
+
+  /// The total fat.
   @FlexibleDoubleConverter()
   final double totalFat;
+
+  /// The logged at.
   @FlexibleDateTimeConverter()
   final DateTime loggedAt;
+
+  /// The created at.
   @FlexibleDateTimeConverter()
   final DateTime createdAt;
+
+  /// The updated at.
   @FlexibleDateTimeConverter()
   final DateTime updatedAt;
 
+  /// To json.
   Map<String, dynamic> toJson() => _$CalorieEntryToJson(this);
 
+  /// Whether valid.
   bool get isValid {
     if (id.trim().isEmpty || userId.trim().isEmpty || name.trim().isEmpty) {
       return false;
@@ -276,21 +360,25 @@ class CalorieEntry {
     return true;
   }
 
+  /// Whether bundle.
   bool get isBundle {
     return (bundleSourcePreparedMealId?.trim().isNotEmpty ?? false) &&
         bundleComponents.isNotEmpty;
   }
 
+  /// Whether restore to inventory.
   bool get canRestoreToInventory {
     return (sourceInventoryItemId?.trim().isNotEmpty ?? false) &&
         (sourceInventoryAmountToRestore ?? 0) > 0;
   }
 
+  /// Whether return prepared meal to inventory.
   bool get canReturnPreparedMealToInventory {
     return (bundleSourcePreparedMealId?.trim().isNotEmpty ?? false) &&
         (bundleConsumedPortions ?? 0) > 0;
   }
 
+  /// Copy with.
   CalorieEntry copyWith({
     String? id,
     String? userId,
@@ -362,6 +450,7 @@ class CalorieEntry {
     );
   }
 
+  /// Recalculate totals.
   CalorieEntry recalculateTotals({DateTime? updatedAt}) {
     if (isBundle) {
       return copyWith(updatedAt: updatedAt ?? DateTime.now());

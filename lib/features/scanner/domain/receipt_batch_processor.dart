@@ -6,26 +6,37 @@ import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
+/// Defines receipt batch process result.
 class ReceiptBatchProcessResult {
+  /// The receipt batch process result.
   const ReceiptBatchProcessResult({
     required this.progress,
     required this.reviewDraftsByIndex,
     required this.wasCanceled,
   });
 
+  /// The progress.
   final ReceiptBatchProgress progress;
+
+  /// The review drafts by index.
   final Map<int, List<ReceiptReviewItemDraft>> reviewDraftsByIndex;
+
+  /// Whether canceled.
   final bool wasCanceled;
 
+  /// Whether review drafts.
   bool get hasReviewDrafts =>
       reviewDraftsByIndex.values.any((items) => items.isNotEmpty);
 
+  /// The review drafts.
   List<ReceiptReviewItemDraft> get reviewDrafts => reviewDraftsByIndex.values
       .expand((items) => items)
       .toList(growable: false);
 }
 
+/// Defines receipt batch processor.
 class ReceiptBatchProcessor {
+  /// The receipt batch processor.
   const ReceiptBatchProcessor({
     required ReceiptAnalysisRepository analysisRepository,
     required Future<List<ReceiptReviewItemDraft>> Function(
@@ -41,8 +52,11 @@ class ReceiptBatchProcessor {
     ReceiptAnalysisExtraction extraction,
   )
   _mapExtraction;
+
+  /// The logger name.
   final String loggerName;
 
+  /// Process selections.
   Future<ReceiptBatchProcessResult> processSelections(
     List<ReceiptInputSelection> selections, {
     required bool Function() shouldContinue,

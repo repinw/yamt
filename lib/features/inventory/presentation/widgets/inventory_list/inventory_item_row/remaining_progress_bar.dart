@@ -3,16 +3,25 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 
 const _maxSegmentCount = 12;
 
-enum RemainingProgressBarLabelLayout { belowBar, aboveBar }
+/// Defines remaining progress bar label layout.
+enum RemainingProgressBarLabelLayout {
+  /// Below bar.
+  belowBar,
 
+  /// Above bar.
+  aboveBar,
+}
+
+/// Defines remaining progress bar.
 class RemainingProgressBar extends StatelessWidget {
+  /// The remaining progress bar.
   const RemainingProgressBar({
-    super.key,
     required this.ratio,
     required this.stockLabel,
     required this.segmentedByUnits,
     required this.totalUnits,
     required this.remainingUnits,
+    super.key,
     this.labelLayout = RemainingProgressBarLabelLayout.belowBar,
     this.trackColor,
     this.fillColor,
@@ -20,15 +29,34 @@ class RemainingProgressBar extends StatelessWidget {
     this.percentageStyle,
   });
 
+  /// The ratio.
   final double ratio;
+
+  /// The stock label.
   final String stockLabel;
+
+  /// The segmented by units.
   final bool segmentedByUnits;
+
+  /// The total units.
   final int totalUnits;
+
+  /// The remaining units.
   final int remainingUnits;
+
+  /// The label layout.
   final RemainingProgressBarLabelLayout labelLayout;
+
+  /// The track color.
   final Color? trackColor;
+
+  /// The fill color.
   final Color? fillColor;
+
+  /// The stock label style.
   final TextStyle? stockLabelStyle;
+
+  /// The percentage style.
   final TextStyle? percentageStyle;
 
   @override

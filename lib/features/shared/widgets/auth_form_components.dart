@@ -1,5 +1,5 @@
-import 'package:form_validator/form_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:form_validator/form_validator.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/auth/auth_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -29,9 +29,11 @@ String _resolveValidationLocaleName(BuildContext context) {
   return 'en';
 }
 
+/// Defines auth validation factory.
 class AuthValidationFactory {
   const AuthValidationFactory._(this._localeName);
 
+  /// Creates a [AuthValidationFactory] for from context.
   factory AuthValidationFactory.fromContext(BuildContext context) {
     return AuthValidationFactory._(_resolveValidationLocaleName(context));
   }
@@ -40,12 +42,15 @@ class AuthValidationFactory {
 
   ValidationBuilder _builder() => ValidationBuilder(localeName: _localeName);
 
+  /// Email.
   StringValidationCallback email() => _builder().email().build();
 
+  /// Password.
   StringValidationCallback password({int minLength = 6}) {
     return _builder().minLength(minLength).build();
   }
 
+  /// Confirm password.
   StringValidationCallback confirmPassword({
     required TextEditingController passwordController,
     required String mismatchMessage,
@@ -59,7 +64,9 @@ class AuthValidationFactory {
   }
 }
 
+/// Defines auth text field.
 class AuthTextField extends StatelessWidget {
+  /// The auth text field.
   const AuthTextField({
     required this.controller,
     required this.validator,
@@ -75,16 +82,37 @@ class AuthTextField extends StatelessWidget {
     super.key,
   });
 
+  /// The controller.
   final TextEditingController controller;
+
+  /// The validator.
   final StringValidationCallback validator;
+
+  /// The label.
   final String label;
+
+  /// The show label.
   final bool showLabel;
+
+  /// The prefix icon.
   final Widget? prefixIcon;
+
+  /// The field key.
   final Key? fieldKey;
+
+  /// The placeholder.
   final String? placeholder;
+
+  /// The keyboard type.
   final TextInputType? keyboardType;
+
+  /// The text input action.
   final TextInputAction textInputAction;
+
+  /// The on changed.
   final ValueChanged<String>? onChanged;
+
+  /// The autofill hints.
   final Iterable<String>? autofillHints;
 
   @override
@@ -115,7 +143,9 @@ class AuthTextField extends StatelessWidget {
   }
 }
 
+/// Defines auth email field.
 class AuthEmailField extends StatelessWidget {
+  /// The auth email field.
   const AuthEmailField({
     required this.controller,
     required this.validator,
@@ -129,14 +159,31 @@ class AuthEmailField extends StatelessWidget {
     super.key,
   });
 
+  /// The controller.
   final TextEditingController controller;
+
+  /// The validator.
   final StringValidationCallback validator;
+
+  /// The label.
   final String? label;
+
+  /// The show label.
   final bool showLabel;
+
+  /// The prefix icon.
   final Widget? prefixIcon;
+
+  /// The field key.
   final Key? fieldKey;
+
+  /// The placeholder.
   final String? placeholder;
+
+  /// The text input action.
   final TextInputAction textInputAction;
+
+  /// The on changed.
   final ValueChanged<String>? onChanged;
 
   @override
@@ -159,7 +206,9 @@ class AuthEmailField extends StatelessWidget {
   }
 }
 
+/// Defines auth password field.
 class AuthPasswordField extends StatefulWidget {
+  /// The auth password field.
   const AuthPasswordField({
     required this.controller,
     required this.validator,
@@ -175,16 +224,37 @@ class AuthPasswordField extends StatefulWidget {
     super.key,
   });
 
+  /// The controller.
   final TextEditingController controller;
+
+  /// The validator.
   final StringValidationCallback validator;
+
+  /// The label.
   final String? label;
+
+  /// The label trailing.
   final Widget? labelTrailing;
+
+  /// The show label.
   final bool showLabel;
+
+  /// The prefix icon.
   final Widget? prefixIcon;
+
+  /// The field key.
   final Key? fieldKey;
+
+  /// The placeholder.
   final String? placeholder;
+
+  /// The text input action.
   final TextInputAction textInputAction;
+
+  /// The on changed.
   final ValueChanged<String>? onChanged;
+
+  /// The show visibility toggle.
   final bool showVisibilityToggle;
 
   @override
@@ -254,7 +324,9 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
   }
 }
 
+/// Defines auth submit button.
 class AuthSubmitButton extends StatelessWidget {
+  /// The auth submit button.
   const AuthSubmitButton({
     required this.isLoading,
     required this.onPressed,
@@ -264,10 +336,19 @@ class AuthSubmitButton extends StatelessWidget {
     super.key,
   });
 
+  /// Whether loading.
   final bool isLoading;
+
+  /// The on pressed.
   final VoidCallback onPressed;
+
+  /// The label.
   final String label;
+
+  /// The button key.
   final Key? buttonKey;
+
+  /// The trailing icon.
   final Widget? trailingIcon;
 
   @override

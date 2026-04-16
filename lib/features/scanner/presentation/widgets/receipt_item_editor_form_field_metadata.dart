@@ -2,30 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 import '../models/receipt_item_editor_draft.dart';
 
+/// Defines receipt item editor field groups.
 class ReceiptItemEditorFieldGroups {
+  /// The before entry date.
   static const beforeEntryDate = <ReceiptItemEditorDraftField>[
     ReceiptItemEditorDraftField.name,
   ];
 
+  /// The before weight unit fallback.
   static const beforeWeightUnitFallback = <ReceiptItemEditorDraftField>[
     ReceiptItemEditorDraftField.quantity,
     ReceiptItemEditorDraftField.unitPrice,
     ReceiptItemEditorDraftField.weight,
   ];
 
+  /// The after weight unit fallback.
   static const afterWeightUnitFallback = <ReceiptItemEditorDraftField>[
     ReceiptItemEditorDraftField.brand,
     ReceiptItemEditorDraftField.category,
   ];
 }
 
+/// Defines receipt item editor form field name.
 class ReceiptItemEditorFormFieldName {
+  /// Whether deposit.
   static const isDeposit = 'is_deposit';
+
+  /// Whether discount.
   static const isDiscount = 'is_discount';
+
+  /// The weight unit fallback option.
   static const weightUnitFallbackOption = 'weight_unit_fallback_option';
 }
 
+/// Defines receipt item editor draft field metadata extension.
 extension ReceiptItemEditorDraftFieldMetadata on ReceiptItemEditorDraftField {
+  /// The field key.
   Key get fieldKey {
     return switch (this) {
       ReceiptItemEditorDraftField.name => const Key(
@@ -55,6 +67,7 @@ extension ReceiptItemEditorDraftFieldMetadata on ReceiptItemEditorDraftField {
     };
   }
 
+  /// The keyboard type.
   TextInputType? get keyboardType {
     return switch (this) {
       ReceiptItemEditorDraftField.quantity => TextInputType.number,
@@ -64,6 +77,7 @@ extension ReceiptItemEditorDraftFieldMetadata on ReceiptItemEditorDraftField {
     };
   }
 
+  /// The linked validation fields.
   List<ReceiptItemEditorDraftField> get linkedValidationFields {
     return switch (this) {
       ReceiptItemEditorDraftField.quantity =>
@@ -79,6 +93,7 @@ extension ReceiptItemEditorDraftFieldMetadata on ReceiptItemEditorDraftField {
     };
   }
 
+  /// Label text.
   String labelText(AppLocalizations l10n) {
     return switch (this) {
       ReceiptItemEditorDraftField.name => l10n.inventoryReceiptReviewFieldName,

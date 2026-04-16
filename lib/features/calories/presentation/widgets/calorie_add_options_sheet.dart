@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines calorie add options sheet.
 class CalorieAddOptionsSheet extends StatelessWidget {
+  /// The calorie add options sheet.
   const CalorieAddOptionsSheet({
     super.key,
     required this.onManualTap,
     required this.onBarcodeTap,
   });
 
+  /// The on manual tap.
   final VoidCallback onManualTap;
+
+  /// The on barcode tap.
   final VoidCallback onBarcodeTap;
 
   @override

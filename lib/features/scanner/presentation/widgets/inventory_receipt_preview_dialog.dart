@@ -5,11 +5,13 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Full-screen dialog that shows the scanned receipt preview image.
 class InventoryReceiptPreviewDialog extends StatelessWidget {
+  /// The inventory receipt preview dialog.
   const InventoryReceiptPreviewDialog({
     super.key,
     required this.receiptPreviewBytes,
   });
 
+  /// The receipt preview bytes.
   final Uint8List? receiptPreviewBytes;
 
   @override

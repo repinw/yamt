@@ -27,12 +27,16 @@ const _functionsEmulatorPort = int.fromEnvironment(
   defaultValue: 5001,
 );
 
+/// Defines calorie barcode backfill user session.
 abstract interface class CalorieBarcodeBackfillUserSession {
+  /// The current user id.
   String? get currentUserId;
 }
 
+/// Defines firestore calorie barcode backfill repository.
 class FirestoreCalorieBarcodeBackfillRepository
     implements CalorieBarcodeBackfillRepositoryContract {
+  /// Creates an instance.
   FirestoreCalorieBarcodeBackfillRepository({
     required CalorieBarcodeBackfillUserSession session,
     FirebaseFunctions? functions,
@@ -283,6 +287,7 @@ class FirestoreCalorieBarcodeBackfillRepository
   }
 }
 
+/// Calorie barcode backfill repository.
 @riverpod
 CalorieBarcodeBackfillRepositoryContract calorieBarcodeBackfillRepository(
   Ref ref,

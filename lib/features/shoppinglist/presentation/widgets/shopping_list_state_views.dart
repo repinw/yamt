@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 
+/// Defines shopping list loading view.
 class ShoppingListLoadingView extends StatelessWidget {
+  /// The shopping list loading view.
   const ShoppingListLoadingView({super.key});
 
   @override
@@ -17,7 +19,9 @@ class ShoppingListLoadingView extends StatelessWidget {
   }
 }
 
+/// Defines shopping list error view.
 class ShoppingListErrorView extends StatelessWidget {
+  /// The shopping list error view.
   const ShoppingListErrorView({
     super.key,
     required this.onRetry,
@@ -25,8 +29,13 @@ class ShoppingListErrorView extends StatelessWidget {
     required this.retryLabel,
   });
 
+  /// The on retry.
   final VoidCallback onRetry;
+
+  /// The message.
   final String message;
+
+  /// The retry label.
   final String retryLabel;
 
   @override

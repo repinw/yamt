@@ -17,7 +17,9 @@ import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_template_recipe_template_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines meal templates page.
 class MealTemplatesPage extends ConsumerWidget {
+  /// The meal templates page.
   const MealTemplatesPage({super.key});
 
   @override

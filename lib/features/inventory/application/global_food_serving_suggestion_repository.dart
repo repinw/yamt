@@ -12,6 +12,7 @@ import 'package:yamt/features/inventory/domain/'
 export 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion_repository_contract.dart';
 
+/// The global food serving suggestion repository provider.
 final globalFoodServingSuggestionRepositoryProvider =
     Provider<GlobalFoodServingSuggestionRepository>((ref) {
       final firestore = ref.watch(firebaseFirestoreProvider);

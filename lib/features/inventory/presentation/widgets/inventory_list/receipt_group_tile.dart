@@ -14,9 +14,10 @@ import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines receipt group tile.
 class ReceiptGroupTile extends StatefulWidget {
+  /// The receipt group tile.
   const ReceiptGroupTile({
-    super.key,
     required this.group,
     required this.dateFormat,
     required this.showBarcodeMarkers,
@@ -24,28 +25,50 @@ class ReceiptGroupTile extends StatefulWidget {
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
+    super.key,
     this.isSelectionMode = false,
     this.selectedItemIds = const <String>{},
     this.onItemLongPress = _noopItemSelection,
     this.onSelectionToggle = _noopItemSelection,
   });
 
+  /// The group.
   final InventoryReceiptGroup group;
+
+  /// The date format.
   final DateFormat dateFormat;
+
+  /// The show barcode markers.
   final bool showBarcodeMarkers;
+
+  /// The active shopping list item keys.
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
+
+  /// The on delete item.
   final Future<bool> Function(String itemId) onDeleteItem;
+
+  /// Documented member.
   final Future<bool> Function(String itemId, InventoryItemEatRequest request)
   onEatItem;
+
+  /// The on throw away item.
   final Future<bool> Function(
     String itemId,
     int amount,
     InventoryDiscardReason reason,
   )
   onThrowAwayItem;
+
+  /// Whether selection mode.
   final bool isSelectionMode;
+
+  /// The selected item ids.
   final Set<String> selectedItemIds;
+
+  /// The on item long press.
   final ValueChanged<String> onItemLongPress;
+
+  /// The on selection toggle.
   final ValueChanged<String> onSelectionToggle;
 
   @override

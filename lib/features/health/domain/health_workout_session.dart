@@ -1,4 +1,6 @@
+/// Defines health workout session.
 class HealthWorkoutSession {
+  /// The health workout session.
   const HealthWorkoutSession({
     required this.id,
     required this.start,
@@ -10,15 +12,31 @@ class HealthWorkoutSession {
     required this.totalSteps,
   });
 
+  /// The id.
   final String id;
+
+  /// The start.
   final DateTime start;
+
+  /// The end exclusive.
   final DateTime endExclusive;
+
+  /// The duration minutes.
   final double durationMinutes;
+
+  /// The activity label.
   final String? activityLabel;
+
+  /// The source name.
   final String? sourceName;
+
+  /// The total calories.
   final int? totalCalories;
+
+  /// The total steps.
   final int? totalSteps;
 
+  /// Copy with.
   HealthWorkoutSession copyWith({
     String? id,
     DateTime? start,
@@ -42,18 +60,26 @@ class HealthWorkoutSession {
   }
 }
 
+/// Defines health active energy sample.
 class HealthActiveEnergySample {
+  /// The health active energy sample.
   const HealthActiveEnergySample({
     required this.startAt,
     required this.endAt,
     required this.numericValue,
   });
 
+  /// The start at.
   final DateTime startAt;
+
+  /// The end at.
   final DateTime endAt;
+
+  /// The numeric value.
   final num numericValue;
 }
 
+/// Merge workout calories.
 HealthWorkoutSession mergeWorkoutCalories({
   required HealthWorkoutSession workout,
   required List<HealthActiveEnergySample> activeEnergySamples,

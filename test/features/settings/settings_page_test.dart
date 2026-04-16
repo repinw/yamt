@@ -17,8 +17,8 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
-import 'package:yamt/features/settings/account_page.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
+import 'package:yamt/features/settings/account_page.dart';
 import 'package:yamt/features/settings/settings_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

@@ -11,6 +11,7 @@ import 'shopping_list_user_session.dart';
 
 part 'shopping_list_repository.g.dart';
 
+/// Shopping list repository.
 @riverpod
 ShoppingListRepository shoppingListRepository(Ref ref) {
   ref.watch(authStateChangesProvider);

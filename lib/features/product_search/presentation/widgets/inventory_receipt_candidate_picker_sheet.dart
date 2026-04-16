@@ -9,41 +9,58 @@ import 'inventory_receipt_product_selection_widgets.dart';
 
 /// Bottom sheet that lets the user choose a matching global food item.
 enum ReceiptCandidatePickerSelectionKind {
+  /// Documented member.
   candidate,
+
+  /// Documented member.
   manualEntry,
+
+  /// Documented member.
   aiEnrichment,
 }
 
+/// Defines receipt candidate picker selection.
 class ReceiptCandidatePickerSelection {
   const ReceiptCandidatePickerSelection._({
     required this.kind,
     this.candidateId,
   });
 
+  /// Creates a [ReceiptCandidatePickerSelection] for candidate.
   const ReceiptCandidatePickerSelection.candidate(String candidateId)
     : this._(
         kind: ReceiptCandidatePickerSelectionKind.candidate,
         candidateId: candidateId,
       );
 
+  /// Creates a [ReceiptCandidatePickerSelection] for manual entry.
   const ReceiptCandidatePickerSelection.manualEntry()
     : this._(kind: ReceiptCandidatePickerSelectionKind.manualEntry);
 
+  /// Creates a [ReceiptCandidatePickerSelection] for ai enrichment.
   const ReceiptCandidatePickerSelection.aiEnrichment()
     : this._(kind: ReceiptCandidatePickerSelectionKind.aiEnrichment);
 
+  /// The kind.
   final ReceiptCandidatePickerSelectionKind kind;
+
+  /// The candidate id.
   final String? candidateId;
 }
 
+/// Defines inventory receipt candidate picker sheet.
 class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
+  /// The inventory receipt candidate picker sheet.
   const InventoryReceiptCandidatePickerSheet({
     super.key,
     required this.draft,
     this.showAiEnrichmentAction = true,
   });
 
+  /// The draft.
   final ReceiptReviewItemDraft draft;
+
+  /// The show ai enrichment action.
   final bool showAiEnrichmentAction;
 
   @override

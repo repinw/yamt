@@ -3,10 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 
+/// The calories day navigation prefetch day count.
 const caloriesDayNavigationPrefetchDayCount = 14;
+
+/// The calories day navigation max fling velocity.
 const caloriesDayNavigationMaxFlingVelocity = 900.0;
+
+/// The calories day navigation fling velocity factor.
 const caloriesDayNavigationFlingVelocityFactor = 0.18;
 
+/// Build prefetched calories day overviews.
 Map<String, CalorieWeekDayOverview> buildPrefetchedCaloriesDayOverviews({
   required WidgetRef ref,
   required DateTime earliestDay,
@@ -48,7 +54,9 @@ Map<String, CalorieWeekDayOverview> buildPrefetchedCaloriesDayOverviews({
   return prefetchedDaysByKey;
 }
 
+/// Defines calories day navigation scroll physics.
 class CaloriesDayNavigationScrollPhysics extends ClampingScrollPhysics {
+  /// The calories day navigation scroll physics.
   const CaloriesDayNavigationScrollPhysics({super.parent});
 
   @override
@@ -77,6 +85,7 @@ class CaloriesDayNavigationScrollPhysics extends ClampingScrollPhysics {
   }
 }
 
+/// Should restore calories day navigation press.
 bool shouldRestoreCaloriesDayNavigationPress({
   required bool isSnapping,
   required bool isPressEnabled,
@@ -92,6 +101,7 @@ bool shouldRestoreCaloriesDayNavigationPress({
   return true;
 }
 
+/// Animate calories day navigation to target if needed.
 Future<void> animateCaloriesDayNavigationToTargetIfNeeded({
   required ScrollController scrollController,
   required double targetOffset,

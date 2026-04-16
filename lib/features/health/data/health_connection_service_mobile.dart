@@ -27,11 +27,14 @@ const _iosAuthorizationTypes = <HealthDataType>[
 const _androidReconnectRequiresRestartMessage =
     'Restart YAMT after disconnecting Health Connect before reconnecting.';
 
+/// Create health connection service.
 HealthConnectionService createHealthConnectionService() {
   return MobileHealthConnectionService();
 }
 
+/// Defines mobile health connection service.
 class MobileHealthConnectionService implements HealthConnectionService {
+  /// Creates an instance.
   MobileHealthConnectionService({Health? health})
     : _health = health ?? Health();
 

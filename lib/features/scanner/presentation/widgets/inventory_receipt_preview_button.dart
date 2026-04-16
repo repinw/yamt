@@ -3,8 +3,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Button that opens the full receipt preview dialog.
 class InventoryReceiptPreviewButton extends StatelessWidget {
+  /// The inventory receipt preview button.
   const InventoryReceiptPreviewButton({super.key, required this.onTap});
 
+  /// The on tap.
   final VoidCallback onTap;
 
   @override

@@ -1,12 +1,18 @@
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
+/// Defines manual health weight entry.
 class ManualHealthWeightEntry {
+  /// Creates an instance.
   ManualHealthWeightEntry({required DateTime day, required this.weightKg})
     : day = DateTime(day.year, day.month, day.day);
 
+  /// The day.
   final DateTime day;
+
+  /// The weight kg.
   final double weightKg;
 
+  /// To json.
   Map<String, Object> toJson() {
     return <String, Object>{
       'day': _formatStorageDay(day),
@@ -14,6 +20,7 @@ class ManualHealthWeightEntry {
     };
   }
 
+  /// From json.
   static ManualHealthWeightEntry? fromJson(Map<String, dynamic> json) {
     final rawDay = json['day'];
     final rawWeight = json['weightKg'];

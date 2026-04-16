@@ -1,22 +1,45 @@
 import 'package:collection/collection.dart';
 import 'package:yamt/core/utils/currency_format.dart';
-import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_product_snapshot.dart';
 
 export 'package:yamt/features/inventory/domain/inventory_amount_parser.dart'
     show InventoryAmountUnit, InventoryAmountUnitCode;
 
-enum InventoryBarcodeStatus { resolved, uncertain, pending, missing }
+/// Defines inventory barcode status.
+enum InventoryBarcodeStatus {
+  /// Resolved.
+  resolved,
 
-enum InventoryItemOrigin { standard, manualAdd }
+  /// Uncertain.
+  uncertain,
 
+  /// Pending.
+  pending,
+
+  /// Missing.
+  missing,
+}
+
+/// Defines inventory item origin.
+enum InventoryItemOrigin {
+  /// Standard.
+  standard,
+
+  /// Manual add.
+  manualAdd,
+}
+
+/// The pending global food item id prefix.
 const pendingGlobalFoodItemIdPrefix = 'pending-';
 
+/// Build pending global food item id.
 String buildPendingGlobalFoodItemId(String resolvedFoodFingerprint) {
   return '$pendingGlobalFoodItemIdPrefix$resolvedFoodFingerprint';
 }
 
+/// Is pending global food item id.
 bool isPendingGlobalFoodItemId(String? value) {
   final normalized = _normalizeGlobalFoodItemId(value);
   if (normalized == null) {
@@ -25,7 +48,9 @@ bool isPendingGlobalFoodItemId(String? value) {
   return normalized.startsWith(pendingGlobalFoodItemIdPrefix);
 }
 
+/// Defines inventory item.
 class InventoryItem {
+  /// The inventory item.
   const InventoryItem({
     required this.id,
     required this.globalFoodItemId,
@@ -55,6 +80,7 @@ class InventoryItem {
     this.origin = InventoryItemOrigin.standard,
   });
 
+  /// Creates a [InventoryItem] for create.
   factory InventoryItem.create({
     required String id,
     required String name,
@@ -138,6 +164,7 @@ class InventoryItem {
     );
   }
 
+  /// Creates a [InventoryItem] for from json.
   factory InventoryItem.fromJson(Map<String, dynamic> json) {
     final productSnapshot = InventoryItemProductSnapshot.fromJson(
       _readMap(json['product_snapshot']),
@@ -179,33 +206,85 @@ class InventoryItem {
     );
   }
 
+  /// The id.
   final String id;
+
+  /// The global food item id.
   final String globalFoodItemId;
+
+  /// The product snapshot.
   final InventoryItemProductSnapshot productSnapshot;
+
+  /// The entry date.
   final DateTime entryDate;
+
+  /// The store name.
   final String storeName;
+
+  /// The quantity.
   final int quantity;
+
+  /// The initial quantity.
   final int initialQuantity;
+
+  /// The unit price.
   final double unitPrice;
+
+  /// The currency code.
   final String? currencyCode;
+
+  /// The weight.
   final String? weight;
+
+  /// The initial amount.
   final int initialAmount;
+
+  /// The current amount.
   final int currentAmount;
+
+  /// The amount unit.
   final InventoryAmountUnit? amountUnit;
+
+  /// The barcode candidates.
   final List<String> barcodeCandidates;
+
+  /// The barcode lookup requested at.
   final DateTime? barcodeLookupRequestedAt;
+
+  /// The barcode resolved at.
   final DateTime? barcodeResolvedAt;
+
+  /// The barcode lookup uncertain.
   final bool barcodeLookupUncertain;
+
+  /// The discounts.
   final Map<String, double> discounts;
+
+  /// The receipt id.
   final String? receiptId;
+
+  /// The receipt date.
   final DateTime? receiptDate;
+
+  /// The language.
   final String? language;
+
+  /// The ocr name.
   final String? ocrName;
+
+  /// The last consumed at.
   final DateTime? lastConsumedAt;
+
+  /// Whether deposit.
   final bool isDeposit;
+
+  /// Whether discount.
   final bool isDiscount;
+
+  /// The origin.
   final InventoryItemOrigin origin;
 
+  /// To json.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
@@ -238,6 +317,7 @@ class InventoryItem {
     };
   }
 
+  /// Copy with.
   InventoryItem copyWith({
     String? id,
     String? globalFoodItemId,
@@ -337,17 +417,37 @@ class InventoryItem {
     );
   }
 
+  /// The name.
   String get name => productSnapshot.name;
+
+  /// The brand.
   String? get brand => productSnapshot.brand;
+
+  /// The category.
   String? get category => productSnapshot.category;
+
+  /// The barcode.
   String? get barcode => productSnapshot.barcode;
+
+  /// The image url.
   String? get imageUrl => productSnapshot.imageUrl;
+
+  /// The food fingerprint.
   String? get foodFingerprint => productSnapshot.foodFingerprint;
+
+  /// The serving size.
   String? get servingSize => productSnapshot.servingSize;
+
+  /// The serving quantity.
   double? get servingQuantity => productSnapshot.servingQuantity;
+
+  /// The serving quantity unit.
   String? get servingQuantityUnit => productSnapshot.servingQuantityUnit;
+
+  /// The nutrition.
   GlobalFoodNutrition? get nutrition => productSnapshot.nutrition;
 
+  /// With derived amount.
   InventoryItem withDerivedAmount({
     String? weight,
     int? quantity,
@@ -371,12 +471,16 @@ class InventoryItem {
     );
   }
 
+  /// Whether review only.
   bool get isReviewOnly => isDeposit || isDiscount;
 
+  /// Whether be saved to inventory.
   bool get canBeSavedToInventory => !isReviewOnly;
 
+  /// Whether manually added.
   bool get isManuallyAdded => origin == InventoryItemOrigin.manualAdd;
 
+  /// Whether amount progress.
   bool get usesAmountProgress => amountUnit != null && initialAmount > 0;
 
   /// Best available starting quantity for price and progress fallbacks.
@@ -390,14 +494,17 @@ class InventoryItem {
     return 1;
   }
 
+  /// The resolved food fingerprint.
   String get resolvedFoodFingerprint {
     return productSnapshot.resolvedFoodFingerprint;
   }
 
+  /// The normalized barcode.
   String? get normalizedBarcode {
     return productSnapshot.normalizedBarcode;
   }
 
+  /// The barcode status.
   InventoryBarcodeStatus get barcodeStatus {
     if (normalizedBarcode != null) {
       if (barcodeLookupUncertain) {
@@ -411,16 +518,19 @@ class InventoryItem {
     return InventoryBarcodeStatus.missing;
   }
 
+  /// Whether consumed.
   bool get isConsumed {
     final progress = _consumptionProgress;
     return progress.remaining < progress.initial;
   }
 
+  /// Whether fully available.
   bool get isFullyAvailable {
     final progress = _consumptionProgress;
     return progress.remaining >= progress.initial;
   }
 
+  /// Whether fully consumed.
   bool get isFullyConsumed {
     final progress = _consumptionProgress;
     return progress.remaining <= 0;

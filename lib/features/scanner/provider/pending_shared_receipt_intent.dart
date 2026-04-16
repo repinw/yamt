@@ -4,6 +4,7 @@ import 'package:yamt/features/scanner/domain/shared_receipt_intent.dart';
 
 part 'pending_shared_receipt_intent.g.dart';
 
+/// Defines pending shared receipt intent.
 @Riverpod(keepAlive: true)
 class PendingSharedReceiptIntent extends _$PendingSharedReceiptIntent {
   @override
@@ -11,6 +12,7 @@ class PendingSharedReceiptIntent extends _$PendingSharedReceiptIntent {
     return null;
   }
 
+  /// Replace.
   void replace(List<ReceiptInputSelection> selections) {
     if (selections.isEmpty) {
       return;
@@ -22,6 +24,7 @@ class PendingSharedReceiptIntent extends _$PendingSharedReceiptIntent {
     );
   }
 
+  /// Consume.
   void consume(int requestId) {
     if (state?.requestId != requestId) {
       return;

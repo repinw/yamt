@@ -2,12 +2,27 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_view_preferences.dart';
 
-enum PreparedMealSortCriterion { added, eaten, alphabetical, quantity }
+/// Defines prepared meal sort criterion.
+enum PreparedMealSortCriterion {
+  /// Added.
+  added,
+
+  /// Eaten.
+  eaten,
+
+  /// Alphabetical.
+  alphabetical,
+
+  /// Quantity.
+  quantity,
+}
 
 /// Sorts prepared meals and exposes sort-mode metadata for the UI.
 class PreparedMealSorter {
+  /// The prepared meal sorter.
   const PreparedMealSorter();
 
+  /// Criterion for.
   PreparedMealSortCriterion criterionFor(PreparedMealSortMode sortMode) {
     return switch (sortMode) {
       PreparedMealSortMode.addedDescending ||
@@ -23,6 +38,7 @@ class PreparedMealSorter {
     };
   }
 
+  /// Is ascending.
   bool isAscending(PreparedMealSortMode sortMode) {
     return switch (sortMode) {
       PreparedMealSortMode.addedAscending ||
@@ -36,6 +52,7 @@ class PreparedMealSorter {
     };
   }
 
+  /// Default ascending for criterion.
   bool defaultAscendingForCriterion(PreparedMealSortCriterion criterion) {
     return switch (criterion) {
       PreparedMealSortCriterion.added ||
@@ -45,6 +62,7 @@ class PreparedMealSorter {
     };
   }
 
+  /// Mode for.
   PreparedMealSortMode modeFor(
     PreparedMealSortCriterion criterion, {
     required bool ascending,

@@ -16,9 +16,9 @@ import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_selection_controller.dart';
+import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBranchIndex = 0;
@@ -30,8 +30,10 @@ enum _DiaryAppBarAction { setGoal, setEatingWindow, shiftGoalStart, calculator }
 
 /// Shell page that hosts the main app tabs and shared home chrome.
 class HomePage extends ConsumerWidget {
+  /// The home page.
   const HomePage({super.key, required this.navigationShell});
 
+  /// The navigation shell.
   final StatefulNavigationShell navigationShell;
 
   void _onTabTapped(int index) {

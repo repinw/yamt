@@ -16,6 +16,7 @@ part 'household_members_provider.g.dart';
 const _usersCollection = 'users';
 const _householdMembersLogName = 'HouseholdMembersProvider';
 
+/// Household members.
 @riverpod
 Stream<List<UserProfile>> householdMembers(Ref ref) {
   final profile = ref.watch(userProfileProvider).asData?.value;
@@ -165,6 +166,7 @@ bool _isPermissionDenied(Object error) {
   return error is FirebaseException && error.code == 'permission-denied';
 }
 
+/// Should ignore transient household member permission denied.
 @visibleForTesting
 bool shouldIgnoreTransientHouseholdMemberPermissionDenied({
   required Object error,

@@ -6,6 +6,7 @@ import 'package:yamt/features/health/data/health_weight_service_stub.dart'
 
 part 'health_weight_service_provider.g.dart';
 
+/// Health weight service.
 @Riverpod(keepAlive: true)
 HealthWeightService healthWeightService(Ref ref) {
   return implementation.createHealthWeightService();

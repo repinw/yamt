@@ -5,16 +5,23 @@ import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines diary health card frame.
 class DiaryHealthCardFrame extends StatelessWidget {
+  /// The diary health card frame.
   const DiaryHealthCardFrame({
-    super.key,
     required this.title,
     required this.subtitle,
     required this.child,
+    super.key,
   });
 
+  /// The title.
   final String title;
+
+  /// The subtitle.
   final String subtitle;
+
+  /// The child.
   final Widget child;
 
   @override
@@ -47,9 +54,10 @@ class DiaryHealthCardFrame extends StatelessWidget {
   }
 }
 
+/// Defines diary health access prompt.
 class DiaryHealthAccessPrompt extends StatelessWidget {
+  /// The diary health access prompt.
   const DiaryHealthAccessPrompt({
-    super.key,
     required this.accessState,
     required this.isBusy,
     required this.permissionBody,
@@ -59,16 +67,34 @@ class DiaryHealthAccessPrompt extends StatelessWidget {
     required this.onGrantAccess,
     required this.onGrantHistoryAccess,
     required this.onInstallHealthConnect,
+    super.key,
   });
 
+  /// The access state.
   final HealthDataAccessState accessState;
+
+  /// Whether busy.
   final bool isBusy;
+
+  /// The permission body.
   final String permissionBody;
+
+  /// The history body.
   final String historyBody;
+
+  /// The install body.
   final String installBody;
+
+  /// The unsupported body.
   final String unsupportedBody;
+
+  /// The on grant access.
   final Future<Object?> Function() onGrantAccess;
+
+  /// The on grant history access.
   final Future<Object?> Function() onGrantHistoryAccess;
+
+  /// The on install health connect.
   final Future<Object?> Function() onInstallHealthConnect;
 
   @override
@@ -121,22 +147,35 @@ class DiaryHealthAccessPrompt extends StatelessWidget {
   }
 }
 
+/// Defines diary health connection prompt.
 class DiaryHealthConnectionPrompt extends ConsumerWidget {
+  /// The diary health connection prompt.
   const DiaryHealthConnectionPrompt({
-    super.key,
     required this.accessState,
     required this.androidPermissionBody,
     required this.iosPermissionBody,
     required this.historyBody,
     required this.installBody,
     required this.unsupportedBody,
+    super.key,
   });
 
+  /// The access state.
   final HealthDataAccessState accessState;
+
+  /// The android permission body.
   final String androidPermissionBody;
+
+  /// The ios permission body.
   final String iosPermissionBody;
+
+  /// The history body.
   final String historyBody;
+
+  /// The install body.
   final String installBody;
+
+  /// The unsupported body.
   final String unsupportedBody;
 
   @override
@@ -155,9 +194,9 @@ class DiaryHealthConnectionPrompt extends ConsumerWidget {
       historyBody: historyBody,
       installBody: installBody,
       unsupportedBody: unsupportedBody,
-      onGrantAccess: () => controller.requestAuthorization(),
-      onGrantHistoryAccess: () => controller.requestHistoryAuthorization(),
-      onInstallHealthConnect: () => controller.installHealthConnect(),
+      onGrantAccess: controller.requestAuthorization,
+      onGrantHistoryAccess: controller.requestHistoryAuthorization,
+      onInstallHealthConnect: controller.installHealthConnect,
     );
   }
 }

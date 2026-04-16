@@ -56,13 +56,13 @@ class _FakeFridgeItemRepository implements InventoryItemRepository {
 
   @override
   Stream<List<InventoryItem>> watchAll() {
-    return Stream<List<InventoryItem>>.multi((controller) {
+    return Stream<List<InventoryItem>>.multi((controller) async {
       final watchSubscription = _watchController.stream.listen(
         controller.add,
         onError: controller.addError,
         onDone: controller.close,
       );
-      _loadItems().then(controller.add, onError: controller.addError);
+      await _loadItems().then(controller.add, onError: controller.addError);
       controller.onCancel = () {
         unawaited(watchSubscription.cancel());
       };
@@ -249,7 +249,7 @@ InventoryItem _item(
     storeName: 'Store',
     quantity: quantity,
     initialQuantity: initialQuantity,
-    unitPrice: 1.0,
+    unitPrice: 1,
     weight: weight,
     initialAmount: initialAmount,
     currentAmount: currentAmount,
@@ -283,8 +283,7 @@ InventoryItem _itemWithNutrition(
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
-    unitPrice: 1.0,
+    unitPrice: 1,
     weight: '1000g',
     initialAmount: initialAmount,
     currentAmount: currentAmount,
@@ -300,8 +299,7 @@ InventoryItem _amountItemWithoutNutrition(String id) {
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
-    unitPrice: 1.0,
+    unitPrice: 1,
     weight: '1000g',
     initialAmount: 1000,
     currentAmount: 1000,
@@ -324,7 +322,7 @@ ShoppingListItem _shoppingItem(
     normalizedName: normalizedName,
     normalizedBrand: normalizedBrand,
     quantity: quantity,
-    estimatedUnitPrice: 1.0,
+    estimatedUnitPrice: 1,
   );
 }
 
@@ -531,8 +529,8 @@ void main() {
   ) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
-        _item('a', name: 'Apple', quantity: 0, initialQuantity: 2),
-        _item('b', name: 'Banana', quantity: 2, initialQuantity: 2),
+        _item('a', name: 'Apple', quantity: 0),
+        _item('b', name: 'Banana'),
       ],
     );
     addTearDown(repository.dispose);
@@ -567,7 +565,6 @@ void main() {
       onReadAll: () async => <InventoryItem>[
         _item(
           'a',
-          initialQuantity: 2,
           quantity: 1,
           weight: '500g',
           initialAmount: 1000,
@@ -591,7 +588,7 @@ void main() {
   ) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
-        _item('a', quantity: 2, initialQuantity: 2),
+        _item('a'),
       ],
     );
     addTearDown(repository.dispose);
@@ -621,7 +618,7 @@ void main() {
   ) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
-        _item('a', quantity: 2, initialQuantity: 2).copyWith(
+        _item('a').copyWith(
           barcode: '4006381333931',
           barcodeResolvedAt: DateTime.parse('2026-02-20T10:05:00Z'),
           barcodeLookupUncertain: true,
@@ -659,22 +656,21 @@ void main() {
           'a',
           name: 'Milk',
           ocrName: 'MILCH 3,5%',
-          quantity: 2,
-          initialQuantity: 2,
         ),
       ],
     );
     final globalRepository = _RecordingGlobalFoodItemRepository();
-    final offRepository =
-        _RecordingOffProductSearchRepository(<OffProductSearchResult>[
-          const OffProductSearchResult(
-            code: '4061458029995',
-            name: 'Oat Drink',
-            brand: 'Oatly',
-            packageWeight: '1000 ml',
-            score: 34,
-          ),
-        ]);
+    final offRepository = _RecordingOffProductSearchRepository(
+      <OffProductSearchResult>[
+        const OffProductSearchResult(
+          code: '4061458029995',
+          name: 'Oat Drink',
+          brand: 'Oatly',
+          packageWeight: '1000 ml',
+          score: 34,
+        ),
+      ],
+    );
     final matcher = GlobalFoodItemMatcher(
       offProductSearchRepository: offRepository,
     );
@@ -723,7 +719,7 @@ void main() {
     (tester) async {
       final repository = _FakeFridgeItemRepository(
         onReadAll: () async => <InventoryItem>[
-          _item('a', name: 'Milk', quantity: 1, initialQuantity: 2),
+          _item('a', name: 'Milk', quantity: 1),
         ],
       );
       addTearDown(repository.dispose);
@@ -747,7 +743,7 @@ void main() {
   ) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
-        _item('a', name: 'Milk', quantity: 2, initialQuantity: 2),
+        _item('a', name: 'Milk'),
       ],
     );
     addTearDown(repository.dispose);

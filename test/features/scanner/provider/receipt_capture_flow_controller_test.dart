@@ -9,19 +9,19 @@ import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
-import 'package:yamt/features/scanner/application/'
-    'receipt_review_resolution_service.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/scanner/application/'
+    'receipt_review_resolution_service.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_to_review_item_draft_mapper.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_contracts.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
-import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
+import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_input_capabilities.dart';
@@ -178,11 +178,11 @@ class _RecordingCalorieBarcodeBackfillRepository
 
   @override
   Future<bool> enqueueFingerprintLookup({
-    String? itemId,
     required String fingerprint,
     required String itemName,
-    String? brand,
     required String trigger,
+    String? itemId,
+    String? brand,
     bool forceRetry = false,
   }) async {
     return true;
@@ -240,7 +240,6 @@ InventoryItem _inventoryItem({
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
     unitPrice: 1.99,
     isDeposit: isDeposit,
     isDiscount: isDiscount,
@@ -568,12 +567,13 @@ void main() {
     final controller = container.read(
       receiptCaptureFlowControllerProvider.notifier,
     );
-    final saved = await controller
-        .persistReviewedItems(<ReceiptReviewItemDraft>[
-          _draft(id: 'food', isDeposit: false, isDiscount: false),
-          _draft(id: 'deposit', isDeposit: true, isDiscount: false),
-          _draft(id: 'discount', isDeposit: false, isDiscount: true),
-        ]);
+    final saved = await controller.persistReviewedItems(
+      <ReceiptReviewItemDraft>[
+        _draft(id: 'food', isDeposit: false, isDiscount: false),
+        _draft(id: 'deposit', isDeposit: true, isDiscount: false),
+        _draft(id: 'discount', isDeposit: false, isDiscount: true),
+      ],
+    );
 
     expect(saved, isTrue);
     expect(persistedItems, hasLength(3));

@@ -11,7 +11,9 @@ import 'package:yamt/features/calories/provider/calorie_health_trend_provider.da
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines calorie health trends page.
 class CalorieHealthTrendsPage extends ConsumerWidget {
+  /// The calorie health trends page.
   const CalorieHealthTrendsPage({super.key});
 
   @override

@@ -6,15 +6,21 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Metadata card that shows store, receipt date, and receipt time.
 class InventoryReceiptReviewMetadataOverview extends StatelessWidget {
+  /// The inventory receipt review metadata overview.
   const InventoryReceiptReviewMetadataOverview({
-    super.key,
     required this.storeName,
     required this.receiptDate,
     required this.receiptTimeText,
+    super.key,
   });
 
+  /// The store name.
   final String storeName;
+
+  /// The receipt date.
   final DateTime? receiptDate;
+
+  /// The receipt time text.
   final String? receiptTimeText;
 
   @override

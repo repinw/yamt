@@ -5,9 +5,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -16,24 +16,27 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_prepared_meal_creation_coordinator.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/provider/'
-    'prepared_meal_selection_controller.dart';
-import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
-import 'package:yamt/features/inventory/provider/'
-    'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/provider/'
+    'prepared_meal_selection_controller.dart';
+import 'package:yamt/features/inventory/provider/'
+    'prepared_meal_templates_controller.dart';
+import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _deleteUndoSnackBarDuration = Duration(seconds: 4);
 const _preparedMealImageAssetUuid = Uuid();
 
+/// Defines inventory page.
 class InventoryPage extends ConsumerStatefulWidget {
+  /// The inventory page.
   const InventoryPage({super.key, this.expandedPreparedMealId});
 
+  /// The expanded prepared meal id.
   final String? expandedPreparedMealId;
 
   @override

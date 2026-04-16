@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/provider/'
 
 part 'calorie_weekly_checkin_controller.g.dart';
 
+/// Defines calorie weekly check in controller.
 @riverpod
 class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
   @override
@@ -17,6 +18,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     return const AsyncData(null);
   }
 
+  /// Sync pending weekly check in.
   Future<bool> syncPendingWeeklyCheckIn(
     PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
   ) async {
@@ -35,6 +37,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         .setPendingWeeklyCheckIn(pendingWeeklyCheckIn);
   }
 
+  /// Dismiss pending weekly check in.
   Future<bool> dismissPendingWeeklyCheckIn(
     PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
   ) async {
@@ -61,6 +64,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     return saved;
   }
 
+  /// Apply weekly check in.
   Future<bool> applyWeeklyCheckIn(
     CalorieWeeklyCheckInViewModel viewModel,
   ) async {
@@ -108,6 +112,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     return saved;
   }
 
+  /// Set skipped intake day.
   Future<bool> setSkippedIntakeDay({
     required DateTime day,
     required bool isSkipped,

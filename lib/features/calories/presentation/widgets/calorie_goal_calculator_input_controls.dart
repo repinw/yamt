@@ -6,6 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Numeric text field used inside the calorie-goal calculator onboarding.
 class CalorieGoalCalculatorNumberField extends StatelessWidget {
+  /// The calorie goal calculator number field.
   const CalorieGoalCalculatorNumberField({
     super.key,
     required this.fieldKey,
@@ -18,13 +19,28 @@ class CalorieGoalCalculatorNumberField extends StatelessWidget {
     this.keyboardType,
   });
 
+  /// The field key.
   final Key fieldKey;
+
+  /// The controller.
   final TextEditingController controller;
+
+  /// The label.
   final String label;
+
+  /// The hint text.
   final String? hintText;
+
+  /// The error text.
   final String? errorText;
+
+  /// The autofocus.
   final bool autofocus;
+
+  /// The on changed.
   final ValueChanged<String> onChanged;
+
+  /// The keyboard type.
   final TextInputType? keyboardType;
 
   @override
@@ -47,13 +63,17 @@ class CalorieGoalCalculatorNumberField extends StatelessWidget {
 
 /// Segmented sex selector for the calorie-goal calculator.
 class CalorieGoalCalculatorSexSegmentedControl extends StatelessWidget {
+  /// The calorie goal calculator sex segmented control.
   const CalorieGoalCalculatorSexSegmentedControl({
     super.key,
     required this.selectedSex,
     required this.onSelected,
   });
 
+  /// The selected sex.
   final CalorieCalculatorSex selectedSex;
+
+  /// The on selected.
   final ValueChanged<CalorieCalculatorSex> onSelected;
 
   @override
@@ -85,13 +105,17 @@ class CalorieGoalCalculatorSexSegmentedControl extends StatelessWidget {
 
 /// Segmented goal-mode selector for the calorie-goal calculator.
 class CalorieGoalCalculatorGoalModeSegmentedControl extends StatelessWidget {
+  /// The calorie goal calculator goal mode segmented control.
   const CalorieGoalCalculatorGoalModeSegmentedControl({
     super.key,
     required this.selectedGoalMode,
     required this.onSelected,
   });
 
+  /// The selected goal mode.
   final CalorieGoalMode selectedGoalMode;
+
+  /// The on selected.
   final ValueChanged<CalorieGoalMode> onSelected;
 
   @override

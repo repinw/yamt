@@ -11,7 +11,9 @@ part 'off_product_search_response_parser.dart';
 
 const _offProductSearchLogName = 'OffProductSearchRepository';
 
+/// Defines off product search result.
 class OffProductSearchResult {
+  /// The off product search result.
   const OffProductSearchResult({
     required this.code,
     required this.name,
@@ -25,19 +27,40 @@ class OffProductSearchResult {
     this.nutrition,
   });
 
+  /// The code.
   final String code;
+
+  /// The name.
   final String name;
+
+  /// The score.
   final double score;
+
+  /// The brand.
   final String? brand;
+
+  /// The image url.
   final String? imageUrl;
+
+  /// The package weight.
   final String? packageWeight;
+
+  /// The serving size.
   final String? servingSize;
+
+  /// The serving quantity.
   final double? servingQuantity;
+
+  /// The serving quantity unit.
   final String? servingQuantityUnit;
+
+  /// The nutrition.
   final GlobalFoodNutrition? nutrition;
 }
 
+/// Defines off product search repository.
 abstract interface class OffProductSearchRepository {
+  /// Search.
   Future<List<OffProductSearchResult>> search({
     required String query,
     String? store,
@@ -46,11 +69,13 @@ abstract interface class OffProductSearchRepository {
     int limit = 15,
   });
 
+  /// Lookup candidates by barcode.
   Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
     required String barcode,
   });
 }
 
+/// Off product search repository.
 @Riverpod(keepAlive: true)
 OffProductSearchRepository offProductSearchRepository(Ref ref) {
   final searchUri = resolveOffProductSearchUri();
@@ -63,7 +88,9 @@ OffProductSearchRepository offProductSearchRepository(Ref ref) {
   return HttpOffProductSearchRepository(client: client, searchUri: searchUri);
 }
 
+/// Defines http off product search repository.
 class HttpOffProductSearchRepository implements OffProductSearchRepository {
+  /// The http off product search repository.
   const HttpOffProductSearchRepository({
     required http.Client client,
     required Uri searchUri,

@@ -4,7 +4,9 @@ const _expandIndicatorAnimationDuration = Duration(milliseconds: 220);
 const _expandIndicatorSize = 32.0;
 const _expandIndicatorIconSize = 20.0;
 
+/// Defines inventory expand indicator.
 class InventoryExpandIndicator extends StatelessWidget {
+  /// The inventory expand indicator.
   const InventoryExpandIndicator({
     super.key,
     required this.isExpanded,
@@ -15,11 +17,22 @@ class InventoryExpandIndicator extends StatelessWidget {
     this.iconSize = _expandIndicatorIconSize,
   });
 
+  /// Whether expanded.
   final bool isExpanded;
+
+  /// The rotation key.
   final Key? rotationKey;
+
+  /// The enabled.
   final bool enabled;
+
+  /// The width.
   final double width;
+
+  /// The height.
   final double height;
+
+  /// The icon size.
   final double iconSize;
 
   @override

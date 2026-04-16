@@ -4,7 +4,9 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 
+/// Defines calorie entry create prefill.
 class CalorieEntryCreatePrefill {
+  /// The calorie entry create prefill.
   const CalorieEntryCreatePrefill({
     required this.initializationKey,
     required this.name,
@@ -19,6 +21,7 @@ class CalorieEntryCreatePrefill {
     required this.loggedAt,
   });
 
+  /// Creates a [CalorieEntryCreatePrefill] for from args.
   factory CalorieEntryCreatePrefill.fromArgs({
     required CalorieProductProfile? prefilledProfile,
     required CalorieInventoryCreateContext? inventoryContext,
@@ -49,16 +52,37 @@ class CalorieEntryCreatePrefill {
     );
   }
 
+  /// The initialization key.
   final String initializationKey;
+
+  /// The name.
   final String name;
+
+  /// The brand.
   final String? brand;
+
+  /// The consumed amount.
   final double consumedAmount;
+
+  /// The per100 kcal.
   final double per100Kcal;
+
+  /// The per100 protein.
   final double per100Protein;
+
+  /// The per100 carbs.
   final double per100Carbs;
+
+  /// The per100 fat.
   final double per100Fat;
+
+  /// The meal type.
   final MealType mealType;
+
+  /// The consumed unit.
   final ConsumedUnit consumedUnit;
+
+  /// The logged at.
   final DateTime loggedAt;
 
   static String _buildInitializationKey({

@@ -6,6 +6,7 @@ import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 
 const int _maxReceiptAnalysisBytes = 12 * 1024 * 1024;
 
+/// Build receipt template inputs.
 Future<Map<String, Object?>> buildReceiptTemplateInputs(
   ReceiptInputSelection selection,
 ) async {

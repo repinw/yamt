@@ -19,8 +19,8 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
-import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/shoppinglist/application/'
@@ -31,6 +31,7 @@ part 'inventory_items_controller.g.dart';
 
 const _controllerLogName = 'InventoryItemsController';
 
+/// Build reduced items.
 @visibleForTesting
 List<InventoryItem>? buildReducedItems({
   required List<InventoryItem> currentItems,
@@ -90,6 +91,7 @@ int _maxReducibleAmount(InventoryItem item) {
   return quantity > 0 ? quantity : 0;
 }
 
+/// Build restored items.
 @visibleForTesting
 List<InventoryItem>? buildRestoredItems({
   required List<InventoryItem> currentItems,
@@ -146,6 +148,7 @@ List<InventoryItem>? buildRestoredItems({
   return nextItems;
 }
 
+/// Quantity for current amount.
 @visibleForTesting
 int quantityForCurrentAmount({
   required InventoryItem item,
@@ -175,18 +178,26 @@ class _PendingDeletedInventoryItem {
   final int index;
 }
 
+/// Defines pending inventory consumption.
 class PendingInventoryConsumption {
+  /// The pending inventory consumption.
   const PendingInventoryConsumption({
     required this.id,
     required this.itemId,
     required this.amount,
   });
 
+  /// The id.
   final String id;
+
+  /// The item id.
   final String itemId;
+
+  /// The amount.
   final int amount;
 }
 
+/// Defines inventory items controller.
 @riverpod
 class InventoryItemsController extends _$InventoryItemsController {
   static const _uuid = Uuid();
@@ -215,6 +226,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     return _restartRealtimeSubscription();
   }
 
+  /// Refresh.
   Future<void> refresh() async {
     state = const AsyncLoading();
     final nextState = await AsyncValue.guard(_restartRealtimeSubscription);
@@ -348,6 +360,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     );
   }
 
+  /// On skipped household access recovery.
   void onSkippedHouseholdAccessRecovery() {
     log(
       'Inventory access recovery had no owner swap candidate. '
@@ -379,6 +392,7 @@ class InventoryItemsController extends _$InventoryItemsController {
         '${recoveryState?.personalUserId ?? '<none>'}';
   }
 
+  /// Delete item.
   Future<bool> deleteItem(String itemId) {
     return _runSerializedMutation(() async {
       final currentItems = await _currentPersistedItems();
@@ -403,6 +417,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     });
   }
 
+  /// Undo last deleted item.
   Future<bool> undoLastDeletedItem() {
     return _runSerializedMutation(() async {
       final pendingDeletedItem = _pendingDeletedItem;
@@ -436,6 +451,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     });
   }
 
+  /// Eat item.
   Future<bool> eatItem(String itemId, int amount, {DateTime? consumedAt}) {
     if (amount < 1) {
       return Future<bool>.value(false);
@@ -450,6 +466,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     );
   }
 
+  /// Throw away item.
   Future<bool> throwAwayItem(
     String itemId,
     int amount,
@@ -510,6 +527,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     });
   }
 
+  /// Restore consumed item.
   Future<bool> restoreConsumedItem(String itemId, int amount) {
     if (amount < 1) {
       return Future<bool>.value(false);
@@ -528,6 +546,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     });
   }
 
+  /// Mark barcode lookup requested.
   Future<bool> markBarcodeLookupRequested(String itemId) {
     return _runItemsMutation((currentItems) {
       final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
@@ -548,6 +567,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     });
   }
 
+  /// Set item barcode.
   Future<bool> setItemBarcode({
     required String itemId,
     required String barcode,
@@ -577,6 +597,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     });
   }
 
+  /// Buy again item.
   Future<bool> buyAgainItem(InventoryItem item) {
     return addInventoryItemToShoppingList(
       item: item,
@@ -669,6 +690,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     });
   }
 
+  /// Stage pending consumption.
   Future<PendingInventoryConsumption?> stagePendingConsumption(
     String itemId,
     int amount,
@@ -691,14 +713,17 @@ class InventoryItemsController extends _$InventoryItemsController {
     );
   }
 
+  /// Pending consumption by id.
   PendingInventoryConsumption? pendingConsumptionById(String draftId) {
     return _pendingConsumptionsById[draftId];
   }
 
+  /// Has pending consumption.
   bool hasPendingConsumption(String draftId) {
     return _pendingConsumptionsById.containsKey(draftId);
   }
 
+  /// Discard pending consumption.
   Future<bool> discardPendingConsumption(String draftId) {
     return _runSerializedTask<bool>(
       operation: () async {
@@ -713,6 +738,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     );
   }
 
+  /// Finalize committed pending consumption.
   Future<bool> finalizeCommittedPendingConsumption({
     required String draftId,
     required String itemId,

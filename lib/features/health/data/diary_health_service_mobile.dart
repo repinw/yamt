@@ -12,11 +12,14 @@ const _activeEnergyQueryTypes = <HealthDataType>[
   HealthDataType.ACTIVE_ENERGY_BURNED,
 ];
 
+/// Create diary health service.
 DiaryHealthService createDiaryHealthService() {
   return MobileDiaryHealthService();
 }
 
+/// Defines mobile diary health service.
 class MobileDiaryHealthService implements DiaryHealthService {
+  /// Creates an instance.
   MobileDiaryHealthService({Health? health}) : _health = health ?? Health();
 
   final Health _health;

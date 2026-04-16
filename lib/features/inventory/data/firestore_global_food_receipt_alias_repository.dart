@@ -8,8 +8,10 @@ import 'global_food_receipt_alias_store.dart';
 
 const String _repositoryLogName = 'FirestoreGlobalFoodReceiptAliasRepository';
 
+/// Defines firestore global food receipt alias repository.
 class FirestoreGlobalFoodReceiptAliasRepository
     implements GlobalFoodReceiptAliasRepository {
+  /// Creates an instance.
   FirestoreGlobalFoodReceiptAliasRepository({
     required GlobalFoodReceiptAliasStore store,
   }) : _store = store;

@@ -7,20 +7,31 @@ import 'package:yamt/features/household/provider/'
     'household_membership_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines household members section.
 class HouseholdMembersSection extends ConsumerWidget {
+  /// The household members section.
   const HouseholdMembersSection({
-    super.key,
     required this.members,
     required this.currentUserId,
     required this.householdRootId,
     required this.canRemoveMembers,
     required this.isBusy,
+    super.key,
   });
 
+  /// The members.
   final List<UserProfile> members;
+
+  /// The current user id.
   final String currentUserId;
+
+  /// The household root id.
   final String householdRootId;
+
+  /// Whether remove members.
   final bool canRemoveMembers;
+
+  /// Whether busy.
   final bool isBusy;
 
   @override

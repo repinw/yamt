@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Show shopping quick add dialog.
 Future<void> showShoppingQuickAddDialog({
   required BuildContext context,
   required AppLocalizations l10n,

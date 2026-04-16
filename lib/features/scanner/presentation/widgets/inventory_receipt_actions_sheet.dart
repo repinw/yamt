@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines inventory receipt actions sheet.
 class InventoryReceiptActionsSheet extends StatelessWidget {
+  /// The inventory receipt actions sheet.
   const InventoryReceiptActionsSheet({
     super.key,
     required this.isCameraEnabled,
@@ -10,9 +12,16 @@ class InventoryReceiptActionsSheet extends StatelessWidget {
     required this.onUploadFileTap,
   });
 
+  /// Whether camera enabled.
   final bool isCameraEnabled;
+
+  /// The on manual add tap.
   final VoidCallback onManualAddTap;
+
+  /// The on scan camera tap.
   final VoidCallback onScanCameraTap;
+
+  /// The on upload file tap.
   final VoidCallback onUploadFileTap;
 
   @override

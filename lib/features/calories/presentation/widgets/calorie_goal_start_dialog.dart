@@ -5,6 +5,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Show calorie goal start dialog.
 Future<void> showCalorieGoalStartDialog({
   required BuildContext context,
   required DateTime initialGoalStartAt,

@@ -8,21 +8,29 @@ import 'package:yamt/features/scanner/presentation/widgets/'
 
 /// Route arguments for the full-screen receipt review page.
 class InventoryReceiptReviewPageArgs {
+  /// The inventory receipt review page args.
   const InventoryReceiptReviewPageArgs({
     required this.items,
     required this.onSaveTap,
     this.receiptPreviewBytes,
   });
 
+  /// The items.
   final List<ReceiptReviewItemDraft> items;
+
+  /// The receipt preview bytes.
   final Uint8List? receiptPreviewBytes;
+
+  /// The on save tap.
   final Future<bool> Function(List<ReceiptReviewItemDraft> items) onSaveTap;
 }
 
 /// Full-screen page for reviewing scanned receipt items before saving them.
 class InventoryReceiptReviewPage extends StatefulWidget {
+  /// The inventory receipt review page.
   const InventoryReceiptReviewPage({super.key, required this.args});
 
+  /// The args.
   final InventoryReceiptReviewPageArgs args;
 
   @override

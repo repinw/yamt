@@ -22,18 +22,45 @@ part 'calorie_weekly_checkin_provider.g.dart';
 
 const _weeklyCheckInProviderLogName = 'CalorieWeeklyCheckInProvider';
 
+/// Defines calorie weekly check in blocked reason.
 enum CalorieWeeklyCheckInBlockedReason {
+  /// Documented member.
   missingIntakeDays,
+
+  /// Documented member.
   tooManyMissingIntakeDays,
+
+  /// Documented member.
   skippedDayWithoutPriorAverage,
+
+  /// Documented member.
   missingWindowStartWeight,
+
+  /// Documented member.
   missingWindowEndWeight,
+
+  /// Documented member.
   unstableWeightData,
 }
 
-enum CalorieLearnedTdeeFreshness { none, fresh, stale, urgent }
+/// Defines calorie learned tdee freshness.
+enum CalorieLearnedTdeeFreshness {
+  /// None.
+  none,
 
+  /// Fresh.
+  fresh,
+
+  /// Stale.
+  stale,
+
+  /// Urgent.
+  urgent,
+}
+
+/// Defines calorie weekly check in window day.
 class CalorieWeeklyCheckInWindowDay {
+  /// The calorie weekly check in window day.
   const CalorieWeeklyCheckInWindowDay({
     required this.day,
     required this.hasEntries,
@@ -44,16 +71,31 @@ class CalorieWeeklyCheckInWindowDay {
     required this.weightKg,
   });
 
+  /// The day.
   final DateTime day;
+
+  /// Whether entries.
   final bool hasEntries;
+
+  /// The logged intake kcal.
   final double loggedIntakeKcal;
+
+  /// The resolved intake kcal.
   final double? resolvedIntakeKcal;
+
+  /// Whether skipped intake day.
   final bool isSkippedIntakeDay;
+
+  /// The active kcal.
   final int activeKcal;
+
+  /// The weight kg.
   final double? weightKg;
 }
 
+/// Defines calorie weekly check in view model.
 class CalorieWeeklyCheckInViewModel {
+  /// The calorie weekly check in view model.
   const CalorieWeeklyCheckInViewModel({
     required this.pendingWeeklyCheckIn,
     required this.shouldAutoOpen,
@@ -67,6 +109,7 @@ class CalorieWeeklyCheckInViewModel {
     required this.lowConfidence,
   });
 
+  /// The calculation.
   const CalorieWeeklyCheckInViewModel.empty()
     : pendingWeeklyCheckIn = null,
       shouldAutoOpen = false,
@@ -79,26 +122,53 @@ class CalorieWeeklyCheckInViewModel {
       latestLearnedTdeeAt = null,
       lowConfidence = false;
 
+  /// The pending weekly check in.
   final PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn;
+
+  /// Whether auto open.
   final bool shouldAutoOpen;
+
+  /// The days.
   final List<CalorieWeeklyCheckInWindowDay> days;
+
+  /// The calculation.
   final CalorieWeeklyCheckInCalculation? calculation;
+
+  /// The blocked reason.
   final CalorieWeeklyCheckInBlockedReason? blockedReason;
+
+  /// The missing intake days.
   final List<DateTime> missingIntakeDays;
+
+  /// The missing weight days.
   final List<DateTime> missingWeightDays;
+
+  /// The freshness.
   final CalorieLearnedTdeeFreshness freshness;
+
+  /// The latest learned tdee at.
   final DateTime? latestLearnedTdeeAt;
+
+  /// The low confidence.
   final bool lowConfidence;
 
+  /// Whether pending.
   bool get hasPending => pendingWeeklyCheckIn != null;
+
+  /// Whether blocked.
   bool get isBlocked => blockedReason != null;
+
+  /// Whether ready.
   bool get isReady => hasPending && !isBlocked && calculation != null;
+
+  /// The show diary hint.
   bool get showDiaryHint =>
       hasPending ||
       freshness == CalorieLearnedTdeeFreshness.stale ||
       freshness == CalorieLearnedTdeeFreshness.urgent;
 }
 
+/// Calorie weekly check in view model.
 @riverpod
 Future<CalorieWeeklyCheckInViewModel> calorieWeeklyCheckInViewModel(
   Ref ref,

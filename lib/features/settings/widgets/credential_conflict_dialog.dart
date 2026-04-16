@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 
+/// Defines credential conflict action.
 enum CredentialConflictAction {
+  /// Documented member.
   overwriteWithGuest,
+
+  /// Documented member.
   deleteGuestAndSignInWithGoogle,
 }
 
+/// Defines credential conflict dialog.
 class CredentialConflictDialog extends StatelessWidget {
+  /// The credential conflict dialog.
   const CredentialConflictDialog({
-    super.key,
     required this.title,
     required this.description,
     required this.overwriteAction,
@@ -19,17 +24,37 @@ class CredentialConflictDialog extends StatelessWidget {
     required this.onCancel,
     required this.onOverwrite,
     required this.onDeleteGuestAndContinue,
+    super.key,
   });
 
+  /// The title.
   final String title;
+
+  /// The description.
   final String description;
+
+  /// The overwrite action.
   final String overwriteAction;
+
+  /// The overwrite subtitle.
   final String overwriteSubtitle;
+
+  /// The delete guest action.
   final String deleteGuestAction;
+
+  /// The delete guest subtitle.
   final String deleteGuestSubtitle;
+
+  /// The cancel label.
   final String cancelLabel;
+
+  /// The on cancel.
   final VoidCallback onCancel;
+
+  /// The on overwrite.
   final VoidCallback onOverwrite;
+
+  /// The on delete guest and continue.
   final VoidCallback onDeleteGuestAndContinue;
 
   @override
@@ -49,7 +74,6 @@ class CredentialConflictDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Align(
-              alignment: Alignment.center,
               child: Container(
                 width: AppSizes.dialogIconContainer,
                 height: AppSizes.dialogIconContainer,

@@ -6,25 +6,33 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 part 'prepared_meal.g.dart';
 
+/// Defines recipe ingredient amount conversion.
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class RecipeIngredientAmountConversion {
+  /// The recipe ingredient amount conversion.
   const RecipeIngredientAmountConversion({
     required this.amountPerPiece,
     required this.unit,
   });
 
+  /// Creates a [RecipeIngredientAmountConversion] for from json.
   factory RecipeIngredientAmountConversion.fromJson(
     Map<String, dynamic> json,
   ) => _$RecipeIngredientAmountConversionFromJson(json);
 
+  /// The amount per piece.
   @JsonKey(fromJson: _readIntOrZero)
   final int amountPerPiece;
+
+  /// The unit.
   @JsonKey(fromJson: _readAmountUnitOrPiece, toJson: _writeAmountUnit)
   final InventoryAmountUnit unit;
 
+  /// To json.
   Map<String, dynamic> toJson() =>
       _$RecipeIngredientAmountConversionToJson(this);
 
+  /// Copy with.
   RecipeIngredientAmountConversion copyWith({
     int? amountPerPiece,
     InventoryAmountUnit? unit,
@@ -47,20 +55,13 @@ class RecipeIngredientAmountConversion {
   int get hashCode => Object.hash(amountPerPiece, unit);
 }
 
+/// Defines prepared meal.
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PreparedMeal {
+  /// The prepared meal.
   const PreparedMeal({
     required this.id,
     required this.name,
-    this.imageAssetId,
-    this.imageUrl,
-    this.recipeUrl,
-    this.recipeIngredients = const <String>[],
-    this.ignoredRecipeIngredients = const <String>[],
-    this.recipeIngredientAssignments = const <String, List<String>>{},
-    this.recipeIngredientAmountConversions =
-        const <String, RecipeIngredientAmountConversion>{},
-    this.pendingRecipeIngredients = const <String>[],
     required this.totalPortions,
     required this.remainingPortions,
     required this.totalKcal,
@@ -70,53 +71,102 @@ class PreparedMeal {
     required this.createdAt,
     required this.updatedAt,
     required this.components,
+    this.imageAssetId,
+    this.imageUrl,
+    this.recipeUrl,
+    this.recipeIngredients = const <String>[],
+    this.ignoredRecipeIngredients = const <String>[],
+    this.recipeIngredientAssignments = const <String, List<String>>{},
+    this.recipeIngredientAmountConversions =
+        const <String, RecipeIngredientAmountConversion>{},
+    this.pendingRecipeIngredients = const <String>[],
   });
 
+  /// Creates a [PreparedMeal] for from json.
   factory PreparedMeal.fromJson(Map<String, dynamic> json) =>
       _$PreparedMealFromJson(json);
 
+  /// The id.
   @JsonKey(fromJson: _readRequiredString)
   final String id;
+
+  /// The name.
   @JsonKey(fromJson: _readRequiredString)
   final String name;
+
+  /// The image asset id.
   @JsonKey(fromJson: _readTrimmedNullableString)
   final String? imageAssetId;
+
+  /// The image url.
   @JsonKey(fromJson: _readTrimmedNullableString)
   final String? imageUrl;
+
+  /// The recipe url.
   @JsonKey(fromJson: _readTrimmedNullableString)
   final String? recipeUrl;
+
+  /// The recipe ingredients.
   @JsonKey(defaultValue: <String>[])
   final List<String> recipeIngredients;
+
+  /// The ignored recipe ingredients.
   @JsonKey(defaultValue: <String>[])
   final List<String> ignoredRecipeIngredients;
+
+  /// The recipe ingredient assignments.
   @JsonKey(defaultValue: <String, List<String>>{})
   final Map<String, List<String>> recipeIngredientAssignments;
+
+  /// Documented member.
   @JsonKey(defaultValue: <String, RecipeIngredientAmountConversion>{})
   final Map<String, RecipeIngredientAmountConversion>
   recipeIngredientAmountConversions;
+
+  /// The pending recipe ingredients.
   @JsonKey(defaultValue: <String>[])
   final List<String> pendingRecipeIngredients;
+
+  /// The total portions.
   @JsonKey(fromJson: _readIntOrZero)
   final int totalPortions;
+
+  /// The remaining portions.
   @JsonKey(fromJson: _readIntOrZero)
   final int remainingPortions;
+
+  /// The total kcal.
   @JsonKey(fromJson: _readDoubleOrZero)
   final double totalKcal;
+
+  /// The total protein.
   @JsonKey(fromJson: _readDoubleOrZero)
   final double totalProtein;
+
+  /// The total carbs.
   @JsonKey(fromJson: _readDoubleOrZero)
   final double totalCarbs;
+
+  /// The total fat.
   @JsonKey(fromJson: _readDoubleOrZero)
   final double totalFat;
+
+  /// The created at.
   @JsonKey(fromJson: _readDateTimeOrNow)
   final DateTime createdAt;
+
+  /// The updated at.
   @JsonKey(fromJson: _readDateTimeOrNow)
   final DateTime updatedAt;
+
+  /// The components.
   @JsonKey(defaultValue: <PreparedMealComponent>[])
   final List<PreparedMealComponent> components;
 
+  /// To json.
   Map<String, dynamic> toJson() => _$PreparedMealToJson(this);
 
+  /// Copy with.
   PreparedMeal copyWith({
     String? id,
     String? name,
@@ -171,10 +221,13 @@ class PreparedMeal {
     );
   }
 
+  /// Whether depleted.
   bool get isDepleted => remainingPortions <= 0;
 
+  /// Whether pending recipe ingredients.
   bool get hasPendingRecipeIngredients => pendingRecipeIngredients.isNotEmpty;
 
+  /// The remaining ratio.
   double get remainingRatio {
     if (totalPortions <= 0) {
       return 0;
@@ -300,8 +353,10 @@ class PreparedMeal {
   }
 }
 
+/// Defines prepared meal component.
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PreparedMealComponent {
+  /// The prepared meal component.
   const PreparedMealComponent({
     required this.inventoryItemId,
     required this.name,
@@ -316,33 +371,57 @@ class PreparedMealComponent {
     required this.sourceItemSnapshot,
   });
 
+  /// Creates a [PreparedMealComponent] for from json.
   factory PreparedMealComponent.fromJson(Map<String, dynamic> json) =>
       _$PreparedMealComponentFromJson(json);
 
+  /// The inventory item id.
   @JsonKey(fromJson: _readRequiredString)
   final String inventoryItemId;
+
+  /// The name.
   @JsonKey(fromJson: _readRequiredString)
   final String name;
+
+  /// The brand.
   @JsonKey(fromJson: _readTrimmedNullableString)
   final String? brand;
+
+  /// The image url.
   @JsonKey(fromJson: _readTrimmedNullableString)
   final String? imageUrl;
+
+  /// The used amount.
   @JsonKey(fromJson: _readIntOrZero)
   final int usedAmount;
+
+  /// The used unit.
   @JsonKey(fromJson: _readAmountUnitOrPiece, toJson: _writeAmountUnit)
   final InventoryAmountUnit usedUnit;
+
+  /// The total kcal.
   @JsonKey(fromJson: _readDoubleOrZero)
   final double totalKcal;
+
+  /// The total protein.
   @JsonKey(fromJson: _readDoubleOrZero)
   final double totalProtein;
+
+  /// The total carbs.
   @JsonKey(fromJson: _readDoubleOrZero)
   final double totalCarbs;
+
+  /// The total fat.
   @JsonKey(fromJson: _readDoubleOrZero)
   final double totalFat;
+
+  /// The source item snapshot.
   final InventoryItem sourceItemSnapshot;
 
+  /// To json.
   Map<String, dynamic> toJson() => _$PreparedMealComponentToJson(this);
 
+  /// Copy with.
   PreparedMealComponent copyWith({
     String? inventoryItemId,
     String? name,
@@ -371,6 +450,7 @@ class PreparedMealComponent {
     );
   }
 
+  /// The source nutrition.
   GlobalFoodNutrition get sourceNutrition {
     return sourceItemSnapshot.nutrition ??
         const GlobalFoodNutrition(

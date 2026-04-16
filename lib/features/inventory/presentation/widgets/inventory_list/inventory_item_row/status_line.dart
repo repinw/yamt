@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 
+/// Defines status line.
 class StatusLine extends StatelessWidget {
-  const StatusLine({super.key, required this.text, required this.color});
+  /// The status line.
+  const StatusLine({required this.text, required this.color, super.key});
 
+  /// The text.
   final String text;
+
+  /// The color.
   final Color color;
 
   @override

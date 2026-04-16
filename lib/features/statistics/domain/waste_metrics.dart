@@ -1,7 +1,9 @@
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 
+/// Defines statistics waste snapshot.
 class StatisticsWasteSnapshot {
+  /// The statistics waste snapshot.
   const StatisticsWasteSnapshot({
     required this.totalEvents,
     required this.totalDiscardedValue,
@@ -12,27 +14,44 @@ class StatisticsWasteSnapshot {
     required this.topItemCount,
   });
 
+  /// The total events.
   final int totalEvents;
+
+  /// The total discarded value.
   final double totalDiscardedValue;
+
+  /// The currency code.
   final String? currencyCode;
+
+  /// The top reason.
   final InventoryDiscardReason? topReason;
+
+  /// The top reason count.
   final int topReasonCount;
+
+  /// The top item name.
   final String? topItemName;
+
+  /// The top item count.
   final int topItemCount;
 
+  /// Whether data.
   bool get hasData => totalEvents > 0;
 }
 
+/// Build statistics waste snapshot.
 StatisticsWasteSnapshot buildStatisticsWasteSnapshot({
   required List<InventoryDiscardEvent> events,
   required DateTime startDate,
   required DateTime endDate,
 }) {
-  final filteredEvents = events.where((event) {
-    final date = _normalizeDay(event.discardedAt);
-    return !date.isBefore(_normalizeDay(startDate)) &&
-        !date.isAfter(_normalizeDay(endDate));
-  }).toList(growable: false);
+  final filteredEvents = events
+      .where((event) {
+        final date = _normalizeDay(event.discardedAt);
+        return !date.isBefore(_normalizeDay(startDate)) &&
+            !date.isAfter(_normalizeDay(endDate));
+      })
+      .toList(growable: false);
 
   final totalDiscardedValue = filteredEvents.fold<double>(
     0,

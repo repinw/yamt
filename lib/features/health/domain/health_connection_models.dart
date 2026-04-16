@@ -1,27 +1,87 @@
-enum HealthPlatform { unsupported, android, ios }
+/// Defines health platform.
+enum HealthPlatform {
+  /// Unsupported.
+  unsupported,
 
+  /// Android.
+  android,
+
+  /// Ios.
+  ios,
+}
+
+/// Defines health connect availability.
 enum HealthConnectAvailability {
+  /// Documented member.
   notApplicable,
+
+  /// Documented member.
   available,
+
+  /// Documented member.
   notInstalled,
+
+  /// Documented member.
   updateRequired,
 }
 
-enum HealthPermissionState { granted, notGranted, unknown }
+/// Defines health permission state.
+enum HealthPermissionState {
+  /// Granted.
+  granted,
 
-enum HealthHistoryAccess { notApplicable, granted, notGranted }
+  /// Not granted.
+  notGranted,
 
+  /// Unknown.
+  unknown,
+}
+
+/// Defines health history access.
+enum HealthHistoryAccess {
+  /// Not applicable.
+  notApplicable,
+
+  /// Granted.
+  granted,
+
+  /// Not granted.
+  notGranted,
+}
+
+/// Defines health data access state.
 enum HealthDataAccessState {
+  /// Documented member.
   ready,
+
+  /// Documented member.
   permissionRequired,
+
+  /// Documented member.
   historyRequired,
+
+  /// Documented member.
   installRequired,
+
+  /// Documented member.
   unsupported,
 }
 
-enum HealthDisconnectResult { disconnected, openedSettings, unsupported }
+/// Defines health disconnect result.
+enum HealthDisconnectResult {
+  /// Disconnected.
+  disconnected,
 
+  /// Opened settings.
+  openedSettings,
+
+  /// Unsupported.
+  unsupported,
+}
+
+/// Defines health connection status.
 class HealthConnectionStatus {
+  /// The health connection status.
   const HealthConnectionStatus({
     required this.platform,
     required this.healthConnectAvailability,
@@ -30,6 +90,7 @@ class HealthConnectionStatus {
     this.errorMessage,
   });
 
+  /// Creates a [HealthConnectionStatus] for unsupported.
   const HealthConnectionStatus.unsupported()
     : platform = HealthPlatform.unsupported,
       healthConnectAvailability = HealthConnectAvailability.notApplicable,
@@ -37,22 +98,35 @@ class HealthConnectionStatus {
       historyAccess = HealthHistoryAccess.notApplicable,
       errorMessage = null;
 
+  /// The platform.
   final HealthPlatform platform;
+
+  /// The health connect availability.
   final HealthConnectAvailability healthConnectAvailability;
+
+  /// The permission state.
   final HealthPermissionState permissionState;
+
+  /// The history access.
   final HealthHistoryAccess historyAccess;
+
+  /// The error message.
   final String? errorMessage;
 
+  /// Whether supported.
   bool get isSupported => platform != HealthPlatform.unsupported;
 
+  /// Whether install.
   bool get needsInstall =>
       platform == HealthPlatform.android &&
       healthConnectAvailability != HealthConnectAvailability.available;
 
+  /// Whether history only.
   bool get needsHistoryOnly =>
       permissionState == HealthPermissionState.granted &&
       historyAccess == HealthHistoryAccess.notGranted;
 
+  /// The access state.
   HealthDataAccessState get accessState {
     if (!isSupported) {
       return HealthDataAccessState.unsupported;
@@ -69,6 +143,7 @@ class HealthConnectionStatus {
     return HealthDataAccessState.ready;
   }
 
+  /// Copy with.
   HealthConnectionStatus copyWith({
     HealthPlatform? platform,
     HealthConnectAvailability? healthConnectAvailability,

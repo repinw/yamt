@@ -4,12 +4,12 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
-import 'package:yamt/features/scanner/application/'
-    'receipt_review_resolution_service.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/scanner/application/'
+    'receipt_review_resolution_service.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_to_review_item_draft_mapper.dart';
@@ -154,7 +154,6 @@ ReceiptReviewItemDraft _reviewDraft({required String id}) {
       entryDate: DateTime.parse('2026-02-24T10:00:00Z'),
       storeName: 'Store',
       quantity: 1,
-      initialQuantity: 1,
       unitPrice: 1.99,
     ),
   );

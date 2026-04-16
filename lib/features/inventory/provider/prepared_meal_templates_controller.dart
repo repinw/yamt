@@ -20,12 +20,19 @@ part 'prepared_meal_templates_controller.g.dart';
 const _preparedMealTemplatesControllerLogName =
     'PreparedMealTemplatesController';
 
+/// Defines prepared meal template save failure reason.
 enum PreparedMealTemplateSaveFailureReason {
+  /// Documented member.
   invalidInput,
+
+  /// Documented member.
   recipeLoadFailed,
+
+  /// Documented member.
   saveFailed,
 }
 
+/// Defines prepared meal template save result.
 class PreparedMealTemplateSaveResult {
   const PreparedMealTemplateSaveResult._({
     required this.isSuccess,
@@ -33,18 +40,26 @@ class PreparedMealTemplateSaveResult {
     this.failureReason,
   });
 
+  /// Creates a [PreparedMealTemplateSaveResult] for success.
   const PreparedMealTemplateSaveResult.success(String templateId)
     : this._(isSuccess: true, templateId: templateId);
 
+  /// Creates a [PreparedMealTemplateSaveResult] for failure.
   const PreparedMealTemplateSaveResult.failure(
     PreparedMealTemplateSaveFailureReason reason,
   ) : this._(isSuccess: false, failureReason: reason);
 
+  /// Whether success.
   final bool isSuccess;
+
+  /// The template id.
   final String? templateId;
+
+  /// The failure reason.
   final PreparedMealTemplateSaveFailureReason? failureReason;
 }
 
+/// Defines prepared meal templates controller.
 @riverpod
 class PreparedMealTemplatesController
     extends _$PreparedMealTemplatesController {
@@ -69,6 +84,7 @@ class PreparedMealTemplatesController
     return _restartSubscription();
   }
 
+  /// Refresh.
   Future<void> refresh() async {
     state = const AsyncLoading();
     final next = await AsyncValue.guard(_restartSubscription);
@@ -78,6 +94,7 @@ class PreparedMealTemplatesController
     state = next;
   }
 
+  /// Save template from meal.
   Future<PreparedMealTemplateSaveResult> saveTemplateFromMeal(
     PreparedMeal meal,
   ) {
@@ -125,6 +142,7 @@ class PreparedMealTemplatesController
         .whenComplete(keepAliveLink.close);
   }
 
+  /// Create template from recipe.
   Future<PreparedMealTemplateSaveResult> createTemplateFromRecipe({
     required String recipeUrl,
     String name = '',
@@ -176,6 +194,7 @@ class PreparedMealTemplatesController
         .whenComplete(keepAliveLink.close);
   }
 
+  /// Save imported recipe template.
   Future<PreparedMealTemplateSaveResult> saveImportedRecipeTemplate({
     required PreparedMealRecipeImport importedRecipe,
     String name = '',
@@ -208,6 +227,7 @@ class PreparedMealTemplatesController
         .whenComplete(keepAliveLink.close);
   }
 
+  /// Update recipe template.
   Future<PreparedMealTemplateSaveResult> updateRecipeTemplate({
     required String templateId,
     required String recipeUrl,
@@ -322,6 +342,7 @@ class PreparedMealTemplatesController
         .whenComplete(keepAliveLink.close);
   }
 
+  /// Delete template.
   Future<bool> deleteTemplate(String templateId) {
     if (templateId.trim().isEmpty) {
       return Future<bool>.value(false);
@@ -343,6 +364,7 @@ class PreparedMealTemplatesController
     }).whenComplete(keepAliveLink.close);
   }
 
+  /// Set recipe ingredient ignored.
   Future<bool> setRecipeIngredientIgnored({
     required String templateId,
     required String ingredient,
@@ -390,6 +412,7 @@ class PreparedMealTemplatesController
     }).whenComplete(keepAliveLink.close);
   }
 
+  /// Set recipe ingredient assignments.
   Future<bool> setRecipeIngredientAssignments({
     required String templateId,
     required String ingredient,
@@ -450,6 +473,7 @@ class PreparedMealTemplatesController
     }).whenComplete(keepAliveLink.close);
   }
 
+  /// Update recipe ingredient assignments.
   Future<bool> updateRecipeIngredientAssignments({
     required String templateId,
     required Map<String, List<String>> recipeIngredientAssignments,

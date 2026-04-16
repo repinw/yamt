@@ -45,9 +45,12 @@ import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines calories page.
 class CaloriesPage extends ConsumerStatefulWidget {
+  /// The calories page.
   const CaloriesPage({super.key, this.referenceNow});
 
+  /// The reference now.
   final DateTime? referenceNow;
 
   @override

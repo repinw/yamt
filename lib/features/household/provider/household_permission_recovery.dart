@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/models/user_profile.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 
+/// Normalize household scope value.
 String? normalizeHouseholdScopeValue(String? value) {
   final normalized = value?.trim();
   if (normalized == null || normalized.isEmpty) {
@@ -11,6 +12,7 @@ String? normalizeHouseholdScopeValue(String? value) {
   return normalized;
 }
 
+/// Household root id for profile.
 String? householdRootIdForProfile(UserProfile? profile) {
   if (profile == null) {
     return null;
@@ -20,6 +22,7 @@ String? householdRootIdForProfile(UserProfile? profile) {
       normalizeHouseholdScopeValue(profile.uid);
 }
 
+/// Should recover from household permission denied.
 bool shouldRecoverFromHouseholdPermissionDenied({
   required Object error,
   required bool isRecoveringHouseholdAccess,
@@ -53,6 +56,7 @@ bool shouldRecoverFromHouseholdPermissionDenied({
       normalizedProfileHouseholdId != null;
 }
 
+/// Has watched household root changed.
 bool hasWatchedHouseholdRootChanged({
   required String watchedHouseholdRootId,
   required UserProfile? latestProfile,
@@ -66,6 +70,7 @@ bool hasWatchedHouseholdRootChanged({
       latestHouseholdRootId != normalizedWatchedHouseholdRootId;
 }
 
+/// Signed in household recovery user id.
 String? signedInHouseholdRecoveryUserId(Ref ref) {
   return normalizeHouseholdScopeValue(
     ref.read(authStateChangesProvider).asData?.value?.uid,

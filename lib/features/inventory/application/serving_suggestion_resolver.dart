@@ -3,7 +3,9 @@ import 'package:yamt/features/inventory/domain/global_food_serving_suggestion.da
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
+/// Defines serving suggestion resolution.
 class ServingSuggestionResolution {
+  /// The serving suggestion resolution.
   const ServingSuggestionResolution({
     required this.inventoryServingOptions,
     required this.manualServingSuggestions,
@@ -11,6 +13,7 @@ class ServingSuggestionResolution {
     required this.manualDefaultSuggestion,
   });
 
+  /// Creates a [ServingSuggestionResolution] for empty.
   const ServingSuggestionResolution.empty()
     : inventoryServingOptions = const <({String label, int value})>[],
       manualServingSuggestions =
@@ -18,18 +21,28 @@ class ServingSuggestionResolution {
       inventoryDefaultAmount = null,
       manualDefaultSuggestion = null;
 
+  /// Documented member.
   final List<({String label, int value})> inventoryServingOptions;
+
+  /// Documented member.
   final List<({String label, double amount, ConsumedUnit unit})>
   manualServingSuggestions;
+
+  /// The inventory default amount.
   final int? inventoryDefaultAmount;
+
+  /// Final.
   final ({double amount, ConsumedUnit unit})? manualDefaultSuggestion;
 }
 
+/// Defines serving suggestion resolver.
 class ServingSuggestionResolver {
+  /// The serving suggestion resolver.
   const ServingSuggestionResolver();
 
   static const _servingAmountParser = InventoryAmountParser();
 
+  /// Resolve.
   ServingSuggestionResolution resolve({
     required InventoryItem item,
     required GlobalFoodServingSuggestionSet learned,

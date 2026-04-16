@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_learned_tdee_goal_sheet.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_flow.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_learned_tdee_goal_sheet.dart';
 
+/// Show calorie goal calculator sheet.
 Future<void> showCalorieGoalCalculatorSheet(
   BuildContext context, {
   required CalorieGoalSettings initialSettings,

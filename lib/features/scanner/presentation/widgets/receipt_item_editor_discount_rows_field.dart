@@ -2,18 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines receipt editor discount rows field.
 class ReceiptEditorDiscountRowsField extends StatefulWidget {
+  /// The receipt editor discount rows field.
   const ReceiptEditorDiscountRowsField({
-    super.key,
     required this.initialEntries,
     required this.onChanged,
     required this.errorText,
     required this.onSubmit,
+    super.key,
   });
 
+  /// The initial entries.
   final List<MapEntry<String, String>> initialEntries;
+
+  /// The on changed.
   final ValueChanged<List<MapEntry<String, String>>> onChanged;
+
+  /// The error text.
   final String? errorText;
+
+  /// The on submit.
   final VoidCallback onSubmit;
 
   @override
@@ -135,9 +144,11 @@ class _ReceiptEditorDiscountRowsFieldState
   }
 
   void _removeRow(int index) {
-    final removed = _rows.removeAt(index);
+    late final _DiscountRowControllers removed;
+    setState(() {
+      removed = _rows.removeAt(index);
+    });
     removed.dispose();
-    setState(() {});
     _notifyRowsChanged();
   }
 

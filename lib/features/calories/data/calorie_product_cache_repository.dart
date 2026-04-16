@@ -16,12 +16,16 @@ const _userOverridesCollection = 'calorie_product_overrides';
 const _offProductsCollection = 'off_products';
 const _offCacheStatusFound = 'found';
 
+/// Defines calorie product cache user session.
 abstract interface class CalorieProductCacheUserSession {
+  /// The current user id.
   String? get currentUserId;
 }
 
+/// Defines firestore calorie product cache repository.
 class FirestoreCalorieProductCacheRepository
     implements CalorieProductCacheRepositoryContract {
+  /// Creates an instance.
   FirestoreCalorieProductCacheRepository({
     required CalorieProductCacheUserSession session,
     required FirebaseFirestore firestore,
@@ -264,6 +268,7 @@ class FirestoreCalorieProductCacheRepository
   }
 }
 
+/// Calorie product cache repository.
 @riverpod
 CalorieProductCacheRepositoryContract calorieProductCacheRepository(Ref ref) {
   final authState = ref.watch(authStateChangesProvider);

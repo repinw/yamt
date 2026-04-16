@@ -12,9 +12,12 @@ import 'package:yamt/features/scanner/provider/'
 import 'package:yamt/features/scanner/provider/shared_receipt_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines shared receipt listener.
 class SharedReceiptListener extends ConsumerStatefulWidget {
+  /// The shared receipt listener.
   const SharedReceiptListener({super.key, required this.child});
 
+  /// The child.
   final Widget child;
 
   @override

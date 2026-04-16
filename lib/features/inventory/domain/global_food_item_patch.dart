@@ -1,6 +1,7 @@
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 
+/// Merge global food item patch.
 GlobalFoodItem mergeGlobalFoodItemPatch({
   required GlobalFoodItem currentItem,
   required GlobalFoodItem patchItem,
@@ -33,6 +34,7 @@ GlobalFoodItem mergeGlobalFoodItemPatch({
   );
 }
 
+/// Merge global food nutrition patch.
 GlobalFoodNutrition? mergeGlobalFoodNutritionPatch(
   GlobalFoodNutrition? currentNutrition,
   GlobalFoodNutrition? patchNutrition,

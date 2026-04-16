@@ -9,6 +9,7 @@ part 'receipt_analysis_clients.g.dart';
 const String _vertexLocation = 'global';
 const Duration _templateRequestTimeout = Duration(seconds: 200);
 
+/// Receipt template model client.
 @riverpod
 ReceiptTemplateModelClient receiptTemplateModelClient(Ref ref) {
   return FirebaseReceiptTemplateModelClient(
@@ -18,7 +19,9 @@ ReceiptTemplateModelClient receiptTemplateModelClient(Ref ref) {
   );
 }
 
+/// Defines firebase receipt template model client.
 class FirebaseReceiptTemplateModelClient implements ReceiptTemplateModelClient {
+  /// Creates an instance.
   FirebaseReceiptTemplateModelClient({required TemplateGenerativeModel model})
     : _model = model;
 

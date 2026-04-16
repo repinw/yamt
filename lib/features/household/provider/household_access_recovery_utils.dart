@@ -5,6 +5,7 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/household/provider/household_permission_recovery.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 
+/// Should recover controller household access.
 bool shouldRecoverControllerHouseholdAccess({
   required Ref ref,
   required Object error,
@@ -27,6 +28,7 @@ bool shouldRecoverControllerHouseholdAccess({
   );
 }
 
+/// Documented member.
 Future<void> recoverControllerHouseholdAccess<T>({
   required Ref ref,
   required bool isRecoveringHouseholdAccess,
@@ -67,6 +69,7 @@ Future<void> recoverControllerHouseholdAccess<T>({
   }
 }
 
+/// Documented member.
 Future<List<T>> performControllerHouseholdAccessRecovery<T>({
   required Ref ref,
   required Future<List<T>> Function() restartHouseholdScopedSubscription,

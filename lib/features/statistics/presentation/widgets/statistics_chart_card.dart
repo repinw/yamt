@@ -3,7 +3,9 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/statistics/presentation/widgets/'
     'statistics_surface_card.dart';
 
+/// Defines statistics chart card.
 class StatisticsChartCard extends StatelessWidget {
+  /// The statistics chart card.
   const StatisticsChartCard({
     super.key,
     required this.title,
@@ -12,9 +14,16 @@ class StatisticsChartCard extends StatelessWidget {
     this.legend,
   });
 
+  /// The title.
   final String title;
+
+  /// The subtitle.
   final String subtitle;
+
+  /// The child.
   final Widget child;
+
+  /// The legend.
   final String? legend;
 
   @override
@@ -66,9 +75,12 @@ class StatisticsChartCard extends StatelessWidget {
   }
 }
 
+/// Defines statistics chart empty state.
 class StatisticsChartEmptyState extends StatelessWidget {
+  /// The statistics chart empty state.
   const StatisticsChartEmptyState({super.key, required this.message});
 
+  /// The message.
   final String message;
 
   @override

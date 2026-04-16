@@ -12,13 +12,13 @@ import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/inventory/application/'
+    'ingredient_inventory_matcher.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_discard_reason_dialog.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -30,6 +30,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_segmented_button_style.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_primary_action_button.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_tile_header_layout.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_action_dialogs.dart';
@@ -40,33 +42,36 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_edit_sheet.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/application/'
-    'ingredient_inventory_matcher.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-part 'prepared_meal_card_display.dart';
-part 'prepared_meal_card_content.dart';
 part 'prepared_meal_card_actions.dart';
+part 'prepared_meal_card_content.dart';
+part 'prepared_meal_card_display.dart';
 part 'prepared_meal_card_pending_ingredient.dart';
 
 const _preparedMealCardLogName = 'PreparedMealCard';
 
+/// Defines prepared meal card.
 class PreparedMealCard extends ConsumerStatefulWidget {
+  /// The prepared meal card.
   const PreparedMealCard({
-    super.key,
     required this.meal,
     required this.onEatPressed,
     required this.onThrowAwayPressed,
     required this.onUnbundlePressed,
     required this.onEditPressed,
     required this.onSaveTemplatePressed,
+    super.key,
     this.onFillPendingIngredientPressed,
     this.onIgnorePendingIngredientPressed,
     this.initiallyExpanded = false,
     this.enabled = true,
   });
 
+  /// The meal.
   final PreparedMeal meal;
+
+  /// The on eat pressed.
   final Future<bool> Function({
     required String mealId,
     required int portions,
@@ -74,21 +79,31 @@ class PreparedMealCard extends ConsumerStatefulWidget {
     required DateTime loggedDay,
   })
   onEatPressed;
+
+  /// The on throw away pressed.
   final Future<bool> Function(
     String mealId,
     int portions,
     InventoryDiscardReason reason,
   )
   onThrowAwayPressed;
+
+  /// The on fill pending ingredient pressed.
   final Future<bool> Function(
     String mealId,
     String ingredient,
     List<String> inventoryItemIds,
   )?
   onFillPendingIngredientPressed;
+
+  /// The on ignore pending ingredient pressed.
   final Future<bool> Function(String mealId, String ingredient)?
   onIgnorePendingIngredientPressed;
+
+  /// The on unbundle pressed.
   final Future<bool> Function(String mealId) onUnbundlePressed;
+
+  /// The on edit pressed.
   final Future<bool> Function(
     String mealId,
     String name,
@@ -96,8 +111,14 @@ class PreparedMealCard extends ConsumerStatefulWidget {
     Uint8List? imageBytes,
   )
   onEditPressed;
+
+  /// The on save template pressed.
   final Future<bool> Function(PreparedMeal meal) onSaveTemplatePressed;
+
+  /// The initially expanded.
   final bool initiallyExpanded;
+
+  /// The enabled.
   final bool enabled;
 
   @override

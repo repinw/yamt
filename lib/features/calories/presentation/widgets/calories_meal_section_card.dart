@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
@@ -10,7 +10,9 @@ import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.d
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines calories meal section card.
 class CaloriesMealSectionCard extends StatelessWidget {
+  /// The calories meal section card.
   const CaloriesMealSectionCard({
     super.key,
     required this.section,
@@ -20,10 +22,19 @@ class CaloriesMealSectionCard extends StatelessWidget {
     required this.onDeleteEntry,
   });
 
+  /// The section.
   final CalorieMealSection section;
+
+  /// The title.
   final String title;
+
+  /// The empty message.
   final String emptyMessage;
+
+  /// The on tap entry.
   final ValueChanged<CalorieEntry> onTapEntry;
+
+  /// The on delete entry.
   final ValueChanged<CalorieEntry> onDeleteEntry;
 
   @override

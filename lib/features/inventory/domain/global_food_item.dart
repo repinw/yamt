@@ -4,9 +4,21 @@ import 'package:yamt/features/inventory/domain/food_fingerprint.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_product_snapshot.dart';
 
-enum GlobalFoodItemStatus { active, candidate, merged }
+/// Defines global food item status.
+enum GlobalFoodItemStatus {
+  /// Active.
+  active,
 
+  /// Candidate.
+  candidate,
+
+  /// Merged.
+  merged,
+}
+
+/// Defines global food item.
 class GlobalFoodItem {
+  /// The global food item.
   const GlobalFoodItem({
     required this.id,
     required this.foodFingerprint,
@@ -31,6 +43,7 @@ class GlobalFoodItem {
     this.mergedIntoId,
   });
 
+  /// Creates a [GlobalFoodItem] for create.
   factory GlobalFoodItem.create({
     required String id,
     required String name,
@@ -79,6 +92,7 @@ class GlobalFoodItem {
     );
   }
 
+  /// Creates a [GlobalFoodItem] for from json.
   factory GlobalFoodItem.fromJson(Map<String, dynamic> json) {
     final storeName = _normalizedStoreNameValue(json['store_name']);
     return GlobalFoodItem(
@@ -125,28 +139,70 @@ class GlobalFoodItem {
     );
   }
 
+  /// The id.
   final String id;
+
+  /// The food fingerprint.
   final String foodFingerprint;
+
+  /// The name.
   final String name;
+
+  /// The brand.
   final String? brand;
+
+  /// The category.
   final String? category;
+
+  /// The store name.
   final String? storeName;
+
+  /// The barcode.
   final String? barcode;
+
+  /// The image url.
   final String? imageUrl;
+
+  /// The package weight.
   final String? packageWeight;
+
+  /// The serving size.
   final String? servingSize;
+
+  /// The serving quantity.
   final double? servingQuantity;
+
+  /// The serving quantity unit.
   final String? servingQuantityUnit;
+
+  /// The nutrition.
   final GlobalFoodNutrition? nutrition;
+
+  /// The normalized name.
   final String normalizedName;
+
+  /// The normalized brand.
   final String? normalizedBrand;
+
+  /// The normalized store name.
   final String? normalizedStoreName;
+
+  /// The search tokens.
   final List<String> searchTokens;
+
+  /// The status.
   final GlobalFoodItemStatus status;
+
+  /// The merged into id.
   final String? mergedIntoId;
+
+  /// The created at.
   final DateTime createdAt;
+
+  /// The updated at.
   final DateTime updatedAt;
 
+  /// To json.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
@@ -173,6 +229,7 @@ class GlobalFoodItem {
     };
   }
 
+  /// Copy with.
   GlobalFoodItem copyWith({
     String? id,
     String? foodFingerprint,
@@ -239,6 +296,7 @@ class GlobalFoodItem {
     );
   }
 
+  /// The resolved food fingerprint.
   String get resolvedFoodFingerprint {
     final value = foodFingerprint.trim();
     if (value.isNotEmpty) {
@@ -247,8 +305,10 @@ class GlobalFoodItem {
     return computeFoodFingerprint(name: name, brand: brand);
   }
 
+  /// The normalized barcode.
   String? get normalizedBarcode => _normalizeOptional(barcode);
 
+  /// To product snapshot.
   InventoryItemProductSnapshot toProductSnapshot() {
     return InventoryItemProductSnapshot(
       name: name,
@@ -322,6 +382,7 @@ class GlobalFoodItem {
   }
 }
 
+/// Normalize global food text.
 String normalizeGlobalFoodText(String raw) {
   final lower = raw.trim().toLowerCase();
   if (lower.isEmpty) {
@@ -333,6 +394,7 @@ String normalizeGlobalFoodText(String raw) {
       .trim();
 }
 
+/// Build global food search tokens.
 List<String> buildGlobalFoodSearchTokens({
   required String name,
   String? brand,

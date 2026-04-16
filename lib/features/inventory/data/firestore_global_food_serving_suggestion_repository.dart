@@ -4,9 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion.dart';
-import 'package:yamt/features/inventory/domain/inventory_parsing_utils.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion_repository_contract.dart';
+import 'package:yamt/features/inventory/domain/inventory_parsing_utils.dart';
 
 const String _repositoryLogName =
     'FirestoreGlobalFoodServingSuggestionRepository';
@@ -14,8 +14,10 @@ const String _globalSuggestionsCollection = 'global_food_item_serving_sizes';
 const String _prefsCollection = 'global_food_item_serving_prefs';
 const String _votesCollection = 'global_food_item_serving_votes';
 
+/// Defines firestore global food serving suggestion repository.
 class FirestoreGlobalFoodServingSuggestionRepository
     implements GlobalFoodServingSuggestionRepository {
+  /// The firestore global food serving suggestion repository.
   const FirestoreGlobalFoodServingSuggestionRepository({
     required FirebaseFirestore firestore,
     required String? currentUserId,

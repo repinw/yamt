@@ -29,15 +29,28 @@ part 'prepared_meals_controller.g.dart';
 
 const _preparedMealsControllerLogName = 'PreparedMealsController';
 
+/// Defines prepared meal creation failure reason.
 enum PreparedMealCreationFailureReason {
+  /// Documented member.
   invalidInput,
+
+  /// Documented member.
   itemUnavailable,
+
+  /// Documented member.
   insufficientAmount,
+
+  /// Documented member.
   missingNutrition,
+
+  /// Documented member.
   inventorySaveFailed,
+
+  /// Documented member.
   mealSaveFailed,
 }
 
+/// Defines prepared meal creation result.
 class PreparedMealCreationResult {
   const PreparedMealCreationResult._({
     required this.isSuccess,
@@ -45,15 +58,22 @@ class PreparedMealCreationResult {
     this.failureReason,
   });
 
+  /// Creates a [PreparedMealCreationResult] for success.
   const PreparedMealCreationResult.success(String preparedMealId)
     : this._(isSuccess: true, preparedMealId: preparedMealId);
 
+  /// Creates a [PreparedMealCreationResult] for failure.
   const PreparedMealCreationResult.failure(
     PreparedMealCreationFailureReason reason,
   ) : this._(isSuccess: false, failureReason: reason);
 
+  /// Whether success.
   final bool isSuccess;
+
+  /// The prepared meal id.
   final String? preparedMealId;
+
+  /// The failure reason.
   final PreparedMealCreationFailureReason? failureReason;
 }
 
@@ -63,15 +83,22 @@ class _PreparedMealCreationException implements Exception {
   final PreparedMealCreationFailureReason reason;
 }
 
+/// Defines prepared meal item input.
 class PreparedMealItemInput {
+  /// The prepared meal item input.
   const PreparedMealItemInput({
     required this.itemId,
     required this.usedAmount,
     this.manualNutrition,
   });
 
+  /// The item id.
   final String itemId;
+
+  /// The used amount.
   final int usedAmount;
+
+  /// The manual nutrition.
   final GlobalFoodNutrition? manualNutrition;
 }
 
@@ -91,6 +118,7 @@ extension _PreparedMealComponentNutritionTotals
   }
 }
 
+/// Defines prepared meals controller.
 @riverpod
 class PreparedMealsController extends _$PreparedMealsController {
   static const _uuid = Uuid();
@@ -114,6 +142,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     return _restartSubscription();
   }
 
+  /// Refresh.
   Future<void> refresh() async {
     state = const AsyncLoading();
     final next = await AsyncValue.guard(_restartSubscription);
@@ -123,6 +152,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     state = next;
   }
 
+  /// Create prepared meal.
   Future<PreparedMealCreationResult> createPreparedMeal({
     required String name,
     String? imageAssetId,
@@ -181,6 +211,7 @@ class PreparedMealsController extends _$PreparedMealsController {
         .whenComplete(keepAliveLink.close);
   }
 
+  /// Create prepared meal from template.
   Future<PreparedMealCreationResult> createPreparedMealFromTemplate({
     required PreparedMeal template,
     required int totalPortions,
@@ -242,6 +273,7 @@ class PreparedMealsController extends _$PreparedMealsController {
         .whenComplete(keepAliveLink.close);
   }
 
+  /// Update prepared meal details.
   Future<bool> updatePreparedMealDetails({
     required String mealId,
     required String name,
@@ -284,6 +316,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     }).whenComplete(keepAliveLink.close);
   }
 
+  /// Fill prepared meal pending ingredient.
   Future<bool> fillPreparedMealPendingIngredient({
     required String mealId,
     required String ingredient,
@@ -377,6 +410,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     }).whenComplete(keepAliveLink.close);
   }
 
+  /// Ignore prepared meal pending ingredient.
   Future<bool> ignorePreparedMealPendingIngredient({
     required String mealId,
     required String ingredient,
@@ -412,6 +446,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     }).whenComplete(keepAliveLink.close);
   }
 
+  /// Consume prepared meal.
   Future<bool> consumePreparedMeal({
     required String mealId,
     required int consumedPortions,
@@ -505,6 +540,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     }).whenComplete(keepAliveLink.close);
   }
 
+  /// Throw away prepared meal.
   Future<bool> throwAwayPreparedMeal({
     required String mealId,
     required int discardedPortions,
@@ -594,6 +630,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     }).whenComplete(keepAliveLink.close);
   }
 
+  /// Restore prepared meal portions.
   Future<bool> restorePreparedMealPortions({
     required String mealId,
     required int portions,
@@ -666,6 +703,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     }).whenComplete(keepAliveLink.close);
   }
 
+  /// Unbundle prepared meal.
   Future<bool> unbundlePreparedMeal(String mealId) {
     final keepAliveLink = ref.keepAlive();
     return _runSerializedMutation(() async {

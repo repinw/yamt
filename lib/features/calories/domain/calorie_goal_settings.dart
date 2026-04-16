@@ -5,25 +5,40 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_goal_settings.g.dart';
 
+/// The default daily calorie goal kcal.
 const defaultDailyCalorieGoalKcal = 2500.0;
+
+/// The default eating window start minute of day.
 const defaultEatingWindowStartMinuteOfDay = 6 * 60;
+
+/// The default eating window end minute of day.
 const defaultEatingWindowEndMinuteOfDay = 22 * 60;
 const _minutesPerDay = 24 * 60;
 const _keepValue = Object();
 
+/// Defines calorie goal source.
 @JsonEnum(valueField: 'jsonValue')
 enum CalorieGoalSource {
+  /// Manual.
   manual('manual'),
+
+  /// Calculator.
   calculator('calculator'),
-  weeklyCheckIn('weekly_checkin');
+
+  /// Weekly check in.
+  weeklyCheckIn('weekly_checkin')
+  ;
 
   const CalorieGoalSource(this.jsonValue);
 
+  /// The json value.
   final String jsonValue;
 }
 
+/// Defines calorie goal weekly check in snapshot.
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CalorieGoalWeeklyCheckInSnapshot {
+  /// The calorie goal weekly check in snapshot.
   const CalorieGoalWeeklyCheckInSnapshot({
     required this.windowStartDate,
     required this.windowEndDate,
@@ -33,29 +48,44 @@ class CalorieGoalWeeklyCheckInSnapshot {
     required this.lowConfidence,
   });
 
+  /// The window start date.
   @FlexibleDateTimeConverter()
   final DateTime windowStartDate;
+
+  /// The window end date.
   @FlexibleDateTimeConverter()
   final DateTime windowEndDate;
+
+  /// The trend weight change per day.
   @FlexibleDoubleConverter()
   final double trendWeightChangePerDay;
+
+  /// The calculated true tdee kcal.
   @FlexibleDoubleConverter()
   final double calculatedTrueTdeeKcal;
+
+  /// The average active kcal.
   @FlexibleDoubleConverter()
   final double averageActiveKcal;
+
+  /// The low confidence.
   final bool lowConfidence;
 
+  /// Creates a [CalorieGoalWeeklyCheckInSnapshot] for from json.
   factory CalorieGoalWeeklyCheckInSnapshot.fromJson(Map<String, dynamic> json) {
     return _$CalorieGoalWeeklyCheckInSnapshotFromJson(json);
   }
 
+  /// To json.
   Map<String, dynamic> toJson() {
     return _$CalorieGoalWeeklyCheckInSnapshotToJson(this);
   }
 }
 
+/// Defines pending calorie goal weekly check in.
 @JsonSerializable(fieldRename: FieldRename.snake)
 class PendingCalorieGoalWeeklyCheckIn {
+  /// The pending calorie goal weekly check in.
   const PendingCalorieGoalWeeklyCheckIn({
     required this.windowStartDate,
     required this.windowEndDate,
@@ -63,21 +93,31 @@ class PendingCalorieGoalWeeklyCheckIn {
     this.dismissedAt,
   });
 
+  /// The window start date.
   @FlexibleDateTimeConverter()
   final DateTime windowStartDate;
+
+  /// The window end date.
   @FlexibleDateTimeConverter()
   final DateTime windowEndDate;
+
+  /// The due date.
   @FlexibleDateTimeConverter()
   final DateTime dueDate;
+
+  /// The dismissed at.
   @NullableFlexibleDateTimeConverter()
   final DateTime? dismissedAt;
 
+  /// Whether dismissed.
   bool get isDismissed => dismissedAt != null;
 
+  /// The window key.
   String get windowKey {
     return '${diaryDayKey(windowStartDate)}:${diaryDayKey(windowEndDate)}';
   }
 
+  /// Copy with.
   PendingCalorieGoalWeeklyCheckIn copyWith({Object? dismissedAt = _keepValue}) {
     return PendingCalorieGoalWeeklyCheckIn(
       windowStartDate: windowStartDate,
@@ -89,17 +129,21 @@ class PendingCalorieGoalWeeklyCheckIn {
     );
   }
 
+  /// Creates a [PendingCalorieGoalWeeklyCheckIn] for from json.
   factory PendingCalorieGoalWeeklyCheckIn.fromJson(Map<String, dynamic> json) {
     return _$PendingCalorieGoalWeeklyCheckInFromJson(json);
   }
 
+  /// To json.
   Map<String, dynamic> toJson() {
     return _$PendingCalorieGoalWeeklyCheckInToJson(this);
   }
 }
 
+/// Defines calorie goal history entry.
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CalorieGoalHistoryEntry {
+  /// The calorie goal history entry.
   const CalorieGoalHistoryEntry({
     required this.dailyKcalGoal,
     required this.calculatorProfile,
@@ -109,34 +153,55 @@ class CalorieGoalHistoryEntry {
     this.weeklyCheckInSnapshot,
   });
 
+  /// The daily kcal goal.
   @NullableFlexibleDoubleConverter()
   final double? dailyKcalGoal;
+
+  /// The calculator profile.
   final CalorieCalculatorProfile? calculatorProfile;
+
+  /// The effective date.
   @FlexibleDateTimeConverter()
   final DateTime effectiveDate;
+
+  /// The changed at.
   @NullableFlexibleDateTimeConverter()
   final DateTime? changedAt;
   @JsonKey(
     defaultValue: CalorieGoalSource.manual,
     unknownEnumValue: CalorieGoalSource.manual,
   )
+  /// The source.
   final CalorieGoalSource source;
+
+  /// The weekly check in snapshot.
   final CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot;
 
+  /// Whether goal.
   bool get hasGoal => dailyKcalGoal != null;
+
+  /// The effective changed at.
   DateTime get effectiveChangedAt => changedAt ?? effectiveDate;
+
+  /// Whether weekly check in.
   bool get isWeeklyCheckIn => source == CalorieGoalSource.weeklyCheckIn;
+
+  /// Whether learned tdee.
   bool get hasLearnedTdee => weeklyCheckInSnapshot != null;
 
+  /// Creates a [CalorieGoalHistoryEntry] for from json.
   factory CalorieGoalHistoryEntry.fromJson(Map<String, dynamic> json) {
     return _$CalorieGoalHistoryEntryFromJson(json);
   }
 
+  /// To json.
   Map<String, dynamic> toJson() => _$CalorieGoalHistoryEntryToJson(this);
 }
 
+/// Defines calorie goal settings.
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CalorieGoalSettings {
+  /// The calorie goal settings.
   const CalorieGoalSettings({
     required this.dailyKcalGoal,
     required this.calculatorProfile,
@@ -148,6 +213,7 @@ class CalorieGoalSettings {
     required this.skippedIntakeDayKeys,
   });
 
+  /// The eating window start minute of day.
   const CalorieGoalSettings.empty()
     : dailyKcalGoal = null,
       calculatorProfile = null,
@@ -158,6 +224,7 @@ class CalorieGoalSettings {
       pendingWeeklyCheckIn = null,
       skippedIntakeDayKeys = const <String>[];
 
+  /// Creates a [CalorieGoalSettings] for single.
   factory CalorieGoalSettings.single({
     required double? dailyKcalGoal,
     required CalorieCalculatorProfile? calculatorProfile,
@@ -189,25 +256,46 @@ class CalorieGoalSettings {
     );
   }
 
+  /// The daily kcal goal.
   @NullableFlexibleDoubleConverter()
   final double? dailyKcalGoal;
+
+  /// The calculator profile.
   final CalorieCalculatorProfile? calculatorProfile;
+
+  /// The updated at.
   @NullableFlexibleDateTimeConverter()
   final DateTime? updatedAt;
+
+  /// The goal history.
   @JsonKey(defaultValue: <CalorieGoalHistoryEntry>[])
   final List<CalorieGoalHistoryEntry> goalHistory;
+
+  /// The eating window start minute of day.
   @JsonKey(defaultValue: defaultEatingWindowStartMinuteOfDay)
   final int eatingWindowStartMinuteOfDay;
+
+  /// The eating window end minute of day.
   @JsonKey(defaultValue: defaultEatingWindowEndMinuteOfDay)
   final int eatingWindowEndMinuteOfDay;
+
+  /// The pending weekly check in.
   final PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn;
+
+  /// The skipped intake day keys.
   @JsonKey(defaultValue: <String>[])
   final List<String> skippedIntakeDayKeys;
 
+  /// Whether goal.
   bool get hasGoal => dailyKcalGoal != null;
+
+  /// Whether calculator profile.
   bool get hasCalculatorProfile => calculatorProfile != null;
+
+  /// Whether learned tdee.
   bool get hasLearnedTdee => latestLearnedTdeeKcal != null;
 
+  /// The normalized eating window start minute of day.
   int get normalizedEatingWindowStartMinuteOfDay {
     return _resolveEatingWindowMinutes(
       startMinuteOfDay: eatingWindowStartMinuteOfDay,
@@ -215,6 +303,7 @@ class CalorieGoalSettings {
     ).startMinuteOfDay;
   }
 
+  /// The normalized eating window end minute of day.
   int get normalizedEatingWindowEndMinuteOfDay {
     return _resolveEatingWindowMinutes(
       startMinuteOfDay: eatingWindowStartMinuteOfDay,
@@ -222,6 +311,7 @@ class CalorieGoalSettings {
     ).endMinuteOfDay;
   }
 
+  /// Eating window start for day.
   DateTime eatingWindowStartForDay(DateTime day) {
     return _dateTimeForMinuteOfDay(
       day: day,
@@ -229,6 +319,7 @@ class CalorieGoalSettings {
     );
   }
 
+  /// Eating window end for day.
   DateTime eatingWindowEndForDay(DateTime day) {
     return _dateTimeForMinuteOfDay(
       day: day,
@@ -236,6 +327,7 @@ class CalorieGoalSettings {
     );
   }
 
+  /// The sorted goal history.
   List<CalorieGoalHistoryEntry> get sortedGoalHistory {
     final entries = List<CalorieGoalHistoryEntry>.from(goalHistory);
     entries.sort((left, right) {
@@ -248,6 +340,7 @@ class CalorieGoalSettings {
     return List<CalorieGoalHistoryEntry>.unmodifiable(entries);
   }
 
+  /// The skipped intake days.
   Iterable<DateTime> get skippedIntakeDays sync* {
     for (final key in skippedIntakeDayKeys) {
       final parsed = _dateFromDayKeyOrNull(key);
@@ -257,6 +350,7 @@ class CalorieGoalSettings {
     }
   }
 
+  /// The latest goal entry.
   CalorieGoalHistoryEntry? get latestGoalEntry {
     for (final entry in sortedGoalHistory.reversed) {
       if (entry.hasGoal) {
@@ -266,6 +360,7 @@ class CalorieGoalSettings {
     return null;
   }
 
+  /// The latest learned tdee entry.
   CalorieGoalHistoryEntry? get latestLearnedTdeeEntry {
     for (final entry in sortedGoalHistory.reversed) {
       if (entry.hasLearnedTdee) {
@@ -275,16 +370,19 @@ class CalorieGoalSettings {
     return null;
   }
 
+  /// The latest learned tdee kcal.
   double? get latestLearnedTdeeKcal {
     return latestLearnedTdeeEntry
         ?.weeklyCheckInSnapshot
         ?.calculatedTrueTdeeKcal;
   }
 
+  /// The latest learned tdee changed at.
   DateTime? get latestLearnedTdeeChangedAt {
     return latestLearnedTdeeEntry?.effectiveChangedAt;
   }
 
+  /// Cycle anchor entry for day.
   CalorieGoalHistoryEntry? cycleAnchorEntryForDay(DateTime day) {
     final normalizedDay = normalizeDiaryDay(day);
     CalorieGoalHistoryEntry? anchorEntry;
@@ -302,6 +400,7 @@ class CalorieGoalSettings {
     return anchorEntry;
   }
 
+  /// Goal entry for day.
   CalorieGoalHistoryEntry? goalEntryForDay(DateTime day) {
     final normalizedDay = normalizeDiaryDay(day);
     CalorieGoalHistoryEntry? resolvedEntry;
@@ -316,6 +415,7 @@ class CalorieGoalSettings {
     return resolvedEntry;
   }
 
+  /// Next goal start after day.
   DateTime? nextGoalStartAfterDay(DateTime day) {
     final normalizedDay = normalizeDiaryDay(day);
     for (final entry in sortedGoalHistory) {
@@ -329,6 +429,7 @@ class CalorieGoalSettings {
     return null;
   }
 
+  /// Goal kcal for day.
   double goalKcalForDay(DateTime day) {
     final entry = goalEntryForDay(day);
     if (entry != null) {
@@ -339,6 +440,7 @@ class CalorieGoalSettings {
         : 0.0;
   }
 
+  /// Balance start for window.
   DateTime balanceStartForWindow(Iterable<DateTime> days) {
     final normalizedDays = days.map(normalizeDiaryDay).toList(growable: false)
       ..sort();
@@ -372,12 +474,15 @@ class CalorieGoalSettings {
     return nextGoalStartAfterDay(windowEnd) ?? windowStart;
   }
 
+  /// Creates a [CalorieGoalSettings] for from json.
   factory CalorieGoalSettings.fromJson(Map<String, dynamic> json) {
     return _$CalorieGoalSettingsFromJson(json);
   }
 
+  /// To json.
   Map<String, dynamic> toJson() => _$CalorieGoalSettingsToJson(this);
 
+  /// Without latest goal entry.
   CalorieGoalSettings withoutLatestGoalEntry() {
     final history = sortedGoalHistory;
     final latestGoalIndex = history.lastIndexWhere((entry) => entry.hasGoal);
@@ -406,6 +511,7 @@ class CalorieGoalSettings {
     );
   }
 
+  /// Apply goal change.
   CalorieGoalSettings applyGoalChange({
     required DateTime changedAt,
     required double? dailyKcalGoal,
@@ -452,6 +558,7 @@ class CalorieGoalSettings {
     );
   }
 
+  /// Apply eating window change.
   CalorieGoalSettings applyEatingWindowChange({
     required DateTime changedAt,
     required int startMinuteOfDay,
@@ -468,10 +575,12 @@ class CalorieGoalSettings {
     );
   }
 
+  /// Is skipped intake day.
   bool isSkippedIntakeDay(DateTime day) {
     return skippedIntakeDayKeys.contains(_dayKey(day));
   }
 
+  /// Copy with pending weekly check in.
   CalorieGoalSettings copyWithPendingWeeklyCheckIn(
     PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn,
   ) {
@@ -487,6 +596,7 @@ class CalorieGoalSettings {
     );
   }
 
+  /// Dismiss pending weekly check in.
   CalorieGoalSettings dismissPendingWeeklyCheckIn(DateTime dismissedAt) {
     final pending = pendingWeeklyCheckIn;
     if (pending == null) {
@@ -497,6 +607,7 @@ class CalorieGoalSettings {
     );
   }
 
+  /// Set skipped intake day.
   CalorieGoalSettings setSkippedIntakeDay({
     required DateTime day,
     required bool isSkipped,
@@ -523,6 +634,7 @@ class CalorieGoalSettings {
     );
   }
 
+  /// Copy with.
   CalorieGoalSettings copyWith({
     double? dailyKcalGoal,
     CalorieCalculatorProfile? calculatorProfile,
@@ -548,6 +660,7 @@ class CalorieGoalSettings {
   }
 }
 
+/// Is valid eating window minutes.
 bool isValidEatingWindowMinutes({
   required int startMinuteOfDay,
   required int endMinuteOfDay,

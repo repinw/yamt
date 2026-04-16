@@ -1,3 +1,4 @@
+/// Recipe source host.
 String? recipeSourceHost(String? recipeUrl) {
   if (recipeUrl == null || recipeUrl.isEmpty) {
     return null;

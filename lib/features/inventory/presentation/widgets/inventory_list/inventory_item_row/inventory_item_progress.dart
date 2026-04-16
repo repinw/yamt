@@ -1,6 +1,8 @@
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
+/// Defines inventory item progress.
 class InventoryItemProgress {
+  /// The inventory item progress.
   const InventoryItemProgress({
     required this.remainingRatio,
     required this.remainingLabel,
@@ -9,16 +11,28 @@ class InventoryItemProgress {
     required this.remainingUnits,
   });
 
+  /// The remaining ratio.
   final double remainingRatio;
+
+  /// The remaining label.
   final String remainingLabel;
+
+  /// The segmented by units.
   final bool segmentedByUnits;
+
+  /// The total units.
   final int totalUnits;
+
+  /// The remaining units.
   final int remainingUnits;
 }
 
+/// Defines inventory item progress calculator.
 class InventoryItemProgressCalculator {
+  /// The inventory item progress calculator.
   const InventoryItemProgressCalculator();
 
+  /// From item.
   InventoryItemProgress fromItem(InventoryItem item) {
     if (item.usesAmountProgress) {
       return _fromAmount(item);

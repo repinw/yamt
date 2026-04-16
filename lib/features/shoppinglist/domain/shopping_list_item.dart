@@ -1,4 +1,6 @@
+/// Defines shopping list item.
 class ShoppingListItem {
+  /// The shopping list item.
   const ShoppingListItem({
     required this.id,
     required this.name,
@@ -9,16 +11,31 @@ class ShoppingListItem {
     this.brand,
   });
 
+  /// The id.
   final String id;
+
+  /// The name.
   final String name;
+
+  /// The brand.
   final String? brand;
+
+  /// The normalized name.
   final String normalizedName;
+
+  /// The normalized brand.
   final String normalizedBrand;
+
+  /// The quantity.
   final int quantity;
+
+  /// The estimated unit price.
   final double estimatedUnitPrice;
 
+  /// The estimated total.
   double get estimatedTotal => estimatedUnitPrice * quantity;
 
+  /// Creates a [ShoppingListItem] for from json.
   factory ShoppingListItem.fromJson(Map<String, dynamic> json) {
     return ShoppingListItem(
       id: _stringValue(json['id']),
@@ -31,6 +48,7 @@ class ShoppingListItem {
     );
   }
 
+  /// To json.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
@@ -43,6 +61,7 @@ class ShoppingListItem {
     };
   }
 
+  /// Copy with.
   ShoppingListItem copyWith({
     String? id,
     String? name,

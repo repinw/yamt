@@ -7,13 +7,17 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Selectable activity-level list for the calorie-goal calculator.
 class CalorieGoalCalculatorActivityLevelSelector extends StatelessWidget {
+  /// The calorie goal calculator activity level selector.
   const CalorieGoalCalculatorActivityLevelSelector({
     super.key,
     required this.selectedOption,
     required this.onSelected,
   });
 
+  /// The selected option.
   final CalorieActivityLevelOption selectedOption;
+
+  /// The on selected.
   final ValueChanged<CalorieActivityLevelOption> onSelected;
 
   @override

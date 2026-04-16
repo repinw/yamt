@@ -9,28 +9,43 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
-    'inventory_tile_header_layout.dart';
-import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_tile_header_layout.dart';
 
+/// Defines inventory item row main section.
 class InventoryItemRowMainSection extends StatelessWidget {
+  /// The inventory item row main section.
   const InventoryItemRowMainSection({
-    super.key,
     required this.item,
     required this.viewData,
     required this.isExpanded,
     required this.onPrimaryActionPressed,
     required this.showSelectionCheckbox,
     required this.isSelected,
+    super.key,
     this.expandIndicatorKey,
   });
 
+  /// The item.
   final InventoryItemRowSnapshot item;
+
+  /// The view data.
   final InventoryItemRowViewData viewData;
+
+  /// Whether expanded.
   final bool isExpanded;
+
+  /// The on primary action pressed.
   final VoidCallback? onPrimaryActionPressed;
+
+  /// The show selection checkbox.
   final bool showSelectionCheckbox;
+
+  /// Whether selected.
   final bool isSelected;
+
+  /// The expand indicator key.
   final Key? expandIndicatorKey;
 
   @override

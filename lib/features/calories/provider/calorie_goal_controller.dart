@@ -7,8 +7,8 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -21,6 +21,7 @@ part 'calorie_goal_controller.g.dart';
 
 const _goalControllerLogName = 'CalorieGoalController';
 
+/// Defines calorie goal controller.
 @riverpod
 class CalorieGoalController extends _$CalorieGoalController {
   StreamSubscription<CalorieGoalSettings>? _settingsSubscription;
@@ -32,6 +33,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     return _restartSubscription();
   }
 
+  /// Refresh.
   Future<void> refresh() async {
     state = const AsyncLoading();
     final next = await AsyncValue.guard(_restartSubscription);
@@ -41,6 +43,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     state = next;
   }
 
+  /// Set goal.
   Future<bool> setGoal(double dailyKcalGoal) async {
     if (dailyKcalGoal <= 0) {
       return false;
@@ -57,6 +60,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     return _persistSettings(nextSettings);
   }
 
+  /// Save calculated goal.
   Future<bool> saveCalculatedGoal(
     CalorieCalculatorProfile profile, {
     required DateTime goalStartAt,
@@ -101,6 +105,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     return true;
   }
 
+  /// Shift goal start.
   Future<bool> shiftGoalStart({required DateTime goalStartAt}) {
     final previousSettings =
         state.asData?.value ?? const CalorieGoalSettings.empty();
@@ -126,6 +131,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     return _persistSettings(nextSettings);
   }
 
+  /// Clear goal.
   Future<bool> clearGoal() async {
     final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
     final now = DateTime.now();
@@ -139,6 +145,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     );
   }
 
+  /// Set eating window.
   Future<bool> setEatingWindow({
     required int startMinuteOfDay,
     required int endMinuteOfDay,
@@ -160,6 +167,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     return _persistSettings(nextSettings);
   }
 
+  /// Set pending weekly check in.
   Future<bool> setPendingWeeklyCheckIn(
     PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
   ) async {
@@ -169,6 +177,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     );
   }
 
+  /// Dismiss pending weekly check in.
   Future<bool> dismissPendingWeeklyCheckIn({DateTime? dismissedAt}) async {
     final previous = await _currentSettings();
     if (previous.pendingWeeklyCheckIn == null) {
@@ -179,6 +188,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     );
   }
 
+  /// Clear pending weekly check in.
   Future<bool> clearPendingWeeklyCheckIn() async {
     final previous = await _currentSettings();
     if (previous.pendingWeeklyCheckIn == null) {
@@ -187,6 +197,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     return _persistSettings(previous.copyWithPendingWeeklyCheckIn(null));
   }
 
+  /// Set skipped intake day.
   Future<bool> setSkippedIntakeDay({
     required DateTime day,
     required bool isSkipped,
@@ -207,6 +218,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     return _persistSettings(nextSettings);
   }
 
+  /// Clear skipped intake day.
   Future<bool> clearSkippedIntakeDay(DateTime day) async {
     final previous = await _currentSettings();
     if (!previous.isSkippedIntakeDay(day)) {
@@ -215,6 +227,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     return setSkippedIntakeDay(day: day, isSkipped: false);
   }
 
+  /// Save learned tdee goal.
   Future<bool> saveLearnedTdeeGoal({
     required CalorieGoalMode goalMode,
     required double goalSpeedKgPerWeek,
@@ -260,6 +273,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     return _persistSettings(nextSettings);
   }
 
+  /// Save weekly check in goal.
   Future<bool> saveWeeklyCheckInGoal({
     required DateTime completedAt,
     required double dailyKcalGoal,
@@ -386,7 +400,8 @@ class CalorieGoalController extends _$CalorieGoalController {
       return;
     }
     if (connectionStatus.accessState == HealthDataAccessState.ready) {
-      final healthSamples = await ref.read(healthWeightServiceProvider)
+      final healthSamples = await ref
+          .read(healthWeightServiceProvider)
           .loadWeightSamples(
             startInclusive: normalizedDay,
             endExclusive: normalizedDay.add(const Duration(days: 1)),

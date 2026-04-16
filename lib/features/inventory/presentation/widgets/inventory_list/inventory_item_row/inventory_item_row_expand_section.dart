@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_nutrition_strip.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_nutrition_strip.dart';
 
+/// Defines inventory item row expand section.
 class InventoryItemRowExpandSection extends StatelessWidget {
+  /// The inventory item row expand section.
   const InventoryItemRowExpandSection({
-    super.key,
     required this.isExpanded,
     required this.viewData,
     required this.colorScheme,
@@ -21,18 +22,40 @@ class InventoryItemRowExpandSection extends StatelessWidget {
     required this.onEditPressed,
     required this.onThrowAwayPressed,
     required this.onSwapCandidatePressed,
+    super.key,
   });
 
+  /// Whether expanded.
   final bool isExpanded;
+
+  /// The view data.
   final InventoryItemRowViewData viewData;
+
+  /// The color scheme.
   final ColorScheme colorScheme;
+
+  /// The delete label.
   final String deleteLabel;
+
+  /// The edit label.
   final String editLabel;
+
+  /// The swap candidate label.
   final String swapCandidateLabel;
+
+  /// The throw away label.
   final String throwAwayLabel;
+
+  /// The on delete pressed.
   final VoidCallback onDeletePressed;
+
+  /// The on edit pressed.
   final VoidCallback onEditPressed;
+
+  /// The on throw away pressed.
   final VoidCallback? onThrowAwayPressed;
+
+  /// The on swap candidate pressed.
   final VoidCallback onSwapCandidatePressed;
 
   @override

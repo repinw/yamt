@@ -135,7 +135,7 @@ List<ManualHealthWeightEntry> _weeklyCheckInWeights(
   final windowStart = _normalizeDay(dueDay).subtract(const Duration(days: 7));
   final windowEnd = windowStart.add(const Duration(days: 6));
   return <ManualHealthWeightEntry>[
-    if (includeStart) ManualHealthWeightEntry(day: windowStart, weightKg: 84.0),
+    if (includeStart) ManualHealthWeightEntry(day: windowStart, weightKg: 84),
     if (includeEnd) ManualHealthWeightEntry(day: windowEnd, weightKg: 83.4),
   ];
 }

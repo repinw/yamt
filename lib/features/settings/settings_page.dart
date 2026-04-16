@@ -5,8 +5,8 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/provider/app_version_provider.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
-import 'package:yamt/core/theme/theme_option_labels.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
+import 'package:yamt/core/theme/theme_option_labels.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_eating_window_dialog.dart';
@@ -22,7 +22,9 @@ TextStyle? _settingsDropdownTextStyle(BuildContext context) {
   ).textTheme.labelLarge?.copyWith(color: colors.primary);
 }
 
+/// Defines settings page.
 class SettingsPage extends StatelessWidget {
+  /// The settings page.
   const SettingsPage({super.key});
 
   @override

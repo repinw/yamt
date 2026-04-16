@@ -7,7 +7,9 @@ import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dar
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines inventory action fab.
 class InventoryActionFab extends ConsumerWidget {
+  /// The inventory action fab.
   const InventoryActionFab({super.key});
 
   @override

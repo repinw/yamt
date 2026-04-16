@@ -5,7 +5,9 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_flow.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
+/// Defines calorie goal onboarding page.
 class CalorieGoalOnboardingPage extends ConsumerWidget {
+  /// The calorie goal onboarding page.
   const CalorieGoalOnboardingPage({super.key});
 
   @override

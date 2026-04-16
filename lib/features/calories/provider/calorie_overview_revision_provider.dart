@@ -8,6 +8,7 @@ class CalorieOverviewRevision extends _$CalorieOverviewRevision {
   @override
   int build() => 0;
 
+  /// Mark changed.
   void markChanged() {
     state += 1;
   }

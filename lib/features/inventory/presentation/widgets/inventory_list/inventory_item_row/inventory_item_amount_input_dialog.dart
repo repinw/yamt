@@ -1,24 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+/// Defines inventory item amount input dialog.
 class InventoryItemAmountInputDialog extends StatefulWidget {
+  /// The inventory item amount input dialog.
   const InventoryItemAmountInputDialog({
-    super.key,
     required this.title,
     required this.confirmLabel,
     required this.cancelLabel,
     required this.fieldLabel,
     required this.invalidAmountMessage,
     required this.maxAmount,
+    super.key,
     this.suffixText,
   });
 
+  /// The title.
   final String title;
+
+  /// The confirm label.
   final String confirmLabel;
+
+  /// The cancel label.
   final String cancelLabel;
+
+  /// The field label.
   final String fieldLabel;
+
+  /// The invalid amount message.
   final String invalidAmountMessage;
+
+  /// The max amount.
   final int maxAmount;
+
+  /// The suffix text.
   final String? suffixText;
 
   @override
@@ -41,8 +56,9 @@ class _InventoryItemAmountInputDialogState
 
   @override
   void dispose() {
-    _focusNode.removeListener(_onFocusChanged);
-    _focusNode.dispose();
+    _focusNode
+      ..removeListener(_onFocusChanged)
+      ..dispose();
     _controller.dispose();
     super.dispose();
   }

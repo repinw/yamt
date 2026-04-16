@@ -30,16 +30,23 @@ export 'inventory_barcode_lookup_candidate.dart'
 const _inventoryBarcodeScannerLogName = 'InventoryBarcodeScannerPage';
 const _inventoryBarcodeCandidateLimit = 5;
 
+/// Defines inventory barcode scanner page.
 class InventoryBarcodeScannerPage extends StatelessWidget {
+  /// The inventory barcode scanner page.
   const InventoryBarcodeScannerPage({
-    super.key,
     required this.title,
     required this.onProductSelected,
+    super.key,
     this.onProductNotFound,
   });
 
+  /// The title.
   final String title;
+
+  /// The on product selected.
   final InventoryBarcodeProductSelectionCallback onProductSelected;
+
+  /// The on product not found.
   final InventoryBarcodeNotFoundCallback? onProductNotFound;
 
   @override
@@ -54,14 +61,19 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
   }
 }
 
+/// Defines inventory barcode scanner view.
 class InventoryBarcodeScannerView extends ConsumerStatefulWidget {
+  /// The inventory barcode scanner view.
   const InventoryBarcodeScannerView({
-    super.key,
     required this.onProductSelected,
+    super.key,
     this.onProductNotFound,
   });
 
+  /// The on product selected.
   final InventoryBarcodeProductSelectionCallback onProductSelected;
+
+  /// The on product not found.
   final InventoryBarcodeNotFoundCallback? onProductNotFound;
 
   @override

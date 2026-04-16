@@ -24,6 +24,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _inventoryManualAddItemId = Uuid();
 const _inventoryAmountParser = InventoryAmountParser();
 
+/// Resolve inventory manual add eat flow max amount.
 @visibleForTesting
 int? resolveInventoryManualAddEatFlowMaxAmount(InventoryItem item) {
   if (item.usesAmountProgress) {
@@ -38,7 +39,9 @@ int? resolveInventoryManualAddEatFlowMaxAmount(InventoryItem item) {
   return item.quantity;
 }
 
+/// Defines inventory manual add page.
 class InventoryManualAddPage extends ConsumerStatefulWidget {
+  /// The inventory manual add page.
   const InventoryManualAddPage({super.key});
 
   @override

@@ -10,8 +10,10 @@ import 'prepared_meal_template_store.dart';
 
 const String _repositoryLogName = 'FirestorePreparedMealTemplateRepository';
 
+/// Defines firestore prepared meal template repository.
 class FirestorePreparedMealTemplateRepository
     implements PreparedMealTemplateRepository {
+  /// Creates an instance.
   FirestorePreparedMealTemplateRepository({
     required InventoryUserSession session,
     required SessionShutdownSignal sessionShutdownSignal,

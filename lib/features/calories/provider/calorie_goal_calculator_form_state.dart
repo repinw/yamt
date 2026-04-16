@@ -2,9 +2,18 @@ import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 
-enum CalorieCalculatorFieldError { empty, invalid }
+/// Defines calorie calculator field error.
+enum CalorieCalculatorFieldError {
+  /// Empty.
+  empty,
 
+  /// Invalid.
+  invalid,
+}
+
+/// Defines calorie goal calculator form state.
 class CalorieGoalCalculatorFormState {
+  /// The calorie goal calculator form state.
   const CalorieGoalCalculatorFormState({
     required this.sex,
     required this.weightKgText,
@@ -22,6 +31,7 @@ class CalorieGoalCalculatorFormState {
     required this.isSaving,
   });
 
+  /// Creates a [CalorieGoalCalculatorFormState] for initial.
   factory CalorieGoalCalculatorFormState.initial(
     CalorieCalculatorProfile? initialProfile,
   ) {
@@ -47,25 +57,55 @@ class CalorieGoalCalculatorFormState {
     );
   }
 
+  /// The sex.
   final CalorieCalculatorSex sex;
+
+  /// The weight kg text.
   final String weightKgText;
+
+  /// The height cm text.
   final String heightCmText;
+
+  /// The age years text.
   final String ageYearsText;
+
+  /// The activity level option.
   final CalorieActivityLevelOption activityLevelOption;
+
+  /// The goal mode.
   final CalorieGoalMode goalMode;
+
+  /// The goal speed kg per week text.
   final String goalSpeedKgPerWeekText;
+
+  /// The last non maintain goal speed text.
   final String lastNonMaintainGoalSpeedText;
+
+  /// The weight error.
   final CalorieCalculatorFieldError? weightError;
+
+  /// The height error.
   final CalorieCalculatorFieldError? heightError;
+
+  /// The age error.
   final CalorieCalculatorFieldError? ageError;
+
+  /// The goal speed error.
   final CalorieCalculatorFieldError? goalSpeedError;
+
+  /// The calculation.
   final CalorieGoalCalculationResult? calculation;
+
+  /// Whether saving.
   final bool isSaving;
 
+  /// Whether maintain mode.
   bool get isMaintainMode => goalMode == CalorieGoalMode.maintain;
 
+  /// Whether save.
   bool get canSave => calculation != null && !isSaving;
 
+  /// The profile.
   CalorieCalculatorProfile? get profile {
     final weightKg = _parsePositiveDouble(weightKgText);
     final heightCm = _parsePositiveDouble(heightCmText);
@@ -92,6 +132,7 @@ class CalorieGoalCalculatorFormState {
     );
   }
 
+  /// Copy with.
   CalorieGoalCalculatorFormState copyWith({
     CalorieCalculatorSex? sex,
     String? weightKgText,

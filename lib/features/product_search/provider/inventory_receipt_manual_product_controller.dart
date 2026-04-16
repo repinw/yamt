@@ -26,7 +26,9 @@ const _manualProductControllerLogName =
     'InventoryReceiptManualProductController';
 const _keepValue = Object();
 
+/// Defines inventory receipt manual product config.
 class InventoryReceiptManualProductConfig {
+  /// The inventory receipt manual product config.
   const InventoryReceiptManualProductConfig({
     required this.item,
     this.selectedProduct,
@@ -34,9 +36,16 @@ class InventoryReceiptManualProductConfig {
     this.includeWeightInSearch = true,
   });
 
+  /// The item.
   final InventoryItem item;
+
+  /// The selected product.
   final OffProductSearchResult? selectedProduct;
+
+  /// The include store in search.
   final bool includeStoreInSearch;
+
+  /// The include weight in search.
   final bool includeWeightInSearch;
 
   @override
@@ -91,26 +100,51 @@ class InventoryReceiptManualProductConfig {
   }
 }
 
+/// Defines inventory receipt manual product error.
 enum InventoryReceiptManualProductError {
+  /// Documented member.
   requiredProductOrNutrition,
+
+  /// Documented member.
   requiredPackageWeight,
 }
 
+/// Defines inventory receipt manual product nutrition scan outcome.
 enum InventoryReceiptManualProductNutritionScanOutcome {
+  /// Documented member.
   applied,
+
+  /// Documented member.
   canceled,
+
+  /// Documented member.
   failed,
+
+  /// Documented member.
   missingBarcode,
 }
 
+/// Defines inventory receipt manual product selection source.
 enum InventoryReceiptManualProductSelectionSource {
+  /// Documented member.
   externalSearch,
+
+  /// Documented member.
   recentInventory,
 }
 
-enum InventoryReceiptOptionalNutritionType { polyunsaturatedFat, fiber }
+/// Defines inventory receipt optional nutrition type.
+enum InventoryReceiptOptionalNutritionType {
+  /// Polyunsaturated fat.
+  polyunsaturatedFat,
 
+  /// Fiber.
+  fiber,
+}
+
+/// Defines inventory receipt manual product selection.
 class InventoryReceiptManualProductSelection {
+  /// The inventory receipt manual product selection.
   const InventoryReceiptManualProductSelection({
     required this.source,
     required this.name,
@@ -126,6 +160,7 @@ class InventoryReceiptManualProductSelection {
     this.globalFoodItemId,
   });
 
+  /// Creates a [InventoryReceiptManualProductSelection] for from search result.
   factory InventoryReceiptManualProductSelection.fromSearchResult(
     OffProductSearchResult result,
   ) {
@@ -144,6 +179,7 @@ class InventoryReceiptManualProductSelection {
     );
   }
 
+  /// Creates a [InventoryReceiptManualProductSelection] for from inventory item.
   factory InventoryReceiptManualProductSelection.fromInventoryItem(
     InventoryItem item,
   ) {
@@ -164,20 +200,44 @@ class InventoryReceiptManualProductSelection {
     );
   }
 
+  /// The source.
   final InventoryReceiptManualProductSelectionSource source;
+
+  /// The name.
   final String name;
+
+  /// The barcode.
   final String barcode;
+
+  /// The brand.
   final String? brand;
+
+  /// The image url.
   final String? imageUrl;
+
+  /// The package weight.
   final String? packageWeight;
+
+  /// The serving size.
   final String? servingSize;
+
+  /// The serving quantity.
   final double? servingQuantity;
+
+  /// The serving quantity unit.
   final String? servingQuantityUnit;
+
+  /// The nutrition.
   final GlobalFoodNutrition? nutrition;
+
+  /// The external product.
   final OffProductSearchResult? externalProduct;
+
+  /// The global food item id.
   final String? globalFoodItemId;
 }
 
+/// Build manual product initial search query.
 String? buildManualProductInitialSearchQuery(
   InventoryReceiptManualProductConfig config,
 ) {
@@ -217,7 +277,9 @@ String? buildManualProductInitialSearchQuery(
   return parts.join(' ');
 }
 
+/// Defines inventory receipt manual product state.
 class InventoryReceiptManualProductState {
+  /// The inventory receipt manual product state.
   const InventoryReceiptManualProductState({
     this.searchQuery = '',
     this.nameText = '',
@@ -249,40 +311,96 @@ class InventoryReceiptManualProductState {
     this.error,
   });
 
+  /// The search query.
   final String searchQuery;
+
+  /// The name text.
   final String nameText;
+
+  /// The brand text.
   final String brandText;
+
+  /// The barcode.
   final String barcode;
+
+  /// The weight amount.
   final String weightAmount;
+
+  /// The selected weight unit.
   final InventoryAmountUnit selectedWeightUnit;
+
+  /// The kcal text.
   final String kcalText;
+
+  /// The saturated fat text.
   final String saturatedFatText;
+
+  /// The polyunsaturated fat text.
   final String polyunsaturatedFatText;
+
+  /// The protein text.
   final String proteinText;
+
+  /// The carbs text.
   final String carbsText;
+
+  /// The sugar text.
   final String sugarText;
+
+  /// The fiber text.
   final String fiberText;
+
+  /// The fat text.
   final String fatText;
+
+  /// The salt text.
   final String saltText;
+
+  /// The show polyunsaturated fat field.
   final bool showPolyunsaturatedFatField;
+
+  /// The show fiber field.
   final bool showFiberField;
+
+  /// Whether adding optional nutrition.
   final bool isAddingOptionalNutrition;
+
+  /// The optional nutrition value text.
   final String optionalNutritionValueText;
+
+  /// The optional nutrition unit.
   final InventoryAmountUnit optionalNutritionUnit;
+
+  /// The optional nutrition type.
   final InventoryReceiptOptionalNutritionType optionalNutritionType;
+
+  /// Whether searching.
   final bool isSearching;
+
+  /// The search results.
   final List<OffProductSearchResult> searchResults;
+
+  /// The selected product.
   final InventoryReceiptManualProductSelection? selectedProduct;
+
+  /// The ocr draft.
   final CalorieNutritionOcrDraft? ocrDraft;
+
+  /// Whether running nutrition ocr.
   final bool isRunningNutritionOcr;
+
+  /// The error.
   final InventoryReceiptManualProductError? error;
 
+  /// Whether barcode.
   bool get hasBarcode => normalizeBarcode(barcode).isNotEmpty;
 
+  /// Whether package weight input.
   bool get hasPackageWeightInput {
     return parseManualProductDouble(weightAmount) != null;
   }
 
+  /// Whether nutrition input.
   bool get hasNutritionInput {
     return normalizeManualProductText(kcalText) != null ||
         normalizeManualProductText(saturatedFatText) != null ||
@@ -295,6 +413,7 @@ class InventoryReceiptManualProductState {
         normalizeManualProductText(saltText) != null;
   }
 
+  /// Whether complete nutrition input.
   bool get hasCompleteNutritionInput {
     return parseManualProductDouble(kcalText) != null &&
         parseManualProductDouble(saturatedFatText) != null &&
@@ -305,6 +424,7 @@ class InventoryReceiptManualProductState {
         parseManualProductDouble(saltText) != null;
   }
 
+  /// The show details.
   bool get showDetails {
     return selectedProduct != null ||
         ocrDraft != null ||
@@ -313,14 +433,17 @@ class InventoryReceiptManualProductState {
         error != null;
   }
 
+  /// Whether save.
   bool get canSave {
     return hasPackageWeightInput && (hasBarcode || hasNutritionInput);
   }
 
+  /// Whether scan nutrition label.
   bool get canScanNutritionLabel {
     return !isRunningNutritionOcr && hasBarcode;
   }
 
+  /// The available optional nutrition types.
   List<InventoryReceiptOptionalNutritionType>
   get availableOptionalNutritionTypes {
     final types = <InventoryReceiptOptionalNutritionType>[];
@@ -333,10 +456,12 @@ class InventoryReceiptManualProductState {
     return types;
   }
 
+  /// Whether add optional nutrition.
   bool get canAddOptionalNutrition {
     return availableOptionalNutritionTypes.isNotEmpty;
   }
 
+  /// The resolved optional nutrition type.
   InventoryReceiptOptionalNutritionType? get resolvedOptionalNutritionType {
     final availableTypes = availableOptionalNutritionTypes;
     if (availableTypes.isEmpty) {
@@ -348,6 +473,7 @@ class InventoryReceiptManualProductState {
     return availableTypes.first;
   }
 
+  /// Copy with.
   InventoryReceiptManualProductState copyWith({
     String? searchQuery,
     String? nameText,
@@ -422,6 +548,7 @@ class InventoryReceiptManualProductState {
   }
 }
 
+/// Defines inventory receipt manual product controller.
 @riverpod
 class InventoryReceiptManualProductController
     extends _$InventoryReceiptManualProductController {
@@ -481,6 +608,7 @@ class InventoryReceiptManualProductController
     );
   }
 
+  /// Builds preview data.
   ({String? imageUrl, String name, String? brand, String? weight})?
   buildPreviewData() {
     final matchedProduct = _currentMatchedProduct();
@@ -504,6 +632,7 @@ class InventoryReceiptManualProductController
     return '$amountText ${_weightUnitCode(state.selectedWeightUnit)}';
   }
 
+  /// Update search query.
   void updateSearchQuery(String value) {
     state = state.copyWith(searchQuery: value, error: null);
     _searchDebounce?.cancel();
@@ -522,54 +651,67 @@ class InventoryReceiptManualProductController
     });
   }
 
+  /// Update barcode.
   void updateBarcode(String value) {
     state = state.copyWith(barcode: value, error: null);
   }
 
+  /// Update name text.
   void updateNameText(String value) {
     state = state.copyWith(nameText: value, error: null);
   }
 
+  /// Update brand text.
   void updateBrandText(String value) {
     state = state.copyWith(brandText: value, error: null);
   }
 
+  /// Update weight amount.
   void updateWeightAmount(String value) {
     state = state.copyWith(weightAmount: value, error: null);
   }
 
+  /// Update weight unit.
   void updateWeightUnit(InventoryAmountUnit unit) {
     state = state.copyWith(selectedWeightUnit: unit, error: null);
   }
 
+  /// Update kcal text.
   void updateKcalText(String value) {
     state = state.copyWith(kcalText: value, error: null);
   }
 
+  /// Update saturated fat text.
   void updateSaturatedFatText(String value) {
     state = state.copyWith(saturatedFatText: value, error: null);
   }
 
+  /// Update polyunsaturated fat text.
   void updatePolyunsaturatedFatText(String value) {
     state = state.copyWith(polyunsaturatedFatText: value, error: null);
   }
 
+  /// Update protein text.
   void updateProteinText(String value) {
     state = state.copyWith(proteinText: value, error: null);
   }
 
+  /// Update carbs text.
   void updateCarbsText(String value) {
     state = state.copyWith(carbsText: value, error: null);
   }
 
+  /// Update sugar text.
   void updateSugarText(String value) {
     state = state.copyWith(sugarText: value, error: null);
   }
 
+  /// Update fiber text.
   void updateFiberText(String value) {
     state = state.copyWith(fiberText: value, error: null);
   }
 
+  /// Start adding optional nutrition.
   void startAddingOptionalNutrition() {
     final nutritionType = state.resolvedOptionalNutritionType;
     if (nutritionType == null) {
@@ -584,6 +726,7 @@ class InventoryReceiptManualProductController
     );
   }
 
+  /// Cancel adding optional nutrition.
   void cancelAddingOptionalNutrition() {
     state = state.copyWith(
       isAddingOptionalNutrition: false,
@@ -592,18 +735,22 @@ class InventoryReceiptManualProductController
     );
   }
 
+  /// Update optional nutrition value text.
   void updateOptionalNutritionValueText(String value) {
     state = state.copyWith(optionalNutritionValueText: value, error: null);
   }
 
+  /// Update optional nutrition unit.
   void updateOptionalNutritionUnit(InventoryAmountUnit unit) {
     state = state.copyWith(optionalNutritionUnit: unit, error: null);
   }
 
+  /// Update optional nutrition type.
   void updateOptionalNutritionType(InventoryReceiptOptionalNutritionType type) {
     state = state.copyWith(optionalNutritionType: type, error: null);
   }
 
+  /// Apply optional nutrition.
   void applyOptionalNutrition() {
     final nutritionType = state.resolvedOptionalNutritionType;
     final valueText = state.optionalNutritionValueText;
@@ -631,14 +778,17 @@ class InventoryReceiptManualProductController
     }
   }
 
+  /// Update fat text.
   void updateFatText(String value) {
     state = state.copyWith(fatText: value, error: null);
   }
 
+  /// Update salt text.
   void updateSaltText(String value) {
     state = state.copyWith(saltText: value, error: null);
   }
 
+  /// Apply search result.
   void applySearchResult(OffProductSearchResult product) {
     _searchDebounce?.cancel();
     _applySelectedProductSelection(
@@ -646,12 +796,14 @@ class InventoryReceiptManualProductController
     );
   }
 
+  /// Apply scanned product.
   void applyScannedProduct(OffProductSearchResult product) {
     _applySelectedProductSelection(
       InventoryReceiptManualProductSelection.fromSearchResult(product),
     );
   }
 
+  /// Apply recent item.
   void applyRecentItem(InventoryItem item) {
     _searchDebounce?.cancel();
     _applySelectedProductSelection(
@@ -659,6 +811,7 @@ class InventoryReceiptManualProductController
     );
   }
 
+  /// Apply scanned barcode only.
   void applyScannedBarcodeOnly(String barcode) {
     state = state.copyWith(
       barcode: barcode,
@@ -683,6 +836,7 @@ class InventoryReceiptManualProductController
     );
   }
 
+  /// Scans the nutrition label.
   Future<InventoryReceiptManualProductNutritionScanOutcome>
   scanNutritionLabel() async {
     final barcode = normalizeBarcode(state.barcode);
@@ -726,6 +880,7 @@ class InventoryReceiptManualProductController
     }
   }
 
+  /// Builds the save payload.
   ({
     InventoryItem item,
     OffProductSearchResult? selectedProduct,

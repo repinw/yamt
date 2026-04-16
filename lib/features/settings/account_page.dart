@@ -17,7 +17,9 @@ import 'package:yamt/features/settings/widgets/credential_conflict_dialog.dart';
 import 'package:yamt/features/settings/widgets/link_email_password_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines account page.
 class AccountPage extends ConsumerStatefulWidget {
+  /// The account page.
   const AccountPage({super.key});
 
   @override

@@ -10,9 +10,10 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list_sections.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines prepared meal filter sheet.
 class PreparedMealFilterSheet extends StatefulWidget {
+  /// The prepared meal filter sheet.
   const PreparedMealFilterSheet({
-    super.key,
     required this.initialCompletionFilter,
     required this.initialConsumptionFilter,
     required this.initialSortMode,
@@ -20,14 +21,28 @@ class PreparedMealFilterSheet extends StatefulWidget {
     required this.onCompletionFilterChanged,
     required this.onConsumptionFilterChanged,
     required this.onSortModeChanged,
+    super.key,
   });
 
+  /// The initial completion filter.
   final PreparedMealCompletionFilter initialCompletionFilter;
+
+  /// The initial consumption filter.
   final PreparedMealConsumptionFilter initialConsumptionFilter;
+
+  /// The initial sort mode.
   final PreparedMealSortMode initialSortMode;
+
+  /// The enabled.
   final bool enabled;
+
+  /// The on completion filter changed.
   final ValueChanged<PreparedMealCompletionFilter> onCompletionFilterChanged;
+
+  /// The on consumption filter changed.
   final ValueChanged<PreparedMealConsumptionFilter> onConsumptionFilterChanged;
+
+  /// The on sort mode changed.
   final ValueChanged<PreparedMealSortMode> onSortModeChanged;
 
   @override

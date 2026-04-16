@@ -3,8 +3,16 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 
 part 'calorie_summary_view_mode_controller.g.dart';
 
-enum CalorieSummaryViewMode { classic, balance }
+/// Defines calorie summary view mode.
+enum CalorieSummaryViewMode {
+  /// Classic.
+  classic,
 
+  /// Balance.
+  balance,
+}
+
+/// Defines calorie summary view mode controller.
 @Riverpod(keepAlive: true)
 class CalorieSummaryViewModeController
     extends _$CalorieSummaryViewModeController {
@@ -21,6 +29,7 @@ class CalorieSummaryViewModeController
     return CalorieSummaryViewMode.balance;
   }
 
+  /// Set mode.
   Future<void> setMode(CalorieSummaryViewMode mode) async {
     if (state == mode) {
       return;

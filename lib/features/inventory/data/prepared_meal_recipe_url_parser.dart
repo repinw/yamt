@@ -1,3 +1,4 @@
+/// Normalize prepared meal recipe url.
 String? normalizePreparedMealRecipeUrl(String value) {
   final trimmedValue = value.trim();
   if (_hasUnsupportedExplicitScheme(trimmedValue)) {

@@ -6,40 +6,41 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_amount_unit_l10n.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_discard_reason_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/inventory_item_eat_sheet.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_amount_input_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_candidate_swap_flow.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/inventory_item_eat_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/inventory_item_progress.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_action_coordinator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_expand_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_nutrition_strip.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_main_section.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/inventory_item_progress.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_snapshot.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_amount_unit_l10n.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_nutrition_strip.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines inventory item row.
 class InventoryItemRow extends ConsumerStatefulWidget {
+  /// The inventory item row.
   const InventoryItemRow({
-    super.key,
     required this.expansionStorageKey,
     required this.item,
     required this.l10n,
@@ -48,29 +49,53 @@ class InventoryItemRow extends ConsumerStatefulWidget {
     required this.onDeletePressed,
     required this.onEatPressed,
     required this.onThrowAwayPressed,
+    super.key,
     this.isSelectionMode = false,
     this.isSelected = false,
     this.onStartSelection,
     this.onSelectionToggle,
   });
 
+  /// The expansion storage key.
   final String expansionStorageKey;
+
+  /// The item.
   final InventoryItem item;
+
+  /// The l10n.
   final AppLocalizations l10n;
+
+  /// The show barcode markers.
   final bool showBarcodeMarkers;
+
+  /// Whether already in shopping list.
   final bool isAlreadyInShoppingList;
+
+  /// The on delete pressed.
   final Future<bool> Function(String itemId) onDeletePressed;
+
+  /// The on eat pressed.
   final Future<bool> Function(String itemId, InventoryItemEatRequest request)
   onEatPressed;
+
+  /// The on throw away pressed.
   final Future<bool> Function(
     String itemId,
     int amount,
     InventoryDiscardReason reason,
   )
   onThrowAwayPressed;
+
+  /// Whether selection mode.
   final bool isSelectionMode;
+
+  /// Whether selected.
   final bool isSelected;
+
+  /// The on start selection.
   final VoidCallback? onStartSelection;
+
+  /// The on selection toggle.
   final VoidCallback? onSelectionToggle;
 
   @override

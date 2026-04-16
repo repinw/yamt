@@ -20,6 +20,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Show calorie learned tdee goal sheet.
 Future<void> showCalorieLearnedTdeeGoalSheet(
   BuildContext context, {
   required CalorieGoalSettings initialSettings,
@@ -34,9 +35,12 @@ Future<void> showCalorieLearnedTdeeGoalSheet(
   );
 }
 
+/// Defines calorie learned tdee goal sheet.
 class CalorieLearnedTdeeGoalSheet extends ConsumerStatefulWidget {
+  /// The calorie learned tdee goal sheet.
   const CalorieLearnedTdeeGoalSheet({super.key, required this.initialSettings});
 
+  /// The initial settings.
   final CalorieGoalSettings initialSettings;
 
   @override

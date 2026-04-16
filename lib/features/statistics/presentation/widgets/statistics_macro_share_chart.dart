@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/statistics/domain/calorie_metrics.dart';
 
+/// Defines statistics macro share chart.
 class StatisticsMacroShareChart extends StatelessWidget {
+  /// The statistics macro share chart.
   const StatisticsMacroShareChart({
     super.key,
     required this.items,
@@ -10,8 +12,13 @@ class StatisticsMacroShareChart extends StatelessWidget {
     required this.valueLabelBuilder,
   });
 
+  /// The items.
   final List<StatisticsMacroShare> items;
+
+  /// The label builder.
   final String Function(StatisticsMacroShare item) labelBuilder;
+
+  /// The value label builder.
   final String Function(StatisticsMacroShare item) valueLabelBuilder;
 
   @override

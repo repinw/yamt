@@ -12,7 +12,9 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines prepared meal creation sheet result.
 class PreparedMealCreationSheetResult {
+  /// The prepared meal creation sheet result.
   const PreparedMealCreationSheetResult({
     required this.name,
     required this.imageBytes,
@@ -20,12 +22,20 @@ class PreparedMealCreationSheetResult {
     required this.items,
   });
 
+  /// The name.
   final String name;
+
+  /// The image bytes.
   final Uint8List? imageBytes;
+
+  /// The total portions.
   final int totalPortions;
+
+  /// The items.
   final List<PreparedMealItemInput> items;
 }
 
+/// Show prepared meal creation sheet.
 Future<PreparedMealCreationSheetResult?> showPreparedMealCreationSheet({
   required BuildContext context,
   required List<InventoryItem> items,
@@ -38,9 +48,12 @@ Future<PreparedMealCreationSheetResult?> showPreparedMealCreationSheet({
   );
 }
 
+/// Defines prepared meal creation sheet.
 class PreparedMealCreationSheet extends ConsumerStatefulWidget {
+  /// The prepared meal creation sheet.
   const PreparedMealCreationSheet({super.key, required this.items});
 
+  /// The items.
   final List<InventoryItem> items;
 
   @override

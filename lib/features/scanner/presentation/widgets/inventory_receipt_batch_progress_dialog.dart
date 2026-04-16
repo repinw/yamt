@@ -4,14 +4,19 @@ import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines inventory receipt batch progress dialog.
 class InventoryReceiptBatchProgressDialog extends ConsumerWidget {
+  /// The inventory receipt batch progress dialog.
   const InventoryReceiptBatchProgressDialog({
     super.key,
     required this.onReviewTap,
     required this.onCloseTap,
   });
 
+  /// The on review tap.
   final Future<void> Function(int index) onReviewTap;
+
+  /// The on close tap.
   final VoidCallback onCloseTap;
 
   @override

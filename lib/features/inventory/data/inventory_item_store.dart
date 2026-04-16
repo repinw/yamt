@@ -7,30 +7,42 @@ const String _storeLogName = 'FirestoreInventoryItemStore';
 const String _usersCollection = 'users';
 const String _inventoryItemsCollection = 'inventory_items';
 
+/// Defines inventory item document.
 class InventoryItemDocument {
+  /// The inventory item document.
   const InventoryItemDocument({required this.id, required this.data});
 
+  /// The id.
   final String id;
+
+  /// The data.
   final Map<String, dynamic> data;
 }
 
+/// Defines inventory item store.
 abstract interface class InventoryItemStore {
+  /// Read all.
   Future<List<InventoryItemDocument>> readAll({required String userId});
 
+  /// Watch all.
   Stream<List<InventoryItemDocument>> watchAll({required String userId});
 
+  /// Replace all.
   Future<bool> replaceAll({
     required String userId,
     required Map<String, Map<String, dynamic>> documentsById,
   });
 
+  /// Upsert all.
   Future<bool> upsertAll({
     required String userId,
     required Map<String, Map<String, dynamic>> documentsById,
   });
 }
 
+/// Defines firestore inventory item store.
 class FirestoreInventoryItemStore implements InventoryItemStore {
+  /// The firestore inventory item store.
   const FirestoreInventoryItemStore({required FirebaseFirestore firestore})
     : _firestore = firestore;
 

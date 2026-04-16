@@ -2,27 +2,35 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines prepared meal edit sheet result.
 class PreparedMealEditSheetResult {
+  /// The prepared meal edit sheet result.
   const PreparedMealEditSheetResult({
     required this.name,
     required this.imageChanged,
     required this.imageBytes,
   });
 
+  /// The name.
   final String name;
+
+  /// The image changed.
   final bool imageChanged;
+
+  /// The image bytes.
   final Uint8List? imageBytes;
 }
 
+/// Show prepared meal edit sheet.
 Future<PreparedMealEditSheetResult?> showPreparedMealEditSheet({
   required BuildContext context,
   required PreparedMeal meal,
@@ -35,9 +43,12 @@ Future<PreparedMealEditSheetResult?> showPreparedMealEditSheet({
   );
 }
 
+/// Defines prepared meal edit sheet.
 class PreparedMealEditSheet extends ConsumerStatefulWidget {
+  /// The prepared meal edit sheet.
   const PreparedMealEditSheet({super.key, required this.meal});
 
+  /// The meal.
   final PreparedMeal meal;
 
   @override

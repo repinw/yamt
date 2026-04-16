@@ -13,9 +13,12 @@ import 'package:yamt/features/health/provider/'
     'manual_health_weight_entries_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines calorie health weight list.
 class CalorieHealthWeightList extends ConsumerWidget {
+  /// The calorie health weight list.
   const CalorieHealthWeightList({super.key, required this.snapshot});
 
+  /// The snapshot.
   final CalorieHealthTrendSnapshot snapshot;
 
   @override

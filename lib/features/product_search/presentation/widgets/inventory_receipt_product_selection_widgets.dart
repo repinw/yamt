@@ -6,13 +6,17 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 
 /// Compact nutrition badges shown for a selected or suggested product.
 class InventoryReceiptNutritionChips extends StatelessWidget {
+  /// The inventory receipt nutrition chips.
   const InventoryReceiptNutritionChips({
     super.key,
     required this.nutrition,
     this.leadingLabel,
   });
 
+  /// The nutrition.
   final GlobalFoodNutrition nutrition;
+
+  /// The leading label.
   final String? leadingLabel;
 
   @override
@@ -96,6 +100,7 @@ class _NutritionChip extends StatelessWidget {
 
 /// Thumbnail that only shows the image already present on the selected product.
 class InventoryReceiptSelectionThumbnail extends StatelessWidget {
+  /// The inventory receipt selection thumbnail.
   const InventoryReceiptSelectionThumbnail({
     super.key,
     required this.imageUrl,
@@ -105,10 +110,19 @@ class InventoryReceiptSelectionThumbnail extends StatelessWidget {
     this.dimension = 28,
   });
 
+  /// The image url.
   final String? imageUrl;
+
+  /// The icon.
   final IconData icon;
+
+  /// The background color.
   final Color? backgroundColor;
+
+  /// The foreground color.
   final Color? foregroundColor;
+
+  /// The dimension.
   final double dimension;
 
   @override

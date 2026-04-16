@@ -5,16 +5,21 @@ import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 
 part 'receipt_analysis_parser.g.dart';
 
+/// Receipt analysis parser.
 @riverpod
 ReceiptAnalysisParser receiptAnalysisParser(Ref ref) {
   return const JsonReceiptAnalysisParser();
 }
 
+/// Defines receipt analysis parser.
 abstract interface class ReceiptAnalysisParser {
+  /// Parse.
   ReceiptAnalysisExtraction parse(String rawResponse);
 }
 
+/// Defines json receipt analysis parser.
 class JsonReceiptAnalysisParser implements ReceiptAnalysisParser {
+  /// The json receipt analysis parser.
   const JsonReceiptAnalysisParser();
 
   @override

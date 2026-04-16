@@ -7,11 +7,14 @@ import 'package:yamt/features/health/domain/health_weight_sample.dart';
 const _logName = 'HealthWeightService';
 const _weightTypes = <HealthDataType>[HealthDataType.WEIGHT];
 
+/// Create health weight service.
 HealthWeightService createHealthWeightService() {
   return MobileHealthWeightService();
 }
 
+/// Defines mobile health weight service.
 class MobileHealthWeightService implements HealthWeightService {
+  /// Creates an instance.
   MobileHealthWeightService({Health? health}) : _health = health ?? Health();
 
   final Health _health;

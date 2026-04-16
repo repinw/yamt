@@ -5,7 +5,9 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/shared/widgets/auth_form_components.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines email password credentials form.
 class EmailPasswordCredentialsForm extends StatefulWidget {
+  /// The email password credentials form.
   const EmailPasswordCredentialsForm({
     super.key,
     required this.onSubmitCredentials,
@@ -15,12 +17,20 @@ class EmailPasswordCredentialsForm extends StatefulWidget {
     this.onInputChanged,
   });
 
+  /// Documented member.
   final Future<void> Function({required String email, required String password})
   onSubmitCredentials;
 
+  /// The submit label.
   final String? submitLabel;
+
+  /// The show submit button.
   final bool showSubmitButton;
+
+  /// Whether loading.
   final bool isLoading;
+
+  /// The on input changed.
   final VoidCallback? onInputChanged;
 
   @override
@@ -28,6 +38,7 @@ class EmailPasswordCredentialsForm extends StatefulWidget {
       EmailPasswordCredentialsFormState();
 }
 
+/// Defines email password credentials form state.
 class EmailPasswordCredentialsFormState
     extends State<EmailPasswordCredentialsForm> {
   final _formKey = GlobalKey<FormState>();
@@ -36,6 +47,7 @@ class EmailPasswordCredentialsFormState
   final _confirmPasswordController = TextEditingController();
   Object? _lastSubmitError;
 
+  /// The last submit error.
   Object? get lastSubmitError => _lastSubmitError;
   @override
   void dispose() {
@@ -45,6 +57,7 @@ class EmailPasswordCredentialsFormState
     super.dispose();
   }
 
+  /// Submit.
   Future<bool> submit() async {
     if (widget.isLoading) {
       return false;

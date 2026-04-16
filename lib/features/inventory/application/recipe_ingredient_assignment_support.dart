@@ -3,18 +3,26 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
+/// Defines recipe ingredient effective requirement.
 class RecipeIngredientEffectiveRequirement {
+  /// The recipe ingredient effective requirement.
   const RecipeIngredientEffectiveRequirement({
     required this.amount,
     required this.unit,
     required this.name,
   });
 
+  /// The amount.
   final int amount;
+
+  /// The unit.
   final InventoryAmountUnit unit;
+
+  /// The name.
   final String name;
 }
 
+/// Resolve shared amount progress unit.
 InventoryAmountUnit? resolveSharedAmountProgressUnit(
   List<InventoryItem> items,
 ) {
@@ -40,10 +48,12 @@ InventoryAmountUnit? resolveSharedAmountProgressUnit(
   return sharedUnit;
 }
 
+/// Uses only piece tracked items.
 bool usesOnlyPieceTrackedItems(List<InventoryItem> items) {
   return items.isNotEmpty && items.every((item) => !item.usesAmountProgress);
 }
 
+/// Can auto assign inventory item.
 bool canAutoAssignInventoryItem({
   required TemplateIngredientRequirement? requirement,
   required InventoryItem item,
@@ -62,6 +72,7 @@ bool canAutoAssignInventoryItem({
   return item.usesAmountProgress && item.amountUnit == requirement.unit;
 }
 
+/// Resolve effective requirement for items.
 RecipeIngredientEffectiveRequirement? resolveEffectiveRequirementForItems({
   required TemplateIngredientRequirement requirement,
   required List<InventoryItem> assignedItems,
@@ -112,6 +123,7 @@ RecipeIngredientEffectiveRequirement? resolveEffectiveRequirementForItems({
   );
 }
 
+/// Can select inventory item for requirement.
 bool canSelectInventoryItemForRequirement({
   required TemplateIngredientRequirement? requirement,
   required List<InventoryItem> selectedItems,

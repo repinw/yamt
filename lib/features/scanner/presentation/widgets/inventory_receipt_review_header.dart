@@ -6,15 +6,21 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Header row for the receipt review sheet with title and save action.
 class InventoryReceiptReviewHeader extends StatelessWidget {
+  /// The inventory receipt review header.
   const InventoryReceiptReviewHeader({
-    super.key,
     required this.isSaving,
     required this.canSave,
     required this.onSaveTap,
+    super.key,
   });
 
+  /// Whether saving.
   final bool isSaving;
+
+  /// Whether save.
   final bool canSave;
+
+  /// The on save tap.
   final VoidCallback onSaveTap;
 
   @override
@@ -24,7 +30,6 @@ class InventoryReceiptReviewHeader extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
           child: Text(

@@ -26,7 +26,9 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 const _editorLogName = 'CalorieEntryEditorPage';
 
+/// Defines calorie entry editor page.
 class CalorieEntryEditorPage extends ConsumerStatefulWidget {
+  /// The calorie entry editor page.
   const CalorieEntryEditorPage({
     super.key,
     this.entryId,
@@ -37,11 +39,22 @@ class CalorieEntryEditorPage extends ConsumerStatefulWidget {
     this.preselectedLoggedAt,
   });
 
+  /// The entry id.
   final String? entryId;
+
+  /// The prefilled profile.
   final CalorieProductProfile? prefilledProfile;
+
+  /// The scanned source ref.
   final CalorieScannedSourceRef? scannedSourceRef;
+
+  /// The inventory context.
   final CalorieInventoryCreateContext? inventoryContext;
+
+  /// The preselected meal type.
   final MealType? preselectedMealType;
+
+  /// The preselected logged at.
   final DateTime? preselectedLoggedAt;
 
   @override

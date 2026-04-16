@@ -17,7 +17,9 @@ import 'package:yamt/features/statistics/provider/'
     'statistics_waste_data_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines statistics page.
 class StatisticsPage extends ConsumerStatefulWidget {
+  /// The statistics page.
   const StatisticsPage({super.key});
 
   @override

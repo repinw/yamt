@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yamt/features/calories/presentation/calorie_health_trends_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Show calorie health weight dialog.
 Future<void> showCalorieHealthWeightDialog({
   required BuildContext context,
   required String dayLabel,

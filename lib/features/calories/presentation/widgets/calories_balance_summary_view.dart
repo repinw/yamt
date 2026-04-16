@@ -106,7 +106,9 @@ resolveCaloriesBalanceBarLayoutMetrics({
   );
 }
 
+/// Defines calories balance summary view.
 class CaloriesBalanceSummaryView extends StatelessWidget {
+  /// The calories balance summary view.
   const CaloriesBalanceSummaryView({
     super.key,
     required this.data,
@@ -114,8 +116,13 @@ class CaloriesBalanceSummaryView extends StatelessWidget {
     required this.kcalUnit,
   });
 
+  /// The data.
   final CalorieBalanceSummaryData data;
+
+  /// The number format.
   final NumberFormat numberFormat;
+
+  /// The kcal unit.
   final String kcalUnit;
 
   @override

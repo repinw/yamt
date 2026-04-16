@@ -25,14 +25,19 @@ import 'package:yamt/features/statistics/provider/'
     'statistics_calorie_data_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines statistics calories view.
 class StatisticsCaloriesView extends ConsumerWidget {
+  /// The statistics calories view.
   const StatisticsCaloriesView({
     super.key,
     required this.timeframe,
     required this.onRetry,
   });
 
+  /// The timeframe.
   final StatisticsTimeframe timeframe;
+
+  /// The on retry.
   final VoidCallback onRetry;
 
   @override

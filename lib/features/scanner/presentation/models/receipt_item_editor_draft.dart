@@ -2,18 +2,36 @@ import 'dart:convert';
 
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
+/// Defines receipt item editor draft field.
 enum ReceiptItemEditorDraftField {
+  /// Documented member.
   name,
+
+  /// Documented member.
   storeName,
+
+  /// Documented member.
   quantity,
+
+  /// Documented member.
   unitPrice,
+
+  /// Documented member.
   weight,
+
+  /// Documented member.
   brand,
+
+  /// Documented member.
   category,
+
+  /// Documented member.
   discounts,
 }
 
+/// Defines receipt item editor draft.
 class ReceiptItemEditorDraft {
+  /// The receipt item editor draft.
   const ReceiptItemEditorDraft({
     required this.name,
     required this.storeName,
@@ -25,6 +43,7 @@ class ReceiptItemEditorDraft {
     required this.discountsText,
   });
 
+  /// Creates a [ReceiptItemEditorDraft] for from item.
   factory ReceiptItemEditorDraft.fromItem(InventoryItem item) {
     return ReceiptItemEditorDraft(
       name: item.name,
@@ -38,15 +57,31 @@ class ReceiptItemEditorDraft {
     );
   }
 
+  /// The name.
   final String name;
+
+  /// The store name.
   final String storeName;
+
+  /// The quantity text.
   final String quantityText;
+
+  /// The unit price text.
   final String unitPriceText;
+
+  /// The weight text.
   final String weightText;
+
+  /// The brand text.
   final String brandText;
+
+  /// The category text.
   final String categoryText;
+
+  /// The discounts text.
   final String discountsText;
 
+  /// Value for.
   String valueFor(ReceiptItemEditorDraftField field) {
     return switch (field) {
       ReceiptItemEditorDraftField.name => name,

@@ -5,6 +5,7 @@ import 'package:yamt/features/household/data/household_repository.dart';
 
 part 'household_invite_code_controller.g.dart';
 
+/// Defines household invite code controller.
 @riverpod
 class HouseholdInviteCodeController extends _$HouseholdInviteCodeController {
   @override
@@ -12,6 +13,7 @@ class HouseholdInviteCodeController extends _$HouseholdInviteCodeController {
     return const AsyncData<String?>(null);
   }
 
+  /// Generate invite code.
   Future<void> generateInviteCode() async {
     state = const AsyncLoading<String?>();
     try {
@@ -30,6 +32,7 @@ class HouseholdInviteCodeController extends _$HouseholdInviteCodeController {
     }
   }
 
+  /// Clear.
   void clear() {
     state = const AsyncData<String?>(null);
   }

@@ -3,14 +3,15 @@ import 'package:yamt/features/scanner/application/'
     'receipt_review_resolution_service.dart';
 import 'package:yamt/features/scanner/data/receipt_analysis_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_input_repository.dart';
-import 'package:yamt/features/scanner/domain/receipt_batch_processor.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
+import 'package:yamt/features/scanner/domain/receipt_batch_processor.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 part 'receipt_batch_flow_controller.g.dart';
 
+/// Defines receipt batch flow controller.
 @riverpod
 class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
   Future<void>? _activeBatchRun;
@@ -20,10 +21,12 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
     return const ReceiptBatchFlowState();
   }
 
+  /// Reset.
   void reset() {
     state = const ReceiptBatchFlowState();
   }
 
+  /// Start review.
   bool startReview(int index) {
     if (!state.reviewableIndices.contains(index)) {
       return false;
@@ -41,6 +44,7 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
     return true;
   }
 
+  /// Finish review.
   void finishReview({required int index, required bool saved}) {
     if (state.activeReviewIndex != index) {
       return;
@@ -54,10 +58,12 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
     );
   }
 
+  /// Consume pending auto review.
   void consumePendingAutoReview() {
     state = state.copyWith(pendingAutoReviewIndex: null);
   }
 
+  /// Run file batch.
   Future<void> runFileBatch() async {
     final inFlight = _activeBatchRun;
     if (inFlight != null) {
@@ -76,6 +82,7 @@ class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
     }
   }
 
+  /// Run selections.
   Future<void> runSelections(List<ReceiptInputSelection> selections) async {
     final inFlight = _activeBatchRun;
     if (inFlight != null) {

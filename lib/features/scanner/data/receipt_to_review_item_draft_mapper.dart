@@ -26,17 +26,22 @@ final _namePiecePattern = RegExp(
   caseSensitive: false,
 );
 
+/// Receipt to review item draft mapper.
 @riverpod
 ReceiptToReviewItemDraftMapper receiptToReviewItemDraftMapper(Ref ref) {
   return const DefaultReceiptToReviewItemDraftMapper();
 }
 
+/// Defines receipt to review item draft mapper.
 abstract interface class ReceiptToReviewItemDraftMapper {
+  /// Map.
   List<ReceiptReviewItemDraft> map(ReceiptAnalysisExtraction extraction);
 }
 
+/// Defines default receipt to review item draft mapper.
 class DefaultReceiptToReviewItemDraftMapper
     implements ReceiptToReviewItemDraftMapper {
+  /// The default receipt to review item draft mapper.
   const DefaultReceiptToReviewItemDraftMapper({DateTime Function()? now})
     : _now = now ?? DateTime.now;
 

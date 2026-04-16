@@ -6,22 +6,35 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines calorie weekly check in hint card.
 class CalorieWeeklyCheckInHintCard extends StatelessWidget {
+  /// The calorie weekly check in hint card.
   const CalorieWeeklyCheckInHintCard({
-    super.key,
     required this.viewModel,
     required this.selectedDay,
     required this.selectedDayHasEntries,
     required this.onContinue,
     required this.onOpenHealthTrends,
     required this.onToggleSelectedDaySkipped,
+    super.key,
   });
 
+  /// The view model.
   final CalorieWeeklyCheckInViewModel viewModel;
+
+  /// The selected day.
   final DateTime selectedDay;
+
+  /// The selected day has entries.
   final bool selectedDayHasEntries;
+
+  /// The on continue.
   final VoidCallback onContinue;
+
+  /// The on open health trends.
   final VoidCallback onOpenHealthTrends;
+
+  /// The on toggle selected day skipped.
   final Future<void> Function(bool isSkipped) onToggleSelectedDaySkipped;
 
   @override
@@ -168,8 +181,7 @@ class CalorieWeeklyCheckInHintCard extends StatelessWidget {
       CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight =>
         l10n.caloriesWeeklyCheckInBlockedMissingStartWeightOn(
           dateFormat.format(
-            pending?.windowStartDate ??
-                viewModel.missingWeightDays.first,
+            pending?.windowStartDate ?? viewModel.missingWeightDays.first,
           ),
         ),
       CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight
@@ -180,8 +192,7 @@ class CalorieWeeklyCheckInHintCard extends StatelessWidget {
       CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight =>
         l10n.caloriesWeeklyCheckInBlockedMissingEndWeightOn(
           dateFormat.format(
-            pending?.windowEndDate ??
-                viewModel.missingWeightDays.last,
+            pending?.windowEndDate ?? viewModel.missingWeightDays.last,
           ),
         ),
       CalorieWeeklyCheckInBlockedReason.unstableWeightData =>
@@ -191,9 +202,12 @@ class CalorieWeeklyCheckInHintCard extends StatelessWidget {
   }
 }
 
+/// Defines calorie weekly check in success card.
 class CalorieWeeklyCheckInSuccessCard extends StatelessWidget {
-  const CalorieWeeklyCheckInSuccessCard({super.key, required this.goalKcal});
+  /// The calorie weekly check in success card.
+  const CalorieWeeklyCheckInSuccessCard({required this.goalKcal, super.key});
 
+  /// The goal kcal.
   final double goalKcal;
 
   @override

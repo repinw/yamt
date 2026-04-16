@@ -5,7 +5,9 @@ import 'package:yamt/features/auth/provider/auth_form_controller.dart';
 import 'package:yamt/features/shared/widgets/auth_form_components.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines register form.
 class RegisterForm extends ConsumerStatefulWidget {
+  /// The register form.
   const RegisterForm({super.key});
 
   @override

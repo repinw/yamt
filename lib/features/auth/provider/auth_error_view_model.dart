@@ -3,13 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// The auth error view model provider.
 final authErrorViewModelProvider = Provider<AuthErrorViewModel>(
   (ref) => const AuthErrorViewModel(),
 );
 
+/// Defines auth error view model.
 class AuthErrorViewModel {
+  /// The auth error view model.
   const AuthErrorViewModel();
 
+  /// Message for.
   String messageFor({required AppLocalizations l10n, required Object error}) {
     if (error is FirebaseAuthException) {
       return _firebaseAuthMessage(l10n, error.code) ??

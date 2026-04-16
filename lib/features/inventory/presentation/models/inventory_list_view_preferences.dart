@@ -4,22 +4,60 @@ import 'package:yamt/features/inventory/presentation/models/'
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 
+/// Defines prepared meal sort mode.
 enum PreparedMealSortMode {
+  /// Documented member.
   addedDescending,
+
+  /// Documented member.
   addedAscending,
+
+  /// Documented member.
   eatenDescending,
+
+  /// Documented member.
   eatenAscending,
+
+  /// Documented member.
   alphabeticalAscending,
+
+  /// Documented member.
   alphabeticalDescending,
+
+  /// Documented member.
   quantityAscending,
+
+  /// Documented member.
   quantityDescending,
 }
 
-enum PreparedMealCompletionFilter { all, readyOnly, incompleteOnly }
+/// Defines prepared meal completion filter.
+enum PreparedMealCompletionFilter {
+  /// All.
+  all,
 
-enum PreparedMealConsumptionFilter { all, hideConsumed, depletedOnly }
+  /// Ready only.
+  readyOnly,
 
+  /// Incomplete only.
+  incompleteOnly,
+}
+
+/// Defines prepared meal consumption filter.
+enum PreparedMealConsumptionFilter {
+  /// All.
+  all,
+
+  /// Hide consumed.
+  hideConsumed,
+
+  /// Depleted only.
+  depletedOnly,
+}
+
+/// Defines inventory list view preferences.
 class InventoryListViewPreferences {
+  /// The inventory list view preferences.
   const InventoryListViewPreferences({
     this.consumptionFilter = const InventoryConsumptionFilter(),
     this.inventoryItemSortMode = InventoryItemSortMode.recentlyAddedDescending,
@@ -30,14 +68,28 @@ class InventoryListViewPreferences {
     this.isPreparedMealsSectionExpanded = true,
   });
 
+  /// The consumption filter.
   final InventoryConsumptionFilter consumptionFilter;
+
+  /// The inventory item sort mode.
   final InventoryItemSortMode inventoryItemSortMode;
+
+  /// The prepared meal completion filter.
   final PreparedMealCompletionFilter preparedMealCompletionFilter;
+
+  /// The prepared meal consumption filter.
   final PreparedMealConsumptionFilter preparedMealConsumptionFilter;
+
+  /// The prepared meal sort mode.
   final PreparedMealSortMode preparedMealSortMode;
+
+  /// Whether recent items section expanded.
   final bool isRecentItemsSectionExpanded;
+
+  /// Whether prepared meals section expanded.
   final bool isPreparedMealsSectionExpanded;
 
+  /// Copy with.
   InventoryListViewPreferences copyWith({
     InventoryConsumptionFilter? consumptionFilter,
     InventoryItemSortMode? inventoryItemSortMode,
@@ -64,7 +116,9 @@ class InventoryListViewPreferences {
   }
 }
 
+/// Defines inventory list view preferences store.
 class InventoryListViewPreferencesStore {
+  /// The inventory list view preferences store.
   const InventoryListViewPreferencesStore();
 
   static const _inventoryHideConsumedItemsKey =
@@ -80,6 +134,7 @@ class InventoryListViewPreferencesStore {
   static const _preparedMealsExpandedKey =
       'inventory_list_prepared_meals_expanded';
 
+  /// Read sync.
   InventoryListViewPreferences readSync(AppPreferences preferences) {
     const defaultPreferences = InventoryListViewPreferences();
 
@@ -124,6 +179,7 @@ class InventoryListViewPreferencesStore {
     );
   }
 
+  /// Save.
   Future<void> save(
     AppPreferences preferences,
     InventoryListViewPreferences value,

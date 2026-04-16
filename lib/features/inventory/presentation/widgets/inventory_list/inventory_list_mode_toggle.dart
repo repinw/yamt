@@ -4,20 +4,36 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_segmented_button_style.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-enum InventoryListMode { byReceipt, allItems }
+/// Defines inventory list mode.
+enum InventoryListMode {
+  /// By receipt.
+  byReceipt,
 
+  /// All items.
+  allItems,
+}
+
+/// Defines inventory list mode toggle.
 class InventoryListModeToggle extends StatelessWidget {
+  /// The inventory list mode toggle.
   const InventoryListModeToggle({
-    super.key,
     required this.mode,
     required this.l10n,
     required this.onModeChanged,
+    super.key,
     this.enabled = true,
   });
 
+  /// The mode.
   final InventoryListMode mode;
+
+  /// The l10n.
   final AppLocalizations l10n;
+
+  /// The on mode changed.
   final ValueChanged<InventoryListMode> onModeChanged;
+
+  /// The enabled.
   final bool enabled;
 
   @override

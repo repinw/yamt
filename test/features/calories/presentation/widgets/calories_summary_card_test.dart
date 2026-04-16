@@ -127,7 +127,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _buildHarness(totalCarbs: 100, totalProtein: 90, totalFat: 40),
+      _buildHarness(totalCarbs: 100),
     );
     await tester.pumpAndSettle();
 
@@ -166,7 +166,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _buildHarness(totalCarbs: 280, totalProtein: 90, totalFat: 40),
+      _buildHarness(totalCarbs: 280),
     );
     await tester.pumpAndSettle();
 

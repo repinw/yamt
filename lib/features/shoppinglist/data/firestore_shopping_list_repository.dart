@@ -10,7 +10,9 @@ import 'shopping_list_user_session.dart';
 
 const String _repositoryLogName = 'FirestoreShoppingListRepository';
 
+/// Defines firestore shopping list repository.
 class FirestoreShoppingListRepository implements ShoppingListRepository {
+  /// Creates an instance.
   FirestoreShoppingListRepository({
     required ShoppingListUserSession session,
     required ShoppingListItemStore store,

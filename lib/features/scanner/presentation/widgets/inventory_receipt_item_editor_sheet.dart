@@ -13,9 +13,12 @@ import 'receipt_item_editor_form_field_metadata.dart';
 import 'receipt_item_editor_form_section.dart';
 import 'receipt_item_editor_weight_unit_fallback_option.dart';
 
+/// Defines inventory receipt item editor sheet.
 class InventoryReceiptItemEditorSheet extends StatefulWidget {
+  /// The inventory receipt item editor sheet.
   const InventoryReceiptItemEditorSheet({super.key, required this.item});
 
+  /// The item.
   final InventoryItem item;
 
   @override

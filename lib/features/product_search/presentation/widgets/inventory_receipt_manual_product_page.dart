@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/core/utils/barcode_utils.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_item_repository.dart';
@@ -27,7 +27,9 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _manualProductRecentItemLimit = 6;
 const _manualProductPageLogName = 'InventoryReceiptManualProductPage';
 
+/// Defines inventory receipt manual product page.
 class InventoryReceiptManualProductPage extends StatelessWidget {
+  /// The inventory receipt manual product page.
   const InventoryReceiptManualProductPage({
     super.key,
     required this.item,
@@ -38,11 +40,22 @@ class InventoryReceiptManualProductPage extends StatelessWidget {
     this.onSaved,
   });
 
+  /// The item.
   final InventoryItem item;
+
+  /// The selected product.
   final OffProductSearchResult? selectedProduct;
+
+  /// The include store in search.
   final bool includeStoreInSearch;
+
+  /// The include weight in search.
   final bool includeWeightInSearch;
+
+  /// The show eat immediately option.
   final bool showEatImmediatelyOption;
+
+  /// Documented member.
   final Future<void> Function(InventoryReceiptManualProductResult result)?
   onSaved;
 
@@ -74,7 +87,9 @@ class InventoryReceiptManualProductPage extends StatelessWidget {
   }
 }
 
+/// Defines inventory receipt manual product result.
 class InventoryReceiptManualProductResult {
+  /// The inventory receipt manual product result.
   const InventoryReceiptManualProductResult({
     required this.item,
     this.selectedProduct,
@@ -84,11 +99,22 @@ class InventoryReceiptManualProductResult {
     this.eatNowWeight,
   });
 
+  /// The item.
   final InventoryItem item;
+
+  /// The selected product.
   final OffProductSearchResult? selectedProduct;
+
+  /// The selected global food item id.
   final String? selectedGlobalFoodItemId;
+
+  /// The requires global persistence.
   final bool requiresGlobalPersistence;
+
+  /// The eat immediately.
   final bool eatImmediately;
+
+  /// The eat now weight.
   final String? eatNowWeight;
 }
 

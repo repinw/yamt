@@ -5,14 +5,19 @@ import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.d
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines calorie week balance summary banner.
 class CalorieWeekBalanceSummaryBanner extends StatelessWidget {
+  /// The calorie week balance summary banner.
   const CalorieWeekBalanceSummaryBanner({
     super.key,
     required this.overview,
     required this.referenceNow,
   });
 
+  /// The overview.
   final CalorieWeekOverview overview;
+
+  /// The reference now.
   final DateTime referenceNow;
 
   @override

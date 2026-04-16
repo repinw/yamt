@@ -7,9 +7,12 @@ import 'package:yamt/features/household/provider/'
     'household_invite_code_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines household invite section.
 class HouseholdInviteSection extends ConsumerWidget {
+  /// The household invite section.
   const HouseholdInviteSection({super.key, required this.isBusy});
 
+  /// Whether busy.
   final bool isBusy;
 
   @override

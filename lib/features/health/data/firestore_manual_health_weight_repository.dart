@@ -9,8 +9,10 @@ const _usersCollection = 'users';
 const _weightsCollection = 'health_weights';
 const _logName = 'FirestoreManualHealthWeightRepository';
 
+/// Defines firestore manual health weight repository.
 class FirestoreManualHealthWeightRepository
     implements ManualHealthWeightRepository {
+  /// Creates an instance.
   FirestoreManualHealthWeightRepository({
     required FirebaseFirestore? firestore,
     required String? currentUserId,

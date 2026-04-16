@@ -4,18 +4,26 @@ import 'package:yamt/features/inventory/data/'
     'prepared_meal_recipe_url_parser.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Defines prepared meal recipe template draft.
 class PreparedMealRecipeTemplateDraft {
+  /// The prepared meal recipe template draft.
   const PreparedMealRecipeTemplateDraft({
     required this.recipeUrl,
     required this.name,
     required this.totalPortions,
   });
 
+  /// The recipe url.
   final String recipeUrl;
+
+  /// The name.
   final String name;
+
+  /// The total portions.
   final int? totalPortions;
 }
 
+/// Show prepared meal recipe template sheet.
 Future<PreparedMealRecipeTemplateDraft?> showPreparedMealRecipeTemplateSheet(
   BuildContext context, {
   PreparedMealRecipeTemplateDraft? initialDraft,

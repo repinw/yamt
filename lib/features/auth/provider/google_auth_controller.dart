@@ -9,6 +9,7 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 
 part 'google_auth_controller.g.dart';
 
+/// Google sign in.
 @riverpod
 Future<GoogleSignIn> googleSignIn(Ref ref) async {
   final serverClientId =
@@ -25,11 +26,13 @@ Future<GoogleSignIn> googleSignIn(Ref ref) async {
   return signIn;
 }
 
+/// Defines google auth controller.
 @riverpod
 class GoogleAuthController extends _$GoogleAuthController {
   @override
   FutureOr<void> build() {}
 
+  /// Sign in with google.
   Future<void> signInWithGoogle() async {
     await _runGoogleAuthFlow((credential) async {
       if (!ref.mounted) return;
@@ -37,6 +40,7 @@ class GoogleAuthController extends _$GoogleAuthController {
     }, false);
   }
 
+  /// Link current user with google.
   Future<void> linkCurrentUserWithGoogle() async {
     await _runGoogleAuthFlow((credential) async {
       if (!ref.mounted) return;

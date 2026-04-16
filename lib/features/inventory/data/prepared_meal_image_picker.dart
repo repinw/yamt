@@ -22,28 +22,44 @@ const double _downscaleStep = 0.82;
 const int _minimumImageDimension = 96;
 const int _maxOptimizationPasses = 12;
 
+/// Defines prepared meal image picker exception.
 class PreparedMealImagePickerException implements Exception {
+  /// The prepared meal image picker exception.
   const PreparedMealImagePickerException(this.code);
 
+  /// The code.
   final String code;
 }
 
+/// Defines prepared meal image picker error codes.
 abstract final class PreparedMealImagePickerErrorCodes {
+  /// The image too large.
   static const imageTooLarge = 'prepared_meal_image_too_large';
+
+  /// The image optimization failed.
   static const imageOptimizationFailed =
       'prepared_meal_image_optimization_failed';
+
+  /// The camera pick failed.
   static const cameraPickFailed = 'prepared_meal_camera_pick_failed';
+
+  /// The file pick failed.
   static const filePickFailed = 'prepared_meal_file_pick_failed';
 }
 
+/// Defines prepared meal image picker.
 abstract interface class PreparedMealImagePicker {
+  /// Pick from camera.
   Future<Uint8List?> pickFromCamera();
 
+  /// Pick from file.
   Future<Uint8List?> pickFromFile();
 
+  /// Whether camera.
   bool get supportsCamera;
 }
 
+/// Prepared meal image picker.
 @riverpod
 PreparedMealImagePicker preparedMealImagePicker(Ref ref) {
   return _DevicePreparedMealImagePicker(
@@ -145,6 +161,7 @@ class _DevicePreparedMealImagePicker implements PreparedMealImagePicker {
   }
 }
 
+/// Optimize prepared meal image bytes.
 @visibleForTesting
 Future<Uint8List> optimizePreparedMealImageBytes(
   Uint8List bytes, {

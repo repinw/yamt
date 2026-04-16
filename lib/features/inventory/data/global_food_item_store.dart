@@ -8,16 +8,24 @@ import 'package:yamt/features/inventory/domain/global_food_item_patch.dart';
 const String _storeLogName = 'FirestoreGlobalFoodItemStore';
 const String _globalFoodItemsCollection = 'global_food_items';
 
+/// Defines global food item document.
 class GlobalFoodItemDocument {
+  /// The global food item document.
   const GlobalFoodItemDocument({required this.id, required this.data});
 
+  /// The id.
   final String id;
+
+  /// The data.
   final Map<String, dynamic> data;
 }
 
+/// Defines global food item store.
 abstract interface class GlobalFoodItemStore {
+  /// Read all.
   Future<List<GlobalFoodItemDocument>> readAll();
 
+  /// Search candidates.
   Future<List<GlobalFoodItemDocument>> searchCandidates({
     String? normalizedName,
     String? normalizedStoreName,
@@ -27,18 +35,23 @@ abstract interface class GlobalFoodItemStore {
     int limit = 20,
   });
 
+  /// Watch all.
   Stream<List<GlobalFoodItemDocument>> watchAll();
 
+  /// Replace all.
   Future<bool> replaceAll({
     required Map<String, Map<String, dynamic>> documentsById,
   });
 
+  /// Upsert all.
   Future<bool> upsertAll({
     required Map<String, Map<String, dynamic>> documentsById,
   });
 }
 
+/// Defines firestore global food item store.
 class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
+  /// The firestore global food item store.
   const FirestoreGlobalFoodItemStore({required FirebaseFirestore firestore})
     : _firestore = firestore;
 
