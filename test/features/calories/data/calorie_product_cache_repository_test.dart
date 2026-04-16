@@ -87,9 +87,9 @@ void main() {
       'status': 'found',
       'product': profile.toJson(),
       'source': 'open_food_facts',
-      'fetched_at': DateTime(2026, 3, 4, 14, 0),
-      'updated_at': DateTime(2026, 3, 4, 14, 0),
-      'expires_at': DateTime(2026, 3, 5, 14, 0),
+      'fetched_at': DateTime(2026, 3, 4, 14),
+      'updated_at': DateTime(2026, 3, 4, 14),
+      'expires_at': DateTime(2026, 3, 5, 14),
     });
 
     final loaded = await repository.readGlobalProduct(profile.barcode);

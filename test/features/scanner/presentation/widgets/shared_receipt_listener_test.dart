@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/router/app_router.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
@@ -17,6 +20,7 @@ import 'package:yamt/features/scanner/presentation/widgets/'
     'shared_receipt_listener.dart';
 import 'package:yamt/features/scanner/provider/'
     'pending_shared_receipt_intent.dart';
+import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/shared_receipt_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -78,6 +82,7 @@ ReceiptReviewItemDraft _reviewDraft() {
   );
 }
 
+@Dependencies([inventoryItemRepository])
 GoRouter _router(GlobalKey<NavigatorState> navigatorKey) {
   return GoRouter(
     navigatorKey: navigatorKey,
@@ -106,6 +111,13 @@ GoRouter _router(GlobalKey<NavigatorState> navigatorKey) {
   );
 }
 
+@Dependencies([
+  inventoryItemRepository,
+  appRouter,
+  InventoryItemsController,
+  ReceiptCaptureFlowController,
+  ReceiptBatchFlowController,
+])
 void main() {
   testWidgets('shows confirmation dialog and cancels shared scan', (
     tester,

@@ -3,10 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/meal_templates/presentation/'
     'meal_template_detail_page.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
@@ -106,12 +109,13 @@ PreparedMeal _recipeTemplate({
   );
 }
 
+@Dependencies([InventoryItemsController, PreparedMealsController])
 Widget _buildHarness({
   required PreparedMealTemplateRepository templateRepository,
   List<InventoryItem> inventoryItems = const <InventoryItem>[],
   FakeShoppingListRepository? shoppingListRepository,
 }) {
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       preparedMealTemplateRepositoryProvider.overrideWithValue(
         templateRepository,
@@ -124,6 +128,10 @@ Widget _buildHarness({
           shoppingListRepository,
         ),
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: const MaterialApp(
       locale: Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -186,6 +194,7 @@ InkWell _inkWellForText(WidgetTester tester, String text) {
   return tester.widget<InkWell>(finder.first);
 }
 
+@Dependencies([InventoryItemsController, PreparedMealsController])
 void main() {
   testWidgets('renders localized meal template detail content', (tester) async {
     final repository = _FakePreparedMealTemplateRepository(

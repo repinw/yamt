@@ -54,7 +54,6 @@ class StatisticsVerticalBarChart extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       item.valueLabel ?? item.value.round().toString(),

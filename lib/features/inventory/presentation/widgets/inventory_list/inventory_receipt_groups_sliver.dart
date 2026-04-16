@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
@@ -8,6 +10,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 
@@ -15,6 +18,7 @@ const _inventoryReceiptGroupsBottomPadding =
     AppSpacing.xxxxl * 4 + AppSpacing.xxxl;
 
 /// Defines inventory receipt groups sliver.
+@Dependencies([inventoryItemRepository, InventoryItemsController])
 class InventoryReceiptGroupsSliver extends StatelessWidget {
   /// The inventory receipt groups sliver.
   const InventoryReceiptGroupsSliver({

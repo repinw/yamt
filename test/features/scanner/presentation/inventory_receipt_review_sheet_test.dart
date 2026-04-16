@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/features/calories/data/'
     'calorie_nutrition_ocr_repository.dart';
@@ -15,6 +16,7 @@ import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
@@ -65,6 +67,7 @@ const _testNutrition = GlobalFoodNutrition(
   per100Kcal: 120,
 );
 
+@Dependencies([inventoryItemRepository])
 Widget _wrap({
   required VoidCallback onCancelTap,
   required Future<void> Function(List<InventoryItem> items) onSaveTap,
@@ -365,6 +368,7 @@ final Uint8List _receiptPreviewPng = Uint8List.fromList(const <int>[
   0x82,
 ]);
 
+@Dependencies([inventoryItemRepository])
 void main() {
   testWidgets('price overview shows total, savable and excluded sums', (
     tester,

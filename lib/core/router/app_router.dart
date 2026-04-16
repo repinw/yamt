@@ -7,6 +7,10 @@ import 'package:yamt/features/auth/provider/'
     'auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_entry_delete_flow.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/presentation/calorie_barcode_scan_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/'
@@ -20,8 +24,11 @@ import 'package:yamt/features/calories/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/meal_templates/presentation/'
     'meal_template_detail_page.dart';
 import 'package:yamt/features/meal_templates/presentation/'
@@ -31,6 +38,8 @@ import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
 import 'package:yamt/features/scanner/presentation/'
     'inventory_receipt_review_page.dart';
+import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/settings/account_page.dart';
 import 'package:yamt/features/settings/settings_page.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
@@ -63,7 +72,18 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
 }
 
 /// Provides application `GoRouter` instance.
-@Riverpod(keepAlive: true)
+@Riverpod(
+  keepAlive: true,
+  dependencies: [
+    inventoryItemRepository,
+    calorieEntryDeleteFlow,
+    inventoryBackedCalorieEntrySaveFlow,
+    InventoryItemsController,
+    PreparedMealsController,
+    ReceiptCaptureFlowController,
+    ReceiptBatchFlowController,
+  ],
+)
 Raw<GoRouter> appRouter(Ref ref) {
   final navigatorKey = ref.watch(navigatorKeyProvider);
   final refreshListenable = ref.watch(appRouterRefreshListenableProvider);

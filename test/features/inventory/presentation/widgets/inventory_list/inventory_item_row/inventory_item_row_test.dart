@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -11,8 +13,10 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/remaining_progress_bar.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+@Dependencies([inventoryItemRepository, InventoryItemsController])
 class _InventoryItemRowHost extends StatelessWidget {
   const _InventoryItemRowHost({
     required this.showRow,
@@ -74,6 +78,7 @@ class _InventoryItemRowHost extends StatelessWidget {
   }
 }
 
+@Dependencies([inventoryItemRepository, InventoryItemsController])
 void main() {
   testWidgets('positions expand indicator in the top-right header area', (
     tester,

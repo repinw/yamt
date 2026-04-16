@@ -126,7 +126,6 @@ class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
               label: AppLocalizations.of(
                 context,
               )!.inventoryReceiptReviewManualSearchLabel,
-              isSearching: false,
               voiceButtonKey: const Key(
                 'receipt_review_manual_voice_search_button',
               ),

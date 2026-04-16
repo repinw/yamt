@@ -29,7 +29,6 @@ class _InventoryItemEatAmountCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
               child: DecoratedBox(
@@ -54,7 +53,6 @@ class _InventoryItemEatAmountCard extends StatelessWidget {
                           key: const Key('inventory_item_amount_dialog_field'),
                           controller: controller,
                           focusNode: focusNode,
-                          autofocus: false,
                           keyboardType: TextInputType.number,
                           textInputAction: TextInputAction.done,
                           decoration: const InputDecoration(

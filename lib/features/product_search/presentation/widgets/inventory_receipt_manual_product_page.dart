@@ -592,7 +592,6 @@ class _InventoryReceiptManualProductEditorPageState
     controller.value = TextEditingValue(
       text: nextText,
       selection: selection,
-      composing: TextRange.empty,
     );
   }
 

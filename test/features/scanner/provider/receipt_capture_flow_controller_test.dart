@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_barcode_backfill_repository.dart';
 import 'package:yamt/features/calories/data/'
@@ -256,6 +257,7 @@ ReceiptReviewItemDraft _draft({
   );
 }
 
+@Dependencies([ReceiptCaptureFlowController])
 void main() {
   test('camera unsupported short-circuits with unsupported status', () async {
     final container = ProviderContainer(

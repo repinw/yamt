@@ -9,8 +9,11 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -27,13 +30,22 @@ import 'package:yamt/features/inventory/provider/'
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _deleteUndoSnackBarDuration = Duration(seconds: 5);
 const _preparedMealImageAssetUuid = Uuid();
 
 /// Defines inventory page.
-@Dependencies([InventoryItemsController, PreparedMealsController])
+@Dependencies([
+  inventoryItemRepository,
+  InventoryItemsController,
+  PreparedMealsController,
+  ReceiptCaptureFlowController,
+  ReceiptBatchFlowController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 class InventoryPage extends ConsumerStatefulWidget {
   /// The inventory page.
   const InventoryPage({super.key, this.expandedPreparedMealId});

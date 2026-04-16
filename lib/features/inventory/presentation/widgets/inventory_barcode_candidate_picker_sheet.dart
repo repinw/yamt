@@ -160,7 +160,6 @@ class _BarcodeCandidateTile extends StatelessWidget {
             children: <Widget>[
               InventoryReceiptSelectionThumbnail(
                 imageUrl: candidate.imageUrl,
-                icon: Icons.inventory_2_outlined,
                 dimension: 44,
               ),
               const SizedBox(width: AppSpacing.md),

@@ -81,7 +81,7 @@ void main() {
             builder: (context, ref, child) {
               result = buildPrefetchedCaloriesDayOverviews(
                 ref: ref,
-                earliestDay: DateTime(2026, 3, 1),
+                earliestDay: DateTime(2026, 3),
                 referenceToday: today,
                 visibleWindowEnd: today,
                 visibleDaysOverview: <CalorieWeekDayOverview>[
@@ -147,7 +147,7 @@ void main() {
             builder: (context, ref, child) {
               result = buildPrefetchedCaloriesDayOverviews(
                 ref: ref,
-                earliestDay: DateTime(2026, 3, 1),
+                earliestDay: DateTime(2026, 3),
                 referenceToday: DateTime(2026, 4, 20),
                 visibleWindowEnd: DateTime(2026, 3, 20),
                 visibleDaysOverview: <CalorieWeekDayOverview>[

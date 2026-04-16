@@ -91,7 +91,6 @@ class CalorieHealthTrendChart extends StatelessWidget {
                 ),
               ),
               gridData: FlGridData(
-                show: true,
                 drawVerticalLine: false,
                 horizontalInterval: layout.interval,
                 getDrawingHorizontalLine: (value) {
@@ -102,9 +101,7 @@ class CalorieHealthTrendChart extends StatelessWidget {
                 },
               ),
               titlesData: FlTitlesData(
-                topTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
+                topTitles: const AxisTitles(),
                 leftTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: layout.showCalorieAxis,

@@ -400,11 +400,6 @@ void main() {
           'b1',
           loggedAt: DateTime(2026, 2, 25, 8),
           mealType: MealType.breakfast,
-          consumedAmount: 100,
-          per100Kcal: 100,
-          per100Protein: 10,
-          per100Carbs: 5,
-          per100Fat: 1,
         ),
         _entry(
           'l1',
@@ -476,11 +471,6 @@ void main() {
           'b1',
           loggedAt: DateTime(2026, 2, 24, 8),
           mealType: MealType.breakfast,
-          consumedAmount: 100,
-          per100Kcal: 100,
-          per100Protein: 10,
-          per100Carbs: 5,
-          per100Fat: 1,
         ),
       ],
     );

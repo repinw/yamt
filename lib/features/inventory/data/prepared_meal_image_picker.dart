@@ -123,7 +123,6 @@ class _DevicePreparedMealImagePicker implements PreparedMealImagePicker {
   Future<Uint8List?> pickFromFile() async {
     try {
       final result = await _filePicker.pickFiles(
-        allowMultiple: false,
         withData: true,
         type: FileType.image,
       );

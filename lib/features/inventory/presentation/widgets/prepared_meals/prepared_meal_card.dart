@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
@@ -52,6 +53,7 @@ part 'prepared_meal_card_pending_ingredient.dart';
 const _preparedMealCardLogName = 'PreparedMealCard';
 
 /// Defines prepared meal card.
+@Dependencies([InventoryItemsController])
 class PreparedMealCard extends ConsumerStatefulWidget {
   /// The prepared meal card.
   const PreparedMealCard({

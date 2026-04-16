@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/'
     'inventory_calorie_entry_commit_store.dart';
@@ -91,6 +94,10 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
   }
 }
 
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 class _SaveDirectEntryButton extends ConsumerWidget {
   const _SaveDirectEntryButton({
     required this.profile,
@@ -168,7 +175,6 @@ InventoryItem _portionItemWithNutrition() {
     entryDate: DateTime.parse('2026-03-01T12:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
   );
 }
 
@@ -186,6 +192,7 @@ InventoryItem _itemWithoutNutrition() {
   );
 }
 
+@Dependencies([InventoryItemsController])
 ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepInventoryAlive(
   ProviderContainer container,
 ) {
@@ -198,6 +205,10 @@ ProviderSubscription<AsyncValue<List<CalorieEntry>>> _keepCaloriesAlive(
   return container.listen(calorieEntriesControllerProvider, (_, _) {});
 }
 
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 void main() {
   test('buildProfileFromInventoryItem maps nutrition and barcode fallback', () {
     final item = _amountItemWithNutrition(barcode: null);

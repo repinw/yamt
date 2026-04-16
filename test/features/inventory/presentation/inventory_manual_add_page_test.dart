@@ -8,8 +8,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository.dart';
@@ -309,6 +312,11 @@ class _FakeMobileScannerPlatform extends MobileScannerPlatform {
   }
 }
 
+@Dependencies([
+  inventoryItemRepository,
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 Widget _buildHarness({
   required OffProductSearchRepository offRepository,
   required InventoryItemRepository inventoryRepository,
@@ -334,7 +342,7 @@ Widget _buildHarness({
     ],
   );
 
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       offProductSearchRepositoryProvider.overrideWithValue(offRepository),
       inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
@@ -359,6 +367,10 @@ Widget _buildHarness({
           inventoryItemsControllerFactory,
         ),
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: MaterialApp.router(
       locale: const Locale('en'),
       routerConfig: router,
@@ -448,30 +460,36 @@ _FakeMobileScannerPlatform _fakeScannerPlatform() {
   return MobileScannerPlatform.instance as _FakeMobileScannerPlatform;
 }
 
+@Dependencies([
+  inventoryItemRepository,
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 void main() {
   testWidgets('single barcode result needs explicit confirmation before save', (
     tester,
   ) async {
     _installFakeScannerPlatform(tester);
 
-    final offRepository =
-        _RecordingOffProductSearchRepository(<OffProductSearchResult>[
-          const OffProductSearchResult(
-            code: '4006381333931',
-            name: 'Milk',
-            brand: 'Brand',
-            score: 99,
-            packageWeight: '1 l',
-            imageUrl: 'https://example.com/milk.png',
-            nutrition: GlobalFoodNutrition(
-              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-              per100Kcal: 100,
-              per100Protein: 10,
-              per100Carbs: 20,
-              per100Fat: 3,
-            ),
+    final offRepository = _RecordingOffProductSearchRepository(
+      <OffProductSearchResult>[
+        const OffProductSearchResult(
+          code: '4006381333931',
+          name: 'Milk',
+          brand: 'Brand',
+          score: 99,
+          packageWeight: '1 l',
+          imageUrl: 'https://example.com/milk.png',
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 100,
+            per100Protein: 10,
+            per100Carbs: 20,
+            per100Fat: 3,
           ),
-        ]);
+        ),
+      ],
+    );
     final inventoryRepository = _RecordingInventoryItemRepository();
     addTearDown(inventoryRepository.dispose);
     final globalFoodRepository = _RecordingGlobalFoodItemRepository();
@@ -563,15 +581,16 @@ void main() {
     (tester) async {
       _installFakeScannerPlatform(tester);
 
-      final offRepository =
-          _RecordingOffProductSearchRepository(<OffProductSearchResult>[
-            const OffProductSearchResult(
-              code: '4316268671224',
-              name: 'Cashews Sour Creme & Onion',
-              brand: 'Clarkys',
-              score: 100,
-            ),
-          ]);
+      final offRepository = _RecordingOffProductSearchRepository(
+        <OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4316268671224',
+            name: 'Cashews Sour Creme & Onion',
+            brand: 'Clarkys',
+            score: 100,
+          ),
+        ],
+      );
       final inventoryRepository = _RecordingInventoryItemRepository();
       addTearDown(inventoryRepository.dispose);
       final globalFoodRepository = _RecordingGlobalFoodItemRepository();
@@ -614,24 +633,25 @@ void main() {
     when(() => auth.currentUser).thenReturn(user);
     when(() => user.uid).thenReturn('user-1');
 
-    final offRepository =
-        _RecordingOffProductSearchRepository(<OffProductSearchResult>[
-          const OffProductSearchResult(
-            code: '4006381333931',
-            name: 'Milk',
-            brand: 'Brand',
-            score: 99,
-            packageWeight: '1 l',
-            imageUrl: 'https://example.com/milk.png',
-            nutrition: GlobalFoodNutrition(
-              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-              per100Kcal: 100,
-              per100Protein: 10,
-              per100Carbs: 20,
-              per100Fat: 3,
-            ),
+    final offRepository = _RecordingOffProductSearchRepository(
+      <OffProductSearchResult>[
+        const OffProductSearchResult(
+          code: '4006381333931',
+          name: 'Milk',
+          brand: 'Brand',
+          score: 99,
+          packageWeight: '1 l',
+          imageUrl: 'https://example.com/milk.png',
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 100,
+            per100Protein: 10,
+            per100Carbs: 20,
+            per100Fat: 3,
           ),
-        ]);
+        ),
+      ],
+    );
     final inventoryRepository = _RecordingInventoryItemRepository();
     addTearDown(inventoryRepository.dispose);
     final globalFoodRepository = _RecordingGlobalFoodItemRepository();
@@ -707,24 +727,25 @@ void main() {
     (tester) async {
       _installFakeScannerPlatform(tester);
 
-      final offRepository =
-          _RecordingOffProductSearchRepository(<OffProductSearchResult>[
-            const OffProductSearchResult(
-              code: '4006381333931',
-              name: 'Milk',
-              brand: 'Brand',
-              score: 99,
-              packageWeight: '1 l',
-              imageUrl: 'https://example.com/milk.png',
-              nutrition: GlobalFoodNutrition(
-                qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-                per100Kcal: 100,
-                per100Protein: 10,
-                per100Carbs: 20,
-                per100Fat: 3,
-              ),
+      final offRepository = _RecordingOffProductSearchRepository(
+        <OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4006381333931',
+            name: 'Milk',
+            brand: 'Brand',
+            score: 99,
+            packageWeight: '1 l',
+            imageUrl: 'https://example.com/milk.png',
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 100,
+              per100Protein: 10,
+              per100Carbs: 20,
+              per100Fat: 3,
             ),
-          ]);
+          ),
+        ],
+      );
       final inventoryRepository = _FailingInventoryItemRepository();
       addTearDown(inventoryRepository.dispose);
       final globalFoodRepository = _RecordingGlobalFoodItemRepository();
@@ -779,24 +800,25 @@ void main() {
     (tester) async {
       _installFakeScannerPlatform(tester);
 
-      final offRepository =
-          _RecordingOffProductSearchRepository(<OffProductSearchResult>[
-            const OffProductSearchResult(
-              code: '4006381333931',
-              name: 'Milk',
-              brand: 'Brand',
-              score: 99,
-              packageWeight: '1 l',
-              imageUrl: 'https://example.com/milk.png',
-              nutrition: GlobalFoodNutrition(
-                qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-                per100Kcal: 100,
-                per100Protein: 10,
-                per100Carbs: 20,
-                per100Fat: 3,
-              ),
+      final offRepository = _RecordingOffProductSearchRepository(
+        <OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4006381333931',
+            name: 'Milk',
+            brand: 'Brand',
+            score: 99,
+            packageWeight: '1 l',
+            imageUrl: 'https://example.com/milk.png',
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 100,
+              per100Protein: 10,
+              per100Carbs: 20,
+              per100Fat: 3,
             ),
-          ]);
+          ),
+        ],
+      );
       final inventoryRepository = _RecordingInventoryItemRepository();
       addTearDown(inventoryRepository.dispose);
       final globalFoodRepository = _RecordingGlobalFoodItemRepository();
@@ -861,37 +883,38 @@ void main() {
   ) async {
     _installFakeScannerPlatform(tester);
 
-    final offRepository =
-        _RecordingOffProductSearchRepository(<OffProductSearchResult>[
-          const OffProductSearchResult(
-            code: '4316268671224',
-            name: 'Cashews Sour Creme & Onion',
-            brand: 'Clarkys',
-            score: 100,
-            packageWeight: '140 g',
-            nutrition: GlobalFoodNutrition(
-              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-              per100Kcal: 550,
-              per100Protein: 8,
-              per100Carbs: 30,
-              per100Fat: 40,
-            ),
+    final offRepository = _RecordingOffProductSearchRepository(
+      <OffProductSearchResult>[
+        const OffProductSearchResult(
+          code: '4316268671224',
+          name: 'Cashews Sour Creme & Onion',
+          brand: 'Clarkys',
+          score: 100,
+          packageWeight: '140 g',
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 550,
+            per100Protein: 8,
+            per100Carbs: 30,
+            per100Fat: 40,
           ),
-          const OffProductSearchResult(
-            code: '4316268671225',
-            name: 'Cashews Paprika',
-            brand: 'Clarkys',
-            score: 90,
-            packageWeight: '150 g',
-            nutrition: GlobalFoodNutrition(
-              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-              per100Kcal: 560,
-              per100Protein: 7,
-              per100Carbs: 31,
-              per100Fat: 41,
-            ),
+        ),
+        const OffProductSearchResult(
+          code: '4316268671225',
+          name: 'Cashews Paprika',
+          brand: 'Clarkys',
+          score: 90,
+          packageWeight: '150 g',
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 560,
+            per100Protein: 7,
+            per100Carbs: 31,
+            per100Fat: 41,
           ),
-        ]);
+        ),
+      ],
+    );
     final inventoryRepository = _RecordingInventoryItemRepository();
     addTearDown(inventoryRepository.dispose);
     final globalFoodRepository = _RecordingGlobalFoodItemRepository();
@@ -953,15 +976,16 @@ void main() {
   ) async {
     _installFakeScannerPlatform(tester);
 
-    final offRepository =
-        _RecordingOffProductSearchRepository(<OffProductSearchResult>[
-          const OffProductSearchResult(
-            code: '4006381333931',
-            name: 'OFF Milk',
-            brand: 'OFF Brand',
-            score: 99,
-          ),
-        ]);
+    final offRepository = _RecordingOffProductSearchRepository(
+      <OffProductSearchResult>[
+        const OffProductSearchResult(
+          code: '4006381333931',
+          name: 'OFF Milk',
+          brand: 'OFF Brand',
+          score: 99,
+        ),
+      ],
+    );
     final inventoryRepository = _RecordingInventoryItemRepository();
     addTearDown(inventoryRepository.dispose);
     final globalFoodRepository = _RecordingGlobalFoodItemRepository();
@@ -1063,16 +1087,17 @@ void main() {
     (tester) async {
       _installFakeScannerPlatform(tester);
 
-      final offRepository =
-          _RecordingOffProductSearchRepository(<OffProductSearchResult>[
-            const OffProductSearchResult(
-              code: '4006381333931',
-              name: 'Milk',
-              brand: 'Acme',
-              score: 99,
-              packageWeight: '1 l',
-            ),
-          ]);
+      final offRepository = _RecordingOffProductSearchRepository(
+        <OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4006381333931',
+            name: 'Milk',
+            brand: 'Acme',
+            score: 99,
+            packageWeight: '1 l',
+          ),
+        ],
+      );
       final inventoryRepository = _RecordingInventoryItemRepository();
       addTearDown(inventoryRepository.dispose);
       final globalFoodRepository = _RecordingGlobalFoodItemRepository();
@@ -1191,15 +1216,16 @@ void main() {
     (tester) async {
       _installFakeScannerPlatform(tester);
 
-      final offRepository =
-          _RecordingOffProductSearchRepository(<OffProductSearchResult>[
-            const OffProductSearchResult(
-              code: '4006381333931',
-              name: 'OFF Milk',
-              brand: 'OFF Brand',
-              score: 99,
-            ),
-          ]);
+      final offRepository = _RecordingOffProductSearchRepository(
+        <OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4006381333931',
+            name: 'OFF Milk',
+            brand: 'OFF Brand',
+            score: 99,
+          ),
+        ],
+      );
       final inventoryRepository = _RecordingInventoryItemRepository();
       addTearDown(inventoryRepository.dispose);
       final globalFoodRepository = _RecordingGlobalFoodItemRepository();

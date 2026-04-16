@@ -16,10 +16,14 @@ Widget _buildHarness({
   required FakeCalorieSettingsRepository settingsRepository,
   CalorieGoalSettings initialSettings = const CalorieGoalSettings.empty(),
 }) {
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: MaterialApp(
       locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,

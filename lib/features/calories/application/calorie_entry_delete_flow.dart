@@ -1,11 +1,13 @@
 import 'dart:developer' show log;
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+
+part 'calorie_entry_delete_flow.g.dart';
 
 const _deleteFlowLogName = 'CalorieEntryDeleteFlow';
 
@@ -49,7 +51,8 @@ class CalorieEntryDeleteResult {
 }
 
 /// The calorie entry delete flow provider.
-final calorieEntryDeleteFlowProvider = Provider<CalorieEntryDeleteFlow>((ref) {
+@Riverpod(dependencies: [InventoryItemsController, PreparedMealsController])
+CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
   return CalorieEntryDeleteFlow(
     deleteEntryById: ref
         .read(calorieEntriesControllerProvider.notifier)
@@ -72,7 +75,7 @@ final calorieEntryDeleteFlowProvider = Provider<CalorieEntryDeleteFlow>((ref) {
               reason: InventoryDiscardReason.other,
             ),
   );
-});
+}
 
 /// Defines calorie entry delete flow.
 class CalorieEntryDeleteFlow {

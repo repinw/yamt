@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/inventory/data/global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -134,6 +135,7 @@ class _FakeGlobalBarcodeCandidateRepository
   }
 }
 
+@Dependencies([InventoryItemsController])
 ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepControllerAlive(
   ProviderContainer container,
 ) {
@@ -176,6 +178,7 @@ GlobalFoodItem _globalProduct({
   );
 }
 
+@Dependencies([InventoryItemsController])
 void main() {
   test(
     'addItem publishes a new item without waiting for realtime sync',

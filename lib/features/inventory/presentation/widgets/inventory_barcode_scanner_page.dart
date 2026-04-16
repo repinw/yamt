@@ -203,7 +203,6 @@ class _InventoryBarcodeScannerViewState
           .read(globalBarcodeCandidateRepositoryProvider)
           .readCandidates(
             barcode: barcode,
-            limit: _inventoryBarcodeCandidateLimit,
           );
     } catch (error, stackTrace) {
       log(

@@ -279,7 +279,6 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
       children: [
         if (widget.showLabel || widget.labelTrailing != null) ...[
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (widget.showLabel)
                 Expanded(

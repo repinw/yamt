@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
@@ -23,6 +24,9 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 
 import '../../features/calories/support/fake_calories_repositories.dart';
 import '../../helpers/memory_app_preferences.dart';
@@ -120,6 +124,12 @@ _MockUser _guestUser({
   return user;
 }
 
+@Dependencies([
+  appRouter,
+  InventoryItemsController,
+  ReceiptCaptureFlowController,
+  ReceiptBatchFlowController,
+])
 void main() {
   testWidgets('shows splash while auth state is loading', (tester) async {
     final container = _createContainerWithAuth(
@@ -232,7 +242,7 @@ void main() {
     tester,
   ) async {
     final container = _createContainerWithAuth(
-      Stream<User?>.value(_guestUser(displayName: null)),
+      Stream<User?>.value(_guestUser()),
     );
 
     await tester.pumpWidget(
@@ -435,7 +445,6 @@ void main() {
         _authenticatedUser(
           uid: 'returning-user',
           displayName: 'Returning Google User',
-          isFirstSignIn: false,
         ),
       ),
     );
@@ -465,7 +474,7 @@ void main() {
     );
     await tester.pump();
 
-    authController.add(_guestUser(displayName: null));
+    authController.add(_guestUser());
     await tester.pump();
     await _pumpRouterTransition(tester);
 

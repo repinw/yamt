@@ -79,10 +79,14 @@ Widget _buildHarness({
     ],
   );
 
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: MaterialApp.router(
       locale: const Locale('de'),
       routerConfig: router,

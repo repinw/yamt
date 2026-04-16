@@ -60,7 +60,7 @@ void main() {
     HouseholdInviteCodeController? inviteController,
     HouseholdMembershipController? membershipController,
   }) {
-    return ProviderScope(
+    final container = ProviderContainer(
       overrides: [
         authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
         userProfileProvider.overrideWith((ref) => Stream.value(profile)),
@@ -72,6 +72,10 @@ void main() {
           () => membershipController ?? _FakeHouseholdMembershipController(),
         ),
       ],
+    );
+    addTearDown(container.dispose);
+    return UncontrolledProviderScope(
+      container: container,
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

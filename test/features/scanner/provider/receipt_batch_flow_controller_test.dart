@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/inventory/application/global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
@@ -159,6 +160,7 @@ ReceiptReviewItemDraft _reviewDraft({required String id}) {
   );
 }
 
+@Dependencies([ReceiptBatchFlowController])
 void main() {
   test(
     'runFileBatch reuses in-flight operation for concurrent calls',

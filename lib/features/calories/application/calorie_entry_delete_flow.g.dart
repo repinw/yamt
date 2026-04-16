@@ -1,0 +1,74 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'calorie_entry_delete_flow.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+/// The calorie entry delete flow provider.
+
+@ProviderFor(calorieEntryDeleteFlow)
+final calorieEntryDeleteFlowProvider = CalorieEntryDeleteFlowProvider._();
+
+/// The calorie entry delete flow provider.
+
+final class CalorieEntryDeleteFlowProvider
+    extends
+        $FunctionalProvider<
+          CalorieEntryDeleteFlow,
+          CalorieEntryDeleteFlow,
+          CalorieEntryDeleteFlow
+        >
+    with $Provider<CalorieEntryDeleteFlow> {
+  /// The calorie entry delete flow provider.
+  CalorieEntryDeleteFlowProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'calorieEntryDeleteFlowProvider',
+        isAutoDispose: true,
+        dependencies: <ProviderOrFamily>[
+          inventoryItemsControllerProvider,
+          preparedMealsControllerProvider,
+        ],
+        $allTransitiveDependencies: <ProviderOrFamily>[
+          CalorieEntryDeleteFlowProvider.$allTransitiveDependencies0,
+          CalorieEntryDeleteFlowProvider.$allTransitiveDependencies1,
+          CalorieEntryDeleteFlowProvider.$allTransitiveDependencies2,
+        ],
+      );
+
+  static final $allTransitiveDependencies0 = inventoryItemsControllerProvider;
+  static final $allTransitiveDependencies1 =
+      InventoryItemsControllerProvider.$allTransitiveDependencies0;
+  static final $allTransitiveDependencies2 = preparedMealsControllerProvider;
+
+  @override
+  String debugGetCreateSourceHash() => _$calorieEntryDeleteFlowHash();
+
+  @$internal
+  @override
+  $ProviderElement<CalorieEntryDeleteFlow> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  CalorieEntryDeleteFlow create(Ref ref) {
+    return calorieEntryDeleteFlow(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(CalorieEntryDeleteFlow value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<CalorieEntryDeleteFlow>(value),
+    );
+  }
+}
+
+String _$calorieEntryDeleteFlowHash() =>
+    r'62c5b2a7de7d3aabde9a1d7d594a2455db076d1c';

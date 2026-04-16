@@ -101,7 +101,7 @@ void main() {
   test('returns safe defaults when no user is signed in', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
-      session: _FakeCalorieLogUserSession(currentUserId: null),
+      session: _FakeCalorieLogUserSession(),
       firestore: firestore,
     );
 
@@ -215,7 +215,7 @@ void main() {
       'when no user is signed in', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
-      session: _FakeCalorieLogUserSession(currentUserId: null),
+      session: _FakeCalorieLogUserSession(),
       firestore: firestore,
     );
 

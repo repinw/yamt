@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
@@ -14,6 +15,7 @@ import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_search_service.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -45,6 +47,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_groups_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'prepared_meal_filter_sheet.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -52,6 +55,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 enum _InventoryItemSortCriterion { added, eaten, alphabetical, quantity }
 
 /// Defines inventory list.
+@Dependencies([inventoryItemRepository, InventoryItemsController])
 class InventoryList extends ConsumerStatefulWidget {
   /// The inventory list.
   const InventoryList({

@@ -3,7 +3,10 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/inventory/application/'
@@ -13,9 +16,14 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory item eat flow.
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 class InventoryItemEatFlow {
   const InventoryItemEatFlow._();
 

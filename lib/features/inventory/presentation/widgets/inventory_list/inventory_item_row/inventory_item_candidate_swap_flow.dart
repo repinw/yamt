@@ -1,9 +1,11 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -36,6 +38,7 @@ class InventoryItemCandidateSwapRequest {
 }
 
 /// Runs the inventory candidate swap picker and returns the chosen product.
+@Dependencies([inventoryItemRepository])
 Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
   required BuildContext context,
   required WidgetRef ref,
@@ -106,6 +109,7 @@ InventoryItemCandidateSwapRequest? _candidateRequest({
   );
 }
 
+@Dependencies([inventoryItemRepository])
 Future<InventoryItemCandidateSwapRequest?> _manualEntryRequest({
   required BuildContext context,
   required InventoryItem item,

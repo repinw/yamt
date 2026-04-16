@@ -78,7 +78,6 @@ void main() {
         barcode: '4006381333931',
         name: 'Override Milk',
         source: CalorieProductSource.userOverride,
-        imageUrl: null,
       );
       final offClient = _FakeOffLookupClient(
         onLookup: (_) async => CalorieOffLookupResult.found(
@@ -186,7 +185,6 @@ void main() {
       barcode: '4006381333931',
       name: 'Global Milk',
       source: CalorieProductSource.globalCatalog,
-      imageUrl: null,
     );
     final offClient = _FakeOffLookupClient(
       onLookup: (_) async =>

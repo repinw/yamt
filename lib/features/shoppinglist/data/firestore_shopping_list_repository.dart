@@ -2,11 +2,10 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_item_store.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository_contract.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_user_session.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
-
-import 'shopping_list_item_store.dart';
-import 'shopping_list_repository_contract.dart';
-import 'shopping_list_user_session.dart';
 
 const String _repositoryLogName = 'FirestoreShoppingListRepository';
 

@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/utils/currency_format.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
@@ -38,6 +40,7 @@ import 'package:yamt/features/inventory/provider/inventory_items_controller.dart
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory item row.
+@Dependencies([inventoryItemRepository, InventoryItemsController])
 class InventoryItemRow extends ConsumerStatefulWidget {
   /// The inventory item row.
   const InventoryItemRow({

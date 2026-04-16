@@ -16,8 +16,12 @@ Future<void> _ensureVisibleText(WidgetTester tester, String text) async {
 }
 
 Widget _wrapWithApp({required Stream<User?> authStream}) {
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [authStateChangesProvider.overrideWith((ref) => authStream)],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: const MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

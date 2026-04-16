@@ -5,8 +5,8 @@ void main() {
   test('mergeWorkoutCalories uses overlapped active energy samples', () {
     final workout = HealthWorkoutSession(
       id: 'walk-1',
-      start: DateTime(2026, 4, 15, 7, 0),
-      endExclusive: DateTime(2026, 4, 15, 8, 0),
+      start: DateTime(2026, 4, 15, 7),
+      endExclusive: DateTime(2026, 4, 15, 8),
       durationMinutes: 60,
       activityLabel: 'Walking',
       sourceName: 'Health Connect',
@@ -18,7 +18,7 @@ void main() {
       workout: workout,
       activeEnergySamples: [
         HealthActiveEnergySample(
-          startAt: DateTime(2026, 4, 15, 7, 0),
+          startAt: DateTime(2026, 4, 15, 7),
           endAt: DateTime(2026, 4, 15, 7, 30),
           numericValue: 120,
         ),
@@ -38,8 +38,8 @@ void main() {
     () {
       final workout = HealthWorkoutSession(
         id: 'run-1',
-        start: DateTime(2026, 4, 15, 7, 0),
-        endExclusive: DateTime(2026, 4, 15, 8, 0),
+        start: DateTime(2026, 4, 15, 7),
+        endExclusive: DateTime(2026, 4, 15, 8),
         durationMinutes: 60,
         activityLabel: 'Running',
         sourceName: 'Health Connect',
@@ -51,8 +51,8 @@ void main() {
         workout: workout,
         activeEnergySamples: [
           HealthActiveEnergySample(
-            startAt: DateTime(2026, 4, 15, 9, 0),
-            endAt: DateTime(2026, 4, 15, 10, 0),
+            startAt: DateTime(2026, 4, 15, 9),
+            endAt: DateTime(2026, 4, 15, 10),
             numericValue: 150,
           ),
         ],

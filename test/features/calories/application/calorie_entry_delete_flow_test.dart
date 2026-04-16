@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -99,7 +100,6 @@ InventoryItem _inventoryItem() {
     entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
     initialAmount: 1000,
     currentAmount: 750,
     amountUnit: InventoryAmountUnit.milliliter,
@@ -185,6 +185,7 @@ CalorieEntry _bundleEntry({
   );
 }
 
+@Dependencies([InventoryItemsController])
 ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepInventoryAlive(
   ProviderContainer container,
 ) {
@@ -197,12 +198,18 @@ ProviderSubscription<AsyncValue<List<CalorieEntry>>> _keepCaloriesAlive(
   return container.listen(calorieEntriesControllerProvider, (_, _) {});
 }
 
+@Dependencies([PreparedMealsController])
 ProviderSubscription<AsyncValue<List<PreparedMeal>>> _keepPreparedMealsAlive(
   ProviderContainer container,
 ) {
   return container.listen(preparedMealsControllerProvider, (_, _) {});
 }
 
+@Dependencies([
+  InventoryItemsController,
+  PreparedMealsController,
+  calorieEntryDeleteFlow,
+])
 void main() {
   test(
     'delete flow restores inventory amount before deleting diary entry',

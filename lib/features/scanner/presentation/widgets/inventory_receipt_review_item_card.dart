@@ -337,7 +337,6 @@ class _ReceiptItemLeading extends StatelessWidget {
           children: [
             InventoryReceiptSelectionThumbnail(
               imageUrl: display.imageUrl,
-              icon: Icons.inventory_2_outlined,
               backgroundColor: colors.surfaceContainerHighest,
               foregroundColor: colors.onSurfaceVariant,
               dimension: 48,

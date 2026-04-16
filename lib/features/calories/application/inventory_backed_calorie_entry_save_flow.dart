@@ -1,23 +1,27 @@
 import 'dart:developer' show log;
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 
+part 'inventory_backed_calorie_entry_save_flow.g.dart';
+
 const _flowLogName = 'InventoryBackedCalorieEntrySaveFlow';
 
 /// The inventory backed calorie entry save flow provider.
-final inventoryBackedCalorieEntrySaveFlowProvider =
-    Provider<InventoryBackedCalorieEntrySaveFlow>((ref) {
-      return InventoryBackedCalorieEntrySaveFlow(
-        inventoryController: ref.read(
-          inventoryItemsControllerProvider.notifier,
-        ),
-        commitStore: ref.read(inventoryCalorieEntryCommitStoreProvider),
-      );
-    });
+@Riverpod(dependencies: [InventoryItemsController])
+InventoryBackedCalorieEntrySaveFlow inventoryBackedCalorieEntrySaveFlow(
+  Ref ref,
+) {
+  return InventoryBackedCalorieEntrySaveFlow(
+    inventoryController: ref.read(
+      inventoryItemsControllerProvider.notifier,
+    ),
+    commitStore: ref.read(inventoryCalorieEntryCommitStoreProvider),
+  );
+}
 
 /// Defines inventory backed calorie entry save flow.
 class InventoryBackedCalorieEntrySaveFlow {

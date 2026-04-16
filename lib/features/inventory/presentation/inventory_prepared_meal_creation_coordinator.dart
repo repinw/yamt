@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
@@ -14,6 +15,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _preparedMealImageAssetUuid = Uuid();
 
 /// Run prepared meal creation flow.
+@Dependencies([InventoryItemsController, PreparedMealsController])
 Future<void> runPreparedMealCreationFlow({
   required BuildContext context,
   required WidgetRef ref,

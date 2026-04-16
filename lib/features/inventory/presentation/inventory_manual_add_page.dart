@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -40,6 +44,11 @@ int? resolveInventoryManualAddEatFlowMaxAmount(InventoryItem item) {
 }
 
 /// Defines inventory manual add page.
+@Dependencies([
+  inventoryItemRepository,
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 class InventoryManualAddPage extends ConsumerStatefulWidget {
   /// The inventory manual add page.
   const InventoryManualAddPage({super.key});
@@ -171,7 +180,6 @@ class _InventoryManualAddPageState
       storeName: l10n.inventoryManualAddStoreName,
       origin: InventoryItemOrigin.manualAdd,
       quantity: 1,
-      initialQuantity: 1,
       brand: globalProduct.brand,
       barcode: globalProduct.barcode,
       imageUrl: globalProduct.imageUrl,
@@ -222,7 +230,6 @@ class _InventoryManualAddPageState
       storeName: AppLocalizations.of(context)!.inventoryManualAddStoreName,
       origin: InventoryItemOrigin.manualAdd,
       quantity: 1,
-      initialQuantity: 1,
       brand: brand,
       barcode: scannedBarcode,
       imageUrl: imageUrl,
@@ -260,7 +267,6 @@ class _InventoryManualAddPageState
       servingQuantityUnit:
           item.servingQuantityUnit ?? selectedProduct?.servingQuantityUnit,
       nutrition: item.nutrition,
-      status: GlobalFoodItemStatus.active,
     );
   }
 

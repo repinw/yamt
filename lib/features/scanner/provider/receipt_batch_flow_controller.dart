@@ -12,7 +12,7 @@ import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 part 'receipt_batch_flow_controller.g.dart';
 
 /// Defines receipt batch flow controller.
-@riverpod
+@Riverpod(dependencies: [receiptReviewResolutionService])
 class ReceiptBatchFlowController extends _$ReceiptBatchFlowController {
   Future<void>? _activeBatchRun;
 

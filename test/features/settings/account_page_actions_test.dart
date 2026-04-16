@@ -85,11 +85,15 @@ Widget _wrap({
   required Stream<User?> authStream,
   required _FakeAccountController controller,
 }) {
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       authStateChangesProvider.overrideWith((ref) => authStream),
       accountControllerProvider.overrideWith(() => controller),
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: const MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

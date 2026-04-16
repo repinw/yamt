@@ -6,9 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/'
     'inventory_calorie_entry_commit_store.dart';
@@ -110,6 +113,10 @@ class _RecordingInventoryItemsController extends InventoryItemsController {
   }
 }
 
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 class _CompleteEatFlowButton extends ConsumerWidget {
   const _CompleteEatFlowButton({
     required this.item,
@@ -225,6 +232,7 @@ Widget routerAppWithContainer({
   );
 }
 
+@Dependencies([InventoryItemsController])
 ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepInventoryAlive(
   ProviderContainer container,
 ) {
@@ -237,6 +245,10 @@ ProviderSubscription<AsyncValue<List<CalorieEntry>>> _keepCaloriesAlive(
   return container.listen(calorieEntriesControllerProvider, (_, _) {});
 }
 
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 void main() {
   testWidgets(
     'complete opens calorie editor with loggedAt and mealType prefilled',

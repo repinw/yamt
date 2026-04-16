@@ -11,6 +11,8 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/'
     'inventory_calorie_entry_commit_store.dart';
@@ -34,6 +36,8 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -364,7 +368,14 @@ ShoppingListItem _shoppingItem(
   );
 }
 
-@Dependencies([InventoryItemsController, PreparedMealsController])
+@Dependencies([
+  inventoryItemRepository,
+  InventoryItemsController,
+  PreparedMealsController,
+  ReceiptCaptureFlowController,
+  ReceiptBatchFlowController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 Widget _buildTestApp(
   InventoryItemRepository repository, {
   List<Override> overrides = const <Override>[],
@@ -435,7 +446,14 @@ Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-@Dependencies([InventoryItemsController, PreparedMealsController])
+@Dependencies([
+  inventoryItemRepository,
+  InventoryItemsController,
+  PreparedMealsController,
+  ReceiptCaptureFlowController,
+  ReceiptBatchFlowController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 void main() {
   testWidgets('shows empty state when repository has no items', (tester) async {
     final repository = _FakeFridgeItemRepository(

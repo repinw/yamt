@@ -598,8 +598,6 @@ class InventoryReceiptManualProductController
       saltText: formatManualProductDouble(nutrition?.per100Salt),
       showPolyunsaturatedFatField: nutrition?.per100PolyunsaturatedFat != null,
       showFiberField: nutrition?.per100Fiber != null,
-      isAddingOptionalNutrition: false,
-      optionalNutritionValueText: '',
       selectedProduct: config.selectedProduct == null
           ? null
           : InventoryReceiptManualProductSelection.fromSearchResult(
@@ -991,7 +989,6 @@ class InventoryReceiptManualProductController
           .search(
             query: query,
             store: _resolvedSearchStore(),
-            brand: null,
             weight: _resolvedSearchWeight(),
             limit: _searchResultLimit,
           );
@@ -1096,14 +1093,9 @@ class InventoryReceiptManualProductController
       name: profile.name,
       brand: profile.brand,
       per100Kcal: profile.per100Kcal,
-      per100SaturatedFat: null,
-      per100PolyunsaturatedFat: null,
       per100Protein: profile.per100Protein,
       per100Carbs: profile.per100Carbs,
-      per100Sugar: null,
-      per100Fiber: null,
       per100Fat: profile.per100Fat,
-      per100Salt: null,
     );
   }
 

@@ -100,7 +100,7 @@ InventoryItem _pieceItem() {
       qualityStatus: GlobalFoodNutritionQualityStatus.verified,
       per100Kcal: 89,
       per100Protein: 1.1,
-      per100Carbs: 23.0,
+      per100Carbs: 23,
       per100Fat: 0.3,
     ),
   );
@@ -121,9 +121,9 @@ InventoryItem _pieceItemWithServingSuggestion() {
     nutrition: const GlobalFoodNutrition(
       qualityStatus: GlobalFoodNutritionQualityStatus.verified,
       per100Kcal: 250,
-      per100Protein: 8.0,
-      per100Carbs: 30.0,
-      per100Fat: 10.0,
+      per100Protein: 8,
+      per100Carbs: 30,
+      per100Fat: 10,
     ),
   );
 }

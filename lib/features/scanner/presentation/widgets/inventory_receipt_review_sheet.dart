@@ -3,9 +3,11 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_match_candidate.dart';
@@ -37,6 +39,7 @@ import 'package:yamt/features/scanner/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Main receipt review content shown inside the full-screen review flow.
+@Dependencies([inventoryItemRepository])
 class InventoryReceiptReviewSheet extends ConsumerStatefulWidget {
   /// The inventory receipt review sheet.
   const InventoryReceiptReviewSheet({
