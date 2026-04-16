@@ -20,6 +20,8 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/provider/'
+    'prepared_meal_selection_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
@@ -414,4 +416,42 @@ void main() {
     expect(find.byType(InventoryActionFab), findsOneWidget);
     expect(find.byType(HomeContextFab), findsNothing);
   });
+
+  testWidgets(
+    'inventory selection chrome compacts on small zoomed layouts',
+    (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 1.8;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await tester.binding.setSurfaceSize(const Size(320, 640));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final repository = FakeCalorieSettingsRepository();
+      addTearDown(repository.dispose);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          settingsRepository: repository,
+          initialLocation: AppRoutes.homeInventory,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(HomePage)),
+      );
+      final selectionController = container.read(
+        preparedMealSelectionControllerProvider.notifier,
+      );
+      selectionController.enterSelection('item-1');
+      selectionController.toggleSelection('item-2');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Cancel'), findsNothing);
+      expect(find.text('Bind meal'), findsNothing);
+      expect(find.text('INVENTORY'), findsNothing);
+      expect(find.byIcon(Icons.close_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.restaurant_menu_rounded), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

@@ -3,6 +3,27 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 
+const _compactHomeChromeWidthBreakpoint = 360.0;
+const _compactHomeChromeTextScaleThreshold = 1.15;
+const _compactBottomNavItemWidth = 88.0;
+
+double _effectiveTextScale(
+  BuildContext context, {
+  double referenceFontSize = 14,
+}) {
+  return MediaQuery.textScalerOf(
+        context,
+      ).scale(referenceFontSize) /
+      referenceFontSize;
+}
+
+/// Whether shared home chrome should switch to its compact layout.
+bool shouldUseCompactHomeChrome(BuildContext context) {
+  final mediaQuery = MediaQuery.of(context);
+  return mediaQuery.size.width < _compactHomeChromeWidthBreakpoint ||
+      _effectiveTextScale(context) > _compactHomeChromeTextScaleThreshold;
+}
+
 /// Tabs shown in the shared home shell.
 enum HomeTabType {
   /// Inventory.
@@ -25,6 +46,7 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     required this.actions,
     super.key,
+    this.compact = false,
     this.titleColor,
     this.titleIcon,
   });
@@ -34,6 +56,9 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   /// The actions.
   final List<Widget> actions;
+
+  /// Whether to use compact spacing for tight layouts.
+  final bool compact;
 
   /// The title color.
   final Color? titleColor;
@@ -67,7 +92,9 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
             child: SizedBox(
               height: preferredSize.height,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                padding: EdgeInsets.symmetric(
+                  horizontal: compact ? AppSpacing.lg : AppSpacing.xl,
+                ),
                 child: Row(
                   children: [
                     Expanded(
@@ -82,18 +109,25 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
                             const SizedBox(width: AppSpacing.sm),
                           ],
                           Expanded(
-                            child: Text(
-                              title,
-                              style: Theme.of(context).textTheme.headlineSmall
-                                  ?.copyWith(
-                                    color: titleColor ?? colors.onSurface,
-                                    fontWeight: FontWeight.w800,
-                                  ),
+                            child: MediaQuery.withClampedTextScaling(
+                              maxScaleFactor: 1.15,
+                              child: Text(
+                                title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.headlineSmall
+                                    ?.copyWith(
+                                      color: titleColor ?? colors.onSurface,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
+                    if (actions.isNotEmpty)
+                      SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
                     ...actions,
                   ],
                 ),
@@ -148,15 +182,17 @@ class HomeBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final compactChrome = shouldUseCompactHomeChrome(context);
     final radius = BorderRadius.circular(AppInventoryEditorial.cardRadius);
+    final horizontalInset = compactChrome ? AppSpacing.lg : AppSpacing.xl;
 
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
+        padding: EdgeInsets.fromLTRB(
+          horizontalInset,
           0,
-          AppSpacing.xl,
+          horizontalInset,
           AppSpacing.xl,
         ),
         child: DecoratedBox(
@@ -187,25 +223,39 @@ class HomeBottomNavBar extends StatelessWidget {
                     ).withValues(alpha: 0.65),
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.sm,
-                    AppSpacing.sm,
-                    AppSpacing.sm,
-                    AppSpacing.md,
-                  ),
-                  child: Row(
-                    children: [
-                      for (final entry in entries)
-                        Expanded(
-                          child: _HomeBottomNavItemButton(
-                            item: entry.item,
-                            isSelected: entry.isSelected,
-                            onTap: entry.onTap,
-                          ),
-                        ),
-                    ],
-                  ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final navHorizontalPadding = compactChrome
+                        ? AppSpacing.xs
+                        : AppSpacing.sm;
+                    final showLabels =
+                        !compactChrome &&
+                        (constraints.maxWidth - (navHorizontalPadding * 2)) /
+                                entries.length >=
+                            _compactBottomNavItemWidth;
+
+                    return Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        navHorizontalPadding,
+                        compactChrome ? AppSpacing.xs : AppSpacing.sm,
+                        navHorizontalPadding,
+                        compactChrome ? AppSpacing.sm : AppSpacing.md,
+                      ),
+                      child: Row(
+                        children: [
+                          for (final entry in entries)
+                            Expanded(
+                              child: _HomeBottomNavItemButton(
+                                item: entry.item,
+                                isSelected: entry.isSelected,
+                                onTap: entry.onTap,
+                                showLabel: showLabels,
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -221,11 +271,13 @@ class _HomeBottomNavItemButton extends StatelessWidget {
     required this.item,
     required this.isSelected,
     required this.onTap,
+    required this.showLabel,
   });
 
   final HomeNavItem item;
   final bool isSelected;
   final VoidCallback onTap;
+  final bool showLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -234,37 +286,51 @@ class _HomeBottomNavItemButton extends StatelessWidget {
         ? colors.primary
         : colors.onSurfaceVariant;
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xs,
-          vertical: AppSpacing.sm,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected ? colors.primaryContainer : Colors.transparent,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(item.icon, color: foregroundColor, size: 22),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              item.label.toUpperCase(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: item.label,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+          padding: EdgeInsets.symmetric(
+            horizontal: showLabel ? AppSpacing.xs : AppSpacing.xxs,
+            vertical: showLabel ? AppSpacing.sm : AppSpacing.md,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected ? colors.primaryContainer : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                item.icon,
                 color: foregroundColor,
-                fontSize: 10,
-                letterSpacing: 1,
+                size: showLabel ? 22 : 24,
               ),
-            ),
-          ],
+              if (showLabel) ...[
+                const SizedBox(height: AppSpacing.xs),
+                MediaQuery.withClampedTextScaling(
+                  maxScaleFactor: 1.0,
+                  child: Text(
+                    item.label.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: foregroundColor,
+                      fontSize: 10,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
