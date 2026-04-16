@@ -8,17 +8,20 @@ part of 'health_connection_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines health connection controller.
 
 @ProviderFor(HealthConnectionController)
 final healthConnectionControllerProvider =
     HealthConnectionControllerProvider._();
 
+/// Defines health connection controller.
 final class HealthConnectionControllerProvider
     extends
         $AsyncNotifierProvider<
           HealthConnectionController,
           HealthConnectionStatus
         > {
+  /// Defines health connection controller.
   HealthConnectionControllerProvider._()
     : super(
         from: null,
@@ -40,6 +43,8 @@ final class HealthConnectionControllerProvider
 
 String _$healthConnectionControllerHash() =>
     r'a1d22ffc7d8a25e706891d4f472adb449b68d202';
+
+/// Defines health connection controller.
 
 abstract class _$HealthConnectionController
     extends $AsyncNotifier<HealthConnectionStatus> {

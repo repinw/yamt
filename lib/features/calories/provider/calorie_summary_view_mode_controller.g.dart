@@ -8,17 +8,20 @@ part of 'calorie_summary_view_mode_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines calorie summary view mode controller.
 
 @ProviderFor(CalorieSummaryViewModeController)
 final calorieSummaryViewModeControllerProvider =
     CalorieSummaryViewModeControllerProvider._();
 
+/// Defines calorie summary view mode controller.
 final class CalorieSummaryViewModeControllerProvider
     extends
         $NotifierProvider<
           CalorieSummaryViewModeController,
           CalorieSummaryViewMode
         > {
+  /// Defines calorie summary view mode controller.
   CalorieSummaryViewModeControllerProvider._()
     : super(
         from: null,
@@ -49,6 +52,8 @@ final class CalorieSummaryViewModeControllerProvider
 
 String _$calorieSummaryViewModeControllerHash() =>
     r'9bf062ad39c3e9c01484e124ad8a6db15d8edf65';
+
+/// Defines calorie summary view mode controller.
 
 abstract class _$CalorieSummaryViewModeController
     extends $Notifier<CalorieSummaryViewMode> {

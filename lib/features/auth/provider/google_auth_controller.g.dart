@@ -8,9 +8,12 @@ part of 'google_auth_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Google sign in.
 
 @ProviderFor(googleSignIn)
 final googleSignInProvider = GoogleSignInProvider._();
+
+/// Google sign in.
 
 final class GoogleSignInProvider
     extends
@@ -20,6 +23,7 @@ final class GoogleSignInProvider
           FutureOr<GoogleSignIn>
         >
     with $FutureModifier<GoogleSignIn>, $FutureProvider<GoogleSignIn> {
+  /// Google sign in.
   GoogleSignInProvider._()
     : super(
         from: null,
@@ -48,11 +52,15 @@ final class GoogleSignInProvider
 
 String _$googleSignInHash() => r'7cbaad2e0aeb6e69e23d7ccec0a53197f17deff4';
 
+/// Defines google auth controller.
+
 @ProviderFor(GoogleAuthController)
 final googleAuthControllerProvider = GoogleAuthControllerProvider._();
 
+/// Defines google auth controller.
 final class GoogleAuthControllerProvider
     extends $AsyncNotifierProvider<GoogleAuthController, void> {
+  /// Defines google auth controller.
   GoogleAuthControllerProvider._()
     : super(
         from: null,
@@ -74,6 +82,8 @@ final class GoogleAuthControllerProvider
 
 String _$googleAuthControllerHash() =>
     r'4d423d58778235958f0c438128d8ac39ab3b647e';
+
+/// Defines google auth controller.
 
 abstract class _$GoogleAuthController extends $AsyncNotifier<void> {
   FutureOr<void> build();

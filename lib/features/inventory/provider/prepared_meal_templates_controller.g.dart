@@ -8,17 +8,20 @@ part of 'prepared_meal_templates_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines prepared meal templates controller.
 
 @ProviderFor(PreparedMealTemplatesController)
 final preparedMealTemplatesControllerProvider =
     PreparedMealTemplatesControllerProvider._();
 
+/// Defines prepared meal templates controller.
 final class PreparedMealTemplatesControllerProvider
     extends
         $AsyncNotifierProvider<
           PreparedMealTemplatesController,
           List<PreparedMeal>
         > {
+  /// Defines prepared meal templates controller.
   PreparedMealTemplatesControllerProvider._()
     : super(
         from: null,
@@ -40,6 +43,8 @@ final class PreparedMealTemplatesControllerProvider
 
 String _$preparedMealTemplatesControllerHash() =>
     r'fd8548fb54949cf4125fec74fa500bc0d7777f28';
+
+/// Defines prepared meal templates controller.
 
 abstract class _$PreparedMealTemplatesController
     extends $AsyncNotifier<List<PreparedMeal>> {

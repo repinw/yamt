@@ -8,13 +8,17 @@ part of 'app_preferences.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Provides app preference store singleton.
 
 @ProviderFor(appPreferences)
 final appPreferencesProvider = AppPreferencesProvider._();
 
+/// Provides app preference store singleton.
+
 final class AppPreferencesProvider
     extends $FunctionalProvider<AppPreferences, AppPreferences, AppPreferences>
     with $Provider<AppPreferences> {
+  /// Provides app preference store singleton.
   AppPreferencesProvider._()
     : super(
         from: null,

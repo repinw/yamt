@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
@@ -28,10 +29,11 @@ import 'package:yamt/features/inventory/provider/'
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-const _deleteUndoSnackBarDuration = Duration(seconds: 4);
+const _deleteUndoSnackBarDuration = Duration(seconds: 5);
 const _preparedMealImageAssetUuid = Uuid();
 
 /// Defines inventory page.
+@Dependencies([InventoryItemsController, PreparedMealsController])
 class InventoryPage extends ConsumerStatefulWidget {
   /// The inventory page.
   const InventoryPage({super.key, this.expandedPreparedMealId});
@@ -46,13 +48,14 @@ class InventoryPage extends ConsumerStatefulWidget {
 class _InventoryPageState extends ConsumerState<InventoryPage> {
   @override
   Widget build(BuildContext context) {
-    ref.listen(inventoryItemsControllerProvider, _logLoadErrorOnce);
-    ref.listen(
-      preparedMealSelectionControllerProvider.select(
-        (state) => state.bindRequestToken,
-      ),
-      _onCreatePreparedMealRequested,
-    );
+    ref
+      ..listen(inventoryItemsControllerProvider, _logLoadErrorOnce)
+      ..listen(
+        preparedMealSelectionControllerProvider.select(
+          (state) => state.bindRequestToken,
+        ),
+        _onCreatePreparedMealRequested,
+      );
 
     final l10n = AppLocalizations.of(context)!;
     final controller = ref.read(inventoryItemsControllerProvider.notifier);
@@ -95,8 +98,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         request: request,
         itemsSnapshot: items,
       ),
-      onThrowAwayItem: (itemId, amount, reason) =>
-          controller.throwAwayItem(itemId, amount, reason),
+      onThrowAwayItem: controller.throwAwayItem,
       onEatPreparedMeal:
           ({
             required mealId,
@@ -179,15 +181,15 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       return result.isSuccess;
     }
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          AppLocalizations.of(context)!.preparedMealTemplateSavedMessage,
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.preparedMealTemplateSavedMessage,
+          ),
         ),
-      ),
-    );
+      );
     return true;
   }
 
@@ -220,13 +222,15 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       return saved;
     }
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.preparedMealUpdatedMessage),
-      ),
-    );
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.preparedMealUpdatedMessage,
+          ),
+        ),
+      );
     return true;
   }
 
@@ -242,21 +246,21 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       return deleted;
     }
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        duration: _deleteUndoSnackBarDuration,
-        persist: false,
-        content: Text(l10n.inventoryItemDeletedMessage),
-        action: SnackBarAction(
-          label: l10n.commonUndoAction,
-          onPressed: () {
-            unawaited(_undoDelete(context: context, ref: ref));
-          },
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          duration: _deleteUndoSnackBarDuration,
+          persist: false,
+          content: Text(l10n.inventoryItemDeletedMessage),
+          action: SnackBarAction(
+            label: l10n.commonUndoAction,
+            onPressed: () {
+              unawaited(_undoDelete(context: context, ref: ref));
+            },
+          ),
         ),
-      ),
-    );
+      );
     return true;
   }
 
@@ -300,10 +304,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       messenger.hideCurrentSnackBar();
       return;
     }
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(content: Text(l10n.inventoryItemActionFailed)),
-    );
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(l10n.inventoryItemActionFailed)),
+      );
   }
 
   Future<bool> _eatItemWithCalorieBridge({
@@ -335,8 +340,8 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     }
 
     if (!context.mounted) {
-      unawaited(
-        inventoryController.discardPendingConsumption(pendingConsumption.id),
+      await inventoryController.discardPendingConsumption(
+        pendingConsumption.id,
       );
       return false;
     }

@@ -8,13 +8,16 @@ part of 'shopping_list_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines shopping list controller.
 
 @ProviderFor(ShoppingListController)
 final shoppingListControllerProvider = ShoppingListControllerProvider._();
 
+/// Defines shopping list controller.
 final class ShoppingListControllerProvider
     extends
         $AsyncNotifierProvider<ShoppingListController, List<ShoppingListItem>> {
+  /// Defines shopping list controller.
   ShoppingListControllerProvider._()
     : super(
         from: null,
@@ -36,6 +39,8 @@ final class ShoppingListControllerProvider
 
 String _$shoppingListControllerHash() =>
     r'34abc208c47a3dcfb163b06e8d760550382f4bdf';
+
+/// Defines shopping list controller.
 
 abstract class _$ShoppingListController
     extends $AsyncNotifier<List<ShoppingListItem>> {

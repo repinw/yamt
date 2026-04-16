@@ -8,12 +8,15 @@ part of 'theme_mode_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Manages persisted theme mode selection.
 
 @ProviderFor(ThemeModeController)
 final themeModeControllerProvider = ThemeModeControllerProvider._();
 
+/// Manages persisted theme mode selection.
 final class ThemeModeControllerProvider
     extends $NotifierProvider<ThemeModeController, ThemeMode> {
+  /// Manages persisted theme mode selection.
   ThemeModeControllerProvider._()
     : super(
         from: null,
@@ -43,6 +46,8 @@ final class ThemeModeControllerProvider
 
 String _$themeModeControllerHash() =>
     r'9454ebd8108323e24f063252d681335a662d4102';
+
+/// Manages persisted theme mode selection.
 
 abstract class _$ThemeModeController extends $Notifier<ThemeMode> {
   ThemeMode build();

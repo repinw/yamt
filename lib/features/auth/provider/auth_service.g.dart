@@ -8,13 +8,17 @@ part of 'auth_service.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Firebase auth.
 
 @ProviderFor(firebaseAuth)
 final firebaseAuthProvider = FirebaseAuthProvider._();
 
+/// Firebase auth.
+
 final class FirebaseAuthProvider
     extends $FunctionalProvider<FirebaseAuth, FirebaseAuth, FirebaseAuth>
     with $Provider<FirebaseAuth> {
+  /// Firebase auth.
   FirebaseAuthProvider._()
     : super(
         from: null,
@@ -50,12 +54,17 @@ final class FirebaseAuthProvider
 
 String _$firebaseAuthHash() => r'cb440927c3ab863427fd4b052a8ccba4c024c863';
 
+/// Auth state changes.
+
 @ProviderFor(authStateChanges)
 final authStateChangesProvider = AuthStateChangesProvider._();
+
+/// Auth state changes.
 
 final class AuthStateChangesProvider
     extends $FunctionalProvider<AsyncValue<User?>, User?, Stream<User?>>
     with $FutureModifier<User?>, $StreamProvider<User?> {
+  /// Auth state changes.
   AuthStateChangesProvider._()
     : super(
         from: null,
@@ -83,8 +92,12 @@ final class AuthStateChangesProvider
 
 String _$authStateChangesHash() => r'37743559f25b40bb97338dac2346cefb22ab69f0';
 
+/// User profile.
+
 @ProviderFor(userProfile)
 final userProfileProvider = UserProfileProvider._();
+
+/// User profile.
 
 final class UserProfileProvider
     extends
@@ -94,6 +107,7 @@ final class UserProfileProvider
           Stream<UserProfile?>
         >
     with $FutureModifier<UserProfile?>, $StreamProvider<UserProfile?> {
+  /// User profile.
   UserProfileProvider._()
     : super(
         from: null,

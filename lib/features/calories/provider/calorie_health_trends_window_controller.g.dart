@@ -8,13 +8,16 @@ part of 'calorie_health_trends_window_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines calorie health trends window controller.
 
 @ProviderFor(CalorieHealthTrendsWindowController)
 final calorieHealthTrendsWindowControllerProvider =
     CalorieHealthTrendsWindowControllerProvider._();
 
+/// Defines calorie health trends window controller.
 final class CalorieHealthTrendsWindowControllerProvider
     extends $NotifierProvider<CalorieHealthTrendsWindowController, DateTime?> {
+  /// Defines calorie health trends window controller.
   CalorieHealthTrendsWindowControllerProvider._()
     : super(
         from: null,
@@ -46,6 +49,8 @@ final class CalorieHealthTrendsWindowControllerProvider
 
 String _$calorieHealthTrendsWindowControllerHash() =>
     r'5cbaa86d563f01eb0f1f44daa08724b141f61d0a';
+
+/// Defines calorie health trends window controller.
 
 abstract class _$CalorieHealthTrendsWindowController
     extends $Notifier<DateTime?> {

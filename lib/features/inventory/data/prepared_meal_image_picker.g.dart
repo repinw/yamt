@@ -8,9 +8,12 @@ part of 'prepared_meal_image_picker.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Prepared meal image picker.
 
 @ProviderFor(preparedMealImagePicker)
 final preparedMealImagePickerProvider = PreparedMealImagePickerProvider._();
+
+/// Prepared meal image picker.
 
 final class PreparedMealImagePickerProvider
     extends
@@ -20,6 +23,7 @@ final class PreparedMealImagePickerProvider
           PreparedMealImagePicker
         >
     with $Provider<PreparedMealImagePicker> {
+  /// Prepared meal image picker.
   PreparedMealImagePickerProvider._()
     : super(
         from: null,

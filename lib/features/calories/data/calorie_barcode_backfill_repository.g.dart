@@ -8,10 +8,13 @@ part of 'calorie_barcode_backfill_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Calorie barcode backfill repository.
 
 @ProviderFor(calorieBarcodeBackfillRepository)
 final calorieBarcodeBackfillRepositoryProvider =
     CalorieBarcodeBackfillRepositoryProvider._();
+
+/// Calorie barcode backfill repository.
 
 final class CalorieBarcodeBackfillRepositoryProvider
     extends
@@ -21,6 +24,7 @@ final class CalorieBarcodeBackfillRepositoryProvider
           CalorieBarcodeBackfillRepositoryContract
         >
     with $Provider<CalorieBarcodeBackfillRepositoryContract> {
+  /// Calorie barcode backfill repository.
   CalorieBarcodeBackfillRepositoryProvider._()
     : super(
         from: null,

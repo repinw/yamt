@@ -8,9 +8,12 @@ part of 'firebase_firestore_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Returns Firestore instance unless session shutdown is already in progress.
 
 @ProviderFor(firebaseFirestore)
 final firebaseFirestoreProvider = FirebaseFirestoreProvider._();
+
+/// Returns Firestore instance unless session shutdown is already in progress.
 
 final class FirebaseFirestoreProvider
     extends
@@ -20,6 +23,7 @@ final class FirebaseFirestoreProvider
           FirebaseFirestore?
         >
     with $Provider<FirebaseFirestore?> {
+  /// Returns Firestore instance unless session shutdown is already in progress.
   FirebaseFirestoreProvider._()
     : super(
         from: null,
@@ -54,4 +58,4 @@ final class FirebaseFirestoreProvider
   }
 }
 
-String _$firebaseFirestoreHash() => r'9172f34eb659c81a799e3f84e8d60b39e74f427c';
+String _$firebaseFirestoreHash() => r'1e78d49954928ea72b527874e079229b28a4bb18';

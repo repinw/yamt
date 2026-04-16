@@ -8,9 +8,12 @@ part of 'shopping_list_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Shopping list repository.
 
 @ProviderFor(shoppingListRepository)
 final shoppingListRepositoryProvider = ShoppingListRepositoryProvider._();
+
+/// Shopping list repository.
 
 final class ShoppingListRepositoryProvider
     extends
@@ -20,6 +23,7 @@ final class ShoppingListRepositoryProvider
           ShoppingListRepository
         >
     with $Provider<ShoppingListRepository> {
+  /// Shopping list repository.
   ShoppingListRepositoryProvider._()
     : super(
         from: null,

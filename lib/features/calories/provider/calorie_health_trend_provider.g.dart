@@ -8,10 +8,13 @@ part of 'calorie_health_trend_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Calorie health trend snapshot.
 
 @ProviderFor(calorieHealthTrendSnapshot)
 final calorieHealthTrendSnapshotProvider =
     CalorieHealthTrendSnapshotProvider._();
+
+/// Calorie health trend snapshot.
 
 final class CalorieHealthTrendSnapshotProvider
     extends
@@ -23,6 +26,7 @@ final class CalorieHealthTrendSnapshotProvider
     with
         $FutureModifier<CalorieHealthTrendSnapshot>,
         $FutureProvider<CalorieHealthTrendSnapshot> {
+  /// Calorie health trend snapshot.
   CalorieHealthTrendSnapshotProvider._()
     : super(
         from: null,

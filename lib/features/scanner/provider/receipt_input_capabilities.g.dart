@@ -8,13 +8,17 @@ part of 'receipt_input_capabilities.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Receipt camera supported.
 
 @ProviderFor(receiptCameraSupported)
 final receiptCameraSupportedProvider = ReceiptCameraSupportedProvider._();
 
+/// Receipt camera supported.
+
 final class ReceiptCameraSupportedProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
+  /// Receipt camera supported.
   ReceiptCameraSupportedProvider._()
     : super(
         from: null,

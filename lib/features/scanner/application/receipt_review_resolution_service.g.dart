@@ -8,10 +8,13 @@ part of 'receipt_review_resolution_service.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Receipt review resolution service.
 
 @ProviderFor(receiptReviewResolutionService)
 final receiptReviewResolutionServiceProvider =
     ReceiptReviewResolutionServiceProvider._();
+
+/// Receipt review resolution service.
 
 final class ReceiptReviewResolutionServiceProvider
     extends
@@ -21,6 +24,7 @@ final class ReceiptReviewResolutionServiceProvider
           ReceiptReviewResolutionService
         >
     with $Provider<ReceiptReviewResolutionService> {
+  /// Receipt review resolution service.
   ReceiptReviewResolutionServiceProvider._()
     : super(
         from: null,
@@ -28,9 +32,13 @@ final class ReceiptReviewResolutionServiceProvider
         retry: null,
         name: r'receiptReviewResolutionServiceProvider',
         isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
+        dependencies: <ProviderOrFamily>[inventoryItemRepositoryProvider],
+        $allTransitiveDependencies: <ProviderOrFamily>[
+          ReceiptReviewResolutionServiceProvider.$allTransitiveDependencies0,
+        ],
       );
+
+  static final $allTransitiveDependencies0 = inventoryItemRepositoryProvider;
 
   @override
   String debugGetCreateSourceHash() => _$receiptReviewResolutionServiceHash();
@@ -58,4 +66,4 @@ final class ReceiptReviewResolutionServiceProvider
 }
 
 String _$receiptReviewResolutionServiceHash() =>
-    r'e7d84c2804bc2fe1dce0915b1e9abb4aa85cade6';
+    r'0edc863d99b9714ad7a4fab79e9baaba9e5e270d';

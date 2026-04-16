@@ -8,9 +8,12 @@ part of 'health_connection_service_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Health connection service.
 
 @ProviderFor(healthConnectionService)
 final healthConnectionServiceProvider = HealthConnectionServiceProvider._();
+
+/// Health connection service.
 
 final class HealthConnectionServiceProvider
     extends
@@ -20,6 +23,7 @@ final class HealthConnectionServiceProvider
           HealthConnectionService
         >
     with $Provider<HealthConnectionService> {
+  /// Health connection service.
   HealthConnectionServiceProvider._()
     : super(
         from: null,

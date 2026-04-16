@@ -4,6 +4,7 @@ import 'dart:developer' show log;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
@@ -28,6 +29,7 @@ const _manualProductRecentItemLimit = 6;
 const _manualProductPageLogName = 'InventoryReceiptManualProductPage';
 
 /// Defines inventory receipt manual product page.
+@Dependencies([inventoryItemRepository])
 class InventoryReceiptManualProductPage extends StatelessWidget {
   /// The inventory receipt manual product page.
   const InventoryReceiptManualProductPage({
@@ -127,6 +129,7 @@ bool _shouldOpenEditorImmediately({
       item.nutrition != null;
 }
 
+@Dependencies([inventoryItemRepository])
 class _InventoryReceiptManualProductLauncherPage
     extends ConsumerStatefulWidget {
   const _InventoryReceiptManualProductLauncherPage({

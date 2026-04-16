@@ -8,13 +8,17 @@ part of 'auth_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Auth repository.
 
 @ProviderFor(authRepository)
 final authRepositoryProvider = AuthRepositoryProvider._();
 
+/// Auth repository.
+
 final class AuthRepositoryProvider
     extends $FunctionalProvider<AuthRepository, AuthRepository, AuthRepository>
     with $Provider<AuthRepository> {
+  /// Auth repository.
   AuthRepositoryProvider._()
     : super(
         from: null,

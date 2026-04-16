@@ -8,12 +8,15 @@ part of 'calorie_goal_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines calorie goal controller.
 
 @ProviderFor(CalorieGoalController)
 final calorieGoalControllerProvider = CalorieGoalControllerProvider._();
 
+/// Defines calorie goal controller.
 final class CalorieGoalControllerProvider
     extends $AsyncNotifierProvider<CalorieGoalController, CalorieGoalSettings> {
+  /// Defines calorie goal controller.
   CalorieGoalControllerProvider._()
     : super(
         from: null,
@@ -35,6 +38,8 @@ final class CalorieGoalControllerProvider
 
 String _$calorieGoalControllerHash() =>
     r'd799a44351460cd33de9be40214e631202d1d0b3';
+
+/// Defines calorie goal controller.
 
 abstract class _$CalorieGoalController
     extends $AsyncNotifier<CalorieGoalSettings> {

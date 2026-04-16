@@ -6,10 +6,12 @@ import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 
-import 'firestore_inventory_item_repository.dart';
-import 'inventory_item_repository_contract.dart';
-import 'inventory_item_store.dart';
-import 'inventory_user_session.dart';
+import 'package:yamt/features/inventory/data/'
+    'firestore_inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_item_repository_contract.dart';
+import 'package:yamt/features/inventory/data/inventory_item_store.dart';
+import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 
 export 'firestore_inventory_item_repository.dart';
 export 'inventory_item_repository_contract.dart';
@@ -19,7 +21,7 @@ export 'inventory_user_session.dart';
 part 'inventory_item_repository.g.dart';
 
 /// Inventory item repository.
-@riverpod
+@Riverpod(dependencies: [])
 InventoryItemRepository inventoryItemRepository(Ref ref) {
   ref.watch(authStateChangesProvider);
   final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);

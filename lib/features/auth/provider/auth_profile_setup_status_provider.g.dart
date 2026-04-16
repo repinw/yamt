@@ -8,13 +8,17 @@ part of 'auth_profile_setup_status_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Auth profile setup completed.
 
 @ProviderFor(authProfileSetupCompleted)
 final authProfileSetupCompletedProvider = AuthProfileSetupCompletedProvider._();
 
+/// Auth profile setup completed.
+
 final class AuthProfileSetupCompletedProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
+  /// Auth profile setup completed.
   AuthProfileSetupCompletedProvider._()
     : super(
         from: null,

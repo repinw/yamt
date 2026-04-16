@@ -8,17 +8,20 @@ part of 'inventory_receipt_manual_product_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines inventory receipt manual product controller.
 
 @ProviderFor(InventoryReceiptManualProductController)
 final inventoryReceiptManualProductControllerProvider =
     InventoryReceiptManualProductControllerFamily._();
 
+/// Defines inventory receipt manual product controller.
 final class InventoryReceiptManualProductControllerProvider
     extends
         $NotifierProvider<
           InventoryReceiptManualProductController,
           InventoryReceiptManualProductState
         > {
+  /// Defines inventory receipt manual product controller.
   InventoryReceiptManualProductControllerProvider._({
     required InventoryReceiptManualProductControllerFamily super.from,
     required InventoryReceiptManualProductConfig super.argument,
@@ -69,7 +72,9 @@ final class InventoryReceiptManualProductControllerProvider
 }
 
 String _$inventoryReceiptManualProductControllerHash() =>
-    r'bddc1382a0cf83f37ab65967edf26f9e4bd56b19';
+    r'5501650933ec608a76c98c7b713c702694c112c7';
+
+/// Defines inventory receipt manual product controller.
 
 final class InventoryReceiptManualProductControllerFamily extends $Family
     with
@@ -89,6 +94,8 @@ final class InventoryReceiptManualProductControllerFamily extends $Family
         isAutoDispose: true,
       );
 
+  /// Defines inventory receipt manual product controller.
+
   InventoryReceiptManualProductControllerProvider call(
     InventoryReceiptManualProductConfig config,
   ) => InventoryReceiptManualProductControllerProvider._(
@@ -99,6 +106,8 @@ final class InventoryReceiptManualProductControllerFamily extends $Family
   @override
   String toString() => r'inventoryReceiptManualProductControllerProvider';
 }
+
+/// Defines inventory receipt manual product controller.
 
 abstract class _$InventoryReceiptManualProductController
     extends $Notifier<InventoryReceiptManualProductState> {

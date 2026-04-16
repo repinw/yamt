@@ -8,14 +8,18 @@ part of 'calorie_goal_onboarding_completed_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Calorie goal onboarding completed.
 
 @ProviderFor(calorieGoalOnboardingCompleted)
 final calorieGoalOnboardingCompletedProvider =
     CalorieGoalOnboardingCompletedProvider._();
 
+/// Calorie goal onboarding completed.
+
 final class CalorieGoalOnboardingCompletedProvider
     extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
     with $FutureModifier<bool>, $FutureProvider<bool> {
+  /// Calorie goal onboarding completed.
   CalorieGoalOnboardingCompletedProvider._()
     : super(
         from: null,

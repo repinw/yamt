@@ -8,14 +8,17 @@ part of 'calorie_weekly_checkin_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines calorie weekly check in controller.
 
 @ProviderFor(CalorieWeeklyCheckInController)
 final calorieWeeklyCheckInControllerProvider =
     CalorieWeeklyCheckInControllerProvider._();
 
+/// Defines calorie weekly check in controller.
 final class CalorieWeeklyCheckInControllerProvider
     extends
         $NotifierProvider<CalorieWeeklyCheckInController, AsyncValue<void>> {
+  /// Defines calorie weekly check in controller.
   CalorieWeeklyCheckInControllerProvider._()
     : super(
         from: null,
@@ -45,6 +48,8 @@ final class CalorieWeeklyCheckInControllerProvider
 
 String _$calorieWeeklyCheckInControllerHash() =>
     r'69eb57a2b48a781a4566cf4eaf7a941152e203e0';
+
+/// Defines calorie weekly check in controller.
 
 abstract class _$CalorieWeeklyCheckInController
     extends $Notifier<AsyncValue<void>> {

@@ -8,12 +8,15 @@ part of 'guest_auth_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines guest auth controller.
 
 @ProviderFor(GuestAuthController)
 final guestAuthControllerProvider = GuestAuthControllerProvider._();
 
+/// Defines guest auth controller.
 final class GuestAuthControllerProvider
     extends $AsyncNotifierProvider<GuestAuthController, void> {
+  /// Defines guest auth controller.
   GuestAuthControllerProvider._()
     : super(
         from: null,
@@ -35,6 +38,8 @@ final class GuestAuthControllerProvider
 
 String _$guestAuthControllerHash() =>
     r'97708a7dd87340de256bd6de496ad09dcc850341';
+
+/// Defines guest auth controller.
 
 abstract class _$GuestAuthController extends $AsyncNotifier<void> {
   FutureOr<void> build();

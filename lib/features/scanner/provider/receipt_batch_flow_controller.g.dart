@@ -8,14 +8,17 @@ part of 'receipt_batch_flow_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines receipt batch flow controller.
 
 @ProviderFor(ReceiptBatchFlowController)
 final receiptBatchFlowControllerProvider =
     ReceiptBatchFlowControllerProvider._();
 
+/// Defines receipt batch flow controller.
 final class ReceiptBatchFlowControllerProvider
     extends
         $NotifierProvider<ReceiptBatchFlowController, ReceiptBatchFlowState> {
+  /// Defines receipt batch flow controller.
   ReceiptBatchFlowControllerProvider._()
     : super(
         from: null,
@@ -45,6 +48,8 @@ final class ReceiptBatchFlowControllerProvider
 
 String _$receiptBatchFlowControllerHash() =>
     r'64783c693305ea83d8d65231fce19a1414e6ebda';
+
+/// Defines receipt batch flow controller.
 
 abstract class _$ReceiptBatchFlowController
     extends $Notifier<ReceiptBatchFlowState> {

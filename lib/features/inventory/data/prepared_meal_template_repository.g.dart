@@ -8,10 +8,13 @@ part of 'prepared_meal_template_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Prepared meal template repository.
 
 @ProviderFor(preparedMealTemplateRepository)
 final preparedMealTemplateRepositoryProvider =
     PreparedMealTemplateRepositoryProvider._();
+
+/// Prepared meal template repository.
 
 final class PreparedMealTemplateRepositoryProvider
     extends
@@ -21,6 +24,7 @@ final class PreparedMealTemplateRepositoryProvider
           PreparedMealTemplateRepository
         >
     with $Provider<PreparedMealTemplateRepository> {
+  /// Prepared meal template repository.
   PreparedMealTemplateRepositoryProvider._()
     : super(
         from: null,

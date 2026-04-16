@@ -8,17 +8,20 @@ part of 'prepared_meal_selection_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines prepared meal selection controller.
 
 @ProviderFor(PreparedMealSelectionController)
 final preparedMealSelectionControllerProvider =
     PreparedMealSelectionControllerProvider._();
 
+/// Defines prepared meal selection controller.
 final class PreparedMealSelectionControllerProvider
     extends
         $NotifierProvider<
           PreparedMealSelectionController,
           PreparedMealSelectionState
         > {
+  /// Defines prepared meal selection controller.
   PreparedMealSelectionControllerProvider._()
     : super(
         from: null,
@@ -48,6 +51,8 @@ final class PreparedMealSelectionControllerProvider
 
 String _$preparedMealSelectionControllerHash() =>
     r'86a5ab3dba5d12d4c07d7b1185a8ea7e7b7f072c';
+
+/// Defines prepared meal selection controller.
 
 abstract class _$PreparedMealSelectionController
     extends $Notifier<PreparedMealSelectionState> {

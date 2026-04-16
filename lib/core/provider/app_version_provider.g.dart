@@ -8,13 +8,17 @@ part of 'app_version_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Returns app version string with build number when present.
 
 @ProviderFor(appVersion)
 final appVersionProvider = AppVersionProvider._();
 
+/// Returns app version string with build number when present.
+
 final class AppVersionProvider
     extends $FunctionalProvider<AsyncValue<String>, String, FutureOr<String>>
     with $FutureModifier<String>, $FutureProvider<String> {
+  /// Returns app version string with build number when present.
   AppVersionProvider._()
     : super(
         from: null,

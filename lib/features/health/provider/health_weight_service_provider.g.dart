@@ -8,9 +8,12 @@ part of 'health_weight_service_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Health weight service.
 
 @ProviderFor(healthWeightService)
 final healthWeightServiceProvider = HealthWeightServiceProvider._();
+
+/// Health weight service.
 
 final class HealthWeightServiceProvider
     extends
@@ -20,6 +23,7 @@ final class HealthWeightServiceProvider
           HealthWeightService
         >
     with $Provider<HealthWeightService> {
+  /// Health weight service.
   HealthWeightServiceProvider._()
     : super(
         from: null,
