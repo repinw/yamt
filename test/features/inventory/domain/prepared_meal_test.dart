@@ -74,8 +74,6 @@ class _AlwaysAmountProgressInventoryItem extends InventoryItem {
     required super.storeName,
     required super.quantity,
     super.unitPrice = 0.0,
-    super.initialAmount = 0,
-    super.currentAmount = 0,
     super.amountUnit,
   }) : super(
          globalFoodItemId: 'pending-$id',
@@ -95,7 +93,6 @@ void main() {
       entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
       storeName: 'Store',
       quantity: 1,
-      initialQuantity: 1,
       initialAmount: 500,
       currentAmount: 350,
       amountUnit: InventoryAmountUnit.gram,
@@ -243,8 +240,6 @@ void main() {
         storeName: 'Store',
         quantity: 1,
         unitPrice: 2.5,
-        initialAmount: 0,
-        currentAmount: 0,
         amountUnit: InventoryAmountUnit.gram,
       );
       final component = _component(
@@ -261,7 +256,7 @@ void main() {
     final meal = _meal(
       components: <PreparedMealComponent>[
         _component(
-          sourceItem: _sourceItem(id: 'rice', name: 'Rice'),
+          sourceItem: _sourceItem(id: 'rice'),
           usedAmount: 100,
           usedUnit: InventoryAmountUnit.gram,
         ),

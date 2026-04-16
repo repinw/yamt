@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/'
@@ -26,6 +28,7 @@ InventoryItem _item({
   );
 }
 
+@Dependencies([inventoryItemRepository])
 Widget _buildHarness({required InventoryReceiptReviewPageArgs args}) {
   final router = GoRouter(
     routes: <RouteBase>[
@@ -93,6 +96,7 @@ class _ReviewLauncherState extends State<_ReviewLauncher> {
   }
 }
 
+@Dependencies([inventoryItemRepository])
 void main() {
   testWidgets('system back closes review page with false result', (
     tester,

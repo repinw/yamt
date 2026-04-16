@@ -145,7 +145,7 @@ void main() {
 
       final first = CalorieEntryCreatePrefill.fromArgs(
         prefilledProfile: null,
-        inventoryContext: _inventoryContext(pendingConsumptionId: 'pending-1'),
+        inventoryContext: _inventoryContext(),
         preselectedMealType: MealType.lunch,
         preselectedLoggedAt: loggedAt,
       );

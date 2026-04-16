@@ -68,7 +68,7 @@ void main() {
         _inventoryItem(
           id: 'rice',
           name: 'Rice',
-          entryDate: DateTime(2026, 4, 1),
+          entryDate: DateTime(2026, 4),
           storeName: 'REWE',
           quantity: 2,
           initialQuantity: 2,
@@ -79,16 +79,15 @@ void main() {
         _inventoryItem(
           id: 'beans',
           name: 'Beans',
-          entryDate: DateTime(2026, 4, 1),
+          entryDate: DateTime(2026, 4),
           storeName: 'Lidl',
           quantity: 1,
-          initialQuantity: 1,
           unitPrice: 3,
           receiptDate: DateTime(2026, 3, 27),
           receiptId: 'receipt-2',
         ),
       ],
-      startDate: DateTime(2026, 3, 1),
+      startDate: DateTime(2026, 3),
       endDate: DateTime(2026, 3, 31),
     );
 
@@ -107,7 +106,7 @@ void main() {
     final startDate = resolveVisibleSpendingStartDate(
       spendingDates: [DateTime(2026, 3, 21), DateTime(2026, 3, 27)],
       maxVisibleDays: 7,
-      fallbackDate: DateTime(2026, 4, 1),
+      fallbackDate: DateTime(2026, 4),
     );
 
     expect(startDate, DateTime(2026, 3, 21));

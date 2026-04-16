@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
@@ -27,6 +28,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _editorLogName = 'CalorieEntryEditorPage';
 
 /// Defines calorie entry editor page.
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 class CalorieEntryEditorPage extends ConsumerStatefulWidget {
   /// The calorie entry editor page.
   const CalorieEntryEditorPage({

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -19,6 +20,8 @@ import 'package:yamt/features/inventory/provider/inventory_items_controller.dart
 import 'package:yamt/features/inventory/provider/'
     'prepared_meal_selection_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBranchIndex = 0;
@@ -29,6 +32,12 @@ const _settingsBranchIndex = 3;
 enum _DiaryAppBarAction { setGoal, setEatingWindow, shiftGoalStart, calculator }
 
 /// Shell page that hosts the main app tabs and shared home chrome.
+@Dependencies([
+  InventoryItemsController,
+  PreparedMealsController,
+  ReceiptCaptureFlowController,
+  ReceiptBatchFlowController,
+])
 class HomePage extends ConsumerWidget {
   /// The home page.
   const HomePage({super.key, required this.navigationShell});

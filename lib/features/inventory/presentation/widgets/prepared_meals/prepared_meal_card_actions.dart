@@ -1,5 +1,6 @@
 part of 'prepared_meal_card.dart';
 
+@Dependencies([InventoryItemsController])
 mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
   bool get expandedState;
   set expandedState(bool value);
@@ -64,7 +65,6 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
     final result = await showPreparedMealEatDialog(
       context,
       widget.meal,
-      useRootNavigator: false,
     );
     if (!mounted || result == null) {
       return;
@@ -110,7 +110,6 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
       context: context,
       meal: widget.meal,
       title: AppLocalizations.of(context)!.preparedMealThrowAwayTitle,
-      useRootNavigator: false,
     );
     if (!mounted || portions == null) {
       log(
@@ -136,7 +135,6 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
     );
     final reason = await showInventoryDiscardReasonDialog(
       context,
-      useRootNavigator: false,
     );
     if (!mounted || reason == null) {
       log(

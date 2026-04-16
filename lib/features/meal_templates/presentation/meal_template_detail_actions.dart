@@ -34,7 +34,6 @@ Future<void> _selectInventoryAssignments({
     onAssignmentChanged(
       MealTemplateIngredientAssignmentSelection(
         inventoryItemIds: selection,
-        amountConversion: null,
       ),
     );
     return;

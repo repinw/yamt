@@ -92,7 +92,6 @@ void main() {
           baseGoalKcal: 960,
           flexibleGoalKcal: 960,
           pacedGoalKcal: 480,
-          deadZoneKcal: 60,
           rangeKcal: 400,
         ),
       ),
@@ -132,7 +131,6 @@ void main() {
           data: _summaryData(
             goalMode: CalorieGoalMode.maintain,
             deltaKcal: 0,
-            baseGoalKcal: 2000,
             carryoverKcal: -2200,
             flexibleGoalKcal: 0,
             pacedGoalKcal: 0,

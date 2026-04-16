@@ -164,13 +164,17 @@ Widget _buildHarness({
     ],
   );
 
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
       preparedMealRecipeImporterProvider.overrideWithValue(importer),
       if (localImageStore != null)
         localImageStoreProvider.overrideWithValue(localImageStore),
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: MaterialApp.router(
       locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,

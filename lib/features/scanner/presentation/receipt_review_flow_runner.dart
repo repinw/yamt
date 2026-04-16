@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
@@ -13,6 +14,7 @@ import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.d
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines receipt review flow runner.
+@Dependencies([ReceiptCaptureFlowController])
 class ReceiptReviewFlowRunner {
   /// Creates an instance.
   ReceiptReviewFlowRunner({

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/scanner/domain/receipt_capture_flow_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/presentation/receipt_review_flow_runner.dart';
@@ -48,6 +49,7 @@ ReceiptInputSelection _selection() {
   );
 }
 
+@Dependencies([ReceiptCaptureFlowController])
 void main() {
   testWidgets(
     'runSelection closes the loading dialog when the controller throws',

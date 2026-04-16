@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
@@ -148,6 +149,7 @@ InventoryItem _inventoryItem({int quantity = 3}) {
   );
 }
 
+@Dependencies([InventoryItemsController, inventoryBackedCalorieEntrySaveFlow])
 Widget _buildHarness({
   required FakeCalorieLogRepository logRepository,
   required FakeCalorieSettingsRepository settingsRepository,
@@ -209,17 +211,19 @@ Widget _buildHarness({
     return UncontrolledProviderScope(container: container, child: app);
   }
 
-  return ProviderScope(
+  final providerContainer = ProviderContainer(
     overrides: [
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       ...additionalOverrides,
     ],
-    child: app,
   );
+  addTearDown(providerContainer.dispose);
+  return UncontrolledProviderScope(container: providerContainer, child: app);
 }
 
+@Dependencies([InventoryItemsController, inventoryBackedCalorieEntrySaveFlow])
 void main() {
   testWidgets('create flow saves a new entry and pops back', (tester) async {
     final logRepository = FakeCalorieLogRepository();

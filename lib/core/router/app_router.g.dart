@@ -134,9 +134,21 @@ final class AppRouterProvider
         retry: null,
         name: r'appRouterProvider',
         isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
+        dependencies: <ProviderOrFamily>[
+          inventoryItemRepositoryProvider,
+          inventoryItemsControllerProvider,
+          preparedMealsControllerProvider,
+        ],
+        $allTransitiveDependencies: <ProviderOrFamily>[
+          AppRouterProvider.$allTransitiveDependencies0,
+          AppRouterProvider.$allTransitiveDependencies1,
+          AppRouterProvider.$allTransitiveDependencies2,
+        ],
       );
+
+  static final $allTransitiveDependencies0 = inventoryItemRepositoryProvider;
+  static final $allTransitiveDependencies1 = inventoryItemsControllerProvider;
+  static final $allTransitiveDependencies2 = preparedMealsControllerProvider;
 
   @override
   String debugGetCreateSourceHash() => _$appRouterHash();
@@ -160,4 +172,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'c80c1d571d129a1397236f3504b2ccecfb7fed75';
+String _$appRouterHash() => r'cc64cc1cc54226162e38b7ab081f31e2bed9fb73';

@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/inventory_action_sheet_flow.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory action fab.
+@Dependencies([
+  InventoryItemsController,
+  ReceiptCaptureFlowController,
+  ReceiptBatchFlowController,
+])
 class InventoryActionFab extends ConsumerWidget {
   /// The inventory action fab.
   const InventoryActionFab({super.key});

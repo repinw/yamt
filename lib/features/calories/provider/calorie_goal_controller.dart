@@ -55,7 +55,6 @@ class CalorieGoalController extends _$CalorieGoalController {
       changedAt: now,
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: null,
-      source: CalorieGoalSource.manual,
     );
     return _persistSettings(nextSettings);
   }
@@ -140,7 +139,6 @@ class CalorieGoalController extends _$CalorieGoalController {
         changedAt: now,
         dailyKcalGoal: null,
         calculatorProfile: null,
-        source: CalorieGoalSource.manual,
       ),
     );
   }

@@ -4,9 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/theme/app_theme.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -19,6 +21,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -72,6 +75,7 @@ InventoryReceiptGroup _group() {
   ]);
 }
 
+@Dependencies([inventoryItemRepository, InventoryItemsController])
 Widget _buildHarness({
   required ThemeData theme,
   required InventoryReceiptGroup group,
@@ -119,7 +123,7 @@ Widget _buildHarness({
     ],
   );
 
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       barcodeBackfillFeatureFlagsProvider.overrideWithValue(
         const BarcodeBackfillFeatureFlags(
@@ -128,6 +132,10 @@ Widget _buildHarness({
         ),
       ),
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: MaterialApp.router(
       routerConfig: router,
       theme: theme,
@@ -138,6 +146,7 @@ Widget _buildHarness({
   );
 }
 
+@Dependencies([inventoryItemRepository, InventoryItemsController])
 Future<void> _pump(WidgetTester tester, {required ThemeData theme}) async {
   await tester.pumpWidget(_buildHarness(theme: theme, group: _group()));
   await tester.pumpAndSettle();
@@ -148,6 +157,7 @@ Future<void> _toggleExpansion(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+@Dependencies([inventoryItemRepository, InventoryItemsController])
 void main() {
   final lightTheme = AppTheme.light(seedColor: AppColors.seed);
   final darkTheme = AppTheme.dark(seedColor: AppColors.seed);

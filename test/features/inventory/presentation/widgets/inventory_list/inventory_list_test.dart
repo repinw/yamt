@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -12,6 +14,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -33,17 +36,19 @@ InventoryItem _item({
   );
 }
 
+@Dependencies([inventoryItemRepository, InventoryItemsController])
 Widget _buildTestApp({required List<InventoryItem> items}) {
   return _buildInventoryTestApp(items: items);
 }
 
+@Dependencies([inventoryItemRepository, InventoryItemsController])
 Widget _buildInventoryTestApp({
   required List<InventoryItem> items,
   List<PreparedMeal> preparedMeals = const <PreparedMeal>[],
   VoiceSearchService? speechService,
   AppPreferences? preferences,
 }) {
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       if (preferences != null)
         appPreferencesProvider.overrideWithValue(preferences),
@@ -59,6 +64,10 @@ Widget _buildInventoryTestApp({
       if (speechService != null)
         voiceSearchServiceProvider.overrideWithValue(speechService),
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -72,6 +81,7 @@ Widget _buildInventoryTestApp({
   );
 }
 
+@Dependencies([inventoryItemRepository, InventoryItemsController])
 Widget _buildInventoryListBody({
   required List<InventoryItem> items,
   required List<PreparedMeal> preparedMeals,
@@ -127,12 +137,21 @@ PreparedMeal _preparedMeal({
   );
 }
 
+@Dependencies([inventoryItemRepository, InventoryItemsController])
 List<String> _visibleInventoryItemNames(WidgetTester tester) {
   return tester
       .widgetList<InventoryItemRowListEntry>(
         find.byType(InventoryItemRowListEntry),
       )
       .map((entry) => entry.item.name)
+      .toList(growable: false);
+}
+
+@Dependencies([InventoryItemsController])
+List<String> _visiblePreparedMealNames(WidgetTester tester) {
+  return tester
+      .widgetList<PreparedMealCard>(find.byType(PreparedMealCard))
+      .map((card) => card.meal.name)
       .toList(growable: false);
 }
 
@@ -217,6 +236,7 @@ class _MemoryAppPreferences implements AppPreferences {
   }
 }
 
+@Dependencies([inventoryItemRepository, InventoryItemsController])
 class _InventoryListPersistenceHarness extends StatefulWidget {
   const _InventoryListPersistenceHarness({
     required this.items,
@@ -261,6 +281,7 @@ class _InventoryListPersistenceHarnessState
   }
 }
 
+@Dependencies([inventoryItemRepository, InventoryItemsController])
 void main() {
   testWidgets('filter switch updates in sheet and hides fully consumed items', (
     tester,
@@ -587,14 +608,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      List<String> visibleMealNames() {
-        return tester
-            .widgetList<PreparedMealCard>(find.byType(PreparedMealCard))
-            .map((card) => card.meal.name)
-            .toList(growable: false);
-      }
-
-      expect(visibleMealNames(), <String>['New Meal', 'Old Meal']);
+      expect(_visiblePreparedMealNames(tester), <String>[
+        'New Meal',
+        'Old Meal',
+      ]);
       expect(find.text('Added - Descending'), findsOneWidget);
 
       await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
@@ -608,7 +625,10 @@ void main() {
       Navigator.of(tester.element(find.byType(InventoryList))).pop();
       await tester.pumpAndSettle();
 
-      expect(visibleMealNames(), <String>['Old Meal', 'New Meal']);
+      expect(_visiblePreparedMealNames(tester), <String>[
+        'Old Meal',
+        'New Meal',
+      ]);
       expect(find.text('Added - Ascending'), findsOneWidget);
     },
   );
@@ -635,14 +655,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      List<String> visibleMealNames() {
-        return tester
-            .widgetList<PreparedMealCard>(find.byType(PreparedMealCard))
-            .map((card) => card.meal.name)
-            .toList(growable: false);
-      }
-
-      expect(visibleMealNames(), <String>['Old Eaten', 'New Eaten']);
+      expect(
+        _visiblePreparedMealNames(tester),
+        <String>['Old Eaten', 'New Eaten'],
+      );
 
       await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
       await tester.pumpAndSettle();
@@ -655,7 +671,10 @@ void main() {
       Navigator.of(tester.element(find.byType(InventoryList))).pop();
       await tester.pumpAndSettle();
 
-      expect(visibleMealNames(), <String>['New Eaten', 'Old Eaten']);
+      expect(
+        _visiblePreparedMealNames(tester),
+        <String>['New Eaten', 'Old Eaten'],
+      );
 
       await tester.tap(find.byKey(const Key('prepared_meals_filter_button')));
       await tester.pumpAndSettle();
@@ -668,7 +687,10 @@ void main() {
       Navigator.of(tester.element(find.byType(InventoryList))).pop();
       await tester.pumpAndSettle();
 
-      expect(visibleMealNames(), <String>['Old Eaten', 'New Eaten']);
+      expect(
+        _visiblePreparedMealNames(tester),
+        <String>['Old Eaten', 'New Eaten'],
+      );
     },
   );
 
@@ -699,14 +721,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      List<String> visibleMealNames() {
-        return tester
-            .widgetList<PreparedMealCard>(find.byType(PreparedMealCard))
-            .map((card) => card.meal.name)
-            .toList(growable: false);
-      }
-
-      expect(visibleMealNames(), <String>[
+      expect(_visiblePreparedMealNames(tester), <String>[
         'Apple Pie',
         'Banana Bowl',
         'Carrot Soup',
@@ -723,7 +738,7 @@ void main() {
       Navigator.of(tester.element(find.byType(InventoryList))).pop();
       await tester.pumpAndSettle();
 
-      expect(visibleMealNames(), <String>[
+      expect(_visiblePreparedMealNames(tester), <String>[
         'Apple Pie',
         'Banana Bowl',
         'Carrot Soup',
@@ -742,7 +757,7 @@ void main() {
       Navigator.of(tester.element(find.byType(InventoryList))).pop();
       await tester.pumpAndSettle();
 
-      expect(visibleMealNames(), <String>[
+      expect(_visiblePreparedMealNames(tester), <String>[
         'Carrot Soup',
         'Banana Bowl',
         'Apple Pie',
@@ -780,13 +795,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    List<String> visibleMealNames() {
-      return tester
-          .widgetList<PreparedMealCard>(find.byType(PreparedMealCard))
-          .map((card) => card.meal.name)
-          .toList(growable: false);
-    }
-
     await tester.scrollUntilVisible(
       find.byKey(const Key('prepared_meals_filter_button')),
       -300,
@@ -805,7 +813,10 @@ void main() {
     Navigator.of(tester.element(find.byType(InventoryList))).pop();
     await tester.pumpAndSettle();
 
-    expect(visibleMealNames(), <String>['Low Meal', 'Mid Meal', 'High Meal']);
+    expect(
+      _visiblePreparedMealNames(tester),
+      <String>['Low Meal', 'Mid Meal', 'High Meal'],
+    );
 
     await tester.scrollUntilVisible(
       find.byKey(const Key('prepared_meals_filter_button')),
@@ -825,7 +836,10 @@ void main() {
     Navigator.of(tester.element(find.byType(InventoryList))).pop();
     await tester.pumpAndSettle();
 
-    expect(visibleMealNames(), <String>['High Meal', 'Mid Meal', 'Low Meal']);
+    expect(
+      _visiblePreparedMealNames(tester),
+      <String>['High Meal', 'Mid Meal', 'Low Meal'],
+    );
   });
 
   testWidgets('inventory view preferences persist across remount', (

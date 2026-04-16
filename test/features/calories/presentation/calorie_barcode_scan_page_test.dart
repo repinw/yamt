@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_nutrition_ocr_repository.dart';
@@ -21,6 +22,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_barcode_candidate_picker_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../support/fake_calories_repositories.dart';
@@ -124,6 +126,7 @@ class _FakeMobileScannerPlatform extends MobileScannerPlatform {
   }
 }
 
+@Dependencies([InventoryItemsController])
 Widget _buildHarness({
   required FakeCalorieProductLookupRepository lookupRepository,
   required FakeCalorieNutritionOcrRepository ocrRepository,
@@ -151,13 +154,17 @@ Widget _buildHarness({
     ],
   );
 
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       calorieProductLookupRepositoryProvider.overrideWithValue(
         lookupRepository,
       ),
       calorieNutritionOcrRepositoryProvider.overrideWithValue(ocrRepository),
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: MaterialApp.router(
       locale: const Locale('en'),
       routerConfig: router,
@@ -188,6 +195,7 @@ _FakeMobileScannerPlatform _fakeScannerPlatform() {
   return MobileScannerPlatform.instance as _FakeMobileScannerPlatform;
 }
 
+@Dependencies([InventoryItemsController])
 void main() {
   testWidgets('ignores queued barcode callback after page disposal', (
     tester,

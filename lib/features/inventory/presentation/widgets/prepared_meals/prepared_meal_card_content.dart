@@ -60,7 +60,6 @@ class _PreparedMealCardHeader extends StatelessWidget {
             onPressed: canEat ? onEatPressed : null,
           ),
           isExpanded: isExpanded,
-          showExpandIndicator: true,
           expandIndicatorEnabled: enabled,
           expandIndicatorKey: Key(
             'prepared_meal_card_expand_indicator_${meal.id}',
@@ -154,7 +153,6 @@ class _PreparedMealCardExpandedContent extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   PreparedMealComponentAvatar(
                     key: Key(

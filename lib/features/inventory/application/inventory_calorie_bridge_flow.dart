@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/application/'
@@ -17,6 +18,10 @@ import 'package:yamt/features/inventory/presentation/models/'
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 
 /// Defines inventory calorie bridge flow.
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 class InventoryCalorieBridgeFlow {
   const InventoryCalorieBridgeFlow._();
 

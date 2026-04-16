@@ -127,7 +127,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _buildHarness(totalCarbs: 100),
+      _buildHarness(),
     );
     await tester.pumpAndSettle();
 
@@ -205,7 +205,7 @@ Widget _buildHarness({
   double totalProtein = 90,
   double totalFat = 40,
 }) {
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       appPreferencesProvider.overrideWithValue(
         preferences ?? MemoryAppPreferences(),
@@ -214,6 +214,10 @@ Widget _buildHarness({
         (ref) async => balanceData ?? _balanceData(),
       ),
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: MaterialApp(
       locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,

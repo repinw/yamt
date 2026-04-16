@@ -26,9 +26,19 @@ final class ReceiptBatchFlowControllerProvider
         retry: null,
         name: r'receiptBatchFlowControllerProvider',
         isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
+        dependencies: <ProviderOrFamily>[
+          receiptReviewResolutionServiceProvider,
+        ],
+        $allTransitiveDependencies: <ProviderOrFamily>[
+          ReceiptBatchFlowControllerProvider.$allTransitiveDependencies0,
+          ReceiptBatchFlowControllerProvider.$allTransitiveDependencies1,
+        ],
       );
+
+  static final $allTransitiveDependencies0 =
+      receiptReviewResolutionServiceProvider;
+  static final $allTransitiveDependencies1 =
+      ReceiptReviewResolutionServiceProvider.$allTransitiveDependencies0;
 
   @override
   String debugGetCreateSourceHash() => _$receiptBatchFlowControllerHash();
@@ -47,7 +57,7 @@ final class ReceiptBatchFlowControllerProvider
 }
 
 String _$receiptBatchFlowControllerHash() =>
-    r'64783c693305ea83d8d65231fce19a1414e6ebda';
+    r'71c4052c6e20f94fe0c344dde84b6653106d1d6c';
 
 /// Defines receipt batch flow controller.
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -19,6 +20,8 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../calories/support/fake_calories_repositories.dart';
@@ -105,6 +108,12 @@ PreparedMeal _preparedMeal(String id) {
   );
 }
 
+@Dependencies([
+  InventoryItemsController,
+  PreparedMealsController,
+  ReceiptCaptureFlowController,
+  ReceiptBatchFlowController,
+])
 Widget _buildHarness({
   required FakeCalorieSettingsRepository settingsRepository,
   String initialLocation = AppRoutes.homeCalories,
@@ -158,7 +167,7 @@ Widget _buildHarness({
     ],
   );
 
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       inventoryItemRepositoryProvider.overrideWithValue(
@@ -178,6 +187,10 @@ Widget _buildHarness({
           () => preparedMealsController,
         ),
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: MaterialApp.router(
       locale: const Locale('en'),
       routerConfig: router,
@@ -187,6 +200,12 @@ Widget _buildHarness({
   );
 }
 
+@Dependencies([
+  InventoryItemsController,
+  PreparedMealsController,
+  ReceiptCaptureFlowController,
+  ReceiptBatchFlowController,
+])
 void main() {
   testWidgets('diary tab does not show the context fab', (tester) async {
     final repository = FakeCalorieSettingsRepository();

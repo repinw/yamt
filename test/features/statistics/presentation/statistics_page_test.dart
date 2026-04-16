@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
@@ -49,6 +50,7 @@ class _FakeInventoryDiscardEventRepository
   }
 }
 
+@Dependencies([InventoryItemsController])
 void main() {
   testWidgets('switches between spending waste and calories tabs', (
     tester,
@@ -325,13 +327,14 @@ void main() {
   });
 }
 
+@Dependencies([InventoryItemsController])
 Widget _buildHarness({
   required InventoryItemsController inventoryController,
   required PreparedMealsController mealsController,
   required CalorieLogRepositoryContract logRepository,
   required CalorieSettingsRepository settingsRepository,
 }) {
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       inventoryItemsControllerProvider.overrideWith(() => inventoryController),
       preparedMealsControllerProvider.overrideWith(() => mealsController),
@@ -341,6 +344,10 @@ Widget _buildHarness({
         const _FakeInventoryDiscardEventRepository(<InventoryDiscardEvent>[]),
       ),
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: const MaterialApp(
       locale: Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -350,6 +357,7 @@ Widget _buildHarness({
   );
 }
 
+@Dependencies([InventoryItemsController])
 Widget _buildRouterHarness({
   required InventoryItemsController inventoryController,
   required PreparedMealsController mealsController,
@@ -370,7 +378,7 @@ Widget _buildRouterHarness({
     ],
   );
 
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       inventoryItemsControllerProvider.overrideWith(() => inventoryController),
       preparedMealsControllerProvider.overrideWith(() => mealsController),
@@ -380,6 +388,10 @@ Widget _buildRouterHarness({
         const _FakeInventoryDiscardEventRepository(<InventoryDiscardEvent>[]),
       ),
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: MaterialApp.router(
       locale: const Locale('en'),
       routerConfig: router,

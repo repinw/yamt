@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
@@ -37,6 +38,7 @@ part 'widgets/meal_template_detail_hero_section.dart';
 part 'widgets/meal_template_detail_top_bar.dart';
 
 /// Defines meal template detail page.
+@Dependencies([InventoryItemsController, PreparedMealsController])
 class MealTemplateDetailPage extends ConsumerStatefulWidget {
   /// The meal template detail page.
   const MealTemplateDetailPage({super.key, required this.templateId});

@@ -101,7 +101,7 @@ void main() {
 
   test('repository returns empty defaults when no user is signed in', () async {
     final repository = FirestoreCalorieSettingsRepository(
-      session: _FakeCalorieSettingsUserSession(currentUserId: null),
+      session: _FakeCalorieSettingsUserSession(),
       firestore: FakeFirebaseFirestore(),
     );
 

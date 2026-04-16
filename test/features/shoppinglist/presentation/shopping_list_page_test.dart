@@ -121,7 +121,7 @@ void main() {
 
     await tester.pumpWidget(_wrap(container));
     await tester.pumpAndSettle();
-    await _addItem(container, name: 'Bread', quantity: 1);
+    await _addItem(container, name: 'Bread');
     await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Decrease quantity'));
@@ -145,7 +145,7 @@ void main() {
 
     await tester.pumpWidget(_wrap(container));
     await tester.pumpAndSettle();
-    await _addItem(container, name: 'Bread', quantity: 1);
+    await _addItem(container, name: 'Bread');
     await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Decrease quantity'));
@@ -169,7 +169,7 @@ void main() {
 
     await tester.pumpWidget(_wrap(container));
     await tester.pumpAndSettle();
-    await _addItem(container, name: 'Bread', quantity: 1);
+    await _addItem(container, name: 'Bread');
     await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Decrease quantity'));

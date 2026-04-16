@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/scanner/domain/receipt_batch_flow_state.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
@@ -14,6 +15,7 @@ import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.d
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines receipt batch flow runner.
+@Dependencies([ReceiptBatchFlowController, ReceiptCaptureFlowController])
 class ReceiptBatchFlowRunner {
   /// Creates an instance.
   ReceiptBatchFlowRunner({

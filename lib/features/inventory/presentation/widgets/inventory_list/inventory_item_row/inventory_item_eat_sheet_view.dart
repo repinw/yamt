@@ -37,7 +37,6 @@ class _InventoryItemEatSheetView extends StatelessWidget {
                   ),
                 ),
                 child: Column(
-                  mainAxisSize: MainAxisSize.max,
                   children: [
                     Expanded(
                       child: SingleChildScrollView(
@@ -69,10 +68,6 @@ class _InventoryItemEatSheetView extends StatelessWidget {
                                   if (data.nutritionMetrics.isNotEmpty) ...[
                                     const SizedBox(height: AppSpacing.md),
                                     _InventoryItemEatSectionCard(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: AppSpacing.xl,
-                                        vertical: AppSpacing.xl,
-                                      ),
                                       child:
                                           _InventoryItemEatNutritionMetricsRow(
                                             metrics: data.nutritionMetrics,

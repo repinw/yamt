@@ -230,7 +230,6 @@ class _CandidatePickerTile extends StatelessWidget {
             children: [
               InventoryReceiptSelectionThumbnail(
                 imageUrl: item.imageUrl,
-                icon: Icons.inventory_2_outlined,
                 dimension: 44,
               ),
               const SizedBox(width: AppSpacing.md),

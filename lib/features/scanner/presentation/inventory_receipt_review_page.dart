@@ -2,9 +2,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_review_sheet.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 
 /// Route arguments for the full-screen receipt review page.
 class InventoryReceiptReviewPageArgs {
@@ -26,6 +28,7 @@ class InventoryReceiptReviewPageArgs {
 }
 
 /// Full-screen page for reviewing scanned receipt items before saving them.
+@Dependencies([inventoryItemRepository])
 class InventoryReceiptReviewPage extends StatefulWidget {
   /// The inventory receipt review page.
   const InventoryReceiptReviewPage({super.key, required this.args});

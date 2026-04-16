@@ -260,7 +260,7 @@ void main() {
       final resolved = resolveSelectedDiaryDayForVisibleWindowChange(
         previousWindowEnd: DateTime(2026, 3, 7),
         nextWindowEnd: DateTime(2026, 3, 8),
-        selectedDay: DateTime(2026, 3, 1),
+        selectedDay: DateTime(2026, 3),
       );
 
       expect(resolved, DateTime(2026, 3, 2));

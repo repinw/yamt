@@ -563,7 +563,6 @@ class ReceiptReviewResolutionService {
       per100Fat: profile.per100Fat,
       source: profile.source,
       offProductId: profile.offProductId,
-      imageUrl: null,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
     );

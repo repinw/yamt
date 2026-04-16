@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/'
@@ -101,12 +102,17 @@ CalorieEntry _entry() {
   );
 }
 
+@Dependencies([InventoryItemsController])
 ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepInventoryAlive(
   ProviderContainer container,
 ) {
   return container.listen(inventoryItemsControllerProvider, (_, _) {});
 }
 
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 void main() {
   test(
     'save flow commits pending inventory consumption and finalizes state',

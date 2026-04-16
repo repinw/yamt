@@ -322,7 +322,6 @@ class GlobalFoodItemMatcher {
       barcode: query.barcode,
       foodFingerprint: query.foodFingerprint,
       searchTokens: query.searchTokens,
-      limit: _globalFoodCandidateQueryLimit,
     );
     return _localCandidateMatcher.scoreCandidates(localInput, products);
   }

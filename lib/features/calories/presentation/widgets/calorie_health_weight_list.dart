@@ -146,7 +146,6 @@ class _WeightDayRow extends StatelessWidget {
 
     return Row(
       key: CalorieHealthTrendsPageKeys.weightRow(dayKey),
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
           child: Column(

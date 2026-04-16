@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_nutrition_ocr_repository.dart';
@@ -296,6 +297,7 @@ Icon _voiceSearchIcon(WidgetTester tester) {
   );
 }
 
+@Dependencies([inventoryItemRepository])
 void main() {
   testWidgets(
     'selected product preview shows image data and nutrition values',
@@ -462,24 +464,25 @@ void main() {
   });
 
   testWidgets('search as you type applies a selected product', (tester) async {
-    final offRepository =
-        _RecordingOffProductSearchRepository(const <OffProductSearchResult>[
-          OffProductSearchResult(
-            code: '4311596490202',
-            name: 'Booster Absolute Zero',
-            brand: 'Booster',
-            imageUrl: 'https://example.com/booster.png',
-            packageWeight: '330 ml',
-            score: 100,
-            nutrition: GlobalFoodNutrition(
-              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-              per100Kcal: 2,
-              per100Protein: 0.02,
-              per100Carbs: 0.01,
-              per100Fat: 0,
-            ),
+    final offRepository = _RecordingOffProductSearchRepository(
+      const <OffProductSearchResult>[
+        OffProductSearchResult(
+          code: '4311596490202',
+          name: 'Booster Absolute Zero',
+          brand: 'Booster',
+          imageUrl: 'https://example.com/booster.png',
+          packageWeight: '330 ml',
+          score: 100,
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 2,
+            per100Protein: 0.02,
+            per100Carbs: 0.01,
+            per100Fat: 0,
           ),
-        ]);
+        ),
+      ],
+    );
 
     await tester.pumpWidget(
       _wrapPage(
@@ -542,15 +545,16 @@ void main() {
     tester,
   ) async {
     final speechService = _FakeManualProductSpeechService();
-    final offRepository =
-        _RecordingOffProductSearchRepository(const <OffProductSearchResult>[
-          OffProductSearchResult(
-            code: '4310000000001',
-            name: 'Chocolate Milk',
-            brand: 'Brand',
-            score: 100,
-          ),
-        ]);
+    final offRepository = _RecordingOffProductSearchRepository(
+      const <OffProductSearchResult>[
+        OffProductSearchResult(
+          code: '4310000000001',
+          name: 'Chocolate Milk',
+          brand: 'Brand',
+          score: 100,
+        ),
+      ],
+    );
 
     await tester.pumpWidget(
       _wrapPage(
@@ -973,17 +977,18 @@ void main() {
   testWidgets('cancel after selecting product returns to search results', (
     tester,
   ) async {
-    final offRepository =
-        _RecordingOffProductSearchRepository(const <OffProductSearchResult>[
-          OffProductSearchResult(
-            code: '4311596490202',
-            name: 'Booster Absolute Zero',
-            brand: 'Booster',
-            imageUrl: 'https://example.com/booster.png',
-            packageWeight: '330 ml',
-            score: 100,
-          ),
-        ]);
+    final offRepository = _RecordingOffProductSearchRepository(
+      const <OffProductSearchResult>[
+        OffProductSearchResult(
+          code: '4311596490202',
+          name: 'Booster Absolute Zero',
+          brand: 'Booster',
+          imageUrl: 'https://example.com/booster.png',
+          packageWeight: '330 ml',
+          score: 100,
+        ),
+      ],
+    );
 
     await tester.pumpWidget(
       _wrapPage(

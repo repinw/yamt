@@ -29,7 +29,7 @@ void main() {
 
     final validator = AuthValidationFactory.fromContext(
       context,
-    ).password(minLength: 6);
+    ).password();
 
     expect(validator('12345'), isNotNull);
     expect(validator('123456'), isNull);
@@ -43,9 +43,9 @@ void main() {
 
     final validator = AuthValidationFactory.fromContext(context)
         .confirmPassword(
-      passwordController: passwordController,
-      mismatchMessage: 'no match',
-    );
+          passwordController: passwordController,
+          mismatchMessage: 'no match',
+        );
 
     expect(validator('secret12'), 'no match');
     expect(validator('secret123'), isNull);

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -16,6 +17,7 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../../support/fake_local_image_store.dart';
@@ -67,7 +69,6 @@ PreparedMeal _meal() {
     entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
     unitPrice: 3,
     currencyCode: 'EUR',
     initialAmount: 300,
@@ -130,7 +131,6 @@ InventoryItem _inventorySuggestion({required String id, required String name}) {
     entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
     imageUrl: '//images.example.com/sour-cream.jpg',
   );
 }
@@ -141,6 +141,7 @@ Widget _wrapCard(Widget child) {
   );
 }
 
+@Dependencies([InventoryItemsController])
 void main() {
   testWidgets('PreparedMealCard shows expand indicator and rotates it', (
     tester,
@@ -677,7 +678,6 @@ void main() {
         entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
         storeName: 'Store',
         quantity: 1,
-        initialQuantity: 1,
         unitPrice: 3,
         currencyCode: 'USD',
         initialAmount: 300,
@@ -838,7 +838,6 @@ void main() {
       entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
       storeName: 'Store',
       quantity: 1,
-      initialQuantity: 1,
       imageUrl: 'https://images.example.com/egg.jpg',
       nutrition: const GlobalFoodNutrition(
         qualityStatus: GlobalFoodNutritionQualityStatus.verified,

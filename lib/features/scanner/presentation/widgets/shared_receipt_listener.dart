@@ -2,17 +2,27 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/router/app_router.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/scanner/domain/shared_receipt_intent.dart';
 import 'package:yamt/features/scanner/presentation/'
     'shared_receipt_flow_runner.dart';
 import 'package:yamt/features/scanner/provider/'
     'pending_shared_receipt_intent.dart';
+import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
+import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.dart';
 import 'package:yamt/features/scanner/provider/shared_receipt_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines shared receipt listener.
+@Dependencies([
+  appRouter,
+  InventoryItemsController,
+  ReceiptCaptureFlowController,
+  ReceiptBatchFlowController,
+])
 class SharedReceiptListener extends ConsumerStatefulWidget {
   /// The shared receipt listener.
   const SharedReceiptListener({super.key, required this.child});

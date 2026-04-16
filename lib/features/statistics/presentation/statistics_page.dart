@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/statistics/domain/statistics_models.dart';
@@ -18,6 +19,7 @@ import 'package:yamt/features/statistics/provider/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines statistics page.
+@Dependencies([InventoryItemsController])
 class StatisticsPage extends ConsumerStatefulWidget {
   /// The statistics page.
   const StatisticsPage({super.key});

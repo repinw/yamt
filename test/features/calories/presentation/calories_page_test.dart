@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
@@ -155,6 +156,7 @@ List<dynamic> _weeklyCheckInOverrides({
   ];
 }
 
+@Dependencies([calorieEntryDeleteFlow])
 Widget _buildHarness({
   required FakeCalorieLogRepository logRepository,
   required FakeCalorieSettingsRepository settingsRepository,
@@ -191,12 +193,16 @@ Widget _buildHarness({
     ],
   );
 
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       ...overrides,
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: MaterialApp.router(
       locale: const Locale('en'),
       routerConfig: router,
@@ -206,6 +212,7 @@ Widget _buildHarness({
   );
 }
 
+@Dependencies([calorieEntryDeleteFlow])
 Widget _buildHarnessWithContainer({required ProviderContainer container}) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeCalories,
@@ -280,6 +287,7 @@ Future<void> _scrollUntilVisible(WidgetTester tester, Finder finder) async {
   expect(finder, findsOneWidget);
 }
 
+@Dependencies([calorieEntryDeleteFlow])
 void main() {
   testWidgets('shows loading indicator while entries are loading', (
     tester,

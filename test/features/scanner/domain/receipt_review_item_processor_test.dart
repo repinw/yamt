@@ -55,7 +55,7 @@ void main() {
 
   test('merges discount line into previous savable item', () {
     final result = processor.process(<ReceiptReviewItemDraft>[
-      _draft(id: 'item-1', name: 'Gurken', unitPrice: 2.0),
+      _draft(id: 'item-1', name: 'Gurken', unitPrice: 2),
       _draft(id: 'discount', name: 'Rabatt', unitPrice: -0.5, isDeposit: true),
     ]);
 
@@ -65,7 +65,7 @@ void main() {
 
   test('merges consecutive discount rows into same previous item', () {
     final result = processor.process(<ReceiptReviewItemDraft>[
-      _draft(id: 'item-1', name: 'Gurken', unitPrice: 2.0),
+      _draft(id: 'item-1', name: 'Gurken', unitPrice: 2),
       _draft(id: 'discount-1', name: 'Rabatt A', unitPrice: -0.5),
       _draft(id: 'discount-2', name: 'Rabatt B', unitPrice: -0.2),
     ]);
@@ -78,7 +78,7 @@ void main() {
   test('first discount item stays as standalone row', () {
     final result = processor.process(<ReceiptReviewItemDraft>[
       _draft(id: 'discount', name: 'Rabatt', unitPrice: -0.5),
-      _draft(id: 'item-1', name: 'Gurken', unitPrice: 2.0),
+      _draft(id: 'item-1', name: 'Gurken', unitPrice: 2),
     ]);
 
     expect(result.items, hasLength(2));
@@ -88,7 +88,7 @@ void main() {
 
   test('leergut line remains standalone deposit row', () {
     final result = processor.process(<ReceiptReviewItemDraft>[
-      _draft(id: 'item-1', name: 'Gurken', unitPrice: 2.0),
+      _draft(id: 'item-1', name: 'Gurken', unitPrice: 2),
       _draft(id: 'deposit-1', name: 'Leergut', unitPrice: -0.5),
     ]);
 
@@ -98,33 +98,36 @@ void main() {
     expect(result.items.last.item.isDiscount, isFalse);
   });
 
-  test('moves likely non-food rows to bottom but keeps deposit rows in place', () {
-    final result = processor.process(<ReceiptReviewItemDraft>[
-      _draft(id: 'food-1', name: 'Gurken', unitPrice: 2.0),
-      _draft(
-        id: 'non-food-1',
-        name: 'Toilettenpapier',
-        unitPrice: 4.0,
-        isDeposit: true,
-      ),
-      _draft(
-        id: 'deposit-1',
-        name: 'Pfand',
-        unitPrice: 0.25,
-        isDeposit: true,
-      ),
-    ]);
+  test(
+    'moves likely non-food rows to bottom but keeps deposit rows in place',
+    () {
+      final result = processor.process(<ReceiptReviewItemDraft>[
+        _draft(id: 'food-1', name: 'Gurken', unitPrice: 2),
+        _draft(
+          id: 'non-food-1',
+          name: 'Toilettenpapier',
+          unitPrice: 4,
+          isDeposit: true,
+        ),
+        _draft(
+          id: 'deposit-1',
+          name: 'Pfand',
+          unitPrice: 0.25,
+          isDeposit: true,
+        ),
+      ]);
 
-    expect(
-      result.items.map((draft) => draft.item.name).toList(),
-      <String>['Gurken', 'Pfand', 'Toilettenpapier'],
-    );
-  });
+      expect(
+        result.items.map((draft) => draft.item.name).toList(),
+        <String>['Gurken', 'Pfand', 'Toilettenpapier'],
+      );
+    },
+  );
 
   test('keeps regular savable rows in place when not flagged as non-food', () {
     final result = processor.process(<ReceiptReviewItemDraft>[
-      _draft(id: 'food-1', name: 'Gurken', unitPrice: 2.0),
-      _draft(id: 'food-2', name: 'Tomaten', unitPrice: 3.0),
+      _draft(id: 'food-1', name: 'Gurken', unitPrice: 2),
+      _draft(id: 'food-2', name: 'Tomaten', unitPrice: 3),
     ]);
 
     expect(
@@ -139,14 +142,13 @@ void main() {
       _draft(
         id: 'item-1',
         name: 'Gurken',
-        unitPrice: 2.0,
+        unitPrice: 2,
         storeName: '  ',
-        receiptDate: null,
       ),
       _draft(
         id: 'item-2',
         name: 'Tomaten',
-        unitPrice: 3.0,
+        unitPrice: 3,
         storeName: 'My Store',
         receiptDate: date,
       ),

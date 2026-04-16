@@ -84,13 +84,17 @@ Widget _wrapWithRouter(
   );
 
   final preferences = appPreferences ?? MemoryAppPreferences();
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       authRepositoryProvider.overrideWithValue(repository),
       appPreferencesProvider.overrideWithValue(preferences),
       authStateChangesProvider.overrideWith((ref) => const Stream.empty()),
       firebaseAuthProvider.overrideWithValue(auth),
     ],
+  );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(
+    container: container,
     child: MaterialApp.router(
       routerConfig: router,
       localizationsDelegates: AppLocalizations.localizationsDelegates,

@@ -121,7 +121,6 @@ class _InventoryItemPrimaryActionButton extends StatelessWidget {
       disabledForegroundColor: viewData.disabledActionIconColor,
       useGradientWhenShowText: false,
       icon: viewData.primaryActionIcon,
-      iconSize: InventoryItemRowConstants.actionIconSize,
     );
   }
 }

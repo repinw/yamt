@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
@@ -46,6 +47,7 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines calories page.
+@Dependencies([calorieEntryDeleteFlow])
 class CaloriesPage extends ConsumerStatefulWidget {
   /// The calories page.
   const CaloriesPage({super.key, this.referenceNow});

@@ -39,7 +39,6 @@ InventoryItem _inventoryItem({int currentAmount = 750}) {
     entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
     initialAmount: 1000,
     currentAmount: currentAmount,
     amountUnit: InventoryAmountUnit.milliliter,
