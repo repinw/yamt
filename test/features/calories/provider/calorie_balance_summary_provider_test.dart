@@ -411,6 +411,112 @@ void main() {
   });
 
   test(
+    'calorieBalanceSummary carries a partial first-day surplus '
+    'into the next day',
+    () async {
+      final now = DateTime(2026, 4, 10, 14);
+      final selectedDay = DateTime(2026, 4, 9);
+      final cycleStartDay = selectedDay.subtract(const Duration(days: 1));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'partial-start',
+            loggedAt: cycleStartDay.add(const Duration(hours: 18, minutes: 30)),
+            totalKcal: 734,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: const CalorieGoalSettings.empty().applyGoalChange(
+          changedAt: DateTime(2026, 4, 8, 18),
+          dailyKcalGoal: 2136,
+          calculatorProfile: null,
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieBalanceNowProvider.overrideWithValue(() => now),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(calorieDayControllerProvider.notifier).setDay(selectedDay);
+
+      final summary = await container.read(
+        calorieBalanceSummaryProvider.future,
+      );
+
+      expect(summary.balanceStartDate, cycleStartDay);
+      expect(summary.baseGoalKcal, 2136);
+      expect(summary.carryoverKcal, closeTo(-200, 0.001));
+      expect(summary.flexibleGoalKcal, closeTo(1936, 0.001));
+      expect(summary.pacedGoalKcal, closeTo(1936, 0.001));
+    },
+  );
+
+  test(
+    'calorieBalanceSummary keeps carryover from before the visible week',
+    () async {
+      final now = DateTime(2026, 4, 11, 14);
+      final selectedDay = DateTime(2026, 4, 10);
+      final cycleStartDay = selectedDay.subtract(const Duration(days: 9));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'cycle-start-surplus',
+            loggedAt: cycleStartDay.add(const Duration(hours: 12)),
+            totalKcal: 2300,
+          ),
+          for (var offset = 1; offset <= 8; offset += 1)
+            _entry(
+              'balanced-$offset',
+              loggedAt: cycleStartDay.add(
+                Duration(days: offset, hours: 12),
+              ),
+              totalKcal: 2000,
+            ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: cycleStartDay,
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieBalanceNowProvider.overrideWithValue(() => now),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(calorieDayControllerProvider.notifier).setDay(selectedDay);
+
+      final summary = await container.read(
+        calorieBalanceSummaryProvider.future,
+      );
+
+      expect(summary.balanceStartDate, cycleStartDay);
+      expect(summary.carryoverKcal, closeTo(-300, 0.001));
+      expect(summary.flexibleGoalKcal, closeTo(1700, 0.001));
+      expect(summary.pacedGoalKcal, closeTo(1700, 0.001));
+    },
+  );
+
+  test(
     'calorieBalanceSummary uses the final flexible goal for past days',
     () async {
       final now = DateTime(2026, 4, 10, 14);
@@ -467,10 +573,10 @@ void main() {
     () async {
       final now = DateTime(2026, 4, 10, 14);
       final day = normalizeDiaryDay(now);
-      final logRepository = FakeCalorieLogRepository();
-      logRepository.onReadEntriesInRange = (_, _) async {
-        throw StateError('history read failed');
-      };
+      final logRepository = FakeCalorieLogRepository()
+        ..onReadEntriesInRange = (_, _) async {
+          throw StateError('history read failed');
+        };
       final settingsRepository = FakeCalorieSettingsRepository(
         initialSettings: CalorieGoalSettings.single(
           dailyKcalGoal: 2000,
@@ -669,7 +775,8 @@ void main() {
   });
 
   test(
-    'resolveCalorieBalanceRecoveryTime returns null when recovery is impossible',
+    'resolveCalorieBalanceRecoveryTime returns null '
+    'when recovery is impossible',
     () {
       final summary = _summaryData(
         goalMode: CalorieGoalMode.maintain,
