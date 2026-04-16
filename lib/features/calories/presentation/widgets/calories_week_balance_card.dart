@@ -57,7 +57,7 @@ class CaloriesWeekBalanceCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             _WeekBalanceSummary(
-              carryoverBeforeTodayKcal: overview.carryoverBeforeTodayKcal,
+              remainingKcal: overview.remainingKcal,
               balanceStartDate: overview.balanceStartDate,
               goalStartsInFuture: overview.goalStartsInFuture,
               nextGoalStartDate: overview.nextGoalStartDate,
@@ -116,7 +116,10 @@ class _WeekBalanceChart extends StatelessWidget {
 
 class _WeekBalanceDayColumn extends StatelessWidget {
   const _WeekBalanceDayColumn({
-    required this.day, required this.isActive, required this.chartMaxKcal, super.key,
+    required this.day,
+    required this.isActive,
+    required this.chartMaxKcal,
+    super.key,
   });
 
   final CalorieWeekDayOverview day;
@@ -247,13 +250,13 @@ class _WeekBalanceDayColumn extends StatelessWidget {
 
 class _WeekBalanceSummary extends StatelessWidget {
   const _WeekBalanceSummary({
-    required this.carryoverBeforeTodayKcal,
+    required this.remainingKcal,
     required this.balanceStartDate,
     required this.goalStartsInFuture,
     required this.nextGoalStartDate,
   });
 
-  final double carryoverBeforeTodayKcal;
+  final double remainingKcal;
   final DateTime balanceStartDate;
   final bool goalStartsInFuture;
   final DateTime? nextGoalStartDate;
@@ -265,25 +268,24 @@ class _WeekBalanceSummary extends StatelessWidget {
     final isGoalStartToday =
         normalizeDiaryDay(balanceStartDate) ==
         normalizeDiaryDay(DateTime.now());
-    final accentColor = carryoverBeforeTodayKcal < 0
-        ? colors.error
-        : colors.primary;
-    final backgroundColor = carryoverBeforeTodayKcal < 0
+    final currentBalanceKcal = remainingKcal;
+    final accentColor = currentBalanceKcal < 0 ? colors.error : colors.primary;
+    final backgroundColor = currentBalanceKcal < 0
         ? colors.error.withValues(alpha: 0.08)
         : colors.primary.withValues(alpha: 0.08);
-    final absoluteCarryover = carryoverBeforeTodayKcal.abs().round();
+    final absoluteBalance = currentBalanceKcal.abs().round();
     final futureGoalStartLabel = nextGoalStartDate == null
         ? null
         : DateFormat.yMMMd(
             Localizations.localeOf(context).toLanguageTag(),
           ).format(nextGoalStartDate!);
 
-    final message = switch ((isGoalStartToday, carryoverBeforeTodayKcal)) {
+    final message = switch ((isGoalStartToday, currentBalanceKcal)) {
       _ when goalStartsInFuture && futureGoalStartLabel != null =>
         l10n.caloriesWeekBalanceStartsLater(futureGoalStartLabel),
       (true, _) => l10n.caloriesWeekBalanceStartedToday,
-      (_, > 0) => l10n.caloriesWeekBalanceSaved(absoluteCarryover),
-      (_, < 0) => l10n.caloriesWeekBalanceOverspent(absoluteCarryover),
+      (_, > 0) => l10n.caloriesWeekBalanceSaved(absoluteBalance),
+      (_, < 0) => l10n.caloriesWeekBalanceOverspent(absoluteBalance),
       _ => l10n.caloriesWeekBalanceStable,
     };
 

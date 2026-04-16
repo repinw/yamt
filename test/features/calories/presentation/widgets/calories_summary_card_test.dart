@@ -184,6 +184,7 @@ void main() {
       _buildHarness(
         balanceData: _balanceData(
           activityDeltaKcal: 135,
+          carryoverKcal: 240,
           usedLearnedTdee: true,
         ),
       ),
@@ -195,7 +196,77 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Today activity delta: +135 kcal'), findsOneWidget);
+    expect(find.byKey(CaloriesPageKeys.summaryCarryoverNote), findsOneWidget);
+    expect(find.text('Carryover: +240 kcal'), findsOneWidget);
   });
+
+  testWidgets('shows carryover in diary summary card without activity delta', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildHarness(
+        balanceData: _balanceData(carryoverKcal: -180),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CaloriesPageKeys.summaryActivityDeltaNote),
+      findsNothing,
+    );
+    expect(find.byKey(CaloriesPageKeys.summaryCarryoverNote), findsOneWidget);
+    expect(find.text('Carryover: -180 kcal'), findsOneWidget);
+  });
+
+  testWidgets(
+    'classic summary uses checkbox toggles below macros to update the circle',
+    (tester) async {
+      await tester.pumpWidget(
+        _buildHarness(
+          balanceData: _balanceData(
+            activityDeltaKcal: 135,
+            carryoverKcal: 240,
+            usedLearnedTdee: true,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(CaloriesPageKeys.summaryModeOption('classic')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(CaloriesPageKeys.summaryMetaSection), findsOneWidget);
+      expect(
+        find.byKey(CaloriesPageKeys.summaryActivityDeltaToggle),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(CaloriesPageKeys.summaryCarryoverToggle),
+        findsOneWidget,
+      );
+      expect(find.text('400'), findsOneWidget);
+
+      await tester.tap(find.byKey(CaloriesPageKeys.summaryCarryoverToggle));
+      await tester.pumpAndSettle();
+
+      expect(find.text('640'), findsOneWidget);
+
+      await tester.tap(find.byKey(CaloriesPageKeys.summaryActivityDeltaToggle));
+      await tester.pumpAndSettle();
+
+      expect(find.text('505'), findsOneWidget);
+
+      final macroBottom = tester.getBottomLeft(
+        find.byKey(CaloriesPageKeys.summaryMacroCard('carbs')),
+      );
+      final metaTop = tester.getTopLeft(
+        find.byKey(CaloriesPageKeys.summaryMetaSection),
+      );
+      expect(metaTop.dy, greaterThan(macroBottom.dy));
+    },
+  );
 }
 
 Widget _buildHarness({
@@ -272,6 +343,7 @@ Color? _currentValueColor(RichText value) {
 
 CalorieBalanceSummaryData _balanceData({
   double activityDeltaKcal = 0,
+  double carryoverKcal = 0,
   bool usedLearnedTdee = false,
 }) {
   final now = DateTime(2026, 4, 10, 14);
@@ -283,10 +355,10 @@ CalorieBalanceSummaryData _balanceData({
     paceWindowStart: DateTime(2026, 4, 10, 6),
     paceWindowEnd: DateTime(2026, 4, 10, 22),
     baseGoalKcal: 2000,
-    carryoverKcal: 0,
+    carryoverKcal: carryoverKcal,
     goalMode: CalorieGoalMode.maintain,
-    flexibleGoalKcal: 2000,
-    pacedGoalKcal: 1000,
+    flexibleGoalKcal: 2000 + carryoverKcal,
+    pacedGoalKcal: 1000 + carryoverKcal,
     consumedKcal: 1000,
     deltaKcal: 0,
     paceRatio: 0.5,

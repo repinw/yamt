@@ -67,6 +67,7 @@ void main() {
       days: days,
       balanceStartDate: days.first,
       carryoverBeforeTodayKcal: 400,
+      remainingKcal: 400,
     );
 
     await tester.pumpWidget(
@@ -74,17 +75,12 @@ void main() {
     );
 
     expect(
-      find.text(
-        'Du hast seit Zielstart 400 kcal gespart. '
-        'Dein heutiges Ziel wurde erhöht.',
-      ),
+      find.text('Seit Zielstart 400 kcal gespart.'),
       findsOneWidget,
     );
     _expectSummaryAccentColor(
       tester,
-      message:
-          'Du hast seit Zielstart 400 kcal gespart. '
-          'Dein heutiges Ziel wurde erhöht.',
+      message: 'Seit Zielstart 400 kcal gespart.',
       color: _themeColor(tester).primary,
     );
   });
@@ -99,20 +95,50 @@ void main() {
           days: days,
           balanceStartDate: days.first,
           carryoverBeforeTodayKcal: -250,
+          remainingKcal: -250,
         ),
       ),
     );
 
     expect(
-      find.text('You are 250 kcal over since your goal started.'),
+      find.text('You went over by 250 kcal since your goal started.'),
       findsOneWidget,
     );
     _expectSummaryAccentColor(
       tester,
-      message: 'You are 250 kcal over since your goal started.',
+      message: 'You went over by 250 kcal since your goal started.',
       color: _themeColor(tester).error,
     );
   });
+
+  testWidgets(
+    'uses todays intake for the summary message and warning color',
+    (tester) async {
+      final today = normalizeDiaryDay(DateTime.now());
+      final days = buildDiaryVisibleDays(anchorDay: today);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          overview: _overview(
+            days: days,
+            balanceStartDate: days.first,
+            carryoverBeforeTodayKcal: 300,
+            remainingKcal: -150,
+          ),
+        ),
+      );
+
+      expect(
+        find.text('You went over by 150 kcal since your goal started.'),
+        findsOneWidget,
+      );
+      _expectSummaryAccentColor(
+        tester,
+        message: 'You went over by 150 kcal since your goal started.',
+        color: _themeColor(tester).error,
+      );
+    },
+  );
 
   testWidgets('shows the stable summary with primary color', (tester) async {
     final today = normalizeDiaryDay(DateTime.now());
@@ -124,22 +150,18 @@ void main() {
           days: days,
           balanceStartDate: days.first,
           carryoverBeforeTodayKcal: 0,
+          remainingKcal: 0,
         ),
       ),
     );
 
     expect(
-      find.text(
-        'You are balanced since your goal started. '
-        "Today's target stays unchanged.",
-      ),
+      find.text('Balanced since your goal started.'),
       findsOneWidget,
     );
     _expectSummaryAccentColor(
       tester,
-      message:
-          'You are balanced since your goal started. '
-          "Today's target stays unchanged.",
+      message: 'Balanced since your goal started.',
       color: _themeColor(tester).primary,
     );
   });
@@ -156,6 +178,7 @@ void main() {
           days: days,
           balanceStartDate: today,
           carryoverBeforeTodayKcal: 0,
+          remainingKcal: 0,
         ),
       ),
     );
@@ -266,6 +289,7 @@ CalorieWeekOverview _overview({
   required List<DateTime> days,
   required DateTime balanceStartDate,
   required double carryoverBeforeTodayKcal,
+  required double remainingKcal,
 }) {
   return CalorieWeekOverview(
     days: List<CalorieWeekDayOverview>.unmodifiable([
@@ -279,7 +303,7 @@ CalorieWeekOverview _overview({
     ]),
     totalConsumedKcal: 12600,
     totalGoalKcal: 14000,
-    remainingKcal: 1400,
+    remainingKcal: remainingKcal,
     balanceStartDate: balanceStartDate,
     carryoverBeforeTodayKcal: carryoverBeforeTodayKcal,
     todayFlexibleGoalKcal: 2400,

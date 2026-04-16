@@ -6,6 +6,26 @@ DateTime normalizeDiaryDay(DateTime day) {
   return DateTime(day.year, day.month, day.day);
 }
 
+/// Adds whole local calendar days without relying on 24-hour durations.
+DateTime addDiaryDays(DateTime day, int dayOffset) {
+  final normalizedDay = normalizeDiaryDay(day);
+  return DateTime(
+    normalizedDay.year,
+    normalizedDay.month,
+    normalizedDay.day + dayOffset,
+  );
+}
+
+/// Returns the next local calendar day.
+DateTime nextDiaryDay(DateTime day) {
+  return addDiaryDays(day, 1);
+}
+
+/// Returns the previous local calendar day.
+DateTime previousDiaryDay(DateTime day) {
+  return addDiaryDays(day, -1);
+}
+
 /// Returns the last visible diary day, which is always the current day.
 DateTime resolveDiaryWindowEnd({DateTime? anchorDay}) {
   return normalizeDiaryDay(anchorDay ?? DateTime.now());
@@ -13,9 +33,10 @@ DateTime resolveDiaryWindowEnd({DateTime? anchorDay}) {
 
 /// Returns the first visible diary day in the rolling 7-day window.
 DateTime resolveDiaryWindowStart({DateTime? anchorDay}) {
-  return resolveDiaryWindowEnd(
-    anchorDay: anchorDay,
-  ).subtract(const Duration(days: diaryVisibleDayCount - 1));
+  return addDiaryDays(
+    resolveDiaryWindowEnd(anchorDay: anchorDay),
+    -(diaryVisibleDayCount - 1),
+  );
 }
 
 /// Builds the visible diary days from oldest to newest.
@@ -23,7 +44,7 @@ List<DateTime> buildDiaryVisibleDays({DateTime? anchorDay}) {
   final start = resolveDiaryWindowStart(anchorDay: anchorDay);
   return List<DateTime>.unmodifiable([
     for (var index = 0; index < diaryVisibleDayCount; index += 1)
-      start.add(Duration(days: index)),
+      addDiaryDays(start, index),
   ]);
 }
 
@@ -44,9 +65,7 @@ String diaryDayKey(DateTime day) {
 
 /// Moves the selected day one step left inside the visible diary window.
 DateTime previousDiaryVisibleDay(DateTime selectedDay, {DateTime? anchorDay}) {
-  final previousDay = normalizeDiaryDay(
-    selectedDay.subtract(const Duration(days: 1)),
-  );
+  final previousDay = previousDiaryDay(selectedDay);
   final earliestVisibleDay = resolveDiaryWindowStart(anchorDay: anchorDay);
   if (previousDay.isBefore(earliestVisibleDay)) {
     return earliestVisibleDay;
@@ -56,7 +75,7 @@ DateTime previousDiaryVisibleDay(DateTime selectedDay, {DateTime? anchorDay}) {
 
 /// Moves the selected day one step right inside the visible diary window.
 DateTime nextDiaryVisibleDay(DateTime selectedDay, {DateTime? anchorDay}) {
-  final nextDay = normalizeDiaryDay(selectedDay.add(const Duration(days: 1)));
+  final nextDay = nextDiaryDay(selectedDay);
   final latestVisibleDay = resolveDiaryWindowEnd(anchorDay: anchorDay);
   if (nextDay.isAfter(latestVisibleDay)) {
     return latestVisibleDay;

@@ -784,6 +784,7 @@
   "caloriesSummaryViewClassic": "Klassisch",
   "caloriesSummaryViewBalance": "Balance",
   "caloriesBalanceCarryoverLabel": "7 Tage Bilanz",
+  "caloriesBalanceCarryoverNoteLabel": "Übertrag",
   "caloriesBalanceFlexGoalLabel": "Flex-Ziel",
   "caloriesBalancePaceNowLabel": "Pace jetzt",
   "caloriesBalancePaceFinalLabel": "Pace final",
@@ -952,8 +953,7 @@
     }
   },
   "caloriesWeekBalanceTodayLabel": "Heu",
-  "caloriesWeekBalanceSaved":
-      "Du hast seit Zielstart {kcal} kcal gespart. Dein heutiges Ziel wurde erhöht.",
+  "caloriesWeekBalanceSaved": "Seit Zielstart {kcal} kcal gespart.",
   "@caloriesWeekBalanceSaved": {
     "placeholders": {
       "kcal": {
@@ -962,7 +962,7 @@
     }
   },
   "caloriesWeekBalanceOverspent":
-      "Seit Zielstart {kcal} kcal im Überschuss.",
+      "Seit Zielstart {kcal} kcal überschritten.",
   "@caloriesWeekBalanceOverspent": {
     "placeholders": {
       "kcal": {
@@ -970,8 +970,7 @@
       }
     }
   },
-  "caloriesWeekBalanceStable":
-      "Seit Zielstart bist du ausgeglichen. Dein heutiges Ziel bleibt unverändert.",
+  "caloriesWeekBalanceStable": "Seit Zielstart ausgeglichen.",
   "caloriesWeekBalanceStartsLater":
       "Dein Ziel startet am {date}. Die Bilanz beginnt dann automatisch.",
   "@caloriesWeekBalanceStartsLater": {

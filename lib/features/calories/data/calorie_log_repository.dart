@@ -6,6 +6,7 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_log_repository.g.dart';
 
@@ -81,7 +82,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
           .get();
       final entries = _decodeSnapshot(snapshot);
       return entries;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read calories for user $userId',
         name: _repositoryLogName,
@@ -109,7 +110,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
           .orderBy('logged_at')
           .get();
       return _decodeSnapshot(snapshot);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read calorie range for user $userId',
         name: _repositoryLogName,
@@ -135,7 +136,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
         return null;
       }
       return _decodeDocument(snapshot.docs.first).loggedAt;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read first calorie entry date for user $userId',
         name: _repositoryLogName,
@@ -163,7 +164,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
         userId,
       ).doc(normalizedEntry.id).set(normalizedEntry.toJson());
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to save calorie entry ${entry.id} for user $userId',
         name: _repositoryLogName,
@@ -184,7 +185,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
     try {
       await _collection(userId).doc(entryId).delete();
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to delete calorie entry $entryId for user $userId',
         name: _repositoryLogName,
@@ -208,7 +209,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
         return null;
       }
       return _decodeDocument(snapshot);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to load calorie entry $entryId for user $userId',
         name: _repositoryLogName,
@@ -241,7 +242,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
     for (final document in snapshot.docs) {
       try {
         entries.add(_decodeDocument(document));
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         log(
           'Skipping malformed calorie entry ${document.id}',
           name: _repositoryLogName,
@@ -296,8 +297,8 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
   ({DateTime startInclusive, DateTime endExclusive}) _dayBoundsLocal(
     DateTime day,
   ) {
-    final start = DateTime(day.year, day.month, day.day);
-    final end = start.add(const Duration(days: 1));
+    final start = normalizeDiaryDay(day);
+    final end = nextDiaryDay(start);
     return (startInclusive: start, endExclusive: end);
   }
 }
@@ -330,7 +331,7 @@ class _CurrentCalorieLogUserSession implements CalorieLogUserSession {
 FirebaseFirestore? _resolveFirestore() {
   try {
     return FirebaseFirestore.instance;
-  } catch (error, stackTrace) {
+  } on Object catch (error, stackTrace) {
     log(
       'Falling back to unavailable calorie log repository.',
       name: _repositoryLogName,

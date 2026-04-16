@@ -178,7 +178,8 @@ void main() {
   );
 
   test(
-    'calorieWeekOverview does not shift visible window when only selected day changes',
+    'calorieWeekOverview does not shift visible window '
+    'when only selected day changes',
     () async {
       final today = normalizeDiaryDay(DateTime.now());
       final yesterday = today.subtract(const Duration(days: 1));
@@ -535,6 +536,138 @@ void main() {
     expect(overview.carryoverBeforeTodayKcal, -300);
     expect(overview.todayFlexibleGoalKcal, 1500);
   });
+
+  test(
+    'calorieWeekOverview keeps carryover from before the visible window',
+    () async {
+      final today = DateTime(2026, 4, 10);
+      final cycleStartDay = today.subtract(const Duration(days: 9));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'cycle-start-surplus',
+            loggedAt: cycleStartDay.add(const Duration(hours: 12)),
+            totalKcal: 2300,
+          ),
+          for (var offset = 1; offset <= 8; offset += 1)
+            _entry(
+              'balanced-$offset',
+              loggedAt: cycleStartDay.add(
+                Duration(days: offset, hours: 12),
+              ),
+              totalKcal: 2000,
+            ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: cycleStartDay,
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container
+          .read(calorieVisibleWindowControllerProvider.notifier)
+          .setWindowEnd(today);
+      await container.read(calorieGoalControllerProvider.future);
+      final overview = await container.read(calorieWeekOverviewProvider.future);
+
+      expect(overview.balanceStartDate, cycleStartDay);
+      expect(overview.carryoverBeforeTodayKcal, closeTo(-300, 0.001));
+      expect(overview.todayFlexibleGoalKcal, closeTo(1700, 0.001));
+      expect(overview.totalConsumedKcal, 18300);
+      expect(overview.totalGoalKcal, 20000);
+      expect(overview.remainingKcal, 1700);
+    },
+  );
+
+  test(
+    'calorieWeekOverview keeps the same balance cycle through weekly check-ins',
+    () async {
+      final today = DateTime(2026, 4, 10);
+      final yesterday = today.subtract(const Duration(days: 1));
+      final cycleStartDay = today.subtract(const Duration(days: 9));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'cycle-start-surplus',
+            loggedAt: cycleStartDay.add(const Duration(hours: 12)),
+            totalKcal: 2300,
+          ),
+          for (var offset = 1; offset <= 7; offset += 1)
+            _entry(
+              'balanced-before-checkin-$offset',
+              loggedAt: cycleStartDay.add(
+                Duration(days: offset, hours: 12),
+              ),
+              totalKcal: 2000,
+            ),
+          _entry(
+            'weekly-checkin-day',
+            loggedAt: yesterday.add(const Duration(hours: 12)),
+            totalKcal: 1900,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: const CalorieGoalSettings.empty()
+            .applyGoalChange(
+              changedAt: DateTime(2026, 4),
+              dailyKcalGoal: 2000,
+              calculatorProfile: null,
+            )
+            .applyGoalChange(
+              changedAt: DateTime(2026, 4, 9, 9),
+              dailyKcalGoal: 1900,
+              calculatorProfile: null,
+              source: CalorieGoalSource.weeklyCheckIn,
+              weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+                windowStartDate: DateTime(2026, 4, 2),
+                windowEndDate: DateTime(2026, 4, 8),
+                trendWeightChangePerDay: -0.05,
+                calculatedTrueTdeeKcal: 2300,
+                averageActiveKcal: 320,
+                lowConfidence: false,
+              ),
+            ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container
+          .read(calorieVisibleWindowControllerProvider.notifier)
+          .setWindowEnd(today);
+      await container.read(calorieGoalControllerProvider.future);
+      final overview = await container.read(calorieWeekOverviewProvider.future);
+
+      expect(overview.balanceStartDate, cycleStartDay);
+      expect(overview.carryoverBeforeTodayKcal, closeTo(-300, 0.001));
+      expect(overview.todayFlexibleGoalKcal, closeTo(1600, 0.001));
+    },
+  );
 
   test(
     'calorieWeekOverview does not reload seven days when goal resolves later',

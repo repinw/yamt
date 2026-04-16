@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -169,7 +171,7 @@ class _CaloriesDayNavigationPagerState
       return false;
     }
 
-    _snapToNearestDay(itemWidth);
+    unawaited(_snapToNearestDay(itemWidth));
     return false;
   }
 
@@ -281,18 +283,20 @@ class _CaloriesDayNavigationPagerState
   }
 
   DateTime _dayForIndex(int index) {
-    return _earliestDay.add(Duration(days: index));
+    return addDiaryDays(_earliestDay, index);
   }
 
   bool _isWithinActiveBuffer(DateTime day) {
     final visibleDays = buildDiaryVisibleDays(
       anchorDay: widget.visibleWindowEnd,
     );
-    final bufferStart = visibleDays.first.subtract(
-      const Duration(days: caloriesDayNavigationPrefetchDayCount),
+    final bufferStart = addDiaryDays(
+      visibleDays.first,
+      -caloriesDayNavigationPrefetchDayCount,
     );
-    final bufferEnd = visibleDays.last.add(
-      const Duration(days: caloriesDayNavigationPrefetchDayCount),
+    final bufferEnd = addDiaryDays(
+      visibleDays.last,
+      caloriesDayNavigationPrefetchDayCount,
     );
     final normalizedDay = normalizeDiaryDay(day);
     if (normalizedDay.isBefore(normalizeDiaryDay(bufferStart))) {

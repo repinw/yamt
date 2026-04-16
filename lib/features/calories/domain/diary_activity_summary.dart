@@ -1,3 +1,4 @@
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
@@ -91,8 +92,8 @@ DiaryActivitySummary buildDiaryActivitySummary({
   required DiaryHealthDayData dayData,
   int stepGoal = diaryActivityStepGoal,
 }) {
-  final normalizedDay = DateTime(day.year, day.month, day.day);
-  final dayEnd = normalizedDay.add(const Duration(days: 1));
+  final normalizedDay = normalizeDiaryDay(day);
+  final dayEnd = nextDiaryDay(normalizedDay);
   final dayWorkouts = dayData.workouts
       .where(
         (workout) =>

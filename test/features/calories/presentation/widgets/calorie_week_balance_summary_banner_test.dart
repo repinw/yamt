@@ -49,4 +49,48 @@ void main() {
     expect(find.byKey(CaloriesPageKeys.weekBalanceSummaryIcon), findsOneWidget);
     expect(find.text(l10n.caloriesWeekBalanceSaved(400)), findsOneWidget);
   });
+
+  testWidgets(
+    'banner content uses todays intake instead of only yesterdays carryover',
+    (tester) async {
+      final overview = CalorieWeekOverview(
+        days: <CalorieWeekDayOverview>[
+          CalorieWeekDayOverview(
+            date: DateTime(2026, 3, 20),
+            totalKcal: 2350,
+            goalKcal: 2200,
+            entryCount: 1,
+          ),
+        ],
+        totalConsumedKcal: 2350,
+        totalGoalKcal: 2200,
+        remainingKcal: -150,
+        balanceStartDate: DateTime(2026, 3, 20),
+        carryoverBeforeTodayKcal: 300,
+        todayFlexibleGoalKcal: 2500,
+        goalStartsInFuture: false,
+        nextGoalStartDate: null,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: CalorieWeekBalanceSummaryBanner(
+              overview: overview,
+              referenceNow: DateTime(2026, 3, 21),
+            ),
+          ),
+        ),
+      );
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CalorieWeekBalanceSummaryBanner)),
+      )!;
+
+      expect(find.text(l10n.caloriesWeekBalanceOverspent(150)), findsOneWidget);
+    },
+  );
 }

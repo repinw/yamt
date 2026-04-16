@@ -4,8 +4,10 @@ import 'dart:math' as math;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
+import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
@@ -126,8 +128,7 @@ class CalorieBalanceSummaryData {
   bool get isOverPace => deltaKcal > deadZoneKcal;
 
   /// The bar progress.
-  double get barProgress =>
-      (deltaKcal.abs() / rangeKcal).clamp(0.0, 1.0);
+  double get barProgress => (deltaKcal.abs() / rangeKcal).clamp(0.0, 1.0);
 }
 
 /// Calorie balance now.
@@ -149,27 +150,17 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
 
   final windowDays = buildDiaryVisibleDays(anchorDay: selectedDay);
   final windowStartDate = windowDays.first;
-  final balanceStartDate = settings.balanceStartForWindow(windowDays);
-  final relevantHistoryStart = _laterDay(windowStartDate, balanceStartDate);
+  final balanceStartDate = resolveCalorieBalanceCycleStartDate(
+    settings: settings,
+    day: selectedDay,
+    fallbackStartDate: windowStartDate,
+  );
   final historyEntries = await _readHistoryEntriesSafely(
-    startInclusive: windowStartDate,
+    startInclusive: balanceStartDate,
     endExclusive: selectedDay,
     repository: repository,
   );
-
-  final historyConsumedKcal = historyEntries.fold<double>(0, (sum, entry) {
-    final loggedDay = normalizeDiaryDay(entry.loggedAt);
-    if (_isBeforeDay(loggedDay, relevantHistoryStart)) {
-      return sum;
-    }
-    return sum + entry.totalKcal;
-  });
-  final historyGoalKcal = windowDays
-      .where((day) {
-        return !_isBeforeDay(day, relevantHistoryStart) &&
-            _isBeforeDay(day, selectedDay);
-      })
-      .fold<double>(0, (sum, day) => sum + settings.goalKcalForDay(day));
+  final historyEntriesByDay = historyEntries.groupByDiaryDayKey();
 
   final goalEntry = settings.goalEntryForDay(selectedDay);
   final resolvedGoal = await ref.watch(
@@ -185,28 +176,33 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
   final consumedKcal = shouldIgnoreSelectedDayForBalance
       ? 0.0
       : selectedEntries.fold<double>(0, (sum, entry) => sum + entry.totalKcal);
-  final initialGoalPacing = _resolveInitialGoalPacing(
+  final cycleStartDayAdjustment = resolveCalorieBalanceCycleDayAdjustment(
     settings: settings,
-    selectedDay: selectedDay,
-    now: now,
-    selectedEntries: selectedEntries,
-    dailyBaseGoalKcal: dailyBaseGoalKcal,
+    cycleStartDate: balanceStartDate,
+    day: selectedDay,
+    dayEntries: selectedEntries,
+    dailyGoalKcal: dailyBaseGoalKcal,
   );
   final baseGoalKcal =
-      initialGoalPacing?.adjustedBaseGoalKcal ?? dailyBaseGoalKcal;
+      cycleStartDayAdjustment?.adjustedGoalKcal ?? dailyBaseGoalKcal;
   final goalMode =
       goalEntry?.calculatorProfile?.goalMode ??
       settings.calculatorProfile?.goalMode ??
       CalorieGoalMode.maintain;
-  final carryoverKcal = historyGoalKcal - historyConsumedKcal;
-  final flexibleGoalKcal = math.max(0.0, baseGoalKcal + carryoverKcal);
+  final carryoverKcal = _calculateCarryoverKcal(
+    settings: settings,
+    cycleStartDate: balanceStartDate,
+    endExclusive: selectedDay,
+    entriesByDay: historyEntriesByDay,
+  );
+  final flexibleGoalKcal = math.max<double>(0, baseGoalKcal + carryoverKcal);
   final defaultPaceWindowStart = settings.eatingWindowStartForDay(selectedDay);
   final defaultPaceWindowEnd = settings.eatingWindowEndForDay(selectedDay);
   final resolvedPaceWindowStart = _resolvePaceWindowStart(
     selectedDay: selectedDay,
     now: now,
     defaultPaceWindowStart: defaultPaceWindowStart,
-    customPaceWindowStart: initialGoalPacing?.paceWindowStart,
+    customPaceWindowStart: cycleStartDayAdjustment?.paceWindowStart,
   );
   final paceRatio = _paceRatioForDay(
     selectedDay: selectedDay,
@@ -224,8 +220,8 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
   );
   final deltaKcal = consumedKcal - pacedGoalKcal;
   final referenceGoalKcal = math.max(baseGoalKcal, flexibleGoalKcal);
-  final deadZoneKcal = math.max(60.0, referenceGoalKcal * 0.04);
-  final rangeKcal = math.max(400.0, referenceGoalKcal * 0.4);
+  final deadZoneKcal = math.max<double>(60, referenceGoalKcal * 0.04);
+  final rangeKcal = math.max<double>(400, referenceGoalKcal * 0.4);
 
   return CalorieBalanceSummaryData(
     selectedDay: selectedDay,
@@ -263,7 +259,7 @@ Future<List<CalorieEntry>> _readHistoryEntriesSafely({
       startInclusive: startInclusive,
       endExclusive: endExclusive,
     );
-  } catch (error, stackTrace) {
+  } on Object catch (error, stackTrace) {
     log(
       'Failed to load historical calorie entries for balance summary.',
       name: _balanceSummaryLogName,
@@ -311,68 +307,6 @@ DateTime _resolvePaceWindowStart({
   return defaultPaceWindowStart;
 }
 
-_InitialGoalPacing? _resolveInitialGoalPacing({
-  required CalorieGoalSettings settings,
-  required DateTime selectedDay,
-  required DateTime now,
-  required List<CalorieEntry> selectedEntries,
-  required double dailyBaseGoalKcal,
-}) {
-  if (!_isSameDay(selectedDay, now)) {
-    return null;
-  }
-
-  final goalEntry = settings.goalEntryForDay(selectedDay);
-  final goalChangedAt = goalEntry?.effectiveChangedAt.toLocal();
-  if (goalChangedAt == null || !_isSameDay(goalChangedAt, selectedDay)) {
-    return null;
-  }
-
-  if (goalEntry?.hasGoal != true) {
-    return null;
-  }
-
-  final hadGoalBeforeToday = settings.sortedGoalHistory.any((entry) {
-    return entry.hasGoal && _isBeforeDay(entry.effectiveDate, selectedDay);
-  });
-  if (hadGoalBeforeToday) {
-    return null;
-  }
-
-  final hadEntriesBeforeGoal = selectedEntries.any((entry) {
-    return entry.loggedAt.toLocal().isBefore(goalChangedAt);
-  });
-  if (hadEntriesBeforeGoal) {
-    return null;
-  }
-
-  final defaultPaceWindowStart = settings.eatingWindowStartForDay(selectedDay);
-  final paceWindowStart = goalChangedAt.isAfter(defaultPaceWindowStart)
-      ? goalChangedAt
-      : defaultPaceWindowStart;
-  final paceWindowEnd = settings.eatingWindowEndForDay(selectedDay);
-  final defaultWindowSeconds = paceWindowEnd
-      .difference(defaultPaceWindowStart)
-      .inSeconds;
-  if (defaultWindowSeconds <= 0) {
-    return _InitialGoalPacing(
-      paceWindowStart: paceWindowStart,
-      adjustedBaseGoalKcal: dailyBaseGoalKcal,
-    );
-  }
-
-  final remainingWindowSeconds = paceWindowEnd
-      .difference(paceWindowStart)
-      .inSeconds;
-  final adjustedBaseGoalKcal = remainingWindowSeconds <= 0
-      ? 0.0
-      : dailyBaseGoalKcal * remainingWindowSeconds / defaultWindowSeconds;
-  return _InitialGoalPacing(
-    paceWindowStart: paceWindowStart,
-    adjustedBaseGoalKcal: adjustedBaseGoalKcal,
-  );
-}
-
 double _resolvePacedGoalKcal({
   required DateTime selectedDay,
   required DateTime now,
@@ -387,14 +321,6 @@ double _resolvePacedGoalKcal({
 
   // For the current day, previous days are already complete and count in full.
   return carryoverKcal + (baseGoalKcal * paceRatio);
-}
-
-DateTime _laterDay(DateTime left, DateTime right) {
-  return _isBeforeDay(left, right) ? right : left;
-}
-
-bool _isBeforeDay(DateTime left, DateTime right) {
-  return normalizeDiaryDay(left).isBefore(normalizeDiaryDay(right));
 }
 
 bool _isSameDay(DateTime left, DateTime right) {
@@ -467,12 +393,38 @@ double _maintainScore(double progress) {
   return (1.0 - progress).clamp(0.0, 1.0);
 }
 
-class _InitialGoalPacing {
-  const _InitialGoalPacing({
-    required this.paceWindowStart,
-    required this.adjustedBaseGoalKcal,
-  });
+double _calculateCarryoverKcal({
+  required CalorieGoalSettings settings,
+  required DateTime cycleStartDate,
+  required DateTime endExclusive,
+  required Map<String, List<CalorieEntry>> entriesByDay,
+}) {
+  if (!cycleStartDate.isBefore(endExclusive)) {
+    return 0;
+  }
 
-  final DateTime paceWindowStart;
-  final double adjustedBaseGoalKcal;
+  var carryoverKcal = 0.0;
+  for (
+    var day = normalizeDiaryDay(cycleStartDate);
+    day.isBefore(normalizeDiaryDay(endExclusive));
+    day = nextDiaryDay(day)
+  ) {
+    final dayEntries = entriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
+    final storedGoalKcal = settings.goalKcalForDay(day);
+    final adjustedGoalKcal =
+        resolveCalorieBalanceCycleDayAdjustment(
+          settings: settings,
+          cycleStartDate: cycleStartDate,
+          day: day,
+          dayEntries: dayEntries,
+          dailyGoalKcal: storedGoalKcal,
+        )?.adjustedGoalKcal ??
+        storedGoalKcal;
+    final consumedKcal = dayEntries.fold<double>(
+      0,
+      (sum, entry) => sum + entry.totalKcal,
+    );
+    carryoverKcal += adjustedGoalKcal - consumedKcal;
+  }
+  return carryoverKcal;
 }

@@ -305,15 +305,13 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
 }) async {
   final days = <DateTime>[
     for (var index = 0; index < weeklyCheckInWindowLengthDays; index += 1)
-      pendingWeeklyCheckIn.windowStartDate.add(Duration(days: index)),
+      addDiaryDays(pendingWeeklyCheckIn.windowStartDate, index),
   ];
   final calorieEntries = await ref
       .watch(calorieLogRepositoryProvider)
       .readEntriesInRange(
         startInclusive: pendingWeeklyCheckIn.windowStartDate,
-        endExclusive: pendingWeeklyCheckIn.windowEndDate.add(
-          const Duration(days: 1),
-        ),
+        endExclusive: nextDiaryDay(pendingWeeklyCheckIn.windowEndDate),
       );
   final calorieEntriesByDay = <String, List<CalorieEntry>>{};
   for (final entry in calorieEntries) {
@@ -639,7 +637,7 @@ DateTime _firstWeeklyCheckInWindowStartDate(
   if (!_startsOnPartialDiaryDay(anchorEntry.effectiveChangedAt)) {
     return anchorStartDate;
   }
-  return anchorStartDate.add(const Duration(days: 1));
+  return nextDiaryDay(anchorStartDate);
 }
 
 bool _startsOnPartialDiaryDay(DateTime changedAt) {
