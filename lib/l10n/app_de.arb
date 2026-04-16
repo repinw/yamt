@@ -784,6 +784,7 @@
   "caloriesSummaryViewClassic": "Klassisch",
   "caloriesSummaryViewBalance": "Balance",
   "caloriesBalanceCarryoverLabel": "7 Tage Bilanz",
+  "caloriesBalanceCarryoverNoteLabel": "Übertrag",
   "caloriesBalanceFlexGoalLabel": "Flex-Ziel",
   "caloriesBalancePaceNowLabel": "Pace jetzt",
   "caloriesBalancePaceFinalLabel": "Pace final",

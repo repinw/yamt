@@ -1461,6 +1461,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesBalanceCarryoverLabel => '7 Tage Bilanz';
 
   @override
+  String get caloriesBalanceCarryoverNoteLabel => 'Übertrag';
+
+  @override
   String get caloriesBalanceFlexGoalLabel => 'Flex-Ziel';
 
   @override

@@ -2903,6 +2903,12 @@ abstract class AppLocalizations {
   /// **'7-day balance'**
   String get caloriesBalanceCarryoverLabel;
 
+  /// No description provided for @caloriesBalanceCarryoverNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Carryover'**
+  String get caloriesBalanceCarryoverNoteLabel;
+
   /// No description provided for @caloriesBalanceFlexGoalLabel.
   ///
   /// In en, this message translates to:

@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
@@ -228,7 +229,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     startInclusive: balanceStartDate,
     endExclusive: visibleWindowStart,
   );
-  final historicalEntriesByDay = _entriesByDay(historicalEntries);
+  final historicalEntriesByDay = historicalEntries.groupByDiaryDayKey();
   final shouldLoadVisibleCycleStartEntries =
       _needsCycleStartDayEntries(
         settings: settings,
@@ -436,16 +437,6 @@ bool _needsCycleStartDayEntries({
   return goalChangedAt.isAfter(
     settings.eatingWindowStartForDay(cycleStartDate),
   );
-}
-
-Map<String, List<CalorieEntry>> _entriesByDay(Iterable<CalorieEntry> entries) {
-  final entriesByDay = <String, List<CalorieEntry>>{};
-  for (final entry in entries) {
-    entriesByDay
-        .putIfAbsent(diaryDayKey(entry.loggedAt), () => <CalorieEntry>[])
-        .add(entry);
-  }
-  return entriesByDay;
 }
 
 bool _isBeforeDay(DateTime left, DateTime right) {

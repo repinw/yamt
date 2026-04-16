@@ -58,7 +58,7 @@ CalorieBalanceCycleDayAdjustment? resolveCalorieBalanceCycleDayAdjustment({
   }
 
   final goalChangedAt = cycleStartEntry!.effectiveChangedAt.toLocal();
-  if (!_isSameDay(goalChangedAt, normalizedDay)) {
+  if (!isSameDiaryDay(goalChangedAt, normalizedDay)) {
     return null;
   }
 
@@ -94,8 +94,4 @@ CalorieBalanceCycleDayAdjustment? resolveCalorieBalanceCycleDayAdjustment({
     paceWindowStart: goalChangedAt,
     adjustedGoalKcal: adjustedGoalKcal,
   );
-}
-
-bool _isSameDay(DateTime left, DateTime right) {
-  return normalizeDiaryDay(left) == normalizeDiaryDay(right);
 }

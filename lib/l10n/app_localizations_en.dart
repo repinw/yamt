@@ -1461,6 +1461,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesBalanceCarryoverLabel => '7-day balance';
 
   @override
+  String get caloriesBalanceCarryoverNoteLabel => 'Carryover';
+
+  @override
   String get caloriesBalanceFlexGoalLabel => 'Flex goal';
 
   @override

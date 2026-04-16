@@ -7,6 +7,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
@@ -159,7 +160,7 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
     endExclusive: selectedDay,
     repository: repository,
   );
-  final historyEntriesByDay = _entriesByDay(historyEntries);
+  final historyEntriesByDay = historyEntries.groupByDiaryDayKey();
 
   final goalEntry = settings.goalEntryForDay(selectedDay);
   final resolvedGoal = await ref.watch(
@@ -390,16 +391,6 @@ double _negativeScore(double progress) {
 
 double _maintainScore(double progress) {
   return (1.0 - progress).clamp(0.0, 1.0);
-}
-
-Map<String, List<CalorieEntry>> _entriesByDay(Iterable<CalorieEntry> entries) {
-  final entriesByDay = <String, List<CalorieEntry>>{};
-  for (final entry in entries) {
-    entriesByDay
-        .putIfAbsent(diaryDayKey(entry.loggedAt), () => <CalorieEntry>[])
-        .add(entry);
-  }
-  return entriesByDay;
 }
 
 double _calculateCarryoverKcal({

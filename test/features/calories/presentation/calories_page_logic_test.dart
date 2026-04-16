@@ -19,6 +19,7 @@ CalorieWeekOverview _overview({
   required double totalConsumedKcal,
   required double totalGoalKcal,
   required double remainingKcal,
+  double? carryoverBeforeTodayKcal,
 }) {
   return CalorieWeekOverview(
     days: List<CalorieWeekDayOverview>.unmodifiable([
@@ -33,7 +34,7 @@ CalorieWeekOverview _overview({
     totalGoalKcal: totalGoalKcal,
     remainingKcal: remainingKcal,
     balanceStartDate: DateTime(2026, 3, 27).subtract(Duration(days: dayOffset)),
-    carryoverBeforeTodayKcal: remainingKcal,
+    carryoverBeforeTodayKcal: carryoverBeforeTodayKcal ?? remainingKcal,
     todayFlexibleGoalKcal: totalGoalKcal,
     goalStartsInFuture: false,
     nextGoalStartDate: null,
@@ -54,10 +55,13 @@ void main() {
       totalGoalKcal: 2200,
       remainingKcal: 600,
     );
-    // ignore: invalid_use_of_internal_member
-    final loading = const AsyncLoading<CalorieWeekOverview>().copyWithPrevious(
-      AsyncData<CalorieWeekOverview>(previous),
-    );
+    final loading = const AsyncLoading<CalorieWeekOverview>()
+        // ignore: invalid_use_of_internal_member, exercising Riverpod refresh
+        // UI fallback behavior with an AsyncValue that keeps the previous
+        // payload.
+        .copyWithPrevious(
+          AsyncData<CalorieWeekOverview>(previous),
+        );
 
     final visibleWindowEnd = DateTime(2026, 3, 27);
 
@@ -158,6 +162,34 @@ void main() {
       );
 
       expect(content.message, l10n.caloriesWeekBalanceOverspent(250));
+      expect(content.accentColor, _warningAccentColor);
+      expect(
+        content.backgroundColor,
+        _warningAccentColor.withValues(alpha: 0.08),
+      );
+    },
+  );
+
+  test(
+    'week balance banner content uses todays intake in the current balance',
+    () {
+      final overview = _overview(
+        dayOffset: 2,
+        totalConsumedKcal: 2600,
+        totalGoalKcal: 2200,
+        remainingKcal: -150,
+        carryoverBeforeTodayKcal: 300,
+      );
+
+      final content = resolveWeekBalanceSummaryBannerContent(
+        overview: overview,
+        l10n: l10n,
+        referenceNow: DateTime(2026, 3, 27, 10),
+        positiveAccentColor: _positiveAccentColor,
+        warningColor: _warningAccentColor,
+      );
+
+      expect(content.message, l10n.caloriesWeekBalanceOverspent(150));
       expect(content.accentColor, _warningAccentColor);
       expect(
         content.backgroundColor,

@@ -15,10 +15,23 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines calories summary card.
-class CaloriesSummaryCard extends ConsumerWidget {
+class CaloriesSummaryCard extends ConsumerStatefulWidget {
   /// The calories summary card.
   const CaloriesSummaryCard({
-    required this.consumedKcal, required this.goalKcal, required this.remainingKcal, required this.progress, required this.totalProtein, required this.totalCarbs, required this.totalFat, required this.consumedLabel, required this.goalLabel, required this.remainingLabel, required this.proteinLabel, required this.carbsLabel, required this.fatLabel, super.key,
+    required this.consumedKcal,
+    required this.goalKcal,
+    required this.remainingKcal,
+    required this.progress,
+    required this.totalProtein,
+    required this.totalCarbs,
+    required this.totalFat,
+    required this.consumedLabel,
+    required this.goalLabel,
+    required this.remainingLabel,
+    required this.proteinLabel,
+    required this.carbsLabel,
+    required this.fatLabel,
+    super.key,
   });
 
   /// The consumed kcal.
@@ -61,15 +74,37 @@ class CaloriesSummaryCard extends ConsumerWidget {
   final String fatLabel;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CaloriesSummaryCard> createState() =>
+      _CaloriesSummaryCardState();
+}
+
+class _CaloriesSummaryCardState extends ConsumerState<CaloriesSummaryCard> {
+  var _includeClassicActivityDelta = false;
+  var _includeClassicCarryover = false;
+  String? _classicAdjustmentSeed;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final numberFormat = NumberFormat.decimalPattern(locale);
     final kcalUnit = l10n.caloriesUnitKcal;
     final gramUnit = l10n.caloriesUnitGram;
-    final macroGoals = _MacroGoals.fromGoalKcal(goalKcal);
+    final macroGoals = _MacroGoals.fromGoalKcal(widget.goalKcal);
     final viewMode = ref.watch(calorieSummaryViewModeControllerProvider);
+    final balanceData = ref.watch(calorieBalanceSummaryProvider).value;
+    _syncClassicAdjustmentState(balanceData);
+    final classicGoalKcal = _resolveClassicGoalKcal(
+      goalKcal: widget.goalKcal,
+      balanceData: balanceData,
+      includeActivityDelta: _includeClassicActivityDelta,
+      includeCarryover: _includeClassicCarryover,
+    );
+    final classicRemainingKcal = classicGoalKcal - widget.consumedKcal;
+    final classicProgress = classicGoalKcal <= 0
+        ? (widget.consumedKcal > 0 ? 1.0 : 0.0)
+        : (widget.consumedKcal / classicGoalKcal).clamp(0.0, 1.0);
 
     return DecoratedBox(
       key: CaloriesPageKeys.summaryCard,
@@ -102,13 +137,13 @@ class CaloriesSummaryCard extends ConsumerWidget {
                           kcalUnit: kcalUnit,
                         ),
                       CalorieSummaryViewMode.classic => _ClassicHeaderStats(
-                        consumedLabel: consumedLabel,
+                        consumedLabel: widget.consumedLabel,
                         consumedValue:
-                            '${numberFormat.format(consumedKcal.round())} '
+                            '${numberFormat.format(widget.consumedKcal.round())} '
                             '$kcalUnit',
-                        goalLabel: goalLabel,
+                        goalLabel: widget.goalLabel,
                         goalValue:
-                            '${numberFormat.format(goalKcal.round())} '
+                            '${numberFormat.format(classicGoalKcal.round())} '
                             '$kcalUnit',
                       ),
                     },
@@ -116,10 +151,11 @@ class CaloriesSummaryCard extends ConsumerWidget {
                 ),
               ],
             ),
-            _SummaryActivityDeltaNote(
-              numberFormat: numberFormat,
-              kcalUnit: kcalUnit,
-            ),
+            if (viewMode == CalorieSummaryViewMode.balance)
+              _SummaryActivityDeltaNote(
+                numberFormat: numberFormat,
+                kcalUnit: kcalUnit,
+              ),
             const SizedBox(height: AppSpacing.xl),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 220),
@@ -128,12 +164,12 @@ class CaloriesSummaryCard extends ConsumerWidget {
               child: switch (viewMode) {
                 CalorieSummaryViewMode.classic => _ClassicSummaryHero(
                   key: const ValueKey<String>('classic_summary_hero'),
-                  remainingKcal: remainingKcal,
-                  progress: progress,
-                  color: remainingKcal < 0
+                  remainingKcal: classicRemainingKcal,
+                  progress: classicProgress,
+                  color: classicRemainingKcal < 0
                       ? colorScheme.error
                       : colorScheme.primary,
-                  label: remainingLabel,
+                  label: widget.remainingLabel,
                   numberFormat: numberFormat,
                 ),
                 CalorieSummaryViewMode.balance => _BalanceSummaryHero(
@@ -149,8 +185,8 @@ class CaloriesSummaryCard extends ConsumerWidget {
                 Expanded(
                   child: _MacroProgressCard(
                     macroId: 'carbs',
-                    label: carbsLabel,
-                    current: totalCarbs,
+                    label: widget.carbsLabel,
+                    current: widget.totalCarbs,
                     target: macroGoals.carbs,
                     color: const Color(0xFF3B82F6),
                     unitLabel: gramUnit,
@@ -161,8 +197,8 @@ class CaloriesSummaryCard extends ConsumerWidget {
                 Expanded(
                   child: _MacroProgressCard(
                     macroId: 'protein',
-                    label: proteinLabel,
-                    current: totalProtein,
+                    label: widget.proteinLabel,
+                    current: widget.totalProtein,
                     target: macroGoals.protein,
                     color: const Color(0xFFF97316),
                     unitLabel: gramUnit,
@@ -173,8 +209,8 @@ class CaloriesSummaryCard extends ConsumerWidget {
                 Expanded(
                   child: _MacroProgressCard(
                     macroId: 'fat',
-                    label: fatLabel,
-                    current: totalFat,
+                    label: widget.fatLabel,
+                    current: widget.totalFat,
                     target: macroGoals.fat,
                     color: const Color(0xFFEF4444),
                     unitLabel: gramUnit,
@@ -183,10 +219,48 @@ class CaloriesSummaryCard extends ConsumerWidget {
                 ),
               ],
             ),
+            if (viewMode == CalorieSummaryViewMode.classic) ...[
+              const SizedBox(height: AppSpacing.lg),
+              _ClassicSummaryMetaToggles(
+                data: balanceData,
+                numberFormat: numberFormat,
+                kcalUnit: kcalUnit,
+                includeActivityDelta: _includeClassicActivityDelta,
+                includeCarryover: _includeClassicCarryover,
+                onToggleActivityDelta: (value) {
+                  setState(() {
+                    _includeClassicActivityDelta = value;
+                  });
+                },
+                onToggleCarryover: (value) {
+                  setState(() {
+                    _includeClassicCarryover = value;
+                  });
+                },
+              ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  void _syncClassicAdjustmentState(CalorieBalanceSummaryData? data) {
+    final nextSeed = switch (data) {
+      final resolvedData? =>
+        '${resolvedData.selectedDay.toIso8601String()}:'
+            '${resolvedData.activityDeltaKcal.round()}:'
+            '${resolvedData.carryoverKcal.round()}:'
+            '${resolvedData.usedLearnedTdee}',
+      null => 'none',
+    };
+    if (_classicAdjustmentSeed == nextSeed) {
+      return;
+    }
+
+    _classicAdjustmentSeed = nextSeed;
+    _includeClassicActivityDelta = data?.usedLearnedTdee == true;
+    _includeClassicCarryover = false;
   }
 }
 
@@ -303,7 +377,12 @@ class _SummaryModeChip extends StatelessWidget {
 
 class _ClassicSummaryHero extends StatelessWidget {
   const _ClassicSummaryHero({
-    required this.remainingKcal, required this.progress, required this.color, required this.label, required this.numberFormat, super.key,
+    required this.remainingKcal,
+    required this.progress,
+    required this.color,
+    required this.label,
+    required this.numberFormat,
+    super.key,
   });
 
   final double remainingKcal;
@@ -365,7 +444,9 @@ class _ClassicSummaryHero extends StatelessWidget {
 
 class _BalanceSummaryHero extends StatelessWidget {
   const _BalanceSummaryHero({
-    required this.numberFormat, required this.kcalUnit, super.key,
+    required this.numberFormat,
+    required this.kcalUnit,
+    super.key,
   });
 
   final NumberFormat numberFormat;
@@ -473,33 +554,234 @@ class _SummaryActivityDeltaNote extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
     final balanceState = ref.watch(calorieBalanceSummaryProvider);
     final data = balanceState.value;
-    if (data == null || !data.usedLearnedTdee) {
+    if (data == null || !_hasSummaryMeta(data)) {
       return const SizedBox.shrink();
     }
 
-    final roundedDelta = data.activityDeltaKcal.round();
-    final sign = roundedDelta > 0 ? '+' : '';
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.xs),
       child: Align(
         alignment: Alignment.centerRight,
-        child: Text(
-          '${l10n.caloriesWeeklyCheckInDialogTodayDeltaLabel}: '
-          '$sign${numberFormat.format(roundedDelta)} $kcalUnit',
-          key: CaloriesPageKeys.summaryActivityDeltaNote,
+        child: _SummaryMetaContent(
+          data: data,
+          numberFormat: numberFormat,
+          kcalUnit: kcalUnit,
+          alignment: CrossAxisAlignment.end,
           textAlign: TextAlign.right,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: colors.onSurfaceVariant,
-            fontWeight: FontWeight.w600,
-          ),
         ),
       ),
     );
   }
+}
+
+class _ClassicSummaryMetaToggles extends StatelessWidget {
+  const _ClassicSummaryMetaToggles({
+    required this.data,
+    required this.numberFormat,
+    required this.kcalUnit,
+    required this.includeActivityDelta,
+    required this.includeCarryover,
+    required this.onToggleActivityDelta,
+    required this.onToggleCarryover,
+  });
+
+  final CalorieBalanceSummaryData? data;
+  final NumberFormat numberFormat;
+  final String kcalUnit;
+  final bool includeActivityDelta;
+  final bool includeCarryover;
+  final ValueChanged<bool> onToggleActivityDelta;
+  final ValueChanged<bool> onToggleCarryover;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final resolvedData = data;
+    if (resolvedData == null || !_hasSummaryMeta(resolvedData)) {
+      return const SizedBox.shrink();
+    }
+
+    return DecoratedBox(
+      key: CaloriesPageKeys.summaryMetaSection,
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (resolvedData.usedLearnedTdee)
+              _SummaryMetaToggleRow(
+                value: includeActivityDelta,
+                onChanged: onToggleActivityDelta,
+                label:
+                    '${AppLocalizations.of(context)!.caloriesWeeklyCheckInDialogTodayDeltaLabel}: '
+                    '${resolvedData.activityDeltaKcal.round() > 0 ? '+' : ''}'
+                    '${numberFormat.format(resolvedData.activityDeltaKcal.round())} '
+                    '$kcalUnit',
+                toggleKey: CaloriesPageKeys.summaryActivityDeltaToggle,
+                textKey: CaloriesPageKeys.summaryActivityDeltaNote,
+              ),
+            if (resolvedData.usedLearnedTdee &&
+                resolvedData.carryoverKcal.round() != 0)
+              const SizedBox(height: AppSpacing.xs),
+            if (resolvedData.carryoverKcal.round() != 0)
+              _SummaryMetaToggleRow(
+                value: includeCarryover,
+                onChanged: onToggleCarryover,
+                label:
+                    '${AppLocalizations.of(context)!.caloriesBalanceCarryoverNoteLabel}: '
+                    '${resolvedData.carryoverKcal.round() > 0 ? '+' : ''}'
+                    '${numberFormat.format(resolvedData.carryoverKcal.round())} '
+                    '$kcalUnit',
+                toggleKey: CaloriesPageKeys.summaryCarryoverToggle,
+                textKey: CaloriesPageKeys.summaryCarryoverNote,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryMetaToggleRow extends StatelessWidget {
+  const _SummaryMetaToggleRow({
+    required this.value,
+    required this.onChanged,
+    required this.label,
+    required this.toggleKey,
+    required this.textKey,
+  });
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  final String label;
+  final Key toggleKey;
+  final Key textKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      onTap: () => onChanged(!value),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
+        child: Row(
+          children: [
+            Checkbox(
+              key: toggleKey,
+              value: value,
+              onChanged: (nextValue) => onChanged(nextValue ?? false),
+              visualDensity: VisualDensity.compact,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Expanded(
+              child: Text(
+                label,
+                key: textKey,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryMetaContent extends StatelessWidget {
+  const _SummaryMetaContent({
+    required this.data,
+    required this.numberFormat,
+    required this.kcalUnit,
+    required this.alignment,
+    required this.textAlign,
+  });
+
+  final CalorieBalanceSummaryData data;
+  final NumberFormat numberFormat;
+  final String kcalUnit;
+  final CrossAxisAlignment alignment;
+  final TextAlign textAlign;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+    final roundedDelta = data.activityDeltaKcal.round();
+    final activitySign = roundedDelta > 0 ? '+' : '';
+    final roundedCarryover = data.carryoverKcal.round();
+    final carryoverSign = roundedCarryover > 0 ? '+' : '';
+    final showActivityDelta = data.usedLearnedTdee;
+    final showCarryover = roundedCarryover != 0;
+
+    return Column(
+      crossAxisAlignment: alignment,
+      children: [
+        if (showActivityDelta)
+          Text(
+            '${l10n.caloriesWeeklyCheckInDialogTodayDeltaLabel}: '
+            '$activitySign${numberFormat.format(roundedDelta)} $kcalUnit',
+            key: CaloriesPageKeys.summaryActivityDeltaNote,
+            textAlign: textAlign,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: colors.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        if (showActivityDelta && showCarryover)
+          const SizedBox(height: AppSpacing.xxs),
+        if (showCarryover)
+          Text(
+            '${l10n.caloriesBalanceCarryoverNoteLabel}: '
+            '$carryoverSign${numberFormat.format(roundedCarryover)} '
+            '$kcalUnit',
+            key: CaloriesPageKeys.summaryCarryoverNote,
+            textAlign: textAlign,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: colors.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+bool _hasSummaryMeta(CalorieBalanceSummaryData data) {
+  return data.usedLearnedTdee || data.carryoverKcal.round() != 0;
+}
+
+double _resolveClassicGoalKcal({
+  required double goalKcal,
+  required CalorieBalanceSummaryData? balanceData,
+  required bool includeActivityDelta,
+  required bool includeCarryover,
+}) {
+  if (balanceData == null) {
+    return goalKcal;
+  }
+
+  var resolvedGoalKcal = goalKcal;
+  if (!includeActivityDelta && balanceData.usedLearnedTdee) {
+    resolvedGoalKcal -= balanceData.activityDeltaKcal;
+  }
+  if (includeCarryover) {
+    resolvedGoalKcal += balanceData.carryoverKcal;
+  }
+  return resolvedGoalKcal;
 }
 
 class _ClassicHeaderStats extends StatelessWidget {
@@ -589,9 +871,7 @@ class _MacroProgressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final currentValueColor = current > target ? color : colorScheme.onSurface;
-    final progress = target <= 0
-        ? 0.0
-        : (current / target).clamp(0.0, 1.0);
+    final progress = target <= 0 ? 0.0 : (current / target).clamp(0.0, 1.0);
     final currentText = numberFormat.format(current.round());
     final targetText = numberFormat.format(target.round());
     final backgroundColor = Color.alphaBlend(
@@ -774,19 +1054,22 @@ String resolveMacroLabelForWidth({
 /// Does calories summary text fit width.
 @visibleForTesting
 bool doesCaloriesSummaryTextFitWidth({
-  required String text, required TextStyle style, required double maxWidth, TextPainter? textPainter,
+  required String text,
+  required TextStyle style,
+  required double maxWidth,
+  TextPainter? textPainter,
   ui.TextDirection textDirection = ui.TextDirection.ltr,
   TextScaler textScaler = TextScaler.noScaling,
 }) {
   final resolvedTextPainter =
       textPainter ??
-      TextPainter(
-        maxLines: 1,
-        textDirection: textDirection,
-        textScaler: textScaler,
-      );
-  resolvedTextPainter.text = TextSpan(text: text, style: style);
-  resolvedTextPainter.layout(maxWidth: maxWidth);
+            TextPainter(
+              maxLines: 1,
+              textDirection: textDirection,
+              textScaler: textScaler,
+            )
+        ..text = TextSpan(text: text, style: style)
+        ..layout(maxWidth: maxWidth);
 
   return !resolvedTextPainter.didExceedMaxLines;
 }

@@ -38,24 +38,24 @@ WeekBalanceSummaryBannerContent resolveWeekBalanceSummaryBannerContent({
   final isGoalStartToday =
       normalizeDiaryDay(overview.balanceStartDate) ==
       normalizeDiaryDay(referenceNow);
-  final carryoverBeforeTodayKcal = overview.carryoverBeforeTodayKcal;
-  final accentColor = carryoverBeforeTodayKcal < 0
+  final currentBalanceKcal = overview.remainingKcal;
+  final accentColor = currentBalanceKcal < 0
       ? warningColor
       : positiveAccentColor;
-  final backgroundColor = carryoverBeforeTodayKcal < 0
+  final backgroundColor = currentBalanceKcal < 0
       ? warningColor.withValues(alpha: 0.08)
       : positiveAccentColor.withValues(alpha: 0.08);
-  final absoluteCarryover = carryoverBeforeTodayKcal.abs().round();
+  final absoluteBalance = currentBalanceKcal.abs().round();
   final futureGoalStartLabel = _formatFutureGoalStartDate(
     overview.nextGoalStartDate,
     l10n.localeName,
   );
-  final message = switch ((isGoalStartToday, carryoverBeforeTodayKcal)) {
+  final message = switch ((isGoalStartToday, currentBalanceKcal)) {
     _ when overview.goalStartsInFuture && futureGoalStartLabel != null =>
       l10n.caloriesWeekBalanceStartsLater(futureGoalStartLabel),
     (true, _) => l10n.caloriesWeekBalanceStartedToday,
-    (_, > 0) => l10n.caloriesWeekBalanceSaved(absoluteCarryover),
-    (_, < 0) => l10n.caloriesWeekBalanceOverspent(absoluteCarryover),
+    (_, > 0) => l10n.caloriesWeekBalanceSaved(absoluteBalance),
+    (_, < 0) => l10n.caloriesWeekBalanceOverspent(absoluteBalance),
     _ => l10n.caloriesWeekBalanceStable,
   };
 

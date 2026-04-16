@@ -756,6 +756,7 @@
   "caloriesSummaryViewClassic": "Classic",
   "caloriesSummaryViewBalance": "Balance",
   "caloriesBalanceCarryoverLabel": "7-day balance",
+  "caloriesBalanceCarryoverNoteLabel": "Carryover",
   "caloriesBalanceFlexGoalLabel": "Flex goal",
   "caloriesBalancePaceNowLabel": "Pace now",
   "caloriesBalancePaceFinalLabel": "Final pace",

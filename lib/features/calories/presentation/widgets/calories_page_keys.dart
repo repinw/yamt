@@ -51,6 +51,24 @@ abstract final class CaloriesPageKeys {
     'calories_summary_activity_delta_note',
   );
 
+  /// The summary carryover note.
+  static const summaryCarryoverNote = Key(
+    'calories_summary_carryover_note',
+  );
+
+  /// The summary meta section.
+  static const summaryMetaSection = Key('calories_summary_meta_section');
+
+  /// The summary activity delta toggle.
+  static const summaryActivityDeltaToggle = Key(
+    'calories_summary_activity_delta_toggle',
+  );
+
+  /// The summary carryover toggle.
+  static const summaryCarryoverToggle = Key(
+    'calories_summary_carryover_toggle',
+  );
+
   /// The reload progress indicator.
   static const reloadProgressIndicator = Key(
     'calories_reload_progress_indicator',
