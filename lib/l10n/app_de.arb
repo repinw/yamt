@@ -717,6 +717,9 @@
   "caloriesWeeklyCheckInDialogTrueTdeeLabel": "Gelernter TDEE",
   "caloriesWeeklyCheckInDialogNewTargetLabel": "Neues Ziel",
   "caloriesWeeklyCheckInDialogTodayDeltaLabel": "Aktivitätsdelta heute",
+  "caloriesActivityWorkoutBonusLabel": "Trainingsbonus",
+  "caloriesActivityLearningHint":
+      "Wir lernen dein Aktivitätsmuster noch.",
   "caloriesWeeklyCheckInDialogLowConfidence":
       "Niedrige Sicherheit: Es lagen nur Start- und Endgewicht vor.",
   "caloriesWeeklyCheckInBlockedUnstableWeight":

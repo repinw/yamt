@@ -209,9 +209,15 @@ class ClassicSummaryMetaToggles extends StatelessWidget {
     if (resolvedData == null || !hasSummaryMeta(resolvedData)) {
       return const SizedBox.shrink();
     }
-    final activityDeltaValue = numberFormat.format(
-      resolvedData.activityDeltaKcal.round(),
-    );
+    final roundedActivityDelta = resolvedData.activityDeltaKcal.round();
+    final activityDeltaValue = numberFormat.format(roundedActivityDelta);
+    final showActivityAdjustment = roundedActivityDelta != 0;
+    final activityAdjustmentLabel = resolvedData.usedLearnedTdee
+        ? l10n.caloriesWeeklyCheckInDialogTodayDeltaLabel
+        : l10n.caloriesActivityWorkoutBonusLabel;
+    final activityAdjustmentHint = resolvedData.usedLearnedTdee
+        ? null
+        : l10n.caloriesActivityLearningHint;
     final carryoverValue = numberFormat.format(
       resolvedData.carryoverKcal.round(),
     );
@@ -230,18 +236,19 @@ class ClassicSummaryMetaToggles extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (resolvedData.usedLearnedTdee)
+            if (showActivityAdjustment)
               SummaryMetaToggleRow(
                 value: includeActivityDelta,
                 onChanged: onToggleActivityDelta,
                 label:
-                    '${l10n.caloriesWeeklyCheckInDialogTodayDeltaLabel}: '
-                    '${resolvedData.activityDeltaKcal.round() > 0 ? '+' : ''}'
+                    '$activityAdjustmentLabel: '
+                    '${roundedActivityDelta > 0 ? '+' : ''}'
                     '$activityDeltaValue $kcalUnit',
+                supportingText: activityAdjustmentHint,
                 toggleKey: CaloriesPageKeys.summaryActivityDeltaToggle,
                 textKey: CaloriesPageKeys.summaryActivityDeltaNote,
               ),
-            if (resolvedData.usedLearnedTdee &&
+            if (showActivityAdjustment &&
                 resolvedData.carryoverKcal.round() != 0)
               const SizedBox(height: AppSpacing.xs),
             if (resolvedData.carryoverKcal.round() != 0)
@@ -271,6 +278,7 @@ class SummaryMetaToggleRow extends StatelessWidget {
     required this.label,
     required this.toggleKey,
     required this.textKey,
+    this.supportingText,
     super.key,
   });
 
@@ -282,6 +290,9 @@ class SummaryMetaToggleRow extends StatelessWidget {
 
   /// Localized label shown next to the checkbox.
   final String label;
+
+  /// Optional supporting hint shown below the label.
+  final String? supportingText;
 
   /// Key applied to the checkbox for widget tests.
   final Key toggleKey;
@@ -299,6 +310,7 @@ class SummaryMetaToggleRow extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Checkbox(
               key: toggleKey,
@@ -308,13 +320,28 @@ class SummaryMetaToggleRow extends StatelessWidget {
             ),
             const SizedBox(width: AppSpacing.xs),
             Expanded(
-              child: Text(
-                label,
-                key: textKey,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    key: textKey,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (supportingText != null) ...[
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      supportingText!,
+                      key: CaloriesPageKeys.summaryActivityHint,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ],
@@ -359,7 +386,13 @@ class SummaryMetaContent extends StatelessWidget {
     final activitySign = roundedDelta > 0 ? '+' : '';
     final roundedCarryover = data.carryoverKcal.round();
     final carryoverSign = roundedCarryover > 0 ? '+' : '';
-    final showActivityDelta = data.usedLearnedTdee;
+    final showActivityDelta = roundedDelta != 0;
+    final activityLabel = data.usedLearnedTdee
+        ? l10n.caloriesWeeklyCheckInDialogTodayDeltaLabel
+        : l10n.caloriesActivityWorkoutBonusLabel;
+    final activityHint = data.usedLearnedTdee
+        ? null
+        : l10n.caloriesActivityLearningHint;
     final showCarryover = roundedCarryover != 0;
 
     return Column(
@@ -367,13 +400,25 @@ class SummaryMetaContent extends StatelessWidget {
       children: [
         if (showActivityDelta)
           Text(
-            '${l10n.caloriesWeeklyCheckInDialogTodayDeltaLabel}: '
+            '$activityLabel: '
             '$activitySign${numberFormat.format(roundedDelta)} $kcalUnit',
             key: CaloriesPageKeys.summaryActivityDeltaNote,
             textAlign: textAlign,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: colors.onSurfaceVariant,
               fontWeight: FontWeight.w600,
+            ),
+          ),
+        if (showActivityDelta && activityHint != null)
+          Padding(
+            padding: const EdgeInsets.only(top: AppSpacing.xxs),
+            child: Text(
+              activityHint,
+              key: CaloriesPageKeys.summaryActivityHint,
+              textAlign: textAlign,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
             ),
           ),
         if (showActivityDelta && showCarryover)
@@ -397,7 +442,7 @@ class SummaryMetaContent extends StatelessWidget {
 
 /// Returns whether any summary meta information should be shown.
 bool hasSummaryMeta(CalorieBalanceSummaryData data) {
-  return data.usedLearnedTdee || data.carryoverKcal.round() != 0;
+  return data.activityDeltaKcal.round() != 0 || data.carryoverKcal.round() != 0;
 }
 
 /// Resolves the classic-mode goal after optional daily adjustments.
@@ -412,7 +457,7 @@ double resolveClassicGoalKcal({
   }
 
   var resolvedGoalKcal = goalKcal;
-  if (!includeActivityDelta && balanceData.usedLearnedTdee) {
+  if (!includeActivityDelta && balanceData.activityDeltaKcal.round() != 0) {
     resolvedGoalKcal -= balanceData.activityDeltaKcal;
   }
   if (includeCarryover) {

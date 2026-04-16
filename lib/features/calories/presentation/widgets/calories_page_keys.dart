@@ -51,6 +51,11 @@ abstract final class CaloriesPageKeys {
     'calories_summary_activity_delta_note',
   );
 
+  /// The summary activity hint.
+  static const summaryActivityHint = Key(
+    'calories_summary_activity_hint',
+  );
+
   /// The summary carryover note.
   static const summaryCarryoverNote = Key(
     'calories_summary_carryover_note',

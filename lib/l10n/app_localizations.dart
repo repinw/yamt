@@ -2711,6 +2711,18 @@ abstract class AppLocalizations {
   /// **'Today activity delta'**
   String get caloriesWeeklyCheckInDialogTodayDeltaLabel;
 
+  /// No description provided for @caloriesActivityWorkoutBonusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout bonus'**
+  String get caloriesActivityWorkoutBonusLabel;
+
+  /// No description provided for @caloriesActivityLearningHint.
+  ///
+  /// In en, this message translates to:
+  /// **'We are still learning your activity pattern.'**
+  String get caloriesActivityLearningHint;
+
   /// No description provided for @caloriesWeeklyCheckInDialogLowConfidence.
   ///
   /// In en, this message translates to:

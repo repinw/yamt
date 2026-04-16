@@ -223,6 +223,58 @@ void main() {
     expect(find.text('Carryover: -180 kcal'), findsOneWidget);
   });
 
+  testWidgets('shows bootstrap workout bonus hint before learned TDEE', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildHarness(
+        balanceData: _balanceData(activityDeltaKcal: 140),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CaloriesPageKeys.summaryActivityDeltaNote),
+      findsOneWidget,
+    );
+    expect(find.text('Workout bonus: +140 kcal'), findsOneWidget);
+    expect(find.byKey(CaloriesPageKeys.summaryActivityHint), findsOneWidget);
+    expect(
+      find.text('We are still learning your activity pattern.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+    'classic summary uses error color when remaining drops below zero',
+    (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _buildHarness(
+          goalKcal: 1500,
+          remainingKcal: -100,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(CaloriesPageKeys.summaryModeOption('classic')),
+      );
+      await tester.pumpAndSettle();
+
+      final classicHero = tester.widget<ClassicSummaryHero>(
+        find.byType(ClassicSummaryHero),
+      );
+      final colorScheme = Theme.of(
+        tester.element(find.byType(CaloriesSummaryCard)),
+      ).colorScheme;
+
+      expect(classicHero.remainingKcal, -100);
+      expect(classicHero.color, colorScheme.error);
+    },
+  );
+
   testWidgets(
     'classic summary uses checkbox toggles below macros to update the circle',
     (tester) async {
@@ -332,6 +384,9 @@ void main() {
 Widget _buildHarness({
   AppPreferences? preferences,
   CalorieBalanceSummaryData? balanceData,
+  double consumedKcal = 1600,
+  double goalKcal = 2000,
+  double remainingKcal = 400,
   double totalCarbs = 100,
   double totalProtein = 90,
   double totalFat = 40,
@@ -359,10 +414,10 @@ Widget _buildHarness({
             child: SizedBox(
               width: 520,
               child: CaloriesSummaryCard(
-                consumedKcal: 1600,
-                goalKcal: 2000,
-                remainingKcal: 400,
-                progress: 0.8,
+                consumedKcal: consumedKcal,
+                goalKcal: goalKcal,
+                remainingKcal: remainingKcal,
+                progress: goalKcal <= 0 ? 0 : consumedKcal / goalKcal,
                 totalProtein: totalProtein,
                 totalCarbs: totalCarbs,
                 totalFat: totalFat,
