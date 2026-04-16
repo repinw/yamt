@@ -119,7 +119,7 @@ class InventoryFiltersSheet extends StatelessWidget {
     final mediaQuery = MediaQuery.of(context);
     final isCompact = mediaQuery.size.width < 640;
     final borderRadius = isCompact
-        ? BorderRadius.vertical(
+        ? const BorderRadius.vertical(
             top: Radius.circular(AppRadius.xl + AppSpacing.xs),
           )
         : BorderRadius.circular(AppRadius.xl + AppSpacing.md);

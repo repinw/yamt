@@ -96,8 +96,8 @@ void main() {
   testWidgets('saves imported recipe template and pops back', (tester) async {
     final repository = _FakePreparedMealTemplateRepository();
     addTearDown(repository.dispose);
-    final args = MealTemplateImportReviewArgs(
-      importedRecipe: const PreparedMealRecipeImport(
+    const args = MealTemplateImportReviewArgs(
+      importedRecipe: PreparedMealRecipeImport(
         recipeUrl: 'https://chefkoch.de/rezepte/42/kartoffelsuppe.html',
         title: 'Kartoffelsuppe',
         servings: 4,
@@ -128,8 +128,8 @@ void main() {
   testWidgets('shows localized save failure message', (tester) async {
     final repository = _FakePreparedMealTemplateRepository(saveSucceeds: false);
     addTearDown(repository.dispose);
-    final args = MealTemplateImportReviewArgs(
-      importedRecipe: const PreparedMealRecipeImport(
+    const args = MealTemplateImportReviewArgs(
+      importedRecipe: PreparedMealRecipeImport(
         recipeUrl: 'https://chefkoch.de/rezepte/42/kartoffelsuppe.html',
         title: 'Kartoffelsuppe',
         servings: 4,

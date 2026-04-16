@@ -1079,7 +1079,7 @@ class InventoryReceiptManualProductController
     String? rawWeight, {
     InventoryAmountUnit? fallbackUnit,
   }) {
-    final parser = const InventoryAmountParser();
+    const parser = InventoryAmountParser();
     final parsed = parser.tryParse(
       rawWeight: rawWeight,
       quantity: 1,

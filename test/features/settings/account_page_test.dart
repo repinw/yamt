@@ -18,10 +18,10 @@ Future<void> _ensureVisibleText(WidgetTester tester, String text) async {
 Widget _wrapWithApp({required Stream<User?> authStream}) {
   return ProviderScope(
     overrides: [authStateChangesProvider.overrideWith((ref) => authStream)],
-    child: MaterialApp(
+    child: const MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const AccountPage(),
+      home: AccountPage(),
     ),
   );
 }

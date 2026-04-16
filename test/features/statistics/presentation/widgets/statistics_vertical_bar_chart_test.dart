@@ -8,10 +8,10 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
+      const MaterialApp(
         home: Scaffold(
           body: StatisticsVerticalBarChart(
-            data: const [
+            data: [
               StatisticsBarChartDatum(
                 label: 'Mo',
                 value: 100,

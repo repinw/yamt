@@ -916,7 +916,7 @@ class _InventoryReceiptManualProductEditorPageState
   }
 
   InventoryAmountUnit _defaultEatNowUnit() {
-    final parser = const InventoryAmountParser();
+    const parser = InventoryAmountParser();
     final rawWeight =
         widget.config.selectedProduct?.packageWeight ??
         widget.config.item.weight;

@@ -109,7 +109,7 @@ class _InventoryReceiptReviewSheetState
                   BoxShadow(
                     color: colors.shadow.withValues(alpha: 0.07),
                     blurRadius: 10,
-                    offset: Offset(0, 2),
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),

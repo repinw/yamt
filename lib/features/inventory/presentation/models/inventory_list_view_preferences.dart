@@ -81,7 +81,7 @@ class InventoryListViewPreferencesStore {
       'inventory_list_prepared_meals_expanded';
 
   InventoryListViewPreferences readSync(AppPreferences preferences) {
-    final defaultPreferences = const InventoryListViewPreferences();
+    const defaultPreferences = InventoryListViewPreferences();
 
     return InventoryListViewPreferences(
       consumptionFilter: InventoryConsumptionFilter(

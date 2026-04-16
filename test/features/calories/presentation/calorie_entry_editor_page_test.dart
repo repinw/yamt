@@ -9,6 +9,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -22,8 +24,6 @@ import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.d
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/calories/application/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../support/fake_calories_repositories.dart';
@@ -550,9 +550,9 @@ void main() {
           logRepository: logRepository,
           settingsRepository: settingsRepository,
           initialLocation: AppRoutes.homeCaloriesEntryCreate,
-          createExtra: CalorieEntryCreateArgs(
+          createExtra: const CalorieEntryCreateArgs(
             prefilledProfile: null,
-            inventoryContext: const CalorieInventoryCreateContext(
+            inventoryContext: CalorieInventoryCreateContext(
               inventoryItemId: 'inventory-1',
               foodFingerprint: 'milk',
               globalFoodItemId: 'off-milk',
@@ -621,9 +621,9 @@ void main() {
           logRepository: logRepository,
           settingsRepository: settingsRepository,
           initialLocation: AppRoutes.root,
-          createExtra: CalorieEntryCreateArgs(
+          createExtra: const CalorieEntryCreateArgs(
             prefilledProfile: null,
-            inventoryContext: const CalorieInventoryCreateContext(
+            inventoryContext: CalorieInventoryCreateContext(
               inventoryItemId: 'inventory-1',
               foodFingerprint: 'milk',
               globalFoodItemId: 'off-milk',

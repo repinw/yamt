@@ -228,12 +228,10 @@ class CalorieHealthTrendChart extends StatelessWidget {
           if (selector(points[index]) case final value?)
             FlSpot(index.toDouble(), transformY(value)),
       ],
-      isCurved: false,
       color: color,
       barWidth: 3,
       isStrokeCapRound: true,
-      dotData: FlDotData(show: true),
-      belowBarData: BarAreaData(show: false),
+      belowBarData: BarAreaData(),
     );
   }
 }

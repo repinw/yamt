@@ -53,7 +53,7 @@ class SettingsPage extends StatelessWidget {
     ];
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(
+      padding: const EdgeInsets.fromLTRB(
         AppSpacing.xl,
         AppSpacing.xl,
         AppSpacing.xl,

@@ -1,18 +1,18 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository.dart';
-import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
+import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_lookup_repository_contract.dart';
-import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
 
@@ -25,14 +25,11 @@ const _lookupErrorUnavailable = 'off_lookup_unavailable';
 const _lookupErrorUnauthenticated = 'unauthenticated';
 const _functionsRegion = 'europe-west1';
 const _lookupCallableName = 'resolveOffProductByBarcode';
-const _lookupCallableTimeout = Duration(seconds: 60);
 const _useFunctionsEmulator = bool.fromEnvironment(
   'USE_FUNCTIONS_EMULATOR',
-  defaultValue: false,
 );
 const _functionsEmulatorHostFromDefine = String.fromEnvironment(
   'FUNCTIONS_EMULATOR_HOST',
-  defaultValue: '',
 );
 const _functionsEmulatorPort = int.fromEnvironment(
   'FUNCTIONS_EMULATOR_PORT',
@@ -132,7 +129,7 @@ class _FirebaseCallableCalorieOffLookupClient
     try {
       final callable = _functions.httpsCallable(
         _lookupCallableName,
-        options: HttpsCallableOptions(timeout: _lookupCallableTimeout),
+        options: HttpsCallableOptions(),
       );
       final result = await callable.call(<String, Object?>{'barcode': barcode});
       final payload = _normalizeStringMap(result.data);

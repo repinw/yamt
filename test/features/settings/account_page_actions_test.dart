@@ -90,10 +90,10 @@ Widget _wrap({
       authStateChangesProvider.overrideWith((ref) => authStream),
       accountControllerProvider.overrideWith(() => controller),
     ],
-    child: MaterialApp(
+    child: const MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const AccountPage(),
+      home: AccountPage(),
     ),
   );
 }

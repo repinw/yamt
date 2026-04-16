@@ -106,7 +106,7 @@ void main() {
   });
 
   test('scroll physics clamps and dampens fling velocity', () {
-    final physics = const CaloriesDayNavigationScrollPhysics();
+    const physics = CaloriesDayNavigationScrollPhysics();
     final applied = physics.applyTo(const AlwaysScrollableScrollPhysics());
     final metrics = FixedScrollMetrics(
       minScrollExtent: 0,

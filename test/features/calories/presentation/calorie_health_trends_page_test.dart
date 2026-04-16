@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_health_trend_snapshot.dart';
 import 'package:yamt/features/calories/presentation/'
-    'calorie_health_trends_page_keys.dart';
-import 'package:yamt/features/calories/presentation/'
     'calorie_health_trends_page.dart';
+import 'package:yamt/features/calories/presentation/'
+    'calorie_health_trends_page_keys.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_health_trend_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -14,11 +14,11 @@ import 'package:yamt/l10n/app_localizations.dart';
 Widget _buildTestApp({required List<dynamic> overrides}) {
   return ProviderScope(
     overrides: overrides.cast(),
-    child: MaterialApp(
-      locale: const Locale('en'),
+    child: const MaterialApp(
+      locale: Locale('en'),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      home: const CalorieHealthTrendsPage(),
+      home: CalorieHealthTrendsPage(),
     ),
   );
 }

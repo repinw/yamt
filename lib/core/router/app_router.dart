@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/auth/guest_name_setup_page.dart';
 import 'package:yamt/features/auth/provider/'
     'auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
-import 'package:yamt/features/auth/guest_name_setup_page.dart';
 import 'package:yamt/features/auth/welcome_page.dart';
-import 'package:yamt/features/calories/presentation/'
-    'calorie_goal_onboarding_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_barcode_scan_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
+import 'package:yamt/features/calories/presentation/'
+    'calorie_goal_onboarding_page.dart';
 import 'package:yamt/features/calories/presentation/'
     'calorie_health_trends_page.dart';
 import 'package:yamt/features/calories/presentation/calories_page.dart';
@@ -18,47 +18,51 @@ import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
-import 'package:yamt/features/household/presentation/household_page.dart';
 import 'package:yamt/features/home/home_page.dart';
+import 'package:yamt/features/household/presentation/household_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/meal_templates/presentation/'
     'meal_template_detail_page.dart';
-import 'package:yamt/features/meal_templates/presentation/models/'
-    'meal_template_import_review_args.dart';
 import 'package:yamt/features/meal_templates/presentation/'
     'meal_template_import_review_page.dart';
 import 'package:yamt/features/meal_templates/presentation/meal_templates_page.dart';
-import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
+import 'package:yamt/features/meal_templates/presentation/models/'
+    'meal_template_import_review_args.dart';
 import 'package:yamt/features/scanner/presentation/'
     'inventory_receipt_review_page.dart';
 import 'package:yamt/features/settings/account_page.dart';
 import 'package:yamt/features/settings/settings_page.dart';
+import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:yamt/features/statistics/presentation/statistics_page.dart';
 
 part 'app_router.g.dart';
 
+/// Provides root navigator key for app routing.
 @Riverpod(keepAlive: true)
 GlobalKey<NavigatorState> navigatorKey(Ref ref) {
   return GlobalKey<NavigatorState>(debugLabel: 'rootNavigator');
 }
 
+/// Provides listenable used to refresh router redirects.
 @Riverpod(keepAlive: true)
 Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
   final listenable = AppRouterRefreshListenable();
-  ref.onDispose(listenable.dispose);
-  ref.listen(authStateChangesProvider, (previous, next) {
-    listenable.refresh();
-  });
-  ref.listen(authProfileSetupCompletedProvider, (previous, next) {
-    listenable.refresh();
-  });
-  ref.listen(calorieGoalOnboardingCompletedProvider, (previous, next) {
-    listenable.refresh();
-  });
+  ref
+    ..onDispose(listenable.dispose)
+    ..listen(authStateChangesProvider, (previous, next) {
+      listenable.refresh();
+    })
+    ..listen(authProfileSetupCompletedProvider, (previous, next) {
+      listenable.refresh();
+    })
+    ..listen(calorieGoalOnboardingCompletedProvider, (previous, next) {
+      listenable.refresh();
+    });
   return listenable;
 }
 
+/// Provides application `GoRouter` instance.
 @Riverpod(keepAlive: true)
 Raw<GoRouter> appRouter(Ref ref) {
   final navigatorKey = ref.watch(navigatorKeyProvider);
@@ -301,7 +305,9 @@ String? _redirectForState(Ref ref, GoRouterState state) {
   return null;
 }
 
+/// Change notifier bridge used to refresh `GoRouter`.
 class AppRouterRefreshListenable extends ChangeNotifier {
+  /// Triggers one router refresh cycle.
   void refresh() {
     notifyListeners();
   }

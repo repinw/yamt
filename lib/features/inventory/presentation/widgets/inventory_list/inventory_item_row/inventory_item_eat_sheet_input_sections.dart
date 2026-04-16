@@ -211,7 +211,7 @@ class _InventoryItemEatInedibleAmountSection extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _InventoryItemEatLeadingIcon(icon: Icons.info_outline_rounded),
+              const _InventoryItemEatLeadingIcon(icon: Icons.info_outline_rounded),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(

@@ -61,10 +61,10 @@ Widget _buildApp({
 
   return ProviderScope(
     overrides: overrides,
-    child: MaterialApp(
+    child: const MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const HouseholdPage(),
+      home: HouseholdPage(),
     ),
   );
 }
@@ -77,7 +77,7 @@ void main() {
       when(() => user.uid).thenReturn('host-1');
       when(() => user.isAnonymous).thenReturn(false);
 
-      final profile = UserProfile(
+      const profile = UserProfile(
         uid: 'host-1',
         email: 'host@example.com',
         displayName: 'Host',

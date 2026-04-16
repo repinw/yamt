@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -37,9 +37,9 @@ import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import '../support/fake_calories_repositories.dart';
 import '../../../helpers/memory_app_preferences.dart';
 import '../../../support/fake_local_image_store.dart';
+import '../support/fake_calories_repositories.dart';
 
 CalorieEntry _entry(
   String id, {
@@ -135,10 +135,8 @@ List<ManualHealthWeightEntry> _weeklyCheckInWeights(
   final windowStart = _normalizeDay(dueDay).subtract(const Duration(days: 7));
   final windowEnd = windowStart.add(const Duration(days: 6));
   return <ManualHealthWeightEntry>[
-    if (includeStart)
-      ManualHealthWeightEntry(day: windowStart, weightKg: 84.0),
-    if (includeEnd)
-      ManualHealthWeightEntry(day: windowEnd, weightKg: 83.4),
+    if (includeStart) ManualHealthWeightEntry(day: windowStart, weightKg: 84.0),
+    if (includeEnd) ManualHealthWeightEntry(day: windowEnd, weightKg: 83.4),
   ];
 }
 
@@ -666,12 +664,36 @@ void main() {
     final selectedDay = DateTime(2026, 4, 11);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
-        _entry('entry-0', loggedAt: DateTime(2026, 4, 8, 8), mealType: MealType.breakfast),
-        _entry('entry-1', loggedAt: DateTime(2026, 4, 9, 8), mealType: MealType.breakfast),
-        _entry('entry-2', loggedAt: DateTime(2026, 4, 10, 8), mealType: MealType.breakfast),
-        _entry('entry-4', loggedAt: DateTime(2026, 4, 12, 8), mealType: MealType.breakfast),
-        _entry('entry-5', loggedAt: DateTime(2026, 4, 13, 8), mealType: MealType.breakfast),
-        _entry('entry-6', loggedAt: DateTime(2026, 4, 14, 8), mealType: MealType.breakfast),
+        _entry(
+          'entry-0',
+          loggedAt: DateTime(2026, 4, 8, 8),
+          mealType: MealType.breakfast,
+        ),
+        _entry(
+          'entry-1',
+          loggedAt: DateTime(2026, 4, 9, 8),
+          mealType: MealType.breakfast,
+        ),
+        _entry(
+          'entry-2',
+          loggedAt: DateTime(2026, 4, 10, 8),
+          mealType: MealType.breakfast,
+        ),
+        _entry(
+          'entry-4',
+          loggedAt: DateTime(2026, 4, 12, 8),
+          mealType: MealType.breakfast,
+        ),
+        _entry(
+          'entry-5',
+          loggedAt: DateTime(2026, 4, 13, 8),
+          mealType: MealType.breakfast,
+        ),
+        _entry(
+          'entry-6',
+          loggedAt: DateTime(2026, 4, 14, 8),
+          mealType: MealType.breakfast,
+        ),
       ],
     );
     final settingsRepository = FakeCalorieSettingsRepository(

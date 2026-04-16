@@ -161,10 +161,10 @@ Future<void> _pumpSettingsPage(
           appVersionProvider.overrideWith(appVersionOverride),
         ...extraOverrides.cast(),
       ],
-      child: MaterialApp(
+      child: const MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: const Scaffold(body: SettingsPage()),
+        home: Scaffold(body: SettingsPage()),
       ),
     ),
   );

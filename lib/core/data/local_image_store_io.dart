@@ -30,7 +30,10 @@ class _IoLocalImageStore implements LocalImageStore {
       }
 
       final targetFile = await _resolveFile(targetRef);
-      targetFile.writeAsBytesSync(sourceFile.readAsBytesSync(), flush: true);
+      await targetFile.writeAsBytes(
+        await sourceFile.readAsBytes(),
+        flush: true,
+      );
     } on Object catch (error, stackTrace) {
       log(
         'Failed to copy local image '
@@ -47,7 +50,7 @@ class _IoLocalImageStore implements LocalImageStore {
     try {
       final file = await _resolveFile(imageRef);
       if (file.existsSync()) {
-        file.deleteSync();
+        await file.delete();
       }
     } on Object catch (error, stackTrace) {
       log(
@@ -66,7 +69,7 @@ class _IoLocalImageStore implements LocalImageStore {
       if (!file.existsSync()) {
         return null;
       }
-      return file.readAsBytesSync();
+      return await file.readAsBytes();
     } on Object catch (error, stackTrace) {
       log(
         'Failed to read local image ${imageRef.storageKey}.',
@@ -85,7 +88,7 @@ class _IoLocalImageStore implements LocalImageStore {
   }) async {
     try {
       final file = await _resolveFile(imageRef);
-      file.writeAsBytesSync(bytes, flush: true);
+      await file.writeAsBytes(bytes, flush: true);
     } on Object catch (error, stackTrace) {
       log(
         'Failed to save local image ${imageRef.storageKey}.',
@@ -102,7 +105,7 @@ class _IoLocalImageStore implements LocalImageStore {
       '${rootDirectory.path}/${imageRef.storageFolder}',
     );
     if (!folder.existsSync()) {
-      folder.createSync(recursive: true);
+      await folder.create(recursive: true);
     }
     return File('${folder.path}/${imageRef.entityId}$_localImageFileExtension');
   }
@@ -118,7 +121,7 @@ class _IoLocalImageStore implements LocalImageStore {
       '${documentsDirectory.path}/$_localImageRootFolderName',
     );
     if (!rootDirectory.existsSync()) {
-      rootDirectory.createSync(recursive: true);
+      await rootDirectory.create(recursive: true);
     }
     _cachedRootDirectory = rootDirectory;
     return rootDirectory;
