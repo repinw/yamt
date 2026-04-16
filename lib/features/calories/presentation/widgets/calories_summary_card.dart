@@ -83,7 +83,7 @@ class _CaloriesSummaryCardState extends ConsumerState<CaloriesSummaryCard> {
   _balanceSummarySubscription;
   var _includeClassicActivityDelta = false;
   var _includeClassicCarryover = false;
-  String? _classicAdjustmentSeed;
+  (DateTime, int, int, bool)? _classicAdjustmentSeed;
 
   @override
   void initState() {
@@ -273,14 +273,14 @@ class _CaloriesSummaryCardState extends ConsumerState<CaloriesSummaryCard> {
   }
 
   bool _applyClassicAdjustmentState(CalorieBalanceSummaryData? data) {
-    final nextSeed = switch (data) {
-      final resolvedData? =>
-        '${resolvedData.selectedDay.toIso8601String()}:'
-            '${resolvedData.activityDeltaKcal.round()}:'
-            '${resolvedData.carryoverKcal.round()}:'
-            '${resolvedData.usedLearnedTdee}',
-      null => 'none',
-    };
+    final nextSeed = data == null
+        ? null
+        : (
+            data.selectedDay,
+            data.activityDeltaKcal.round(),
+            data.carryoverKcal.round(),
+            data.usedLearnedTdee,
+          );
     if (_classicAdjustmentSeed == nextSeed) {
       return false;
     }
