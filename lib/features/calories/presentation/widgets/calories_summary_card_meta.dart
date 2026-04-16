@@ -206,15 +206,16 @@ class ClassicSummaryMetaToggles extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final resolvedData = data;
     final l10n = AppLocalizations.of(context)!;
-    if (resolvedData == null || !hasSummaryMeta(resolvedData)) {
+    if (resolvedData == null || !hasClassicSummaryMetaToggles(resolvedData)) {
       return const SizedBox.shrink();
     }
     final roundedActivityDelta = resolvedData.activityDeltaKcal.round();
     final activityDeltaValue = numberFormat.format(roundedActivityDelta);
     final showActivityAdjustment = roundedActivityDelta != 0;
-    final activityAdjustmentLabel = resolvedData.usedLearnedTdee
-        ? l10n.caloriesWeeklyCheckInDialogTodayDeltaLabel
-        : l10n.caloriesActivityWorkoutBonusLabel;
+    final activityAdjustmentLabel = _activityMetaLabel(
+      l10n: l10n,
+      data: resolvedData,
+    );
     final activityAdjustmentHint = resolvedData.usedLearnedTdee
         ? null
         : l10n.caloriesActivityLearningHint;
@@ -382,14 +383,14 @@ class SummaryMetaContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
-    final roundedDelta = data.activityDeltaKcal.round();
-    final activitySign = roundedDelta > 0 ? '+' : '';
+    final roundedDisplayedActivityKcal = _displayedActivityMetaKcal(
+      data,
+    ).round();
+    final activitySign = roundedDisplayedActivityKcal > 0 ? '+' : '';
     final roundedCarryover = data.carryoverKcal.round();
     final carryoverSign = roundedCarryover > 0 ? '+' : '';
-    final showActivityDelta = roundedDelta != 0;
-    final activityLabel = data.usedLearnedTdee
-        ? l10n.caloriesWeeklyCheckInDialogTodayDeltaLabel
-        : l10n.caloriesActivityWorkoutBonusLabel;
+    final showActivityDelta = roundedDisplayedActivityKcal != 0;
+    final activityLabel = _activityMetaLabel(l10n: l10n, data: data);
     final activityHint = data.usedLearnedTdee
         ? null
         : l10n.caloriesActivityLearningHint;
@@ -401,7 +402,8 @@ class SummaryMetaContent extends StatelessWidget {
         if (showActivityDelta)
           Text(
             '$activityLabel: '
-            '$activitySign${numberFormat.format(roundedDelta)} $kcalUnit',
+            '$activitySign'
+            '${numberFormat.format(roundedDisplayedActivityKcal)} $kcalUnit',
             key: CaloriesPageKeys.summaryActivityDeltaNote,
             textAlign: textAlign,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -442,6 +444,12 @@ class SummaryMetaContent extends StatelessWidget {
 
 /// Returns whether any summary meta information should be shown.
 bool hasSummaryMeta(CalorieBalanceSummaryData data) {
+  return _displayedActivityMetaKcal(data).round() != 0 ||
+      data.carryoverKcal.round() != 0;
+}
+
+/// Returns whether any classic-mode adjustment toggles should be shown.
+bool hasClassicSummaryMetaToggles(CalorieBalanceSummaryData data) {
   return data.activityDeltaKcal.round() != 0 || data.carryoverKcal.round() != 0;
 }
 
@@ -464,6 +472,24 @@ double resolveClassicGoalKcal({
     resolvedGoalKcal += balanceData.carryoverKcal;
   }
   return resolvedGoalKcal;
+}
+
+double _displayedActivityMetaKcal(CalorieBalanceSummaryData data) {
+  return data.usedLearnedTdee
+      ? data.activityComparisonKcal
+      : data.activityDeltaKcal;
+}
+
+String _activityMetaLabel({
+  required AppLocalizations l10n,
+  required CalorieBalanceSummaryData data,
+}) {
+  if (!data.usedLearnedTdee) {
+    return l10n.caloriesActivityWorkoutBonusLabel;
+  }
+  return data.isCurrentDay
+      ? l10n.caloriesActivityTodayVsUsualLabel
+      : l10n.caloriesActivityVsUsualLabel;
 }
 
 /// Shows the classic-mode consumed and goal stats in the header.

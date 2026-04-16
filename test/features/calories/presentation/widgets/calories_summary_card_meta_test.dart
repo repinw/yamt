@@ -70,6 +70,44 @@ void main() {
     );
   });
 
+  testWidgets('summary meta content shows signed learned comparison labels', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildHarness(
+        child: Column(
+          children: [
+            SummaryMetaContent(
+              data: _balanceData(
+                activityComparisonKcal: -120,
+                usedLearnedTdee: true,
+              ),
+              numberFormat: numberFormat,
+              kcalUnit: 'kcal',
+              alignment: CrossAxisAlignment.start,
+              textAlign: TextAlign.left,
+            ),
+            SummaryMetaContent(
+              data: _balanceData(
+                selectedDay: DateTime(2026, 4, 9),
+                activityComparisonKcal: -80,
+                usedLearnedTdee: true,
+              ),
+              numberFormat: numberFormat,
+              kcalUnit: 'kcal',
+              alignment: CrossAxisAlignment.start,
+              textAlign: TextAlign.left,
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Today vs usual: -120 kcal'), findsOneWidget);
+    expect(find.text('Activity vs usual: -80 kcal'), findsOneWidget);
+  });
+
   testWidgets(
     'classic meta toggles can render carryover without activity row',
     (
@@ -151,13 +189,16 @@ Widget _buildHarness({required Widget child}) {
 }
 
 CalorieBalanceSummaryData _balanceData({
+  DateTime? selectedDay,
   double activityDeltaKcal = 0,
+  double activityComparisonKcal = 0,
   double carryoverKcal = 0,
   bool usedLearnedTdee = false,
 }) {
   final now = DateTime(2026, 4, 10, 14);
+  final resolvedSelectedDay = selectedDay ?? DateTime(2026, 4, 10);
   return CalorieBalanceSummaryData(
-    selectedDay: DateTime(2026, 4, 10),
+    selectedDay: resolvedSelectedDay,
     referenceNow: now,
     windowStartDate: now.subtract(const Duration(days: 6)),
     balanceStartDate: now.subtract(const Duration(days: 6)),
@@ -174,6 +215,7 @@ CalorieBalanceSummaryData _balanceData({
     deadZoneKcal: 60,
     rangeKcal: 600,
     activityDeltaKcal: activityDeltaKcal,
+    activityComparisonKcal: activityComparisonKcal,
     usedLearnedTdee: usedLearnedTdee,
   );
 }

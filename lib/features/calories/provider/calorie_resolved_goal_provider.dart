@@ -30,6 +30,7 @@ class ResolvedCalorieGoalData {
     required this.usedLearnedTdee,
     required this.usesBootstrapActivityBonus,
     required this.wasClampedToMinimum,
+    this.activityComparisonKcal = 0,
   });
 
   /// The day.
@@ -44,10 +45,13 @@ class ResolvedCalorieGoalData {
   /// The activity delta kcal.
   final double activityDeltaKcal;
 
+  /// The signed activity comparison against the learned baseline.
+  final double activityComparisonKcal;
+
   /// The last week average active kcal.
   final double lastWeekAverageActiveKcal;
 
-  /// The today active kcal.
+  /// The selected day active kcal.
   final int todayActiveKcal;
 
   /// The used learned tdee.
@@ -84,7 +88,7 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
     log(message, name: _resolvedGoalLogName);
   }
 
-  if (!isSameDiaryDay(normalizedDay, now) || storedGoalKcal <= 0) {
+  if (storedGoalKcal <= 0) {
     return ResolvedCalorieGoalData(
       day: normalizedDay,
       storedGoalKcal: storedGoalKcal,
@@ -98,15 +102,16 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
     );
   }
 
-  final todayActivity = await _loadTodayActivityData(ref, normalizedDay);
-  if (!settings.hasLearnedTdee) {
+  final dayActivity = await _loadDayActivityData(ref, normalizedDay);
+  final learnedEntry = settings.learnedTdeeEntryForDay(normalizedDay);
+  if (learnedEntry == null) {
     final activityDeltaKcal =
         _isBootstrapWorkoutBonusEligible(
           settings: settings,
           day: normalizedDay,
         )
         ? calculateBootstrapWorkoutBonusKcal(
-            workoutCalories: todayActivity.totalWorkoutCalories,
+            workoutCalories: dayActivity.totalWorkoutCalories,
           )
         : 0.0;
     final resolvedGoalKcal = (storedGoalKcal + activityDeltaKcal).clamp(
@@ -117,8 +122,8 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
       final message =
           'CALC_GOAL_DEBUG '
           'day=${diaryDayKey(normalizedDay)} '
-          'totalWorkoutCalories=${todayActivity.totalWorkoutCalories} '
-          'todayActiveKcal=${todayActivity.todayActiveKcal} '
+          'totalWorkoutCalories=${dayActivity.totalWorkoutCalories} '
+          'todayActiveKcal=${dayActivity.todayActiveKcal} '
           'bootstrapActivityBonusKcal='
           '${activityDeltaKcal.toStringAsFixed(2)} '
           'resolvedGoalKcal=${resolvedGoalKcal.toStringAsFixed(2)}';
@@ -131,7 +136,7 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
       goalKcal: resolvedGoalKcal,
       activityDeltaKcal: activityDeltaKcal,
       lastWeekAverageActiveKcal: 0,
-      todayActiveKcal: todayActivity.todayActiveKcal,
+      todayActiveKcal: dayActivity.todayActiveKcal,
       usedLearnedTdee: false,
       usesBootstrapActivityBonus: activityDeltaKcal > 0,
       wasClampedToMinimum:
@@ -142,13 +147,13 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
   }
 
   final averageActiveKcal =
-      settings
-          .latestLearnedTdeeEntry
-          ?.weeklyCheckInSnapshot
-          ?.averageActiveKcal ??
-      0;
+      learnedEntry.weeklyCheckInSnapshot?.averageActiveKcal ?? 0;
+  final activityComparisonKcal = calculateLearnedActivityComparisonKcal(
+    todayActiveKcal: dayActivity.todayActiveKcal,
+    averageActiveKcal: averageActiveKcal,
+  );
   final activityDeltaKcal = calculateLearnedActivityBonusKcal(
-    todayActiveKcal: todayActivity.todayActiveKcal,
+    todayActiveKcal: dayActivity.todayActiveKcal,
     averageActiveKcal: averageActiveKcal,
   );
   final resolvedGoalKcal = (storedGoalKcal + activityDeltaKcal).clamp(
@@ -160,7 +165,8 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
         'CALC_GOAL_DEBUG '
         'day=${diaryDayKey(normalizedDay)} '
         'averageActiveKcal=${averageActiveKcal.toStringAsFixed(2)} '
-        'todayActiveKcal=${todayActivity.todayActiveKcal} '
+        'todayActiveKcal=${dayActivity.todayActiveKcal} '
+        'activityComparisonKcal=${activityComparisonKcal.toStringAsFixed(2)} '
         'activityDeltaKcal=${activityDeltaKcal.toStringAsFixed(2)} '
         'resolvedGoalKcal=${resolvedGoalKcal.toStringAsFixed(2)}';
     log(message, name: _resolvedGoalLogName);
@@ -171,8 +177,9 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
     storedGoalKcal: storedGoalKcal,
     goalKcal: resolvedGoalKcal,
     activityDeltaKcal: activityDeltaKcal,
+    activityComparisonKcal: activityComparisonKcal,
     lastWeekAverageActiveKcal: averageActiveKcal,
-    todayActiveKcal: todayActivity.todayActiveKcal,
+    todayActiveKcal: dayActivity.todayActiveKcal,
     usedLearnedTdee: true,
     usesBootstrapActivityBonus: false,
     wasClampedToMinimum:
@@ -182,8 +189,8 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
   );
 }
 
-class _ResolvedTodayActivityData {
-  const _ResolvedTodayActivityData({
+class _ResolvedDayActivityData {
+  const _ResolvedDayActivityData({
     required this.todayActiveKcal,
     required this.totalWorkoutCalories,
   });
@@ -192,26 +199,26 @@ class _ResolvedTodayActivityData {
   final int totalWorkoutCalories;
 }
 
-Future<_ResolvedTodayActivityData> _loadTodayActivityData(
+Future<_ResolvedDayActivityData> _loadDayActivityData(
   Ref ref,
-  DateTime today,
+  DateTime day,
 ) async {
   final status = await ref.watch(healthConnectionControllerProvider.future);
   if (status.accessState != HealthDataAccessState.ready) {
-    return const _ResolvedTodayActivityData(
+    return const _ResolvedDayActivityData(
       todayActiveKcal: 0,
       totalWorkoutCalories: 0,
     );
   }
   final dayData = await ref
       .watch(diaryHealthServiceProvider)
-      .loadDayData(day: today);
-  final summary = buildDiaryActivitySummary(day: today, dayData: dayData);
+      .loadDayData(day: day);
+  final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
   final totalWorkoutCalories = summary.workouts.fold<int>(
     0,
     (sum, workout) => sum + (workout.totalCalories ?? 0),
   );
-  return _ResolvedTodayActivityData(
+  return _ResolvedDayActivityData(
     todayActiveKcal:
         calculateDiaryBurnedCalories(
           stepsOutsideWorkouts: summary.stepsOutsideWorkouts,

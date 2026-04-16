@@ -7,11 +7,25 @@ const bootstrapWorkoutBonusFraction = 0.35;
 const bootstrapWorkoutBonusMaxKcal = 300.0;
 
 /// Calculates the learned daily activity bonus after the first weekly check-in.
+double calculateLearnedActivityComparisonKcal({
+  required int todayActiveKcal,
+  required double averageActiveKcal,
+}) {
+  return todayActiveKcal - averageActiveKcal;
+}
+
+/// Calculates the learned daily activity bonus after the first weekly check-in.
 double calculateLearnedActivityBonusKcal({
   required int todayActiveKcal,
   required double averageActiveKcal,
 }) {
-  return math.max<double>(0, todayActiveKcal - averageActiveKcal);
+  return math.max<double>(
+    0,
+    calculateLearnedActivityComparisonKcal(
+      todayActiveKcal: todayActiveKcal,
+      averageActiveKcal: averageActiveKcal,
+    ),
+  );
 }
 
 /// Calculates the temporary workout bonus before the first weekly check-in.

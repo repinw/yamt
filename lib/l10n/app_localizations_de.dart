@@ -1359,6 +1359,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeeklyCheckInDialogTodayDeltaLabel => 'Aktivitätsdelta heute';
 
   @override
+  String get caloriesActivityTodayVsUsualLabel => 'Heute vs. üblich';
+
+  @override
+  String get caloriesActivityVsUsualLabel => 'Aktivität vs. üblich';
+
+  @override
   String get caloriesActivityWorkoutBonusLabel => 'Trainingsbonus';
 
   @override
