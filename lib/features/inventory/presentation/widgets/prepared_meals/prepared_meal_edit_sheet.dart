@@ -46,7 +46,7 @@ Future<PreparedMealEditSheetResult?> showPreparedMealEditSheet({
 /// Defines prepared meal edit sheet.
 class PreparedMealEditSheet extends ConsumerStatefulWidget {
   /// The prepared meal edit sheet.
-  const PreparedMealEditSheet({super.key, required this.meal});
+  const PreparedMealEditSheet({required this.meal, super.key});
 
   /// The meal.
   final PreparedMeal meal;

@@ -499,7 +499,7 @@ void main() {
       'maps canceled GoogleSignInException to user-friendly auth error',
       () async {
         final mockGoogleSignIn = _MockGoogleSignIn();
-        when(() => mockGoogleSignIn.authenticate()).thenThrow(
+        when(mockGoogleSignIn.authenticate).thenThrow(
           const GoogleSignInException(
             code: GoogleSignInExceptionCode.canceled,
             description: 'account picker canceled',
@@ -540,7 +540,7 @@ void main() {
       'treats interrupted GoogleSignInException as non-error state',
       () async {
         final mockGoogleSignIn = _MockGoogleSignIn();
-        when(() => mockGoogleSignIn.authenticate()).thenThrow(
+        when(mockGoogleSignIn.authenticate).thenThrow(
           const GoogleSignInException(
             code: GoogleSignInExceptionCode.interrupted,
             description: 'flow interrupted',
@@ -576,7 +576,7 @@ void main() {
       final mockGoogleAccount = _MockGoogleSignInAccount();
 
       when(
-        () => mockGoogleSignIn.authenticate(),
+        mockGoogleSignIn.authenticate,
       ).thenAnswer((_) async => mockGoogleAccount);
       when(
         () => mockGoogleAccount.authentication,
@@ -615,7 +615,7 @@ void main() {
       final mockUserCredential = _MockUserCredential();
 
       when(
-        () => mockGoogleSignIn.authenticate(),
+        mockGoogleSignIn.authenticate,
       ).thenAnswer((_) async => mockGoogleAccount);
       when(
         () => mockGoogleAccount.authentication,
@@ -666,7 +666,7 @@ void main() {
         final mockUserCredential = _MockUserCredential();
 
         when(
-          () => mockGoogleSignIn.authenticate(),
+          mockGoogleSignIn.authenticate,
         ).thenAnswer((_) async => mockGoogleAccount);
         when(
           () => mockGoogleAccount.authentication,
@@ -721,7 +721,7 @@ void main() {
         var currentDisplayName = 'Guest Wlad';
 
         when(
-          () => mockGoogleSignIn.authenticate(),
+          mockGoogleSignIn.authenticate,
         ).thenAnswer((_) async => mockGoogleAccount);
         when(
           () => mockGoogleAccount.authentication,
@@ -741,7 +741,7 @@ void main() {
         ) async {
           currentDisplayName = invocation.positionalArguments.first as String;
         });
-        when(() => mockFirebaseUser.reload()).thenAnswer((_) async {});
+        when(mockFirebaseUser.reload).thenAnswer((_) async {});
 
         final container = ProviderContainer(
           overrides: [
@@ -766,7 +766,7 @@ void main() {
         verify(
           () => mockFirebaseUser.updateDisplayName('Guest Wlad'),
         ).called(1);
-        verify(() => mockFirebaseUser.reload()).called(1);
+        verify(mockFirebaseUser.reload).called(1);
       },
     );
 
@@ -776,7 +776,7 @@ void main() {
       final mockFirebaseAuth = _MockFirebaseAuth();
 
       when(
-        () => mockGoogleSignIn.authenticate(),
+        mockGoogleSignIn.authenticate,
       ).thenAnswer((_) async => mockGoogleAccount);
       when(
         () => mockGoogleAccount.authentication,
@@ -818,7 +818,7 @@ void main() {
       'linking rethrows canceled Google sign-in as FirebaseAuthException',
       () async {
         final mockGoogleSignIn = _MockGoogleSignIn();
-        when(() => mockGoogleSignIn.authenticate()).thenThrow(
+        when(mockGoogleSignIn.authenticate).thenThrow(
           const GoogleSignInException(code: GoogleSignInExceptionCode.canceled),
         );
 

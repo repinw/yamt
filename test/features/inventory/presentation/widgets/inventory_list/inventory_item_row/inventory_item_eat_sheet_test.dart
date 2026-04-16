@@ -23,7 +23,6 @@ InventoryItem _amountItem() {
     entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
     initialAmount: 1000,
     currentAmount: 1000,
     amountUnit: InventoryAmountUnit.gram,
@@ -54,10 +53,7 @@ class _FakeGlobalFoodServingSuggestionRepository
   @override
   Future<void> recordSelection({
     required String foodFingerprint,
-    String? globalFoodItemId,
-    required double amount,
-    required ConsumedUnit unit,
-    required DateTime selectedAt,
+    required double amount, required ConsumedUnit unit, required DateTime selectedAt, String? globalFoodItemId,
   }) async {}
 }
 
@@ -69,7 +65,6 @@ InventoryItem _amountItemWithServing() {
     entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
     initialAmount: 500,
     currentAmount: 500,
     amountUnit: InventoryAmountUnit.gram,

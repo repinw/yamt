@@ -46,9 +46,6 @@ class _UnavailableGlobalFoodServingSuggestionRepository
   @override
   Future<void> recordSelection({
     required String foodFingerprint,
-    String? globalFoodItemId,
-    required double amount,
-    required ConsumedUnit unit,
-    required DateTime selectedAt,
+    required double amount, required ConsumedUnit unit, required DateTime selectedAt, String? globalFoodItemId,
   }) async {}
 }

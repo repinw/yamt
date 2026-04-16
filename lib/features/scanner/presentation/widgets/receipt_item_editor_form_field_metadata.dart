@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:yamt/features/scanner/presentation/models/receipt_item_editor_draft.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-import '../models/receipt_item_editor_draft.dart';
 
 /// Defines receipt item editor field groups.
 class ReceiptItemEditorFieldGroups {

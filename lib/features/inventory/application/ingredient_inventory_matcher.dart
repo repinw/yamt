@@ -179,7 +179,7 @@ Set<String> _ingredientMatchCandidates(
 }
 
 String _normalizeMatchText(String value) {
-  return value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9äöüß]+'), ' ').trim();
+  return value.toLowerCase().replaceAll(RegExp('[^a-z0-9äöüß]+'), ' ').trim();
 }
 
 Set<String> _matchTokens(String value, _IngredientMatcherLexicon lexicon) {
@@ -284,7 +284,7 @@ String _normalizedLocaleCode(String? localeCode) {
   if (trimmed.isEmpty) {
     return '';
   }
-  return trimmed.split(RegExp(r'[-_]')).first;
+  return trimmed.split(RegExp('[-_]')).first;
 }
 
 const _fallbackIngredientMatcherLexicon = _IngredientMatcherLexicon(

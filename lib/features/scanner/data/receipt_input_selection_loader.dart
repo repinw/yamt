@@ -233,7 +233,7 @@ String _resolvedFileName({
 }
 
 String _fileNameFromPath(String path) {
-  final normalizedPath = path.replaceAll('\\', '/');
+  final normalizedPath = path.replaceAll(r'\', '/');
   final separatorIndex = normalizedPath.lastIndexOf('/');
   if (separatorIndex == -1) {
     return normalizedPath;

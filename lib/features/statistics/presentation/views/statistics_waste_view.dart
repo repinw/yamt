@@ -15,9 +15,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 class StatisticsWasteView extends ConsumerWidget {
   /// The statistics waste view.
   const StatisticsWasteView({
-    super.key,
-    required this.timeframe,
-    required this.onRetry,
+    required this.timeframe, required this.onRetry, super.key,
   });
 
   /// The timeframe.

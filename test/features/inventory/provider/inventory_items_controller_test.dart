@@ -216,7 +216,7 @@ void main() {
 
   test('addItem replaces an existing item with the same id', () async {
     final repository = _FakeInventoryItemRepository(
-      initialItems: <InventoryItem>[_item(id: 'a', name: 'Milk')],
+      initialItems: <InventoryItem>[_item(id: 'a')],
     );
     repository.emitRealtimeOnAppend = false;
     addTearDown(repository.dispose);
@@ -246,7 +246,7 @@ void main() {
   test(
     'addItem rolls back optimistic state when append returns false',
     () async {
-      final existingItem = _item(id: 'a', name: 'Milk');
+      final existingItem = _item(id: 'a');
       final repository = _FakeInventoryItemRepository(
         initialItems: <InventoryItem>[existingItem],
       );
@@ -280,7 +280,7 @@ void main() {
   );
 
   test('addItem rolls back optimistic state when append throws', () async {
-    final existingItem = _item(id: 'a', name: 'Milk');
+    final existingItem = _item(id: 'a');
     final repository = _FakeInventoryItemRepository(
       initialItems: <InventoryItem>[existingItem],
     );
@@ -343,7 +343,7 @@ void main() {
     () async {
       final repository = _FakeInventoryItemRepository(
         initialItems: <InventoryItem>[
-          _item(id: 'a', name: 'Milk', quantity: 2, initialQuantity: 2),
+          _item(id: 'a', quantity: 2, initialQuantity: 2),
         ],
       );
       final globalRepository = _FakeGlobalFoodItemRepository();
@@ -371,7 +371,6 @@ void main() {
             itemId: 'a',
             resolvedProduct: _globalProduct(
               id: 'off-4061458029995',
-              name: 'Oat Drink',
               barcode: '4061458029995',
               packageWeight: '1000 g',
             ),
@@ -403,7 +402,7 @@ void main() {
     () async {
       final repository = _FakeInventoryItemRepository(
         initialItems: <InventoryItem>[
-          _item(id: 'a', quantity: 1, initialQuantity: 2),
+          _item(id: 'a', initialQuantity: 2),
         ],
       );
       final globalRepository = _FakeGlobalFoodItemRepository();

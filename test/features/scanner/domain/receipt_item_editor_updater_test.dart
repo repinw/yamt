@@ -9,7 +9,6 @@ InventoryItem _sourceItem() {
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
     storeName: 'Original Store',
     quantity: 1,
-    initialQuantity: 1,
     unitPrice: 1.5,
   );
 }
@@ -56,7 +55,6 @@ void main() {
         storeName: ' Edited Store ',
         quantityText: '2',
         unitPriceText: '3.50',
-        weightText: '250g',
         brandText: ' ',
         categoryText: ' Dairy ',
         discountEntries: const <MapEntry<String, String>>[
@@ -164,7 +162,7 @@ void main() {
   test('apply normalizes savable zero quantity to one', () {
     final result = updater.apply(
       sourceItem: _sourceItem(),
-      formData: _formData(quantityText: '0', weightText: '250g'),
+      formData: _formData(quantityText: '0'),
       locale: 'en_US',
       fallbackUnit: null,
     );
@@ -181,7 +179,6 @@ void main() {
       sourceItem: _sourceItem(),
       formData: _formData(
         quantityText: '0',
-        weightText: '250g',
         isDeposit: true,
       ),
       locale: 'en_US',

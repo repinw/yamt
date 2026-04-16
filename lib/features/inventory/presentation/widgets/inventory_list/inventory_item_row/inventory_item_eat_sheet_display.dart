@@ -1,13 +1,9 @@
 part of 'inventory_item_eat_sheet.dart';
 
 class _InventoryItemEatSectionCard extends StatelessWidget {
-  const _InventoryItemEatSectionCard({
-    required this.child,
-    this.padding = const EdgeInsets.all(AppSpacing.xl),
-  });
+  const _InventoryItemEatSectionCard({required this.child});
 
   final Widget child;
-  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +24,10 @@ class _InventoryItemEatSectionCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Padding(padding: padding, child: child),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: child,
+      ),
     );
   }
 }
@@ -142,7 +141,7 @@ class _InventoryItemEatNutritionMetric extends StatelessWidget {
       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
         color: valueColor,
         fontWeight: FontWeight.w800,
-        height: 1.0,
+        height: 1,
       ),
     );
 

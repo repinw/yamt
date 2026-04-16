@@ -18,7 +18,7 @@ InventoryItem _item({
     storeName: 'Store',
     quantity: quantity,
     initialQuantity: initialQuantity,
-    unitPrice: 1.0,
+    unitPrice: 1,
     weight: weight,
     initialAmount: initialAmount,
     currentAmount: currentAmount,
@@ -70,9 +70,6 @@ void main() {
     final item = _item(
       initialQuantity: 4,
       quantity: 3,
-      initialAmount: 0,
-      currentAmount: 0,
-      amountUnit: null,
     );
 
     final progress = calculator.fromItem(item);
@@ -85,7 +82,7 @@ void main() {
   });
 
   test('does not segment quantity progress when total units is one', () {
-    final item = _item(initialQuantity: 1, quantity: 1);
+    final item = _item();
 
     final progress = calculator.fromItem(item);
 

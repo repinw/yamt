@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
@@ -14,8 +16,6 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/calories/application/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -147,9 +147,8 @@ class _InventoryManualAddPageState
   Future<InventoryItem?> _persistProduct({
     required InventoryItem item,
     required String barcode,
-    OffProductSearchResult? selectedProduct,
+    required bool requiresGlobalPersistence, OffProductSearchResult? selectedProduct,
     String? selectedGlobalFoodItemId,
-    required bool requiresGlobalPersistence,
     String? eatNowWeight,
   }) async {
     final now = DateTime.now();

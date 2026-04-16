@@ -8,11 +8,10 @@ import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/product_search/presentation/widgets/inventory_receipt_manual_product_form_utils.dart';
 import 'package:yamt/features/product_search/provider/'
     'inventory_receipt_manual_product_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-import 'inventory_receipt_manual_product_form_utils.dart';
 
 final TextInputFormatter _singleDecimalInputFormatter =
     TextInputFormatter.withFunction((oldValue, newValue) {

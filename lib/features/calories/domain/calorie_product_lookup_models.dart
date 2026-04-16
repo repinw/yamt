@@ -48,6 +48,36 @@ class CalorieProductProfile {
     this.imageUrl,
   });
 
+  /// Creates a [CalorieProductProfile] for from json.
+  factory CalorieProductProfile.fromJson(Map<String, dynamic> json) {
+    return _$CalorieProductProfileFromJson(json);
+  }
+
+  /// Creates a [CalorieProductProfile] for from entry.
+  factory CalorieProductProfile.fromEntry({
+    required CalorieEntry entry,
+    required String barcode,
+    required CalorieProductSource source,
+    required String? offProductId,
+    required String? imageUrl,
+    required DateTime now,
+  }) {
+    return CalorieProductProfile(
+      barcode: barcode,
+      name: entry.name.trim(),
+      brand: entry.brand?.trim().isEmpty == true ? null : entry.brand?.trim(),
+      per100Kcal: entry.per100Kcal,
+      per100Protein: entry.per100Protein,
+      per100Carbs: entry.per100Carbs,
+      per100Fat: entry.per100Fat,
+      source: source,
+      offProductId: offProductId,
+      imageUrl: imageUrl,
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+
   /// The barcode.
   final String barcode;
 
@@ -90,11 +120,6 @@ class CalorieProductProfile {
   @FlexibleDateTimeConverter()
   final DateTime updatedAt;
 
-  /// Creates a [CalorieProductProfile] for from json.
-  factory CalorieProductProfile.fromJson(Map<String, dynamic> json) {
-    return _$CalorieProductProfileFromJson(json);
-  }
-
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieProductProfileToJson(this);
 
@@ -126,31 +151,6 @@ class CalorieProductProfile {
       imageUrl: imageUrl ?? this.imageUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-    );
-  }
-
-  /// Creates a [CalorieProductProfile] for from entry.
-  factory CalorieProductProfile.fromEntry({
-    required CalorieEntry entry,
-    required String barcode,
-    required CalorieProductSource source,
-    required String? offProductId,
-    required String? imageUrl,
-    required DateTime now,
-  }) {
-    return CalorieProductProfile(
-      barcode: barcode,
-      name: entry.name.trim(),
-      brand: entry.brand?.trim().isEmpty == true ? null : entry.brand?.trim(),
-      per100Kcal: entry.per100Kcal,
-      per100Protein: entry.per100Protein,
-      per100Carbs: entry.per100Carbs,
-      per100Fat: entry.per100Fat,
-      source: source,
-      offProductId: offProductId,
-      imageUrl: imageUrl,
-      createdAt: now,
-      updatedAt: now,
     );
   }
 }
@@ -274,7 +274,6 @@ class CalorieNutritionOcrDraft {
       per100Carbs: per100Carbs!,
       per100Fat: per100Fat!,
       source: CalorieProductSource.ocr,
-      offProductId: null,
       createdAt: now,
       updatedAt: now,
     );
@@ -310,6 +309,23 @@ enum CalorieLookupStatus {
 
 /// Defines calorie lookup outcome.
 class CalorieLookupOutcome {
+
+  /// Creates a [CalorieLookupOutcome] for found single.
+  const CalorieLookupOutcome.foundSingle(CalorieProductProfile product)
+    : this._(status: CalorieLookupStatus.foundSingle, product: product);
+
+  /// Creates a [CalorieLookupOutcome] for found multiple.
+  const CalorieLookupOutcome.foundMultiple(
+    List<CalorieProductCandidate> candidates,
+  ) : this._(status: CalorieLookupStatus.foundMultiple, candidates: candidates);
+
+  /// Creates a [CalorieLookupOutcome] for not found.
+  const CalorieLookupOutcome.notFound()
+    : this._(status: CalorieLookupStatus.notFound);
+
+  /// Creates a [CalorieLookupOutcome] for failed.
+  const CalorieLookupOutcome.failed({required String errorCode})
+    : this._(status: CalorieLookupStatus.failed, errorCode: errorCode);
   const CalorieLookupOutcome._({
     required this.status,
     this.product,
@@ -328,23 +344,6 @@ class CalorieLookupOutcome {
 
   /// The error code.
   final String? errorCode;
-
-  /// Creates a [CalorieLookupOutcome] for found single.
-  const CalorieLookupOutcome.foundSingle(CalorieProductProfile product)
-    : this._(status: CalorieLookupStatus.foundSingle, product: product);
-
-  /// Creates a [CalorieLookupOutcome] for found multiple.
-  const CalorieLookupOutcome.foundMultiple(
-    List<CalorieProductCandidate> candidates,
-  ) : this._(status: CalorieLookupStatus.foundMultiple, candidates: candidates);
-
-  /// Creates a [CalorieLookupOutcome] for not found.
-  const CalorieLookupOutcome.notFound()
-    : this._(status: CalorieLookupStatus.notFound);
-
-  /// Creates a [CalorieLookupOutcome] for failed.
-  const CalorieLookupOutcome.failed({required String errorCode})
-    : this._(status: CalorieLookupStatus.failed, errorCode: errorCode);
 }
 
 /// Defines calorie scanned source ref.
@@ -380,24 +379,6 @@ enum CalorieNutritionOcrStatus {
 
 /// Defines calorie nutrition ocr result.
 class CalorieNutritionOcrResult {
-  const CalorieNutritionOcrResult._({
-    required this.status,
-    this.profile,
-    this.draft,
-    this.errorCode,
-  });
-
-  /// The status.
-  final CalorieNutritionOcrStatus status;
-
-  /// The profile.
-  final CalorieProductProfile? profile;
-
-  /// The draft.
-  final CalorieNutritionOcrDraft? draft;
-
-  /// The error code.
-  final String? errorCode;
 
   /// Creates a [CalorieNutritionOcrResult] for succeeded.
   const CalorieNutritionOcrResult.succeeded({
@@ -416,4 +397,22 @@ class CalorieNutritionOcrResult {
   /// Creates a [CalorieNutritionOcrResult] for failed.
   const CalorieNutritionOcrResult.failed({required String errorCode})
     : this._(status: CalorieNutritionOcrStatus.failed, errorCode: errorCode);
+  const CalorieNutritionOcrResult._({
+    required this.status,
+    this.profile,
+    this.draft,
+    this.errorCode,
+  });
+
+  /// The status.
+  final CalorieNutritionOcrStatus status;
+
+  /// The profile.
+  final CalorieProductProfile? profile;
+
+  /// The draft.
+  final CalorieNutritionOcrDraft? draft;
+
+  /// The error code.
+  final String? errorCode;
 }

@@ -105,7 +105,6 @@ PreparedMeal _templateMeal({required String id, required String name}) {
     entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
     initialAmount: 300,
     currentAmount: 300,
     amountUnit: InventoryAmountUnit.gram,
@@ -325,7 +324,6 @@ void main() {
           .read(preparedMealTemplatesControllerProvider.notifier)
           .createTemplateFromRecipe(
             recipeUrl: 'chefkoch.de/rezepte/1234/spaghetti-mit-pesto.html',
-            name: '',
           );
 
       expect(saved.isSuccess, isTrue);
@@ -365,7 +363,7 @@ void main() {
     await container.read(preparedMealTemplatesControllerProvider.future);
     final saved = await container
         .read(preparedMealTemplatesControllerProvider.notifier)
-        .createTemplateFromRecipe(recipeUrl: 'notaurl', name: '');
+        .createTemplateFromRecipe(recipeUrl: 'notaurl');
 
     expect(saved.isSuccess, isFalse);
     expect(
@@ -398,7 +396,6 @@ void main() {
         .read(preparedMealTemplatesControllerProvider.notifier)
         .createTemplateFromRecipe(
           recipeUrl: 'https://chefkoch.de/rezepte/1234/spaghetti.html',
-          name: '',
         );
 
     expect(saved.isSuccess, isFalse);

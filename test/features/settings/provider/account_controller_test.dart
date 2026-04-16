@@ -56,7 +56,7 @@ void main() {
 
   test('signOut succeeds and clears loading state', () async {
     final auth = _MockFirebaseAuth();
-    when(() => auth.signOut()).thenAnswer((_) async {});
+    when(auth.signOut).thenAnswer((_) async {});
 
     final container = ProviderContainer(
       overrides: [firebaseAuthProvider.overrideWithValue(auth)],
@@ -69,13 +69,13 @@ void main() {
       container.read(accountControllerProvider),
       const AsyncData<void>(null),
     );
-    verify(() => auth.signOut()).called(1);
+    verify(auth.signOut).called(1);
   });
 
   test('signOut propagates failure and stores AsyncError', () async {
     final auth = _MockFirebaseAuth();
     final error = FirebaseAuthException(code: 'network-request-failed');
-    when(() => auth.signOut()).thenThrow(error);
+    when(auth.signOut).thenThrow(error);
 
     final container = ProviderContainer(
       overrides: [firebaseAuthProvider.overrideWithValue(auth)],
@@ -94,7 +94,7 @@ void main() {
     final auth = _MockFirebaseAuth();
     final user = _MockUser();
     when(() => auth.currentUser).thenReturn(user);
-    when(() => user.delete()).thenAnswer((_) async {});
+    when(user.delete).thenAnswer((_) async {});
 
     final container = ProviderContainer(
       overrides: [firebaseAuthProvider.overrideWithValue(auth)],
@@ -105,7 +105,7 @@ void main() {
         .read(accountControllerProvider.notifier)
         .deleteCurrentAccount();
 
-    verify(() => user.delete()).called(1);
+    verify(user.delete).called(1);
     expect(
       container.read(accountControllerProvider),
       const AsyncData<void>(null),
@@ -347,7 +347,7 @@ void main() {
         () => secondaryAuth.signInWithCredential(credential),
       ).thenAnswer((_) async => secondaryCredential);
       when(() => secondaryCredential.user).thenReturn(existingUser);
-      when(() => existingUser.delete()).thenAnswer((_) async {});
+      when(existingUser.delete).thenAnswer((_) async {});
       when(
         () => guestUser.linkWithCredential(credential),
       ).thenAnswer((_) async => _MockUserCredential());
@@ -365,7 +365,7 @@ void main() {
           .read(accountControllerProvider.notifier)
           .overwriteExistingGoogleAccountWithGuest(credential);
 
-      verify(() => existingUser.delete()).called(1);
+      verify(existingUser.delete).called(1);
       verify(() => guestUser.linkWithCredential(credential)).called(1);
       verify(() => secondaryClient.disposeApp(app)).called(1);
       expect(
@@ -500,7 +500,7 @@ void main() {
       final credential = _MockAuthCredential();
       when(() => auth.currentUser).thenReturn(guestUser);
       when(() => guestUser.isAnonymous).thenReturn(true);
-      when(() => guestUser.delete()).thenAnswer((_) async {});
+      when(guestUser.delete).thenAnswer((_) async {});
       when(
         () => auth.signInWithCredential(credential),
       ).thenAnswer((_) async => _MockUserCredential());
@@ -514,7 +514,7 @@ void main() {
           .read(accountControllerProvider.notifier)
           .deleteGuestAndSignInWithGoogleCredential(credential);
 
-      verify(() => guestUser.delete()).called(1);
+      verify(guestUser.delete).called(1);
       verify(() => auth.signInWithCredential(credential)).called(1);
       expect(
         container.read(accountControllerProvider),

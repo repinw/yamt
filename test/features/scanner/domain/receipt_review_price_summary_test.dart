@@ -51,7 +51,7 @@ void main() {
   test('calculate returns total, storable and excluded sums', () {
     final summary = calculator.calculate([
       _draft(id: 'food-1', quantity: 2, unitPrice: 1.5),
-      _draft(id: 'food-2', quantity: 1, unitPrice: 2.0),
+      _draft(id: 'food-2', quantity: 1, unitPrice: 2),
       _draft(id: 'deposit', quantity: 1, unitPrice: 0.25, isDeposit: true),
     ]);
 
@@ -76,7 +76,7 @@ void main() {
         unitPrice: 1.5,
         discounts: const <String, double>{'Rabatt': -0.5},
       ),
-      _draft(id: 'food-2', quantity: 1, unitPrice: 2.0),
+      _draft(id: 'food-2', quantity: 1, unitPrice: 2),
       _draft(id: 'deposit', quantity: 1, unitPrice: 0.25, isDeposit: true),
     ]);
 

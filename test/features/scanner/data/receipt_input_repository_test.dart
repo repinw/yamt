@@ -27,7 +27,7 @@ class _FakeImagePicker extends ImagePicker {
     if (callback != null) {
       return callback(source);
     }
-    return Future<XFile?>.value(null);
+    return Future<XFile?>.value();
   }
 }
 
@@ -50,7 +50,7 @@ class _FakeFilePicker extends FilePicker {
     String? initialDirectory,
     FileType type = FileType.any,
     List<String>? allowedExtensions,
-    Function(FilePickerStatus)? onFileLoading,
+    void Function(FilePickerStatus)? onFileLoading,
     bool allowCompression = false,
     int compressionQuality = 0,
     bool allowMultiple = false,

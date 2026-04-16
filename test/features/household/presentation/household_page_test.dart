@@ -49,12 +49,12 @@ Widget _buildApp({
     );
     overrides.add(
       householdInviteCodeControllerProvider.overrideWith(
-        () => _FakeHouseholdInviteCodeController(),
+        _FakeHouseholdInviteCodeController.new,
       ),
     );
     overrides.add(
       householdMembershipControllerProvider.overrideWith(
-        () => _FakeHouseholdMembershipController(),
+        _FakeHouseholdMembershipController.new,
       ),
     );
   }
@@ -81,7 +81,6 @@ void main() {
         uid: 'host-1',
         email: 'host@example.com',
         displayName: 'Host',
-        isAnonymous: false,
       );
 
       await tester.pumpWidget(

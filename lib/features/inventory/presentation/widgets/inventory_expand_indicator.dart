@@ -8,8 +8,7 @@ const _expandIndicatorIconSize = 20.0;
 class InventoryExpandIndicator extends StatelessWidget {
   /// The inventory expand indicator.
   const InventoryExpandIndicator({
-    super.key,
-    required this.isExpanded,
+    required this.isExpanded, super.key,
     this.rotationKey,
     this.enabled = true,
     this.width = _expandIndicatorSize,

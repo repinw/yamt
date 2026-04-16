@@ -22,7 +22,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines household sharing card.
 class HouseholdSharingCard extends ConsumerWidget {
   /// The household sharing card.
-  const HouseholdSharingCard({super.key, required this.user});
+  const HouseholdSharingCard({required this.user, super.key});
 
   /// The user.
   final User user;

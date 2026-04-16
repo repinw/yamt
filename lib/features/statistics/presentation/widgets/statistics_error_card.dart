@@ -7,7 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines statistics error card.
 class StatisticsErrorCard extends StatelessWidget {
   /// The statistics error card.
-  const StatisticsErrorCard({super.key, required this.onRetry});
+  const StatisticsErrorCard({required this.onRetry, super.key});
 
   /// The on retry.
   final VoidCallback onRetry;

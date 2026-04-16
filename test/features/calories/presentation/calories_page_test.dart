@@ -1,15 +1,18 @@
 import 'dart:typed_data';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -141,12 +144,13 @@ List<ManualHealthWeightEntry> _weeklyCheckInWeights(
   ];
 }
 
-List<dynamic> _weeklyCheckInOverrides({
+List<Override> _weeklyCheckInOverrides({
   required DateTime today,
   required List<ManualHealthWeightEntry> weights,
 }) {
-  return <dynamic>[
+  return <Override>[
     calorieBalanceNowProvider.overrideWithValue(() => today),
+    authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(null)),
     healthConnectionServiceProvider.overrideWithValue(
       FakeHealthConnectionService(const HealthConnectionStatus.unsupported()),
     ),
@@ -160,7 +164,7 @@ List<dynamic> _weeklyCheckInOverrides({
 Widget _buildHarness({
   required FakeCalorieLogRepository logRepository,
   required FakeCalorieSettingsRepository settingsRepository,
-  List<dynamic> overrides = const <dynamic>[],
+  List<Override> overrides = const <Override>[],
   DateTime? referenceNow,
 }) {
   final router = GoRouter(
@@ -193,16 +197,13 @@ Widget _buildHarness({
     ],
   );
 
-  final container = ProviderContainer(
+  return _ManagedProviderContainerScope(
+    key: UniqueKey(),
     overrides: [
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       ...overrides,
     ],
-  );
-  addTearDown(container.dispose);
-  return UncontrolledProviderScope(
-    container: container,
     child: MaterialApp.router(
       locale: const Locale('en'),
       routerConfig: router,
@@ -210,6 +211,42 @@ Widget _buildHarness({
       supportedLocales: AppLocalizations.supportedLocales,
     ),
   );
+}
+
+class _ManagedProviderContainerScope extends StatefulWidget {
+  const _ManagedProviderContainerScope({
+    required this.overrides,
+    required this.child,
+    super.key,
+  });
+
+  final List<Override> overrides;
+  final Widget child;
+
+  @override
+  State<_ManagedProviderContainerScope> createState() =>
+      _ManagedProviderContainerScopeState();
+}
+
+class _ManagedProviderContainerScopeState
+    extends State<_ManagedProviderContainerScope> {
+  late final ProviderContainer _container = ProviderContainer(
+    overrides: widget.overrides,
+  );
+
+  @override
+  void dispose() {
+    _container.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return UncontrolledProviderScope(
+      container: _container,
+      child: widget.child,
+    );
+  }
 }
 
 @Dependencies([calorieEntryDeleteFlow])
@@ -1681,7 +1718,7 @@ void main() {
       _buildHarness(
         logRepository: logRepository,
         settingsRepository: settingsRepository,
-        overrides: <dynamic>[
+        overrides: <Override>[
           calorieWeekOverviewProvider.overrideWith(
             (ref) async => throw StateError('week overview failed'),
           ),

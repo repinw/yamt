@@ -134,7 +134,7 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
 
   var _isExpanded = false;
   var _isWorking = false;
-  var _displayMode = _PreparedMealDisplayMode.perHundred;
+  _PreparedMealDisplayMode _displayMode = _PreparedMealDisplayMode.perHundred;
   List<InventoryItem> _cachedSuggestionInventoryItems = const <InventoryItem>[];
   List<String> _cachedPendingIngredients = const <String>[];
   Map<String, List<InventoryItem>> _cachedPendingSuggestions =

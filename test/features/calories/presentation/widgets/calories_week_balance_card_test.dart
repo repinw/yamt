@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
@@ -86,7 +85,7 @@ void main() {
       message:
           'Du hast seit Zielstart 400 kcal gespart. '
           'Dein heutiges Ziel wurde erhöht.',
-      color: AppInventoryEditorial.primary,
+      color: _themeColor(tester).primary,
     );
   });
 
@@ -111,7 +110,7 @@ void main() {
     _expectSummaryAccentColor(
       tester,
       message: 'You are 250 kcal over since your goal started.',
-      color: AppInventoryEditorial.warning,
+      color: _themeColor(tester).error,
     );
   });
 
@@ -132,7 +131,7 @@ void main() {
     expect(
       find.text(
         'You are balanced since your goal started. '
-        'Today\'s target stays unchanged.',
+        "Today's target stays unchanged.",
       ),
       findsOneWidget,
     );
@@ -140,8 +139,8 @@ void main() {
       tester,
       message:
           'You are balanced since your goal started. '
-          'Today\'s target stays unchanged.',
-      color: AppInventoryEditorial.primary,
+          "Today's target stays unchanged.",
+      color: _themeColor(tester).primary,
     );
   });
 
@@ -168,7 +167,7 @@ void main() {
     _expectSummaryAccentColor(
       tester,
       message: 'Your goal starts today. The balance will build up from here.',
-      color: AppInventoryEditorial.primary,
+      color: _themeColor(tester).primary,
     );
   });
 
@@ -247,7 +246,7 @@ void main() {
     );
     final decoration = bar.decoration as BoxDecoration;
 
-    expect(decoration.color, AppInventoryEditorial.warning);
+    expect(decoration.color, _themeColor(tester).error);
   });
 }
 
@@ -306,4 +305,10 @@ void _expectSummaryAccentColor(
 String _dayKey(DateTime day) {
   final normalized = normalizeDiaryDay(day);
   return '${normalized.year}-${normalized.month}-${normalized.day}';
+}
+
+ColorScheme _themeColor(WidgetTester tester) {
+  return Theme.of(
+    tester.element(find.byType(CaloriesWeekBalanceCard)),
+  ).colorScheme;
 }

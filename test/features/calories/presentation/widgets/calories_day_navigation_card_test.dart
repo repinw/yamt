@@ -325,7 +325,7 @@ void main() {
           widget.constraints?.maxHeight == 6;
     });
     final dot = tester.widget<Container>(dotFinder);
-    final decoration = dot.decoration as BoxDecoration;
+    final decoration = dot.decoration! as BoxDecoration;
     final colors = Theme.of(tester.element(dotFinder)).colorScheme;
 
     expect(decoration.color, colors.error);

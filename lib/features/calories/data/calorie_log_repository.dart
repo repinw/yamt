@@ -61,9 +61,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
         },
         onDone: controller.close,
       );
-      controller.onCancel = () {
-        subscription.cancel();
-      };
+      controller.onCancel = subscription.cancel;
     });
   }
 

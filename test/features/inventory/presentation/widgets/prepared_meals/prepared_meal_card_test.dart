@@ -751,7 +751,7 @@ void main() {
       await tester.tap(find.text('Imported bowl'));
       await tester.pumpAndSettle();
 
-      expect(find.text('\$1.00'), findsOneWidget);
+      expect(find.text(r'$1.00'), findsOneWidget);
       expect(find.text('€1.00'), findsNothing);
     },
   );

@@ -9,8 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 class EmailPasswordCredentialsForm extends StatefulWidget {
   /// The email password credentials form.
   const EmailPasswordCredentialsForm({
-    super.key,
-    required this.onSubmitCredentials,
+    required this.onSubmitCredentials, super.key,
     this.submitLabel,
     this.showSubmitButton = true,
     this.isLoading = false,

@@ -2,8 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/'
-    'calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
@@ -50,10 +48,7 @@ class _FakeGlobalFoodServingSuggestionRepository
   @override
   Future<void> recordSelection({
     required String foodFingerprint,
-    String? globalFoodItemId,
-    required double amount,
-    required ConsumedUnit unit,
-    required DateTime selectedAt,
+    required double amount, required ConsumedUnit unit, required DateTime selectedAt, String? globalFoodItemId,
   }) async {
     calls.add((
       foodFingerprint: foodFingerprint,
@@ -108,9 +103,9 @@ void main() {
           calorieEntryPostPersistHookProvider.overrideWith(
             (ref) =>
                 ({
-                  required CalorieEntry entry,
-                  CalorieInventoryCreateContext? inventoryContext,
-                  CalorieScannedSourceRef? scannedSourceRef,
+                  required entry,
+                  inventoryContext,
+                  scannedSourceRef,
                 }) async {
                   if (inventoryContext == null) {
                     return;
@@ -152,9 +147,9 @@ void main() {
         calorieEntryPostPersistHookProvider.overrideWith(
           (ref) =>
               ({
-                required CalorieEntry entry,
-                CalorieInventoryCreateContext? inventoryContext,
-                CalorieScannedSourceRef? scannedSourceRef,
+                required entry,
+                inventoryContext,
+                scannedSourceRef,
               }) async {
                 if (inventoryContext == null) {
                   return;

@@ -12,7 +12,7 @@ InventoryItem _quantityItem({
     storeName: 'Store',
     quantity: quantity,
     initialQuantity: initialQuantity,
-    unitPrice: 1.0,
+    unitPrice: 1,
   );
 }
 
@@ -27,7 +27,7 @@ InventoryItem _amountItem({
     storeName: 'Store',
     quantity: 2,
     initialQuantity: 2,
-    unitPrice: 1.0,
+    unitPrice: 1,
     initialAmount: initialAmount,
     currentAmount: currentAmount,
     amountUnit: InventoryAmountUnit.milliliter,

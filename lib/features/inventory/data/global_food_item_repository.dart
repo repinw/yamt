@@ -3,9 +3,9 @@ import 'dart:developer' show log;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'firestore_global_food_item_repository.dart';
-import 'global_food_item_repository_contract.dart';
-import 'global_food_item_store.dart';
+import 'package:yamt/features/inventory/data/firestore_global_food_item_repository.dart';
+import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
+import 'package:yamt/features/inventory/data/global_food_item_store.dart';
 
 export 'firestore_global_food_item_repository.dart';
 export 'global_food_item_repository_contract.dart';

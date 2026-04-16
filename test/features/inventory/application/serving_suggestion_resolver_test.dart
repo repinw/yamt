@@ -19,7 +19,6 @@ InventoryItem _amountItem({
     entryDate: DateTime.parse('2026-04-10T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
     initialAmount: initialAmount,
     currentAmount: currentAmount,
     amountUnit: unit,

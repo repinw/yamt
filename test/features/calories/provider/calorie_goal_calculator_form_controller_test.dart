@@ -273,7 +273,7 @@ class _BlockingCalorieSettingsRepository implements CalorieSettingsRepository {
 
   final Completer<void>? saveBlocker;
   final bool saveShouldFail;
-  var saveCallCount = 0;
+  int saveCallCount = 0;
 
   @override
   Stream<CalorieGoalSettings> watchSettings() {

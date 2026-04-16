@@ -95,8 +95,7 @@ void main() {
         store: 'Kaufland',
         receiptId: 'abc123456',
         receiptDate: DateTime.parse('2026-02-11T10:00:00Z'),
-        quantity: 1,
-        unitPrice: 2.0,
+        unitPrice: 2,
         currencyCode: 'USD',
       ),
     ]);
@@ -108,7 +107,7 @@ void main() {
     expect(title, 'Receipt Feb 11, 2026');
     expect(subtitle, contains('Kaufland'));
     expect(subtitle, contains('2 items'));
-    expect(subtitle, contains('\$5.00'));
+    expect(subtitle, contains(r'$5.00'));
   });
 
   test('title falls back to shortened receipt id without receipt date', () {

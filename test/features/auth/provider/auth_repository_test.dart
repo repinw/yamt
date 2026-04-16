@@ -79,7 +79,7 @@ void main() {
     final mockCredential = _MockUserCredential();
 
     when(
-      () => mockAuth.signInAnonymously(),
+      mockAuth.signInAnonymously,
     ).thenAnswer((_) async => mockCredential);
 
     final container = ProviderContainer(
@@ -91,7 +91,7 @@ void main() {
 
     await repository.signInAnonymously();
 
-    verify(() => mockAuth.signInAnonymously()).called(1);
+    verify(mockAuth.signInAnonymously).called(1);
   });
 
   test('authRepository updates current user display name', () async {
@@ -100,7 +100,7 @@ void main() {
 
     when(() => mockAuth.currentUser).thenReturn(mockUser);
     when(() => mockUser.updateDisplayName(any())).thenAnswer((_) async {});
-    when(() => mockUser.reload()).thenAnswer((_) async {});
+    when(mockUser.reload).thenAnswer((_) async {});
 
     final container = ProviderContainer(
       overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
@@ -111,6 +111,6 @@ void main() {
     await repository.updateCurrentUserDisplayName(displayName: 'Wlad');
 
     verify(() => mockUser.updateDisplayName('Wlad')).called(1);
-    verify(() => mockUser.reload()).called(1);
+    verify(mockUser.reload).called(1);
   });
 }

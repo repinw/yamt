@@ -828,7 +828,7 @@ String? _humanizeRecipePathSegment(String segment) {
     '',
   );
   final withoutSeparators = withoutExtension
-      .replaceAll(RegExp(r'[-_]+'), ' ')
+      .replaceAll(RegExp('[-_]+'), ' ')
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
   if (withoutSeparators.isEmpty ||

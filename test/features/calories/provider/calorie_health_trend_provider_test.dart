@@ -195,7 +195,7 @@ void main() {
         ),
         HealthWeightSample(
           recordedAt: windowEnd.add(const Duration(hours: 8)),
-          weightKg: 71.0,
+          weightKg: 71,
         ),
         HealthWeightSample(
           recordedAt: windowEnd.add(const Duration(hours: 20)),

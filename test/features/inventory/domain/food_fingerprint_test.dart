@@ -12,7 +12,7 @@ void main() {
   });
 
   test('computeFoodFingerprint uses unknown fallback when empty', () {
-    final fingerprint = computeFoodFingerprint(name: '  ', brand: null);
+    final fingerprint = computeFoodFingerprint(name: '  ');
 
     expect(fingerprint, 'unknown_food');
   });

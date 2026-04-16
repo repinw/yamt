@@ -106,7 +106,7 @@ abstract final class CalorieWeeklyCheckInCalculator {
     final activityDeltaKcal = todayActiveKcal - lastWeekAverageActiveKcal;
     final dynamicGoalTodayKcal = (newGoalKcal + activityDeltaKcal)
         .clamp(minimumResolvedDailyCalorieGoalKcal, double.infinity)
-        .toDouble();
+        ;
     if (!kReleaseMode) {
       final weightPointsLabel = weightPoints
           .map((point) {
@@ -174,7 +174,7 @@ abstract final class CalorieWeeklyCheckInCalculator {
   }) {
     final minGoalKcal = previousGoalKcal - _maxWeeklyGoalAdjustmentKcal;
     final maxGoalKcal = previousGoalKcal + _maxWeeklyGoalAdjustmentKcal;
-    return newGoalKcal.clamp(minGoalKcal, maxGoalKcal).toDouble();
+    return newGoalKcal.clamp(minGoalKcal, maxGoalKcal);
   }
 
   static List<CalorieWeeklyCheckInWeightPoint> _smoothWeightPoints(

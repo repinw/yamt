@@ -40,7 +40,7 @@ enum _DiaryAppBarAction { setGoal, setEatingWindow, shiftGoalStart, calculator }
 ])
 class HomePage extends ConsumerWidget {
   /// The home page.
-  const HomePage({super.key, required this.navigationShell});
+  const HomePage({required this.navigationShell, super.key});
 
   /// The navigation shell.
   final StatefulNavigationShell navigationShell;

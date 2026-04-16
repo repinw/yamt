@@ -1,10 +1,9 @@
 import 'dart:developer' show log;
 
 import 'package:yamt/core/utils/store_name_normalizer.dart';
+import 'package:yamt/features/inventory/data/global_food_receipt_alias_repository_contract.dart';
+import 'package:yamt/features/inventory/data/global_food_receipt_alias_store.dart';
 import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
-
-import 'global_food_receipt_alias_repository_contract.dart';
-import 'global_food_receipt_alias_store.dart';
 
 const String _repositoryLogName = 'FirestoreGlobalFoodReceiptAliasRepository';
 

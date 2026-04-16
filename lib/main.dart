@@ -8,8 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/config/firebase_config.dart';
 import 'package:yamt/core/debug/app_provider_observer.dart';
-import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/inventory/application/'

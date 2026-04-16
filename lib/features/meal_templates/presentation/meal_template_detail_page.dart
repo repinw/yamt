@@ -41,7 +41,7 @@ part 'widgets/meal_template_detail_top_bar.dart';
 @Dependencies([InventoryItemsController, PreparedMealsController])
 class MealTemplateDetailPage extends ConsumerStatefulWidget {
   /// The meal template detail page.
-  const MealTemplateDetailPage({super.key, required this.templateId});
+  const MealTemplateDetailPage({required this.templateId, super.key});
 
   /// The template id.
   final String templateId;
@@ -134,9 +134,9 @@ class _MealTemplateDetailPageState
             },
             onAssignmentChanged:
                 ({
-                  required String ingredient,
-                  required List<String> inventoryItemIds,
-                  required RecipeIngredientAmountConversion? amountConversion,
+                  required ingredient,
+                  required inventoryItemIds,
+                  required amountConversion,
                 }) {
                   setState(() {
                     _draftAssignments = _updatedAssignments(

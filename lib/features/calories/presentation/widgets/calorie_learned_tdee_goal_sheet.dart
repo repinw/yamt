@@ -38,7 +38,7 @@ Future<void> showCalorieLearnedTdeeGoalSheet(
 /// Defines calorie learned tdee goal sheet.
 class CalorieLearnedTdeeGoalSheet extends ConsumerStatefulWidget {
   /// The calorie learned tdee goal sheet.
-  const CalorieLearnedTdeeGoalSheet({super.key, required this.initialSettings});
+  const CalorieLearnedTdeeGoalSheet({required this.initialSettings, super.key});
 
   /// The initial settings.
   final CalorieGoalSettings initialSettings;

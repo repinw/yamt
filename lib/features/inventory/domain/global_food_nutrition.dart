@@ -28,36 +28,6 @@ class GlobalFoodNutrition {
     this.per100Fiber,
   });
 
-  /// The quality status.
-  final GlobalFoodNutritionQualityStatus qualityStatus;
-
-  /// The per100 kcal.
-  final double? per100Kcal;
-
-  /// The per100 protein.
-  final double? per100Protein;
-
-  /// The per100 carbs.
-  final double? per100Carbs;
-
-  /// The per100 fat.
-  final double? per100Fat;
-
-  /// The per100 salt.
-  final double? per100Salt;
-
-  /// The per100 saturated fat.
-  final double? per100SaturatedFat;
-
-  /// The per100 polyunsaturated fat.
-  final double? per100PolyunsaturatedFat;
-
-  /// The per100 sugar.
-  final double? per100Sugar;
-
-  /// The per100 fiber.
-  final double? per100Fiber;
-
   /// Creates a [GlobalFoodNutrition] for from json.
   factory GlobalFoodNutrition.fromJson(Map<String, dynamic> json) {
     return GlobalFoodNutrition(
@@ -104,6 +74,36 @@ class GlobalFoodNutrition {
       ]),
     );
   }
+
+  /// The quality status.
+  final GlobalFoodNutritionQualityStatus qualityStatus;
+
+  /// The per100 kcal.
+  final double? per100Kcal;
+
+  /// The per100 protein.
+  final double? per100Protein;
+
+  /// The per100 carbs.
+  final double? per100Carbs;
+
+  /// The per100 fat.
+  final double? per100Fat;
+
+  /// The per100 salt.
+  final double? per100Salt;
+
+  /// The per100 saturated fat.
+  final double? per100SaturatedFat;
+
+  /// The per100 polyunsaturated fat.
+  final double? per100PolyunsaturatedFat;
+
+  /// The per100 sugar.
+  final double? per100Sugar;
+
+  /// The per100 fiber.
+  final double? per100Fiber;
 
   /// To json.
   Map<String, dynamic> toJson() {

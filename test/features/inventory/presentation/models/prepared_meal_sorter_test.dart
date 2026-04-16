@@ -115,8 +115,6 @@ void main() {
         id: 'half-few',
         name: 'Half Few',
         createdAt: '2026-02-21T08:00:00Z',
-        totalPortions: 2,
-        remainingPortions: 1,
       ),
       _preparedMeal(
         id: 'empty',

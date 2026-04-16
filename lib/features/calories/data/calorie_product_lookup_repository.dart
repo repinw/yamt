@@ -150,11 +150,10 @@ class _FirebaseCallableCalorieOffLookupClient
     }
 
     try {
-      final callable = _functions.httpsCallable(
-        _lookupCallableName,
-        options: HttpsCallableOptions(),
-      );
-      final result = await callable.call(<String, Object?>{'barcode': barcode});
+      final callable = _functions.httpsCallable(_lookupCallableName);
+      final result = await callable.call<Object?>(<String, Object?>{
+        'barcode': barcode,
+      });
       final payload = _normalizeStringMap(result.data);
       if (payload == null) {
         return const CalorieOffLookupResult.failed(

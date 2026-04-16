@@ -7,9 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 class CalorieBarcodeCandidatePickerSheet extends StatelessWidget {
   /// The calorie barcode candidate picker sheet.
   const CalorieBarcodeCandidatePickerSheet({
-    super.key,
-    required this.candidates,
-    required this.onSelect,
+    required this.candidates, required this.onSelect, super.key,
   });
 
   /// The candidates.

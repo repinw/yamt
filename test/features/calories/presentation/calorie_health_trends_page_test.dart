@@ -38,7 +38,7 @@ void main() {
           day: DateTime(2026, 3, 15),
           intakeKcal: 2100,
           burnedKcal: 510,
-          weightKg: 71.0,
+          weightKg: 71,
           weightSource: CalorieHealthTrendWeightSource.health,
         ),
       ],

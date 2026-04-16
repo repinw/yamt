@@ -2,11 +2,10 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
+import 'package:yamt/features/inventory/data/inventory_item_store.dart';
+import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-
-import 'inventory_item_repository_contract.dart';
-import 'inventory_item_store.dart';
-import 'inventory_user_session.dart';
 
 const String _repositoryLogName = 'FirestoreInventoryItemRepository';
 
@@ -194,9 +193,7 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
       globalFoodItemId: item.globalFoodItemId.trim(),
       barcode: barcode,
       foodFingerprint: item.resolvedFoodFingerprint,
-      barcodeLookupUncertain: barcode == null
-          ? false
-          : item.barcodeLookupUncertain,
+      barcodeLookupUncertain: !(barcode == null) && item.barcodeLookupUncertain,
       barcodeResolvedAt: barcode == null
           ? null
           : (item.barcodeResolvedAt ?? DateTime.now()),

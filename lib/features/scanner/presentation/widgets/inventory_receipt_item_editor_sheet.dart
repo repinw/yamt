@@ -6,17 +6,17 @@ import 'package:yamt/features/scanner/domain/receipt_item_editor_updater.dart';
 import 'package:yamt/features/scanner/domain/receipt_item_input_parser.dart';
 import 'package:yamt/features/scanner/domain/'
     'receipt_item_quantity_normalizer.dart';
+import 'package:yamt/features/scanner/presentation/models/receipt_item_editor_draft.dart';
+import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_action_row.dart';
+import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_form_field_metadata.dart';
+import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_form_section.dart';
+import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_weight_unit_fallback_option.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-import '../models/receipt_item_editor_draft.dart';
-import 'receipt_item_editor_action_row.dart';
-import 'receipt_item_editor_form_field_metadata.dart';
-import 'receipt_item_editor_form_section.dart';
-import 'receipt_item_editor_weight_unit_fallback_option.dart';
 
 /// Defines inventory receipt item editor sheet.
 class InventoryReceiptItemEditorSheet extends StatefulWidget {
   /// The inventory receipt item editor sheet.
-  const InventoryReceiptItemEditorSheet({super.key, required this.item});
+  const InventoryReceiptItemEditorSheet({required this.item, super.key});
 
   /// The item.
   final InventoryItem item;

@@ -14,7 +14,7 @@ import 'package:yamt/features/inventory/provider/inventory_items_controller.dart
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 
-const _inventoryReceiptGroupsBottomPadding =
+const double _inventoryReceiptGroupsBottomPadding =
     AppSpacing.xxxxl * 4 + AppSpacing.xxxl;
 
 /// Defines inventory receipt groups sliver.

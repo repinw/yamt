@@ -184,10 +184,10 @@ class RemainingProgressBar extends StatelessWidget {
 
   double _segmentFillValue(int segmentIndex, double exactFilled) {
     if (segmentIndex + 1 <= exactFilled) {
-      return 1.0;
+      return 1;
     }
     if (segmentIndex >= exactFilled) {
-      return 0.0;
+      return 0;
     }
     return (exactFilled - segmentIndex).clamp(0.0, 1.0);
   }

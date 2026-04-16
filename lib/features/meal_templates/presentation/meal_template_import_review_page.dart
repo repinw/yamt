@@ -12,7 +12,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines meal template import review page.
 class MealTemplateImportReviewPage extends ConsumerStatefulWidget {
   /// The meal template import review page.
-  const MealTemplateImportReviewPage({super.key, required this.args});
+  const MealTemplateImportReviewPage({required this.args, super.key});
 
   /// The args.
   final MealTemplateImportReviewArgs args;

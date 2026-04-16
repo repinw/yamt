@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 
-const _maxPreparedMealImageBytes = 350 * 1024;
+const int _maxPreparedMealImageBytes = 350 * 1024;
 
 void main() {
   test('optimizePreparedMealImageBytes downscales oversized images', () async {

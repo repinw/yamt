@@ -151,7 +151,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
 
     return _InventoryItemRowCard(
       layoutData: layoutData,
-      isExpanded: widget.isSelectionMode ? false : _isExpanded,
+      isExpanded: !widget.isSelectionMode && _isExpanded,
       isSelectionMode: widget.isSelectionMode,
       isSelected: widget.isSelected,
       deleteLabel: widget.l10n.inventoryItemDeleteAction,
@@ -350,7 +350,6 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
 
     final reason = await showInventoryDiscardReasonDialog(
       context,
-      useRootNavigator: false,
     );
     if (!mounted || reason == null) {
       return;

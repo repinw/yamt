@@ -110,10 +110,7 @@ resolveCaloriesBalanceBarLayoutMetrics({
 class CaloriesBalanceSummaryView extends StatelessWidget {
   /// The calories balance summary view.
   const CaloriesBalanceSummaryView({
-    super.key,
-    required this.data,
-    required this.numberFormat,
-    required this.kcalUnit,
+    required this.data, required this.numberFormat, required this.kcalUnit, super.key,
   });
 
   /// The data.

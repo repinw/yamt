@@ -19,7 +19,6 @@ InventoryItem _item({required String id, required String name}) {
     entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
     initialAmount: 300,
     currentAmount: 300,
     amountUnit: InventoryAmountUnit.gram,

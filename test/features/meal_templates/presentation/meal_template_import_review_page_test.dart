@@ -119,13 +119,13 @@ void main() {
     expect(find.text('Rezept prüfen'), findsOneWidget);
     expect(find.text('Kurze Anleitung'), findsOneWidget);
 
-    await tester.tap(find.text('Als Vorlage speichern'));
+    await tester.tap(find.text('Als Rezept speichern'));
     await tester.pumpAndSettle();
 
     expect(repository.savedTemplates, hasLength(1));
     expect(repository.savedTemplates.single.name, 'Kartoffelsuppe');
     expect(repository.savedTemplates.single.totalPortions, 4);
-    expect(find.text('Vorlage gespeichert.'), findsOneWidget);
+    expect(find.text('Rezept gespeichert.'), findsOneWidget);
     expect(find.text('open'), findsOneWidget);
   });
 
@@ -147,10 +147,10 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Als Vorlage speichern'));
+    await tester.tap(find.text('Als Rezept speichern'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Vorlage konnte nicht erstellt werden.'), findsOneWidget);
+    expect(find.text('Rezept konnte nicht erstellt werden.'), findsOneWidget);
     expect(repository.savedTemplates, isEmpty);
   });
 }

@@ -28,8 +28,7 @@ class StatisticsBarChartDatum {
 class StatisticsVerticalBarChart extends StatelessWidget {
   /// The statistics vertical bar chart.
   const StatisticsVerticalBarChart({
-    super.key,
-    required this.data,
+    required this.data, super.key,
     this.height = 180,
   });
 

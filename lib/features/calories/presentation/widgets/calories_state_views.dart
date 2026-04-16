@@ -24,10 +24,7 @@ class CaloriesLoadingView extends StatelessWidget {
 class CaloriesErrorView extends StatelessWidget {
   /// The calories error view.
   const CaloriesErrorView({
-    super.key,
-    required this.onRetry,
-    required this.message,
-    required this.retryLabel,
+    required this.onRetry, required this.message, required this.retryLabel, super.key,
   });
 
   /// The on retry.

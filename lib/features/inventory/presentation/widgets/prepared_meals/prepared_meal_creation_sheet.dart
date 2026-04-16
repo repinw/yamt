@@ -51,7 +51,7 @@ Future<PreparedMealCreationSheetResult?> showPreparedMealCreationSheet({
 /// Defines prepared meal creation sheet.
 class PreparedMealCreationSheet extends ConsumerStatefulWidget {
   /// The prepared meal creation sheet.
-  const PreparedMealCreationSheet({super.key, required this.items});
+  const PreparedMealCreationSheet({required this.items, super.key});
 
   /// The items.
   final List<InventoryItem> items;

@@ -26,13 +26,18 @@ Future<CalorieHealthTrendSnapshot> calorieHealthTrendSnapshot(Ref ref) async {
   );
   final DateTime visibleWindowEnd =
       trendsWindowEnd ?? ref.watch(calorieVisibleWindowControllerProvider);
-  final intakeSnapshot = await ref.watch(
+  final intakeSnapshotFuture = ref.watch(
     calorieWeekConsumptionSnapshotForWindowProvider(visibleWindowEnd).future,
   );
-  final status = await ref.watch(healthConnectionControllerProvider.future);
-  final manualEntries = await ref.watch(
+  final statusFuture = ref.watch(healthConnectionControllerProvider.future);
+  final manualEntriesFuture = ref.watch(
     manualHealthWeightEntriesControllerProvider.future,
   );
+  final diaryHealthService = ref.watch(diaryHealthServiceProvider);
+  final healthWeightService = ref.watch(healthWeightServiceProvider);
+  final intakeSnapshot = await intakeSnapshotFuture;
+  final status = await statusFuture;
+  final manualEntries = await manualEntriesFuture;
   final days = intakeSnapshot.days
       .map((day) => day.date)
       .toList(growable: false);
@@ -45,7 +50,6 @@ Future<CalorieHealthTrendSnapshot> calorieHealthTrendSnapshot(Ref ref) async {
   };
 
   if (status.accessState == HealthDataAccessState.ready && days.isNotEmpty) {
-    final diaryHealthService = ref.watch(diaryHealthServiceProvider);
     final dayDataList = await Future.wait(
       days.map((day) => diaryHealthService.loadDayData(day: day)),
     );
@@ -59,12 +63,10 @@ Future<CalorieHealthTrendSnapshot> calorieHealthTrendSnapshot(Ref ref) async {
 
     final startInclusive = days.first;
     final endExclusive = days.last.add(const Duration(days: 1));
-    final weightSamples = await ref
-        .watch(healthWeightServiceProvider)
-        .loadWeightSamples(
-          startInclusive: startInclusive,
-          endExclusive: endExclusive,
-        );
+    final weightSamples = await healthWeightService.loadWeightSamples(
+      startInclusive: startInclusive,
+      endExclusive: endExclusive,
+    );
     weightByDay = _latestWeightByDay(weightSamples);
     for (final key in weightByDay.keys) {
       weightSourceByDay.putIfAbsent(

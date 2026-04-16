@@ -18,7 +18,6 @@ InventoryItem _item({
     entryDate: DateTime.parse('2026-02-20T08:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
     unitPrice: 1,
   );
 }

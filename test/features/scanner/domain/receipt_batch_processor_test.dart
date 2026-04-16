@@ -54,8 +54,7 @@ ReceiptReviewItemDraft _mappedItem(String id) {
       entryDate: DateTime.parse('2026-02-26T12:00:00Z'),
       storeName: 'Store',
       quantity: 1,
-      initialQuantity: 1,
-      unitPrice: 1.0,
+      unitPrice: 1,
     ),
   );
 }

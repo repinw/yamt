@@ -58,7 +58,6 @@ InventoryReceiptGroup _group() {
       storeName: 'Aldi',
       receiptId: 'abc123',
       receiptDate: DateTime.parse('2026-02-20T10:00:00Z'),
-      quantity: 1,
       unitPrice: 1.5,
       currencyCode: 'EUR',
     ),
@@ -69,7 +68,7 @@ InventoryReceiptGroup _group() {
       receiptId: 'abc123',
       receiptDate: DateTime.parse('2026-02-20T10:00:00Z'),
       quantity: 2,
-      unitPrice: 2.0,
+      unitPrice: 2,
       currencyCode: 'EUR',
     ),
   ]);

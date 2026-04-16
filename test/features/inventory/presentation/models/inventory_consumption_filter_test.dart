@@ -15,7 +15,7 @@ InventoryItem _item({
     storeName: 'Store',
     quantity: quantity,
     initialQuantity: initialQuantity,
-    unitPrice: 1.0,
+    unitPrice: 1,
   );
 }
 

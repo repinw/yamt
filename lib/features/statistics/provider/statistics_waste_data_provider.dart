@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod/src/providers/future_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_discard_event_repository.dart';
 import 'package:yamt/features/statistics/domain/statistics_models.dart';
 import 'package:yamt/features/statistics/domain/waste_metrics.dart';
 
 /// The statistics waste data provider.
-final statisticsWasteDataProvider =
+final FutureProviderFamily<StatisticsWasteSnapshot, StatisticsTimeframe> statisticsWasteDataProvider =
     FutureProvider.family<StatisticsWasteSnapshot, StatisticsTimeframe>((
       ref,
       timeframe,

@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -47,27 +48,36 @@ Widget _buildInventoryTestApp({
   List<PreparedMeal> preparedMeals = const <PreparedMeal>[],
   VoiceSearchService? speechService,
   AppPreferences? preferences,
+  ProviderContainer? container,
 }) {
-  final container = ProviderContainer(
-    overrides: [
-      if (preferences != null)
-        appPreferencesProvider.overrideWithValue(preferences),
-      barcodeBackfillFeatureFlagsProvider.overrideWithValue(
-        const BarcodeBackfillFeatureFlags(
-          showInventoryBarcodeMarkers: false,
-          enableQueueBackfill: false,
-        ),
-      ),
-      activeShoppingListItemKeysProvider.overrideWithValue(
-        const <ShoppingListItemMatchKey>{},
-      ),
-      if (speechService != null)
-        voiceSearchServiceProvider.overrideWithValue(speechService),
-    ],
-  );
-  addTearDown(container.dispose);
+  final resolvedContainer =
+      container ??
+      ProviderContainer(
+        overrides: [
+          if (preferences != null)
+            appPreferencesProvider.overrideWithValue(preferences),
+          barcodeBackfillFeatureFlagsProvider.overrideWithValue(
+            const BarcodeBackfillFeatureFlags(
+              showInventoryBarcodeMarkers: false,
+              enableQueueBackfill: false,
+            ),
+          ),
+          householdDataOwnerUserIdProvider.overrideWith((ref) => 'user-1'),
+          inventoryItemsControllerProvider.overrideWith(
+            () => _StaticInventoryItemsController(items),
+          ),
+          activeShoppingListItemKeysProvider.overrideWithValue(
+            const <ShoppingListItemMatchKey>{},
+          ),
+          if (speechService != null)
+            voiceSearchServiceProvider.overrideWithValue(speechService),
+        ],
+      );
+  if (container == null) {
+    addTearDown(resolvedContainer.dispose);
+  }
   return UncontrolledProviderScope(
-    container: container,
+    container: resolvedContainer,
     child: MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -234,6 +244,15 @@ class _MemoryAppPreferences implements AppPreferences {
     _ints[key] = value;
     return true;
   }
+}
+
+class _StaticInventoryItemsController extends InventoryItemsController {
+  _StaticInventoryItemsController(this._items);
+
+  final List<InventoryItem> _items;
+
+  @override
+  List<InventoryItem> build() => _items;
 }
 
 @Dependencies([inventoryItemRepository, InventoryItemsController])
@@ -776,7 +795,6 @@ void main() {
             id: 'meal-low',
             name: 'Low Meal',
             totalPortions: 4,
-            remainingPortions: 1,
           ),
           _preparedMeal(
             id: 'meal-mid',
@@ -904,7 +922,6 @@ void main() {
         id: 'meal-low',
         name: 'Ready Low',
         totalPortions: 4,
-        remainingPortions: 1,
       ),
       _preparedMeal(
         id: 'meal-high',
@@ -917,12 +934,32 @@ void main() {
         name: 'Incomplete Meal',
       ).copyWith(pendingRecipeIngredients: const <String>['Cheese']),
     ];
+    final container = ProviderContainer(
+      overrides: [
+        appPreferencesProvider.overrideWithValue(preferences),
+        barcodeBackfillFeatureFlagsProvider.overrideWithValue(
+          const BarcodeBackfillFeatureFlags(
+            showInventoryBarcodeMarkers: false,
+            enableQueueBackfill: false,
+          ),
+        ),
+        householdDataOwnerUserIdProvider.overrideWith((ref) => 'user-1'),
+        inventoryItemsControllerProvider.overrideWith(
+          () => _StaticInventoryItemsController(const <InventoryItem>[]),
+        ),
+        activeShoppingListItemKeysProvider.overrideWithValue(
+          const <ShoppingListItemMatchKey>{},
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
 
     await tester.pumpWidget(
       _buildInventoryTestApp(
         items: const <InventoryItem>[],
         preparedMeals: preparedMeals,
         preferences: preferences,
+        container: container,
       ),
     );
     await tester.pumpAndSettle();
@@ -954,6 +991,7 @@ void main() {
         items: const <InventoryItem>[],
         preparedMeals: preparedMeals,
         preferences: preferences,
+        container: container,
       ),
     );
     await tester.pumpAndSettle();

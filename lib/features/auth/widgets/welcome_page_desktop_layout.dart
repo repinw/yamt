@@ -16,7 +16,6 @@ class _DesktopAuthLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(child: _EditorialAside(isLoginMode: isLoginMode)),
         const SizedBox(width: AppSpacing.xxxxl),

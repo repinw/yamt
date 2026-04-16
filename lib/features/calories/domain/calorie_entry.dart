@@ -43,6 +43,11 @@ class CalorieEntryBundleComponent {
     this.imageUrl,
   });
 
+  /// Creates a [CalorieEntryBundleComponent] for from json.
+  factory CalorieEntryBundleComponent.fromJson(Map<String, dynamic> json) {
+    return _$CalorieEntryBundleComponentFromJson(json);
+  }
+
   /// The name.
   final String name;
 
@@ -70,11 +75,6 @@ class CalorieEntryBundleComponent {
   /// The total fat.
   @FlexibleDoubleConverter()
   final double totalFat;
-
-  /// Creates a [CalorieEntryBundleComponent] for from json.
-  factory CalorieEntryBundleComponent.fromJson(Map<String, dynamic> json) {
-    return _$CalorieEntryBundleComponentFromJson(json);
-  }
 
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieEntryBundleComponentToJson(this);

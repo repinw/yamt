@@ -2,11 +2,10 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
+import 'package:yamt/features/inventory/data/inventory_user_session.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_template_repository_contract.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_template_store.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-
-import 'inventory_user_session.dart';
-import 'prepared_meal_template_repository_contract.dart';
-import 'prepared_meal_template_store.dart';
 
 const String _repositoryLogName = 'FirestorePreparedMealTemplateRepository';
 

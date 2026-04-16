@@ -696,7 +696,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     int amount,
   ) {
     if (amount < 1) {
-      return Future<PendingInventoryConsumption?>.value(null);
+      return Future<PendingInventoryConsumption?>.value();
     }
     return _runSerializedTask<PendingInventoryConsumption?>(
       operation: () async {
@@ -1003,7 +1003,7 @@ class InventoryItemsController extends _$InventoryItemsController {
 
   String _nextPendingConsumptionId() {
     _pendingConsumptionDraftCounter += 1;
-    return 'pending-consumption-${_pendingConsumptionDraftCounter.toString()}';
+    return 'pending-consumption-$_pendingConsumptionDraftCounter';
   }
 }
 

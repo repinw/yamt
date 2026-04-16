@@ -6,10 +6,10 @@ import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 
-import 'firestore_prepared_meal_template_repository.dart';
-import 'inventory_user_session.dart';
-import 'prepared_meal_template_repository_contract.dart';
-import 'prepared_meal_template_store.dart';
+import 'package:yamt/features/inventory/data/firestore_prepared_meal_template_repository.dart';
+import 'package:yamt/features/inventory/data/inventory_user_session.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_template_repository_contract.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_template_store.dart';
 
 export 'firestore_prepared_meal_template_repository.dart';
 export 'prepared_meal_template_repository_contract.dart';

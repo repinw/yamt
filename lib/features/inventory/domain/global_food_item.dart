@@ -389,7 +389,7 @@ String normalizeGlobalFoodText(String raw) {
     return '';
   }
   return lower
-      .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
+      .replaceAll(RegExp('[^a-z0-9]+'), ' ')
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
 }

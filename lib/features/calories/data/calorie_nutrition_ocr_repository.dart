@@ -370,8 +370,8 @@ class _FirebaseCalorieNutritionOcrRepository
   String _normalizeKey(String rawKey) {
     final trimmed = rawKey.trim().toLowerCase();
     return trimmed
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
-        .replaceAll(RegExp(r'_+'), '_');
+        .replaceAll(RegExp('[^a-z0-9]+'), '_')
+        .replaceAll(RegExp('_+'), '_');
   }
 
   String? _extractString(Map<String, Object?> payload, List<String> keys) {

@@ -16,11 +16,9 @@ const _enqueueJobsCallableName = 'enqueueInventoryBarcodeJobs';
 const _functionsRegion = 'europe-west1';
 const _useFunctionsEmulator = bool.fromEnvironment(
   'USE_FUNCTIONS_EMULATOR',
-  defaultValue: false,
 );
 const _functionsEmulatorHostFromDefine = String.fromEnvironment(
   'FUNCTIONS_EMULATOR_HOST',
-  defaultValue: '',
 );
 const _functionsEmulatorPort = int.fromEnvironment(
   'FUNCTIONS_EMULATOR_PORT',
@@ -53,11 +51,8 @@ class FirestoreCalorieBarcodeBackfillRepository
 
   @override
   Future<bool> enqueueFingerprintLookup({
-    String? itemId,
-    required String fingerprint,
-    required String itemName,
+    required String fingerprint, required String itemName, required String trigger, String? itemId,
     String? brand,
-    required String trigger,
     bool forceRetry = false,
   }) async {
     final userId = _currentUserId();
@@ -220,7 +215,7 @@ class FirestoreCalorieBarcodeBackfillRepository
       'in region=$_functionsRegion.',
     );
     final callable = functions.httpsCallable(_resolveCallableName);
-    final result = await callable.call(payload);
+    final result = await callable.call<Object?>(payload);
     return _castCallableResponse(result.data);
   }
 
@@ -237,7 +232,7 @@ class FirestoreCalorieBarcodeBackfillRepository
       'in region=$_functionsRegion.',
     );
     final callable = functions.httpsCallable(_enqueueJobsCallableName);
-    final result = await callable.call(payload);
+    final result = await callable.call<Object?>(payload);
     return _castCallableResponse(result.data);
   }
 
@@ -366,11 +361,8 @@ class _UnavailableCalorieBarcodeBackfillRepository
 
   @override
   Future<bool> enqueueFingerprintLookup({
-    String? itemId,
-    required String fingerprint,
-    required String itemName,
+    required String fingerprint, required String itemName, required String trigger, String? itemId,
     String? brand,
-    required String trigger,
     bool forceRetry = false,
   }) async {
     return false;

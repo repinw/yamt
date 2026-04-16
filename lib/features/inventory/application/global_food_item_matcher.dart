@@ -123,9 +123,7 @@ class GlobalFoodItemMatcher {
     required List<OffProductSearchResult> externalResults,
   }) {
     return externalResults
-        .map((result) {
-          return candidateFromExternalResult(result);
-        })
+        .map(candidateFromExternalResult)
         .toList(growable: false);
   }
 

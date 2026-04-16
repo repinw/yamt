@@ -672,7 +672,10 @@ class _DelayedCalorieSettingsRepository implements CalorieSettingsRepository {
   CalorieGoalSettings _settings = const CalorieGoalSettings.empty();
 
   @override
-  Stream<CalorieGoalSettings> watchSettings() => _controller.stream;
+  Stream<CalorieGoalSettings> watchSettings() async* {
+    yield _settings;
+    yield* _controller.stream;
+  }
 
   @override
   Future<CalorieGoalSettings> readSettings() async => _settings;
