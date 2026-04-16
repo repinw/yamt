@@ -8,13 +8,16 @@ part of 'calorie_entries_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines calorie entries controller.
 
 @ProviderFor(CalorieEntriesController)
 final calorieEntriesControllerProvider = CalorieEntriesControllerProvider._();
 
+/// Defines calorie entries controller.
 final class CalorieEntriesControllerProvider
     extends
         $AsyncNotifierProvider<CalorieEntriesController, List<CalorieEntry>> {
+  /// Defines calorie entries controller.
   CalorieEntriesControllerProvider._()
     : super(
         from: null,
@@ -37,6 +40,8 @@ final class CalorieEntriesControllerProvider
 String _$calorieEntriesControllerHash() =>
     r'01b0512e014caa53ee8f5569a117f17d190bfb18';
 
+/// Defines calorie entries controller.
+
 abstract class _$CalorieEntriesController
     extends $AsyncNotifier<List<CalorieEntry>> {
   FutureOr<List<CalorieEntry>> build();
@@ -57,8 +62,12 @@ abstract class _$CalorieEntriesController
   }
 }
 
+/// Calorie entry by id.
+
 @ProviderFor(calorieEntryById)
 final calorieEntryByIdProvider = CalorieEntryByIdFamily._();
+
+/// Calorie entry by id.
 
 final class CalorieEntryByIdProvider
     extends
@@ -68,6 +77,7 @@ final class CalorieEntryByIdProvider
           FutureOr<CalorieEntry?>
         >
     with $FutureModifier<CalorieEntry?>, $FutureProvider<CalorieEntry?> {
+  /// Calorie entry by id.
   CalorieEntryByIdProvider._({
     required CalorieEntryByIdFamily super.from,
     required String super.argument,
@@ -114,6 +124,8 @@ final class CalorieEntryByIdProvider
 
 String _$calorieEntryByIdHash() => r'5a59a396ab6e1f6b79c6f084214ccffb13846fcb';
 
+/// Calorie entry by id.
+
 final class CalorieEntryByIdFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<CalorieEntry?>, String> {
   CalorieEntryByIdFamily._()
@@ -125,6 +137,8 @@ final class CalorieEntryByIdFamily extends $Family
         isAutoDispose: true,
       );
 
+  /// Calorie entry by id.
+
   CalorieEntryByIdProvider call(String entryId) =>
       CalorieEntryByIdProvider._(argument: entryId, from: this);
 
@@ -132,8 +146,12 @@ final class CalorieEntryByIdFamily extends $Family
   String toString() => r'calorieEntryByIdProvider';
 }
 
+/// Calorie day view data.
+
 @ProviderFor(calorieDayViewData)
 final calorieDayViewDataProvider = CalorieDayViewDataProvider._();
+
+/// Calorie day view data.
 
 final class CalorieDayViewDataProvider
     extends
@@ -143,6 +161,7 @@ final class CalorieDayViewDataProvider
           AsyncValue<CalorieDayViewData>
         >
     with $Provider<AsyncValue<CalorieDayViewData>> {
+  /// Calorie day view data.
   CalorieDayViewDataProvider._()
     : super(
         from: null,

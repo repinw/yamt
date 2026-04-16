@@ -8,13 +8,16 @@ part of 'calorie_visible_window_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines calorie visible window controller.
 
 @ProviderFor(CalorieVisibleWindowController)
 final calorieVisibleWindowControllerProvider =
     CalorieVisibleWindowControllerProvider._();
 
+/// Defines calorie visible window controller.
 final class CalorieVisibleWindowControllerProvider
     extends $NotifierProvider<CalorieVisibleWindowController, DateTime> {
+  /// Defines calorie visible window controller.
   CalorieVisibleWindowControllerProvider._()
     : super(
         from: null,
@@ -44,6 +47,8 @@ final class CalorieVisibleWindowControllerProvider
 
 String _$calorieVisibleWindowControllerHash() =>
     r'7079a54d9164464d711cf2476013548787b19769';
+
+/// Defines calorie visible window controller.
 
 abstract class _$CalorieVisibleWindowController extends $Notifier<DateTime> {
   DateTime build();

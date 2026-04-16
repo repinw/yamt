@@ -8,9 +8,12 @@ part of 'inventory_item_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Inventory item repository.
 
 @ProviderFor(inventoryItemRepository)
 final inventoryItemRepositoryProvider = InventoryItemRepositoryProvider._();
+
+/// Inventory item repository.
 
 final class InventoryItemRepositoryProvider
     extends
@@ -20,6 +23,7 @@ final class InventoryItemRepositoryProvider
           InventoryItemRepository
         >
     with $Provider<InventoryItemRepository> {
+  /// Inventory item repository.
   InventoryItemRepositoryProvider._()
     : super(
         from: null,
@@ -27,8 +31,8 @@ final class InventoryItemRepositoryProvider
         retry: null,
         name: r'inventoryItemRepositoryProvider',
         isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
+        dependencies: <ProviderOrFamily>[],
+        $allTransitiveDependencies: <ProviderOrFamily>[],
       );
 
   @override
@@ -55,4 +59,4 @@ final class InventoryItemRepositoryProvider
 }
 
 String _$inventoryItemRepositoryHash() =>
-    r'd13da9f736408ff98a83d2c89a3937cf9e834a4c';
+    r'2ad65192f1088f675b9d14ab543d3fb72fcbad27';

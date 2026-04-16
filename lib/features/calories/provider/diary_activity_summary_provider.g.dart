@@ -8,9 +8,12 @@ part of 'diary_activity_summary_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Diary activity summary.
 
 @ProviderFor(diaryActivitySummary)
 final diaryActivitySummaryProvider = DiaryActivitySummaryProvider._();
+
+/// Diary activity summary.
 
 final class DiaryActivitySummaryProvider
     extends
@@ -22,6 +25,7 @@ final class DiaryActivitySummaryProvider
     with
         $FutureModifier<DiaryActivitySummary>,
         $FutureProvider<DiaryActivitySummary> {
+  /// Diary activity summary.
   DiaryActivitySummaryProvider._()
     : super(
         from: null,

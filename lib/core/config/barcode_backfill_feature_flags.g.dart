@@ -8,10 +8,13 @@ part of 'barcode_backfill_feature_flags.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Resolves barcode backfill feature flags from Firebase Remote Config.
 
 @ProviderFor(barcodeBackfillFeatureFlags)
 final barcodeBackfillFeatureFlagsProvider =
     BarcodeBackfillFeatureFlagsProvider._();
+
+/// Resolves barcode backfill feature flags from Firebase Remote Config.
 
 final class BarcodeBackfillFeatureFlagsProvider
     extends
@@ -21,6 +24,7 @@ final class BarcodeBackfillFeatureFlagsProvider
           BarcodeBackfillFeatureFlags
         >
     with $Provider<BarcodeBackfillFeatureFlags> {
+  /// Resolves barcode backfill feature flags from Firebase Remote Config.
   BarcodeBackfillFeatureFlagsProvider._()
     : super(
         from: null,
@@ -56,4 +60,4 @@ final class BarcodeBackfillFeatureFlagsProvider
 }
 
 String _$barcodeBackfillFeatureFlagsHash() =>
-    r'cb801b165dbfffa725344765d30b8dba9a3431e5';
+    r'5c0472f72ecae8fe9f86ebfa0460a59c96fcd631';

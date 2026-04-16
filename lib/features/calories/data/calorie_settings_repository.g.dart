@@ -8,9 +8,12 @@ part of 'calorie_settings_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Calorie settings repository.
 
 @ProviderFor(calorieSettingsRepository)
 final calorieSettingsRepositoryProvider = CalorieSettingsRepositoryProvider._();
+
+/// Calorie settings repository.
 
 final class CalorieSettingsRepositoryProvider
     extends
@@ -20,6 +23,7 @@ final class CalorieSettingsRepositoryProvider
           CalorieSettingsRepository
         >
     with $Provider<CalorieSettingsRepository> {
+  /// Calorie settings repository.
   CalorieSettingsRepositoryProvider._()
     : super(
         from: null,

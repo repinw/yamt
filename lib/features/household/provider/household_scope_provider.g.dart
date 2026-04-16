@@ -8,13 +8,17 @@ part of 'household_scope_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Household data owner user id.
 
 @ProviderFor(householdDataOwnerUserId)
 final householdDataOwnerUserIdProvider = HouseholdDataOwnerUserIdProvider._();
 
+/// Household data owner user id.
+
 final class HouseholdDataOwnerUserIdProvider
     extends $FunctionalProvider<String?, String?, String?>
     with $Provider<String?> {
+  /// Household data owner user id.
   HouseholdDataOwnerUserIdProvider._()
     : super(
         from: null,
@@ -51,16 +55,20 @@ final class HouseholdDataOwnerUserIdProvider
 String _$householdDataOwnerUserIdHash() =>
     r'c9f7a0e6270d2b609d52160fda6266369681feb7';
 
+/// Defines household data owner recovery.
+
 @ProviderFor(HouseholdDataOwnerRecovery)
 final householdDataOwnerRecoveryProvider =
     HouseholdDataOwnerRecoveryProvider._();
 
+/// Defines household data owner recovery.
 final class HouseholdDataOwnerRecoveryProvider
     extends
         $NotifierProvider<
           HouseholdDataOwnerRecovery,
           HouseholdDataOwnerRecoveryState?
         > {
+  /// Defines household data owner recovery.
   HouseholdDataOwnerRecoveryProvider._()
     : super(
         from: null,
@@ -93,6 +101,8 @@ final class HouseholdDataOwnerRecoveryProvider
 String _$householdDataOwnerRecoveryHash() =>
     r'84692e5670e7dbe96bb829a0816efab6b479ec2c';
 
+/// Defines household data owner recovery.
+
 abstract class _$HouseholdDataOwnerRecovery
     extends $Notifier<HouseholdDataOwnerRecoveryState?> {
   HouseholdDataOwnerRecoveryState? build();
@@ -120,13 +130,18 @@ abstract class _$HouseholdDataOwnerRecovery
   }
 }
 
+/// Effective household data owner user id.
+
 @ProviderFor(effectiveHouseholdDataOwnerUserId)
 final effectiveHouseholdDataOwnerUserIdProvider =
     EffectiveHouseholdDataOwnerUserIdProvider._();
 
+/// Effective household data owner user id.
+
 final class EffectiveHouseholdDataOwnerUserIdProvider
     extends $FunctionalProvider<String?, String?, String?>
     with $Provider<String?> {
+  /// Effective household data owner user id.
   EffectiveHouseholdDataOwnerUserIdProvider._()
     : super(
         from: null,
@@ -164,13 +179,18 @@ final class EffectiveHouseholdDataOwnerUserIdProvider
 String _$effectiveHouseholdDataOwnerUserIdHash() =>
     r'abb1ed887bdc6e85b69b06c90674e86e1e25447f';
 
+/// Household has additional members.
+
 @ProviderFor(householdHasAdditionalMembers)
 final householdHasAdditionalMembersProvider =
     HouseholdHasAdditionalMembersProvider._();
 
+/// Household has additional members.
+
 final class HouseholdHasAdditionalMembersProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
+  /// Household has additional members.
   HouseholdHasAdditionalMembersProvider._()
     : super(
         from: null,

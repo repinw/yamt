@@ -8,12 +8,15 @@ part of 'auth_form_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines auth form controller.
 
 @ProviderFor(AuthFormController)
 final authFormControllerProvider = AuthFormControllerProvider._();
 
+/// Defines auth form controller.
 final class AuthFormControllerProvider
     extends $AsyncNotifierProvider<AuthFormController, void> {
+  /// Defines auth form controller.
   AuthFormControllerProvider._()
     : super(
         from: null,
@@ -35,6 +38,8 @@ final class AuthFormControllerProvider
 
 String _$authFormControllerHash() =>
     r'd1f7ed6e0927cb18a3340b8b5d07c1bf9ac40f2f';
+
+/// Defines auth form controller.
 
 abstract class _$AuthFormController extends $AsyncNotifier<void> {
   FutureOr<void> build();

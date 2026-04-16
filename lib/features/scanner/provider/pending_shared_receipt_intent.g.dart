@@ -8,14 +8,17 @@ part of 'pending_shared_receipt_intent.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines pending shared receipt intent.
 
 @ProviderFor(PendingSharedReceiptIntent)
 final pendingSharedReceiptIntentProvider =
     PendingSharedReceiptIntentProvider._();
 
+/// Defines pending shared receipt intent.
 final class PendingSharedReceiptIntentProvider
     extends
         $NotifierProvider<PendingSharedReceiptIntent, SharedReceiptIntent?> {
+  /// Defines pending shared receipt intent.
   PendingSharedReceiptIntentProvider._()
     : super(
         from: null,
@@ -45,6 +48,8 @@ final class PendingSharedReceiptIntentProvider
 
 String _$pendingSharedReceiptIntentHash() =>
     r'7c6ac203e753704c7aff69a3d5b176e2d5b450a8';
+
+/// Defines pending shared receipt intent.
 
 abstract class _$PendingSharedReceiptIntent
     extends $Notifier<SharedReceiptIntent?> {

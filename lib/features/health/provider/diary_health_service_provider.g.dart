@@ -8,9 +8,12 @@ part of 'diary_health_service_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Diary health service.
 
 @ProviderFor(diaryHealthService)
 final diaryHealthServiceProvider = DiaryHealthServiceProvider._();
+
+/// Diary health service.
 
 final class DiaryHealthServiceProvider
     extends
@@ -20,6 +23,7 @@ final class DiaryHealthServiceProvider
           DiaryHealthService
         >
     with $Provider<DiaryHealthService> {
+  /// Diary health service.
   DiaryHealthServiceProvider._()
     : super(
         from: null,

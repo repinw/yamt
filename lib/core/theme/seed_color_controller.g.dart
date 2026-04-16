@@ -8,12 +8,15 @@ part of 'seed_color_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Manages persisted seed color selection.
 
 @ProviderFor(SeedColorController)
 final seedColorControllerProvider = SeedColorControllerProvider._();
 
+/// Manages persisted seed color selection.
 final class SeedColorControllerProvider
     extends $NotifierProvider<SeedColorController, Color> {
+  /// Manages persisted seed color selection.
   SeedColorControllerProvider._()
     : super(
         from: null,
@@ -43,6 +46,8 @@ final class SeedColorControllerProvider
 
 String _$seedColorControllerHash() =>
     r'95e792ba13d0c1d1d5776a452887a4e94617fcaa';
+
+/// Manages persisted seed color selection.
 
 abstract class _$SeedColorController extends $Notifier<Color> {
   Color build();

@@ -8,9 +8,12 @@ part of 'receipt_analysis_parser.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Receipt analysis parser.
 
 @ProviderFor(receiptAnalysisParser)
 final receiptAnalysisParserProvider = ReceiptAnalysisParserProvider._();
+
+/// Receipt analysis parser.
 
 final class ReceiptAnalysisParserProvider
     extends
@@ -20,6 +23,7 @@ final class ReceiptAnalysisParserProvider
           ReceiptAnalysisParser
         >
     with $Provider<ReceiptAnalysisParser> {
+  /// Receipt analysis parser.
   ReceiptAnalysisParserProvider._()
     : super(
         from: null,

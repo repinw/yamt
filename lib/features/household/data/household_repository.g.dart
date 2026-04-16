@@ -8,9 +8,12 @@ part of 'household_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Household repository.
 
 @ProviderFor(householdRepository)
 final householdRepositoryProvider = HouseholdRepositoryProvider._();
+
+/// Household repository.
 
 final class HouseholdRepositoryProvider
     extends
@@ -20,6 +23,7 @@ final class HouseholdRepositoryProvider
           HouseholdRepository
         >
     with $Provider<HouseholdRepository> {
+  /// Household repository.
   HouseholdRepositoryProvider._()
     : super(
         from: null,

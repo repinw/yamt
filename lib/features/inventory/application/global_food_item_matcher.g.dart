@@ -8,9 +8,12 @@ part of 'global_food_item_matcher.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Global food item matcher.
 
 @ProviderFor(globalFoodItemMatcher)
 final globalFoodItemMatcherProvider = GlobalFoodItemMatcherProvider._();
+
+/// Global food item matcher.
 
 final class GlobalFoodItemMatcherProvider
     extends
@@ -20,6 +23,7 @@ final class GlobalFoodItemMatcherProvider
           GlobalFoodItemMatcher
         >
     with $Provider<GlobalFoodItemMatcher> {
+  /// Global food item matcher.
   GlobalFoodItemMatcherProvider._()
     : super(
         from: null,

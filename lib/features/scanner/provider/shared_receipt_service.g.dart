@@ -8,14 +8,18 @@ part of 'shared_receipt_service.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// File share intent.
 
 @ProviderFor(fileShareIntent)
 final fileShareIntentProvider = FileShareIntentProvider._();
+
+/// File share intent.
 
 final class FileShareIntentProvider
     extends
         $FunctionalProvider<FileShareIntent, FileShareIntent, FileShareIntent>
     with $Provider<FileShareIntent> {
+  /// File share intent.
   FileShareIntentProvider._()
     : super(
         from: null,
@@ -51,11 +55,15 @@ final class FileShareIntentProvider
 
 String _$fileShareIntentHash() => r'877187683456d9af03382b9e455b4597e4390f94';
 
+/// Defines shared receipt service.
+
 @ProviderFor(SharedReceiptService)
 final sharedReceiptServiceProvider = SharedReceiptServiceProvider._();
 
+/// Defines shared receipt service.
 final class SharedReceiptServiceProvider
     extends $AsyncNotifierProvider<SharedReceiptService, void> {
+  /// Defines shared receipt service.
   SharedReceiptServiceProvider._()
     : super(
         from: null,
@@ -77,6 +85,8 @@ final class SharedReceiptServiceProvider
 
 String _$sharedReceiptServiceHash() =>
     r'67c4d04b9edc4ec4bdbabaaf781e7284d535a60a';
+
+/// Defines shared receipt service.
 
 abstract class _$SharedReceiptService extends $AsyncNotifier<void> {
   FutureOr<void> build();

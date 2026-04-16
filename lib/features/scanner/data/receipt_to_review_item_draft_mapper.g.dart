@@ -8,10 +8,13 @@ part of 'receipt_to_review_item_draft_mapper.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Receipt to review item draft mapper.
 
 @ProviderFor(receiptToReviewItemDraftMapper)
 final receiptToReviewItemDraftMapperProvider =
     ReceiptToReviewItemDraftMapperProvider._();
+
+/// Receipt to review item draft mapper.
 
 final class ReceiptToReviewItemDraftMapperProvider
     extends
@@ -21,6 +24,7 @@ final class ReceiptToReviewItemDraftMapperProvider
           ReceiptToReviewItemDraftMapper
         >
     with $Provider<ReceiptToReviewItemDraftMapper> {
+  /// Receipt to review item draft mapper.
   ReceiptToReviewItemDraftMapperProvider._()
     : super(
         from: null,

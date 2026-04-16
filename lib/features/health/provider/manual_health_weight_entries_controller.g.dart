@@ -8,17 +8,20 @@ part of 'manual_health_weight_entries_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines manual health weight entries controller.
 
 @ProviderFor(ManualHealthWeightEntriesController)
 final manualHealthWeightEntriesControllerProvider =
     ManualHealthWeightEntriesControllerProvider._();
 
+/// Defines manual health weight entries controller.
 final class ManualHealthWeightEntriesControllerProvider
     extends
         $AsyncNotifierProvider<
           ManualHealthWeightEntriesController,
           List<ManualHealthWeightEntry>
         > {
+  /// Defines manual health weight entries controller.
   ManualHealthWeightEntriesControllerProvider._()
     : super(
         from: null,
@@ -42,6 +45,8 @@ final class ManualHealthWeightEntriesControllerProvider
 
 String _$manualHealthWeightEntriesControllerHash() =>
     r'b7ad22b94b8ce7b3bbf7d06a1f977f7cff9b11fe';
+
+/// Defines manual health weight entries controller.
 
 abstract class _$ManualHealthWeightEntriesController
     extends $AsyncNotifier<List<ManualHealthWeightEntry>> {

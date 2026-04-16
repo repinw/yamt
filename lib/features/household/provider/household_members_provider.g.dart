@@ -8,9 +8,12 @@ part of 'household_members_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Household members.
 
 @ProviderFor(householdMembers)
 final householdMembersProvider = HouseholdMembersProvider._();
+
+/// Household members.
 
 final class HouseholdMembersProvider
     extends
@@ -22,6 +25,7 @@ final class HouseholdMembersProvider
     with
         $FutureModifier<List<UserProfile>>,
         $StreamProvider<List<UserProfile>> {
+  /// Household members.
   HouseholdMembersProvider._()
     : super(
         from: null,

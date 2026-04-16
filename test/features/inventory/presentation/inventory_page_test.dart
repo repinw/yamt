@@ -1,11 +1,21 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:riverpod/src/framework.dart' show Override;
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/'
+    'inventory_calorie_entry_commit_store.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/inventory/application/'
@@ -23,11 +33,17 @@ import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../calories/support/fake_calories_repositories.dart';
 import '../../shoppinglist/support/fake_shopping_list_repository.dart';
+
+class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+
+class _MockUser extends Mock implements User {}
 
 class _FakeInventoryDiscardEventRepository
     implements InventoryDiscardEventRepository {
@@ -164,15 +180,36 @@ class _RecordingOffProductSearchRepository
   }
 }
 
+class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
+  PendingInventoryConsumption? pendingConsumption;
+  CalorieEntry? entry;
+
+  @override
+  Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
+    required CalorieEntry entry,
+    required PendingInventoryConsumption pendingConsumption,
+  }) async {
+    this.entry = entry;
+    this.pendingConsumption = pendingConsumption;
+    return InventoryCalorieEntryCommitResult(
+      itemId: pendingConsumption.itemId,
+      quantity: 1,
+      currentAmount: 1000 - pendingConsumption.amount,
+    );
+  }
+}
+
 class _DelayedStageInventoryItemsController extends InventoryItemsController {
   _DelayedStageInventoryItemsController({
     required List<InventoryItem> initialItems,
     required Future<void> Function() waitForStage,
+    this.onStageStarted,
   }) : _initialItems = initialItems,
        _waitForStage = waitForStage;
 
   final List<InventoryItem> _initialItems;
   final Future<void> Function() _waitForStage;
+  final VoidCallback? onStageStarted;
   final List<String> discardedPendingIds = <String>[];
 
   @override
@@ -183,6 +220,7 @@ class _DelayedStageInventoryItemsController extends InventoryItemsController {
     String itemId,
     int amount,
   ) async {
+    onStageStarted?.call();
     await _waitForStage();
     return PendingInventoryConsumption(
       id: 'pending-delayed',
@@ -326,9 +364,10 @@ ShoppingListItem _shoppingItem(
   );
 }
 
+@Dependencies([InventoryItemsController, PreparedMealsController])
 Widget _buildTestApp(
   InventoryItemRepository repository, {
-  List<dynamic> overrides = const <dynamic>[],
+  List<Override> overrides = const <Override>[],
   bool includeDefaultBarcodeFlagsOverride = true,
   GoRoute? calorieEntryRoute,
   Widget Function(Widget child)? shellBuilder,
@@ -349,9 +388,8 @@ Widget _buildTestApp(
     routes.add(calorieEntryRoute);
   }
   final router = GoRouter(routes: routes);
-
   return ProviderScope(
-    overrides: [
+    overrides: <Override>[
       inventoryItemRepositoryProvider.overrideWithValue(repository),
       inventoryDiscardEventRepositoryProvider.overrideWithValue(
         _FakeInventoryDiscardEventRepository(),
@@ -374,20 +412,17 @@ Widget _buildTestApp(
   );
 }
 
-Finder get _inventoryScrollable => find.byType(Scrollable).first;
+Finder _stockLabel(String text) => find.text(text, findRichText: true);
 
 Future<void> _scrollUntilVisible(WidgetTester tester, Finder finder) async {
-  await tester.scrollUntilVisible(
-    finder,
-    300,
-    scrollable: _inventoryScrollable,
-  );
+  expect(finder, findsWidgets);
+  await tester.ensureVisible(finder.first);
   await tester.pumpAndSettle();
 }
 
 Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
   await _scrollUntilVisible(tester, finder);
-  await tester.tap(finder);
+  await tester.tap(finder.first);
   await tester.pumpAndSettle();
 }
 
@@ -400,6 +435,7 @@ Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+@Dependencies([InventoryItemsController, PreparedMealsController])
 void main() {
   testWidgets('shows empty state when repository has no items', (tester) async {
     final repository = _FakeFridgeItemRepository(
@@ -544,14 +580,27 @@ void main() {
     expect(find.text('Banana'), findsOneWidget);
 
     await _tapVisible(tester, find.byTooltip('Filter items'));
-    await _tapVisible(tester, find.text('Consumed'));
+    await _tapVisible(
+      tester,
+      find.descendant(
+        of: find.byKey(const Key('inventory_items_hide_consumed_toggle')),
+        matching: find.byType(Switch),
+      ),
+    );
+    await _tapVisible(tester, find.byTooltip('Close'));
     await _scrollUntilVisible(tester, find.text('Banana'));
 
     expect(find.text('Apple'), findsNothing);
     expect(find.text('Banana'), findsOneWidget);
 
     await _tapVisible(tester, find.byTooltip('Filter items'));
-    await _tapVisible(tester, find.text('Consumed'));
+    await _tapVisible(
+      tester,
+      find.descendant(
+        of: find.byKey(const Key('inventory_items_hide_consumed_toggle')),
+        matching: find.byType(Switch),
+      ),
+    );
     await _scrollUntilVisible(tester, find.text('Banana'));
 
     expect(find.text('Apple'), findsOneWidget);
@@ -578,9 +627,9 @@ void main() {
     await tester.pumpWidget(_buildTestApp(repository));
     await tester.pumpAndSettle();
 
-    await _scrollUntilVisible(tester, find.text('500g / 1000g'));
+    await _scrollUntilVisible(tester, _stockLabel('500g / 1000g'));
 
-    expect(find.text('500g / 1000g'), findsOneWidget);
+    expect(_stockLabel('500g / 1000g'), findsOneWidget);
   });
 
   testWidgets('shows barcode missing marker when feature flag is enabled', (
@@ -597,7 +646,7 @@ void main() {
       _buildTestApp(
         repository,
         includeDefaultBarcodeFlagsOverride: false,
-        overrides: <dynamic>[
+        overrides: <Override>[
           barcodeBackfillFeatureFlagsProvider.overrideWithValue(
             const BarcodeBackfillFeatureFlags(
               showInventoryBarcodeMarkers: true,
@@ -631,7 +680,7 @@ void main() {
       _buildTestApp(
         repository,
         includeDefaultBarcodeFlagsOverride: false,
-        overrides: <dynamic>[
+        overrides: <Override>[
           barcodeBackfillFeatureFlagsProvider.overrideWithValue(
             const BarcodeBackfillFeatureFlags(
               showInventoryBarcodeMarkers: true,
@@ -680,7 +729,7 @@ void main() {
       _buildTestApp(
         repository,
         includeDefaultBarcodeFlagsOverride: false,
-        overrides: <dynamic>[
+        overrides: <Override>[
           barcodeBackfillFeatureFlagsProvider.overrideWithValue(
             const BarcodeBackfillFeatureFlags(
               showInventoryBarcodeMarkers: true,
@@ -731,7 +780,8 @@ void main() {
 
       expect(
         find.text(
-          'You can swap the candidate only while the item is still fully available.',
+          'You can swap the candidate only while the item is still fully '
+          'available.',
         ),
         findsOneWidget,
       );
@@ -806,21 +856,29 @@ void main() {
     expect(find.text('Item deleted.'), findsOneWidget);
     expect(find.text('Undo'), findsOneWidget);
 
-    await tester.pump(const Duration(seconds: 5));
+    await tester.pump(const Duration(seconds: 6));
     await tester.pumpAndSettle();
 
     expect(find.text('Item deleted.'), findsNothing);
     expect(find.text('Undo'), findsNothing);
   });
 
-  testWidgets('eat action opens calorie entry from local nutrition', (
+  testWidgets('eat action direct-saves local nutrition', (
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[_itemWithNutrition('a')],
     );
+    final calorieLogRepository = FakeCalorieLogRepository();
+    final commitStore = _RecordingCommitStore();
+    final auth = _MockFirebaseAuth();
+    final user = _MockUser();
     CalorieEntryCreateArgs? openedArgs;
     addTearDown(repository.dispose);
+    addTearDown(calorieLogRepository.dispose);
+
+    when(() => user.uid).thenReturn('user-1');
+    when(() => auth.currentUser).thenReturn(user);
 
     await tester.pumpWidget(
       _buildTestApp(
@@ -832,19 +890,26 @@ void main() {
             return const Scaffold(body: Text('editor'));
           },
         ),
+        overrides: <Override>[
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+          inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
+            commitStore,
+          ),
+          firebaseAuthProvider.overrideWithValue(auth),
+        ],
       ),
     );
     await tester.pumpAndSettle();
 
-    await _scrollUntilVisible(tester, find.text('1000g / 1000g'));
+    await _scrollUntilVisible(tester, _stockLabel('1000g / 1000g'));
 
-    expect(find.text('1000g / 1000g'), findsOneWidget);
+    expect(_stockLabel('1000g / 1000g'), findsOneWidget);
 
     await _tapVisible(tester, find.byTooltip('Eat'));
 
-    expect(find.text('Eat: Milk'), findsOneWidget);
-    expect(find.text('QUICK SELECT'), findsOneWidget);
-    expect(find.text('NUTRITION'), findsOneWidget);
+    expect(find.text('LOG FOOD'), findsOneWidget);
+    expect(find.text('Milk'), findsWidgets);
+    expect(find.text('All'), findsOneWidget);
 
     final amountField = find.byKey(
       const Key('inventory_item_amount_dialog_field'),
@@ -854,20 +919,29 @@ void main() {
 
     await _tapAmountDialogConfirm(tester);
 
-    expect(find.text('editor'), findsOneWidget);
-    expect(openedArgs?.prefilledProfile?.barcode, '4061458029995');
-    expect(openedArgs?.inventoryContext?.consumedAmount, 120);
-    expect(openedArgs?.inventoryContext?.inventoryAmountToRestore, 120);
+    expect(find.text('editor'), findsNothing);
+    expect(openedArgs, isNull);
+    expect(commitStore.pendingConsumption?.amount, 120);
+    expect(commitStore.entry?.consumedAmount, 120);
+    expect(commitStore.entry?.mealType, MealType.breakfast);
   });
 
-  testWidgets('eat action quick select all uses remaining amount', (
+  testWidgets('eat action quick select all direct-saves remaining amount', (
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[_itemWithNutrition('a')],
     );
+    final calorieLogRepository = FakeCalorieLogRepository();
+    final commitStore = _RecordingCommitStore();
+    final auth = _MockFirebaseAuth();
+    final user = _MockUser();
     CalorieEntryCreateArgs? openedArgs;
     addTearDown(repository.dispose);
+    addTearDown(calorieLogRepository.dispose);
+
+    when(() => user.uid).thenReturn('user-1');
+    when(() => auth.currentUser).thenReturn(user);
 
     await tester.pumpWidget(
       _buildTestApp(
@@ -879,20 +953,28 @@ void main() {
             return const Scaffold(body: Text('editor'));
           },
         ),
+        overrides: <Override>[
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+          inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
+            commitStore,
+          ),
+          firebaseAuthProvider.overrideWithValue(auth),
+        ],
       ),
     );
     await tester.pumpAndSettle();
 
-    await _scrollUntilVisible(tester, find.text('1000g / 1000g'));
+    await _scrollUntilVisible(tester, _stockLabel('1000g / 1000g'));
     await _tapVisible(tester, find.byTooltip('Eat'));
     await tester.tap(find.text('All'));
     await tester.pumpAndSettle();
 
     await _tapAmountDialogConfirm(tester);
 
-    expect(find.text('editor'), findsOneWidget);
-    expect(openedArgs?.inventoryContext?.consumedAmount, 1000);
-    expect(openedArgs?.inventoryContext?.inventoryAmountToRestore, 1000);
+    expect(find.text('editor'), findsNothing);
+    expect(openedArgs, isNull);
+    expect(commitStore.pendingConsumption?.amount, 1000);
+    expect(commitStore.entry?.consumedAmount, 1000);
   });
 
   testWidgets(
@@ -910,7 +992,7 @@ void main() {
       await tester.pumpWidget(
         _buildTestApp(
           repository,
-          overrides: <dynamic>[
+          overrides: <Override>[
             inventoryItemsControllerProvider.overrideWith(() => controller),
           ],
         ),
@@ -939,11 +1021,17 @@ void main() {
       onReadAll: () async => const <InventoryItem>[],
     );
     final stageCompleter = Completer<void>();
+    final stageStartedCompleter = Completer<void>();
     final controller = _DelayedStageInventoryItemsController(
       initialItems: <InventoryItem>[
         _item('a', quantity: 3, initialQuantity: 3),
       ],
       waitForStage: () => stageCompleter.future,
+      onStageStarted: () {
+        if (!stageStartedCompleter.isCompleted) {
+          stageStartedCompleter.complete();
+        }
+      },
     );
     addTearDown(repository.dispose);
 
@@ -951,7 +1039,7 @@ void main() {
       _buildTestApp(
         repository,
         includeDefaultBarcodeFlagsOverride: false,
-        overrides: <dynamic>[
+        overrides: <Override>[
           inventoryItemsControllerProvider.overrideWith(() => controller),
           barcodeBackfillFeatureFlagsProvider.overrideWithValue(
             const BarcodeBackfillFeatureFlags(
@@ -974,7 +1062,10 @@ void main() {
     );
     await tester.ensureVisible(confirmButton);
     await tester.tap(confirmButton);
-    await tester.pump();
+    await tester.pumpAndSettle();
+    while (!stageStartedCompleter.isCompleted) {
+      await tester.pump();
+    }
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
@@ -1007,7 +1098,7 @@ void main() {
       await tester.pumpWidget(
         _buildTestApp(
           repository,
-          overrides: [
+          overrides: <Override>[
             shoppingListRepositoryProvider.overrideWithValue(
               shoppingRepository,
             ),
@@ -1046,7 +1137,7 @@ void main() {
       await tester.pumpWidget(
         _buildTestApp(
           repository,
-          overrides: [
+          overrides: <Override>[
             shoppingListRepositoryProvider.overrideWithValue(
               shoppingRepository,
             ),
@@ -1079,7 +1170,7 @@ void main() {
     await tester.pumpWidget(
       _buildTestApp(
         repository,
-        overrides: [
+        overrides: <Override>[
           shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
         ],
       ),
@@ -1117,7 +1208,7 @@ void main() {
     await tester.pumpWidget(
       _buildTestApp(
         repository,
-        overrides: [
+        overrides: <Override>[
           shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
         ],
       ),
@@ -1149,7 +1240,7 @@ void main() {
     await tester.pumpWidget(
       _buildTestApp(
         repository,
-        overrides: [
+        overrides: <Override>[
           shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
         ],
       ),
@@ -1190,7 +1281,7 @@ void main() {
 
     expect(find.text('Please enter valid numbers.'), findsOneWidget);
     expect(amountField, findsOneWidget);
-    expect(find.text('3/3'), findsOneWidget);
+    expect(_stockLabel('3 /3'), findsOneWidget);
   });
 
   testWidgets('throw away action opens amount dialog and updates stock', (
@@ -1224,6 +1315,6 @@ void main() {
       find.byKey(const Key('inventory_item_amount_dialog_field')),
       findsNothing,
     );
-    expect(find.text('2/3'), findsOneWidget);
+    expect(_stockLabel('2 /3'), findsOneWidget);
   });
 }

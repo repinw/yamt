@@ -8,17 +8,20 @@ part of 'calorie_barcode_flow_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines calorie barcode flow controller.
 
 @ProviderFor(CalorieBarcodeFlowController)
 final calorieBarcodeFlowControllerProvider =
     CalorieBarcodeFlowControllerProvider._();
 
+/// Defines calorie barcode flow controller.
 final class CalorieBarcodeFlowControllerProvider
     extends
         $AsyncNotifierProvider<
           CalorieBarcodeFlowController,
           CalorieLookupOutcome?
         > {
+  /// Defines calorie barcode flow controller.
   CalorieBarcodeFlowControllerProvider._()
     : super(
         from: null,
@@ -40,6 +43,8 @@ final class CalorieBarcodeFlowControllerProvider
 
 String _$calorieBarcodeFlowControllerHash() =>
     r'80ad192cbd828b1567c95e8fba3c5a099546aeec';
+
+/// Defines calorie barcode flow controller.
 
 abstract class _$CalorieBarcodeFlowController
     extends $AsyncNotifier<CalorieLookupOutcome?> {

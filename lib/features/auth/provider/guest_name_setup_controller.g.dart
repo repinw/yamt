@@ -8,12 +8,15 @@ part of 'guest_name_setup_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines guest name setup controller.
 
 @ProviderFor(GuestNameSetupController)
 final guestNameSetupControllerProvider = GuestNameSetupControllerProvider._();
 
+/// Defines guest name setup controller.
 final class GuestNameSetupControllerProvider
     extends $AsyncNotifierProvider<GuestNameSetupController, void> {
+  /// Defines guest name setup controller.
   GuestNameSetupControllerProvider._()
     : super(
         from: null,
@@ -34,7 +37,9 @@ final class GuestNameSetupControllerProvider
 }
 
 String _$guestNameSetupControllerHash() =>
-    r'8da81caa6dbad4ffd43f4dcb15f84b49d197140b';
+    r'92cf06929ee8cf7447f53b43ee3379d994deeb86';
+
+/// Defines guest name setup controller.
 
 abstract class _$GuestNameSetupController extends $AsyncNotifier<void> {
   FutureOr<void> build();

@@ -119,7 +119,7 @@ extension _PreparedMealComponentNutritionTotals
 }
 
 /// Defines prepared meals controller.
-@riverpod
+@Riverpod(dependencies: [inventoryItemRepository])
 class PreparedMealsController extends _$PreparedMealsController {
   static const _uuid = Uuid();
 

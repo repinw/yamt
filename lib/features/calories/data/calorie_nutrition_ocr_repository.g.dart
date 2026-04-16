@@ -8,10 +8,13 @@ part of 'calorie_nutrition_ocr_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Calorie nutrition ocr repository.
 
 @ProviderFor(calorieNutritionOcrRepository)
 final calorieNutritionOcrRepositoryProvider =
     CalorieNutritionOcrRepositoryProvider._();
+
+/// Calorie nutrition ocr repository.
 
 final class CalorieNutritionOcrRepositoryProvider
     extends
@@ -21,6 +24,7 @@ final class CalorieNutritionOcrRepositoryProvider
           CalorieNutritionOcrRepositoryContract
         >
     with $Provider<CalorieNutritionOcrRepositoryContract> {
+  /// Calorie nutrition ocr repository.
   CalorieNutritionOcrRepositoryProvider._()
     : super(
         from: null,
@@ -59,13 +63,18 @@ final class CalorieNutritionOcrRepositoryProvider
 String _$calorieNutritionOcrRepositoryHash() =>
     r'42da416ee54c75fa7c8481261b3d10e19530cece';
 
+/// Calorie nutrition image picker.
+
 @ProviderFor(calorieNutritionImagePicker)
 final calorieNutritionImagePickerProvider =
     CalorieNutritionImagePickerProvider._();
 
+/// Calorie nutrition image picker.
+
 final class CalorieNutritionImagePickerProvider
     extends $FunctionalProvider<ImagePicker, ImagePicker, ImagePicker>
     with $Provider<ImagePicker> {
+  /// Calorie nutrition image picker.
   CalorieNutritionImagePickerProvider._()
     : super(
         from: null,
@@ -102,9 +111,13 @@ final class CalorieNutritionImagePickerProvider
 String _$calorieNutritionImagePickerHash() =>
     r'934f0231caceff29a0f569cdd4319177acec320f';
 
+/// Calorie nutrition template config client.
+
 @ProviderFor(calorieNutritionTemplateConfigClient)
 final calorieNutritionTemplateConfigClientProvider =
     CalorieNutritionTemplateConfigClientProvider._();
+
+/// Calorie nutrition template config client.
 
 final class CalorieNutritionTemplateConfigClientProvider
     extends
@@ -114,6 +127,7 @@ final class CalorieNutritionTemplateConfigClientProvider
           CalorieNutritionTemplateConfigClient
         >
     with $Provider<CalorieNutritionTemplateConfigClient> {
+  /// Calorie nutrition template config client.
   CalorieNutritionTemplateConfigClientProvider._()
     : super(
         from: null,
@@ -153,9 +167,13 @@ final class CalorieNutritionTemplateConfigClientProvider
 String _$calorieNutritionTemplateConfigClientHash() =>
     r'0d917734b7c4d4aeed01839741429999c7f87960';
 
+/// Calorie nutrition template model client.
+
 @ProviderFor(calorieNutritionTemplateModelClient)
 final calorieNutritionTemplateModelClientProvider =
     CalorieNutritionTemplateModelClientProvider._();
+
+/// Calorie nutrition template model client.
 
 final class CalorieNutritionTemplateModelClientProvider
     extends
@@ -165,6 +183,7 @@ final class CalorieNutritionTemplateModelClientProvider
           CalorieNutritionTemplateModelClient
         >
     with $Provider<CalorieNutritionTemplateModelClient> {
+  /// Calorie nutrition template model client.
   CalorieNutritionTemplateModelClientProvider._()
     : super(
         from: null,

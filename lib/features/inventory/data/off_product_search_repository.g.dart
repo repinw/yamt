@@ -8,10 +8,13 @@ part of 'off_product_search_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Off product search repository.
 
 @ProviderFor(offProductSearchRepository)
 final offProductSearchRepositoryProvider =
     OffProductSearchRepositoryProvider._();
+
+/// Off product search repository.
 
 final class OffProductSearchRepositoryProvider
     extends
@@ -21,6 +24,7 @@ final class OffProductSearchRepositoryProvider
           OffProductSearchRepository
         >
     with $Provider<OffProductSearchRepository> {
+  /// Off product search repository.
   OffProductSearchRepositoryProvider._()
     : super(
         from: null,

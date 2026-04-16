@@ -8,9 +8,12 @@ part of 'receipt_analysis_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Receipt analysis repository.
 
 @ProviderFor(receiptAnalysisRepository)
 final receiptAnalysisRepositoryProvider = ReceiptAnalysisRepositoryProvider._();
+
+/// Receipt analysis repository.
 
 final class ReceiptAnalysisRepositoryProvider
     extends
@@ -20,6 +23,7 @@ final class ReceiptAnalysisRepositoryProvider
           ReceiptAnalysisRepository
         >
     with $Provider<ReceiptAnalysisRepository> {
+  /// Receipt analysis repository.
   ReceiptAnalysisRepositoryProvider._()
     : super(
         from: null,

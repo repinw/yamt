@@ -8,9 +8,12 @@ part of 'account_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Secondary auth client.
 
 @ProviderFor(secondaryAuthClient)
 final secondaryAuthClientProvider = SecondaryAuthClientProvider._();
+
+/// Secondary auth client.
 
 final class SecondaryAuthClientProvider
     extends
@@ -20,6 +23,7 @@ final class SecondaryAuthClientProvider
           SecondaryAuthClient
         >
     with $Provider<SecondaryAuthClient> {
+  /// Secondary auth client.
   SecondaryAuthClientProvider._()
     : super(
         from: null,
@@ -57,11 +61,15 @@ final class SecondaryAuthClientProvider
 String _$secondaryAuthClientHash() =>
     r'8ecfce9b38fd112781068553f10e45f381588e66';
 
+/// Defines account controller.
+
 @ProviderFor(AccountController)
 final accountControllerProvider = AccountControllerProvider._();
 
+/// Defines account controller.
 final class AccountControllerProvider
     extends $AsyncNotifierProvider<AccountController, void> {
+  /// Defines account controller.
   AccountControllerProvider._()
     : super(
         from: null,
@@ -82,6 +90,8 @@ final class AccountControllerProvider
 }
 
 String _$accountControllerHash() => r'cb40c00d17817d03970f4f68fd4e5c8ef126f64f';
+
+/// Defines account controller.
 
 abstract class _$AccountController extends $AsyncNotifier<void> {
   FutureOr<void> build();

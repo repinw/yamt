@@ -8,10 +8,13 @@ part of 'calorie_product_cache_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Calorie product cache repository.
 
 @ProviderFor(calorieProductCacheRepository)
 final calorieProductCacheRepositoryProvider =
     CalorieProductCacheRepositoryProvider._();
+
+/// Calorie product cache repository.
 
 final class CalorieProductCacheRepositoryProvider
     extends
@@ -21,6 +24,7 @@ final class CalorieProductCacheRepositoryProvider
           CalorieProductCacheRepositoryContract
         >
     with $Provider<CalorieProductCacheRepositoryContract> {
+  /// Calorie product cache repository.
   CalorieProductCacheRepositoryProvider._()
     : super(
         from: null,

@@ -8,9 +8,12 @@ part of 'app_router.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Provides root navigator key for app routing.
 
 @ProviderFor(navigatorKey)
 final navigatorKeyProvider = NavigatorKeyProvider._();
+
+/// Provides root navigator key for app routing.
 
 final class NavigatorKeyProvider
     extends
@@ -20,6 +23,7 @@ final class NavigatorKeyProvider
           GlobalKey<NavigatorState>
         >
     with $Provider<GlobalKey<NavigatorState>> {
+  /// Provides root navigator key for app routing.
   NavigatorKeyProvider._()
     : super(
         from: null,
@@ -56,9 +60,13 @@ final class NavigatorKeyProvider
 
 String _$navigatorKeyHash() => r'cca063af6cdf1e440f6eeb4ad84cf0449235735f';
 
+/// Provides listenable used to refresh router redirects.
+
 @ProviderFor(appRouterRefreshListenable)
 final appRouterRefreshListenableProvider =
     AppRouterRefreshListenableProvider._();
+
+/// Provides listenable used to refresh router redirects.
 
 final class AppRouterRefreshListenableProvider
     extends
@@ -68,6 +76,7 @@ final class AppRouterRefreshListenableProvider
           Raw<AppRouterRefreshListenable>
         >
     with $Provider<Raw<AppRouterRefreshListenable>> {
+  /// Provides listenable used to refresh router redirects.
   AppRouterRefreshListenableProvider._()
     : super(
         from: null,
@@ -105,14 +114,19 @@ final class AppRouterRefreshListenableProvider
 }
 
 String _$appRouterRefreshListenableHash() =>
-    r'490fc1cbea874d41749de65d39070ae29b5f24b1';
+    r'c90f6a4b9110c8907b9a098c180417172e99610c';
+
+/// Provides application `GoRouter` instance.
 
 @ProviderFor(appRouter)
 final appRouterProvider = AppRouterProvider._();
 
+/// Provides application `GoRouter` instance.
+
 final class AppRouterProvider
     extends $FunctionalProvider<Raw<GoRouter>, Raw<GoRouter>, Raw<GoRouter>>
     with $Provider<Raw<GoRouter>> {
+  /// Provides application `GoRouter` instance.
   AppRouterProvider._()
     : super(
         from: null,

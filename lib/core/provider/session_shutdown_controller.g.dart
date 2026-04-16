@@ -8,9 +8,12 @@ part of 'session_shutdown_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Provides global shutdown signal object.
 
 @ProviderFor(sessionShutdownSignal)
 final sessionShutdownSignalProvider = SessionShutdownSignalProvider._();
+
+/// Provides global shutdown signal object.
 
 final class SessionShutdownSignalProvider
     extends
@@ -20,6 +23,7 @@ final class SessionShutdownSignalProvider
           SessionShutdownSignal
         >
     with $Provider<SessionShutdownSignal> {
+  /// Provides global shutdown signal object.
   SessionShutdownSignalProvider._()
     : super(
         from: null,
@@ -57,11 +61,15 @@ final class SessionShutdownSignalProvider
 String _$sessionShutdownSignalHash() =>
     r'2effb4f7f3e0ab3d2cb57d4dd1a8b68fb60ef83e';
 
+/// Exposes shutdown state to the app.
+
 @ProviderFor(SessionShutdownController)
 final sessionShutdownControllerProvider = SessionShutdownControllerProvider._();
 
+/// Exposes shutdown state to the app.
 final class SessionShutdownControllerProvider
     extends $NotifierProvider<SessionShutdownController, bool> {
+  /// Exposes shutdown state to the app.
   SessionShutdownControllerProvider._()
     : super(
         from: null,
@@ -91,6 +99,8 @@ final class SessionShutdownControllerProvider
 
 String _$sessionShutdownControllerHash() =>
     r'fff8e1eb265b45b392217631120de5a04497f196';
+
+/// Exposes shutdown state to the app.
 
 abstract class _$SessionShutdownController extends $Notifier<bool> {
   bool build();

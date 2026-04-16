@@ -8,13 +8,16 @@ part of 'household_membership_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines household membership controller.
 
 @ProviderFor(HouseholdMembershipController)
 final householdMembershipControllerProvider =
     HouseholdMembershipControllerProvider._();
 
+/// Defines household membership controller.
 final class HouseholdMembershipControllerProvider
     extends $AsyncNotifierProvider<HouseholdMembershipController, void> {
+  /// Defines household membership controller.
   HouseholdMembershipControllerProvider._()
     : super(
         from: null,
@@ -36,6 +39,8 @@ final class HouseholdMembershipControllerProvider
 
 String _$householdMembershipControllerHash() =>
     r'3e5d1d4ac9cd8b31a38c0029c02f02fcc6d800da';
+
+/// Defines household membership controller.
 
 abstract class _$HouseholdMembershipController extends $AsyncNotifier<void> {
   FutureOr<void> build();

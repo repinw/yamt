@@ -8,10 +8,13 @@ part of 'receipt_analysis_clients.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Receipt template model client.
 
 @ProviderFor(receiptTemplateModelClient)
 final receiptTemplateModelClientProvider =
     ReceiptTemplateModelClientProvider._();
+
+/// Receipt template model client.
 
 final class ReceiptTemplateModelClientProvider
     extends
@@ -21,6 +24,7 @@ final class ReceiptTemplateModelClientProvider
           ReceiptTemplateModelClient
         >
     with $Provider<ReceiptTemplateModelClient> {
+  /// Receipt template model client.
   ReceiptTemplateModelClientProvider._()
     : super(
         from: null,

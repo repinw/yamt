@@ -8,10 +8,13 @@ part of 'manual_health_weight_repository_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Manual health weight repository.
 
 @ProviderFor(manualHealthWeightRepository)
 final manualHealthWeightRepositoryProvider =
     ManualHealthWeightRepositoryProvider._();
+
+/// Manual health weight repository.
 
 final class ManualHealthWeightRepositoryProvider
     extends
@@ -21,6 +24,7 @@ final class ManualHealthWeightRepositoryProvider
           ManualHealthWeightRepository
         >
     with $Provider<ManualHealthWeightRepository> {
+  /// Manual health weight repository.
   ManualHealthWeightRepositoryProvider._()
     : super(
         from: null,

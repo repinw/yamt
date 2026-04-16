@@ -198,7 +198,7 @@ class PendingInventoryConsumption {
 }
 
 /// Defines inventory items controller.
-@riverpod
+@Riverpod(dependencies: [inventoryItemRepository])
 class InventoryItemsController extends _$InventoryItemsController {
   static const _uuid = Uuid();
 

@@ -23,6 +23,21 @@ Map<String, dynamic> _$RecipeIngredientAmountConversionToJson(
 PreparedMeal _$PreparedMealFromJson(Map<String, dynamic> json) => PreparedMeal(
   id: _readRequiredString(json['id']),
   name: _readRequiredString(json['name']),
+  totalPortions: _readIntOrZero(json['total_portions']),
+  remainingPortions: _readIntOrZero(json['remaining_portions']),
+  totalKcal: _readDoubleOrZero(json['total_kcal']),
+  totalProtein: _readDoubleOrZero(json['total_protein']),
+  totalCarbs: _readDoubleOrZero(json['total_carbs']),
+  totalFat: _readDoubleOrZero(json['total_fat']),
+  createdAt: _readDateTimeOrNow(json['created_at']),
+  updatedAt: _readDateTimeOrNow(json['updated_at']),
+  components:
+      (json['components'] as List<dynamic>?)
+          ?.map(
+            (e) => PreparedMealComponent.fromJson(e as Map<String, dynamic>),
+          )
+          .toList() ??
+      [],
   imageAssetId: _readTrimmedNullableString(json['image_asset_id']),
   imageUrl: _readTrimmedNullableString(json['image_url']),
   recipeUrl: _readTrimmedNullableString(json['recipe_url']),
@@ -56,21 +71,6 @@ PreparedMeal _$PreparedMealFromJson(Map<String, dynamic> json) => PreparedMeal(
   pendingRecipeIngredients:
       (json['pending_recipe_ingredients'] as List<dynamic>?)
           ?.map((e) => e as String)
-          .toList() ??
-      [],
-  totalPortions: _readIntOrZero(json['total_portions']),
-  remainingPortions: _readIntOrZero(json['remaining_portions']),
-  totalKcal: _readDoubleOrZero(json['total_kcal']),
-  totalProtein: _readDoubleOrZero(json['total_protein']),
-  totalCarbs: _readDoubleOrZero(json['total_carbs']),
-  totalFat: _readDoubleOrZero(json['total_fat']),
-  createdAt: _readDateTimeOrNow(json['created_at']),
-  updatedAt: _readDateTimeOrNow(json['updated_at']),
-  components:
-      (json['components'] as List<dynamic>?)
-          ?.map(
-            (e) => PreparedMealComponent.fromJson(e as Map<String, dynamic>),
-          )
           .toList() ??
       [],
 );

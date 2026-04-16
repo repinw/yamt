@@ -8,14 +8,17 @@ part of 'household_invite_code_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines household invite code controller.
 
 @ProviderFor(HouseholdInviteCodeController)
 final householdInviteCodeControllerProvider =
     HouseholdInviteCodeControllerProvider._();
 
+/// Defines household invite code controller.
 final class HouseholdInviteCodeControllerProvider
     extends
         $NotifierProvider<HouseholdInviteCodeController, AsyncValue<String?>> {
+  /// Defines household invite code controller.
   HouseholdInviteCodeControllerProvider._()
     : super(
         from: null,
@@ -45,6 +48,8 @@ final class HouseholdInviteCodeControllerProvider
 
 String _$householdInviteCodeControllerHash() =>
     r'3cc51937d2156ef9cf7947b5bea2a77db353b8e9';
+
+/// Defines household invite code controller.
 
 abstract class _$HouseholdInviteCodeController
     extends $Notifier<AsyncValue<String?>> {

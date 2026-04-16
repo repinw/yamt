@@ -8,10 +8,13 @@ part of 'calorie_weekly_checkin_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Calorie weekly check in view model.
 
 @ProviderFor(calorieWeeklyCheckInViewModel)
 final calorieWeeklyCheckInViewModelProvider =
     CalorieWeeklyCheckInViewModelProvider._();
+
+/// Calorie weekly check in view model.
 
 final class CalorieWeeklyCheckInViewModelProvider
     extends
@@ -23,6 +26,7 @@ final class CalorieWeeklyCheckInViewModelProvider
     with
         $FutureModifier<CalorieWeeklyCheckInViewModel>,
         $FutureProvider<CalorieWeeklyCheckInViewModel> {
+  /// Calorie weekly check in view model.
   CalorieWeeklyCheckInViewModelProvider._()
     : super(
         from: null,

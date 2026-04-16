@@ -8,13 +8,17 @@ part of 'receipt_input_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Image picker.
 
 @ProviderFor(imagePicker)
 final imagePickerProvider = ImagePickerProvider._();
 
+/// Image picker.
+
 final class ImagePickerProvider
     extends $FunctionalProvider<ImagePicker, ImagePicker, ImagePicker>
     with $Provider<ImagePicker> {
+  /// Image picker.
   ImagePickerProvider._()
     : super(
         from: null,
@@ -50,12 +54,17 @@ final class ImagePickerProvider
 
 String _$imagePickerHash() => r'7877699a862be48e962306635347623c45e91971';
 
+/// File picker.
+
 @ProviderFor(filePicker)
 final filePickerProvider = FilePickerProvider._();
+
+/// File picker.
 
 final class FilePickerProvider
     extends $FunctionalProvider<FilePicker, FilePicker, FilePicker>
     with $Provider<FilePicker> {
+  /// File picker.
   FilePickerProvider._()
     : super(
         from: null,
@@ -91,8 +100,12 @@ final class FilePickerProvider
 
 String _$filePickerHash() => r'bae1fe0c95c85532cffec63b62cfe564b8356d75';
 
+/// Receipt input repository.
+
 @ProviderFor(receiptInputRepository)
 final receiptInputRepositoryProvider = ReceiptInputRepositoryProvider._();
+
+/// Receipt input repository.
 
 final class ReceiptInputRepositoryProvider
     extends
@@ -102,6 +115,7 @@ final class ReceiptInputRepositoryProvider
           ReceiptInputRepository
         >
     with $Provider<ReceiptInputRepository> {
+  /// Receipt input repository.
   ReceiptInputRepositoryProvider._()
     : super(
         from: null,

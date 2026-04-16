@@ -8,9 +8,12 @@ part of 'calorie_balance_summary_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Calorie balance now.
 
 @ProviderFor(calorieBalanceNow)
 final calorieBalanceNowProvider = CalorieBalanceNowProvider._();
+
+/// Calorie balance now.
 
 final class CalorieBalanceNowProvider
     extends
@@ -20,6 +23,7 @@ final class CalorieBalanceNowProvider
           CalorieBalanceNow
         >
     with $Provider<CalorieBalanceNow> {
+  /// Calorie balance now.
   CalorieBalanceNowProvider._()
     : super(
         from: null,
@@ -56,8 +60,12 @@ final class CalorieBalanceNowProvider
 
 String _$calorieBalanceNowHash() => r'3cb71b22b7ddee933f84bad12ae8fab5150305ac';
 
+/// Calorie balance summary.
+
 @ProviderFor(calorieBalanceSummary)
 final calorieBalanceSummaryProvider = CalorieBalanceSummaryProvider._();
+
+/// Calorie balance summary.
 
 final class CalorieBalanceSummaryProvider
     extends
@@ -69,6 +77,7 @@ final class CalorieBalanceSummaryProvider
     with
         $FutureModifier<CalorieBalanceSummaryData>,
         $FutureProvider<CalorieBalanceSummaryData> {
+  /// Calorie balance summary.
   CalorieBalanceSummaryProvider._()
     : super(
         from: null,

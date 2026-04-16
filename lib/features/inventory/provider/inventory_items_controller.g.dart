@@ -8,13 +8,16 @@ part of 'inventory_items_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines inventory items controller.
 
 @ProviderFor(InventoryItemsController)
 final inventoryItemsControllerProvider = InventoryItemsControllerProvider._();
 
+/// Defines inventory items controller.
 final class InventoryItemsControllerProvider
     extends
         $AsyncNotifierProvider<InventoryItemsController, List<InventoryItem>> {
+  /// Defines inventory items controller.
   InventoryItemsControllerProvider._()
     : super(
         from: null,
@@ -22,9 +25,13 @@ final class InventoryItemsControllerProvider
         retry: null,
         name: r'inventoryItemsControllerProvider',
         isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
+        dependencies: <ProviderOrFamily>[inventoryItemRepositoryProvider],
+        $allTransitiveDependencies: <ProviderOrFamily>[
+          InventoryItemsControllerProvider.$allTransitiveDependencies0,
+        ],
       );
+
+  static final $allTransitiveDependencies0 = inventoryItemRepositoryProvider;
 
   @override
   String debugGetCreateSourceHash() => _$inventoryItemsControllerHash();
@@ -35,7 +42,9 @@ final class InventoryItemsControllerProvider
 }
 
 String _$inventoryItemsControllerHash() =>
-    r'0f030d4e6c34fe8abac845f8d75aaa6fe13e46e4';
+    r'78be66b61a885353ae8e0619cdf95894a4529d8f';
+
+/// Defines inventory items controller.
 
 abstract class _$InventoryItemsController
     extends $AsyncNotifier<List<InventoryItem>> {

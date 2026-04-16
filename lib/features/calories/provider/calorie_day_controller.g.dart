@@ -8,12 +8,15 @@ part of 'calorie_day_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines calorie day controller.
 
 @ProviderFor(CalorieDayController)
 final calorieDayControllerProvider = CalorieDayControllerProvider._();
 
+/// Defines calorie day controller.
 final class CalorieDayControllerProvider
     extends $NotifierProvider<CalorieDayController, DateTime> {
+  /// Defines calorie day controller.
   CalorieDayControllerProvider._()
     : super(
         from: null,
@@ -43,6 +46,8 @@ final class CalorieDayControllerProvider
 
 String _$calorieDayControllerHash() =>
     r'2494fa7c0925db9999dfe461ed02388dc337f62c';
+
+/// Defines calorie day controller.
 
 abstract class _$CalorieDayController extends $Notifier<DateTime> {
   DateTime build();

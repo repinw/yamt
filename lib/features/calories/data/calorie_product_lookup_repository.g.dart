@@ -8,9 +8,12 @@ part of 'calorie_product_lookup_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Calorie lookup functions.
 
 @ProviderFor(calorieLookupFunctions)
 final calorieLookupFunctionsProvider = CalorieLookupFunctionsProvider._();
+
+/// Calorie lookup functions.
 
 final class CalorieLookupFunctionsProvider
     extends
@@ -20,6 +23,7 @@ final class CalorieLookupFunctionsProvider
           FirebaseFunctions?
         >
     with $Provider<FirebaseFunctions?> {
+  /// Calorie lookup functions.
   CalorieLookupFunctionsProvider._()
     : super(
         from: null,
@@ -57,8 +61,12 @@ final class CalorieLookupFunctionsProvider
 String _$calorieLookupFunctionsHash() =>
     r'33b92a7e259965f8b10febe5e7ff1f1821f762d4';
 
+/// Calorie off lookup client.
+
 @ProviderFor(calorieOffLookupClient)
 final calorieOffLookupClientProvider = CalorieOffLookupClientProvider._();
+
+/// Calorie off lookup client.
 
 final class CalorieOffLookupClientProvider
     extends
@@ -68,6 +76,7 @@ final class CalorieOffLookupClientProvider
           CalorieOffLookupClient
         >
     with $Provider<CalorieOffLookupClient> {
+  /// Calorie off lookup client.
   CalorieOffLookupClientProvider._()
     : super(
         from: null,
@@ -105,9 +114,13 @@ final class CalorieOffLookupClientProvider
 String _$calorieOffLookupClientHash() =>
     r'f042897a64b2a4d0bfde9f0fff8e379422e5afb5';
 
+/// Calorie product lookup repository.
+
 @ProviderFor(calorieProductLookupRepository)
 final calorieProductLookupRepositoryProvider =
     CalorieProductLookupRepositoryProvider._();
+
+/// Calorie product lookup repository.
 
 final class CalorieProductLookupRepositoryProvider
     extends
@@ -117,6 +130,7 @@ final class CalorieProductLookupRepositoryProvider
           CalorieProductLookupRepositoryContract
         >
     with $Provider<CalorieProductLookupRepositoryContract> {
+  /// Calorie product lookup repository.
   CalorieProductLookupRepositoryProvider._()
     : super(
         from: null,

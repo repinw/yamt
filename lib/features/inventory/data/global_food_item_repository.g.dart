@@ -8,9 +8,12 @@ part of 'global_food_item_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Global food item repository.
 
 @ProviderFor(globalFoodItemRepository)
 final globalFoodItemRepositoryProvider = GlobalFoodItemRepositoryProvider._();
+
+/// Global food item repository.
 
 final class GlobalFoodItemRepositoryProvider
     extends
@@ -20,6 +23,7 @@ final class GlobalFoodItemRepositoryProvider
           GlobalFoodItemRepository
         >
     with $Provider<GlobalFoodItemRepository> {
+  /// Global food item repository.
   GlobalFoodItemRepositoryProvider._()
     : super(
         from: null,

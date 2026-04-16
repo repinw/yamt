@@ -8,17 +8,20 @@ part of 'calorie_goal_calculator_form_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Defines calorie goal calculator form controller.
 
 @ProviderFor(CalorieGoalCalculatorFormController)
 final calorieGoalCalculatorFormControllerProvider =
     CalorieGoalCalculatorFormControllerFamily._();
 
+/// Defines calorie goal calculator form controller.
 final class CalorieGoalCalculatorFormControllerProvider
     extends
         $NotifierProvider<
           CalorieGoalCalculatorFormController,
           CalorieGoalCalculatorFormState
         > {
+  /// Defines calorie goal calculator form controller.
   CalorieGoalCalculatorFormControllerProvider._({
     required CalorieGoalCalculatorFormControllerFamily super.from,
     required CalorieCalculatorProfile? super.argument,
@@ -71,6 +74,8 @@ final class CalorieGoalCalculatorFormControllerProvider
 String _$calorieGoalCalculatorFormControllerHash() =>
     r'ba910593f54fe3a4bbe5463e68370cc30de839ba';
 
+/// Defines calorie goal calculator form controller.
+
 final class CalorieGoalCalculatorFormControllerFamily extends $Family
     with
         $ClassFamilyOverride<
@@ -89,6 +94,8 @@ final class CalorieGoalCalculatorFormControllerFamily extends $Family
         isAutoDispose: true,
       );
 
+  /// Defines calorie goal calculator form controller.
+
   CalorieGoalCalculatorFormControllerProvider call(
     CalorieCalculatorProfile? initialProfile,
   ) => CalorieGoalCalculatorFormControllerProvider._(
@@ -99,6 +106,8 @@ final class CalorieGoalCalculatorFormControllerFamily extends $Family
   @override
   String toString() => r'calorieGoalCalculatorFormControllerProvider';
 }
+
+/// Defines calorie goal calculator form controller.
 
 abstract class _$CalorieGoalCalculatorFormController
     extends $Notifier<CalorieGoalCalculatorFormState> {

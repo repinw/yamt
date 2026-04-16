@@ -8,10 +8,13 @@ part of 'calorie_week_overview_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Calorie week consumption snapshot.
 
 @ProviderFor(calorieWeekConsumptionSnapshot)
 final calorieWeekConsumptionSnapshotProvider =
     CalorieWeekConsumptionSnapshotProvider._();
+
+/// Calorie week consumption snapshot.
 
 final class CalorieWeekConsumptionSnapshotProvider
     extends
@@ -23,6 +26,7 @@ final class CalorieWeekConsumptionSnapshotProvider
     with
         $FutureModifier<CalorieWeekConsumptionSnapshot>,
         $FutureProvider<CalorieWeekConsumptionSnapshot> {
+  /// Calorie week consumption snapshot.
   CalorieWeekConsumptionSnapshotProvider._()
     : super(
         from: null,
@@ -52,9 +56,13 @@ final class CalorieWeekConsumptionSnapshotProvider
 String _$calorieWeekConsumptionSnapshotHash() =>
     r'94debead174ee08ef160f4bef048b07a2810f7de';
 
+/// Calorie week consumption snapshot for window.
+
 @ProviderFor(calorieWeekConsumptionSnapshotForWindow)
 final calorieWeekConsumptionSnapshotForWindowProvider =
     CalorieWeekConsumptionSnapshotForWindowFamily._();
+
+/// Calorie week consumption snapshot for window.
 
 final class CalorieWeekConsumptionSnapshotForWindowProvider
     extends
@@ -66,6 +74,7 @@ final class CalorieWeekConsumptionSnapshotForWindowProvider
     with
         $FutureModifier<CalorieWeekConsumptionSnapshot>,
         $FutureProvider<CalorieWeekConsumptionSnapshot> {
+  /// Calorie week consumption snapshot for window.
   CalorieWeekConsumptionSnapshotForWindowProvider._({
     required CalorieWeekConsumptionSnapshotForWindowFamily super.from,
     required DateTime super.argument,
@@ -115,6 +124,8 @@ final class CalorieWeekConsumptionSnapshotForWindowProvider
 String _$calorieWeekConsumptionSnapshotForWindowHash() =>
     r'ceb8e50f957df9ea2c52fd25afc0995625a90724';
 
+/// Calorie week consumption snapshot for window.
+
 final class CalorieWeekConsumptionSnapshotForWindowFamily extends $Family
     with
         $FunctionalFamilyOverride<
@@ -130,6 +141,8 @@ final class CalorieWeekConsumptionSnapshotForWindowFamily extends $Family
         isAutoDispose: true,
       );
 
+  /// Calorie week consumption snapshot for window.
+
   CalorieWeekConsumptionSnapshotForWindowProvider call(
     DateTime visibleWindowEnd,
   ) => CalorieWeekConsumptionSnapshotForWindowProvider._(
@@ -141,8 +154,12 @@ final class CalorieWeekConsumptionSnapshotForWindowFamily extends $Family
   String toString() => r'calorieWeekConsumptionSnapshotForWindowProvider';
 }
 
+/// Calorie week overview.
+
 @ProviderFor(calorieWeekOverview)
 final calorieWeekOverviewProvider = CalorieWeekOverviewProvider._();
+
+/// Calorie week overview.
 
 final class CalorieWeekOverviewProvider
     extends
@@ -154,6 +171,7 @@ final class CalorieWeekOverviewProvider
     with
         $FutureModifier<CalorieWeekOverview>,
         $FutureProvider<CalorieWeekOverview> {
+  /// Calorie week overview.
   CalorieWeekOverviewProvider._()
     : super(
         from: null,
@@ -183,9 +201,13 @@ final class CalorieWeekOverviewProvider
 String _$calorieWeekOverviewHash() =>
     r'fec207db49ed096beb332cfd22a84252060dc198';
 
+/// Calorie week overview for window.
+
 @ProviderFor(calorieWeekOverviewForWindow)
 final calorieWeekOverviewForWindowProvider =
     CalorieWeekOverviewForWindowFamily._();
+
+/// Calorie week overview for window.
 
 final class CalorieWeekOverviewForWindowProvider
     extends
@@ -197,6 +219,7 @@ final class CalorieWeekOverviewForWindowProvider
     with
         $FutureModifier<CalorieWeekOverview>,
         $FutureProvider<CalorieWeekOverview> {
+  /// Calorie week overview for window.
   CalorieWeekOverviewForWindowProvider._({
     required CalorieWeekOverviewForWindowFamily super.from,
     required DateTime super.argument,
@@ -245,6 +268,8 @@ final class CalorieWeekOverviewForWindowProvider
 String _$calorieWeekOverviewForWindowHash() =>
     r'2911dec303d6f41887881e5fde5bca2900b096ce';
 
+/// Calorie week overview for window.
+
 final class CalorieWeekOverviewForWindowFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<CalorieWeekOverview>, DateTime> {
   CalorieWeekOverviewForWindowFamily._()
@@ -256,6 +281,8 @@ final class CalorieWeekOverviewForWindowFamily extends $Family
         isAutoDispose: true,
       );
 
+  /// Calorie week overview for window.
+
   CalorieWeekOverviewForWindowProvider call(DateTime visibleWindowEnd) =>
       CalorieWeekOverviewForWindowProvider._(
         argument: visibleWindowEnd,
@@ -266,9 +293,13 @@ final class CalorieWeekOverviewForWindowFamily extends $Family
   String toString() => r'calorieWeekOverviewForWindowProvider';
 }
 
+/// Calorie week day overview for date.
+
 @ProviderFor(calorieWeekDayOverviewForDate)
 final calorieWeekDayOverviewForDateProvider =
     CalorieWeekDayOverviewForDateFamily._();
+
+/// Calorie week day overview for date.
 
 final class CalorieWeekDayOverviewForDateProvider
     extends
@@ -280,6 +311,7 @@ final class CalorieWeekDayOverviewForDateProvider
     with
         $FutureModifier<CalorieWeekDayOverview>,
         $FutureProvider<CalorieWeekDayOverview> {
+  /// Calorie week day overview for date.
   CalorieWeekDayOverviewForDateProvider._({
     required CalorieWeekDayOverviewForDateFamily super.from,
     required DateTime super.argument,
@@ -328,6 +360,8 @@ final class CalorieWeekDayOverviewForDateProvider
 String _$calorieWeekDayOverviewForDateHash() =>
     r'11fb87947b528e41e92c3392708e876550a5fe8d';
 
+/// Calorie week day overview for date.
+
 final class CalorieWeekDayOverviewForDateFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<CalorieWeekDayOverview>, DateTime> {
   CalorieWeekDayOverviewForDateFamily._()
@@ -338,6 +372,8 @@ final class CalorieWeekDayOverviewForDateFamily extends $Family
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
+
+  /// Calorie week day overview for date.
 
   CalorieWeekDayOverviewForDateProvider call(DateTime day) =>
       CalorieWeekDayOverviewForDateProvider._(argument: day, from: this);
