@@ -251,7 +251,7 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _StepPanel extends StatelessWidget {
-  const _StepPanel({super.key, required this.title, required this.child});
+  const _StepPanel({required this.title, required this.child, super.key});
 
   final String title;
   final Widget child;

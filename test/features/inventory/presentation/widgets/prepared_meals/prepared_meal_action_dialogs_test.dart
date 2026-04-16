@@ -13,7 +13,6 @@ PreparedMeal _meal() {
     entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
     initialAmount: 200,
     currentAmount: 200,
     amountUnit: InventoryAmountUnit.gram,

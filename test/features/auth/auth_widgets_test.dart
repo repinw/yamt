@@ -450,7 +450,7 @@ void main() {
     (tester) async {
       const googleErrorMessage = 'Google consent screen failed';
       final mockGoogleSignIn = _MockGoogleSignIn();
-      when(() => mockGoogleSignIn.authenticate()).thenThrow(
+      when(mockGoogleSignIn.authenticate).thenThrow(
         const GoogleSignInException(
           code: GoogleSignInExceptionCode.unknownError,
           description: googleErrorMessage,
@@ -487,7 +487,7 @@ void main() {
       final mockGoogleSignIn = _MockGoogleSignIn();
       final completer = Completer<GoogleSignInAccount>();
       when(
-        () => mockGoogleSignIn.authenticate(),
+        mockGoogleSignIn.authenticate,
       ).thenAnswer((_) => completer.future);
 
       await tester.pumpWidget(

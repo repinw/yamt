@@ -23,10 +23,7 @@ class ShoppingListLoadingView extends StatelessWidget {
 class ShoppingListErrorView extends StatelessWidget {
   /// The shopping list error view.
   const ShoppingListErrorView({
-    super.key,
-    required this.onRetry,
-    required this.message,
-    required this.retryLabel,
+    required this.onRetry, required this.message, required this.retryLabel, super.key,
   });
 
   /// The on retry.

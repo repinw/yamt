@@ -35,11 +35,8 @@ class BarcodeLookupBatchItem {
 abstract interface class CalorieBarcodeBackfillRepositoryContract {
   /// Enqueue fingerprint lookup.
   Future<bool> enqueueFingerprintLookup({
-    String? itemId,
-    required String fingerprint,
-    required String itemName,
+    required String fingerprint, required String itemName, required String trigger, String? itemId,
     String? brand,
-    required String trigger,
     bool forceRetry = false,
   });
 

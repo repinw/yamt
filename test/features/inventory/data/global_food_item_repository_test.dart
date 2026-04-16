@@ -175,7 +175,6 @@ GlobalFoodItem _item(String id) {
     brand: ' Acme ',
     category: ' Dairy ',
     barcode: ' 123456 ',
-    normalizedBrand: null,
   );
 }
 

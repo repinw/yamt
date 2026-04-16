@@ -261,7 +261,6 @@ class _CalorieBarcodeScanPageState
             scannedSourceRef: CalorieScannedSourceRef(
               barcode: scannedBarcode,
               source: CalorieProductSource.ocr,
-              offProductId: null,
             ),
           );
           return;

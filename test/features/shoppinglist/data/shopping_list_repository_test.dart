@@ -129,7 +129,7 @@ class _FakeShoppingListItemStore implements ShoppingListItemStore {
   ) {
     return _controllersByUser.putIfAbsent(
       userId,
-      () => StreamController<List<ShoppingListItemDocument>>.broadcast(),
+      StreamController<List<ShoppingListItemDocument>>.broadcast,
     );
   }
 
@@ -167,7 +167,7 @@ void main() {
       final store = _FakeShoppingListItemStore();
       addTearDown(store.dispose);
       final repository = FirestoreShoppingListRepository(
-        session: _FakeShoppingListUserSession(currentUserId: null),
+        session: _FakeShoppingListUserSession(),
         store: store,
       );
 

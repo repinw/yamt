@@ -6,9 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 class CalorieAddOptionsSheet extends StatelessWidget {
   /// The calorie add options sheet.
   const CalorieAddOptionsSheet({
-    super.key,
-    required this.onManualTap,
-    required this.onBarcodeTap,
+    required this.onManualTap, required this.onBarcodeTap, super.key,
   });
 
   /// The on manual tap.

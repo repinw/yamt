@@ -92,7 +92,7 @@ class _InventoryItemEatSheetState
   late MealType _selectedMealType = MealType.defaultForDateTime(
     _selectedLoggedAt,
   );
-  var _selectedManualCalorieUnit = ConsumedUnit.grams;
+  ConsumedUnit _selectedManualCalorieUnit = ConsumedUnit.grams;
   String? _inventoryAmountErrorText;
   String? _inedibleAmountErrorText;
   String? _manualCalorieAmountErrorText;

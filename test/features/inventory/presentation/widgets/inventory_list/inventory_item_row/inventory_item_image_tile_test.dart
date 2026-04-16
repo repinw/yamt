@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file/memory.dart';
@@ -13,7 +14,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 const _imageUrl = 'https://images.example.com/item.png';
 const _fallbackEmoji = '🍽️';
 
-final _transparentPngBytes = base64Decode(
+final Uint8List _transparentPngBytes = base64Decode(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8'
   '/w8AAgMBgJGDnzsAAAAASUVORK5CYII=',
 );

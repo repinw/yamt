@@ -3,9 +3,9 @@ import 'dart:developer' show log;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod/riverpod.dart';
 
-import 'firestore_global_food_receipt_alias_repository.dart';
-import 'global_food_receipt_alias_repository_contract.dart';
-import 'global_food_receipt_alias_store.dart';
+import 'package:yamt/features/inventory/data/firestore_global_food_receipt_alias_repository.dart';
+import 'package:yamt/features/inventory/data/global_food_receipt_alias_repository_contract.dart';
+import 'package:yamt/features/inventory/data/global_food_receipt_alias_store.dart';
 
 export 'firestore_global_food_receipt_alias_repository.dart';
 export 'global_food_receipt_alias_repository_contract.dart';

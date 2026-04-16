@@ -5,7 +5,7 @@ import 'package:yamt/features/inventory/presentation/constants/'
 /// Defines brand badge.
 class BrandBadge extends StatelessWidget {
   /// The brand badge.
-  const BrandBadge({super.key, required this.brand});
+  const BrandBadge({required this.brand, super.key});
 
   /// The brand.
   final String brand;

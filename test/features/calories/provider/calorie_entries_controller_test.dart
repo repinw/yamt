@@ -27,7 +27,7 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   Object? saveError;
   Future<List<CalorieEntry>> Function(DateTime day)? onReadEntriesForDay;
   Completer<void>? saveBlocker;
-  var saveStarted = false;
+  bool saveStarted = false;
   Duration initialEmissionDelay = Duration.zero;
 
   List<CalorieEntry> get entries => List<CalorieEntry>.unmodifiable(_entries);
@@ -192,7 +192,7 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   StreamController<List<CalorieEntry>> _controllerFor(String key) {
     return _controllersByDay.putIfAbsent(
       key,
-      () => StreamController<List<CalorieEntry>>.broadcast(),
+      StreamController<List<CalorieEntry>>.broadcast,
     );
   }
 
@@ -307,6 +307,12 @@ ProviderSubscription<AsyncValue<CalorieGoalSettings>> _keepGoalAlive(
   ProviderContainer container,
 ) {
   return container.listen(calorieGoalControllerProvider, (_, _) {});
+}
+
+ProviderSubscription<AsyncValue<CalorieDayViewData>> _keepDayViewAlive(
+  ProviderContainer container,
+) {
+  return container.listen(calorieDayViewDataProvider, (_, _) {});
 }
 
 Future<void> _waitForCondition({
@@ -432,14 +438,19 @@ void main() {
     addTearDown(container.dispose);
     final entriesSubscription = _keepEntriesAlive(container);
     final goalSubscription = _keepGoalAlive(container);
+    final viewDataSubscription = _keepDayViewAlive(container);
     addTearDown(entriesSubscription.close);
     addTearDown(goalSubscription.close);
+    addTearDown(viewDataSubscription.close);
 
     container
         .read(calorieDayControllerProvider.notifier)
         .setDay(DateTime(2026, 2, 25));
     await container.read(calorieEntriesControllerProvider.future);
     await container.read(calorieGoalControllerProvider.future);
+    await _waitForCondition(
+      condition: () => container.read(calorieDayViewDataProvider).hasValue,
+    );
 
     final viewDataState = container.read(calorieDayViewDataProvider);
     final viewData = viewDataState.requireValue;
@@ -499,12 +510,17 @@ void main() {
     addTearDown(container.dispose);
     final entriesSubscription = _keepEntriesAlive(container);
     final goalSubscription = _keepGoalAlive(container);
+    final viewDataSubscription = _keepDayViewAlive(container);
     addTearDown(entriesSubscription.close);
     addTearDown(goalSubscription.close);
+    addTearDown(viewDataSubscription.close);
 
     container.read(calorieDayControllerProvider.notifier).setDay(selectedDay);
     await container.read(calorieEntriesControllerProvider.future);
     await container.read(calorieGoalControllerProvider.future);
+    await _waitForCondition(
+      condition: () => container.read(calorieDayViewDataProvider).hasValue,
+    );
 
     final viewData = container.read(calorieDayViewDataProvider).requireValue;
 

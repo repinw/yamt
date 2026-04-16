@@ -9,9 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 class CalorieWeekBalanceSummaryBanner extends StatelessWidget {
   /// The calorie week balance summary banner.
   const CalorieWeekBalanceSummaryBanner({
-    super.key,
-    required this.overview,
-    required this.referenceNow,
+    required this.overview, required this.referenceNow, super.key,
   });
 
   /// The overview.

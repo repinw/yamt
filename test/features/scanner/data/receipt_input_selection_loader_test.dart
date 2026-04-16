@@ -122,7 +122,7 @@ void main() {
         ),
         throwsA(
           predicate(
-            (Object error) =>
+            (error) =>
                 error.toString().contains('Receipt file exceeds size limit'),
           ),
         ),

@@ -72,7 +72,7 @@ class _InventoryItemRowHost extends StatelessWidget {
       storeName: 'Store',
       quantity: 2,
       initialQuantity: 2,
-      unitPrice: 1.0,
+      unitPrice: 1,
       brand: 'Acme',
     );
   }
@@ -201,7 +201,7 @@ void main() {
       storeName: 'Store',
       quantity: 2,
       initialQuantity: 2,
-      unitPrice: 1.0,
+      unitPrice: 1,
       nutrition: const GlobalFoodNutrition(
         qualityStatus: GlobalFoodNutritionQualityStatus.verified,
         per100Kcal: 590,

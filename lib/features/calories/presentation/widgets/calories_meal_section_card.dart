@@ -14,12 +14,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 class CaloriesMealSectionCard extends StatelessWidget {
   /// The calories meal section card.
   const CaloriesMealSectionCard({
-    super.key,
-    required this.section,
-    required this.title,
-    required this.emptyMessage,
-    required this.onTapEntry,
-    required this.onDeleteEntry,
+    required this.section, required this.title, required this.emptyMessage, required this.onTapEntry, required this.onDeleteEntry, super.key,
   });
 
   /// The section.
@@ -196,7 +191,7 @@ class _DiaryMealEntryCard extends StatelessWidget {
                         metadata.join(' • ').toUpperCase(),
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: colors.onSurfaceVariant,
-                          letterSpacing: 1.0,
+                          letterSpacing: 1,
                           fontWeight: FontWeight.w700,
                         ),
                       ),

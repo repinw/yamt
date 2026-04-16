@@ -7,7 +7,7 @@ InventoryItem _item({
   required String id,
   required String name,
   String? brand,
-  var quantity = 1,
+  int quantity = 1,
 }) {
   return InventoryItem.create(
     id: id,

@@ -40,9 +40,7 @@ enum CalorieGoalCalculatorFlowPresentation {
 class CalorieGoalCalculatorFlow extends ConsumerStatefulWidget {
   /// The calorie goal calculator flow.
   const CalorieGoalCalculatorFlow({
-    super.key,
-    required this.initialSettings,
-    required this.presentation,
+    required this.initialSettings, required this.presentation, super.key,
   });
 
   /// The initial settings.
@@ -69,7 +67,7 @@ class _CalorieGoalCalculatorFlowState
   late DateTime _goalStartAt;
   late int _eatingWindowStartMinuteOfDay;
   late int _eatingWindowEndMinuteOfDay;
-  var _currentStep = _CalculatorOnboardingStep.sex;
+  _CalculatorOnboardingStep _currentStep = _CalculatorOnboardingStep.sex;
 
   @override
   void initState() {

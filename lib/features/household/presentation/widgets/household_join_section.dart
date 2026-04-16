@@ -10,7 +10,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines household join section.
 class HouseholdJoinSection extends ConsumerStatefulWidget {
   /// The household join section.
-  const HouseholdJoinSection({super.key, required this.isBusy});
+  const HouseholdJoinSection({required this.isBusy, super.key});
 
   /// Whether busy.
   final bool isBusy;

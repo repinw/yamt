@@ -174,12 +174,12 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   static const _preparedMealSorter = PreparedMealSorter();
   static const _viewPreferencesStore = InventoryListViewPreferencesStore();
   final _voiceSearchController = TextVoiceSearchController();
-  var _mode = InventoryListMode.allItems;
+  InventoryListMode _mode = InventoryListMode.allItems;
   var _consumptionFilter = const InventoryConsumptionFilter();
-  var _inventoryItemSortMode = InventoryItemSortMode.recentlyAddedDescending;
-  var _preparedMealCompletionFilter = PreparedMealCompletionFilter.all;
-  var _preparedMealConsumptionFilter = PreparedMealConsumptionFilter.all;
-  var _preparedMealSortMode = PreparedMealSortMode.addedDescending;
+  InventoryItemSortMode _inventoryItemSortMode = InventoryItemSortMode.recentlyAddedDescending;
+  PreparedMealCompletionFilter _preparedMealCompletionFilter = PreparedMealCompletionFilter.all;
+  PreparedMealConsumptionFilter _preparedMealConsumptionFilter = PreparedMealConsumptionFilter.all;
+  PreparedMealSortMode _preparedMealSortMode = PreparedMealSortMode.addedDescending;
   var _isRecentItemsSectionExpanded = true;
   var _isPreparedMealsSectionExpanded = true;
   late final AppPreferences _preferences;
@@ -597,10 +597,8 @@ class _InventoryListState extends ConsumerState<InventoryList> {
         break;
       case PreparedMealCompletionFilter.readyOnly:
         filteredMeals.removeWhere((meal) => meal.hasPendingRecipeIngredients);
-        break;
       case PreparedMealCompletionFilter.incompleteOnly:
         filteredMeals.removeWhere((meal) => !meal.hasPendingRecipeIngredients);
-        break;
     }
 
     switch (_preparedMealConsumptionFilter) {
@@ -608,10 +606,8 @@ class _InventoryListState extends ConsumerState<InventoryList> {
         break;
       case PreparedMealConsumptionFilter.hideConsumed:
         filteredMeals.removeWhere((meal) => meal.isDepleted);
-        break;
       case PreparedMealConsumptionFilter.depletedOnly:
         filteredMeals.removeWhere((meal) => !meal.isDepleted);
-        break;
     }
     return filteredMeals;
   }

@@ -52,6 +52,11 @@ class CalorieCalculatorProfile {
     required this.goalSpeedKgPerWeek,
   });
 
+  /// Creates a [CalorieCalculatorProfile] for from json.
+  factory CalorieCalculatorProfile.fromJson(Map<String, dynamic> json) {
+    return _$CalorieCalculatorProfileFromJson(json);
+  }
+
   /// Creates a [CalorieCalculatorProfile] for defaults.
   const CalorieCalculatorProfile.defaults()
     : sex = CalorieCalculatorSex.male,
@@ -93,11 +98,6 @@ class CalorieCalculatorProfile {
   /// The goal speed kg per week.
   @FlexibleDoubleConverter()
   final double goalSpeedKgPerWeek;
-
-  /// Creates a [CalorieCalculatorProfile] for from json.
-  factory CalorieCalculatorProfile.fromJson(Map<String, dynamic> json) {
-    return _$CalorieCalculatorProfileFromJson(json);
-  }
 
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieCalculatorProfileToJson(this);

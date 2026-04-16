@@ -55,7 +55,7 @@ class ReceiptBatchFlowRunner {
 
   /// Run.
   Future<void> run() async {
-    await _runWith(() => _batchController.runFileBatch());
+    await _runWith(_batchController.runFileBatch);
   }
 
   /// Run selections.

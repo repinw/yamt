@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:riverpod/src/framework.dart' show Override;
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_nutrition_ocr_repository.dart';
 import 'package:yamt/features/calories/data/'
@@ -949,9 +949,11 @@ void main() {
       find.byKey(const Key('receipt_review_manual_weight_field')),
       '500',
     );
+    await tester.pump();
     final manualSaveButton = tester.widget<FilledButton>(
       find.byKey(const Key('receipt_review_manual_save_button')),
     );
+    expect(manualSaveButton.onPressed, isNotNull);
     manualSaveButton.onPressed!.call();
     await tester.pumpAndSettle();
 
@@ -996,8 +998,6 @@ void main() {
               per100Sugar: 8,
               per100Fat: 7,
               per100Salt: 0.5,
-              per100PolyunsaturatedFat: null,
-              per100Fiber: null,
             ),
           );
         },
@@ -1071,10 +1071,12 @@ void main() {
         find.byKey(const Key('receipt_review_manual_weight_field')),
         '330',
       );
+      await tester.pump();
 
       final manualSaveButton = tester.widget<FilledButton>(
         find.byKey(const Key('receipt_review_manual_save_button')),
       );
+      expect(manualSaveButton.onPressed, isNotNull);
       manualSaveButton.onPressed!.call();
       await tester.pumpAndSettle();
 
@@ -1181,7 +1183,7 @@ void main() {
         ),
       );
 
-      expect(find.text('\$1.50'), findsWidgets);
+      expect(find.text(r'$1.50'), findsWidgets);
       expect(find.text('€1.50'), findsNothing);
     },
   );
@@ -2010,7 +2012,7 @@ void main() {
             name: 'Mandarinen',
             isDeposit: false,
             isDiscount: false,
-            unitPrice: 2.00,
+            unitPrice: 2,
             weight: '500 g',
             nutrition: _testNutrition,
           ),
@@ -2075,7 +2077,7 @@ void main() {
             name: 'Mandarinen',
             isDeposit: false,
             isDiscount: false,
-            unitPrice: 2.00,
+            unitPrice: 2,
             weight: '500 g',
             nutrition: _testNutrition,
           ),
@@ -2132,7 +2134,7 @@ void main() {
             name: 'Mandarinen',
             isDeposit: false,
             isDiscount: false,
-            unitPrice: 2.00,
+            unitPrice: 2,
             weight: '500 g',
             nutrition: _testNutrition,
           ),

@@ -165,7 +165,7 @@ String formatMinuteOfDay(BuildContext context, {required int minuteOfDay}) {
 
 /// Time of day from minute of day.
 TimeOfDay timeOfDayFromMinuteOfDay(int minuteOfDay) {
-  final normalizedMinute = minuteOfDay.clamp(0, (24 * 60) - 1).toInt();
+  final normalizedMinute = minuteOfDay.clamp(0, (24 * 60) - 1);
   return TimeOfDay(hour: normalizedMinute ~/ 60, minute: normalizedMinute % 60);
 }
 

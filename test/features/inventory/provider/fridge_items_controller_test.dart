@@ -155,8 +155,7 @@ InventoryItem _item(String id) {
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
-    unitPrice: 1.0,
+    unitPrice: 1,
   );
 }
 
@@ -168,7 +167,7 @@ InventoryItem _amountItem(String id) {
     storeName: 'Store',
     quantity: 2,
     initialQuantity: 2,
-    unitPrice: 1.0,
+    unitPrice: 1,
     initialAmount: 1000,
     currentAmount: 600,
     amountUnit: InventoryAmountUnit.milliliter,

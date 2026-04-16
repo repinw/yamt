@@ -707,7 +707,6 @@ void main() {
         goalMode: CalorieGoalMode.maintain,
         deltaKcal: 200,
         referenceNow: DateTime(2026, 4, 10, 18),
-        baseGoalKcal: 2000,
         flexibleGoalKcal: 2000,
         pacedGoalKcal: 0,
         consumedKcal: 200,

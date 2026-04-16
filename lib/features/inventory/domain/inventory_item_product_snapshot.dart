@@ -17,6 +17,28 @@ class InventoryItemProductSnapshot {
     this.nutrition,
   });
 
+  /// Creates a [InventoryItemProductSnapshot] for from json.
+  factory InventoryItemProductSnapshot.fromJson(Map<String, dynamic> json) {
+    return InventoryItemProductSnapshot(
+      name: json['name'] as String? ?? '',
+      brand: _readTrimmedString(json['brand']),
+      category: _readTrimmedString(json['category']),
+      barcode: _readTrimmedString(json['barcode']),
+      imageUrl: _readTrimmedString(json['image_url']),
+      foodFingerprint: _readTrimmedString(json['food_fingerprint']),
+      servingSize:
+          _readTrimmedString(json['serving_size']) ??
+          _readTrimmedString(json['servingSize']),
+      servingQuantity: _readDouble(
+        json['serving_quantity'] ?? json['servingQuantity'],
+      ),
+      servingQuantityUnit: _readTrimmedString(
+        json['serving_quantity_unit'] ?? json['servingQuantityUnit'],
+      ),
+      nutrition: _readNutrition(json['nutrition']),
+    );
+  }
+
   /// The name.
   final String name;
 
@@ -46,28 +68,6 @@ class InventoryItemProductSnapshot {
 
   /// The nutrition.
   final GlobalFoodNutrition? nutrition;
-
-  /// Creates a [InventoryItemProductSnapshot] for from json.
-  factory InventoryItemProductSnapshot.fromJson(Map<String, dynamic> json) {
-    return InventoryItemProductSnapshot(
-      name: json['name'] as String? ?? '',
-      brand: _readTrimmedString(json['brand']),
-      category: _readTrimmedString(json['category']),
-      barcode: _readTrimmedString(json['barcode']),
-      imageUrl: _readTrimmedString(json['image_url']),
-      foodFingerprint: _readTrimmedString(json['food_fingerprint']),
-      servingSize:
-          _readTrimmedString(json['serving_size']) ??
-          _readTrimmedString(json['servingSize']),
-      servingQuantity: _readDouble(
-        json['serving_quantity'] ?? json['servingQuantity'],
-      ),
-      servingQuantityUnit: _readTrimmedString(
-        json['serving_quantity_unit'] ?? json['servingQuantityUnit'],
-      ),
-      nutrition: _readNutrition(json['nutrition']),
-    );
-  }
 
   /// To json.
   Map<String, dynamic> toJson() {

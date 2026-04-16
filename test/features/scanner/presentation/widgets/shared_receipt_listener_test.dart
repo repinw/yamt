@@ -76,7 +76,6 @@ ReceiptReviewItemDraft _reviewDraft() {
       entryDate: DateTime.parse('2026-04-05T10:00:00Z'),
       storeName: 'Store',
       quantity: 1,
-      initialQuantity: 1,
       unitPrice: 1.99,
     ),
   );
@@ -138,7 +137,7 @@ void main() {
           appRouterProvider.overrideWithValue(router),
           navigatorKeyProvider.overrideWithValue(navigatorKey),
           sharedReceiptServiceProvider.overrideWith(
-            () => _FakeSharedReceiptService(),
+            _FakeSharedReceiptService.new,
           ),
           receiptCaptureFlowControllerProvider.overrideWith(
             () => fakeController,
@@ -202,7 +201,7 @@ void main() {
           appRouterProvider.overrideWithValue(router),
           navigatorKeyProvider.overrideWithValue(navigatorKey),
           sharedReceiptServiceProvider.overrideWith(
-            () => _FakeSharedReceiptService(),
+            _FakeSharedReceiptService.new,
           ),
           receiptCaptureFlowControllerProvider.overrideWith(
             () => fakeController,
@@ -261,7 +260,7 @@ void main() {
           appRouterProvider.overrideWithValue(router),
           navigatorKeyProvider.overrideWithValue(navigatorKey),
           sharedReceiptServiceProvider.overrideWith(
-            () => _FakeSharedReceiptService(),
+            _FakeSharedReceiptService.new,
           ),
           receiptCaptureFlowControllerProvider.overrideWith(
             () => fakeController,

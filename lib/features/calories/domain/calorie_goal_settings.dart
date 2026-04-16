@@ -9,11 +9,11 @@ part 'calorie_goal_settings.g.dart';
 const defaultDailyCalorieGoalKcal = 2500.0;
 
 /// The default eating window start minute of day.
-const defaultEatingWindowStartMinuteOfDay = 6 * 60;
+const int defaultEatingWindowStartMinuteOfDay = 6 * 60;
 
 /// The default eating window end minute of day.
-const defaultEatingWindowEndMinuteOfDay = 22 * 60;
-const _minutesPerDay = 24 * 60;
+const int defaultEatingWindowEndMinuteOfDay = 22 * 60;
+const int _minutesPerDay = 24 * 60;
 const _keepValue = Object();
 
 /// Defines calorie goal source.
@@ -48,6 +48,11 @@ class CalorieGoalWeeklyCheckInSnapshot {
     required this.lowConfidence,
   });
 
+  /// Creates a [CalorieGoalWeeklyCheckInSnapshot] for from json.
+  factory CalorieGoalWeeklyCheckInSnapshot.fromJson(Map<String, dynamic> json) {
+    return _$CalorieGoalWeeklyCheckInSnapshotFromJson(json);
+  }
+
   /// The window start date.
   @FlexibleDateTimeConverter()
   final DateTime windowStartDate;
@@ -71,11 +76,6 @@ class CalorieGoalWeeklyCheckInSnapshot {
   /// The low confidence.
   final bool lowConfidence;
 
-  /// Creates a [CalorieGoalWeeklyCheckInSnapshot] for from json.
-  factory CalorieGoalWeeklyCheckInSnapshot.fromJson(Map<String, dynamic> json) {
-    return _$CalorieGoalWeeklyCheckInSnapshotFromJson(json);
-  }
-
   /// To json.
   Map<String, dynamic> toJson() {
     return _$CalorieGoalWeeklyCheckInSnapshotToJson(this);
@@ -92,6 +92,11 @@ class PendingCalorieGoalWeeklyCheckIn {
     required this.dueDate,
     this.dismissedAt,
   });
+
+  /// Creates a [PendingCalorieGoalWeeklyCheckIn] for from json.
+  factory PendingCalorieGoalWeeklyCheckIn.fromJson(Map<String, dynamic> json) {
+    return _$PendingCalorieGoalWeeklyCheckInFromJson(json);
+  }
 
   /// The window start date.
   @FlexibleDateTimeConverter()
@@ -129,11 +134,6 @@ class PendingCalorieGoalWeeklyCheckIn {
     );
   }
 
-  /// Creates a [PendingCalorieGoalWeeklyCheckIn] for from json.
-  factory PendingCalorieGoalWeeklyCheckIn.fromJson(Map<String, dynamic> json) {
-    return _$PendingCalorieGoalWeeklyCheckInFromJson(json);
-  }
-
   /// To json.
   Map<String, dynamic> toJson() {
     return _$PendingCalorieGoalWeeklyCheckInToJson(this);
@@ -152,6 +152,11 @@ class CalorieGoalHistoryEntry {
     this.source = CalorieGoalSource.manual,
     this.weeklyCheckInSnapshot,
   });
+
+  /// Creates a [CalorieGoalHistoryEntry] for from json.
+  factory CalorieGoalHistoryEntry.fromJson(Map<String, dynamic> json) {
+    return _$CalorieGoalHistoryEntryFromJson(json);
+  }
 
   /// The daily kcal goal.
   @NullableFlexibleDoubleConverter()
@@ -189,11 +194,6 @@ class CalorieGoalHistoryEntry {
   /// Whether learned tdee.
   bool get hasLearnedTdee => weeklyCheckInSnapshot != null;
 
-  /// Creates a [CalorieGoalHistoryEntry] for from json.
-  factory CalorieGoalHistoryEntry.fromJson(Map<String, dynamic> json) {
-    return _$CalorieGoalHistoryEntryFromJson(json);
-  }
-
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieGoalHistoryEntryToJson(this);
 }
@@ -212,6 +212,11 @@ class CalorieGoalSettings {
     required this.pendingWeeklyCheckIn,
     required this.skippedIntakeDayKeys,
   });
+
+  /// Creates a [CalorieGoalSettings] for from json.
+  factory CalorieGoalSettings.fromJson(Map<String, dynamic> json) {
+    return _$CalorieGoalSettingsFromJson(json);
+  }
 
   /// The eating window start minute of day.
   const CalorieGoalSettings.empty()
@@ -474,11 +479,6 @@ class CalorieGoalSettings {
     return nextGoalStartAfterDay(windowEnd) ?? windowStart;
   }
 
-  /// Creates a [CalorieGoalSettings] for from json.
-  factory CalorieGoalSettings.fromJson(Map<String, dynamic> json) {
-    return _$CalorieGoalSettingsFromJson(json);
-  }
-
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieGoalSettingsToJson(this);
 
@@ -706,7 +706,7 @@ bool _shouldKeepGoalHistoryEntry({
 }
 
 int _normalizeMinuteOfDay(int value) {
-  return value.clamp(0, _minutesPerDay - 1).toInt();
+  return value.clamp(0, _minutesPerDay - 1);
 }
 
 String _dayKey(DateTime day) {

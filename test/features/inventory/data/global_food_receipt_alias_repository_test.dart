@@ -86,7 +86,6 @@ void main() {
       final aliases = await repository.searchCandidates(
         normalizedStoreName: 'aldi',
         normalizedReceiptName: 'milch 3 5',
-        limit: 5,
       );
 
       expect(store.lastNormalizedStoreName, 'aldi');

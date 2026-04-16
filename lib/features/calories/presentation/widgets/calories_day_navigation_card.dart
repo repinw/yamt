@@ -213,8 +213,8 @@ class _DiaryDayBalancePreview extends StatelessWidget {
     final dayKey = diaryDayKey(day.date);
     final goalRatio = (day.goalKcal / chartMaxKcal).clamp(0.0, 1.0);
     final totalRatio = (day.totalKcal / chartMaxKcal).clamp(0.0, 1.0);
-    final goalBottomOffset = (_miniWeekBalanceHeight * goalRatio).toDouble();
-    final barHeight = (_miniWeekBalanceHeight * totalRatio).toDouble();
+    final goalBottomOffset = _miniWeekBalanceHeight * goalRatio;
+    final barHeight = _miniWeekBalanceHeight * totalRatio;
 
     return SizedBox(
       key: CaloriesPageKeys.dayNavigationPreview(dayKey),

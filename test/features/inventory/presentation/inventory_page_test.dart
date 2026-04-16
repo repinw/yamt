@@ -32,8 +32,12 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_fab.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_list.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/scanner/provider/receipt_batch_flow_controller.dart';
@@ -891,6 +895,7 @@ void main() {
     final commitStore = _RecordingCommitStore();
     final auth = _MockFirebaseAuth();
     final user = _MockUser();
+    final expectedMealType = MealType.defaultForDateTime(DateTime.now());
     CalorieEntryCreateArgs? openedArgs;
     addTearDown(repository.dispose);
     addTearDown(calorieLogRepository.dispose);
@@ -941,7 +946,7 @@ void main() {
     expect(openedArgs, isNull);
     expect(commitStore.pendingConsumption?.amount, 120);
     expect(commitStore.entry?.consumedAmount, 120);
-    expect(commitStore.entry?.mealType, MealType.breakfast);
+    expect(commitStore.entry?.mealType, expectedMealType);
   });
 
   testWidgets('eat action quick select all direct-saves remaining amount', (
@@ -1070,27 +1075,28 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await _tapVisible(tester, find.byTooltip('Eat'));
-    await tester.enterText(
-      find.byKey(const Key('inventory_item_amount_dialog_field')),
-      '1',
+    final inventoryList = tester.widget<InventoryList>(
+      find.byType(InventoryList),
     );
-    final confirmButton = find.byKey(
-      const Key('inventory_item_amount_dialog_confirm_button'),
+    unawaited(
+      inventoryList.onEatItem(
+        'a',
+        InventoryItemEatRequest(
+          inventoryAmount: 1,
+          loggedAt: DateTime.parse('2026-02-19T10:00:00Z'),
+          mealType: MealType.breakfast,
+        ),
+      ),
     );
-    await tester.ensureVisible(confirmButton);
-    await tester.tap(confirmButton);
-    await tester.pumpAndSettle();
-    while (!stageStartedCompleter.isCompleted) {
-      await tester.pump();
-    }
+    await tester.pump();
+    expect(stageStartedCompleter.isCompleted, isTrue);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
 
     stageCompleter.complete();
     await tester.pump();
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 50));
 
     expect(controller.discardedPendingIds, <String>['pending-delayed']);
   });

@@ -52,12 +52,12 @@ class _FakeHealthConnectionService implements HealthConnectionService {
 }
 
 class _FakeHealthWeightService implements HealthWeightService {
+
+  _FakeHealthWeightService({this.shouldSaveFail = false});
   bool shouldSaveFail;
   int saveCallCount = 0;
   DateTime? lastRecordedAt;
   double? lastWeightKg;
-
-  _FakeHealthWeightService({this.shouldSaveFail = false});
 
   @override
   Future<List<HealthWeightSample>> loadWeightSamples({
@@ -81,17 +81,17 @@ class _FakeHealthWeightService implements HealthWeightService {
 
 class _FakeManualHealthWeightRepository
     implements ManualHealthWeightRepository {
-  List<ManualHealthWeightEntry> entries;
-  bool shouldSaveFail;
-  bool shouldDeleteFail;
-  int saveCallCount = 0;
-  int deleteCallCount = 0;
 
   _FakeManualHealthWeightRepository({
     this.entries = const <ManualHealthWeightEntry>[],
     this.shouldSaveFail = false,
     this.shouldDeleteFail = false,
   });
+  List<ManualHealthWeightEntry> entries;
+  bool shouldSaveFail;
+  bool shouldDeleteFail;
+  int saveCallCount = 0;
+  int deleteCallCount = 0;
 
   @override
   Future<bool> deleteEntryForDay(DateTime day) async {
@@ -190,7 +190,6 @@ void main() {
       final healthWeightService = _FakeHealthWeightService();
       final container = buildContainer(
         repository: repository,
-        status: _permissionRequiredStatus,
         healthWeightService: healthWeightService,
       );
       addTearDown(container.dispose);
@@ -277,7 +276,6 @@ void main() {
     );
     final container = buildContainer(
       repository: repository,
-      status: _permissionRequiredStatus,
     );
     addTearDown(container.dispose);
 

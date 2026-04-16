@@ -517,7 +517,7 @@ CalorieDayViewData _buildCalorieDayViewData({
       : goalKcal - aggregate.summary.totalKcal;
   final progress = goalKcal <= 0
       ? 0.0
-      : (aggregate.summary.totalKcal / goalKcal).clamp(0.0, 1.0).toDouble();
+      : (aggregate.summary.totalKcal / goalKcal).clamp(0.0, 1.0);
 
   return CalorieDayViewData(
     selectedDay: selectedDay,

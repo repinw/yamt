@@ -127,7 +127,7 @@ class CalorieBalanceSummaryData {
 
   /// The bar progress.
   double get barProgress =>
-      (deltaKcal.abs() / rangeKcal).clamp(0.0, 1.0).toDouble();
+      (deltaKcal.abs() / rangeKcal).clamp(0.0, 1.0);
 }
 
 /// Calorie balance now.
@@ -199,9 +199,7 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
       settings.calculatorProfile?.goalMode ??
       CalorieGoalMode.maintain;
   final carryoverKcal = historyGoalKcal - historyConsumedKcal;
-  final flexibleGoalKcal = math
-      .max(0.0, baseGoalKcal + carryoverKcal)
-      .toDouble();
+  final flexibleGoalKcal = math.max(0.0, baseGoalKcal + carryoverKcal);
   final defaultPaceWindowStart = settings.eatingWindowStartForDay(selectedDay);
   final defaultPaceWindowEnd = settings.eatingWindowEndForDay(selectedDay);
   final resolvedPaceWindowStart = _resolvePaceWindowStart(
@@ -225,9 +223,9 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
     paceRatio: paceRatio,
   );
   final deltaKcal = consumedKcal - pacedGoalKcal;
-  final referenceGoalKcal = math.max(baseGoalKcal, flexibleGoalKcal).toDouble();
-  final deadZoneKcal = math.max(60.0, referenceGoalKcal * 0.04).toDouble();
-  final rangeKcal = math.max(400.0, referenceGoalKcal * 0.4).toDouble();
+  final referenceGoalKcal = math.max(baseGoalKcal, flexibleGoalKcal);
+  final deadZoneKcal = math.max(60.0, referenceGoalKcal * 0.04);
+  final rangeKcal = math.max(400.0, referenceGoalKcal * 0.4);
 
   return CalorieBalanceSummaryData(
     selectedDay: selectedDay,
@@ -283,22 +281,22 @@ double _paceRatioForDay({
   required DateTime paceWindowEnd,
 }) {
   if (!_isSameDay(selectedDay, now)) {
-    return 1.0;
+    return 1;
   }
 
   if (!paceWindowStart.isBefore(paceWindowEnd)) {
-    return 0.0;
+    return 0;
   }
   if (!now.isAfter(paceWindowStart)) {
-    return 0.0;
+    return 0;
   }
   if (!now.isBefore(paceWindowEnd)) {
-    return 1.0;
+    return 1;
   }
 
   final elapsedSeconds = now.difference(paceWindowStart).inSeconds;
   final paceWindowSeconds = paceWindowEnd.difference(paceWindowStart).inSeconds;
-  return (elapsedSeconds / paceWindowSeconds).clamp(0.0, 1.0).toDouble();
+  return (elapsedSeconds / paceWindowSeconds).clamp(0.0, 1.0);
 }
 
 DateTime _resolvePaceWindowStart({
@@ -408,7 +406,7 @@ bool _isSameDay(DateTime left, DateTime right) {
 /// Resolve calorie balance score.
 double resolveCalorieBalanceScore(CalorieBalanceSummaryData data) {
   if (!data.isUnderPace && !data.isOverPace) {
-    return 1.0;
+    return 1;
   }
 
   return switch (data.goalMode) {

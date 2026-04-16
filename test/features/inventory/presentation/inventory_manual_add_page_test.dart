@@ -1327,7 +1327,6 @@ void main() {
       storeName: 'Added manually',
       quantity: 1,
       initialAmount: 1000,
-      currentAmount: 0,
       amountUnit: InventoryAmountUnit.milliliter,
     );
 

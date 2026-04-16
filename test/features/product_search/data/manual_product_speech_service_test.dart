@@ -27,7 +27,7 @@ class _FakeSpeechToText extends SpeechToText {
   Future<bool> initialize({
     SpeechErrorListener? onError,
     SpeechStatusListener? onStatus,
-    debugLogging = false,
+    dynamic debugLogging = false,
     Duration finalTimeout = SpeechToText.defaultFinalTimeout,
     List<SpeechConfigOption>? options,
   }) async {
@@ -41,17 +41,17 @@ class _FakeSpeechToText extends SpeechToText {
   }
 
   @override
-  Future listen({
+  Future<void> listen({
     SpeechResultListener? onResult,
     Duration? listenFor,
     Duration? pauseFor,
     String? localeId,
     SpeechSoundLevelChange? onSoundLevelChange,
-    cancelOnError = false,
-    partialResults = true,
-    onDevice = false,
+    dynamic cancelOnError = false,
+    dynamic partialResults = true,
+    dynamic onDevice = false,
     ListenMode listenMode = ListenMode.confirmation,
-    sampleRate = 0,
+    dynamic sampleRate = 0,
     SpeechListenOptions? listenOptions,
   }) async {
     _resultListener = onResult;

@@ -304,6 +304,7 @@ void main() {
     'buildSavePayload keeps matched product metadata after nutrition edit',
     () {
       final config = _config(
+        itemWeight: '500 g',
         selectedProduct: const OffProductSearchResult(
           code: '4061462542046',
           name: 'Olivenoel',
@@ -355,6 +356,7 @@ void main() {
 
   test('buildSavePayload uses manual name and brand overrides', () {
     final config = _config(
+      itemWeight: '500 g',
       selectedProduct: const OffProductSearchResult(
         code: '4061462542046',
         name: 'Olivenoel',
@@ -415,7 +417,7 @@ void main() {
   });
 
   test('buildSavePayload keeps explicit zero nutrition values', () {
-    final config = _config();
+    final config = _config(itemWeight: '500 g');
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
@@ -514,14 +516,8 @@ void main() {
                     quantityLabel: '500 ml',
                     servingSizeLabel: '15 ml',
                     per100Kcal: 120,
-                    per100SaturatedFat: null,
-                    per100PolyunsaturatedFat: null,
-                    per100Protein: null,
                     per100Carbs: 5,
-                    per100Sugar: null,
-                    per100Fiber: null,
                     per100Fat: 3,
-                    per100Salt: null,
                   ),
                 );
               },

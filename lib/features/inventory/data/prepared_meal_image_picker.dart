@@ -220,10 +220,10 @@ Map<String, Object?> _optimizePreparedMealImageBytesInIsolate(
   Map<String, Object> message,
 ) {
   try {
-    final transferableBytes = message['bytes'] as TransferableTypedData;
-    final maxBytes = message['maxBytes'] as int;
-    final maxWidth = message['maxWidth'] as int;
-    final maxHeight = message['maxHeight'] as int;
+    final transferableBytes = message['bytes']! as TransferableTypedData;
+    final maxBytes = message['maxBytes']! as int;
+    final maxWidth = message['maxWidth']! as int;
+    final maxHeight = message['maxHeight']! as int;
     final bytes = transferableBytes.materialize().asUint8List();
     final optimizedBytes = _optimizePreparedMealImageBytesSync(
       bytes,

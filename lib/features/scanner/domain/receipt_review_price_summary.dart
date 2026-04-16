@@ -33,7 +33,7 @@ class ReceiptReviewPriceSummaryCalculator {
     for (final draft in items) {
       final item = draft.item;
       final discountTotal = item.discounts.values.fold<double>(
-        0.0,
+        0,
         (sum, value) => sum + value,
       );
       final linePrice = (item.quantity * item.unitPrice) + discountTotal;

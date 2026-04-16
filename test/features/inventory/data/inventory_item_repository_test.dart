@@ -133,7 +133,7 @@ class _FakeInventoryItemStore implements InventoryItemStore {
   StreamController<List<InventoryItemDocument>> _controllerFor(String userId) {
     return _controllersByUser.putIfAbsent(
       userId,
-      () => StreamController<List<InventoryItemDocument>>.broadcast(),
+      StreamController<List<InventoryItemDocument>>.broadcast,
     );
   }
 
@@ -153,8 +153,7 @@ InventoryItem _item(String id) {
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
-    unitPrice: 1.0,
+    unitPrice: 1,
   );
 }
 
@@ -163,7 +162,7 @@ void main() {
     final store = _FakeInventoryItemStore();
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(currentUserId: null),
+      session: _FakeInventoryUserSession(),
       sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );

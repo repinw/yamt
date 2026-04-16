@@ -27,15 +27,15 @@ class _OffProductSearchResponseParser {
 
   List<OffProductSearchResult> _parseJsonPayload(Object decoded) {
     final items = switch (decoded) {
-      List<dynamic> list => list,
-      Map<String, dynamic> map when map['results'] is List<dynamic> =>
+      final List<dynamic> list => list,
+      final Map<String, dynamic> map when map['results'] is List<dynamic> =>
         map['results'] as List<dynamic>,
-      Map<String, dynamic> map when map['items'] is List<dynamic> =>
+      final Map<String, dynamic> map when map['items'] is List<dynamic> =>
         map['items'] as List<dynamic>,
-      Map<String, dynamic> map when map['product'] is Map => <dynamic>[
+      final Map<String, dynamic> map when map['product'] is Map => <dynamic>[
         map['product'],
       ],
-      Map<String, dynamic> map
+      final Map<String, dynamic> map
           when map['code'] != null &&
               (map['name'] != null || map['product_name'] != null) =>
         <dynamic>[map],

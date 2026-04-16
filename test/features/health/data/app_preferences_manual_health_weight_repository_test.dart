@@ -23,7 +23,7 @@ void main() {
         ManualHealthWeightEntry(day: DateTime(2026, 3, 18), weightKg: 72.1),
       );
       await repository.saveEntry(
-        ManualHealthWeightEntry(day: DateTime(2026, 3, 20), weightKg: 71.0),
+        ManualHealthWeightEntry(day: DateTime(2026, 3, 20), weightKg: 71),
       );
 
       final entries = await repository.readEntries();
@@ -57,7 +57,7 @@ void main() {
           ).toJson(),
           ManualHealthWeightEntry(
             day: DateTime(2026, 3, 20),
-            weightKg: 71.0,
+            weightKg: 71,
           ).toJson(),
         ]),
       },

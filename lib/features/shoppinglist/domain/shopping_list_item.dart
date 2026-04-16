@@ -11,6 +11,19 @@ class ShoppingListItem {
     this.brand,
   });
 
+  /// Creates a [ShoppingListItem] for from json.
+  factory ShoppingListItem.fromJson(Map<String, dynamic> json) {
+    return ShoppingListItem(
+      id: _stringValue(json['id']),
+      name: _stringValue(json['name']),
+      brand: _nullableStringValue(json['brand']),
+      normalizedName: _stringValue(json['normalized_name']),
+      normalizedBrand: _stringValue(json['normalized_brand']),
+      quantity: _intValue(json['quantity']),
+      estimatedUnitPrice: _doubleValue(json['estimated_unit_price']),
+    );
+  }
+
   /// The id.
   final String id;
 
@@ -34,19 +47,6 @@ class ShoppingListItem {
 
   /// The estimated total.
   double get estimatedTotal => estimatedUnitPrice * quantity;
-
-  /// Creates a [ShoppingListItem] for from json.
-  factory ShoppingListItem.fromJson(Map<String, dynamic> json) {
-    return ShoppingListItem(
-      id: _stringValue(json['id']),
-      name: _stringValue(json['name']),
-      brand: _nullableStringValue(json['brand']),
-      normalizedName: _stringValue(json['normalized_name']),
-      normalizedBrand: _stringValue(json['normalized_brand']),
-      quantity: _intValue(json['quantity']),
-      estimatedUnitPrice: _doubleValue(json['estimated_unit_price']),
-    );
-  }
 
   /// To json.
   Map<String, dynamic> toJson() {

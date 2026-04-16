@@ -35,7 +35,7 @@ void main() {
       final mockAuth = _MockFirebaseAuth();
       final controller = StreamController<User?>();
 
-      when(() => mockAuth.userChanges()).thenAnswer((_) => controller.stream);
+      when(mockAuth.userChanges).thenAnswer((_) => controller.stream);
 
       final container = ProviderContainer(
         overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
@@ -52,7 +52,7 @@ void main() {
       await controller.close();
       expect(await firstValueFuture, isNull);
 
-      verify(() => mockAuth.userChanges()).called(1);
+      verify(mockAuth.userChanges).called(1);
     },
   );
 

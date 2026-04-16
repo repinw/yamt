@@ -12,7 +12,7 @@ abstract final class CalorieGoalStartPicker {
     final pickedDate = await showDatePicker(
       context: context,
       initialDate: initialGoalStartAt,
-      firstDate: DateTime(referenceNow.year - 10, 1),
+      firstDate: DateTime(referenceNow.year - 10),
       lastDate: DateTime(referenceNow.year + 10, 12, 31),
     );
     if (!context.mounted) {

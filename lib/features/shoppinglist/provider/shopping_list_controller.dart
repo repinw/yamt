@@ -102,9 +102,7 @@ class ShoppingListController extends _$ShoppingListController {
 
   _AddShoppingListItemInput? _parseAddItemInput({
     required String name,
-    String? brand,
-    required int quantity,
-    required double estimatedUnitPrice,
+    required int quantity, required double estimatedUnitPrice, String? brand,
   }) {
     final safeQuantity = quantity < 1 ? 1 : quantity;
     final safePrice = estimatedUnitPrice < 0 ? 0.0 : estimatedUnitPrice;

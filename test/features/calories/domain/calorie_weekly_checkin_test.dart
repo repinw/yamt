@@ -14,7 +14,7 @@ void main() {
         CalorieWeeklyCheckInWeightPoint(dayIndex: 2, weightKg: 83.55),
         CalorieWeeklyCheckInWeightPoint(dayIndex: 3, weightKg: 81.70),
         CalorieWeeklyCheckInWeightPoint(dayIndex: 4, weightKg: 83.65),
-        CalorieWeeklyCheckInWeightPoint(dayIndex: 5, weightKg: 83.00),
+        CalorieWeeklyCheckInWeightPoint(dayIndex: 5, weightKg: 83),
         CalorieWeeklyCheckInWeightPoint(dayIndex: 6, weightKg: 83.75),
       ],
     );

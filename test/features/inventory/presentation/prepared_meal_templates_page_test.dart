@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
+import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -82,7 +83,6 @@ PreparedMeal _template({required String id, required String name}) {
     entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
     initialAmount: 300,
     currentAmount: 300,
     amountUnit: InventoryAmountUnit.gram,
@@ -166,6 +166,7 @@ Widget _buildHarness({
 
   final container = ProviderContainer(
     overrides: [
+      householdDataOwnerUserIdProvider.overrideWith((ref) => 'user-1'),
       preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
       preparedMealRecipeImporterProvider.overrideWithValue(importer),
       if (localImageStore != null)

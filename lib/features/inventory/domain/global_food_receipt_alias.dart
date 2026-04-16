@@ -22,59 +22,6 @@ class GlobalFoodReceiptAlias {
     required this.updatedAt,
   });
 
-  /// Builds a persistable alias or returns `null` when the lookup key would
-  /// be too weak, for example without a usable store or OCR name.
-  static GlobalFoodReceiptAlias? tryCreate({
-    required String storeName,
-    required String receiptName,
-    required GlobalFoodItem globalFoodItem,
-    required DateTime now,
-  }) {
-    final normalizedStoreName = normalizeGlobalFoodReceiptAliasStoreName(
-      storeName,
-    );
-    final normalizedReceiptName = normalizeGlobalFoodReceiptObservedName(
-      receiptName,
-    );
-    final safeStoreName = normalizeStoreName(storeName);
-    final safeReceiptName = receiptName.trim();
-    final safeGlobalFoodItemId = globalFoodItem.id.trim();
-    if (normalizedStoreName == null ||
-        normalizedReceiptName == null ||
-        safeStoreName == null ||
-        safeReceiptName.isEmpty ||
-        safeGlobalFoodItemId.isEmpty) {
-      return null;
-    }
-
-    return GlobalFoodReceiptAlias(
-      id: buildGlobalFoodReceiptAliasId(
-        normalizedStoreName: normalizedStoreName,
-        normalizedReceiptName: normalizedReceiptName,
-        globalFoodItemId: safeGlobalFoodItemId,
-      ),
-      globalFoodItemId: safeGlobalFoodItemId,
-      storeName: safeStoreName,
-      normalizedStoreName: normalizedStoreName,
-      receiptName: safeReceiptName,
-      normalizedReceiptName: normalizedReceiptName,
-      compactReceiptName: compactGlobalFoodReceiptAliasText(
-        normalizedReceiptName,
-      ),
-      receiptSearchTokens: buildGlobalFoodReceiptAliasSearchTokens(
-        safeReceiptName,
-      ),
-      lookupKey: buildGlobalFoodReceiptAliasLookupKey(
-        normalizedStoreName: normalizedStoreName,
-        normalizedReceiptName: normalizedReceiptName,
-      ),
-      selectionCount: 1,
-      globalFoodItem: globalFoodItem,
-      createdAt: now,
-      updatedAt: now,
-    );
-  }
-
   /// Creates a [GlobalFoodReceiptAlias] for from json.
   factory GlobalFoodReceiptAlias.fromJson(Map<String, dynamic> json) {
     final globalFoodItemId = (json['global_food_item_id'] as String? ?? '')
@@ -129,6 +76,59 @@ class GlobalFoodReceiptAlias {
           _readDateTime(json['updated_at']) ??
           _readDateTime(json['created_at']) ??
           DateTime.now(),
+    );
+  }
+
+  /// Builds a persistable alias or returns `null` when the lookup key would
+  /// be too weak, for example without a usable store or OCR name.
+  static GlobalFoodReceiptAlias? tryCreate({
+    required String storeName,
+    required String receiptName,
+    required GlobalFoodItem globalFoodItem,
+    required DateTime now,
+  }) {
+    final normalizedStoreName = normalizeGlobalFoodReceiptAliasStoreName(
+      storeName,
+    );
+    final normalizedReceiptName = normalizeGlobalFoodReceiptObservedName(
+      receiptName,
+    );
+    final safeStoreName = normalizeStoreName(storeName);
+    final safeReceiptName = receiptName.trim();
+    final safeGlobalFoodItemId = globalFoodItem.id.trim();
+    if (normalizedStoreName == null ||
+        normalizedReceiptName == null ||
+        safeStoreName == null ||
+        safeReceiptName.isEmpty ||
+        safeGlobalFoodItemId.isEmpty) {
+      return null;
+    }
+
+    return GlobalFoodReceiptAlias(
+      id: buildGlobalFoodReceiptAliasId(
+        normalizedStoreName: normalizedStoreName,
+        normalizedReceiptName: normalizedReceiptName,
+        globalFoodItemId: safeGlobalFoodItemId,
+      ),
+      globalFoodItemId: safeGlobalFoodItemId,
+      storeName: safeStoreName,
+      normalizedStoreName: normalizedStoreName,
+      receiptName: safeReceiptName,
+      normalizedReceiptName: normalizedReceiptName,
+      compactReceiptName: compactGlobalFoodReceiptAliasText(
+        normalizedReceiptName,
+      ),
+      receiptSearchTokens: buildGlobalFoodReceiptAliasSearchTokens(
+        safeReceiptName,
+      ),
+      lookupKey: buildGlobalFoodReceiptAliasLookupKey(
+        normalizedStoreName: normalizedStoreName,
+        normalizedReceiptName: normalizedReceiptName,
+      ),
+      selectionCount: 1,
+      globalFoodItem: globalFoodItem,
+      createdAt: now,
+      updatedAt: now,
     );
   }
 
@@ -301,7 +301,7 @@ String normalizeGlobalFoodReceiptAliasText(String rawValue) {
       .replaceAll('ä', 'ae')
       .replaceAll('ö', 'oe')
       .replaceAll('ü', 'ue')
-      .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
+      .replaceAll(RegExp('[^a-z0-9]+'), ' ')
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
 }

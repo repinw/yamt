@@ -9,9 +9,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 class InventoryNutritionStrip extends StatelessWidget {
   /// The inventory nutrition strip.
   const InventoryNutritionStrip({
-    super.key,
-    required this.metrics,
-    required this.colorScheme,
+    required this.metrics, required this.colorScheme, super.key,
   });
 
   /// The metrics.

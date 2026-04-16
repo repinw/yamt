@@ -340,10 +340,10 @@ class MealTemplateFooterTestHarness extends StatelessWidget {
       isSavingTemplate: isSavingTemplate,
       canCreateMeal: canCreateMeal,
       onSaveTemplatePressed:
-          onSaveTemplatePressed ?? () => Future<void>.value(),
+          onSaveTemplatePressed ?? Future<void>.value,
       onAddIngredientsToShoppingListPressed:
-          onAddIngredientsToShoppingListPressed ?? () => Future<void>.value(),
-      onCreateMealPressed: onCreateMealPressed ?? () => Future<void>.value(),
+          onAddIngredientsToShoppingListPressed ?? Future<void>.value,
+      onCreateMealPressed: onCreateMealPressed ?? Future<void>.value,
     );
   }
 }

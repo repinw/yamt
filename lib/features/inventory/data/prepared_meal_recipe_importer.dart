@@ -8,10 +8,7 @@ class PreparedMealRecipeImport {
   /// The prepared meal recipe import.
   const PreparedMealRecipeImport({
     required this.recipeUrl,
-    this.imageUrl,
-    required this.title,
-    required this.servings,
-    required this.ingredients,
+    required this.title, required this.servings, required this.ingredients, this.imageUrl,
     this.instructionsPreview = const <String>[],
   });
 

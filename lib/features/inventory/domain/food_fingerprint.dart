@@ -18,8 +18,8 @@ String _normalizeToken(String raw) {
     return '';
   }
   final normalized = lower
-      .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
-      .replaceAll(RegExp(r'_+'), '_')
+      .replaceAll(RegExp('[^a-z0-9]+'), '_')
+      .replaceAll(RegExp('_+'), '_')
       .replaceAll(RegExp(r'^_+|_+$'), '');
   return normalized;
 }

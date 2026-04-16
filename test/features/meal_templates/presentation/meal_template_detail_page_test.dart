@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/provider/prepared_meal_templates_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/features/meal_templates/presentation/'
     'meal_template_detail_page.dart';
@@ -49,6 +51,8 @@ class _FakePreparedMealTemplateRepository
     return true;
   }
 
+  List<PreparedMeal> get currentTemplates => List<PreparedMeal>.from(_templates);
+
   Future<void> dispose() => _controller.close();
 }
 
@@ -75,6 +79,75 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
     return true;
+  }
+}
+
+class _StaticPreparedMealTemplatesController
+    extends PreparedMealTemplatesController {
+  _StaticPreparedMealTemplatesController({
+    required List<PreparedMeal> templates,
+  }) : _templates = List<PreparedMeal>.from(templates);
+
+  List<PreparedMeal> _templates;
+
+  @override
+  FutureOr<List<PreparedMeal>> build() {
+    return List<PreparedMeal>.from(_templates);
+  }
+
+  @override
+  Future<bool> updateRecipeIngredientAssignments({
+    required String templateId,
+    required Map<String, List<String>> recipeIngredientAssignments,
+    required Map<String, RecipeIngredientAmountConversion>
+    recipeIngredientAmountConversions,
+  }) async {
+    final templateIndex = _templates.indexWhere(
+      (template) => template.id == templateId,
+    );
+    if (templateIndex < 0) {
+      return false;
+    }
+
+    final nextTemplates = List<PreparedMeal>.from(_templates);
+    nextTemplates[templateIndex] = nextTemplates[templateIndex].copyWith(
+      recipeIngredientAssignments: recipeIngredientAssignments,
+      recipeIngredientAmountConversions: recipeIngredientAmountConversions,
+    );
+    _templates = nextTemplates;
+    state = AsyncData(List<PreparedMeal>.from(_templates));
+    return true;
+  }
+}
+
+class _StaticInventoryItemsController extends InventoryItemsController {
+  _StaticInventoryItemsController(this._items);
+
+  final List<InventoryItem> _items;
+
+  @override
+  FutureOr<List<InventoryItem>> build() {
+    return List<InventoryItem>.from(_items);
+  }
+}
+
+class _StaticPreparedMealsController extends PreparedMealsController {
+  @override
+  FutureOr<List<PreparedMeal>> build() {
+    return const <PreparedMeal>[];
+  }
+
+  @override
+  Future<PreparedMealCreationResult> createPreparedMealFromTemplate({
+    required PreparedMeal template,
+    required int totalPortions,
+    required Map<String, List<String>> recipeIngredientAssignments,
+    required Map<String, RecipeIngredientAmountConversion>
+    recipeIngredientAmountConversions,
+  }) async {
+    return const PreparedMealCreationResult.failure(
+      PreparedMealCreationFailureReason.invalidInput,
+    );
   }
 }
 
@@ -111,17 +184,29 @@ PreparedMeal _recipeTemplate({
 
 @Dependencies([InventoryItemsController, PreparedMealsController])
 Widget _buildHarness({
-  required PreparedMealTemplateRepository templateRepository,
+  required _FakePreparedMealTemplateRepository templateRepository,
   List<InventoryItem> inventoryItems = const <InventoryItem>[],
   FakeShoppingListRepository? shoppingListRepository,
 }) {
   final container = ProviderContainer(
     overrides: [
+      householdDataOwnerUserIdProvider.overrideWith((ref) => 'user-1'),
       preparedMealTemplateRepositoryProvider.overrideWithValue(
         templateRepository,
       ),
+      preparedMealTemplatesControllerProvider.overrideWith(
+        () => _StaticPreparedMealTemplatesController(
+          templates: templateRepository.currentTemplates,
+        ),
+      ),
       inventoryItemRepositoryProvider.overrideWithValue(
         _FakeInventoryItemRepository(items: inventoryItems),
+      ),
+      inventoryItemsControllerProvider.overrideWith(
+        () => _StaticInventoryItemsController(inventoryItems),
+      ),
+      preparedMealsControllerProvider.overrideWith(
+        _StaticPreparedMealsController.new,
       ),
       if (shoppingListRepository != null)
         shoppingListRepositoryProvider.overrideWithValue(
@@ -179,7 +264,6 @@ InventoryItem _weightedInventoryItem({
     entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
     storeName: 'Store',
     quantity: 1,
-    initialQuantity: 1,
     initialAmount: initialAmount ?? amount,
     currentAmount: currentAmount ?? amount,
     amountUnit: unit,

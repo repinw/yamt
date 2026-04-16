@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/'
@@ -140,7 +141,21 @@ void main() {
       _buildHarness(
         args: InventoryReceiptReviewPageArgs(
           items: <ReceiptReviewItemDraft>[
-            ReceiptReviewItemDraft(item: _item(id: 'item-1')),
+            ReceiptReviewItemDraft(
+              item: _item(
+                id: 'item-1',
+              ).copyWith(
+                weight: '500 g',
+                nutrition: const GlobalFoodNutrition(
+                  qualityStatus:
+                      GlobalFoodNutritionQualityStatus.verified,
+                  per100Kcal: 120,
+                  per100Protein: 5,
+                  per100Carbs: 10,
+                  per100Fat: 2,
+                ),
+              ),
+            ),
           ],
           onSaveTap: (drafts) async {
             savedDrafts = drafts;
@@ -152,6 +167,9 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('open_review_page')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('receipt_review_confirm_button_0')));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('receipt_review_save_button')));

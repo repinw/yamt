@@ -14,7 +14,7 @@ void main() {
     var didLog = false;
     debugFirebaseFirestoreInstanceGetter = () => firestore;
     debugFirebaseFirestoreLogWriter =
-        (message, {String name = '', Object? error, StackTrace? stackTrace}) {
+        (message, {name = '', error, stackTrace}) {
           expect(message, isNotEmpty);
           expect(name, isNotEmpty);
           didLog = true;
@@ -35,7 +35,7 @@ void main() {
     StackTrace? loggedStackTrace;
     debugFirebaseFirestoreInstanceGetter = () => throw fallbackError;
     debugFirebaseFirestoreLogWriter =
-        (message, {String name = '', Object? error, StackTrace? stackTrace}) {
+        (message, {name = '', error, stackTrace}) {
           loggedMessage = message;
           loggedName = name;
           loggedError = error;

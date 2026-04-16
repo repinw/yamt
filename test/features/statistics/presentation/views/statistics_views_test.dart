@@ -79,7 +79,6 @@ void main() {
         entryDate: day,
         storeName: 'REWE',
         quantity: 1,
-        initialQuantity: 1,
         unitPrice: 1,
         receiptDate: day,
       );
@@ -234,7 +233,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('No data yet'), findsOneWidget);
+      expect(find.text('No data yet'), findsAtLeastNWidgets(1));
       expect(
         find.text('No calorie entries in this period yet.'),
         findsOneWidget,

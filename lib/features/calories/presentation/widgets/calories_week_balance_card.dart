@@ -18,7 +18,7 @@ const _weekBalanceSummaryIconSize = 18.0;
 /// Defines calories week balance card.
 class CaloriesWeekBalanceCard extends StatelessWidget {
   /// The calories week balance card.
-  const CaloriesWeekBalanceCard({super.key, required this.overview});
+  const CaloriesWeekBalanceCard({required this.overview, super.key});
 
   /// The overview.
   final CalorieWeekOverview overview;
@@ -116,10 +116,7 @@ class _WeekBalanceChart extends StatelessWidget {
 
 class _WeekBalanceDayColumn extends StatelessWidget {
   const _WeekBalanceDayColumn({
-    super.key,
-    required this.day,
-    required this.isActive,
-    required this.chartMaxKcal,
+    required this.day, required this.isActive, required this.chartMaxKcal, super.key,
   });
 
   final CalorieWeekDayOverview day;
@@ -133,8 +130,8 @@ class _WeekBalanceDayColumn extends StatelessWidget {
     final locale = Localizations.localeOf(context).languageCode;
     final goalRatio = (day.goalKcal / chartMaxKcal).clamp(0.0, 1.0);
     final totalRatio = (day.totalKcal / chartMaxKcal).clamp(0.0, 1.0);
-    final goalBottomOffset = (_weekBalanceChartHeight * goalRatio).toDouble();
-    final barHeight = (_weekBalanceChartHeight * totalRatio).toDouble();
+    final goalBottomOffset = _weekBalanceChartHeight * goalRatio;
+    final barHeight = _weekBalanceChartHeight * totalRatio;
 
     return Semantics(
       label: _semanticLabel(context, isToday: isToday),

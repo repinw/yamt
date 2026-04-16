@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod/src/providers/provider.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/provider/shopping_list_controller.dart';
@@ -29,7 +30,7 @@ final activeShoppingListItemKeysProvider =
     });
 
 /// Whether inventory item in active shopping list provider.
-final isInventoryItemInActiveShoppingListProvider =
+final ProviderFamily<bool, InventoryItem> isInventoryItemInActiveShoppingListProvider =
     Provider.family<bool, InventoryItem>((ref, item) {
       return ref.watch(
         activeShoppingListItemKeysProvider.select(

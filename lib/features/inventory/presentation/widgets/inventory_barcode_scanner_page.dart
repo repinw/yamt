@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
@@ -11,14 +12,17 @@ import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_barcode_candidate_picker_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_barcode_lookup_candidate.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import 'inventory_barcode_candidate_picker_sheet.dart';
-import 'inventory_barcode_lookup_candidate.dart';
-
-export 'inventory_barcode_candidate_picker_sheet.dart'
+export 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_barcode_candidate_picker_sheet.dart'
     show inventoryBarcodeCandidateSheetKey;
-export 'inventory_barcode_lookup_candidate.dart'
+export 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_barcode_lookup_candidate.dart'
     show
         InventoryBarcodeLookupCandidate,
         InventoryBarcodeLookupCandidateSource,
@@ -28,7 +32,6 @@ export 'inventory_barcode_lookup_candidate.dart'
         mergeInventoryBarcodeCandidates;
 
 const _inventoryBarcodeScannerLogName = 'InventoryBarcodeScannerPage';
-const _inventoryBarcodeCandidateLimit = 5;
 
 /// Defines inventory barcode scanner page.
 class InventoryBarcodeScannerPage extends StatelessWidget {
@@ -88,7 +91,7 @@ class _InventoryBarcodeScannerViewState
 
   @override
   void dispose() {
-    _scannerController.dispose();
+    unawaited(_scannerController.dispose());
     super.dispose();
   }
 

@@ -12,6 +12,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
+import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -170,6 +171,7 @@ Widget _buildHarness({
   final container = ProviderContainer(
     overrides: [
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      householdDataOwnerUserIdProvider.overrideWith((ref) => 'user-1'),
       inventoryItemRepositoryProvider.overrideWithValue(
         inventoryRepository ??
             _FakeInventoryItemRepository(const <InventoryItem>[]),

@@ -14,7 +14,7 @@ const _nameNumberTokenPattern = r'(?:\d+(?:[.,]\d+)?|[.,]\d+)';
 
 final _namePackWithUnitPattern = RegExp(
   '(?:^|\\b)(\\d{1,3})\\s*[x\\u00D7]\\s*($_nameNumberTokenPattern)\\s*'
-  '(kg|g|mg|ml|cl|dl|l)\\b',
+  r'(kg|g|mg|ml|cl|dl|l)\b',
   caseSensitive: false,
 );
 final _nameValueWithUnitPattern = RegExp(

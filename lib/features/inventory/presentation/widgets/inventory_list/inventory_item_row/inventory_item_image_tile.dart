@@ -10,7 +10,7 @@ class InventoryItemImageTile extends StatelessWidget {
   /// The inventory item image tile.
   const InventoryItemImageTile({super.key, this.imageUrl});
 
-  static const _size = AppInventoryEditorial.imageTileSize;
+  static const double _size = AppInventoryEditorial.imageTileSize;
 
   /// The image url.
   final String? imageUrl;

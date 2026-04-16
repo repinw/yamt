@@ -93,25 +93,33 @@ void main() {
 
   group('provider resolution', () {
     test('uses Android debug provider when requested', () {
-      final provider = resolveFirebaseAppCheckAndroidProvider(true);
+      final provider = resolveFirebaseAppCheckAndroidProvider(
+        useDebugProvider: true,
+      );
 
       expect(provider, isA<AndroidDebugProvider>());
     });
 
     test('uses Play Integrity on Android release path', () {
-      final provider = resolveFirebaseAppCheckAndroidProvider(false);
+      final provider = resolveFirebaseAppCheckAndroidProvider(
+        useDebugProvider: false,
+      );
 
       expect(provider, isA<AndroidPlayIntegrityProvider>());
     });
 
     test('uses Apple debug provider when requested', () {
-      final provider = resolveFirebaseAppCheckAppleProvider(true);
+      final provider = resolveFirebaseAppCheckAppleProvider(
+        useDebugProvider: true,
+      );
 
       expect(provider, isA<AppleDebugProvider>());
     });
 
     test('uses App Attest with fallback on Apple release path', () {
-      final provider = resolveFirebaseAppCheckAppleProvider(false);
+      final provider = resolveFirebaseAppCheckAppleProvider(
+        useDebugProvider: false,
+      );
 
       expect(provider, isA<AppleAppAttestWithDeviceCheckFallbackProvider>());
     });

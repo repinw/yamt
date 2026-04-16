@@ -73,9 +73,7 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
         },
         onDone: controller.close,
       );
-      controller.onCancel = () {
-        subscription.cancel();
-      };
+      controller.onCancel = subscription.cancel;
     });
   }
 

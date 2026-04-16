@@ -18,20 +18,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 class CaloriesSummaryCard extends ConsumerWidget {
   /// The calories summary card.
   const CaloriesSummaryCard({
-    super.key,
-    required this.consumedKcal,
-    required this.goalKcal,
-    required this.remainingKcal,
-    required this.progress,
-    required this.totalProtein,
-    required this.totalCarbs,
-    required this.totalFat,
-    required this.consumedLabel,
-    required this.goalLabel,
-    required this.remainingLabel,
-    required this.proteinLabel,
-    required this.carbsLabel,
-    required this.fatLabel,
+    required this.consumedKcal, required this.goalKcal, required this.remainingKcal, required this.progress, required this.totalProtein, required this.totalCarbs, required this.totalFat, required this.consumedLabel, required this.goalLabel, required this.remainingLabel, required this.proteinLabel, required this.carbsLabel, required this.fatLabel, super.key,
   });
 
   /// The consumed kcal.
@@ -316,12 +303,7 @@ class _SummaryModeChip extends StatelessWidget {
 
 class _ClassicSummaryHero extends StatelessWidget {
   const _ClassicSummaryHero({
-    super.key,
-    required this.remainingKcal,
-    required this.progress,
-    required this.color,
-    required this.label,
-    required this.numberFormat,
+    required this.remainingKcal, required this.progress, required this.color, required this.label, required this.numberFormat, super.key,
   });
 
   final double remainingKcal;
@@ -383,9 +365,7 @@ class _ClassicSummaryHero extends StatelessWidget {
 
 class _BalanceSummaryHero extends StatelessWidget {
   const _BalanceSummaryHero({
-    super.key,
-    required this.numberFormat,
-    required this.kcalUnit,
+    required this.numberFormat, required this.kcalUnit, super.key,
   });
 
   final NumberFormat numberFormat;
@@ -466,7 +446,7 @@ class _BalanceFlexGoalHeaderStat extends ConsumerWidget {
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
             color: colors.onSurfaceVariant,
             fontWeight: FontWeight.w800,
-            letterSpacing: 1.0,
+            letterSpacing: 1,
           ),
         ),
         const SizedBox(height: AppSpacing.xxs),
@@ -611,7 +591,7 @@ class _MacroProgressCard extends StatelessWidget {
     final currentValueColor = current > target ? color : colorScheme.onSurface;
     final progress = target <= 0
         ? 0.0
-        : (current / target).clamp(0.0, 1.0).toDouble();
+        : (current / target).clamp(0.0, 1.0);
     final currentText = numberFormat.format(current.round());
     final targetText = numberFormat.format(target.round());
     final backgroundColor = Color.alphaBlend(
@@ -794,10 +774,7 @@ String resolveMacroLabelForWidth({
 /// Does calories summary text fit width.
 @visibleForTesting
 bool doesCaloriesSummaryTextFitWidth({
-  TextPainter? textPainter,
-  required String text,
-  required TextStyle style,
-  required double maxWidth,
+  required String text, required TextStyle style, required double maxWidth, TextPainter? textPainter,
   ui.TextDirection textDirection = ui.TextDirection.ltr,
   TextScaler textScaler = TextScaler.noScaling,
 }) {
@@ -821,10 +798,6 @@ class _MacroGoals {
     required this.fat,
   });
 
-  final double carbs;
-  final double protein;
-  final double fat;
-
   factory _MacroGoals.fromGoalKcal(double goalKcal) {
     return _MacroGoals(
       carbs: goalKcal * 0.45 / 4,
@@ -832,4 +805,8 @@ class _MacroGoals {
       fat: goalKcal * 0.30 / 9,
     );
   }
+
+  final double carbs;
+  final double protein;
+  final double fat;
 }

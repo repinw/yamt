@@ -116,8 +116,8 @@ class _CoordinatorHarness {
   _CoordinatorHarness({this.working = false});
 
   final events = <String>[];
-  var working = false;
-  var mounted = true;
+  bool working = false;
+  bool mounted = true;
   String? lastSnackBarMessage;
 
   InventoryItemRowActionCoordinator buildCoordinator() {

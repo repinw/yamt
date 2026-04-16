@@ -190,7 +190,7 @@ class TemplateIngredientParser {
   }
 
   String _normalizeToken(String value) {
-    return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9äöüß]+'), '');
+    return value.trim().toLowerCase().replaceAll(RegExp('[^a-z0-9äöüß]+'), '');
   }
 }
 

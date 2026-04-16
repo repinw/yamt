@@ -89,15 +89,9 @@ class ShoppingListContent extends StatelessWidget {
           item: item,
           l10n: l10n,
           currency: currency,
-          onDismissed: (itemId) {
-            controller.removeItem(itemId);
-          },
-          onIncrement: (itemId) {
-            controller.incrementQuantity(itemId);
-          },
-          onDecrement: (itemId) {
-            controller.decrementQuantity(itemId);
-          },
+          onDismissed: controller.removeItem,
+          onIncrement: controller.incrementQuantity,
+          onDecrement: controller.decrementQuantity,
         );
       },
     );

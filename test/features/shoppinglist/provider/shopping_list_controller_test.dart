@@ -197,7 +197,7 @@ void main() {
     final controller = container.read(shoppingListControllerProvider.notifier);
 
     await controller.addItem(name: 'Milk', estimatedUnitPrice: 2.49);
-    await controller.addItem(name: 'Milk', estimatedUnitPrice: 0);
+    await controller.addItem(name: 'Milk');
 
     final item = container.read(shoppingListControllerProvider).asData?.value;
     expect(item?.single.quantity, 2);
@@ -252,7 +252,7 @@ void main() {
   test('removeItem removes matching item id', () async {
     final repository = FakeShoppingListRepository(
       initialItems: <ShoppingListItem>[
-        _item('a', name: 'Milk'),
+        _item('a'),
         _item('b', name: 'Bread'),
       ],
     );
@@ -268,7 +268,7 @@ void main() {
 
   test('decrementQuantity keeps item and sets quantity to zero', () async {
     final repository = FakeShoppingListRepository(
-      initialItems: <ShoppingListItem>[_item('a', quantity: 1)],
+      initialItems: <ShoppingListItem>[_item('a')],
     );
     final container = await _createContainer(repository);
     final controller = container.read(shoppingListControllerProvider.notifier);
@@ -297,7 +297,7 @@ void main() {
   test('clearCrossedOffItems removes only items with quantity zero', () async {
     final repository = FakeShoppingListRepository(
       initialItems: <ShoppingListItem>[
-        _item('a', name: 'Milk', quantity: 0),
+        _item('a', quantity: 0),
         _item('b', name: 'Bread', quantity: 2),
       ],
     );
@@ -314,7 +314,7 @@ void main() {
 
   test('save failure rolls back optimistic quantity update', () async {
     final repository = FakeShoppingListRepository(
-      initialItems: <ShoppingListItem>[_item('a', quantity: 1)],
+      initialItems: <ShoppingListItem>[_item('a')],
     );
     repository.saveAllShouldFail = true;
     repository.emitRealtimeOnSave = false;

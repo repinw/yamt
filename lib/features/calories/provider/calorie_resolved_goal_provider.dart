@@ -103,7 +103,7 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
   final activityDeltaKcal = todayActiveKcal - averageActiveKcal;
   final resolvedGoalKcal = (storedGoalKcal + activityDeltaKcal)
       .clamp(minimumResolvedDailyCalorieGoalKcal, double.infinity)
-      .toDouble();
+      ;
   if (!kReleaseMode) {
     final message =
         'CALC_GOAL_DEBUG '

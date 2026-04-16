@@ -56,9 +56,7 @@ class PreparedMealCalorieLogBridge {
   /// Creates an instance.
   PreparedMealCalorieLogBridge({
     required Future<bool> Function(CalorieEntry entry) saveEntry,
-    Future<bool> Function(CalorieEntry entry)? saveEntryAtomically,
-    required DateTime Function() now,
-    required String Function() nextEntryId,
+    required DateTime Function() now, required String Function() nextEntryId, Future<bool> Function(CalorieEntry entry)? saveEntryAtomically,
   }) : _saveEntry = saveEntry,
        _saveEntryAtomically = saveEntryAtomically,
        _now = now,

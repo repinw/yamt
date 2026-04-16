@@ -39,7 +39,7 @@ void main() {
       entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
       storeName: 'Store',
       quantity: 1,
-      unitPrice: 1.0,
+      unitPrice: 1,
     );
 
     final draft = ReceiptItemEditorDraft.fromItem(item);

@@ -63,11 +63,17 @@ class AccountController extends _$AccountController {
 
   /// Sign out.
   Future<void> signOut() async {
-    if (!ref.mounted) return;
-    state = const AsyncLoading();
-    await _pauseFirestoreBackedStreams();
+    final keepAliveLink = ref.keepAlive();
+    SessionShutdownController? sessionShutdownController;
     try {
-      await ref.read(firebaseAuthProvider).signOut();
+      if (!ref.mounted) return;
+      state = const AsyncLoading();
+      final auth = ref.read(firebaseAuthProvider);
+      sessionShutdownController = ref.read(
+        sessionShutdownControllerProvider.notifier,
+      );
+      await _pauseFirestoreBackedStreams(sessionShutdownController!);
+      await auth.signOut();
       if (!ref.mounted) return;
       state = const AsyncData(null);
     } catch (error, stackTrace) {
@@ -77,21 +83,25 @@ class AccountController extends _$AccountController {
       rethrow;
     } finally {
       if (ref.mounted) {
-        ref.read(sessionShutdownControllerProvider.notifier).finish();
+        sessionShutdownController?.finish();
       }
+      keepAliveLink.close();
     }
   }
 
   /// Link guest with google.
   Future<bool> linkGuestWithGoogle() async {
-    if (!ref.mounted) return false;
-    state = const AsyncLoading();
+    final keepAliveLink = ref.keepAlive();
     try {
-      await ref
-          .read(googleAuthControllerProvider.notifier)
-          .linkCurrentUserWithGoogle();
+      if (!ref.mounted) return false;
+      state = const AsyncLoading();
+      final googleAuthController = ref.read(
+        googleAuthControllerProvider.notifier,
+      );
+      final auth = ref.read(firebaseAuthProvider);
+      await googleAuthController.linkCurrentUserWithGoogle();
 
-      final user = ref.read(firebaseAuthProvider).currentUser;
+      final user = auth.currentUser;
       final isLinked = user != null && !user.isAnonymous;
       if (!isLinked) {
         throw FirebaseAuthException(
@@ -107,6 +117,8 @@ class AccountController extends _$AccountController {
         state = AsyncError(error, stackTrace);
       }
       rethrow;
+    } finally {
+      keepAliveLink.close();
     }
   }
 
@@ -115,13 +127,14 @@ class AccountController extends _$AccountController {
     required String email,
     required String password,
   }) async {
-    if (!ref.mounted) return false;
-    state = const AsyncLoading();
+    final keepAliveLink = ref.keepAlive();
     final credential = EmailAuthProvider.credential(
       email: email.trim(),
       password: password,
     );
     try {
+      if (!ref.mounted) return false;
+      state = const AsyncLoading();
       final auth = ref.read(firebaseAuthProvider);
       final guestUser = _requireAnonymousCurrentUser(auth);
       final linkedCredential = await guestUser.linkWithCredential(credential);
@@ -150,6 +163,8 @@ class AccountController extends _$AccountController {
         state = AsyncError(error, stackTrace);
       }
       rethrow;
+    } finally {
+      keepAliveLink.close();
     }
   }
 
@@ -175,16 +190,18 @@ class AccountController extends _$AccountController {
   Future<void> overwriteExistingGoogleAccountWithGuest(
     AuthCredential credential,
   ) async {
-    if (!ref.mounted) return;
-    state = const AsyncLoading();
-    final secondaryAuthClient = ref.read(secondaryAuthClientProvider);
+    final keepAliveLink = ref.keepAlive();
     FirebaseApp? secondaryApp;
+    SecondaryAuthClient? secondaryAuthClient;
     try {
+      if (!ref.mounted) return;
+      state = const AsyncLoading();
+      secondaryAuthClient = ref.read(secondaryAuthClientProvider);
       final auth = ref.read(firebaseAuthProvider);
       final guestUser = _requireAnonymousCurrentUser(auth);
 
       final appName = 'link-recovery-${DateTime.now().microsecondsSinceEpoch}';
-      secondaryApp = await secondaryAuthClient.createApp(appName);
+      secondaryApp = await secondaryAuthClient!.createApp(appName);
 
       final secondaryAuth = secondaryAuthClient.authForApp(secondaryApp);
       final existingAccount = await secondaryAuth.signInWithCredential(
@@ -211,9 +228,10 @@ class AccountController extends _$AccountController {
       }
       rethrow;
     } finally {
-      if (secondaryApp != null) {
+      if (secondaryApp != null && secondaryAuthClient != null) {
         await secondaryAuthClient.disposeApp(secondaryApp);
       }
+      keepAliveLink.close();
     }
   }
 
@@ -221,9 +239,10 @@ class AccountController extends _$AccountController {
   Future<void> deleteGuestAndSignInWithGoogleCredential(
     AuthCredential credential,
   ) async {
-    if (!ref.mounted) return;
-    state = const AsyncLoading();
+    final keepAliveLink = ref.keepAlive();
     try {
+      if (!ref.mounted) return;
+      state = const AsyncLoading();
       final auth = ref.read(firebaseAuthProvider);
       final guestUser = _requireAnonymousCurrentUser(auth);
       await guestUser.delete();
@@ -236,16 +255,24 @@ class AccountController extends _$AccountController {
         state = AsyncError(error, stackTrace);
       }
       rethrow;
+    } finally {
+      keepAliveLink.close();
     }
   }
 
   /// Delete current account.
   Future<void> deleteCurrentAccount() async {
-    if (!ref.mounted) return;
-    state = const AsyncLoading();
-    await _pauseFirestoreBackedStreams();
+    final keepAliveLink = ref.keepAlive();
+    SessionShutdownController? sessionShutdownController;
     try {
-      final user = ref.read(firebaseAuthProvider).currentUser;
+      if (!ref.mounted) return;
+      state = const AsyncLoading();
+      final auth = ref.read(firebaseAuthProvider);
+      sessionShutdownController = ref.read(
+        sessionShutdownControllerProvider.notifier,
+      );
+      await _pauseFirestoreBackedStreams(sessionShutdownController!);
+      final user = auth.currentUser;
       if (user == null) {
         throw FirebaseAuthException(
           code: 'no-current-user',
@@ -263,13 +290,16 @@ class AccountController extends _$AccountController {
       rethrow;
     } finally {
       if (ref.mounted) {
-        ref.read(sessionShutdownControllerProvider.notifier).finish();
+        sessionShutdownController?.finish();
       }
+      keepAliveLink.close();
     }
   }
 
-  Future<void> _pauseFirestoreBackedStreams() async {
-    ref.read(sessionShutdownControllerProvider.notifier).begin();
+  Future<void> _pauseFirestoreBackedStreams(
+    SessionShutdownController sessionShutdownController,
+  ) async {
+    sessionShutdownController.begin();
     await Future<void>.delayed(Duration.zero);
   }
 

@@ -502,7 +502,7 @@ class _CalorieEntryEditorPageState
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-    if (!mounted || pickedDate == null) {
+    if (pickedDate == null || !context.mounted) {
       return;
     }
 
@@ -522,7 +522,7 @@ class _CalorieEntryEditorPageState
       context: context,
       initialTime: TimeOfDay.fromDateTime(_loggedAt),
     );
-    if (!mounted || pickedTime == null) {
+    if (pickedTime == null || !context.mounted) {
       return;
     }
 
@@ -543,8 +543,6 @@ class _CalorieEntryEditorPageState
     required CalorieEntry? initialEntry,
   }) async {
     final l10n = AppLocalizations.of(context)!;
-    final router = GoRouter.of(context);
-    final messenger = ScaffoldMessenger.of(context);
     final formState = _formKey.currentState;
     if (formState == null || !formState.validate()) {
       return;
@@ -557,11 +555,17 @@ class _CalorieEntryEditorPageState
     final per100Fat = _parseDouble(_per100FatController.text);
 
     if (amount == null || per100Kcal == null) {
-      _showFailureSnackBar(messenger, l10n.caloriesInvalidNumber);
+      _showFailureSnackBar(
+        ScaffoldMessenger.of(context),
+        l10n.caloriesInvalidNumber,
+      );
       return;
     }
     if (per100Protein == null || per100Carbs == null || per100Fat == null) {
-      _showFailureSnackBar(messenger, l10n.caloriesInvalidNumber);
+      _showFailureSnackBar(
+        ScaffoldMessenger.of(context),
+        l10n.caloriesInvalidNumber,
+      );
       return;
     }
 
@@ -617,6 +621,9 @@ class _CalorieEntryEditorPageState
     final inventoryBackedSaveFlow = inventoryBackedPendingConsumptionId == null
         ? null
         : ref.read(inventoryBackedCalorieEntrySaveFlowProvider);
+    final calorieEntriesController = ref.read(
+      calorieEntriesControllerProvider.notifier,
+    );
     final persistEntry = inventoryBackedSaveFlow == null
         ? null
         : (CalorieEntry entry) {
@@ -635,29 +642,29 @@ class _CalorieEntryEditorPageState
       name: _editorLogName,
     );
 
-    final saved = await ref
-        .read(calorieEntriesControllerProvider.notifier)
-        .saveEntry(
-          entry,
-          inventoryContext: inventoryContext,
-          scannedSourceRef: initialEntry == null
-              ? widget.scannedSourceRef
-              : null,
-          persistEntry: persistEntry,
-        );
+    final saved = await calorieEntriesController.saveEntry(
+      entry,
+      inventoryContext: inventoryContext,
+      scannedSourceRef: initialEntry == null ? widget.scannedSourceRef : null,
+      persistEntry: persistEntry,
+    );
 
     log(
       'Calorie entry save completed for ${entry.id} with result=$saved.',
       name: _editorLogName,
     );
 
-    if (!mounted) {
+    if (!mounted || !context.mounted) {
       log(
         'Calorie entry editor unmounted before save UI handling for ${entry.id}.',
         name: _editorLogName,
       );
       return;
     }
+
+    final router = GoRouter.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final mountedL10n = AppLocalizations.of(context)!;
 
     setState(() {
       _isSaving = false;
@@ -679,7 +686,7 @@ class _CalorieEntryEditorPageState
       'Calorie entry ${entry.id} save failed. Showing failure snackbar.',
       name: _editorLogName,
     );
-    _showFailureSnackBar(messenger, l10n.caloriesSaveFailed);
+    _showFailureSnackBar(messenger, mountedL10n.caloriesSaveFailed);
   }
 
   String? _positiveNumberValidator(String? value) {

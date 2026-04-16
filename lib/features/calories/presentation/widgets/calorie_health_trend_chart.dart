@@ -8,7 +8,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines calorie health trend chart.
 class CalorieHealthTrendChart extends StatelessWidget {
   /// The calorie health trend chart.
-  const CalorieHealthTrendChart({super.key, required this.snapshot});
+  const CalorieHealthTrendChart({required this.snapshot, super.key});
 
   /// The snapshot.
   final CalorieHealthTrendSnapshot snapshot;

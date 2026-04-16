@@ -190,7 +190,7 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   StreamController<List<CalorieEntry>> _controllerFor(String key) {
     return _controllersByDay.putIfAbsent(
       key,
-      () => StreamController<List<CalorieEntry>>.broadcast(),
+      StreamController<List<CalorieEntry>>.broadcast,
     );
   }
 
@@ -360,9 +360,9 @@ class FakeCalorieProductCacheRepository
   final Map<String, CalorieProductProfile> overrides =
       <String, CalorieProductProfile>{};
   final List<String> savedOverrideReasons = <String>[];
-  var saveUserOverrideCallCount = 0;
-  var saveUserOverrideShouldFail = false;
-  var saveUserOverrideShouldThrow = false;
+  int saveUserOverrideCallCount = 0;
+  bool saveUserOverrideShouldFail = false;
+  bool saveUserOverrideShouldThrow = false;
 
   @override
   Future<CalorieProductProfile?> readGlobalProduct(String barcode) async {

@@ -155,9 +155,7 @@ class PreparedMealsController extends _$PreparedMealsController {
   /// Create prepared meal.
   Future<PreparedMealCreationResult> createPreparedMeal({
     required String name,
-    String? imageAssetId,
-    required int totalPortions,
-    required List<PreparedMealItemInput> items,
+    required int totalPortions, required List<PreparedMealItemInput> items, String? imageAssetId,
   }) {
     final trimmedName = name.trim();
     if (trimmedName.isEmpty || totalPortions < 1 || items.isEmpty) {

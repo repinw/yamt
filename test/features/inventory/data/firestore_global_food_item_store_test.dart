@@ -88,7 +88,6 @@ void main() {
       final store = FirestoreGlobalFoodItemStore(firestore: firestore);
       final documents = await store.searchCandidates(
         barcode: '4006381333931',
-        searchTokens: const <String>[],
       );
 
       expect(documents, hasLength(1));

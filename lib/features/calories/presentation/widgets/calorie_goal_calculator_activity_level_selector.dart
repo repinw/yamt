@@ -9,9 +9,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 class CalorieGoalCalculatorActivityLevelSelector extends StatelessWidget {
   /// The calorie goal calculator activity level selector.
   const CalorieGoalCalculatorActivityLevelSelector({
-    super.key,
-    required this.selectedOption,
-    required this.onSelected,
+    required this.selectedOption, required this.onSelected, super.key,
   });
 
   /// The selected option.

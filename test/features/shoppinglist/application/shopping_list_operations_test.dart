@@ -36,7 +36,7 @@ ShoppingListItem _shoppingItem({
     normalizedName: normalizedName,
     normalizedBrand: normalizedBrand,
     quantity: quantity,
-    estimatedUnitPrice: 1.0,
+    estimatedUnitPrice: 1,
   );
 }
 
@@ -107,7 +107,6 @@ void main() {
           id: 'i1',
           name: 'Milk',
           brand: 'Acme',
-          quantity: 0,
         ),
         activeItemKeys: activeKeys,
       );
@@ -128,7 +127,6 @@ void main() {
           id: 'i2',
           name: 'Bread',
           brand: 'Acme',
-          quantity: 0,
         ),
         activeItemKeys: activeKeys,
       );
@@ -184,10 +182,10 @@ void main() {
       final result = await addInventoryItemToShoppingList(
         addItem:
             ({
-              required String name,
-              String? brand,
-              int quantity = 1,
-              double estimatedUnitPrice = 0.0,
+              required name,
+              brand,
+              quantity = 1,
+              estimatedUnitPrice = 0.0,
             }) async {
               captured = (
                 name: name,

@@ -155,7 +155,7 @@ class _FakePreparedMealCalorieEntryCommitStore
     implements PreparedMealCalorieEntryCommitStore {
   bool shouldSucceed = true;
   CalorieEntry? committedEntry;
-  var commitCount = 0;
+  int commitCount = 0;
 
   @override
   Future<bool> commitEntryAndPreparedMeal({required CalorieEntry entry}) async {
@@ -325,7 +325,7 @@ void main() {
     () async {
       final inventoryRepository = _FakeInventoryItemRepository(
         initialItems: [
-          _item(id: 'rice', name: 'Rice', currentAmount: 300),
+          _item(id: 'rice', name: 'Rice'),
           _item(id: 'beans', name: 'Beans', currentAmount: 250),
         ],
       );
@@ -382,7 +382,7 @@ void main() {
     'createPreparedMeal restores inventory when prepared meal save throws',
     () async {
       final originalItems = [
-        _item(id: 'rice', name: 'Rice', currentAmount: 300),
+        _item(id: 'rice', name: 'Rice'),
         _item(id: 'beans', name: 'Beans', currentAmount: 250),
       ];
       final inventoryRepository = _FakeInventoryItemRepository(
@@ -539,7 +539,6 @@ void main() {
             name: 'Carrots',
             currentAmount: 2000,
             initialAmount: 2000,
-            amountUnit: InventoryAmountUnit.gram,
           ),
         ],
       );
@@ -626,7 +625,6 @@ void main() {
           name: 'Carrots',
           currentAmount: 2000,
           initialAmount: 2000,
-          amountUnit: InventoryAmountUnit.gram,
         ),
       ],
     );

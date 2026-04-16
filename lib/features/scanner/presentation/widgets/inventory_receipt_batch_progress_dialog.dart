@@ -10,9 +10,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 class InventoryReceiptBatchProgressDialog extends ConsumerWidget {
   /// The inventory receipt batch progress dialog.
   const InventoryReceiptBatchProgressDialog({
-    super.key,
-    required this.onReviewTap,
-    required this.onCloseTap,
+    required this.onReviewTap, required this.onCloseTap, super.key,
   });
 
   /// The on review tap.

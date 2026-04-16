@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/theme/app_theme_tokens.dart';
 import 'package:yamt/core/theme/seed_color_controller.dart';
 
 class _FakeAppPreferences implements AppPreferences {
@@ -52,7 +53,10 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    expect(container.read(seedColorControllerProvider).toARGB32(), 0xFF29F006);
+    expect(
+      container.read(seedColorControllerProvider).toARGB32(),
+      AppColors.seed.toARGB32(),
+    );
   });
 
   test('seed color can be updated and persisted', () async {

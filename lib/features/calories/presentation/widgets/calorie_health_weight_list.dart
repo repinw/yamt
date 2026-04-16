@@ -16,7 +16,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines calorie health weight list.
 class CalorieHealthWeightList extends ConsumerWidget {
   /// The calorie health weight list.
-  const CalorieHealthWeightList({super.key, required this.snapshot});
+  const CalorieHealthWeightList({required this.snapshot, super.key});
 
   /// The snapshot.
   final CalorieHealthTrendSnapshot snapshot;

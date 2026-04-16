@@ -25,7 +25,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 ])
 class SharedReceiptListener extends ConsumerStatefulWidget {
   /// The shared receipt listener.
-  const SharedReceiptListener({super.key, required this.child});
+  const SharedReceiptListener({required this.child, super.key});
 
   /// The child.
   final Widget child;
@@ -122,7 +122,7 @@ class _SharedReceiptListenerState extends ConsumerState<SharedReceiptListener> {
       }
 
       _consumePendingIntent(pendingIntent);
-      if (shouldScan != true) {
+      if (!shouldScan) {
         return;
       }
 

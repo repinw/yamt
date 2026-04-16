@@ -44,7 +44,7 @@ class InventoryReceiptGroup {
     }
 
     final store = sortedItems.isEmpty ? '' : sortedItems.first.storeName;
-    final value = sortedItems.fold<double>(0.0, (sum, item) {
+    final value = sortedItems.fold<double>(0, (sum, item) {
       return sum + (item.quantity * item.unitPrice);
     });
     final currencyCode = resolveSharedCurrencyCode(

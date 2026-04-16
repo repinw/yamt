@@ -559,7 +559,6 @@ void main() {
             goalMode: CalorieGoalMode.maintain,
             goalSpeedKgPerWeek: 0,
           ),
-          source: CalorieGoalSource.manual,
         )
         .applyGoalChange(
           changedAt: DateTime(2026, 4, 15, 9),

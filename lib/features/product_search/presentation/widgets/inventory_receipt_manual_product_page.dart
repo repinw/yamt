@@ -33,8 +33,7 @@ const _manualProductPageLogName = 'InventoryReceiptManualProductPage';
 class InventoryReceiptManualProductPage extends StatelessWidget {
   /// The inventory receipt manual product page.
   const InventoryReceiptManualProductPage({
-    super.key,
-    required this.item,
+    required this.item, super.key,
     this.selectedProduct,
     this.includeStoreInSearch = true,
     this.includeWeightInSearch = true,
@@ -801,10 +800,8 @@ class _InventoryReceiptManualProductEditorPageState
     }
 
     final eatImmediately =
-        widget.showEatImmediatelyOption &&
-            _canEatImmediately(ref.read(_provider))
-        ? _eatImmediately
-        : false;
+        (widget.showEatImmediatelyOption &&
+            _canEatImmediately(ref.read(_provider))) && _eatImmediately;
 
     final result = InventoryReceiptManualProductResult(
       item: payload.item,
