@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
@@ -6,6 +8,7 @@ import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
+import 'package:yamt/features/health/provider/health_connection_controller.dart';
 import 'package:yamt/features/health/provider/'
     'health_connection_service_provider.dart';
 import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
@@ -52,9 +55,12 @@ class _FakeHealthConnectionService implements HealthConnectionService {
 }
 
 class _FakeHealthWeightService implements HealthWeightService {
-
-  _FakeHealthWeightService({this.shouldSaveFail = false});
+  _FakeHealthWeightService({
+    this.shouldSaveFail = false,
+    this.shouldThrowOnSave = false,
+  });
   bool shouldSaveFail;
+  bool shouldThrowOnSave;
   int saveCallCount = 0;
   DateTime? lastRecordedAt;
   double? lastWeightKg;
@@ -75,27 +81,38 @@ class _FakeHealthWeightService implements HealthWeightService {
     saveCallCount += 1;
     lastRecordedAt = recordedAt;
     lastWeightKg = weightKg;
+    if (shouldThrowOnSave) {
+      throw Exception('saveWeightSample failed');
+    }
     return !shouldSaveFail;
   }
 }
 
 class _FakeManualHealthWeightRepository
     implements ManualHealthWeightRepository {
-
   _FakeManualHealthWeightRepository({
     this.entries = const <ManualHealthWeightEntry>[],
+    this.readEntriesCompleter,
     this.shouldSaveFail = false,
     this.shouldDeleteFail = false,
+    this.shouldSaveThrow = false,
+    this.shouldDeleteThrow = false,
   });
   List<ManualHealthWeightEntry> entries;
+  Completer<List<ManualHealthWeightEntry>>? readEntriesCompleter;
   bool shouldSaveFail;
   bool shouldDeleteFail;
+  bool shouldSaveThrow;
+  bool shouldDeleteThrow;
   int saveCallCount = 0;
   int deleteCallCount = 0;
 
   @override
   Future<bool> deleteEntryForDay(DateTime day) async {
     deleteCallCount += 1;
+    if (shouldDeleteThrow) {
+      throw Exception('deleteEntryForDay failed');
+    }
     if (shouldDeleteFail) {
       return false;
     }
@@ -107,12 +124,19 @@ class _FakeManualHealthWeightRepository
 
   @override
   Future<List<ManualHealthWeightEntry>> readEntries() async {
+    final pendingRead = readEntriesCompleter;
+    if (pendingRead != null) {
+      return pendingRead.future;
+    }
     return List<ManualHealthWeightEntry>.unmodifiable(entries);
   }
 
   @override
   Future<bool> saveEntry(ManualHealthWeightEntry entry) async {
     saveCallCount += 1;
+    if (shouldSaveThrow) {
+      throw Exception('saveEntry failed');
+    }
     if (shouldSaveFail) {
       return false;
     }
@@ -235,6 +259,30 @@ void main() {
     expect(repository.entries.single.weightKg, 71.2);
   });
 
+  test('saveEntry falls back to repository when health save throws', () async {
+    final repository = _FakeManualHealthWeightRepository();
+    final healthWeightService = _FakeHealthWeightService(
+      shouldThrowOnSave: true,
+    );
+    final container = buildContainer(
+      repository: repository,
+      status: _readyStatus,
+      healthWeightService: healthWeightService,
+    );
+    addTearDown(container.dispose);
+
+    await container.read(manualHealthWeightEntriesControllerProvider.future);
+    final saved = await container
+        .read(manualHealthWeightEntriesControllerProvider.notifier)
+        .saveEntry(day: DateTime(2026, 3, 20), weightKg: 71.2);
+
+    expect(saved, isTrue);
+    expect(healthWeightService.saveCallCount, 1);
+    expect(repository.saveCallCount, 1);
+    expect(repository.entries.single.day, DateTime(2026, 3, 20));
+    expect(repository.entries.single.weightKg, 71.2);
+  });
+
   test(
     'saveEntry keeps success when health save works and fallback cleanup fails',
     () async {
@@ -277,6 +325,31 @@ void main() {
     final container = buildContainer(
       repository: repository,
     );
+    addTearDown(container.dispose);
+
+    await container.read(manualHealthWeightEntriesControllerProvider.future);
+    final saved = await container
+        .read(manualHealthWeightEntriesControllerProvider.notifier)
+        .saveEntry(day: DateTime(2026, 3, 20), weightKg: 71.2);
+
+    expect(saved, isFalse);
+    final stateEntries = container
+        .read(manualHealthWeightEntriesControllerProvider)
+        .requireValue;
+    expect(stateEntries, hasLength(1));
+    expect(stateEntries.single.day, DateTime(2026, 3, 18));
+    expect(stateEntries.single.weightKg, 72.1);
+    expect(repository.entries, hasLength(1));
+  });
+
+  test('saveEntry reverts state when repository save throws', () async {
+    final repository = _FakeManualHealthWeightRepository(
+      entries: [
+        ManualHealthWeightEntry(day: DateTime(2026, 3, 18), weightKg: 72.1),
+      ],
+      shouldSaveThrow: true,
+    );
+    final container = buildContainer(repository: repository);
     addTearDown(container.dispose);
 
     await container.read(manualHealthWeightEntriesControllerProvider.future);
@@ -344,6 +417,57 @@ void main() {
       expect(stateEntries, hasLength(1));
       expect(stateEntries.single.day, DateTime(2026, 3, 18));
       expect(stateEntries.single.weightKg, 72.1);
+    },
+  );
+
+  test(
+    'deleteEntryForDay reverts state when repository delete throws',
+    () async {
+      final repository = _FakeManualHealthWeightRepository(
+        entries: [
+          ManualHealthWeightEntry(day: DateTime(2026, 3, 18), weightKg: 72.1),
+        ],
+        shouldDeleteThrow: true,
+      );
+      final container = buildContainer(repository: repository);
+      addTearDown(container.dispose);
+
+      await container.read(manualHealthWeightEntriesControllerProvider.future);
+      final deleted = await container
+          .read(manualHealthWeightEntriesControllerProvider.notifier)
+          .deleteEntryForDay(DateTime(2026, 3, 18));
+
+      expect(deleted, isFalse);
+      final stateEntries = container
+          .read(manualHealthWeightEntriesControllerProvider)
+          .requireValue;
+      expect(stateEntries, hasLength(1));
+      expect(stateEntries.single.day, DateTime(2026, 3, 18));
+      expect(stateEntries.single.weightKg, 72.1);
+    },
+  );
+
+  test(
+    'saveEntry still persists when controller is disposed mid-flight',
+    () async {
+      final readEntriesCompleter = Completer<List<ManualHealthWeightEntry>>();
+      final repository = _FakeManualHealthWeightRepository(
+        readEntriesCompleter: readEntriesCompleter,
+      );
+      final container = buildContainer(repository: repository);
+
+      await container.read(healthConnectionControllerProvider.future);
+      final saveFuture = container
+          .read(manualHealthWeightEntriesControllerProvider.notifier)
+          .saveEntry(day: DateTime(2026, 3, 20, 18), weightKg: 71.2);
+
+      container.dispose();
+      readEntriesCompleter.complete(const <ManualHealthWeightEntry>[]);
+
+      await expectLater(saveFuture, completion(isTrue));
+      expect(repository.entries, hasLength(1));
+      expect(repository.entries.single.day, DateTime(2026, 3, 20));
+      expect(repository.entries.single.weightKg, 71.2);
     },
   );
 }
