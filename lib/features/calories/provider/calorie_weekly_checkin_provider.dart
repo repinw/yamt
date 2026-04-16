@@ -10,6 +10,7 @@ import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_summary_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
@@ -535,7 +536,8 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
         .map((day) {
           return '${diaryDayKey(day.day)}'
               ':logged=${day.loggedIntakeKcal.toStringAsFixed(2)}'
-              ',resolved=${day.resolvedIntakeKcal?.toStringAsFixed(2) ?? 'null'}'
+              ',resolved='
+              '${day.resolvedIntakeKcal?.toStringAsFixed(2) ?? 'null'}'
               ',active=${day.activeKcal}'
               ',weight=${day.weightKg?.toStringAsFixed(2) ?? 'null'}'
               ',skipped=${day.isSkippedIntakeDay}';
@@ -547,7 +549,9 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
         '..${diaryDayKey(pendingWeeklyCheckIn.windowEndDate)} '
         'today=${diaryDayKey(today)} '
         'previousGoalKcal='
-        '${settings.goalKcalForDay(pendingWeeklyCheckIn.windowEndDate).toStringAsFixed(2)} '
+        '${settings.goalKcalForDay(
+          pendingWeeklyCheckIn.windowEndDate,
+        ).toStringAsFixed(2)} '
         'days=[$daysLabel]';
     log(message, name: _weeklyCheckInProviderLogName);
   }
@@ -585,7 +589,10 @@ double _medianWeight(List<double> values) {
   return (sorted[middleIndex - 1] + sorted[middleIndex]) / 2;
 }
 
-int _resolveActiveKcal({required DateTime day, required dynamic dayData}) {
+int _resolveActiveKcal({
+  required DateTime day,
+  required DiaryHealthDayData dayData,
+}) {
   final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
   return calculateDiaryBurnedCalories(
         stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
