@@ -101,14 +101,15 @@ void main() {
           ),
       ],
     );
-    final manualRepository =
-        FakeManualHealthWeightRepository(<ManualHealthWeightEntry>[
-          ManualHealthWeightEntry(day: goalStart, weightKg: 82),
-          ManualHealthWeightEntry(
-            day: goalStart.add(const Duration(days: 6)),
-            weightKg: 81.4,
-          ),
-        ]);
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[
+        ManualHealthWeightEntry(day: goalStart, weightKg: 82),
+        ManualHealthWeightEntry(
+          day: goalStart.add(const Duration(days: 6)),
+          weightKg: 81.4,
+        ),
+      ],
+    );
     addTearDown(logRepository.dispose);
     addTearDown(settingsRepository.dispose);
 
@@ -159,14 +160,15 @@ void main() {
           ),
       ],
     );
-    final manualRepository =
-        FakeManualHealthWeightRepository(<ManualHealthWeightEntry>[
-          ManualHealthWeightEntry(day: goalStart, weightKg: 82),
-          ManualHealthWeightEntry(
-            day: goalStart.add(const Duration(days: 6)),
-            weightKg: 81.4,
-          ),
-        ]);
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[
+        ManualHealthWeightEntry(day: goalStart, weightKg: 82),
+        ManualHealthWeightEntry(
+          day: goalStart.add(const Duration(days: 6)),
+          weightKg: 81.4,
+        ),
+      ],
+    );
     addTearDown(logRepository.dispose);
     addTearDown(settingsRepository.dispose);
 
@@ -222,13 +224,14 @@ void main() {
             ),
         ],
       );
-      final manualRepository =
-          FakeManualHealthWeightRepository(<ManualHealthWeightEntry>[
-            ManualHealthWeightEntry(
-              day: goalStart.add(const Duration(days: 6)),
-              weightKg: 81.4,
-            ),
-          ]);
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[
+          ManualHealthWeightEntry(
+            day: goalStart.add(const Duration(days: 6)),
+            weightKg: 81.4,
+          ),
+        ],
+      );
       addTearDown(logRepository.dispose);
       addTearDown(settingsRepository.dispose);
 
@@ -288,7 +291,7 @@ void main() {
         ],
       );
       final healthWeightService = FakeHealthWeightService(<HealthWeightSample>[
-        HealthWeightSample(recordedAt: DateTime(2026, 4, 8, 7), weightKg: 84.0),
+        HealthWeightSample(recordedAt: DateTime(2026, 4, 8, 7), weightKg: 84),
         HealthWeightSample(
           recordedAt: DateTime(2026, 4, 9, 7),
           weightKg: 84.15,
@@ -311,7 +314,7 @@ void main() {
         ),
         HealthWeightSample(
           recordedAt: DateTime(2026, 4, 13, 7),
-          weightKg: 83.0,
+          weightKg: 83,
         ),
         HealthWeightSample(
           recordedAt: DateTime(2026, 4, 14, 7),
@@ -384,14 +387,15 @@ void main() {
             ),
         ],
       );
-      final manualRepository =
-          FakeManualHealthWeightRepository(<ManualHealthWeightEntry>[
-            ManualHealthWeightEntry(day: goalStart, weightKg: 82),
-            ManualHealthWeightEntry(
-              day: goalStart.add(const Duration(days: 6)),
-              weightKg: 81.4,
-            ),
-          ]);
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[
+          ManualHealthWeightEntry(day: goalStart, weightKg: 82),
+          ManualHealthWeightEntry(
+            day: goalStart.add(const Duration(days: 6)),
+            weightKg: 81.4,
+          ),
+        ],
+      );
       addTearDown(logRepository.dispose);
       addTearDown(settingsRepository.dispose);
 
@@ -422,7 +426,6 @@ void main() {
             changedAt: DateTime(2026, 4, 1, 9),
             dailyKcalGoal: 2400,
             calculatorProfile: null,
-            source: CalorieGoalSource.manual,
           )
           .applyGoalChange(
             changedAt: DateTime(2026, 4, 8, 9),
@@ -430,7 +433,7 @@ void main() {
             calculatorProfile: null,
             source: CalorieGoalSource.weeklyCheckIn,
             weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: DateTime(2026, 4, 1),
+              windowStartDate: DateTime(2026, 4),
               windowEndDate: DateTime(2026, 4, 7),
               trendWeightChangePerDay: -0.05,
               calculatedTrueTdeeKcal: 2400,
@@ -473,7 +476,6 @@ void main() {
             changedAt: DateTime(2026, 4, 1, 9),
             dailyKcalGoal: 2400,
             calculatorProfile: null,
-            source: CalorieGoalSource.manual,
           )
           .applyGoalChange(
             changedAt: DateTime(2026, 4, 8, 9),
@@ -481,7 +483,7 @@ void main() {
             calculatorProfile: null,
             source: CalorieGoalSource.weeklyCheckIn,
             weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: DateTime(2026, 4, 1),
+              windowStartDate: DateTime(2026, 4),
               windowEndDate: DateTime(2026, 4, 7),
               trendWeightChangePerDay: -0.05,
               calculatedTrueTdeeKcal: 2400,
@@ -525,7 +527,6 @@ void main() {
             changedAt: goalStart,
             dailyKcalGoal: 2400,
             calculatorProfile: null,
-            source: CalorieGoalSource.manual,
           )
           .applyGoalChange(
             changedAt: DateTime(2026, 4, 8, 10),
@@ -533,7 +534,7 @@ void main() {
             calculatorProfile: null,
             source: CalorieGoalSource.weeklyCheckIn,
             weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: DateTime(2026, 4, 1),
+              windowStartDate: DateTime(2026, 4),
               windowEndDate: DateTime(2026, 4, 7),
               trendWeightChangePerDay: -0.05,
               calculatedTrueTdeeKcal: 2400,
@@ -554,11 +555,12 @@ void main() {
             ),
         ],
       );
-      final manualRepository =
-          FakeManualHealthWeightRepository(<ManualHealthWeightEntry>[
-            ManualHealthWeightEntry(day: DateTime(2026, 4, 8), weightKg: 82),
-            ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 81.4),
-          ]);
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[
+          ManualHealthWeightEntry(day: DateTime(2026, 4, 8), weightKg: 82),
+          ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 81.4),
+        ],
+      );
       addTearDown(logRepository.dispose);
       addTearDown(settingsRepository.dispose);
 
@@ -593,7 +595,6 @@ void main() {
           changedAt: DateTime(2026, 4, 1, 9),
           dailyKcalGoal: 2400,
           calculatorProfile: null,
-          source: CalorieGoalSource.manual,
         )
         .applyGoalChange(
           changedAt: DateTime(2026, 4, 15, 9),
@@ -628,11 +629,12 @@ void main() {
           ),
       ],
     );
-    final manualRepository =
-        FakeManualHealthWeightRepository(<ManualHealthWeightEntry>[
-          ManualHealthWeightEntry(day: DateTime(2026, 4, 20), weightKg: 82),
-          ManualHealthWeightEntry(day: DateTime(2026, 4, 26), weightKg: 81.4),
-        ]);
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[
+        ManualHealthWeightEntry(day: DateTime(2026, 4, 20), weightKg: 82),
+        ManualHealthWeightEntry(day: DateTime(2026, 4, 26), weightKg: 81.4),
+      ],
+    );
     addTearDown(logRepository.dispose);
     addTearDown(settingsRepository.dispose);
 
@@ -681,14 +683,15 @@ void main() {
           _entry('entry-6', DateTime(2026, 4, 14, 8), 2600),
         ],
       );
-      final manualRepository =
-          FakeManualHealthWeightRepository(<ManualHealthWeightEntry>[
-            ManualHealthWeightEntry(day: goalStart, weightKg: 82),
-            ManualHealthWeightEntry(
-              day: goalStart.add(const Duration(days: 6)),
-              weightKg: 81.4,
-            ),
-          ]);
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[
+          ManualHealthWeightEntry(day: goalStart, weightKg: 82),
+          ManualHealthWeightEntry(
+            day: goalStart.add(const Duration(days: 6)),
+            weightKg: 81.4,
+          ),
+        ],
+      );
       addTearDown(logRepository.dispose);
       addTearDown(settingsRepository.dispose);
 
