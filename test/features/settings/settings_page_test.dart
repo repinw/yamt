@@ -245,6 +245,25 @@ void main() {
     expect(find.text('1.1.0+2'), findsOneWidget);
   });
 
+  testWidgets(
+    'SettingsPage stays scrollable on compact display-size layouts',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(320, 640));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await _pumpSettingsPage(
+        tester,
+        appVersionOverride: (ref) async => '1.1.0+2',
+      );
+      await tester.pumpAndSettle();
+
+      await _scrollToText(tester, 'About');
+
+      expect(find.text('About'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('health connect tile requests authorization', (tester) async {
     final healthService = _FakeHealthConnectionService(
       disconnectResult: HealthDisconnectResult.disconnected,

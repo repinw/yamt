@@ -16,6 +16,7 @@ import 'package:yamt/features/statistics/provider/'
     'statistics_calorie_data_provider.dart';
 import 'package:yamt/features/statistics/provider/'
     'statistics_waste_data_provider.dart';
+import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines statistics page.
@@ -38,11 +39,10 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     final inventoryAsync = ref.watch(inventoryItemsControllerProvider);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xl,
-        AppSpacing.lg,
-        AppSpacing.xl,
-        140,
+      padding: responsivePagePadding(
+        context,
+        top: AppSpacing.lg,
+        bottom: 140,
       ),
       children: [
         _StatisticsHeroCard(
@@ -166,7 +166,11 @@ class _StatisticsHeroCard extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxxl),
+        padding: responsiveCardPadding(
+          context,
+          compact: AppSpacing.xxl,
+          regular: AppSpacing.xxxl,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

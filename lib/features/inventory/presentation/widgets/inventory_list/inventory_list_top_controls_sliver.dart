@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -46,11 +47,10 @@ class InventoryListTopControlsSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xl,
-        AppSpacing.lg,
-        AppSpacing.xl,
-        AppSpacing.lg,
+      padding: responsivePagePadding(
+        context,
+        top: AppSpacing.lg,
+        bottom: AppSpacing.lg,
       ),
       sliver: SliverToBoxAdapter(
         child: Column(

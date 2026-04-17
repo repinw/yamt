@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 
-const _compactHomeChromeWidthBreakpoint = 360.0;
 const _compactHomeChromeTextScaleThreshold = 1.15;
 const _compactBottomNavItemWidth = 88.0;
 
@@ -19,8 +19,7 @@ double _effectiveTextScale(
 
 /// Whether shared home chrome should switch to its compact layout.
 bool shouldUseCompactHomeChrome(BuildContext context) {
-  final mediaQuery = MediaQuery.of(context);
-  return mediaQuery.size.width < _compactHomeChromeWidthBreakpoint ||
+  return isCompactViewport(context) ||
       _effectiveTextScale(context) > _compactHomeChromeTextScaleThreshold;
 }
 

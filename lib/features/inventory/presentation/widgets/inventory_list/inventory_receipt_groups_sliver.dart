@@ -13,6 +13,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
+import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 
 const double _inventoryReceiptGroupsBottomPadding =
     AppSpacing.xxxxl * 4 + AppSpacing.xxxl;
@@ -77,11 +78,12 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final horizontalPadding = responsivePageHorizontalPadding(context);
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xl,
+      padding: EdgeInsets.fromLTRB(
+        horizontalPadding,
         AppSpacing.md,
-        AppSpacing.xl,
+        horizontalPadding,
         _inventoryReceiptGroupsBottomPadding,
       ),
       sliver: SliverList.builder(

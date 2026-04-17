@@ -13,6 +13,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
+import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 TextStyle? _settingsDropdownTextStyle(BuildContext context) {
@@ -55,11 +56,10 @@ class SettingsPage extends StatelessWidget {
     ];
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xl,
-        AppSpacing.xl,
-        AppSpacing.xl,
-        AppSpacing.xl,
+      padding: responsivePagePadding(
+        context,
+        top: AppSpacing.xl,
+        bottom: AppSpacing.xl,
       ),
       child: DecoratedBox(
         decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(

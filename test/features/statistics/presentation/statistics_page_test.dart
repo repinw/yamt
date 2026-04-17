@@ -330,6 +330,57 @@ void main() {
 
     expect(find.byType(CalorieHealthTrendsPage), findsOneWidget);
   });
+
+  testWidgets(
+    'statistics page stays scrollable on compact display-size layouts',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(320, 640));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final inventoryController = _InventoryItemsDataController(
+        const <InventoryItem>[],
+      );
+      final mealsController = _PreparedMealsDataController(
+        const <PreparedMeal>[],
+      );
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry('breakfast', loggedAt: DateTime.now()),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: DateTime.now().subtract(const Duration(days: 6)),
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          inventoryController: inventoryController,
+          mealsController: mealsController,
+          logRepository: logRepository,
+          settingsRepository: settingsRepository,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Calories'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(StatisticsPageKeys.weightCard),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(StatisticsPageKeys.weightCard), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
 @Dependencies([InventoryItemsController])
