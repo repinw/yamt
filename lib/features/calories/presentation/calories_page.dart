@@ -7,11 +7,12 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/calories_page_logic.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_bundle_details_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_week_balance_summary_banner.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -44,10 +45,15 @@ import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines calories page.
-@Dependencies([calorieEntryDeleteFlow])
+@Dependencies([
+  calorieEntryDeleteFlow,
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 class CaloriesPage extends ConsumerStatefulWidget {
   /// The calories page.
   const CaloriesPage({super.key, this.referenceNow});
@@ -185,11 +191,15 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
               title: section.mealType.localizedName(l10n),
               emptyMessage: l10n.caloriesSectionEmptyState,
               onTapEntry: (entry) {
-                if (entry.isBundle) {
-                  showCalorieBundleDetailsSheet(context, entry: entry);
-                  return;
-                }
-                context.push(AppRoutes.homeCaloriesEntryEditPath(entry.id));
+                showModalBottomSheet<void>(
+                  context: context,
+                  useRootNavigator: true,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) {
+                    return CalorieEntryEditorPage(entryId: entry.id);
+                  },
+                );
               },
               onDeleteEntry: (entry) =>
                   _deleteEntry(context: context, ref: ref, entry: entry),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
@@ -14,6 +15,8 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -39,11 +42,14 @@ import 'package:yamt/features/health/provider/'
     'manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
 import '../../../support/fake_local_image_store.dart';
 import '../support/fake_calories_repositories.dart';
+
+class _MockUser extends Mock implements User {}
 
 CalorieEntry _entry(
   String id, {
@@ -160,12 +166,17 @@ List<Override> _weeklyCheckInOverrides({
   ];
 }
 
-@Dependencies([calorieEntryDeleteFlow])
+@Dependencies([
+  calorieEntryDeleteFlow,
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 Widget _buildHarness({
   required FakeCalorieLogRepository logRepository,
   required FakeCalorieSettingsRepository settingsRepository,
   List<Override> overrides = const <Override>[],
   DateTime? referenceNow,
+  bool authenticated = true,
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeCalories,
@@ -197,9 +208,16 @@ Widget _buildHarness({
     ],
   );
 
+  final user = _MockUser();
+  when(() => user.uid).thenReturn('user-1');
+
   return _ManagedProviderContainerScope(
     key: UniqueKey(),
     overrides: [
+      if (authenticated)
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(user),
+        ),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       ...overrides,
@@ -249,7 +267,11 @@ class _ManagedProviderContainerScopeState
   }
 }
 
-@Dependencies([calorieEntryDeleteFlow])
+@Dependencies([
+  calorieEntryDeleteFlow,
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 Widget _buildHarnessWithContainer({required ProviderContainer container}) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeCalories,
@@ -324,7 +346,11 @@ Future<void> _scrollUntilVisible(WidgetTester tester, Finder finder) async {
   expect(finder, findsOneWidget);
 }
 
-@Dependencies([calorieEntryDeleteFlow])
+@Dependencies([
+  calorieEntryDeleteFlow,
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 void main() {
   testWidgets('shows loading indicator while entries are loading', (
     tester,
@@ -438,7 +464,7 @@ void main() {
     expect(find.text('Skyr'), findsOneWidget);
   });
 
-  testWidgets('navigates to edit page when tapping regular diary entry', (
+  testWidgets('opens detail sheet when tapping regular diary entry', (
     tester,
   ) async {
     final today = DateTime(2026, 3, 20);
@@ -472,7 +498,7 @@ void main() {
     await tester.tap(find.byKey(CaloriesPageKeys.entryTile('edit-me')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Edit'), findsOneWidget);
+    expect(find.text('Edit calorie entry'), findsOneWidget);
   });
 
   testWidgets('week balance banner no longer shows open chart button', (
@@ -536,6 +562,7 @@ void main() {
           weights: _weeklyCheckInWeights(today),
         ),
         referenceNow: today,
+        authenticated: false,
       ),
     );
     await tester.pumpAndSettle();
@@ -576,6 +603,7 @@ void main() {
           weights: _weeklyCheckInWeights(today),
         ),
         referenceNow: today,
+        authenticated: false,
       ),
     );
     await tester.pumpAndSettle();
@@ -620,6 +648,7 @@ void main() {
           weights: _weeklyCheckInWeights(today),
         ),
         referenceNow: today,
+        authenticated: false,
       ),
     );
     await tester.pumpAndSettle();
@@ -1470,7 +1499,7 @@ void main() {
     expect(find.text(l10n.caloriesDeleteRestoreFailed), findsOneWidget);
   });
 
-  testWidgets('renders ingredient image in bundle details sheet', (
+  testWidgets('opens detail sheet when tapping prepared meal diary entry', (
     tester,
   ) async {
     final today = DateTime.now();
@@ -1502,13 +1531,7 @@ void main() {
     await tester.tap(find.byKey(CaloriesPageKeys.entryTile('bundle-entry')));
     await tester.pumpAndSettle();
 
-    final imageFinder = find.byKey(
-      CaloriesPageKeys.bundleComponentImage('bundle-entry', 0),
-    );
-    expect(imageFinder, findsOneWidget);
-
-    final imageWidget = tester.widget<AppCachedNetworkImage>(imageFinder);
-    expect(imageWidget.imageUrl, 'https://images.example.com/beans.jpg');
+    expect(find.text('Edit calorie entry'), findsOneWidget);
   });
 
   testWidgets(
@@ -1610,62 +1633,6 @@ void main() {
       expect(imageWidget.image, isA<MemoryImage>());
     },
   );
-
-  testWidgets('bundle details sheet does not overflow on small screens', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(320, 520);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    final today = DateTime.now();
-    final components = List<CalorieEntryBundleComponent>.generate(
-      8,
-      (index) => CalorieEntryBundleComponent(
-        name: 'Ingredient $index',
-        amountLabel: '${100 + index * 10} g',
-        brand: 'Brand $index',
-        imageUrl: 'https://images.example.com/item_$index.jpg',
-        totalKcal: 50 + index.toDouble(),
-        totalProtein: 5,
-        totalCarbs: 6,
-        totalFat: 2,
-      ),
-    );
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _bundleEntry(
-          'overflow-bundle-entry',
-          loggedAt: DateTime(today.year, today.month, today.day, 12),
-          mealType: MealType.lunch,
-          bundleComponents: components,
-        ),
-      ],
-    );
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await _scrollUntilVisible(
-      tester,
-      find.byKey(CaloriesPageKeys.entryTile('overflow-bundle-entry')),
-    );
-    await tester.tap(
-      find.byKey(CaloriesPageKeys.entryTile('overflow-bundle-entry')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(tester.takeException(), isNull);
-  });
 
   testWidgets('renders empty state text for meal sections without entries', (
     tester,

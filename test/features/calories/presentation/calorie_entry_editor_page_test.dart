@@ -10,6 +10,7 @@ import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -149,7 +150,54 @@ InventoryItem _inventoryItem({int quantity = 3}) {
   );
 }
 
-@Dependencies([InventoryItemsController, inventoryBackedCalorieEntrySaveFlow])
+CalorieEntry _bundleEntry(String id) {
+  final loggedAt = DateTime(2026, 2, 25, 12);
+  return CalorieEntry.bundle(
+    id: id,
+    userId: 'user-1',
+    name: 'Chili',
+    brand: 'Kitchen Club',
+    mealType: MealType.lunch,
+    totalKcal: 420,
+    totalProtein: 28,
+    totalCarbs: 35,
+    totalFat: 18,
+    bundleSourcePreparedMealId: 'prepared-1',
+    bundleConsumedPortions: 2,
+    bundleTotalPortions: 4,
+    bundleComponents: const [
+      CalorieEntryBundleComponent(
+        name: 'Beans',
+        amountLabel: '150 g',
+        brand: 'Acme',
+        imageUrl: 'https://images.example.com/beans.jpg',
+        totalKcal: 120,
+        totalProtein: 8,
+        totalCarbs: 18,
+        totalFat: 1,
+      ),
+      CalorieEntryBundleComponent(
+        name: 'Corn',
+        amountLabel: '90 g',
+        brand: 'Farm Fresh',
+        imageUrl: 'https://images.example.com/corn.jpg',
+        totalKcal: 80,
+        totalProtein: 3,
+        totalCarbs: 12,
+        totalFat: 1,
+      ),
+    ],
+    loggedAt: loggedAt,
+    createdAt: loggedAt,
+    updatedAt: loggedAt,
+  );
+}
+
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+  calorieEntryDeleteFlow,
+])
 Widget _buildHarness({
   required FakeCalorieLogRepository logRepository,
   required FakeCalorieSettingsRepository settingsRepository,
@@ -223,7 +271,11 @@ Widget _buildHarness({
   return UncontrolledProviderScope(container: providerContainer, child: app);
 }
 
-@Dependencies([InventoryItemsController, inventoryBackedCalorieEntrySaveFlow])
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+  calorieEntryDeleteFlow,
+])
 void main() {
   testWidgets('create flow saves a new entry and pops back', (tester) async {
     final logRepository = FakeCalorieLogRepository();
@@ -268,7 +320,9 @@ void main() {
     expect(logRepository.entries.single.name, 'Greek Yogurt');
   });
 
-  testWidgets('edit flow loads and updates existing entry', (tester) async {
+  testWidgets('edit flow loads details and updates the meal window', (
+    tester,
+  ) async {
     final existing = _entry('entry-1');
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[existing],
@@ -287,18 +341,138 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Edit calorie entry'), findsOneWidget);
-
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.nameField),
-      'Updated Skyr',
+    expect(find.text('Skyr'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(CalorieEntryDetailKeys.mealSelector),
+      200,
     );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CalorieEntryDetailKeys.mealSelector));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Snack').last);
+    await tester.pumpAndSettle();
+
     await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
     await tester.pumpAndSettle();
 
     expect(find.text('Edit calorie entry'), findsOneWidget);
     final updated = logRepository.entries.single;
     expect(updated.id, 'entry-1');
-    expect(updated.name, 'Updated Skyr');
+    expect(updated.name, 'Skyr');
+    expect(updated.mealType, MealType.snack);
+  });
+
+  testWidgets('edit flow updates the logged diary day', (tester) async {
+    final existing = _entry('entry-day');
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[existing],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.homeCaloriesEntryEditPath('entry-day'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(CalorieEntryDetailKeys.loggedDayButton),
+      200,
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CalorieEntryDetailKeys.loggedDayButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('27').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
+    await tester.pumpAndSettle();
+
+    final updated = logRepository.entries.single;
+    expect(updated.id, 'entry-day');
+    expect(updated.loggedAt.year, 2026);
+    expect(updated.loggedAt.month, 2);
+    expect(updated.loggedAt.day, 27);
+    expect(updated.loggedAt.hour, existing.loggedAt.hour);
+    expect(updated.loggedAt.minute, existing.loggedAt.minute);
+  });
+
+  testWidgets('prepared meal edit view shows ingredient table', (tester) async {
+    final existing = _bundleEntry('bundle-1');
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[existing],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.homeCaloriesEntryEditPath('bundle-1'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CalorieEntryDetailKeys.brandValue), findsOneWidget);
+    expect(find.text('Kitchen Club'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.byKey(CalorieEntryDetailKeys.ingredientsTable),
+      250,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CalorieEntryDetailKeys.ingredientsTable), findsOneWidget);
+    expect(
+      find.byKey(CalorieEntryDetailKeys.ingredientNameCell(0)),
+      findsOneWidget,
+    );
+    expect(find.text('Beans'), findsOneWidget);
+    expect(find.text('150 g'), findsOneWidget);
+    expect(find.text('120 kcal'), findsOneWidget);
+    expect(
+      find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('prepared meal edit view does not overflow on small screens', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 520);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final existing = _bundleEntry('bundle-small');
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[existing],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.homeCaloriesEntryEditPath('bundle-small'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('validation blocks save for empty name', (tester) async {
