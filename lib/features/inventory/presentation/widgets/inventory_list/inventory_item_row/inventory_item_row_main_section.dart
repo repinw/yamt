@@ -21,6 +21,7 @@ class InventoryItemRowMainSection extends StatelessWidget {
     required this.viewData,
     required this.isExpanded,
     required this.onPrimaryActionPressed,
+    required this.onQuickShoppingListActionPressed,
     required this.showSelectionCheckbox,
     required this.isSelected,
     super.key,
@@ -38,6 +39,9 @@ class InventoryItemRowMainSection extends StatelessWidget {
 
   /// The on primary action pressed.
   final VoidCallback? onPrimaryActionPressed;
+
+  /// The on quick shopping list action pressed.
+  final VoidCallback? onQuickShoppingListActionPressed;
 
   /// The show selection checkbox.
   final bool showSelectionCheckbox;
@@ -64,15 +68,49 @@ class InventoryItemRowMainSection extends StatelessWidget {
       remainingUnits: item.quantity,
       action: showSelectionCheckbox
           ? null
-          : _InventoryItemPrimaryActionButton(
+          : _InventoryItemPrimaryActions(
               viewData: viewData,
               onPrimaryActionPressed: onPrimaryActionPressed,
+              onQuickShoppingListActionPressed:
+                  onQuickShoppingListActionPressed,
             ),
       showSelectionCheckbox: showSelectionCheckbox,
       isSelected: isSelected,
       showExpandIndicator: !showSelectionCheckbox,
       isExpanded: isExpanded,
       expandIndicatorKey: expandIndicatorKey,
+    );
+  }
+}
+
+class _InventoryItemPrimaryActions extends StatelessWidget {
+  const _InventoryItemPrimaryActions({
+    required this.viewData,
+    required this.onPrimaryActionPressed,
+    required this.onQuickShoppingListActionPressed,
+  });
+
+  final InventoryItemRowViewData viewData;
+  final VoidCallback? onPrimaryActionPressed;
+  final VoidCallback? onQuickShoppingListActionPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (viewData.showQuickShoppingListAction) ...[
+          _InventoryItemQuickShoppingListAction(
+            viewData: viewData,
+            onPressed: onQuickShoppingListActionPressed,
+          ),
+          const SizedBox(width: AppSpacing.xs),
+        ],
+        _InventoryItemPrimaryActionButton(
+          viewData: viewData,
+          onPrimaryActionPressed: onPrimaryActionPressed,
+        ),
+      ],
     );
   }
 }
@@ -89,38 +127,66 @@ class _InventoryItemPrimaryActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final buttonWidth = viewData.showPrimaryActionText
-        ? InventoryItemRowConstants.primaryActionWidth
-        : AppInventoryEditorial.actionTileSize;
-    final buttonHeight = viewData.showPrimaryActionText
-        ? InventoryItemRowConstants.primaryActionHeight
-        : AppInventoryEditorial.actionTileSize;
-    final solidTextButton = viewData.showPrimaryActionText;
-    final enabledBackgroundColor = solidTextButton
-        ? colors.primary
-        : viewData.eatActionBackgroundColor;
-    final enabledBorderColor = solidTextButton
-        ? colors.primary
-        : viewData.eatActionBorderColor;
-    final enabledForegroundColor = solidTextButton
-        ? colors.onPrimary
-        : viewData.eatActionIconColor;
+    final buttonWidth = viewData.isShoppingListPrimaryAction
+        ? InventoryItemRowConstants.primaryActionWideWidth
+        : InventoryItemRowConstants.primaryActionWidth;
 
     return InventoryPrimaryActionButton(
       tooltip: viewData.primaryActionTooltip,
       onPressed: onPrimaryActionPressed,
-      showText: viewData.showPrimaryActionText,
+      showText: true,
       label: viewData.primaryActionLabel,
       width: buttonWidth,
-      height: buttonHeight,
-      enabledBackgroundColor: enabledBackgroundColor,
+      height: InventoryItemRowConstants.primaryActionHeight,
+      enabledBackgroundColor: viewData.isShoppingListPrimaryAction
+          ? viewData.eatActionBackgroundColor
+          : colors.primary,
       disabledBackgroundColor: viewData.disabledActionBackgroundColor,
-      enabledBorderColor: enabledBorderColor,
+      enabledBorderColor: viewData.isShoppingListPrimaryAction
+          ? viewData.eatActionBorderColor
+          : colors.primary,
       disabledBorderColor: viewData.disabledActionBorderColor,
-      enabledForegroundColor: enabledForegroundColor,
+      enabledForegroundColor: viewData.isShoppingListPrimaryAction
+          ? viewData.eatActionIconColor
+          : colors.onPrimary,
       disabledForegroundColor: viewData.disabledActionIconColor,
       useGradientWhenShowText: false,
       icon: viewData.primaryActionIcon,
+      showIconWithText: viewData.showPrimaryActionIconWithText,
+    );
+  }
+}
+
+class _InventoryItemQuickShoppingListAction extends StatelessWidget {
+  const _InventoryItemQuickShoppingListAction({
+    required this.viewData,
+    required this.onPressed,
+  });
+
+  final InventoryItemRowViewData viewData;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveOnPressed = viewData.isQuickShoppingListActionEnabled
+        ? onPressed
+        : null;
+
+    return InventoryPrimaryActionButton(
+      tooltip: viewData.quickShoppingListActionTooltip,
+      onPressed: effectiveOnPressed,
+      showText: false,
+      label: viewData.primaryActionLabel,
+      width: InventoryItemRowConstants.shoppingListQuickActionSize,
+      height: InventoryItemRowConstants.shoppingListQuickActionSize,
+      enabledBackgroundColor: viewData.quickShoppingListActionBackgroundColor,
+      disabledBackgroundColor: viewData.disabledActionBackgroundColor,
+      enabledBorderColor: viewData.quickShoppingListActionBorderColor,
+      disabledBorderColor: viewData.disabledActionBorderColor,
+      enabledForegroundColor: viewData.quickShoppingListActionIconColor,
+      disabledForegroundColor: viewData.disabledActionIconColor,
+      useGradientWhenShowText: false,
+      icon: viewData.quickShoppingListActionIcon,
     );
   }
 }

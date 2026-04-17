@@ -270,6 +270,15 @@ class _PreparedMealPortionDialogState
             widget.meal.remainingPortions,
             widget.meal.totalPortions,
           ),
+          suffixIcon: Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: TextButton(
+              key: const Key('prepared_meal_portion_dialog_fill_button'),
+              onPressed: _fillRemainingPortions,
+              child: Text(l10n.inventoryAmountDialogAllRemainingAction),
+            ),
+          ),
+          suffixIconConstraints: const BoxConstraints(),
         ),
       ),
       actions: [
@@ -310,13 +319,21 @@ class _PreparedMealPortionDialogState
       ],
     );
   }
+
+  void _fillRemainingPortions() {
+    final value = widget.meal.remainingPortions.toString();
+    _controller.value = TextEditingValue(
+      text: value,
+      selection: TextSelection.collapsed(offset: value.length),
+    );
+  }
 }
 
 void _showInvalidPortionsSnackBar({
   required BuildContext scaffoldContext,
   required String message,
 }) {
-  final messenger = ScaffoldMessenger.of(scaffoldContext);
-  messenger.hideCurrentSnackBar();
-  messenger.showSnackBar(SnackBar(content: Text(message)));
+  ScaffoldMessenger.of(scaffoldContext)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(message)));
 }

@@ -154,6 +154,7 @@
   "inventoryReceiptGroupItems": "Artikel",
   "inventoryItemDeleteAction": "Löschen",
   "inventoryItemDeletedMessage": "Artikel gelöscht.",
+  "inventoryItemRemovedMessage": "Artikel aussortiert.",
   "inventoryItemEatAction": "Essen",
   "inventoryItemEatSheetEyebrow": "Essen loggen",
   "inventoryItemEatSheetTitle": "Essen: {name}",
@@ -167,6 +168,7 @@
   "inventoryItemEatSheetAmountLabel": "Menge eingeben",
   "inventoryItemEatSheetQuickSelectLabel": "Schnellwahl",
   "inventoryItemEatSheetAllAction": "Alles",
+  "inventoryAmountDialogAllRemainingAction": "Alles/Rest",
   "inventoryItemEatSheetInedibleAmountLabel":
       "Nicht essbaren Anteil abziehen",
   "inventoryItemEatSheetInedibleAmountHint":
@@ -180,11 +182,32 @@
   "inventoryItemEatSheetNutritionLabel": "Nährwerte",
   "inventoryItemEatSheetConfirmAction": "Loggen",
   "inventoryItemEatSheetClearAmountAction": "Menge leeren",
+  "inventoryItemAddToListAction": "Auf die Liste",
+  "inventoryItemAddToShoppingListAction": "Zur Einkaufsliste hinzufügen",
   "inventoryItemBuyAgainAction": "Erneut kaufen",
   "inventoryItemBuyAgainSucceeded":
       "Artikel zur Einkaufsliste hinzugefügt.",
+  "inventoryItemRemoveAction": "Aussortieren",
+  "inventoryItemRemoveDialogTitle": "Artikel aussortieren",
+  "inventoryItemRemoveDialogMessage":
+      "Warum möchtest du {name} aussortieren?",
+  "@inventoryItemRemoveDialogMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryItemRemoveDiscardAction": "Weggeworfen",
+  "inventoryItemRemoveDiscardSubtitle": "Abgelaufen oder verdorben",
+  "inventoryItemRemoveConsumeElsewhereAction": "Anderweitig verbraucht",
+  "inventoryItemRemoveConsumeElsewhereSubtitle":
+      "Gespendet, verschenkt oder geteilt",
+  "inventoryItemRemoveDeleteAction": "Komplett löschen",
+  "inventoryItemRemoveDeleteSubtitle":
+      "Fehleingabe, nicht in Statistiken werten",
   "inventoryItemThrowAwayAction": "Wegwerfen",
-  "inventoryItemSwapCandidateAction": "Kandidat tauschen",
+  "inventoryItemSwapCandidateAction": "Tauschen",
   "inventoryItemSwapCandidateRequiresFullItem":
       "Du kannst den Kandidaten nur tauschen, solange der Artikel noch vollständig vorhanden ist.",
   "inventoryItemActionFailed": "Aktion fehlgeschlagen. Bitte erneut versuchen.",

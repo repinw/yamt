@@ -21,6 +21,7 @@ class InventoryPrimaryActionButton extends StatelessWidget {
     this.useGradientWhenShowText = true,
     this.icon,
     this.iconSize = AppSpacing.xxl,
+    this.showIconWithText = false,
   });
 
   /// The tooltip.
@@ -68,6 +69,9 @@ class InventoryPrimaryActionButton extends StatelessWidget {
   /// The icon size.
   final double iconSize;
 
+  /// Whether to keep the icon visible next to the label.
+  final bool showIconWithText;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -113,13 +117,11 @@ class InventoryPrimaryActionButton extends StatelessWidget {
           tooltip: tooltip,
           onPressed: onPressed,
           icon: showText
-              ? Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: foregroundColor,
-                    fontSize: 12,
-                  ),
+              ? _TextActionContent(
+                  label: label,
+                  icon: showIconWithText ? icon : null,
+                  color: foregroundColor,
+                  iconSize: iconSize,
                 )
               : Icon(icon, size: iconSize),
           color: foregroundColor,
@@ -128,6 +130,43 @@ class InventoryPrimaryActionButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _TextActionContent extends StatelessWidget {
+  const _TextActionContent({
+    required this.label,
+    required this.color,
+    required this.iconSize,
+    this.icon,
+  });
+
+  final String label;
+  final Color color;
+  final double iconSize;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Text(
+      label,
+      textAlign: TextAlign.center,
+      style: Theme.of(
+        context,
+      ).textTheme.labelLarge?.copyWith(color: color, fontSize: 12),
+    );
+    if (icon == null) {
+      return text;
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: iconSize - 2, color: color),
+        const SizedBox(width: AppSpacing.xs),
+        Flexible(child: text),
+      ],
     );
   }
 }

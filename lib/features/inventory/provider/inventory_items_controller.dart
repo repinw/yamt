@@ -197,6 +197,15 @@ class PendingInventoryConsumption {
   final int amount;
 }
 
+/// The result of reducing inventory item stock.
+typedef InventoryItemReductionResult = ({int removedAmount});
+
+/// The result of discarding inventory item stock.
+typedef InventoryItemDiscardResult = ({
+  String discardEventId,
+  int removedAmount,
+});
+
 /// Defines inventory items controller.
 @Riverpod(dependencies: [inventoryItemRepository])
 class InventoryItemsController extends _$InventoryItemsController {
@@ -208,6 +217,8 @@ class InventoryItemsController extends _$InventoryItemsController {
   _PendingDeletedInventoryItem? _pendingDeletedItem;
   final Map<String, PendingInventoryConsumption> _pendingConsumptionsById =
       <String, PendingInventoryConsumption>{};
+  final Map<String, InventoryItemDiscardResult> _recentDiscardResultsByItemId =
+      <String, InventoryItemDiscardResult>{};
   List<InventoryItem>? _persistedItems;
   int _pendingConsumptionDraftCounter = 0;
   String? _currentDataOwnerUserId;
@@ -247,6 +258,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     _persistedItems = null;
     _pendingDeletedItem = null;
     _pendingConsumptionsById.clear();
+    _recentDiscardResultsByItemId.clear();
 
     _itemsSubscription = repository.watchAll().listen(
       (items) {
@@ -453,16 +465,56 @@ class InventoryItemsController extends _$InventoryItemsController {
 
   /// Eat item.
   Future<bool> eatItem(String itemId, int amount, {DateTime? consumedAt}) {
+    return eatItemDetailed(
+      itemId,
+      amount,
+      consumedAt: consumedAt,
+    ).then((result) => result != null);
+  }
+
+  /// Eat item and return the actual reduced amount.
+  Future<InventoryItemReductionResult?> eatItemDetailed(
+    String itemId,
+    int amount, {
+    DateTime? consumedAt,
+  }) {
     if (amount < 1) {
-      return Future<bool>.value(false);
+      return Future<InventoryItemReductionResult?>.value(null);
     }
-    return _runItemsMutation(
-      (currentItems) => buildReducedItems(
-        currentItems: currentItems,
-        itemId: itemId,
-        amount: amount,
-        consumedAt: consumedAt,
-      ),
+
+    return _runSerializedTask<InventoryItemReductionResult?>(
+      operation: () async {
+        final currentItems = await _currentPersistedItems();
+        final removedAmount = _resolveEffectiveConsumptionAmount(
+          currentItems: currentItems,
+          itemId: itemId,
+          requestedAmount: amount,
+        );
+        if (removedAmount == null) {
+          return null;
+        }
+
+        final nextItems = buildReducedItems(
+          currentItems: currentItems,
+          itemId: itemId,
+          amount: removedAmount,
+          consumedAt: consumedAt,
+        );
+        if (nextItems == null) {
+          return null;
+        }
+
+        final saved = await _saveItems(
+          previousItems: currentItems,
+          nextItems: nextItems,
+        );
+        if (!saved) {
+          return null;
+        }
+
+        return (removedAmount: removedAmount);
+      },
+      fallbackValue: null,
     );
   }
 
@@ -472,59 +524,80 @@ class InventoryItemsController extends _$InventoryItemsController {
     int amount,
     InventoryDiscardReason reason,
   ) {
+    return throwAwayItemDetailed(itemId, amount, reason).then(
+      (result) => result != null,
+    );
+  }
+
+  /// Throw away item and return the actual discarded amount.
+  Future<InventoryItemDiscardResult?> throwAwayItemDetailed(
+    String itemId,
+    int amount,
+    InventoryDiscardReason reason,
+  ) {
     if (amount < 1) {
-      return Future<bool>.value(false);
+      return Future<InventoryItemDiscardResult?>.value(null);
     }
 
-    return _runSerializedMutation(() async {
-      final currentItems = await _currentPersistedItems();
-      final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
-      if (itemIndex < 0) {
-        return false;
-      }
+    return _runSerializedTask<InventoryItemDiscardResult?>(
+      operation: () async {
+        _recentDiscardResultsByItemId.remove(itemId);
+        final currentItems = await _currentPersistedItems();
+        final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
+        if (itemIndex < 0) {
+          return null;
+        }
 
-      final item = currentItems[itemIndex];
-      final discardedAmount = _resolveDiscardedAmount(
-        item: item,
-        requestedAmount: amount,
-      );
-      if (discardedAmount == null) {
-        return false;
-      }
+        final item = currentItems[itemIndex];
+        final discardedAmount = _resolveDiscardedAmount(
+          item: item,
+          requestedAmount: amount,
+        );
+        if (discardedAmount == null) {
+          return null;
+        }
 
-      final nextItems = buildReducedItems(
-        currentItems: currentItems,
-        itemId: itemId,
-        amount: amount,
-      );
-      if (nextItems == null) {
-        return false;
-      }
+        final nextItems = buildReducedItems(
+          currentItems: currentItems,
+          itemId: itemId,
+          amount: discardedAmount,
+        );
+        if (nextItems == null) {
+          return null;
+        }
 
-      final saved = await _saveItems(
-        previousItems: currentItems,
-        nextItems: nextItems,
-      );
-      if (!saved) {
-        return false;
-      }
+        final saved = await _saveItems(
+          previousItems: currentItems,
+          nextItems: nextItems,
+        );
+        if (!saved) {
+          return null;
+        }
 
-      final discardEvent = InventoryDiscardEvent.fromInventoryItem(
-        id: _uuid.v4(),
-        item: item,
-        discardedAmount: discardedAmount,
-        reason: reason,
-      );
-      final eventSaved = await ref
-          .read(inventoryDiscardEventRepositoryProvider)
-          .saveEvent(discardEvent);
-      if (eventSaved) {
-        return true;
-      }
+        final discardEventId = _uuid.v4();
+        final discardEvent = InventoryDiscardEvent.fromInventoryItem(
+          id: discardEventId,
+          item: item,
+          discardedAmount: discardedAmount,
+          reason: reason,
+        );
+        final eventSaved = await ref
+            .read(inventoryDiscardEventRepositoryProvider)
+            .saveEvent(discardEvent);
+        if (eventSaved) {
+          final result = (
+            discardEventId: discardEventId,
+            removedAmount: discardedAmount,
+          );
+          _recentDiscardResultsByItemId[itemId] = result;
+          return result;
+        }
 
-      await _saveItems(previousItems: nextItems, nextItems: currentItems);
-      return false;
-    });
+        await _saveItems(previousItems: nextItems, nextItems: currentItems);
+        return null;
+      },
+      fallbackValue: null,
+    );
   }
 
   /// Restore consumed item.
@@ -544,6 +617,65 @@ class InventoryItemsController extends _$InventoryItemsController {
       }
       return _saveItems(previousItems: currentItems, nextItems: nextItems);
     });
+  }
+
+  /// Restore stock for a thrown-away item and delete its discard event.
+  Future<bool> undoThrowAwayItem({
+    required String itemId,
+    required int amount,
+    required String discardEventId,
+  }) {
+    if (amount < 1 || discardEventId.trim().isEmpty) {
+      return Future<bool>.value(false);
+    }
+
+    return _runSerializedTask<bool>(
+      operation: () async {
+        final currentItems = await _currentPersistedItems();
+        final restoredItems = buildRestoredItems(
+          currentItems: currentItems,
+          itemId: itemId,
+          amount: amount,
+        );
+        if (restoredItems == null) {
+          return false;
+        }
+
+        final restored = await _saveItems(
+          previousItems: currentItems,
+          nextItems: restoredItems,
+        );
+        if (!restored) {
+          return false;
+        }
+
+        final deleted = await ref
+            .read(inventoryDiscardEventRepositoryProvider)
+            .deleteEvent(discardEventId);
+        if (deleted) {
+          return true;
+        }
+
+        final rolledBack = await _saveItems(
+          previousItems: restoredItems,
+          nextItems: currentItems,
+        );
+        if (!rolledBack) {
+          log(
+            'Failed to rollback thrown-away item undo after discard event '
+            'delete failure (itemId=$itemId, discardEventId=$discardEventId).',
+            name: _controllerLogName,
+          );
+        }
+        return false;
+      },
+      fallbackValue: false,
+    );
+  }
+
+  /// Consume the most recent discard result for an item, if available.
+  InventoryItemDiscardResult? takeRecentDiscardResult(String itemId) {
+    return _recentDiscardResultsByItemId.remove(itemId);
   }
 
   /// Mark barcode lookup requested.

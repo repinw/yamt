@@ -131,6 +131,7 @@ class _RecordingShoppingListController extends ShoppingListController {
 class _FakeInventoryDiscardEventRepository
     implements InventoryDiscardEventRepository {
   bool saveShouldFail = false;
+  bool deleteShouldFail = false;
   final List<InventoryDiscardEvent> savedEvents = <InventoryDiscardEvent>[];
 
   @override
@@ -144,6 +145,15 @@ class _FakeInventoryDiscardEventRepository
       return false;
     }
     savedEvents.add(event);
+    return true;
+  }
+
+  @override
+  Future<bool> deleteEvent(String eventId) async {
+    if (deleteShouldFail) {
+      return false;
+    }
+    savedEvents.removeWhere((event) => event.id == eventId);
     return true;
   }
 }
@@ -1199,6 +1209,73 @@ void main() {
     },
   );
 
+  test('throwAwayItemDetailed returns the actual discarded amount', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_amountItem('a')],
+    );
+    final discardEventRepository = _FakeInventoryDiscardEventRepository();
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+        inventoryDiscardEventRepositoryProvider.overrideWithValue(
+          discardEventRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final result = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .throwAwayItemDetailed('a', 9999, InventoryDiscardReason.other);
+
+    expect(result, isNotNull);
+    expect(result?.removedAmount, 600);
+    expect(discardEventRepository.savedEvents, hasLength(1));
+    expect(
+      discardEventRepository.savedEvents.single.id,
+      result?.discardEventId,
+    );
+  });
+
+  test(
+    'takeRecentDiscardResult consumes the latest discard metadata',
+    () async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <InventoryItem>[_item('a')],
+      );
+      final discardEventRepository = _FakeInventoryDiscardEventRepository();
+      addTearDown(repository.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+          inventoryDiscardEventRepositoryProvider.overrideWithValue(
+            discardEventRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final controllerSubscription = _keepControllerAlive(container);
+      addTearDown(controllerSubscription.close);
+
+      await container.read(inventoryItemsControllerProvider.future);
+      final notifier = container.read(
+        inventoryItemsControllerProvider.notifier,
+      );
+      final result = await notifier.throwAwayItemDetailed(
+        'a',
+        1,
+        InventoryDiscardReason.other,
+      );
+
+      expect(notifier.takeRecentDiscardResult('a'), result);
+      expect(notifier.takeRecentDiscardResult('a'), isNull);
+    },
+  );
+
   test(
     'throwAwayItem rolls back and returns false when event save fails',
     () async {
@@ -1234,6 +1311,115 @@ void main() {
       expect(discardEventRepository.savedEvents, isEmpty);
     },
   );
+
+  test('undoThrowAwayItem restores stock and removes discard event', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_item('a')],
+    );
+    final discardEventRepository = _FakeInventoryDiscardEventRepository();
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+        inventoryDiscardEventRepositoryProvider.overrideWithValue(
+          discardEventRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final discardResult = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .throwAwayItemDetailed('a', 1, InventoryDiscardReason.other);
+    expect(discardResult, isNotNull);
+
+    final restored = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .undoThrowAwayItem(
+          itemId: 'a',
+          amount: discardResult!.removedAmount,
+          discardEventId: discardResult.discardEventId,
+        );
+
+    expect(restored, isTrue);
+    expect(repository.savedItems.single.quantity, 1);
+    expect(discardEventRepository.savedEvents, isEmpty);
+  });
+
+  test(
+    'undoThrowAwayItem rolls stock back when deleting discard event fails',
+    () async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <InventoryItem>[_item('a')],
+      );
+      final discardEventRepository = _FakeInventoryDiscardEventRepository()
+        ..deleteShouldFail = true;
+      addTearDown(repository.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+          inventoryDiscardEventRepositoryProvider.overrideWithValue(
+            discardEventRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final controllerSubscription = _keepControllerAlive(container);
+      addTearDown(controllerSubscription.close);
+
+      await container.read(inventoryItemsControllerProvider.future);
+      final discardResult = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .throwAwayItemDetailed('a', 1, InventoryDiscardReason.other);
+      expect(discardResult, isNotNull);
+
+      final restored = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .undoThrowAwayItem(
+            itemId: 'a',
+            amount: discardResult!.removedAmount,
+            discardEventId: discardResult.discardEventId,
+          );
+
+      expect(restored, isFalse);
+      expect(repository.savedItems.single.quantity, 0);
+      expect(
+        container.read(inventoryItemsControllerProvider).value?.single.quantity,
+        0,
+      );
+      expect(discardEventRepository.savedEvents, hasLength(1));
+    },
+  );
+
+  test('undoThrowAwayItem rejects invalid undo arguments', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_item('a')],
+    );
+    final discardEventRepository = _FakeInventoryDiscardEventRepository();
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+        inventoryDiscardEventRepositoryProvider.overrideWithValue(
+          discardEventRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final restored = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .undoThrowAwayItem(itemId: 'a', amount: 0, discardEventId: '   ');
+
+    expect(restored, isFalse);
+    expect(repository.savedItems, isEmpty);
+  });
 
   test('markBarcodeLookupRequested sets pending timestamp', () async {
     final repository = _FakeFridgeItemRepository(

@@ -391,6 +391,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemDeletedMessage => 'Artikel gelöscht.';
 
   @override
+  String get inventoryItemRemovedMessage => 'Artikel aussortiert.';
+
+  @override
   String get inventoryItemEatAction => 'Essen';
 
   @override
@@ -409,6 +412,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryItemEatSheetAllAction => 'Alles';
+
+  @override
+  String get inventoryAmountDialogAllRemainingAction => 'Alles/Rest';
 
   @override
   String get inventoryItemEatSheetInedibleAmountLabel => 'Nicht essbaren Anteil abziehen';
@@ -438,16 +444,51 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemEatSheetClearAmountAction => 'Menge leeren';
 
   @override
+  String get inventoryItemAddToListAction => 'Auf die Liste';
+
+  @override
+  String get inventoryItemAddToShoppingListAction => 'Zur Einkaufsliste hinzufügen';
+
+  @override
   String get inventoryItemBuyAgainAction => 'Erneut kaufen';
 
   @override
   String get inventoryItemBuyAgainSucceeded => 'Artikel zur Einkaufsliste hinzugefügt.';
 
   @override
+  String get inventoryItemRemoveAction => 'Aussortieren';
+
+  @override
+  String get inventoryItemRemoveDialogTitle => 'Artikel aussortieren';
+
+  @override
+  String inventoryItemRemoveDialogMessage(String name) {
+    return 'Warum möchtest du $name aussortieren?';
+  }
+
+  @override
+  String get inventoryItemRemoveDiscardAction => 'Weggeworfen';
+
+  @override
+  String get inventoryItemRemoveDiscardSubtitle => 'Abgelaufen oder verdorben';
+
+  @override
+  String get inventoryItemRemoveConsumeElsewhereAction => 'Anderweitig verbraucht';
+
+  @override
+  String get inventoryItemRemoveConsumeElsewhereSubtitle => 'Gespendet, verschenkt oder geteilt';
+
+  @override
+  String get inventoryItemRemoveDeleteAction => 'Komplett löschen';
+
+  @override
+  String get inventoryItemRemoveDeleteSubtitle => 'Fehleingabe, nicht in Statistiken werten';
+
+  @override
   String get inventoryItemThrowAwayAction => 'Wegwerfen';
 
   @override
-  String get inventoryItemSwapCandidateAction => 'Kandidat tauschen';
+  String get inventoryItemSwapCandidateAction => 'Tauschen';
 
   @override
   String get inventoryItemSwapCandidateRequiresFullItem => 'Du kannst den Kandidaten nur tauschen, solange der Artikel noch vollständig vorhanden ist.';

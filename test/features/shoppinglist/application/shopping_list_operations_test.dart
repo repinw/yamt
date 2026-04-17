@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/shoppinglist/application/'
@@ -96,7 +97,7 @@ void main() {
   });
 
   test(
-    'isInventoryItemInActiveShoppingList returns true for consumed match',
+    'isInventoryItemInActiveShoppingList returns true for matching items',
     () {
       final activeKeys = <ShoppingListItemMatchKey>{
         (normalizedName: 'milk', normalizedBrand: 'acme'),
@@ -136,7 +137,7 @@ void main() {
   );
 
   test(
-    'isInventoryItemInActiveShoppingList returns false for unconsumed items',
+    'isInventoryItemInActiveShoppingList returns true for partial items',
     () {
       final activeKeys = <ShoppingListItemMatchKey>{
         (normalizedName: 'milk', normalizedBrand: 'acme'),
@@ -153,7 +154,7 @@ void main() {
         activeItemKeys: activeKeys,
       );
 
-      expect(result, isFalse);
+      expect(result, isTrue);
     },
   );
 
@@ -212,4 +213,24 @@ void main() {
       expect(captured!.estimatedUnitPrice, 2.5);
     },
   );
+
+  test('provider family matches inventory items against active keys', () {
+    final item = _inventoryItem(id: 'i5', name: 'Milk', brand: 'Acme');
+    final container = ProviderContainer(
+      overrides: [
+        activeShoppingListItemKeysProvider.overrideWith(
+          (ref) => <ShoppingListItemMatchKey>{
+            (normalizedName: 'milk', normalizedBrand: 'acme'),
+          },
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final result = container.read(
+      isInventoryItemInActiveShoppingListProvider(item),
+    );
+
+    expect(result, isTrue);
+  });
 }

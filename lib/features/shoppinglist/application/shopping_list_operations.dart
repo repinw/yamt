@@ -30,7 +30,8 @@ final activeShoppingListItemKeysProvider =
     });
 
 /// Whether inventory item in active shopping list provider.
-final ProviderFamily<bool, InventoryItem> isInventoryItemInActiveShoppingListProvider =
+final ProviderFamily<bool, InventoryItem>
+isInventoryItemInActiveShoppingListProvider =
     Provider.family<bool, InventoryItem>((ref, item) {
       return ref.watch(
         activeShoppingListItemKeysProvider.select(
@@ -94,10 +95,6 @@ bool isInventoryItemInActiveShoppingList({
   required InventoryItem item,
   required Set<ShoppingListItemMatchKey> activeItemKeys,
 }) {
-  if (!item.isFullyConsumed) {
-    return false;
-  }
-
   final key = _inventoryItemMatchKey(item);
   if (key == null) {
     return false;

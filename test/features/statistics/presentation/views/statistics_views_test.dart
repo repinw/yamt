@@ -34,6 +34,11 @@ class _FakeInventoryDiscardEventRepository
   Future<bool> saveEvent(InventoryDiscardEvent event) async {
     return true;
   }
+
+  @override
+  Future<bool> deleteEvent(String eventId) async {
+    return true;
+  }
 }
 
 void main() {
