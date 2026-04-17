@@ -12,6 +12,7 @@ class InventoryItemAmountInputDialog extends StatefulWidget {
     required this.invalidAmountMessage,
     required this.maxAmount,
     super.key,
+    this.quickFillLabel,
     this.suffixText,
   });
 
@@ -32,6 +33,9 @@ class InventoryItemAmountInputDialog extends StatefulWidget {
 
   /// The max amount.
   final int maxAmount;
+
+  /// Optional label for quickly filling the remaining amount.
+  final String? quickFillLabel;
 
   /// The suffix text.
   final String? suffixText;
@@ -79,6 +83,21 @@ class _InventoryItemAmountInputDialogState
           decoration: InputDecoration(
             labelText: widget.fieldLabel,
             suffixText: widget.suffixText,
+            suffixIcon: widget.quickFillLabel == null
+                ? null
+                : Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: TextButton(
+                      key: const Key(
+                        'inventory_item_amount_dialog_fill_button',
+                      ),
+                      onPressed: _fillMaxAmount,
+                      child: Text(widget.quickFillLabel!),
+                    ),
+                  ),
+            suffixIconConstraints: widget.quickFillLabel == null
+                ? null
+                : const BoxConstraints(),
           ),
           validator: _validateAmount,
           onFieldSubmitted: (_) => _submit(),
@@ -124,6 +143,14 @@ class _InventoryItemAmountInputDialogState
       return;
     }
     context.pop(parsed);
+  }
+
+  void _fillMaxAmount() {
+    final value = widget.maxAmount.toString();
+    _controller.value = TextEditingValue(
+      text: value,
+      selection: TextSelection.collapsed(offset: value.length),
+    );
   }
 
   void _onFocusChanged() {

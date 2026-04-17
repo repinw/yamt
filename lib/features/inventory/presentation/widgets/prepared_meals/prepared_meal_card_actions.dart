@@ -103,6 +103,30 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
 
   Future<void> _runThrowAwayFlow() async {
     log(
+      '_runThrowAwayFlow(): opening reason dialog for ${widget.meal.id}',
+      name: _preparedMealCardLogName,
+    );
+    final reason = await showInventoryDiscardReasonDialog(context);
+    if (!mounted || reason == null) {
+      log(
+        '_runThrowAwayFlow(): reason dialog cancelled for ${widget.meal.id}',
+        name: _preparedMealCardLogName,
+      );
+      return;
+    }
+    log(
+      '_runThrowAwayFlow(): confirmed reason=${reason.name} '
+      'for ${widget.meal.id}',
+      name: _preparedMealCardLogName,
+    );
+
+    await Future<void>.delayed(Duration.zero);
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) {
+      return;
+    }
+
+    log(
       '_runThrowAwayFlow(): opening portion dialog for ${widget.meal.id}',
       name: _preparedMealCardLogName,
     );
@@ -120,32 +144,6 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
     }
     log(
       '_runThrowAwayFlow(): confirmed portions=$portions for ${widget.meal.id}',
-      name: _preparedMealCardLogName,
-    );
-
-    await Future<void>.delayed(Duration.zero);
-    await WidgetsBinding.instance.endOfFrame;
-    if (!mounted) {
-      return;
-    }
-
-    log(
-      '_runThrowAwayFlow(): opening reason dialog for ${widget.meal.id}',
-      name: _preparedMealCardLogName,
-    );
-    final reason = await showInventoryDiscardReasonDialog(
-      context,
-    );
-    if (!mounted || reason == null) {
-      log(
-        '_runThrowAwayFlow(): reason dialog cancelled for ${widget.meal.id}',
-        name: _preparedMealCardLogName,
-      );
-      return;
-    }
-    log(
-      '_runThrowAwayFlow(): confirmed reason=${reason.name} '
-      'for ${widget.meal.id}',
       name: _preparedMealCardLogName,
     );
 
@@ -217,8 +215,8 @@ mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
     if (success) {
       return;
     }
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(failureMessage)));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(failureMessage)));
   }
 }

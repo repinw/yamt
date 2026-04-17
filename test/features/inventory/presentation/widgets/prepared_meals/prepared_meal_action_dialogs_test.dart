@@ -285,4 +285,32 @@ void main() {
 
     expect(find.text('portions:1'), findsOneWidget);
   });
+
+  testWidgets('portion dialog can fill all remaining portions', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _ActionDialogsHarness(meal: _meal()),
+      ),
+    );
+
+    await tester.tap(find.text('Open portions'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const Key('prepared_meal_portion_dialog_fill_button')),
+    );
+    await tester.pump();
+
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller?.text, '2');
+
+    await tester.tap(find.text('Confirm'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(find.text('portions:2'), findsOneWidget);
+  });
 }

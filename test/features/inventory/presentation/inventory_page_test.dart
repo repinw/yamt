@@ -67,6 +67,12 @@ class _FakeInventoryDiscardEventRepository
     savedEvents.add(event);
     return true;
   }
+
+  @override
+  Future<bool> deleteEvent(String eventId) async {
+    savedEvents.removeWhere((event) => event.id == eventId);
+    return true;
+  }
 }
 
 class _FakeFridgeItemRepository implements InventoryItemRepository {
@@ -385,6 +391,7 @@ Widget _buildTestApp(
   List<Override> overrides = const <Override>[],
   bool includeDefaultBarcodeFlagsOverride = true,
   GoRoute? calorieEntryRoute,
+  InventoryDiscardEventRepository? discardEventRepository,
   Widget Function(Widget child)? shellBuilder,
 }) {
   final routes = <RouteBase>[
@@ -407,7 +414,7 @@ Widget _buildTestApp(
     overrides: <Override>[
       inventoryItemRepositoryProvider.overrideWithValue(repository),
       inventoryDiscardEventRepositoryProvider.overrideWithValue(
-        _FakeInventoryDiscardEventRepository(),
+        discardEventRepository ?? _FakeInventoryDiscardEventRepository(),
       ),
       if (includeDefaultBarcodeFlagsOverride)
         barcodeBackfillFeatureFlagsProvider.overrideWithValue(
@@ -519,6 +526,57 @@ void main() {
     expect(
       tester.getRect(emptyStateCard.first).bottom,
       lessThan(tester.getRect(fab).top),
+    );
+  });
+
+  testWidgets('remove sheets draw above fab overlay chrome', (tester) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_item('a', quantity: 3)],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        repository,
+        shellBuilder: (child) {
+          return Scaffold(
+            body: child,
+            floatingActionButton: const SizedBox.square(
+              key: Key('test_inventory_fab'),
+              dimension: 64,
+            ),
+            bottomNavigationBar: const SizedBox(height: 96),
+          );
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final fab = find.byKey(const Key('test_inventory_fab'));
+
+    await _tapVisible(tester, find.text('Milk'));
+    await _tapVisible(tester, find.text('Remove'));
+
+    final removeSheetSurface = find.ancestor(
+      of: find.text('Remove item'),
+      matching: find.byType(DecoratedBox),
+    );
+    expect(removeSheetSurface, findsWidgets);
+    expect(
+      tester.getRect(removeSheetSurface.first).bottom,
+      greaterThan(tester.getRect(fab).top),
+    );
+
+    await _tapVisible(tester, find.text('Thrown away'));
+
+    final reasonSheetSurface = find.ancestor(
+      of: find.text('Why are you throwing this away?'),
+      matching: find.byType(DecoratedBox),
+    );
+    expect(reasonSheetSurface, findsWidgets);
+    expect(
+      tester.getRect(reasonSheetSurface.first).bottom,
+      greaterThan(tester.getRect(fab).top),
     );
   });
 
@@ -830,7 +888,7 @@ void main() {
     expect(find.text('Not implemented yet'), findsOneWidget);
   });
 
-  testWidgets('delete action shows undo snackbar and restores item', (
+  testWidgets('remove action can delete item and restore it via undo', (
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
@@ -845,7 +903,8 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapVisible(tester, find.text('Delete'));
+    await _tapVisible(tester, find.text('Remove'));
+    await _tapVisible(tester, find.text('Delete completely'));
 
     expect(find.text('Item deleted.'), findsOneWidget);
     expect(find.text('Undo'), findsOneWidget);
@@ -861,7 +920,7 @@ void main() {
     expect(find.text('Bread'), findsOneWidget);
   });
 
-  testWidgets('delete undo snackbar dismisses itself after its timeout', (
+  testWidgets('delete-from-remove snackbar dismisses itself after timeout', (
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
@@ -873,7 +932,8 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapVisible(tester, find.text('Delete'));
+    await _tapVisible(tester, find.text('Remove'));
+    await _tapVisible(tester, find.text('Delete completely'));
 
     expect(find.text('Item deleted.'), findsOneWidget);
     expect(find.text('Undo'), findsOneWidget);
@@ -1102,7 +1162,48 @@ void main() {
   });
 
   testWidgets(
-    'fully consumed item shows buy-again action and success feedback',
+    'available item keeps eat and shopping list actions side by side',
+    (tester) async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <InventoryItem>[
+          _item(
+            'a',
+            name: 'Milk',
+            brand: 'Acme',
+            quantity: 1,
+          ),
+        ],
+      );
+      final shoppingRepository = FakeShoppingListRepository();
+      addTearDown(repository.dispose);
+      addTearDown(shoppingRepository.dispose);
+
+      await tester.pumpWidget(
+        _buildTestApp(
+          repository,
+          overrides: <Override>[
+            shoppingListRepositoryProvider.overrideWithValue(
+              shoppingRepository,
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byTooltip('Eat'), findsOneWidget);
+      expect(find.byTooltip('Add to shopping list'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Add to shopping list'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Item added to shopping list.'), findsOneWidget);
+      expect(shoppingRepository.savedItems, hasLength(1));
+    },
+  );
+
+  testWidgets(
+    'fully consumed item expands shopping list action and '
+    'shows success feedback',
     (tester) async {
       final repository = _FakeFridgeItemRepository(
         onReadAll: () async => <InventoryItem>[
@@ -1131,10 +1232,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byTooltip('Buy again'), findsOneWidget);
+      expect(find.byTooltip('Add to shopping list'), findsOneWidget);
       expect(find.byTooltip('Eat'), findsNothing);
 
-      await tester.tap(find.byTooltip('Buy again'));
+      await tester.tap(find.byTooltip('Add to shopping list'));
       await tester.pumpAndSettle();
 
       expect(find.text('Item added to shopping list.'), findsOneWidget);
@@ -1147,7 +1248,8 @@ void main() {
   );
 
   testWidgets(
-    'buy-again falls back to quantity one when initial quantity is zero',
+    'shopping list action falls back to quantity one when '
+    'initial quantity is zero',
     (tester) async {
       final repository = _FakeFridgeItemRepository(
         onReadAll: () async => <InventoryItem>[
@@ -1170,7 +1272,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Buy again'));
+      await tester.tap(find.byTooltip('Add to shopping list'));
       await tester.pumpAndSettle();
 
       expect(shoppingRepository.savedItems, hasLength(1));
@@ -1178,36 +1280,41 @@ void main() {
     },
   );
 
-  testWidgets('buy-again action shows add-failed feedback on save failure', (
-    tester,
-  ) async {
-    final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <InventoryItem>[
-        _item('a', name: 'Milk', quantity: 0, initialQuantity: 1),
-      ],
-    );
-    final shoppingRepository = FakeShoppingListRepository()
-      ..saveAllShouldFail = true;
-    addTearDown(repository.dispose);
-    addTearDown(shoppingRepository.dispose);
-
-    await tester.pumpWidget(
-      _buildTestApp(
-        repository,
-        overrides: <Override>[
-          shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
+  testWidgets(
+    'shopping list action shows add-failed feedback on save failure',
+    (
+      tester,
+    ) async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <InventoryItem>[
+          _item('a', name: 'Milk', quantity: 0, initialQuantity: 1),
         ],
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      final shoppingRepository = FakeShoppingListRepository()
+        ..saveAllShouldFail = true;
+      addTearDown(repository.dispose);
+      addTearDown(shoppingRepository.dispose);
 
-    await tester.tap(find.byTooltip('Buy again'));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildTestApp(
+          repository,
+          overrides: <Override>[
+            shoppingListRepositoryProvider.overrideWithValue(
+              shoppingRepository,
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('Action failed. Please try again.'), findsOneWidget);
-  });
+      await tester.tap(find.byTooltip('Add to shopping list'));
+      await tester.pumpAndSettle();
 
-  testWidgets('buy-again button is disabled when item is already shopping', (
+      expect(find.text('Action failed. Please try again.'), findsOneWidget);
+    },
+  );
+
+  testWidgets('shopping list button is disabled when item is already listed', (
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
@@ -1240,7 +1347,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final buyAgainButton = find.ancestor(
-      of: find.byIcon(Icons.shopping_cart_checkout_rounded),
+      of: find.byIcon(Icons.shopping_cart_outlined),
       matching: find.byType(IconButton),
     );
     expect(buyAgainButton, findsOneWidget);
@@ -1248,7 +1355,7 @@ void main() {
     expect(shoppingRepository.savedItems, isEmpty);
   });
 
-  testWidgets('buy-again does not throw when row unmounts mid-action', (
+  testWidgets('shopping list action stays safe when row unmounts mid-action', (
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
@@ -1271,7 +1378,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Buy again'));
+    await tester.tap(find.byTooltip('Add to shopping list'));
     await tester.pump();
 
     await tester.pumpWidget(const SizedBox.shrink());
@@ -1308,7 +1415,7 @@ void main() {
     expect(_stockLabel('3 /3'), findsOneWidget);
   });
 
-  testWidgets('throw away action opens amount dialog and updates stock', (
+  testWidgets('remove flow can mark item as thrown away and update stock', (
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
@@ -1323,7 +1430,9 @@ void main() {
 
     await _tapVisible(tester, find.text('Milk'));
 
-    await _tapVisible(tester, find.text('Throw away'));
+    await _tapVisible(tester, find.text('Remove'));
+    await _tapVisible(tester, find.text('Thrown away'));
+    await _tapVisible(tester, find.text('Expired'));
 
     final amountField = find.byKey(
       const Key('inventory_item_amount_dialog_field'),
@@ -1332,13 +1441,170 @@ void main() {
     await tester.enterText(amountField, '1');
 
     await _tapAmountDialogConfirm(tester);
-    await tester.tap(find.text('Expired'));
     await tester.pumpAndSettle();
 
     expect(
       find.byKey(const Key('inventory_item_amount_dialog_field')),
       findsNothing,
     );
+    expect(find.text('Undo'), findsOneWidget);
     expect(_stockLabel('2 /3'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+
+    expect(_stockLabel('3 /3'), findsOneWidget);
   });
+
+  testWidgets('throw-away undo also removes the discard event', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _item('a', quantity: 3, initialQuantity: 3),
+      ],
+    );
+    final discardEventRepository = _FakeInventoryDiscardEventRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        repository,
+        discardEventRepository: discardEventRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Milk'));
+    await _tapVisible(tester, find.text('Remove'));
+    await _tapVisible(tester, find.text('Thrown away'));
+    await _tapVisible(tester, find.text('Expired'));
+
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      '1',
+    );
+    await _tapAmountDialogConfirm(tester);
+    await tester.pumpAndSettle();
+
+    expect(discardEventRepository.savedEvents, hasLength(1));
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+
+    expect(discardEventRepository.savedEvents, isEmpty);
+    expect(_stockLabel('3 /3'), findsOneWidget);
+  });
+
+  testWidgets('throw-away amount dialog can fill all remaining stock', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _item('a', quantity: 3, initialQuantity: 3),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildTestApp(repository));
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Milk'));
+    await _tapVisible(tester, find.text('Remove'));
+    await _tapVisible(tester, find.text('Thrown away'));
+    await _tapVisible(tester, find.text('Expired'));
+
+    final amountField = find.byKey(
+      const Key('inventory_item_amount_dialog_field'),
+    );
+    expect(amountField, findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_fill_button')),
+    );
+    await tester.pump();
+
+    final field = tester.widget<TextFormField>(amountField);
+    expect(field.controller?.text, '3');
+
+    await _tapAmountDialogConfirm(tester);
+    await tester.pumpAndSettle();
+
+    expect(_stockLabel('0 /3'), findsOneWidget);
+  });
+
+  testWidgets('consume-elsewhere amount dialog can fill all remaining stock', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _item('a', quantity: 3, initialQuantity: 3),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_buildTestApp(repository));
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Milk'));
+    await _tapVisible(tester, find.text('Remove'));
+    await _tapVisible(tester, find.text('Consumed elsewhere'));
+
+    final amountField = find.byKey(
+      const Key('inventory_item_amount_dialog_field'),
+    );
+    expect(amountField, findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_fill_button')),
+    );
+    await tester.pump();
+
+    final field = tester.widget<TextFormField>(amountField);
+    expect(field.controller?.text, '3');
+
+    await _tapAmountDialogConfirm(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Undo'), findsOneWidget);
+    expect(_stockLabel('0 /3'), findsOneWidget);
+  });
+
+  testWidgets(
+    'remove undo restores only the amount actually removed after remote sync',
+    (tester) async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <InventoryItem>[
+          _item('a', quantity: 3, initialQuantity: 3),
+        ],
+      );
+      addTearDown(repository.dispose);
+
+      await tester.pumpWidget(_buildTestApp(repository));
+      await tester.pumpAndSettle();
+
+      await _tapVisible(tester, find.text('Milk'));
+      await _tapVisible(tester, find.text('Remove'));
+      await _tapVisible(tester, find.text('Consumed elsewhere'));
+
+      await repository.saveAll(<InventoryItem>[
+        _item('a', quantity: 1, initialQuantity: 3),
+      ]);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('inventory_item_amount_dialog_field')),
+        '3',
+      );
+      await _tapAmountDialogConfirm(tester);
+      await tester.pumpAndSettle();
+
+      expect(_stockLabel('0 /3'), findsOneWidget);
+
+      await tester.tap(find.text('Undo'));
+      await tester.pumpAndSettle();
+
+      expect(_stockLabel('1 /3'), findsOneWidget);
+    },
+  );
 }

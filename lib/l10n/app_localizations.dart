@@ -851,6 +851,12 @@ abstract class AppLocalizations {
   /// **'Item deleted.'**
   String get inventoryItemDeletedMessage;
 
+  /// No description provided for @inventoryItemRemovedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Item removed.'**
+  String get inventoryItemRemovedMessage;
+
   /// No description provided for @inventoryItemEatAction.
   ///
   /// In en, this message translates to:
@@ -886,6 +892,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All'**
   String get inventoryItemEatSheetAllAction;
+
+  /// No description provided for @inventoryAmountDialogAllRemainingAction.
+  ///
+  /// In en, this message translates to:
+  /// **'All/Rest'**
+  String get inventoryAmountDialogAllRemainingAction;
 
   /// No description provided for @inventoryItemEatSheetInedibleAmountLabel.
   ///
@@ -941,6 +953,18 @@ abstract class AppLocalizations {
   /// **'Clear amount'**
   String get inventoryItemEatSheetClearAmountAction;
 
+  /// No description provided for @inventoryItemAddToListAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to list'**
+  String get inventoryItemAddToListAction;
+
+  /// No description provided for @inventoryItemAddToShoppingListAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to shopping list'**
+  String get inventoryItemAddToShoppingListAction;
+
   /// No description provided for @inventoryItemBuyAgainAction.
   ///
   /// In en, this message translates to:
@@ -952,6 +976,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Item added to shopping list.'**
   String get inventoryItemBuyAgainSucceeded;
+
+  /// No description provided for @inventoryItemRemoveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get inventoryItemRemoveAction;
+
+  /// No description provided for @inventoryItemRemoveDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove item'**
+  String get inventoryItemRemoveDialogTitle;
+
+  /// No description provided for @inventoryItemRemoveDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Why do you want to remove {name}?'**
+  String inventoryItemRemoveDialogMessage(String name);
+
+  /// No description provided for @inventoryItemRemoveDiscardAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Thrown away'**
+  String get inventoryItemRemoveDiscardAction;
+
+  /// No description provided for @inventoryItemRemoveDiscardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired or spoiled'**
+  String get inventoryItemRemoveDiscardSubtitle;
+
+  /// No description provided for @inventoryItemRemoveConsumeElsewhereAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Consumed elsewhere'**
+  String get inventoryItemRemoveConsumeElsewhereAction;
+
+  /// No description provided for @inventoryItemRemoveConsumeElsewhereSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Donated, shared or gifted'**
+  String get inventoryItemRemoveConsumeElsewhereSubtitle;
+
+  /// No description provided for @inventoryItemRemoveDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete completely'**
+  String get inventoryItemRemoveDeleteAction;
+
+  /// No description provided for @inventoryItemRemoveDeleteSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Input mistake, do not count in statistics'**
+  String get inventoryItemRemoveDeleteSubtitle;
 
   /// No description provided for @inventoryItemThrowAwayAction.
   ///

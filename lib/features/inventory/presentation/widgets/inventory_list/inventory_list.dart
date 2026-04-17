@@ -100,7 +100,7 @@ class InventoryList extends ConsumerStatefulWidget {
   onEatItem;
 
   /// The on throw away item.
-  final Future<bool> Function(
+  final Future<InventoryItemDiscardResult?> Function(
     String itemId,
     int amount,
     InventoryDiscardReason reason,
@@ -176,10 +176,14 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   final _voiceSearchController = TextVoiceSearchController();
   InventoryListMode _mode = InventoryListMode.allItems;
   var _consumptionFilter = const InventoryConsumptionFilter();
-  InventoryItemSortMode _inventoryItemSortMode = InventoryItemSortMode.recentlyAddedDescending;
-  PreparedMealCompletionFilter _preparedMealCompletionFilter = PreparedMealCompletionFilter.all;
-  PreparedMealConsumptionFilter _preparedMealConsumptionFilter = PreparedMealConsumptionFilter.all;
-  PreparedMealSortMode _preparedMealSortMode = PreparedMealSortMode.addedDescending;
+  InventoryItemSortMode _inventoryItemSortMode =
+      InventoryItemSortMode.recentlyAddedDescending;
+  PreparedMealCompletionFilter _preparedMealCompletionFilter =
+      PreparedMealCompletionFilter.all;
+  PreparedMealConsumptionFilter _preparedMealConsumptionFilter =
+      PreparedMealConsumptionFilter.all;
+  PreparedMealSortMode _preparedMealSortMode =
+      PreparedMealSortMode.addedDescending;
   var _isRecentItemsSectionExpanded = true;
   var _isPreparedMealsSectionExpanded = true;
   late final AppPreferences _preferences;

@@ -14,13 +14,11 @@ class InventoryItemRowExpandSection extends StatelessWidget {
     required this.isExpanded,
     required this.viewData,
     required this.colorScheme,
-    required this.deleteLabel,
     required this.editLabel,
     required this.swapCandidateLabel,
-    required this.throwAwayLabel,
-    required this.onDeletePressed,
+    required this.removeLabel,
     required this.onEditPressed,
-    required this.onThrowAwayPressed,
+    required this.onRemovePressed,
     required this.onSwapCandidatePressed,
     super.key,
   });
@@ -34,26 +32,20 @@ class InventoryItemRowExpandSection extends StatelessWidget {
   /// The color scheme.
   final ColorScheme colorScheme;
 
-  /// The delete label.
-  final String deleteLabel;
-
   /// The edit label.
   final String editLabel;
 
   /// The swap candidate label.
   final String swapCandidateLabel;
 
-  /// The throw away label.
-  final String throwAwayLabel;
-
-  /// The on delete pressed.
-  final VoidCallback onDeletePressed;
+  /// The remove label.
+  final String removeLabel;
 
   /// The on edit pressed.
   final VoidCallback onEditPressed;
 
-  /// The on throw away pressed.
-  final VoidCallback? onThrowAwayPressed;
+  /// The on remove pressed.
+  final VoidCallback? onRemovePressed;
 
   /// The on swap candidate pressed.
   final VoidCallback onSwapCandidatePressed;
@@ -72,13 +64,11 @@ class InventoryItemRowExpandSection extends StatelessWidget {
               child: _InventoryItemActionPanel(
                 viewData: viewData,
                 colorScheme: colorScheme,
-                deleteLabel: deleteLabel,
                 editLabel: editLabel,
                 swapCandidateLabel: swapCandidateLabel,
-                throwAwayLabel: throwAwayLabel,
-                onDeletePressed: onDeletePressed,
+                removeLabel: removeLabel,
                 onEditPressed: onEditPressed,
-                onThrowAwayPressed: onThrowAwayPressed,
+                onRemovePressed: onRemovePressed,
                 onSwapCandidatePressed: onSwapCandidatePressed,
               ),
             )
@@ -91,29 +81,27 @@ class _InventoryItemActionPanel extends StatelessWidget {
   const _InventoryItemActionPanel({
     required this.viewData,
     required this.colorScheme,
-    required this.deleteLabel,
     required this.editLabel,
     required this.swapCandidateLabel,
-    required this.throwAwayLabel,
-    required this.onDeletePressed,
+    required this.removeLabel,
     required this.onEditPressed,
-    required this.onThrowAwayPressed,
+    required this.onRemovePressed,
     required this.onSwapCandidatePressed,
   });
 
   final InventoryItemRowViewData viewData;
   final ColorScheme colorScheme;
-  final String deleteLabel;
   final String editLabel;
   final String swapCandidateLabel;
-  final String throwAwayLabel;
-  final VoidCallback onDeletePressed;
+  final String removeLabel;
   final VoidCallback onEditPressed;
-  final VoidCallback? onThrowAwayPressed;
+  final VoidCallback? onRemovePressed;
   final VoidCallback onSwapCandidatePressed;
 
   @override
   Widget build(BuildContext context) {
+    final warningActionColors = _warningActionColors(colorScheme);
+
     return Column(
       children: [
         if (viewData.nutritionMetrics.isNotEmpty) ...[
@@ -125,16 +113,6 @@ class _InventoryItemActionPanel extends StatelessWidget {
         ],
         Row(
           children: [
-            Expanded(
-              child: _InventoryItemActionButton(
-                label: throwAwayLabel,
-                icon: Icons.delete_sweep_outlined,
-                foregroundColor: colorScheme.onSurfaceVariant,
-                backgroundColor: colorScheme.surfaceContainerHigh,
-                onPressed: onThrowAwayPressed,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.xs),
             Expanded(
               child: _InventoryItemActionButton(
                 label: editLabel,
@@ -157,18 +135,31 @@ class _InventoryItemActionPanel extends StatelessWidget {
             const SizedBox(width: AppSpacing.xs),
             Expanded(
               child: _InventoryItemActionButton(
-                label: deleteLabel,
+                label: removeLabel,
                 icon: Icons.delete_outline_rounded,
-                foregroundColor: colorScheme.error,
-                backgroundColor: colorScheme.errorContainer.withValues(
-                  alpha: 0.38,
-                ),
-                onPressed: onDeletePressed,
+                foregroundColor: warningActionColors.iconColor,
+                backgroundColor: warningActionColors.backgroundColor,
+                onPressed: onRemovePressed,
               ),
             ),
           ],
         ),
       ],
+    );
+  }
+
+  _InventoryItemActionColors _warningActionColors(ColorScheme colors) {
+    const tint = AppInventoryEditorial.warning;
+
+    return _InventoryItemActionColors(
+      backgroundColor: Color.alphaBlend(
+        tint.withValues(alpha: 0.22),
+        colors.primaryContainer,
+      ),
+      iconColor: Color.alphaBlend(
+        tint.withValues(alpha: 0.82),
+        colors.onPrimaryContainer,
+      ),
     );
   }
 }
@@ -224,4 +215,14 @@ class _InventoryItemActionButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class _InventoryItemActionColors {
+  const _InventoryItemActionColors({
+    required this.backgroundColor,
+    required this.iconColor,
+  });
+
+  final Color backgroundColor;
+  final Color iconColor;
 }

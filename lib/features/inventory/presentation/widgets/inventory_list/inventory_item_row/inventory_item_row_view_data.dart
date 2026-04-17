@@ -6,7 +6,6 @@ class InventoryItemRowViewData {
   const InventoryItemRowViewData({
     required this.rowBorderColor,
     required this.expandedRowBorderColor,
-    required this.unitPriceLabel,
     required this.nameTextStyle,
     required this.hasBrand,
     required this.brand,
@@ -15,9 +14,8 @@ class InventoryItemRowViewData {
     required this.remainingRatio,
     required this.remainingLabel,
     required this.segmentedByUnits,
-    required this.isPrimaryActionEnabled,
-    required this.isBuyAgainPrimaryAction,
-    required this.showPrimaryActionText,
+    required this.isShoppingListPrimaryAction,
+    required this.showPrimaryActionIconWithText,
     required this.primaryActionLabel,
     required this.eatActionBackgroundColor,
     required this.disabledActionBackgroundColor,
@@ -27,6 +25,13 @@ class InventoryItemRowViewData {
     required this.primaryActionIcon,
     required this.eatActionIconColor,
     required this.disabledActionIconColor,
+    required this.showQuickShoppingListAction,
+    required this.isQuickShoppingListActionEnabled,
+    required this.quickShoppingListActionTooltip,
+    required this.quickShoppingListActionIcon,
+    required this.quickShoppingListActionBackgroundColor,
+    required this.quickShoppingListActionBorderColor,
+    required this.quickShoppingListActionIconColor,
     required this.nutritionMetrics,
   });
 
@@ -35,9 +40,6 @@ class InventoryItemRowViewData {
 
   /// The expanded row border color.
   final Color expandedRowBorderColor;
-
-  /// The unit price label.
-  final String unitPriceLabel;
 
   /// The name text style.
   final TextStyle nameTextStyle;
@@ -63,14 +65,11 @@ class InventoryItemRowViewData {
   /// The segmented by units.
   final bool segmentedByUnits;
 
-  /// Whether primary action enabled.
-  final bool isPrimaryActionEnabled;
+  /// Whether the shopping list action is the primary action.
+  final bool isShoppingListPrimaryAction;
 
-  /// Whether buy again primary action.
-  final bool isBuyAgainPrimaryAction;
-
-  /// The show primary action text.
-  final bool showPrimaryActionText;
+  /// Whether the primary action keeps its icon next to the label.
+  final bool showPrimaryActionIconWithText;
 
   /// The primary action label.
   final String primaryActionLabel;
@@ -98,6 +97,27 @@ class InventoryItemRowViewData {
 
   /// The disabled action icon color.
   final Color disabledActionIconColor;
+
+  /// Whether to show the shopping list quick action.
+  final bool showQuickShoppingListAction;
+
+  /// Whether the shopping list quick action is enabled.
+  final bool isQuickShoppingListActionEnabled;
+
+  /// The shopping list quick action tooltip.
+  final String quickShoppingListActionTooltip;
+
+  /// The shopping list quick action icon.
+  final IconData quickShoppingListActionIcon;
+
+  /// The shopping list quick action background color.
+  final Color quickShoppingListActionBackgroundColor;
+
+  /// The shopping list quick action border color.
+  final Color quickShoppingListActionBorderColor;
+
+  /// The shopping list quick action icon color.
+  final Color quickShoppingListActionIconColor;
 
   /// The nutrition metrics.
   final List<InventoryNutritionMetric> nutritionMetrics;

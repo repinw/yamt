@@ -18,6 +18,9 @@ abstract interface class InventoryDiscardEventRepository {
 
   /// Save event.
   Future<bool> saveEvent(InventoryDiscardEvent event);
+
+  /// Delete event.
+  Future<bool> deleteEvent(String eventId);
 }
 
 /// Defines firestore inventory discard event repository.
@@ -69,6 +72,28 @@ class FirestoreInventoryDiscardEventRepository
     } catch (error, stackTrace) {
       log(
         'Failed to save discard event ${event.id} for user $userId',
+        name: _discardEventRepositoryLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> deleteEvent(String eventId) async {
+    final userId = _resolvedUserId();
+    final normalizedEventId = eventId.trim();
+    if (userId == null || normalizedEventId.isEmpty) {
+      return false;
+    }
+
+    try {
+      await _collection(userId).doc(normalizedEventId).delete();
+      return true;
+    } catch (error, stackTrace) {
+      log(
+        'Failed to delete discard event $normalizedEventId for user $userId',
         name: _discardEventRepositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -153,6 +178,11 @@ class _UnavailableInventoryDiscardEventRepository
 
   @override
   Future<bool> saveEvent(InventoryDiscardEvent event) async {
+    return false;
+  }
+
+  @override
+  Future<bool> deleteEvent(String eventId) async {
     return false;
   }
 }

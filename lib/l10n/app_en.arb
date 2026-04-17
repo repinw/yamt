@@ -151,6 +151,7 @@
   "inventoryReceiptGroupItems": "items",
   "inventoryItemDeleteAction": "Delete",
   "inventoryItemDeletedMessage": "Item deleted.",
+  "inventoryItemRemovedMessage": "Item removed.",
   "inventoryItemEatAction": "Eat",
   "inventoryItemEatSheetEyebrow": "Log food",
   "inventoryItemEatSheetTitle": "Eat: {name}",
@@ -164,6 +165,7 @@
   "inventoryItemEatSheetAmountLabel": "Enter amount",
   "inventoryItemEatSheetQuickSelectLabel": "Quick select",
   "inventoryItemEatSheetAllAction": "All",
+  "inventoryAmountDialogAllRemainingAction": "All/Rest",
   "inventoryItemEatSheetInedibleAmountLabel": "Subtract inedible part",
   "inventoryItemEatSheetInedibleAmountHint":
       "Optional, e.g. bones or shells. Calories are calculated only for the edible remainder.",
@@ -175,8 +177,28 @@
   "inventoryItemEatSheetNutritionLabel": "Nutrition",
   "inventoryItemEatSheetConfirmAction": "Log",
   "inventoryItemEatSheetClearAmountAction": "Clear amount",
+  "inventoryItemAddToListAction": "Add to list",
+  "inventoryItemAddToShoppingListAction": "Add to shopping list",
   "inventoryItemBuyAgainAction": "Buy again",
   "inventoryItemBuyAgainSucceeded": "Item added to shopping list.",
+  "inventoryItemRemoveAction": "Remove",
+  "inventoryItemRemoveDialogTitle": "Remove item",
+  "inventoryItemRemoveDialogMessage": "Why do you want to remove {name}?",
+  "@inventoryItemRemoveDialogMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryItemRemoveDiscardAction": "Thrown away",
+  "inventoryItemRemoveDiscardSubtitle": "Expired or spoiled",
+  "inventoryItemRemoveConsumeElsewhereAction": "Consumed elsewhere",
+  "inventoryItemRemoveConsumeElsewhereSubtitle":
+      "Donated, shared or gifted",
+  "inventoryItemRemoveDeleteAction": "Delete completely",
+  "inventoryItemRemoveDeleteSubtitle":
+      "Input mistake, do not count in statistics",
   "inventoryItemThrowAwayAction": "Throw away",
   "inventoryItemSwapCandidateAction": "Swap candidate",
   "inventoryItemSwapCandidateRequiresFullItem":

@@ -149,6 +149,12 @@ class _FakeInventoryDiscardEventRepository
     savedEvents.add(event);
     return true;
   }
+
+  @override
+  Future<bool> deleteEvent(String eventId) async {
+    savedEvents.removeWhere((event) => event.id == eventId);
+    return true;
+  }
 }
 
 class _FakePreparedMealCalorieEntryCommitStore

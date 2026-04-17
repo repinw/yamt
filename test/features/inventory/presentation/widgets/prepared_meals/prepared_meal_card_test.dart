@@ -551,14 +551,14 @@ void main() {
     await tester.tap(find.text('Throw away'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField), '1');
-    await tester.tap(find.text('Confirm'));
-    await tester.pump();
-    await tester.pumpAndSettle();
-
     expect(find.text('Why are you throwing this away?'), findsOneWidget);
 
     await tester.tap(find.text('Expired'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '1');
+    await tester.tap(find.text('Confirm'));
+    await tester.pump();
     await tester.pumpAndSettle();
 
     expect(thrownAwayMealId, meal.id);

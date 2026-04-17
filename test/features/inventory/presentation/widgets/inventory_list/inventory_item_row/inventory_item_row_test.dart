@@ -52,8 +52,10 @@ class _InventoryItemRowHost extends StatelessWidget {
                         isAlreadyInShoppingList: false,
                         onDeletePressed: (itemId) async => true,
                         onEatPressed: (itemId, amount) async => true,
-                        onThrowAwayPressed: (itemId, amount, reason) async =>
-                            true,
+                        onThrowAwayPressed: (itemId, amount, reason) async => (
+                          discardEventId: 'discard-$itemId',
+                          removedAmount: amount,
+                        ),
                       );
                     },
                   )
@@ -131,7 +133,12 @@ void main() {
     await tester.pumpAndSettle();
 
     final button = tester.widget<InventoryPrimaryActionButton>(
-      find.byType(InventoryPrimaryActionButton),
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is InventoryPrimaryActionButton &&
+            widget.label == 'Eat' &&
+            widget.showText,
+      ),
     );
 
     expect(button.enabledBackgroundColor, theme.colorScheme.primary);
@@ -174,7 +181,7 @@ void main() {
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Delete'), findsOneWidget);
+    expect(find.text('Remove'), findsOneWidget);
 
     await tester.pumpWidget(
       _InventoryItemRowHost(showRow: false, bucket: bucket),
@@ -187,7 +194,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Milk'), findsOneWidget);
-    expect(find.text('Delete'), findsOneWidget);
+    expect(find.text('Remove'), findsOneWidget);
   });
 
   testWidgets('shows nutrition metrics inside one segmented strip', (

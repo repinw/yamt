@@ -84,7 +84,7 @@ Widget _buildHarness({
   Future<bool> Function(String itemId)? onDeleteItem,
   Future<bool> Function(String itemId, InventoryItemEatRequest request)?
   onEatItem,
-  Future<bool> Function(
+  Future<InventoryItemDiscardResult?> Function(
     String itemId,
     int amount,
     InventoryDiscardReason reason,
@@ -98,7 +98,11 @@ Widget _buildHarness({
     activeShoppingListItemKeys: const <ShoppingListItemMatchKey>{},
     onDeleteItem: onDeleteItem ?? (_) async => true,
     onEatItem: onEatItem ?? (itemId, request) async => true,
-    onThrowAwayItem: onThrowAwayItem ?? (itemId, amount, reason) async => true,
+    onThrowAwayItem:
+        onThrowAwayItem ??
+        (itemId, amount, reason) async {
+          return (discardEventId: 'discard-$itemId', removedAmount: amount);
+        },
     isSelectionMode: isSelectionMode,
   );
   final body = SingleChildScrollView(
@@ -335,7 +339,7 @@ void main() {
     expect(find.byType(InventoryItemRowListEntry), findsNothing);
   });
 
-  testWidgets('triggers onDeleteItem when delete button is pressed', (
+  testWidgets('triggers onDeleteItem when remove dialog confirms delete', (
     tester,
   ) async {
     String? deletedItemId;
@@ -353,7 +357,9 @@ void main() {
 
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Delete'));
+    await tester.tap(find.text('Remove'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete completely'));
     await tester.pumpAndSettle();
 
     expect(deletedItemId, 'a');
@@ -400,11 +406,12 @@ void main() {
     expect(eatRequest?.calorieAmount, 25);
   });
 
-  testWidgets('triggers onThrowAwayItem when action is confirmed', (
+  testWidgets('triggers onThrowAwayItem when remove dialog picks discarded', (
     tester,
   ) async {
     String? thrownAwayItemId;
     int? thrownAwayAmount;
+    InventoryDiscardReason? thrownAwayReason;
     await tester.pumpWidget(
       _buildHarness(
         theme: lightTheme,
@@ -412,7 +419,8 @@ void main() {
         onThrowAwayItem: (itemId, amount, reason) async {
           thrownAwayItemId = itemId;
           thrownAwayAmount = amount;
-          return true;
+          thrownAwayReason = reason;
+          return (discardEventId: 'discard-$itemId', removedAmount: amount);
         },
       ),
     );
@@ -420,7 +428,11 @@ void main() {
 
     await tester.tap(find.text('Milk'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Throw away').first);
+    await tester.tap(find.text('Remove').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Thrown away'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Expired'));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const Key('inventory_item_amount_dialog_field')),
@@ -430,10 +442,9 @@ void main() {
       find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Expired'));
-    await tester.pumpAndSettle();
 
     expect(thrownAwayItemId, 'a');
     expect(thrownAwayAmount, 1);
+    expect(thrownAwayReason, InventoryDiscardReason.expired);
   });
 }

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -16,6 +15,8 @@ import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_discard_reason_dialog.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_item_remove_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_amount_input_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -82,7 +83,7 @@ class InventoryItemRow extends ConsumerStatefulWidget {
   onEatPressed;
 
   /// The on throw away pressed.
-  final Future<bool> Function(
+  final Future<InventoryItemDiscardResult?> Function(
     String itemId,
     int amount,
     InventoryDiscardReason reason,
@@ -106,6 +107,8 @@ class InventoryItemRow extends ConsumerStatefulWidget {
 }
 
 class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
+  static const _removeUndoSnackBarDuration = Duration(seconds: 5);
+
   var _isExpanded = false;
   var _isWorking = false;
   var _didRestoreExpansionState = false;
@@ -148,25 +151,26 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       isSelectionMode: widget.isSelectionMode,
     );
     final onPrimaryActionPressed = _buildPrimaryActionPressed(layoutData);
+    final onQuickShoppingListActionPressed =
+        _buildQuickShoppingListActionPressed(layoutData);
 
     return _InventoryItemRowCard(
       layoutData: layoutData,
       isExpanded: !widget.isSelectionMode && _isExpanded,
       isSelectionMode: widget.isSelectionMode,
       isSelected: widget.isSelected,
-      deleteLabel: widget.l10n.inventoryItemDeleteAction,
+      removeLabel: widget.l10n.inventoryItemRemoveAction,
       editLabel: widget.l10n.inventoryReceiptReviewEditAction,
       swapCandidateLabel: widget.l10n.inventoryItemSwapCandidateAction,
-      throwAwayLabel: widget.l10n.inventoryItemThrowAwayAction,
       onToggleExpanded: widget.isSelectionMode
           ? (widget.onSelectionToggle ?? () {})
           : _toggleExpanded,
-      onDeletePressed: _isWorking ? () {} : _onDeletePressed,
       onEditPressed: _isWorking ? () {} : _onEditPressed,
       onPrimaryActionPressed: onPrimaryActionPressed,
+      onQuickShoppingListActionPressed: onQuickShoppingListActionPressed,
       onSwapCandidatePressed: _isWorking ? () {} : _onSwapCandidatePressed,
-      onThrowAwayPressed: layoutData.isAdjustActionEnabled
-          ? _onThrowAwayPressed
+      onRemovePressed: layoutData.isRemoveActionEnabled
+          ? _onRemovePressed
           : null,
       onStartSelection: widget.onStartSelection,
     );
@@ -178,10 +182,19 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     if (!layoutData.isPrimaryActionEnabled) {
       return null;
     }
-    if (layoutData.isBuyAgainPrimaryAction) {
-      return _onBuyAgainPressed;
+    if (layoutData.isShoppingListPrimaryAction) {
+      return _onAddToShoppingListPressed;
     }
     return _onEatPressed;
+  }
+
+  VoidCallback? _buildQuickShoppingListActionPressed(
+    _InventoryItemRowLayoutData layoutData,
+  ) {
+    if (!layoutData.isQuickShoppingListActionEnabled) {
+      return null;
+    }
+    return _onAddToShoppingListPressed;
   }
 
   _InventoryItemRowLayoutData _buildLayoutData(
@@ -192,12 +205,10 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   }) {
     final item = widget.item;
     final hasAdjustableAmount = _buildInputConfig(item) != null;
-    final localeName = Localizations.localeOf(context).toLanguageTag();
     return _InventoryItemRowLayoutData.fromItem(
       context: context,
       item: item,
       l10n: widget.l10n,
-      localeName: localeName,
       hasAdjustableAmount: hasAdjustableAmount,
       isWorking: _isWorking,
       isAlreadyInShoppingList: isAlreadyInShoppingList,
@@ -221,27 +232,19 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     });
   }
 
-  void _onDeletePressed() {
-    unawaited(
-      _actionCoordinator.runAction(
-        () => widget.onDeletePressed(widget.item.id),
-      ),
-    );
-  }
-
   void _onEatPressed() {
     unawaited(_requestEatAmountAndRunAction(action: widget.onEatPressed));
   }
 
-  void _onThrowAwayPressed() {
-    unawaited(_requestDiscardAndRunAction());
+  void _onRemovePressed() {
+    unawaited(_requestRemoveAndRunAction());
   }
 
   void _onEditPressed() {
     _showActionSnackBar(widget.l10n.commonNotImplementedYet);
   }
 
-  void _onBuyAgainPressed() {
+  void _onAddToShoppingListPressed() {
     final controller = ref.read(inventoryItemsControllerProvider.notifier);
     unawaited(
       _actionCoordinator.runAction(
@@ -323,50 +326,214 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     await _actionCoordinator.runAction(() => action(widget.item.id, result));
   }
 
-  Future<void> _requestDiscardAndRunAction() async {
+  Future<void> _requestRemoveAndRunAction() async {
+    final controller = ref.read(inventoryItemsControllerProvider.notifier);
     final config = _buildInputConfig(widget.item);
-    if (config == null) {
+    final removalChoice = await showInventoryItemRemoveDialog(
+      context,
+      itemName: widget.item.name,
+      canReduceAmount: config != null,
+    );
+    if (!mounted || removalChoice == null) {
       return;
     }
 
-    final amount = await showDialog<int>(
+    await _waitForDialogDismissal();
+    if (!mounted) {
+      return;
+    }
+
+    switch (removalChoice) {
+      case InventoryItemRemovalChoice.discarded:
+        if (config == null) {
+          return;
+        }
+        await _handleDiscardChoice(controller: controller, config: config);
+        return;
+      case InventoryItemRemovalChoice.consumedElsewhere:
+        if (config == null) {
+          return;
+        }
+        await _handleConsumeElsewhereChoice(
+          controller: controller,
+          config: config,
+        );
+        return;
+      case InventoryItemRemovalChoice.deleteCompletely:
+        await _actionCoordinator.runAction(
+          () => widget.onDeletePressed(widget.item.id),
+        );
+        return;
+    }
+  }
+
+  Future<void> _handleDiscardChoice({
+    required InventoryItemsController controller,
+    required _ItemAmountInputConfig config,
+  }) async {
+    final discardReason = await showInventoryDiscardReasonDialog(
+      context,
+      itemName: widget.item.name,
+    );
+    if (!mounted || discardReason == null) {
+      return;
+    }
+    await _waitForDialogDismissal();
+    if (!mounted) {
+      return;
+    }
+
+    final discardedAmount = await _promptForAmount(
+      config: config,
+      title: widget.l10n.inventoryItemRemoveDiscardAction,
+      confirmLabel: widget.l10n.inventoryItemRemoveDiscardAction,
+      quickFillLabel: widget.l10n.inventoryAmountDialogAllRemainingAction,
+    );
+    if (!mounted || discardedAmount == null) {
+      return;
+    }
+    await _waitForDialogDismissal();
+    if (!mounted) {
+      return;
+    }
+
+    InventoryItemDiscardResult? discardResult;
+    await _actionCoordinator.runAction(
+      () async {
+        discardResult = await widget.onThrowAwayPressed(
+          widget.item.id,
+          discardedAmount,
+          discardReason,
+        );
+        return discardResult != null;
+      },
+    );
+    if (!mounted || discardResult == null) {
+      return;
+    }
+
+    _showUndoSnackBar(
+      message: widget.l10n.inventoryItemRemovedMessage,
+      onUndo: () => controller.undoThrowAwayItem(
+        itemId: widget.item.id,
+        amount: discardResult!.removedAmount,
+        discardEventId: discardResult!.discardEventId,
+      ),
+    );
+  }
+
+  Future<void> _handleConsumeElsewhereChoice({
+    required InventoryItemsController controller,
+    required _ItemAmountInputConfig config,
+  }) async {
+    final consumedAmount = await _promptForAmount(
+      config: config,
+      title: widget.l10n.inventoryItemRemoveConsumeElsewhereAction,
+      confirmLabel: widget.l10n.inventoryItemRemoveConsumeElsewhereAction,
+      quickFillLabel: widget.l10n.inventoryAmountDialogAllRemainingAction,
+    );
+    if (!mounted || consumedAmount == null) {
+      return;
+    }
+    await _waitForDialogDismissal();
+    if (!mounted) {
+      return;
+    }
+
+    InventoryItemReductionResult? consumptionResult;
+    await _actionCoordinator.runAction(
+      () async {
+        consumptionResult = await controller.eatItemDetailed(
+          widget.item.id,
+          consumedAmount,
+        );
+        return consumptionResult != null;
+      },
+    );
+    if (!mounted || consumptionResult == null) {
+      return;
+    }
+
+    _showUndoSnackBar(
+      message: widget.l10n.inventoryItemRemovedMessage,
+      onUndo: () => controller.restoreConsumedItem(
+        widget.item.id,
+        consumptionResult!.removedAmount,
+      ),
+    );
+  }
+
+  Future<int?> _promptForAmount({
+    required _ItemAmountInputConfig config,
+    required String title,
+    required String confirmLabel,
+    String? quickFillLabel,
+  }) {
+    return showDialog<int>(
       context: context,
-      useRootNavigator: false,
       builder: (context) {
         return InventoryItemAmountInputDialog(
-          title: widget.l10n.inventoryItemThrowAwayAction,
-          confirmLabel: widget.l10n.inventoryItemThrowAwayAction,
+          title: title,
+          confirmLabel: confirmLabel,
           cancelLabel: widget.l10n.inventoryReceiptReviewCancelAction,
           fieldLabel: config.fieldLabel,
           invalidAmountMessage: widget.l10n.inventoryReceiptReviewInvalidNumber,
           maxAmount: config.maxAmount,
+          quickFillLabel: quickFillLabel,
           suffixText: config.suffixText,
         );
       },
     );
-    if (!mounted || amount == null) {
-      return;
-    }
+  }
 
-    final reason = await showInventoryDiscardReasonDialog(
-      context,
-    );
-    if (!mounted || reason == null) {
-      return;
-    }
-
-    await _actionCoordinator.runAction(
-      () => widget.onThrowAwayPressed(widget.item.id, amount, reason),
-    );
+  Future<void> _waitForDialogDismissal() async {
+    await Future<void>.delayed(Duration.zero);
+    await WidgetsBinding.instance.endOfFrame;
   }
 
   void _showActionSnackBar(String message) {
     if (!mounted) {
       return;
     }
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _showUndoSnackBar({
+    required String message,
+    required Future<bool> Function() onUndo,
+  }) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          duration: _removeUndoSnackBarDuration,
+          persist: false,
+          content: Text(message),
+          action: SnackBarAction(
+            label: widget.l10n.commonUndoAction,
+            onPressed: () {
+              unawaited(_runUndoAction(onUndo));
+            },
+          ),
+        ),
+      );
+  }
+
+  Future<void> _runUndoAction(Future<bool> Function() onUndo) async {
+    final restored = await onUndo();
+    if (!mounted) {
+      return;
+    }
+    if (restored) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      return;
+    }
+    _showActionSnackBar(widget.l10n.inventoryItemActionFailed);
   }
 
   _ItemAmountInputConfig? _buildInputConfig(InventoryItem item) {
@@ -412,15 +579,15 @@ class _InventoryItemRowLayoutData {
     required this.snapshot,
     required this.viewData,
     required this.isPrimaryActionEnabled,
-    required this.isBuyAgainPrimaryAction,
-    required this.isAdjustActionEnabled,
+    required this.isShoppingListPrimaryAction,
+    required this.isQuickShoppingListActionEnabled,
+    required this.isRemoveActionEnabled,
   });
 
   factory _InventoryItemRowLayoutData.fromItem({
     required BuildContext context,
     required InventoryItem item,
     required AppLocalizations l10n,
-    required String localeName,
     required bool hasAdjustableAmount,
     required bool isWorking,
     required bool isAlreadyInShoppingList,
@@ -428,21 +595,22 @@ class _InventoryItemRowLayoutData {
     required bool isSelectionMode,
   }) {
     final colors = Theme.of(context).colorScheme;
-    final isBuyAgainPrimaryAction = item.isFullyConsumed;
+    final isShoppingListPrimaryAction = item.isFullyConsumed;
     final eatActionColors = AppInventoryEatActionColors.fromColorScheme(colors);
-    final buyAgainActionColors =
+    final shoppingListActionColors =
         AppInventoryBuyAgainActionColors.fromColorScheme(colors);
     final progress = const InventoryItemProgressCalculator().fromItem(item);
     final brand = item.brand?.trim() ?? '';
     final hasBrand = brand.isNotEmpty;
-    final isAdjustActionEnabled =
-        !isSelectionMode && !isWorking && hasAdjustableAmount;
+    final canRunSecondaryActions = !isSelectionMode && !isWorking;
+    final isRemoveActionEnabled = canRunSecondaryActions;
     final isPrimaryActionEnabled =
-        !isSelectionMode &&
-        !isWorking &&
-        (isBuyAgainPrimaryAction
+        canRunSecondaryActions &&
+        (isShoppingListPrimaryAction
             ? !isAlreadyInShoppingList
-            : isAdjustActionEnabled);
+            : hasAdjustableAmount);
+    final isQuickShoppingListActionEnabled =
+        canRunSecondaryActions && !isAlreadyInShoppingList;
 
     final marker = showBarcodeMarkers
         ? _barcodeStatusMarker(
@@ -451,10 +619,6 @@ class _InventoryItemRowLayoutData {
             status: item.barcodeStatus,
           )
         : null;
-    final currency = buildCurrencyFormat(
-      locale: localeName,
-      currencyCode: item.currencyCode,
-    );
 
     return _InventoryItemRowLayoutData(
       colorScheme: colors,
@@ -462,9 +626,6 @@ class _InventoryItemRowLayoutData {
       viewData: InventoryItemRowViewData(
         rowBorderColor: AppInventoryEditorialSurfaces.ghostBorder(colors),
         expandedRowBorderColor: colors.primary.withValues(alpha: 0.2),
-        unitPriceLabel:
-            '${l10n.inventoryReceiptReviewFieldUnitPrice}: '
-            '${currency.format(item.unitPrice)}',
         nameTextStyle:
             (Theme.of(context).textTheme.titleMedium ?? const TextStyle())
                 .copyWith(
@@ -480,37 +641,49 @@ class _InventoryItemRowLayoutData {
         remainingRatio: progress.remainingRatio,
         remainingLabel: progress.remainingLabel,
         segmentedByUnits: progress.segmentedByUnits,
-        isPrimaryActionEnabled: isPrimaryActionEnabled,
-        isBuyAgainPrimaryAction: isBuyAgainPrimaryAction,
-        showPrimaryActionText: !isBuyAgainPrimaryAction,
-        primaryActionLabel: l10n.inventoryItemEatAction,
-        eatActionBackgroundColor: isBuyAgainPrimaryAction
-            ? buyAgainActionColors.backgroundColor
+        isShoppingListPrimaryAction: isShoppingListPrimaryAction,
+        showPrimaryActionIconWithText: isShoppingListPrimaryAction,
+        primaryActionLabel: isShoppingListPrimaryAction
+            ? l10n.inventoryItemAddToListAction
+            : l10n.inventoryItemEatAction,
+        eatActionBackgroundColor: isShoppingListPrimaryAction
+            ? shoppingListActionColors.backgroundColor
             : eatActionColors.backgroundColor,
         disabledActionBackgroundColor: AppInventoryEditorialSurfaces.section(
           colors,
         ),
-        eatActionBorderColor: isBuyAgainPrimaryAction
-            ? buyAgainActionColors.borderColor
+        eatActionBorderColor: isShoppingListPrimaryAction
+            ? shoppingListActionColors.borderColor
             : eatActionColors.borderColor,
         disabledActionBorderColor: AppInventoryEditorialSurfaces.ghostBorder(
           colors,
         ),
-        primaryActionTooltip: isBuyAgainPrimaryAction
-            ? l10n.inventoryItemBuyAgainAction
+        primaryActionTooltip: isShoppingListPrimaryAction
+            ? l10n.inventoryItemAddToShoppingListAction
             : l10n.inventoryItemEatAction,
-        primaryActionIcon: isBuyAgainPrimaryAction
-            ? Icons.shopping_cart_checkout_rounded
+        primaryActionIcon: isShoppingListPrimaryAction
+            ? Icons.shopping_cart_outlined
             : Icons.restaurant_menu,
-        eatActionIconColor: isBuyAgainPrimaryAction
-            ? buyAgainActionColors.iconColor
+        eatActionIconColor: isShoppingListPrimaryAction
+            ? shoppingListActionColors.iconColor
             : eatActionColors.iconColor,
         disabledActionIconColor: colors.onSurfaceVariant,
+        showQuickShoppingListAction: !isShoppingListPrimaryAction,
+        isQuickShoppingListActionEnabled: isQuickShoppingListActionEnabled,
+        quickShoppingListActionTooltip:
+            l10n.inventoryItemAddToShoppingListAction,
+        quickShoppingListActionIcon: Icons.shopping_cart_outlined,
+        quickShoppingListActionBackgroundColor:
+            shoppingListActionColors.backgroundColor,
+        quickShoppingListActionBorderColor:
+            shoppingListActionColors.borderColor,
+        quickShoppingListActionIconColor: shoppingListActionColors.iconColor,
         nutritionMetrics: _buildNutritionMetrics(l10n, item),
       ),
       isPrimaryActionEnabled: isPrimaryActionEnabled,
-      isBuyAgainPrimaryAction: isBuyAgainPrimaryAction,
-      isAdjustActionEnabled: isAdjustActionEnabled,
+      isShoppingListPrimaryAction: isShoppingListPrimaryAction,
+      isQuickShoppingListActionEnabled: isQuickShoppingListActionEnabled,
+      isRemoveActionEnabled: isRemoveActionEnabled,
     );
   }
 
@@ -518,8 +691,9 @@ class _InventoryItemRowLayoutData {
   final InventoryItemRowSnapshot snapshot;
   final InventoryItemRowViewData viewData;
   final bool isPrimaryActionEnabled;
-  final bool isBuyAgainPrimaryAction;
-  final bool isAdjustActionEnabled;
+  final bool isShoppingListPrimaryAction;
+  final bool isQuickShoppingListActionEnabled;
+  final bool isRemoveActionEnabled;
 }
 
 List<InventoryNutritionMetric> _buildNutritionMetrics(
@@ -583,16 +757,15 @@ class _InventoryItemRowCard extends StatelessWidget {
     required this.isExpanded,
     required this.isSelectionMode,
     required this.isSelected,
-    required this.deleteLabel,
+    required this.removeLabel,
     required this.editLabel,
     required this.swapCandidateLabel,
-    required this.throwAwayLabel,
     required this.onToggleExpanded,
-    required this.onDeletePressed,
     required this.onEditPressed,
     required this.onPrimaryActionPressed,
+    required this.onQuickShoppingListActionPressed,
     required this.onSwapCandidatePressed,
-    required this.onThrowAwayPressed,
+    required this.onRemovePressed,
     required this.onStartSelection,
   });
 
@@ -600,16 +773,15 @@ class _InventoryItemRowCard extends StatelessWidget {
   final bool isExpanded;
   final bool isSelectionMode;
   final bool isSelected;
-  final String deleteLabel;
+  final String removeLabel;
   final String editLabel;
   final String swapCandidateLabel;
-  final String throwAwayLabel;
   final VoidCallback onToggleExpanded;
-  final VoidCallback onDeletePressed;
   final VoidCallback onEditPressed;
   final VoidCallback? onPrimaryActionPressed;
+  final VoidCallback? onQuickShoppingListActionPressed;
   final VoidCallback onSwapCandidatePressed;
-  final VoidCallback? onThrowAwayPressed;
+  final VoidCallback? onRemovePressed;
 
   final VoidCallback? onStartSelection;
 
@@ -649,16 +821,16 @@ class _InventoryItemRowCard extends StatelessWidget {
               isExpanded: isExpanded,
               isSelectionMode: isSelectionMode,
               isSelected: isSelected,
-              deleteLabel: deleteLabel,
+              removeLabel: removeLabel,
               editLabel: editLabel,
               swapCandidateLabel: swapCandidateLabel,
-              throwAwayLabel: throwAwayLabel,
               onToggleExpanded: onToggleExpanded,
-              onDeletePressed: onDeletePressed,
               onEditPressed: onEditPressed,
               onPrimaryActionPressed: onPrimaryActionPressed,
+              onQuickShoppingListActionPressed:
+                  onQuickShoppingListActionPressed,
               onSwapCandidatePressed: onSwapCandidatePressed,
-              onThrowAwayPressed: onThrowAwayPressed,
+              onRemovePressed: onRemovePressed,
             ),
           ),
         ),
@@ -673,32 +845,30 @@ class _InventoryItemRowBody extends StatelessWidget {
     required this.isExpanded,
     required this.isSelectionMode,
     required this.isSelected,
-    required this.deleteLabel,
+    required this.removeLabel,
     required this.editLabel,
     required this.swapCandidateLabel,
-    required this.throwAwayLabel,
     required this.onToggleExpanded,
-    required this.onDeletePressed,
     required this.onEditPressed,
     required this.onPrimaryActionPressed,
+    required this.onQuickShoppingListActionPressed,
     required this.onSwapCandidatePressed,
-    required this.onThrowAwayPressed,
+    required this.onRemovePressed,
   });
 
   final _InventoryItemRowLayoutData layoutData;
   final bool isExpanded;
   final bool isSelectionMode;
   final bool isSelected;
-  final String deleteLabel;
+  final String removeLabel;
   final String editLabel;
   final String swapCandidateLabel;
-  final String throwAwayLabel;
   final VoidCallback onToggleExpanded;
-  final VoidCallback onDeletePressed;
   final VoidCallback onEditPressed;
   final VoidCallback? onPrimaryActionPressed;
+  final VoidCallback? onQuickShoppingListActionPressed;
   final VoidCallback onSwapCandidatePressed;
-  final VoidCallback? onThrowAwayPressed;
+  final VoidCallback? onRemovePressed;
 
   @override
   Widget build(BuildContext context) {
@@ -713,6 +883,8 @@ class _InventoryItemRowBody extends StatelessWidget {
               viewData: layoutData.viewData,
               isExpanded: isExpanded,
               onPrimaryActionPressed: onPrimaryActionPressed,
+              onQuickShoppingListActionPressed:
+                  onQuickShoppingListActionPressed,
               showSelectionCheckbox: isSelectionMode,
               isSelected: isSelected,
             )
@@ -722,6 +894,8 @@ class _InventoryItemRowBody extends StatelessWidget {
               viewData: layoutData.viewData,
               isExpanded: isExpanded,
               onPrimaryActionPressed: onPrimaryActionPressed,
+              onQuickShoppingListActionPressed:
+                  onQuickShoppingListActionPressed,
               showSelectionCheckbox: isSelectionMode,
               isSelected: isSelected,
               expandIndicatorKey: Key(
@@ -734,13 +908,11 @@ class _InventoryItemRowBody extends StatelessWidget {
             isExpanded: isExpanded,
             viewData: layoutData.viewData,
             colorScheme: layoutData.colorScheme,
-            deleteLabel: deleteLabel,
+            removeLabel: removeLabel,
             editLabel: editLabel,
             swapCandidateLabel: swapCandidateLabel,
-            throwAwayLabel: throwAwayLabel,
-            onDeletePressed: onDeletePressed,
             onEditPressed: onEditPressed,
-            onThrowAwayPressed: onThrowAwayPressed,
+            onRemovePressed: onRemovePressed,
             onSwapCandidatePressed: onSwapCandidatePressed,
           ),
         ],

@@ -391,6 +391,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemDeletedMessage => 'Item deleted.';
 
   @override
+  String get inventoryItemRemovedMessage => 'Item removed.';
+
+  @override
   String get inventoryItemEatAction => 'Eat';
 
   @override
@@ -409,6 +412,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryItemEatSheetAllAction => 'All';
+
+  @override
+  String get inventoryAmountDialogAllRemainingAction => 'All/Rest';
 
   @override
   String get inventoryItemEatSheetInedibleAmountLabel => 'Subtract inedible part';
@@ -438,10 +444,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemEatSheetClearAmountAction => 'Clear amount';
 
   @override
+  String get inventoryItemAddToListAction => 'Add to list';
+
+  @override
+  String get inventoryItemAddToShoppingListAction => 'Add to shopping list';
+
+  @override
   String get inventoryItemBuyAgainAction => 'Buy again';
 
   @override
   String get inventoryItemBuyAgainSucceeded => 'Item added to shopping list.';
+
+  @override
+  String get inventoryItemRemoveAction => 'Remove';
+
+  @override
+  String get inventoryItemRemoveDialogTitle => 'Remove item';
+
+  @override
+  String inventoryItemRemoveDialogMessage(String name) {
+    return 'Why do you want to remove $name?';
+  }
+
+  @override
+  String get inventoryItemRemoveDiscardAction => 'Thrown away';
+
+  @override
+  String get inventoryItemRemoveDiscardSubtitle => 'Expired or spoiled';
+
+  @override
+  String get inventoryItemRemoveConsumeElsewhereAction => 'Consumed elsewhere';
+
+  @override
+  String get inventoryItemRemoveConsumeElsewhereSubtitle => 'Donated, shared or gifted';
+
+  @override
+  String get inventoryItemRemoveDeleteAction => 'Delete completely';
+
+  @override
+  String get inventoryItemRemoveDeleteSubtitle => 'Input mistake, do not count in statistics';
 
   @override
   String get inventoryItemThrowAwayAction => 'Throw away';
