@@ -13,14 +13,6 @@ class ServingSuggestionResolution {
     required this.manualDefaultSuggestion,
   });
 
-  /// Creates a [ServingSuggestionResolution] for empty.
-  const ServingSuggestionResolution.empty()
-    : inventoryServingOptions = const <({String label, int value})>[],
-      manualServingSuggestions =
-          const <({String label, double amount, ConsumedUnit unit})>[],
-      inventoryDefaultAmount = null,
-      manualDefaultSuggestion = null;
-
   /// Documented member.
   final List<({String label, int value})> inventoryServingOptions;
 

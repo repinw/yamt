@@ -111,19 +111,6 @@ class CalorieWeeklyCheckInViewModel {
     required this.lowConfidence,
   });
 
-  /// The calculation.
-  const CalorieWeeklyCheckInViewModel.empty()
-    : pendingWeeklyCheckIn = null,
-      shouldAutoOpen = false,
-      days = const <CalorieWeeklyCheckInWindowDay>[],
-      calculation = null,
-      blockedReason = null,
-      missingIntakeDays = const <DateTime>[],
-      missingWeightDays = const <DateTime>[],
-      freshness = CalorieLearnedTdeeFreshness.none,
-      latestLearnedTdeeAt = null,
-      lowConfidence = false;
-
   /// The pending weekly check in.
   final PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn;
 

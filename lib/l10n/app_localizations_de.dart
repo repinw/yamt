@@ -205,9 +205,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewUndoConfirmAction => 'Bestätigung aufheben';
 
   @override
-  String get inventoryReceiptReviewWeightMissingTag => 'Gewicht?';
-
-  @override
   String get inventoryReceiptReviewInvalidDiscounts => 'JSON oder key=value verwenden.';
 
   @override
@@ -248,9 +245,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryReceiptReviewManualDataSaveAction => 'Übernehmen';
-
-  @override
-  String get inventoryReceiptReviewManualDataBarcodeLabel => 'Barcode';
 
   @override
   String get inventoryReceiptReviewManualDataRequired => 'Bitte Produkt wählen, Barcode scannen oder Nährwerte angeben.';
@@ -1397,9 +1391,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeeklyCheckInDialogNewTargetLabel => 'Neues Ziel';
 
   @override
-  String get caloriesWeeklyCheckInDialogTodayDeltaLabel => 'Aktivitätsdelta heute';
-
-  @override
   String get caloriesActivityTodayVsUsualLabel => 'Heute vs. üblich';
 
   @override
@@ -1475,12 +1466,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeeklyCheckInBlockedSkippedWithoutAverage => 'Ein ausgelassener Tag braucht frühere geloggte Aufnahme im selben Zeitraum, bevor wir ihn schätzen können.';
 
   @override
-  String get caloriesWeeklyCheckInBlockedMissingStartWeight => 'Füge ein Gewicht für den ersten Tag dieses Zeitraums hinzu, um fortzufahren.';
-
-  @override
-  String get caloriesWeeklyCheckInBlockedMissingEndWeight => 'Füge ein Gewicht für den letzten Tag dieses Zeitraums hinzu, um fortzufahren.';
-
-  @override
   String caloriesWeeklyCheckInBlockedMissingStartWeightOn(Object date) {
     return 'Füge ein Gewicht für den ersten Tag dieses Zeitraums ($date) hinzu, um fortzufahren.';
   }
@@ -1511,19 +1496,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesSummaryViewBalance => 'Balance';
 
   @override
-  String get caloriesBalanceCarryoverLabel => '7 Tage Bilanz';
-
-  @override
   String get caloriesBalanceCarryoverNoteLabel => 'Übertrag';
 
   @override
   String get caloriesBalanceFlexGoalLabel => 'Flex-Ziel';
-
-  @override
-  String get caloriesBalancePaceNowLabel => 'Pace jetzt';
-
-  @override
-  String get caloriesBalancePaceFinalLabel => 'Pace final';
 
   @override
   String get caloriesBalanceScaleBufferLabel => 'Defizit';
@@ -1558,34 +1534,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesBalanceStatusRecommendFastRestOfDay => 'Empfehlung: restlichen Tag fasten';
-
-  @override
-  String get caloriesBalanceStatusOnTrack => 'Genau im Takt';
-
-  @override
-  String caloriesBalanceStatusBuffer(int kcal) {
-    return '$kcal kcal unter Pace';
-  }
-
-  @override
-  String caloriesBalanceStatusOver(int kcal) {
-    return '$kcal kcal über Pace';
-  }
-
-  @override
-  String caloriesBalanceStatusLoseUnder(int kcal) {
-    return '$kcal kcal Puffer fürs Abnehmen';
-  }
-
-  @override
-  String caloriesBalanceStatusLoseOver(int kcal) {
-    return '$kcal kcal über Pace fürs Abnehmen';
-  }
-
-  @override
-  String caloriesBalanceStatusGainUnder(int kcal) {
-    return '$kcal kcal unter Pace fürs Zunehmen';
-  }
 
   @override
   String get caloriesBalanceStatusFinishedOnTrack => 'Der Tag endete im Zielkorridor';
@@ -1669,16 +1617,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeekBufferTitle => 'Wochenbilanz';
 
   @override
-  String caloriesWeekBufferRemaining(int kcal) {
-    return '$kcal kcal für diese Woche übrig';
-  }
-
-  @override
-  String caloriesWeekBufferOverspent(int kcal) {
-    return '$kcal kcal diese Woche drüber';
-  }
-
-  @override
   String get caloriesWeekBalanceTodayLabel => 'Heu';
 
   @override
@@ -1701,9 +1639,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesWeekBalanceStartedToday => 'Dein Zielstart ist heute. Die Bilanz baut sich ab jetzt auf.';
-
-  @override
-  String get caloriesHealthTrendsOpenAction => 'Öffnen';
 
   @override
   String get caloriesHealthTrendsPageTitle => 'Gesundheitstrends';
@@ -2029,9 +1964,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsHealthInstallSubtitle => 'Installiere Health Connect, bevor du hier Gesundheitsdaten verbinden kannst.';
-
-  @override
-  String get settingsHealthDisconnectTitle => 'Health trennen';
 
   @override
   String get settingsHealthDisconnectSubtitle => 'Entferne den Health-Connect-Zugriff für YAMT.';
@@ -2420,12 +2352,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get statisticsHouseholdHintBody => 'Haushaltszahlen basieren aktuell auf erfassten Vorratsartikeln und verfügbaren Belegdaten. Eine vollständige Verlaufs-Historie folgt später.';
 
   @override
-  String get statisticsWasteHintTitle => 'Waste-Tracking vorbereiten';
-
-  @override
-  String get statisticsWasteHintBody => 'Für echte Food-Waste-Statistiken brauchen wir dauerhafte Wegwerf-Events und Gründe im Wegwerfen-Flow.';
-
-  @override
   String get statisticsSpendingTotalTitle => 'Erfasste Ausgaben';
 
   @override
@@ -2563,38 +2489,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get statisticsMetricNoData => 'Noch keine Daten';
-
-  @override
-  String get statisticsMetricAverage => 'Durchschnitt';
-
-  @override
-  String get statisticsMetricEntries => 'Einträge';
-
-  @override
-  String get statisticsMetricTrackedDays => 'Tage mit Einträgen';
-
-  @override
-  String get statisticsMetricGoalDays => 'Im Ziel';
-
-  @override
-  String get statisticsMetricReceipts => 'Belege';
-
-  @override
-  String get statisticsWasteSignalsTitle => 'Was noch fehlt';
-
-  @override
-  String get statisticsWasteChecklistEvents => 'dauerhafte Wegwerf-Events mit Menge und Zeitpunkt';
-
-  @override
-  String get statisticsWasteChecklistReasons => 'Wegwerf-Gründe wie abgelaufen, schimmelig oder zu viel gekocht';
-
-  @override
-  String get statisticsWasteChecklistEatingOut => 'Preise für externe Mahlzeiten, damit Haushaltskosten vollständiger werden';
-
-  @override
-  String statisticsCaloriesBalanceWindow(String startDate, String endDate) {
-    return 'Balance-Fenster von $startDate bis $endDate';
-  }
 
   @override
   String get statisticsLoadFailed => 'Statistik konnte nicht geladen werden.';

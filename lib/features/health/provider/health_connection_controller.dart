@@ -17,13 +17,6 @@ class HealthConnectionController extends _$HealthConnectionController {
     return _loadStatusFallback(previousStatus: null);
   }
 
-  /// Refresh.
-  Future<HealthConnectionStatus> refresh() async {
-    return _runStatusAction(
-      () => ref.read(healthConnectionServiceProvider).loadStatus(),
-    );
-  }
-
   /// Connect.
   Future<HealthConnectionStatus> connect() async {
     final currentStatus = state.asData?.value;

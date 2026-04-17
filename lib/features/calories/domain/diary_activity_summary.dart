@@ -78,12 +78,6 @@ class DiaryActivitySummary {
     }
     return rawProgress;
   }
-
-  /// Whether workout split.
-  bool get hasWorkoutSplit =>
-      accessState == HealthDataAccessState.ready &&
-      stepsDuringWorkouts != null &&
-      stepsOutsideWorkouts != null;
 }
 
 /// Build diary activity summary.

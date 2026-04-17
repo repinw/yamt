@@ -649,11 +649,6 @@ class InventoryReceiptManualProductController
     });
   }
 
-  /// Update barcode.
-  void updateBarcode(String value) {
-    state = state.copyWith(barcode: value, error: null);
-  }
-
   /// Update name text.
   void updateNameText(String value) {
     state = state.copyWith(nameText: value, error: null);

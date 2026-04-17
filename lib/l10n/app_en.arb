@@ -83,7 +83,6 @@
   "inventoryReceiptReviewInvalidWeightUnit": "Please add a unit (e.g. g or ml).",
   "inventoryReceiptReviewConfirmItemAction": "Confirm item",
   "inventoryReceiptReviewUndoConfirmAction": "Undo confirmation",
-  "inventoryReceiptReviewWeightMissingTag": "Weight?",
   "inventoryReceiptReviewInvalidDiscounts": "Use JSON or key=value pairs.",
   "inventoryReceiptReviewDetectedItems": "Detected items",
   "inventoryReceiptReviewOriginalReceiptAction": "View original receipt",
@@ -101,7 +100,6 @@
   "inventoryReceiptReviewManualDataHint":
       "Search product or scan barcode. Add nutrition later.",
   "inventoryReceiptReviewManualDataSaveAction": "Apply",
-  "inventoryReceiptReviewManualDataBarcodeLabel": "Barcode",
   "inventoryReceiptReviewManualDataRequired":
       "Please select a product, scan a barcode, or add nutrition.",
   "inventoryReceiptReviewRequestEnrichmentAction":
@@ -713,7 +711,6 @@
   "caloriesWeeklyCheckInDialogTrendLabel": "Weight trend",
   "caloriesWeeklyCheckInDialogTrueTdeeLabel": "Learned TDEE",
   "caloriesWeeklyCheckInDialogNewTargetLabel": "New target",
-  "caloriesWeeklyCheckInDialogTodayDeltaLabel": "Today activity delta",
   "caloriesActivityTodayVsUsualLabel": "Today vs usual",
   "caloriesActivityVsUsualLabel": "Activity vs usual",
   "caloriesActivityWorkoutBonusLabel": "Workout bonus",
@@ -752,10 +749,6 @@
       "This window has 3 or more missing intake days. We will keep your last learned target until you log more complete days.",
   "caloriesWeeklyCheckInBlockedSkippedWithoutAverage":
       "A skipped day needs earlier logged intake in the same window before we can estimate it.",
-  "caloriesWeeklyCheckInBlockedMissingStartWeight":
-      "Add a weight for the first day of this window to continue.",
-  "caloriesWeeklyCheckInBlockedMissingEndWeight":
-      "Add a weight for the last day of this window to continue.",
   "caloriesWeeklyCheckInBlockedMissingStartWeightOn":
       "Add a weight for the first day of this window ({date}) to continue.",
   "@caloriesWeeklyCheckInBlockedMissingStartWeightOn": {
@@ -782,11 +775,8 @@
   "caloriesRemainingLabel": "Remaining",
   "caloriesSummaryViewClassic": "Classic",
   "caloriesSummaryViewBalance": "Balance",
-  "caloriesBalanceCarryoverLabel": "7-day balance",
   "caloriesBalanceCarryoverNoteLabel": "Carryover",
   "caloriesBalanceFlexGoalLabel": "Flex goal",
-  "caloriesBalancePaceNowLabel": "Pace now",
-  "caloriesBalancePaceFinalLabel": "Final pace",
   "caloriesBalanceScaleBufferLabel": "Deficit",
   "caloriesBalanceScaleOnTrackLabel": "On track",
   "caloriesBalanceScaleOverLabel": "Surplus",
@@ -814,50 +804,6 @@
       "Recommendation: fast today",
   "caloriesBalanceStatusRecommendFastRestOfDay":
       "Recommendation: fast for the rest of today",
-  "caloriesBalanceStatusOnTrack": "Right on pace",
-  "caloriesBalanceStatusBuffer": "{kcal} kcal under pace",
-  "@caloriesBalanceStatusBuffer": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceStatusOver": "{kcal} kcal over pace",
-  "@caloriesBalanceStatusOver": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceStatusLoseUnder":
-      "{kcal} kcal buffer for weight loss",
-  "@caloriesBalanceStatusLoseUnder": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceStatusLoseOver":
-      "{kcal} kcal over pace for weight loss",
-  "@caloriesBalanceStatusLoseOver": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceStatusGainUnder":
-      "{kcal} kcal under pace for weight gain",
-  "@caloriesBalanceStatusGainUnder": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
   "caloriesBalanceStatusFinishedOnTrack": "The day ended on target",
   "caloriesBalanceStatusFinishedBuffer": "{kcal} kcal under the flex target",
   "@caloriesBalanceStatusFinishedBuffer": {
@@ -929,22 +875,6 @@
   "caloriesWorkoutsSourceLabel": "Source",
   "caloriesWorkoutsMinuteUnit": "min",
   "caloriesWeekBufferTitle": "Weekly balance",
-  "caloriesWeekBufferRemaining": "{kcal} kcal left this week",
-  "@caloriesWeekBufferRemaining": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesWeekBufferOverspent": "{kcal} kcal over this week",
-  "@caloriesWeekBufferOverspent": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
   "caloriesWeekBalanceTodayLabel": "Today",
   "caloriesWeekBalanceSaved":
       "You saved {kcal} kcal since your goal started.",
@@ -976,7 +906,6 @@
   },
   "caloriesWeekBalanceStartedToday":
       "Your goal starts today. The balance will build up from here.",
-  "caloriesHealthTrendsOpenAction": "Open",
   "caloriesHealthTrendsPageTitle": "Health trends",
   "caloriesHealthTrendsChartTitle": "7-day health chart",
   "caloriesHealthTrendsChartSubtitle":
@@ -1133,7 +1062,6 @@
       "Allow older Health Connect history so past diary days can load activity data.",
   "settingsHealthInstallSubtitle":
       "Install Health Connect before you can connect health data here.",
-  "settingsHealthDisconnectTitle": "Disconnect health",
   "settingsHealthDisconnectSubtitle":
       "Remove Health Connect access for YAMT.",
   "settingsAppleHealthDisconnectSubtitle":
@@ -1276,8 +1204,6 @@
   "statisticsTabCalories": "Calories",
   "statisticsHouseholdHintTitle": "MVP note",
   "statisticsHouseholdHintBody": "Household figures currently use tracked inventory items and available receipt data. A full timeline view will come later.",
-  "statisticsWasteHintTitle": "Prepare waste tracking",
-  "statisticsWasteHintBody": "Real food-waste statistics need durable discard events and discard reasons in the throw-away flow.",
   "statisticsSpendingTotalTitle": "Tracked spending",
   "statisticsSpendingTotalSubtitle": "sum of captured purchases in the selected period",
   "statisticsSpendingTrendTitle": "Price trend",
@@ -1359,26 +1285,6 @@
   "statisticsChartGoalLegend": "Goal marker",
   "statisticsMetricNoTrend": "No trend yet",
   "statisticsMetricNoData": "No data yet",
-  "statisticsMetricAverage": "Average",
-  "statisticsMetricEntries": "Entries",
-  "statisticsMetricTrackedDays": "Tracked days",
-  "statisticsMetricGoalDays": "Within goal",
-  "statisticsMetricReceipts": "Receipts",
-  "statisticsWasteSignalsTitle": "What is still missing",
-  "statisticsWasteChecklistEvents": "durable discard events with amount and timestamp",
-  "statisticsWasteChecklistReasons": "discard reasons such as expired, moldy, or cooked too much",
-  "statisticsWasteChecklistEatingOut": "prices for outside meals so household spending becomes more complete",
-  "statisticsCaloriesBalanceWindow": "Balance window from {startDate} to {endDate}",
-  "@statisticsCaloriesBalanceWindow": {
-    "placeholders": {
-      "startDate": {
-        "type": "String"
-      },
-      "endDate": {
-        "type": "String"
-      }
-    }
-  },
   "statisticsLoadFailed": "Could not load statistics.",
   "commonUndoAction": "Undo",
   "commonNotImplementedYet": "Not implemented yet"

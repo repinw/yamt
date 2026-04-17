@@ -13,9 +13,6 @@ enum ReceiptAnalysisStatus {
 
 /// Defines receipt analysis error codes.
 abstract final class ReceiptAnalysisErrorCodes {
-  /// The not implemented.
-  static const notImplemented = 'analysis_not_implemented';
-
   /// The empty response.
   static const emptyResponse = 'analysis_empty_response';
 
@@ -24,9 +21,6 @@ abstract final class ReceiptAnalysisErrorCodes {
 
   /// The parse failed.
   static const parseFailed = 'analysis_parse_failed';
-
-  /// The storage failed.
-  static const storageFailed = 'analysis_storage_failed';
 
   /// The unexpected.
   static const unexpected = 'analysis_unexpected';

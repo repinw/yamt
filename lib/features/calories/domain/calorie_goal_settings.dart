@@ -294,9 +294,6 @@ class CalorieGoalSettings {
   /// Whether goal.
   bool get hasGoal => dailyKcalGoal != null;
 
-  /// Whether calculator profile.
-  bool get hasCalculatorProfile => calculatorProfile != null;
-
   /// Whether learned tdee.
   bool get hasLearnedTdee => latestLearnedTdeeKcal != null;
 
@@ -343,16 +340,6 @@ class CalorieGoalSettings {
         return left.effectiveChangedAt.compareTo(right.effectiveChangedAt);
       });
     return List<CalorieGoalHistoryEntry>.unmodifiable(entries);
-  }
-
-  /// The skipped intake days.
-  Iterable<DateTime> get skippedIntakeDays sync* {
-    for (final key in skippedIntakeDayKeys) {
-      final parsed = _dateFromDayKeyOrNull(key);
-      if (parsed != null) {
-        yield parsed;
-      }
-    }
   }
 
   /// The latest goal entry.
@@ -728,14 +715,6 @@ int _normalizeMinuteOfDay(int value) {
 
 String _dayKey(DateTime day) {
   return normalizeDiaryDay(day).toIso8601String().split('T').first;
-}
-
-DateTime? _dateFromDayKeyOrNull(String value) {
-  try {
-    return normalizeDiaryDay(DateTime.parse(value));
-  } on FormatException {
-    return null;
-  }
 }
 
 DateTime _dateTimeForMinuteOfDay({

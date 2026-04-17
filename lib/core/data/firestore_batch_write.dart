@@ -5,28 +5,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// Single write operation that can be applied to a Firestore batch.
 class FirestoreBatchWriteOperation {
   /// Creates set operation for given document reference.
-  const FirestoreBatchWriteOperation.set(this.reference, this.data)
-    : _isDelete = false;
-
-  /// Creates delete operation for given document reference.
-  const FirestoreBatchWriteOperation.delete(this.reference)
-    : data = null,
-      _isDelete = true;
+  const FirestoreBatchWriteOperation.set(this.reference, this.data);
 
   /// Document reference affected by this operation.
   final DocumentReference<Map<String, dynamic>> reference;
 
-  /// Data written by set operations, or `null` for deletes.
-  final Map<String, dynamic>? data;
-  final bool _isDelete;
+  /// Data written by this operation.
+  final Map<String, dynamic> data;
 
   /// Applies this operation to provided batch.
   void apply(WriteBatch batch) {
-    if (_isDelete) {
-      batch.delete(reference);
-      return;
-    }
-    batch.set(reference, data!);
+    batch.set(reference, data);
   }
 }
 

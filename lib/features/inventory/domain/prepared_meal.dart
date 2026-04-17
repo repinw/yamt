@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/core/utils/currency_format.dart';
-import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 part 'prepared_meal.g.dart';
@@ -448,14 +447,6 @@ class PreparedMealComponent {
       totalFat: totalFat ?? this.totalFat,
       sourceItemSnapshot: sourceItemSnapshot ?? this.sourceItemSnapshot,
     );
-  }
-
-  /// The source nutrition.
-  GlobalFoodNutrition get sourceNutrition {
-    return sourceItemSnapshot.nutrition ??
-        const GlobalFoodNutrition(
-          qualityStatus: GlobalFoodNutritionQualityStatus.missing,
-        );
   }
 
   /// Cost contribution of this component based on the consumed share.

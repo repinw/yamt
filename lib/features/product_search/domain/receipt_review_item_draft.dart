@@ -147,9 +147,6 @@ class ReceiptReviewItemDraft {
     );
   }
 
-  /// Whether new item selection.
-  bool get isNewItemSelection => selectedGlobalFoodItemId == null;
-
   /// Whether be saved to inventory.
   bool get canBeSavedToInventory => item.canBeSavedToInventory;
 
