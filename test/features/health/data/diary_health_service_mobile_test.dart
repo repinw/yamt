@@ -1,0 +1,277 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:health/health.dart';
+import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
+import 'package:yamt/features/health/data/diary_health_service_mobile.dart';
+
+void main() {
+  test(
+    'loadDayData prefers workout summary steps before inferring from distance',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 18, minutes: 5));
+      final workoutEnd = day.add(const Duration(hours: 18, minutes: 41));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 422,
+              totalDistance: 5168,
+              workoutSummarySteps: 5367,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 6772,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+
+      expect(dayData.workouts.single.totalSteps, 5367);
+      expect(summary.stepsDuringWorkouts, 5367);
+      expect(summary.stepsOutsideWorkouts, 1405);
+      expect(fakeHealth.requestedStepIntervals, <String>[
+        _intervalKey(day, dayEnd),
+      ]);
+    },
+  );
+
+  test(
+    'loadDayData preserves workout steps already present in the payload',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 18));
+      final workoutEnd = day.add(const Duration(hours: 19));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 240,
+              totalSteps: 2800,
+              totalDistance: 5000,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 6700,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+
+      expect(dayData.workouts.single.totalSteps, 2800);
+      expect(summary.stepsDuringWorkouts, 2800);
+      expect(summary.stepsOutsideWorkouts, 3900);
+      expect(fakeHealth.requestedStepIntervals, <String>[
+        _intervalKey(day, dayEnd),
+      ]);
+    },
+  );
+
+  test(
+    'loadDayData estimates running steps from distance when steps are zero',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 18, minutes: 5));
+      final workoutEnd = day.add(const Duration(hours: 18, minutes: 41));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 422,
+              totalDistance: 5168,
+              totalSteps: 0,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 6700,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+
+      expect(dayData.workouts.single.totalSteps, 6080);
+      expect(summary.stepsDuringWorkouts, 6080);
+      expect(summary.stepsOutsideWorkouts, 620);
+      expect(fakeHealth.requestedStepIntervals, <String>[
+        _intervalKey(day, dayEnd),
+      ]);
+    },
+  );
+
+  test(
+    'loadDayData personalizes distance estimate from saved height',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 18, minutes: 5));
+      final workoutEnd = day.add(const Duration(hours: 18, minutes: 41));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 422,
+              totalDistance: 5168,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 6700,
+        },
+      );
+      final service = MobileDiaryHealthService(
+        health: fakeHealth,
+        userHeightCm: 160,
+      );
+
+      final dayData = await service.loadDayData(day: day);
+      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+
+      expect(dayData.workouts.single.totalSteps, 6840);
+      expect(summary.stepsDuringWorkouts, 6840);
+      expect(summary.stepsOutsideWorkouts, 0);
+      expect(fakeHealth.requestedStepIntervals, <String>[
+        _intervalKey(day, dayEnd),
+      ]);
+    },
+  );
+
+  test(
+    'loadDayData leaves workout steps null without a distance estimate',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 9));
+      final workoutEnd = day.add(const Duration(hours: 10));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 300,
+              totalSteps: 0,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 2500,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+
+      expect(dayData.workouts.single.totalSteps, isNull);
+      expect(summary.stepsDuringWorkouts, 0);
+      expect(summary.stepsOutsideWorkouts, 2500);
+      expect(fakeHealth.requestedStepIntervals, <String>[
+        _intervalKey(day, dayEnd),
+      ]);
+    },
+  );
+}
+
+class _FakeHealth extends Health {
+  _FakeHealth({
+    required this.healthDataPoints,
+    required this.totalStepsResponses,
+  });
+
+  final Map<HealthDataType, List<HealthDataPoint>> healthDataPoints;
+  final Map<String, int?> totalStepsResponses;
+  final List<String> requestedStepIntervals = <String>[];
+
+  @override
+  Future<void> configure() async {}
+
+  @override
+  Future<List<HealthDataPoint>> getHealthDataFromTypes({
+    required List<HealthDataType> types,
+    required DateTime startTime,
+    required DateTime endTime,
+    Map<HealthDataType, HealthDataUnit>? preferredUnits,
+    List<RecordingMethod> recordingMethodsToFilter = const [],
+  }) async {
+    return types
+        .expand((type) => healthDataPoints[type] ?? const <HealthDataPoint>[])
+        .toList(growable: false);
+  }
+
+  @override
+  Future<int?> getTotalStepsInInterval(
+    DateTime startTime,
+    DateTime endTime, {
+    bool includeManualEntry = true,
+  }) async {
+    final key = _intervalKey(startTime, endTime);
+    requestedStepIntervals.add(key);
+    return totalStepsResponses[key];
+  }
+}
+
+HealthDataPoint _buildWorkoutPoint({
+  required DateTime start,
+  required DateTime end,
+  required int totalCalories,
+  int? totalSteps,
+  int? totalDistance,
+  int? workoutSummarySteps,
+}) {
+  return HealthDataPoint(
+    uuid: 'run-1',
+    value: WorkoutHealthValue(
+      workoutActivityType: HealthWorkoutActivityType.RUNNING,
+      totalEnergyBurned: totalCalories,
+      totalEnergyBurnedUnit: HealthDataUnit.KILOCALORIE,
+      totalDistance: totalDistance,
+      totalDistanceUnit: totalDistance == null ? null : HealthDataUnit.METER,
+      totalSteps: totalSteps,
+      totalStepsUnit: totalSteps == null ? null : HealthDataUnit.COUNT,
+    ),
+    type: HealthDataType.WORKOUT,
+    unit: HealthDataUnit.NO_UNIT,
+    dateFrom: start,
+    dateTo: end,
+    sourcePlatform: HealthPlatformType.googleHealthConnect,
+    sourceDeviceId: 'device-id',
+    sourceId: 'samsung.health',
+    sourceName: 'Samsung Health',
+    workoutSummary: workoutSummarySteps == null
+        ? null
+        : WorkoutSummary(
+            workoutType: 'running',
+            totalDistance: totalDistance ?? 0,
+            totalEnergyBurned: totalCalories,
+            totalSteps: workoutSummarySteps,
+          ),
+  );
+}
+
+String _intervalKey(DateTime start, DateTime end) {
+  return '${start.millisecondsSinceEpoch}:${end.millisecondsSinceEpoch}';
+}
