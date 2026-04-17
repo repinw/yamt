@@ -479,12 +479,6 @@ abstract class AppLocalizations {
   /// **'Undo confirmation'**
   String get inventoryReceiptReviewUndoConfirmAction;
 
-  /// No description provided for @inventoryReceiptReviewWeightMissingTag.
-  ///
-  /// In en, this message translates to:
-  /// **'Weight?'**
-  String get inventoryReceiptReviewWeightMissingTag;
-
   /// No description provided for @inventoryReceiptReviewInvalidDiscounts.
   ///
   /// In en, this message translates to:
@@ -568,12 +562,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Apply'**
   String get inventoryReceiptReviewManualDataSaveAction;
-
-  /// No description provided for @inventoryReceiptReviewManualDataBarcodeLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Barcode'**
-  String get inventoryReceiptReviewManualDataBarcodeLabel;
 
   /// No description provided for @inventoryReceiptReviewManualDataRequired.
   ///
@@ -2783,12 +2771,6 @@ abstract class AppLocalizations {
   /// **'New target'**
   String get caloriesWeeklyCheckInDialogNewTargetLabel;
 
-  /// No description provided for @caloriesWeeklyCheckInDialogTodayDeltaLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Today activity delta'**
-  String get caloriesWeeklyCheckInDialogTodayDeltaLabel;
-
   /// No description provided for @caloriesActivityTodayVsUsualLabel.
   ///
   /// In en, this message translates to:
@@ -2939,18 +2921,6 @@ abstract class AppLocalizations {
   /// **'A skipped day needs earlier logged intake in the same window before we can estimate it.'**
   String get caloriesWeeklyCheckInBlockedSkippedWithoutAverage;
 
-  /// No description provided for @caloriesWeeklyCheckInBlockedMissingStartWeight.
-  ///
-  /// In en, this message translates to:
-  /// **'Add a weight for the first day of this window to continue.'**
-  String get caloriesWeeklyCheckInBlockedMissingStartWeight;
-
-  /// No description provided for @caloriesWeeklyCheckInBlockedMissingEndWeight.
-  ///
-  /// In en, this message translates to:
-  /// **'Add a weight for the last day of this window to continue.'**
-  String get caloriesWeeklyCheckInBlockedMissingEndWeight;
-
   /// No description provided for @caloriesWeeklyCheckInBlockedMissingStartWeightOn.
   ///
   /// In en, this message translates to:
@@ -2999,12 +2969,6 @@ abstract class AppLocalizations {
   /// **'Balance'**
   String get caloriesSummaryViewBalance;
 
-  /// No description provided for @caloriesBalanceCarryoverLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'7-day balance'**
-  String get caloriesBalanceCarryoverLabel;
-
   /// No description provided for @caloriesBalanceCarryoverNoteLabel.
   ///
   /// In en, this message translates to:
@@ -3016,18 +2980,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Flex goal'**
   String get caloriesBalanceFlexGoalLabel;
-
-  /// No description provided for @caloriesBalancePaceNowLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Pace now'**
-  String get caloriesBalancePaceNowLabel;
-
-  /// No description provided for @caloriesBalancePaceFinalLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Final pace'**
-  String get caloriesBalancePaceFinalLabel;
 
   /// No description provided for @caloriesBalanceScaleBufferLabel.
   ///
@@ -3088,42 +3040,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Recommendation: fast for the rest of today'**
   String get caloriesBalanceStatusRecommendFastRestOfDay;
-
-  /// No description provided for @caloriesBalanceStatusOnTrack.
-  ///
-  /// In en, this message translates to:
-  /// **'Right on pace'**
-  String get caloriesBalanceStatusOnTrack;
-
-  /// No description provided for @caloriesBalanceStatusBuffer.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} kcal under pace'**
-  String caloriesBalanceStatusBuffer(int kcal);
-
-  /// No description provided for @caloriesBalanceStatusOver.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} kcal over pace'**
-  String caloriesBalanceStatusOver(int kcal);
-
-  /// No description provided for @caloriesBalanceStatusLoseUnder.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} kcal buffer for weight loss'**
-  String caloriesBalanceStatusLoseUnder(int kcal);
-
-  /// No description provided for @caloriesBalanceStatusLoseOver.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} kcal over pace for weight loss'**
-  String caloriesBalanceStatusLoseOver(int kcal);
-
-  /// No description provided for @caloriesBalanceStatusGainUnder.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} kcal under pace for weight gain'**
-  String caloriesBalanceStatusGainUnder(int kcal);
 
   /// No description provided for @caloriesBalanceStatusFinishedOnTrack.
   ///
@@ -3263,18 +3179,6 @@ abstract class AppLocalizations {
   /// **'Weekly balance'**
   String get caloriesWeekBufferTitle;
 
-  /// No description provided for @caloriesWeekBufferRemaining.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} kcal left this week'**
-  String caloriesWeekBufferRemaining(int kcal);
-
-  /// No description provided for @caloriesWeekBufferOverspent.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} kcal over this week'**
-  String caloriesWeekBufferOverspent(int kcal);
-
   /// No description provided for @caloriesWeekBalanceTodayLabel.
   ///
   /// In en, this message translates to:
@@ -3310,12 +3214,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your goal starts today. The balance will build up from here.'**
   String get caloriesWeekBalanceStartedToday;
-
-  /// No description provided for @caloriesHealthTrendsOpenAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Open'**
-  String get caloriesHealthTrendsOpenAction;
 
   /// No description provided for @caloriesHealthTrendsPageTitle.
   ///
@@ -3946,12 +3844,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Install Health Connect before you can connect health data here.'**
   String get settingsHealthInstallSubtitle;
-
-  /// No description provided for @settingsHealthDisconnectTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Disconnect health'**
-  String get settingsHealthDisconnectTitle;
 
   /// No description provided for @settingsHealthDisconnectSubtitle.
   ///
@@ -4721,18 +4613,6 @@ abstract class AppLocalizations {
   /// **'Household figures currently use tracked inventory items and available receipt data. A full timeline view will come later.'**
   String get statisticsHouseholdHintBody;
 
-  /// No description provided for @statisticsWasteHintTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Prepare waste tracking'**
-  String get statisticsWasteHintTitle;
-
-  /// No description provided for @statisticsWasteHintBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Real food-waste statistics need durable discard events and discard reasons in the throw-away flow.'**
-  String get statisticsWasteHintBody;
-
   /// No description provided for @statisticsSpendingTotalTitle.
   ///
   /// In en, this message translates to:
@@ -4966,66 +4846,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No data yet'**
   String get statisticsMetricNoData;
-
-  /// No description provided for @statisticsMetricAverage.
-  ///
-  /// In en, this message translates to:
-  /// **'Average'**
-  String get statisticsMetricAverage;
-
-  /// No description provided for @statisticsMetricEntries.
-  ///
-  /// In en, this message translates to:
-  /// **'Entries'**
-  String get statisticsMetricEntries;
-
-  /// No description provided for @statisticsMetricTrackedDays.
-  ///
-  /// In en, this message translates to:
-  /// **'Tracked days'**
-  String get statisticsMetricTrackedDays;
-
-  /// No description provided for @statisticsMetricGoalDays.
-  ///
-  /// In en, this message translates to:
-  /// **'Within goal'**
-  String get statisticsMetricGoalDays;
-
-  /// No description provided for @statisticsMetricReceipts.
-  ///
-  /// In en, this message translates to:
-  /// **'Receipts'**
-  String get statisticsMetricReceipts;
-
-  /// No description provided for @statisticsWasteSignalsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'What is still missing'**
-  String get statisticsWasteSignalsTitle;
-
-  /// No description provided for @statisticsWasteChecklistEvents.
-  ///
-  /// In en, this message translates to:
-  /// **'durable discard events with amount and timestamp'**
-  String get statisticsWasteChecklistEvents;
-
-  /// No description provided for @statisticsWasteChecklistReasons.
-  ///
-  /// In en, this message translates to:
-  /// **'discard reasons such as expired, moldy, or cooked too much'**
-  String get statisticsWasteChecklistReasons;
-
-  /// No description provided for @statisticsWasteChecklistEatingOut.
-  ///
-  /// In en, this message translates to:
-  /// **'prices for outside meals so household spending becomes more complete'**
-  String get statisticsWasteChecklistEatingOut;
-
-  /// No description provided for @statisticsCaloriesBalanceWindow.
-  ///
-  /// In en, this message translates to:
-  /// **'Balance window from {startDate} to {endDate}'**
-  String statisticsCaloriesBalanceWindow(String startDate, String endDate);
 
   /// No description provided for @statisticsLoadFailed.
   ///

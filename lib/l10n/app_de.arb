@@ -83,7 +83,6 @@
   "inventoryReceiptReviewInvalidWeightUnit": "Bitte eine Einheit angeben (z. B. g oder ml).",
   "inventoryReceiptReviewConfirmItemAction": "Artikel bestätigen",
   "inventoryReceiptReviewUndoConfirmAction": "Bestätigung aufheben",
-  "inventoryReceiptReviewWeightMissingTag": "Gewicht?",
   "inventoryReceiptReviewInvalidDiscounts": "JSON oder key=value verwenden.",
   "inventoryReceiptReviewDetectedItems": "Erkannte Artikel",
   "inventoryReceiptReviewOriginalReceiptAction": "Original-Beleg ansehen",
@@ -101,7 +100,6 @@
   "inventoryReceiptReviewManualDataHint":
       "Produkt suchen oder Barcode scannen. Nährwerte später ergänzen.",
   "inventoryReceiptReviewManualDataSaveAction": "Übernehmen",
-  "inventoryReceiptReviewManualDataBarcodeLabel": "Barcode",
   "inventoryReceiptReviewManualDataRequired":
       "Bitte Produkt wählen, Barcode scannen oder Nährwerte angeben.",
   "inventoryReceiptReviewRequestEnrichmentAction":
@@ -739,7 +737,6 @@
   "caloriesWeeklyCheckInDialogTrendLabel": "Gewichtstrend",
   "caloriesWeeklyCheckInDialogTrueTdeeLabel": "Gelernter TDEE",
   "caloriesWeeklyCheckInDialogNewTargetLabel": "Neues Ziel",
-  "caloriesWeeklyCheckInDialogTodayDeltaLabel": "Aktivitätsdelta heute",
   "caloriesActivityTodayVsUsualLabel": "Heute vs. üblich",
   "caloriesActivityVsUsualLabel": "Aktivität vs. üblich",
   "caloriesActivityWorkoutBonusLabel": "Trainingsbonus",
@@ -781,10 +778,6 @@
       "Dieser Zeitraum hat 3 oder mehr fehlende Aufnahmetage. Wir behalten dein letztes gelerntes Ziel, bis du wieder mehr vollständige Tage geloggt hast.",
   "caloriesWeeklyCheckInBlockedSkippedWithoutAverage":
       "Ein ausgelassener Tag braucht frühere geloggte Aufnahme im selben Zeitraum, bevor wir ihn schätzen können.",
-  "caloriesWeeklyCheckInBlockedMissingStartWeight":
-      "Füge ein Gewicht für den ersten Tag dieses Zeitraums hinzu, um fortzufahren.",
-  "caloriesWeeklyCheckInBlockedMissingEndWeight":
-      "Füge ein Gewicht für den letzten Tag dieses Zeitraums hinzu, um fortzufahren.",
   "caloriesWeeklyCheckInBlockedMissingStartWeightOn":
       "Füge ein Gewicht für den ersten Tag dieses Zeitraums ({date}) hinzu, um fortzufahren.",
   "@caloriesWeeklyCheckInBlockedMissingStartWeightOn": {
@@ -811,11 +804,8 @@
   "caloriesRemainingLabel": "Verbleibend",
   "caloriesSummaryViewClassic": "Klassisch",
   "caloriesSummaryViewBalance": "Balance",
-  "caloriesBalanceCarryoverLabel": "7 Tage Bilanz",
   "caloriesBalanceCarryoverNoteLabel": "Übertrag",
   "caloriesBalanceFlexGoalLabel": "Flex-Ziel",
-  "caloriesBalancePaceNowLabel": "Pace jetzt",
-  "caloriesBalancePaceFinalLabel": "Pace final",
   "caloriesBalanceScaleBufferLabel": "Defizit",
   "caloriesBalanceScaleOnTrackLabel": "Im Takt",
   "caloriesBalanceScaleOverLabel": "Überschuss",
@@ -846,48 +836,6 @@
       "Empfehlung: heute fasten",
   "caloriesBalanceStatusRecommendFastRestOfDay":
       "Empfehlung: restlichen Tag fasten",
-  "caloriesBalanceStatusOnTrack": "Genau im Takt",
-  "caloriesBalanceStatusBuffer": "{kcal} kcal unter Pace",
-  "@caloriesBalanceStatusBuffer": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceStatusOver": "{kcal} kcal über Pace",
-  "@caloriesBalanceStatusOver": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceStatusLoseUnder": "{kcal} kcal Puffer fürs Abnehmen",
-  "@caloriesBalanceStatusLoseUnder": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceStatusLoseOver": "{kcal} kcal über Pace fürs Abnehmen",
-  "@caloriesBalanceStatusLoseOver": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesBalanceStatusGainUnder":
-      "{kcal} kcal unter Pace fürs Zunehmen",
-  "@caloriesBalanceStatusGainUnder": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
   "caloriesBalanceStatusFinishedOnTrack": "Der Tag endete im Zielkorridor",
   "caloriesBalanceStatusFinishedBuffer":
       "{kcal} kcal unter dem Flex-Ziel beendet",
@@ -964,22 +912,6 @@
   "caloriesWorkoutsSourceLabel": "Quelle",
   "caloriesWorkoutsMinuteUnit": "Min",
   "caloriesWeekBufferTitle": "Wochenbilanz",
-  "caloriesWeekBufferRemaining": "{kcal} kcal für diese Woche übrig",
-  "@caloriesWeekBufferRemaining": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesWeekBufferOverspent": "{kcal} kcal diese Woche drüber",
-  "@caloriesWeekBufferOverspent": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
   "caloriesWeekBalanceTodayLabel": "Heu",
   "caloriesWeekBalanceSaved": "Seit Zielstart {kcal} kcal gespart.",
   "@caloriesWeekBalanceSaved": {
@@ -1010,7 +942,6 @@
   },
   "caloriesWeekBalanceStartedToday":
       "Dein Zielstart ist heute. Die Bilanz baut sich ab jetzt auf.",
-  "caloriesHealthTrendsOpenAction": "Öffnen",
   "caloriesHealthTrendsPageTitle": "Gesundheitstrends",
   "caloriesHealthTrendsChartTitle": "7-Tage-Gesundheitschart",
   "caloriesHealthTrendsChartSubtitle":
@@ -1172,7 +1103,6 @@
       "Erlaube ältere Health-Connect-Historie, damit vergangene Tagebuch-Tage Aktivitätsdaten laden können.",
   "settingsHealthInstallSubtitle":
       "Installiere Health Connect, bevor du hier Gesundheitsdaten verbinden kannst.",
-  "settingsHealthDisconnectTitle": "Health trennen",
   "settingsHealthDisconnectSubtitle":
       "Entferne den Health-Connect-Zugriff für YAMT.",
   "settingsAppleHealthDisconnectSubtitle":
@@ -1315,8 +1245,6 @@
   "statisticsTabCalories": "Kalorien",
   "statisticsHouseholdHintTitle": "MVP-Hinweis",
   "statisticsHouseholdHintBody": "Haushaltszahlen basieren aktuell auf erfassten Vorratsartikeln und verfügbaren Belegdaten. Eine vollständige Verlaufs-Historie folgt später.",
-  "statisticsWasteHintTitle": "Waste-Tracking vorbereiten",
-  "statisticsWasteHintBody": "Für echte Food-Waste-Statistiken brauchen wir dauerhafte Wegwerf-Events und Gründe im Wegwerfen-Flow.",
   "statisticsSpendingTotalTitle": "Erfasste Ausgaben",
   "statisticsSpendingTotalSubtitle": "Summe der erfassten Einkäufe im gewählten Zeitraum",
   "statisticsSpendingTrendTitle": "Preisentwicklung",
@@ -1398,26 +1326,6 @@
   "statisticsChartGoalLegend": "Zielmarke",
   "statisticsMetricNoTrend": "Noch kein Trend",
   "statisticsMetricNoData": "Noch keine Daten",
-  "statisticsMetricAverage": "Durchschnitt",
-  "statisticsMetricEntries": "Einträge",
-  "statisticsMetricTrackedDays": "Tage mit Einträgen",
-  "statisticsMetricGoalDays": "Im Ziel",
-  "statisticsMetricReceipts": "Belege",
-  "statisticsWasteSignalsTitle": "Was noch fehlt",
-  "statisticsWasteChecklistEvents": "dauerhafte Wegwerf-Events mit Menge und Zeitpunkt",
-  "statisticsWasteChecklistReasons": "Wegwerf-Gründe wie abgelaufen, schimmelig oder zu viel gekocht",
-  "statisticsWasteChecklistEatingOut": "Preise für externe Mahlzeiten, damit Haushaltskosten vollständiger werden",
-  "statisticsCaloriesBalanceWindow": "Balance-Fenster von {startDate} bis {endDate}",
-  "@statisticsCaloriesBalanceWindow": {
-    "placeholders": {
-      "startDate": {
-        "type": "String"
-      },
-      "endDate": {
-        "type": "String"
-      }
-    }
-  },
   "statisticsLoadFailed": "Statistik konnte nicht geladen werden.",
   "commonUndoAction": "Rückgängig machen",
   "commonNotImplementedYet": "Noch nicht implementiert"

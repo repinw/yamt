@@ -16,11 +16,6 @@ class CalorieDayController extends _$CalorieDayController {
     state = normalizeDiaryDay(value);
   }
 
-  /// Go to today.
-  void goToToday() {
-    state = normalizeDiaryDay(DateTime.now());
-  }
-
   /// Next day.
   void nextDay() {
     state = nextDiaryDay(state);

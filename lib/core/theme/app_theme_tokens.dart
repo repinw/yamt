@@ -47,12 +47,6 @@ abstract final class AppThemeBackground {
 
 /// Editorial design tokens for inventory surfaces and accents.
 abstract final class AppInventoryEditorial {
-  /// Main editorial accent.
-  static const Color primary = Color(0xFF006941);
-
-  /// Darker primary accent.
-  static const Color primaryDim = Color(0xFF005C38);
-
   /// Warning accent.
   static const Color warning = Color(0xFFAB2D00);
 
@@ -73,9 +67,6 @@ abstract final class AppInventoryEditorial {
 
   /// Square image tile size.
   static const double imageTileSize = 56;
-
-  /// Action tile size.
-  static const double actionTileSize = 48;
 
   /// Context floating action button size.
   static const double contextFabSize = 64;

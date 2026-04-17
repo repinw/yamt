@@ -33,16 +33,6 @@ class CalorieGoalController extends _$CalorieGoalController {
     return _restartSubscription();
   }
 
-  /// Refresh.
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    final next = await AsyncValue.guard(_restartSubscription);
-    if (!ref.mounted) {
-      return;
-    }
-    state = next;
-  }
-
   /// Set goal.
   Future<bool> setGoal(double dailyKcalGoal) async {
     if (dailyKcalGoal <= 0) {
@@ -184,15 +174,6 @@ class CalorieGoalController extends _$CalorieGoalController {
     return _persistSettings(
       previous.dismissPendingWeeklyCheckIn(dismissedAt ?? DateTime.now()),
     );
-  }
-
-  /// Clear pending weekly check in.
-  Future<bool> clearPendingWeeklyCheckIn() async {
-    final previous = await _currentSettings();
-    if (previous.pendingWeeklyCheckIn == null) {
-      return Future<bool>.value(true);
-    }
-    return _persistSettings(previous.copyWithPendingWeeklyCheckIn(null));
   }
 
   /// Set skipped intake day.

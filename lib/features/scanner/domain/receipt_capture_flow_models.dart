@@ -249,14 +249,6 @@ class ReceiptBatchRunResult {
          reviewDrafts: reviewDrafts,
        );
 
-  /// The receipt batch progress.
-  const ReceiptBatchRunResult.inputCanceled()
-    : this(
-        status: ReceiptBatchRunStatus.inputCanceled,
-        progress: const ReceiptBatchProgress(items: []),
-        reviewDrafts: const <ReceiptReviewItemDraft>[],
-      );
-
   /// Creates a [ReceiptBatchRunResult] for input failed.
   const ReceiptBatchRunResult.inputFailed({required String errorCode})
     : this(

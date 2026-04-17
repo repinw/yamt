@@ -44,11 +44,6 @@ abstract final class AppInsets {
   /// Default card padding.
   static const EdgeInsets card = EdgeInsets.all(AppSpacing.xl);
 
-  /// Vertical padding for list sections.
-  static const EdgeInsets listVertical = EdgeInsets.symmetric(
-    vertical: AppSpacing.xl,
-  );
-
   /// Margin used for floating snack bars.
   static const EdgeInsets snackBarMargin = EdgeInsets.symmetric(
     horizontal: AppSpacing.xl,

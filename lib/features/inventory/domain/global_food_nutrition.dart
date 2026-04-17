@@ -181,25 +181,6 @@ class GlobalFoodNutrition {
     ].any((value) => value != null);
   }
 
-  /// Whether all zero.
-  bool get isAllZero {
-    final values = <double?>[
-      per100Kcal,
-      per100Protein,
-      per100Carbs,
-      per100Fat,
-      per100Salt,
-      per100SaturatedFat,
-      per100PolyunsaturatedFat,
-      per100Sugar,
-      per100Fiber,
-    ].whereType<double>();
-    if (values.isEmpty) {
-      return false;
-    }
-    return values.every((value) => value == 0);
-  }
-
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||

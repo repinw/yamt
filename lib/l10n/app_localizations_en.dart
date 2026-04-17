@@ -205,9 +205,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewUndoConfirmAction => 'Undo confirmation';
 
   @override
-  String get inventoryReceiptReviewWeightMissingTag => 'Weight?';
-
-  @override
   String get inventoryReceiptReviewInvalidDiscounts => 'Use JSON or key=value pairs.';
 
   @override
@@ -248,9 +245,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryReceiptReviewManualDataSaveAction => 'Apply';
-
-  @override
-  String get inventoryReceiptReviewManualDataBarcodeLabel => 'Barcode';
 
   @override
   String get inventoryReceiptReviewManualDataRequired => 'Please select a product, scan a barcode, or add nutrition.';
@@ -1397,9 +1391,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesWeeklyCheckInDialogNewTargetLabel => 'New target';
 
   @override
-  String get caloriesWeeklyCheckInDialogTodayDeltaLabel => 'Today activity delta';
-
-  @override
   String get caloriesActivityTodayVsUsualLabel => 'Today vs usual';
 
   @override
@@ -1475,12 +1466,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesWeeklyCheckInBlockedSkippedWithoutAverage => 'A skipped day needs earlier logged intake in the same window before we can estimate it.';
 
   @override
-  String get caloriesWeeklyCheckInBlockedMissingStartWeight => 'Add a weight for the first day of this window to continue.';
-
-  @override
-  String get caloriesWeeklyCheckInBlockedMissingEndWeight => 'Add a weight for the last day of this window to continue.';
-
-  @override
   String caloriesWeeklyCheckInBlockedMissingStartWeightOn(Object date) {
     return 'Add a weight for the first day of this window ($date) to continue.';
   }
@@ -1511,19 +1496,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesSummaryViewBalance => 'Balance';
 
   @override
-  String get caloriesBalanceCarryoverLabel => '7-day balance';
-
-  @override
   String get caloriesBalanceCarryoverNoteLabel => 'Carryover';
 
   @override
   String get caloriesBalanceFlexGoalLabel => 'Flex goal';
-
-  @override
-  String get caloriesBalancePaceNowLabel => 'Pace now';
-
-  @override
-  String get caloriesBalancePaceFinalLabel => 'Final pace';
 
   @override
   String get caloriesBalanceScaleBufferLabel => 'Deficit';
@@ -1558,34 +1534,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesBalanceStatusRecommendFastRestOfDay => 'Recommendation: fast for the rest of today';
-
-  @override
-  String get caloriesBalanceStatusOnTrack => 'Right on pace';
-
-  @override
-  String caloriesBalanceStatusBuffer(int kcal) {
-    return '$kcal kcal under pace';
-  }
-
-  @override
-  String caloriesBalanceStatusOver(int kcal) {
-    return '$kcal kcal over pace';
-  }
-
-  @override
-  String caloriesBalanceStatusLoseUnder(int kcal) {
-    return '$kcal kcal buffer for weight loss';
-  }
-
-  @override
-  String caloriesBalanceStatusLoseOver(int kcal) {
-    return '$kcal kcal over pace for weight loss';
-  }
-
-  @override
-  String caloriesBalanceStatusGainUnder(int kcal) {
-    return '$kcal kcal under pace for weight gain';
-  }
 
   @override
   String get caloriesBalanceStatusFinishedOnTrack => 'The day ended on target';
@@ -1669,16 +1617,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesWeekBufferTitle => 'Weekly balance';
 
   @override
-  String caloriesWeekBufferRemaining(int kcal) {
-    return '$kcal kcal left this week';
-  }
-
-  @override
-  String caloriesWeekBufferOverspent(int kcal) {
-    return '$kcal kcal over this week';
-  }
-
-  @override
   String get caloriesWeekBalanceTodayLabel => 'Today';
 
   @override
@@ -1701,9 +1639,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesWeekBalanceStartedToday => 'Your goal starts today. The balance will build up from here.';
-
-  @override
-  String get caloriesHealthTrendsOpenAction => 'Open';
 
   @override
   String get caloriesHealthTrendsPageTitle => 'Health trends';
@@ -2029,9 +1964,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsHealthInstallSubtitle => 'Install Health Connect before you can connect health data here.';
-
-  @override
-  String get settingsHealthDisconnectTitle => 'Disconnect health';
 
   @override
   String get settingsHealthDisconnectSubtitle => 'Remove Health Connect access for YAMT.';
@@ -2420,12 +2352,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statisticsHouseholdHintBody => 'Household figures currently use tracked inventory items and available receipt data. A full timeline view will come later.';
 
   @override
-  String get statisticsWasteHintTitle => 'Prepare waste tracking';
-
-  @override
-  String get statisticsWasteHintBody => 'Real food-waste statistics need durable discard events and discard reasons in the throw-away flow.';
-
-  @override
   String get statisticsSpendingTotalTitle => 'Tracked spending';
 
   @override
@@ -2563,38 +2489,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statisticsMetricNoData => 'No data yet';
-
-  @override
-  String get statisticsMetricAverage => 'Average';
-
-  @override
-  String get statisticsMetricEntries => 'Entries';
-
-  @override
-  String get statisticsMetricTrackedDays => 'Tracked days';
-
-  @override
-  String get statisticsMetricGoalDays => 'Within goal';
-
-  @override
-  String get statisticsMetricReceipts => 'Receipts';
-
-  @override
-  String get statisticsWasteSignalsTitle => 'What is still missing';
-
-  @override
-  String get statisticsWasteChecklistEvents => 'durable discard events with amount and timestamp';
-
-  @override
-  String get statisticsWasteChecklistReasons => 'discard reasons such as expired, moldy, or cooked too much';
-
-  @override
-  String get statisticsWasteChecklistEatingOut => 'prices for outside meals so household spending becomes more complete';
-
-  @override
-  String statisticsCaloriesBalanceWindow(String startDate, String endDate) {
-    return 'Balance window from $startDate to $endDate';
-  }
 
   @override
   String get statisticsLoadFailed => 'Could not load statistics.';

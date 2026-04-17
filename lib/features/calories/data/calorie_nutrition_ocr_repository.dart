@@ -26,9 +26,6 @@ abstract final class CalorieNutritionOcrErrorCodes {
   /// The camera not supported.
   static const cameraNotSupported = 'ocr_camera_not_supported';
 
-  /// The camera pick failed.
-  static const cameraPickFailed = 'ocr_camera_pick_failed';
-
   /// The template config failed.
   static const templateConfigFailed = 'ocr_template_config_failed';
 

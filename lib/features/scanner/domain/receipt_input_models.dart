@@ -101,10 +101,6 @@ class ReceiptInputResult {
   const ReceiptInputResult.canceled()
     : this(status: ReceiptInputStatus.canceled);
 
-  /// Creates a [ReceiptInputResult] for unsupported.
-  const ReceiptInputResult.unsupported({String? errorCode})
-    : this(status: ReceiptInputStatus.unsupported, errorCode: errorCode);
-
   /// Creates a [ReceiptInputResult] for failed.
   const ReceiptInputResult.failed({String? errorCode})
     : this(status: ReceiptInputStatus.failed, errorCode: errorCode);

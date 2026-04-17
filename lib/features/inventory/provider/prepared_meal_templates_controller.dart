@@ -412,67 +412,6 @@ class PreparedMealTemplatesController
     }).whenComplete(keepAliveLink.close);
   }
 
-  /// Set recipe ingredient assignments.
-  Future<bool> setRecipeIngredientAssignments({
-    required String templateId,
-    required String ingredient,
-    required List<String> inventoryItemIds,
-    RecipeIngredientAmountConversion? amountConversion,
-  }) {
-    if (templateId.trim().isEmpty || ingredient.trim().isEmpty) {
-      return Future<bool>.value(false);
-    }
-
-    final keepAliveLink = ref.keepAlive();
-    return _runSerializedMutation(() async {
-      final currentTemplates = await _currentTemplates();
-      final templateIndex = currentTemplates.indexWhere(
-        (template) => template.id == templateId,
-      );
-      if (templateIndex < 0) {
-        return false;
-      }
-
-      final currentTemplate = currentTemplates[templateIndex];
-      final normalizedIngredient = ingredient.trim();
-      final nextAssignments = <String, List<String>>{
-        ...currentTemplate.recipeIngredientAssignments,
-      };
-      final nextItemIds = inventoryItemIds
-          .map((itemId) => itemId.trim())
-          .where((itemId) => itemId.isNotEmpty)
-          .toSet()
-          .toList(growable: false);
-      if (nextItemIds.isEmpty) {
-        nextAssignments.remove(normalizedIngredient);
-      } else {
-        nextAssignments[normalizedIngredient] = nextItemIds;
-      }
-      final nextConversions = <String, RecipeIngredientAmountConversion>{
-        ...currentTemplate.recipeIngredientAmountConversions,
-      };
-      if (nextItemIds.isEmpty ||
-          amountConversion == null ||
-          amountConversion.amountPerPiece < 1 ||
-          amountConversion.unit == InventoryAmountUnit.piece) {
-        nextConversions.remove(normalizedIngredient);
-      } else {
-        nextConversions[normalizedIngredient] = amountConversion;
-      }
-
-      final nextTemplates = List<PreparedMeal>.from(currentTemplates);
-      nextTemplates[templateIndex] = currentTemplate.copyWith(
-        recipeIngredientAssignments: nextAssignments,
-        recipeIngredientAmountConversions: nextConversions,
-        updatedAt: DateTime.now(),
-      );
-      return _saveTemplates(
-        previousTemplates: currentTemplates,
-        nextTemplates: nextTemplates,
-      );
-    }).whenComplete(keepAliveLink.close);
-  }
-
   /// Update recipe ingredient assignments.
   Future<bool> updateRecipeIngredientAssignments({
     required String templateId,

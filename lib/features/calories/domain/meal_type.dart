@@ -29,16 +29,6 @@ enum MealType {
     MealType.snack,
   ];
 
-  /// From json value.
-  static MealType fromJsonValue(String? value) {
-    return switch (value) {
-      'breakfast' => MealType.breakfast,
-      'lunch' => MealType.lunch,
-      'dinner' => MealType.dinner,
-      _ => MealType.snack,
-    };
-  }
-
   /// Default for date time.
   static MealType defaultForDateTime(DateTime dateTime) {
     return fromHour(dateTime.hour);

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Defines app receipt review ui.
 abstract final class AppReceiptReviewUi {
@@ -43,15 +42,6 @@ abstract final class AppReceiptReviewSurfaces {
 
 /// Defines app brand badge.
 abstract final class AppBrandBadge {
-  /// The padding.
-  static const EdgeInsets padding = EdgeInsets.symmetric(
-    horizontal: AppSpacing.xs - AppSpacing.xxs,
-    vertical: AppSpacing.xxs,
-  );
-
-  /// The border radius.
-  static const double borderRadius = 999;
-
   /// The font size.
   static const double fontSize = 9;
 
