@@ -159,6 +159,113 @@ void main() {
   );
 
   test(
+    'loadDayData does not estimate steps for non-step workouts with distance',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 12));
+      final workoutEnd = day.add(const Duration(hours: 13));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 600,
+              totalSteps: 0,
+              totalDistance: 25000,
+              activityType: HealthWorkoutActivityType.BIKING,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 4000,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+
+      expect(dayData.workouts.single.totalSteps, isNull);
+      expect(summary.stepsDuringWorkouts, 0);
+      expect(summary.stepsOutsideWorkouts, 4000);
+    },
+  );
+
+  test(
+    'loadDayData converts mile distance before estimating steps',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 7));
+      final workoutEnd = day.add(const Duration(hours: 8));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 350,
+              totalDistance: 1,
+              totalDistanceUnit: HealthDataUnit.MILE,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 2500,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+
+      expect(dayData.workouts.single.totalSteps, 1893);
+      expect(summary.stepsDuringWorkouts, 1893);
+      expect(summary.stepsOutsideWorkouts, 607);
+    },
+  );
+
+  test(
+    'loadDayData leaves workout steps null when distance unit is missing',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 9));
+      final workoutEnd = day.add(const Duration(hours: 10));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 300,
+              totalSteps: 0,
+              totalDistance: 5168,
+              keepNullDistanceUnit: true,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 2500,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+
+      expect(dayData.workouts.single.totalSteps, isNull);
+      expect(summary.stepsDuringWorkouts, 0);
+      expect(summary.stepsOutsideWorkouts, 2500);
+    },
+  );
+
+  test(
     'loadDayData leaves workout steps null without a distance estimate',
     () async {
       final day = DateTime(2026, 4, 17);
@@ -238,18 +345,25 @@ HealthDataPoint _buildWorkoutPoint({
   required DateTime start,
   required DateTime end,
   required int totalCalories,
+  HealthWorkoutActivityType activityType = HealthWorkoutActivityType.RUNNING,
   int? totalSteps,
   int? totalDistance,
+  HealthDataUnit? totalDistanceUnit,
+  bool keepNullDistanceUnit = false,
   int? workoutSummarySteps,
 }) {
   return HealthDataPoint(
     uuid: 'run-1',
     value: WorkoutHealthValue(
-      workoutActivityType: HealthWorkoutActivityType.RUNNING,
+      workoutActivityType: activityType,
       totalEnergyBurned: totalCalories,
       totalEnergyBurnedUnit: HealthDataUnit.KILOCALORIE,
       totalDistance: totalDistance,
-      totalDistanceUnit: totalDistance == null ? null : HealthDataUnit.METER,
+      totalDistanceUnit: totalDistance == null
+          ? null
+          : keepNullDistanceUnit
+          ? totalDistanceUnit
+          : totalDistanceUnit ?? HealthDataUnit.METER,
       totalSteps: totalSteps,
       totalStepsUnit: totalSteps == null ? null : HealthDataUnit.COUNT,
     ),

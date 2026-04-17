@@ -233,7 +233,7 @@ class MobileDiaryHealthService implements DiaryHealthService {
       HealthDataUnit.CENTIMETER => distance / 100,
       HealthDataUnit.FOOT => distance * 0.3048,
       HealthDataUnit.INCH => distance * 0.0254,
-      HealthDataUnit.METER || null => distance.toDouble(),
+      HealthDataUnit.METER => distance.toDouble(),
       HealthDataUnit.MILE => distance * 1609.344,
       HealthDataUnit.YARD => distance * 0.9144,
       _ => null,
