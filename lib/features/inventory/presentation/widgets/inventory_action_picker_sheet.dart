@@ -65,7 +65,7 @@ class InventoryActionPickerSheet extends StatelessWidget {
             borderRadius: borderRadius,
           ),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: AppInsets.pageLarge,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -109,7 +109,7 @@ class InventoryActionPickerSheet extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xxxl),
                 ConstrainedBox(
                   constraints: BoxConstraints(maxHeight: maxBodyHeight),
                   child: SingleChildScrollView(
@@ -161,8 +161,8 @@ class InventoryActionPickerOptionIcon extends StatelessWidget {
         : foregroundColor;
 
     return Container(
-      width: 44,
-      height: 44,
+      width: AppSizes.dialogIconContainer,
+      height: AppSizes.dialogIconContainer,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.72),
         shape: BoxShape.circle,

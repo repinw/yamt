@@ -348,96 +348,15 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
         if (config == null) {
           return;
         }
-        final discardReason = await showInventoryDiscardReasonDialog(
-          context,
-          itemName: widget.item.name,
-        );
-        if (!mounted || discardReason == null) {
-          return;
-        }
-        await _waitForDialogDismissal();
-        if (!mounted) {
-          return;
-        }
-        final discardedAmount = await _promptForAmount(
-          config: config,
-          title: widget.l10n.inventoryItemRemoveDiscardAction,
-          confirmLabel: widget.l10n.inventoryItemRemoveDiscardAction,
-          quickFillLabel: widget.l10n.inventoryAmountDialogAllRemainingAction,
-        );
-        if (!mounted || discardedAmount == null) {
-          return;
-        }
-        await _waitForDialogDismissal();
-        if (!mounted) {
-          return;
-        }
-        controller.takeRecentDiscardResult(widget.item.id);
-        InventoryItemDiscardResult? discardResult;
-        await _actionCoordinator.runAction(
-          () async {
-            final discarded = await widget.onThrowAwayPressed(
-              widget.item.id,
-              discardedAmount,
-              discardReason,
-            );
-            if (!discarded) {
-              return false;
-            }
-            discardResult = controller.takeRecentDiscardResult(widget.item.id);
-            return true;
-          },
-        );
-        if (!mounted) {
-          return;
-        }
-        if (discardResult != null) {
-          _showUndoSnackBar(
-            message: widget.l10n.inventoryItemRemovedMessage,
-            onUndo: () => controller.undoThrowAwayItem(
-              itemId: widget.item.id,
-              amount: discardResult!.removedAmount,
-              discardEventId: discardResult!.discardEventId,
-            ),
-          );
-        }
+        await _handleDiscardChoice(controller: controller, config: config);
         return;
       case InventoryItemRemovalChoice.consumedElsewhere:
         if (config == null) {
           return;
         }
-        final consumedAmount = await _promptForAmount(
+        await _handleConsumeElsewhereChoice(
+          controller: controller,
           config: config,
-          title: widget.l10n.inventoryItemRemoveConsumeElsewhereAction,
-          confirmLabel: widget.l10n.inventoryItemRemoveConsumeElsewhereAction,
-          quickFillLabel: widget.l10n.inventoryAmountDialogAllRemainingAction,
-        );
-        if (!mounted || consumedAmount == null) {
-          return;
-        }
-        await _waitForDialogDismissal();
-        if (!mounted) {
-          return;
-        }
-        InventoryItemReductionResult? consumptionResult;
-        await _actionCoordinator.runAction(
-          () async {
-            consumptionResult = await controller.eatItemDetailed(
-              widget.item.id,
-              consumedAmount,
-            );
-            return consumptionResult != null;
-          },
-        );
-        if (!mounted || consumptionResult == null) {
-          return;
-        }
-        _showUndoSnackBar(
-          message: widget.l10n.inventoryItemRemovedMessage,
-          onUndo: () => controller.restoreConsumedItem(
-            widget.item.id,
-            consumptionResult!.removedAmount,
-          ),
         );
         return;
       case InventoryItemRemovalChoice.deleteCompletely:
@@ -446,6 +365,107 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
         );
         return;
     }
+  }
+
+  Future<void> _handleDiscardChoice({
+    required InventoryItemsController controller,
+    required _ItemAmountInputConfig config,
+  }) async {
+    final discardReason = await showInventoryDiscardReasonDialog(
+      context,
+      itemName: widget.item.name,
+    );
+    if (!mounted || discardReason == null) {
+      return;
+    }
+    await _waitForDialogDismissal();
+    if (!mounted) {
+      return;
+    }
+
+    final discardedAmount = await _promptForAmount(
+      config: config,
+      title: widget.l10n.inventoryItemRemoveDiscardAction,
+      confirmLabel: widget.l10n.inventoryItemRemoveDiscardAction,
+      quickFillLabel: widget.l10n.inventoryAmountDialogAllRemainingAction,
+    );
+    if (!mounted || discardedAmount == null) {
+      return;
+    }
+    await _waitForDialogDismissal();
+    if (!mounted) {
+      return;
+    }
+
+    controller.takeRecentDiscardResult(widget.item.id);
+    InventoryItemDiscardResult? discardResult;
+    await _actionCoordinator.runAction(
+      () async {
+        final discarded = await widget.onThrowAwayPressed(
+          widget.item.id,
+          discardedAmount,
+          discardReason,
+        );
+        if (!discarded) {
+          return false;
+        }
+        discardResult = controller.takeRecentDiscardResult(widget.item.id);
+        return true;
+      },
+    );
+    if (!mounted || discardResult == null) {
+      return;
+    }
+
+    _showUndoSnackBar(
+      message: widget.l10n.inventoryItemRemovedMessage,
+      onUndo: () => controller.undoThrowAwayItem(
+        itemId: widget.item.id,
+        amount: discardResult!.removedAmount,
+        discardEventId: discardResult!.discardEventId,
+      ),
+    );
+  }
+
+  Future<void> _handleConsumeElsewhereChoice({
+    required InventoryItemsController controller,
+    required _ItemAmountInputConfig config,
+  }) async {
+    final consumedAmount = await _promptForAmount(
+      config: config,
+      title: widget.l10n.inventoryItemRemoveConsumeElsewhereAction,
+      confirmLabel: widget.l10n.inventoryItemRemoveConsumeElsewhereAction,
+      quickFillLabel: widget.l10n.inventoryAmountDialogAllRemainingAction,
+    );
+    if (!mounted || consumedAmount == null) {
+      return;
+    }
+    await _waitForDialogDismissal();
+    if (!mounted) {
+      return;
+    }
+
+    InventoryItemReductionResult? consumptionResult;
+    await _actionCoordinator.runAction(
+      () async {
+        consumptionResult = await controller.eatItemDetailed(
+          widget.item.id,
+          consumedAmount,
+        );
+        return consumptionResult != null;
+      },
+    );
+    if (!mounted || consumptionResult == null) {
+      return;
+    }
+
+    _showUndoSnackBar(
+      message: widget.l10n.inventoryItemRemovedMessage,
+      onUndo: () => controller.restoreConsumedItem(
+        widget.item.id,
+        consumptionResult!.removedAmount,
+      ),
+    );
   }
 
   Future<int?> _promptForAmount({
