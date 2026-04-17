@@ -110,7 +110,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         request: request,
         itemsSnapshot: items,
       ),
-      onThrowAwayItem: controller.throwAwayItem,
+      onThrowAwayItem: controller.throwAwayItemDetailed,
       onEatPreparedMeal:
           ({
             required mealId,

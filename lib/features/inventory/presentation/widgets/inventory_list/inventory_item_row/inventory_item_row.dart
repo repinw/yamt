@@ -83,7 +83,7 @@ class InventoryItemRow extends ConsumerStatefulWidget {
   onEatPressed;
 
   /// The on throw away pressed.
-  final Future<bool> Function(
+  final Future<InventoryItemDiscardResult?> Function(
     String itemId,
     int amount,
     InventoryDiscardReason reason,
@@ -397,20 +397,15 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       return;
     }
 
-    controller.takeRecentDiscardResult(widget.item.id);
     InventoryItemDiscardResult? discardResult;
     await _actionCoordinator.runAction(
       () async {
-        final discarded = await widget.onThrowAwayPressed(
+        discardResult = await widget.onThrowAwayPressed(
           widget.item.id,
           discardedAmount,
           discardReason,
         );
-        if (!discarded) {
-          return false;
-        }
-        discardResult = controller.takeRecentDiscardResult(widget.item.id);
-        return true;
+        return discardResult != null;
       },
     );
     if (!mounted || discardResult == null) {

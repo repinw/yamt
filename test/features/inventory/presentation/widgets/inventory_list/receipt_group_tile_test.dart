@@ -84,7 +84,7 @@ Widget _buildHarness({
   Future<bool> Function(String itemId)? onDeleteItem,
   Future<bool> Function(String itemId, InventoryItemEatRequest request)?
   onEatItem,
-  Future<bool> Function(
+  Future<InventoryItemDiscardResult?> Function(
     String itemId,
     int amount,
     InventoryDiscardReason reason,
@@ -98,7 +98,11 @@ Widget _buildHarness({
     activeShoppingListItemKeys: const <ShoppingListItemMatchKey>{},
     onDeleteItem: onDeleteItem ?? (_) async => true,
     onEatItem: onEatItem ?? (itemId, request) async => true,
-    onThrowAwayItem: onThrowAwayItem ?? (itemId, amount, reason) async => true,
+    onThrowAwayItem:
+        onThrowAwayItem ??
+        (itemId, amount, reason) async {
+          return (discardEventId: 'discard-$itemId', removedAmount: amount);
+        },
     isSelectionMode: isSelectionMode,
   );
   final body = SingleChildScrollView(
@@ -416,7 +420,7 @@ void main() {
           thrownAwayItemId = itemId;
           thrownAwayAmount = amount;
           thrownAwayReason = reason;
-          return true;
+          return (discardEventId: 'discard-$itemId', removedAmount: amount);
         },
       ),
     );

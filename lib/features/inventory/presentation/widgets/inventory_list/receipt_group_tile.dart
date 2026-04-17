@@ -56,7 +56,7 @@ class ReceiptGroupTile extends StatefulWidget {
   onEatItem;
 
   /// The on throw away item.
-  final Future<bool> Function(
+  final Future<InventoryItemDiscardResult?> Function(
     String itemId,
     int amount,
     InventoryDiscardReason reason,

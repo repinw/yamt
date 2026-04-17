@@ -1242,41 +1242,6 @@ void main() {
   });
 
   test(
-    'takeRecentDiscardResult consumes the latest discard metadata',
-    () async {
-      final repository = _FakeFridgeItemRepository(
-        onReadAll: () async => <InventoryItem>[_item('a')],
-      );
-      final discardEventRepository = _FakeInventoryDiscardEventRepository();
-      addTearDown(repository.dispose);
-      final container = ProviderContainer(
-        overrides: [
-          inventoryItemRepositoryProvider.overrideWithValue(repository),
-          inventoryDiscardEventRepositoryProvider.overrideWithValue(
-            discardEventRepository,
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
-      final controllerSubscription = _keepControllerAlive(container);
-      addTearDown(controllerSubscription.close);
-
-      await container.read(inventoryItemsControllerProvider.future);
-      final notifier = container.read(
-        inventoryItemsControllerProvider.notifier,
-      );
-      final result = await notifier.throwAwayItemDetailed(
-        'a',
-        1,
-        InventoryDiscardReason.other,
-      );
-
-      expect(notifier.takeRecentDiscardResult('a'), result);
-      expect(notifier.takeRecentDiscardResult('a'), isNull);
-    },
-  );
-
-  test(
     'throwAwayItem rolls back and returns false when event save fails',
     () async {
       final repository = _FakeFridgeItemRepository(

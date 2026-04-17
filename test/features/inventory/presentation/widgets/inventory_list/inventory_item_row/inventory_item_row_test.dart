@@ -52,8 +52,10 @@ class _InventoryItemRowHost extends StatelessWidget {
                         isAlreadyInShoppingList: false,
                         onDeletePressed: (itemId) async => true,
                         onEatPressed: (itemId, amount) async => true,
-                        onThrowAwayPressed: (itemId, amount, reason) async =>
-                            true,
+                        onThrowAwayPressed: (itemId, amount, reason) async => (
+                          discardEventId: 'discard-$itemId',
+                          removedAmount: amount,
+                        ),
                       );
                     },
                   )

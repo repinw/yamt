@@ -217,8 +217,6 @@ class InventoryItemsController extends _$InventoryItemsController {
   _PendingDeletedInventoryItem? _pendingDeletedItem;
   final Map<String, PendingInventoryConsumption> _pendingConsumptionsById =
       <String, PendingInventoryConsumption>{};
-  final Map<String, InventoryItemDiscardResult> _recentDiscardResultsByItemId =
-      <String, InventoryItemDiscardResult>{};
   List<InventoryItem>? _persistedItems;
   int _pendingConsumptionDraftCounter = 0;
   String? _currentDataOwnerUserId;
@@ -258,7 +256,6 @@ class InventoryItemsController extends _$InventoryItemsController {
     _persistedItems = null;
     _pendingDeletedItem = null;
     _pendingConsumptionsById.clear();
-    _recentDiscardResultsByItemId.clear();
 
     _itemsSubscription = repository.watchAll().listen(
       (items) {
@@ -541,7 +538,6 @@ class InventoryItemsController extends _$InventoryItemsController {
 
     return _runSerializedTask<InventoryItemDiscardResult?>(
       operation: () async {
-        _recentDiscardResultsByItemId.remove(itemId);
         final currentItems = await _currentPersistedItems();
         final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
         if (itemIndex < 0) {
@@ -585,12 +581,10 @@ class InventoryItemsController extends _$InventoryItemsController {
             .read(inventoryDiscardEventRepositoryProvider)
             .saveEvent(discardEvent);
         if (eventSaved) {
-          final result = (
+          return (
             discardEventId: discardEventId,
             removedAmount: discardedAmount,
           );
-          _recentDiscardResultsByItemId[itemId] = result;
-          return result;
         }
 
         await _saveItems(previousItems: nextItems, nextItems: currentItems);
@@ -671,11 +665,6 @@ class InventoryItemsController extends _$InventoryItemsController {
       },
       fallbackValue: false,
     );
-  }
-
-  /// Consume the most recent discard result for an item, if available.
-  InventoryItemDiscardResult? takeRecentDiscardResult(String itemId) {
-    return _recentDiscardResultsByItemId.remove(itemId);
   }
 
   /// Mark barcode lookup requested.
