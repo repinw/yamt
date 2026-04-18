@@ -448,9 +448,35 @@ void main() {
 
       expect(find.text('Cancel'), findsNothing);
       expect(find.text('Bind meal'), findsNothing);
-      expect(find.text('INVENTORY'), findsNothing);
       expect(find.byIcon(Icons.close_rounded), findsOneWidget);
       expect(find.byIcon(Icons.restaurant_menu_rounded), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'bottom nav keeps labels on wider layouts with larger text',
+    (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 1.25;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await tester.binding.setSurfaceSize(const Size(430, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final repository = FakeCalorieSettingsRepository();
+      addTearDown(repository.dispose);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          settingsRepository: repository,
+          initialLocation: AppRoutes.homeInventory,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('INVENTORY'), findsOneWidget);
+      expect(find.text('DIARY'), findsOneWidget);
+      expect(find.text('STATISTICS'), findsOneWidget);
+      expect(find.text('SETTINGS'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

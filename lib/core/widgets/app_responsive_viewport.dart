@@ -33,7 +33,11 @@ EdgeInsets responsiveCardPadding(
   return EdgeInsets.all(inset);
 }
 
-/// Adds app-level responsive adjustments for dense mobile layouts.
+/// Shared responsive wrapper.
+///
+/// Intentionally preserves platform accessibility settings such as text scale
+/// and touch target density. Responsive layout changes should happen in the
+/// widgets that need them.
 class AppResponsiveViewport extends StatelessWidget {
   /// Creates the responsive viewport wrapper.
   const AppResponsiveViewport({required this.child, super.key});
@@ -43,22 +47,6 @@ class AppResponsiveViewport extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final wrappedChild = Builder(
-      builder: (context) {
-        final theme = Theme.of(context);
-        if (!isCompactViewport(context)) {
-          return child;
-        }
-        return Theme(
-          data: theme.copyWith(visualDensity: VisualDensity.compact),
-          child: child,
-        );
-      },
-    );
-
-    return MediaQuery.withClampedTextScaling(
-      maxScaleFactor: 1.2,
-      child: wrappedChild,
-    );
+    return child;
   }
 }

@@ -112,7 +112,10 @@ class HomePage extends ConsumerWidget {
         onTap: () => _onTabTapped(_statisticsBranchIndex),
       ),
       HomeNavEntry(
-        item: HomeNavItem(icon: Icons.person_rounded, label: l10n.homeSettings),
+        item: HomeNavItem(
+          icon: Icons.settings_rounded,
+          label: l10n.homeSettings,
+        ),
         isSelected: currentTab == HomeTabType.settings,
         onTap: () => _onTabTapped(_settingsBranchIndex),
       ),

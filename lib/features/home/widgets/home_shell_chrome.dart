@@ -5,7 +5,9 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 
 const _compactHomeChromeTextScaleThreshold = 1.15;
-const _compactBottomNavItemWidth = 88.0;
+const _bottomNavLabelMinItemWidth = 64.0;
+const _regularHomeTopBarHeight = 76.0;
+const _compactHomeTopBarHeight = 88.0;
 
 double _effectiveTextScale(
   BuildContext context, {
@@ -21,6 +23,20 @@ double _effectiveTextScale(
 bool shouldUseCompactHomeChrome(BuildContext context) {
   return isCompactViewport(context) ||
       _effectiveTextScale(context) > _compactHomeChromeTextScaleThreshold;
+}
+
+bool _shouldShowBottomNavLabels(
+  List<HomeNavEntry> entries, {
+  required double maxWidth,
+  required double navHorizontalPadding,
+}) {
+  if (entries.isEmpty) {
+    return false;
+  }
+
+  final availablePerItem =
+      (maxWidth - (navHorizontalPadding * 2)) / entries.length;
+  return availablePerItem >= _bottomNavLabelMinItemWidth;
 }
 
 /// Tabs shown in the shared home shell.
@@ -66,7 +82,9 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   final IconData? titleIcon;
 
   @override
-  Size get preferredSize => const Size.fromHeight(76);
+  Size get preferredSize => Size.fromHeight(
+    compact ? _compactHomeTopBarHeight : _regularHomeTopBarHeight,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -103,23 +121,29 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
                             Icon(
                               titleIcon,
                               color: titleColor ?? colors.primary,
-                              size: 22,
+                              size: compact ? 20 : 22,
                             ),
-                            const SizedBox(width: AppSpacing.sm),
+                            SizedBox(
+                              width: compact ? AppSpacing.xs : AppSpacing.sm,
+                            ),
                           ],
                           Expanded(
-                            child: MediaQuery.withClampedTextScaling(
-                              maxScaleFactor: 1.15,
-                              child: Text(
-                                title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.headlineSmall
-                                    ?.copyWith(
-                                      color: titleColor ?? colors.onSurface,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                              ),
+                            child: Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  (compact
+                                          ? Theme.of(
+                                              context,
+                                            ).textTheme.titleLarge
+                                          : Theme.of(
+                                              context,
+                                            ).textTheme.headlineSmall)
+                                      ?.copyWith(
+                                        color: titleColor ?? colors.onSurface,
+                                        fontWeight: FontWeight.w800,
+                                      ),
                             ),
                           ),
                         ],
@@ -227,11 +251,11 @@ class HomeBottomNavBar extends StatelessWidget {
                     final navHorizontalPadding = compactChrome
                         ? AppSpacing.xs
                         : AppSpacing.sm;
-                    final showLabels =
-                        !compactChrome &&
-                        (constraints.maxWidth - (navHorizontalPadding * 2)) /
-                                entries.length >=
-                            _compactBottomNavItemWidth;
+                    final showLabels = _shouldShowBottomNavLabels(
+                      entries,
+                      maxWidth: constraints.maxWidth,
+                      navHorizontalPadding: navHorizontalPadding,
+                    );
 
                     return Padding(
                       padding: EdgeInsets.fromLTRB(
@@ -314,16 +338,19 @@ class _HomeBottomNavItemButton extends StatelessWidget {
               ),
               if (showLabel) ...[
                 const SizedBox(height: AppSpacing.xs),
-                MediaQuery.withClampedTextScaling(
-                  maxScaleFactor: 1.0,
-                  child: Text(
-                    item.label.toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: foregroundColor,
-                      fontSize: 10,
-                      letterSpacing: 1,
+                SizedBox(
+                  width: double.infinity,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      item.label.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: foregroundColor,
+                        fontSize: 10,
+                        letterSpacing: 1,
+                      ),
                     ),
                   ),
                 ),

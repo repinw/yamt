@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 
 void main() {
-  testWidgets('caps aggressive text scaling', (tester) async {
+  testWidgets('preserves platform text scaling', (tester) async {
     await tester.pumpWidget(
       MediaQuery(
         data: const MediaQueryData(textScaler: TextScaler.linear(2)),
@@ -14,10 +14,10 @@ void main() {
       ),
     );
 
-    expect(find.text('12.0'), findsOneWidget);
+    expect(find.text('20.0'), findsOneWidget);
   });
 
-  testWidgets('uses compact visual density on tight widths', (tester) async {
+  testWidgets('preserves theme visual density on tight widths', (tester) async {
     await tester.pumpWidget(
       MediaQuery(
         data: const MediaQueryData(size: Size(320, 640)),
@@ -31,7 +31,7 @@ void main() {
       ),
     );
 
-    expect(find.text('compact'), findsOneWidget);
+    expect(find.text('regular'), findsOneWidget);
   });
 }
 
