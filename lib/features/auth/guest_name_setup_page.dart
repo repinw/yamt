@@ -75,9 +75,9 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
             l10n: l10n,
             error: error,
           );
-          final messenger = ScaffoldMessenger.of(context);
-          messenger.hideCurrentSnackBar();
-          messenger.showSnackBar(SnackBar(content: Text(message)));
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(message)));
         },
       );
     });
@@ -228,7 +228,7 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
     try {
       _seedColorController.previewSeedColor(_initialSeedColor);
       _themeModeController.previewThemeMode(_initialThemeMode);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       developer.log(
         'Guest setup preview restore failed during dispose',
         name: 'GuestNameSetupPage',

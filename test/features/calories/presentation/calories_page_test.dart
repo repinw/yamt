@@ -34,6 +34,8 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_health_trends_window_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -785,6 +787,9 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
+    container.read(
+      calorieVisibleWindowControllerProvider.notifier,
+    ).setWindowEnd(today);
     container.read(calorieDayControllerProvider.notifier).setDay(selectedDay);
 
     await tester.pumpWidget(_buildHarnessWithContainer(container: container));

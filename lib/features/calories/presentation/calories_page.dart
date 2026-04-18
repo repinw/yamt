@@ -74,9 +74,13 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(calorieEntriesControllerProvider, _logEntriesLoadErrorOnce);
-    ref.listen(calorieDayViewDataProvider, _cacheResolvedDayView);
-    ref.listen(calorieWeeklyCheckInViewModelProvider, _cacheWeeklyCheckInView);
+    ref
+      ..listen(calorieEntriesControllerProvider, _logEntriesLoadErrorOnce)
+      ..listen(calorieDayViewDataProvider, _cacheResolvedDayView)
+      ..listen(
+        calorieWeeklyCheckInViewModelProvider,
+        _cacheWeeklyCheckInView,
+      );
 
     final l10n = AppLocalizations.of(context)!;
     final dayController = ref.read(calorieDayControllerProvider.notifier);
@@ -92,7 +96,9 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
       if (dayViewState.hasError) {
         return CaloriesErrorView(
           onRetry: () {
-            ref.read(calorieEntriesControllerProvider.notifier).refresh();
+            unawaited(
+              ref.read(calorieEntriesControllerProvider.notifier).refresh(),
+            );
           },
           message: l10n.caloriesLoadFailed,
           retryLabel: l10n.caloriesRetryAction,
@@ -276,7 +282,7 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
       if (!mounted) {
         return;
       }
-      _openWeeklyCheckInDialog(viewModel);
+      unawaited(_openWeeklyCheckInDialog(viewModel));
     });
   }
 
@@ -341,7 +347,7 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
     ref
         .read(calorieHealthTrendsWindowControllerProvider.notifier)
         .setWindowEnd(resolvedWindowEnd);
-    context.push(AppRoutes.homeStatisticsWeight);
+    unawaited(context.push(AppRoutes.homeStatisticsWeight));
   }
 
   Future<void> _toggleSkippedSelectedDay({
