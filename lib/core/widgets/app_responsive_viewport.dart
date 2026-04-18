@@ -13,6 +13,13 @@ double responsivePageHorizontalPadding(BuildContext context) {
   return isCompactViewport(context) ? AppSpacing.md : AppSpacing.xl;
 }
 
+/// Bottom padding that keeps scrollable home-shell content above chrome.
+double homeShellPageBottomPadding(BuildContext context) {
+  return AppSizes.homeShellBottomBarClearance +
+      AppSpacing.xxxxl +
+      MediaQuery.paddingOf(context).bottom;
+}
+
 /// Shared page/list padding for scrollable screens.
 EdgeInsets responsivePagePadding(
   BuildContext context, {
@@ -31,22 +38,4 @@ EdgeInsets responsiveCardPadding(
 }) {
   final inset = isCompactViewport(context) ? compact : regular;
   return EdgeInsets.all(inset);
-}
-
-/// Shared responsive wrapper.
-///
-/// Intentionally preserves platform accessibility settings such as text scale
-/// and touch target density. Responsive layout changes should happen in the
-/// widgets that need them.
-class AppResponsiveViewport extends StatelessWidget {
-  /// Creates the responsive viewport wrapper.
-  const AppResponsiveViewport({required this.child, super.key});
-
-  /// The wrapped subtree.
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return child;
-  }
 }

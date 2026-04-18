@@ -147,7 +147,8 @@ class _InventoryManualAddPageState
   Future<InventoryItem?> _persistProduct({
     required InventoryItem item,
     required String barcode,
-    required bool requiresGlobalPersistence, OffProductSearchResult? selectedProduct,
+    required bool requiresGlobalPersistence,
+    OffProductSearchResult? selectedProduct,
     String? selectedGlobalFoodItemId,
     String? eatNowWeight,
   }) async {

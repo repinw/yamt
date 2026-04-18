@@ -51,7 +51,10 @@ class FirestoreCalorieBarcodeBackfillRepository
 
   @override
   Future<bool> enqueueFingerprintLookup({
-    required String fingerprint, required String itemName, required String trigger, String? itemId,
+    required String fingerprint,
+    required String itemName,
+    required String trigger,
+    String? itemId,
     String? brand,
     bool forceRetry = false,
   }) async {
@@ -361,7 +364,10 @@ class _UnavailableCalorieBarcodeBackfillRepository
 
   @override
   Future<bool> enqueueFingerprintLookup({
-    required String fingerprint, required String itemName, required String trigger, String? itemId,
+    required String fingerprint,
+    required String itemName,
+    required String trigger,
+    String? itemId,
     String? brand,
     bool forceRetry = false,
   }) async {

@@ -117,7 +117,7 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
       padding: responsivePagePadding(
         context,
         top: AppSpacing.lg,
-        bottom: 140,
+        bottom: homeShellPageBottomPadding(context),
       ),
       children: <Widget>[
         CaloriesDayNavigationPager(

@@ -98,4 +98,7 @@ abstract final class AppSizes {
 
   /// Stroke width for progress indicators.
   static const double progressStrokeWidth = 2;
+
+  /// Base clearance reserved for the floating home shell bottom chrome.
+  static const double homeShellBottomBarClearance = 96;
 }

@@ -1,57 +1,160 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 
 void main() {
-  testWidgets('preserves platform text scaling', (tester) async {
+  testWidgets('isCompactViewport is true below compact breakpoint', (
+    tester,
+  ) async {
+    late bool isCompact;
+
     await tester.pumpWidget(
-      MediaQuery(
-        data: const MediaQueryData(textScaler: TextScaler.linear(2)),
-        child: const Directionality(
-          textDirection: TextDirection.ltr,
-          child: AppResponsiveViewport(child: _TextScaleProbe()),
-        ),
+      _buildProbe(
+        size: const Size(359, 800),
+        builder: (context) {
+          isCompact = isCompactViewport(context);
+          return const SizedBox.shrink();
+        },
       ),
     );
 
-    expect(find.text('20.0'), findsOneWidget);
+    expect(isCompact, isTrue);
   });
 
-  testWidgets('preserves theme visual density on tight widths', (tester) async {
+  testWidgets('responsivePageHorizontalPadding uses compact spacing', (
+    tester,
+  ) async {
+    late double padding;
+
     await tester.pumpWidget(
-      MediaQuery(
-        data: const MediaQueryData(size: Size(320, 640)),
-        child: Theme(
-          data: ThemeData(useMaterial3: true),
-          child: const Directionality(
-            textDirection: TextDirection.ltr,
-            child: AppResponsiveViewport(child: _VisualDensityProbe()),
-          ),
-        ),
+      _buildProbe(
+        size: const Size(320, 800),
+        builder: (context) {
+          padding = responsivePageHorizontalPadding(context);
+          return const SizedBox.shrink();
+        },
       ),
     );
 
-    expect(find.text('regular'), findsOneWidget);
+    expect(padding, AppSpacing.md);
+  });
+
+  testWidgets('responsivePageHorizontalPadding uses regular spacing', (
+    tester,
+  ) async {
+    late double padding;
+
+    await tester.pumpWidget(
+      _buildProbe(
+        size: const Size(360, 800),
+        builder: (context) {
+          padding = responsivePageHorizontalPadding(context);
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+
+    expect(padding, AppSpacing.xl);
+  });
+
+  testWidgets('responsivePagePadding applies responsive horizontal inset', (
+    tester,
+  ) async {
+    late EdgeInsets padding;
+
+    await tester.pumpWidget(
+      _buildProbe(
+        size: const Size(320, 800),
+        builder: (context) {
+          padding = responsivePagePadding(
+            context,
+            top: AppSpacing.lg,
+            bottom: AppSpacing.xl,
+          );
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+
+    expect(
+      padding,
+      const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.xl,
+      ),
+    );
+  });
+
+  testWidgets('responsiveCardPadding uses compact inset on narrow screens', (
+    tester,
+  ) async {
+    late EdgeInsets padding;
+
+    await tester.pumpWidget(
+      _buildProbe(
+        size: const Size(320, 800),
+        builder: (context) {
+          padding = responsiveCardPadding(context);
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+
+    expect(padding, const EdgeInsets.all(AppSpacing.lg));
+  });
+
+  testWidgets('responsiveCardPadding uses regular inset on wider screens', (
+    tester,
+  ) async {
+    late EdgeInsets padding;
+
+    await tester.pumpWidget(
+      _buildProbe(
+        size: const Size(430, 800),
+        builder: (context) {
+          padding = responsiveCardPadding(context);
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+
+    expect(padding, const EdgeInsets.all(AppSpacing.xl));
+  });
+
+  testWidgets('homeShellPageBottomPadding includes shell clearance', (
+    tester,
+  ) async {
+    late double padding;
+
+    await tester.pumpWidget(
+      _buildProbe(
+        size: const Size(430, 800),
+        builder: (context) {
+          padding = homeShellPageBottomPadding(context);
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+
+    expect(
+      padding,
+      AppSizes.homeShellBottomBarClearance + AppSpacing.xxxxl,
+    );
   });
 }
 
-class _TextScaleProbe extends StatelessWidget {
-  const _TextScaleProbe();
-
-  @override
-  Widget build(BuildContext context) {
-    final scaledFontSize = MediaQuery.textScalerOf(context).scale(10);
-    return Text(scaledFontSize.toStringAsFixed(1));
-  }
-}
-
-class _VisualDensityProbe extends StatelessWidget {
-  const _VisualDensityProbe();
-
-  @override
-  Widget build(BuildContext context) {
-    final density = Theme.of(context).visualDensity;
-    final isCompact = density == VisualDensity.compact;
-    return Text(isCompact ? 'compact' : 'regular');
-  }
+Widget _buildProbe({
+  required Size size,
+  required WidgetBuilder builder,
+}) {
+  return MediaQuery(
+    data: MediaQueryData(size: size),
+    child: Directionality(
+      textDirection: TextDirection.ltr,
+      child: Builder(builder: builder),
+    ),
+  );
 }

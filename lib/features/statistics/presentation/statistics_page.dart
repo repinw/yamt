@@ -42,7 +42,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
       padding: responsivePagePadding(
         context,
         top: AppSpacing.lg,
-        bottom: 140,
+        bottom: homeShellPageBottomPadding(context),
       ),
       children: [
         _StatisticsHeroCard(
