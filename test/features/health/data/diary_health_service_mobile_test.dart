@@ -141,12 +141,9 @@ void main() {
           _intervalKey(day, dayEnd): 6700,
         },
       );
-      final service = MobileDiaryHealthService(
-        health: fakeHealth,
-        userHeightCm: 160,
-      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
 
-      final dayData = await service.loadDayData(day: day);
+      final dayData = await service.loadDayData(day: day, userHeightCm: 160);
       final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
 
       expect(dayData.workouts.single.totalSteps, 6840);
@@ -155,6 +152,107 @@ void main() {
       expect(fakeHealth.requestedStepIntervals, <String>[
         _intervalKey(day, dayEnd),
       ]);
+    },
+  );
+
+  test(
+    'loadDayData clamps very small height to the minimum personalized height',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 18, minutes: 5));
+      final workoutEnd = day.add(const Duration(hours: 18, minutes: 41));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 422,
+              totalDistance: 5168,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 10000,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day, userHeightCm: 50);
+
+      expect(dayData.workouts.single.totalSteps, 9120);
+    },
+  );
+
+  test(
+    'loadDayData clamps very large height to the maximum personalized height',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 18, minutes: 5));
+      final workoutEnd = day.add(const Duration(hours: 18, minutes: 41));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 422,
+              totalDistance: 5168,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 5000,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day, userHeightCm: 300);
+
+      expect(dayData.workouts.single.totalSteps, 4378);
+    },
+  );
+
+  test(
+    'loadDayData treats zero and negative height as the default step length',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 18, minutes: 5));
+      final workoutEnd = day.add(const Duration(hours: 18, minutes: 41));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 422,
+              totalDistance: 5168,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: const <HealthDataPoint>[],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 7000,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final zeroHeightDayData = await service.loadDayData(
+        day: day,
+        userHeightCm: 0,
+      );
+      final negativeHeightDayData = await service.loadDayData(
+        day: day,
+        userHeightCm: -10,
+      );
+
+      expect(zeroHeightDayData.workouts.single.totalSteps, 6080);
+      expect(negativeHeightDayData.workouts.single.totalSteps, 6080);
     },
   );
 

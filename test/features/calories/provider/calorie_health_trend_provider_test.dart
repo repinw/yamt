@@ -91,7 +91,10 @@ class _FakeDiaryHealthService implements DiaryHealthService {
   final Map<String, DiaryHealthDayData> dataByDay;
 
   @override
-  Future<DiaryHealthDayData> loadDayData({required DateTime day}) async {
+  Future<DiaryHealthDayData> loadDayData({
+    required DateTime day,
+    double? userHeightCm,
+  }) async {
     return dataByDay[diaryDayKey(day)] ??
         const DiaryHealthDayData(totalSteps: 0, workouts: []);
   }

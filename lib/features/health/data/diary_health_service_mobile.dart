@@ -26,25 +26,24 @@ const _stepBasedWorkoutTypes = <HealthWorkoutActivityType>{
 };
 
 /// Create diary health service.
-DiaryHealthService createDiaryHealthService({double? userHeightCm}) {
-  return MobileDiaryHealthService(userHeightCm: userHeightCm);
-}
+DiaryHealthService createDiaryHealthService() => MobileDiaryHealthService();
 
 /// Defines mobile diary health service.
 class MobileDiaryHealthService implements DiaryHealthService {
   /// Creates an instance.
-  MobileDiaryHealthService({Health? health, double? userHeightCm})
-    : _health = health ?? Health(),
-      _userHeightCm = _normalizeUserHeightCm(userHeightCm);
+  MobileDiaryHealthService({Health? health}) : _health = health ?? Health();
 
   final Health _health;
-  final double? _userHeightCm;
   bool _isConfigured = false;
 
   @override
-  Future<DiaryHealthDayData> loadDayData({required DateTime day}) async {
+  Future<DiaryHealthDayData> loadDayData({
+    required DateTime day,
+    double? userHeightCm,
+  }) async {
     await _ensureConfigured();
 
+    final normalizedUserHeightCm = _normalizeUserHeightCm(userHeightCm);
     final dayStart = DateTime(day.year, day.month, day.day);
     final dayEnd = dayStart.add(const Duration(days: 1));
     final totalSteps =
@@ -69,6 +68,7 @@ class MobileDiaryHealthService implements DiaryHealthService {
               (point) => _resolveWorkout(
                 point: point,
                 activeEnergySamples: activeEnergySamples,
+                userHeightCm: normalizedUserHeightCm,
               ),
             )
             .toList(growable: false)
@@ -91,10 +91,12 @@ class MobileDiaryHealthService implements DiaryHealthService {
   HealthWorkoutSession _resolveWorkout({
     required HealthDataPoint point,
     required List<HealthActiveEnergySample> activeEnergySamples,
+    required double? userHeightCm,
   }) {
     final workout = _backfillWorkoutSteps(
       workout: _buildWorkoutSession(point),
       point: point,
+      userHeightCm: userHeightCm,
     );
     return mergeWorkoutCalories(
       workout: workout,
@@ -130,12 +132,16 @@ class MobileDiaryHealthService implements DiaryHealthService {
   HealthWorkoutSession _backfillWorkoutSteps({
     required HealthWorkoutSession workout,
     required HealthDataPoint point,
+    required double? userHeightCm,
   }) {
     if (!_needsWorkoutStepBackfill(point: point, workout: workout)) {
       return workout;
     }
 
-    final estimatedSteps = _estimateStepsFromWorkoutDistance(point);
+    final estimatedSteps = _estimateStepsFromWorkoutDistance(
+      point,
+      userHeightCm: userHeightCm,
+    );
     if (estimatedSteps == null || estimatedSteps <= 0) {
       return workout;
     }
@@ -199,7 +205,10 @@ class MobileDiaryHealthService implements DiaryHealthService {
     );
   }
 
-  int? _estimateStepsFromWorkoutDistance(HealthDataPoint point) {
+  int? _estimateStepsFromWorkoutDistance(
+    HealthDataPoint point, {
+    required double? userHeightCm,
+  }) {
     final workoutValue = point.value is WorkoutHealthValue
         ? point.value as WorkoutHealthValue
         : null;
@@ -219,7 +228,7 @@ class MobileDiaryHealthService implements DiaryHealthService {
       defaultStepLengthMeters: _defaultStepLengthMetersForWorkoutType(
         workoutValue.workoutActivityType,
       ),
-      userHeightCm: _userHeightCm,
+      userHeightCm: userHeightCm,
     );
     final estimatedSteps = (distanceMeters / stepLengthMeters).round();
     return estimatedSteps > 0 ? estimatedSteps : null;

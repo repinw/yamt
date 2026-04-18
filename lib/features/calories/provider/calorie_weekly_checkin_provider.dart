@@ -337,6 +337,7 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
   };
   var todayActiveKcal = 0;
   var representativeWeightByDay = const <String, double>{};
+  final userHeightCm = settings.calculatorProfile?.heightCm;
 
   if (status.accessState == HealthDataAccessState.ready) {
     final healthWeightSamples = await ref
@@ -360,7 +361,12 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
 
     final diaryHealthService = ref.watch(diaryHealthServiceProvider);
     final windowDayData = await Future.wait(
-      days.map((day) => diaryHealthService.loadDayData(day: day)),
+      days.map(
+        (day) => diaryHealthService.loadDayData(
+          day: day,
+          userHeightCm: userHeightCm,
+        ),
+      ),
     );
     for (var index = 0; index < days.length; index += 1) {
       activeKcalByDay[diaryDayKey(days[index])] = _resolveActiveKcal(
@@ -371,7 +377,10 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
 
     todayActiveKcal = _resolveActiveKcal(
       day: today,
-      dayData: await diaryHealthService.loadDayData(day: today),
+      dayData: await diaryHealthService.loadDayData(
+        day: today,
+        userHeightCm: userHeightCm,
+      ),
     );
   }
   if (anchorWeightSourceDay != null) {
