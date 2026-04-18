@@ -71,12 +71,3 @@ class CalorieEntryCreateArgs {
   /// The preselected logged at.
   final DateTime? preselectedLoggedAt;
 }
-
-/// Defines calorie barcode scan args.
-class CalorieBarcodeScanArgs {
-  /// The calorie barcode scan args.
-  const CalorieBarcodeScanArgs({this.inventoryContext});
-
-  /// The inventory context.
-  final CalorieInventoryCreateContext? inventoryContext;
-}

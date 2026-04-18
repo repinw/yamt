@@ -121,11 +121,6 @@ abstract final class CaloriesPageKeys {
     return Key('calories_entry_tile_$entryId');
   }
 
-  /// Delete restore checkbox.
-  static Key deleteRestoreCheckbox(String entryId) {
-    return Key('calories_delete_restore_$entryId');
-  }
-
   /// Entry image.
   static Key entryImage(String entryId) {
     return Key('calories_entry_image_$entryId');
@@ -334,6 +329,47 @@ abstract final class CalorieEntryEditorKeys {
   static const saveButton = Key('calorie_entry_save_button');
 }
 
+/// Defines calorie entry detail keys.
+abstract final class CalorieEntryDetailKeys {
+  /// The logged day button.
+  static const loggedDayButton = Key('calorie_entry_detail_logged_day_button');
+
+  /// The selected meal dropdown.
+  static const mealSelector = Key('calorie_entry_detail_meal_selector');
+
+  /// The nutrition strip.
+  static const nutritionStrip = Key('calorie_entry_detail_nutrition_strip');
+
+  /// The amount value.
+  static const amountValue = Key('calorie_entry_detail_amount_value');
+
+  /// The brand value.
+  static const brandValue = Key('calorie_entry_detail_brand_value');
+
+  /// The return to inventory button.
+  static const returnToInventoryButton = Key(
+    'calorie_entry_detail_return_to_inventory_button',
+  );
+
+  /// The ingredients table.
+  static const ingredientsTable = Key('calorie_entry_detail_ingredients_table');
+
+  /// Ingredient name cell.
+  static Key ingredientNameCell(int index) {
+    return Key('calorie_entry_detail_ingredient_name_$index');
+  }
+
+  /// Ingredient amount cell.
+  static Key ingredientAmountCell(int index) {
+    return Key('calorie_entry_detail_ingredient_amount_$index');
+  }
+
+  /// Ingredient kcal cell.
+  static Key ingredientKcalCell(int index) {
+    return Key('calorie_entry_detail_ingredient_kcal_$index');
+  }
+}
+
 /// Defines calorie eating window dialog keys.
 abstract final class CalorieEatingWindowDialogKeys {
   /// The change start button.
@@ -346,19 +382,4 @@ abstract final class CalorieEatingWindowDialogKeys {
 
   /// The save button.
   static const saveButton = Key('calorie_eating_window_save_button');
-}
-
-/// Defines calorie barcode scan keys.
-abstract final class CalorieBarcodeScanKeys {
-  /// The candidate sheet.
-  static const candidateSheet = Key('calorie_barcode_candidate_sheet');
-
-  /// The not found dialog.
-  static const notFoundDialog = Key('calorie_barcode_not_found_dialog');
-
-  /// The not found manual button.
-  static const notFoundManualButton = Key('calorie_barcode_not_found_manual');
-
-  /// The not found ocr button.
-  static const notFoundOcrButton = Key('calorie_barcode_not_found_ocr');
 }

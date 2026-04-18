@@ -4,11 +4,11 @@ import 'dart:developer' show log;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -20,6 +20,8 @@ import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_prefill.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_entry_details_view.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -31,6 +33,7 @@ const _editorLogName = 'CalorieEntryEditorPage';
 @Dependencies([
   InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
+  calorieEntryDeleteFlow,
 ])
 class CalorieEntryEditorPage extends ConsumerStatefulWidget {
   /// The calorie entry editor page.
@@ -88,6 +91,8 @@ class _CalorieEntryEditorPageState
   ProviderSubscription<AsyncValue<CalorieEntry?>>? _entrySubscription;
   bool _isSaving = false;
   bool _didCommitPendingConsumption = false;
+  bool _allowDirtyDetailsDismiss = false;
+  bool _isShowingDiscardDialog = false;
 
   @override
   void initState() {
@@ -180,11 +185,12 @@ class _CalorieEntryEditorPageState
       data: (entry) {
         if (entry == null) {
           return Scaffold(
-            appBar: AppBar(title: Text(l10n.caloriesEditEntryTitle)),
+            appBar: AppBar(title: Text(l10n.caloriesEntryDetailsTitle)),
             body: Center(child: Text(l10n.caloriesEntryNotFound)),
           );
         }
-        return _buildEditorScaffold(context, user: user, initialEntry: entry);
+        _initializeFromEntry(entry);
+        return _buildExistingEntryScaffold(context, entry: entry);
       },
       loading: () => const Scaffold(
         body: Center(
@@ -198,7 +204,7 @@ class _CalorieEntryEditorPageState
       ),
       error: (error, stackTrace) {
         return Scaffold(
-          appBar: AppBar(title: Text(l10n.caloriesEditEntryTitle)),
+          appBar: AppBar(title: Text(l10n.caloriesEntryDetailsTitle)),
           body: Center(child: Text(l10n.caloriesLoadFailed)),
         );
       },
@@ -222,6 +228,7 @@ class _CalorieEntryEditorPageState
     _mealType = entry?.mealType ?? MealType.defaultForDateTime(DateTime.now());
     _consumedUnit = entry?.consumedUnit ?? ConsumedUnit.grams;
     _loggedAt = entry?.loggedAt ?? DateTime.now();
+    _allowDirtyDetailsDismiss = false;
     _initializedEntryId = nextEntryId;
     return true;
   }
@@ -275,6 +282,44 @@ class _CalorieEntryEditorPageState
         setState(() {});
       },
       fireImmediately: true,
+    );
+  }
+
+  Widget _buildExistingEntryScaffold(
+    BuildContext context, {
+    required CalorieEntry entry,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    final hasPendingChanges = _hasPendingChangesForEntry(entry);
+
+    return PopScope<void>(
+      canPop:
+          !_isSaving && (!hasPendingChanges || _allowDirtyDetailsDismiss),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop || _isSaving || !hasPendingChanges) {
+          return;
+        }
+        unawaited(_requestCloseExistingEntry(context, entry: entry));
+      },
+      child: CalorieEntryDetailsView(
+        title: l10n.caloriesEntryDetailsTitle,
+        entry: entry,
+        selectedMealType: _mealType,
+        selectedLoggedAt: _loggedAt,
+        isSaving: _isSaving,
+        onClose: () {
+          unawaited(_requestCloseExistingEntry(context, entry: entry));
+        },
+        onMealTypeChanged: (mealType) {
+          setState(() {
+            _mealType = mealType;
+          });
+        },
+        onPickLoggedAt: () => _pickDate(context),
+        onSave: () => _saveExistingEntry(context, entry: entry),
+        onReturnToInventory: () =>
+            _returnEntryToInventory(context, entry: entry),
+      ),
     );
   }
 
@@ -624,14 +669,16 @@ class _CalorieEntryEditorPageState
     final calorieEntriesController = ref.read(
       calorieEntriesControllerProvider.notifier,
     );
+    Future<bool> persistInventoryBackedEntry(CalorieEntry entry) {
+      return inventoryBackedSaveFlow!.saveEntry(
+        entry: entry,
+        pendingConsumptionId: inventoryBackedPendingConsumptionId!,
+      );
+    }
+
     final persistEntry = inventoryBackedSaveFlow == null
         ? null
-        : (CalorieEntry entry) {
-            return inventoryBackedSaveFlow.saveEntry(
-              entry: entry,
-              pendingConsumptionId: inventoryBackedPendingConsumptionId!,
-            );
-          };
+        : persistInventoryBackedEntry;
 
     log(
       'Saving calorie entry ${entry.id} '
@@ -656,13 +703,13 @@ class _CalorieEntryEditorPageState
 
     if (!mounted || !context.mounted) {
       log(
-        'Calorie entry editor unmounted before save UI handling for ${entry.id}.',
+        'Calorie entry editor unmounted before save UI handling for '
+        '${entry.id}.',
         name: _editorLogName,
       );
       return;
     }
 
-    final router = GoRouter.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final mountedL10n = AppLocalizations.of(context)!;
 
@@ -676,9 +723,7 @@ class _CalorieEntryEditorPageState
         'Calorie entry ${entry.id} saved successfully. Closing editor.',
         name: _editorLogName,
       );
-      if (router.canPop()) {
-        router.pop();
-      }
+      _maybePopRootNavigator(context);
       return;
     }
 
@@ -687,6 +732,180 @@ class _CalorieEntryEditorPageState
       name: _editorLogName,
     );
     _showFailureSnackBar(messenger, mountedL10n.caloriesSaveFailed);
+  }
+
+  Future<void> _saveExistingEntry(
+    BuildContext context, {
+    required CalorieEntry entry,
+  }) async {
+    if (_mealType == entry.mealType && _loggedAt == entry.loggedAt) {
+      return;
+    }
+
+    final controller = ref.read(calorieEntriesControllerProvider.notifier);
+    final updatedAt = DateTime.now();
+    final updatedEntry = entry
+        .copyWith(
+          mealType: _mealType,
+          loggedAt: _loggedAt,
+          updatedAt: updatedAt,
+        )
+        .recalculateTotals(updatedAt: updatedAt);
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    final saved = await controller.saveEntry(updatedEntry);
+    if (!mounted || !context.mounted) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = false;
+    });
+
+    if (saved) {
+      _maybePopRootNavigator(context);
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    _showFailureSnackBar(messenger, l10n.caloriesSaveFailed);
+  }
+
+  Future<void> _returnEntryToInventory(
+    BuildContext context, {
+    required CalorieEntry entry,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(
+            entry.canReturnPreparedMealToInventory
+                ? l10n.caloriesReturnPreparedMealDialogTitle
+                : l10n.caloriesReturnPreparedMealConfirmAction,
+          ),
+          content: Text(
+            entry.canReturnPreparedMealToInventory
+                ? l10n.caloriesReturnPreparedMealDialogMessage(entry.name)
+                : l10n.caloriesDeleteRestoreInventoryQuestion,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.inventoryReceiptReviewCancelAction),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(l10n.caloriesReturnPreparedMealConfirmAction),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !mounted || !context.mounted) {
+      return;
+    }
+
+    final deleteFlow = ref.read(calorieEntryDeleteFlowProvider);
+    setState(() {
+      _isSaving = true;
+    });
+
+    final result = await deleteFlow.deleteEntry(
+      entry: entry,
+      restoreToInventory: true,
+    );
+    if (!mounted || !context.mounted) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = false;
+    });
+
+    if (result.isSuccess) {
+      _maybePopRootNavigator(context);
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    final message = switch (result.failureReason) {
+      CalorieEntryDeleteFailureReason.restoreFailed =>
+        entry.canReturnPreparedMealToInventory
+            ? l10n.caloriesReturnPreparedMealFailed
+            : l10n.caloriesDeleteRestoreFailed,
+      CalorieEntryDeleteFailureReason.deleteFailed ||
+      null => l10n.caloriesDeleteFailed,
+    };
+    messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  bool _hasPendingChangesForEntry(CalorieEntry entry) {
+    return _mealType != entry.mealType || _loggedAt != entry.loggedAt;
+  }
+
+  Future<void> _requestCloseExistingEntry(
+    BuildContext context, {
+    required CalorieEntry entry,
+  }) async {
+    if (_isSaving) {
+      return;
+    }
+    if (!_hasPendingChangesForEntry(entry)) {
+      _maybePopRootNavigator(context);
+      return;
+    }
+    if (_isShowingDiscardDialog) {
+      return;
+    }
+
+    _isShowingDiscardDialog = true;
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final shouldDiscard = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: Text(l10n.caloriesDiscardChangesDialogTitle),
+            content: Text(l10n.caloriesDiscardChangesDialogMessage),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: Text(l10n.inventoryReceiptReviewCancelAction),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(l10n.caloriesDiscardChangesConfirmAction),
+              ),
+            ],
+          );
+        },
+      );
+      if (shouldDiscard != true || !mounted || !context.mounted) {
+        return;
+      }
+
+      setState(() {
+        _allowDirtyDetailsDismiss = true;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !context.mounted) {
+          return;
+        }
+        _maybePopRootNavigator(context);
+      });
+    } finally {
+      _isShowingDiscardDialog = false;
+    }
+  }
+
+  void _maybePopRootNavigator(BuildContext context) {
+    unawaited(Navigator.of(context, rootNavigator: true).maybePop());
   }
 
   String? _positiveNumberValidator(String? value) {
@@ -723,8 +942,9 @@ class _CalorieEntryEditorPageState
   }
 
   void _showFailureSnackBar(ScaffoldMessengerState messenger, String message) {
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _onPopInvokedWithResult(bool didPop, Object? result) {

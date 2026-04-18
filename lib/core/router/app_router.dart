@@ -11,7 +11,6 @@ import 'package:yamt/features/calories/application/'
     'calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/calories/presentation/calorie_barcode_scan_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/'
     'calorie_goal_onboarding_page.dart';
@@ -135,34 +134,32 @@ Raw<GoRouter> appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.homeCaloriesEntryCreate,
+        redirect: (context, state) {
+          final args = state.extra;
+          if (args is! CalorieEntryCreateArgs ||
+              args.inventoryContext == null) {
+            return AppRoutes.homeInventory;
+          }
+          return null;
+        },
         builder: (context, state) {
-          final args = state.extra is CalorieEntryCreateArgs
-              ? state.extra! as CalorieEntryCreateArgs
-              : null;
+          final args = state.extra! as CalorieEntryCreateArgs;
           return CalorieEntryEditorPage(
-            prefilledProfile: args?.prefilledProfile,
-            scannedSourceRef: args?.scannedSourceRef,
-            inventoryContext: args?.inventoryContext,
-            preselectedMealType: args?.preselectedMealType,
-            preselectedLoggedAt: args?.preselectedLoggedAt,
+            prefilledProfile: args.prefilledProfile,
+            scannedSourceRef: args.scannedSourceRef,
+            inventoryContext: args.inventoryContext,
+            preselectedMealType: args.preselectedMealType,
+            preselectedLoggedAt: args.preselectedLoggedAt,
           );
         },
       ),
       GoRoute(
-        path: AppRoutes.homeCaloriesEntryEdit,
-        builder: (context, state) {
+        path: AppRoutes.homeCaloriesEntryDetails,
+        pageBuilder: (context, state) {
           final entryId = state.pathParameters['entryId'];
-          return CalorieEntryEditorPage(entryId: entryId);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.homeCaloriesBarcodeScan,
-        builder: (context, state) {
-          final args = state.extra is CalorieBarcodeScanArgs
-              ? state.extra! as CalorieBarcodeScanArgs
-              : null;
-          return CalorieBarcodeScanPage(
-            inventoryContext: args?.inventoryContext,
+          return _ModalBottomSheetPage<void>(
+            key: state.pageKey,
+            child: CalorieEntryEditorPage(entryId: entryId),
           );
         },
       ),
@@ -330,6 +327,22 @@ class AppRouterRefreshListenable extends ChangeNotifier {
   /// Triggers one router refresh cycle.
   void refresh() {
     notifyListeners();
+  }
+}
+
+class _ModalBottomSheetPage<T> extends Page<T> {
+  const _ModalBottomSheetPage({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    return ModalBottomSheetRoute<T>(
+      settings: this,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => child,
+    );
   }
 }
 

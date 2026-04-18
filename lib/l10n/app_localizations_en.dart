@@ -1749,6 +1749,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesEditEntryTitle => 'Edit calorie entry';
 
   @override
+  String get caloriesEntryDetailsTitle => 'Calorie entry details';
+
+  @override
+  String get caloriesDiscardChangesDialogTitle => 'Discard unsaved changes?';
+
+  @override
+  String get caloriesDiscardChangesDialogMessage => 'Your changes to this diary entry have not been saved yet.';
+
+  @override
+  String get caloriesDiscardChangesConfirmAction => 'Discard changes';
+
+  @override
   String get caloriesEntryNotFound => 'Entry not found.';
 
   @override

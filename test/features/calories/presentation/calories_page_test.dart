@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
@@ -14,11 +15,14 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
+import 'package:yamt/features/calories/application/'
+    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/calories_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
@@ -37,13 +41,14 @@ import 'package:yamt/features/health/provider/'
     'health_connection_service_provider.dart';
 import 'package:yamt/features/health/provider/'
     'manual_health_weight_repository_provider.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
 import '../../../support/fake_local_image_store.dart';
 import '../support/fake_calories_repositories.dart';
+
+class _MockUser extends Mock implements User {}
 
 CalorieEntry _entry(
   String id, {
@@ -160,12 +165,17 @@ List<Override> _weeklyCheckInOverrides({
   ];
 }
 
-@Dependencies([calorieEntryDeleteFlow])
+@Dependencies([
+  calorieEntryDeleteFlow,
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 Widget _buildHarness({
   required FakeCalorieLogRepository logRepository,
   required FakeCalorieSettingsRepository settingsRepository,
   List<Override> overrides = const <Override>[],
   DateTime? referenceNow,
+  bool authenticated = true,
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeCalories,
@@ -187,8 +197,12 @@ Widget _buildHarness({
         },
       ),
       GoRoute(
-        path: AppRoutes.homeCaloriesEntryEdit,
-        builder: (context, state) => const Scaffold(body: Text('Edit')),
+        path: AppRoutes.homeCaloriesEntryDetails,
+        builder: (context, state) {
+          return CalorieEntryEditorPage(
+            entryId: state.pathParameters['entryId'],
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.homeStatisticsWeight,
@@ -197,9 +211,16 @@ Widget _buildHarness({
     ],
   );
 
+  final user = _MockUser();
+  when(() => user.uid).thenReturn('user-1');
+
   return _ManagedProviderContainerScope(
     key: UniqueKey(),
     overrides: [
+      if (authenticated)
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(user),
+        ),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       ...overrides,
@@ -249,7 +270,11 @@ class _ManagedProviderContainerScopeState
   }
 }
 
-@Dependencies([calorieEntryDeleteFlow])
+@Dependencies([
+  calorieEntryDeleteFlow,
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 Widget _buildHarnessWithContainer({required ProviderContainer container}) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeCalories,
@@ -269,8 +294,12 @@ Widget _buildHarnessWithContainer({required ProviderContainer container}) {
         },
       ),
       GoRoute(
-        path: AppRoutes.homeCaloriesEntryEdit,
-        builder: (context, state) => const Scaffold(body: Text('Edit')),
+        path: AppRoutes.homeCaloriesEntryDetails,
+        builder: (context, state) {
+          return CalorieEntryEditorPage(
+            entryId: state.pathParameters['entryId'],
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.homeStatisticsWeight,
@@ -288,19 +317,6 @@ Widget _buildHarnessWithContainer({required ProviderContainer container}) {
       supportedLocales: AppLocalizations.supportedLocales,
     ),
   );
-}
-
-class _FakePreparedMealRepository implements PreparedMealRepository {
-  @override
-  Future<List<PreparedMeal>> readAll() async => const <PreparedMeal>[];
-
-  @override
-  Future<bool> saveAll(List<PreparedMeal> meals) async => true;
-
-  @override
-  Stream<List<PreparedMeal>> watchAll() {
-    return Stream<List<PreparedMeal>>.value(const <PreparedMeal>[]);
-  }
 }
 
 Finder get _pageListView => find.byType(ListView).first;
@@ -324,7 +340,11 @@ Future<void> _scrollUntilVisible(WidgetTester tester, Finder finder) async {
   expect(finder, findsOneWidget);
 }
 
-@Dependencies([calorieEntryDeleteFlow])
+@Dependencies([
+  calorieEntryDeleteFlow,
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 void main() {
   testWidgets('shows loading indicator while entries are loading', (
     tester,
@@ -438,7 +458,7 @@ void main() {
     expect(find.text('Skyr'), findsOneWidget);
   });
 
-  testWidgets('navigates to edit page when tapping regular diary entry', (
+  testWidgets('opens detail sheet when tapping regular diary entry', (
     tester,
   ) async {
     final today = DateTime(2026, 3, 20);
@@ -472,7 +492,7 @@ void main() {
     await tester.tap(find.byKey(CaloriesPageKeys.entryTile('edit-me')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Edit'), findsOneWidget);
+    expect(find.text('Calorie entry details'), findsOneWidget);
   });
 
   testWidgets('week balance banner no longer shows open chart button', (
@@ -536,6 +556,7 @@ void main() {
           weights: _weeklyCheckInWeights(today),
         ),
         referenceNow: today,
+        authenticated: false,
       ),
     );
     await tester.pumpAndSettle();
@@ -576,6 +597,7 @@ void main() {
           weights: _weeklyCheckInWeights(today),
         ),
         referenceNow: today,
+        authenticated: false,
       ),
     );
     await tester.pumpAndSettle();
@@ -620,6 +642,7 @@ void main() {
           weights: _weeklyCheckInWeights(today),
         ),
         referenceNow: today,
+        authenticated: false,
       ),
     );
     await tester.pumpAndSettle();
@@ -930,7 +953,9 @@ void main() {
     );
   });
 
-  testWidgets('delete action removes entry after confirmation', (tester) async {
+  testWidgets('long press on diary entry does not open delete dialog', (
+    tester,
+  ) async {
     final today = DateTime.now();
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
@@ -961,67 +986,13 @@ void main() {
     await tester.longPress(find.byKey(CaloriesPageKeys.entryTile('delete-me')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Delete entry?'), findsOneWidget);
-
-    final dialogDeleteButton = find.descendant(
-      of: find.byType(AlertDialog),
-      matching: find.widgetWithText(TextButton, 'Delete'),
-    );
-    await tester.tap(dialogDeleteButton);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Delete Me'), findsNothing);
-    expect(
-      logRepository.entries.where((entry) => entry.id == 'delete-me'),
-      isEmpty,
-    );
+    expect(find.text('Delete entry?'), findsNothing);
+    expect(find.text('Delete Me'), findsOneWidget);
   });
 
-  testWidgets('delete dialog asks about returning inventory food', (
+  testWidgets('long press on prepared meal does not open return dialog', (
     tester,
   ) async {
-    final today = DateTime.now();
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _entry(
-          'inventory-delete',
-          loggedAt: DateTime(today.year, today.month, today.day, 8),
-          mealType: MealType.breakfast,
-          name: 'Inventory Milk',
-          sourceInventoryItemId: 'inventory-1',
-          sourceInventoryAmountToRestore: 250,
-        ),
-      ],
-    );
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await _scrollUntilVisible(
-      tester,
-      find.byKey(CaloriesPageKeys.entryTile('inventory-delete')),
-    );
-    await tester.longPress(
-      find.byKey(CaloriesPageKeys.entryTile('inventory-delete')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Add the food back to inventory?'), findsOneWidget);
-    expect(
-      find.byKey(CaloriesPageKeys.deleteRestoreCheckbox('inventory-delete')),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('bundle delete dialog returns meal to inventory', (tester) async {
     final today = DateTime.now();
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
@@ -1040,11 +1011,6 @@ void main() {
       _buildHarness(
         logRepository: logRepository,
         settingsRepository: settingsRepository,
-        overrides: [
-          preparedMealRepositoryProvider.overrideWithValue(
-            _FakePreparedMealRepository(),
-          ),
-        ],
       ),
     );
     await tester.pumpAndSettle();
@@ -1056,179 +1022,10 @@ void main() {
     await tester.longPress(
       find.byKey(CaloriesPageKeys.entryTile('bundle-delete')),
     );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Return meal to inventory?'), findsOneWidget);
-    expect(
-      find.text('Return "Chili" to inventory and remove it from the diary?'),
-      findsOneWidget,
-    );
-    expect(
-      find.widgetWithText(TextButton, 'Return to inventory'),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('prepared meal return dialog closes on cancel', (tester) async {
-    final today = DateTime.now();
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _bundleEntry(
-          'bundle-cancel',
-          loggedAt: DateTime(today.year, today.month, today.day, 12),
-          mealType: MealType.lunch,
-        ),
-      ],
-    );
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        overrides: [
-          preparedMealRepositoryProvider.overrideWithValue(
-            _FakePreparedMealRepository(),
-          ),
-        ],
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await _scrollUntilVisible(
-      tester,
-      find.byKey(CaloriesPageKeys.entryTile('bundle-cancel')),
-    );
-    await tester.longPress(
-      find.byKey(CaloriesPageKeys.entryTile('bundle-cancel')),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
     await tester.pumpAndSettle();
 
     expect(find.text('Return meal to inventory?'), findsNothing);
     expect(find.text('Chili'), findsOneWidget);
-  });
-
-  testWidgets('shows snackbar when prepared meal restore fails', (
-    tester,
-  ) async {
-    final today = DateTime.now();
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _bundleEntry(
-          'bundle-restore-fail',
-          loggedAt: DateTime(today.year, today.month, today.day, 12),
-          mealType: MealType.lunch,
-        ),
-      ],
-    );
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    final failingFlow = CalorieEntryDeleteFlow(
-      deleteEntryById: (_) async => true,
-      restoreConsumedItem: (itemId, amount) async => true,
-      rollbackRestoredItem: (itemId, amount, {consumedAt}) async => true,
-      restorePreparedMealPortions:
-          ({required mealId, required portions}) async => false,
-      rollbackRestoredPreparedMeal:
-          ({required mealId, required discardedPortions}) async => true,
-    );
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        overrides: [
-          calorieEntryDeleteFlowProvider.overrideWithValue(failingFlow),
-          preparedMealRepositoryProvider.overrideWithValue(
-            _FakePreparedMealRepository(),
-          ),
-        ],
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(CaloriesPage)),
-    )!;
-    await _scrollUntilVisible(
-      tester,
-      find.byKey(CaloriesPageKeys.entryTile('bundle-restore-fail')),
-    );
-    await tester.longPress(
-      find.byKey(CaloriesPageKeys.entryTile('bundle-restore-fail')),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.widgetWithText(TextButton, 'Return to inventory'));
-    await tester.pumpAndSettle();
-
-    expect(find.text(l10n.caloriesReturnPreparedMealFailed), findsOneWidget);
-  });
-
-  testWidgets('shows generic delete failure when prepared meal delete fails', (
-    tester,
-  ) async {
-    final today = DateTime.now();
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _bundleEntry(
-          'bundle-delete-fail',
-          loggedAt: DateTime(today.year, today.month, today.day, 12),
-          mealType: MealType.lunch,
-        ),
-      ],
-    );
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    final failingFlow = CalorieEntryDeleteFlow(
-      deleteEntryById: (_) async => false,
-      restoreConsumedItem: (itemId, amount) async => true,
-      rollbackRestoredItem: (itemId, amount, {consumedAt}) async => true,
-      restorePreparedMealPortions:
-          ({required mealId, required portions}) async => true,
-      rollbackRestoredPreparedMeal:
-          ({required mealId, required discardedPortions}) async => true,
-    );
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        overrides: [
-          calorieEntryDeleteFlowProvider.overrideWithValue(failingFlow),
-          preparedMealRepositoryProvider.overrideWithValue(
-            _FakePreparedMealRepository(),
-          ),
-        ],
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(CaloriesPage)),
-    )!;
-    await _scrollUntilVisible(
-      tester,
-      find.byKey(CaloriesPageKeys.entryTile('bundle-delete-fail')),
-    );
-    await tester.longPress(
-      find.byKey(CaloriesPageKeys.entryTile('bundle-delete-fail')),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.widgetWithText(TextButton, 'Return to inventory'));
-    await tester.pumpAndSettle();
-
-    expect(find.text(l10n.caloriesDeleteFailed), findsOneWidget);
   });
 
   testWidgets('does not render meal add buttons in diary sections', (
@@ -1300,177 +1097,7 @@ void main() {
     expect(imageWidget.imageUrl, 'https://images.example.com/skyr.jpg');
   });
 
-  testWidgets('delete dialog toggles restore checkbox and closes on cancel', (
-    tester,
-  ) async {
-    final today = DateTime.now();
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _entry(
-          'toggle-cancel',
-          loggedAt: DateTime(today.year, today.month, today.day, 8),
-          mealType: MealType.breakfast,
-          name: 'Toggle Cancel',
-          sourceInventoryItemId: 'inventory-1',
-          sourceInventoryAmountToRestore: 250,
-        ),
-      ],
-    );
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await _scrollUntilVisible(
-      tester,
-      find.byKey(CaloriesPageKeys.entryTile('toggle-cancel')),
-    );
-    await tester.longPress(
-      find.byKey(CaloriesPageKeys.entryTile('toggle-cancel')),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(
-      find.byKey(CaloriesPageKeys.deleteRestoreCheckbox('toggle-cancel')),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Delete entry?'), findsNothing);
-    expect(find.text('Toggle Cancel'), findsOneWidget);
-  });
-
-  testWidgets('shows snackbar when delete fails without restore', (
-    tester,
-  ) async {
-    final today = DateTime.now();
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _entry(
-          'delete-fail',
-          loggedAt: DateTime(today.year, today.month, today.day, 8),
-          mealType: MealType.breakfast,
-          name: 'Delete Fail',
-        ),
-      ],
-    );
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    final failingFlow = CalorieEntryDeleteFlow(
-      deleteEntryById: (_) async => false,
-      restoreConsumedItem: (itemId, amount) async => true,
-      rollbackRestoredItem: (itemId, amount, {consumedAt}) async => true,
-      restorePreparedMealPortions:
-          ({required mealId, required portions}) async => true,
-      rollbackRestoredPreparedMeal:
-          ({required mealId, required discardedPortions}) async => true,
-    );
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        overrides: [
-          calorieEntryDeleteFlowProvider.overrideWithValue(failingFlow),
-        ],
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(CaloriesPage)),
-    )!;
-    await _scrollUntilVisible(
-      tester,
-      find.byKey(CaloriesPageKeys.entryTile('delete-fail')),
-    );
-    await tester.longPress(
-      find.byKey(CaloriesPageKeys.entryTile('delete-fail')),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.widgetWithText(TextButton, 'Delete'));
-    await tester.pumpAndSettle();
-
-    expect(find.text(l10n.caloriesDeleteFailed), findsOneWidget);
-  });
-
-  testWidgets('shows snackbar when restore-enabled delete fails to restore', (
-    tester,
-  ) async {
-    final today = DateTime.now();
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _entry(
-          'restore-fail',
-          loggedAt: DateTime(today.year, today.month, today.day, 8),
-          mealType: MealType.breakfast,
-          name: 'Restore Fail',
-          sourceInventoryItemId: 'inventory-1',
-          sourceInventoryAmountToRestore: 250,
-        ),
-      ],
-    );
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    final failingFlow = CalorieEntryDeleteFlow(
-      deleteEntryById: (_) async => true,
-      restoreConsumedItem: (itemId, amount) async => false,
-      rollbackRestoredItem: (itemId, amount, {consumedAt}) async => true,
-      restorePreparedMealPortions:
-          ({required mealId, required portions}) async => true,
-      rollbackRestoredPreparedMeal:
-          ({required mealId, required discardedPortions}) async => true,
-    );
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        overrides: [
-          calorieEntryDeleteFlowProvider.overrideWithValue(failingFlow),
-        ],
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(CaloriesPage)),
-    )!;
-    await _scrollUntilVisible(
-      tester,
-      find.byKey(CaloriesPageKeys.entryTile('restore-fail')),
-    );
-    await tester.longPress(
-      find.byKey(CaloriesPageKeys.entryTile('restore-fail')),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(
-      find.byKey(CaloriesPageKeys.deleteRestoreCheckbox('restore-fail')),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.widgetWithText(TextButton, 'Delete'));
-    await tester.pumpAndSettle();
-
-    expect(find.text(l10n.caloriesDeleteRestoreFailed), findsOneWidget);
-  });
-
-  testWidgets('renders ingredient image in bundle details sheet', (
+  testWidgets('opens detail sheet when tapping prepared meal diary entry', (
     tester,
   ) async {
     final today = DateTime.now();
@@ -1502,13 +1129,7 @@ void main() {
     await tester.tap(find.byKey(CaloriesPageKeys.entryTile('bundle-entry')));
     await tester.pumpAndSettle();
 
-    final imageFinder = find.byKey(
-      CaloriesPageKeys.bundleComponentImage('bundle-entry', 0),
-    );
-    expect(imageFinder, findsOneWidget);
-
-    final imageWidget = tester.widget<AppCachedNetworkImage>(imageFinder);
-    expect(imageWidget.imageUrl, 'https://images.example.com/beans.jpg');
+    expect(find.text('Calorie entry details'), findsOneWidget);
   });
 
   testWidgets(
@@ -1610,62 +1231,6 @@ void main() {
       expect(imageWidget.image, isA<MemoryImage>());
     },
   );
-
-  testWidgets('bundle details sheet does not overflow on small screens', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(320, 520);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    final today = DateTime.now();
-    final components = List<CalorieEntryBundleComponent>.generate(
-      8,
-      (index) => CalorieEntryBundleComponent(
-        name: 'Ingredient $index',
-        amountLabel: '${100 + index * 10} g',
-        brand: 'Brand $index',
-        imageUrl: 'https://images.example.com/item_$index.jpg',
-        totalKcal: 50 + index.toDouble(),
-        totalProtein: 5,
-        totalCarbs: 6,
-        totalFat: 2,
-      ),
-    );
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _bundleEntry(
-          'overflow-bundle-entry',
-          loggedAt: DateTime(today.year, today.month, today.day, 12),
-          mealType: MealType.lunch,
-          bundleComponents: components,
-        ),
-      ],
-    );
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await _scrollUntilVisible(
-      tester,
-      find.byKey(CaloriesPageKeys.entryTile('overflow-bundle-entry')),
-    );
-    await tester.tap(
-      find.byKey(CaloriesPageKeys.entryTile('overflow-bundle-entry')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(tester.takeException(), isNull);
-  });
 
   testWidgets('renders empty state text for meal sections without entries', (
     tester,

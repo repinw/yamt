@@ -14,7 +14,11 @@ import 'package:yamt/l10n/app_localizations.dart';
 class CaloriesMealSectionCard extends StatelessWidget {
   /// The calories meal section card.
   const CaloriesMealSectionCard({
-    required this.section, required this.title, required this.emptyMessage, required this.onTapEntry, required this.onDeleteEntry, super.key,
+    required this.section,
+    required this.title,
+    required this.emptyMessage,
+    required this.onTapEntry,
+    super.key,
   });
 
   /// The section.
@@ -28,9 +32,6 @@ class CaloriesMealSectionCard extends StatelessWidget {
 
   /// The on tap entry.
   final ValueChanged<CalorieEntry> onTapEntry;
-
-  /// The on delete entry.
-  final ValueChanged<CalorieEntry> onDeleteEntry;
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +90,6 @@ class CaloriesMealSectionCard extends StatelessWidget {
                 kcalUnit: kcalUnit,
                 bundleSummary: bundleSummary,
                 onTap: () => onTapEntry(entry),
-                onDelete: () => onDeleteEntry(entry),
               ),
             );
           }),
@@ -128,19 +128,20 @@ class _DiaryMealEntryCard extends StatelessWidget {
     required this.kcalUnit,
     required this.bundleSummary,
     required this.onTap,
-    required this.onDelete,
   });
 
   final CalorieEntry entry;
   final String kcalUnit;
   final String? bundleSummary;
   final VoidCallback onTap;
-  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final consumedUnitLabel = entry.consumedUnit.localizedName(l10n);
+    final consumedAmountLabel =
+        '${entry.consumedAmount.toStringAsFixed(0)} $consumedUnitLabel';
     final metadata = entry.isBundle
         ? <String>[
             l10n.caloriesBundlePortions(
@@ -149,8 +150,7 @@ class _DiaryMealEntryCard extends StatelessWidget {
             ),
           ]
         : <String>[
-            '${entry.consumedAmount.toStringAsFixed(0)} '
-                '${entry.consumedUnit.localizedName(l10n)}',
+            consumedAmountLabel,
             if ((entry.brand ?? '').trim().isNotEmpty) entry.brand!.trim(),
           ];
 
@@ -159,7 +159,6 @@ class _DiaryMealEntryCard extends StatelessWidget {
       child: InkWell(
         key: CaloriesPageKeys.entryTile(entry.id),
         onTap: onTap,
-        onLongPress: onDelete,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         child: DecoratedBox(
           decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
