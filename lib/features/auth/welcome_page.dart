@@ -41,9 +41,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
     final message = ref
         .read(authErrorViewModelProvider)
         .messageFor(l10n: l10n, error: error);
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _handleAsyncError(
