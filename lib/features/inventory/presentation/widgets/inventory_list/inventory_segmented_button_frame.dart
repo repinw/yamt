@@ -5,7 +5,8 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 class InventorySegmentedButtonFrame extends StatelessWidget {
   /// The inventory segmented button frame.
   const InventorySegmentedButtonFrame({
-    required this.child, super.key,
+    required this.child,
+    super.key,
     this.padding = const EdgeInsets.all(AppSpacing.xs),
   });
 

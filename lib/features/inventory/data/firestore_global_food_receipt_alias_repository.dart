@@ -46,7 +46,7 @@ class FirestoreGlobalFoodReceiptAliasRepository
         limit: limit,
       );
       return _decodeDocuments(documents);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to search global food receipt aliases.',
         name: _repositoryLogName,
@@ -82,7 +82,7 @@ class FirestoreGlobalFoodReceiptAliasRepository
       }
       try {
         aliases.add(_normalizeAlias(GlobalFoodReceiptAlias.fromJson(json)));
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         log(
           'Skipping corrupted global food receipt alias at index $index.',
           name: _repositoryLogName,

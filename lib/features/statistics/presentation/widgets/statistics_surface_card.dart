@@ -5,7 +5,8 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 class StatisticsSurfaceCard extends StatelessWidget {
   /// The statistics surface card.
   const StatisticsSurfaceCard({
-    required this.child, super.key,
+    required this.child,
+    super.key,
     this.padding = AppInsets.card,
   });
 

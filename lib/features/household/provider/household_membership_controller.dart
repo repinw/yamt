@@ -46,7 +46,7 @@ class HouseholdMembershipController extends _$HouseholdMembershipController {
         return;
       }
       state = const AsyncData<void>(null);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       if (ref.mounted) {
         state = AsyncError<void>(error, stackTrace);
       }

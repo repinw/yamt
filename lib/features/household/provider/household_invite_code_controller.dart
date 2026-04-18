@@ -24,7 +24,7 @@ class HouseholdInviteCodeController extends _$HouseholdInviteCodeController {
         return;
       }
       state = AsyncData<String?>(inviteCode);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       if (ref.mounted) {
         state = AsyncError<String?>(error, stackTrace);
       }

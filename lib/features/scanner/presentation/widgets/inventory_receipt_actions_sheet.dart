@@ -5,7 +5,11 @@ import 'package:yamt/l10n/app_localizations.dart';
 class InventoryReceiptActionsSheet extends StatelessWidget {
   /// The inventory receipt actions sheet.
   const InventoryReceiptActionsSheet({
-    required this.isCameraEnabled, required this.onManualAddTap, required this.onScanCameraTap, required this.onUploadFileTap, super.key,
+    required this.isCameraEnabled,
+    required this.onManualAddTap,
+    required this.onScanCameraTap,
+    required this.onUploadFileTap,
+    super.key,
   });
 
   /// Whether camera enabled.

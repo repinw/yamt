@@ -273,6 +273,8 @@ class _IngredientAssignmentConversionSheetState
             final conversionAmount = int.tryParse(value.text.trim());
             final isConversionValid =
                 conversionAmount != null && conversionAmount > 0;
+            final conversionErrorText =
+                l10n.preparedMealTemplateDetailSelectionConversionError;
 
             return SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
@@ -303,7 +305,7 @@ class _IngredientAssignmentConversionSheetState
                           ),
                       errorText: value.text.trim().isEmpty || isConversionValid
                           ? null
-                          : l10n.preparedMealTemplateDetailSelectionConversionError,
+                          : conversionErrorText,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -477,7 +479,7 @@ Future<void> _toggleIgnored({
 }
 
 void _showSnackBar(BuildContext context, String message) {
-  final messenger = ScaffoldMessenger.of(context);
-  messenger.hideCurrentSnackBar();
-  messenger.showSnackBar(SnackBar(content: Text(message)));
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(message)));
 }

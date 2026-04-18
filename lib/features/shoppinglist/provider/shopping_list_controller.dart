@@ -16,15 +16,16 @@ const _controllerLogName = 'ShoppingListController';
 class ShoppingListController extends _$ShoppingListController {
   static const _uuid = Uuid();
 
-  StreamSubscription<List<ShoppingListItem>>? _itemsSubscription;
+  Future<void> Function()? _cancelItemsSubscription;
   final _mutationQueue = SerializedMutationQueue();
 
   @override
   FutureOr<List<ShoppingListItem>> build() {
-    ref.watch(shoppingListRepositoryProvider);
-    ref.onDispose(() {
-      unawaited(_disposeRealtimeSubscription());
-    });
+    ref
+      ..watch(shoppingListRepositoryProvider)
+      ..onDispose(() {
+        unawaited(_disposeRealtimeSubscription());
+      });
     return _restartRealtimeSubscription();
   }
 
@@ -102,7 +103,9 @@ class ShoppingListController extends _$ShoppingListController {
 
   _AddShoppingListItemInput? _parseAddItemInput({
     required String name,
-    required int quantity, required double estimatedUnitPrice, String? brand,
+    required int quantity,
+    required double estimatedUnitPrice,
+    String? brand,
   }) {
     final safeQuantity = quantity < 1 ? 1 : quantity;
     final safePrice = estimatedUnitPrice < 0 ? 0.0 : estimatedUnitPrice;
@@ -202,7 +205,7 @@ class ShoppingListController extends _$ShoppingListController {
     final repository = ref.read(shoppingListRepositoryProvider);
     await _disposeRealtimeSubscription();
 
-    _itemsSubscription = repository.watchAll().listen(
+    final subscription = repository.watchAll().listen(
       (items) {
         if (!initialItems.isCompleted) {
           initialItems.complete(items);
@@ -218,14 +221,15 @@ class ShoppingListController extends _$ShoppingListController {
         _onRealtimeError(error, stackTrace);
       },
     );
+    _cancelItemsSubscription = subscription.cancel;
     return initialItems.future;
   }
 
   Future<void> _disposeRealtimeSubscription() async {
-    final currentSubscription = _itemsSubscription;
-    _itemsSubscription = null;
-    if (currentSubscription != null) {
-      await currentSubscription.cancel();
+    final cancelSubscription = _cancelItemsSubscription;
+    _cancelItemsSubscription = null;
+    if (cancelSubscription != null) {
+      await cancelSubscription();
     }
   }
 
@@ -266,7 +270,7 @@ class ShoppingListController extends _$ShoppingListController {
         state = AsyncData(previousItems);
       }
       return saved;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to persist shopping list mutation.',
         name: _controllerLogName,

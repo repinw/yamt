@@ -108,9 +108,10 @@ class CalorieEntriesController extends _$CalorieEntriesController {
 
   @override
   FutureOr<List<CalorieEntry>> build() {
-    ref.watch(calorieLogRepositoryProvider);
-    ref.watch(calorieDayControllerProvider);
-    ref.onDispose(_disposeSubscription);
+    ref
+      ..watch(calorieLogRepositoryProvider)
+      ..watch(calorieDayControllerProvider)
+      ..onDispose(_disposeSubscription);
     return _restartSubscription();
   }
 
@@ -237,7 +238,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
           _restoreEntries(previousEntries);
           return false;
         }
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         log(
           failureLogMessage,
           name: _entriesControllerLogName,
@@ -265,7 +266,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
   ) async {
     try {
       await callback();
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Post-persist callback failed for calorie entry mutation.',
         name: _entriesControllerLogName,
@@ -358,7 +359,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
           .read(calorieLogRepositoryProvider)
           .readEntriesForDay(selectedDay);
       return entries;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read current calorie entries for mutation fallback.',
         name: _entriesControllerLogName,
@@ -428,7 +429,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
           try {
             final mutationResult = await mutation();
             result.complete(mutationResult);
-          } catch (error, stackTrace) {
+          } on Object catch (error, stackTrace) {
             log(
               'Unexpected calorie mutation error.',
               name: _entriesControllerLogName,

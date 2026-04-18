@@ -313,11 +313,12 @@ void main() {
   });
 
   test('save failure rolls back optimistic quantity update', () async {
-    final repository = FakeShoppingListRepository(
-      initialItems: <ShoppingListItem>[_item('a')],
-    );
-    repository.saveAllShouldFail = true;
-    repository.emitRealtimeOnSave = false;
+    final repository =
+        FakeShoppingListRepository(
+            initialItems: <ShoppingListItem>[_item('a')],
+          )
+          ..saveAllShouldFail = true
+          ..emitRealtimeOnSave = false;
     final container = await _createContainer(repository);
     final controller = container.read(shoppingListControllerProvider.notifier);
 

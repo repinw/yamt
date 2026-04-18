@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -18,10 +20,12 @@ Widget _buildHarness({
           return Center(
             child: FilledButton(
               onPressed: () {
-                showCalorieGoalStartDialog(
-                  context: context,
-                  initialGoalStartAt: DateTime(2026, 4, 10, 16, 30),
-                  onSaveGoalStart: onSaveGoalStart,
+                unawaited(
+                  showCalorieGoalStartDialog(
+                    context: context,
+                    initialGoalStartAt: DateTime(2026, 4, 10, 16, 30),
+                    onSaveGoalStart: onSaveGoalStart,
+                  ),
                 );
               },
               child: const Text('Open'),

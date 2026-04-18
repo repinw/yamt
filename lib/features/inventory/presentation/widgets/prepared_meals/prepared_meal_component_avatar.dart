@@ -6,7 +6,9 @@ import 'package:yamt/core/widgets/app_cached_network_image.dart';
 class PreparedMealComponentAvatar extends StatelessWidget {
   /// The prepared meal component avatar.
   const PreparedMealComponentAvatar({
-    required this.label, required this.imageUrl, super.key,
+    required this.label,
+    required this.imageUrl,
+    super.key,
     this.size = 24,
   });
 

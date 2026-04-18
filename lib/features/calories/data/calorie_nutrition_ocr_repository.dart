@@ -1,3 +1,4 @@
+// Firebase AI template APIs are still marked experimental in current package.
 // ignore_for_file: experimental_member_use
 
 import 'dart:convert';
@@ -239,7 +240,7 @@ class _FirebaseCalorieNutritionOcrRepository
       final templateId = await _configClient.loadTemplateId();
       log('Resolved OCR template id: $templateId', name: _ocrLogName);
       return templateId;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to load OCR template id.',
         name: _ocrLogName,

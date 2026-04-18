@@ -439,11 +439,9 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(HomePage)),
       );
-      final selectionController = container.read(
-        preparedMealSelectionControllerProvider.notifier,
-      );
-      selectionController.enterSelection('item-1');
-      selectionController.toggleSelection('item-2');
+      container.read(preparedMealSelectionControllerProvider.notifier)
+        ..enterSelection('item-1')
+        ..toggleSelection('item-2');
       await tester.pumpAndSettle();
 
       expect(find.text('Cancel'), findsNothing);

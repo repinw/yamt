@@ -87,9 +87,9 @@ class _RecordingInventorySaveFlow
 
 CalorieEntryDeleteFlow _restoreFailingDeleteFlow() {
   return CalorieEntryDeleteFlow(
-    deleteEntryById: (_) async => true,
-    restoreConsumedItem: (_, __) async => false,
-    rollbackRestoredItem: (_, __, {consumedAt}) async => true,
+    deleteEntryById: (entryId) async => true,
+    restoreConsumedItem: (itemId, amount) async => false,
+    rollbackRestoredItem: (itemId, amount, {consumedAt}) async => true,
     restorePreparedMealPortions:
         ({
           required mealId,
@@ -127,7 +127,9 @@ class _AutoOpenRoutePageState extends State<_AutoOpenRoutePage> {
       if (!mounted) {
         return;
       }
-      GoRouter.of(context).push(widget.location, extra: widget.extra);
+      unawaited(
+        GoRouter.of(context).push(widget.location, extra: widget.extra),
+      );
     });
   }
 

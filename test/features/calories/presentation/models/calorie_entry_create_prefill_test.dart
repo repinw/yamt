@@ -138,8 +138,8 @@ void main() {
   });
 
   test(
-    'initialization key changes with inventory context even without a profile'
-    '',
+    'initialization key changes with inventory context '
+    'even without a profile',
     () {
       final loggedAt = DateTime.parse('2026-04-06T12:30:00Z');
 

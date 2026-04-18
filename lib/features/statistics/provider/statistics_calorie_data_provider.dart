@@ -1,7 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
-import 'package:riverpod/src/providers/future_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
@@ -11,7 +11,8 @@ import 'package:yamt/features/statistics/domain/statistics_models.dart';
 const _statisticsCalorieLogName = 'StatisticsCalorieDataProvider';
 
 /// The statistics calorie data provider.
-final FutureProviderFamily<StatisticsCalorieSnapshot, StatisticsTimeframe> statisticsCalorieDataProvider =
+final FutureProvider<StatisticsCalorieSnapshot> Function(StatisticsTimeframe)
+statisticsCalorieDataProvider =
     FutureProvider.family<StatisticsCalorieSnapshot, StatisticsTimeframe>((
       ref,
       timeframe,
@@ -46,7 +47,7 @@ final FutureProviderFamily<StatisticsCalorieSnapshot, StatisticsTimeframe> stati
           startDate: startDate,
           endDate: today,
         );
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         log(
           'Failed to build calorie statistics for ${timeframe.name}.',
           name: _statisticsCalorieLogName,

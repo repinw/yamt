@@ -114,7 +114,7 @@ class FirestoreGlobalFoodReceiptAliasStore
     try {
       await _createMissingDocuments(documentsById);
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to upsert global food receipt aliases.',
         name: _storeLogName,

@@ -64,7 +64,7 @@ class FirestoreShoppingListItemStore implements ShoppingListItemStore {
     try {
       await _replaceAllUnsafe(userId: userId, documentsById: documentsById);
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to replace shopping list items for user $userId',
         name: _storeLogName,

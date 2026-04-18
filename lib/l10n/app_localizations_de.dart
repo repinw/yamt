@@ -39,7 +39,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryActionUploadFile => 'Beleg hochladen (Bild/PDF)';
 
   @override
-  String get inventoryActionCameraUnsupported => 'Kamera wird auf dieser Plattform nicht unterstützt.';
+  String get inventoryActionCameraUnsupported =>
+      'Kamera wird auf dieser Plattform nicht unterstützt.';
 
   @override
   String get inventoryActionManualAdd => 'Lebensmittel manuell hinzufügen';
@@ -48,7 +49,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventorySharedReceiptConfirmTitle => 'Geteilten Beleg scannen?';
 
   @override
-  String get inventorySharedReceiptConfirmSingleMessage => 'Möchtest du diese geteilte Datei als Beleg scannen?';
+  String get inventorySharedReceiptConfirmSingleMessage =>
+      'Möchtest du diese geteilte Datei als Beleg scannen?';
 
   @override
   String inventorySharedReceiptConfirmMultipleMessage(int count) {
@@ -59,10 +61,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventorySharedReceiptConfirmAction => 'Scannen';
 
   @override
-  String get inventoryReceiptSelectionFailed => 'Beleg konnte nicht ausgewählt werden. Bitte erneut versuchen.';
+  String get inventoryReceiptSelectionFailed =>
+      'Beleg konnte nicht ausgewählt werden. Bitte erneut versuchen.';
 
   @override
-  String get inventoryReceiptAnalysisFailed => 'Beleganalyse fehlgeschlagen. Bitte erneut versuchen.';
+  String get inventoryReceiptAnalysisFailed =>
+      'Beleganalyse fehlgeschlagen. Bitte erneut versuchen.';
 
   @override
   String get inventoryReceiptBatchTitle => 'Belege werden verarbeitet';
@@ -106,10 +110,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewPriceSavable => 'Im Vorrat gespeichert';
 
   @override
-  String get inventoryReceiptReviewPriceExcluded => 'Ausgeschlossene Positionen';
+  String get inventoryReceiptReviewPriceExcluded =>
+      'Ausgeschlossene Positionen';
 
   @override
-  String get inventoryReceiptReviewEmpty => 'Keine Positionen im Beleg gefunden.';
+  String get inventoryReceiptReviewEmpty =>
+      'Keine Positionen im Beleg gefunden.';
 
   @override
   String get inventoryReceiptReviewExcludedTag => 'Nur prüfen';
@@ -142,7 +148,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewFieldWeightUnit => 'Einheit';
 
   @override
-  String get inventoryReceiptReviewFieldWeightUnitFallback => 'Fallback-Einheit';
+  String get inventoryReceiptReviewFieldWeightUnitFallback =>
+      'Fallback-Einheit';
 
   @override
   String get inventoryReceiptReviewWeightUnitAuto => 'Automatisch';
@@ -181,7 +188,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewDiscountAmountLabel => 'Betrag';
 
   @override
-  String get inventoryReceiptReviewAddDiscountAction => 'Rabattzeile hinzufügen';
+  String get inventoryReceiptReviewAddDiscountAction =>
+      'Rabattzeile hinzufügen';
 
   @override
   String get inventoryReceiptReviewFieldIsDeposit => 'Ist Pfandartikel';
@@ -193,10 +201,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewNoDate => 'Kein Datum';
 
   @override
-  String get inventoryReceiptReviewInvalidNumber => 'Bitte gültige Zahlen eingeben.';
+  String get inventoryReceiptReviewInvalidNumber =>
+      'Bitte gültige Zahlen eingeben.';
 
   @override
-  String get inventoryReceiptReviewInvalidWeightUnit => 'Bitte eine Einheit angeben (z. B. g oder ml).';
+  String get inventoryReceiptReviewInvalidWeightUnit =>
+      'Bitte eine Einheit angeben (z. B. g oder ml).';
 
   @override
   String get inventoryReceiptReviewConfirmItemAction => 'Artikel bestätigen';
@@ -205,19 +215,23 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewUndoConfirmAction => 'Bestätigung aufheben';
 
   @override
-  String get inventoryReceiptReviewInvalidDiscounts => 'JSON oder key=value verwenden.';
+  String get inventoryReceiptReviewInvalidDiscounts =>
+      'JSON oder key=value verwenden.';
 
   @override
   String get inventoryReceiptReviewDetectedItems => 'Erkannte Artikel';
 
   @override
-  String get inventoryReceiptReviewOriginalReceiptAction => 'Original-Beleg ansehen';
+  String get inventoryReceiptReviewOriginalReceiptAction =>
+      'Original-Beleg ansehen';
 
   @override
-  String get inventoryReceiptReviewOriginalReceiptTitle => 'Original-Beleg Vorschau';
+  String get inventoryReceiptReviewOriginalReceiptTitle =>
+      'Original-Beleg Vorschau';
 
   @override
-  String get inventoryReceiptReviewOriginalReceiptUnavailable => '(Hier würde das Foto angezeigt werden)';
+  String get inventoryReceiptReviewOriginalReceiptUnavailable =>
+      '(Hier würde das Foto angezeigt werden)';
 
   @override
   String get inventoryReceiptReviewReadAsPrefix => 'Gelesen als';
@@ -235,25 +249,31 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewRecentProductsTitle => 'Zuletzt hinzugefügt';
 
   @override
-  String get inventoryReceiptReviewManualDataAction => 'Produkt suchen oder Barcode scannen';
+  String get inventoryReceiptReviewManualDataAction =>
+      'Produkt suchen oder Barcode scannen';
 
   @override
-  String get inventoryReceiptReviewManualDataTitle => 'Produkt suchen oder Barcode scannen';
+  String get inventoryReceiptReviewManualDataTitle =>
+      'Produkt suchen oder Barcode scannen';
 
   @override
-  String get inventoryReceiptReviewManualDataHint => 'Produkt suchen oder Barcode scannen. Nährwerte später ergänzen.';
+  String get inventoryReceiptReviewManualDataHint =>
+      'Produkt suchen oder Barcode scannen. Nährwerte später ergänzen.';
 
   @override
   String get inventoryReceiptReviewManualDataSaveAction => 'Übernehmen';
 
   @override
-  String get inventoryReceiptReviewManualDataRequired => 'Bitte Produkt wählen, Barcode scannen oder Nährwerte angeben.';
+  String get inventoryReceiptReviewManualDataRequired =>
+      'Bitte Produkt wählen, Barcode scannen oder Nährwerte angeben.';
 
   @override
-  String get inventoryReceiptReviewRequestEnrichmentAction => 'Später per KI ermitteln lassen';
+  String get inventoryReceiptReviewRequestEnrichmentAction =>
+      'Später per KI ermitteln lassen';
 
   @override
-  String get inventoryReceiptReviewRequestEnrichmentHint => 'Speichert den Artikel jetzt und markiert ihn für spätere KI-Anreicherung.';
+  String get inventoryReceiptReviewRequestEnrichmentHint =>
+      'Speichert den Artikel jetzt und markiert ihn für spätere KI-Anreicherung.';
 
   @override
   String get inventoryReceiptReviewSwitchAction => 'Wechseln';
@@ -265,10 +285,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewSaveAction => 'Speichern';
 
   @override
-  String get inventoryReceiptSaveSucceeded => 'Positionen zum Vorrat hinzugefügt.';
+  String get inventoryReceiptSaveSucceeded =>
+      'Positionen zum Vorrat hinzugefügt.';
 
   @override
-  String get inventoryReceiptSaveFailed => 'Positionen konnten nicht gespeichert werden.';
+  String get inventoryReceiptSaveFailed =>
+      'Positionen konnten nicht gespeichert werden.';
 
   @override
   String get inventoryListModeByReceipt => 'Nach Beleg';
@@ -292,7 +314,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryFiltersTitle => 'Ansicht anpassen';
 
   @override
-  String get inventoryFiltersSubtitle => 'Sortiere und filtere deine Lebensmittel';
+  String get inventoryFiltersSubtitle =>
+      'Sortiere und filtere deine Lebensmittel';
 
   @override
   String get inventoryFiltersShowResultsAction => 'Ergebnisse anzeigen';
@@ -343,10 +366,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryHideConsumedFilterTitle => 'Verbrauchte ausblenden';
 
   @override
-  String get inventoryHideConsumedFilterSubtitle => 'Komplett leere Artikel verbergen';
+  String get inventoryHideConsumedFilterSubtitle =>
+      'Komplett leere Artikel verbergen';
 
   @override
-  String get inventoryHideFullyConsumedItemsToggle => 'Komplett verbrauchte Artikel ausblenden';
+  String get inventoryHideFullyConsumedItemsToggle =>
+      'Komplett verbrauchte Artikel ausblenden';
 
   @override
   String get preparedMealFilterAction => 'Filtern';
@@ -355,7 +380,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealFiltersTitle => 'Ansicht anpassen';
 
   @override
-  String get preparedMealFiltersSubtitle => 'Sortiere und filtere deine Mahlzeiten';
+  String get preparedMealFiltersSubtitle =>
+      'Sortiere und filtere deine Mahlzeiten';
 
   @override
   String get preparedMealShowReadyOnlyToggle => 'Nur fertige anzeigen';
@@ -367,7 +393,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealShowDepletedOnlyToggle => 'Nur aufgebrauchte anzeigen';
 
   @override
-  String get preparedMealHideFullyConsumedItemsToggle => 'Verbrauchte ausblenden';
+  String get preparedMealHideFullyConsumedItemsToggle =>
+      'Verbrauchte ausblenden';
 
   @override
   String get inventoryReceiptGroupTitle => 'Beleg';
@@ -411,16 +438,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryAmountDialogAllRemainingAction => 'Alles/Rest';
 
   @override
-  String get inventoryItemEatSheetInedibleAmountLabel => 'Nicht essbaren Anteil abziehen';
+  String get inventoryItemEatSheetInedibleAmountLabel =>
+      'Nicht essbaren Anteil abziehen';
 
   @override
-  String get inventoryItemEatSheetInedibleAmountHint => 'Optional, zum Beispiel Knochen oder Schalen. Kalorien werden nur für den essbaren Rest berechnet.';
+  String get inventoryItemEatSheetInedibleAmountHint =>
+      'Optional, zum Beispiel Knochen oder Schalen. Kalorien werden nur für den essbaren Rest berechnet.';
 
   @override
-  String get inventoryItemEatSheetInedibleAmountFieldLabel => 'Nicht essbarer Anteil';
+  String get inventoryItemEatSheetInedibleAmountFieldLabel =>
+      'Nicht essbarer Anteil';
 
   @override
-  String get inventoryItemEatSheetInedibleAmountError => 'Der Abzug muss kleiner als die verzehrte Menge sein.';
+  String get inventoryItemEatSheetInedibleAmountError =>
+      'Der Abzug muss kleiner als die verzehrte Menge sein.';
 
   @override
   String get inventoryItemEatSheetWhenLabel => 'Wann?';
@@ -441,13 +472,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemAddToListAction => 'Auf die Liste';
 
   @override
-  String get inventoryItemAddToShoppingListAction => 'Zur Einkaufsliste hinzufügen';
+  String get inventoryItemAddToShoppingListAction =>
+      'Zur Einkaufsliste hinzufügen';
 
   @override
   String get inventoryItemBuyAgainAction => 'Erneut kaufen';
 
   @override
-  String get inventoryItemBuyAgainSucceeded => 'Artikel zur Einkaufsliste hinzugefügt.';
+  String get inventoryItemBuyAgainSucceeded =>
+      'Artikel zur Einkaufsliste hinzugefügt.';
 
   @override
   String get inventoryItemRemoveAction => 'Aussortieren';
@@ -467,16 +500,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemRemoveDiscardSubtitle => 'Abgelaufen oder verdorben';
 
   @override
-  String get inventoryItemRemoveConsumeElsewhereAction => 'Anderweitig verbraucht';
+  String get inventoryItemRemoveConsumeElsewhereAction =>
+      'Anderweitig verbraucht';
 
   @override
-  String get inventoryItemRemoveConsumeElsewhereSubtitle => 'Gespendet, verschenkt oder geteilt';
+  String get inventoryItemRemoveConsumeElsewhereSubtitle =>
+      'Gespendet, verschenkt oder geteilt';
 
   @override
   String get inventoryItemRemoveDeleteAction => 'Komplett löschen';
 
   @override
-  String get inventoryItemRemoveDeleteSubtitle => 'Fehleingabe, nicht in Statistiken werten';
+  String get inventoryItemRemoveDeleteSubtitle =>
+      'Fehleingabe, nicht in Statistiken werten';
 
   @override
   String get inventoryItemThrowAwayAction => 'Wegwerfen';
@@ -485,10 +521,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemSwapCandidateAction => 'Tauschen';
 
   @override
-  String get inventoryItemSwapCandidateRequiresFullItem => 'Du kannst den Kandidaten nur tauschen, solange der Artikel noch vollständig vorhanden ist.';
+  String get inventoryItemSwapCandidateRequiresFullItem =>
+      'Du kannst den Kandidaten nur tauschen, solange der Artikel noch vollständig vorhanden ist.';
 
   @override
-  String get inventoryItemActionFailed => 'Aktion fehlgeschlagen. Bitte erneut versuchen.';
+  String get inventoryItemActionFailed =>
+      'Aktion fehlgeschlagen. Bitte erneut versuchen.';
 
   @override
   String get inventoryBarcodeStatusPending => 'Barcode-Abgleich läuft';
@@ -503,7 +541,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryBarcodeMissingPromptTitle => 'Barcode fehlt';
 
   @override
-  String get inventoryBarcodeMissingPromptMessage => 'Jetzt scannen für sofortiges Kalorien-Logging oder später per KI ergänzen lassen.';
+  String get inventoryBarcodeMissingPromptMessage =>
+      'Jetzt scannen für sofortiges Kalorien-Logging oder später per KI ergänzen lassen.';
 
   @override
   String get inventoryBarcodeMissingPromptScanNow => 'Jetzt Barcode scannen';
@@ -512,16 +551,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryBarcodeMissingPromptLater => 'Später';
 
   @override
-  String get inventoryBarcodeLookupQueued => 'Barcode-Suche wurde ausgeführt. Ergebnis steht direkt im Inventar-Item.';
+  String get inventoryBarcodeLookupQueued =>
+      'Barcode-Suche wurde ausgeführt. Ergebnis steht direkt im Inventar-Item.';
 
   @override
-  String get inventoryBarcodeScanUnsupported => 'Barcode-Scan wird aktuell auf Android und iOS unterstützt.';
+  String get inventoryBarcodeScanUnsupported =>
+      'Barcode-Scan wird aktuell auf Android und iOS unterstützt.';
 
   @override
   String get inventoryManualAddTitle => 'Lebensmittel manuell hinzufügen';
 
   @override
-  String get inventoryManualAddHint => 'Scanne einen Barcode. Danach kannst du das Produkt prüfen, speichern oder Nährwerte ergänzen.';
+  String get inventoryManualAddHint =>
+      'Scanne einen Barcode. Danach kannst du das Produkt prüfen, speichern oder Nährwerte ergänzen.';
 
   @override
   String get inventoryManualAddResolving => 'Barcode wird gesucht...';
@@ -530,7 +572,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryManualAddCandidateTitle => 'Produkt auswählen';
 
   @override
-  String get inventoryManualAddCandidateSubtitle => 'Zu diesem Barcode wurden mehrere passende Produkte gefunden.';
+  String get inventoryManualAddCandidateSubtitle =>
+      'Zu diesem Barcode wurden mehrere passende Produkte gefunden.';
 
   @override
   String get inventoryManualAddCandidateSourceLearned => 'Community';
@@ -542,13 +585,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryManualAddUnknownBrand => 'Unbekannte Marke';
 
   @override
-  String get inventoryManualAddNotFound => 'Zu diesem Barcode wurde kein passendes Produkt gefunden.';
+  String get inventoryManualAddNotFound =>
+      'Zu diesem Barcode wurde kein passendes Produkt gefunden.';
 
   @override
-  String get inventoryManualAddLookupFailed => 'Barcode-Abfrage fehlgeschlagen. Bitte versuche es erneut.';
+  String get inventoryManualAddLookupFailed =>
+      'Barcode-Abfrage fehlgeschlagen. Bitte versuche es erneut.';
 
   @override
-  String get inventoryManualAddSaveFailed => 'Das Produkt konnte nicht zum Inventar hinzugefügt werden.';
+  String get inventoryManualAddSaveFailed =>
+      'Das Produkt konnte nicht zum Inventar hinzugefügt werden.';
 
   @override
   String get inventoryManualAddSaved => 'Produkt zum Inventar hinzugefügt.';
@@ -563,7 +609,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryManualAddEatNowSizeLabel => 'Sofort essen Menge';
 
   @override
-  String get inventoryManualAddEatNowRequiresNutrition => 'Nur verfügbar, wenn Nährwerte vorhanden sind.';
+  String get inventoryManualAddEatNowRequiresNutrition =>
+      'Nur verfügbar, wenn Nährwerte vorhanden sind.';
 
   @override
   String get inventoryManualAddVoiceSearchStartTooltip => 'Sprachsuche starten';
@@ -572,13 +619,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryManualAddVoiceSearchStopTooltip => 'Sprachsuche beenden';
 
   @override
-  String get inventoryManualAddVoiceSearchUnavailable => 'Sprachsuche wird auf diesem Gerät aktuell nicht unterstützt.';
+  String get inventoryManualAddVoiceSearchUnavailable =>
+      'Sprachsuche wird auf diesem Gerät aktuell nicht unterstützt.';
 
   @override
-  String get inventoryManualAddVoiceSearchPermissionDenied => 'Bitte erlaube Mikrofonzugriff, um die Sprachsuche zu verwenden.';
+  String get inventoryManualAddVoiceSearchPermissionDenied =>
+      'Bitte erlaube Mikrofonzugriff, um die Sprachsuche zu verwenden.';
 
   @override
-  String get inventoryManualAddVoiceSearchFailed => 'Sprachsuche konnte nicht gestartet werden. Bitte versuche es erneut.';
+  String get inventoryManualAddVoiceSearchFailed =>
+      'Sprachsuche konnte nicht gestartet werden. Bitte versuche es erneut.';
 
   @override
   String get inventoryManualAddStoreName => 'Manuell hinzugefügt';
@@ -590,13 +640,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryBarcodePortionDialogConfirmAction => 'Weiter';
 
   @override
-  String get inventoryEmptyState => 'Noch keine Vorratsartikel vorhanden. Scanne einen Beleg oder füge Lebensmittel manuell hinzu.';
+  String get inventoryEmptyState =>
+      'Noch keine Vorratsartikel vorhanden. Scanne einen Beleg oder füge Lebensmittel manuell hinzu.';
 
   @override
-  String get inventoryFilteredEmptyState => 'Keine Artikel passen zu deiner Suche oder den aktiven Filtern.';
+  String get inventoryFilteredEmptyState =>
+      'Keine Artikel passen zu deiner Suche oder den aktiven Filtern.';
 
   @override
-  String get inventoryLoadFailed => 'Vorratsartikel konnten nicht geladen werden.';
+  String get inventoryLoadFailed =>
+      'Vorratsartikel konnten nicht geladen werden.';
 
   @override
   String get inventoryRetryAction => 'Erneut versuchen';
@@ -623,13 +676,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealPortionsLabel => 'Portionen';
 
   @override
-  String get preparedMealInvalidPortions => 'Bitte gib mindestens eine Portion ein.';
+  String get preparedMealInvalidPortions =>
+      'Bitte gib mindestens eine Portion ein.';
 
   @override
-  String get preparedMealFixFormErrorsMessage => 'Bitte prüfe die markierten Felder.';
+  String get preparedMealFixFormErrorsMessage =>
+      'Bitte prüfe die markierten Felder.';
 
   @override
-  String get preparedMealInvalidPortionsRange => 'Bitte gib eine gültige Portionsanzahl im verfügbaren Bereich ein.';
+  String get preparedMealInvalidPortionsRange =>
+      'Bitte gib eine gültige Portionsanzahl im verfügbaren Bereich ein.';
 
   @override
   String get preparedMealImageLabel => 'Titelbild';
@@ -644,13 +700,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealRemoveImageAction => 'Bild entfernen';
 
   @override
-  String get preparedMealImageHint => 'Füge ein Foto für diese Mahlzeit hinzu oder nutze das Standard-Cover.';
+  String get preparedMealImageHint =>
+      'Füge ein Foto für diese Mahlzeit hinzu oder nutze das Standard-Cover.';
 
   @override
   String get preparedMealImageCameraAction => 'Foto aufnehmen';
 
   @override
-  String get preparedMealImagePickFailed => 'Das Mahlzeitenbild konnte nicht ausgewählt werden.';
+  String get preparedMealImagePickFailed =>
+      'Das Mahlzeitenbild konnte nicht ausgewählt werden.';
 
   @override
   String get preparedMealImageTooLarge => 'Das ausgewählte Bild ist zu groß.';
@@ -673,13 +731,16 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get preparedMealInvalidIngredientAmount => 'Bitte gib eine gültige Zutatenmenge ein.';
+  String get preparedMealInvalidIngredientAmount =>
+      'Bitte gib eine gültige Zutatenmenge ein.';
 
   @override
-  String get preparedMealNutritionPerPieceHint => 'Bitte Nährwerte pro verwendetem Stück eintragen.';
+  String get preparedMealNutritionPerPieceHint =>
+      'Bitte Nährwerte pro verwendetem Stück eintragen.';
 
   @override
-  String get preparedMealNutritionPerHundredHint => 'Bitte Nährwerte pro 100 g/ml eintragen.';
+  String get preparedMealNutritionPerHundredHint =>
+      'Bitte Nährwerte pro 100 g/ml eintragen.';
 
   @override
   String get preparedMealNutritionModePerHundred => '100 g/ml';
@@ -711,16 +772,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealUpdatedMessage => 'Mahlzeit wurde aktualisiert.';
 
   @override
-  String get preparedMealInsufficientAmountMessage => 'Mindestens eine ausgewählte Zutat ist nicht mehr in ausreichender Menge verfügbar.';
+  String get preparedMealInsufficientAmountMessage =>
+      'Mindestens eine ausgewählte Zutat ist nicht mehr in ausreichender Menge verfügbar.';
 
   @override
-  String get preparedMealMissingNutritionMessage => 'Mindestens einer ausgewählten Zutat fehlen vollständige Nährwerte.';
+  String get preparedMealMissingNutritionMessage =>
+      'Mindestens einer ausgewählten Zutat fehlen vollständige Nährwerte.';
 
   @override
-  String get preparedMealItemUnavailableMessage => 'Mindestens eine ausgewählte Zutat ist nicht mehr im Inventar verfügbar.';
+  String get preparedMealItemUnavailableMessage =>
+      'Mindestens eine ausgewählte Zutat ist nicht mehr im Inventar verfügbar.';
 
   @override
-  String get preparedMealActionFailed => 'Mahlzeit-Aktion fehlgeschlagen. Bitte versuche es erneut.';
+  String get preparedMealActionFailed =>
+      'Mahlzeit-Aktion fehlgeschlagen. Bitte versuche es erneut.';
 
   @override
   String preparedMealIngredientsCount(int count) {
@@ -731,7 +796,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealIncompleteLabel => 'Unvollständig';
 
   @override
-  String get preparedMealIncompleteHint => 'Diese Mahlzeit ist noch nicht vollständig und kann erst gegessen werden, wenn alle fehlenden Zutaten ergänzt wurden.';
+  String get preparedMealIncompleteHint =>
+      'Diese Mahlzeit ist noch nicht vollständig und kann erst gegessen werden, wenn alle fehlenden Zutaten ergänzt wurden.';
 
   @override
   String get preparedMealPendingIngredientUnassigned => 'Noch nicht belegt';
@@ -743,16 +809,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealPendingIngredientIgnoreAction => 'Zutat ignorieren';
 
   @override
-  String get preparedMealPendingIngredientSelectionTitle => 'Zutat aus Inventar ergänzen';
+  String get preparedMealPendingIngredientSelectionTitle =>
+      'Zutat aus Inventar ergänzen';
 
   @override
-  String get preparedMealPendingIngredientSelectionEmpty => 'Keine Inventarartikel vorhanden.';
+  String get preparedMealPendingIngredientSelectionEmpty =>
+      'Keine Inventarartikel vorhanden.';
 
   @override
-  String get preparedMealPendingIngredientFillFailed => 'Zutat konnte nicht zur Mahlzeit hinzugefügt werden.';
+  String get preparedMealPendingIngredientFillFailed =>
+      'Zutat konnte nicht zur Mahlzeit hinzugefügt werden.';
 
   @override
-  String get preparedMealPendingIngredientIgnoreFailed => 'Zutat konnte nicht ignoriert werden.';
+  String get preparedMealPendingIngredientIgnoreFailed =>
+      'Zutat konnte nicht ignoriert werden.';
 
   @override
   String preparedMealPortionsRemaining(int remaining, int total) {
@@ -802,10 +872,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplatesPageTitle => 'Rezepte';
 
   @override
-  String get preparedMealTemplatesEmptyState => 'Noch keine Rezepte gespeichert.';
+  String get preparedMealTemplatesEmptyState =>
+      'Noch keine Rezepte gespeichert.';
 
   @override
-  String get preparedMealTemplatesLoadFailed => 'Rezepte konnten nicht geladen werden.';
+  String get preparedMealTemplatesLoadFailed =>
+      'Rezepte konnten nicht geladen werden.';
 
   @override
   String get preparedMealTemplateDeleteAction => 'Rezept löschen';
@@ -820,10 +892,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateCreateFromRecipeAction => 'Aus Rezept anlegen';
 
   @override
-  String get preparedMealTemplateCreateFailedMessage => 'Rezept konnte nicht erstellt werden.';
+  String get preparedMealTemplateCreateFailedMessage =>
+      'Rezept konnte nicht erstellt werden.';
 
   @override
-  String get preparedMealTemplateRecipeImportFailedMessage => 'Rezeptdaten konnten nicht importiert werden.';
+  String get preparedMealTemplateRecipeImportFailedMessage =>
+      'Rezeptdaten konnten nicht importiert werden.';
 
   @override
   String get preparedMealTemplateRecipeSheetTitle => 'Rezept anlegen';
@@ -832,7 +906,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateRecipeEditSheetTitle => 'Rezept bearbeiten';
 
   @override
-  String get preparedMealTemplateRecipeSheetSubtitle => 'Füge einen Rezept-Link ein, zum Beispiel von Chefkoch.';
+  String get preparedMealTemplateRecipeSheetSubtitle =>
+      'Füge einen Rezept-Link ein, zum Beispiel von Chefkoch.';
 
   @override
   String get preparedMealTemplateRecipeUrlLabel => 'Rezept-Link';
@@ -841,25 +916,29 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateRecipeUrlHint => 'https://www.chefkoch.de/...';
 
   @override
-  String get preparedMealTemplateRecipeUrlInvalid => 'Bitte gib einen gültigen Rezept-Link ein.';
+  String get preparedMealTemplateRecipeUrlInvalid =>
+      'Bitte gib einen gültigen Rezept-Link ein.';
 
   @override
   String get preparedMealTemplateNameLabel => 'Rezeptname';
 
   @override
-  String get preparedMealTemplateNameHelper => 'Optional. Wenn leer, wird der Name aus dem Link abgeleitet.';
+  String get preparedMealTemplateNameHelper =>
+      'Optional. Wenn leer, wird der Name aus dem Link abgeleitet.';
 
   @override
   String get preparedMealTemplatePortionsLabel => 'Portionen';
 
   @override
-  String get preparedMealTemplatePortionsHelper => 'Optional. Wenn leer, werden die Portionen aus dem Rezept übernommen.';
+  String get preparedMealTemplatePortionsHelper =>
+      'Optional. Wenn leer, werden die Portionen aus dem Rezept übernommen.';
 
   @override
   String get preparedMealTemplateRecipePlaceholder => 'Rezept-Link';
 
   @override
-  String get preparedMealTemplateNoIngredientsYet => 'Noch keine Zutaten verknüpft.';
+  String get preparedMealTemplateNoIngredientsYet =>
+      'Noch keine Zutaten verknüpft.';
 
   @override
   String get preparedMealTemplateOpenAction => 'Rezept öffnen';
@@ -871,7 +950,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateImportReviewTitle => 'Rezept prüfen';
 
   @override
-  String get preparedMealTemplateImportReviewInstructionsTitle => 'Kurze Anleitung';
+  String get preparedMealTemplateImportReviewInstructionsTitle =>
+      'Kurze Anleitung';
 
   @override
   String get preparedMealTemplateImportReviewSavingAction => 'Speichert...';
@@ -898,7 +978,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateDetailNotFound => 'Rezept nicht gefunden.';
 
   @override
-  String get preparedMealTemplateDetailLoadFailed => 'Rezept konnte nicht geladen werden.';
+  String get preparedMealTemplateDetailLoadFailed =>
+      'Rezept konnte nicht geladen werden.';
 
   @override
   String preparedMealTemplateDetailBasePortions(int count) {
@@ -906,10 +987,12 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get preparedMealTemplateDetailScaleHint => 'Zutaten werden auf diese Portionszahl skaliert.';
+  String get preparedMealTemplateDetailScaleHint =>
+      'Zutaten werden auf diese Portionszahl skaliert.';
 
   @override
-  String get preparedMealTemplateDetailNoIngredients => 'Noch keine Zutaten vorhanden.';
+  String get preparedMealTemplateDetailNoIngredients =>
+      'Noch keine Zutaten vorhanden.';
 
   @override
   String get preparedMealTemplateDetailSaveAction => 'Rezept anpassen';
@@ -918,22 +1001,27 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateDetailSavingAction => 'Speichert...';
 
   @override
-  String get preparedMealTemplateDetailIngredientsToShoppingListAction => 'Zutaten auf Einkaufsliste';
+  String get preparedMealTemplateDetailIngredientsToShoppingListAction =>
+      'Zutaten auf Einkaufsliste';
 
   @override
-  String get preparedMealTemplateDetailCreateMealHint => 'Dieses Rezept braucht mindestens eine Zutat, bevor du eine Mahlzeit erstellst.';
+  String get preparedMealTemplateDetailCreateMealHint =>
+      'Dieses Rezept braucht mindestens eine Zutat, bevor du eine Mahlzeit erstellst.';
 
   @override
   String get preparedMealTemplateDetailAssignAction => 'Zuordnen';
 
   @override
-  String get preparedMealTemplateDetailChangeAssignmentAction => 'Zuordnung ändern';
+  String get preparedMealTemplateDetailChangeAssignmentAction =>
+      'Zuordnung ändern';
 
   @override
-  String get preparedMealTemplateDetailAssignedFromInventoryTitle => 'Aus dem Inventar belegt';
+  String get preparedMealTemplateDetailAssignedFromInventoryTitle =>
+      'Aus dem Inventar belegt';
 
   @override
-  String get preparedMealTemplateDetailMatchingInventoryItemsTitle => 'Passende Inventarartikel';
+  String get preparedMealTemplateDetailMatchingInventoryItemsTitle =>
+      'Passende Inventarartikel';
 
   @override
   String preparedMealTemplateDetailMissingAssignedItems(int count) {
@@ -951,26 +1039,40 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get preparedMealTemplateDetailSelectionTitle => 'Inventarartikel wählen';
+  String get preparedMealTemplateDetailSelectionTitle =>
+      'Inventarartikel wählen';
 
   @override
-  String get preparedMealTemplateDetailSelectionEmpty => 'Keine Inventarartikel vorhanden.';
+  String get preparedMealTemplateDetailSelectionEmpty =>
+      'Keine Inventarartikel vorhanden.';
 
   @override
-  String preparedMealTemplateDetailSelectionConversionLabel(String sourceUnit, String unit) {
+  String preparedMealTemplateDetailSelectionConversionLabel(
+    String sourceUnit,
+    String unit,
+  ) {
     return 'Menge pro $sourceUnit ($unit)';
   }
 
   @override
-  String preparedMealTemplateDetailSelectionConversionHint(String sourceUnit, String unit, String ingredient) {
+  String preparedMealTemplateDetailSelectionConversionHint(
+    String sourceUnit,
+    String unit,
+    String ingredient,
+  ) {
     return 'Wie viel $unit entspricht 1 $sourceUnit von \"$ingredient\"?';
   }
 
   @override
-  String get preparedMealTemplateDetailSelectionConversionError => 'Bitte gib eine Menge größer als 0 ein.';
+  String get preparedMealTemplateDetailSelectionConversionError =>
+      'Bitte gib eine Menge größer als 0 ein.';
 
   @override
-  String preparedMealTemplateDetailConversionSummary(String sourceUnit, int amount, String unit) {
+  String preparedMealTemplateDetailConversionSummary(
+    String sourceUnit,
+    int amount,
+    String unit,
+  ) {
     return '1 $sourceUnit = $amount $unit';
   }
 
@@ -987,7 +1089,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateDetailRestoreAction => 'Wiederherstellen';
 
   @override
-  String get preparedMealTemplateDetailAddToShoppingListAction => 'Zur Einkaufsliste';
+  String get preparedMealTemplateDetailAddToShoppingListAction =>
+      'Zur Einkaufsliste';
 
   @override
   String get preparedMealTemplateDetailIgnoreAction => 'Ignorieren';
@@ -996,10 +1099,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateDetailUnignoreAction => 'Nicht ignorieren';
 
   @override
-  String get preparedMealTemplateDetailAddIngredientShoppingFailed => 'Zutat konnte nicht zur Einkaufsliste hinzugefügt werden.';
+  String get preparedMealTemplateDetailAddIngredientShoppingFailed =>
+      'Zutat konnte nicht zur Einkaufsliste hinzugefügt werden.';
 
   @override
-  String get preparedMealTemplateDetailAddIngredientsShoppingFailed => 'Zutaten konnten nicht zur Einkaufsliste hinzugefügt werden.';
+  String get preparedMealTemplateDetailAddIngredientsShoppingFailed =>
+      'Zutaten konnten nicht zur Einkaufsliste hinzugefügt werden.';
 
   @override
   String preparedMealTemplateDetailAddIngredientsShoppingSucceeded(int count) {
@@ -1007,13 +1112,16 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get preparedMealTemplateDetailIgnoreSaveFailed => 'Zutatenstatus konnte nicht gespeichert werden.';
+  String get preparedMealTemplateDetailIgnoreSaveFailed =>
+      'Zutatenstatus konnte nicht gespeichert werden.';
 
   @override
-  String get preparedMealTemplateDetailInvalidMealMessage => 'Das Rezept braucht mindestens eine gültige Zutat.';
+  String get preparedMealTemplateDetailInvalidMealMessage =>
+      'Das Rezept braucht mindestens eine gültige Zutat.';
 
   @override
-  String get preparedMealTemplateDetailSaveFailedMessage => 'Rezept konnte nicht angepasst werden.';
+  String get preparedMealTemplateDetailSaveFailedMessage =>
+      'Rezept konnte nicht angepasst werden.';
 
   @override
   String get shoppingListStatsEntries => 'Positionen';
@@ -1037,13 +1145,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shoppingListEmptyState => 'Deine Einkaufsliste ist leer.';
 
   @override
-  String get shoppingListInvalidNameError => 'Bitte einen Artikelnamen eingeben.';
+  String get shoppingListInvalidNameError =>
+      'Bitte einen Artikelnamen eingeben.';
 
   @override
-  String get shoppingListAddFailedError => 'Artikel konnte nicht hinzugefügt werden. Bitte erneut versuchen.';
+  String get shoppingListAddFailedError =>
+      'Artikel konnte nicht hinzugefügt werden. Bitte erneut versuchen.';
 
   @override
-  String get shoppingListLoadFailed => 'Einkaufsartikel konnten nicht geladen werden.';
+  String get shoppingListLoadFailed =>
+      'Einkaufsartikel konnten nicht geladen werden.';
 
   @override
   String get shoppingListRetryAction => 'Erneut versuchen';
@@ -1063,10 +1174,12 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get shoppingListClearCrossedOffDialogTitle => 'Durchgestrichene Artikel löschen?';
+  String get shoppingListClearCrossedOffDialogTitle =>
+      'Durchgestrichene Artikel löschen?';
 
   @override
-  String get shoppingListClearCrossedOffDialogMessage => 'Alle durchgestrichenen Artikel werden von der Einkaufsliste entfernt.';
+  String get shoppingListClearCrossedOffDialogMessage =>
+      'Alle durchgestrichenen Artikel werden von der Einkaufsliste entfernt.';
 
   @override
   String get shoppingListClearCrossedOffConfirmAction => 'Löschen';
@@ -1087,13 +1200,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesBarcodeResolving => 'Produkt wird gesucht...';
 
   @override
-  String get caloriesBarcodeLookupFailed => 'Barcode-Suche fehlgeschlagen. Bitte erneut versuchen.';
+  String get caloriesBarcodeLookupFailed =>
+      'Barcode-Suche fehlgeschlagen. Bitte erneut versuchen.';
 
   @override
   String get caloriesBarcodeCandidateTitle => 'Produkt auswählen';
 
   @override
-  String get caloriesBarcodeCandidateSubtitle => 'Für diesen Barcode wurden mehrere Produkte gefunden.';
+  String get caloriesBarcodeCandidateSubtitle =>
+      'Für diesen Barcode wurden mehrere Produkte gefunden.';
 
   @override
   String get caloriesBarcodeUnknownBrand => 'Unbekannte Marke';
@@ -1102,7 +1217,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesBarcodeNotFoundTitle => 'Produkt nicht gefunden';
 
   @override
-  String get caloriesBarcodeNotFoundMessage => 'Für diesen Barcode wurde kein Produkt gefunden.';
+  String get caloriesBarcodeNotFoundMessage =>
+      'Für diesen Barcode wurde kein Produkt gefunden.';
 
   @override
   String get caloriesBarcodeNotFoundManualAction => 'Manueller Eintrag';
@@ -1111,16 +1227,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesBarcodeNotFoundOcrAction => 'Nährwertetikett scannen';
 
   @override
-  String get caloriesOcrFailed => 'Nährwertetikett konnte nicht erkannt werden.';
+  String get caloriesOcrFailed =>
+      'Nährwertetikett konnte nicht erkannt werden.';
 
   @override
-  String get caloriesLoadFailed => 'Kalorien-Einträge konnten nicht geladen werden.';
+  String get caloriesLoadFailed =>
+      'Kalorien-Einträge konnten nicht geladen werden.';
 
   @override
   String get caloriesRetryAction => 'Erneut versuchen';
 
   @override
-  String get caloriesAuthRequired => 'Bitte melde dich an, um Kalorien zu verwalten.';
+  String get caloriesAuthRequired =>
+      'Bitte melde dich an, um Kalorien zu verwalten.';
 
   @override
   String get caloriesTodayAction => 'Heute';
@@ -1150,13 +1269,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesGoalClearAction => 'Ziel löschen';
 
   @override
-  String get caloriesGoalInvalidValue => 'Bitte eine Zahl größer als null eingeben.';
+  String get caloriesGoalInvalidValue =>
+      'Bitte eine Zahl größer als null eingeben.';
 
   @override
-  String get caloriesGoalSaveFailed => 'Kalorienziel konnte nicht gespeichert werden.';
+  String get caloriesGoalSaveFailed =>
+      'Kalorienziel konnte nicht gespeichert werden.';
 
   @override
-  String get caloriesGoalClearFailed => 'Kalorienziel konnte nicht gelöscht werden.';
+  String get caloriesGoalClearFailed =>
+      'Kalorienziel konnte nicht gelöscht werden.';
 
   @override
   String get caloriesGoalStartDialogTitle => 'Zielstart verschieben';
@@ -1168,7 +1290,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesGoalStartTimeLabel => 'Uhrzeit';
 
   @override
-  String get caloriesGoalStartSaveFailed => 'Der Zielstart konnte nicht aktualisiert werden.';
+  String get caloriesGoalStartSaveFailed =>
+      'Der Zielstart konnte nicht aktualisiert werden.';
 
   @override
   String get caloriesEatingWindowDialogTitle => 'Essensfenster setzen';
@@ -1180,10 +1303,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesEatingWindowEndLabel => 'Ende';
 
   @override
-  String get caloriesEatingWindowInvalidRange => 'Die Endzeit muss nach der Startzeit liegen.';
+  String get caloriesEatingWindowInvalidRange =>
+      'Die Endzeit muss nach der Startzeit liegen.';
 
   @override
-  String get caloriesEatingWindowSaveFailed => 'Das Essensfenster konnte nicht aktualisiert werden.';
+  String get caloriesEatingWindowSaveFailed =>
+      'Das Essensfenster konnte nicht aktualisiert werden.';
 
   @override
   String get caloriesCalculatorSheetTitle => 'Kalorienrechner';
@@ -1192,7 +1317,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorOnboardingTitle => 'Kalorienziel festlegen';
 
   @override
-  String get caloriesCalculatorOnboardingSubtitle => 'Wir berechnen aus ein paar Angaben dein tägliches Kalorienziel.';
+  String get caloriesCalculatorOnboardingSubtitle =>
+      'Wir berechnen aus ein paar Angaben dein tägliches Kalorienziel.';
 
   @override
   String caloriesCalculatorStepProgress(int current, int total) {
@@ -1221,7 +1347,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorWeightEmpty => 'Bitte gib dein Gewicht ein.';
 
   @override
-  String get caloriesCalculatorWeightInvalid => 'Bitte gib ein gültiges Gewicht ein.';
+  String get caloriesCalculatorWeightInvalid =>
+      'Bitte gib ein gültiges Gewicht ein.';
 
   @override
   String get caloriesCalculatorHeightLabel => 'Größe (cm)';
@@ -1230,7 +1357,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorHeightEmpty => 'Bitte gib deine Größe ein.';
 
   @override
-  String get caloriesCalculatorHeightInvalid => 'Bitte gib eine gültige Größe ein.';
+  String get caloriesCalculatorHeightInvalid =>
+      'Bitte gib eine gültige Größe ein.';
 
   @override
   String get caloriesCalculatorAgeLabel => 'Alter (Jahre)';
@@ -1239,52 +1367,61 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorAgeEmpty => 'Bitte gib dein Alter ein.';
 
   @override
-  String get caloriesCalculatorAgeInvalid => 'Bitte gib ein gültiges Alter ein.';
+  String get caloriesCalculatorAgeInvalid =>
+      'Bitte gib ein gültiges Alter ein.';
 
   @override
   String get caloriesCalculatorActivityLevelLabel => 'Aktivitätslevel (PAL)';
 
   @override
-  String get caloriesCalculatorActivityLevelHelp => 'Wähle die Option, die am besten zu deiner typischen Woche passt.';
+  String get caloriesCalculatorActivityLevelHelp =>
+      'Wähle die Option, die am besten zu deiner typischen Woche passt.';
 
   @override
   String get caloriesCalculatorActivityLevelNoneTitle => 'Kaum aktiv';
 
   @override
-  String get caloriesCalculatorActivityLevelNoneDescription => 'Büro, viel sitzen, wenige Schritte und kein oder kaum Sport.';
+  String get caloriesCalculatorActivityLevelNoneDescription =>
+      'Büro, viel sitzen, wenige Schritte und kein oder kaum Sport.';
 
   @override
   String get caloriesCalculatorActivityLevelLowTitle => 'Leicht aktiv';
 
   @override
-  String get caloriesCalculatorActivityLevelLowDescription => 'Überwiegend sitzend, aber mit etwas Bewegung im Alltag oder 1 bis 2 lockeren Einheiten pro Woche.';
+  String get caloriesCalculatorActivityLevelLowDescription =>
+      'Überwiegend sitzend, aber mit etwas Bewegung im Alltag oder 1 bis 2 lockeren Einheiten pro Woche.';
 
   @override
   String get caloriesCalculatorActivityLevelMediumTitle => 'Moderat aktiv';
 
   @override
-  String get caloriesCalculatorActivityLevelMediumDescription => 'Regelmäßige Bewegung im Alltag oder 3 bis 4 Sporteinheiten pro Woche.';
+  String get caloriesCalculatorActivityLevelMediumDescription =>
+      'Regelmäßige Bewegung im Alltag oder 3 bis 4 Sporteinheiten pro Woche.';
 
   @override
   String get caloriesCalculatorActivityLevelHighTitle => 'Sehr aktiv';
 
   @override
-  String get caloriesCalculatorActivityLevelHighDescription => 'Körperlich aktiver Alltag oder intensives Training an den meisten Tagen.';
+  String get caloriesCalculatorActivityLevelHighDescription =>
+      'Körperlich aktiver Alltag oder intensives Training an den meisten Tagen.';
 
   @override
   String get caloriesCalculatorActivityLevelExtremeTitle => 'Extrem aktiv';
 
   @override
-  String get caloriesCalculatorActivityLevelExtremeDescription => 'Sehr hohe Trainingsumfänge, körperlich harte Arbeit oder Leistungssport.';
+  String get caloriesCalculatorActivityLevelExtremeDescription =>
+      'Sehr hohe Trainingsumfänge, körperlich harte Arbeit oder Leistungssport.';
 
   @override
   String get caloriesCalculatorActivityLevelHint => 'Zum Beispiel 1,2 bis 2,0';
 
   @override
-  String get caloriesCalculatorActivityLevelEmpty => 'Bitte gib dein Aktivitätslevel ein.';
+  String get caloriesCalculatorActivityLevelEmpty =>
+      'Bitte gib dein Aktivitätslevel ein.';
 
   @override
-  String get caloriesCalculatorActivityLevelInvalid => 'Bitte gib ein gültiges Aktivitätslevel ein.';
+  String get caloriesCalculatorActivityLevelInvalid =>
+      'Bitte gib ein gültiges Aktivitätslevel ein.';
 
   @override
   String get caloriesCalculatorGoalModeLabel => 'Zielmodus';
@@ -1299,16 +1436,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorGoalModeGain => 'Zunehmen';
 
   @override
-  String get caloriesCalculatorGoalSpeedLabel => 'Zielgeschwindigkeit (kg/Woche)';
+  String get caloriesCalculatorGoalSpeedLabel =>
+      'Zielgeschwindigkeit (kg/Woche)';
 
   @override
-  String get caloriesCalculatorGoalSpeedHint => 'Zum Beispiel 0,25, 0,5 oder 0,75';
+  String get caloriesCalculatorGoalSpeedHint =>
+      'Zum Beispiel 0,25, 0,5 oder 0,75';
 
   @override
-  String get caloriesCalculatorGoalSpeedEmpty => 'Bitte gib eine Zielgeschwindigkeit ein.';
+  String get caloriesCalculatorGoalSpeedEmpty =>
+      'Bitte gib eine Zielgeschwindigkeit ein.';
 
   @override
-  String get caloriesCalculatorGoalSpeedInvalid => 'Bitte gib eine gültige Zielgeschwindigkeit ein.';
+  String get caloriesCalculatorGoalSpeedInvalid =>
+      'Bitte gib eine gültige Zielgeschwindigkeit ein.';
 
   @override
   String get caloriesCalculatorResultsTitle => 'Ergebnisse';
@@ -1326,7 +1467,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorGoalStartLabel => 'Zielstart';
 
   @override
-  String get caloriesCalculatorGoalStartHint => 'Dein Kalorienziel-Verlauf beginnt ab diesem Zeitpunkt.';
+  String get caloriesCalculatorGoalStartHint =>
+      'Dein Kalorienziel-Verlauf beginnt ab diesem Zeitpunkt.';
 
   @override
   String get caloriesCalculatorGoalStartChangeAction => 'Ändern';
@@ -1335,10 +1477,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorEatingWindowLabel => 'Essensfenster';
 
   @override
-  String get caloriesCalculatorEatingWindowHint => 'Wird verwendet, um die heutige Tagebuch-Balance über den Tag zu takten.';
+  String get caloriesCalculatorEatingWindowHint =>
+      'Wird verwendet, um die heutige Tagebuch-Balance über den Tag zu takten.';
 
   @override
-  String get caloriesCalculatorGoalStartFutureError => 'Der Zielstart darf nicht in der Zukunft liegen.';
+  String get caloriesCalculatorGoalStartFutureError =>
+      'Der Zielstart darf nicht in der Zukunft liegen.';
 
   @override
   String caloriesCalculatorMinimumGoalWarning(int minimumKcal) {
@@ -1349,13 +1493,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorSaveAction => 'Ziel speichern';
 
   @override
-  String get caloriesCalculatorSaveFailed => 'Das berechnete Kalorienziel konnte nicht gespeichert werden.';
+  String get caloriesCalculatorSaveFailed =>
+      'Das berechnete Kalorienziel konnte nicht gespeichert werden.';
 
   @override
-  String get caloriesLearnedTdeeSheetTitle => 'Ziel aus gelerntem TDEE neu berechnen';
+  String get caloriesLearnedTdeeSheetTitle =>
+      'Ziel aus gelerntem TDEE neu berechnen';
 
   @override
-  String get caloriesLearnedTdeeSheetSubtitle => 'Verwende deinen letzten erfolgreichen Wochen-Check-in statt einer Aktivitätsschätzung.';
+  String get caloriesLearnedTdeeSheetSubtitle =>
+      'Verwende deinen letzten erfolgreichen Wochen-Check-in statt einer Aktivitätsschätzung.';
 
   @override
   String get caloriesLearnedTdeeLabel => 'Gelernter TDEE';
@@ -1364,19 +1511,23 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesLearnedTdeeResultLabel => 'Neues Tagesziel';
 
   @override
-  String get caloriesLearnedTdeeUseProfileResetAction => 'Profilbasierten Reset nutzen';
+  String get caloriesLearnedTdeeUseProfileResetAction =>
+      'Profilbasierten Reset nutzen';
 
   @override
-  String get caloriesLearnedTdeeSaveFailed => 'Das Ziel aus dem gelernten TDEE konnte nicht gespeichert werden.';
+  String get caloriesLearnedTdeeSaveFailed =>
+      'Das Ziel aus dem gelernten TDEE konnte nicht gespeichert werden.';
 
   @override
   String get caloriesWeeklyCheckInDialogTitle => 'Wochen-Check-in';
 
   @override
-  String get caloriesWeeklyCheckInDialogReadyBody => 'Prüfe deine letzten 7 abgeschlossenen Tage und übernimm ab heute ein aktualisiertes Ziel.';
+  String get caloriesWeeklyCheckInDialogReadyBody =>
+      'Prüfe deine letzten 7 abgeschlossenen Tage und übernimm ab heute ein aktualisiertes Ziel.';
 
   @override
-  String get caloriesWeeklyCheckInDialogBlockedBody => 'Uns fehlen noch ein paar Daten, bevor wir dein Ziel aktualisieren können.';
+  String get caloriesWeeklyCheckInDialogBlockedBody =>
+      'Uns fehlen noch ein paar Daten, bevor wir dein Ziel aktualisieren können.';
 
   @override
   String get caloriesWeeklyCheckInDialogWindowLabel => 'Zeitraum';
@@ -1400,13 +1551,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesActivityWorkoutBonusLabel => 'Trainingsbonus';
 
   @override
-  String get caloriesActivityLearningHint => 'Wir lernen dein Aktivitätsmuster noch.';
+  String get caloriesActivityLearningHint =>
+      'Wir lernen dein Aktivitätsmuster noch.';
 
   @override
-  String get caloriesWeeklyCheckInDialogLowConfidence => 'Niedrige Sicherheit: Es lagen nur Start- und Endgewicht vor.';
+  String get caloriesWeeklyCheckInDialogLowConfidence =>
+      'Niedrige Sicherheit: Es lagen nur Start- und Endgewicht vor.';
 
   @override
-  String get caloriesWeeklyCheckInBlockedUnstableWeight => 'Die Gewichtsdaten waren diese Woche zu unruhig für ein verlässliches TDEE-Update. Füge gleichmäßigere Wiegewerte hinzu und versuche es erneut.';
+  String get caloriesWeeklyCheckInBlockedUnstableWeight =>
+      'Die Gewichtsdaten waren diese Woche zu unruhig für ein verlässliches TDEE-Update. Füge gleichmäßigere Wiegewerte hinzu und versuche es erneut.';
 
   @override
   String get caloriesWeeklyCheckInApplyAction => 'Ziel übernehmen';
@@ -1415,19 +1569,23 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeeklyCheckInLaterAction => 'Später';
 
   @override
-  String get caloriesWeeklyCheckInApplyFailed => 'Der Wochen-Check-in konnte nicht übernommen werden.';
+  String get caloriesWeeklyCheckInApplyFailed =>
+      'Der Wochen-Check-in konnte nicht übernommen werden.';
 
   @override
   String get caloriesWeeklyCheckInHintReadyTitle => 'Wochen-Check-in bereit';
 
   @override
-  String get caloriesWeeklyCheckInHintReadyBody => 'Deine letzten 7 abgeschlossenen Tage sind für ein Ziel-Update bereit.';
+  String get caloriesWeeklyCheckInHintReadyBody =>
+      'Deine letzten 7 abgeschlossenen Tage sind für ein Ziel-Update bereit.';
 
   @override
-  String get caloriesWeeklyCheckInHintBlockedTitle => 'Wochen-Check-in braucht Daten';
+  String get caloriesWeeklyCheckInHintBlockedTitle =>
+      'Wochen-Check-in braucht Daten';
 
   @override
-  String get caloriesWeeklyCheckInHintBlockedBody => 'Ergänze fehlende Aufnahme- oder Gewichtsdaten, um dein Ziel zu aktualisieren.';
+  String get caloriesWeeklyCheckInHintBlockedBody =>
+      'Ergänze fehlende Aufnahme- oder Gewichtsdaten, um dein Ziel zu aktualisieren.';
 
   @override
   String get caloriesWeeklyCheckInHintContinueAction => 'Fortsetzen';
@@ -1436,34 +1594,44 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeeklyCheckInHintStaleTitle => 'Ziel wird alt';
 
   @override
-  String get caloriesWeeklyCheckInHintStaleBody => 'Nutze den nächsten Wochen-Check-in, damit dein Ziel aktuell bleibt.';
+  String get caloriesWeeklyCheckInHintStaleBody =>
+      'Nutze den nächsten Wochen-Check-in, damit dein Ziel aktuell bleibt.';
 
   @override
-  String get caloriesWeeklyCheckInHintUrgentTitle => 'Ziel braucht Aktualisierung';
+  String get caloriesWeeklyCheckInHintUrgentTitle =>
+      'Ziel braucht Aktualisierung';
 
   @override
-  String get caloriesWeeklyCheckInHintUrgentBody => 'Du verwendest schon länger ältere Zieldaten.';
+  String get caloriesWeeklyCheckInHintUrgentBody =>
+      'Du verwendest schon länger ältere Zieldaten.';
 
   @override
-  String get caloriesWeeklyCheckInSkipDayAction => 'Tag als ausgelassen markieren';
+  String get caloriesWeeklyCheckInSkipDayAction =>
+      'Tag als ausgelassen markieren';
 
   @override
-  String get caloriesWeeklyCheckInUnskipDayAction => 'Ausgelassen-Markierung entfernen';
+  String get caloriesWeeklyCheckInUnskipDayAction =>
+      'Ausgelassen-Markierung entfernen';
 
   @override
-  String get caloriesWeeklyCheckInAutoAdjustedHint => 'Ziel durch Wochen-Check-in aktualisiert:';
+  String get caloriesWeeklyCheckInAutoAdjustedHint =>
+      'Ziel durch Wochen-Check-in aktualisiert:';
 
   @override
-  String get caloriesWeeklyCheckInOpenHealthTrendsAction => 'Gesundheitstrends öffnen';
+  String get caloriesWeeklyCheckInOpenHealthTrendsAction =>
+      'Gesundheitstrends öffnen';
 
   @override
-  String get caloriesWeeklyCheckInBlockedMissingIntake => 'Mindestens ein Tag in diesem Zeitraum hat noch keine Aufnahme. Trage ihn ein oder markiere 1 oder 2 leere Tage als ausgelassen.';
+  String get caloriesWeeklyCheckInBlockedMissingIntake =>
+      'Mindestens ein Tag in diesem Zeitraum hat noch keine Aufnahme. Trage ihn ein oder markiere 1 oder 2 leere Tage als ausgelassen.';
 
   @override
-  String get caloriesWeeklyCheckInBlockedTooManyMissingIntake => 'Dieser Zeitraum hat 3 oder mehr fehlende Aufnahmetage. Wir behalten dein letztes gelerntes Ziel, bis du wieder mehr vollständige Tage geloggt hast.';
+  String get caloriesWeeklyCheckInBlockedTooManyMissingIntake =>
+      'Dieser Zeitraum hat 3 oder mehr fehlende Aufnahmetage. Wir behalten dein letztes gelerntes Ziel, bis du wieder mehr vollständige Tage geloggt hast.';
 
   @override
-  String get caloriesWeeklyCheckInBlockedSkippedWithoutAverage => 'Ein ausgelassener Tag braucht frühere geloggte Aufnahme im selben Zeitraum, bevor wir ihn schätzen können.';
+  String get caloriesWeeklyCheckInBlockedSkippedWithoutAverage =>
+      'Ein ausgelassener Tag braucht frühere geloggte Aufnahme im selben Zeitraum, bevor wir ihn schätzen können.';
 
   @override
   String caloriesWeeklyCheckInBlockedMissingStartWeightOn(Object date) {
@@ -1519,7 +1687,8 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get caloriesBalanceStatusWaitNow => 'Gedulde dich noch etwas mit dem Essen';
+  String get caloriesBalanceStatusWaitNow =>
+      'Gedulde dich noch etwas mit dem Essen';
 
   @override
   String caloriesBalanceStatusWaitUntil(String time) {
@@ -1527,16 +1696,19 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get caloriesBalanceStatusWaitRestOfDay => 'Heute vermutlich nicht mehr im Takt';
+  String get caloriesBalanceStatusWaitRestOfDay =>
+      'Heute vermutlich nicht mehr im Takt';
 
   @override
   String get caloriesBalanceStatusRecommendFast => 'Empfehlung: heute fasten';
 
   @override
-  String get caloriesBalanceStatusRecommendFastRestOfDay => 'Empfehlung: restlichen Tag fasten';
+  String get caloriesBalanceStatusRecommendFastRestOfDay =>
+      'Empfehlung: restlichen Tag fasten';
 
   @override
-  String get caloriesBalanceStatusFinishedOnTrack => 'Der Tag endete im Zielkorridor';
+  String get caloriesBalanceStatusFinishedOnTrack =>
+      'Der Tag endete im Zielkorridor';
 
   @override
   String caloriesBalanceStatusFinishedBuffer(int kcal) {
@@ -1569,7 +1741,8 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get caloriesBalanceUnavailable => 'Die Balance-Ansicht ist gerade nicht verfügbar.';
+  String get caloriesBalanceUnavailable =>
+      'Die Balance-Ansicht ist gerade nicht verfügbar.';
 
   @override
   String get caloriesProteinLabel => 'Eiweiß';
@@ -1584,13 +1757,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesActivitiesTitle => 'Aktivität';
 
   @override
-  String get caloriesActivitiesSubtitle => 'Tägliche Schritte und geschätzte verbrannte Kalorien aus Workouts.';
+  String get caloriesActivitiesSubtitle =>
+      'Tägliche Schritte und geschätzte verbrannte Kalorien aus Workouts.';
 
   @override
-  String get caloriesActivitiesStepsDuringWorkoutsLabel => 'Schritte während Workouts';
+  String get caloriesActivitiesStepsDuringWorkoutsLabel =>
+      'Schritte während Workouts';
 
   @override
-  String get caloriesActivitiesStepsOutsideWorkoutsLabel => 'Schritte außerhalb von Workouts';
+  String get caloriesActivitiesStepsOutsideWorkoutsLabel =>
+      'Schritte außerhalb von Workouts';
 
   @override
   String get caloriesActivitiesCaloriesBurnedLabel => 'Verbrannte Kalorien';
@@ -1599,7 +1775,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWorkoutsTitle => 'Workouts';
 
   @override
-  String get caloriesWorkoutsSubtitle => 'Aus Health Connect importierte Sessions für den gewählten Tagebuch-Tag.';
+  String get caloriesWorkoutsSubtitle =>
+      'Aus Health Connect importierte Sessions für den gewählten Tagebuch-Tag.';
 
   @override
   String get caloriesWorkoutsEmpty => 'Keine Workouts für diesen Tag gefunden.';
@@ -1638,7 +1815,8 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get caloriesWeekBalanceStartedToday => 'Dein Zielstart ist heute. Die Bilanz baut sich ab jetzt auf.';
+  String get caloriesWeekBalanceStartedToday =>
+      'Dein Zielstart ist heute. Die Bilanz baut sich ab jetzt auf.';
 
   @override
   String get caloriesHealthTrendsPageTitle => 'Gesundheitstrends';
@@ -1647,7 +1825,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesHealthTrendsChartTitle => '7-Tage-Gesundheitschart';
 
   @override
-  String get caloriesHealthTrendsChartSubtitle => 'Zeigt Gewicht, verbrannte Kalorien und Kalorienaufnahme für die sichtbaren 7 Tage im Tagebuch.';
+  String get caloriesHealthTrendsChartSubtitle =>
+      'Zeigt Gewicht, verbrannte Kalorien und Kalorienaufnahme für die sichtbaren 7 Tage im Tagebuch.';
 
   @override
   String get caloriesHealthTrendsLegendWeight => 'Gewicht';
@@ -1659,16 +1838,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesHealthTrendsLegendIntake => 'Aufnahme';
 
   @override
-  String get caloriesHealthTrendsEmpty => 'Für dieses sichtbare 7-Tage-Fenster sind noch keine Trenddaten vorhanden.';
+  String get caloriesHealthTrendsEmpty =>
+      'Für dieses sichtbare 7-Tage-Fenster sind noch keine Trenddaten vorhanden.';
 
   @override
-  String get caloriesHealthTrendsHealthHint => 'Verbinde den Gesundheitszugriff, um verbrannte Kalorien und Gewicht in diesem Chart zu sehen.';
+  String get caloriesHealthTrendsHealthHint =>
+      'Verbinde den Gesundheitszugriff, um verbrannte Kalorien und Gewicht in diesem Chart zu sehen.';
 
   @override
   String get caloriesHealthTrendsWeightsTitle => 'Tagesgewichte';
 
   @override
-  String get caloriesHealthTrendsWeightsSubtitle => 'Tippe auf einen sichtbaren Tag, um ein manuelles Gewicht hinzuzufügen oder zu bearbeiten. Manuelle Werte überschreiben importierte Werte für denselben Tag.';
+  String get caloriesHealthTrendsWeightsSubtitle =>
+      'Tippe auf einen sichtbaren Tag, um ein manuelles Gewicht hinzuzufügen oder zu bearbeiten. Manuelle Werte überschreiben importierte Werte für denselben Tag.';
 
   @override
   String get caloriesHealthTrendsWeightAddAction => 'Hinzufügen';
@@ -1688,10 +1870,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesHealthTrendsWeightClearAction => 'Überschreibung löschen';
 
   @override
-  String get caloriesHealthTrendsWeightSaveFailed => 'Gewicht konnte nicht gespeichert werden.';
+  String get caloriesHealthTrendsWeightSaveFailed =>
+      'Gewicht konnte nicht gespeichert werden.';
 
   @override
-  String get caloriesHealthTrendsWeightClearFailed => 'Manuelles Gewicht konnte nicht gelöscht werden.';
+  String get caloriesHealthTrendsWeightClearFailed =>
+      'Manuelles Gewicht konnte nicht gelöscht werden.';
 
   @override
   String get caloriesHealthTrendsWeightSourceManual => 'Manuell';
@@ -1720,7 +1904,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesDeleteEntryConfirmAction => 'Löschen';
 
   @override
-  String get caloriesReturnPreparedMealDialogTitle => 'Mahlzeit zurück in den Vorrat legen?';
+  String get caloriesReturnPreparedMealDialogTitle =>
+      'Mahlzeit zurück in den Vorrat legen?';
 
   @override
   String caloriesReturnPreparedMealDialogMessage(String name) {
@@ -1731,13 +1916,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesReturnPreparedMealConfirmAction => 'Zurück in den Vorrat';
 
   @override
-  String get caloriesReturnPreparedMealFailed => 'Die Mahlzeit konnte nicht zurück in den Vorrat gelegt werden.';
+  String get caloriesReturnPreparedMealFailed =>
+      'Die Mahlzeit konnte nicht zurück in den Vorrat gelegt werden.';
 
   @override
-  String get caloriesDeleteRestoreInventoryQuestion => 'Nahrungsmittel wieder in den Vorrat legen?';
+  String get caloriesDeleteRestoreInventoryQuestion =>
+      'Nahrungsmittel wieder in den Vorrat legen?';
 
   @override
-  String get caloriesDeleteRestoreFailed => 'Das Nahrungsmittel konnte nicht zurück in den Vorrat gelegt werden.';
+  String get caloriesDeleteRestoreFailed =>
+      'Das Nahrungsmittel konnte nicht zurück in den Vorrat gelegt werden.';
 
   @override
   String get caloriesDeleteFailed => 'Eintrag konnte nicht gelöscht werden.';
@@ -1752,10 +1940,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesEntryDetailsTitle => 'Kalorien-Eintragsdetails';
 
   @override
-  String get caloriesDiscardChangesDialogTitle => 'Ungespeicherte Änderungen verwerfen?';
+  String get caloriesDiscardChangesDialogTitle =>
+      'Ungespeicherte Änderungen verwerfen?';
 
   @override
-  String get caloriesDiscardChangesDialogMessage => 'Deine Änderungen an diesem Tagebucheintrag wurden noch nicht gespeichert.';
+  String get caloriesDiscardChangesDialogMessage =>
+      'Deine Änderungen an diesem Tagebucheintrag wurden noch nicht gespeichert.';
 
   @override
   String get caloriesDiscardChangesConfirmAction => 'Änderungen verwerfen';
@@ -1794,10 +1984,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesPer100FatLabel => 'Fett (g)';
 
   @override
-  String get caloriesPer100SaturatedFatLabel => 'Davon gesättigte Fettsäuren (g)';
+  String get caloriesPer100SaturatedFatLabel =>
+      'Davon gesättigte Fettsäuren (g)';
 
   @override
-  String get caloriesPer100PolyunsaturatedFatLabel => 'Davon mehrfach ungesättigte Fettsäuren (g)';
+  String get caloriesPer100PolyunsaturatedFatLabel =>
+      'Davon mehrfach ungesättigte Fettsäuren (g)';
 
   @override
   String get caloriesPer100SugarLabel => 'Davon Zucker (g)';
@@ -1809,7 +2001,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesPer100SaltLabel => 'Salz (g)';
 
   @override
-  String get inventoryReceiptReviewManualAddNutritionAction => 'Weitere Nährwerte eintragen';
+  String get inventoryReceiptReviewManualAddNutritionAction =>
+      'Weitere Nährwerte eintragen';
 
   @override
   String get inventoryReceiptReviewManualNutritionValueLabel => 'Wert';
@@ -1836,10 +2029,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesInvalidNumber => 'Bitte gültige Zahlen eingeben.';
 
   @override
-  String get caloriesPositiveNumberValidation => 'Bitte eine Zahl größer als null eingeben.';
+  String get caloriesPositiveNumberValidation =>
+      'Bitte eine Zahl größer als null eingeben.';
 
   @override
-  String get caloriesNonNegativeNumberValidation => 'Bitte eine Zahl größer oder gleich null eingeben.';
+  String get caloriesNonNegativeNumberValidation =>
+      'Bitte eine Zahl größer oder gleich null eingeben.';
 
   @override
   String get caloriesMealBreakfast => 'Frühstück';
@@ -1892,7 +2087,8 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get homeSettingsActionContextPlaceholder => 'Einstellungsaktion folgt bald.';
+  String get homeSettingsActionContextPlaceholder =>
+      'Einstellungsaktion folgt bald.';
 
   @override
   String get settingsLanguageTitle => 'Sprache';
@@ -1942,13 +2138,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsNotificationsTitle => 'Benachrichtigungen';
 
   @override
-  String get settingsNotificationsSubtitle => 'Erinnerungen und Hinweise verwalten';
+  String get settingsNotificationsSubtitle =>
+      'Erinnerungen und Hinweise verwalten';
 
   @override
   String get settingsHouseholdTitle => 'Haushalt';
 
   @override
-  String get settingsHouseholdSubtitle => 'Mitglieder einladen und geteilten Zugriff verwalten';
+  String get settingsHouseholdSubtitle =>
+      'Mitglieder einladen und geteilten Zugriff verwalten';
 
   @override
   String get settingsAccountTitle => 'Konto';
@@ -1963,46 +2161,57 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsHealthConnectTitle => 'Health verbinden';
 
   @override
-  String get settingsHealthConnectSubtitle => 'Erlaube YAMT, Schritte, Workouts und verbrannte Kalorien aus Health Connect zu lesen.';
+  String get settingsHealthConnectSubtitle =>
+      'Erlaube YAMT, Schritte, Workouts und verbrannte Kalorien aus Health Connect zu lesen.';
 
   @override
   String get settingsAppleHealthTitle => 'Apple Health';
 
   @override
-  String get settingsAppleHealthConnectSubtitle => 'Erlaube YAMT, Schritte, Workouts und verbrannte Kalorien aus Apple Health zu lesen.';
+  String get settingsAppleHealthConnectSubtitle =>
+      'Erlaube YAMT, Schritte, Workouts und verbrannte Kalorien aus Apple Health zu lesen.';
 
   @override
-  String get settingsHealthHistorySubtitle => 'Erlaube ältere Health-Connect-Historie, damit vergangene Tagebuch-Tage Aktivitätsdaten laden können.';
+  String get settingsHealthHistorySubtitle =>
+      'Erlaube ältere Health-Connect-Historie, damit vergangene Tagebuch-Tage Aktivitätsdaten laden können.';
 
   @override
-  String get settingsHealthInstallSubtitle => 'Installiere Health Connect, bevor du hier Gesundheitsdaten verbinden kannst.';
+  String get settingsHealthInstallSubtitle =>
+      'Installiere Health Connect, bevor du hier Gesundheitsdaten verbinden kannst.';
 
   @override
-  String get settingsHealthDisconnectSubtitle => 'Entferne den Health-Connect-Zugriff für YAMT.';
+  String get settingsHealthDisconnectSubtitle =>
+      'Entferne den Health-Connect-Zugriff für YAMT.';
 
   @override
-  String get settingsAppleHealthDisconnectSubtitle => 'Entferne den Apple-Health-Zugriff für YAMT.';
+  String get settingsAppleHealthDisconnectSubtitle =>
+      'Entferne den Apple-Health-Zugriff für YAMT.';
 
   @override
   String get settingsHealthDisconnectDialogTitle => 'Health-Zugriff trennen?';
 
   @override
-  String get settingsHealthDisconnectDialogBody => 'YAMT verliert den Zugriff auf Health Connect, bis du es erneut verbindest.';
+  String get settingsHealthDisconnectDialogBody =>
+      'YAMT verliert den Zugriff auf Health Connect, bis du es erneut verbindest.';
 
   @override
   String get settingsHealthDisconnectAction => 'Trennen';
 
   @override
-  String get settingsHealthDisconnectSuccess => 'Health-Zugriff getrennt. Starte YAMT neu, bevor du Health Connect erneut verbindest.';
+  String get settingsHealthDisconnectSuccess =>
+      'Health-Zugriff getrennt. Starte YAMT neu, bevor du Health Connect erneut verbindest.';
 
   @override
-  String get settingsHealthDisconnectOpenedSettings => 'Einstellungen geöffnet, damit du den Apple-Health-Zugriff verwalten kannst.';
+  String get settingsHealthDisconnectOpenedSettings =>
+      'Einstellungen geöffnet, damit du den Apple-Health-Zugriff verwalten kannst.';
 
   @override
-  String get settingsHealthDisconnectFailed => 'Health-Zugriff konnte nicht getrennt werden.';
+  String get settingsHealthDisconnectFailed =>
+      'Health-Zugriff konnte nicht getrennt werden.';
 
   @override
-  String get settingsHealthConnectFailed => 'Health-Zugriff konnte nicht verbunden werden.';
+  String get settingsHealthConnectFailed =>
+      'Health-Zugriff konnte nicht verbunden werden.';
 
   @override
   String get accountPageNoSession => 'Keine aktive Kontositzung.';
@@ -2011,7 +2220,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get accountPageGuestTitle => 'Gastkonto';
 
   @override
-  String get accountPageGuestDescription => 'Verknüpfe dein Gastkonto mit Google, um den Zugriff geräteübergreifend zu behalten.';
+  String get accountPageGuestDescription =>
+      'Verknüpfe dein Gastkonto mit Google, um den Zugriff geräteübergreifend zu behalten.';
 
   @override
   String get accountPageLinkGoogle => 'Mit Google verknüpfen';
@@ -2023,7 +2233,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get accountPageLinkEmailPasswordTitle => 'Gastkonto verknüpfen';
 
   @override
-  String get accountPageLinkEmailPasswordDescription => 'Lege E-Mail-Anmeldedaten für dieses Gastkonto an.';
+  String get accountPageLinkEmailPasswordDescription =>
+      'Lege E-Mail-Anmeldedaten für dieses Gastkonto an.';
 
   @override
   String get accountPageLinkEmailPasswordConfirmAction => 'Konto verknüpfen';
@@ -2035,40 +2246,50 @@ class AppLocalizationsDe extends AppLocalizations {
   String get healthHistoryAction => 'Ältere Historie erlauben';
 
   @override
-  String get healthUnsupportedHint => 'Health Connect oder Apple Health ist auf diesem Gerät nicht verfügbar.';
+  String get healthUnsupportedHint =>
+      'Health Connect oder Apple Health ist auf diesem Gerät nicht verfügbar.';
 
   @override
   String get accountPageLinkSuccess => 'Konto erfolgreich verknüpft.';
 
   @override
-  String get accountPageLinkNotCompleted => 'Die Kontoverknüpfung wurde nicht abgeschlossen. Bitte erneut versuchen.';
+  String get accountPageLinkNotCompleted =>
+      'Die Kontoverknüpfung wurde nicht abgeschlossen. Bitte erneut versuchen.';
 
   @override
   String get accountPageLinkConflictTitle => 'Konto bereits vergeben';
 
   @override
-  String get accountPageLinkConflictDescription => 'Diese Anmeldeinformation ist bereits mit einem anderen Profil verknüpft. Wähle, wie du fortfahren möchtest.';
+  String get accountPageLinkConflictDescription =>
+      'Diese Anmeldeinformation ist bereits mit einem anderen Profil verknüpft. Wähle, wie du fortfahren möchtest.';
 
   @override
-  String get accountPageLinkConflictOverwriteAction => 'Mit diesem Gastkonto überschreiben';
+  String get accountPageLinkConflictOverwriteAction =>
+      'Mit diesem Gastkonto überschreiben';
 
   @override
-  String get accountPageLinkConflictOverwriteSubtitle => 'Dieses Gastkonto behalten und das alte verknüpfte Konto ersetzen.';
+  String get accountPageLinkConflictOverwriteSubtitle =>
+      'Dieses Gastkonto behalten und das alte verknüpfte Konto ersetzen.';
 
   @override
-  String get accountPageLinkConflictDeleteGuestAction => 'Gastkonto löschen und anmelden';
+  String get accountPageLinkConflictDeleteGuestAction =>
+      'Gastkonto löschen und anmelden';
 
   @override
-  String get accountPageLinkConflictDeleteGuestSubtitle => 'Dieses Gastkonto löschen und mit dem bestehenden Konto weitermachen.';
+  String get accountPageLinkConflictDeleteGuestSubtitle =>
+      'Dieses Gastkonto löschen und mit dem bestehenden Konto weitermachen.';
 
   @override
-  String get accountPageLinkConflictOverwriteDone => 'Anmeldeinformation wurde auf dieses Gastkonto übertragen.';
+  String get accountPageLinkConflictOverwriteDone =>
+      'Anmeldeinformation wurde auf dieses Gastkonto übertragen.';
 
   @override
-  String get accountPageLinkConflictDeleteGuestDone => 'Gastkonto gelöscht. Mit bestehendem Konto angemeldet.';
+  String get accountPageLinkConflictDeleteGuestDone =>
+      'Gastkonto gelöscht. Mit bestehendem Konto angemeldet.';
 
   @override
-  String get accountPageGuestSessionRequired => 'Diese Aktion ist nur für Gastkonten verfügbar.';
+  String get accountPageGuestSessionRequired =>
+      'Diese Aktion ist nur für Gastkonten verfügbar.';
 
   @override
   String get accountPageSignOut => 'Abmelden';
@@ -2080,7 +2301,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get accountPageDeleteDialogTitle => 'Konto löschen?';
 
   @override
-  String get accountPageDeleteDialogMessage => 'Dadurch wird dein Konto dauerhaft gelöscht und kann nicht rückgängig gemacht werden.';
+  String get accountPageDeleteDialogMessage =>
+      'Dadurch wird dein Konto dauerhaft gelöscht und kann nicht rückgängig gemacht werden.';
 
   @override
   String get accountPageDeleteDialogConfirmAction => 'Löschen';
@@ -2125,7 +2347,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdJoinExpiredCode => 'Dieser Haushaltscode ist abgelaufen.';
 
   @override
-  String get householdJoinOwnCode => 'Du kannst deinem eigenen Haushalt nicht beitreten.';
+  String get householdJoinOwnCode =>
+      'Du kannst deinem eigenen Haushalt nicht beitreten.';
 
   @override
   String get householdInviteTitle => 'Mitglieder einladen';
@@ -2146,10 +2369,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdInviteRefreshCode => 'Neuen Code erstellen';
 
   @override
-  String get householdInviteVerificationRequired => 'Verknüpfe dein Konto erst mit Google oder E-Mail, bevor du einen Haushalt leitest.';
+  String get householdInviteVerificationRequired =>
+      'Verknüpfe dein Konto erst mit Google oder E-Mail, bevor du einen Haushalt leitest.';
 
   @override
-  String get householdHostVerificationHint => 'Um andere Personen in deinen Haushalt einzuladen, verknüpfe dein Gastkonto mit Google oder E-Mail & Passwort.';
+  String get householdHostVerificationHint =>
+      'Um andere Personen in deinen Haushalt einzuladen, verknüpfe dein Gastkonto mit Google oder E-Mail & Passwort.';
 
   @override
   String get householdMembersTitle => 'Mitglieder';
@@ -2175,13 +2400,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdRemoveMemberSuccess => 'Mitglied entfernt.';
 
   @override
-  String get householdRemoveMemberFailed => 'Dieses Mitglied kann nicht entfernt werden.';
+  String get householdRemoveMemberFailed =>
+      'Dieses Mitglied kann nicht entfernt werden.';
 
   @override
   String get householdLeaveTitle => 'Haushalt verlassen?';
 
   @override
-  String get householdLeaveMessage => 'Du verlierst den Zugriff auf den geteilten Haushalt, bis du erneut beitrittst.';
+  String get householdLeaveMessage =>
+      'Du verlierst den Zugriff auf den geteilten Haushalt, bis du erneut beitrittst.';
 
   @override
   String get householdLeaveAction => 'Haushalt verlassen';
@@ -2193,7 +2420,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdLeaderOnly => 'Das kann nur die Haushaltsleitung tun.';
 
   @override
-  String get householdActionFailed => 'Haushaltsaktion fehlgeschlagen. Bitte versuche es erneut.';
+  String get householdActionFailed =>
+      'Haushaltsaktion fehlgeschlagen. Bitte versuche es erneut.';
 
   @override
   String get settingsAboutTitle => 'Über die App';
@@ -2274,7 +2502,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get confirmPasswordLabel => 'Passwort bestätigen';
 
   @override
-  String get validationPasswordsDoNotMatch => 'Passwörter stimmen nicht überein';
+  String get validationPasswordsDoNotMatch =>
+      'Passwörter stimmen nicht überein';
 
   @override
   String get authFailed => 'Authentifizierung fehlgeschlagen';
@@ -2295,40 +2524,51 @@ class AppLocalizationsDe extends AppLocalizations {
   String get authErrorInvalidCredential => 'Die Anmeldedaten sind ungültig.';
 
   @override
-  String get authErrorEmailAlreadyInUse => 'Für diese E-Mail existiert bereits ein Konto.';
+  String get authErrorEmailAlreadyInUse =>
+      'Für diese E-Mail existiert bereits ein Konto.';
 
   @override
   String get authErrorWeakPassword => 'Das Passwort ist zu schwach.';
 
   @override
-  String get authErrorOperationNotAllowed => 'Diese Anmeldemethode ist nicht aktiviert.';
+  String get authErrorOperationNotAllowed =>
+      'Diese Anmeldemethode ist nicht aktiviert.';
 
   @override
-  String get authErrorTooManyRequests => 'Zu viele Anfragen. Bitte später erneut versuchen.';
+  String get authErrorTooManyRequests =>
+      'Zu viele Anfragen. Bitte später erneut versuchen.';
 
   @override
-  String get authErrorNetworkRequestFailed => 'Netzwerkfehler. Bitte Internetverbindung prüfen.';
+  String get authErrorNetworkRequestFailed =>
+      'Netzwerkfehler. Bitte Internetverbindung prüfen.';
 
   @override
-  String get authErrorRequiresRecentLogin => 'Bitte melde dich erneut an, um fortzufahren.';
+  String get authErrorRequiresRecentLogin =>
+      'Bitte melde dich erneut an, um fortzufahren.';
 
   @override
-  String get authErrorAccountExistsWithDifferentCredential => 'Es existiert bereits ein Konto mit einer anderen Anmeldemethode.';
+  String get authErrorAccountExistsWithDifferentCredential =>
+      'Es existiert bereits ein Konto mit einer anderen Anmeldemethode.';
 
   @override
-  String get authErrorCredentialAlreadyInUse => 'Diese Anmeldeinformation wird bereits von einem anderen Konto verwendet.';
+  String get authErrorCredentialAlreadyInUse =>
+      'Diese Anmeldeinformation wird bereits von einem anderen Konto verwendet.';
 
   @override
-  String get authErrorProviderAlreadyLinked => 'Dieser Anmeldeanbieter ist bereits mit deinem Konto verknüpft.';
+  String get authErrorProviderAlreadyLinked =>
+      'Dieser Anmeldeanbieter ist bereits mit deinem Konto verknüpft.';
 
   @override
-  String get authErrorGoogleSignInCanceled => 'Google-Anmeldung fehlgeschlagen. Bitte erneut versuchen.';
+  String get authErrorGoogleSignInCanceled =>
+      'Google-Anmeldung fehlgeschlagen. Bitte erneut versuchen.';
 
   @override
-  String get authErrorGoogleIdTokenMissing => 'Google-Anmeldung hat kein gültiges Token geliefert.';
+  String get authErrorGoogleIdTokenMissing =>
+      'Google-Anmeldung hat kein gültiges Token geliefert.';
 
   @override
-  String get statisticsPageSubtitle => 'Muster aus Vorrat, Food Waste und Ernährung auf einen Blick.';
+  String get statisticsPageSubtitle =>
+      'Muster aus Vorrat, Food Waste und Ernährung auf einen Blick.';
 
   @override
   String get statisticsContextHousehold => 'Haushalt';
@@ -2361,40 +2601,47 @@ class AppLocalizationsDe extends AppLocalizations {
   String get statisticsHouseholdHintTitle => 'MVP-Hinweis';
 
   @override
-  String get statisticsHouseholdHintBody => 'Haushaltszahlen basieren aktuell auf erfassten Vorratsartikeln und verfügbaren Belegdaten. Eine vollständige Verlaufs-Historie folgt später.';
+  String get statisticsHouseholdHintBody =>
+      'Haushaltszahlen basieren aktuell auf erfassten Vorratsartikeln und verfügbaren Belegdaten. Eine vollständige Verlaufs-Historie folgt später.';
 
   @override
   String get statisticsSpendingTotalTitle => 'Erfasste Ausgaben';
 
   @override
-  String get statisticsSpendingTotalSubtitle => 'Summe der erfassten Einkäufe im gewählten Zeitraum';
+  String get statisticsSpendingTotalSubtitle =>
+      'Summe der erfassten Einkäufe im gewählten Zeitraum';
 
   @override
   String get statisticsSpendingTrendTitle => 'Preisentwicklung';
 
   @override
-  String get statisticsSpendingTrendEmpty => 'Noch keine wiederkehrenden Produkte mit Preisverlauf im gewählten Zeitraum.';
+  String get statisticsSpendingTrendEmpty =>
+      'Noch keine wiederkehrenden Produkte mit Preisverlauf im gewählten Zeitraum.';
 
   @override
   String get statisticsSpendingStoresTitle => 'Top Supermärkte';
 
   @override
-  String get statisticsTopStoresEmpty => 'Noch keine Märkte mit verwertbaren Werten im Zeitraum.';
+  String get statisticsTopStoresEmpty =>
+      'Noch keine Märkte mit verwertbaren Werten im Zeitraum.';
 
   @override
   String get statisticsSpendingChartTitle => 'Ausgaben nach Belegdatum';
 
   @override
-  String get statisticsSpendingChartSubtitle => 'Der Graph nutzt das echte receiptDate des Belegs und zeigt die letzten Einkaufstage im Filter.';
+  String get statisticsSpendingChartSubtitle =>
+      'Der Graph nutzt das echte receiptDate des Belegs und zeigt die letzten Einkaufstage im Filter.';
 
   @override
-  String get statisticsSpendingChartEmpty => 'Sobald Belegdaten mit Datum vorliegen, erscheint hier dein Ausgabenverlauf.';
+  String get statisticsSpendingChartEmpty =>
+      'Sobald Belegdaten mit Datum vorliegen, erscheint hier dein Ausgabenverlauf.';
 
   @override
   String get statisticsSpendingItemsTitle => 'Teuerste Einkäufe';
 
   @override
-  String get statisticsExpensiveItemsEmpty => 'Noch keine kostenrelevanten Positionen im Zeitraum.';
+  String get statisticsExpensiveItemsEmpty =>
+      'Noch keine kostenrelevanten Positionen im Zeitraum.';
 
   @override
   String get statisticsWasteOverviewTitle => 'Food Waste Überblick';
@@ -2403,7 +2650,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get statisticsWasteTrackingMissingValue => 'Noch keine Historie';
 
   @override
-  String get statisticsWasteTrackingMissingMessage => 'Wegwerf-Events und Gründe werden aktuell noch nicht dauerhaft gespeichert.';
+  String get statisticsWasteTrackingMissingMessage =>
+      'Wegwerf-Events und Gründe werden aktuell noch nicht dauerhaft gespeichert.';
 
   @override
   String statisticsWasteOverviewSummary(int eventCount, Object lossValue) {
@@ -2420,16 +2668,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get statisticsWasteRatioTitle => 'Verhältnis & Geldverlust';
 
   @override
-  String get statisticsWasteMoneyLossMissing => 'Sobald Wegwerfwerte erfasst werden, erscheint hier das Verhältnis und der Euro-Verlust.';
+  String get statisticsWasteMoneyLossMissing =>
+      'Sobald Wegwerfwerte erfasst werden, erscheint hier das Verhältnis und der Euro-Verlust.';
 
   @override
-  String get statisticsWasteMoneyLossTracked => 'Erfasster Wert der weggeworfenen Lebensmittel im Zeitraum.';
+  String get statisticsWasteMoneyLossTracked =>
+      'Erfasster Wert der weggeworfenen Lebensmittel im Zeitraum.';
 
   @override
   String get statisticsWasteReasonsTitle => 'Waste-Gründe';
 
   @override
-  String get statisticsWasteReasonsMissing => 'Füge beim Wegwerfen Gründe wie abgelaufen oder zu viel gekocht hinzu, damit wir Muster erkennen.';
+  String get statisticsWasteReasonsMissing =>
+      'Füge beim Wegwerfen Gründe wie abgelaufen oder zu viel gekocht hinzu, damit wir Muster erkennen.';
 
   @override
   String statisticsWasteReasonsTopSummary(int count) {
@@ -2440,7 +2691,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get statisticsWasteItemsTitle => 'Oft weggeworfen';
 
   @override
-  String get statisticsWasteItemsMissing => 'Sobald genug Wegwerf-Events vorliegen, zeigen wir hier deine häufigsten Problemartikel.';
+  String get statisticsWasteItemsMissing =>
+      'Sobald genug Wegwerf-Events vorliegen, zeigen wir hier deine häufigsten Problemartikel.';
 
   @override
   String statisticsWasteItemsTopSummary(int count) {
@@ -2473,25 +2725,30 @@ class AppLocalizationsDe extends AppLocalizations {
   String get statisticsCaloriesBufferTitle => 'Wochenbilanz';
 
   @override
-  String get statisticsCaloriesBufferSubtitle => 'aktuelle Balance gegen dein Ziel';
+  String get statisticsCaloriesBufferSubtitle =>
+      'aktuelle Balance gegen dein Ziel';
 
   @override
   String get statisticsCaloriesChartTitle => 'Tagesverlauf';
 
   @override
-  String get statisticsCaloriesChartSubtitle => 'Letzte Tage mit gegessenen Kalorien und Zielmarke.';
+  String get statisticsCaloriesChartSubtitle =>
+      'Letzte Tage mit gegessenen Kalorien und Zielmarke.';
 
   @override
-  String get statisticsCaloriesChartEmpty => 'Sobald Kalorien-Einträge vorliegen, erscheint hier dein Tagesverlauf.';
+  String get statisticsCaloriesChartEmpty =>
+      'Sobald Kalorien-Einträge vorliegen, erscheint hier dein Tagesverlauf.';
 
   @override
   String get statisticsCaloriesMacrosTitle => 'Makro-Verteilung';
 
   @override
-  String get statisticsCaloriesMacroChartSubtitle => 'Anteil der Kalorien aus Kohlenhydraten, Protein und Fett.';
+  String get statisticsCaloriesMacroChartSubtitle =>
+      'Anteil der Kalorien aus Kohlenhydraten, Protein und Fett.';
 
   @override
-  String get statisticsCaloriesNoEntries => 'Noch keine Kalorien-Einträge im Zeitraum.';
+  String get statisticsCaloriesNoEntries =>
+      'Noch keine Kalorien-Einträge im Zeitraum.';
 
   @override
   String get statisticsChartGoalLegend => 'Zielmarke';

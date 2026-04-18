@@ -28,8 +28,9 @@ class CalorieGoalController extends _$CalorieGoalController {
 
   @override
   FutureOr<CalorieGoalSettings> build() {
-    ref.watch(calorieSettingsRepositoryProvider);
-    ref.onDispose(_disposeSubscription);
+    ref
+      ..watch(calorieSettingsRepositoryProvider)
+      ..onDispose(_disposeSubscription);
     return _restartSubscription();
   }
 

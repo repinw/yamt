@@ -46,7 +46,7 @@ class AppPreferencesManualHealthWeightRepository
               .toList(growable: false)
             ..sort((left, right) => left.day.compareTo(right.day));
       return List<ManualHealthWeightEntry>.unmodifiable(entries);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to decode manual weight entries.',
         name: _logName,

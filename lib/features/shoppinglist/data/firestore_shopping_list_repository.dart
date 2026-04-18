@@ -85,7 +85,7 @@ class FirestoreShoppingListRepository implements ShoppingListRepository {
         stackTrace: stackTrace,
       );
       rethrow;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to watch shopping list items for user $userId',
         name: _repositoryLogName,
@@ -100,7 +100,7 @@ class FirestoreShoppingListRepository implements ShoppingListRepository {
     try {
       final documents = await _store.readAll(userId: userId);
       return _decodeDocuments(documents);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read shopping list items for user $userId',
         name: _repositoryLogName,
@@ -127,7 +127,7 @@ class FirestoreShoppingListRepository implements ShoppingListRepository {
             Map<String, dynamic>.from(docs[index].data),
           ),
         );
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         log(
           'Skipping corrupted shopping list item at index $index',
           name: _repositoryLogName,

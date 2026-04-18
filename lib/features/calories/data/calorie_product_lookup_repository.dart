@@ -51,7 +51,7 @@ FirebaseFunctions? calorieLookupFunctions(Ref ref) {
       );
     }
     return functions;
-  } catch (error, stackTrace) {
+  } on Object catch (error, stackTrace) {
     log(
       'FirebaseFunctions not available for calorie lookup.',
       name: _lookupLogName,
@@ -202,7 +202,7 @@ class _FirebaseCallableCalorieOffLookupClient
       return CalorieOffLookupResult.failed(
         errorCode: error.code.isEmpty ? _lookupErrorRequestFailed : error.code,
       );
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Unexpected callable OFF lookup failure for barcode $barcode.',
         name: _lookupLogName,

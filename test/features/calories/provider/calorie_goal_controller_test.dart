@@ -259,7 +259,8 @@ void main() {
     },
   );
 
-  test('saveCalculatedGoal seeds initial calculator weight into weight history', () async {
+  test('saveCalculatedGoal seeds initial calculator weight '
+      'into weight history', () async {
     final repository = FakeCalorieSettingsRepository();
     final manualRepository = FakeManualHealthWeightRepository(
       <ManualHealthWeightEntry>[],
@@ -270,7 +271,9 @@ void main() {
       overrides: [
         calorieSettingsRepositoryProvider.overrideWithValue(repository),
         healthConnectionServiceProvider.overrideWithValue(
-          FakeHealthConnectionService(const HealthConnectionStatus.unsupported()),
+          FakeHealthConnectionService(
+            const HealthConnectionStatus.unsupported(),
+          ),
         ),
         manualHealthWeightRepositoryProvider.overrideWithValue(
           manualRepository,

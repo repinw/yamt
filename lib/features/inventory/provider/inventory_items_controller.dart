@@ -340,7 +340,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     return recoverControllerHouseholdAccess<InventoryItem>(
       ref: ref,
       isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      setIsRecoveringHouseholdAccess: (value) {
+      setIsRecoveringHouseholdAccess: ({required bool value}) {
         _isRecoveringHouseholdAccess = value;
       },
       setState: (nextState) {
@@ -476,7 +476,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     DateTime? consumedAt,
   }) {
     if (amount < 1) {
-      return Future<InventoryItemReductionResult?>.value(null);
+      return Future<InventoryItemReductionResult?>.value();
     }
 
     return _runSerializedTask<InventoryItemReductionResult?>(
@@ -533,7 +533,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     InventoryDiscardReason reason,
   ) {
     if (amount < 1) {
-      return Future<InventoryItemDiscardResult?>.value(null);
+      return Future<InventoryItemDiscardResult?>.value();
     }
 
     return _runSerializedTask<InventoryItemDiscardResult?>(
@@ -797,7 +797,7 @@ class InventoryItemsController extends _$InventoryItemsController {
           _publishVisibleItems();
         }
         return saved;
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         log(
           'Failed to append inventory item ${item.id}.',
           name: _controllerLogName,
@@ -931,7 +931,7 @@ class InventoryItemsController extends _$InventoryItemsController {
         _publishVisibleItems();
       }
       return saved;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to persist inventory mutation.',
         name: _controllerLogName,
@@ -956,7 +956,7 @@ class InventoryItemsController extends _$InventoryItemsController {
       return await ref.read(globalFoodItemRepositoryProvider).appendAll(
         <GlobalFoodItem>[resolvedProduct],
       );
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to persist swapped product ${resolvedProduct.id}. '
         'Continuing with inventory-only save.',

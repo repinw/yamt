@@ -50,7 +50,7 @@ class _FirebaseSecondaryAuthClient implements SecondaryAuthClient {
     try {
       await authForApp(app).signOut();
       await app.delete();
-    } catch (_) {}
+    } on Object catch (_) {}
   }
 }
 // coverage:ignore-end
@@ -76,7 +76,7 @@ class AccountController extends _$AccountController {
       await auth.signOut();
       if (!ref.mounted) return;
       state = const AsyncData(null);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       if (ref.mounted) {
         state = AsyncError(error, stackTrace);
       }
@@ -112,7 +112,7 @@ class AccountController extends _$AccountController {
       if (!ref.mounted) return isLinked;
       state = const AsyncData(null);
       return isLinked;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       if (ref.mounted) {
         state = AsyncError(error, stackTrace);
       }
@@ -158,7 +158,7 @@ class AccountController extends _$AccountController {
         state = AsyncError(normalizedError, stackTrace);
       }
       throw normalizedError;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       if (ref.mounted) {
         state = AsyncError(error, stackTrace);
       }
@@ -222,7 +222,7 @@ class AccountController extends _$AccountController {
 
       if (!ref.mounted) return;
       state = const AsyncData(null);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       if (ref.mounted) {
         state = AsyncError(error, stackTrace);
       }
@@ -250,7 +250,7 @@ class AccountController extends _$AccountController {
 
       if (!ref.mounted) return;
       state = const AsyncData(null);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       if (ref.mounted) {
         state = AsyncError(error, stackTrace);
       }
@@ -283,7 +283,7 @@ class AccountController extends _$AccountController {
 
       if (!ref.mounted) return;
       state = const AsyncData(null);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       if (ref.mounted) {
         state = AsyncError(error, stackTrace);
       }

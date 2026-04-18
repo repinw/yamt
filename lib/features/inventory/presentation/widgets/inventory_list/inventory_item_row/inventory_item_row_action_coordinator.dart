@@ -44,7 +44,7 @@ class InventoryItemRowActionCoordinator {
     var success = false;
     try {
       success = await action();
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Action failed',
         name: _coordinatorLogName,

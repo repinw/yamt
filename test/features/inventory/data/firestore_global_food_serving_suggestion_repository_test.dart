@@ -37,34 +37,32 @@ void main() {
           'unit': 'g',
           'updated_at': '2026-04-09T10:00:00.000Z',
         });
-    await firestore
-        .collection(_globalCollection)
-        .doc('older')
-        .set(<String, dynamic>{
-          'id': 'older',
-          'item_key': 'global_off-cheese',
-          'global_food_item_id': 'off-cheese',
-          'amount': 34,
-          'unit': 'g',
-          'selection_count': 5,
-          'unique_user_count': 2,
-          'created_at': '2026-04-09T10:00:00.000Z',
-          'updated_at': '2026-04-09T10:00:00.000Z',
-        });
-    await firestore
-        .collection(_globalCollection)
-        .doc('newer')
-        .set(<String, dynamic>{
-          'id': 'newer',
-          'item_key': 'global_off-cheese',
-          'global_food_item_id': 'off-cheese',
-          'amount': 36,
-          'unit': 'g',
-          'selection_count': 3,
-          'unique_user_count': 4,
-          'created_at': '2026-04-10T10:00:00.000Z',
-          'updated_at': '2026-04-10T10:00:00.000Z',
-        });
+    await firestore.collection(_globalCollection).doc('older').set(
+      <String, dynamic>{
+        'id': 'older',
+        'item_key': 'global_off-cheese',
+        'global_food_item_id': 'off-cheese',
+        'amount': 34,
+        'unit': 'g',
+        'selection_count': 5,
+        'unique_user_count': 2,
+        'created_at': '2026-04-09T10:00:00.000Z',
+        'updated_at': '2026-04-09T10:00:00.000Z',
+      },
+    );
+    await firestore.collection(_globalCollection).doc('newer').set(
+      <String, dynamic>{
+        'id': 'newer',
+        'item_key': 'global_off-cheese',
+        'global_food_item_id': 'off-cheese',
+        'amount': 36,
+        'unit': 'g',
+        'selection_count': 3,
+        'unique_user_count': 4,
+        'created_at': '2026-04-10T10:00:00.000Z',
+        'updated_at': '2026-04-10T10:00:00.000Z',
+      },
+    );
 
     final repository = FirestoreGlobalFoodServingSuggestionRepository(
       firestore: firestore,

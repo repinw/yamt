@@ -104,7 +104,7 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
         stackTrace: stackTrace,
       );
       rethrow;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to watch inventory items from firestore for user $userId.',
         name: _repositoryLogName,
@@ -132,7 +132,7 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
         stackTrace: stackTrace,
       );
       rethrow;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read inventory items from firestore for user $userId.',
         name: _repositoryLogName,
@@ -175,7 +175,7 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
       }
       try {
         items.add(_normalizeItem(InventoryItem.fromJson(json)));
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         log(
           'Skipping corrupted inventory item at index $index.',
           name: _repositoryLogName,

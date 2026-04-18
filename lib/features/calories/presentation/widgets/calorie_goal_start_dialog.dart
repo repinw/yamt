@@ -108,8 +108,7 @@ Future<void> showCalorieGoalStartDialog({
     return;
   }
 
-  final messenger = ScaffoldMessenger.of(context);
-  messenger.hideCurrentSnackBar();
+  final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
 
   final saved = await onSaveGoalStart(selectedGoalStartAt);
   if (!context.mounted || saved) {

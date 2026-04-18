@@ -94,7 +94,7 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
         stackTrace: stackTrace,
       );
       rethrow;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to watch prepared meals for user $userId.',
         name: _repositoryLogName,
@@ -109,7 +109,7 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
     try {
       final documents = await _store.readAll(userId: userId);
       return _decodeDocuments(documents);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read prepared meals for user $userId.',
         name: _repositoryLogName,
@@ -136,7 +136,7 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
       }
       try {
         meals.add(PreparedMeal.fromJson(json));
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         log(
           'Skipping corrupted prepared meal at index $index.',
           name: _repositoryLogName,

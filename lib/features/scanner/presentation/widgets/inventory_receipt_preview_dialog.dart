@@ -7,7 +7,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 class InventoryReceiptPreviewDialog extends StatelessWidget {
   /// The inventory receipt preview dialog.
   const InventoryReceiptPreviewDialog({
-    required this.receiptPreviewBytes, super.key,
+    required this.receiptPreviewBytes,
+    super.key,
   });
 
   /// The receipt preview bytes.

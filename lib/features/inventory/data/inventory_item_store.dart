@@ -74,7 +74,7 @@ class FirestoreInventoryItemStore implements InventoryItemStore {
         documentsById: documentsById,
       );
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to replace inventory items for user $userId.',
         name: _storeLogName,
@@ -96,7 +96,7 @@ class FirestoreInventoryItemStore implements InventoryItemStore {
         documentsById: documentsById,
       );
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to upsert inventory items for user $userId.',
         name: _storeLogName,

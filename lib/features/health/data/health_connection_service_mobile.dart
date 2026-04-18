@@ -62,7 +62,7 @@ class MobileHealthConnectionService implements HealthConnectionService {
           historyAccess: historyAccess,
         ),
       );
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to inspect Health Connect status.',
         name: _logName,

@@ -28,7 +28,8 @@ class StatisticsBarChartDatum {
 class StatisticsVerticalBarChart extends StatelessWidget {
   /// The statistics vertical bar chart.
   const StatisticsVerticalBarChart({
-    required this.data, super.key,
+    required this.data,
+    super.key,
     this.height = 180,
   });
 
@@ -70,6 +71,10 @@ class StatisticsVerticalBarChart extends StatelessWidget {
                           final barHeight = maxValue <= 0
                               ? 0.0
                               : (item.value / maxValue) * chartHeight;
+                          final barGradient =
+                              AppInventoryEditorialSurfaces.soulGradient(
+                                colors,
+                              );
                           final goalLineBottom = _goalLineBottom(
                             item: item,
                             maxValue: maxValue,
@@ -109,10 +114,7 @@ class StatisticsVerticalBarChart extends StatelessWidget {
                                   width: double.infinity,
                                   height: barHeight.clamp(0.0, chartHeight),
                                   decoration: BoxDecoration(
-                                    gradient:
-                                        AppInventoryEditorialSurfaces.soulGradient(
-                                          colors,
-                                        ),
+                                    gradient: barGradient,
                                     borderRadius: BorderRadius.circular(
                                       AppRadius.lg,
                                     ),

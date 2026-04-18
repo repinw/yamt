@@ -51,7 +51,8 @@ class _FakePreparedMealTemplateRepository
     return true;
   }
 
-  List<PreparedMeal> get currentTemplates => List<PreparedMeal>.from(_templates);
+  List<PreparedMeal> get currentTemplates =>
+      List<PreparedMeal>.from(_templates);
 
   Future<void> dispose() => _controller.close();
 }
@@ -834,7 +835,8 @@ void main() {
 
     expect(
       find.text(
-        'This template needs at least one ingredient before you can create a meal.',
+        'This template needs at least one ingredient before you can '
+        'create a meal.',
       ),
       findsOneWidget,
     );

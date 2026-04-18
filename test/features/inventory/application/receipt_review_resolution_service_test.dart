@@ -840,12 +840,13 @@ void main() {
         globalFoodItemIdGenerator: () => 'global-food-fixed',
       );
 
-      final result = await service
-          .persistReviewedItems(<ReceiptReviewItemDraft>[
-            ReceiptReviewItemDraft(
-              item: _item(id: 'draft-1', name: 'Unknown Product'),
-            ).markForAiEnrichment(),
-          ]);
+      final result = await service.persistReviewedItems(
+        <ReceiptReviewItemDraft>[
+          ReceiptReviewItemDraft(
+            item: _item(id: 'draft-1', name: 'Unknown Product'),
+          ).markForAiEnrichment(),
+        ],
+      );
 
       expect(result.saved, isTrue);
       expect(result.itemsNeedingEnrichment, hasLength(1));

@@ -48,7 +48,7 @@ class FirestoreCalorieProductCacheRepository
         return null;
       }
       return _decodeDocument(snapshot, fallbackBarcode: barcode);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read calorie override for $barcode.',
         name: _cacheLogName,
@@ -72,7 +72,7 @@ class FirestoreCalorieProductCacheRepository
         return null;
       }
       return _decodeOffCacheDocument(offSnapshot, fallbackBarcode: barcode);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read global calorie product for $barcode.',
         name: _cacheLogName,
@@ -104,7 +104,7 @@ class FirestoreCalorieProductCacheRepository
         error: error,
       );
       return false;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to save global calorie product ${profile.barcode}.',
         name: _cacheLogName,
@@ -138,7 +138,7 @@ class FirestoreCalorieProductCacheRepository
       payload['reason'] = reason;
       await _userOverrideDoc(userId, profile.barcode).set(payload);
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to save user calorie override ${profile.barcode}.',
         name: _cacheLogName,
@@ -193,7 +193,7 @@ class FirestoreCalorieProductCacheRepository
 
     try {
       return CalorieProductProfile.fromJson(normalized);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Malformed calorie product cache document ${snapshot.id}.',
         name: _cacheLogName,
@@ -232,7 +232,7 @@ class FirestoreCalorieProductCacheRepository
 
     try {
       return CalorieProductProfile.fromJson(normalized);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Malformed OFF product cache document ${snapshot.id}.',
         name: _cacheLogName,
@@ -299,7 +299,7 @@ class _CurrentCalorieProductCacheUserSession
 FirebaseFirestore? _resolveFirestore() {
   try {
     return FirebaseFirestore.instance;
-  } catch (error, stackTrace) {
+  } on Object catch (error, stackTrace) {
     log(
       'Falling back to unavailable calorie product cache repository.',
       name: _cacheLogName,

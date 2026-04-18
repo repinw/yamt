@@ -118,8 +118,7 @@ void main() {
   test(
     'saveEntry does not call override callback when persist fails',
     () async {
-      final logRepository = FakeCalorieLogRepository();
-      logRepository.saveShouldFail = true;
+      final logRepository = FakeCalorieLogRepository()..saveShouldFail = true;
       final settingsRepository = FakeCalorieSettingsRepository();
       final cacheRepository = FakeCalorieProductCacheRepository();
       addTearDown(logRepository.dispose);

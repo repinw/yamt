@@ -105,7 +105,7 @@ class ReceiptItemInputParser {
     try {
       final parsed = NumberFormat.decimalPattern(normalizedLocale).parse(value);
       return parsed.toDouble();
-    } catch (_) {
+    } on Object catch (_) {
       return null;
     }
   }
@@ -195,7 +195,7 @@ class ReceiptItemInputParser {
         parsed[entry.key] = amount;
       }
       return parsed;
-    } catch (_) {
+    } on Object catch (_) {
       return null;
     }
   }

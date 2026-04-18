@@ -33,7 +33,8 @@ const _manualProductPageLogName = 'InventoryReceiptManualProductPage';
 class InventoryReceiptManualProductPage extends StatelessWidget {
   /// The inventory receipt manual product page.
   const InventoryReceiptManualProductPage({
-    required this.item, super.key,
+    required this.item,
+    super.key,
     this.selectedProduct,
     this.includeStoreInSearch = true,
     this.includeWeightInSearch = true,
@@ -201,7 +202,7 @@ class _InventoryReceiptManualProductLauncherPageState
       setState(() {
         _recentItems = _buildRecentItems(items);
       });
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to load recent manual product items.',
         name: _manualProductPageLogName,
@@ -801,7 +802,8 @@ class _InventoryReceiptManualProductEditorPageState
 
     final eatImmediately =
         (widget.showEatImmediatelyOption &&
-            _canEatImmediately(ref.read(_provider))) && _eatImmediately;
+            _canEatImmediately(ref.read(_provider))) &&
+        _eatImmediately;
 
     final result = InventoryReceiptManualProductResult(
       item: payload.item,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
@@ -104,8 +106,10 @@ class CalorieWeeklyCheckInHintCard extends StatelessWidget {
                   OutlinedButton(
                     key: CaloriesPageKeys.weeklyCheckInSkipDayButton,
                     onPressed: () {
-                      onToggleSelectedDaySkipped(
-                        !selectedDayData.isSkippedIntakeDay,
+                      unawaited(
+                        onToggleSelectedDaySkipped(
+                          !selectedDayData.isSkippedIntakeDay,
+                        ),
                       );
                     },
                     child: Text(

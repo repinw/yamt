@@ -142,19 +142,19 @@ void main() {
         args: InventoryReceiptReviewPageArgs(
           items: <ReceiptReviewItemDraft>[
             ReceiptReviewItemDraft(
-              item: _item(
-                id: 'item-1',
-              ).copyWith(
-                weight: '500 g',
-                nutrition: const GlobalFoodNutrition(
-                  qualityStatus:
-                      GlobalFoodNutritionQualityStatus.verified,
-                  per100Kcal: 120,
-                  per100Protein: 5,
-                  per100Carbs: 10,
-                  per100Fat: 2,
-                ),
-              ),
+              item:
+                  _item(
+                    id: 'item-1',
+                  ).copyWith(
+                    weight: '500 g',
+                    nutrition: const GlobalFoodNutrition(
+                      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+                      per100Kcal: 120,
+                      per100Protein: 5,
+                      per100Carbs: 10,
+                      per100Fat: 2,
+                    ),
+                  ),
             ),
           ],
           onSaveTap: (drafts) async {

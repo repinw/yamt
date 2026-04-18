@@ -58,7 +58,7 @@ class HouseholdInviteSection extends ConsumerWidget {
       await ref
           .read(householdInviteCodeControllerProvider.notifier)
           .generateInviteCode();
-    } catch (error) {
+    } on Object catch (error) {
       if (!context.mounted) {
         return;
       }
@@ -134,7 +134,7 @@ class _GeneratedCodeView extends ConsumerWidget {
                               householdInviteCodeControllerProvider.notifier,
                             )
                             .generateInviteCode();
-                      } catch (error) {
+                      } on Object catch (error) {
                         if (!context.mounted) {
                           return;
                         }

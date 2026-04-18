@@ -293,8 +293,7 @@ class _CalorieEntryEditorPageState
     final hasPendingChanges = _hasPendingChangesForEntry(entry);
 
     return PopScope<void>(
-      canPop:
-          !_isSaving && (!hasPendingChanges || _allowDirtyDetailsDismiss),
+      canPop: !_isSaving && (!hasPendingChanges || _allowDirtyDetailsDismiss),
       onPopInvokedWithResult: (didPop, result) {
         if (didPop || _isSaving || !hasPendingChanges) {
           return;

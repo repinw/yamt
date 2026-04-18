@@ -32,7 +32,7 @@ bool shouldRecoverControllerHouseholdAccess({
 Future<void> recoverControllerHouseholdAccess<T>({
   required Ref ref,
   required bool isRecoveringHouseholdAccess,
-  required void Function(bool value) setIsRecoveringHouseholdAccess,
+  required void Function({required bool value}) setIsRecoveringHouseholdAccess,
   required void Function(AsyncValue<List<T>> nextState) setState,
   required Future<List<T>> Function() restartHouseholdScopedSubscription,
   required String? currentHouseholdDataOwnerUserId,
@@ -45,7 +45,7 @@ Future<void> recoverControllerHouseholdAccess<T>({
     return;
   }
 
-  setIsRecoveringHouseholdAccess(true);
+  setIsRecoveringHouseholdAccess(value: true);
   try {
     if (showLoading) {
       setState(AsyncLoading<List<T>>());
@@ -65,7 +65,7 @@ Future<void> recoverControllerHouseholdAccess<T>({
     }
     setState(nextState);
   } finally {
-    setIsRecoveringHouseholdAccess(false);
+    setIsRecoveringHouseholdAccess(value: false);
   }
 }
 

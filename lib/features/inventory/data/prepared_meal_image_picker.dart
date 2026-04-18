@@ -106,7 +106,7 @@ class _DevicePreparedMealImagePicker implements PreparedMealImagePicker {
       return _prepareBytes(await image.readAsBytes());
     } on PreparedMealImagePickerException {
       rethrow;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to pick prepared meal image from camera.',
         name: 'PreparedMealImagePicker',
@@ -142,7 +142,7 @@ class _DevicePreparedMealImagePicker implements PreparedMealImagePicker {
       return _prepareBytes(bytes);
     } on PreparedMealImagePickerException {
       rethrow;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to pick prepared meal image from file.',
         name: 'PreparedMealImagePicker',
@@ -182,7 +182,7 @@ Future<Uint8List> optimizePreparedMealImageBytes(
     result = await optimizationRunner(message);
   } on PreparedMealImagePickerException {
     rethrow;
-  } catch (error, stackTrace) {
+  } on Object catch (error, stackTrace) {
     log(
       'Prepared meal image optimization isolate failed.',
       name: 'PreparedMealImagePicker',

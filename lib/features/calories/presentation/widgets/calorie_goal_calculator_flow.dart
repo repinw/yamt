@@ -40,7 +40,9 @@ enum CalorieGoalCalculatorFlowPresentation {
 class CalorieGoalCalculatorFlow extends ConsumerStatefulWidget {
   /// The calorie goal calculator flow.
   const CalorieGoalCalculatorFlow({
-    required this.initialSettings, required this.presentation, super.key,
+    required this.initialSettings,
+    required this.presentation,
+    super.key,
   });
 
   /// The initial settings.
@@ -155,11 +157,11 @@ class _CalorieGoalCalculatorFlowState
       return;
     }
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(content: Text(l10n.caloriesCalculatorSaveFailed)),
-    );
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(l10n.caloriesCalculatorSaveFailed)),
+      );
   }
 
   void _syncGoalSpeedText(String value) {
@@ -222,10 +224,11 @@ class _CalorieGoalCalculatorFlowState
       time: pickedTime,
     );
     if (pickedGoalStart.isAfter(now)) {
-      messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.caloriesCalculatorGoalStartFutureError)),
-      );
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(l10n.caloriesCalculatorGoalStartFutureError)),
+        );
       return;
     }
 

@@ -44,19 +44,18 @@ Widget _buildApp({
     overrides.add(userProfileProvider.overrideWith((ref) => profileStream));
   }
   if (membersStream != null) {
-    overrides.add(
-      householdMembersProvider.overrideWith((ref) => membersStream),
-    );
-    overrides.add(
-      householdInviteCodeControllerProvider.overrideWith(
-        _FakeHouseholdInviteCodeController.new,
-      ),
-    );
-    overrides.add(
-      householdMembershipControllerProvider.overrideWith(
-        _FakeHouseholdMembershipController.new,
-      ),
-    );
+    overrides
+      ..add(householdMembersProvider.overrideWith((ref) => membersStream))
+      ..add(
+        householdInviteCodeControllerProvider.overrideWith(
+          _FakeHouseholdInviteCodeController.new,
+        ),
+      )
+      ..add(
+        householdMembershipControllerProvider.overrideWith(
+          _FakeHouseholdMembershipController.new,
+        ),
+      );
   }
 
   return ProviderScope(

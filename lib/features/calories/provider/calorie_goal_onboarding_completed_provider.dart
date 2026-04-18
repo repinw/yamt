@@ -16,7 +16,7 @@ FutureOr<bool> calorieGoalOnboardingCompleted(Ref ref) async {
   String? userId;
   try {
     userId = _userIdFromAuthState(ref.watch(authStateChangesProvider));
-  } catch (_) {
+  } on Object catch (_) {
     return false;
   }
   if (userId == null) {
@@ -72,7 +72,7 @@ bool _hasCompletionMarker(AppPreferences preferences, String userId) {
 String? _currentUserId(Ref ref) {
   try {
     return _userIdFromAuthState(ref.read(authStateChangesProvider));
-  } catch (_) {
+  } on Object catch (_) {
     return null;
   }
 }

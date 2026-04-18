@@ -59,7 +59,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
         personalSuggestion: results[0] as ServingSizeSuggestion?,
         globalSuggestions: results[1]! as List<GlobalFoodServingSuggestion>,
       );
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read serving suggestions.',
         name: _repositoryLogName,
@@ -274,7 +274,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
       }
       try {
         suggestions.add(GlobalFoodServingSuggestion.fromJson(data));
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         log(
           'Skipping corrupted serving suggestion at index $index.',
           name: _repositoryLogName,

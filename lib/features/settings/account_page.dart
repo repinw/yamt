@@ -30,7 +30,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
   Future<void> _signOut(AppLocalizations l10n) async {
     try {
       await ref.read(accountControllerProvider.notifier).signOut();
-    } catch (error) {
+    } on Object catch (error) {
       if (!mounted) return;
       _showAuthError(l10n, error);
     }
@@ -69,7 +69,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
         context,
         message: l10n.accountPageDeleteSuccess,
       );
-    } catch (error) {
+    } on Object catch (error) {
       if (!mounted) {
         return;
       }
@@ -110,7 +110,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
           message: l10n.accountPageLinkSuccess,
         );
       }
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       if (!mounted) return;
       if (error is FirebaseAuthException &&
           error.code == 'credential-already-in-use') {
@@ -156,7 +156,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                 message: 'Account linking was not completed. Please try again.',
               );
             }
-          } catch (error, stackTrace) {
+          } on Object catch (error, stackTrace) {
             _logAuthError(error: error, stackTrace: stackTrace);
             rethrow;
           }
@@ -212,7 +212,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
           .resolveCredentialConflict(choice: choice, credential: credential);
       if (!mounted) return;
       showAccountStatusSnackBar(context, message: successMessage);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       if (!mounted) return;
       _logAuthError(error: error, stackTrace: stackTrace);
       _showAuthError(l10n, error);

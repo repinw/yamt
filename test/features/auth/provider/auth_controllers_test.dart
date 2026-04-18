@@ -261,7 +261,8 @@ void main() {
     });
 
     test(
-      'register keeps AsyncData state when display name update fails afterwards',
+      'register keeps AsyncData state when display name update '
+      'fails afterwards',
       () async {
         final repository = _FailingDisplayNameUpdateRepository();
         final container = ProviderContainer(

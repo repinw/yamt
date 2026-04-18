@@ -46,7 +46,7 @@ abstract final class ReceiptInputSelectionLoader {
         if (selection != null) {
           selections.add(selection);
         }
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         log(
           'Skipped shared receipt file: $normalizedPath',
           name: _receiptInputSelectionLoaderLogName,

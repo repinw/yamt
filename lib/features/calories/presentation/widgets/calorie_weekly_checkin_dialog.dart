@@ -78,20 +78,27 @@ class _CalorieWeeklyCheckInDialog extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               _MetricRow(
                 label: l10n.caloriesWeeklyCheckInDialogTrendLabel,
-                value:
-                    '${viewModel.calculation!.trendWeightChangePerDay.toStringAsFixed(2)} kg/day',
+                value: [
+                  viewModel.calculation!.trendWeightChangePerDay
+                      .toStringAsFixed(2),
+                  'kg/day',
+                ].join(' '),
               ),
               const SizedBox(height: AppSpacing.sm),
               _MetricRow(
                 label: l10n.caloriesWeeklyCheckInDialogTrueTdeeLabel,
                 value:
-                    '${numberFormat.format(viewModel.calculation!.calculatedTrueTdeeKcal.round())} ${l10n.caloriesUnitKcal}',
+                    '${numberFormat.format(
+                      viewModel.calculation!.calculatedTrueTdeeKcal.round(),
+                    )} ${l10n.caloriesUnitKcal}',
               ),
               const SizedBox(height: AppSpacing.sm),
               _MetricRow(
                 label: l10n.caloriesWeeklyCheckInDialogNewTargetLabel,
                 value:
-                    '${numberFormat.format(viewModel.calculation!.newGoalKcal.round())} ${l10n.caloriesUnitKcal}',
+                    '${numberFormat.format(
+                      viewModel.calculation!.newGoalKcal.round(),
+                    )} ${l10n.caloriesUnitKcal}',
               ),
               if (viewModel.lowConfidence) ...<Widget>[
                 const SizedBox(height: AppSpacing.md),
