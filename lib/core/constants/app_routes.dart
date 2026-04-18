@@ -51,9 +51,6 @@ abstract final class AppRoutes {
   static const homeCaloriesEntryDetails =
       '/home/calories/entry/:entryId/details';
 
-  /// Barcode scanner route for calories.
-  static const homeCaloriesBarcodeScan = '/home/calories/barcode-scan';
-
   /// Statistics home route.
   static const homeStatistics = '/home/statistics';
 

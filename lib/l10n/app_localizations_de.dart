@@ -1752,6 +1752,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesEntryDetailsTitle => 'Kalorien-Eintragsdetails';
 
   @override
+  String get caloriesDiscardChangesDialogTitle => 'Ungespeicherte Änderungen verwerfen?';
+
+  @override
+  String get caloriesDiscardChangesDialogMessage => 'Deine Änderungen an diesem Tagebucheintrag wurden noch nicht gespeichert.';
+
+  @override
+  String get caloriesDiscardChangesConfirmAction => 'Änderungen verwerfen';
+
+  @override
   String get caloriesEntryNotFound => 'Eintrag wurde nicht gefunden.';
 
   @override

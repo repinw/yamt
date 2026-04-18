@@ -139,6 +139,9 @@ class _DiaryMealEntryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final consumedUnitLabel = entry.consumedUnit.localizedName(l10n);
+    final consumedAmountLabel =
+        '${entry.consumedAmount.toStringAsFixed(0)} $consumedUnitLabel';
     final metadata = entry.isBundle
         ? <String>[
             l10n.caloriesBundlePortions(
@@ -147,8 +150,7 @@ class _DiaryMealEntryCard extends StatelessWidget {
             ),
           ]
         : <String>[
-            '${entry.consumedAmount.toStringAsFixed(0)} '
-                '${entry.consumedUnit.localizedName(l10n)}',
+            consumedAmountLabel,
             if ((entry.brand ?? '').trim().isNotEmpty) entry.brand!.trim(),
           ];
 
@@ -157,7 +159,6 @@ class _DiaryMealEntryCard extends StatelessWidget {
       child: InkWell(
         key: CaloriesPageKeys.entryTile(entry.id),
         onTap: onTap,
-        onLongPress: () {},
         borderRadius: BorderRadius.circular(AppRadius.xl),
         child: DecoratedBox(
           decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(

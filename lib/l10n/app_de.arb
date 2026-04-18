@@ -1010,6 +1010,10 @@
   "caloriesAddEntryTitle": "Kalorien-Eintrag hinzufügen",
   "caloriesEditEntryTitle": "Kalorien-Eintrag bearbeiten",
   "caloriesEntryDetailsTitle": "Kalorien-Eintragsdetails",
+  "caloriesDiscardChangesDialogTitle": "Ungespeicherte Änderungen verwerfen?",
+  "caloriesDiscardChangesDialogMessage":
+      "Deine Änderungen an diesem Tagebucheintrag wurden noch nicht gespeichert.",
+  "caloriesDiscardChangesConfirmAction": "Änderungen verwerfen",
   "caloriesEntryNotFound": "Eintrag wurde nicht gefunden.",
   "caloriesEntryNameLabel": "Name",
   "caloriesEntryBrandLabel": "Marke (optional)",

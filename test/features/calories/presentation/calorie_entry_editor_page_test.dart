@@ -103,17 +103,17 @@ CalorieEntryDeleteFlow _restoreFailingDeleteFlow() {
   );
 }
 
-class _AutoOpenCreateRoutePage extends StatefulWidget {
-  const _AutoOpenCreateRoutePage({this.extra});
+class _AutoOpenRoutePage extends StatefulWidget {
+  const _AutoOpenRoutePage({required this.location, this.extra});
 
+  final String location;
   final Object? extra;
 
   @override
-  State<_AutoOpenCreateRoutePage> createState() =>
-      _AutoOpenCreateRoutePageState();
+  State<_AutoOpenRoutePage> createState() => _AutoOpenRoutePageState();
 }
 
-class _AutoOpenCreateRoutePageState extends State<_AutoOpenCreateRoutePage> {
+class _AutoOpenRoutePageState extends State<_AutoOpenRoutePage> {
   var _didOpenRoute = false;
 
   @override
@@ -127,9 +127,7 @@ class _AutoOpenCreateRoutePageState extends State<_AutoOpenCreateRoutePage> {
       if (!mounted) {
         return;
       }
-      GoRouter.of(
-        context,
-      ).push(AppRoutes.homeCaloriesEntryCreate, extra: widget.extra);
+      GoRouter.of(context).push(widget.location, extra: widget.extra);
     });
   }
 
@@ -230,6 +228,7 @@ Widget _buildHarness({
   ProviderContainer? container,
   List<Override> additionalOverrides = const <Override>[],
   bool openCreateFromRoot = false,
+  String? autoOpenLocationFromRoot,
 }) {
   final router = GoRouter(
     initialLocation: initialLocation,
@@ -238,8 +237,17 @@ Widget _buildHarness({
       GoRoute(
         path: '/',
         builder: (context, state) {
+          if (autoOpenLocationFromRoot != null) {
+            return _AutoOpenRoutePage(
+              location: autoOpenLocationFromRoot,
+              extra: createExtra,
+            );
+          }
           if (openCreateFromRoot) {
-            return _AutoOpenCreateRoutePage(extra: createExtra);
+            return _AutoOpenRoutePage(
+              location: AppRoutes.homeCaloriesEntryCreate,
+              extra: createExtra,
+            );
           }
           return const Scaffold(body: Text('Root'));
         },
@@ -427,6 +435,65 @@ void main() {
     expect(updated.loggedAt.day, 27);
     expect(updated.loggedAt.hour, existing.loggedAt.hour);
     expect(updated.loggedAt.minute, existing.loggedAt.minute);
+  });
+
+  testWidgets('details flow confirms before discarding unsaved changes', (
+    tester,
+  ) async {
+    final existing = _entry('entry-discard');
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[existing],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.root,
+        autoOpenLocationFromRoot: AppRoutes.homeCaloriesEntryDetailsPath(
+          'entry-discard',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(CalorieEntryDetailKeys.mealSelector),
+      200,
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CalorieEntryDetailKeys.mealSelector));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Snack').last);
+    await tester.pumpAndSettle();
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Discard unsaved changes?'), findsOneWidget);
+    expect(
+      find.text('Your changes to this diary entry have not been saved yet.'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Calorie entry details'), findsOneWidget);
+    expect(find.text('Skyr'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Discard changes'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Calorie entry details'), findsNothing);
+    expect(find.text('Discard unsaved changes?'), findsNothing);
+    expect(logRepository.entries.single.mealType, MealType.breakfast);
   });
 
   testWidgets('prepared meal details view shows ingredient table', (

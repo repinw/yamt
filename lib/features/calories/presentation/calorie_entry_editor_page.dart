@@ -91,6 +91,8 @@ class _CalorieEntryEditorPageState
   ProviderSubscription<AsyncValue<CalorieEntry?>>? _entrySubscription;
   bool _isSaving = false;
   bool _didCommitPendingConsumption = false;
+  bool _allowDirtyDetailsDismiss = false;
+  bool _isShowingDiscardDialog = false;
 
   @override
   void initState() {
@@ -226,6 +228,7 @@ class _CalorieEntryEditorPageState
     _mealType = entry?.mealType ?? MealType.defaultForDateTime(DateTime.now());
     _consumedUnit = entry?.consumedUnit ?? ConsumedUnit.grams;
     _loggedAt = entry?.loggedAt ?? DateTime.now();
+    _allowDirtyDetailsDismiss = false;
     _initializedEntryId = nextEntryId;
     return true;
   }
@@ -287,22 +290,36 @@ class _CalorieEntryEditorPageState
     required CalorieEntry entry,
   }) {
     final l10n = AppLocalizations.of(context)!;
+    final hasPendingChanges = _hasPendingChangesForEntry(entry);
 
-    return CalorieEntryDetailsView(
-      title: l10n.caloriesEntryDetailsTitle,
-      entry: entry,
-      selectedMealType: _mealType,
-      selectedLoggedAt: _loggedAt,
-      isSaving: _isSaving,
-      onClose: () => _maybePopRootNavigator(context),
-      onMealTypeChanged: (mealType) {
-        setState(() {
-          _mealType = mealType;
-        });
+    return PopScope<void>(
+      canPop:
+          !_isSaving && (!hasPendingChanges || _allowDirtyDetailsDismiss),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop || _isSaving || !hasPendingChanges) {
+          return;
+        }
+        unawaited(_requestCloseExistingEntry(context, entry: entry));
       },
-      onPickLoggedAt: () => _pickDate(context),
-      onSave: () => _saveExistingEntry(context, entry: entry),
-      onReturnToInventory: () => _returnEntryToInventory(context, entry: entry),
+      child: CalorieEntryDetailsView(
+        title: l10n.caloriesEntryDetailsTitle,
+        entry: entry,
+        selectedMealType: _mealType,
+        selectedLoggedAt: _loggedAt,
+        isSaving: _isSaving,
+        onClose: () {
+          unawaited(_requestCloseExistingEntry(context, entry: entry));
+        },
+        onMealTypeChanged: (mealType) {
+          setState(() {
+            _mealType = mealType;
+          });
+        },
+        onPickLoggedAt: () => _pickDate(context),
+        onSave: () => _saveExistingEntry(context, entry: entry),
+        onReturnToInventory: () =>
+            _returnEntryToInventory(context, entry: entry),
+      ),
     );
   }
 
@@ -826,6 +843,65 @@ class _CalorieEntryEditorPageState
       null => l10n.caloriesDeleteFailed,
     };
     messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  bool _hasPendingChangesForEntry(CalorieEntry entry) {
+    return _mealType != entry.mealType || _loggedAt != entry.loggedAt;
+  }
+
+  Future<void> _requestCloseExistingEntry(
+    BuildContext context, {
+    required CalorieEntry entry,
+  }) async {
+    if (_isSaving) {
+      return;
+    }
+    if (!_hasPendingChangesForEntry(entry)) {
+      _maybePopRootNavigator(context);
+      return;
+    }
+    if (_isShowingDiscardDialog) {
+      return;
+    }
+
+    _isShowingDiscardDialog = true;
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final shouldDiscard = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: Text(l10n.caloriesDiscardChangesDialogTitle),
+            content: Text(l10n.caloriesDiscardChangesDialogMessage),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: Text(l10n.inventoryReceiptReviewCancelAction),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(l10n.caloriesDiscardChangesConfirmAction),
+              ),
+            ],
+          );
+        },
+      );
+      if (shouldDiscard != true || !mounted || !context.mounted) {
+        return;
+      }
+
+      setState(() {
+        _allowDirtyDetailsDismiss = true;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !context.mounted) {
+          return;
+        }
+        _maybePopRootNavigator(context);
+      });
+    } finally {
+      _isShowingDiscardDialog = false;
+    }
   }
 
   void _maybePopRootNavigator(BuildContext context) {

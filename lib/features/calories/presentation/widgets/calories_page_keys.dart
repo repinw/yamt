@@ -383,18 +383,3 @@ abstract final class CalorieEatingWindowDialogKeys {
   /// The save button.
   static const saveButton = Key('calorie_eating_window_save_button');
 }
-
-/// Defines calorie barcode scan keys.
-abstract final class CalorieBarcodeScanKeys {
-  /// The candidate sheet.
-  static const candidateSheet = Key('calorie_barcode_candidate_sheet');
-
-  /// The not found dialog.
-  static const notFoundDialog = Key('calorie_barcode_not_found_dialog');
-
-  /// The not found manual button.
-  static const notFoundManualButton = Key('calorie_barcode_not_found_manual');
-
-  /// The not found ocr button.
-  static const notFoundOcrButton = Key('calorie_barcode_not_found_ocr');
-}

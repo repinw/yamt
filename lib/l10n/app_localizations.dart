@@ -3425,6 +3425,24 @@ abstract class AppLocalizations {
   /// **'Calorie entry details'**
   String get caloriesEntryDetailsTitle;
 
+  /// No description provided for @caloriesDiscardChangesDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard unsaved changes?'**
+  String get caloriesDiscardChangesDialogTitle;
+
+  /// No description provided for @caloriesDiscardChangesDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your changes to this diary entry have not been saved yet.'**
+  String get caloriesDiscardChangesDialogMessage;
+
+  /// No description provided for @caloriesDiscardChangesConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes'**
+  String get caloriesDiscardChangesConfirmAction;
+
   /// No description provided for @caloriesEntryNotFound.
   ///
   /// In en, this message translates to:

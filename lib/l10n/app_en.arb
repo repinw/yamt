@@ -969,6 +969,10 @@
   "caloriesAddEntryTitle": "Add calorie entry",
   "caloriesEditEntryTitle": "Edit calorie entry",
   "caloriesEntryDetailsTitle": "Calorie entry details",
+  "caloriesDiscardChangesDialogTitle": "Discard unsaved changes?",
+  "caloriesDiscardChangesDialogMessage":
+      "Your changes to this diary entry have not been saved yet.",
+  "caloriesDiscardChangesConfirmAction": "Discard changes",
   "caloriesEntryNotFound": "Entry not found.",
   "caloriesEntryNameLabel": "Name",
   "caloriesEntryBrandLabel": "Brand (optional)",
