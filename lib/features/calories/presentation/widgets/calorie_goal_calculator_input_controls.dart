@@ -8,7 +8,11 @@ import 'package:yamt/l10n/app_localizations.dart';
 class CalorieGoalCalculatorNumberField extends StatelessWidget {
   /// The calorie goal calculator number field.
   const CalorieGoalCalculatorNumberField({
-    required this.fieldKey, required this.controller, required this.label, required this.onChanged, super.key,
+    required this.fieldKey,
+    required this.controller,
+    required this.label,
+    required this.onChanged,
+    super.key,
     this.autofocus = false,
     this.hintText,
     this.errorText,
@@ -61,7 +65,9 @@ class CalorieGoalCalculatorNumberField extends StatelessWidget {
 class CalorieGoalCalculatorSexSegmentedControl extends StatelessWidget {
   /// The calorie goal calculator sex segmented control.
   const CalorieGoalCalculatorSexSegmentedControl({
-    required this.selectedSex, required this.onSelected, super.key,
+    required this.selectedSex,
+    required this.onSelected,
+    super.key,
   });
 
   /// The selected sex.
@@ -101,7 +107,9 @@ class CalorieGoalCalculatorSexSegmentedControl extends StatelessWidget {
 class CalorieGoalCalculatorGoalModeSegmentedControl extends StatelessWidget {
   /// The calorie goal calculator goal mode segmented control.
   const CalorieGoalCalculatorGoalModeSegmentedControl({
-    required this.selectedGoalMode, required this.onSelected, super.key,
+    required this.selectedGoalMode,
+    required this.onSelected,
+    super.key,
   });
 
   /// The selected goal mode.

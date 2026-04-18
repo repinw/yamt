@@ -11,6 +11,7 @@ import 'package:yamt/core/config/barcode_backfill_feature_flags.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
@@ -246,6 +247,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     final hasAnySourceItems =
         widget.items.isNotEmpty || widget.preparedMeals.isNotEmpty;
     final hasFilteredItems = filteredItems.isNotEmpty;
+    final horizontalPadding = responsivePageHorizontalPadding(context);
     final modeToggle = InventoryListModeToggle(
       mode: _mode,
       l10n: l10n,
@@ -288,10 +290,10 @@ class _InventoryListState extends ConsumerState<InventoryList> {
           ),
         if (showRecentItemsSection)
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xl,
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
               AppSpacing.lg,
-              AppSpacing.xl,
+              horizontalPadding,
               AppSpacing.sm,
             ),
             sliver: SliverToBoxAdapter(

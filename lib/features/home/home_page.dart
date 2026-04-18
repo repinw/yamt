@@ -112,7 +112,10 @@ class HomePage extends ConsumerWidget {
         onTap: () => _onTabTapped(_statisticsBranchIndex),
       ),
       HomeNavEntry(
-        item: HomeNavItem(icon: Icons.person_rounded, label: l10n.homeSettings),
+        item: HomeNavItem(
+          icon: Icons.settings_rounded,
+          label: l10n.homeSettings,
+        ),
         isSelected: currentTab == HomeTabType.settings,
         onTap: () => _onTabTapped(_settingsBranchIndex),
       ),
@@ -125,10 +128,36 @@ class HomePage extends ConsumerWidget {
     AppLocalizations l10n,
     PreparedMealSelectionState selectionState,
     CalorieGoalSettings? currentCalorieSettings,
+    bool useCompactSelectionActions,
   ) {
     final colors = Theme.of(context).colorScheme;
     if (_currentTab() == HomeTabType.inventory &&
         selectionState.isSelectionMode) {
+      if (useCompactSelectionActions) {
+        return [
+          IconButton(
+            tooltip: l10n.inventoryReceiptReviewCancelAction,
+            onPressed: () {
+              ref
+                  .read(preparedMealSelectionControllerProvider.notifier)
+                  .clearSelection();
+            },
+            icon: const Icon(Icons.close_rounded),
+          ),
+          IconButton.filledTonal(
+            tooltip: l10n.preparedMealBindAction,
+            onPressed: selectionState.selectedCount >= 2
+                ? () {
+                    ref
+                        .read(preparedMealSelectionControllerProvider.notifier)
+                        .requestCreateMeal();
+                  }
+                : null,
+            icon: const Icon(Icons.restaurant_menu_rounded),
+          ),
+        ];
+      }
+
       return [
         TextButton(
           onPressed: () {
@@ -225,6 +254,7 @@ class HomePage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final currentTab = _currentTab();
+    final compactHomeChrome = shouldUseCompactHomeChrome(context);
     final currentCalorieSettings = ref
         .watch(calorieGoalControllerProvider)
         .asData
@@ -241,12 +271,14 @@ class HomePage extends ConsumerWidget {
       appBar: HomeTopBar(
         title: _titleForTab(l10n, selectionState),
         titleColor: colors.primary,
+        compact: compactHomeChrome,
         actions: _buildActions(
           context,
           ref,
           l10n,
           selectionState,
           currentCalorieSettings,
+          compactHomeChrome,
         ),
       ),
       body: navigationShell,

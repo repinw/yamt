@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_expand_indicator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -42,42 +43,52 @@ class InventorySectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final titleContent = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: colors.onSurface,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: AppSpacing.xxs),
+          Text(
+            subtitle!,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: colors.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ],
+    );
+
+    if (trailing == null) {
+      return titleContent;
+    }
+
+    if (isCompactViewport(context)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          titleContent,
+          const SizedBox(height: AppSpacing.sm),
+          Align(alignment: Alignment.centerLeft, child: trailing!),
+        ],
+      );
+    }
 
     return Row(
       crossAxisAlignment: subtitle == null
           ? CrossAxisAlignment.center
           : CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: colors.onSurface,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              if (subtitle != null) ...[
-                const SizedBox(height: AppSpacing.xxs),
-                Text(
-                  subtitle!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-        ...?(trailing == null
-            ? null
-            : <Widget>[
-                if (subtitle != null) const SizedBox(width: AppSpacing.md),
-                trailing!,
-              ]),
+        Expanded(child: titleContent),
+        if (subtitle != null) const SizedBox(width: AppSpacing.md),
+        trailing!,
       ],
     );
   }

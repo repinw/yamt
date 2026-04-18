@@ -9,6 +9,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'diary_health_card_parts.dart';
 import 'package:yamt/features/calories/provider/calorie_health_trend_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines calorie health trends page.
@@ -25,11 +26,10 @@ class CalorieHealthTrendsPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.caloriesHealthTrendsPageTitle)),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          AppSpacing.lg,
-          AppSpacing.xl,
-          AppSpacing.xxxl,
+        padding: responsivePagePadding(
+          context,
+          top: AppSpacing.lg,
+          bottom: AppSpacing.xxxl,
         ),
         children: [
           DecoratedBox(
@@ -38,7 +38,7 @@ class CalorieHealthTrendsPage extends ConsumerWidget {
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
             child: Padding(
-              padding: AppInsets.card,
+              padding: responsiveCardPadding(context),
               child: trendAsync.when(
                 loading: () => const LinearProgressIndicator(),
                 error: (_, _) => Text(l10n.caloriesLoadFailed),

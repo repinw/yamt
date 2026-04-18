@@ -520,7 +520,10 @@ class _IngredientPreviewThumbnail extends StatelessWidget {
 class MealTemplateIngredientCardTestHarness extends StatelessWidget {
   /// The meal template ingredient card test harness.
   const MealTemplateIngredientCardTestHarness({
-    required this.name, required this.amountLabel, required this.inventoryItems, super.key,
+    required this.name,
+    required this.amountLabel,
+    required this.inventoryItems,
+    super.key,
     this.rawIngredient,
     this.isIgnored = false,
     this.assignedInventoryItemIds = const <String>[],

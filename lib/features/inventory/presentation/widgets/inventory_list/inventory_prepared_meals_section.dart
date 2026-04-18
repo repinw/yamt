@@ -11,6 +11,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory prepared meals section.
@@ -109,12 +110,13 @@ class InventoryPreparedMealsSection extends StatelessWidget {
     final bottomPadding = isExpanded && meals.isNotEmpty
         ? AppSpacing.lg
         : AppSpacing.sm;
+    final horizontalPadding = responsivePageHorizontalPadding(context);
 
     return SliverPadding(
       padding: EdgeInsets.fromLTRB(
-        AppSpacing.xl,
+        horizontalPadding,
         AppSpacing.lg,
-        AppSpacing.xl,
+        horizontalPadding,
         bottomPadding,
       ),
       sliver: SliverToBoxAdapter(

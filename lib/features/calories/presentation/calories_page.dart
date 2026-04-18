@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
@@ -113,11 +114,10 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
         DateUtils.isSameDay(latestGoalEntry?.effectiveDate, referenceNow);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xl,
-        AppSpacing.lg,
-        AppSpacing.xl,
-        140,
+      padding: responsivePagePadding(
+        context,
+        top: AppSpacing.lg,
+        bottom: homeShellPageBottomPadding(context),
       ),
       children: <Widget>[
         CaloriesDayNavigationPager(
