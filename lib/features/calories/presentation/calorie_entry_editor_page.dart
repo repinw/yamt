@@ -4,7 +4,6 @@ import 'dart:developer' show log;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
@@ -295,9 +294,7 @@ class _CalorieEntryEditorPageState
       selectedMealType: _mealType,
       selectedLoggedAt: _loggedAt,
       isSaving: _isSaving,
-      onClose: () {
-        unawaited(Navigator.of(context).maybePop());
-      },
+      onClose: () => _maybePopRootNavigator(context),
       onMealTypeChanged: (mealType) {
         setState(() {
           _mealType = mealType;
@@ -696,7 +693,6 @@ class _CalorieEntryEditorPageState
       return;
     }
 
-    final router = GoRouter.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final mountedL10n = AppLocalizations.of(context)!;
 
@@ -710,9 +706,7 @@ class _CalorieEntryEditorPageState
         'Calorie entry ${entry.id} saved successfully. Closing editor.',
         name: _editorLogName,
       );
-      if (router.canPop()) {
-        router.pop();
-      }
+      _maybePopRootNavigator(context);
       return;
     }
 
@@ -755,10 +749,7 @@ class _CalorieEntryEditorPageState
     });
 
     if (saved) {
-      final router = GoRouter.of(context);
-      if (router.canPop()) {
-        router.pop();
-      }
+      _maybePopRootNavigator(context);
       return;
     }
 
@@ -788,11 +779,11 @@ class _CalorieEntryEditorPageState
           ),
           actions: <Widget>[
             TextButton(
-              onPressed: () => dialogContext.pop(false),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
               child: Text(l10n.inventoryReceiptReviewCancelAction),
             ),
             TextButton(
-              onPressed: () => dialogContext.pop(true),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
               child: Text(l10n.caloriesReturnPreparedMealConfirmAction),
             ),
           ],
@@ -821,10 +812,7 @@ class _CalorieEntryEditorPageState
     });
 
     if (result.isSuccess) {
-      final router = GoRouter.of(context);
-      if (router.canPop()) {
-        router.pop();
-      }
+      _maybePopRootNavigator(context);
       return;
     }
 
@@ -838,6 +826,10 @@ class _CalorieEntryEditorPageState
       null => l10n.caloriesDeleteFailed,
     };
     messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _maybePopRootNavigator(BuildContext context) {
+    unawaited(Navigator.of(context, rootNavigator: true).maybePop());
   }
 
   String? _positiveNumberValidator(String? value) {

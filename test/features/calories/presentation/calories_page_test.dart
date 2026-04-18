@@ -22,6 +22,7 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/calories_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
@@ -197,7 +198,11 @@ Widget _buildHarness({
       ),
       GoRoute(
         path: AppRoutes.homeCaloriesEntryDetails,
-        builder: (context, state) => const Scaffold(body: Text('Details')),
+        builder: (context, state) {
+          return CalorieEntryEditorPage(
+            entryId: state.pathParameters['entryId'],
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.homeStatisticsWeight,
@@ -290,7 +295,11 @@ Widget _buildHarnessWithContainer({required ProviderContainer container}) {
       ),
       GoRoute(
         path: AppRoutes.homeCaloriesEntryDetails,
-        builder: (context, state) => const Scaffold(body: Text('Details')),
+        builder: (context, state) {
+          return CalorieEntryEditorPage(
+            entryId: state.pathParameters['entryId'],
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.homeStatisticsWeight,

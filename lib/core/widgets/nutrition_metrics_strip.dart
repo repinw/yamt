@@ -135,7 +135,10 @@ class _NutritionMetricCell extends StatelessWidget {
 }
 
 /// Formats nutrition values without unnecessary trailing decimals.
-String formatNutritionMetricValue(double value) {
-  final hasFraction = value % 1 != 0;
-  return hasFraction ? value.toStringAsFixed(1) : value.toStringAsFixed(0);
+extension NutritionMetricValueFormatting on double {
+  /// Returns a compact nutrition string.
+  String toNutritionMetricValue() {
+    final hasFraction = this % 1 != 0;
+    return hasFraction ? toStringAsFixed(1) : toStringAsFixed(0);
+  }
 }

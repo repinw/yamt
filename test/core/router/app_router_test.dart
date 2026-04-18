@@ -687,34 +687,38 @@ void main() {
     expect(container.read(appRouterProvider), same(stubRouter));
   });
 
-  testWidgets('calorie entry routes open full-screen entry pages', (
-    tester,
-  ) async {
-    final container = _createContainerWithAuth(
-      Stream<User?>.value(_authenticatedUser()),
-      completedProfileSetupUserIds: {'uid-123'},
-      completedCalorieGoalOnboardingUserIds: {'uid-123'},
-    );
+  testWidgets(
+    'calorie entry create opens a page and details route opens a sheet',
+    (
+      tester,
+    ) async {
+      final container = _createContainerWithAuth(
+        Stream<User?>.value(_authenticatedUser()),
+        completedProfileSetupUserIds: {'uid-123'},
+        completedCalorieGoalOnboardingUserIds: {'uid-123'},
+      );
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(container: container, child: const YAMT()),
-    );
-    await _pumpRouterTransition(tester);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: container, child: const YAMT()),
+      );
+      await _pumpRouterTransition(tester);
 
-    final router = container.read(appRouterProvider);
+      final router = container.read(appRouterProvider);
 
-    router.go(AppRoutes.homeCaloriesEntryCreate);
-    await _pumpRouterTransition(tester);
-    await _pumpRouterTransition(tester);
-    expect(find.text('Add calorie entry'), findsOneWidget);
-    expect(find.byKey(CalorieEntryEditorKeys.nameField), findsOneWidget);
+      router.go(AppRoutes.homeCaloriesEntryCreate);
+      await _pumpRouterTransition(tester);
+      await _pumpRouterTransition(tester);
+      expect(find.text('Add calorie entry'), findsOneWidget);
+      expect(find.byKey(CalorieEntryEditorKeys.nameField), findsOneWidget);
 
-    router.go(AppRoutes.homeCaloriesEntryDetailsPath('missing-entry'));
-    await _pumpRouterTransition(tester);
-    await _pumpRouterTransition(tester);
-    expect(find.text('Calorie entry details'), findsOneWidget);
-    expect(find.text('Entry not found.'), findsOneWidget);
-  });
+      router.go(AppRoutes.homeCaloriesEntryDetailsPath('missing-entry'));
+      await _pumpRouterTransition(tester);
+      await _pumpRouterTransition(tester);
+      expect(find.text('Calorie entry details'), findsOneWidget);
+      expect(find.text('Entry not found.'), findsOneWidget);
+      expect(find.byType(ModalBarrier), findsOneWidget);
+    },
+  );
 
   testWidgets('barcode scan route is registered on app router', (tester) async {
     final container = _createContainerWithAuth(

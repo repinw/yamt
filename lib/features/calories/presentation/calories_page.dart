@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
@@ -10,7 +11,6 @@ import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dar
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/calories_page_logic.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -191,14 +191,10 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
               title: section.mealType.localizedName(l10n),
               emptyMessage: l10n.caloriesSectionEmptyState,
               onTapEntry: (entry) {
-                showModalBottomSheet<void>(
-                  context: context,
-                  useRootNavigator: true,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) {
-                    return CalorieEntryEditorPage(entryId: entry.id);
-                  },
+                unawaited(
+                  context.push<void>(
+                    AppRoutes.homeCaloriesEntryDetailsPath(entry.id),
+                  ),
                 );
               },
             ),

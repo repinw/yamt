@@ -85,6 +85,24 @@ class _RecordingInventorySaveFlow
   }
 }
 
+CalorieEntryDeleteFlow _restoreFailingDeleteFlow() {
+  return CalorieEntryDeleteFlow(
+    deleteEntryById: (_) async => true,
+    restoreConsumedItem: (_, __) async => false,
+    rollbackRestoredItem: (_, __, {consumedAt}) async => true,
+    restorePreparedMealPortions:
+        ({
+          required mealId,
+          required portions,
+        }) async => false,
+    rollbackRestoredPreparedMeal:
+        ({
+          required mealId,
+          required discardedPortions,
+        }) async => true,
+  );
+}
+
 class _AutoOpenCreateRoutePage extends StatefulWidget {
   const _AutoOpenCreateRoutePage({this.extra});
 
@@ -121,7 +139,11 @@ class _AutoOpenCreateRoutePageState extends State<_AutoOpenCreateRoutePage> {
   }
 }
 
-CalorieEntry _entry(String id) {
+CalorieEntry _entry(
+  String id, {
+  String? sourceInventoryItemId,
+  int? sourceInventoryAmountToRestore,
+}) {
   return CalorieEntry.create(
     id: id,
     userId: 'user-1',
@@ -133,6 +155,8 @@ CalorieEntry _entry(String id) {
     per100Protein: 10,
     per100Carbs: 5,
     per100Fat: 1,
+    sourceInventoryItemId: sourceInventoryItemId,
+    sourceInventoryAmountToRestore: sourceInventoryAmountToRestore,
     loggedAt: DateTime(2026, 2, 25, 8),
     createdAt: DateTime(2026, 2, 25, 8),
     updatedAt: DateTime(2026, 2, 25, 8),
@@ -474,6 +498,162 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('details flow shows snackbar when saving changes fails', (
+    tester,
+  ) async {
+    final existing = _entry('entry-save-fail');
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[existing],
+    )..saveShouldFail = true;
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.homeCaloriesEntryDetailsPath(
+          'entry-save-fail',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(CalorieEntryDetailKeys.mealSelector),
+      200,
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CalorieEntryDetailKeys.mealSelector));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Snack').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Could not save entry.'), findsOneWidget);
+    expect(
+      tester
+          .widget<ButtonStyleButton>(
+            find.byKey(CalorieEntryEditorKeys.saveButton),
+          )
+          .onPressed,
+      isNotNull,
+    );
+    expect(logRepository.entries.single.mealType, MealType.breakfast);
+  });
+
+  testWidgets(
+    'details flow shows inventory restore snackbar when return fails',
+    (tester) async {
+      final existing = _entry(
+        'entry-restore-fail',
+        sourceInventoryItemId: 'inventory-1',
+        sourceInventoryAmountToRestore: 2,
+      );
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[existing],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository();
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          logRepository: logRepository,
+          settingsRepository: settingsRepository,
+          initialLocation: AppRoutes.homeCaloriesEntryDetailsPath(
+            'entry-restore-fail',
+          ),
+          additionalOverrides: [
+            calorieEntryDeleteFlowProvider.overrideWithValue(
+              _restoreFailingDeleteFlow(),
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Return to inventory').last);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('The food could not be added back to inventory.'),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<ButtonStyleButton>(
+              find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
+            )
+            .onPressed,
+        isNotNull,
+      );
+    },
+  );
+
+  testWidgets(
+    'prepared meal details show snackbar when return to inventory fails',
+    (tester) async {
+      final existing = _bundleEntry('bundle-restore-fail');
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[existing],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository();
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          logRepository: logRepository,
+          settingsRepository: settingsRepository,
+          initialLocation: AppRoutes.homeCaloriesEntryDetailsPath(
+            'bundle-restore-fail',
+          ),
+          additionalOverrides: [
+            calorieEntryDeleteFlowProvider.overrideWithValue(
+              _restoreFailingDeleteFlow(),
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
+        250,
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Return to inventory').last);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('The meal could not be returned to inventory.'),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<ButtonStyleButton>(
+              find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
+            )
+            .onPressed,
+        isNotNull,
+      );
+    },
+  );
 
   testWidgets('validation blocks save for empty name', (tester) async {
     final logRepository = FakeCalorieLogRepository();

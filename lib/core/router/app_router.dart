@@ -150,9 +150,12 @@ Raw<GoRouter> appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.homeCaloriesEntryDetails,
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final entryId = state.pathParameters['entryId'];
-          return CalorieEntryEditorPage(entryId: entryId);
+          return _ModalBottomSheetPage<void>(
+            key: state.pageKey,
+            child: CalorieEntryEditorPage(entryId: entryId),
+          );
         },
       ),
       GoRoute(
@@ -330,6 +333,22 @@ class AppRouterRefreshListenable extends ChangeNotifier {
   /// Triggers one router refresh cycle.
   void refresh() {
     notifyListeners();
+  }
+}
+
+class _ModalBottomSheetPage<T> extends Page<T> {
+  const _ModalBottomSheetPage({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    return ModalBottomSheetRoute<T>(
+      settings: this,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => child,
+    );
   }
 }
 

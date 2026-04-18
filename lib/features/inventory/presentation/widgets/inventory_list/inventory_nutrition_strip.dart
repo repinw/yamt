@@ -34,5 +34,5 @@ class InventoryNutritionStrip extends StatelessWidget {
 
 /// Format inventory nutrition value.
 String formatInventoryNutritionValue(double value) {
-  return formatNutritionMetricValue(value);
+  return value.toNutritionMetricValue();
 }
