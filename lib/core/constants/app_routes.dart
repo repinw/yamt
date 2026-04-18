@@ -47,8 +47,9 @@ abstract final class AppRoutes {
   /// Calorie entry creation route.
   static const homeCaloriesEntryCreate = '/home/calories/entry/create';
 
-  /// Calorie entry edit route with entry id parameter.
-  static const homeCaloriesEntryEdit = '/home/calories/entry/:entryId/edit';
+  /// Calorie entry details route with entry id parameter.
+  static const homeCaloriesEntryDetails =
+      '/home/calories/entry/:entryId/details';
 
   /// Barcode scanner route for calories.
   static const homeCaloriesBarcodeScan = '/home/calories/barcode-scan';
@@ -68,9 +69,9 @@ abstract final class AppRoutes {
   /// Household settings route.
   static const homeSettingsHousehold = '/home/settings/household';
 
-  /// Builds calorie entry edit path for concrete entry id.
-  static String homeCaloriesEntryEditPath(String entryId) {
-    return '/home/calories/entry/$entryId/edit';
+  /// Builds calorie entry details path for concrete entry id.
+  static String homeCaloriesEntryDetailsPath(String entryId) {
+    return '/home/calories/entry/$entryId/details';
   }
 
   /// Builds inventory template detail path for concrete template id.

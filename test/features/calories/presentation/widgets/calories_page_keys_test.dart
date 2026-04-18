@@ -17,10 +17,6 @@ void main() {
       const Key('calories_entry_tile_entry-1'),
     );
     expect(
-      CaloriesPageKeys.deleteRestoreCheckbox('entry-1'),
-      const Key('calories_delete_restore_entry-1'),
-    );
-    expect(
       CaloriesPageKeys.entryImage('entry-1'),
       const Key('calories_entry_image_entry-1'),
     );

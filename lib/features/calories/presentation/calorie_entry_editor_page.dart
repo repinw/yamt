@@ -184,7 +184,7 @@ class _CalorieEntryEditorPageState
       data: (entry) {
         if (entry == null) {
           return Scaffold(
-            appBar: AppBar(title: Text(l10n.caloriesEditEntryTitle)),
+            appBar: AppBar(title: Text(l10n.caloriesEntryDetailsTitle)),
             body: Center(child: Text(l10n.caloriesEntryNotFound)),
           );
         }
@@ -203,7 +203,7 @@ class _CalorieEntryEditorPageState
       ),
       error: (error, stackTrace) {
         return Scaffold(
-          appBar: AppBar(title: Text(l10n.caloriesEditEntryTitle)),
+          appBar: AppBar(title: Text(l10n.caloriesEntryDetailsTitle)),
           body: Center(child: Text(l10n.caloriesLoadFailed)),
         );
       },
@@ -287,7 +287,10 @@ class _CalorieEntryEditorPageState
     BuildContext context, {
     required CalorieEntry entry,
   }) {
+    final l10n = AppLocalizations.of(context)!;
+
     return CalorieEntryDetailsView(
+      title: l10n.caloriesEntryDetailsTitle,
       entry: entry,
       selectedMealType: _mealType,
       selectedLoggedAt: _loggedAt,

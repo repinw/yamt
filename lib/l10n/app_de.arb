@@ -1009,6 +1009,7 @@
   "caloriesDeleteFailed": "Eintrag konnte nicht gelöscht werden.",
   "caloriesAddEntryTitle": "Kalorien-Eintrag hinzufügen",
   "caloriesEditEntryTitle": "Kalorien-Eintrag bearbeiten",
+  "caloriesEntryDetailsTitle": "Kalorien-Eintragsdetails",
   "caloriesEntryNotFound": "Eintrag wurde nicht gefunden.",
   "caloriesEntryNameLabel": "Name",
   "caloriesEntryBrandLabel": "Marke (optional)",

@@ -235,7 +235,7 @@ Widget _buildHarness({
         },
       ),
       GoRoute(
-        path: AppRoutes.homeCaloriesEntryEdit,
+        path: AppRoutes.homeCaloriesEntryDetails,
         builder: (context, state) {
           return CalorieEntryEditorPage(
             entryId: state.pathParameters['entryId'],
@@ -320,7 +320,7 @@ void main() {
     expect(logRepository.entries.single.name, 'Greek Yogurt');
   });
 
-  testWidgets('edit flow loads details and updates the meal window', (
+  testWidgets('details flow loads and updates the meal window', (
     tester,
   ) async {
     final existing = _entry('entry-1');
@@ -335,13 +335,13 @@ void main() {
       _buildHarness(
         logRepository: logRepository,
         settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.homeCaloriesEntryEditPath('entry-1'),
+        initialLocation: AppRoutes.homeCaloriesEntryDetailsPath('entry-1'),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Edit calorie entry'), findsOneWidget);
     expect(find.text('Skyr'), findsOneWidget);
+    expect(find.byKey(CalorieEntryDetailKeys.ingredientsTable), findsNothing);
     await tester.scrollUntilVisible(
       find.byKey(CalorieEntryDetailKeys.mealSelector),
       200,
@@ -356,14 +356,13 @@ void main() {
     await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
     await tester.pumpAndSettle();
 
-    expect(find.text('Edit calorie entry'), findsOneWidget);
     final updated = logRepository.entries.single;
     expect(updated.id, 'entry-1');
     expect(updated.name, 'Skyr');
     expect(updated.mealType, MealType.snack);
   });
 
-  testWidgets('edit flow updates the logged diary day', (tester) async {
+  testWidgets('details flow updates the logged diary day', (tester) async {
     final existing = _entry('entry-day');
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[existing],
@@ -376,7 +375,7 @@ void main() {
       _buildHarness(
         logRepository: logRepository,
         settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.homeCaloriesEntryEditPath('entry-day'),
+        initialLocation: AppRoutes.homeCaloriesEntryDetailsPath('entry-day'),
       ),
     );
     await tester.pumpAndSettle();
@@ -406,7 +405,9 @@ void main() {
     expect(updated.loggedAt.minute, existing.loggedAt.minute);
   });
 
-  testWidgets('prepared meal edit view shows ingredient table', (tester) async {
+  testWidgets('prepared meal details view shows ingredient table', (
+    tester,
+  ) async {
     final existing = _bundleEntry('bundle-1');
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[existing],
@@ -419,7 +420,7 @@ void main() {
       _buildHarness(
         logRepository: logRepository,
         settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.homeCaloriesEntryEditPath('bundle-1'),
+        initialLocation: AppRoutes.homeCaloriesEntryDetailsPath('bundle-1'),
       ),
     );
     await tester.pumpAndSettle();
@@ -440,14 +441,13 @@ void main() {
     );
     expect(find.text('Beans'), findsOneWidget);
     expect(find.text('150 g'), findsOneWidget);
-    expect(find.text('120 kcal'), findsOneWidget);
     expect(
       find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
       findsOneWidget,
     );
   });
 
-  testWidgets('prepared meal edit view does not overflow on small screens', (
+  testWidgets('prepared meal details view does not overflow on small screens', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(320, 520);
@@ -467,7 +467,7 @@ void main() {
       _buildHarness(
         logRepository: logRepository,
         settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.homeCaloriesEntryEditPath('bundle-small'),
+        initialLocation: AppRoutes.homeCaloriesEntryDetailsPath('bundle-small'),
       ),
     );
     await tester.pumpAndSettle();

@@ -7,7 +7,6 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
-import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
@@ -19,6 +18,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 class CalorieEntryDetailsView extends ConsumerWidget {
   /// The calorie entry details view.
   const CalorieEntryDetailsView({
+    required this.title,
     required this.entry,
     required this.selectedMealType,
     required this.selectedLoggedAt,
@@ -30,6 +30,9 @@ class CalorieEntryDetailsView extends ConsumerWidget {
     required this.onReturnToInventory,
     super.key,
   });
+
+  /// The visible sheet title.
+  final String title;
 
   /// The displayed entry.
   final CalorieEntry entry;
@@ -60,8 +63,6 @@ class CalorieEntryDetailsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final material = MaterialLocalizations.of(context);
     final colors = Theme.of(context).colorScheme;
     final hasMealChanges = selectedMealType != entry.mealType;
     final hasLoggedAtChanges = selectedLoggedAt != entry.loggedAt;
@@ -77,6 +78,10 @@ class CalorieEntryDetailsView extends ConsumerWidget {
       end: Alignment.bottomCenter,
       colors: [
         Color.alphaBlend(
+          colors.surfaceContainerHigh.withValues(alpha: 0.9),
+          colors.surface,
+        ),
+        Color.alphaBlend(
           colors.surfaceContainerLow.withValues(alpha: 0.96),
           colors.surface,
         ),
@@ -85,6 +90,7 @@ class CalorieEntryDetailsView extends ConsumerWidget {
           colors.surface,
         ),
       ],
+      stops: const [0, 0.45, 1],
     );
 
     return Scaffold(
@@ -113,7 +119,6 @@ class CalorieEntryDetailsView extends ConsumerWidget {
                     AppInventoryEditorialSurfaces.ambientBoxShadow(
                       colors,
                       blurRadius: 40,
-                      offset: const Offset(0, 18),
                     ),
                   ],
                 ),
@@ -137,18 +142,20 @@ class CalorieEntryDetailsView extends ConsumerWidget {
                       child: Column(
                         children: [
                           _DetailsSheetHeader(
-                            title: l10n.caloriesEditEntryTitle,
-                            closeTooltip: material.closeButtonTooltip,
+                            title: title,
+                            closeTooltip: MaterialLocalizations.of(
+                              context,
+                            ).closeButtonTooltip,
                             isSaving: isSaving,
                             onClose: onClose,
                           ),
                           Flexible(
                             child: ListView(
                               padding: const EdgeInsets.fromLTRB(
-                                AppSpacing.lg,
+                                AppSpacing.xl,
                                 0,
+                                AppSpacing.xl,
                                 AppSpacing.lg,
-                                AppSpacing.md,
                               ),
                               children: [
                                 _EntryOverviewCard(
@@ -159,25 +166,12 @@ class CalorieEntryDetailsView extends ConsumerWidget {
                                   onPickLoggedAt: onPickLoggedAt,
                                   onMealTypeChanged: onMealTypeChanged,
                                 ),
-                                const SizedBox(height: AppSpacing.sm),
-                                _CompactPanel(
-                                  title:
-                                      l10n.inventoryItemEatSheetNutritionLabel,
-                                  child: NutritionMetricsStrip(
-                                    key: CalorieEntryDetailKeys.nutritionStrip,
-                                    metrics: _buildNutritionMetrics(
-                                      l10n,
-                                      entry,
-                                    ),
-                                    height: 64,
-                                    radius: 20,
-                                    dividerHeight: 22,
-                                  ),
-                                ),
+                                const SizedBox(height: AppSpacing.lg),
+                                _NutritionSummaryCard(entry: entry),
                                 if (entry.isBundle &&
                                     entry.bundleComponents.isNotEmpty) ...[
-                                  const SizedBox(height: AppSpacing.sm),
-                                  _IngredientsTableCard(entry: entry),
+                                  const SizedBox(height: AppSpacing.xxl),
+                                  _IngredientsSection(entry: entry),
                                 ],
                               ],
                             ),
@@ -222,18 +216,18 @@ class _DetailsSheetHeader extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
+        AppSpacing.xl,
         AppSpacing.sm,
         AppSpacing.sm,
-        AppSpacing.sm,
+        AppSpacing.xs,
       ),
       child: Column(
         children: [
           Container(
-            width: 38,
-            height: 4,
+            width: 74,
+            height: 6,
             decoration: BoxDecoration(
-              color: colors.outlineVariant.withValues(alpha: 0.9),
+              color: colors.outlineVariant.withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(999),
             ),
           ),
@@ -253,6 +247,11 @@ class _DetailsSheetHeader extends StatelessWidget {
                 onPressed: isSaving ? null : onClose,
                 tooltip: closeTooltip,
                 visualDensity: VisualDensity.compact,
+                style: IconButton.styleFrom(
+                  backgroundColor: colors.surfaceContainerHighest.withValues(
+                    alpha: 0.92,
+                  ),
+                ),
                 icon: const Icon(Icons.close_rounded),
               ),
             ],
@@ -283,116 +282,108 @@ class _EntryOverviewCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final material = MaterialLocalizations.of(context);
     final colors = Theme.of(context).colorScheme;
+    final material = MaterialLocalizations.of(context);
+    final eyebrow = _entryEyebrow(l10n, entry);
     final brand = entry.brand?.trim();
     final imageRef = maybeLocalImageAssetRef(entry.imageAssetId);
     final storedImageBytes = imageRef == null
         ? null
         : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
 
-    return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
-        colors,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        color: Color.alphaBlend(
-          colors.surfaceContainerLow.withValues(alpha: 0.78),
-          colors.surface,
-        ),
-        blurRadius: 24,
-        shadowOffset: const Offset(0, 12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _EntryThumbnail(
-                  entry: entry,
-                  storedImageBytes: storedImageBytes,
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+            _EntryThumbnail(entry: entry, storedImageBytes: storedImageBytes),
+            const SizedBox(width: AppSpacing.lg),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xxs),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (eyebrow != null) ...[
                       Text(
-                        entry.name,
-                        maxLines: 2,
+                        eyebrow,
+                        key: brand != null && brand.isNotEmpty
+                            ? CalorieEntryDetailKeys.brandValue
+                            : null,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          height: 1.05,
-                        ),
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(
+                              color: colors.primary,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.1,
+                            ),
                       ),
-                      if (brand != null && brand.isNotEmpty) ...[
-                        const SizedBox(height: AppSpacing.xxs),
-                        Text(
-                          brand,
-                          key: CalorieEntryDetailKeys.brandValue,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: colors.onSurfaceVariant,
-                                fontWeight: FontWeight.w600,
-                              ),
-                        ),
-                      ],
+                      const SizedBox(height: AppSpacing.xs),
                     ],
-                  ),
+                    Text(
+                      entry.name,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            height: 1.05,
+                            letterSpacing: -0.3,
+                          ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final amountMeta = _EntryMetaItem(
+                          icon: Icons.scale_outlined,
+                          label: _consumedAmountLabel(l10n, entry),
+                          valueKey: CalorieEntryDetailKeys.amountValue,
+                        );
+                        final timeMeta = _EntryMetaItem(
+                          icon: Icons.schedule_rounded,
+                          label: _loggedAtMetaLabel(
+                            context,
+                            l10n,
+                            material,
+                            selectedLoggedAt,
+                          ),
+                        );
+
+                        if (constraints.maxWidth < 220) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              amountMeta,
+                              const SizedBox(height: AppSpacing.xs),
+                              timeMeta,
+                            ],
+                          );
+                        }
+
+                        return Wrap(
+                          spacing: AppSpacing.md,
+                          runSpacing: AppSpacing.xs,
+                          children: [amountMeta, timeMeta],
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.xs,
-              runSpacing: AppSpacing.xs,
-              children: [
-                _EntryTag(
-                  icon: Icons.restaurant_menu_rounded,
-                  label: selectedMealType.localizedName(l10n),
-                ),
-                if (entry.isBundle)
-                  _EntryTag(
-                    icon: Icons.soup_kitchen_outlined,
-                    label: l10n.preparedMealSectionTitle,
-                  ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.xs,
-              runSpacing: AppSpacing.xs,
-              children: [
-                _EntryMetricChip(
-                  title: l10n.caloriesEntryAmountLabel,
-                  value: _consumedAmountLabel(l10n, entry),
-                  icon: Icons.scale_outlined,
-                  valueKey: CalorieEntryDetailKeys.amountValue,
-                ),
-                _EntryMetricChip(
-                  title: l10n.preparedMealDiaryDayLabel,
-                  value: material.formatShortDate(selectedLoggedAt),
-                  icon: Icons.schedule_rounded,
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            _EntryControlRow(
-              isSaving: isSaving,
-              selectedMealType: selectedMealType,
-              selectedLoggedAt: selectedLoggedAt,
-              onPickLoggedAt: onPickLoggedAt,
-              onMealTypeChanged: onMealTypeChanged,
-              compact: true,
+              ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: AppSpacing.xxl),
+        _EntryControlRow(
+          isSaving: isSaving,
+          selectedMealType: selectedMealType,
+          selectedLoggedAt: selectedLoggedAt,
+          onPickLoggedAt: onPickLoggedAt,
+          onMealTypeChanged: onMealTypeChanged,
+        ),
+      ],
     );
   }
 }
@@ -481,109 +472,39 @@ class _EntryImageFallback extends StatelessWidget {
   }
 }
 
-class _EntryTag extends StatelessWidget {
-  const _EntryTag({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.primaryContainer.withValues(alpha: 0.58),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xxs,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: colors.onPrimaryContainer),
-            const SizedBox(width: AppSpacing.xxs),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: colors.onPrimaryContainer,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EntryMetricChip extends StatelessWidget {
-  const _EntryMetricChip({
-    required this.title,
-    required this.value,
+class _EntryMetaItem extends StatelessWidget {
+  const _EntryMetaItem({
     required this.icon,
+    required this.label,
     this.valueKey,
   });
 
-  final String title;
-  final String value;
   final IconData icon;
+  final String label;
   final Key? valueKey;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLowest.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: AppInventoryEditorialSurfaces.ghostBorder(
-            colors,
-          ).withValues(alpha: 0.85),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xs,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: colors.primary),
-            const SizedBox(width: AppSpacing.xs),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xxs),
-                Text(
-                  value,
-                  key: valueKey,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: colors.onSurface,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 15, color: colors.onSurfaceVariant),
+        const SizedBox(width: AppSpacing.xs),
+        Flexible(
+          child: Text(
+            label,
+            key: valueKey,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: colors.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -595,7 +516,6 @@ class _EntryControlRow extends StatelessWidget {
     required this.selectedLoggedAt,
     required this.onPickLoggedAt,
     required this.onMealTypeChanged,
-    this.compact = false,
   });
 
   final bool isSaving;
@@ -603,7 +523,6 @@ class _EntryControlRow extends StatelessWidget {
   final DateTime selectedLoggedAt;
   final VoidCallback onPickLoggedAt;
   final ValueChanged<MealType> onMealTypeChanged;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -615,7 +534,6 @@ class _EntryControlRow extends StatelessWidget {
         final isNarrow = constraints.maxWidth < 320;
         final dayCard = _CompactFieldCard(
           label: l10n.preparedMealDiaryDayLabel,
-          compact: compact,
           child: _LoggedDayButton(
             loggedAt: selectedLoggedAt,
             isEnabled: !isSaving,
@@ -625,7 +543,6 @@ class _EntryControlRow extends StatelessWidget {
         );
         final mealCard = _CompactFieldCard(
           label: l10n.caloriesEntryMealLabel,
-          compact: compact,
           child: _MealTypeDropdown(
             selectedMealType: selectedMealType,
             isEnabled: !isSaving,
@@ -637,7 +554,7 @@ class _EntryControlRow extends StatelessWidget {
           return Column(
             children: [
               dayCard,
-              SizedBox(height: compact ? AppSpacing.xxs : AppSpacing.xs),
+              const SizedBox(height: AppSpacing.sm),
               mealCard,
             ],
           );
@@ -646,7 +563,7 @@ class _EntryControlRow extends StatelessWidget {
         return Row(
           children: [
             Expanded(child: dayCard),
-            SizedBox(width: compact ? AppSpacing.xxs : AppSpacing.xs),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(child: mealCard),
           ],
         );
@@ -656,15 +573,10 @@ class _EntryControlRow extends StatelessWidget {
 }
 
 class _CompactFieldCard extends StatelessWidget {
-  const _CompactFieldCard({
-    required this.label,
-    required this.child,
-    this.compact = false,
-  });
+  const _CompactFieldCard({required this.label, required this.child});
 
   final String label;
   final Widget child;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -674,26 +586,32 @@ class _CompactFieldCard extends StatelessWidget {
       decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
         colors,
         borderRadius: BorderRadius.circular(AppRadius.lg + AppSpacing.xs),
-        color: colors.surfaceContainerLowest.withValues(alpha: 0.82),
-        blurRadius: compact ? 12 : 18,
-        shadowOffset: Offset(0, compact ? 4 : 8),
+        color: Color.alphaBlend(
+          colors.surfaceContainerLowest.withValues(alpha: 0.94),
+          colors.surface,
+        ),
+        blurRadius: 18,
+        shadowOffset: const Offset(0, 8),
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: compact ? AppSpacing.sm : AppSpacing.md,
-          vertical: compact ? AppSpacing.xs : AppSpacing.sm,
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.md,
+          AppSpacing.lg,
+          AppSpacing.md,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              label,
+              label.toUpperCase(),
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: colors.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.1,
               ),
             ),
-            SizedBox(height: compact ? 0 : AppSpacing.xxs),
+            const SizedBox(height: AppSpacing.xs),
             child,
           ],
         ),
@@ -718,6 +636,7 @@ class _LoggedDayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final foregroundColor = isEnabled
         ? colors.onSurface
         : colors.onSurface.withValues(alpha: 0.45);
@@ -732,22 +651,23 @@ class _LoggedDayButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
           child: Row(
             children: [
+              Expanded(
+                child: Text(
+                  _loggedDayLabel(context, l10n, material, loggedAt),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: foregroundColor,
+                    fontWeight: FontWeight.w800,
+                    height: 1,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
               Icon(
                 Icons.calendar_today_outlined,
                 size: 18,
-                color: isEnabled ? colors.primary : foregroundColor,
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Expanded(
-                child: Text(
-                  material.formatShortDate(loggedAt),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: foregroundColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                color: isEnabled ? colors.onSurfaceVariant : foregroundColor,
               ),
             ],
           ),
@@ -786,11 +706,12 @@ class _MealTypeDropdown extends StatelessWidget {
           color: colors.onSurfaceVariant,
           size: 20,
         ),
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
           color: isEnabled
               ? colors.onSurface
               : colors.onSurface.withValues(alpha: 0.45),
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w800,
+          height: 1,
         ),
         items: MealType.sectionOrder
             .map((mealType) {
@@ -799,6 +720,9 @@ class _MealTypeDropdown extends StatelessWidget {
                 child: Text(
                   mealType.localizedName(l10n),
                   overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               );
             })
@@ -816,52 +740,143 @@ class _MealTypeDropdown extends StatelessWidget {
   }
 }
 
-class _CompactPanel extends StatelessWidget {
-  const _CompactPanel({
-    required this.title,
-    required this.child,
-    this.trailing,
-  });
+class _NutritionSummaryCard extends StatelessWidget {
+  const _NutritionSummaryCard({required this.entry});
 
-  final String title;
-  final Widget child;
-  final Widget? trailing;
+  final CalorieEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+
+    return Container(
+      key: CalorieEntryDetailKeys.nutritionStrip,
+      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+        colors,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        color: Color.alphaBlend(
+          colors.surfaceContainerLowest.withValues(alpha: 0.96),
+          colors.surface,
+        ),
+        blurRadius: 16,
+        shadowOffset: const Offset(0, 8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xl,
+          vertical: AppSpacing.lg,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 4,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: entry.totalKcal.round().toString(),
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              color: colors.primary,
+                              fontWeight: FontWeight.w900,
+                              height: 1,
+                            ),
+                      ),
+                      TextSpan(
+                        text: ' ${l10n.caloriesUnitKcal.toUpperCase()}',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            _buildDivider(colors),
+            Expanded(
+              flex: 3,
+              child: _NutritionMetricCell(
+                label: l10n.inventoryNutritionCarbsShortLabel.toUpperCase(),
+                value: '${_formatNutritionMetricValue(entry.totalCarbs)}g',
+              ),
+            ),
+            _buildDivider(colors),
+            Expanded(
+              flex: 3,
+              child: _NutritionMetricCell(
+                label: l10n.caloriesProteinLabel.toUpperCase(),
+                value: '${_formatNutritionMetricValue(entry.totalProtein)}g',
+              ),
+            ),
+            _buildDivider(colors),
+            Expanded(
+              flex: 3,
+              child: _NutritionMetricCell(
+                label: l10n.caloriesFatLabel.toUpperCase(),
+                value: '${_formatNutritionMetricValue(entry.totalFat)}g',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDivider(ColorScheme colors) {
+    return SizedBox(
+      height: 26,
+      child: VerticalDivider(
+        width: AppSpacing.xl,
+        thickness: 1,
+        color: AppInventoryEditorialSurfaces.ghostBorder(
+          colors,
+        ).withValues(alpha: 0.9),
+      ),
+    );
+  }
+}
+
+class _NutritionMetricCell extends StatelessWidget {
+  const _NutritionMetricCell({required this.label, required this.value});
+
+  final String label;
+  final String value;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return DecoratedBox(
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
-        colors,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        color: Color.alphaBlend(
-          colors.surfaceContainerLow.withValues(alpha: 0.72),
-          colors.surface,
-        ),
-        blurRadius: 20,
-        shadowOffset: const Offset(0, 10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+    return Semantics(
+      label: '$label $value',
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                if (trailing != null) trailing!,
-              ],
+            Text(
+              label,
+              maxLines: 1,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: colors.onSurfaceVariant,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.8,
+              ),
             ),
-            const SizedBox(height: AppSpacing.sm),
-            child,
+            const SizedBox(height: AppSpacing.xxs),
+            Text(
+              value,
+              maxLines: 1,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: colors.onSurface,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
           ],
         ),
       ),
@@ -897,7 +912,7 @@ class _DetailsSheetFooter extends StatelessWidget {
         ),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: colors.surfaceContainerLowest.withValues(alpha: 0.92),
+            color: colors.surfaceContainerLowest.withValues(alpha: 0.94),
             border: Border(
               top: BorderSide(
                 color: AppInventoryEditorialSurfaces.ghostBorder(
@@ -910,14 +925,13 @@ class _DetailsSheetFooter extends StatelessWidget {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
+                AppSpacing.xl,
                 AppSpacing.sm,
-                AppSpacing.lg,
+                AppSpacing.xl,
                 AppSpacing.md,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (canReturn) ...[
                     TextButton.icon(
@@ -926,33 +940,48 @@ class _DetailsSheetFooter extends StatelessWidget {
                       icon: const Icon(Icons.undo_rounded, size: 16),
                       style: TextButton.styleFrom(
                         visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xs,
-                          vertical: AppSpacing.xxs,
-                        ),
-                        foregroundColor: colors.primary,
+                        foregroundColor: colors.onSurfaceVariant,
                       ),
                       label: Text(
                         l10n.caloriesReturnPreparedMealConfirmAction,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.xs),
+                    const SizedBox(height: AppSpacing.sm),
                   ],
                   SizedBox(
                     width: double.infinity,
-                    child: FilledButton(
+                    child: FilledButton.icon(
                       key: CalorieEntryEditorKeys.saveButton,
                       onPressed: isSaving || !hasPendingChanges ? null : onSave,
+                      icon: const Icon(Icons.check_circle_rounded, size: 18),
                       style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(48),
+                        minimumSize: const Size.fromHeight(52),
+                        backgroundColor: Color.alphaBlend(
+                          colors.primary.withValues(alpha: 0.14),
+                          colors.surfaceContainerLowest,
+                        ),
+                        disabledBackgroundColor: colors.surfaceContainerLow,
+                        foregroundColor: colors.primary,
+                        disabledForegroundColor: colors.onSurfaceVariant
+                            .withValues(alpha: 0.45),
+                        side: BorderSide(
+                          color: AppInventoryEditorialSurfaces.ghostBorder(
+                            colors,
+                          ).withValues(alpha: 0.9),
+                        ),
                         padding: const EdgeInsets.symmetric(
                           vertical: AppSpacing.md,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                          borderRadius: BorderRadius.circular(AppRadius.xl),
                         ),
+                        elevation: 0,
                       ),
-                      child: Text(l10n.caloriesSaveEntryAction),
+                      label: Text(
+                        l10n.caloriesSaveEntryAction,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w800),
+                      ),
                     ),
                   ),
                 ],
@@ -965,8 +994,8 @@ class _DetailsSheetFooter extends StatelessWidget {
   }
 }
 
-class _IngredientsTableCard extends StatelessWidget {
-  const _IngredientsTableCard({required this.entry});
+class _IngredientsSection extends StatelessWidget {
+  const _IngredientsSection({required this.entry});
 
   final CalorieEntry entry;
 
@@ -975,153 +1004,54 @@ class _IngredientsTableCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
 
-    return _CompactPanel(
-      title: l10n.preparedMealIngredientsTitle,
-      trailing: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colors.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
-            vertical: AppSpacing.xxs,
-          ),
-          child: Text(
-            entry.bundleComponents.length.toString(),
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: colors.primary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        child: DecoratedBox(
-          key: CalorieEntryDetailKeys.ingredientsTable,
-          decoration: BoxDecoration(
-            color: colors.surfaceContainerLowest,
-            border: Border.all(
-              color: AppInventoryEditorialSurfaces.ghostBorder(
-                colors,
-              ).withValues(alpha: 0.8),
-            ),
-          ),
-          child: Table(
-            columnWidths: const <int, TableColumnWidth>{
-              0: FlexColumnWidth(2.6),
-              1: FlexColumnWidth(1.2),
-              2: FlexColumnWidth(0.9),
-            },
-            children: [
-              _ingredientHeaderRow(context, l10n),
-              for (
-                var index = 0;
-                index < entry.bundleComponents.length;
-                index += 1
-              )
-                _ingredientRow(
-                  context,
-                  component: entry.bundleComponents[index],
-                  index: index,
-                  kcalUnit: l10n.caloriesUnitKcal,
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  TableRow _ingredientHeaderRow(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
-    final colors = Theme.of(context).colorScheme;
-    final textStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
-      color: colors.onSurfaceVariant,
-      fontWeight: FontWeight.w800,
-      letterSpacing: 0.3,
-    );
-
-    return TableRow(
-      decoration: BoxDecoration(color: colors.surfaceContainerLow),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _IngredientTableCell(
-          child: Text(l10n.preparedMealIngredientsTitle, style: textStyle),
-        ),
-        _IngredientTableCell(
-          child: Text(l10n.inventorySortQuantity, style: textStyle),
-        ),
-        _IngredientTableCell(
-          alignment: Alignment.centerRight,
-          child: Text(
-            l10n.inventoryNutritionCaloriesShortLabel,
-            style: textStyle,
+        Text(
+          l10n.preparedMealIngredientsTitle.toUpperCase(),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: colors.onSurfaceVariant,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.2,
           ),
         ),
-      ],
-    );
-  }
-
-  TableRow _ingredientRow(
-    BuildContext context, {
-    required CalorieEntryBundleComponent component,
-    required int index,
-    required String kcalUnit,
-  }) {
-    final colors = Theme.of(context).colorScheme;
-    final brand = component.brand?.trim();
-
-    return TableRow(
-      key: ValueKey('ingredient_row_$index'),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: AppInventoryEditorialSurfaces.ghostBorder(colors),
-          ),
-        ),
-      ),
-      children: [
-        _IngredientTableCell(
-          child: Column(
-            key: CalorieEntryDetailKeys.ingredientNameCell(index),
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                component.name,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+        const SizedBox(height: AppSpacing.sm),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          child: DecoratedBox(
+            key: CalorieEntryDetailKeys.ingredientsTable,
+            decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
+              colors,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              color: Color.alphaBlend(
+                colors.surfaceContainerLowest.withValues(alpha: 0.96),
+                colors.surface,
               ),
-              if (brand != null && brand.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.xxs),
-                  child: Text(
-                    brand,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: colors.onSurfaceVariant,
+              blurRadius: 16,
+              shadowOffset: const Offset(0, 8),
+            ),
+            child: Column(
+              children: [
+                for (
+                  var index = 0;
+                  index < entry.bundleComponents.length;
+                  index++
+                ) ...[
+                  if (index > 0)
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: AppInventoryEditorialSurfaces.ghostBorder(
+                        colors,
+                      ).withValues(alpha: 0.9),
                     ),
+                  _IngredientRow(
+                    component: entry.bundleComponents[index],
+                    index: index,
+                    accentColor: _ingredientAccentColor(index),
                   ),
-                ),
-            ],
-          ),
-        ),
-        _IngredientTableCell(
-          child: Text(
-            component.amountLabel,
-            key: CalorieEntryDetailKeys.ingredientAmountCell(index),
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ),
-        _IngredientTableCell(
-          alignment: Alignment.centerRight,
-          child: Text(
-            '${component.totalKcal.toStringAsFixed(0)} $kcalUnit',
-            key: CalorieEntryDetailKeys.ingredientKcalCell(index),
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w700,
+                ],
+              ],
             ),
           ),
         ),
@@ -1130,49 +1060,114 @@ class _IngredientsTableCard extends StatelessWidget {
   }
 }
 
-class _IngredientTableCell extends StatelessWidget {
-  const _IngredientTableCell({
-    required this.child,
-    this.alignment = Alignment.centerLeft,
+class _IngredientRow extends StatelessWidget {
+  const _IngredientRow({
+    required this.component,
+    required this.index,
+    required this.accentColor,
   });
 
-  final Widget child;
-  final Alignment alignment;
+  final CalorieEntryBundleComponent component;
+  final int index;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final brand = component.brand?.trim();
+
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.lg,
       ),
-      child: Align(alignment: alignment, child: child),
+      child: Row(
+        children: [
+          Icon(Icons.circle, size: 10, color: accentColor),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  component.name,
+                  key: CalorieEntryDetailKeys.ingredientNameCell(index),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (brand != null && brand.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xxs),
+                    child: Text(
+                      brand,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            component.amountLabel,
+            key: CalorieEntryDetailKeys.ingredientAmountCell(index),
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: colors.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-List<NutritionMetric> _buildNutritionMetrics(
+String? _entryEyebrow(AppLocalizations l10n, CalorieEntry entry) {
+  final brand = entry.brand?.trim();
+  if (brand != null && brand.isNotEmpty) {
+    return brand;
+  }
+  if (entry.isBundle) {
+    return l10n.preparedMealSectionTitle;
+  }
+  return null;
+}
+
+String _loggedDayLabel(
+  BuildContext context,
   AppLocalizations l10n,
-  CalorieEntry entry,
+  MaterialLocalizations material,
+  DateTime loggedAt,
 ) {
-  return [
-    NutritionMetric(
-      label: l10n.inventoryNutritionCaloriesShortLabel,
-      value: entry.totalKcal.round().toString(),
-    ),
-    NutritionMetric(
-      label: l10n.inventoryNutritionCarbsShortLabel,
-      value: '${formatNutritionMetricValue(entry.totalCarbs)}g',
-    ),
-    NutritionMetric(
-      label: l10n.caloriesProteinLabel,
-      value: '${formatNutritionMetricValue(entry.totalProtein)}g',
-    ),
-    NutritionMetric(
-      label: l10n.caloriesFatLabel,
-      value: '${formatNutritionMetricValue(entry.totalFat)}g',
-    ),
+  if (DateUtils.isSameDay(loggedAt, DateTime.now())) {
+    return l10n.caloriesTodayAction;
+  }
+  return material.formatShortDate(loggedAt);
+}
+
+String _loggedAtMetaLabel(
+  BuildContext context,
+  AppLocalizations l10n,
+  MaterialLocalizations material,
+  DateTime loggedAt,
+) {
+  final timeLabel = material.formatTimeOfDay(
+    TimeOfDay.fromDateTime(loggedAt),
+    alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context),
+  );
+  return '${_loggedDayLabel(context, l10n, material, loggedAt)}, $timeLabel';
+}
+
+Color _ingredientAccentColor(int index) {
+  const palette = <Color>[
+    Color(0xFF0F7A52),
+    Color(0xFF67DEA8),
+    Color(0xFF8AF5C5),
+    Color(0xFFFFA271),
   ];
+  return palette[index % palette.length];
 }
 
 String _consumedAmountLabel(AppLocalizations l10n, CalorieEntry entry) {
@@ -1183,6 +1178,11 @@ String _consumedAmountLabel(AppLocalizations l10n, CalorieEntry entry) {
     );
   }
 
-  return '${formatNutritionMetricValue(entry.consumedAmount)} '
+  return '${_formatNutritionMetricValue(entry.consumedAmount)} '
       '${entry.consumedUnit.localizedName(l10n)}';
+}
+
+String _formatNutritionMetricValue(double value) {
+  final hasFraction = value % 1 != 0;
+  return hasFraction ? value.toStringAsFixed(1) : value.toStringAsFixed(0);
 }

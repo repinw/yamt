@@ -121,11 +121,6 @@ abstract final class CaloriesPageKeys {
     return Key('calories_entry_tile_$entryId');
   }
 
-  /// Delete restore checkbox.
-  static Key deleteRestoreCheckbox(String entryId) {
-    return Key('calories_delete_restore_$entryId');
-  }
-
   /// Entry image.
   static Key entryImage(String entryId) {
     return Key('calories_entry_image_$entryId');

@@ -687,7 +687,7 @@ void main() {
     expect(container.read(appRouterProvider), same(stubRouter));
   });
 
-  testWidgets('calorie entry routes open full-screen editor pages', (
+  testWidgets('calorie entry routes open full-screen entry pages', (
     tester,
   ) async {
     final container = _createContainerWithAuth(
@@ -709,10 +709,10 @@ void main() {
     expect(find.text('Add calorie entry'), findsOneWidget);
     expect(find.byKey(CalorieEntryEditorKeys.nameField), findsOneWidget);
 
-    router.go(AppRoutes.homeCaloriesEntryEditPath('missing-entry'));
+    router.go(AppRoutes.homeCaloriesEntryDetailsPath('missing-entry'));
     await _pumpRouterTransition(tester);
     await _pumpRouterTransition(tester);
-    expect(find.text('Edit calorie entry'), findsOneWidget);
+    expect(find.text('Calorie entry details'), findsOneWidget);
     expect(find.text('Entry not found.'), findsOneWidget);
   });
 

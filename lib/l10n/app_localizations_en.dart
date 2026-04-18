@@ -1749,6 +1749,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesEditEntryTitle => 'Edit calorie entry';
 
   @override
+  String get caloriesEntryDetailsTitle => 'Calorie entry details';
+
+  @override
   String get caloriesEntryNotFound => 'Entry not found.';
 
   @override

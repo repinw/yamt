@@ -372,6 +372,7 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.caloriesDeleteFailed,
     l10n.caloriesAddEntryTitle,
     l10n.caloriesEditEntryTitle,
+    l10n.caloriesEntryDetailsTitle,
     l10n.caloriesEntryNotFound,
     l10n.caloriesEntryNameLabel,
     l10n.caloriesEntryBrandLabel,

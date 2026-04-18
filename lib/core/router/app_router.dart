@@ -149,7 +149,7 @@ Raw<GoRouter> appRouter(Ref ref) {
         },
       ),
       GoRoute(
-        path: AppRoutes.homeCaloriesEntryEdit,
+        path: AppRoutes.homeCaloriesEntryDetails,
         builder: (context, state) {
           final entryId = state.pathParameters['entryId'];
           return CalorieEntryEditorPage(entryId: entryId);

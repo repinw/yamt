@@ -201,8 +201,6 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
                   },
                 );
               },
-              onDeleteEntry: (entry) =>
-                  _deleteEntry(context: context, ref: ref, entry: entry),
             ),
           ),
         ),
@@ -258,136 +256,6 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
       error: nextError.error,
       stackTrace: nextError.stackTrace,
     );
-  }
-
-  Future<void> _deleteEntry({
-    required BuildContext context,
-    required WidgetRef ref,
-    required CalorieEntry entry,
-  }) async {
-    final l10n = AppLocalizations.of(context)!;
-    if (entry.canReturnPreparedMealToInventory) {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text(l10n.caloriesReturnPreparedMealDialogTitle),
-            content: Text(
-              l10n.caloriesReturnPreparedMealDialogMessage(entry.name),
-            ),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => context.pop(false),
-                child: Text(l10n.inventoryReceiptReviewCancelAction),
-              ),
-              TextButton(
-                onPressed: () => context.pop(true),
-                child: Text(l10n.caloriesReturnPreparedMealConfirmAction),
-              ),
-            ],
-          );
-        },
-      );
-
-      if (confirmed != true) {
-        return;
-      }
-
-      final result = await ref
-          .read(calorieEntryDeleteFlowProvider)
-          .deleteEntry(entry: entry, restoreToInventory: true);
-      if (!context.mounted || result.isSuccess) {
-        return;
-      }
-
-      final messenger = ScaffoldMessenger.of(context);
-      messenger.hideCurrentSnackBar();
-      late final String message;
-      if (result.failureReason ==
-          CalorieEntryDeleteFailureReason.restoreFailed) {
-        message = l10n.caloriesReturnPreparedMealFailed;
-      } else {
-        message = l10n.caloriesDeleteFailed;
-      }
-      messenger.showSnackBar(SnackBar(content: Text(message)));
-      return;
-    }
-
-    final decision = await showDialog<_CalorieEntryDeleteDialogResult>(
-      context: context,
-      builder: (context) {
-        var restoreToInventory = false;
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text(l10n.caloriesDeleteEntryDialogTitle),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(l10n.caloriesDeleteEntryDialogMessage(entry.name)),
-                  if (entry.canRestoreToInventory) ...[
-                    const SizedBox(height: AppSpacing.md),
-                    CheckboxListTile(
-                      key: CaloriesPageKeys.deleteRestoreCheckbox(entry.id),
-                      value: restoreToInventory,
-                      contentPadding: EdgeInsets.zero,
-                      controlAffinity: ListTileControlAffinity.leading,
-                      onChanged: (value) {
-                        setState(() {
-                          restoreToInventory = value ?? false;
-                        });
-                      },
-                      title: Text(l10n.caloriesDeleteRestoreInventoryQuestion),
-                    ),
-                  ],
-                ],
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => context.pop(),
-                  child: Text(l10n.inventoryReceiptReviewCancelAction),
-                ),
-                TextButton(
-                  onPressed: () {
-                    context.pop(
-                      _CalorieEntryDeleteDialogResult(
-                        restoreToInventory: restoreToInventory,
-                      ),
-                    );
-                  },
-                  child: Text(l10n.caloriesDeleteEntryConfirmAction),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-
-    if (decision == null) {
-      return;
-    }
-
-    final result = await ref
-        .read(calorieEntryDeleteFlowProvider)
-        .deleteEntry(
-          entry: entry,
-          restoreToInventory: decision.restoreToInventory,
-        );
-    if (!context.mounted || result.isSuccess) {
-      return;
-    }
-
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    final message = switch (result.failureReason) {
-      CalorieEntryDeleteFailureReason.restoreFailed =>
-        l10n.caloriesDeleteRestoreFailed,
-      CalorieEntryDeleteFailureReason.deleteFailed ||
-      null => l10n.caloriesDeleteFailed,
-    };
-    messenger.showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _maybeOpenWeeklyCheckInDialog(
@@ -495,10 +363,4 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
       context,
     ).showSnackBar(SnackBar(content: Text(l10n.caloriesGoalSaveFailed)));
   }
-}
-
-class _CalorieEntryDeleteDialogResult {
-  const _CalorieEntryDeleteDialogResult({required this.restoreToInventory});
-
-  final bool restoreToInventory;
 }

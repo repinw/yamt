@@ -968,6 +968,7 @@
   "caloriesDeleteFailed": "Could not delete entry.",
   "caloriesAddEntryTitle": "Add calorie entry",
   "caloriesEditEntryTitle": "Edit calorie entry",
+  "caloriesEntryDetailsTitle": "Calorie entry details",
   "caloriesEntryNotFound": "Entry not found.",
   "caloriesEntryNameLabel": "Name",
   "caloriesEntryBrandLabel": "Brand (optional)",

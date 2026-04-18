@@ -3419,6 +3419,12 @@ abstract class AppLocalizations {
   /// **'Edit calorie entry'**
   String get caloriesEditEntryTitle;
 
+  /// No description provided for @caloriesEntryDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Calorie entry details'**
+  String get caloriesEntryDetailsTitle;
+
   /// No description provided for @caloriesEntryNotFound.
   ///
   /// In en, this message translates to:
