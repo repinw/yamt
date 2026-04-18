@@ -58,6 +58,20 @@ class HealthWorkoutSession {
       totalSteps: totalSteps ?? this.totalSteps,
     );
   }
+
+  @override
+  String toString() {
+    return 'HealthWorkoutSession('
+        'id: $id, '
+        'start: $start, '
+        'endExclusive: $endExclusive, '
+        'durationMinutes: $durationMinutes, '
+        'activityLabel: $activityLabel, '
+        'sourceName: $sourceName, '
+        'totalCalories: $totalCalories, '
+        'totalSteps: $totalSteps'
+        ')';
+  }
 }
 
 /// Defines health active energy sample.
@@ -77,6 +91,15 @@ class HealthActiveEnergySample {
 
   /// The numeric value.
   final num numericValue;
+
+  @override
+  String toString() {
+    return 'HealthActiveEnergySample('
+        'startAt: $startAt, '
+        'endAt: $endAt, '
+        'numericValue: $numericValue'
+        ')';
+  }
 }
 
 /// Merge workout calories.

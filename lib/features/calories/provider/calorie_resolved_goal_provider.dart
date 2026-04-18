@@ -102,7 +102,11 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
     );
   }
 
-  final dayActivity = await _loadDayActivityData(ref, normalizedDay);
+  final dayActivity = await _loadDayActivityData(
+    ref,
+    normalizedDay,
+    userHeightCm: settings.calculatorProfile?.heightCm,
+  );
   final learnedEntry = settings.learnedTdeeEntryForDay(normalizedDay);
   if (learnedEntry == null) {
     final activityDeltaKcal =
@@ -201,8 +205,9 @@ class _ResolvedDayActivityData {
 
 Future<_ResolvedDayActivityData> _loadDayActivityData(
   Ref ref,
-  DateTime day,
-) async {
+  DateTime day, {
+  double? userHeightCm,
+}) async {
   final status = await ref.watch(healthConnectionControllerProvider.future);
   if (status.accessState != HealthDataAccessState.ready) {
     return const _ResolvedDayActivityData(
@@ -212,7 +217,7 @@ Future<_ResolvedDayActivityData> _loadDayActivityData(
   }
   final dayData = await ref
       .watch(diaryHealthServiceProvider)
-      .loadDayData(day: day);
+      .loadDayData(day: day, userHeightCm: userHeightCm);
   final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
   final totalWorkoutCalories = summary.workouts.fold<int>(
     0,

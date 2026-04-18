@@ -10,7 +10,10 @@ class _UnsupportedDiaryHealthService implements DiaryHealthService {
   const _UnsupportedDiaryHealthService();
 
   @override
-  Future<DiaryHealthDayData> loadDayData({required DateTime day}) async {
+  Future<DiaryHealthDayData> loadDayData({
+    required DateTime day,
+    double? userHeightCm,
+  }) async {
     return const DiaryHealthDayData(totalSteps: 0, workouts: <Never>[]);
   }
 }

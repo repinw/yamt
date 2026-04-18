@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_health_trend_snapshot.dart';
 import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_health_trends_window_controller.dart';
 import 'package:yamt/features/calories/provider/'
@@ -32,6 +33,12 @@ Future<CalorieHealthTrendSnapshot> calorieHealthTrendSnapshot(Ref ref) async {
       calorieVisibleWindowControllerProvider,
     );
   }
+  final userHeightCm = ref
+      .read(calorieGoalControllerProvider)
+      .asData
+      ?.value
+      .calculatorProfile
+      ?.heightCm;
   final intakeSnapshotFuture = ref.watch(
     calorieWeekConsumptionSnapshotForWindowProvider(
       resolvedVisibleWindowEnd,
@@ -59,7 +66,12 @@ Future<CalorieHealthTrendSnapshot> calorieHealthTrendSnapshot(Ref ref) async {
 
   if (status.accessState == HealthDataAccessState.ready && days.isNotEmpty) {
     final dayDataList = await Future.wait(
-      days.map((day) => diaryHealthService.loadDayData(day: day)),
+      days.map(
+        (day) => diaryHealthService.loadDayData(
+          day: day,
+          userHeightCm: userHeightCm,
+        ),
+      ),
     );
     burnedByDay = {
       for (var index = 0; index < days.length; index += 1)
