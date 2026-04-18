@@ -23,7 +23,7 @@ GlobalFoodReceiptAliasStore _resolveStore() {
     return FirestoreGlobalFoodReceiptAliasStore(
       firestore: FirebaseFirestore.instance,
     );
-  } catch (error, stackTrace) {
+  } on Object catch (error, stackTrace) {
     log(
       'Falling back to unavailable global food receipt alias store.',
       name: 'GlobalFoodReceiptAliasRepositoryProvider',

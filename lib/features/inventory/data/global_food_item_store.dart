@@ -163,7 +163,7 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
         documentsById: documentsById,
       );
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to replace global food items.',
         name: _storeLogName,
@@ -181,7 +181,7 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
     try {
       await _upsertDocuments(documentsById);
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to upsert global food items.',
         name: _storeLogName,

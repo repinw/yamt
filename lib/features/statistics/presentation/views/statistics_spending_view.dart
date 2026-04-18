@@ -20,7 +20,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 class StatisticsSpendingView extends StatelessWidget {
   /// The statistics spending view.
   const StatisticsSpendingView({
-    required this.timeframe, required this.inventoryAsync, required this.onRetry, super.key,
+    required this.timeframe,
+    required this.inventoryAsync,
+    required this.onRetry,
+    super.key,
   });
 
   /// The timeframe.

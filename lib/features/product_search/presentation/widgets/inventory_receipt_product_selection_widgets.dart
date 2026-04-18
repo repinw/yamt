@@ -8,7 +8,8 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 class InventoryReceiptNutritionChips extends StatelessWidget {
   /// The inventory receipt nutrition chips.
   const InventoryReceiptNutritionChips({
-    required this.nutrition, super.key,
+    required this.nutrition,
+    super.key,
     this.leadingLabel,
   });
 
@@ -101,7 +102,8 @@ class _NutritionChip extends StatelessWidget {
 class InventoryReceiptSelectionThumbnail extends StatelessWidget {
   /// The inventory receipt selection thumbnail.
   const InventoryReceiptSelectionThumbnail({
-    required this.imageUrl, super.key,
+    required this.imageUrl,
+    super.key,
     this.icon = Icons.inventory_2_outlined,
     this.backgroundColor,
     this.foregroundColor,

@@ -113,7 +113,7 @@ class InventoryItemEatFlow {
           preselectedLoggedAt: request.loggedAt,
         ),
       );
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       developer.log(
         'Eat flow failed unexpectedly.',
         name: 'InventoryItemEatFlow',

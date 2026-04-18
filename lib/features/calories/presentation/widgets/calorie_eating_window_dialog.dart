@@ -127,8 +127,7 @@ Future<void> showCalorieEatingWindowDialog({
     return;
   }
 
-  final messenger = ScaffoldMessenger.of(context);
-  messenger.hideCurrentSnackBar();
+  final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
 
   final saved = await onSaveEatingWindow(
     selectedStartMinuteOfDay,

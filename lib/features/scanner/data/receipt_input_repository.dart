@@ -95,7 +95,7 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
       }
 
       return ReceiptInputResult.selected(selection: selection);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Receipt input repository pick failed (code: $failureCode)',
         name: 'DeviceReceiptInputRepository',
@@ -117,7 +117,7 @@ class DeviceReceiptInputRepository implements ReceiptInputRepository {
       }
 
       return ReceiptInputBatchResult.selected(selections: selections);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Receipt input batch pick failed (code: $failureCode)',
         name: 'DeviceReceiptInputRepository',

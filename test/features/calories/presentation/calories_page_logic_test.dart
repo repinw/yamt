@@ -48,20 +48,36 @@ void main() {
     await initializeDateFormatting('en');
   });
 
-  test('resolveDisplayedWeekOverview keeps previous value during refresh', () {
+  test(
+    'resolveDisplayedWeekOverview keeps previous value during refresh',
+    () async {
     final previous = _overview(
       dayOffset: 0,
       totalConsumedKcal: 1600,
       totalGoalKcal: 2200,
       remainingKcal: 600,
     );
-    final loading = const AsyncLoading<CalorieWeekOverview>()
-        // ignore: invalid_use_of_internal_member, exercising Riverpod refresh
-        // UI fallback behavior with an AsyncValue that keeps the previous
-        // payload.
-        .copyWithPrevious(
-          AsyncData<CalorieWeekOverview>(previous),
-        );
+    var currentFuture = Future<CalorieWeekOverview>.value(previous);
+    final provider = FutureProvider<CalorieWeekOverview>((ref) {
+      return currentFuture;
+    });
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    final subscription = container.listen(
+      provider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+    await container.read(provider.future);
+
+    currentFuture = Future<CalorieWeekOverview>.delayed(
+      const Duration(milliseconds: 1),
+      () => previous,
+    );
+    container.refresh(provider);
+    final loading = subscription.read();
 
     final visibleWindowEnd = DateTime(2026, 3, 27);
 

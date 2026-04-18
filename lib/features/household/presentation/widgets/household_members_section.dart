@@ -154,7 +154,7 @@ class _MemberRow extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.householdRemoveMemberSuccess)),
       );
-    } catch (error) {
+    } on Object catch (error) {
       if (!context.mounted) {
         return;
       }

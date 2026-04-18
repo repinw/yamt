@@ -207,7 +207,7 @@ class _InventoryBarcodeScannerViewState
           .readCandidates(
             barcode: barcode,
           );
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Learned barcode candidate lookup failed for $barcode.',
         name: _inventoryBarcodeScannerLogName,
@@ -225,7 +225,7 @@ class _InventoryBarcodeScannerViewState
       return await ref
           .read(offProductSearchRepositoryProvider)
           .lookupCandidatesByBarcode(barcode: barcode);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'OFF barcode candidate lookup failed for $barcode.',
         name: _inventoryBarcodeScannerLogName,
@@ -290,7 +290,7 @@ class _InventoryBarcodeScannerViewState
   Future<void> _stopScanner() async {
     try {
       await _scannerController.stop();
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Stopping inventory barcode scanner failed.',
         name: _inventoryBarcodeScannerLogName,
@@ -303,7 +303,7 @@ class _InventoryBarcodeScannerViewState
   Future<void> _startScanner() async {
     try {
       await _scannerController.start();
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Starting inventory barcode scanner failed.',
         name: _inventoryBarcodeScannerLogName,

@@ -408,7 +408,8 @@ void main() {
   );
 
   test(
-    'overwriteExistingGoogleAccountWithGuest throws when secondary user missing',
+    'overwriteExistingGoogleAccountWithGuest throws when secondary '
+    'user missing',
     () async {
       final auth = _MockFirebaseAuth();
       final guestUser = _MockUser();
@@ -420,7 +421,9 @@ void main() {
 
       when(() => auth.currentUser).thenReturn(guestUser);
       when(() => guestUser.isAnonymous).thenReturn(true);
-      when(() => secondaryClient.createApp(any())).thenAnswer((_) async => app);
+      when(
+        () => secondaryClient.createApp(any()),
+      ).thenAnswer((_) async => app);
       when(() => secondaryClient.authForApp(app)).thenReturn(secondaryAuth);
       when(
         () => secondaryAuth.signInWithCredential(credential),
@@ -454,7 +457,8 @@ void main() {
   );
 
   test(
-    'overwriteExistingGoogleAccountWithGuest stores AsyncError on sign-in failure',
+    'overwriteExistingGoogleAccountWithGuest stores AsyncError on '
+    'sign-in failure',
     () async {
       final auth = _MockFirebaseAuth();
       final guestUser = _MockUser();
@@ -466,7 +470,9 @@ void main() {
 
       when(() => auth.currentUser).thenReturn(guestUser);
       when(() => guestUser.isAnonymous).thenReturn(true);
-      when(() => secondaryClient.createApp(any())).thenAnswer((_) async => app);
+      when(
+        () => secondaryClient.createApp(any()),
+      ).thenAnswer((_) async => app);
       when(() => secondaryClient.authForApp(app)).thenReturn(secondaryAuth);
       when(
         () => secondaryAuth.signInWithCredential(credential),
@@ -524,7 +530,8 @@ void main() {
   );
 
   test(
-    'deleteGuestAndSignInWithGoogleCredential throws when guest session missing',
+    'deleteGuestAndSignInWithGoogleCredential throws when guest '
+    'session missing',
     () async {
       final auth = _MockFirebaseAuth();
       final credential = _MockAuthCredential();

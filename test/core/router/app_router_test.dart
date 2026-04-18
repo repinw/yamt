@@ -721,12 +721,11 @@ void main() {
       );
       await _pumpRouterTransition(tester);
 
-      final router = container.read(appRouterProvider);
-
-      router.go(
-        AppRoutes.homeCaloriesEntryCreate,
-        extra: _inventoryBackedCreateArgs,
-      );
+      final router = container.read(appRouterProvider)
+        ..go(
+          AppRoutes.homeCaloriesEntryCreate,
+          extra: _inventoryBackedCreateArgs,
+        );
       await _pumpRouterTransition(tester);
       await _pumpRouterTransition(tester);
       expect(find.text('Add calorie entry'), findsOneWidget);

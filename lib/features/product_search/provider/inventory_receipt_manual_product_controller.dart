@@ -993,7 +993,7 @@ class InventoryReceiptManualProductController
       }
 
       state = state.copyWith(isSearching: false, searchResults: results);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Manual product search failed for query "$query".',
         name: _manualProductControllerLogName,

@@ -182,7 +182,7 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
           ),
         ),
       };
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Receipt flow analysis failed unexpectedly',
         name: 'ReceiptCaptureFlowController',
@@ -234,7 +234,7 @@ class ReceiptCaptureFlowController extends _$ReceiptCaptureFlowController {
         unawaited(_enqueueBatchBarcodeLookup(result.itemsNeedingEnrichment));
       }
       return result.saved;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Receipt flow storage failed unexpectedly',
         name: 'ReceiptCaptureFlowController',

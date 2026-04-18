@@ -68,7 +68,7 @@ class FirestorePreparedMealStore implements PreparedMealStore {
         documentsById: documentsById,
       );
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to replace prepared meals for user $userId.',
         name: _storeLogName,

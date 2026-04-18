@@ -87,7 +87,7 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
     try {
       final snapshot = await _document(userId).get();
       return _decodeSnapshot(snapshot);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read calorie settings for user $userId',
         name: _repositoryLogName,
@@ -109,7 +109,7 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
       final normalizedSettings = settings.copyWith(updatedAt: DateTime.now());
       await _document(userId).set(normalizedSettings.toJson());
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to save calorie settings for user $userId',
         name: _repositoryLogName,
@@ -172,7 +172,7 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
     final normalizedData = _normalizeFirestoreJson(rawData);
     try {
       return CalorieGoalSettings.fromJson(normalizedData);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Malformed calorie settings document ${snapshot.id}',
         name: _repositoryLogName,
@@ -238,7 +238,7 @@ class _CurrentCalorieSettingsUserSession implements CalorieSettingsUserSession {
 FirebaseFirestore? _resolveFirestore() {
   try {
     return FirebaseFirestore.instance;
-  } catch (error, stackTrace) {
+  } on Object catch (error, stackTrace) {
     log(
       'Falling back to unavailable calorie settings repository.',
       name: _repositoryLogName,

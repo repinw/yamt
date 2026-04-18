@@ -6,7 +6,9 @@ import 'package:yamt/l10n/app_localizations.dart';
 class ReceiptItemEditorActionRow extends StatelessWidget {
   /// The receipt item editor action row.
   const ReceiptItemEditorActionRow({
-    required this.onCancelTap, required this.onApplyTap, super.key,
+    required this.onCancelTap,
+    required this.onApplyTap,
+    super.key,
   });
 
   /// The on cancel tap.

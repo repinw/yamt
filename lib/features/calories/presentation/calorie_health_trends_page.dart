@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_health_trend_chart.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_health_weight_list.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'diary_health_card_parts.dart';
-import 'package:yamt/features/calories/provider/calorie_health_trend_provider.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_health_trend_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines calorie health trends page.

@@ -83,7 +83,7 @@ class DeviceReceiptAnalysisRepository implements ReceiptAnalysisRepository {
       );
     } on _ReceiptParseException {
       return _ReceiptAnalysisRepositoryFailures.parse;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       _logReceiptAnalysisRepositoryError(
         message: 'Receipt AI request failed',
         error: error,
@@ -96,7 +96,7 @@ class DeviceReceiptAnalysisRepository implements ReceiptAnalysisRepository {
   ReceiptAnalysisExtraction _parse(String normalizedResponse) {
     try {
       return _parser.parse(normalizedResponse);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       _logReceiptAnalysisRepositoryError(
         message: 'Receipt analysis parse failed',
         error: error,

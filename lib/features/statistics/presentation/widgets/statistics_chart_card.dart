@@ -7,7 +7,10 @@ import 'package:yamt/features/statistics/presentation/widgets/'
 class StatisticsChartCard extends StatelessWidget {
   /// The statistics chart card.
   const StatisticsChartCard({
-    required this.title, required this.subtitle, required this.child, super.key,
+    required this.title,
+    required this.subtitle,
+    required this.child,
+    super.key,
     this.legend,
   });
 

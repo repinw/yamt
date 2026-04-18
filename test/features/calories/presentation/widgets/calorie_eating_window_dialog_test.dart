@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -21,11 +23,13 @@ Widget _buildHarness({
             return Center(
               child: FilledButton(
                 onPressed: () {
-                  showCalorieEatingWindowDialog(
-                    context: context,
-                    initialStartMinuteOfDay: 6 * 60,
-                    initialEndMinuteOfDay: 22 * 60,
-                    onSaveEatingWindow: onSaveEatingWindow,
+                  unawaited(
+                    showCalorieEatingWindowDialog(
+                      context: context,
+                      initialStartMinuteOfDay: 6 * 60,
+                      initialEndMinuteOfDay: 22 * 60,
+                      onSaveEatingWindow: onSaveEatingWindow,
+                    ),
                   );
                 },
                 child: const Text('Open'),
@@ -69,7 +73,10 @@ Future<void> _pickTime(
   await tester.pumpAndSettle();
 
   await tester.tap(
-    find.descendant(of: find.byType(TimePickerDialog), matching: find.text('OK')),
+    find.descendant(
+      of: find.byType(TimePickerDialog),
+      matching: find.text('OK'),
+    ),
   );
   await tester.pumpAndSettle();
 }
@@ -119,29 +126,30 @@ void main() {
     expect(savedEndMinuteOfDay, 22 * 60);
   });
 
-  testWidgets('change start action opens time picker and updates displayed time', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _buildHarness(onSaveEatingWindow: (_, _) async => true),
-    );
+  testWidgets(
+    'change start action opens time picker and updates displayed time',
+    (tester) async {
+      await tester.pumpWidget(
+        _buildHarness(onSaveEatingWindow: (_, _) async => true),
+      );
 
-    await _openDialog(tester);
+      await _openDialog(tester);
 
-    expect(find.text(_formattedTime(tester, 6 * 60)), findsOneWidget);
-    expect(find.text(_formattedTime(tester, 22 * 60)), findsOneWidget);
+      expect(find.text(_formattedTime(tester, 6 * 60)), findsOneWidget);
+      expect(find.text(_formattedTime(tester, 22 * 60)), findsOneWidget);
 
-    await _pickTime(
-      tester,
-      changeButtonKey: CalorieEatingWindowDialogKeys.changeStartButton,
-      hour: '08',
-      minute: '30',
-    );
+      await _pickTime(
+        tester,
+        changeButtonKey: CalorieEatingWindowDialogKeys.changeStartButton,
+        hour: '08',
+        minute: '30',
+      );
 
-    expect(find.byType(TimePickerDialog), findsNothing);
-    expect(find.text(_formattedTime(tester, (8 * 60) + 30)), findsOneWidget);
-    expect(find.text(_formattedTime(tester, 22 * 60)), findsOneWidget);
-  });
+      expect(find.byType(TimePickerDialog), findsNothing);
+      expect(find.text(_formattedTime(tester, (8 * 60) + 30)), findsOneWidget);
+      expect(find.text(_formattedTime(tester, 22 * 60)), findsOneWidget);
+    },
+  );
 
   testWidgets('change end action opens time picker', (
     tester,

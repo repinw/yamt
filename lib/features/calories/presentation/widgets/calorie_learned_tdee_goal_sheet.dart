@@ -269,11 +269,11 @@ class _CalorieLearnedTdeeGoalSheetState
       return;
     }
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(content: Text(l10n.caloriesLearnedTdeeSaveFailed)),
-    );
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(l10n.caloriesLearnedTdeeSaveFailed)),
+      );
   }
 
   Future<void> _openFullReset() async {
@@ -319,10 +319,11 @@ class _CalorieLearnedTdeeGoalSheetState
       time: pickedTime,
     );
     if (pickedGoalStart.isAfter(now)) {
-      messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.caloriesCalculatorGoalStartFutureError)),
-      );
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(l10n.caloriesCalculatorGoalStartFutureError)),
+        );
       return;
     }
 

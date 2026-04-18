@@ -48,7 +48,7 @@ class FirestoreInventoryDiscardEventRepository
         userId,
       ).orderBy('discarded_at', descending: true).get();
       return _decodeSnapshot(snapshot);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read discard events for user $userId',
         name: _discardEventRepositoryLogName,
@@ -69,7 +69,7 @@ class FirestoreInventoryDiscardEventRepository
     try {
       await _collection(userId).doc(event.id).set(event.toJson());
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to save discard event ${event.id} for user $userId',
         name: _discardEventRepositoryLogName,
@@ -91,7 +91,7 @@ class FirestoreInventoryDiscardEventRepository
     try {
       await _collection(userId).doc(normalizedEventId).delete();
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to delete discard event $normalizedEventId for user $userId',
         name: _discardEventRepositoryLogName,
@@ -127,7 +127,7 @@ class FirestoreInventoryDiscardEventRepository
         final normalizedData = _normalizeFirestoreJson(rawData);
         normalizedData['id'] = normalizedData['id'] ?? document.id;
         events.add(InventoryDiscardEvent.fromJson(normalizedData));
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         log(
           'Skipping malformed discard event ${document.id}',
           name: _discardEventRepositoryLogName,

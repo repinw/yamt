@@ -227,7 +227,7 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
       }
 
       return _responseParser.parse(response.body);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'OFF $action request failed for $uri.',
         name: _offProductSearchLogName,

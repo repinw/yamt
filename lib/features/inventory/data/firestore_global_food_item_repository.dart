@@ -22,7 +22,7 @@ class FirestoreGlobalFoodItemRepository implements GlobalFoodItemRepository {
       await for (final documents in _store.watchAll()) {
         yield _decodeDocuments(documents);
       }
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to watch global food items.',
         name: _repositoryLogName,
@@ -38,7 +38,7 @@ class FirestoreGlobalFoodItemRepository implements GlobalFoodItemRepository {
     try {
       final documents = await _store.readAll();
       return _decodeDocuments(documents);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read global food items.',
         name: _repositoryLogName,
@@ -78,7 +78,7 @@ class FirestoreGlobalFoodItemRepository implements GlobalFoodItemRepository {
         limit: limit,
       );
       return _decodeDocuments(documents);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to search global food items.',
         name: _repositoryLogName,
@@ -122,7 +122,7 @@ class FirestoreGlobalFoodItemRepository implements GlobalFoodItemRepository {
       }
       try {
         items.add(_normalizeItem(GlobalFoodItem.fromJson(json)));
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         log(
           'Skipping corrupted global food item at index $index.',
           name: _repositoryLogName,

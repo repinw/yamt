@@ -9,7 +9,9 @@ import 'package:yamt/core/widgets/app_cached_network_image.dart';
 class PreparedMealCover extends StatelessWidget {
   /// The prepared meal cover.
   const PreparedMealCover({
-    required this.label, required this.imageBytes, super.key,
+    required this.label,
+    required this.imageBytes,
+    super.key,
     this.imageUrl,
     this.size = 64,
     this.borderRadius,

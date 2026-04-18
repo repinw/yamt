@@ -309,7 +309,6 @@ enum CalorieLookupStatus {
 
 /// Defines calorie lookup outcome.
 class CalorieLookupOutcome {
-
   /// Creates a [CalorieLookupOutcome] for found single.
   const CalorieLookupOutcome.foundSingle(CalorieProductProfile product)
     : this._(status: CalorieLookupStatus.foundSingle, product: product);
@@ -379,7 +378,6 @@ enum CalorieNutritionOcrStatus {
 
 /// Defines calorie nutrition ocr result.
 class CalorieNutritionOcrResult {
-
   /// Creates a [CalorieNutritionOcrResult] for succeeded.
   const CalorieNutritionOcrResult.succeeded({
     CalorieProductProfile? profile,

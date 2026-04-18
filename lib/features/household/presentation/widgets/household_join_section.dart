@@ -100,7 +100,7 @@ class _HouseholdJoinSectionState extends ConsumerState<HouseholdJoinSection> {
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.householdJoinSuccess)),
       );
-    } catch (error) {
+    } on Object catch (error) {
       if (!mounted) {
         return;
       }

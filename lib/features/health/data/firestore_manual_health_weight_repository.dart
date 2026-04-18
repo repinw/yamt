@@ -40,7 +40,7 @@ class FirestoreManualHealthWeightRepository
               .toList(growable: false)
             ..sort((left, right) => left.day.compareTo(right.day));
       return List<ManualHealthWeightEntry>.unmodifiable(entries);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read fallback weight entries.',
         name: _logName,
@@ -64,7 +64,7 @@ class FirestoreManualHealthWeightRepository
         'updatedAt': FieldValue.serverTimestamp(),
       });
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to save fallback weight entry.',
         name: _logName,
@@ -85,7 +85,7 @@ class FirestoreManualHealthWeightRepository
     try {
       await collection.doc(_documentIdForDay(day)).delete();
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to delete fallback weight entry.',
         name: _logName,

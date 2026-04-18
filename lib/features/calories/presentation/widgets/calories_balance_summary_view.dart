@@ -70,7 +70,10 @@ resolveCaloriesBalanceBarLayoutMetrics({
   required bool isOverPace,
 }) {
   final halfWidth = totalWidth / 2;
-  final paddedHalfWidth = math.max(0.0, halfWidth - _balanceBarFillInset);
+  final paddedHalfWidth = math.max<double>(
+    0,
+    halfWidth - _balanceBarFillInset,
+  );
   final visibleProgress = (isUnderPace || isOverPace)
       ? progress.clamp(0.0, 1.0)
       : 0.0;
@@ -91,8 +94,8 @@ resolveCaloriesBalanceBarLayoutMetrics({
   }
 
   final markerInsetProgress = (_balanceBarMarkerWidth / 2) / paddedHalfWidth;
-  final barVisibleProgress = math.max(
-    0.0,
+  final barVisibleProgress = math.max<double>(
+    0,
     visibleProgress - markerInsetProgress,
   );
   final barWidth = paddedHalfWidth * barVisibleProgress;

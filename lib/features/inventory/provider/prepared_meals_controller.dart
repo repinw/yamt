@@ -155,7 +155,9 @@ class PreparedMealsController extends _$PreparedMealsController {
   /// Create prepared meal.
   Future<PreparedMealCreationResult> createPreparedMeal({
     required String name,
-    required int totalPortions, required List<PreparedMealItemInput> items, String? imageAssetId,
+    required int totalPortions,
+    required List<PreparedMealItemInput> items,
+    String? imageAssetId,
   }) {
     final trimmedName = name.trim();
     if (trimmedName.isEmpty || totalPortions < 1 || items.isEmpty) {
@@ -821,7 +823,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     return recoverControllerHouseholdAccess<PreparedMeal>(
       ref: ref,
       isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      setIsRecoveringHouseholdAccess: (value) {
+      setIsRecoveringHouseholdAccess: ({required bool value}) {
         _isRecoveringHouseholdAccess = value;
       },
       setState: (nextState) {
@@ -860,7 +862,7 @@ class PreparedMealsController extends _$PreparedMealsController {
         state = AsyncData(previousMeals);
       }
       return saved;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to persist prepared meal mutation.',
         name: _preparedMealsControllerLogName,
@@ -880,7 +882,7 @@ class PreparedMealsController extends _$PreparedMealsController {
   }) async {
     try {
       await inventoryRepository.saveAll(previousItems);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to restore inventory after prepared meal rollback.',
         name: _preparedMealsControllerLogName,

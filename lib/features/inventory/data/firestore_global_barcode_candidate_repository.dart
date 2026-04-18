@@ -69,7 +69,7 @@ class FirestoreGlobalBarcodeCandidateRepository
           normalizedBarcode: normalizedBarcode,
           limit: safeLimit,
         );
-      } catch (fallbackError, fallbackStackTrace) {
+      } on Object catch (fallbackError, fallbackStackTrace) {
         log(
           'Failed to read barcode candidates for $normalizedBarcode.',
           name: _repositoryLogName,
@@ -78,7 +78,7 @@ class FirestoreGlobalBarcodeCandidateRepository
         );
         return const <GlobalBarcodeCandidate>[];
       }
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read barcode candidates for $normalizedBarcode.',
         name: _repositoryLogName,
@@ -227,7 +227,7 @@ class FirestoreGlobalBarcodeCandidateRepository
       }
       try {
         candidates.add(GlobalBarcodeCandidate.fromJson(json));
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         log(
           'Skipping corrupted barcode candidate at index $index.',
           name: _repositoryLogName,

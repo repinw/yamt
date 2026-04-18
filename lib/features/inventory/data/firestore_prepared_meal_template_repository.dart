@@ -95,7 +95,7 @@ class FirestorePreparedMealTemplateRepository
         stackTrace: stackTrace,
       );
       rethrow;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to watch prepared meal templates for user $userId.',
         name: _repositoryLogName,
@@ -110,7 +110,7 @@ class FirestorePreparedMealTemplateRepository
     try {
       final documents = await _store.readAll(userId: userId);
       return _decodeDocuments(documents);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to read prepared meal templates for user $userId.',
         name: _repositoryLogName,
@@ -139,7 +139,7 @@ class FirestorePreparedMealTemplateRepository
       }
       try {
         templates.add(PreparedMeal.fromJson(json));
-      } catch (error, stackTrace) {
+      } on Object catch (error, stackTrace) {
         log(
           'Skipping corrupted prepared meal template at index $index.',
           name: _repositoryLogName,

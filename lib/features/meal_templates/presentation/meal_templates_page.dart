@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
@@ -138,7 +139,9 @@ class MealTemplatesPage extends ConsumerWidget {
     required BuildContext context,
     required String templateId,
   }) {
-    context.push(AppRoutes.homeInventoryTemplateDetailPath(templateId));
+    unawaited(
+      context.push(AppRoutes.homeInventoryTemplateDetailPath(templateId)),
+    );
   }
 
   void _logLoadErrorOnce(
@@ -212,12 +215,14 @@ class MealTemplatesPage extends ConsumerWidget {
       return;
     }
 
-    context.push(
-      AppRoutes.homeInventoryTemplateImportReview,
-      extra: MealTemplateImportReviewArgs(
-        importedRecipe: importedRecipe,
-        preferredName: draft.name,
-        preferredPortions: draft.totalPortions,
+    unawaited(
+      context.push(
+        AppRoutes.homeInventoryTemplateImportReview,
+        extra: MealTemplateImportReviewArgs(
+          importedRecipe: importedRecipe,
+          preferredName: draft.name,
+          preferredPortions: draft.totalPortions,
+        ),
       ),
     );
   }
@@ -279,8 +284,8 @@ class MealTemplatesPage extends ConsumerWidget {
   }
 
   void _showSnackBar(BuildContext context, String message) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }

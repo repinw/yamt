@@ -62,7 +62,7 @@ class SharedReceiptService extends _$SharedReceiptService {
         error: error,
         stackTrace: stackTrace,
       );
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Shared receipt service setup failed.',
         name: _sharedReceiptServiceLogName,
@@ -99,7 +99,7 @@ class SharedReceiptService extends _$SharedReceiptService {
         name: _sharedReceiptServiceLogName,
       );
       ref.read(pendingSharedReceiptIntentProvider.notifier).replace(selections);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Shared receipt import failed.',
         name: _sharedReceiptServiceLogName,
@@ -116,7 +116,7 @@ class SharedReceiptService extends _$SharedReceiptService {
       await intentPlugin.reset();
     } on MissingPluginException {
       // Plugin is optional in tests and on unsupported platforms.
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Shared receipt reset failed.',
         name: _sharedReceiptServiceLogName,

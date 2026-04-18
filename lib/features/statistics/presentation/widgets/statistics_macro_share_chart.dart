@@ -6,7 +6,10 @@ import 'package:yamt/features/statistics/domain/calorie_metrics.dart';
 class StatisticsMacroShareChart extends StatelessWidget {
   /// The statistics macro share chart.
   const StatisticsMacroShareChart({
-    required this.items, required this.labelBuilder, required this.valueLabelBuilder, super.key,
+    required this.items,
+    required this.labelBuilder,
+    required this.valueLabelBuilder,
+    super.key,
   });
 
   /// The items.

@@ -164,7 +164,7 @@ class HouseholdSharingCard extends ConsumerWidget {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.householdLeaveSuccess)));
-    } catch (error) {
+    } on Object catch (error) {
       if (!context.mounted) {
         return;
       }

@@ -24,6 +24,13 @@ class _MealTemplateFooter extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(28);
+    final addIngredientsLabel =
+        l10n.preparedMealTemplateDetailIngredientsToShoppingListAction;
+    final handleAddIngredientsToShoppingList =
+        onAddIngredientsToShoppingListPressed;
+    void addIngredientsToShoppingList() {
+      unawaited(handleAddIngredientsToShoppingList());
+    }
 
     return SafeArea(
       top: false,
@@ -98,13 +105,10 @@ class _MealTemplateFooter extends StatelessWidget {
                           Expanded(
                             child: _FooterOutlineActionButton(
                               icon: Icons.shopping_cart_rounded,
-                              label: l10n
-                                  .preparedMealTemplateDetailIngredientsToShoppingListAction,
+                              label: addIngredientsLabel,
                               onPressed: isSavingTemplate || isCreatingMeal
                                   ? null
-                                  : () async {
-                                      await onAddIngredientsToShoppingListPressed();
-                                    },
+                                  : addIngredientsToShoppingList,
                             ),
                           ),
                           const SizedBox(width: AppSpacing.md),
@@ -339,8 +343,7 @@ class MealTemplateFooterTestHarness extends StatelessWidget {
       isCreatingMeal: isCreatingMeal,
       isSavingTemplate: isSavingTemplate,
       canCreateMeal: canCreateMeal,
-      onSaveTemplatePressed:
-          onSaveTemplatePressed ?? Future<void>.value,
+      onSaveTemplatePressed: onSaveTemplatePressed ?? Future<void>.value,
       onAddIngredientsToShoppingListPressed:
           onAddIngredientsToShoppingListPressed ?? Future<void>.value,
       onCreateMealPressed: onCreateMealPressed ?? Future<void>.value,

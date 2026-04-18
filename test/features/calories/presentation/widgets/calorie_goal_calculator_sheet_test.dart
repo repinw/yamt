@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -33,9 +35,11 @@ Widget _buildHarness({
           builder: (context) {
             return FilledButton(
               onPressed: () {
-                showCalorieGoalCalculatorSheet(
-                  context,
-                  initialSettings: initialSettings,
+                unawaited(
+                  showCalorieGoalCalculatorSheet(
+                    context,
+                    initialSettings: initialSettings,
+                  ),
                 );
               },
               child: const Text('Open'),

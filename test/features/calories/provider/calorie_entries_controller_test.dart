@@ -24,7 +24,7 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   bool saveShouldFail = false;
   bool deleteShouldFail = false;
   Object? watchError;
-  Object? saveError;
+  Error? saveError;
   Future<List<CalorieEntry>> Function(DateTime day)? onReadEntriesForDay;
   Completer<void>? saveBlocker;
   bool saveStarted = false;
@@ -84,13 +84,14 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   }) async {
     final start = _normalize(startInclusive);
     final end = _normalize(endExclusive);
-    final entries = _entries
-        .where((entry) {
-          final loggedAt = entry.loggedAt;
-          return !loggedAt.isBefore(start) && loggedAt.isBefore(end);
-        })
-        .toList(growable: false);
-    entries.sort((left, right) => left.loggedAt.compareTo(right.loggedAt));
+    final entries =
+        _entries
+            .where((entry) {
+              final loggedAt = entry.loggedAt;
+              return !loggedAt.isBefore(start) && loggedAt.isBefore(end);
+            })
+            .toList(growable: false)
+          ..sort((left, right) => left.loggedAt.compareTo(right.loggedAt));
     return entries;
   }
 
@@ -160,14 +161,15 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 
   List<CalorieEntry> _entriesForDay(DateTime day) {
-    final entries = _entries
-        .where((entry) {
-          return entry.loggedAt.year == day.year &&
-              entry.loggedAt.month == day.month &&
-              entry.loggedAt.day == day.day;
-        })
-        .toList(growable: false);
-    entries.sort((left, right) => left.loggedAt.compareTo(right.loggedAt));
+    final entries =
+        _entries
+            .where((entry) {
+              return entry.loggedAt.year == day.year &&
+                  entry.loggedAt.month == day.month &&
+                  entry.loggedAt.day == day.day;
+            })
+            .toList(growable: false)
+          ..sort((left, right) => left.loggedAt.compareTo(right.loggedAt));
     return entries;
   }
 
@@ -333,8 +335,9 @@ void main() {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
-    final dayController = container.read(calorieDayControllerProvider.notifier);
-    dayController.setDay(DateTime(2026, 2, 25, 19, 30));
+    final dayController =
+        container.read(calorieDayControllerProvider.notifier)
+          ..setDay(DateTime(2026, 2, 25, 19, 30));
 
     expect(container.read(calorieDayControllerProvider), DateTime(2026, 2, 25));
 
@@ -529,8 +532,8 @@ void main() {
   });
 
   test('calorieDayViewData stays loading while entries are loading', () {
-    final repository = _FakeCalorieLogRepository();
-    repository.initialEmissionDelay = const Duration(seconds: 1);
+    final repository = _FakeCalorieLogRepository()
+      ..initialEmissionDelay = const Duration(seconds: 1);
     final settingsRepository = _FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
     addTearDown(settingsRepository.dispose);
@@ -556,8 +559,8 @@ void main() {
   });
 
   test('calorieDayViewData returns AsyncError when entries fail', () async {
-    final repository = _FakeCalorieLogRepository();
-    repository.watchError = StateError('permission denied');
+    final repository = _FakeCalorieLogRepository()
+      ..watchError = StateError('permission denied');
     final settingsRepository = _FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
     addTearDown(settingsRepository.dispose);
@@ -586,8 +589,8 @@ void main() {
   test(
     'entries controller returns AsyncError when initial watch fails',
     () async {
-      final repository = _FakeCalorieLogRepository();
-      repository.watchError = StateError('permission denied');
+      final repository = _FakeCalorieLogRepository()
+        ..watchError = StateError('permission denied');
       final settingsRepository = _FakeCalorieSettingsRepository();
       addTearDown(repository.dispose);
       addTearDown(settingsRepository.dispose);
@@ -625,8 +628,7 @@ void main() {
             mealType: MealType.breakfast,
           ),
         ],
-      );
-      repository.saveBlocker = Completer<void>();
+      )..saveBlocker = Completer<void>();
       final settingsRepository = _FakeCalorieSettingsRepository();
       addTearDown(repository.dispose);
       addTearDown(settingsRepository.dispose);
@@ -655,11 +657,10 @@ void main() {
       );
 
       var mutationCompleted = false;
-      final saveFuture =
-          container
-              .read(calorieEntriesControllerProvider.notifier)
-              .saveEntry(newEntry)
-            ..then((_) => mutationCompleted = true);
+      final saveFuture = container
+          .read(calorieEntriesControllerProvider.notifier)
+          .saveEntry(newEntry);
+      unawaited(saveFuture.then((_) => mutationCompleted = true));
 
       await _waitForCondition(condition: () => repository.saveStarted);
 
@@ -685,8 +686,8 @@ void main() {
   test(
     'saveEntry completes without listener before initial stream emission',
     () async {
-      final repository = _FakeCalorieLogRepository();
-      repository.initialEmissionDelay = const Duration(seconds: 2);
+      final repository = _FakeCalorieLogRepository()
+        ..initialEmissionDelay = const Duration(seconds: 2);
       final settingsRepository = _FakeCalorieSettingsRepository();
       addTearDown(repository.dispose);
       addTearDown(settingsRepository.dispose);
@@ -734,8 +735,7 @@ void main() {
             mealType: MealType.breakfast,
           ),
         ],
-      );
-      repository.saveShouldFail = true;
+      )..saveShouldFail = true;
       final settingsRepository = _FakeCalorieSettingsRepository();
       addTearDown(repository.dispose);
       addTearDown(settingsRepository.dispose);
@@ -786,8 +786,7 @@ void main() {
           mealType: MealType.breakfast,
         ),
       ],
-    );
-    repository.saveError = StateError('write failed');
+    )..saveError = StateError('write failed');
     final settingsRepository = _FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
     addTearDown(settingsRepository.dispose);

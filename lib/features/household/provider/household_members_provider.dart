@@ -147,18 +147,19 @@ List<UserProfile> _sortHouseholdMembers({
   final membersByUid = <String, UserProfile>{
     for (final member in members) member.uid: member,
   };
-  final sortedMembers = membersByUid.values.toList(growable: false);
-  sortedMembers.sort((left, right) {
-    final leftRank = left.uid == householdRootId ? 0 : 1;
-    final rightRank = right.uid == householdRootId ? 0 : 1;
-    if (leftRank != rightRank) {
-      return leftRank.compareTo(rightRank);
-    }
-    final leftName = (left.displayName ?? left.email ?? left.uid).toLowerCase();
-    final rightName = (right.displayName ?? right.email ?? right.uid)
-        .toLowerCase();
-    return leftName.compareTo(rightName);
-  });
+  final sortedMembers = membersByUid.values.toList(growable: false)
+    ..sort((left, right) {
+      final leftRank = left.uid == householdRootId ? 0 : 1;
+      final rightRank = right.uid == householdRootId ? 0 : 1;
+      if (leftRank != rightRank) {
+        return leftRank.compareTo(rightRank);
+      }
+      final leftName = (left.displayName ?? left.email ?? left.uid)
+          .toLowerCase();
+      final rightName = (right.displayName ?? right.email ?? right.uid)
+          .toLowerCase();
+      return leftName.compareTo(rightName);
+    });
   return sortedMembers;
 }
 

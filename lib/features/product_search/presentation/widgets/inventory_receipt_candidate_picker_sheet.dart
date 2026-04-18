@@ -51,7 +51,8 @@ class ReceiptCandidatePickerSelection {
 class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
   /// The inventory receipt candidate picker sheet.
   const InventoryReceiptCandidatePickerSheet({
-    required this.draft, super.key,
+    required this.draft,
+    super.key,
     this.showAiEnrichmentAction = true,
   });
 

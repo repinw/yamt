@@ -23,7 +23,7 @@ GlobalFoodItemRepository globalFoodItemRepository(Ref ref) {
 GlobalFoodItemStore _resolveStore() {
   try {
     return FirestoreGlobalFoodItemStore(firestore: FirebaseFirestore.instance);
-  } catch (error, stackTrace) {
+  } on Object catch (error, stackTrace) {
     log(
       'Falling back to unavailable global food item store.',
       name: 'GlobalFoodItemRepositoryProvider',

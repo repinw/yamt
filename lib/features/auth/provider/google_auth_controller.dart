@@ -103,7 +103,7 @@ class GoogleAuthController extends _$GoogleAuthController {
       }
       state = AsyncError(error, stackTrace);
       if (rethrowErrors) rethrow;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       if (!ref.mounted) return;
       state = AsyncError(error, stackTrace);
       if (rethrowErrors) rethrow;

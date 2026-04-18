@@ -84,7 +84,7 @@ class ReceiptBatchFlowRunner {
           await dialog;
         }
       }
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Receipt batch flow failed unexpectedly',
         name: 'ReceiptBatchFlowRunner',
@@ -133,7 +133,7 @@ class ReceiptBatchFlowRunner {
     var saved = false;
     try {
       saved = await _openReviewPage(reviewDrafts: reviewDrafts);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Receipt review page failed unexpectedly',
         name: 'ReceiptBatchFlowRunner',

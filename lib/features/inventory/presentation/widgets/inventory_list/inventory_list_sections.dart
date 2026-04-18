@@ -76,7 +76,7 @@ class InventorySectionHeader extends StatelessWidget {
         children: [
           titleContent,
           const SizedBox(height: AppSpacing.sm),
-          Align(alignment: Alignment.centerLeft, child: trailing!),
+          Align(alignment: Alignment.centerLeft, child: trailing),
         ],
       );
     }

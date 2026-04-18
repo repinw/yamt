@@ -43,7 +43,9 @@ void main() {
       final originalBytes = Uint8List.fromList(img.encodeJpg(originalImage));
       expect(originalBytes.length, lessThan(_maxPreparedMealImageBytes));
 
-      final optimizedBytes = await optimizePreparedMealImageBytes(originalBytes);
+      final optimizedBytes = await optimizePreparedMealImageBytes(
+        originalBytes,
+      );
       final optimizedImage = img.decodeImage(optimizedBytes);
 
       expect(optimizedImage, isNotNull);

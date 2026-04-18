@@ -61,7 +61,7 @@ class AuthFormController extends _$AuthFormController {
       await repository.updateCurrentUserDisplayName(
         displayName: normalizedDisplayName,
       );
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'User registration succeeded, but display name update failed.',
         name: _authFormControllerLogName,

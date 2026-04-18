@@ -139,7 +139,7 @@ class FirestorePreparedMealCalorieEntryCommitStore
         });
         return true;
       });
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to commit prepared meal calorie entry ${entry.id}.',
         name: _commitStoreLogName,

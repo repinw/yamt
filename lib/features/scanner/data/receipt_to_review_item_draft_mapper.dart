@@ -241,7 +241,7 @@ double? _parseNum(Object? value, {required String? language}) {
   }
   try {
     return NumberFormat.decimalPattern(language).parse(normalized).toDouble();
-  } catch (_) {
+  } on Object catch (_) {
     return null;
   }
 }

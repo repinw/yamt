@@ -197,7 +197,8 @@ void main() {
   );
 
   test(
-    'commitEntryAndInventory uses shared inventory owner and personal entry user',
+    'commitEntryAndInventory uses shared inventory owner '
+    'and personal entry user',
     () async {
       final firestore = FakeFirebaseFirestore();
       await _inventoryCollection(

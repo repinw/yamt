@@ -615,7 +615,7 @@ void main() {
     'first unresolved overdue window stays pending when multiple exist',
     () async {
       final today = DateTime(2026, 4, 22);
-      final goalStart = DateTime(2026, 4, 1);
+      final goalStart = DateTime(2026, 4);
       final settings = const CalorieGoalSettings.empty()
           .applyGoalChange(
             changedAt: goalStart,
@@ -686,7 +686,7 @@ void main() {
     final today = DateTime(2026, 4, 27);
     final initialSettings = const CalorieGoalSettings.empty()
         .applyGoalChange(
-          changedAt: DateTime(2026, 4, 1),
+          changedAt: DateTime(2026, 4),
           dailyKcalGoal: 2400,
           calculatorProfile: null,
         )

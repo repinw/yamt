@@ -306,8 +306,8 @@ void main() {
   );
 
   test('repository serializes concurrent saveAll writes', () async {
-    final store = _FakeShoppingListItemStore();
-    store.replaceDelay = const Duration(milliseconds: 25);
+    final store = _FakeShoppingListItemStore()
+      ..replaceDelay = const Duration(milliseconds: 25);
     addTearDown(store.dispose);
     final repository = FirestoreShoppingListRepository(
       session: _FakeShoppingListUserSession(currentUserId: 'user-1'),
@@ -325,8 +325,7 @@ void main() {
   });
 
   test('repository saveAll returns false when store replace fails', () async {
-    final store = _FakeShoppingListItemStore();
-    store.replaceAllShouldFail = true;
+    final store = _FakeShoppingListItemStore()..replaceAllShouldFail = true;
     addTearDown(store.dispose);
     final repository = FirestoreShoppingListRepository(
       session: _FakeShoppingListUserSession(currentUserId: 'user-1'),

@@ -97,13 +97,14 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
     if (customReader != null) {
       return customReader(start, end);
     }
-    final entries = _entries
-        .where((entry) {
-          final loggedAt = entry.loggedAt;
-          return !loggedAt.isBefore(start) && loggedAt.isBefore(end);
-        })
-        .toList(growable: false);
-    entries.sort((left, right) => left.loggedAt.compareTo(right.loggedAt));
+    final entries =
+        _entries
+            .where((entry) {
+              final loggedAt = entry.loggedAt;
+              return !loggedAt.isBefore(start) && loggedAt.isBefore(end);
+            })
+            .toList(growable: false)
+          ..sort((left, right) => left.loggedAt.compareTo(right.loggedAt));
     return entries;
   }
 
@@ -165,15 +166,15 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 
   List<CalorieEntry> _entriesForDay(DateTime day) {
-    final entries = _entries
-        .where((entry) {
-          return entry.loggedAt.year == day.year &&
-              entry.loggedAt.month == day.month &&
-              entry.loggedAt.day == day.day;
-        })
-        .toList(growable: false);
-
-    entries.sort((left, right) => left.loggedAt.compareTo(right.loggedAt));
+    final entries =
+        _entries
+            .where((entry) {
+              return entry.loggedAt.year == day.year &&
+                  entry.loggedAt.month == day.month &&
+                  entry.loggedAt.day == day.day;
+            })
+            .toList(growable: false)
+          ..sort((left, right) => left.loggedAt.compareTo(right.loggedAt));
     return entries;
   }
 

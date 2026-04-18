@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/statistics/domain/statistics_models.dart';
 import 'package:yamt/features/statistics/presentation/views/'
@@ -16,7 +19,6 @@ import 'package:yamt/features/statistics/provider/'
     'statistics_calorie_data_provider.dart';
 import 'package:yamt/features/statistics/provider/'
     'statistics_waste_data_provider.dart';
-import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines statistics page.
@@ -133,7 +135,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   }
 
   void _retryHouseholdData() {
-    ref.read(inventoryItemsControllerProvider.notifier).refresh();
+    unawaited(ref.read(inventoryItemsControllerProvider.notifier).refresh());
   }
 
   void _retryCalorieData() {

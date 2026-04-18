@@ -39,7 +39,7 @@ class FakeShoppingListRepository implements ShoppingListRepository {
         onError: controller.addError,
         onDone: controller.close,
       );
-      readAll().then(controller.add, onError: controller.addError);
+      unawaited(readAll().then(controller.add, onError: controller.addError));
       controller.onCancel = () {
         unawaited(watchSubscription.cancel());
       };
@@ -54,7 +54,14 @@ class FakeShoppingListRepository implements ShoppingListRepository {
     savedItems = List<ShoppingListItem>.from(items);
 
     if (_saveErrors.isNotEmpty) {
-      throw _saveErrors.removeFirst();
+      final error = _saveErrors.removeFirst();
+      if (error case final Error saveError) {
+        throw saveError;
+      }
+      if (error case final Exception saveException) {
+        throw saveException;
+      }
+      throw StateError('Unexpected queued save error: $error');
     }
     if (saveAllShouldThrow) {
       throw StateError('saveAll failed');
@@ -89,7 +96,7 @@ class FakeShoppingListRepository implements ShoppingListRepository {
     _watchController.addError(error, stackTrace);
   }
 
-  void enqueueSaveResult(bool result) {
+  void enqueueSaveResult({required bool result}) {
     _saveResults.add(result);
   }
 

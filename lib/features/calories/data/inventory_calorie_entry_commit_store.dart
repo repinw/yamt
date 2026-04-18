@@ -160,11 +160,12 @@ class FirestoreInventoryCalorieEntryCommitStore
           updatedAt: DateTime.now(),
         );
 
-        transaction.set(
-          _calorieEntriesCollectionRef(entryUserId).doc(normalizedEntry.id),
-          normalizedEntry.toJson(),
-        );
-        transaction.update(inventoryRef, _buildInventoryUpdate(committedItem));
+        transaction
+          ..set(
+            _calorieEntriesCollectionRef(entryUserId).doc(normalizedEntry.id),
+            normalizedEntry.toJson(),
+          )
+          ..update(inventoryRef, _buildInventoryUpdate(committedItem));
 
         log(
           'Transaction prepared for calorie entry ${entry.id} '
@@ -180,7 +181,7 @@ class FirestoreInventoryCalorieEntryCommitStore
           currentAmount: committedItem.currentAmount,
         );
       });
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to commit calorie entry ${entry.id} with inventory item '
         '${pendingConsumption.itemId}.',

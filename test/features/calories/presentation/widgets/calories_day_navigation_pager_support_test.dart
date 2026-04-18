@@ -65,8 +65,7 @@ void main() {
     addTearDown(logRepository.dispose);
     addTearDown(settingsRepository.dispose);
 
-    var result =
-        <String, CalorieWeekDayOverview>{};
+    var result = <String, CalorieWeekDayOverview>{};
 
     await tester.pumpWidget(
       ProviderScope(
@@ -137,8 +136,7 @@ void main() {
   testWidgets('prefetch helper normalizes buffer end when today is far ahead', (
     tester,
   ) async {
-    var result =
-        <String, CalorieWeekDayOverview>{};
+    var result = <String, CalorieWeekDayOverview>{};
 
     await tester.pumpWidget(
       ProviderScope(

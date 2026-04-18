@@ -787,9 +787,11 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
-    container.read(
-      calorieVisibleWindowControllerProvider.notifier,
-    ).setWindowEnd(today);
+    container
+        .read(
+          calorieVisibleWindowControllerProvider.notifier,
+        )
+        .setWindowEnd(today);
     container.read(calorieDayControllerProvider.notifier).setDay(selectedDay);
 
     await tester.pumpWidget(_buildHarnessWithContainer(container: container));

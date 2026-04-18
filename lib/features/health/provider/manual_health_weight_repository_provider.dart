@@ -13,7 +13,7 @@ ManualHealthWeightRepository manualHealthWeightRepository(Ref ref) {
   String? currentUserId;
   try {
     currentUserId = ref.watch(authStateChangesProvider).asData?.value?.uid;
-  } catch (_) {
+  } on Object catch (_) {
     currentUserId = null;
   }
   return FirestoreManualHealthWeightRepository(

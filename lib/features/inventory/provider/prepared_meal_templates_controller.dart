@@ -556,7 +556,7 @@ class PreparedMealTemplatesController
     return recoverControllerHouseholdAccess<PreparedMeal>(
       ref: ref,
       isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      setIsRecoveringHouseholdAccess: (value) {
+      setIsRecoveringHouseholdAccess: ({required bool value}) {
         _isRecoveringHouseholdAccess = value;
       },
       setState: (nextState) {
@@ -600,7 +600,7 @@ class PreparedMealTemplatesController
         state = AsyncData(_sortTemplates(previousTemplates));
       }
       return saved;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Failed to persist prepared meal template mutation.',
         name: _preparedMealTemplatesControllerLogName,

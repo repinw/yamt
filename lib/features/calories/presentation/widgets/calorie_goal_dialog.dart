@@ -72,8 +72,7 @@ Future<void> showCalorieGoalDialog({
     return;
   }
 
-  final messenger = ScaffoldMessenger.of(context);
-  messenger.hideCurrentSnackBar();
+  final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
 
   switch (action) {
     case _GoalDialogAction.save:

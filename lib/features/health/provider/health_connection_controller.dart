@@ -66,7 +66,7 @@ class HealthConnectionController extends _$HealthConnectionController {
         state = AsyncData(nextStatus);
       }
       return result;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       final fallback = _buildFallbackStatus(
         previousStatus: previousStatus,
         error: error,
@@ -84,7 +84,7 @@ class HealthConnectionController extends _$HealthConnectionController {
   }) async {
     try {
       return await ref.read(healthConnectionServiceProvider).loadStatus();
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       return _buildFallbackStatus(
         previousStatus: previousStatus,
         error: error,
@@ -105,7 +105,7 @@ class HealthConnectionController extends _$HealthConnectionController {
         state = AsyncData(nextStatus);
       }
       return nextStatus;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       final fallback = _buildFallbackStatus(
         previousStatus: previousStatus,
         error: error,

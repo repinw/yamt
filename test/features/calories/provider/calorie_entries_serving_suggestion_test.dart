@@ -48,7 +48,10 @@ class _FakeGlobalFoodServingSuggestionRepository
   @override
   Future<void> recordSelection({
     required String foodFingerprint,
-    required double amount, required ConsumedUnit unit, required DateTime selectedAt, String? globalFoodItemId,
+    required double amount,
+    required ConsumedUnit unit,
+    required DateTime selectedAt,
+    String? globalFoodItemId,
   }) async {
     calls.add((
       foodFingerprint: foodFingerprint,

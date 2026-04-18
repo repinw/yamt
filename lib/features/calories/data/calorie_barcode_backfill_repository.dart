@@ -92,7 +92,7 @@ class FirestoreCalorieBarcodeBackfillRepository
         return success;
       }
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       if (_useFunctionsEmulator &&
           error is FirebaseFunctionsException &&
           error.code == 'unavailable') {
@@ -158,7 +158,7 @@ class FirestoreCalorieBarcodeBackfillRepository
         return success;
       }
       return true;
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       _trace(
         'Failed to resolve barcode batch for ${normalizedItems.length} items.',
         error: error,
@@ -245,7 +245,7 @@ class FirestoreCalorieBarcodeBackfillRepository
     }
     try {
       return Map<String, dynamic>.from(rawData);
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       _trace(
         'Callable response map had invalid key/value types.',
         error: error,
@@ -329,7 +329,7 @@ FirebaseFunctions? _resolveFunctions() {
       );
     }
     return functions;
-  } catch (error, stackTrace) {
+  } on Object catch (error, stackTrace) {
     _trace(
       'Falling back to unavailable barcode backfill repository.',
       error: error,

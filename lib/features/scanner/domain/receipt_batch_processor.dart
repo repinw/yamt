@@ -148,7 +148,7 @@ class ReceiptBatchProcessor {
           errorCode: errorCode,
         ),
       };
-    } catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       log(
         'Receipt batch analysis failed for ${selection.name}',
         name: loggerName,
