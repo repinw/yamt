@@ -8,7 +8,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_editing_workflows.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_mutation_support.dart';
+    'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_workflow_context.dart';
 import 'package:yamt/features/inventory/application/'

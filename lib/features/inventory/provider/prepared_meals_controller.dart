@@ -11,7 +11,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_household_recovery.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_mutation_support.dart';
+    'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_workflows.dart';
 import 'package:yamt/features/inventory/application/'
@@ -25,7 +25,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 export 'package:yamt/features/inventory/application/'
-    'prepared_meal_mutation_support.dart'
+    'prepared_meal_mutation_models.dart'
     show
         PreparedMealCreationFailureReason,
         PreparedMealCreationResult,

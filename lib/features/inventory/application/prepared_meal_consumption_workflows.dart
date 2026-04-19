@@ -2,7 +2,7 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_mutation_support.dart';
+    'prepared_meal_inventory_math.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_workflow_context.dart';
 import 'package:yamt/features/inventory/data/'
