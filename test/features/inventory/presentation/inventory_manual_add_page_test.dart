@@ -401,7 +401,7 @@ class _TestHomePageState extends State<_TestHomePage> {
       if (!mounted) {
         return;
       }
-      context.push(AppRoutes.homeInventoryManualAdd);
+      unawaited(context.push(AppRoutes.homeInventoryManualAdd));
     });
   }
 
@@ -552,7 +552,14 @@ void main() {
     await tester.tap(manualSaveButton);
     await _pumpUi(tester);
 
-    expect(find.text('home'), findsOneWidget);
+    expect(
+      find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+      findsNothing,
+    );
     expect(globalFoodRepository.appendedItems, hasLength(1));
     expect(globalFoodRepository.appendedItems.single.id, 'off-4006381333931');
     expect(inventoryRepository.appendedItems, hasLength(1));
@@ -716,11 +723,104 @@ void main() {
     await tester.tap(logButton);
     await tester.pumpAndSettle();
 
-    expect(find.text('home'), findsOneWidget);
+    expect(
+      find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('receipt_review_manual_search_field')),
+      findsNothing,
+    );
     expect(inventoryCommitStore.pendingConsumption, isNotNull);
     expect(inventoryCommitStore.pendingConsumption?.itemId, isNotEmpty);
     expect(inventoryCommitStore.pendingConsumption?.amount, 250);
   });
+
+  testWidgets(
+    'saving a selected search result returns to search for another item',
+    (tester) async {
+      final offRepository = _RecordingOffProductSearchRepository(
+        <OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4006381333931',
+            name: 'Milk',
+            brand: 'Brand',
+            score: 99,
+            packageWeight: '1 l',
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 100,
+              per100Protein: 10,
+              per100Carbs: 20,
+              per100Fat: 3,
+            ),
+          ),
+        ],
+      );
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      addTearDown(inventoryRepository.dispose);
+      final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+
+      await tester.pumpWidget(
+        _buildHarness(
+          offRepository: offRepository,
+          inventoryRepository: inventoryRepository,
+          globalFoodRepository: globalFoodRepository,
+        ),
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+      );
+      await _pumpUi(tester);
+
+      expect(
+        find.byKey(const Key('receipt_review_manual_search_field')),
+        findsOneWidget,
+      );
+
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_search_field')),
+        'Milk',
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(
+          const Key('receipt_review_manual_search_result_4006381333931'),
+        ),
+      );
+      await _pumpUi(tester);
+
+      expect(
+        find.byKey(const Key('receipt_review_manual_save_button')),
+        findsOneWidget,
+      );
+
+      await tester.ensureVisible(
+        find.byKey(const Key('receipt_review_manual_save_button')),
+      );
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_save_button')),
+      );
+      await _pumpUi(tester);
+
+      expect(inventoryRepository.appendedItems, hasLength(1));
+      expect(
+        find.byKey(const Key('receipt_review_manual_search_field')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const Key('receipt_review_manual_save_button')),
+        findsNothing,
+      );
+    },
+  );
 
   testWidgets(
     'eat now shows save error and does not open eat flow when persisting fails',
