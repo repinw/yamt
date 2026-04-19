@@ -116,7 +116,7 @@ class _InventoryManualAddPageState
     }
 
     if (result.eatImmediately) {
-      await _closeEditorsIfNeeded();
+      _closeEditorsIfNeeded();
     } else {
       await _closeTopEditorIfNeeded();
     }
@@ -135,14 +135,12 @@ class _InventoryManualAddPageState
     }
   }
 
-  Future<void> _closeEditorsIfNeeded() async {
+  void _closeEditorsIfNeeded() {
     final route = ModalRoute.of(context);
-    while (mounted && !(route?.isCurrent ?? false)) {
-      final didPop = await Navigator.of(context).maybePop();
-      if (!didPop) {
-        return;
-      }
+    if (route == null || route.isCurrent) {
+      return;
     }
+    Navigator.of(context).popUntil((candidate) => candidate == route);
   }
 
   Future<void> _closeTopEditorIfNeeded() async {
