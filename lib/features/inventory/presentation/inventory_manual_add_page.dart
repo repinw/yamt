@@ -116,7 +116,11 @@ class _InventoryManualAddPageState
       return;
     }
 
-    await _closeEditorIfNeeded();
+    if (result.eatImmediately) {
+      await _closeEditorsIfNeeded();
+    } else {
+      await _closeTopEditorIfNeeded();
+    }
     if (!mounted) {
       return;
     }
@@ -130,13 +134,19 @@ class _InventoryManualAddPageState
         return;
       }
     }
+  }
 
-    if (context.canPop()) {
-      context.pop(true);
+  Future<void> _closeEditorsIfNeeded() async {
+    final route = ModalRoute.of(context);
+    while (mounted && !(route?.isCurrent ?? false)) {
+      final didPop = await Navigator.of(context).maybePop();
+      if (!didPop) {
+        return;
+      }
     }
   }
 
-  Future<void> _closeEditorIfNeeded() async {
+  Future<void> _closeTopEditorIfNeeded() async {
     final route = ModalRoute.of(context);
     if (route?.isCurrent ?? false) {
       return;
