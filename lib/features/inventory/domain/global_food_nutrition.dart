@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 
 /// Defines global food nutrition quality status.
 enum GlobalFoodNutritionQualityStatus {
@@ -12,6 +13,7 @@ enum GlobalFoodNutritionQualityStatus {
   verified,
 }
 
+@immutable
 /// Defines global food nutrition.
 class GlobalFoodNutrition {
   /// The global food nutrition.
@@ -179,6 +181,21 @@ class GlobalFoodNutrition {
       per100Sugar,
       per100Fiber,
     ].any((value) => value != null);
+  }
+
+  /// Whether the mandatory EU nutrition declaration is complete.
+  ///
+  /// Germany follows the EU FIC declaration fields we model here:
+  /// energy (kcal in app), fat, saturates, carbohydrate, sugars,
+  /// protein and salt.
+  bool get hasEuMandatoryNutritionDeclaration {
+    return per100Kcal != null &&
+        per100Fat != null &&
+        per100SaturatedFat != null &&
+        per100Carbs != null &&
+        per100Sugar != null &&
+        per100Protein != null &&
+        per100Salt != null;
   }
 
   @override

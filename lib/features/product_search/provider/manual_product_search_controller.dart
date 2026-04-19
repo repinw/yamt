@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
@@ -18,14 +19,15 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'inventory_receipt_manual_product_form_utils.dart';
+    'manual_product_search_form_utils.dart';
 
-part 'inventory_receipt_manual_product_controller.g.dart';
+part 'manual_product_search_controller.g.dart';
 
 const _manualProductControllerLogName =
     'InventoryReceiptManualProductController';
 const _keepValue = Object();
 
+@immutable
 /// Defines inventory receipt manual product config.
 class InventoryReceiptManualProductConfig {
   /// The inventory receipt manual product config.
@@ -109,6 +111,15 @@ enum InventoryReceiptManualProductError {
   requiredPackageWeight,
 }
 
+/// Defines inventory receipt manual product action.
+enum InventoryReceiptManualProductAction {
+  /// Save only to inventory.
+  addToInventory,
+
+  /// Save to inventory and continue to eat flow.
+  eatNow,
+}
+
 /// Defines inventory receipt manual product nutrition scan outcome.
 enum InventoryReceiptManualProductNutritionScanOutcome {
   /// Documented member.
@@ -179,7 +190,7 @@ class InventoryReceiptManualProductSelection {
     );
   }
 
-  /// Creates a [InventoryReceiptManualProductSelection] for from inventory item.
+  /// Creates a [InventoryReceiptManualProductSelection] from inventory item.
   factory InventoryReceiptManualProductSelection.fromInventoryItem(
     InventoryItem item,
   ) {
@@ -236,6 +247,15 @@ class InventoryReceiptManualProductSelection {
   /// The global food item id.
   final String? globalFoodItemId;
 }
+
+/// Structured save payload returned by manual product save builders.
+typedef InventoryReceiptManualProductSavePayload = ({
+  InventoryItem item,
+  OffProductSearchResult? selectedProduct,
+  String? selectedGlobalFoodItemId,
+  bool requiresGlobalPersistence,
+  String? globalPackageWeight,
+});
 
 /// Build manual product initial search query.
 String? buildManualProductInitialSearchQuery(
@@ -874,13 +894,10 @@ class InventoryReceiptManualProductController
   }
 
   /// Builds the save payload.
-  ({
-    InventoryItem item,
-    OffProductSearchResult? selectedProduct,
-    String? selectedGlobalFoodItemId,
-    bool requiresGlobalPersistence,
-  })?
-  buildSavePayload() {
+  InventoryReceiptManualProductSavePayload? buildSavePayload({
+    InventoryReceiptManualProductAction action =
+        InventoryReceiptManualProductAction.addToInventory,
+  }) {
     final barcode = normalizeManualProductText(state.barcode);
     final kcal = parseManualProductDouble(state.kcalText);
     final saturatedFat = parseManualProductDouble(state.saturatedFatText);
@@ -910,7 +927,8 @@ class InventoryReceiptManualProductController
       );
       return null;
     }
-    if (!state.hasPackageWeightInput) {
+    if (action == InventoryReceiptManualProductAction.addToInventory &&
+        !state.hasPackageWeightInput) {
       state = state.copyWith(
         error: InventoryReceiptManualProductError.requiredPackageWeight,
       );
@@ -919,6 +937,11 @@ class InventoryReceiptManualProductController
 
     final matchedProduct = _currentMatchedProduct();
     final selectedProduct = state.selectedProduct;
+    final globalPackageWeight = _resolvedGlobalPackageWeight(
+      action: action,
+      matchedProduct: matchedProduct,
+    );
+    final inventoryWeight = _resolvedWeight;
     final updatedItem = _config.item
         .copyWith(
           name: _resolvedManualName(
@@ -927,7 +950,7 @@ class InventoryReceiptManualProductController
           brand: _resolvedManualBrand(),
           barcode: barcode,
           imageUrl: matchedProduct?.imageUrl ?? _config.item.imageUrl,
-          weight: _resolvedWeight,
+          weight: inventoryWeight,
           servingSize:
               matchedProduct?.servingSize ??
               state.ocrDraft?.servingSizeLabel ??
@@ -953,11 +976,14 @@ class InventoryReceiptManualProductController
               : selectedProduct?.nutrition ?? _config.item.nutrition,
         )
         .withDerivedAmount(
-          weight: _resolvedWeight,
+          weight: inventoryWeight,
           quantity: _config.item.quantity,
           fallbackUnit: state.selectedWeightUnit,
         );
-    final selectedEditKind = _selectedProductEditKindForItem(updatedItem);
+    final selectedEditKind = _selectedProductEditKindForItem(
+      updatedItem,
+      globalPackageWeight: globalPackageWeight,
+    );
     final effectiveSelectedProduct =
         selectedProduct == null ||
             selectedEditKind == GlobalFoodItemEditKind.createNewCandidate
@@ -971,6 +997,78 @@ class InventoryReceiptManualProductController
         selection: effectiveSelectedProduct,
         editKind: selectedEditKind,
       ),
+      globalPackageWeight: globalPackageWeight,
+    );
+  }
+
+  /// Builds a direct search-result payload without mutating page state.
+  InventoryReceiptManualProductSavePayload? buildDirectSearchResultPayload({
+    required OffProductSearchResult product,
+    required InventoryReceiptManualProductAction action,
+  }) {
+    final selection = InventoryReceiptManualProductSelection.fromSearchResult(
+      product,
+    );
+    final weightInput = _resolveWeightInput(
+      selection.packageWeight,
+      fallbackUnit: _config.item.amountUnit,
+    );
+    final inventoryWeight = weightInput.amount.isEmpty
+        ? null
+        : '${weightInput.amount} ${_weightUnitCode(weightInput.unit)}';
+    final nutrition = selection.nutrition ?? _config.item.nutrition;
+    if (action == InventoryReceiptManualProductAction.eatNow) {
+      if (nutrition?.hasAnyNutritionValue != true) {
+        return null;
+      }
+    }
+
+    final barcode = normalizeManualProductText(selection.barcode);
+    if (barcode == null) {
+      return null;
+    }
+
+    final updatedItem = _config.item
+        .copyWith(
+          name: selection.name,
+          brand: selection.brand,
+          barcode: barcode,
+          imageUrl: selection.imageUrl ?? _config.item.imageUrl,
+          weight: inventoryWeight,
+          servingSize: selection.servingSize ?? _config.item.servingSize,
+          servingQuantity:
+              selection.servingQuantity ?? _config.item.servingQuantity,
+          servingQuantityUnit:
+              selection.servingQuantityUnit ?? _config.item.servingQuantityUnit,
+          nutrition: nutrition,
+        )
+        .withDerivedAmount(
+          weight: inventoryWeight,
+          quantity: _config.item.quantity,
+          fallbackUnit: weightInput.unit,
+        );
+    final globalPackageWeight = _resolvedGlobalPackageWeightForSelection(
+      action: action,
+      selection: selection,
+    );
+    final selectedEditKind = _selectedProductEditKind(
+      selection: selection,
+      item: updatedItem,
+      globalPackageWeight: globalPackageWeight,
+    );
+    final effectiveSelectedProduct =
+        selectedEditKind == GlobalFoodItemEditKind.createNewCandidate
+        ? null
+        : selection;
+    return (
+      item: updatedItem,
+      selectedProduct: effectiveSelectedProduct?.externalProduct,
+      selectedGlobalFoodItemId: effectiveSelectedProduct?.globalFoodItemId,
+      requiresGlobalPersistence: _requiresGlobalPersistenceForSelection(
+        selection: effectiveSelectedProduct,
+        editKind: selectedEditKind,
+      ),
+      globalPackageWeight: globalPackageWeight,
     );
   }
 
@@ -987,12 +1085,21 @@ class InventoryReceiptManualProductController
             weight: _resolvedSearchWeight(),
             limit: _searchResultLimit,
           );
+      final filteredResults = results
+          .where(
+            (result) =>
+                result.nutrition?.hasEuMandatoryNutritionDeclaration == true,
+          )
+          .toList(growable: false);
 
       if (!ref.mounted || requestId != _activeSearchRequestId) {
         return;
       }
 
-      state = state.copyWith(isSearching: false, searchResults: results);
+      state = state.copyWith(
+        isSearching: false,
+        searchResults: filteredResults,
+      );
     } on Object catch (error, stackTrace) {
       log(
         'Manual product search failed for query "$query".',
@@ -1094,24 +1201,60 @@ class InventoryReceiptManualProductController
     );
   }
 
-  GlobalFoodItemEditKind _selectedProductEditKindForItem(InventoryItem item) {
+  GlobalFoodItemEditKind _selectedProductEditKindForItem(
+    InventoryItem item, {
+    required String? globalPackageWeight,
+  }) {
+    return _selectedProductEditKind(
+      selection: state.selectedProduct,
+      item: item,
+      globalPackageWeight: globalPackageWeight,
+    );
+  }
+
+  GlobalFoodItemEditKind _selectedProductEditKind({
+    required InventoryReceiptManualProductSelection? selection,
+    required InventoryItem item,
+    required String? globalPackageWeight,
+  }) {
     final selectedProduct = state.selectedProduct;
-    if (selectedProduct == null) {
+    final resolvedSelection = selection ?? selectedProduct;
+    if (resolvedSelection == null) {
       return GlobalFoodItemEditKind.createNewCandidate;
     }
 
     return classifyGlobalFoodItemEdit(
-      currentItem: _globalFoodItemFromSelection(selectedProduct),
+      currentItem: _globalFoodItemFromSelection(resolvedSelection),
       name: item.name,
       brand: item.brand,
       barcode: item.barcode,
       imageUrl: normalizeProductImageUrl(item.imageUrl),
-      packageWeight: item.weight,
+      packageWeight: globalPackageWeight,
       servingSize: item.servingSize,
       servingQuantity: item.servingQuantity,
       servingQuantityUnit: item.servingQuantityUnit,
       nutrition: item.nutrition,
     );
+  }
+
+  String? _resolvedGlobalPackageWeight({
+    required InventoryReceiptManualProductAction action,
+    required InventoryReceiptManualProductSelection? matchedProduct,
+  }) {
+    return _resolvedGlobalPackageWeightForSelection(
+      action: action,
+      selection: matchedProduct,
+    );
+  }
+
+  String? _resolvedGlobalPackageWeightForSelection({
+    required InventoryReceiptManualProductAction action,
+    required InventoryReceiptManualProductSelection? selection,
+  }) {
+    if (action == InventoryReceiptManualProductAction.addToInventory) {
+      return _resolvedWeight;
+    }
+    return selection?.packageWeight ?? _config.item.weight;
   }
 
   String _resolvedManualName({required String fallbackName}) {

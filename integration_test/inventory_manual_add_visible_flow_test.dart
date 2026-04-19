@@ -205,9 +205,12 @@ _ManualAddIntegrationHarness _buildHarness() {
         nutrition: GlobalFoodNutrition(
           qualityStatus: GlobalFoodNutritionQualityStatus.verified,
           per100Kcal: 100,
-          per100Protein: 10,
-          per100Carbs: 20,
           per100Fat: 3,
+          per100SaturatedFat: 2,
+          per100Carbs: 20,
+          per100Sugar: 20,
+          per100Protein: 10,
+          per100Salt: 0.1,
         ),
       ),
     ],
@@ -302,7 +305,9 @@ void main() {
     await _showStep(tester);
 
     final resultTile = find.byKey(
-      const Key('receipt_review_manual_search_result_4006381333931'),
+      const Key(
+        'receipt_review_manual_search_result_store_button_4006381333931',
+      ),
     );
     expect(resultTile, findsOneWidget);
 
@@ -323,7 +328,7 @@ void main() {
     expect(harness.inventoryRepository.appendedItems.single.name, 'Milk');
     expect(harness.globalFoodRepository.appendedItems, hasLength(1));
     expect(harness.barcodeCandidateRepository.recordedSelections, hasLength(1));
-    expect(launcherSearchField, findsOneWidget);
-    expect(searchField, findsNothing);
+    expect(launcherSearchField, findsNothing);
+    expect(searchField, findsOneWidget);
   });
 }

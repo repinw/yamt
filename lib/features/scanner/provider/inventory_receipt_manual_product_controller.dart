@@ -1,1 +1,1 @@
-export 'package:yamt/features/product_search/provider/inventory_receipt_manual_product_controller.dart';
+export 'package:yamt/features/product_search/provider/manual_product_search_controller.dart';

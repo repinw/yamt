@@ -14,7 +14,7 @@ import 'package:yamt/features/product_search/domain/'
 import 'package:yamt/features/product_search/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'inventory_receipt_manual_product_page.dart';
+    'manual_product_search_page.dart';
 
 const _swapGlobalFoodIdPrefix = 'global-food-';
 
@@ -60,6 +60,7 @@ Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
   final selection = await showModalBottomSheet<ReceiptCandidatePickerSelection>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
     builder: (sheetContext) {
@@ -115,9 +116,10 @@ Future<InventoryItemCandidateSwapRequest?> _manualEntryRequest({
   required InventoryItem item,
   required GlobalFoodItemMatcher matcher,
 }) async {
-  final result = await Navigator.of(context)
+  final result = await Navigator.of(context, rootNavigator: true)
       .push<InventoryReceiptManualProductResult>(
         MaterialPageRoute<InventoryReceiptManualProductResult>(
+          fullscreenDialog: true,
           builder: (routeContext) {
             return InventoryReceiptManualProductPage(
               item: item,

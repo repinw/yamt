@@ -24,11 +24,13 @@ export 'package:yamt/features/inventory/presentation/widgets/'
 export 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_lookup_candidate.dart'
     show
+        InventoryBarcodeCandidateAction,
         InventoryBarcodeLookupCandidate,
         InventoryBarcodeLookupCandidateSource,
         InventoryBarcodeNotFoundCallback,
         InventoryBarcodeProductSelectionCallback,
         inventoryBarcodeCandidateDedupeKey,
+        inventoryBarcodeCandidateWidgetKeySuffix,
         mergeInventoryBarcodeCandidates;
 
 const _inventoryBarcodeScannerLogName = 'InventoryBarcodeScannerPage';
@@ -41,6 +43,7 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
     required this.onProductSelected,
     super.key,
     this.onProductNotFound,
+    this.showActionButtons = true,
   });
 
   /// The title.
@@ -52,6 +55,9 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
   /// The on product not found.
   final InventoryBarcodeNotFoundCallback? onProductNotFound;
 
+  /// Whether candidate rows show explicit action buttons.
+  final bool showActionButtons;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,6 +65,7 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
       body: InventoryBarcodeScannerView(
         onProductSelected: onProductSelected,
         onProductNotFound: onProductNotFound,
+        showActionButtons: showActionButtons,
       ),
     );
   }
@@ -71,6 +78,7 @@ class InventoryBarcodeScannerView extends ConsumerStatefulWidget {
     required this.onProductSelected,
     super.key,
     this.onProductNotFound,
+    this.showActionButtons = true,
   });
 
   /// The on product selected.
@@ -78,6 +86,9 @@ class InventoryBarcodeScannerView extends ConsumerStatefulWidget {
 
   /// The on product not found.
   final InventoryBarcodeNotFoundCallback? onProductNotFound;
+
+  /// Whether candidate rows show explicit action buttons.
+  final bool showActionButtons;
 
   @override
   ConsumerState<InventoryBarcodeScannerView> createState() =>
@@ -258,21 +269,23 @@ class _InventoryBarcodeScannerViewState
       return !handled;
     }
 
-    final selected = candidates.length == 1
-        ? candidates.single
-        : await _pickCandidate(candidates);
-    if (!mounted || selected == null) {
+    final selection = await _pickCandidate(candidates);
+    if (!mounted || selection == null) {
       return true;
     }
 
-    final handled = await widget.onProductSelected(selected, scannedBarcode);
+    final handled = await widget.onProductSelected(
+      selection.candidate,
+      scannedBarcode,
+      selection.action,
+    );
     return !handled;
   }
 
-  Future<InventoryBarcodeLookupCandidate?> _pickCandidate(
+  Future<_InventoryBarcodeCandidateSelection?> _pickCandidate(
     List<InventoryBarcodeLookupCandidate> candidates,
   ) {
-    return showModalBottomSheet<InventoryBarcodeLookupCandidate>(
+    return showModalBottomSheet<_InventoryBarcodeCandidateSelection>(
       context: context,
       isScrollControlled: true,
       useRootNavigator: true,
@@ -281,7 +294,14 @@ class _InventoryBarcodeScannerViewState
       builder: (sheetContext) {
         return InventoryBarcodeCandidatePickerSheet(
           candidates: candidates,
-          onSelect: (candidate) => _popRoute(sheetContext, candidate),
+          showActionButtons: widget.showActionButtons,
+          onSelect: (candidate, action) => _popRoute(
+            sheetContext,
+            _InventoryBarcodeCandidateSelection(
+              candidate: candidate,
+              action: action,
+            ),
+          ),
         );
       },
     );
@@ -314,9 +334,9 @@ class _InventoryBarcodeScannerViewState
   }
 
   void _showSnackBar(String message) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _popRoute<T extends Object?>(BuildContext context, [T? result]) {
@@ -359,4 +379,14 @@ bool _isMobileBarcodeScanSupported() {
   }
   return defaultTargetPlatform == TargetPlatform.android ||
       defaultTargetPlatform == TargetPlatform.iOS;
+}
+
+class _InventoryBarcodeCandidateSelection {
+  const _InventoryBarcodeCandidateSelection({
+    required this.candidate,
+    required this.action,
+  });
+
+  final InventoryBarcodeLookupCandidate candidate;
+  final InventoryBarcodeCandidateAction action;
 }

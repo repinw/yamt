@@ -125,11 +125,21 @@ class InventoryBarcodeLookupCandidate {
   final int uniqueUserCount;
 }
 
+/// Action chosen for a barcode candidate.
+enum InventoryBarcodeCandidateAction {
+  /// Save to inventory.
+  addToInventory,
+
+  /// Continue into eat flow.
+  eatNow,
+}
+
 /// Defines inventory barcode product selection callback typedef.
 typedef InventoryBarcodeProductSelectionCallback =
     Future<bool> Function(
       InventoryBarcodeLookupCandidate candidate,
       String scannedBarcode,
+      InventoryBarcodeCandidateAction action,
     );
 
 /// Defines inventory barcode not found callback typedef.
@@ -177,6 +187,14 @@ String inventoryBarcodeCandidateDedupeKey(
   );
   return '${candidate.barcode}|$normalizedName|$normalizedBrand|'
       '$normalizedWeight';
+}
+
+/// Source-aware key suffix for barcode candidate widgets.
+String inventoryBarcodeCandidateWidgetKeySuffix(
+  InventoryBarcodeLookupCandidate candidate,
+) {
+  return '${candidate.source.name}|'
+      '${inventoryBarcodeCandidateDedupeKey(candidate)}';
 }
 
 String _normalizedBarcodeCandidateWeight(String? rawWeight) {

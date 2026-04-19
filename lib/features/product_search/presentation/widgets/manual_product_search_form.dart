@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
@@ -8,9 +9,11 @@ import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_search/presentation/widgets/inventory_receipt_manual_product_form_utils.dart';
+import 'package:yamt/features/product_search/presentation/widgets/inventory_product_candidate_widgets.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form_utils.dart';
 import 'package:yamt/features/product_search/provider/'
-    'inventory_receipt_manual_product_controller.dart';
+    'manual_product_search_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 final TextInputFormatter _singleDecimalInputFormatter =
@@ -28,6 +31,25 @@ final TextInputFormatter _singleDecimalInputFormatter =
 final _numericInputFormatters = <TextInputFormatter>[
   _singleDecimalInputFormatter,
 ];
+
+abstract final class _ManualProductFormFieldName {
+  static const name = 'manual_product_name';
+  static const brand = 'manual_product_brand';
+  static const weightAmount = 'manual_product_weight_amount';
+  static const weightUnit = 'manual_product_weight_unit';
+  static const kcal = 'manual_product_kcal';
+  static const fat = 'manual_product_fat';
+  static const saturatedFat = 'manual_product_saturated_fat';
+  static const carbs = 'manual_product_carbs';
+  static const sugar = 'manual_product_sugar';
+  static const protein = 'manual_product_protein';
+  static const salt = 'manual_product_salt';
+  static const polyunsaturatedFat = 'manual_product_polyunsaturated_fat';
+  static const fiber = 'manual_product_fiber';
+  static const optionalNutritionValue = 'manual_product_optional_value';
+  static const optionalNutritionUnit = 'manual_product_optional_unit';
+  static const optionalNutritionType = 'manual_product_optional_type';
+}
 
 String _sanitizeDecimalInput(String rawText) {
   final buffer = StringBuffer();
@@ -77,20 +99,31 @@ class InventoryReceiptManualProductPreviewData {
 class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
   /// The inventory receipt manual product launcher content.
   const InventoryReceiptManualProductLauncherContent({
+    required this.title,
     required this.searchController,
     required this.recentItems,
+    required this.onClose,
     required this.onSearchTap,
     required this.onVoiceSearchTap,
     required this.onRecentItemSelected,
     required this.onScanBarcode,
     super.key,
+    this.showRecentItemActions = false,
+    this.onRecentItemStoreSelected,
+    this.onRecentItemEatSelected,
   });
+
+  /// Dialog title.
+  final String title;
 
   /// The search controller.
   final TextEditingController searchController;
 
   /// The recent items.
   final List<InventoryItem> recentItems;
+
+  /// Close action.
+  final VoidCallback onClose;
 
   /// The on search tap.
   final VoidCallback onSearchTap;
@@ -104,61 +137,52 @@ class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
   /// The on scan barcode.
   final VoidCallback onScanBarcode;
 
+  /// Whether recent items show action buttons.
+  final bool showRecentItemActions;
+
+  /// The on recent item store selected.
+  final ValueChanged<InventoryItem>? onRecentItemStoreSelected;
+
+  /// The on recent item eat selected.
+  final ValueChanged<InventoryItem>? onRecentItemEatSelected;
+
   @override
   Widget build(BuildContext context) {
-    final insets = MediaQuery.viewInsetsOf(context).bottom;
+    final l10n = AppLocalizations.of(context)!;
 
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          AppSpacing.xl,
-          AppSpacing.xl,
-          AppSpacing.xl + insets,
+    return _ManualProductSearchShell(
+      title: title,
+      onClose: onClose,
+      searchBar: TextVoiceSearchBar(
+        controller: searchController,
+        label: l10n.inventoryReceiptReviewManualSearchLabel,
+        hintText: l10n.inventoryReceiptReviewManualSearchLabel,
+        voiceButtonKey: const Key('receipt_review_manual_voice_search_button'),
+        clearButtonKey: const Key(
+          'receipt_review_manual_launcher_search_clear_button',
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextVoiceSearchBar(
-              controller: searchController,
-              label: AppLocalizations.of(
-                context,
-              )!.inventoryReceiptReviewManualSearchLabel,
-              voiceButtonKey: const Key(
-                'receipt_review_manual_voice_search_button',
-              ),
-              clearButtonKey: const Key(
-                'receipt_review_manual_launcher_search_clear_button',
-              ),
-              fieldKey: const Key(
-                'receipt_review_manual_launcher_search_field',
-              ),
-              readOnly: true,
-              onTap: onSearchTap,
-              onVoiceSearchPressed: onVoiceSearchTap,
-              trailingActions: <Widget>[
-                SizedBox(
-                  height: 56,
-                  width: 56,
-                  child: IconButton.outlined(
-                    key: const Key('receipt_review_manual_scan_button'),
-                    onPressed: onScanBarcode,
-                    tooltip: AppLocalizations.of(
-                      context,
-                    )!.inventoryBarcodeMissingPromptScanNow,
-                    icon: const Icon(Icons.qr_code_scanner_outlined),
-                  ),
-                ),
-              ],
+        fieldKey: const Key('receipt_review_manual_launcher_search_field'),
+        readOnly: true,
+        onTap: onSearchTap,
+        onVoiceSearchPressed: onVoiceSearchTap,
+        trailingActions: <Widget>[
+          SizedBox(
+            height: 56,
+            width: 56,
+            child: IconButton.outlined(
+              key: const Key('receipt_review_manual_scan_button'),
+              onPressed: onScanBarcode,
+              tooltip: l10n.inventoryBarcodeMissingPromptScanNow,
+              icon: const Icon(Icons.qr_code_scanner_rounded),
             ),
-            const SizedBox(height: AppSpacing.sm),
-            _ManualProductRecentItems(
-              items: recentItems,
-              onSelect: onRecentItemSelected,
-            ),
-          ],
-        ),
+          ),
+        ],
+      ),
+      body: _ManualProductRecentItems(
+        items: recentItems,
+        onSelect: onRecentItemSelected,
+        onStoreSelect: showRecentItemActions ? onRecentItemStoreSelected : null,
+        onEatSelect: showRecentItemActions ? onRecentItemEatSelected : null,
       ),
     );
   }
@@ -168,6 +192,7 @@ class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
 class InventoryReceiptManualProductForm extends StatelessWidget {
   /// The inventory receipt manual product form.
   const InventoryReceiptManualProductForm({
+    required this.title,
     required this.searchController,
     required this.nameController,
     required this.brandController,
@@ -179,8 +204,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.recentItems,
     required this.weightAmountController,
     required this.selectedWeightUnit,
-    required this.eatNowAmountController,
-    required this.selectedEatNowUnit,
     required this.kcalController,
     required this.saturatedFatController,
     required this.polyunsaturatedFatController,
@@ -200,6 +223,8 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.availableOptionalNutritionTypes,
     required this.preview,
     required this.errorText,
+    required this.showActionSelector,
+    required this.selectedAction,
     required this.onSearchResultSelected,
     required this.onRecentItemSelected,
     required this.onScanBarcode,
@@ -210,21 +235,21 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.onOptionalNutritionTypeChanged,
     required this.onApplyOptionalNutrition,
     required this.onCancelOptionalNutrition,
-    required this.onEatNowUnitChanged,
     required this.onCancel,
     required this.onSave,
     super.key,
     this.autofocusSearch = false,
-    this.showEatImmediatelyOption = false,
-    this.eatImmediately = false,
-    this.canEatImmediately = false,
-    this.showEatNowAmountField = false,
     this.onSearchChanged,
     this.voiceSearchService,
     this.voiceSearchController,
     this.startVoiceSearchOnMount = false,
-    this.onEatImmediatelyChanged,
+    this.onSearchResultStoreSelected,
+    this.onSearchResultEatSelected,
+    this.onActionChanged,
   });
+
+  /// Dialog title.
+  final String title;
 
   /// The search controller.
   final TextEditingController searchController;
@@ -261,12 +286,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
 
   /// The selected weight unit.
   final InventoryAmountUnit selectedWeightUnit;
-
-  /// The eat now amount controller.
-  final TextEditingController eatNowAmountController;
-
-  /// The selected eat now unit.
-  final InventoryAmountUnit selectedEatNowUnit;
 
   /// The kcal controller.
   final TextEditingController kcalController;
@@ -326,20 +345,17 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   /// The error text.
   final String? errorText;
 
-  /// The show eat immediately option.
-  final bool showEatImmediatelyOption;
-
-  /// The eat immediately.
-  final bool eatImmediately;
-
-  /// Whether eat immediately.
-  final bool canEatImmediately;
-
-  /// The show eat now amount field.
-  final bool showEatNowAmountField;
+  /// Whether action selector visible.
+  final bool showActionSelector;
 
   /// The on search result selected.
   final ValueChanged<OffProductSearchResult> onSearchResultSelected;
+
+  /// The on search result store selected.
+  final ValueChanged<OffProductSearchResult>? onSearchResultStoreSelected;
+
+  /// The on search result eat selected.
+  final ValueChanged<OffProductSearchResult>? onSearchResultEatSelected;
 
   /// The on recent item selected.
   final ValueChanged<InventoryItem> onRecentItemSelected;
@@ -381,11 +397,11 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   /// The on cancel optional nutrition.
   final VoidCallback onCancelOptionalNutrition;
 
-  /// The on eat immediately changed.
-  final ValueChanged<bool>? onEatImmediatelyChanged;
+  /// The selected action.
+  final InventoryReceiptManualProductAction selectedAction;
 
-  /// The on eat now unit changed.
-  final ValueChanged<InventoryAmountUnit> onEatNowUnitChanged;
+  /// The on action changed.
+  final ValueChanged<InventoryReceiptManualProductAction>? onActionChanged;
 
   /// The on cancel.
   final VoidCallback onCancel;
@@ -396,54 +412,47 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final insets = MediaQuery.viewInsetsOf(context).bottom;
+    final colors = Theme.of(context).colorScheme;
 
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          AppSpacing.xl,
-          AppSpacing.xl,
-          AppSpacing.xl + insets,
-        ),
+    return _ManualProductSearchShell(
+      title: title,
+      onClose: onCancel,
+      searchBar: TextVoiceSearchBar(
+        controller: searchController,
+        label: l10n.inventoryReceiptReviewManualSearchLabel,
+        hintText: l10n.inventoryReceiptReviewManualSearchLabel,
+        isSearching: isSearching,
+        voiceButtonKey: const Key('receipt_review_manual_voice_search_button'),
+        clearButtonKey: const Key('receipt_review_manual_search_clear_button'),
+        fieldKey: const Key('receipt_review_manual_search_field'),
+        autofocus: autofocusSearch,
+        onChanged: onSearchChanged,
+        voiceSearchService: voiceSearchService,
+        voiceSearchController: voiceSearchController,
+        startVoiceSearchOnMount: startVoiceSearchOnMount,
+        trailingActions: <Widget>[
+          SizedBox(
+            height: 56,
+            width: 56,
+            child: IconButton.outlined(
+              key: const Key('receipt_review_manual_scan_button'),
+              onPressed: onScanBarcode,
+              tooltip: l10n.inventoryBarcodeMissingPromptScanNow,
+              icon: const Icon(Icons.qr_code_scanner_rounded),
+            ),
+          ),
+        ],
+      ),
+      body: FormBuilder(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextVoiceSearchBar(
-              controller: searchController,
-              label: l10n.inventoryReceiptReviewManualSearchLabel,
-              isSearching: isSearching,
-              voiceButtonKey: const Key(
-                'receipt_review_manual_voice_search_button',
-              ),
-              clearButtonKey: const Key(
-                'receipt_review_manual_search_clear_button',
-              ),
-              fieldKey: const Key('receipt_review_manual_search_field'),
-              autofocus: autofocusSearch,
-              onChanged: onSearchChanged,
-              voiceSearchService: voiceSearchService,
-              voiceSearchController: voiceSearchController,
-              startVoiceSearchOnMount: startVoiceSearchOnMount,
-              trailingActions: <Widget>[
-                SizedBox(
-                  height: 56,
-                  width: 56,
-                  child: IconButton.outlined(
-                    key: const Key('receipt_review_manual_scan_button'),
-                    onPressed: onScanBarcode,
-                    tooltip: l10n.inventoryBarcodeMissingPromptScanNow,
-                    icon: const Icon(Icons.qr_code_scanner_outlined),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
             if (searchResults.isNotEmpty)
               _ManualProductSearchResults(
                 results: searchResults,
                 onSelect: onSearchResultSelected,
+                onStoreSelect: onSearchResultStoreSelected,
+                onEatSelect: onSearchResultEatSelected,
               )
             else
               _ManualProductRecentItems(
@@ -457,6 +466,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
             if (showDetails) ...[
               const SizedBox(height: AppSpacing.lg),
               _ManualProductTextField(
+                name: _ManualProductFormFieldName.name,
                 controller: nameController,
                 label: l10n.inventoryReceiptReviewFieldName,
                 fieldKey: const Key('receipt_review_manual_name_field'),
@@ -464,6 +474,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
+                name: _ManualProductFormFieldName.brand,
                 controller: brandController,
                 label: l10n.inventoryReceiptReviewFieldBrand,
                 fieldKey: const Key('receipt_review_manual_brand_field'),
@@ -487,15 +498,12 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                   key: const Key('receipt_review_manual_nutrition_ocr_button'),
                   onPressed: onScanNutritionLabel,
                   icon: const Icon(Icons.document_scanner_outlined),
-                  label: Text(
-                    AppLocalizations.of(
-                      context,
-                    )!.caloriesBarcodeNotFoundOcrAction,
-                  ),
+                  label: Text(l10n.caloriesBarcodeNotFoundOcrAction),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
+                name: _ManualProductFormFieldName.kcal,
                 controller: kcalController,
                 label: l10n.caloriesPer100KcalLabel,
                 fieldKey: const Key('receipt_review_manual_kcal_field'),
@@ -506,6 +514,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
+                name: _ManualProductFormFieldName.fat,
                 controller: fatController,
                 label: l10n.caloriesPer100FatLabel,
                 fieldKey: const Key('receipt_review_manual_fat_field'),
@@ -516,6 +525,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
+                name: _ManualProductFormFieldName.saturatedFat,
                 controller: saturatedFatController,
                 label: l10n.caloriesPer100SaturatedFatLabel,
                 fieldKey: const Key(
@@ -528,6 +538,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
+                name: _ManualProductFormFieldName.carbs,
                 controller: carbsController,
                 label: l10n.caloriesPer100CarbsLabel,
                 fieldKey: const Key('receipt_review_manual_carbs_field'),
@@ -538,6 +549,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
+                name: _ManualProductFormFieldName.sugar,
                 controller: sugarController,
                 label: l10n.caloriesPer100SugarLabel,
                 fieldKey: const Key('receipt_review_manual_sugar_field'),
@@ -548,6 +560,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
+                name: _ManualProductFormFieldName.protein,
                 controller: proteinController,
                 label: l10n.caloriesPer100ProteinLabel,
                 fieldKey: const Key('receipt_review_manual_protein_field'),
@@ -558,6 +571,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               _ManualProductTextField(
+                name: _ManualProductFormFieldName.salt,
                 controller: saltController,
                 label: l10n.caloriesPer100SaltLabel,
                 fieldKey: const Key('receipt_review_manual_salt_field'),
@@ -569,6 +583,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               if (showPolyunsaturatedFatField) ...[
                 _ManualProductTextField(
+                  name: _ManualProductFormFieldName.polyunsaturatedFat,
                   controller: polyunsaturatedFatController,
                   label: l10n.caloriesPer100PolyunsaturatedFatLabel,
                   fieldKey: const Key(
@@ -583,6 +598,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
               ],
               if (showFiberField) ...[
                 _ManualProductTextField(
+                  name: _ManualProductFormFieldName.fiber,
                   controller: fiberController,
                   label: l10n.caloriesPer100FiberLabel,
                   fieldKey: const Key('receipt_review_manual_fiber_field'),
@@ -607,42 +623,25 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                   )
                 else
                   _OptionalNutritionAddRow(
-                    label: AppLocalizations.of(
-                      context,
-                    )!.inventoryReceiptReviewManualAddNutritionAction,
+                    label: l10n.inventoryReceiptReviewManualAddNutritionAction,
                     onPressed: onStartAddingOptionalNutrition,
                   ),
                 const SizedBox(height: AppSpacing.md),
               ],
-              if (showEatImmediatelyOption) ...[
-                _ManualProductEatImmediatelyOption(
-                  value: eatImmediately,
-                  enabled: canEatImmediately,
-                  onChanged: onEatImmediatelyChanged,
+              if (showActionSelector) ...[
+                _ManualProductActionSelector(
+                  selectedAction: selectedAction,
+                  onChanged: onActionChanged,
                 ),
-                if (showEatNowAmountField) ...[
-                  const SizedBox(height: AppSpacing.md),
-                  _ManualProductWeightFields(
-                    amountController: eatNowAmountController,
-                    selectedUnit: selectedEatNowUnit,
-                    onUnitChanged: onEatNowUnitChanged,
-                    amountFieldKey: const Key(
-                      'receipt_review_manual_eat_now_weight_field',
-                    ),
-                    unitFieldKey: const Key(
-                      'receipt_review_manual_eat_now_weight_unit_field',
-                    ),
-                    amountLabel: l10n.inventoryManualAddEatNowSizeLabel,
-                  ),
-                ],
+                const SizedBox(height: AppSpacing.md),
               ],
               if (errorText case final String message) ...[
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   message,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: colors.error),
                 ),
               ],
               const SizedBox(height: AppSpacing.lg),
@@ -662,9 +661,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
                           ? null
                           : onSave,
                       child: Text(
-                        AppLocalizations.of(
-                          context,
-                        )!.inventoryReceiptReviewManualDataSaveAction,
+                        l10n.inventoryReceiptReviewManualDataSaveAction,
                       ),
                     ),
                   ),
@@ -678,34 +675,207 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   }
 }
 
-class _ManualProductEatImmediatelyOption extends StatelessWidget {
-  const _ManualProductEatImmediatelyOption({
-    required this.value,
-    required this.enabled,
-    required this.onChanged,
+class _ManualProductSearchShell extends StatelessWidget {
+  const _ManualProductSearchShell({
+    required this.title,
+    required this.searchBar,
+    required this.body,
+    required this.onClose,
   });
 
-  final bool value;
-  final bool enabled;
-  final ValueChanged<bool>? onChanged;
+  final String title;
+  final Widget searchBar;
+  final Widget body;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final insets = MediaQuery.viewInsetsOf(context).bottom;
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.lg,
+          AppSpacing.xl,
+          AppSpacing.xl + insets,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _ManualProductDialogHeader(title: title, onClose: onClose),
+            const SizedBox(height: AppSpacing.lg),
+            Theme(
+              data: _buildSearchToolbarTheme(context),
+              child: searchBar,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Divider(
+              height: 1,
+              color: colors.outlineVariant.withValues(alpha: 0.55),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            body,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+ThemeData _buildSearchToolbarTheme(BuildContext context) {
+  final theme = Theme.of(context);
+  final colors = theme.colorScheme;
+  final shape = RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(AppRadius.xl),
+  );
+
+  return theme.copyWith(
+    inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+      hintStyle: theme.textTheme.bodyLarge?.copyWith(
+        color: colors.onSurfaceVariant,
+      ),
+      filled: true,
+      fillColor: colors.surfaceContainerLow.withValues(alpha: 0.96),
+      prefixIconColor: colors.primary,
+      suffixIconColor: colors.onSurfaceVariant,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        borderSide: BorderSide(color: colors.outlineVariant),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        borderSide: BorderSide(
+          color: colors.outlineVariant.withValues(alpha: 0.72),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        borderSide: BorderSide(color: colors.primary.withValues(alpha: 0.82)),
+      ),
+    ),
+    iconButtonTheme: IconButtonThemeData(
+      style: IconButton.styleFrom(
+        backgroundColor: colors.surfaceContainerLow.withValues(alpha: 0.96),
+        foregroundColor: colors.onSurfaceVariant,
+        side: BorderSide(
+          color: colors.outlineVariant.withValues(alpha: 0.72),
+        ),
+        shape: shape,
+      ),
+    ),
+  );
+}
+
+class _ManualProductDialogHeader extends StatelessWidget {
+  const _ManualProductDialogHeader({
+    required this.title,
+    required this.onClose,
+  });
+
+  final String title;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow.withValues(alpha: 0.96),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: colors.outlineVariant.withValues(alpha: 0.72),
+            ),
+          ),
+          child: CloseButton(
+            color: colors.onSurfaceVariant,
+            onPressed: onClose,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ManualProductActionSelector extends StatelessWidget {
+  const _ManualProductActionSelector({
+    required this.selectedAction,
+    this.onChanged,
+  });
+
+  final InventoryReceiptManualProductAction selectedAction;
+  final ValueChanged<InventoryReceiptManualProductAction>? onChanged;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return CheckboxListTile(
-      key: const Key('receipt_review_manual_eat_now_checkbox'),
-      value: value,
-      contentPadding: EdgeInsets.zero,
-      controlAffinity: ListTileControlAffinity.leading,
-      enabled: enabled,
-      title: Text(l10n.inventoryManualAddEatNowOption),
-      subtitle: enabled
-          ? null
-          : Text(l10n.inventoryManualAddEatNowRequiresNutrition),
-      onChanged: onChanged == null
-          ? null
-          : (checked) => onChanged!(checked ?? false),
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            key: const Key('receipt_review_manual_inventory_action_button'),
+            onPressed: onChanged == null
+                ? null
+                : () => onChanged!(
+                    InventoryReceiptManualProductAction.addToInventory,
+                  ),
+            style: _buttonStyle(
+              context: context,
+              isSelected:
+                  selectedAction ==
+                  InventoryReceiptManualProductAction.addToInventory,
+            ),
+            child: Text(l10n.inventoryManualAddResultActionInventory),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: OutlinedButton(
+            key: const Key('receipt_review_manual_eat_action_button'),
+            onPressed: onChanged == null
+                ? null
+                : () => onChanged!(InventoryReceiptManualProductAction.eatNow),
+            style: _buttonStyle(
+              context: context,
+              isSelected:
+                  selectedAction == InventoryReceiptManualProductAction.eatNow,
+            ),
+            child: Text(l10n.inventoryManualAddResultActionEat),
+          ),
+        ),
+      ],
+    );
+  }
+
+  ButtonStyle _buttonStyle({
+    required BuildContext context,
+    required bool isSelected,
+  }) {
+    final colors = Theme.of(context).colorScheme;
+    return OutlinedButton.styleFrom(
+      backgroundColor: isSelected ? colors.secondaryContainer : null,
+      foregroundColor: isSelected ? colors.onSecondaryContainer : null,
+      side: BorderSide(
+        color: isSelected ? colors.secondary : colors.outlineVariant,
+      ),
     );
   }
 }
@@ -769,6 +939,7 @@ class _OptionalNutritionComposer extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _ManualProductTextField(
+          name: _ManualProductFormFieldName.optionalNutritionValue,
           controller: valueController,
           label: l10n.inventoryReceiptReviewManualNutritionValueLabel,
           fieldKey: const Key(
@@ -782,12 +953,12 @@ class _OptionalNutritionComposer extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: DropdownButtonFormField<InventoryAmountUnit>(
+              child: FormBuilderDropdown<InventoryAmountUnit>(
                 key: const Key(
                   'receipt_review_manual_optional_nutrition_unit_field',
                 ),
+                name: _ManualProductFormFieldName.optionalNutritionUnit,
                 initialValue: selectedUnit,
-                isExpanded: true,
                 decoration: InputDecoration(
                   labelText:
                       l10n.inventoryReceiptReviewManualNutritionUnitLabel,
@@ -813,36 +984,33 @@ class _OptionalNutritionComposer extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               flex: 2,
-              child:
-                  DropdownButtonFormField<
-                    InventoryReceiptOptionalNutritionType
-                  >(
-                    key: const Key(
-                      'receipt_review_manual_optional_nutrition_type_field',
+              child: FormBuilderDropdown<InventoryReceiptOptionalNutritionType>(
+                key: const Key(
+                  'receipt_review_manual_optional_nutrition_type_field',
+                ),
+                name: _ManualProductFormFieldName.optionalNutritionType,
+                initialValue: selectedType,
+                decoration: InputDecoration(
+                  labelText:
+                      l10n.inventoryReceiptReviewManualNutritionTypeLabel,
+                  border: const OutlineInputBorder(),
+                ),
+                items: [
+                  for (final type in availableTypes)
+                    DropdownMenuItem<InventoryReceiptOptionalNutritionType>(
+                      value: type,
+                      child: Text(
+                        _optionalNutritionTypeLabel(l10n, type),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    initialValue: selectedType,
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      labelText:
-                          l10n.inventoryReceiptReviewManualNutritionTypeLabel,
-                      border: const OutlineInputBorder(),
-                    ),
-                    items: [
-                      for (final type in availableTypes)
-                        DropdownMenuItem<InventoryReceiptOptionalNutritionType>(
-                          value: type,
-                          child: Text(
-                            _optionalNutritionTypeLabel(l10n, type),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        onTypeChanged(value);
-                      }
-                    },
-                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    onTypeChanged(value);
+                  }
+                },
+              ),
             ),
           ],
         ),
@@ -900,6 +1068,7 @@ class _ManualProductWeightFields extends StatelessWidget {
         Expanded(
           flex: 3,
           child: _ManualProductTextField(
+            name: _ManualProductFormFieldName.weightAmount,
             controller: amountController,
             label: amountLabel,
             fieldKey: amountFieldKey,
@@ -910,8 +1079,9 @@ class _ManualProductWeightFields extends StatelessWidget {
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           flex: 2,
-          child: DropdownButtonFormField<InventoryAmountUnit>(
+          child: FormBuilderDropdown<InventoryAmountUnit>(
             key: unitFieldKey,
+            name: _ManualProductFormFieldName.weightUnit,
             initialValue: selectedUnit,
             decoration: InputDecoration(
               labelText: l10n.inventoryReceiptReviewFieldWeightUnit,
@@ -958,6 +1128,7 @@ String _optionalNutritionTypeLabel(
 
 class _ManualProductTextField extends StatelessWidget {
   const _ManualProductTextField({
+    required this.name,
     required this.controller,
     required this.label,
     required this.fieldKey,
@@ -965,6 +1136,7 @@ class _ManualProductTextField extends StatelessWidget {
     this.inputFormatters,
   });
 
+  final String name;
   final TextEditingController controller;
   final String label;
   final Key fieldKey;
@@ -973,11 +1145,13 @@ class _ManualProductTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return FormBuilderTextField(
       key: fieldKey,
+      name: name,
       controller: controller,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
+      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -990,49 +1164,81 @@ class _ManualProductSearchResults extends StatelessWidget {
   const _ManualProductSearchResults({
     required this.results,
     required this.onSelect,
+    this.onStoreSelect,
+    this.onEatSelect,
   });
 
   final List<OffProductSearchResult> results;
   final ValueChanged<OffProductSearchResult> onSelect;
+  final ValueChanged<OffProductSearchResult>? onStoreSelect;
+  final ValueChanged<OffProductSearchResult>? onEatSelect;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     if (results.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border.all(color: colors.outlineVariant),
-        borderRadius: BorderRadius.circular(AppRadius.md),
+    return Column(
+      children: [
+        for (var index = 0; index < results.length; index++) ...[
+          Builder(
+            builder: (context) {
+              final result = results[index];
+              final showsActionButtons =
+                  onStoreSelect != null && onEatSelect != null;
+              return InventoryProductCandidateTile(
+                key: Key('receipt_review_manual_search_result_${result.code}'),
+                name: result.name,
+                brand: result.brand,
+                imageUrl: result.imageUrl,
+                packageWeight: result.packageWeight,
+                nutrition: result.nutrition,
+                onTap: () => onSelect(result),
+                trailing: showsActionButtons
+                    ? _ManualProductSearchActions(
+                        result: result,
+                        onStore: onStoreSelect!,
+                        onEat: onEatSelect!,
+                      )
+                    : null,
+              );
+            },
+          ),
+          if (index != results.length - 1)
+            const SizedBox(height: AppSpacing.md),
+        ],
+      ],
+    );
+  }
+}
+
+class _ManualProductSearchActions extends StatelessWidget {
+  const _ManualProductSearchActions({
+    required this.result,
+    required this.onStore,
+    required this.onEat,
+  });
+
+  final OffProductSearchResult result;
+  final ValueChanged<OffProductSearchResult> onStore;
+  final ValueChanged<OffProductSearchResult> onEat;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return InventoryProductCandidateActions(
+      inventoryLabel: l10n.inventoryManualAddResultActionInventory,
+      eatLabel: l10n.inventoryManualAddResultActionEat,
+      inventoryButtonKey: Key(
+        'receipt_review_manual_search_result_store_button_${result.code}',
       ),
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: results.length,
-        separatorBuilder: (_, _) =>
-            Divider(height: 1, color: colors.outlineVariant),
-        itemBuilder: (context, index) {
-          final result = results[index];
-          return InkWell(
-            key: Key('receipt_review_manual_search_result_${result.code}'),
-            onTap: () => onSelect(result),
-            child: Padding(
-              padding: AppInsets.card,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _ManualProductSearchImage(imageUrl: result.imageUrl),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(child: _ManualProductSearchDetails(result: result)),
-                ],
-              ),
-            ),
-          );
-        },
+      eatButtonKey: Key(
+        'receipt_review_manual_search_result_eat_button_${result.code}',
       ),
+      onInventory: () => onStore(result),
+      onEat: () => onEat(result),
     );
   }
 }
@@ -1041,10 +1247,14 @@ class _ManualProductRecentItems extends StatelessWidget {
   const _ManualProductRecentItems({
     required this.items,
     required this.onSelect,
+    this.onStoreSelect,
+    this.onEatSelect,
   });
 
   final List<InventoryItem> items;
   final ValueChanged<InventoryItem> onSelect;
+  final ValueChanged<InventoryItem>? onStoreSelect;
+  final ValueChanged<InventoryItem>? onEatSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -1052,7 +1262,6 @@ class _ManualProductRecentItems extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
     return Column(
@@ -1060,239 +1269,57 @@ class _ManualProductRecentItems extends StatelessWidget {
       children: [
         Text(
           l10n.inventoryReceiptReviewRecentProductsTitle,
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border.all(color: colors.outlineVariant),
-            borderRadius: BorderRadius.circular(AppRadius.md),
-          ),
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: items.length,
-            separatorBuilder: (_, _) =>
-                Divider(height: 1, color: colors.outlineVariant),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return InkWell(
-                key: Key('receipt_review_manual_recent_item_${item.id}'),
-                onTap: () => onSelect(item),
-                child: Padding(
-                  padding: AppInsets.card,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _ManualProductSearchImage(imageUrl: item.imageUrl),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: _ManualProductRecentItemDetails(item: item),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w700,
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _ManualProductSearchDetails extends StatelessWidget {
-  const _ManualProductSearchDetails({required this.result});
-
-  final OffProductSearchResult result;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final l10n = AppLocalizations.of(context)!;
-    final brand = normalizeManualProductText(result.brand ?? '');
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          result.name,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: textTheme.titleSmall,
-        ),
-        if (brand != null) ...[
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            brand,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: textTheme.bodyMedium?.copyWith(
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-        ],
-        if (result.nutrition?.hasAnyNutritionValue == true) ...[
-          const SizedBox(height: AppSpacing.xs),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.xxs,
-            children: [
-              if (result.nutrition?.per100Kcal != null)
-                _ManualProductNutritionValue(
-                  value: result.nutrition!.per100Kcal!.round().toString(),
-                  label: l10n.caloriesUnitKcal,
-                ),
-              if (result.nutrition?.per100Carbs != null)
-                _ManualProductNutritionValue(
-                  value: _formatNutritionValue(result.nutrition!.per100Carbs!),
-                  label: l10n.inventoryNutritionCarbsShortLabel,
-                ),
-              if (result.nutrition?.per100Protein != null)
-                _ManualProductNutritionValue(
-                  value: _formatNutritionValue(
-                    result.nutrition!.per100Protein!,
-                  ),
-                  label: l10n.caloriesProteinLabel,
-                ),
-              if (result.nutrition?.per100Fat != null)
-                _ManualProductNutritionValue(
-                  value: _formatNutritionValue(result.nutrition!.per100Fat!),
-                  label: l10n.caloriesFatLabel,
-                ),
+        const SizedBox(height: AppSpacing.md),
+        Column(
+          children: [
+            for (var index = 0; index < items.length; index++) ...[
+              Builder(
+                builder: (context) {
+                  final item = items[index];
+                  final showsActionButtons =
+                      onStoreSelect != null && onEatSelect != null;
+                  final inventoryButtonKey = Key(
+                    'receipt_review_manual_recent_item_store_button_'
+                    '${item.id}',
+                  );
+                  final eatButtonKey = Key(
+                    'receipt_review_manual_recent_item_eat_button_'
+                    '${item.id}',
+                  );
+                  return InventoryProductCandidateTile(
+                    key: Key('receipt_review_manual_recent_item_${item.id}'),
+                    name: item.name,
+                    brand: item.brand,
+                    imageUrl: item.imageUrl,
+                    packageWeight: item.weight,
+                    nutrition: item.nutrition,
+                    onTap: () => onSelect(item),
+                    trailing: showsActionButtons
+                        ? InventoryProductCandidateActions(
+                            inventoryLabel:
+                                l10n.inventoryManualAddResultActionInventory,
+                            eatLabel: l10n.inventoryManualAddResultActionEat,
+                            inventoryButtonKey: inventoryButtonKey,
+                            eatButtonKey: eatButtonKey,
+                            onInventory: () => onStoreSelect!(item),
+                            onEat: () => onEatSelect!(item),
+                          )
+                        : null,
+                  );
+                },
+              ),
+              if (index != items.length - 1)
+                const SizedBox(height: AppSpacing.md),
             ],
-          ),
-        ],
+          ],
+        ),
       ],
     );
   }
-}
-
-class _ManualProductRecentItemDetails extends StatelessWidget {
-  const _ManualProductRecentItemDetails({required this.item});
-
-  final InventoryItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final brand = normalizeManualProductText(item.brand ?? '');
-    final weight = normalizeManualProductText(item.weight ?? '');
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          item.name,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: textTheme.titleSmall,
-        ),
-        if (brand != null) ...[
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            brand,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: textTheme.bodyMedium?.copyWith(
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-        ],
-        if (weight != null) ...[
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            weight,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: textTheme.bodySmall?.copyWith(
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _ManualProductNutritionValue extends StatelessWidget {
-  const _ManualProductNutritionValue({
-    required this.value,
-    required this.label,
-  });
-
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: '$value ',
-            style: textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          TextSpan(text: label),
-        ],
-      ),
-      style: textTheme.bodySmall,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-    );
-  }
-}
-
-class _ManualProductSearchImage extends StatelessWidget {
-  const _ManualProductSearchImage({required this.imageUrl});
-
-  static const _imageSize = 48.0;
-
-  final String? imageUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final resolvedUrl = normalizeProductImageUrl(imageUrl);
-    if (resolvedUrl == null) {
-      return SizedBox.square(
-        dimension: _imageSize,
-        child: Icon(
-          Icons.inventory_2_outlined,
-          size: _imageSize,
-          color: colors.onSurfaceVariant,
-        ),
-      );
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppRadius.md),
-      child: AppCachedNetworkImage(
-        imageUrl: resolvedUrl,
-        width: _imageSize,
-        height: _imageSize,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return SizedBox.square(
-            dimension: _imageSize,
-            child: Icon(
-              Icons.inventory_2_outlined,
-              size: _imageSize,
-              color: colors.onSurfaceVariant,
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-String _formatNutritionValue(double value) {
-  final hasFraction = value % 1 != 0;
-  return hasFraction ? value.toStringAsFixed(1) : value.toStringAsFixed(0);
 }
 
 class _ManualProductPreview extends StatelessWidget {

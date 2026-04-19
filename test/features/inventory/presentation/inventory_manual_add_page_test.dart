@@ -416,32 +416,16 @@ Future<void> _pumpUi(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 400));
 }
 
-Future<void> _scrollIntoView(WidgetTester tester, Finder finder) async {
-  await tester.dragUntilVisible(
-    finder,
-    find.byType(Scrollable).first,
-    const Offset(0, -200),
+Finder _barcodeCandidateActionButton(
+  InventoryBarcodeLookupCandidate candidate,
+  InventoryBarcodeCandidateAction action,
+) {
+  final prefix = action == InventoryBarcodeCandidateAction.addToInventory
+      ? 'inventory_barcode_candidate_store_button_'
+      : 'inventory_barcode_candidate_eat_button_';
+  return find.byKey(
+    Key('$prefix${inventoryBarcodeCandidateWidgetKeySuffix(candidate)}'),
   );
-  await _pumpUi(tester);
-}
-
-Future<void> _pressFilledButton(WidgetTester tester, Finder finder) async {
-  final button = tester.widget<FilledButton>(finder);
-  expect(button.onPressed, isNotNull);
-  button.onPressed!.call();
-  await tester.pumpAndSettle();
-}
-
-Future<void> _setCheckboxValue(
-  WidgetTester tester,
-  Finder finder,
-  bool value,
-) async {
-  final checkbox = tester.widget<CheckboxListTile>(finder);
-  expect(checkbox.onChanged, isNotNull);
-  checkbox.onChanged!(value);
-  await _pumpUi(tester);
-  expect(tester.widget<CheckboxListTile>(finder).value, value);
 }
 
 void _installFakeScannerPlatform(WidgetTester tester) {
@@ -471,24 +455,26 @@ void main() {
   ) async {
     _installFakeScannerPlatform(tester);
 
+    const milkProduct = OffProductSearchResult(
+      code: '4006381333931',
+      name: 'Milk',
+      brand: 'Brand',
+      score: 99,
+      packageWeight: '1 l',
+      imageUrl: 'https://example.com/milk.png',
+      nutrition: GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Kcal: 100,
+        per100Fat: 3,
+        per100SaturatedFat: 2,
+        per100Carbs: 20,
+        per100Sugar: 20,
+        per100Protein: 10,
+        per100Salt: 0.1,
+      ),
+    );
     final offRepository = _RecordingOffProductSearchRepository(
-      <OffProductSearchResult>[
-        const OffProductSearchResult(
-          code: '4006381333931',
-          name: 'Milk',
-          brand: 'Brand',
-          score: 99,
-          packageWeight: '1 l',
-          imageUrl: 'https://example.com/milk.png',
-          nutrition: GlobalFoodNutrition(
-            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-            per100Kcal: 100,
-            per100Protein: 10,
-            per100Carbs: 20,
-            per100Fat: 3,
-          ),
-        ),
-      ],
+      <OffProductSearchResult>[milkProduct],
     );
     final inventoryRepository = _RecordingInventoryItemRepository();
     addTearDown(inventoryRepository.dispose);
@@ -522,26 +508,22 @@ void main() {
     expect(offRepository.lastBarcode, '4006381333931');
     expect(inventoryRepository.appendedItems, isEmpty);
     expect(globalFoodRepository.appendedItems, isEmpty);
-    final searchField = tester.widget<TextField>(
-      find.byKey(const Key('receipt_review_manual_search_field')),
-    );
-    final previewName = tester.widget<Text>(
-      find.byKey(const Key('receipt_review_manual_preview_name')),
-    );
-    expect(searchField.controller?.text, 'Milk');
-    expect(previewName.data, 'Milk');
-    expect(
-      find.descendant(
-        of: find.byKey(const Key('receipt_review_manual_preview')),
-        matching: find.text('Brand'),
+    expect(find.byKey(inventoryBarcodeCandidateSheetKey), findsOneWidget);
+
+    await tester.tap(
+      _barcodeCandidateActionButton(
+        InventoryBarcodeLookupCandidate.fromOffProduct(milkProduct),
+        InventoryBarcodeCandidateAction.addToInventory,
       ),
+    );
+    await _pumpUi(tester);
+
+    expect(
+      find.byKey(const Key('receipt_review_manual_search_field')),
       findsOneWidget,
     );
     expect(
-      find.descendant(
-        of: find.byKey(const Key('receipt_review_manual_preview')),
-        matching: find.text('1000 ml'),
-      ),
+      find.byKey(const Key('receipt_review_manual_preview_name')),
       findsOneWidget,
     );
 
@@ -619,13 +601,28 @@ void main() {
       _fakeScannerPlatform().emitBarcode('4316268671224');
       await _pumpUi(tester);
 
-      final checkbox = tester.widget<CheckboxListTile>(
-        find.byKey(const Key('receipt_review_manual_eat_now_checkbox')),
+      final eatActionButton = _barcodeCandidateActionButton(
+        InventoryBarcodeLookupCandidate.fromOffProduct(
+          const OffProductSearchResult(
+            code: '4316268671224',
+            name: 'Cashews Sour Creme & Onion',
+            brand: 'Clarkys',
+            score: 100,
+          ),
+        ),
+        InventoryBarcodeCandidateAction.eatNow,
       );
-      expect(checkbox.enabled, isFalse);
+      expect(eatActionButton, findsOneWidget);
+      await tester.ensureVisible(eatActionButton);
+      await tester.tap(eatActionButton);
+      await _pumpUi(tester);
       expect(
-        find.text('Only available when nutrition values are present.'),
-        findsOneWidget,
+        tester
+            .widget<FilledButton>(
+              find.byKey(const Key('receipt_review_manual_save_button')),
+            )
+            .onPressed,
+        isNull,
       );
     },
   );
@@ -640,24 +637,26 @@ void main() {
     when(() => auth.currentUser).thenReturn(user);
     when(() => user.uid).thenReturn('user-1');
 
+    const milkProduct = OffProductSearchResult(
+      code: '4006381333931',
+      name: 'Milk',
+      brand: 'Brand',
+      score: 99,
+      packageWeight: '1 l',
+      imageUrl: 'https://example.com/milk.png',
+      nutrition: GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Kcal: 100,
+        per100Fat: 3,
+        per100SaturatedFat: 2,
+        per100Carbs: 20,
+        per100Sugar: 20,
+        per100Protein: 10,
+        per100Salt: 0.1,
+      ),
+    );
     final offRepository = _RecordingOffProductSearchRepository(
-      <OffProductSearchResult>[
-        const OffProductSearchResult(
-          code: '4006381333931',
-          name: 'Milk',
-          brand: 'Brand',
-          score: 99,
-          packageWeight: '1 l',
-          imageUrl: 'https://example.com/milk.png',
-          nutrition: GlobalFoodNutrition(
-            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-            per100Kcal: 100,
-            per100Protein: 10,
-            per100Carbs: 20,
-            per100Fat: 3,
-          ),
-        ),
-      ],
+      <OffProductSearchResult>[milkProduct],
     );
     final inventoryRepository = _RecordingInventoryItemRepository();
     addTearDown(inventoryRepository.dispose);
@@ -688,22 +687,13 @@ void main() {
     _fakeScannerPlatform().emitBarcode('4006381333931');
     await _pumpUi(tester);
 
-    final eatNowCheckbox = find.byKey(
-      const Key('receipt_review_manual_eat_now_checkbox'),
+    final eatActionButton = _barcodeCandidateActionButton(
+      InventoryBarcodeLookupCandidate.fromOffProduct(milkProduct),
+      InventoryBarcodeCandidateAction.eatNow,
     );
-    await tester.ensureVisible(eatNowCheckbox);
-    await _setCheckboxValue(tester, eatNowCheckbox, true);
-    await tester.enterText(
-      find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
-      '250',
-    );
+    await tester.ensureVisible(eatActionButton);
+    await tester.tap(eatActionButton);
     await _pumpUi(tester);
-
-    final manualSaveButton = find.byKey(
-      const Key('receipt_review_manual_save_button'),
-    );
-    await _scrollIntoView(tester, manualSaveButton);
-    await _pressFilledButton(tester, manualSaveButton);
 
     expect(
       find.byKey(const Key('inventory_item_amount_dialog_field')),
@@ -712,7 +702,7 @@ void main() {
     final amountField = tester.widget<TextField>(
       find.byKey(const Key('inventory_item_amount_dialog_field')),
     );
-    expect(amountField.controller?.text, '250');
+    expect(amountField.controller?.text, '1000');
     expect(
       find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
       findsOneWidget,
@@ -733,7 +723,8 @@ void main() {
     );
     expect(inventoryCommitStore.pendingConsumption, isNotNull);
     expect(inventoryCommitStore.pendingConsumption?.itemId, isNotEmpty);
-    expect(inventoryCommitStore.pendingConsumption?.amount, 250);
+    expect(inventoryCommitStore.pendingConsumption?.amount, 1000);
+    expect(find.text('Milk eaten.'), findsOneWidget);
   });
 
   testWidgets(
@@ -750,9 +741,12 @@ void main() {
             nutrition: GlobalFoodNutrition(
               qualityStatus: GlobalFoodNutritionQualityStatus.verified,
               per100Kcal: 100,
-              per100Protein: 10,
-              per100Carbs: 20,
               per100Fat: 3,
+              per100SaturatedFat: 2,
+              per100Carbs: 20,
+              per100Sugar: 20,
+              per100Protein: 10,
+              per100Salt: 0.1,
             ),
           ),
         ],
@@ -788,7 +782,9 @@ void main() {
 
       await tester.tap(
         find.byKey(
-          const Key('receipt_review_manual_search_result_4006381333931'),
+          const Key(
+            'receipt_review_manual_search_result_store_button_4006381333931',
+          ),
         ),
       );
       await _pumpUi(tester);
@@ -807,6 +803,7 @@ void main() {
       await _pumpUi(tester);
 
       expect(inventoryRepository.appendedItems, hasLength(1));
+      expect(find.text('Product added to inventory.'), findsOneWidget);
       expect(
         find.byKey(const Key('receipt_review_manual_search_field')),
         findsOneWidget,
@@ -818,6 +815,20 @@ void main() {
       expect(
         find.byKey(const Key('receipt_review_manual_save_button')),
         findsNothing,
+      );
+
+      await tester.tap(
+        find.byKey(
+          const Key(
+            'receipt_review_manual_search_result_store_button_4006381333931',
+          ),
+        ),
+      );
+      await _pumpUi(tester);
+
+      expect(
+        find.byKey(const Key('receipt_review_manual_save_button')),
+        findsOneWidget,
       );
     },
   );
@@ -841,9 +852,12 @@ void main() {
             nutrition: GlobalFoodNutrition(
               qualityStatus: GlobalFoodNutritionQualityStatus.verified,
               per100Kcal: 100,
-              per100Protein: 10,
-              per100Carbs: 20,
               per100Fat: 3,
+              per100SaturatedFat: 2,
+              per100Carbs: 20,
+              per100Sugar: 20,
+              per100Protein: 10,
+              per100Salt: 0.1,
             ),
           ),
         ],
@@ -882,27 +896,10 @@ void main() {
 
       await tester.tap(
         find.byKey(
-          const Key('receipt_review_manual_search_result_4006381333931'),
+          const Key(
+            'receipt_review_manual_search_result_eat_button_4006381333931',
+          ),
         ),
-      );
-      await _pumpUi(tester);
-
-      final eatNowCheckbox = find.byKey(
-        const Key('receipt_review_manual_eat_now_checkbox'),
-      );
-      await tester.ensureVisible(eatNowCheckbox);
-      await _setCheckboxValue(tester, eatNowCheckbox, true);
-      await tester.enterText(
-        find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
-        '250',
-      );
-      await _pumpUi(tester);
-
-      await tester.ensureVisible(
-        find.byKey(const Key('receipt_review_manual_save_button')),
-      );
-      await tester.tap(
-        find.byKey(const Key('receipt_review_manual_save_button')),
       );
       await _pumpUi(tester);
 
@@ -912,6 +909,10 @@ void main() {
       );
       expect(
         find.byKey(const Key('receipt_review_manual_search_field')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const Key('receipt_review_manual_save_button')),
         findsNothing,
       );
 
@@ -934,28 +935,139 @@ void main() {
   );
 
   testWidgets(
-    'eat now shows save error and does not open eat flow when persisting fails',
+    'eat now from search result without package size asks for consumed amount',
     (tester) async {
-      _installFakeScannerPlatform(tester);
+      final auth = _MockFirebaseAuth();
+      final user = _MockUser();
+      when(() => auth.currentUser).thenReturn(user);
+      when(() => user.uid).thenReturn('user-1');
 
       final offRepository = _RecordingOffProductSearchRepository(
         <OffProductSearchResult>[
           const OffProductSearchResult(
             code: '4006381333931',
-            name: 'Milk',
+            name: 'Banana',
             brand: 'Brand',
             score: 99,
-            packageWeight: '1 l',
-            imageUrl: 'https://example.com/milk.png',
             nutrition: GlobalFoodNutrition(
               qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-              per100Kcal: 100,
-              per100Protein: 10,
-              per100Carbs: 20,
-              per100Fat: 3,
+              per100Kcal: 89,
+              per100Fat: 0,
+              per100SaturatedFat: 0,
+              per100Carbs: 23,
+              per100Sugar: 12,
+              per100Protein: 1,
+              per100Salt: 0,
             ),
           ),
         ],
+      );
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      addTearDown(inventoryRepository.dispose);
+      final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(calorieLogRepository.dispose);
+      final calorieProductCacheRepository = FakeCalorieProductCacheRepository();
+      final inventoryCommitStore = _RecordingInventoryCalorieEntryCommitStore();
+
+      await tester.pumpWidget(
+        _buildHarness(
+          auth: auth,
+          offRepository: offRepository,
+          inventoryRepository: inventoryRepository,
+          globalFoodRepository: globalFoodRepository,
+          calorieLogRepository: calorieLogRepository,
+          calorieProductCacheRepository: calorieProductCacheRepository,
+          inventoryCommitStore: inventoryCommitStore,
+        ),
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+      );
+      await _pumpUi(tester);
+
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_search_field')),
+        'Banana',
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(
+          const Key(
+            'receipt_review_manual_search_result_eat_button_4006381333931',
+          ),
+        ),
+      );
+      await _pumpUi(tester);
+
+      expect(
+        find.byKey(const Key('inventory_manual_add_eat_amount_field')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('receipt_review_manual_save_button')),
+        findsNothing,
+      );
+
+      await tester.enterText(
+        find.byKey(const Key('inventory_manual_add_eat_amount_field')),
+        '200',
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('inventory_manual_add_eat_confirm_button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('inventory_item_amount_dialog_field')),
+        findsOneWidget,
+      );
+      final amountField = tester.widget<TextField>(
+        find.byKey(const Key('inventory_item_amount_dialog_field')),
+      );
+      expect(amountField.controller?.text, '200');
+
+      final logButton = find.text('Log');
+      await tester.ensureVisible(logButton);
+      await tester.tap(logButton);
+      await tester.pumpAndSettle();
+
+      expect(inventoryRepository.appendedItems, hasLength(1));
+      expect(inventoryRepository.appendedItems.single.weight, '200 g');
+      expect(inventoryCommitStore.pendingConsumption?.amount, 200);
+    },
+  );
+
+  testWidgets(
+    'eat now shows save error and does not open eat flow when persisting fails',
+    (tester) async {
+      _installFakeScannerPlatform(tester);
+
+      const milkProduct = OffProductSearchResult(
+        code: '4006381333931',
+        name: 'Milk',
+        brand: 'Brand',
+        score: 99,
+        packageWeight: '1 l',
+        imageUrl: 'https://example.com/milk.png',
+        nutrition: GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+          per100Kcal: 100,
+          per100Fat: 3,
+          per100SaturatedFat: 2,
+          per100Carbs: 20,
+          per100Sugar: 20,
+          per100Protein: 10,
+          per100Salt: 0.1,
+        ),
+      );
+      final offRepository = _RecordingOffProductSearchRepository(
+        <OffProductSearchResult>[milkProduct],
       );
       final inventoryRepository = _FailingInventoryItemRepository();
       addTearDown(inventoryRepository.dispose);
@@ -978,22 +1090,13 @@ void main() {
       _fakeScannerPlatform().emitBarcode('4006381333931');
       await _pumpUi(tester);
 
-      final eatNowCheckbox = find.byKey(
-        const Key('receipt_review_manual_eat_now_checkbox'),
+      final eatActionButton = _barcodeCandidateActionButton(
+        InventoryBarcodeLookupCandidate.fromOffProduct(milkProduct),
+        InventoryBarcodeCandidateAction.eatNow,
       );
-      await tester.ensureVisible(eatNowCheckbox);
-      await _setCheckboxValue(tester, eatNowCheckbox, true);
-      await tester.enterText(
-        find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
-        '250',
-      );
+      await tester.ensureVisible(eatActionButton);
+      await tester.tap(eatActionButton);
       await _pumpUi(tester);
-
-      final manualSaveButton = find.byKey(
-        const Key('receipt_review_manual_save_button'),
-      );
-      await _scrollIntoView(tester, manualSaveButton);
-      await _pressFilledButton(tester, manualSaveButton);
 
       expect(
         find.text('The product could not be added to the inventory.'),
@@ -1011,24 +1114,26 @@ void main() {
     (tester) async {
       _installFakeScannerPlatform(tester);
 
+      const milkProduct = OffProductSearchResult(
+        code: '4006381333931',
+        name: 'Milk',
+        brand: 'Brand',
+        score: 99,
+        packageWeight: '1 l',
+        imageUrl: 'https://example.com/milk.png',
+        nutrition: GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+          per100Kcal: 100,
+          per100Fat: 3,
+          per100SaturatedFat: 2,
+          per100Carbs: 20,
+          per100Sugar: 20,
+          per100Protein: 10,
+          per100Salt: 0.1,
+        ),
+      );
       final offRepository = _RecordingOffProductSearchRepository(
-        <OffProductSearchResult>[
-          const OffProductSearchResult(
-            code: '4006381333931',
-            name: 'Milk',
-            brand: 'Brand',
-            score: 99,
-            packageWeight: '1 l',
-            imageUrl: 'https://example.com/milk.png',
-            nutrition: GlobalFoodNutrition(
-              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-              per100Kcal: 100,
-              per100Protein: 10,
-              per100Carbs: 20,
-              per100Fat: 3,
-            ),
-          ),
-        ],
+        <OffProductSearchResult>[milkProduct],
       );
       final inventoryRepository = _RecordingInventoryItemRepository();
       addTearDown(inventoryRepository.dispose);
@@ -1054,22 +1159,13 @@ void main() {
       _fakeScannerPlatform().emitBarcode('4006381333931');
       await _pumpUi(tester);
 
-      final eatNowCheckbox = find.byKey(
-        const Key('receipt_review_manual_eat_now_checkbox'),
+      final eatActionButton = _barcodeCandidateActionButton(
+        InventoryBarcodeLookupCandidate.fromOffProduct(milkProduct),
+        InventoryBarcodeCandidateAction.eatNow,
       );
-      await tester.ensureVisible(eatNowCheckbox);
-      await _setCheckboxValue(tester, eatNowCheckbox, true);
-      await tester.enterText(
-        find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
-        '250',
-      );
+      await tester.ensureVisible(eatActionButton);
+      await tester.tap(eatActionButton);
       await _pumpUi(tester);
-
-      final manualSaveButton = find.byKey(
-        const Key('receipt_review_manual_save_button'),
-      );
-      await _scrollIntoView(tester, manualSaveButton);
-      await _pressFilledButton(tester, manualSaveButton);
 
       expect(
         find.byKey(const Key('inventory_item_amount_dialog_field')),
@@ -1094,37 +1190,36 @@ void main() {
   ) async {
     _installFakeScannerPlatform(tester);
 
+    const sourCreamProduct = OffProductSearchResult(
+      code: '4316268671224',
+      name: 'Cashews Sour Creme & Onion',
+      brand: 'Clarkys',
+      score: 100,
+      packageWeight: '140 g',
+      nutrition: GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Kcal: 550,
+        per100Protein: 8,
+        per100Carbs: 30,
+        per100Fat: 40,
+      ),
+    );
+    const paprikaProduct = OffProductSearchResult(
+      code: '4316268671225',
+      name: 'Cashews Paprika',
+      brand: 'Clarkys',
+      score: 90,
+      packageWeight: '150 g',
+      nutrition: GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Kcal: 560,
+        per100Protein: 7,
+        per100Carbs: 31,
+        per100Fat: 41,
+      ),
+    );
     final offRepository = _RecordingOffProductSearchRepository(
-      <OffProductSearchResult>[
-        const OffProductSearchResult(
-          code: '4316268671224',
-          name: 'Cashews Sour Creme & Onion',
-          brand: 'Clarkys',
-          score: 100,
-          packageWeight: '140 g',
-          nutrition: GlobalFoodNutrition(
-            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-            per100Kcal: 550,
-            per100Protein: 8,
-            per100Carbs: 30,
-            per100Fat: 40,
-          ),
-        ),
-        const OffProductSearchResult(
-          code: '4316268671225',
-          name: 'Cashews Paprika',
-          brand: 'Clarkys',
-          score: 90,
-          packageWeight: '150 g',
-          nutrition: GlobalFoodNutrition(
-            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-            per100Kcal: 560,
-            per100Protein: 7,
-            per100Carbs: 31,
-            per100Fat: 41,
-          ),
-        ),
-      ],
+      <OffProductSearchResult>[sourCreamProduct, paprikaProduct],
     );
     final inventoryRepository = _RecordingInventoryItemRepository();
     addTearDown(inventoryRepository.dispose);
@@ -1156,7 +1251,12 @@ void main() {
     expect(find.text('150 g'), findsOneWidget);
     expect(find.text('Cashews Paprika'), findsOneWidget);
 
-    await tester.tap(find.text('Cashews Paprika'));
+    await tester.tap(
+      _barcodeCandidateActionButton(
+        InventoryBarcodeLookupCandidate.fromOffProduct(paprikaProduct),
+        InventoryBarcodeCandidateAction.addToInventory,
+      ),
+    );
     await _pumpUi(tester);
 
     expect(inventoryRepository.appendedItems, isEmpty);
@@ -1220,9 +1320,12 @@ void main() {
                 nutrition: const GlobalFoodNutrition(
                   qualityStatus: GlobalFoodNutritionQualityStatus.verified,
                   per100Kcal: 100,
-                  per100Protein: 10,
-                  per100Carbs: 20,
                   per100Fat: 3,
+                  per100SaturatedFat: 2,
+                  per100Carbs: 20,
+                  per100Sugar: 20,
+                  per100Protein: 10,
+                  per100Salt: 0.1,
                 ),
               ),
               createdAt: DateTime.parse('2026-04-13T10:00:00Z'),
@@ -1254,7 +1357,14 @@ void main() {
     expect(find.text('Community'), findsOneWidget);
     expect(find.text('OFF'), findsOneWidget);
 
-    await tester.tap(find.text('Community Milk'));
+    await tester.tap(
+      _barcodeCandidateActionButton(
+        InventoryBarcodeLookupCandidate.fromLearned(
+          barcodeCandidateRepository.candidates.single,
+        ),
+        InventoryBarcodeCandidateAction.addToInventory,
+      ),
+    );
     await _pumpUi(tester);
 
     expect(
@@ -1412,19 +1522,15 @@ void main() {
     await _pumpUi(tester);
 
     expect(offRepository.lastBarcode, '4006381333931');
-    expect(
-      tester
-          .widget<Text>(
-            find.byKey(const Key('receipt_review_manual_preview_name')),
-          )
-          .data,
-      'Community Milk',
-    );
+    expect(find.byKey(inventoryBarcodeCandidateSheetKey), findsOneWidget);
+    expect(find.text('Community Milk'), findsOneWidget);
   });
 
   testWidgets(
-    'learned candidate keeps package size when eat now amount is smaller',
-    (tester) async {
+    'learned candidate keeps package size in eat flow',
+    (
+      tester,
+    ) async {
       _installFakeScannerPlatform(tester);
 
       final offRepository = _RecordingOffProductSearchRepository(
@@ -1460,9 +1566,12 @@ void main() {
                   nutrition: const GlobalFoodNutrition(
                     qualityStatus: GlobalFoodNutritionQualityStatus.verified,
                     per100Kcal: 100,
-                    per100Protein: 10,
-                    per100Carbs: 20,
                     per100Fat: 3,
+                    per100SaturatedFat: 2,
+                    per100Carbs: 20,
+                    per100Sugar: 20,
+                    per100Protein: 10,
+                    per100Salt: 0.1,
                   ),
                 ),
                 createdAt: DateTime.parse('2026-04-13T10:00:00Z'),
@@ -1489,25 +1598,14 @@ void main() {
       _fakeScannerPlatform().emitBarcode('4006381333931');
       await _pumpUi(tester);
 
-      await tester.tap(find.text('Community Milk'));
-      await _pumpUi(tester);
-
-      final eatNowCheckbox = find.byKey(
-        const Key('receipt_review_manual_eat_now_checkbox'),
+      await tester.tap(
+        _barcodeCandidateActionButton(
+          InventoryBarcodeLookupCandidate.fromLearned(
+            barcodeCandidateRepository.candidates.single,
+          ),
+          InventoryBarcodeCandidateAction.eatNow,
+        ),
       );
-      await tester.ensureVisible(eatNowCheckbox);
-      await _setCheckboxValue(tester, eatNowCheckbox, true);
-      await tester.enterText(
-        find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
-        '250',
-      );
-      await _pumpUi(tester);
-
-      final manualSaveButton = find.byKey(
-        const Key('receipt_review_manual_save_button'),
-      );
-      await tester.ensureVisible(manualSaveButton);
-      await tester.tap(manualSaveButton);
       await _pumpUi(tester);
 
       expect(globalFoodRepository.appendedItems, isEmpty);
@@ -1517,9 +1615,9 @@ void main() {
             .single
             .globalFoodItem
             .packageWeight,
-        '1000 ml',
+        '1 l',
       );
-      expect(inventoryRepository.appendedItems.single.weight, '1000 ml');
+      expect(inventoryRepository.appendedItems.single.weight, '1 l');
     },
   );
 

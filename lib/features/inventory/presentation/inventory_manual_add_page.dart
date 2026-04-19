@@ -21,7 +21,9 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_list/inventory_item_row/inventory_item_eat_sheet.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
-    'inventory_receipt_manual_product_page.dart';
+    'manual_product_search_page.dart';
+import 'package:yamt/features/product_search/provider/'
+    'manual_product_search_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryManualAddItemId = Uuid();
@@ -93,19 +95,28 @@ class _InventoryManualAddPageState
       return;
     }
 
-    final barcode = result.item.normalizedBarcode;
+    var itemToSave = result.item;
+    if (result.action == InventoryReceiptManualProductAction.eatNow) {
+      final resolvedEatItem = await _resolveEatItem(result.item);
+      if (!mounted || resolvedEatItem == null) {
+        return;
+      }
+      itemToSave = resolvedEatItem;
+    }
+
+    final barcode = itemToSave.normalizedBarcode;
     if (barcode == null) {
       _showSnackBar(AppLocalizations.of(context)!.inventoryManualAddSaveFailed);
       return;
     }
 
     final savedItem = await _persistProduct(
-      item: result.item,
+      item: itemToSave,
       barcode: barcode,
       selectedProduct: result.selectedProduct,
       selectedGlobalFoodItemId: result.selectedGlobalFoodItemId,
       requiresGlobalPersistence: result.requiresGlobalPersistence,
-      eatNowWeight: result.eatNowWeight,
+      globalPackageWeight: result.globalPackageWeight,
     );
     if (!mounted) {
       return;
@@ -115,24 +126,72 @@ class _InventoryManualAddPageState
       return;
     }
 
-    if (result.eatImmediately) {
+    if (result.action == InventoryReceiptManualProductAction.addToInventory) {
+      _showSnackBar(AppLocalizations.of(context)!.inventoryManualAddSaved);
+      return;
+    }
+
+    if (result.action == InventoryReceiptManualProductAction.eatNow) {
       _closeEditorsIfNeeded();
-    } else {
-      await _closeTopEditorIfNeeded();
     }
     if (!mounted) {
       return;
     }
 
-    if (result.eatImmediately) {
+    if (result.action == InventoryReceiptManualProductAction.eatNow) {
       await _openImmediateEatFlow(
         savedItem,
-        initialEatWeight: result.eatNowWeight,
+        initialEatWeight: savedItem.weight,
       );
       if (!mounted) {
         return;
       }
     }
+  }
+
+  Future<InventoryItem?> _resolveEatItem(InventoryItem item) async {
+    if (!_requiresEatAmountPrompt(item)) {
+      return item;
+    }
+
+    final eatAmount = await _showEatAmountDialog(item);
+    if (!mounted || eatAmount == null) {
+      return null;
+    }
+
+    final weight = '${eatAmount.amount} ${_weightUnitCode(eatAmount.unit)}';
+    return item
+        .copyWith(weight: weight)
+        .withDerivedAmount(
+          weight: weight,
+          quantity: item.quantity,
+          fallbackUnit: eatAmount.unit,
+        );
+  }
+
+  bool _requiresEatAmountPrompt(InventoryItem item) {
+    return item.weight == null ||
+        item.amountUnit == null ||
+        item.initialAmount < 1;
+  }
+
+  Future<_ManualEatAmountDialogResult?> _showEatAmountDialog(
+    InventoryItem item,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    return showDialog<_ManualEatAmountDialogResult>(
+      context: context,
+      builder: (dialogContext) {
+        return _ManualEatAmountDialog(
+          title: l10n.inventoryBarcodePortionDialogTitle,
+          confirmLabel: l10n.inventoryBarcodePortionDialogConfirmAction,
+          cancelLabel: l10n.inventoryReceiptReviewCancelAction,
+          amountLabel: l10n.inventoryItemEatSheetAmountLabel,
+          invalidAmountMessage: l10n.inventoryReceiptReviewInvalidNumber,
+          initialUnit: _defaultEatAmountUnit(item),
+        );
+      },
+    );
   }
 
   void _closeEditorsIfNeeded() {
@@ -143,21 +202,13 @@ class _InventoryManualAddPageState
     Navigator.of(context).popUntil((candidate) => candidate == route);
   }
 
-  Future<void> _closeTopEditorIfNeeded() async {
-    final route = ModalRoute.of(context);
-    if (route?.isCurrent ?? false) {
-      return;
-    }
-    await Navigator.of(context).maybePop();
-  }
-
   Future<InventoryItem?> _persistProduct({
     required InventoryItem item,
     required String barcode,
     required bool requiresGlobalPersistence,
     OffProductSearchResult? selectedProduct,
     String? selectedGlobalFoodItemId,
-    String? eatNowWeight,
+    String? globalPackageWeight,
   }) async {
     final now = DateTime.now();
     final l10n = AppLocalizations.of(context)!;
@@ -167,6 +218,7 @@ class _InventoryManualAddPageState
       now: now,
       selectedProduct: selectedProduct,
       selectedGlobalFoodItemId: selectedGlobalFoodItemId,
+      packageWeight: globalPackageWeight,
     );
 
     final globalSaved =
@@ -177,7 +229,6 @@ class _InventoryManualAddPageState
 
     final inventoryWeight = _resolveInventoryWeight(
       packageWeight: item.weight,
-      eatNowWeight: eatNowWeight,
     );
     final savedItem = InventoryItem.create(
       id: _inventoryManualAddItemId.v4(),
@@ -252,6 +303,7 @@ class _InventoryManualAddPageState
     required InventoryItem item,
     required String barcode,
     required DateTime now,
+    required String? packageWeight,
     OffProductSearchResult? selectedProduct,
     String? selectedGlobalFoodItemId,
   }) {
@@ -268,7 +320,7 @@ class _InventoryManualAddPageState
       brand: item.brand,
       barcode: barcode,
       imageUrl: normalizeProductImageUrl(item.imageUrl),
-      packageWeight: selectedProduct?.packageWeight ?? item.weight,
+      packageWeight: packageWeight,
       servingSize: item.servingSize ?? selectedProduct?.servingSize,
       servingQuantity: item.servingQuantity ?? selectedProduct?.servingQuantity,
       servingQuantityUnit:
@@ -361,19 +413,43 @@ class _InventoryManualAddPageState
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
+  InventoryAmountUnit _defaultEatAmountUnit(InventoryItem item) {
+    if (item.amountUnit case final InventoryAmountUnit unit) {
+      return unit;
+    }
+
+    final combinedHint = <String>[
+      item.servingSize ?? '',
+      item.servingQuantityUnit ?? '',
+    ].join(' ').toLowerCase();
+    if (combinedHint.contains('ml') ||
+        RegExp(r'(^|\s)l\b').hasMatch(combinedHint)) {
+      return InventoryAmountUnit.milliliter;
+    }
+    if (combinedHint.contains('stk') ||
+        combinedHint.contains('stück') ||
+        combinedHint.contains('pc')) {
+      return InventoryAmountUnit.piece;
+    }
+    return InventoryAmountUnit.gram;
+  }
+
+  String _weightUnitCode(InventoryAmountUnit unit) {
+    return switch (unit) {
+      InventoryAmountUnit.gram => 'g',
+      InventoryAmountUnit.milliliter => 'ml',
+      InventoryAmountUnit.piece => 'Stk',
+    };
+  }
+
   String? _resolveInventoryWeight({
     required String? packageWeight,
-    required String? eatNowWeight,
   }) {
     final normalizedPackageWeight = packageWeight?.trim();
     if (normalizedPackageWeight != null && normalizedPackageWeight.isNotEmpty) {
       return normalizedPackageWeight;
     }
-    final normalizedEatNowWeight = eatNowWeight?.trim();
-    if (normalizedEatNowWeight == null || normalizedEatNowWeight.isEmpty) {
-      return null;
-    }
-    return normalizedEatNowWeight;
+    return null;
   }
 
   int? _resolveInitialEatAmount({
@@ -393,5 +469,169 @@ class _InventoryManualAddPageState
       return null;
     }
     return parsed.amount;
+  }
+}
+
+class _ManualEatAmountDialogResult {
+  const _ManualEatAmountDialogResult({
+    required this.amount,
+    required this.unit,
+  });
+
+  final int amount;
+  final InventoryAmountUnit unit;
+}
+
+class _ManualEatAmountDialog extends StatefulWidget {
+  const _ManualEatAmountDialog({
+    required this.title,
+    required this.confirmLabel,
+    required this.cancelLabel,
+    required this.amountLabel,
+    required this.invalidAmountMessage,
+    required this.initialUnit,
+  });
+
+  final String title;
+  final String confirmLabel;
+  final String cancelLabel;
+  final String amountLabel;
+  final String invalidAmountMessage;
+  final InventoryAmountUnit initialUnit;
+
+  @override
+  State<_ManualEatAmountDialog> createState() => _ManualEatAmountDialogState();
+}
+
+class _ManualEatAmountDialogState extends State<_ManualEatAmountDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _amountController;
+  late final FocusNode _amountFocusNode;
+  late InventoryAmountUnit _selectedUnit;
+
+  @override
+  void initState() {
+    super.initState();
+    _amountController = TextEditingController();
+    _amountFocusNode = FocusNode()..addListener(_handleFocusChanged);
+    _selectedUnit = widget.initialUnit;
+  }
+
+  @override
+  void dispose() {
+    _amountFocusNode
+      ..removeListener(_handleFocusChanged)
+      ..dispose();
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return AlertDialog(
+      title: Text(widget.title),
+      content: Form(
+        key: _formKey,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: TextFormField(
+                key: const Key('inventory_manual_add_eat_amount_field'),
+                controller: _amountController,
+                focusNode: _amountFocusNode,
+                autofocus: true,
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.done,
+                decoration: InputDecoration(labelText: widget.amountLabel),
+                validator: _validateAmount,
+                onFieldSubmitted: (_) => _submit(),
+              ),
+            ),
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 112,
+              child: DropdownButtonFormField<InventoryAmountUnit>(
+                key: const Key('inventory_manual_add_eat_unit_field'),
+                initialValue: _selectedUnit,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  DropdownMenuItem<InventoryAmountUnit>(
+                    value: InventoryAmountUnit.gram,
+                    child: Text(l10n.inventoryUnitGram),
+                  ),
+                  DropdownMenuItem<InventoryAmountUnit>(
+                    value: InventoryAmountUnit.milliliter,
+                    child: Text(l10n.inventoryUnitMilliliter),
+                  ),
+                  DropdownMenuItem<InventoryAmountUnit>(
+                    value: InventoryAmountUnit.piece,
+                    child: Text(l10n.inventoryUnitPiece),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value == null) {
+                    return;
+                  }
+                  setState(() {
+                    _selectedUnit = value;
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          key: const Key('inventory_manual_add_eat_cancel_button'),
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(widget.cancelLabel),
+        ),
+        FilledButton(
+          key: const Key('inventory_manual_add_eat_confirm_button'),
+          onPressed: _submit,
+          child: Text(widget.confirmLabel),
+        ),
+      ],
+    );
+  }
+
+  String? _validateAmount(String? value) {
+    final parsed = int.tryParse((value ?? '').trim());
+    if (parsed == null || parsed < 1) {
+      return widget.invalidAmountMessage;
+    }
+    return null;
+  }
+
+  void _submit() {
+    final formState = _formKey.currentState;
+    if (formState == null || !formState.validate()) {
+      return;
+    }
+
+    final parsed = int.tryParse(_amountController.text.trim());
+    if (parsed == null) {
+      return;
+    }
+
+    Navigator.of(context).pop(
+      _ManualEatAmountDialogResult(amount: parsed, unit: _selectedUnit),
+    );
+  }
+
+  void _handleFocusChanged() {
+    if (!_amountFocusNode.hasFocus) {
+      return;
+    }
+    _amountController.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: _amountController.text.length,
+    );
   }
 }
