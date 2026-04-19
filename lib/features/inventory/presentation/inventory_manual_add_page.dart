@@ -167,14 +167,17 @@ class _InventoryManualAddPageState
           amount: eatAmount.amount,
           unit: eatAmount.unit,
           scale: amountScale,
-        )} ${_weightUnitCode(eatAmount.unit)}';
-    return item
-        .copyWith(weight: weight)
-        .withDerivedAmount(
-          weight: weight,
-          quantity: item.quantity,
-          fallbackUnit: eatAmount.unit,
-        );
+        )} ${eatAmount.unit.code}';
+    final parsedAmount = InventoryAmountParseResult(
+      amount: eatAmount.amount,
+      unit: eatAmount.unit,
+      scale: amountScale,
+    );
+    return item.withResolvedAmount(
+      weight: weight,
+      parsedAmount: parsedAmount,
+      quantity: item.quantity,
+    );
   }
 
   bool _requiresEatAmountPrompt(InventoryItem item) {
@@ -440,14 +443,6 @@ class _InventoryManualAddPageState
       return InventoryAmountUnit.piece;
     }
     return InventoryAmountUnit.gram;
-  }
-
-  String _weightUnitCode(InventoryAmountUnit unit) {
-    return switch (unit) {
-      InventoryAmountUnit.gram => 'g',
-      InventoryAmountUnit.milliliter => 'ml',
-      InventoryAmountUnit.piece => 'Stk',
-    };
   }
 
   String? _resolveInventoryWeight({

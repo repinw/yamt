@@ -201,6 +201,43 @@ void main() {
   );
 
   test(
+    'buildDirectSearchResultPayload normalizes fractional piece amount'
+    ' for inventory storage',
+    () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final config = InventoryReceiptManualProductConfig(item: _item());
+      final provider = inventoryReceiptManualProductControllerProvider(config);
+      final controller = container.read(provider.notifier);
+
+      final payload = controller.buildDirectSearchResultPayload(
+        product: const OffProductSearchResult(
+          code: '4006381333931',
+          name: 'Apple',
+          brand: 'Brand',
+          packageWeight: '1.5 Stk',
+          score: 99,
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 100,
+            per100Protein: 1,
+            per100Carbs: 20,
+            per100Fat: 0,
+          ),
+        ),
+        action: InventoryReceiptManualProductAction.eatNow,
+      );
+
+      expect(payload, isNotNull);
+      expect(payload?.item.weight, '1.5 pc');
+      expect(payload?.item.currentAmount, 1500);
+      expect(payload?.item.amountScale, inventoryPieceAmountScale);
+      expect(payload?.globalPackageWeight, '1.5 Stk');
+    },
+  );
+
+  test(
     'buildDirectSearchResultPayload returns null when nutrition is missing',
     () {
       final container = ProviderContainer();
@@ -222,6 +259,38 @@ void main() {
       );
 
       expect(payload, isNull);
+    },
+  );
+
+  test(
+    'buildSavePayload stores normalized manual piece amount for inventory'
+    ' and global payload',
+    () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      const selectedProduct = OffProductSearchResult(
+        code: '4311596490202',
+        name: 'Apple',
+        brand: 'Brand',
+        score: 100,
+      );
+      final config = InventoryReceiptManualProductConfig(
+        item: _item(),
+        selectedProduct: selectedProduct,
+      );
+      final provider = inventoryReceiptManualProductControllerProvider(config);
+      final payload =
+          (container.read(provider.notifier)
+                ..updateWeightAmount('1,5')
+                ..updateWeightUnit(InventoryAmountUnit.piece))
+              .buildSavePayload();
+
+      expect(payload, isNotNull);
+      expect(payload?.item.weight, '1.5 pc');
+      expect(payload?.item.currentAmount, 1500);
+      expect(payload?.item.amountScale, inventoryPieceAmountScale);
+      expect(payload?.globalPackageWeight, '1.5 pc');
     },
   );
 

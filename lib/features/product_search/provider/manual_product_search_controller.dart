@@ -257,6 +257,13 @@ typedef InventoryReceiptManualProductSavePayload = ({
   String? globalPackageWeight,
 });
 
+typedef _ResolvedWeightInput = ({
+  String amount,
+  InventoryAmountUnit unit,
+  String? normalizedWeight,
+  InventoryAmountParseResult? parsedAmount,
+});
+
 /// Build manual product initial search query.
 String? buildManualProductInitialSearchQuery(
   InventoryReceiptManualProductConfig config,
@@ -643,11 +650,14 @@ class InventoryReceiptManualProductController
   }
 
   String? get _resolvedWeight {
-    final amountText = normalizeManualProductText(state.weightAmount);
-    if (amountText == null) {
-      return null;
-    }
-    return '$amountText ${_weightUnitCode(state.selectedWeightUnit)}';
+    return _resolvedManualWeightInput.normalizedWeight;
+  }
+
+  _ResolvedWeightInput get _resolvedManualWeightInput {
+    return _resolveWeightInput(
+      state.weightAmount,
+      fallbackUnit: state.selectedWeightUnit,
+    );
   }
 
   /// Update search query.
@@ -937,11 +947,12 @@ class InventoryReceiptManualProductController
 
     final matchedProduct = _currentMatchedProduct();
     final selectedProduct = state.selectedProduct;
+    final resolvedWeightInput = _resolvedManualWeightInput;
     final globalPackageWeight = _resolvedGlobalPackageWeight(
       action: action,
       matchedProduct: matchedProduct,
     );
-    final inventoryWeight = _resolvedWeight;
+    final inventoryWeight = resolvedWeightInput.normalizedWeight;
     final updatedItem = _config.item
         .copyWith(
           name: _resolvedManualName(
@@ -975,10 +986,10 @@ class InventoryReceiptManualProductController
                 )
               : selectedProduct?.nutrition ?? _config.item.nutrition,
         )
-        .withDerivedAmount(
+        .withResolvedAmount(
           weight: inventoryWeight,
+          parsedAmount: resolvedWeightInput.parsedAmount,
           quantity: _config.item.quantity,
-          fallbackUnit: state.selectedWeightUnit,
         );
     final selectedEditKind = _selectedProductEditKindForItem(
       updatedItem,
@@ -1013,9 +1024,7 @@ class InventoryReceiptManualProductController
       selection.packageWeight,
       fallbackUnit: _config.item.amountUnit,
     );
-    final inventoryWeight = weightInput.amount.isEmpty
-        ? null
-        : '${weightInput.amount} ${_weightUnitCode(weightInput.unit)}';
+    final inventoryWeight = weightInput.normalizedWeight;
     final nutrition = selection.nutrition ?? _config.item.nutrition;
     if (action == InventoryReceiptManualProductAction.eatNow) {
       if (nutrition?.hasAnyNutritionValue != true) {
@@ -1042,10 +1051,10 @@ class InventoryReceiptManualProductController
               selection.servingQuantityUnit ?? _config.item.servingQuantityUnit,
           nutrition: nutrition,
         )
-        .withDerivedAmount(
+        .withResolvedAmount(
           weight: inventoryWeight,
+          parsedAmount: weightInput.parsedAmount,
           quantity: _config.item.quantity,
-          fallbackUnit: weightInput.unit,
         );
     final globalPackageWeight = _resolvedGlobalPackageWeightForSelection(
       action: action,
@@ -1312,7 +1321,7 @@ class InventoryReceiptManualProductController
     );
   }
 
-  ({String amount, InventoryAmountUnit unit})? _resolveOcrWeightInput(
+  _ResolvedWeightInput? _resolveOcrWeightInput(
     String? rawWeight,
   ) {
     final weight = normalizeManualProductText(rawWeight ?? '');
@@ -1360,7 +1369,7 @@ class InventoryReceiptManualProductController
     };
   }
 
-  ({String amount, InventoryAmountUnit unit}) _resolveWeightInput(
+  _ResolvedWeightInput _resolveWeightInput(
     String? rawWeight, {
     InventoryAmountUnit? fallbackUnit,
   }) {
@@ -1371,18 +1380,58 @@ class InventoryReceiptManualProductController
       fallbackUnit: fallbackUnit,
     );
     if (parsed != null) {
-      return (amount: parsed.amount.toString(), unit: parsed.unit);
+      final amount = formatInventoryAmountValue(
+        amount: parsed.amount,
+        unit: parsed.unit,
+        scale: parsed.scale,
+      );
+      return (
+        amount: amount,
+        unit: parsed.unit,
+        normalizedWeight: '$amount ${parsed.unit.code}',
+        parsedAmount: parsed,
+      );
     }
 
     final normalized = normalizeManualProductText(rawWeight ?? '');
     final amountMatch = RegExp(r'\d+(?:[.,]\d+)?').firstMatch(normalized ?? '');
     final amount = amountMatch?.group(0)?.replaceAll(',', '.') ?? '';
+    final unit =
+        _unitFromRawWeight(normalized) ??
+        fallbackUnit ??
+        InventoryAmountUnit.gram;
+    final parsedAmount = _parseWeightAmount(amount: amount, unit: unit);
     return (
       amount: amount,
-      unit:
-          _unitFromRawWeight(normalized) ??
-          fallbackUnit ??
-          InventoryAmountUnit.gram,
+      unit: unit,
+      normalizedWeight: amount.isEmpty ? null : '$amount ${unit.code}',
+      parsedAmount: parsedAmount,
+    );
+  }
+
+  InventoryAmountParseResult? _parseWeightAmount({
+    required String amount,
+    required InventoryAmountUnit unit,
+  }) {
+    if (amount.isEmpty) {
+      return null;
+    }
+
+    final scale = unit == InventoryAmountUnit.piece
+        ? inventoryPieceAmountScale
+        : 1;
+    final parsedAmount = parseInventoryAmountInput(
+      rawValue: amount,
+      unit: unit,
+      scale: scale,
+    );
+    if (parsedAmount == null) {
+      return null;
+    }
+    return InventoryAmountParseResult(
+      amount: parsedAmount,
+      unit: unit,
+      scale: scale,
     );
   }
 
@@ -1409,13 +1458,6 @@ class InventoryReceiptManualProductController
     return null;
   }
 
-  String _weightUnitCode(InventoryAmountUnit unit) {
-    return switch (unit) {
-      InventoryAmountUnit.gram => 'g',
-      InventoryAmountUnit.milliliter => 'ml',
-      InventoryAmountUnit.piece => 'Stk',
-    };
-  }
 }
 
 String? _initialSearchStoreName(InventoryItem item) {

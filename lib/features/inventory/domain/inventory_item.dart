@@ -507,6 +507,25 @@ class InventoryItem {
   /// The nutrition.
   GlobalFoodNutrition? get nutrition => productSnapshot.nutrition;
 
+  /// Applies already-resolved amount data without reparsing weight text.
+  InventoryItem withResolvedAmount({
+    String? weight,
+    InventoryAmountParseResult? parsedAmount,
+    int? quantity,
+  }) {
+    final normalizedWeight = _normalizeWeightText(weight ?? this.weight);
+    final nextQuantity = quantity ?? this.quantity;
+
+    return copyWith(
+      quantity: nextQuantity,
+      weight: normalizedWeight,
+      initialAmount: parsedAmount?.amount ?? 0,
+      currentAmount: parsedAmount?.amount ?? 0,
+      amountScale: parsedAmount?.scale ?? 1,
+      amountUnit: parsedAmount?.unit,
+    );
+  }
+
   /// With derived amount.
   InventoryItem withDerivedAmount({
     String? weight,
@@ -520,15 +539,10 @@ class InventoryItem {
       quantity: nextQuantity,
       fallbackUnit: fallbackUnit,
     );
-    final amount = parsedAmount?.amount ?? 0;
-
-    return copyWith(
-      quantity: nextQuantity,
+    return withResolvedAmount(
       weight: normalizedWeight,
-      initialAmount: amount,
-      currentAmount: amount,
-      amountScale: parsedAmount?.scale ?? 1,
-      amountUnit: parsedAmount?.unit,
+      parsedAmount: parsedAmount,
+      quantity: nextQuantity,
     );
   }
 

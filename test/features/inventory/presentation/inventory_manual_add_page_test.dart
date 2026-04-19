@@ -1209,7 +1209,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(inventoryRepository.appendedItems, hasLength(1));
-      expect(inventoryRepository.appendedItems.single.weight, '1.5 Stk');
+      expect(inventoryRepository.appendedItems.single.weight, '1.5 pc');
       expect(
         inventoryRepository.appendedItems.single.amountScale,
         inventoryPieceAmountScale,
