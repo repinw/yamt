@@ -7,6 +7,32 @@ import 'package:yamt/features/inventory/domain/global_food_item_patch.dart';
 
 const String _storeLogName = 'FirestoreGlobalFoodItemStore';
 const String _globalFoodItemsCollection = 'global_food_items';
+const List<String> _patchableGlobalFoodItemFields = <String>[
+  'brand',
+  'category',
+  'store_name',
+  'barcode',
+  'image_url',
+  'package_weight',
+  'serving_size',
+  'serving_quantity',
+  'serving_quantity_unit',
+  'normalized_brand',
+  'normalized_store_name',
+];
+const List<String> _patchableNutritionFields = <String>[
+  'quality_status',
+  'per_100_kcal',
+  'per_100_protein',
+  'per_100_carbs',
+  'per_100_fat',
+  'per_100_salt',
+  'per_100_saturated_fat',
+  'per_100_polyunsaturated_fat',
+  'per_100_sugar',
+  'per_100_fiber',
+];
+final Object _omittedValue = Object();
 
 /// Defines global food item document.
 class GlobalFoodItemDocument {
@@ -202,25 +228,121 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
     for (final entry in documentsById.entries) {
       await _firestore.runTransaction((transaction) async {
         final reference = _collection().doc(entry.key);
+        final nextDocument = _compactMap(entry.value);
         final snapshot = await transaction.get(reference);
         if (!snapshot.exists) {
-          transaction.set(reference, entry.value);
+          transaction.set(reference, nextDocument);
           return;
         }
 
         final currentData = snapshot.data() ?? const <String, dynamic>{};
         final currentItem = GlobalFoodItem.fromJson(currentData);
-        final patchItem = GlobalFoodItem.fromJson(entry.value);
+        final patchItem = GlobalFoodItem.fromJson(nextDocument);
         final mergedItem = mergeGlobalFoodItemPatch(
           currentItem: currentItem,
           patchItem: patchItem,
           updatedAt:
-              DateTime.tryParse(entry.value['updated_at'] as String? ?? '') ??
+              DateTime.tryParse(nextDocument['updated_at'] as String? ?? '') ??
               patchItem.updatedAt,
         );
-        transaction.set(reference, mergedItem.toJson());
+        final updateData = _buildUpdateData(
+          currentData: currentData,
+          mergedData: _compactMap(mergedItem.toJson()),
+        );
+        transaction.update(reference, updateData);
       });
     }
+  }
+
+  Map<String, dynamic> _buildUpdateData({
+    required Map<String, dynamic> currentData,
+    required Map<String, dynamic> mergedData,
+  }) {
+    final updateData = <String, dynamic>{
+      'updated_at': mergedData['updated_at'],
+    };
+
+    for (final key in _patchableGlobalFoodItemFields) {
+      if (!mergedData.containsKey(key)) {
+        continue;
+      }
+      if (currentData[key] == mergedData[key]) {
+        continue;
+      }
+      updateData[key] = mergedData[key];
+    }
+
+    final currentNutrition = _readMap(currentData['nutrition']);
+    final mergedNutrition = _readMap(mergedData['nutrition']);
+    if (mergedNutrition == null) {
+      return updateData;
+    }
+    if (currentNutrition == null) {
+      updateData['nutrition'] = mergedNutrition;
+      return updateData;
+    }
+
+    for (final key in _patchableNutritionFields) {
+      if (!mergedNutrition.containsKey(key)) {
+        continue;
+      }
+      if (currentNutrition[key] == mergedNutrition[key]) {
+        continue;
+      }
+      updateData['nutrition.$key'] = mergedNutrition[key];
+    }
+
+    return updateData;
+  }
+
+  Map<String, dynamic>? _readMap(Object? value) {
+    if (value is Map<String, dynamic>) {
+      return value;
+    }
+    if (value is Map) {
+      return value.map(
+        (key, nestedValue) => MapEntry(key.toString(), nestedValue),
+      );
+    }
+    return null;
+  }
+
+  // `null` in upsert payload means "do not patch this field". Deletions are
+  // intentionally not supported here because Firestore rules only allow
+  // fill-missing updates for global food items.
+  Map<String, dynamic> _compactMap(Map<String, dynamic> input) {
+    final compacted = <String, dynamic>{};
+    for (final entry in input.entries) {
+      final compactedValue = _compactValue(entry.value);
+      if (identical(compactedValue, _omittedValue)) {
+        continue;
+      }
+      compacted[entry.key] = compactedValue;
+    }
+    return compacted;
+  }
+
+  dynamic _compactValue(Object? value) {
+    if (value == null) {
+      return _omittedValue;
+    }
+    if (value is Map<String, dynamic>) {
+      return _compactMap(value);
+    }
+    if (value is Map) {
+      return _compactMap(
+        value.map(
+          (key, nestedValue) => MapEntry(key.toString(), nestedValue),
+        ),
+      );
+    }
+    if (value is Iterable) {
+      return value
+          .map(_compactValue)
+          .where((item) => !identical(item, _omittedValue))
+          .toList(growable: false);
+    }
+    return value;
   }
 
   List<GlobalFoodItemDocument> _mapSnapshot(

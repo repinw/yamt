@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
@@ -116,7 +115,11 @@ class _InventoryManualAddPageState
       return;
     }
 
-    await _closeEditorIfNeeded();
+    if (result.eatImmediately) {
+      _closeEditorsIfNeeded();
+    } else {
+      await _closeTopEditorIfNeeded();
+    }
     if (!mounted) {
       return;
     }
@@ -130,13 +133,17 @@ class _InventoryManualAddPageState
         return;
       }
     }
-
-    if (context.canPop()) {
-      context.pop(true);
-    }
   }
 
-  Future<void> _closeEditorIfNeeded() async {
+  void _closeEditorsIfNeeded() {
+    final route = ModalRoute.of(context);
+    if (route == null || route.isCurrent) {
+      return;
+    }
+    Navigator.of(context).popUntil((candidate) => candidate == route);
+  }
+
+  Future<void> _closeTopEditorIfNeeded() async {
     final route = ModalRoute.of(context);
     if (route?.isCurrent ?? false) {
       return;
@@ -349,9 +356,9 @@ class _InventoryManualAddPageState
   }
 
   void _showSnackBar(String message) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   String? _resolveInventoryWeight({

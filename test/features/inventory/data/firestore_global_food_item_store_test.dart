@@ -158,4 +158,222 @@ void main() {
       expect(snapshot.data()!['updated_at'], '2026-04-13T10:00:00.000Z');
     },
   );
+
+  test(
+    'upsertAll keeps sparse existing docs sparse while filling missing values',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      final collection = _globalFoodCollection(firestore: firestore);
+      await collection.doc('milk').set(<String, dynamic>{
+        'id': 'milk',
+        'name': 'Milk',
+        'food_fingerprint': 'milk__fingerprint',
+        'normalized_name': 'milk',
+        'search_tokens': const <String>['milk'],
+        'status': 'active',
+        'created_at': '2026-03-01T10:00:00.000Z',
+        'updated_at': '2026-03-01T10:00:00.000Z',
+      });
+
+      final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+      await store.upsertAll(
+        documentsById: <String, Map<String, dynamic>>{
+          'milk': <String, dynamic>{
+            'id': 'milk',
+            'name': 'Milk',
+            'brand': 'Acme',
+            'category': null,
+            'store_name': null,
+            'barcode': '4006381333931',
+            'image_url': null,
+            'package_weight': '500 g',
+            'serving_size': null,
+            'serving_quantity': null,
+            'serving_quantity_unit': null,
+            'nutrition': <String, dynamic>{
+              'quality_status': 'verified',
+              'per_100_kcal': 100.0,
+              'per_100_protein': null,
+            },
+            'normalized_name': 'milk',
+            'normalized_brand': 'acme',
+            'normalized_store_name': null,
+            'search_tokens': const <String>['milk'],
+            'status': 'active',
+            'merged_into_id': null,
+            'created_at': '2026-04-13T10:00:00.000Z',
+            'updated_at': '2026-04-13T10:00:00.000Z',
+          },
+        },
+      );
+
+      final snapshot = await collection.doc('milk').get();
+      final data = snapshot.data()!;
+      final nutrition = Map<String, dynamic>.from(
+        data['nutrition']! as Map<String, dynamic>,
+      );
+
+      expect(data['brand'], 'Acme');
+      expect(data['normalized_brand'], 'acme');
+      expect(data['barcode'], '4006381333931');
+      expect(data['package_weight'], '500 g');
+      expect(data, isNot(contains('category')));
+      expect(data, isNot(contains('merged_into_id')));
+      expect(data, isNot(contains('store_name')));
+      expect(data, isNot(contains('image_url')));
+      expect(nutrition['quality_status'], 'verified');
+      expect(nutrition['per_100_kcal'], 100.0);
+      expect(nutrition, isNot(contains('per_100_protein')));
+    },
+  );
+
+  test(
+    'upsertAll keeps existing values when incoming patch uses null',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      final collection = _globalFoodCollection(firestore: firestore);
+      await collection.doc('milk').set(<String, dynamic>{
+        'id': 'milk',
+        'name': 'Milk',
+        'brand': 'Old Brand',
+        'food_fingerprint': 'milk__fingerprint',
+        'normalized_name': 'milk',
+        'normalized_brand': 'old brand',
+        'search_tokens': const <String>['milk'],
+        'status': 'active',
+        'created_at': '2026-03-01T10:00:00.000Z',
+        'updated_at': '2026-03-01T10:00:00.000Z',
+      });
+
+      final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+      await store.upsertAll(
+        documentsById: <String, Map<String, dynamic>>{
+          'milk': <String, dynamic>{
+            'id': 'milk',
+            'name': 'Milk',
+            'brand': null,
+            'food_fingerprint': 'milk__fingerprint',
+            'normalized_name': 'milk',
+            'normalized_brand': null,
+            'search_tokens': const <String>['milk'],
+            'status': 'active',
+            'created_at': '2026-04-13T10:00:00.000Z',
+            'updated_at': '2026-04-13T10:00:00.000Z',
+          },
+        },
+      );
+
+      final snapshot = await collection.doc('milk').get();
+      final data = snapshot.data()!;
+
+      expect(data['brand'], 'Old Brand');
+      expect(data['normalized_brand'], 'old brand');
+      expect(data['updated_at'], '2026-04-13T10:00:00.000Z');
+    },
+  );
+
+  test(
+    'upsertAll initializes nutrition map when existing document has none',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      final collection = _globalFoodCollection(firestore: firestore);
+      await collection.doc('milk').set(<String, dynamic>{
+        'id': 'milk',
+        'name': 'Milk',
+        'food_fingerprint': 'milk__fingerprint',
+        'normalized_name': 'milk',
+        'search_tokens': const <String>['milk'],
+        'status': 'active',
+        'created_at': '2026-03-01T10:00:00.000Z',
+        'updated_at': '2026-03-01T10:00:00.000Z',
+      });
+
+      final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+      await store.upsertAll(
+        documentsById: <String, Map<String, dynamic>>{
+          'milk': <String, dynamic>{
+            'id': 'milk',
+            'name': 'Milk',
+            'food_fingerprint': 'milk__fingerprint',
+            'normalized_name': 'milk',
+            'nutrition': <String, dynamic>{
+              'quality_status': 'verified',
+              'per_100_kcal': 100.0,
+              'per_100_protein': 10.0,
+            },
+            'search_tokens': const <String>['milk'],
+            'status': 'active',
+            'created_at': '2026-04-13T10:00:00.000Z',
+            'updated_at': '2026-04-13T10:00:00.000Z',
+          },
+        },
+      );
+
+      final snapshot = await collection.doc('milk').get();
+      final data = snapshot.data()!;
+      final nutrition = Map<String, dynamic>.from(
+        data['nutrition']! as Map<String, dynamic>,
+      );
+
+      expect(
+        nutrition,
+        <String, dynamic>{
+          'quality_status': 'verified',
+          'per_100_kcal': 100.0,
+          'per_100_protein': 10.0,
+        },
+      );
+    },
+  );
+
+  test(
+    'upsertAll keeps existing nutrition when incoming patch omits nutrition',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      final collection = _globalFoodCollection(firestore: firestore);
+      await collection.doc('milk').set(<String, dynamic>{
+        'id': 'milk',
+        'name': 'Milk',
+        'food_fingerprint': 'milk__fingerprint',
+        'normalized_name': 'milk',
+        'nutrition': <String, dynamic>{
+          'quality_status': 'verified',
+          'per_100_kcal': 100.0,
+          'per_100_protein': 10.0,
+        },
+        'search_tokens': const <String>['milk'],
+        'status': 'active',
+        'created_at': '2026-03-01T10:00:00.000Z',
+        'updated_at': '2026-03-01T10:00:00.000Z',
+      });
+
+      final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+      await store.upsertAll(
+        documentsById: <String, Map<String, dynamic>>{
+          'milk': <String, dynamic>{
+            'id': 'milk',
+            'name': 'Milk',
+            'brand': 'Acme',
+            'food_fingerprint': 'milk__fingerprint',
+            'normalized_name': 'milk',
+            'normalized_brand': 'acme',
+            'search_tokens': const <String>['milk'],
+            'status': 'active',
+            'created_at': '2026-04-13T10:00:00.000Z',
+            'updated_at': '2026-04-13T10:00:00.000Z',
+          },
+        },
+      );
+
+      final snapshot = await collection.doc('milk').get();
+      final data = snapshot.data()!;
+
+      expect(data['brand'], 'Acme');
+      expect(data['nutrition'], <String, dynamic>{
+        'quality_status': 'verified',
+        'per_100_kcal': 100.0,
+        'per_100_protein': 10.0,
+      });
+    },
+  );
 }
