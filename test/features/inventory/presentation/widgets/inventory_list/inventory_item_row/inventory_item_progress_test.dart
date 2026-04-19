@@ -9,6 +9,7 @@ InventoryItem _item({
   String? weight,
   int initialAmount = 0,
   int currentAmount = 0,
+  int amountScale = 1,
   InventoryAmountUnit? amountUnit,
 }) {
   return InventoryItem.create(
@@ -22,6 +23,7 @@ InventoryItem _item({
     weight: weight,
     initialAmount: initialAmount,
     currentAmount: currentAmount,
+    amountScale: amountScale,
     amountUnit: amountUnit,
   );
 }
@@ -64,6 +66,25 @@ void main() {
     expect(progress.segmentedByUnits, isTrue);
     expect(progress.totalUnits, 5);
     expect(progress.remainingUnits, 5);
+  });
+
+  test('formats fractional piece progress using display precision', () {
+    final item = _item(
+      initialQuantity: 2,
+      quantity: 2,
+      initialAmount: 2000,
+      currentAmount: 1500,
+      amountScale: inventoryPieceAmountScale,
+      amountUnit: InventoryAmountUnit.piece,
+    );
+
+    final progress = calculator.fromItem(item);
+
+    expect(progress.remainingRatio, closeTo(0.75, 0.0001));
+    expect(progress.remainingLabel, '1.5pc / 2pc');
+    expect(progress.segmentedByUnits, isTrue);
+    expect(progress.totalUnits, 2);
+    expect(progress.remainingUnits, 2);
   });
 
   test('falls back to quantity progress and segments for multi-unit items', () {

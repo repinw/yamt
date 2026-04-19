@@ -114,6 +114,8 @@ Future<List<String>?> _showPendingIngredientSelectionSheet({
   required List<InventoryItem> inventoryItems,
 }) {
   final l10n = AppLocalizations.of(context)!;
+  final emptySelectionMessage =
+      l10n.preparedMealPendingIngredientSelectionEmpty;
   final sortedItems = rankInventoryItemsForIngredient(
     ingredient: ingredient,
     inventoryItems: inventoryItems,
@@ -151,9 +153,7 @@ Future<List<String>?> _showPendingIngredientSelectionSheet({
                     Expanded(
                       child: sortedItems.isEmpty
                           ? Center(
-                              child: Text(
-                                l10n.preparedMealPendingIngredientSelectionEmpty,
-                              ),
+                              child: Text(emptySelectionMessage),
                             )
                           : ListView.builder(
                               itemCount: sortedItems.length,
@@ -217,7 +217,11 @@ Future<List<String>?> _showPendingIngredientSelectionSheet({
 
 String _pendingIngredientInventoryAmount(InventoryItem item) {
   if (item.usesAmountProgress && item.amountUnit != null) {
-    return '${item.currentAmount} ${item.amountUnit!.code}';
+    return '${formatInventoryAmountValue(
+      amount: item.currentAmount,
+      unit: item.amountUnit!,
+      scale: item.amountScale,
+    )} ${item.amountUnit!.code}';
   }
   return '${item.quantity}x';
 }

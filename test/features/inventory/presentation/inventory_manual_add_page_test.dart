@@ -1107,6 +1107,118 @@ void main() {
   );
 
   testWidgets(
+    'eat now from search result accepts fractional piece amount',
+    (tester) async {
+      final auth = _MockFirebaseAuth();
+      final user = _MockUser();
+      when(() => auth.currentUser).thenReturn(user);
+      when(() => user.uid).thenReturn('user-1');
+
+      final offRepository = _RecordingOffProductSearchRepository(
+        <OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4006381333999',
+            name: 'Apple',
+            brand: 'Brand',
+            score: 99,
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 52,
+              per100Fat: 0.2,
+              per100SaturatedFat: 0.03,
+              per100Carbs: 14,
+              per100Sugar: 10,
+              per100Protein: 0.3,
+              per100Salt: 0,
+            ),
+          ),
+        ],
+      );
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      addTearDown(inventoryRepository.dispose);
+      final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(calorieLogRepository.dispose);
+      final calorieProductCacheRepository = FakeCalorieProductCacheRepository();
+      final inventoryCommitStore = _RecordingInventoryCalorieEntryCommitStore();
+
+      await tester.pumpWidget(
+        _buildHarness(
+          auth: auth,
+          offRepository: offRepository,
+          inventoryRepository: inventoryRepository,
+          globalFoodRepository: globalFoodRepository,
+          calorieLogRepository: calorieLogRepository,
+          calorieProductCacheRepository: calorieProductCacheRepository,
+          inventoryCommitStore: inventoryCommitStore,
+        ),
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+      );
+      await _pumpUi(tester);
+
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_search_field')),
+        'Apple',
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(
+          const Key(
+            'receipt_review_manual_search_result_eat_button_4006381333999',
+          ),
+        ),
+      );
+      await _pumpUi(tester);
+
+      expect(
+        find.byKey(const Key('inventory_manual_add_eat_amount_field')),
+        findsOneWidget,
+      );
+
+      await tester.enterText(
+        find.byKey(const Key('inventory_manual_add_eat_amount_field')),
+        '1,5',
+      );
+      await tester.tap(
+        find.byKey(const Key('inventory_manual_add_eat_unit_field')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('pc').last);
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const Key('inventory_manual_add_eat_confirm_button')),
+      );
+      await tester.pumpAndSettle();
+
+      final amountField = tester.widget<TextField>(
+        find.byKey(const Key('inventory_item_amount_dialog_field')),
+      );
+      expect(amountField.controller?.text, '1.5');
+
+      await tester.enterText(find.byType(TextField).at(1), '150');
+
+      final logButton = find.text('Log');
+      await tester.ensureVisible(logButton);
+      await tester.tap(logButton);
+      await tester.pumpAndSettle();
+
+      expect(inventoryRepository.appendedItems, hasLength(1));
+      expect(inventoryRepository.appendedItems.single.weight, '1.5 Stk');
+      expect(
+        inventoryRepository.appendedItems.single.amountScale,
+        inventoryPieceAmountScale,
+      );
+      expect(inventoryRepository.appendedItems.single.currentAmount, 1500);
+    },
+  );
+
+  testWidgets(
     'eat now shows save error and does not open eat flow when persisting fails',
     (tester) async {
       _installFakeScannerPlatform(tester);

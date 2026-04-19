@@ -43,6 +43,7 @@ class _InventoryItemEatSheetAmountSectionData {
     required this.unitLabel,
     required this.errorText,
     required this.selectedAmount,
+    required this.allowFractionalInput,
     required this.quickOptions,
     required this.onChanged,
     required this.onClearAndFocus,
@@ -57,6 +58,7 @@ class _InventoryItemEatSheetAmountSectionData {
   final String? unitLabel;
   final String? errorText;
   final int? selectedAmount;
+  final bool allowFractionalInput;
   final List<({String label, int value})> quickOptions;
   final ValueChanged<String> onChanged;
   final VoidCallback onClearAndFocus;

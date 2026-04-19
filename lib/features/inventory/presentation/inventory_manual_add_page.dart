@@ -159,7 +159,15 @@ class _InventoryManualAddPageState
       return null;
     }
 
-    final weight = '${eatAmount.amount} ${_weightUnitCode(eatAmount.unit)}';
+    final amountScale = eatAmount.unit == InventoryAmountUnit.piece
+        ? inventoryPieceAmountScale
+        : 1;
+    final weight =
+        '${formatInventoryAmountValue(
+          amount: eatAmount.amount,
+          unit: eatAmount.unit,
+          scale: amountScale,
+        )} ${_weightUnitCode(eatAmount.unit)}';
     return item
         .copyWith(weight: weight)
         .withDerivedAmount(
@@ -529,6 +537,13 @@ class _ManualEatAmountDialogState extends State<_ManualEatAmountDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final amountScale = _selectedUnit == InventoryAmountUnit.piece
+        ? inventoryPieceAmountScale
+        : 1;
+    final allowsFractionalInput = inventoryAmountAllowsFractionalInput(
+      unit: _selectedUnit,
+      scale: amountScale,
+    );
 
     return AlertDialog(
       title: Text(widget.title),
@@ -543,7 +558,9 @@ class _ManualEatAmountDialogState extends State<_ManualEatAmountDialog> {
                 controller: _amountController,
                 focusNode: _amountFocusNode,
                 autofocus: true,
-                keyboardType: TextInputType.number,
+                keyboardType: TextInputType.numberWithOptions(
+                  decimal: allowsFractionalInput,
+                ),
                 textInputAction: TextInputAction.done,
                 decoration: InputDecoration(labelText: widget.amountLabel),
                 validator: _validateAmount,
@@ -602,7 +619,13 @@ class _ManualEatAmountDialogState extends State<_ManualEatAmountDialog> {
   }
 
   String? _validateAmount(String? value) {
-    final parsed = int.tryParse((value ?? '').trim());
+    final parsed = parseInventoryAmountInput(
+      rawValue: value ?? '',
+      unit: _selectedUnit,
+      scale: _selectedUnit == InventoryAmountUnit.piece
+          ? inventoryPieceAmountScale
+          : 1,
+    );
     if (parsed == null || parsed < 1) {
       return widget.invalidAmountMessage;
     }
@@ -615,7 +638,13 @@ class _ManualEatAmountDialogState extends State<_ManualEatAmountDialog> {
       return;
     }
 
-    final parsed = int.tryParse(_amountController.text.trim());
+    final parsed = parseInventoryAmountInput(
+      rawValue: _amountController.text,
+      unit: _selectedUnit,
+      scale: _selectedUnit == InventoryAmountUnit.piece
+          ? inventoryPieceAmountScale
+          : 1,
+    );
     if (parsed == null) {
       return;
     }

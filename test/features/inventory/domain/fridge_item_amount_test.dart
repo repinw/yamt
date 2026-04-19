@@ -75,4 +75,13 @@ void main() {
     expect(item.currentAmount, 300);
     expect(item.amountUnit, InventoryAmountUnit.gram);
   });
+
+  test('withDerivedAmount stores fractional pieces with scaled precision', () {
+    final item = _item(weight: '1.5 Stk').withDerivedAmount();
+
+    expect(item.initialAmount, 1500);
+    expect(item.currentAmount, 1500);
+    expect(item.amountScale, inventoryPieceAmountScale);
+    expect(item.amountUnit, InventoryAmountUnit.piece);
+  });
 }

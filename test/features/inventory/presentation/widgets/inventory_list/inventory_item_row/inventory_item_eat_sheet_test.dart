@@ -126,6 +126,29 @@ InventoryItem _pieceItemWithServingSuggestion() {
   );
 }
 
+InventoryItem _fractionalPieceAmountItem() {
+  return InventoryItem.create(
+    id: 'item-3',
+    name: 'Apple',
+    brand: 'Acme',
+    entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
+    storeName: 'Store',
+    quantity: 2,
+    initialQuantity: 2,
+    initialAmount: 2000,
+    currentAmount: 1500,
+    amountScale: inventoryPieceAmountScale,
+    amountUnit: InventoryAmountUnit.piece,
+    nutrition: const GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+      per100Kcal: 52,
+      per100Protein: 0.3,
+      per100Carbs: 14,
+      per100Fat: 0.2,
+    ),
+  );
+}
+
 class _OpenEatSheetButton extends StatelessWidget {
   const _OpenEatSheetButton({
     required this.item,
@@ -440,6 +463,41 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Banana'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'accepts fractional piece inventory amount and keeps scaled stock amount',
+    (tester) async {
+      InventoryItemEatRequest? result;
+      await tester.pumpWidget(
+        _buildTestApp(
+          item: _fractionalPieceAmountItem(),
+          maxAmount: 1500,
+          onResult: (value) {
+            result = value;
+          },
+        ),
+      );
+
+      await _openSheet(tester);
+
+      final amountField = tester.widget<TextField>(
+        find.byKey(const Key('inventory_item_amount_dialog_field')),
+      );
+      expect(amountField.controller?.text, '1');
+
+      await tester.enterText(
+        find.byKey(const Key('inventory_item_amount_dialog_field')),
+        '1,5',
+      );
+      await tester.enterText(find.byType(TextField).at(1), '150');
+      await _tapConfirmButton(tester);
+
+      expect(result, isNotNull);
+      expect(result?.inventoryAmount, 1500);
+      expect(result?.calorieAmount, 150);
+      expect(result?.calorieUnit, ConsumedUnit.grams);
     },
   );
 

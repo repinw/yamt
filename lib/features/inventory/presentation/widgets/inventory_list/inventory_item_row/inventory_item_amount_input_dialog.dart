@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 /// Defines inventory item amount input dialog.
 class InventoryItemAmountInputDialog extends StatefulWidget {
@@ -14,6 +15,8 @@ class InventoryItemAmountInputDialog extends StatefulWidget {
     super.key,
     this.quickFillLabel,
     this.suffixText,
+    this.amountUnit,
+    this.amountScale = 1,
   });
 
   /// The title.
@@ -40,6 +43,12 @@ class InventoryItemAmountInputDialog extends StatefulWidget {
   /// The suffix text.
   final String? suffixText;
 
+  /// Optional amount unit for fractional input handling.
+  final InventoryAmountUnit? amountUnit;
+
+  /// Internal amount scale for amount-based units.
+  final int amountScale;
+
   @override
   State<InventoryItemAmountInputDialog> createState() =>
       _InventoryItemAmountInputDialogState();
@@ -54,7 +63,22 @@ class _InventoryItemAmountInputDialogState
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: '1');
+    final defaultAmount = widget.amountUnit == InventoryAmountUnit.piece &&
+            widget.amountScale > 1
+        ? widget.amountScale
+        : 1;
+    final initialAmount = widget.maxAmount < defaultAmount
+        ? widget.maxAmount
+        : defaultAmount;
+    _controller = TextEditingController(
+      text: widget.amountUnit == null
+          ? '1'
+          : formatInventoryAmountValue(
+              amount: initialAmount,
+              unit: widget.amountUnit!,
+              scale: widget.amountScale,
+            ),
+    );
     _focusNode = FocusNode()..addListener(_onFocusChanged);
   }
 
@@ -78,7 +102,13 @@ class _InventoryItemAmountInputDialogState
           controller: _controller,
           focusNode: _focusNode,
           autofocus: true,
-          keyboardType: TextInputType.number,
+          keyboardType: TextInputType.numberWithOptions(
+            decimal: widget.amountUnit != null &&
+                inventoryAmountAllowsFractionalInput(
+                  unit: widget.amountUnit!,
+                  scale: widget.amountScale,
+                ),
+          ),
           textInputAction: TextInputAction.done,
           decoration: InputDecoration(
             labelText: widget.fieldLabel,
@@ -119,7 +149,7 @@ class _InventoryItemAmountInputDialogState
   }
 
   String? _validateAmount(String? value) {
-    final parsed = int.tryParse((value ?? '').trim());
+    final parsed = _parseAmount(value ?? '');
     if (parsed == null) {
       return widget.invalidAmountMessage;
     }
@@ -138,7 +168,7 @@ class _InventoryItemAmountInputDialogState
       return;
     }
 
-    final parsed = int.tryParse(_controller.text.trim());
+    final parsed = _parseAmount(_controller.text);
     if (parsed == null) {
       return;
     }
@@ -146,7 +176,13 @@ class _InventoryItemAmountInputDialogState
   }
 
   void _fillMaxAmount() {
-    final value = widget.maxAmount.toString();
+    final value = widget.amountUnit == null
+        ? widget.maxAmount.toString()
+        : formatInventoryAmountValue(
+            amount: widget.maxAmount,
+            unit: widget.amountUnit!,
+            scale: widget.amountScale,
+          );
     _controller.value = TextEditingValue(
       text: value,
       selection: TextSelection.collapsed(offset: value.length),
@@ -160,6 +196,23 @@ class _InventoryItemAmountInputDialogState
     _controller.selection = TextSelection(
       baseOffset: 0,
       extentOffset: _controller.text.length,
+    );
+  }
+
+  int? _parseAmount(String rawValue) {
+    final amountUnit = widget.amountUnit;
+    if (amountUnit == null) {
+      final parsed = int.tryParse(rawValue.trim());
+      if (parsed == null || parsed < 1) {
+        return null;
+      }
+      return parsed;
+    }
+
+    return parseInventoryAmountInput(
+      rawValue: rawValue,
+      unit: amountUnit,
+      scale: widget.amountScale,
     );
   }
 }
