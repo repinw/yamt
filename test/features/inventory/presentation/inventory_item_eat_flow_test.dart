@@ -494,7 +494,10 @@ void main() {
         container.read(calorieEntriesControllerProvider).value?.single.name,
         item.name,
       );
-      expect(find.byType(SnackBar), findsNothing);
+      expect(
+        find.text('${item.name} gegessen.'),
+        findsOneWidget,
+      );
     },
   );
 }

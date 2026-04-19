@@ -36,7 +36,7 @@ class InventoryItemEatFlow {
   }
 
   /// Complete.
-  static Future<void> complete({
+  static Future<bool> complete({
     required BuildContext context,
     required WidgetRef ref,
     required InventoryItem itemBeforeMutation,
@@ -45,6 +45,9 @@ class InventoryItemEatFlow {
   }) async {
     try {
       final l10n = AppLocalizations.of(context)!;
+      final successMessage = l10n.inventoryManualAddEatSucceeded(
+        itemBeforeMutation.name.trim(),
+      );
       final profile = InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(
         itemBeforeMutation,
       );
@@ -59,7 +62,7 @@ class InventoryItemEatFlow {
             message: l10n.inventoryItemActionFailed,
           );
         }
-        return;
+        return false;
       }
 
       final inventoryContext = InventoryCalorieBridgeFlow.buildInventoryContext(
@@ -82,7 +85,10 @@ class InventoryItemEatFlow {
           mealType: request.mealType,
         );
         if (saved) {
-          return;
+          if (context.mounted) {
+            _showSnackBar(context: context, message: successMessage);
+          }
+          return true;
         }
 
         await _discardPendingConsumption(
@@ -92,7 +98,7 @@ class InventoryItemEatFlow {
         if (context.mounted) {
           _showSnackBar(context: context, message: l10n.caloriesSaveFailed);
         }
-        return;
+        return false;
       }
 
       if (!context.mounted) {
@@ -100,10 +106,10 @@ class InventoryItemEatFlow {
           ref: ref,
           pendingConsumptionId: pendingConsumptionId,
         );
-        return;
+        return false;
       }
 
-      await context.push(
+      final saved = await context.push<bool>(
         AppRoutes.homeCaloriesEntryCreate,
         extra: CalorieEntryCreateArgs(
           prefilledProfile: profile,
@@ -113,6 +119,10 @@ class InventoryItemEatFlow {
           preselectedLoggedAt: request.loggedAt,
         ),
       );
+      if (saved == true && context.mounted) {
+        _showSnackBar(context: context, message: successMessage);
+      }
+      return saved == true;
     } on Object catch (error, stackTrace) {
       developer.log(
         'Eat flow failed unexpectedly.',
@@ -125,12 +135,13 @@ class InventoryItemEatFlow {
         pendingConsumptionId: pendingConsumptionId,
       );
       if (!context.mounted) {
-        return;
+        return false;
       }
       _showSnackBar(
         context: context,
         message: AppLocalizations.of(context)!.inventoryItemActionFailed,
       );
+      return false;
     }
   }
 
@@ -148,8 +159,8 @@ class InventoryItemEatFlow {
     required BuildContext context,
     required String message,
   }) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }

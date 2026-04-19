@@ -1,9 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_barcode_candidate_picker_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 GlobalBarcodeCandidate _learnedCandidate({
   required String id,
@@ -154,6 +158,70 @@ void main() {
       expect(
         inventoryBarcodeCandidateDedupeKey(first),
         isNot(inventoryBarcodeCandidateDedupeKey(second)),
+      );
+    },
+  );
+
+  testWidgets(
+    'barcode picker hides action buttons when explicit actions are disabled',
+    (tester) async {
+      final candidate = InventoryBarcodeLookupCandidate.fromOffProduct(
+        const OffProductSearchResult(
+          code: '4006381333931',
+          name: 'Milk',
+          brand: 'Acme',
+          packageWeight: '1 l',
+          score: 100,
+        ),
+      );
+      InventoryBarcodeLookupCandidate? selectedCandidate;
+      InventoryBarcodeCandidateAction? selectedAction;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: InventoryBarcodeCandidatePickerSheet(
+              candidates: <InventoryBarcodeLookupCandidate>[candidate],
+              showActionButtons: false,
+              onSelect: (nextCandidate, action) {
+                selectedCandidate = nextCandidate;
+                selectedAction = action;
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(
+        find.byKey(
+          Key(
+            'inventory_barcode_candidate_store_button_'
+            '${inventoryBarcodeCandidateWidgetKeySuffix(candidate)}',
+          ),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.byKey(
+          Key(
+            'inventory_barcode_candidate_eat_button_'
+            '${inventoryBarcodeCandidateWidgetKeySuffix(candidate)}',
+          ),
+        ),
+        findsNothing,
+      );
+
+      await tester.tap(find.text('Milk'));
+      await tester.pump();
+
+      expect(selectedCandidate?.barcode, candidate.barcode);
+      expect(
+        selectedAction,
+        InventoryBarcodeCandidateAction.addToInventory,
       );
     },
   );

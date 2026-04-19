@@ -481,6 +481,8 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
           maxAmount: config.maxAmount,
           quickFillLabel: quickFillLabel,
           suffixText: config.suffixText,
+          amountUnit: config.amountUnit,
+          amountScale: config.amountScale,
         );
       },
     );
@@ -546,6 +548,8 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
         maxAmount: maxAmount,
         fieldLabel: widget.l10n.inventoryReceiptReviewFieldWeight,
         suffixText: item.amountUnit!.localizedName(widget.l10n),
+        amountUnit: item.amountUnit,
+        amountScale: item.amountScale,
       );
     }
 
@@ -557,6 +561,8 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       maxAmount: maxAmount,
       fieldLabel: widget.l10n.inventoryReceiptReviewFieldQuantity,
       suffixText: null,
+      amountUnit: null,
+      amountScale: 1,
     );
   }
 }
@@ -566,11 +572,15 @@ class _ItemAmountInputConfig {
     required this.maxAmount,
     required this.fieldLabel,
     required this.suffixText,
+    required this.amountUnit,
+    required this.amountScale,
   });
 
   final int maxAmount;
   final String fieldLabel;
   final String? suffixText;
+  final InventoryAmountUnit? amountUnit;
+  final int amountScale;
 }
 
 class _InventoryItemRowLayoutData {

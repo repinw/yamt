@@ -174,6 +174,7 @@ class _InventoryItemEatAmountSection extends StatelessWidget {
             focusNode: data.focusNode,
             unitLabel: data.unitLabel,
             errorText: data.errorText,
+            allowFractionalInput: data.allowFractionalInput,
             clearTooltip: data.clearTooltip,
             onChanged: data.onChanged,
             onClearAndFocus: data.onClearAndFocus,

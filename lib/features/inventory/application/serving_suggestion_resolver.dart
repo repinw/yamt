@@ -313,7 +313,10 @@ class ServingSuggestionResolver {
       'piece' ||
       'pieces' ||
       'st' ||
-      'stk' => (amount: quantity, unit: InventoryAmountUnit.piece),
+      'stk' => (
+        amount: quantity * inventoryPieceAmountScale,
+        unit: InventoryAmountUnit.piece,
+      ),
       _ => null,
     };
     if (converted == null || converted.amount <= 0) {
@@ -355,7 +358,13 @@ class ServingSuggestionResolver {
     ({double amount, InventoryAmountUnit unit}) serving,
   ) {
     final code = serving.unit.code;
-    final value = _formatInventoryNutritionValue(serving.amount);
+    final value = serving.unit == InventoryAmountUnit.piece
+        ? formatInventoryAmountValue(
+            amount: serving.amount.round(),
+            unit: serving.unit,
+            scale: inventoryPieceAmountScale,
+          )
+        : _formatInventoryNutritionValue(serving.amount);
     return code.isEmpty ? value : '$value $code';
   }
 

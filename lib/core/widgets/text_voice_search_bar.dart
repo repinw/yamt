@@ -62,6 +62,7 @@ class TextVoiceSearchBar extends StatefulWidget {
     this.voiceSearchController,
     this.onVoiceSearchPressed,
     this.trailingActions = const <Widget>[],
+    this.hintText,
   });
 
   /// Controller that holds current search text.
@@ -111,6 +112,9 @@ class TextVoiceSearchBar extends StatefulWidget {
 
   /// Extra trailing actions rendered after the voice button.
   final List<Widget> trailingActions;
+
+  /// Optional hint text shown inside the field instead of a floating label.
+  final String? hintText;
 
   @override
   State<TextVoiceSearchBar> createState() => _TextVoiceSearchBarState();
@@ -206,6 +210,7 @@ class _TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
           child: _TextVoiceSearchField(
             controller: widget.controller,
             label: widget.label,
+            hintText: widget.hintText,
             fieldKey: widget.fieldKey,
             clearButtonKey: widget.clearButtonKey,
             readOnly: widget.readOnly,
@@ -393,6 +398,7 @@ class _TextVoiceSearchField extends StatelessWidget {
   const _TextVoiceSearchField({
     required this.controller,
     required this.label,
+    required this.hintText,
     required this.fieldKey,
     required this.clearButtonKey,
     required this.readOnly,
@@ -406,6 +412,7 @@ class _TextVoiceSearchField extends StatelessWidget {
 
   final TextEditingController controller;
   final String label;
+  final String? hintText;
   final Key fieldKey;
   final Key? clearButtonKey;
   final bool readOnly;
@@ -434,7 +441,11 @@ class _TextVoiceSearchField extends StatelessWidget {
           onChanged: onChanged,
           textInputAction: TextInputAction.search,
           decoration: InputDecoration(
-            labelText: label,
+            labelText: hintText == null ? label : null,
+            hintText: hintText,
+            floatingLabelBehavior: hintText == null
+                ? FloatingLabelBehavior.auto
+                : FloatingLabelBehavior.never,
             prefixIcon: const Icon(Icons.search),
             suffixIcon: _TextVoiceSearchSuffixActions(
               isSearching: isSearching,

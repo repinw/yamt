@@ -6,6 +6,7 @@ class _InventoryItemEatAmountCard extends StatelessWidget {
     required this.focusNode,
     required this.unitLabel,
     required this.errorText,
+    required this.allowFractionalInput,
     required this.clearTooltip,
     required this.onChanged,
     required this.onClearAndFocus,
@@ -16,6 +17,7 @@ class _InventoryItemEatAmountCard extends StatelessWidget {
   final FocusNode focusNode;
   final String? unitLabel;
   final String? errorText;
+  final bool allowFractionalInput;
   final String clearTooltip;
   final ValueChanged<String> onChanged;
   final VoidCallback onClearAndFocus;
@@ -53,7 +55,9 @@ class _InventoryItemEatAmountCard extends StatelessWidget {
                           key: const Key('inventory_item_amount_dialog_field'),
                           controller: controller,
                           focusNode: focusNode,
-                          keyboardType: TextInputType.number,
+                          keyboardType: TextInputType.numberWithOptions(
+                            decimal: allowFractionalInput,
+                          ),
                           textInputAction: TextInputAction.done,
                           decoration: const InputDecoration(
                             border: InputBorder.none,

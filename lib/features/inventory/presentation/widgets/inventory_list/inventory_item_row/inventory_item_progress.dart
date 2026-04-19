@@ -50,8 +50,16 @@ class InventoryItemProgressCalculator {
     return InventoryItemProgress(
       remainingRatio: remainingAmount / initialAmount,
       remainingLabel:
-          '${_formatAmount(remainingAmount, unit)} / '
-          '${_formatAmount(initialAmount, unit)}',
+          '${_formatAmount(
+            remainingAmount,
+            unit,
+            scale: item.amountScale,
+          )} / '
+          '${_formatAmount(
+            initialAmount,
+            unit,
+            scale: item.amountScale,
+          )}',
       segmentedByUnits: totalUnits > 1,
       totalUnits: totalUnits,
       remainingUnits: remainingUnits,
@@ -78,9 +86,16 @@ class InventoryItemProgressCalculator {
     return initialQuantity;
   }
 
-  String _formatAmount(int value, InventoryAmountUnit unit) {
-    final safeValue = value < 0 ? 0 : value;
-    return '$safeValue${_unitSuffix(unit)}';
+  String _formatAmount(
+    int value,
+    InventoryAmountUnit unit, {
+    required int scale,
+  }) {
+    return '${formatInventoryAmountValue(
+      amount: value,
+      unit: unit,
+      scale: scale,
+    )}${_unitSuffix(unit)}';
   }
 
   String _unitSuffix(InventoryAmountUnit unit) {

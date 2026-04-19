@@ -204,6 +204,8 @@ String _inventorySortSignature(
       ..write(':')
       ..write(item.initialAmount)
       ..write(':')
+      ..write(item.amountScale)
+      ..write(':')
       ..write(item.amountUnit?.code ?? '')
       ..write(':')
       ..write(item.lastConsumedAt?.microsecondsSinceEpoch ?? -1);

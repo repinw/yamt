@@ -1,11 +1,19 @@
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_product_snapshot.dart';
 
 export 'package:yamt/features/inventory/domain/inventory_amount_parser.dart'
-    show InventoryAmountUnit, InventoryAmountUnitCode;
+    show
+        InventoryAmountUnit,
+        InventoryAmountUnitCode,
+        formatInventoryAmountValue,
+        inventoryAmountAllowsFractionalInput,
+        inventoryAmountToDisplayValue,
+        inventoryPieceAmountScale,
+        parseInventoryAmountInput;
 
 /// Defines inventory barcode status.
 enum InventoryBarcodeStatus {
@@ -49,6 +57,7 @@ bool isPendingGlobalFoodItemId(String? value) {
 }
 
 /// Defines inventory item.
+@immutable
 class InventoryItem {
   /// The inventory item.
   const InventoryItem({
@@ -64,6 +73,7 @@ class InventoryItem {
     this.weight,
     this.initialAmount = 0,
     this.currentAmount = 0,
+    this.amountScale = 1,
     this.amountUnit,
     this.barcodeCandidates = const <String>[],
     this.barcodeLookupRequestedAt,
@@ -93,6 +103,7 @@ class InventoryItem {
     String? weight,
     int initialAmount = 0,
     int currentAmount = 0,
+    int amountScale = 1,
     InventoryAmountUnit? amountUnit,
     String? barcode,
     List<String> barcodeCandidates = const <String>[],
@@ -147,6 +158,7 @@ class InventoryItem {
       weight: _normalizeWeightText(weight),
       initialAmount: initialAmount,
       currentAmount: currentAmount,
+      amountScale: amountScale,
       amountUnit: amountUnit,
       barcodeCandidates: barcodeCandidates,
       barcodeLookupRequestedAt: barcodeLookupRequestedAt,
@@ -169,6 +181,13 @@ class InventoryItem {
     final productSnapshot = InventoryItemProductSnapshot.fromJson(
       _readMap(json['product_snapshot']),
     );
+    final amountUnit = _readAmountUnit(json['amount_unit']);
+    final amountData = _resolvePersistedAmountData(
+      amountUnit: amountUnit,
+      storedInitialAmount: _readInt(json['initial_amount']) ?? 0,
+      storedCurrentAmount: _readInt(json['current_amount']) ?? 0,
+      storedAmountScale: _readInt(json['amount_scale']),
+    );
 
     return InventoryItem(
       id: _readTrimmedString(json['id']) ?? '',
@@ -184,9 +203,10 @@ class InventoryItem {
       unitPrice: _readDouble(json['unit_price']) ?? 0.0,
       currencyCode: _normalizeCurrencyCodeValue(json['currency_code']),
       weight: _normalizeWeightText(json['weight']),
-      initialAmount: _readInt(json['initial_amount']) ?? 0,
-      currentAmount: _readInt(json['current_amount']) ?? 0,
-      amountUnit: _readAmountUnit(json['amount_unit']),
+      initialAmount: amountData.initialAmount,
+      currentAmount: amountData.currentAmount,
+      amountScale: amountData.amountScale,
+      amountUnit: amountUnit,
       barcodeCandidates: _readStringList(json['barcode_candidates']),
       barcodeLookupRequestedAt: _readDateTime(
         json['barcode_lookup_requested_at'],
@@ -203,6 +223,40 @@ class InventoryItem {
       isDeposit: _readBool(json['is_deposit']) ?? false,
       isDiscount: _readBool(json['is_discount']) ?? false,
       origin: _readInventoryItemOrigin(json['origin']),
+    );
+  }
+
+  static ({
+    int initialAmount,
+    int currentAmount,
+    int amountScale,
+  }) _resolvePersistedAmountData({
+    required InventoryAmountUnit? amountUnit,
+    required int storedInitialAmount,
+    required int storedCurrentAmount,
+    required int? storedAmountScale,
+  }) {
+    if (amountUnit == InventoryAmountUnit.piece) {
+      final scale = storedAmountScale ?? inventoryPieceAmountScale;
+      if (storedAmountScale == null) {
+        return (
+          initialAmount: storedInitialAmount * inventoryPieceAmountScale,
+          currentAmount: storedCurrentAmount * inventoryPieceAmountScale,
+          amountScale: scale,
+        );
+      }
+      return (
+        initialAmount: storedInitialAmount,
+        currentAmount: storedCurrentAmount,
+        amountScale: scale < 1 ? inventoryPieceAmountScale : scale,
+      );
+    }
+
+    final scale = storedAmountScale ?? 1;
+    return (
+      initialAmount: storedInitialAmount,
+      currentAmount: storedCurrentAmount,
+      amountScale: scale < 1 ? 1 : scale,
     );
   }
 
@@ -241,6 +295,9 @@ class InventoryItem {
 
   /// The current amount.
   final int currentAmount;
+
+  /// Internal amount storage scale.
+  final int amountScale;
 
   /// The amount unit.
   final InventoryAmountUnit? amountUnit;
@@ -299,6 +356,7 @@ class InventoryItem {
       'weight': weight,
       'initial_amount': initialAmount,
       'current_amount': currentAmount,
+      'amount_scale': amountScale,
       'amount_unit': amountUnit?.code,
       'barcode_candidates': barcodeCandidates,
       'barcode_lookup_requested_at': barcodeLookupRequestedAt
@@ -341,6 +399,7 @@ class InventoryItem {
     Object? weight = _keepValue,
     int? initialAmount,
     int? currentAmount,
+    int? amountScale,
     Object? amountUnit = _keepValue,
     List<String>? barcodeCandidates,
     Object? barcodeLookupRequestedAt = _keepValue,
@@ -385,6 +444,7 @@ class InventoryItem {
       weight: weight == _keepValue ? this.weight : _normalizeWeightText(weight),
       initialAmount: initialAmount ?? this.initialAmount,
       currentAmount: currentAmount ?? this.currentAmount,
+      amountScale: amountScale ?? this.amountScale,
       amountUnit: amountUnit == _keepValue
           ? this.amountUnit
           : amountUnit as InventoryAmountUnit?,
@@ -447,6 +507,25 @@ class InventoryItem {
   /// The nutrition.
   GlobalFoodNutrition? get nutrition => productSnapshot.nutrition;
 
+  /// Applies already-resolved amount data without reparsing weight text.
+  InventoryItem withResolvedAmount({
+    String? weight,
+    InventoryAmountParseResult? parsedAmount,
+    int? quantity,
+  }) {
+    final normalizedWeight = _normalizeWeightText(weight ?? this.weight);
+    final nextQuantity = quantity ?? this.quantity;
+
+    return copyWith(
+      quantity: nextQuantity,
+      weight: normalizedWeight,
+      initialAmount: parsedAmount?.amount ?? 0,
+      currentAmount: parsedAmount?.amount ?? 0,
+      amountScale: parsedAmount?.scale ?? 1,
+      amountUnit: parsedAmount?.unit,
+    );
+  }
+
   /// With derived amount.
   InventoryItem withDerivedAmount({
     String? weight,
@@ -460,14 +539,10 @@ class InventoryItem {
       quantity: nextQuantity,
       fallbackUnit: fallbackUnit,
     );
-    final amount = parsedAmount?.amount ?? 0;
-
-    return copyWith(
-      quantity: nextQuantity,
+    return withResolvedAmount(
       weight: normalizedWeight,
-      initialAmount: amount,
-      currentAmount: amount,
-      amountUnit: parsedAmount?.unit,
+      parsedAmount: parsedAmount,
+      quantity: nextQuantity,
     );
   }
 
@@ -562,6 +637,7 @@ class InventoryItem {
             other.weight == weight &&
             other.initialAmount == initialAmount &&
             other.currentAmount == currentAmount &&
+            other.amountScale == amountScale &&
             other.amountUnit == amountUnit &&
             const ListEquality<String>().equals(
               other.barcodeCandidates,
@@ -599,6 +675,7 @@ class InventoryItem {
       weight,
       initialAmount,
       currentAmount,
+      amountScale,
       amountUnit,
       const ListEquality<String>().hash(barcodeCandidates),
       barcodeLookupRequestedAt,
@@ -613,8 +690,8 @@ class InventoryItem {
       isDeposit,
       isDiscount,
       origin,
-    ]);
-  }
+  ]);
+}
 }
 
 class _ConsumptionProgress {

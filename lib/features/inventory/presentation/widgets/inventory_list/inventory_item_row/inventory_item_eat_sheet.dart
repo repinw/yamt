@@ -79,8 +79,7 @@ class _InventoryItemEatSheetState
     extends ConsumerState<_InventoryItemEatSheet> {
   static const _servingResolver = ServingSuggestionResolver();
 
-  late final TextEditingController _inventoryAmountController =
-      TextEditingController(text: _defaultInventoryAmount.toString());
+  late final TextEditingController _inventoryAmountController;
   late final FocusNode _inventoryAmountFocusNode = FocusNode();
   late final TextEditingController _inedibleAmountController =
       TextEditingController();
@@ -113,10 +112,37 @@ class _InventoryItemEatSheetState
     return inventoryItemUsesFixedCalorieUnit(widget.item);
   }
 
+  InventoryAmountUnit get _inventoryAmountUnit {
+    if (widget.item.usesAmountProgress && widget.item.amountUnit != null) {
+      return widget.item.amountUnit!;
+    }
+    return InventoryAmountUnit.piece;
+  }
+
+  int get _inventoryAmountScale {
+    if (widget.item.usesAmountProgress) {
+      return widget.item.amountScale;
+    }
+    return 1;
+  }
+
+  bool get _allowsFractionalInventoryAmount {
+    return inventoryAmountAllowsFractionalInput(
+      unit: _inventoryAmountUnit,
+      scale: _inventoryAmountScale,
+    );
+  }
+
   int get _defaultInventoryAmount {
+    final defaultAmount = _allowsFractionalInventoryAmount
+        ? _inventoryAmountScale
+        : 1;
     final amount = widget.initialInventoryAmount;
     if (amount == null || amount < 1) {
-      return 1;
+      if (defaultAmount > widget.maxAmount) {
+        return widget.maxAmount;
+      }
+      return defaultAmount;
     }
     if (amount > widget.maxAmount) {
       return widget.maxAmount;
@@ -127,6 +153,13 @@ class _InventoryItemEatSheetState
   @override
   void initState() {
     super.initState();
+    _inventoryAmountController = TextEditingController(
+      text: formatInventoryAmountValue(
+        amount: _defaultInventoryAmount,
+        unit: _inventoryAmountUnit,
+        scale: _inventoryAmountScale,
+      ),
+    );
     _inventoryAmountFocusNode.addListener(_selectAllInventoryAmount);
     _inedibleAmountFocusNode.addListener(_selectAllInedibleAmount);
     _manualCalorieAmountFocusNode.addListener(_selectAllManualCalorieAmount);
@@ -135,12 +168,15 @@ class _InventoryItemEatSheetState
 
   @override
   void dispose() {
-    _inventoryAmountFocusNode.removeListener(_selectAllInventoryAmount);
-    _inventoryAmountFocusNode.dispose();
-    _inedibleAmountFocusNode.removeListener(_selectAllInedibleAmount);
-    _inedibleAmountFocusNode.dispose();
-    _manualCalorieAmountFocusNode.removeListener(_selectAllManualCalorieAmount);
-    _manualCalorieAmountFocusNode.dispose();
+    _inventoryAmountFocusNode
+      ..removeListener(_selectAllInventoryAmount)
+      ..dispose();
+    _inedibleAmountFocusNode
+      ..removeListener(_selectAllInedibleAmount)
+      ..dispose();
+    _manualCalorieAmountFocusNode
+      ..removeListener(_selectAllManualCalorieAmount)
+      ..dispose();
     _inventoryAmountController.dispose();
     _inedibleAmountController.dispose();
     _manualCalorieAmountController.dispose();
@@ -168,7 +204,11 @@ class _InventoryItemEatSheetState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final material = MaterialLocalizations.of(context);
-    final selectedAmount = int.tryParse(_inventoryAmountController.text.trim());
+    final selectedAmount = parseInventoryAmountInput(
+      rawValue: _inventoryAmountController.text,
+      unit: _inventoryAmountUnit,
+      scale: _inventoryAmountScale,
+    );
     final unitLabel = _inventoryUnitLabel(l10n);
     final servingResolution = _resolveServingResolution();
     final quickOptions = _buildQuickOptions(
@@ -198,6 +238,7 @@ class _InventoryItemEatSheetState
         unitLabel: unitLabel,
         errorText: _inventoryAmountErrorText,
         selectedAmount: selectedAmount,
+        allowFractionalInput: _allowsFractionalInventoryAmount,
         quickOptions: quickOptions,
         onChanged: _clearInventoryAmountError,
         onClearAndFocus: _clearInventoryAmountAndFocus,
@@ -268,6 +309,30 @@ class _InventoryItemEatSheetState
     }
 
     if (widget.item.usesAmountProgress) {
+      if (_allowsFractionalInventoryAmount) {
+        for (final value in <int>[
+          _inventoryAmountScale ~/ 4,
+          _inventoryAmountScale ~/ 2,
+          _inventoryAmountScale,
+        ]) {
+          if (value >= widget.maxAmount || value < 1 || !values.add(value)) {
+            continue;
+          }
+          final label = unitLabel == null
+              ? formatInventoryAmountValue(
+                  amount: value,
+                  unit: _inventoryAmountUnit,
+                  scale: _inventoryAmountScale,
+                )
+              : '${formatInventoryAmountValue(
+                  amount: value,
+                  unit: _inventoryAmountUnit,
+                  scale: _inventoryAmountScale,
+                )} $unitLabel';
+          options.add((label: label, value: value));
+        }
+        return options;
+      }
       for (final value in const [50, 100, 250]) {
         if (value >= widget.maxAmount || !values.add(value)) {
           continue;
@@ -312,7 +377,11 @@ class _InventoryItemEatSheetState
   }
 
   void _applyInventoryDefault(int value) {
-    _inventoryAmountController.text = value.toString();
+    _inventoryAmountController.text = formatInventoryAmountValue(
+      amount: value,
+      unit: _inventoryAmountUnit,
+      scale: _inventoryAmountScale,
+    );
   }
 
   void _applyManualDefault(({double amount, ConsumedUnit unit}) suggestion) {
@@ -341,20 +410,23 @@ class _InventoryItemEatSheetState
       if (nutrition?.per100Carbs != null)
         (
           label: l10n.inventoryNutritionCarbsShortLabel,
-          value:
-              '${formatInventoryNutritionValue(nutrition!.per100Carbs! * factor)}g',
+          value: '${formatInventoryNutritionValue(
+            nutrition!.per100Carbs! * factor,
+          )}g',
         ),
       if (nutrition?.per100Protein != null)
         (
           label: l10n.caloriesProteinLabel,
-          value:
-              '${formatInventoryNutritionValue(nutrition!.per100Protein! * factor)}g',
+          value: '${formatInventoryNutritionValue(
+            nutrition!.per100Protein! * factor,
+          )}g',
         ),
       if (nutrition?.per100Fat != null)
         (
           label: l10n.caloriesFatLabel,
-          value:
-              '${formatInventoryNutritionValue(nutrition!.per100Fat! * factor)}g',
+          value: '${formatInventoryNutritionValue(
+            nutrition!.per100Fat! * factor,
+          )}g',
         ),
     ];
   }
@@ -391,7 +463,11 @@ class _InventoryItemEatSheetState
   void _selectInventoryAmount(int amount) {
     _didManuallyEditInventoryAmount = true;
     _updateState(() {
-      _inventoryAmountController.text = amount.toString();
+      _inventoryAmountController.text = formatInventoryAmountValue(
+        amount: amount,
+        unit: _inventoryAmountUnit,
+        scale: _inventoryAmountScale,
+      );
       _inventoryAmountErrorText = null;
     });
   }
@@ -437,8 +513,10 @@ class _InventoryItemEatSheetState
   }
 
   void _submit() {
-    final inventoryAmount = int.tryParse(
-      _inventoryAmountController.text.trim(),
+    final inventoryAmount = parseInventoryAmountInput(
+      rawValue: _inventoryAmountController.text,
+      unit: _inventoryAmountUnit,
+      scale: _inventoryAmountScale,
     );
     final isInventoryAmountValid =
         inventoryAmount != null &&
@@ -506,8 +584,10 @@ class _InventoryItemEatSheetState
       return _parsePositiveAmount(_manualCalorieAmountController.text);
     }
 
-    final inventoryAmount = int.tryParse(
-      _inventoryAmountController.text.trim(),
+    final inventoryAmount = parseInventoryAmountInput(
+      rawValue: _inventoryAmountController.text,
+      unit: _inventoryAmountUnit,
+      scale: _inventoryAmountScale,
     );
     if (inventoryAmount == null || inventoryAmount < 1) {
       return null;

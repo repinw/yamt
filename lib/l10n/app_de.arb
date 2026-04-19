@@ -238,7 +238,16 @@
   "inventoryManualAddSaveFailed":
       "Das Produkt konnte nicht zum Inventar hinzugefügt werden.",
   "inventoryManualAddSaved": "Produkt zum Inventar hinzugefügt.",
+  "inventoryManualAddEatSucceeded": "{itemName} gegessen.",
+  "inventoryManualAddSearchDialogTitle": "Produktsuche",
+  "@inventoryManualAddEatSucceeded": {
+    "placeholders": {
+      "itemName": {}
+    }
+  },
   "inventoryManualAddPackageSizeLabel": "Packungsgröße",
+  "inventoryManualAddResultActionInventory": "Vorrat",
+  "inventoryManualAddResultActionEat": "Essen",
   "inventoryManualAddEatNowOption": "Sofort essen",
   "inventoryManualAddEatNowSizeLabel": "Sofort essen Menge",
   "inventoryManualAddEatNowRequiresNutrition":

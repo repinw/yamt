@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'inventory_receipt_manual_product_controller.dart';
+part of 'manual_product_search_controller.dart';
 
 // **************************************************************************
 // RiverpodGenerator

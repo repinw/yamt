@@ -1,13 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_amount_input_dialog.dart';
 
 class _AmountDialogHarness extends StatelessWidget {
-  const _AmountDialogHarness({required this.onResult});
+  const _AmountDialogHarness({
+    required this.onResult,
+    this.builder = _defaultDialogBuilder,
+  });
 
   final ValueChanged<int?> onResult;
+  final WidgetBuilder builder;
+
+  static Widget _defaultDialogBuilder(BuildContext context) {
+    return const InventoryItemAmountInputDialog(
+      title: 'Choose amount',
+      confirmLabel: 'Confirm',
+      cancelLabel: 'Cancel',
+      fieldLabel: 'Amount',
+      invalidAmountMessage: 'Invalid amount',
+      maxAmount: 5,
+      quickFillLabel: 'All',
+      suffixText: 'pcs',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,18 +40,7 @@ class _AmountDialogHarness extends StatelessWidget {
                   onPressed: () async {
                     final result = await showDialog<int>(
                       context: context,
-                      builder: (context) {
-                        return const InventoryItemAmountInputDialog(
-                          title: 'Choose amount',
-                          confirmLabel: 'Confirm',
-                          cancelLabel: 'Cancel',
-                          fieldLabel: 'Amount',
-                          invalidAmountMessage: 'Invalid amount',
-                          maxAmount: 5,
-                          quickFillLabel: 'All',
-                          suffixText: 'pcs',
-                        );
-                      },
+                      builder: builder,
                     );
                     onResult(result);
                   },
@@ -111,5 +118,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(result, 2);
+  });
+
+  testWidgets('dialog accepts fractional piece amount with comma input', (
+    tester,
+  ) async {
+    int? result;
+    await tester.pumpWidget(
+      _AmountDialogHarness(
+        onResult: (value) {
+          result = value;
+        },
+        builder: (context) {
+          return const InventoryItemAmountInputDialog(
+            title: 'Choose amount',
+            confirmLabel: 'Confirm',
+            cancelLabel: 'Cancel',
+            fieldLabel: 'Amount',
+            invalidAmountMessage: 'Invalid amount',
+            maxAmount: 1500,
+            quickFillLabel: 'All',
+            suffixText: 'pieces',
+            amountUnit: InventoryAmountUnit.piece,
+            amountScale: inventoryPieceAmountScale,
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      '1,5',
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(result, 1500);
   });
 }
