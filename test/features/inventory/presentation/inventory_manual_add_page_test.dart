@@ -627,6 +627,69 @@ void main() {
     },
   );
 
+  testWidgets(
+    'eat now shows feedback before opening editor when OFF nutrition'
+    ' is missing',
+    (tester) async {
+      _installFakeScannerPlatform(tester);
+
+      final offRepository = _RecordingOffProductSearchRepository(
+        <OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4316268671224',
+            name: 'Cashews Sour Creme & Onion',
+            brand: 'Clarkys',
+            score: 100,
+          ),
+        ],
+      );
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      addTearDown(inventoryRepository.dispose);
+      final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+
+      await tester.pumpWidget(
+        _buildHarness(
+          offRepository: offRepository,
+          inventoryRepository: inventoryRepository,
+          globalFoodRepository: globalFoodRepository,
+        ),
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_scan_button')),
+      );
+      await _pumpUi(tester);
+
+      _fakeScannerPlatform().emitBarcode('4316268671224');
+      await _pumpUi(tester);
+
+      final eatActionButton = _barcodeCandidateActionButton(
+        InventoryBarcodeLookupCandidate.fromOffProduct(
+          const OffProductSearchResult(
+            code: '4316268671224',
+            name: 'Cashews Sour Creme & Onion',
+            brand: 'Clarkys',
+            score: 100,
+          ),
+        ),
+        InventoryBarcodeCandidateAction.eatNow,
+      );
+      await tester.ensureVisible(eatActionButton);
+      await tester.tap(eatActionButton);
+      await _pumpUi(tester);
+
+      expect(
+        find.text('Only available when nutrition values are present.'),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('receipt_review_manual_save_button')),
+        findsOneWidget,
+      );
+    },
+  );
+
   testWidgets('eat now opens the eat flow after the product was saved', (
     tester,
   ) async {

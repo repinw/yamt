@@ -67,6 +67,21 @@ void main() {
     expect(draft.tryParse(), isNull);
   });
 
+  test('tryParse returns null for invalid amount text', () {
+    final draft = CalorieEntryEditorDraft();
+    addTearDown(draft.dispose);
+
+    draft
+      ..nameController.text = 'Milk'
+      ..amountController.text = 'abc'
+      ..per100KcalController.text = '10'
+      ..per100ProteinController.text = '1'
+      ..per100CarbsController.text = '2'
+      ..per100FatController.text = '3';
+
+    expect(draft.tryParse(), isNull);
+  });
+
   test('initializeFromEntry populates draft and ignores same entry twice', () {
     final draft = CalorieEntryEditorDraft();
     addTearDown(draft.dispose);

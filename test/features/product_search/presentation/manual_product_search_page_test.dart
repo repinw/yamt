@@ -1149,6 +1149,57 @@ void main() {
   });
 
   testWidgets(
+    'recent item eat action shows feedback when nutrition is missing',
+    (tester) async {
+      final recentItem = InventoryItem.create(
+        id: 'recent-1',
+        name: 'Butter',
+        entryDate: DateTime.parse('2026-04-04T10:00:00Z'),
+        storeName: 'Ajout manuel',
+        origin: InventoryItemOrigin.manualAdd,
+        quantity: 1,
+        brand: 'Bio',
+        weight: '250 g',
+      );
+
+      await tester.pumpWidget(
+        _wrapPage(
+          item: _item(),
+          showEatImmediatelyOption: true,
+          inventoryRepository: _FakeInventoryItemRepository(
+            initialItems: <InventoryItem>[recentItem],
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(
+        find.byKey(
+          const Key('receipt_review_manual_recent_item_eat_button_recent-1'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Nur verfügbar, wenn Nährwerte vorhanden sind.'),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('receipt_review_manual_save_button')),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.byKey(const Key('receipt_review_manual_save_button')),
+            )
+            .onPressed,
+        isNull,
+      );
+    },
+  );
+
+  testWidgets(
     'recent items without explicit global id or barcode dedupe safely',
     (tester) async {
       final firstManualItem = InventoryItem.create(

@@ -270,6 +270,10 @@ class _InventoryReceiptManualProductLauncherPageState
       initialRecentItem: item,
       initialAction: action,
       showActionSelector: false,
+      initialInfoMessage: action == InventoryReceiptManualProductAction.eatNow
+          ? AppLocalizations.of(context)!
+              .inventoryManualAddEatNowRequiresNutrition
+          : null,
     );
   }
 
@@ -381,6 +385,10 @@ class _InventoryReceiptManualProductLauncherPageState
             selectedProduct: selectedProduct,
             initialAction: action,
             showActionSelector: false,
+            initialInfoMessage:
+                action == InventoryReceiptManualProductAction.eatNow
+                ? l10n.inventoryManualAddEatNowRequiresNutrition
+                : null,
           );
           return;
         }
@@ -409,6 +417,10 @@ class _InventoryReceiptManualProductLauncherPageState
           initialRecentItem: selectedItem,
           initialAction: action,
           showActionSelector: false,
+          initialInfoMessage:
+              action == InventoryReceiptManualProductAction.eatNow
+              ? l10n.inventoryManualAddEatNowRequiresNutrition
+              : null,
         );
       case _ManualBarcodeScanResultKind.notFound:
         final scannedBarcode = result.scannedBarcode;
@@ -957,6 +969,8 @@ class _InventoryReceiptManualProductEditorPageState
     OffProductSearchResult product,
     InventoryReceiptManualProductAction action,
   ) async {
+    final eatNowRequiresNutritionMessage =
+        AppLocalizations.of(context)!.inventoryManualAddEatNowRequiresNutrition;
     await _voiceSearchController.stopVoiceSearchIfNeeded();
     if (widget.autofocusSearch &&
         action == InventoryReceiptManualProductAction.eatNow) {
@@ -970,6 +984,9 @@ class _InventoryReceiptManualProductEditorPageState
         product,
         action: action,
         showActionSelector: false,
+        initialInfoMessage: action == InventoryReceiptManualProductAction.eatNow
+            ? eatNowRequiresNutritionMessage
+            : null,
       );
       return;
     }
@@ -1030,6 +1047,7 @@ class _InventoryReceiptManualProductEditorPageState
     OffProductSearchResult product, {
     required InventoryReceiptManualProductAction action,
     required bool showActionSelector,
+    String? initialInfoMessage,
   }) async {
     final config = InventoryReceiptManualProductConfig(
       item: widget.config.item,
@@ -1049,6 +1067,7 @@ class _InventoryReceiptManualProductEditorPageState
                 closeCurrentEditorOnSave: true,
                 showActionSelector: showActionSelector,
                 onSaved: widget.onSaved,
+                initialInfoMessage: initialInfoMessage,
               );
             },
           ),
@@ -1156,6 +1175,11 @@ class _InventoryReceiptManualProductEditorPageState
             selectedProduct,
             action: action,
             showActionSelector: false,
+            initialInfoMessage:
+                action == InventoryReceiptManualProductAction.eatNow
+                ? AppLocalizations.of(context)!
+                      .inventoryManualAddEatNowRequiresNutrition
+                : null,
           );
           return;
         }

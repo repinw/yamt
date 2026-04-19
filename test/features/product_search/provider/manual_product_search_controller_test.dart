@@ -6,6 +6,31 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/provider/'
     'manual_product_search_controller.dart';
 
+class _RecordingOffProductSearchRepository
+    implements OffProductSearchRepository {
+  _RecordingOffProductSearchRepository(this.results);
+
+  final List<OffProductSearchResult> results;
+
+  @override
+  Future<List<OffProductSearchResult>> search({
+    required String query,
+    String? store,
+    String? brand,
+    String? weight,
+    int limit = 15,
+  }) async {
+    return results.take(limit).toList(growable: false);
+  }
+
+  @override
+  Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
+    required String barcode,
+  }) async {
+    return const <OffProductSearchResult>[];
+  }
+}
+
 InventoryItem _item() {
   return InventoryItem.create(
     id: 'item-1',
@@ -172,6 +197,101 @@ void main() {
       expect(payload?.item.weight, isNull);
       expect(payload?.globalPackageWeight, isNull);
       expect(payload?.selectedProduct?.code, '4006381333931');
+    },
+  );
+
+  test(
+    'buildDirectSearchResultPayload returns null when nutrition is missing',
+    () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final config = InventoryReceiptManualProductConfig(item: _item());
+      final provider = inventoryReceiptManualProductControllerProvider(config);
+      final controller = container.read(provider.notifier);
+
+      final payload = controller.buildDirectSearchResultPayload(
+        product: const OffProductSearchResult(
+          code: '4006381333931',
+          name: 'Milk',
+          brand: 'Brand',
+          packageWeight: '1 l',
+          score: 99,
+        ),
+        action: InventoryReceiptManualProductAction.eatNow,
+      );
+
+      expect(payload, isNull);
+    },
+  );
+
+  test(
+    'updateSearchQuery keeps only OFF results with Germany-required'
+    ' nutrition values',
+    () async {
+      final repository = _RecordingOffProductSearchRepository(
+        const <OffProductSearchResult>[
+          OffProductSearchResult(
+            code: '4311596490201',
+            name: 'No Nutrition',
+            brand: 'Booster',
+            packageWeight: '330 ml',
+            score: 100,
+          ),
+          OffProductSearchResult(
+            code: '4311596490202',
+            name: 'Incomplete Zero',
+            brand: 'Booster',
+            packageWeight: '330 ml',
+            score: 99,
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 2,
+              per100Carbs: 0.01,
+              per100Fat: 0,
+              per100Protein: 0.02,
+            ),
+          ),
+          OffProductSearchResult(
+            code: '4311596490203',
+            name: 'Complete Zero',
+            brand: 'Booster',
+            packageWeight: '330 ml',
+            score: 98,
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 2,
+              per100Fat: 0,
+              per100SaturatedFat: 0,
+              per100Carbs: 0.01,
+              per100Sugar: 0.01,
+              per100Protein: 0.02,
+              per100Salt: 0.01,
+            ),
+          ),
+        ],
+      );
+      final container = ProviderContainer(
+        overrides: [
+          offProductSearchRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final config = InventoryReceiptManualProductConfig(item: _item());
+      final provider = inventoryReceiptManualProductControllerProvider(config);
+      final subscription = container.listen(provider, (previous, next) {});
+      addTearDown(subscription.close);
+
+      container.read(provider.notifier).updateSearchQuery('Zero');
+      await Future<void>.delayed(const Duration(milliseconds: 350));
+      await Future<void>.delayed(Duration.zero);
+
+      final state = container.read(provider);
+      expect(
+        state.searchResults.map((result) => result.name),
+        <String>['Complete Zero'],
+      );
     },
   );
 }
