@@ -194,30 +194,30 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   const InventoryReceiptManualProductForm({
     required this.title,
     required this.searchController,
-    required this.nameController,
-    required this.brandController,
     required this.isSearching,
     required this.canSave,
     required this.isRunningNutritionOcr,
     required this.showDetails,
     required this.searchResults,
     required this.recentItems,
-    required this.weightAmountController,
+    required this.nameText,
+    required this.brandText,
+    required this.weightAmount,
     required this.selectedWeightUnit,
-    required this.kcalController,
-    required this.saturatedFatController,
-    required this.polyunsaturatedFatController,
+    required this.kcalText,
+    required this.saturatedFatText,
+    required this.polyunsaturatedFatText,
     required this.showPolyunsaturatedFatField,
-    required this.fatController,
-    required this.carbsController,
-    required this.sugarController,
-    required this.fiberController,
+    required this.fatText,
+    required this.carbsText,
+    required this.sugarText,
+    required this.fiberText,
     required this.showFiberField,
-    required this.proteinController,
-    required this.saltController,
+    required this.proteinText,
+    required this.saltText,
     required this.canAddOptionalNutrition,
     required this.isAddingOptionalNutrition,
-    required this.optionalNutritionValueController,
+    required this.optionalNutritionValueText,
     required this.optionalNutritionUnit,
     required this.optionalNutritionType,
     required this.availableOptionalNutritionTypes,
@@ -228,9 +228,22 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.onSearchResultSelected,
     required this.onRecentItemSelected,
     required this.onScanBarcode,
+    required this.onNameChanged,
+    required this.onBrandChanged,
+    required this.onWeightAmountChanged,
     required this.onWeightUnitChanged,
+    required this.onKcalChanged,
+    required this.onFatChanged,
+    required this.onSaturatedFatChanged,
+    required this.onCarbsChanged,
+    required this.onSugarChanged,
+    required this.onProteinChanged,
+    required this.onSaltChanged,
+    required this.onPolyunsaturatedFatChanged,
+    required this.onFiberChanged,
     required this.onScanNutritionLabel,
     required this.onStartAddingOptionalNutrition,
+    required this.onOptionalNutritionValueChanged,
     required this.onOptionalNutritionUnitChanged,
     required this.onOptionalNutritionTypeChanged,
     required this.onApplyOptionalNutrition,
@@ -254,12 +267,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   /// The search controller.
   final TextEditingController searchController;
 
-  /// The name controller.
-  final TextEditingController nameController;
-
-  /// The brand controller.
-  final TextEditingController brandController;
-
   /// Whether searching.
   final bool isSearching;
 
@@ -281,44 +288,50 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   /// The recent items.
   final List<InventoryItem> recentItems;
 
-  /// The weight amount controller.
-  final TextEditingController weightAmountController;
+  /// The name text.
+  final String nameText;
+
+  /// The brand text.
+  final String brandText;
+
+  /// The weight amount text.
+  final String weightAmount;
 
   /// The selected weight unit.
   final InventoryAmountUnit selectedWeightUnit;
 
-  /// The kcal controller.
-  final TextEditingController kcalController;
+  /// The kcal text.
+  final String kcalText;
 
-  /// The saturated fat controller.
-  final TextEditingController saturatedFatController;
+  /// The saturated fat text.
+  final String saturatedFatText;
 
-  /// The polyunsaturated fat controller.
-  final TextEditingController polyunsaturatedFatController;
+  /// The polyunsaturated fat text.
+  final String polyunsaturatedFatText;
 
   /// The show polyunsaturated fat field.
   final bool showPolyunsaturatedFatField;
 
-  /// The fat controller.
-  final TextEditingController fatController;
+  /// The fat text.
+  final String fatText;
 
-  /// The carbs controller.
-  final TextEditingController carbsController;
+  /// The carbs text.
+  final String carbsText;
 
-  /// The sugar controller.
-  final TextEditingController sugarController;
+  /// The sugar text.
+  final String sugarText;
 
-  /// The fiber controller.
-  final TextEditingController fiberController;
+  /// The fiber text.
+  final String fiberText;
 
   /// The show fiber field.
   final bool showFiberField;
 
-  /// The protein controller.
-  final TextEditingController proteinController;
+  /// The protein text.
+  final String proteinText;
 
-  /// The salt controller.
-  final TextEditingController saltController;
+  /// The salt text.
+  final String saltText;
 
   /// Whether add optional nutrition.
   final bool canAddOptionalNutrition;
@@ -326,8 +339,8 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   /// Whether adding optional nutrition.
   final bool isAddingOptionalNutrition;
 
-  /// The optional nutrition value controller.
-  final TextEditingController optionalNutritionValueController;
+  /// The optional nutrition value text.
+  final String optionalNutritionValueText;
 
   /// The optional nutrition unit.
   final InventoryAmountUnit optionalNutritionUnit;
@@ -363,8 +376,17 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   /// The on scan barcode.
   final VoidCallback onScanBarcode;
 
+  /// The on name changed.
+  final ValueChanged<String> onNameChanged;
+
+  /// The on brand changed.
+  final ValueChanged<String> onBrandChanged;
+
   /// The on search changed.
   final ValueChanged<String>? onSearchChanged;
+
+  /// The on weight amount changed.
+  final ValueChanged<String> onWeightAmountChanged;
 
   /// The voice search service.
   final VoiceSearchService? voiceSearchService;
@@ -378,11 +400,41 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   /// The on weight unit changed.
   final ValueChanged<InventoryAmountUnit> onWeightUnitChanged;
 
+  /// The on kcal changed.
+  final ValueChanged<String> onKcalChanged;
+
+  /// The on fat changed.
+  final ValueChanged<String> onFatChanged;
+
+  /// The on saturated fat changed.
+  final ValueChanged<String> onSaturatedFatChanged;
+
+  /// The on carbs changed.
+  final ValueChanged<String> onCarbsChanged;
+
+  /// The on sugar changed.
+  final ValueChanged<String> onSugarChanged;
+
+  /// The on protein changed.
+  final ValueChanged<String> onProteinChanged;
+
+  /// The on salt changed.
+  final ValueChanged<String> onSaltChanged;
+
+  /// The on polyunsaturated fat changed.
+  final ValueChanged<String> onPolyunsaturatedFatChanged;
+
+  /// The on fiber changed.
+  final ValueChanged<String> onFiberChanged;
+
   /// The on scan nutrition label.
   final VoidCallback? onScanNutritionLabel;
 
   /// The on start adding optional nutrition.
   final VoidCallback onStartAddingOptionalNutrition;
+
+  /// The on optional nutrition value changed.
+  final ValueChanged<String> onOptionalNutritionValueChanged;
 
   /// The on optional nutrition unit changed.
   final ValueChanged<InventoryAmountUnit> onOptionalNutritionUnitChanged;
@@ -412,7 +464,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
 
     return _ManualProductSearchShell(
       title: title,
@@ -443,233 +494,566 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
           ),
         ],
       ),
-      body: FormBuilder(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (searchResults.isNotEmpty)
-              _ManualProductSearchResults(
-                results: searchResults,
-                onSelect: onSearchResultSelected,
-                onStoreSelect: onSearchResultStoreSelected,
-                onEatSelect: onSearchResultEatSelected,
-              )
-            else
-              _ManualProductRecentItems(
-                items: recentItems,
-                onSelect: onRecentItemSelected,
-              ),
-            if (showDetails && preview != null) ...[
-              const SizedBox(height: AppSpacing.lg),
-              _ManualProductPreview(preview: preview!),
-            ],
-            if (showDetails) ...[
-              const SizedBox(height: AppSpacing.lg),
-              _ManualProductTextField(
-                name: _ManualProductFormFieldName.name,
-                controller: nameController,
-                label: l10n.inventoryReceiptReviewFieldName,
-                fieldKey: const Key('receipt_review_manual_name_field'),
-                keyboardType: TextInputType.text,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _ManualProductTextField(
-                name: _ManualProductFormFieldName.brand,
-                controller: brandController,
-                label: l10n.inventoryReceiptReviewFieldBrand,
-                fieldKey: const Key('receipt_review_manual_brand_field'),
-                keyboardType: TextInputType.text,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              _ManualProductWeightFields(
-                amountController: weightAmountController,
-                selectedUnit: selectedWeightUnit,
-                onUnitChanged: onWeightUnitChanged,
-                amountFieldKey: const Key('receipt_review_manual_weight_field'),
-                unitFieldKey: const Key(
-                  'receipt_review_manual_weight_unit_field',
-                ),
-                amountLabel: l10n.inventoryManualAddPackageSizeLabel,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: OutlinedButton.icon(
-                  key: const Key('receipt_review_manual_nutrition_ocr_button'),
-                  onPressed: onScanNutritionLabel,
-                  icon: const Icon(Icons.document_scanner_outlined),
-                  label: Text(l10n.caloriesBarcodeNotFoundOcrAction),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _ManualProductTextField(
-                name: _ManualProductFormFieldName.kcal,
-                controller: kcalController,
-                label: l10n.caloriesPer100KcalLabel,
-                fieldKey: const Key('receipt_review_manual_kcal_field'),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: _numericInputFormatters,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _ManualProductTextField(
-                name: _ManualProductFormFieldName.fat,
-                controller: fatController,
-                label: l10n.caloriesPer100FatLabel,
-                fieldKey: const Key('receipt_review_manual_fat_field'),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: _numericInputFormatters,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _ManualProductTextField(
-                name: _ManualProductFormFieldName.saturatedFat,
-                controller: saturatedFatController,
-                label: l10n.caloriesPer100SaturatedFatLabel,
-                fieldKey: const Key(
-                  'receipt_review_manual_saturated_fat_field',
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: _numericInputFormatters,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _ManualProductTextField(
-                name: _ManualProductFormFieldName.carbs,
-                controller: carbsController,
-                label: l10n.caloriesPer100CarbsLabel,
-                fieldKey: const Key('receipt_review_manual_carbs_field'),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: _numericInputFormatters,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _ManualProductTextField(
-                name: _ManualProductFormFieldName.sugar,
-                controller: sugarController,
-                label: l10n.caloriesPer100SugarLabel,
-                fieldKey: const Key('receipt_review_manual_sugar_field'),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: _numericInputFormatters,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _ManualProductTextField(
-                name: _ManualProductFormFieldName.protein,
-                controller: proteinController,
-                label: l10n.caloriesPer100ProteinLabel,
-                fieldKey: const Key('receipt_review_manual_protein_field'),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: _numericInputFormatters,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _ManualProductTextField(
-                name: _ManualProductFormFieldName.salt,
-                controller: saltController,
-                label: l10n.caloriesPer100SaltLabel,
-                fieldKey: const Key('receipt_review_manual_salt_field'),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: _numericInputFormatters,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              if (showPolyunsaturatedFatField) ...[
-                _ManualProductTextField(
-                  name: _ManualProductFormFieldName.polyunsaturatedFat,
-                  controller: polyunsaturatedFatController,
-                  label: l10n.caloriesPer100PolyunsaturatedFatLabel,
-                  fieldKey: const Key(
-                    'receipt_review_manual_polyunsaturated_fat_field',
-                  ),
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: _numericInputFormatters,
-                ),
-                const SizedBox(height: AppSpacing.md),
-              ],
-              if (showFiberField) ...[
-                _ManualProductTextField(
-                  name: _ManualProductFormFieldName.fiber,
-                  controller: fiberController,
-                  label: l10n.caloriesPer100FiberLabel,
-                  fieldKey: const Key('receipt_review_manual_fiber_field'),
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: _numericInputFormatters,
-                ),
-                const SizedBox(height: AppSpacing.md),
-              ],
-              if (canAddOptionalNutrition || isAddingOptionalNutrition) ...[
-                if (isAddingOptionalNutrition)
-                  _OptionalNutritionComposer(
-                    valueController: optionalNutritionValueController,
-                    selectedUnit: optionalNutritionUnit,
-                    selectedType: optionalNutritionType,
-                    availableTypes: availableOptionalNutritionTypes,
-                    onUnitChanged: onOptionalNutritionUnitChanged,
-                    onTypeChanged: onOptionalNutritionTypeChanged,
-                    onApply: onApplyOptionalNutrition,
-                    onCancel: onCancelOptionalNutrition,
-                  )
-                else
-                  _OptionalNutritionAddRow(
-                    label: l10n.inventoryReceiptReviewManualAddNutritionAction,
-                    onPressed: onStartAddingOptionalNutrition,
-                  ),
-                const SizedBox(height: AppSpacing.md),
-              ],
-              if (showActionSelector) ...[
-                _ManualProductActionSelector(
-                  selectedAction: selectedAction,
-                  onChanged: onActionChanged,
-                ),
-                const SizedBox(height: AppSpacing.md),
-              ],
-              if (errorText case final String message) ...[
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  message,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: colors.error),
-                ),
-              ],
-              const SizedBox(height: AppSpacing.lg),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: onCancel,
-                      child: Text(l10n.inventoryReceiptReviewCancelAction),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: FilledButton(
-                      key: const Key('receipt_review_manual_save_button'),
-                      onPressed: isRunningNutritionOcr || !canSave
-                          ? null
-                          : onSave,
-                      child: Text(
-                        l10n.inventoryReceiptReviewManualDataSaveAction,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+      body: _ManualProductDetailsForm(
+        searchResults: searchResults,
+        recentItems: recentItems,
+        showDetails: showDetails,
+        preview: preview,
+        nameText: nameText,
+        brandText: brandText,
+        weightAmount: weightAmount,
+        selectedWeightUnit: selectedWeightUnit,
+        kcalText: kcalText,
+        saturatedFatText: saturatedFatText,
+        polyunsaturatedFatText: polyunsaturatedFatText,
+        showPolyunsaturatedFatField: showPolyunsaturatedFatField,
+        fatText: fatText,
+        carbsText: carbsText,
+        sugarText: sugarText,
+        fiberText: fiberText,
+        showFiberField: showFiberField,
+        proteinText: proteinText,
+        saltText: saltText,
+        canAddOptionalNutrition: canAddOptionalNutrition,
+        isAddingOptionalNutrition: isAddingOptionalNutrition,
+        optionalNutritionValueText: optionalNutritionValueText,
+        optionalNutritionUnit: optionalNutritionUnit,
+        optionalNutritionType: optionalNutritionType,
+        availableOptionalNutritionTypes: availableOptionalNutritionTypes,
+        errorText: errorText,
+        showActionSelector: showActionSelector,
+        selectedAction: selectedAction,
+        canSave: canSave,
+        isRunningNutritionOcr: isRunningNutritionOcr,
+        onSearchResultSelected: onSearchResultSelected,
+        onSearchResultStoreSelected: onSearchResultStoreSelected,
+        onSearchResultEatSelected: onSearchResultEatSelected,
+        onRecentItemSelected: onRecentItemSelected,
+        onNameChanged: onNameChanged,
+        onBrandChanged: onBrandChanged,
+        onWeightAmountChanged: onWeightAmountChanged,
+        onWeightUnitChanged: onWeightUnitChanged,
+        onScanNutritionLabel: onScanNutritionLabel,
+        onKcalChanged: onKcalChanged,
+        onFatChanged: onFatChanged,
+        onSaturatedFatChanged: onSaturatedFatChanged,
+        onCarbsChanged: onCarbsChanged,
+        onSugarChanged: onSugarChanged,
+        onProteinChanged: onProteinChanged,
+        onSaltChanged: onSaltChanged,
+        onPolyunsaturatedFatChanged: onPolyunsaturatedFatChanged,
+        onFiberChanged: onFiberChanged,
+        onStartAddingOptionalNutrition: onStartAddingOptionalNutrition,
+        onOptionalNutritionValueChanged: onOptionalNutritionValueChanged,
+        onOptionalNutritionUnitChanged: onOptionalNutritionUnitChanged,
+        onOptionalNutritionTypeChanged: onOptionalNutritionTypeChanged,
+        onApplyOptionalNutrition: onApplyOptionalNutrition,
+        onCancelOptionalNutrition: onCancelOptionalNutrition,
+        onActionChanged: onActionChanged,
+        onCancel: onCancel,
+        onSave: onSave,
+      ),
+    );
+  }
+}
+
+class _ManualProductDetailsForm extends StatefulWidget {
+  const _ManualProductDetailsForm({
+    required this.searchResults,
+    required this.recentItems,
+    required this.showDetails,
+    required this.preview,
+    required this.nameText,
+    required this.brandText,
+    required this.weightAmount,
+    required this.selectedWeightUnit,
+    required this.kcalText,
+    required this.saturatedFatText,
+    required this.polyunsaturatedFatText,
+    required this.showPolyunsaturatedFatField,
+    required this.fatText,
+    required this.carbsText,
+    required this.sugarText,
+    required this.fiberText,
+    required this.showFiberField,
+    required this.proteinText,
+    required this.saltText,
+    required this.canAddOptionalNutrition,
+    required this.isAddingOptionalNutrition,
+    required this.optionalNutritionValueText,
+    required this.optionalNutritionUnit,
+    required this.optionalNutritionType,
+    required this.availableOptionalNutritionTypes,
+    required this.errorText,
+    required this.showActionSelector,
+    required this.selectedAction,
+    required this.canSave,
+    required this.isRunningNutritionOcr,
+    required this.onSearchResultSelected,
+    required this.onSearchResultStoreSelected,
+    required this.onSearchResultEatSelected,
+    required this.onRecentItemSelected,
+    required this.onNameChanged,
+    required this.onBrandChanged,
+    required this.onWeightAmountChanged,
+    required this.onWeightUnitChanged,
+    required this.onScanNutritionLabel,
+    required this.onKcalChanged,
+    required this.onFatChanged,
+    required this.onSaturatedFatChanged,
+    required this.onCarbsChanged,
+    required this.onSugarChanged,
+    required this.onProteinChanged,
+    required this.onSaltChanged,
+    required this.onPolyunsaturatedFatChanged,
+    required this.onFiberChanged,
+    required this.onStartAddingOptionalNutrition,
+    required this.onOptionalNutritionValueChanged,
+    required this.onOptionalNutritionUnitChanged,
+    required this.onOptionalNutritionTypeChanged,
+    required this.onApplyOptionalNutrition,
+    required this.onCancelOptionalNutrition,
+    required this.onCancel,
+    required this.onSave,
+    this.onActionChanged,
+  });
+
+  final List<OffProductSearchResult> searchResults;
+  final List<InventoryItem> recentItems;
+  final bool showDetails;
+  final InventoryReceiptManualProductPreviewData? preview;
+  final String nameText;
+  final String brandText;
+  final String weightAmount;
+  final InventoryAmountUnit selectedWeightUnit;
+  final String kcalText;
+  final String saturatedFatText;
+  final String polyunsaturatedFatText;
+  final bool showPolyunsaturatedFatField;
+  final String fatText;
+  final String carbsText;
+  final String sugarText;
+  final String fiberText;
+  final bool showFiberField;
+  final String proteinText;
+  final String saltText;
+  final bool canAddOptionalNutrition;
+  final bool isAddingOptionalNutrition;
+  final String optionalNutritionValueText;
+  final InventoryAmountUnit optionalNutritionUnit;
+  final InventoryReceiptOptionalNutritionType? optionalNutritionType;
+  final List<InventoryReceiptOptionalNutritionType>
+  availableOptionalNutritionTypes;
+  final String? errorText;
+  final bool showActionSelector;
+  final InventoryReceiptManualProductAction selectedAction;
+  final bool canSave;
+  final bool isRunningNutritionOcr;
+  final ValueChanged<OffProductSearchResult> onSearchResultSelected;
+  final ValueChanged<OffProductSearchResult>? onSearchResultStoreSelected;
+  final ValueChanged<OffProductSearchResult>? onSearchResultEatSelected;
+  final ValueChanged<InventoryItem> onRecentItemSelected;
+  final ValueChanged<String> onNameChanged;
+  final ValueChanged<String> onBrandChanged;
+  final ValueChanged<String> onWeightAmountChanged;
+  final ValueChanged<InventoryAmountUnit> onWeightUnitChanged;
+  final VoidCallback? onScanNutritionLabel;
+  final ValueChanged<String> onKcalChanged;
+  final ValueChanged<String> onFatChanged;
+  final ValueChanged<String> onSaturatedFatChanged;
+  final ValueChanged<String> onCarbsChanged;
+  final ValueChanged<String> onSugarChanged;
+  final ValueChanged<String> onProteinChanged;
+  final ValueChanged<String> onSaltChanged;
+  final ValueChanged<String> onPolyunsaturatedFatChanged;
+  final ValueChanged<String> onFiberChanged;
+  final VoidCallback onStartAddingOptionalNutrition;
+  final ValueChanged<String> onOptionalNutritionValueChanged;
+  final ValueChanged<InventoryAmountUnit> onOptionalNutritionUnitChanged;
+  final ValueChanged<InventoryReceiptOptionalNutritionType>
+  onOptionalNutritionTypeChanged;
+  final VoidCallback onApplyOptionalNutrition;
+  final VoidCallback onCancelOptionalNutrition;
+  final ValueChanged<InventoryReceiptManualProductAction>? onActionChanged;
+  final VoidCallback onCancel;
+  final VoidCallback onSave;
+
+  @override
+  State<_ManualProductDetailsForm> createState() {
+    return _ManualProductDetailsFormState();
+  }
+}
+
+class _ManualProductDetailsFormState extends State<_ManualProductDetailsForm> {
+  final _formKey = GlobalKey<FormBuilderState>();
+  bool _isPatchingFormValues = false;
+
+  @override
+  void didUpdateWidget(covariant _ManualProductDetailsForm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _patchChangedFormValues(oldWidget);
+  }
+
+  void _patchChangedFormValues(_ManualProductDetailsForm oldWidget) {
+    final formState = _formKey.currentState;
+    if (formState == null) {
+      return;
+    }
+
+    final previousValues = _formValuesFor(oldWidget);
+    final nextValues = _formValuesFor(widget);
+    final changedValues = <String, dynamic>{};
+    for (final entry in nextValues.entries) {
+      if (previousValues[entry.key] == entry.value) {
+        continue;
+      }
+      if (!formState.fields.containsKey(entry.key)) {
+        continue;
+      }
+      changedValues[entry.key] = entry.value;
+    }
+    if (changedValues.isEmpty) {
+      return;
+    }
+
+    _isPatchingFormValues = true;
+    formState.patchValue(changedValues);
+    _isPatchingFormValues = false;
+  }
+
+  Map<String, dynamic> _formValuesFor(_ManualProductDetailsForm form) {
+    return <String, dynamic>{
+      _ManualProductFormFieldName.name: form.nameText,
+      _ManualProductFormFieldName.brand: form.brandText,
+      _ManualProductFormFieldName.weightAmount: form.weightAmount,
+      _ManualProductFormFieldName.weightUnit: form.selectedWeightUnit,
+      _ManualProductFormFieldName.kcal: form.kcalText,
+      _ManualProductFormFieldName.fat: form.fatText,
+      _ManualProductFormFieldName.saturatedFat: form.saturatedFatText,
+      _ManualProductFormFieldName.carbs: form.carbsText,
+      _ManualProductFormFieldName.sugar: form.sugarText,
+      _ManualProductFormFieldName.protein: form.proteinText,
+      _ManualProductFormFieldName.salt: form.saltText,
+      _ManualProductFormFieldName.polyunsaturatedFat:
+          form.polyunsaturatedFatText,
+      _ManualProductFormFieldName.fiber: form.fiberText,
+      _ManualProductFormFieldName.optionalNutritionValue:
+          form.optionalNutritionValueText,
+      _ManualProductFormFieldName.optionalNutritionUnit:
+          form.optionalNutritionUnit,
+      _ManualProductFormFieldName.optionalNutritionType:
+          form.optionalNutritionType,
+    };
+  }
+
+  void _onTextChanged(String? value, ValueChanged<String> onChanged) {
+    if (_isPatchingFormValues) {
+      return;
+    }
+    onChanged(value ?? '');
+  }
+
+  void _onUnitChanged(
+    InventoryAmountUnit? value,
+    ValueChanged<InventoryAmountUnit> onChanged,
+  ) {
+    if (_isPatchingFormValues || value == null) {
+      return;
+    }
+    onChanged(value);
+  }
+
+  void _onOptionalNutritionTypeChanged(
+    InventoryReceiptOptionalNutritionType? value,
+  ) {
+    if (_isPatchingFormValues || value == null) {
+      return;
+    }
+    widget.onOptionalNutritionTypeChanged(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+
+    return FormBuilder(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.searchResults.isNotEmpty)
+            _ManualProductSearchResults(
+              results: widget.searchResults,
+              onSelect: widget.onSearchResultSelected,
+              onStoreSelect: widget.onSearchResultStoreSelected,
+              onEatSelect: widget.onSearchResultEatSelected,
+            )
+          else
+            _ManualProductRecentItems(
+              items: widget.recentItems,
+              onSelect: widget.onRecentItemSelected,
+            ),
+          if (widget.showDetails && widget.preview != null) ...[
+            const SizedBox(height: AppSpacing.lg),
+            _ManualProductPreview(preview: widget.preview!),
           ],
-        ),
+          if (widget.showDetails) ...[
+            const SizedBox(height: AppSpacing.lg),
+            _ManualProductTextField(
+              name: _ManualProductFormFieldName.name,
+              initialValue: widget.nameText,
+              label: l10n.inventoryReceiptReviewFieldName,
+              fieldKey: const Key('receipt_review_manual_name_field'),
+              keyboardType: TextInputType.text,
+              onChanged: (value) {
+                _onTextChanged(value, widget.onNameChanged);
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            _ManualProductTextField(
+              name: _ManualProductFormFieldName.brand,
+              initialValue: widget.brandText,
+              label: l10n.inventoryReceiptReviewFieldBrand,
+              fieldKey: const Key('receipt_review_manual_brand_field'),
+              keyboardType: TextInputType.text,
+              onChanged: (value) {
+                _onTextChanged(value, widget.onBrandChanged);
+              },
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            _ManualProductWeightFields(
+              amountValue: widget.weightAmount,
+              selectedUnit: widget.selectedWeightUnit,
+              onAmountChanged: (value) {
+                _onTextChanged(value, widget.onWeightAmountChanged);
+              },
+              onUnitChanged: (value) {
+                _onUnitChanged(value, widget.onWeightUnitChanged);
+              },
+              amountFieldKey: const Key('receipt_review_manual_weight_field'),
+              unitFieldKey: const Key(
+                'receipt_review_manual_weight_unit_field',
+              ),
+              amountLabel: l10n.inventoryManualAddPackageSizeLabel,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                key: const Key('receipt_review_manual_nutrition_ocr_button'),
+                onPressed: widget.onScanNutritionLabel,
+                icon: const Icon(Icons.document_scanner_outlined),
+                label: Text(l10n.caloriesBarcodeNotFoundOcrAction),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            _ManualProductTextField(
+              name: _ManualProductFormFieldName.kcal,
+              initialValue: widget.kcalText,
+              label: l10n.caloriesPer100KcalLabel,
+              fieldKey: const Key('receipt_review_manual_kcal_field'),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: _numericInputFormatters,
+              onChanged: (value) {
+                _onTextChanged(value, widget.onKcalChanged);
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            _ManualProductTextField(
+              name: _ManualProductFormFieldName.fat,
+              initialValue: widget.fatText,
+              label: l10n.caloriesPer100FatLabel,
+              fieldKey: const Key('receipt_review_manual_fat_field'),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: _numericInputFormatters,
+              onChanged: (value) {
+                _onTextChanged(value, widget.onFatChanged);
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            _ManualProductTextField(
+              name: _ManualProductFormFieldName.saturatedFat,
+              initialValue: widget.saturatedFatText,
+              label: l10n.caloriesPer100SaturatedFatLabel,
+              fieldKey: const Key(
+                'receipt_review_manual_saturated_fat_field',
+              ),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: _numericInputFormatters,
+              onChanged: (value) {
+                _onTextChanged(value, widget.onSaturatedFatChanged);
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            _ManualProductTextField(
+              name: _ManualProductFormFieldName.carbs,
+              initialValue: widget.carbsText,
+              label: l10n.caloriesPer100CarbsLabel,
+              fieldKey: const Key('receipt_review_manual_carbs_field'),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: _numericInputFormatters,
+              onChanged: (value) {
+                _onTextChanged(value, widget.onCarbsChanged);
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            _ManualProductTextField(
+              name: _ManualProductFormFieldName.sugar,
+              initialValue: widget.sugarText,
+              label: l10n.caloriesPer100SugarLabel,
+              fieldKey: const Key('receipt_review_manual_sugar_field'),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: _numericInputFormatters,
+              onChanged: (value) {
+                _onTextChanged(value, widget.onSugarChanged);
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            _ManualProductTextField(
+              name: _ManualProductFormFieldName.protein,
+              initialValue: widget.proteinText,
+              label: l10n.caloriesPer100ProteinLabel,
+              fieldKey: const Key('receipt_review_manual_protein_field'),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: _numericInputFormatters,
+              onChanged: (value) {
+                _onTextChanged(value, widget.onProteinChanged);
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            _ManualProductTextField(
+              name: _ManualProductFormFieldName.salt,
+              initialValue: widget.saltText,
+              label: l10n.caloriesPer100SaltLabel,
+              fieldKey: const Key('receipt_review_manual_salt_field'),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: _numericInputFormatters,
+              onChanged: (value) {
+                _onTextChanged(value, widget.onSaltChanged);
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            if (widget.showPolyunsaturatedFatField) ...[
+              _ManualProductTextField(
+                name: _ManualProductFormFieldName.polyunsaturatedFat,
+                initialValue: widget.polyunsaturatedFatText,
+                label: l10n.caloriesPer100PolyunsaturatedFatLabel,
+                fieldKey: const Key(
+                  'receipt_review_manual_polyunsaturated_fat_field',
+                ),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: _numericInputFormatters,
+                onChanged: (value) {
+                  _onTextChanged(value, widget.onPolyunsaturatedFatChanged);
+                },
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+            if (widget.showFiberField) ...[
+              _ManualProductTextField(
+                name: _ManualProductFormFieldName.fiber,
+                initialValue: widget.fiberText,
+                label: l10n.caloriesPer100FiberLabel,
+                fieldKey: const Key('receipt_review_manual_fiber_field'),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: _numericInputFormatters,
+                onChanged: (value) {
+                  _onTextChanged(value, widget.onFiberChanged);
+                },
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+            if (widget.canAddOptionalNutrition ||
+                widget.isAddingOptionalNutrition) ...[
+              if (widget.isAddingOptionalNutrition)
+                _OptionalNutritionComposer(
+                  valueText: widget.optionalNutritionValueText,
+                  selectedUnit: widget.optionalNutritionUnit,
+                  selectedType: widget.optionalNutritionType,
+                  availableTypes: widget.availableOptionalNutritionTypes,
+                  onValueChanged: (value) {
+                    _onTextChanged(
+                      value,
+                      widget.onOptionalNutritionValueChanged,
+                    );
+                  },
+                  onUnitChanged: (value) {
+                    _onUnitChanged(
+                      value,
+                      widget.onOptionalNutritionUnitChanged,
+                    );
+                  },
+                  onTypeChanged: _onOptionalNutritionTypeChanged,
+                  onApply: widget.onApplyOptionalNutrition,
+                  onCancel: widget.onCancelOptionalNutrition,
+                )
+              else
+                _OptionalNutritionAddRow(
+                  label: l10n.inventoryReceiptReviewManualAddNutritionAction,
+                  onPressed: widget.onStartAddingOptionalNutrition,
+                ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+            if (widget.showActionSelector) ...[
+              _ManualProductActionSelector(
+                selectedAction: widget.selectedAction,
+                onChanged: widget.onActionChanged,
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+            if (widget.errorText case final String message) ...[
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                message,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: colors.error),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: widget.onCancel,
+                    child: Text(l10n.inventoryReceiptReviewCancelAction),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: FilledButton(
+                    key: const Key('receipt_review_manual_save_button'),
+                    onPressed: widget.isRunningNutritionOcr || !widget.canSave
+                        ? null
+                        : widget.onSave,
+                    child: Text(
+                      l10n.inventoryReceiptReviewManualDataSaveAction,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -909,22 +1293,24 @@ class _OptionalNutritionAddRow extends StatelessWidget {
 
 class _OptionalNutritionComposer extends StatelessWidget {
   const _OptionalNutritionComposer({
-    required this.valueController,
+    required this.valueText,
     required this.selectedUnit,
     required this.selectedType,
     required this.availableTypes,
+    required this.onValueChanged,
     required this.onUnitChanged,
     required this.onTypeChanged,
     required this.onApply,
     required this.onCancel,
   });
 
-  final TextEditingController valueController;
+  final String valueText;
   final InventoryAmountUnit selectedUnit;
   final InventoryReceiptOptionalNutritionType? selectedType;
   final List<InventoryReceiptOptionalNutritionType> availableTypes;
-  final ValueChanged<InventoryAmountUnit> onUnitChanged;
-  final ValueChanged<InventoryReceiptOptionalNutritionType> onTypeChanged;
+  final ValueChanged<String?> onValueChanged;
+  final ValueChanged<InventoryAmountUnit?> onUnitChanged;
+  final ValueChanged<InventoryReceiptOptionalNutritionType?> onTypeChanged;
   final VoidCallback onApply;
   final VoidCallback onCancel;
 
@@ -932,21 +1318,21 @@ class _OptionalNutritionComposer extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final canApply =
-        parseManualProductDouble(valueController.text) != null &&
-        selectedType != null;
+        parseManualProductDouble(valueText) != null && selectedType != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _ManualProductTextField(
           name: _ManualProductFormFieldName.optionalNutritionValue,
-          controller: valueController,
+          initialValue: valueText,
           label: l10n.inventoryReceiptReviewManualNutritionValueLabel,
           fieldKey: const Key(
             'receipt_review_manual_optional_nutrition_value_field',
           ),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: _numericInputFormatters,
+          onChanged: onValueChanged,
         ),
         const SizedBox(height: AppSpacing.md),
         Row(
@@ -974,11 +1360,7 @@ class _OptionalNutritionComposer extends StatelessWidget {
                     child: Text('ml'),
                   ),
                 ],
-                onChanged: (value) {
-                  if (value != null) {
-                    onUnitChanged(value);
-                  }
-                },
+                onChanged: onUnitChanged,
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -1005,11 +1387,7 @@ class _OptionalNutritionComposer extends StatelessWidget {
                       ),
                     ),
                 ],
-                onChanged: (value) {
-                  if (value != null) {
-                    onTypeChanged(value);
-                  }
-                },
+                onChanged: onTypeChanged,
               ),
             ),
           ],
@@ -1044,17 +1422,19 @@ class _OptionalNutritionComposer extends StatelessWidget {
 
 class _ManualProductWeightFields extends StatelessWidget {
   const _ManualProductWeightFields({
-    required this.amountController,
+    required this.amountValue,
     required this.selectedUnit,
+    required this.onAmountChanged,
     required this.onUnitChanged,
     required this.amountFieldKey,
     required this.unitFieldKey,
     required this.amountLabel,
   });
 
-  final TextEditingController amountController;
+  final String amountValue;
   final InventoryAmountUnit selectedUnit;
-  final ValueChanged<InventoryAmountUnit> onUnitChanged;
+  final ValueChanged<String?> onAmountChanged;
+  final ValueChanged<InventoryAmountUnit?> onUnitChanged;
   final Key amountFieldKey;
   final Key unitFieldKey;
   final String amountLabel;
@@ -1069,11 +1449,12 @@ class _ManualProductWeightFields extends StatelessWidget {
           flex: 3,
           child: _ManualProductTextField(
             name: _ManualProductFormFieldName.weightAmount,
-            controller: amountController,
+            initialValue: amountValue,
             label: amountLabel,
             fieldKey: amountFieldKey,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: _numericInputFormatters,
+            onChanged: onAmountChanged,
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -1094,11 +1475,7 @@ class _ManualProductWeightFields extends StatelessWidget {
                   child: Text(_weightUnitLabel(l10n, unit)),
                 ),
             ],
-            onChanged: (value) {
-              if (value != null) {
-                onUnitChanged(value);
-              }
-            },
+            onChanged: onUnitChanged,
           ),
         ),
       ],
@@ -1129,18 +1506,20 @@ String _optionalNutritionTypeLabel(
 class _ManualProductTextField extends StatelessWidget {
   const _ManualProductTextField({
     required this.name,
-    required this.controller,
+    required this.initialValue,
     required this.label,
     required this.fieldKey,
     required this.keyboardType,
+    required this.onChanged,
     this.inputFormatters,
   });
 
   final String name;
-  final TextEditingController controller;
+  final String initialValue;
   final String label;
   final Key fieldKey;
   final TextInputType keyboardType;
+  final ValueChanged<String?> onChanged;
   final List<TextInputFormatter>? inputFormatters;
 
   @override
@@ -1148,9 +1527,10 @@ class _ManualProductTextField extends StatelessWidget {
     return FormBuilderTextField(
       key: fieldKey,
       name: name,
-      controller: controller,
+      initialValue: initialValue,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
+      onChanged: onChanged,
       onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       decoration: InputDecoration(
         labelText: label,

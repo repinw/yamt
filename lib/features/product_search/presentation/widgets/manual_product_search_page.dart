@@ -271,8 +271,9 @@ class _InventoryReceiptManualProductLauncherPageState
       initialAction: action,
       showActionSelector: false,
       initialInfoMessage: action == InventoryReceiptManualProductAction.eatNow
-          ? AppLocalizations.of(context)!
-              .inventoryManualAddEatNowRequiresNutrition
+          ? AppLocalizations.of(
+              context,
+            )!.inventoryManualAddEatNowRequiresNutrition
           : null,
     );
   }
@@ -634,23 +635,9 @@ class _InventoryReceiptManualProductEditorPageState
   late final VoiceSearchService _voiceSearchService;
   final _voiceSearchController = TextVoiceSearchController();
   late final TextEditingController _searchController;
-  late final TextEditingController _nameController;
-  late final TextEditingController _brandController;
-  late final TextEditingController _weightAmountController;
-  late final TextEditingController _kcalController;
-  late final TextEditingController _saturatedFatController;
-  late final TextEditingController _polyunsaturatedFatController;
-  late final TextEditingController _proteinController;
-  late final TextEditingController _carbsController;
-  late final TextEditingController _sugarController;
-  late final TextEditingController _fiberController;
-  late final TextEditingController _fatController;
-  late final TextEditingController _saltController;
-  late final TextEditingController _optionalNutritionValueController;
   ProviderSubscription<InventoryReceiptManualProductState>? _stateSubscription;
   bool _didBindProviderState = false;
   bool _didScheduleInitialRecentItem = false;
-  bool _isSyncingControllers = false;
   late InventoryReceiptManualProductAction _selectedAction =
       widget.initialAction;
   late bool _showActionSelector = widget.showActionSelector;
@@ -668,34 +655,6 @@ class _InventoryReceiptManualProductEditorPageState
     super.initState();
     _voiceSearchService = ref.read(voiceSearchServiceProvider);
     _searchController = TextEditingController();
-    _nameController = TextEditingController();
-    _brandController = TextEditingController();
-    _weightAmountController = TextEditingController();
-    _nameController.addListener(_handleNameChanged);
-    _brandController.addListener(_handleBrandChanged);
-    _weightAmountController.addListener(_handleWeightChanged);
-    _kcalController = TextEditingController();
-    _saturatedFatController = TextEditingController();
-    _polyunsaturatedFatController = TextEditingController();
-    _proteinController = TextEditingController();
-    _carbsController = TextEditingController();
-    _sugarController = TextEditingController();
-    _fiberController = TextEditingController();
-    _fatController = TextEditingController();
-    _saltController = TextEditingController();
-    _optionalNutritionValueController = TextEditingController();
-    _kcalController.addListener(_handleKcalChanged);
-    _saturatedFatController.addListener(_handleSaturatedFatChanged);
-    _polyunsaturatedFatController.addListener(_handlePolyunsaturatedFatChanged);
-    _proteinController.addListener(_handleProteinChanged);
-    _carbsController.addListener(_handleCarbsChanged);
-    _sugarController.addListener(_handleSugarChanged);
-    _fiberController.addListener(_handleFiberChanged);
-    _fatController.addListener(_handleFatChanged);
-    _saltController.addListener(_handleSaltChanged);
-    _optionalNutritionValueController.addListener(
-      _handleOptionalNutritionValueChanged,
-    );
     final initialInfoMessage = widget.initialInfoMessage;
     if (initialInfoMessage != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -715,11 +674,11 @@ class _InventoryReceiptManualProductEditorPageState
     }
 
     _didBindProviderState = true;
-    _syncControllers(ref.read(_provider));
+    _syncSearchController(ref.read(_provider));
     _stateSubscription = ref.listenManual<InventoryReceiptManualProductState>(
       _provider,
       (previous, next) {
-        _syncControllers(next);
+        _syncSearchController(next);
       },
     );
     final initialRecentItem = widget.initialRecentItem;
@@ -734,33 +693,12 @@ class _InventoryReceiptManualProductEditorPageState
     }
   }
 
-  void _syncControllers(InventoryReceiptManualProductState state) {
-    _isSyncingControllers = true;
+  void _syncSearchController(InventoryReceiptManualProductState state) {
     _replaceControllerText(
       _searchController,
       state.searchQuery,
       collapseSelectionToEnd: true,
     );
-    _replaceControllerText(_nameController, state.nameText);
-    _replaceControllerText(_brandController, state.brandText);
-    _replaceControllerText(_weightAmountController, state.weightAmount);
-    _replaceControllerText(_kcalController, state.kcalText);
-    _replaceControllerText(_saturatedFatController, state.saturatedFatText);
-    _replaceControllerText(
-      _polyunsaturatedFatController,
-      state.polyunsaturatedFatText,
-    );
-    _replaceControllerText(_proteinController, state.proteinText);
-    _replaceControllerText(_carbsController, state.carbsText);
-    _replaceControllerText(_sugarController, state.sugarText);
-    _replaceControllerText(_fiberController, state.fiberText);
-    _replaceControllerText(_fatController, state.fatText);
-    _replaceControllerText(_saltController, state.saltText);
-    _replaceControllerText(
-      _optionalNutritionValueController,
-      state.optionalNutritionValueText,
-    );
-    _isSyncingControllers = false;
   }
 
   void _replaceControllerText(
@@ -798,45 +736,6 @@ class _InventoryReceiptManualProductEditorPageState
     _voiceSearchController.dispose();
     _stateSubscription?.close();
     _searchController.dispose();
-    _nameController
-      ..removeListener(_handleNameChanged)
-      ..dispose();
-    _brandController
-      ..removeListener(_handleBrandChanged)
-      ..dispose();
-    _weightAmountController
-      ..removeListener(_handleWeightChanged)
-      ..dispose();
-    _kcalController
-      ..removeListener(_handleKcalChanged)
-      ..dispose();
-    _saturatedFatController
-      ..removeListener(_handleSaturatedFatChanged)
-      ..dispose();
-    _polyunsaturatedFatController
-      ..removeListener(_handlePolyunsaturatedFatChanged)
-      ..dispose();
-    _proteinController
-      ..removeListener(_handleProteinChanged)
-      ..dispose();
-    _carbsController
-      ..removeListener(_handleCarbsChanged)
-      ..dispose();
-    _sugarController
-      ..removeListener(_handleSugarChanged)
-      ..dispose();
-    _fiberController
-      ..removeListener(_handleFiberChanged)
-      ..dispose();
-    _fatController
-      ..removeListener(_handleFatChanged)
-      ..dispose();
-    _saltController
-      ..removeListener(_handleSaltChanged)
-      ..dispose();
-    _optionalNutritionValueController
-      ..removeListener(_handleOptionalNutritionValueChanged)
-      ..dispose();
     super.dispose();
   }
 
@@ -853,8 +752,6 @@ class _InventoryReceiptManualProductEditorPageState
         title: l10n.inventoryManualAddSearchDialogTitle,
         preview: preview,
         searchController: _searchController,
-        nameController: _nameController,
-        brandController: _brandController,
         isSearching: state.isSearching,
         canSave: canSave,
         isRunningNutritionOcr: state.isRunningNutritionOcr,
@@ -862,22 +759,24 @@ class _InventoryReceiptManualProductEditorPageState
         showDetails: state.showDetails,
         searchResults: state.searchResults,
         recentItems: const <InventoryItem>[],
-        weightAmountController: _weightAmountController,
+        nameText: state.nameText,
+        brandText: state.brandText,
+        weightAmount: state.weightAmount,
         selectedWeightUnit: state.selectedWeightUnit,
-        kcalController: _kcalController,
-        saturatedFatController: _saturatedFatController,
-        polyunsaturatedFatController: _polyunsaturatedFatController,
+        kcalText: state.kcalText,
+        saturatedFatText: state.saturatedFatText,
+        polyunsaturatedFatText: state.polyunsaturatedFatText,
         showPolyunsaturatedFatField: state.showPolyunsaturatedFatField,
-        fatController: _fatController,
-        carbsController: _carbsController,
-        sugarController: _sugarController,
-        fiberController: _fiberController,
+        fatText: state.fatText,
+        carbsText: state.carbsText,
+        sugarText: state.sugarText,
+        fiberText: state.fiberText,
         showFiberField: state.showFiberField,
-        proteinController: _proteinController,
-        saltController: _saltController,
+        proteinText: state.proteinText,
+        saltText: state.saltText,
         canAddOptionalNutrition: state.canAddOptionalNutrition,
         isAddingOptionalNutrition: state.isAddingOptionalNutrition,
-        optionalNutritionValueController: _optionalNutritionValueController,
+        optionalNutritionValueText: state.optionalNutritionValueText,
         optionalNutritionUnit: state.optionalNutritionUnit,
         optionalNutritionType: state.resolvedOptionalNutritionType,
         availableOptionalNutritionTypes: state.availableOptionalNutritionTypes,
@@ -900,7 +799,19 @@ class _InventoryReceiptManualProductEditorPageState
         onScanBarcode: () {
           unawaited(_openBarcodeScanner());
         },
+        onNameChanged: _controller.updateNameText,
+        onBrandChanged: _controller.updateBrandText,
+        onWeightAmountChanged: _controller.updateWeightAmount,
         onWeightUnitChanged: _controller.updateWeightUnit,
+        onKcalChanged: _controller.updateKcalText,
+        onFatChanged: _controller.updateFatText,
+        onSaturatedFatChanged: _controller.updateSaturatedFatText,
+        onCarbsChanged: _controller.updateCarbsText,
+        onSugarChanged: _controller.updateSugarText,
+        onProteinChanged: _controller.updateProteinText,
+        onSaltChanged: _controller.updateSaltText,
+        onPolyunsaturatedFatChanged: _controller.updatePolyunsaturatedFatText,
+        onFiberChanged: _controller.updateFiberText,
         onScanNutritionLabel: state.canScanNutritionLabel
             ? () {
                 unawaited(_scanNutritionLabel());
@@ -908,6 +819,8 @@ class _InventoryReceiptManualProductEditorPageState
             : null,
         onStartAddingOptionalNutrition:
             _controller.startAddingOptionalNutrition,
+        onOptionalNutritionValueChanged:
+            _controller.updateOptionalNutritionValueText,
         onOptionalNutritionUnitChanged: _controller.updateOptionalNutritionUnit,
         onOptionalNutritionTypeChanged: _controller.updateOptionalNutritionType,
         onApplyOptionalNutrition: _controller.applyOptionalNutrition,
@@ -969,8 +882,9 @@ class _InventoryReceiptManualProductEditorPageState
     OffProductSearchResult product,
     InventoryReceiptManualProductAction action,
   ) async {
-    final eatNowRequiresNutritionMessage =
-        AppLocalizations.of(context)!.inventoryManualAddEatNowRequiresNutrition;
+    final eatNowRequiresNutritionMessage = AppLocalizations.of(
+      context,
+    )!.inventoryManualAddEatNowRequiresNutrition;
     await _voiceSearchController.stopVoiceSearchIfNeeded();
     if (widget.autofocusSearch &&
         action == InventoryReceiptManualProductAction.eatNow) {
@@ -1177,8 +1091,9 @@ class _InventoryReceiptManualProductEditorPageState
             showActionSelector: false,
             initialInfoMessage:
                 action == InventoryReceiptManualProductAction.eatNow
-                ? AppLocalizations.of(context)!
-                      .inventoryManualAddEatNowRequiresNutrition
+                ? AppLocalizations.of(
+                    context,
+                  )!.inventoryManualAddEatNowRequiresNutrition
                 : null,
           );
           return;
@@ -1281,101 +1196,6 @@ class _InventoryReceiptManualProductEditorPageState
       return;
     }
     Navigator.of(context).pop(result);
-  }
-
-  void _handleWeightChanged() {
-    if (_isSyncingControllers) {
-      return;
-    }
-    _controller.updateWeightAmount(_weightAmountController.text);
-  }
-
-  void _handleNameChanged() {
-    if (_isSyncingControllers) {
-      return;
-    }
-    _controller.updateNameText(_nameController.text);
-  }
-
-  void _handleBrandChanged() {
-    if (_isSyncingControllers) {
-      return;
-    }
-    _controller.updateBrandText(_brandController.text);
-  }
-
-  void _handleKcalChanged() {
-    if (_isSyncingControllers) {
-      return;
-    }
-    _controller.updateKcalText(_kcalController.text);
-  }
-
-  void _handleSaturatedFatChanged() {
-    if (_isSyncingControllers) {
-      return;
-    }
-    _controller.updateSaturatedFatText(_saturatedFatController.text);
-  }
-
-  void _handlePolyunsaturatedFatChanged() {
-    if (_isSyncingControllers) {
-      return;
-    }
-    _controller.updatePolyunsaturatedFatText(
-      _polyunsaturatedFatController.text,
-    );
-  }
-
-  void _handleProteinChanged() {
-    if (_isSyncingControllers) {
-      return;
-    }
-    _controller.updateProteinText(_proteinController.text);
-  }
-
-  void _handleCarbsChanged() {
-    if (_isSyncingControllers) {
-      return;
-    }
-    _controller.updateCarbsText(_carbsController.text);
-  }
-
-  void _handleSugarChanged() {
-    if (_isSyncingControllers) {
-      return;
-    }
-    _controller.updateSugarText(_sugarController.text);
-  }
-
-  void _handleFiberChanged() {
-    if (_isSyncingControllers) {
-      return;
-    }
-    _controller.updateFiberText(_fiberController.text);
-  }
-
-  void _handleFatChanged() {
-    if (_isSyncingControllers) {
-      return;
-    }
-    _controller.updateFatText(_fatController.text);
-  }
-
-  void _handleSaltChanged() {
-    if (_isSyncingControllers) {
-      return;
-    }
-    _controller.updateSaltText(_saltController.text);
-  }
-
-  void _handleOptionalNutritionValueChanged() {
-    if (_isSyncingControllers) {
-      return;
-    }
-    _controller.updateOptionalNutritionValueText(
-      _optionalNutritionValueController.text,
-    );
   }
 
   String? _resolveErrorText(

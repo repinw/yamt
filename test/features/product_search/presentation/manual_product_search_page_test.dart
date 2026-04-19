@@ -301,12 +301,14 @@ Icon _voiceSearchIcon(WidgetTester tester) {
   );
 }
 
-FormBuilderTextField _manualFormTextField(WidgetTester tester, Key key) {
-  return tester.widget<FormBuilderTextField>(find.byKey(key));
-}
-
 String? _manualFormFieldText(WidgetTester tester, Key key) {
-  return _manualFormTextField(tester, key).controller?.text;
+  final editableText = tester.widget<EditableText>(
+    find.descendant(
+      of: find.byKey(key),
+      matching: find.byType(EditableText),
+    ),
+  );
+  return editableText.controller.text;
 }
 
 FormBuilderDropdown<T> _manualFormDropdown<T>(

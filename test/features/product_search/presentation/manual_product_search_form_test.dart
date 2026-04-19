@@ -60,19 +60,19 @@ OffProductSearchResult _searchResult() {
 
 InventoryReceiptManualProductForm _buildForm({
   required TextEditingController searchController,
-  required TextEditingController nameController,
-  required TextEditingController brandController,
-  required TextEditingController weightAmountController,
-  required TextEditingController kcalController,
-  required TextEditingController saturatedFatController,
-  required TextEditingController polyunsaturatedFatController,
-  required TextEditingController fatController,
-  required TextEditingController carbsController,
-  required TextEditingController sugarController,
-  required TextEditingController fiberController,
-  required TextEditingController proteinController,
-  required TextEditingController saltController,
-  required TextEditingController optionalNutritionValueController,
+  String nameText = '',
+  String brandText = '',
+  String weightAmount = '',
+  String kcalText = '',
+  String saturatedFatText = '',
+  String polyunsaturatedFatText = '',
+  String fatText = '',
+  String carbsText = '',
+  String sugarText = '',
+  String fiberText = '',
+  String proteinText = '',
+  String saltText = '',
+  String optionalNutritionValueText = '',
   List<OffProductSearchResult> searchResults = const <OffProductSearchResult>[],
   List<InventoryItem> recentItems = const <InventoryItem>[],
   bool canSave = true,
@@ -85,36 +85,49 @@ InventoryReceiptManualProductForm _buildForm({
   ValueChanged<OffProductSearchResult>? onSearchResultSelected,
   ValueChanged<OffProductSearchResult>? onSearchResultStoreSelected,
   ValueChanged<OffProductSearchResult>? onSearchResultEatSelected,
+  ValueChanged<String>? onNameChanged,
+  ValueChanged<String>? onBrandChanged,
+  ValueChanged<String>? onWeightAmountChanged,
   ValueChanged<InventoryAmountUnit>? onWeightUnitChanged,
+  ValueChanged<String>? onKcalChanged,
+  ValueChanged<String>? onFatChanged,
+  ValueChanged<String>? onSaturatedFatChanged,
+  ValueChanged<String>? onCarbsChanged,
+  ValueChanged<String>? onSugarChanged,
+  ValueChanged<String>? onProteinChanged,
+  ValueChanged<String>? onSaltChanged,
+  ValueChanged<String>? onPolyunsaturatedFatChanged,
+  ValueChanged<String>? onFiberChanged,
+  ValueChanged<String>? onOptionalNutritionValueChanged,
   VoidCallback? onApplyOptionalNutrition,
 }) {
   return InventoryReceiptManualProductForm(
     title: 'Produktsuche',
     searchController: searchController,
-    nameController: nameController,
-    brandController: brandController,
     isSearching: false,
     canSave: canSave,
     isRunningNutritionOcr: false,
     showDetails: showDetails,
     searchResults: searchResults,
     recentItems: recentItems,
-    weightAmountController: weightAmountController,
+    nameText: nameText,
+    brandText: brandText,
+    weightAmount: weightAmount,
     selectedWeightUnit: InventoryAmountUnit.gram,
-    kcalController: kcalController,
-    saturatedFatController: saturatedFatController,
-    polyunsaturatedFatController: polyunsaturatedFatController,
+    kcalText: kcalText,
+    saturatedFatText: saturatedFatText,
+    polyunsaturatedFatText: polyunsaturatedFatText,
     showPolyunsaturatedFatField: false,
-    fatController: fatController,
-    carbsController: carbsController,
-    sugarController: sugarController,
-    fiberController: fiberController,
+    fatText: fatText,
+    carbsText: carbsText,
+    sugarText: sugarText,
+    fiberText: fiberText,
     showFiberField: false,
-    proteinController: proteinController,
-    saltController: saltController,
+    proteinText: proteinText,
+    saltText: saltText,
     canAddOptionalNutrition: canAddOptionalNutrition,
     isAddingOptionalNutrition: isAddingOptionalNutrition,
-    optionalNutritionValueController: optionalNutritionValueController,
+    optionalNutritionValueText: optionalNutritionValueText,
     optionalNutritionUnit: InventoryAmountUnit.gram,
     optionalNutritionType: optionalNutritionType,
     availableOptionalNutritionTypes:
@@ -134,9 +147,22 @@ InventoryReceiptManualProductForm _buildForm({
     onSearchResultSelected: onSearchResultSelected ?? (_) {},
     onRecentItemSelected: (_) {},
     onScanBarcode: () {},
+    onNameChanged: onNameChanged ?? (_) {},
+    onBrandChanged: onBrandChanged ?? (_) {},
+    onWeightAmountChanged: onWeightAmountChanged ?? (_) {},
     onWeightUnitChanged: onWeightUnitChanged ?? (_) {},
+    onKcalChanged: onKcalChanged ?? (_) {},
+    onFatChanged: onFatChanged ?? (_) {},
+    onSaturatedFatChanged: onSaturatedFatChanged ?? (_) {},
+    onCarbsChanged: onCarbsChanged ?? (_) {},
+    onSugarChanged: onSugarChanged ?? (_) {},
+    onProteinChanged: onProteinChanged ?? (_) {},
+    onSaltChanged: onSaltChanged ?? (_) {},
+    onPolyunsaturatedFatChanged: onPolyunsaturatedFatChanged ?? (_) {},
+    onFiberChanged: onFiberChanged ?? (_) {},
     onScanNutritionLabel: () {},
     onStartAddingOptionalNutrition: () {},
+    onOptionalNutritionValueChanged: onOptionalNutritionValueChanged ?? (_) {},
     onOptionalNutritionUnitChanged: (_) {},
     onOptionalNutritionTypeChanged: (_) {},
     onApplyOptionalNutrition: onApplyOptionalNutrition ?? () {},
@@ -160,76 +186,27 @@ void main() {
     tester,
   ) async {
     final searchController = TextEditingController(text: 'Banane');
-    final nameController = TextEditingController(text: 'Banane');
-    final brandController = TextEditingController(text: 'Ja!');
-    final weightAmountController = TextEditingController(text: '200');
-    final kcalController = TextEditingController(text: '89');
-    final saturatedFatController = TextEditingController(text: '0.1');
-    final polyunsaturatedFatController = TextEditingController();
-    final fatController = TextEditingController(text: '0.2');
-    final carbsController = TextEditingController(text: '20');
-    final sugarController = TextEditingController(text: '18');
-    final fiberController = TextEditingController();
-    final proteinController = TextEditingController(text: '1');
-    final saltController = TextEditingController(text: '0');
-    final optionalNutritionValueController = TextEditingController();
 
     var didSave = false;
     var didCancel = false;
     InventoryAmountUnit? changedUnit;
 
-    addTearDown(() {
-      searchController.dispose();
-      nameController.dispose();
-      brandController.dispose();
-      weightAmountController.dispose();
-      kcalController.dispose();
-      saturatedFatController.dispose();
-      polyunsaturatedFatController.dispose();
-      fatController.dispose();
-      carbsController.dispose();
-      sugarController.dispose();
-      fiberController.dispose();
-      proteinController.dispose();
-      saltController.dispose();
-      optionalNutritionValueController.dispose();
-    });
-
-    final listenable = Listenable.merge(<Listenable>[
-      searchController,
-      nameController,
-      brandController,
-      weightAmountController,
-      kcalController,
-      saturatedFatController,
-      polyunsaturatedFatController,
-      fatController,
-      carbsController,
-      sugarController,
-      fiberController,
-      proteinController,
-      saltController,
-      optionalNutritionValueController,
-    ]);
+    addTearDown(searchController.dispose);
 
     await tester.pumpWidget(
       _wrapForm(
-        listenable: listenable,
         builder: (_) => _buildForm(
           searchController: searchController,
-          nameController: nameController,
-          brandController: brandController,
-          weightAmountController: weightAmountController,
-          kcalController: kcalController,
-          saturatedFatController: saturatedFatController,
-          polyunsaturatedFatController: polyunsaturatedFatController,
-          fatController: fatController,
-          carbsController: carbsController,
-          sugarController: sugarController,
-          fiberController: fiberController,
-          proteinController: proteinController,
-          saltController: saltController,
-          optionalNutritionValueController: optionalNutritionValueController,
+          nameText: 'Banane',
+          brandText: 'Ja!',
+          weightAmount: '200',
+          kcalText: '89',
+          saturatedFatText: '0.1',
+          fatText: '0.2',
+          carbsText: '20',
+          sugarText: '18',
+          proteinText: '1',
+          saltText: '0',
           recentItems: <InventoryItem>[_recentItem()],
           onSave: () => didSave = true,
           onCancel: () => didCancel = true,
@@ -278,77 +255,18 @@ void main() {
     tester,
   ) async {
     final searchController = TextEditingController(text: 'Wurst');
-    final nameController = TextEditingController();
-    final brandController = TextEditingController();
-    final weightAmountController = TextEditingController();
-    final kcalController = TextEditingController();
-    final saturatedFatController = TextEditingController();
-    final polyunsaturatedFatController = TextEditingController();
-    final fatController = TextEditingController();
-    final carbsController = TextEditingController();
-    final sugarController = TextEditingController();
-    final fiberController = TextEditingController();
-    final proteinController = TextEditingController();
-    final saltController = TextEditingController();
-    final optionalNutritionValueController = TextEditingController();
     final result = _searchResult();
 
     OffProductSearchResult? selectedResult;
     OffProductSearchResult? storeResult;
     OffProductSearchResult? eatResult;
 
-    addTearDown(() {
-      searchController.dispose();
-      nameController.dispose();
-      brandController.dispose();
-      weightAmountController.dispose();
-      kcalController.dispose();
-      saturatedFatController.dispose();
-      polyunsaturatedFatController.dispose();
-      fatController.dispose();
-      carbsController.dispose();
-      sugarController.dispose();
-      fiberController.dispose();
-      proteinController.dispose();
-      saltController.dispose();
-      optionalNutritionValueController.dispose();
-    });
-
-    final listenable = Listenable.merge(<Listenable>[
-      searchController,
-      nameController,
-      brandController,
-      weightAmountController,
-      kcalController,
-      saturatedFatController,
-      polyunsaturatedFatController,
-      fatController,
-      carbsController,
-      sugarController,
-      fiberController,
-      proteinController,
-      saltController,
-      optionalNutritionValueController,
-    ]);
+    addTearDown(searchController.dispose);
 
     await tester.pumpWidget(
       _wrapForm(
-        listenable: listenable,
         builder: (_) => _buildForm(
           searchController: searchController,
-          nameController: nameController,
-          brandController: brandController,
-          weightAmountController: weightAmountController,
-          kcalController: kcalController,
-          saturatedFatController: saturatedFatController,
-          polyunsaturatedFatController: polyunsaturatedFatController,
-          fatController: fatController,
-          carbsController: carbsController,
-          sugarController: sugarController,
-          fiberController: fiberController,
-          proteinController: proteinController,
-          saltController: saltController,
-          optionalNutritionValueController: optionalNutritionValueController,
           showDetails: false,
           searchResults: <OffProductSearchResult>[result],
           onSearchResultSelected: (value) => selectedResult = value,
@@ -392,78 +310,38 @@ void main() {
     'optional nutrition composer sanitizes numeric input and enables apply',
     (tester) async {
       final searchController = TextEditingController(text: 'Wurst');
-      final nameController = TextEditingController(text: 'Wurst');
-      final brandController = TextEditingController(text: 'Metzger');
-      final weightAmountController = TextEditingController(text: '200');
-      final kcalController = TextEditingController(text: '210');
-      final saturatedFatController = TextEditingController(text: '6');
-      final polyunsaturatedFatController = TextEditingController();
-      final fatController = TextEditingController(text: '17');
-      final carbsController = TextEditingController(text: '1');
-      final sugarController = TextEditingController(text: '1');
-      final fiberController = TextEditingController();
-      final proteinController = TextEditingController(text: '15');
-      final saltController = TextEditingController(text: '1.8');
-      final optionalNutritionValueController = TextEditingController();
+      final optionalNutritionValue = ValueNotifier<String>('');
 
       var didApply = false;
 
       addTearDown(() {
         searchController.dispose();
-        nameController.dispose();
-        brandController.dispose();
-        weightAmountController.dispose();
-        kcalController.dispose();
-        saturatedFatController.dispose();
-        polyunsaturatedFatController.dispose();
-        fatController.dispose();
-        carbsController.dispose();
-        sugarController.dispose();
-        fiberController.dispose();
-        proteinController.dispose();
-        saltController.dispose();
-        optionalNutritionValueController.dispose();
+        optionalNutritionValue.dispose();
       });
-
-      final listenable = Listenable.merge(<Listenable>[
-        searchController,
-        nameController,
-        brandController,
-        weightAmountController,
-        kcalController,
-        saturatedFatController,
-        polyunsaturatedFatController,
-        fatController,
-        carbsController,
-        sugarController,
-        fiberController,
-        proteinController,
-        saltController,
-        optionalNutritionValueController,
-      ]);
 
       await tester.pumpWidget(
         _wrapForm(
-          listenable: listenable,
+          listenable: optionalNutritionValue,
           builder: (_) => _buildForm(
             searchController: searchController,
-            nameController: nameController,
-            brandController: brandController,
-            weightAmountController: weightAmountController,
-            kcalController: kcalController,
-            saturatedFatController: saturatedFatController,
-            polyunsaturatedFatController: polyunsaturatedFatController,
-            fatController: fatController,
-            carbsController: carbsController,
-            sugarController: sugarController,
-            fiberController: fiberController,
-            proteinController: proteinController,
-            saltController: saltController,
-            optionalNutritionValueController: optionalNutritionValueController,
+            nameText: 'Wurst',
+            brandText: 'Metzger',
+            weightAmount: '200',
+            kcalText: '210',
+            saturatedFatText: '6',
+            fatText: '17',
+            carbsText: '1',
+            sugarText: '1',
+            proteinText: '15',
+            saltText: '1.8',
             canAddOptionalNutrition: true,
             isAddingOptionalNutrition: true,
+            optionalNutritionValueText: optionalNutritionValue.value,
             optionalNutritionType:
                 InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
+            onOptionalNutritionValueChanged: (value) {
+              optionalNutritionValue.value = value;
+            },
             onApplyOptionalNutrition: () => didApply = true,
           ),
         ),
@@ -484,9 +362,9 @@ void main() {
         ),
         '4x,5y',
       );
-      await tester.pump();
+      await tester.pumpAndSettle();
 
-      expect(optionalNutritionValueController.text, '4,5');
+      expect(optionalNutritionValue.value, '4,5');
       expect(
         tester.widget<IconButton>(confirmButtonFinder).onPressed,
         isNotNull,
