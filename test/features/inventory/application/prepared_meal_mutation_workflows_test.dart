@@ -79,6 +79,44 @@ void main() {
     );
 
     test(
+      'createPreparedMeal restores inventory when meal save fails',
+      () async {
+        final harness = _WorkflowHarness(saveMealsResults: <bool>[false]);
+        final inventoryRepository = _FakeInventoryItemRepository(
+          items: <InventoryItem>[
+            _measuredItem(
+              id: 'rice',
+              name: 'Rice',
+              currentAmount: 200,
+              initialAmount: 200,
+              initialQuantity: 1,
+            ),
+          ],
+        );
+
+        final result = await harness.workflows.createPreparedMeal(
+          name: 'Rice Bowl',
+          totalPortions: 2,
+          items: const <PreparedMealItemInput>[
+            PreparedMealItemInput(itemId: 'rice', usedAmount: 100),
+          ],
+          imageAssetId: null,
+          inventoryRepository: inventoryRepository,
+        );
+
+        expect(result.isSuccess, isFalse);
+        expect(
+          result.failureReason,
+          PreparedMealCreationFailureReason.mealSaveFailed,
+        );
+        expect(inventoryRepository.saveCount, 1);
+        expect(harness.saveCalls, 1);
+        expect(harness.restoreInventoryCalls, 1);
+        expect(harness.lastRestoredItems.single.currentAmount, 200);
+      },
+    );
+
+    test(
       'createPreparedMealFromTemplate saves created meal on success',
       () async {
         final harness = _WorkflowHarness();
@@ -154,6 +192,53 @@ void main() {
           PreparedMealCreationFailureReason.invalidInput,
         );
         expect(harness.loadCalls, 0);
+      },
+    );
+
+    test(
+      'createPreparedMealFromTemplate restores inventory when meal save fails',
+      () async {
+        final harness = _WorkflowHarness(saveMealsResults: <bool>[false]);
+        final inventoryRepository = _FakeInventoryItemRepository(
+          items: <InventoryItem>[
+            _measuredItem(
+              id: 'rice',
+              name: 'Rice',
+              currentAmount: 200,
+              initialAmount: 200,
+              initialQuantity: 1,
+            ),
+          ],
+        );
+
+        final result = await harness.workflows.createPreparedMealFromTemplate(
+          template: _meal(
+            id: 'template',
+            name: 'Rice Bowl',
+            totalPortions: 1,
+            remainingPortions: 1,
+            recipeIngredients: const <String>['100 g rice'],
+            components: const <PreparedMealComponent>[],
+          ),
+          totalPortions: 1,
+          recipeIngredientAssignments: const <String, List<String>>{
+            '100 g rice': <String>['rice'],
+          },
+          recipeIngredientAmountConversions:
+              const <String, RecipeIngredientAmountConversion>{},
+          inventoryRepository: inventoryRepository,
+          ingredientParser: ingredientParser,
+        );
+
+        expect(result.isSuccess, isFalse);
+        expect(
+          result.failureReason,
+          PreparedMealCreationFailureReason.mealSaveFailed,
+        );
+        expect(inventoryRepository.saveCount, 1);
+        expect(harness.saveCalls, 1);
+        expect(harness.restoreInventoryCalls, 1);
+        expect(harness.lastRestoredItems.single.currentAmount, 200);
       },
     );
 
@@ -280,6 +365,51 @@ void main() {
 
         expect(saved, isFalse);
         expect(harness.loadCalls, 0);
+      },
+    );
+
+    test(
+      'fillPreparedMealPendingIngredient restores inventory '
+      'when meal save fails',
+      () async {
+        final harness = _WorkflowHarness(
+          saveMealsResults: <bool>[false],
+          meals: <PreparedMeal>[
+            _meal(
+              id: 'meal-1',
+              name: 'Soup',
+              totalPortions: 2,
+              remainingPortions: 2,
+              pendingRecipeIngredients: const <String>['100 g rice'],
+              components: const <PreparedMealComponent>[],
+            ),
+          ],
+        );
+        final inventoryRepository = _FakeInventoryItemRepository(
+          items: <InventoryItem>[
+            _measuredItem(
+              id: 'rice',
+              name: 'Rice',
+              currentAmount: 150,
+              initialAmount: 150,
+              initialQuantity: 1,
+            ),
+          ],
+        );
+
+        final saved = await harness.workflows.fillPreparedMealPendingIngredient(
+          mealId: 'meal-1',
+          ingredient: '100 g rice',
+          inventoryItemIds: const <String>['rice'],
+          inventoryRepository: inventoryRepository,
+          ingredientParser: ingredientParser,
+        );
+
+        expect(saved, isFalse);
+        expect(inventoryRepository.saveCount, 1);
+        expect(harness.saveCalls, 1);
+        expect(harness.restoreInventoryCalls, 1);
+        expect(harness.lastRestoredItems.single.currentAmount, 150);
       },
     );
 
@@ -448,6 +578,49 @@ void main() {
       expect(harness.loadCalls, 0);
     });
 
+    test(
+      'throwAwayPreparedMeal restores previous meal state '
+      'when event save fails',
+      () async {
+        final sourceItem = _measuredItem(
+          id: 'rice',
+          name: 'Rice',
+          currentAmount: 400,
+          initialAmount: 400,
+          initialQuantity: 1,
+          unitPrice: 4,
+        );
+        final harness = _WorkflowHarness(
+          meals: <PreparedMeal>[
+            _meal(
+              id: 'meal-1',
+              name: 'Rice Bowl',
+              totalPortions: 4,
+              remainingPortions: 4,
+              components: <PreparedMealComponent>[
+                _component(item: sourceItem, usedAmount: 400, totalKcal: 400),
+              ],
+            ),
+          ],
+        );
+        final discardRepository = _FakeDiscardEventRepository(
+          shouldSave: false,
+        );
+
+        final saved = await harness.workflows.throwAwayPreparedMeal(
+          mealId: 'meal-1',
+          discardedPortions: 1,
+          reason: InventoryDiscardReason.spoiled,
+          discardEventRepository: discardRepository,
+        );
+
+        expect(saved, isFalse);
+        expect(discardRepository.saveCount, 1);
+        expect(harness.saveCalls, 2);
+        expect(harness.lastSavedMeals.single.remainingPortions, 4);
+      },
+    );
+
     test('restorePreparedMealPortions saves increased portions', () async {
       final harness = _WorkflowHarness(
         meals: <PreparedMeal>[
@@ -544,20 +717,64 @@ void main() {
       expect(saved, isFalse);
       expect(inventoryRepository.readCount, 0);
     });
+
+    test(
+      'unbundlePreparedMeal restores inventory when meal save fails',
+      () async {
+        final sourceItem = _measuredItem(
+          id: 'rice',
+          name: 'Rice',
+          currentAmount: 200,
+          initialAmount: 200,
+          initialQuantity: 1,
+        );
+        final harness = _WorkflowHarness(
+          saveMealsResults: <bool>[false],
+          meals: <PreparedMeal>[
+            _meal(
+              id: 'meal-1',
+              name: 'Rice Bowl',
+              totalPortions: 4,
+              remainingPortions: 2,
+              components: <PreparedMealComponent>[
+                _component(item: sourceItem, usedAmount: 200, totalKcal: 200),
+              ],
+            ),
+          ],
+        );
+        final inventoryRepository = _FakeInventoryItemRepository();
+
+        final saved = await harness.workflows.unbundlePreparedMeal(
+          mealId: 'meal-1',
+          inventoryRepository: inventoryRepository,
+        );
+
+        expect(saved, isFalse);
+        expect(inventoryRepository.saveCount, 1);
+        expect(harness.saveCalls, 1);
+        expect(harness.restoreInventoryCalls, 1);
+        expect(harness.lastRestoredItems, isEmpty);
+      },
+    );
   });
 }
 
 class _WorkflowHarness {
-  _WorkflowHarness({List<PreparedMeal>? meals})
-    : _meals = List<PreparedMeal>.from(meals ?? const <PreparedMeal>[]);
+  _WorkflowHarness({
+    List<PreparedMeal>? meals,
+    List<bool>? saveMealsResults,
+  }) : _meals = List<PreparedMeal>.from(meals ?? const <PreparedMeal>[]),
+       _saveMealsResults = List<bool>.from(saveMealsResults ?? <bool>[true]);
 
   final List<PreparedMeal> _meals;
+  final List<bool> _saveMealsResults;
   int loadCalls = 0;
   int saveCalls = 0;
   int publishCalls = 0;
   int restoreInventoryCalls = 0;
   List<PreparedMeal> lastSavedMeals = const <PreparedMeal>[];
   List<PreparedMeal> lastPublishedMeals = const <PreparedMeal>[];
+  List<InventoryItem> lastRestoredItems = const <InventoryItem>[];
 
   PreparedMealMutationWorkflows get workflows {
     return PreparedMealMutationWorkflows(
@@ -568,10 +785,16 @@ class _WorkflowHarness {
       saveMeals: ({required previousMeals, required nextMeals}) async {
         saveCalls += 1;
         lastSavedMeals = List<PreparedMeal>.from(nextMeals);
-        _meals
-          ..clear()
-          ..addAll(nextMeals);
-        return true;
+        final resultIndex = saveCalls - 1;
+        final didSave = resultIndex < _saveMealsResults.length
+            ? _saveMealsResults[resultIndex]
+            : _saveMealsResults.last;
+        if (didSave) {
+          _meals
+            ..clear()
+            ..addAll(nextMeals);
+        }
+        return didSave;
       },
       restoreInventory:
           ({
@@ -579,6 +802,7 @@ class _WorkflowHarness {
             required previousItems,
           }) async {
             restoreInventoryCalls += 1;
+            lastRestoredItems = List<InventoryItem>.from(previousItems);
           },
       publishMeals: (meals) {
         publishCalls += 1;
@@ -629,6 +853,9 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
 }
 
 class _FakeDiscardEventRepository implements InventoryDiscardEventRepository {
+  _FakeDiscardEventRepository({this.shouldSave = true});
+
+  final bool shouldSave;
   int saveCount = 0;
   InventoryDiscardEvent? lastSavedEvent;
 
@@ -641,7 +868,7 @@ class _FakeDiscardEventRepository implements InventoryDiscardEventRepository {
   Future<bool> saveEvent(InventoryDiscardEvent event) async {
     saveCount += 1;
     lastSavedEvent = event;
-    return true;
+    return shouldSave;
   }
 
   @override
