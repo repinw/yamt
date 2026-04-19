@@ -2,6 +2,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 /// Internal storage scale for fractional piece amounts.
 const inventoryPieceAmountScale = 1000;
+final RegExp _trailingZeroPattern = RegExp(r'0+$');
+final RegExp _trailingDecimalPointPattern = RegExp(r'\.$');
 
 /// Defines inventory amount unit.
 enum InventoryAmountUnit {
@@ -86,9 +88,10 @@ String formatInventoryAmountValue({
   if ((displayValue - roundedValue).abs() < 0.000001) {
     return roundedValue.toInt().toString();
   }
-  return displayValue.toStringAsFixed(3)
-      .replaceFirst(RegExp(r'0+$'), '')
-      .replaceFirst(RegExp(r'\.$'), '');
+  return displayValue
+      .toStringAsFixed(3)
+      .replaceFirst(_trailingZeroPattern, '')
+      .replaceFirst(_trailingDecimalPointPattern, '');
 }
 
 /// Parses user-entered inventory amount text into stored amount units.
