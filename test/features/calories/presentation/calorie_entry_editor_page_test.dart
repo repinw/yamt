@@ -269,6 +269,18 @@ Widget _buildHarness({
         },
       ),
       GoRoute(
+        path: AppRoutes.homeInventory,
+        builder: (context, state) {
+          return const Scaffold(body: Text('Inventory Home'));
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.homeCalories,
+        builder: (context, state) {
+          return const Scaffold(body: Text('Calories Home'));
+        },
+      ),
+      GoRoute(
         path: AppRoutes.homeCaloriesEntryDetails,
         builder: (context, state) {
           return CalorieEntryEditorPage(
@@ -352,6 +364,7 @@ void main() {
 
     expect(logRepository.entries, hasLength(1));
     expect(logRepository.entries.single.name, 'Greek Yogurt');
+    expect(find.text('Inventory Home'), findsOneWidget);
   });
 
   testWidgets('details flow loads and updates the meal window', (

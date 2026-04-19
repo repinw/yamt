@@ -4,8 +4,10 @@ import 'dart:developer' show log;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/'
@@ -610,11 +612,25 @@ class _CalorieEntryEditorContentState
   }
 
   void _maybePopRootNavigator(BuildContext context, {Object? result}) {
-    final navigator = Navigator.of(context, rootNavigator: true);
-    if (navigator.canPop()) {
-      navigator.pop(result);
+    final rootNavigator = Navigator.of(context, rootNavigator: true);
+    if (rootNavigator.canPop()) {
+      rootNavigator.pop(result);
       return;
     }
+
+    final localNavigator = Navigator.of(context);
+    if (!identical(localNavigator, rootNavigator) && localNavigator.canPop()) {
+      localNavigator.pop(result);
+      return;
+    }
+
+    GoRouter.of(context).go(_fallbackCloseRoute);
+  }
+
+  String get _fallbackCloseRoute {
+    return widget.entryId == null
+        ? AppRoutes.homeInventory
+        : AppRoutes.homeCalories;
   }
 
   void _showFailureSnackBar(ScaffoldMessengerState messenger, String message) {

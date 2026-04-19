@@ -67,6 +67,7 @@ Widget _buildTestApp({
   required TextEditingController textController,
   required VoiceSearchService voiceSearchService,
   TextVoiceSearchController? voiceSearchController,
+  List<Widget> trailingActions = const <Widget>[],
 }) {
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -82,6 +83,7 @@ Widget _buildTestApp({
           clearButtonKey: const Key('shared_clear_button'),
           voiceSearchService: voiceSearchService,
           voiceSearchController: voiceSearchController,
+          trailingActions: trailingActions,
         ),
       ),
     ),
@@ -156,5 +158,36 @@ void main() {
 
     expect(voiceSearchService.cancelCallCount, 1);
     textController.dispose();
+  });
+
+  testWidgets('trailing actions stay top-aligned with search field', (
+    tester,
+  ) async {
+    final textController = TextEditingController();
+    final voiceSearchService = _FakeVoiceSearchService();
+
+    addTearDown(textController.dispose);
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        textController: textController,
+        voiceSearchService: voiceSearchService,
+        trailingActions: const <Widget>[
+          SizedBox(
+            key: Key('extra_action'),
+            height: 72,
+            width: 56,
+            child: ColoredBox(color: Colors.red),
+          ),
+        ],
+      ),
+    );
+
+    final fieldTop = tester.getTopLeft(
+      find.byKey(const Key('shared_search_field')),
+    );
+    final actionTop = tester.getTopLeft(find.byKey(const Key('extra_action')));
+
+    expect(actionTop.dy, fieldTop.dy);
   });
 }

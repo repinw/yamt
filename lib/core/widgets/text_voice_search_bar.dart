@@ -204,6 +204,7 @@ class _TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: _TextVoiceSearchField(
