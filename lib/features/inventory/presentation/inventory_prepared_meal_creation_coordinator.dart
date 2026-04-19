@@ -66,11 +66,11 @@ Future<void> runPreparedMealCreationFlow({
   }
 
   final l10n = AppLocalizations.of(context)!;
-  final messenger = ScaffoldMessenger.of(context);
-  messenger.hideCurrentSnackBar();
-  messenger.showSnackBar(
-    SnackBar(content: Text(_creationFeedbackMessage(l10n, creationResult))),
-  );
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(content: Text(_creationFeedbackMessage(l10n, creationResult))),
+    );
 
   if (!creationResult.isSuccess) {
     return;

@@ -169,18 +169,16 @@ class GlobalFoodItemMatcher {
   List<GlobalFoodMatchCandidate> _finalizeSourceBucket(
     List<GlobalFoodMatchCandidate> candidates,
   ) {
-    final deduped = _dedupeCandidates(candidates);
-    deduped.sort((left, right) {
-      final byScore = right.score.compareTo(left.score);
-      if (byScore != 0) {
-        return byScore;
-      }
-      if (left.requiresPersistence != right.requiresPersistence) {
-        return left.requiresPersistence ? 1 : -1;
-      }
-      return left.item.id.compareTo(right.item.id);
-    });
-    return deduped
+    return (_dedupeCandidates(candidates)..sort((left, right) {
+          final byScore = right.score.compareTo(left.score);
+          if (byScore != 0) {
+            return byScore;
+          }
+          if (left.requiresPersistence != right.requiresPersistence) {
+            return left.requiresPersistence ? 1 : -1;
+          }
+          return left.item.id.compareTo(right.item.id);
+        }))
         .take(_globalFoodReviewCandidateLimitPerSource)
         .toList(growable: false);
   }

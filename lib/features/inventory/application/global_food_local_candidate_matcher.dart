@@ -159,17 +159,17 @@ class _GlobalFoodLocalCandidateMatcher {
   }
 
   List<String> _queryNameTokensFor(String name) {
-    final tokens = buildGlobalFoodSearchTokens(
-      name: name,
-    ).toSet().toList(growable: false);
-    tokens.sort((left, right) {
-      final lengthCompare = right.length.compareTo(left.length);
-      if (lengthCompare != 0) {
-        return lengthCompare;
-      }
-      return left.compareTo(right);
-    });
-    return tokens.take(_globalFoodQueryTokenLimit).toList(growable: false);
+    return (buildGlobalFoodSearchTokens(
+          name: name,
+        ).toSet().toList(growable: false)..sort((left, right) {
+          final lengthCompare = right.length.compareTo(left.length);
+          if (lengthCompare != 0) {
+            return lengthCompare;
+          }
+          return left.compareTo(right);
+        }))
+        .take(_globalFoodQueryTokenLimit)
+        .toList(growable: false);
   }
 
   bool _hasConfidentLead(List<GlobalFoodMatchCandidate> candidates) {

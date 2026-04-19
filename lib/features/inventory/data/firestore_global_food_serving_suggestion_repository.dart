@@ -162,26 +162,27 @@ class FirestoreGlobalFoodServingSuggestionRepository
         transaction.set(entry.key, entry.value);
       }
 
-      transaction.set(suggestionRef, <String, dynamic>{
-        'id': suggestionId,
-        'item_key': globalKey,
-        'global_food_item_id': globalId,
-        'amount': normalizedAmount,
-        'unit': unit.jsonValue,
-        'selection_count': nextSelectionCount,
-        'unique_user_count': nextUniqueUserCount,
-        'created_at': currentData['created_at'] ?? nowText,
-        'updated_at': nowText,
-      });
-      transaction.set(voteRef, <String, dynamic>{
-        'item_key': globalKey,
-        'suggestion_id': suggestionId,
-        'global_food_item_id': globalId,
-        'amount': normalizedAmount,
-        'unit': unit.jsonValue,
-        'created_at': voteSnapshot.data()?['created_at'] ?? nowText,
-        'updated_at': nowText,
-      });
+      transaction
+        ..set(suggestionRef, <String, dynamic>{
+          'id': suggestionId,
+          'item_key': globalKey,
+          'global_food_item_id': globalId,
+          'amount': normalizedAmount,
+          'unit': unit.jsonValue,
+          'selection_count': nextSelectionCount,
+          'unique_user_count': nextUniqueUserCount,
+          'created_at': currentData['created_at'] ?? nowText,
+          'updated_at': nowText,
+        })
+        ..set(voteRef, <String, dynamic>{
+          'item_key': globalKey,
+          'suggestion_id': suggestionId,
+          'global_food_item_id': globalId,
+          'amount': normalizedAmount,
+          'unit': unit.jsonValue,
+          'created_at': voteSnapshot.data()?['created_at'] ?? nowText,
+          'updated_at': nowText,
+        });
     });
   }
 

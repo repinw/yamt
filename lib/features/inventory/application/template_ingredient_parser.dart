@@ -121,8 +121,10 @@ class TemplateIngredientParser {
     String? countMeasureLabel,
   }) {
     final amountLabel = countMeasureLabel?.trim();
-    return '$amount ${amountLabel?.isNotEmpty == true ? amountLabel : unit.code} '
-        '$name';
+    final resolvedAmountLabel = amountLabel?.isNotEmpty == true
+        ? amountLabel
+        : unit.code;
+    return '$amount $resolvedAmountLabel $name';
   }
 
   double? _parseQuantity(String rawValue) {

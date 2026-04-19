@@ -129,14 +129,15 @@ class FirestorePreparedMealCalorieEntryCommitStore
         final nextRemainingPortions =
             currentMeal.remainingPortions - consumedPortions;
 
-        transaction.set(
-          _calorieEntriesCollectionRef(entryUserId).doc(normalizedEntry.id),
-          normalizedEntry.toJson(),
-        );
-        transaction.update(mealRef, <String, dynamic>{
-          'remaining_portions': nextRemainingPortions,
-          'updated_at': committedAt.toIso8601String(),
-        });
+        transaction
+          ..set(
+            _calorieEntriesCollectionRef(entryUserId).doc(normalizedEntry.id),
+            normalizedEntry.toJson(),
+          )
+          ..update(mealRef, <String, dynamic>{
+            'remaining_portions': nextRemainingPortions,
+            'updated_at': committedAt.toIso8601String(),
+          });
         return true;
       });
     } on Object catch (error, stackTrace) {

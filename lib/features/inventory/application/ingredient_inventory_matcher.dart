@@ -54,8 +54,7 @@ List<InventoryItem> rankInventoryItemsForIngredient({
     return const <InventoryItem>[];
   }
 
-  final sortedCandidates = List<InventoryItem>.from(candidates);
-  sortedCandidates.sort((left, right) {
+  return List<InventoryItem>.from(candidates)..sort((left, right) {
     final rightScore = ingredientInventoryMatchScore(
       ingredient: ingredient,
       item: right,
@@ -71,7 +70,6 @@ List<InventoryItem> rankInventoryItemsForIngredient({
     }
     return left.name.toLowerCase().compareTo(right.name.toLowerCase());
   });
-  return sortedCandidates;
 }
 
 /// Ingredient inventory match score.
