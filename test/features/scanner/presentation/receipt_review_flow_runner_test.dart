@@ -21,7 +21,7 @@ class _ThrowingReceiptCaptureFlowController
 
   final Completer<void> started;
   final Completer<void> releaseError;
-  final Object error;
+  final Error error;
 
   @override
   Future<ReceiptCaptureFlowResult?> build() async {

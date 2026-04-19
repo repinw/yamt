@@ -27,7 +27,7 @@ class _FakeInventoryItemStore implements InventoryItemStore {
 
   bool replaceAllShouldFail = false;
   bool upsertAllShouldFail = false;
-  Object? watchAllError;
+  Exception? watchAllError;
   Duration upsertDelay = Duration.zero;
   int _activeUpserts = 0;
   int maxConcurrentUpserts = 0;

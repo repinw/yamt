@@ -18,7 +18,10 @@ class _TestReceiptBatchFlowController extends ReceiptBatchFlowController {
     return initialState;
   }
 
-  void replaceState(ReceiptBatchFlowState next) {
+  void emitState(ReceiptBatchFlowState next) {
+    if (identical(state, next)) {
+      return;
+    }
     state = next;
   }
 }
@@ -94,7 +97,7 @@ void main() {
     );
     expect(find.text('0/1'), findsOneWidget);
 
-    controller.replaceState(
+    controller.emitState(
       const ReceiptBatchFlowState(
         progress: ReceiptBatchProgress(
           items: <ReceiptBatchItemProgress>[
@@ -142,7 +145,7 @@ void main() {
     await tester.pump();
     expect(tappedIndex, 0);
 
-    controller.replaceState(
+    controller.emitState(
       const ReceiptBatchFlowState(
         status: ReceiptBatchFlowStatus.completed,
         progress: ReceiptBatchProgress(

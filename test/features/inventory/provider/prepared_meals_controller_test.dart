@@ -446,7 +446,8 @@ void main() {
   );
 
   test(
-    'createPreparedMealFromTemplate parses fractions and decimals and keeps unsupported units pending',
+    'createPreparedMealFromTemplate parses fractions and decimals '
+    'and keeps unsupported units pending',
     () async {
       final inventoryRepository = _FakeInventoryItemRepository(
         initialItems: [

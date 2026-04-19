@@ -76,7 +76,10 @@ Widget _wrap({
   Uint8List? receiptPreviewBytes,
   List<Override> overrides = const <Override>[],
 }) {
-  assert((items == null) != (drafts == null));
+  assert(
+    (items == null) != (drafts == null),
+    'Provide either items or drafts.',
+  );
 
   return ProviderScope(
     overrides: overrides,

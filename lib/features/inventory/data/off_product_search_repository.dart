@@ -91,7 +91,7 @@ OffProductSearchRepository offProductSearchRepository(Ref ref) {
 /// Defines http off product search repository.
 class HttpOffProductSearchRepository implements OffProductSearchRepository {
   /// The http off product search repository.
-  const HttpOffProductSearchRepository({
+  HttpOffProductSearchRepository({
     required http.Client client,
     required Uri searchUri,
   }) : _client = client,
@@ -207,7 +207,7 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
     assert(() {
       log('OFF $action request: GET $uri', name: _offProductSearchLogName);
       return true;
-    }());
+    }(), 'OFF request logging should run only in debug mode.');
   }
 
   Future<List<OffProductSearchResult>> _fetchResults({

@@ -157,7 +157,9 @@ void main() {
       expect(snapshot.data()!['selection_count'], 3);
       expect(snapshot.data()!['unique_user_count'], 2);
       expect(snapshot.data()!['completeness_score'], 8);
-      expect(snapshot.data()!['global_food_item']['image_url'], isNull);
+      final globalFoodItem =
+          snapshot.data()!['global_food_item'] as Map<String, dynamic>;
+      expect(globalFoodItem['image_url'], isNull);
     },
   );
 

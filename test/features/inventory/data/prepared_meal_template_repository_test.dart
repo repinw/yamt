@@ -15,7 +15,7 @@ class _FakeInventoryUserSession implements InventoryUserSession {
 }
 
 class _FakePreparedMealTemplateStore implements PreparedMealTemplateStore {
-  Object? watchAllError;
+  Exception? watchAllError;
 
   @override
   Future<List<PreparedMealTemplateDocument>> readAll({

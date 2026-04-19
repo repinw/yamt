@@ -15,7 +15,7 @@ class _FakeInventoryUserSession implements InventoryUserSession {
 }
 
 class _FakePreparedMealStore implements PreparedMealStore {
-  Object? watchAllError;
+  Exception? watchAllError;
   final StreamController<List<PreparedMealDocument>> _controller =
       StreamController<List<PreparedMealDocument>>.broadcast();
 
@@ -112,8 +112,9 @@ void main() {
       final firstEmission = repository.watchAll().first;
       await Future<void>.delayed(Duration.zero);
 
-      sessionShutdownSignal.begin();
-      sessionShutdownSignal.finish();
+      sessionShutdownSignal
+        ..begin()
+        ..finish();
       store.emitWatchError(
         FirebaseException(plugin: 'cloud_firestore', code: 'permission-denied'),
       );
