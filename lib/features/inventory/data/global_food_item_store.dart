@@ -277,12 +277,16 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
     if (mergedNutrition == null) {
       return updateData;
     }
+    if (currentNutrition == null) {
+      updateData['nutrition'] = mergedNutrition;
+      return updateData;
+    }
 
     for (final key in _patchableNutritionFields) {
       if (!mergedNutrition.containsKey(key)) {
         continue;
       }
-      if (currentNutrition?[key] == mergedNutrition[key]) {
+      if (currentNutrition[key] == mergedNutrition[key]) {
         continue;
       }
       updateData['nutrition.$key'] = mergedNutrition[key];

@@ -823,6 +823,117 @@ void main() {
   );
 
   testWidgets(
+    'eat now from selected search result closes stacked editors first',
+    (tester) async {
+      final auth = _MockFirebaseAuth();
+      final user = _MockUser();
+      when(() => auth.currentUser).thenReturn(user);
+      when(() => user.uid).thenReturn('user-1');
+
+      final offRepository = _RecordingOffProductSearchRepository(
+        <OffProductSearchResult>[
+          const OffProductSearchResult(
+            code: '4006381333931',
+            name: 'Milk',
+            brand: 'Brand',
+            score: 99,
+            packageWeight: '1 l',
+            nutrition: GlobalFoodNutrition(
+              qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+              per100Kcal: 100,
+              per100Protein: 10,
+              per100Carbs: 20,
+              per100Fat: 3,
+            ),
+          ),
+        ],
+      );
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      addTearDown(inventoryRepository.dispose);
+      final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(calorieLogRepository.dispose);
+      final calorieProductCacheRepository = FakeCalorieProductCacheRepository();
+      final inventoryCommitStore = _RecordingInventoryCalorieEntryCommitStore();
+
+      await tester.pumpWidget(
+        _buildHarness(
+          auth: auth,
+          offRepository: offRepository,
+          inventoryRepository: inventoryRepository,
+          globalFoodRepository: globalFoodRepository,
+          calorieLogRepository: calorieLogRepository,
+          calorieProductCacheRepository: calorieProductCacheRepository,
+          inventoryCommitStore: inventoryCommitStore,
+        ),
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+      );
+      await _pumpUi(tester);
+
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_search_field')),
+        'Milk',
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(
+          const Key('receipt_review_manual_search_result_4006381333931'),
+        ),
+      );
+      await _pumpUi(tester);
+
+      final eatNowCheckbox = find.byKey(
+        const Key('receipt_review_manual_eat_now_checkbox'),
+      );
+      await tester.ensureVisible(eatNowCheckbox);
+      await _setCheckboxValue(tester, eatNowCheckbox, true);
+      await tester.enterText(
+        find.byKey(const Key('receipt_review_manual_eat_now_weight_field')),
+        '250',
+      );
+      await _pumpUi(tester);
+
+      await tester.ensureVisible(
+        find.byKey(const Key('receipt_review_manual_save_button')),
+      );
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_save_button')),
+      );
+      await _pumpUi(tester);
+
+      expect(
+        find.byKey(const Key('inventory_item_amount_dialog_field')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('receipt_review_manual_search_field')),
+        findsNothing,
+      );
+
+      final logButton = find.text('Log');
+      await tester.ensureVisible(logButton);
+      await tester.tap(logButton);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('receipt_review_manual_search_field')),
+        findsNothing,
+      );
+      expect(inventoryCommitStore.pendingConsumption, isNotNull);
+      expect(inventoryCommitStore.pendingConsumption?.itemId, isNotEmpty);
+    },
+  );
+
+  testWidgets(
     'eat now shows save error and does not open eat flow when persisting fails',
     (tester) async {
       _installFakeScannerPlatform(tester);
