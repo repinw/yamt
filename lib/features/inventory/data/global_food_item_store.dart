@@ -303,6 +303,9 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
     return null;
   }
 
+  // `null` in upsert payload means "do not patch this field". Deletions are
+  // intentionally not supported here because Firestore rules only allow
+  // fill-missing updates for global food items.
   Map<String, dynamic> _compactMap(Map<String, dynamic> input) {
     final compacted = <String, dynamic>{};
     for (final entry in input.entries) {

@@ -226,4 +226,49 @@ void main() {
       expect(nutrition, isNot(contains('per_100_protein')));
     },
   );
+
+  test(
+    'upsertAll keeps existing values when incoming patch uses null',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      final collection = _globalFoodCollection(firestore: firestore);
+      await collection.doc('milk').set(<String, dynamic>{
+        'id': 'milk',
+        'name': 'Milk',
+        'brand': 'Old Brand',
+        'food_fingerprint': 'milk__fingerprint',
+        'normalized_name': 'milk',
+        'normalized_brand': 'old brand',
+        'search_tokens': const <String>['milk'],
+        'status': 'active',
+        'created_at': '2026-03-01T10:00:00.000Z',
+        'updated_at': '2026-03-01T10:00:00.000Z',
+      });
+
+      final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+      await store.upsertAll(
+        documentsById: <String, Map<String, dynamic>>{
+          'milk': <String, dynamic>{
+            'id': 'milk',
+            'name': 'Milk',
+            'brand': null,
+            'food_fingerprint': 'milk__fingerprint',
+            'normalized_name': 'milk',
+            'normalized_brand': null,
+            'search_tokens': const <String>['milk'],
+            'status': 'active',
+            'created_at': '2026-04-13T10:00:00.000Z',
+            'updated_at': '2026-04-13T10:00:00.000Z',
+          },
+        },
+      );
+
+      final snapshot = await collection.doc('milk').get();
+      final data = snapshot.data()!;
+
+      expect(data['brand'], 'Old Brand');
+      expect(data['normalized_brand'], 'old brand');
+      expect(data['updated_at'], '2026-04-13T10:00:00.000Z');
+    },
+  );
 }
