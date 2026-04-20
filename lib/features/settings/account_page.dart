@@ -83,19 +83,19 @@ class _AccountPageState extends ConsumerState<AccountPage> {
   }
 
   void _showRecentLoginRequiredSnackBar(AppLocalizations l10n) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(l10n.authErrorRequiresRecentLogin),
-        action: SnackBarAction(
-          label: l10n.accountPageSignOut,
-          onPressed: () {
-            unawaited(_signOut(l10n));
-          },
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(l10n.authErrorRequiresRecentLogin),
+          action: SnackBarAction(
+            label: l10n.accountPageSignOut,
+            onPressed: () {
+              unawaited(_signOut(l10n));
+            },
+          ),
         ),
-      ),
-    );
+      );
   }
 
   Future<void> _linkGuestWithGoogle(AppLocalizations l10n) async {

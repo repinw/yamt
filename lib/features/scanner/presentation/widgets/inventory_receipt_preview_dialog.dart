@@ -20,6 +20,9 @@ class InventoryReceiptPreviewDialog extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final hasPreview =
         receiptPreviewBytes != null && receiptPreviewBytes!.isNotEmpty;
+    final unavailableTitle = l10n.inventoryReceiptReviewOriginalReceiptTitle;
+    final unavailableSubtitle =
+        l10n.inventoryReceiptReviewOriginalReceiptUnavailable;
 
     return Material(
       color: Colors.transparent,
@@ -68,10 +71,8 @@ class InventoryReceiptPreviewDialog extends StatelessWidget {
                                     ),
                                   )
                                 : _ReceiptPreviewPlaceholder(
-                                    title: l10n
-                                        .inventoryReceiptReviewOriginalReceiptTitle,
-                                    subtitle: l10n
-                                        .inventoryReceiptReviewOriginalReceiptUnavailable,
+                                    title: unavailableTitle,
+                                    subtitle: unavailableSubtitle,
                                   ),
                           ),
                         ),

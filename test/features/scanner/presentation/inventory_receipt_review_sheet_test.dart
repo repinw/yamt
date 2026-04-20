@@ -1058,6 +1058,8 @@ void main() {
       final ocrButtonAfter = tester.widget<OutlinedButton>(ocrButtonFinder);
       expect(ocrButtonAfter.onPressed, isNotNull);
 
+      await tester.ensureVisible(ocrButtonFinder);
+      await tester.pumpAndSettle();
       await tester.tap(ocrButtonFinder);
       await tester.pumpAndSettle();
 

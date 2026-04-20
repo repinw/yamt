@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -612,11 +613,13 @@ class _InventoryReceiptReviewSheetState
       if (!mounted || !context.mounted) {
         return;
       }
-      Scrollable.ensureVisible(
-        context,
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-        alignment: 0.32,
+      unawaited(
+        Scrollable.ensureVisible(
+          context,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          alignment: 0.32,
+        ),
       );
     });
   }

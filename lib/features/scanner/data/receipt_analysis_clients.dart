@@ -1,3 +1,4 @@
+// Firebase template model API is still marked experimental upstream.
 // ignore_for_file: experimental_member_use
 
 import 'package:firebase_ai/firebase_ai.dart';

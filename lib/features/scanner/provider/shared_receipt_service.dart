@@ -72,7 +72,7 @@ class SharedReceiptService extends _$SharedReceiptService {
     }
 
     ref.onDispose(() {
-      _mediaSubscription?.cancel();
+      unawaited(_mediaSubscription?.cancel());
     });
   }
 
