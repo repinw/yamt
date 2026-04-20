@@ -595,6 +595,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryManualAddVoiceSearchFailed => 'Voice search could not be started. Please try again.';
 
   @override
+  String get inventoryManualAddAiSearchAction => 'Create with AI';
+
+  @override
+  String get inventoryManualAddAiSearchTitle => 'Create food with AI';
+
+  @override
+  String get inventoryManualAddAiSearchPromptLabel => 'Food description';
+
+  @override
+  String get inventoryManualAddAiSearchPromptHint => 'For example: Doener Haehnchen';
+
+  @override
+  String get inventoryManualAddAiSearchGenerateAction => 'Generate estimate';
+
+  @override
+  String get inventoryManualAddAiSearchPromptRequired => 'Please enter a food description.';
+
+  @override
+  String get inventoryManualAddAiSearchFailed => 'Could not generate a food estimate. Please try again.';
+
+  @override
+  String get inventoryManualAddAiSearchReadOnlyHint => 'Adjust weight or kcal per 100 g if the estimate feels off.';
+
+  @override
+  String get inventoryManualAddAiSearchIngredientsTitle => 'Ingredients for this portion';
+
+  @override
+  String get inventoryManualAddAiSearchAmountColumn => 'Amount';
+
+  @override
+  String get inventoryManualAddAiSearchTotalLabel => 'Total';
+
+  @override
+  String get inventoryManualAddAiSearchPer100Title => 'Saved per 100 g';
+
+  @override
+  String get inventoryManualAddAiSearchPer100CardTitle => 'PER 100 G';
+
+  @override
+  String get inventoryManualAddAiSearchPortionCardTitle => 'YOUR PORTION';
+
+  @override
+  String get inventoryManualAddAiSearchWeightLabel => 'Weight';
+
+  @override
+  String get inventoryManualAddAiSearchWeightRequired => 'Enter a valid weight.';
+
+  @override
+  String get inventoryManualAddAiSearchDensityTitle => 'Adjust kcal density (per 100 g)';
+
+  @override
+  String get inventoryManualAddAiSearchDensityHint => 'Was the dish lighter or richer than expected? Scale calories per 100 g. Total nutrition updates automatically.';
+
+  @override
+  String inventoryManualAddAiSearchDensityMinLabel(Object kcal) {
+    return '$kcal kcal/100g (lighter)';
+  }
+
+  @override
+  String inventoryManualAddAiSearchDensityBaseLabel(Object kcal) {
+    return 'Base: $kcal';
+  }
+
+  @override
+  String inventoryManualAddAiSearchDensityMaxLabel(Object kcal) {
+    return '$kcal kcal/100g (richer)';
+  }
+
+  @override
   String get inventoryManualAddStoreName => 'Added manually';
 
   @override

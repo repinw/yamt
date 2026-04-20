@@ -215,7 +215,7 @@
   "inventoryBarcodeMissingPromptTitle": "Barcode fehlt",
   "inventoryBarcodeMissingPromptMessage":
       "Jetzt scannen für sofortiges Kalorien-Logging oder später per KI ergänzen lassen.",
-  "inventoryBarcodeMissingPromptScanNow": "Jetzt Barcode scannen",
+  "inventoryBarcodeMissingPromptScanNow": "Barcode",
   "inventoryBarcodeMissingPromptLater": "Später",
   "inventoryBarcodeLookupQueued":
       "Barcode-Suche wurde ausgeführt. Ergebnis steht direkt im Inventar-Item.",
@@ -260,6 +260,50 @@
       "Bitte erlaube Mikrofonzugriff, um die Sprachsuche zu verwenden.",
   "inventoryManualAddVoiceSearchFailed":
       "Sprachsuche konnte nicht gestartet werden. Bitte versuche es erneut.",
+  "inventoryManualAddAiSearchAction": "KI-Vorschlag",
+  "inventoryManualAddAiSearchTitle": "Lebensmittel mit KI erstellen",
+  "inventoryManualAddAiSearchPromptLabel": "Lebensmittelbeschreibung",
+  "inventoryManualAddAiSearchPromptHint": "Zum Beispiel: Doener Haehnchen",
+  "inventoryManualAddAiSearchGenerateAction": "Schätzung erstellen",
+  "inventoryManualAddAiSearchPromptRequired":
+      "Bitte gib eine Lebensmittelbeschreibung ein.",
+  "inventoryManualAddAiSearchFailed":
+      "Die Lebensmittelschätzung konnte nicht erstellt werden. Bitte versuche es erneut.",
+  "inventoryManualAddAiSearchReadOnlyHint":
+      "Passe Gewicht oder kcal pro 100 g an, wenn sich die Schätzung falsch anfühlt.",
+  "inventoryManualAddAiSearchIngredientsTitle": "Zutaten für diese Portion",
+  "inventoryManualAddAiSearchAmountColumn": "Menge",
+  "inventoryManualAddAiSearchTotalLabel": "Gesamt",
+  "inventoryManualAddAiSearchPer100Title": "Gespeichert pro 100 g",
+  "inventoryManualAddAiSearchPer100CardTitle": "PRO 100 G",
+  "inventoryManualAddAiSearchPortionCardTitle": "DEINE PORTION",
+  "inventoryManualAddAiSearchWeightLabel": "Gewicht",
+  "inventoryManualAddAiSearchWeightRequired":
+      "Bitte gib ein gültiges Gewicht ein.",
+  "inventoryManualAddAiSearchDensityTitle":
+      "Kaloriendichte anpassen (pro 100 g)",
+  "inventoryManualAddAiSearchDensityHint":
+      "War das Gericht eher leichter oder gehaltvoller als erwartet? Skaliere die Kalorien pro 100 g. Die Gesamtwerte passen sich automatisch an.",
+  "inventoryManualAddAiSearchDensityMinLabel":
+      "{kcal} kcal/100g (Leichter)",
+  "@inventoryManualAddAiSearchDensityMinLabel": {
+    "placeholders": {
+      "kcal": {}
+    }
+  },
+  "inventoryManualAddAiSearchDensityBaseLabel": "Basis: {kcal}",
+  "@inventoryManualAddAiSearchDensityBaseLabel": {
+    "placeholders": {
+      "kcal": {}
+    }
+  },
+  "inventoryManualAddAiSearchDensityMaxLabel":
+      "{kcal} kcal/100g (Gehaltvoller)",
+  "@inventoryManualAddAiSearchDensityMaxLabel": {
+    "placeholders": {
+      "kcal": {}
+    }
+  },
   "inventoryManualAddStoreName": "Manuell hinzugefügt",
   "inventoryBarcodePortionDialogTitle": "Verzehrte Menge eingeben",
   "inventoryBarcodePortionDialogConfirmAction": "Weiter",

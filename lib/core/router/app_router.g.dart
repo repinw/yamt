@@ -136,19 +136,38 @@ final class AppRouterProvider
         isAutoDispose: false,
         dependencies: <ProviderOrFamily>[
           inventoryItemRepositoryProvider,
+          calorieEntryDeleteFlowProvider,
+          inventoryBackedCalorieEntrySaveFlowProvider,
           inventoryItemsControllerProvider,
           preparedMealsControllerProvider,
+          receiptCaptureFlowControllerProvider,
+          receiptBatchFlowControllerProvider,
         ],
-        $allTransitiveDependencies: <ProviderOrFamily>[
+        $allTransitiveDependencies: <ProviderOrFamily>{
           AppRouterProvider.$allTransitiveDependencies0,
           AppRouterProvider.$allTransitiveDependencies1,
           AppRouterProvider.$allTransitiveDependencies2,
-        ],
+          AppRouterProvider.$allTransitiveDependencies3,
+          AppRouterProvider.$allTransitiveDependencies4,
+          AppRouterProvider.$allTransitiveDependencies5,
+          AppRouterProvider.$allTransitiveDependencies6,
+          AppRouterProvider.$allTransitiveDependencies7,
+        },
       );
 
   static final $allTransitiveDependencies0 = inventoryItemRepositoryProvider;
-  static final $allTransitiveDependencies1 = inventoryItemsControllerProvider;
-  static final $allTransitiveDependencies2 = preparedMealsControllerProvider;
+  static final $allTransitiveDependencies1 = calorieEntryDeleteFlowProvider;
+  static final $allTransitiveDependencies2 =
+      CalorieEntryDeleteFlowProvider.$allTransitiveDependencies0;
+  static final $allTransitiveDependencies3 =
+      CalorieEntryDeleteFlowProvider.$allTransitiveDependencies2;
+  static final $allTransitiveDependencies4 =
+      inventoryBackedCalorieEntrySaveFlowProvider;
+  static final $allTransitiveDependencies5 =
+      receiptCaptureFlowControllerProvider;
+  static final $allTransitiveDependencies6 =
+      ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies0;
+  static final $allTransitiveDependencies7 = receiptBatchFlowControllerProvider;
 
   @override
   String debugGetCreateSourceHash() => _$appRouterHash();
@@ -172,4 +191,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'cc64cc1cc54226162e38b7ab081f31e2bed9fb73';
+String _$appRouterHash() => r'72ac75b0b0135429d2e3ac633ae9ad825a528e51';

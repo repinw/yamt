@@ -58,6 +58,22 @@ OffProductSearchResult _searchResult() {
   );
 }
 
+InventoryReceiptManualProductLauncherContent _buildLauncher({
+  required TextEditingController searchController,
+}) {
+  return InventoryReceiptManualProductLauncherContent(
+    title: 'Produktsuche',
+    searchController: searchController,
+    recentItems: <InventoryItem>[_recentItem()],
+    onClose: () {},
+    onAiSearchTap: () {},
+    onSearchTap: () {},
+    onVoiceSearchTap: () {},
+    onRecentItemSelected: (_) {},
+    onScanBarcode: () {},
+  );
+}
+
 InventoryReceiptManualProductForm _buildForm({
   required TextEditingController searchController,
   String nameText = '',
@@ -142,6 +158,7 @@ InventoryReceiptManualProductForm _buildForm({
       weight: '200 g',
     ),
     errorText: null,
+    onAiSearchTap: () {},
     showActionSelector: false,
     selectedAction: InventoryReceiptManualProductAction.addToInventory,
     onSearchResultSelected: onSearchResultSelected ?? (_) {},
@@ -182,6 +199,41 @@ Finder _editableTextWithin(Key key) {
 }
 
 void main() {
+  testWidgets('launcher shows ai and scan actions below search bar', (
+    tester,
+  ) async {
+    final searchController = TextEditingController(text: 'Banane');
+    addTearDown(searchController.dispose);
+
+    await tester.pumpWidget(
+      _wrapForm(
+        builder: (_) => _buildLauncher(searchController: searchController),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final searchFieldTop = tester.getTopLeft(
+      find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+    );
+    final aiButtonTop = tester.getTopLeft(
+      find.byKey(const Key('receipt_review_manual_ai_search_button')),
+    );
+    final scanButtonTop = tester.getTopLeft(
+      find.byKey(const Key('receipt_review_manual_scan_button')),
+    );
+
+    expect(aiButtonTop.dy, greaterThan(searchFieldTop.dy));
+    expect(scanButtonTop.dy, greaterThan(searchFieldTop.dy));
+
+    final aiIcon = tester.widget<Icon>(
+      find.descendant(
+        of: find.byKey(const Key('receipt_review_manual_ai_search_button')),
+        matching: find.byType(Icon),
+      ),
+    );
+    expect(aiIcon.icon, Icons.auto_awesome_rounded);
+  });
+
   testWidgets('details form keeps button wiring and weight unit callback', (
     tester,
   ) async {
@@ -223,9 +275,11 @@ void main() {
       tester.element(find.byType(InventoryReceiptManualProductForm)),
     )!;
 
-    await tester.tap(
-      find.byKey(const Key('receipt_review_manual_weight_unit_field')),
+    final weightUnitField = find.byKey(
+      const Key('receipt_review_manual_weight_unit_field'),
     );
+    await tester.ensureVisible(weightUnitField);
+    await tester.tap(weightUnitField);
     await tester.pumpAndSettle();
     await tester.tap(find.text('ml').last);
     await tester.pumpAndSettle();

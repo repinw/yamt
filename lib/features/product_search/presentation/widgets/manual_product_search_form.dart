@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
@@ -23,6 +24,7 @@ class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
     required this.searchController,
     required this.recentItems,
     required this.onClose,
+    required this.onAiSearchTap,
     required this.onSearchTap,
     required this.onVoiceSearchTap,
     required this.onRecentItemSelected,
@@ -44,6 +46,9 @@ class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
 
   /// Close action.
   final VoidCallback onClose;
+
+  /// Open AI search page.
+  final VoidCallback onAiSearchTap;
 
   /// The on search tap.
   final VoidCallback onSearchTap;
@@ -73,28 +78,28 @@ class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
     return ManualProductSearchShell(
       title: title,
       onClose: onClose,
-      searchBar: TextVoiceSearchBar(
-        controller: searchController,
-        label: l10n.inventoryReceiptReviewManualSearchLabel,
-        hintText: l10n.inventoryReceiptReviewManualSearchLabel,
-        voiceButtonKey: const Key('receipt_review_manual_voice_search_button'),
-        clearButtonKey: const Key(
-          'receipt_review_manual_launcher_search_clear_button',
-        ),
-        fieldKey: const Key('receipt_review_manual_launcher_search_field'),
-        readOnly: true,
-        onTap: onSearchTap,
-        onVoiceSearchPressed: onVoiceSearchTap,
-        trailingActions: <Widget>[
-          SizedBox(
-            height: 56,
-            width: 56,
-            child: IconButton.outlined(
-              key: const Key('receipt_review_manual_scan_button'),
-              onPressed: onScanBarcode,
-              tooltip: l10n.inventoryBarcodeMissingPromptScanNow,
-              icon: const Icon(Icons.qr_code_scanner_rounded),
+      searchBar: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextVoiceSearchBar(
+            controller: searchController,
+            label: l10n.inventoryReceiptReviewManualSearchLabel,
+            hintText: l10n.inventoryReceiptReviewManualSearchLabel,
+            voiceButtonKey: const Key(
+              'receipt_review_manual_voice_search_button',
             ),
+            clearButtonKey: const Key(
+              'receipt_review_manual_launcher_search_clear_button',
+            ),
+            fieldKey: const Key('receipt_review_manual_launcher_search_field'),
+            readOnly: true,
+            onTap: onSearchTap,
+            onVoiceSearchPressed: onVoiceSearchTap,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          ManualProductQuickActionsRow(
+            onAiSearchTap: onAiSearchTap,
+            onScanBarcode: onScanBarcode,
           ),
         ],
       ),
@@ -143,6 +148,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.availableOptionalNutritionTypes,
     required this.preview,
     required this.errorText,
+    required this.onAiSearchTap,
     required this.showActionSelector,
     required this.selectedAction,
     required this.onSearchResultSelected,
@@ -278,6 +284,9 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   /// The error text.
   final String? errorText;
 
+  /// Open AI search page.
+  final VoidCallback onAiSearchTap;
+
   /// Whether action selector visible.
   final bool showActionSelector;
 
@@ -388,29 +397,31 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     return ManualProductSearchShell(
       title: title,
       onClose: onCancel,
-      searchBar: TextVoiceSearchBar(
-        controller: searchController,
-        label: l10n.inventoryReceiptReviewManualSearchLabel,
-        hintText: l10n.inventoryReceiptReviewManualSearchLabel,
-        isSearching: isSearching,
-        voiceButtonKey: const Key('receipt_review_manual_voice_search_button'),
-        clearButtonKey: const Key('receipt_review_manual_search_clear_button'),
-        fieldKey: const Key('receipt_review_manual_search_field'),
-        autofocus: autofocusSearch,
-        onChanged: onSearchChanged,
-        voiceSearchService: voiceSearchService,
-        voiceSearchController: voiceSearchController,
-        startVoiceSearchOnMount: startVoiceSearchOnMount,
-        trailingActions: <Widget>[
-          SizedBox(
-            height: 56,
-            width: 56,
-            child: IconButton.outlined(
-              key: const Key('receipt_review_manual_scan_button'),
-              onPressed: onScanBarcode,
-              tooltip: l10n.inventoryBarcodeMissingPromptScanNow,
-              icon: const Icon(Icons.qr_code_scanner_rounded),
+      searchBar: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextVoiceSearchBar(
+            controller: searchController,
+            label: l10n.inventoryReceiptReviewManualSearchLabel,
+            hintText: l10n.inventoryReceiptReviewManualSearchLabel,
+            isSearching: isSearching,
+            voiceButtonKey: const Key(
+              'receipt_review_manual_voice_search_button',
             ),
+            clearButtonKey: const Key(
+              'receipt_review_manual_search_clear_button',
+            ),
+            fieldKey: const Key('receipt_review_manual_search_field'),
+            autofocus: autofocusSearch,
+            onChanged: onSearchChanged,
+            voiceSearchService: voiceSearchService,
+            voiceSearchController: voiceSearchController,
+            startVoiceSearchOnMount: startVoiceSearchOnMount,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          ManualProductQuickActionsRow(
+            onAiSearchTap: onAiSearchTap,
+            onScanBarcode: onScanBarcode,
           ),
         ],
       ),

@@ -7,6 +7,7 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/core/widgets/nutrition_profile_card.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
@@ -748,138 +749,17 @@ class _NutritionSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
-
-    return Container(
+    return NutritionProfileCard(
       key: CalorieEntryDetailKeys.nutritionStrip,
-      decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
-        colors,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        color: Color.alphaBlend(
-          colors.surfaceContainerLowest.withValues(alpha: 0.96),
-          colors.surface,
-        ),
-        blurRadius: 16,
-        shadowOffset: const Offset(0, 8),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xl,
-          vertical: AppSpacing.lg,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 4,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: entry.totalKcal.round().toString(),
-                        style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(
-                              color: colors.primary,
-                              fontWeight: FontWeight.w900,
-                              height: 1,
-                            ),
-                      ),
-                      TextSpan(
-                        text: ' ${l10n.caloriesUnitKcal.toUpperCase()}',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            _buildDivider(colors),
-            Expanded(
-              flex: 3,
-              child: _NutritionMetricCell(
-                label: l10n.inventoryNutritionCarbsShortLabel.toUpperCase(),
-                value: '${_formatNutritionMetricValue(entry.totalCarbs)}g',
-              ),
-            ),
-            _buildDivider(colors),
-            Expanded(
-              flex: 3,
-              child: _NutritionMetricCell(
-                label: l10n.caloriesProteinLabel.toUpperCase(),
-                value: '${_formatNutritionMetricValue(entry.totalProtein)}g',
-              ),
-            ),
-            _buildDivider(colors),
-            Expanded(
-              flex: 3,
-              child: _NutritionMetricCell(
-                label: l10n.caloriesFatLabel.toUpperCase(),
-                value: '${_formatNutritionMetricValue(entry.totalFat)}g',
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDivider(ColorScheme colors) {
-    return SizedBox(
-      height: 26,
-      child: VerticalDivider(
-        width: AppSpacing.xl,
-        thickness: 1,
-        color: AppInventoryEditorialSurfaces.ghostBorder(
-          colors,
-        ).withValues(alpha: 0.9),
-      ),
-    );
-  }
-}
-
-class _NutritionMetricCell extends StatelessWidget {
-  const _NutritionMetricCell({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return Semantics(
-      label: '$label $value',
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              maxLines: 1,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: colors.onSurfaceVariant,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.8,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xxs),
-            Text(
-              value,
-              maxLines: 1,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: colors.onSurface,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-      ),
+      kcal: entry.totalKcal,
+      kcalUnitLabel: l10n.caloriesUnitKcal,
+      carbs: entry.totalCarbs,
+      protein: entry.totalProtein,
+      fat: entry.totalFat,
+      carbsLabel: l10n.inventoryNutritionCarbsShortLabel,
+      proteinLabel: l10n.caloriesProteinLabel,
+      fatLabel: l10n.caloriesFatLabel,
+      accentColor: Theme.of(context).colorScheme.primary,
     );
   }
 }

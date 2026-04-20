@@ -18,6 +18,8 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
+    'product_ai_search_page.dart';
 import 'package:yamt/features/product_search/provider/'
     'manual_product_search_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -182,6 +184,9 @@ class _InventoryReceiptManualProductLauncherPageState
         searchController: _searchController,
         recentItems: _recentItems,
         onClose: _closePage,
+        onAiSearchTap: () {
+          unawaited(_openAiSearchPage());
+        },
         onSearchTap: () {
           unawaited(_openSearchEditor());
         },
@@ -230,6 +235,33 @@ class _InventoryReceiptManualProductLauncherPageState
 
   Future<void> _openVoiceSearchEditor() async {
     await _openEditor(autofocusSearch: true, initialStartVoiceSearch: true);
+  }
+
+  Future<void> _openAiSearchPage() async {
+    final result = await Navigator.of(context)
+        .push<ManualProductAiSearchResult>(
+          _NoAnimationMaterialPageRoute<ManualProductAiSearchResult>(
+            fullscreenDialog: true,
+            builder: (routeContext) {
+              return ManualProductAiSearchPage(
+                item: widget.config.item,
+                initialPrompt: _searchController.text,
+                showEatImmediatelyOption: widget.showEatImmediatelyOption,
+              );
+            },
+          ),
+        );
+    if (!mounted || result == null) {
+      return;
+    }
+
+    await _completeSelectedResult(
+      InventoryReceiptManualProductResult(
+        item: result.item,
+        action: result.action,
+        globalPackageWeight: result.globalPackageWeight,
+      ),
+    );
   }
 
   Future<void> _openRecentItemEditor(InventoryItem item) async {
@@ -781,6 +813,9 @@ class _InventoryReceiptManualProductEditorPageState
         optionalNutritionType: state.resolvedOptionalNutritionType,
         availableOptionalNutritionTypes: state.availableOptionalNutritionTypes,
         errorText: _resolveErrorText(l10n, state.error),
+        onAiSearchTap: () {
+          unawaited(_openAiSearchPage());
+        },
         showActionSelector:
             widget.showEatImmediatelyOption && _showActionSelector,
         selectedAction: _selectedAction,
@@ -1142,6 +1177,47 @@ class _InventoryReceiptManualProductEditorPageState
         _controller.applyScannedBarcodeOnly(scannedBarcode);
         _showSnackBar(AppLocalizations.of(context)!.inventoryManualAddNotFound);
     }
+  }
+
+  Future<void> _openAiSearchPage() async {
+    await _voiceSearchController.stopVoiceSearchIfNeeded();
+    if (!mounted) {
+      return;
+    }
+
+    final result = await Navigator.of(context)
+        .push<ManualProductAiSearchResult>(
+          _NoAnimationMaterialPageRoute<ManualProductAiSearchResult>(
+            fullscreenDialog: true,
+            builder: (routeContext) {
+              return ManualProductAiSearchPage(
+                item: widget.config.item,
+                initialPrompt: _searchController.text,
+                showEatImmediatelyOption: widget.showEatImmediatelyOption,
+                initialAction: _selectedAction,
+              );
+            },
+          ),
+        );
+    if (!mounted || result == null) {
+      return;
+    }
+
+    final wrappedResult = InventoryReceiptManualProductResult(
+      item: result.item,
+      action: result.action,
+      globalPackageWeight: result.globalPackageWeight,
+    );
+    if (widget.closeCurrentEditorOnSave) {
+      _closePage(wrappedResult);
+      return;
+    }
+    final onSaved = widget.onSaved;
+    if (onSaved != null) {
+      await onSaved(wrappedResult);
+      return;
+    }
+    _closePage(wrappedResult);
   }
 
   Future<void> _scanNutritionLabel() async {

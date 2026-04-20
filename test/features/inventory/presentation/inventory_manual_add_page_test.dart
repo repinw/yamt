@@ -34,6 +34,10 @@ import 'package:yamt/features/inventory/presentation/'
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_barcode_scanner_page.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/product_search/data/'
+    'product_ai_search_repository.dart';
+import 'package:yamt/features/product_search/domain/'
+    'product_ai_search_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
@@ -224,6 +228,20 @@ class _RecordingOffProductSearchRepository
   }
 }
 
+class _FakeProductAiSearchRepository extends FirebaseProductAiSearchRepository {
+  _FakeProductAiSearchRepository({required this.onGenerateFoodFromText});
+
+  final Future<ProductAiSearchDraft?> Function(String prompt)
+  onGenerateFoodFromText;
+
+  @override
+  Future<ProductAiSearchDraft?> generateFoodFromText({
+    required String prompt,
+  }) {
+    return onGenerateFoodFromText(prompt);
+  }
+}
+
 class _ThrowingBarcodeLookupOffProductSearchRepository
     extends _RecordingOffProductSearchRepository {
   _ThrowingBarcodeLookupOffProductSearchRepository()
@@ -322,6 +340,7 @@ Widget _buildHarness({
   required InventoryItemRepository inventoryRepository,
   required GlobalFoodItemRepository globalFoodRepository,
   GlobalBarcodeCandidateRepository? barcodeCandidateRepository,
+  FirebaseProductAiSearchRepository? productAiSearchRepository,
   FirebaseAuth? auth,
   FakeCalorieLogRepository? calorieLogRepository,
   FakeCalorieProductCacheRepository? calorieProductCacheRepository,
@@ -350,6 +369,10 @@ Widget _buildHarness({
       if (barcodeCandidateRepository != null)
         globalBarcodeCandidateRepositoryProvider.overrideWithValue(
           barcodeCandidateRepository,
+        ),
+      if (productAiSearchRepository != null)
+        productAiSearchRepositoryProvider.overrideWithValue(
+          productAiSearchRepository,
         ),
       if (auth != null) firebaseAuthProvider.overrideWithValue(auth),
       if (calorieLogRepository != null)
@@ -442,6 +465,46 @@ void _installFakeScannerPlatform(WidgetTester tester) {
 
 _FakeMobileScannerPlatform _fakeScannerPlatform() {
   return MobileScannerPlatform.instance as _FakeMobileScannerPlatform;
+}
+
+ProductAiSearchDraft _aiDraft() {
+  return const ProductAiSearchDraft(
+    name: 'Doener Haehnchen',
+    ingredients: <ProductAiSearchIngredientRow>[
+      ProductAiSearchIngredientRow(
+        label: 'Fladenbrot',
+        amountText: '100 g',
+        amountGrams: 100,
+        kcalMin: 250,
+        kcalMax: 300,
+      ),
+      ProductAiSearchIngredientRow(
+        label: 'Hähnchen',
+        amountText: '150 g',
+        amountGrams: 150,
+        kcalMin: 250,
+        kcalMax: 320,
+      ),
+      ProductAiSearchIngredientRow(
+        label: 'Cocktailsauce',
+        amountText: '40 g',
+        amountGrams: 40,
+        kcalMin: 180,
+        kcalMax: 220,
+      ),
+    ],
+    totalWeightGrams: 380,
+    totalKcalMin: 800,
+    totalKcalMax: 950,
+    defaultKcal: 880,
+    portionNutrition: ProductAiSearchNutritionEstimate(
+      kcal: 880,
+      protein: 42,
+      carbs: 68,
+      fat: 38,
+      salt: 2.8,
+    ),
+  );
 }
 
 @Dependencies([
@@ -1793,6 +1856,88 @@ void main() {
         '1 l',
       );
       expect(inventoryRepository.appendedItems.single.weight, '1 l');
+    },
+  );
+
+  testWidgets(
+    'ai manual item saves without barcode and skips candidate record',
+    (tester) async {
+      final offRepository = _RecordingOffProductSearchRepository(
+        const <OffProductSearchResult>[],
+      );
+      final inventoryRepository = _RecordingInventoryItemRepository();
+      addTearDown(inventoryRepository.dispose);
+      final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+      final barcodeCandidateRepository =
+          _RecordingGlobalBarcodeCandidateRepository();
+      final aiRepository = _FakeProductAiSearchRepository(
+        onGenerateFoodFromText: (prompt) async {
+          return _aiDraft();
+        },
+      );
+
+      await tester.pumpWidget(
+        _buildHarness(
+          offRepository: offRepository,
+          inventoryRepository: inventoryRepository,
+          globalFoodRepository: globalFoodRepository,
+          barcodeCandidateRepository: barcodeCandidateRepository,
+          productAiSearchRepository: aiRepository,
+        ),
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_launcher_search_field')),
+      );
+      await _pumpUi(tester);
+
+      await tester.tap(
+        find.byKey(const Key('receipt_review_manual_ai_search_button')),
+      );
+      await _pumpUi(tester);
+
+      await tester.enterText(
+        find.byKey(const Key('manual_product_ai_prompt_field')),
+        'Doener Haehnchen',
+      );
+      await tester.pump();
+      await tester.tap(
+        find.byKey(const Key('manual_product_ai_generate_button')),
+      );
+      await _pumpUi(tester);
+
+      expect(
+        find.byKey(const Key('manual_product_ai_result_card')),
+        findsOneWidget,
+      );
+
+      await tester.ensureVisible(
+        find.byKey(const Key('manual_product_ai_save_button')),
+      );
+      await tester.tap(
+        find.byKey(const Key('manual_product_ai_save_button')),
+      );
+      await _pumpUi(tester);
+
+      expect(globalFoodRepository.appendedItems, hasLength(1));
+      expect(
+        globalFoodRepository.appendedItems.single.id,
+        startsWith('manual-food-'),
+      );
+      expect(globalFoodRepository.appendedItems.single.barcode, isNull);
+
+      expect(inventoryRepository.appendedItems, hasLength(1));
+      expect(inventoryRepository.appendedItems.single.barcode, isNull);
+      expect(
+        inventoryRepository.appendedItems.single.barcodeCandidates,
+        isEmpty,
+      );
+      expect(
+        inventoryRepository.appendedItems.single.barcodeResolvedAt,
+        isNull,
+      );
+      expect(barcodeCandidateRepository.recordedSelections, isEmpty);
     },
   );
 

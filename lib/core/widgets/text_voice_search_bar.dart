@@ -63,6 +63,7 @@ class TextVoiceSearchBar extends StatefulWidget {
     this.onVoiceSearchPressed,
     this.trailingActions = const <Widget>[],
     this.hintText,
+    this.prefixIcon,
   });
 
   /// Controller that holds current search text.
@@ -115,6 +116,9 @@ class TextVoiceSearchBar extends StatefulWidget {
 
   /// Optional hint text shown inside the field instead of a floating label.
   final String? hintText;
+
+  /// Optional custom prefix icon for field.
+  final Widget? prefixIcon;
 
   @override
   State<TextVoiceSearchBar> createState() => _TextVoiceSearchBarState();
@@ -217,6 +221,7 @@ class _TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
             autofocus: widget.autofocus,
             enabled: widget.enabled,
             isSearching: widget.isSearching,
+            prefixIcon: widget.prefixIcon,
             onTap: widget.onTap,
             onChanged: widget.onChanged,
             onClearPressed: _handleClearPressed,
@@ -405,6 +410,7 @@ class _TextVoiceSearchField extends StatelessWidget {
     required this.autofocus,
     required this.enabled,
     required this.isSearching,
+    required this.prefixIcon,
     required this.onTap,
     required this.onChanged,
     required this.onClearPressed,
@@ -419,6 +425,7 @@ class _TextVoiceSearchField extends StatelessWidget {
   final bool autofocus;
   final bool enabled;
   final bool isSearching;
+  final Widget? prefixIcon;
   final VoidCallback? onTap;
   final ValueChanged<String>? onChanged;
   final VoidCallback onClearPressed;
@@ -446,7 +453,7 @@ class _TextVoiceSearchField extends StatelessWidget {
             floatingLabelBehavior: hintText == null
                 ? FloatingLabelBehavior.auto
                 : FloatingLabelBehavior.never,
-            prefixIcon: const Icon(Icons.search),
+            prefixIcon: prefixIcon ?? const Icon(Icons.search),
             suffixIcon: _TextVoiceSearchSuffixActions(
               isSearching: isSearching,
               hasText: hasText,
