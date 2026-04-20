@@ -363,7 +363,7 @@ void main() {
         find.byKey(const Key('manual_product_ai_density_slider')),
       );
 
-      expect(slider.value, closeTo(271.43, 0.01));
+      expect(slider.value, 271);
       expect(slider.value, greaterThanOrEqualTo(slider.min));
       expect(slider.value, lessThanOrEqualTo(slider.max));
     },
