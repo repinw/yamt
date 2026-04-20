@@ -185,8 +185,7 @@ void main() {
     () async {
       final repository = _FakeInventoryItemRepository(
         initialItems: const <InventoryItem>[],
-      );
-      repository.emitRealtimeOnAppend = false;
+      )..emitRealtimeOnAppend = false;
       addTearDown(repository.dispose);
 
       final container = ProviderContainer(
@@ -217,8 +216,7 @@ void main() {
   test('addItem replaces an existing item with the same id', () async {
     final repository = _FakeInventoryItemRepository(
       initialItems: <InventoryItem>[_item(id: 'a')],
-    );
-    repository.emitRealtimeOnAppend = false;
+    )..emitRealtimeOnAppend = false;
     addTearDown(repository.dispose);
 
     final container = ProviderContainer(
@@ -249,9 +247,9 @@ void main() {
       final existingItem = _item(id: 'a');
       final repository = _FakeInventoryItemRepository(
         initialItems: <InventoryItem>[existingItem],
-      );
-      repository.emitRealtimeOnAppend = false;
-      repository.appendShouldFail = true;
+      )
+        ..emitRealtimeOnAppend = false
+        ..appendShouldFail = true;
       addTearDown(repository.dispose);
 
       final container = ProviderContainer(
@@ -283,9 +281,9 @@ void main() {
     final existingItem = _item(id: 'a');
     final repository = _FakeInventoryItemRepository(
       initialItems: <InventoryItem>[existingItem],
-    );
-    repository.emitRealtimeOnAppend = false;
-    repository.appendShouldThrow = true;
+    )
+      ..emitRealtimeOnAppend = false
+      ..appendShouldThrow = true;
     addTearDown(repository.dispose);
 
     final container = ProviderContainer(

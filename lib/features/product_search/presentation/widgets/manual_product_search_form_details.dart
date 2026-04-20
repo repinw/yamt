@@ -145,7 +145,7 @@ class ManualProductDetailsForm extends StatefulWidget {
 
 class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
   final _formKey = GlobalKey<FormBuilderState>();
-  final _nutritionOcrButtonAnchorKey = GlobalKey();
+  final GlobalKey _nutritionOcrButtonAnchorKey = GlobalKey();
   bool _isPatchingFormValues = false;
 
   @override

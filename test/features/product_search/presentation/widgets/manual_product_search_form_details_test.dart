@@ -187,7 +187,6 @@ void main() {
         scrollController: scrollController,
         showDetails: true,
         onScanNutritionLabel: null,
-        nameText: 'Banane',
       ),
     );
 
