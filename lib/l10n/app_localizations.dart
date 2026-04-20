@@ -1247,6 +1247,132 @@ abstract class AppLocalizations {
   /// **'Voice search could not be started. Please try again.'**
   String get inventoryManualAddVoiceSearchFailed;
 
+  /// No description provided for @inventoryManualAddAiSearchAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create with AI'**
+  String get inventoryManualAddAiSearchAction;
+
+  /// No description provided for @inventoryManualAddAiSearchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create food with AI'**
+  String get inventoryManualAddAiSearchTitle;
+
+  /// No description provided for @inventoryManualAddAiSearchPromptLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Food description'**
+  String get inventoryManualAddAiSearchPromptLabel;
+
+  /// No description provided for @inventoryManualAddAiSearchPromptHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example: Doener Haehnchen'**
+  String get inventoryManualAddAiSearchPromptHint;
+
+  /// No description provided for @inventoryManualAddAiSearchGenerateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate estimate'**
+  String get inventoryManualAddAiSearchGenerateAction;
+
+  /// No description provided for @inventoryManualAddAiSearchPromptRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a food description.'**
+  String get inventoryManualAddAiSearchPromptRequired;
+
+  /// No description provided for @inventoryManualAddAiSearchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not generate a food estimate. Please try again.'**
+  String get inventoryManualAddAiSearchFailed;
+
+  /// No description provided for @inventoryManualAddAiSearchReadOnlyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust weight or kcal per 100 g if the estimate feels off.'**
+  String get inventoryManualAddAiSearchReadOnlyHint;
+
+  /// No description provided for @inventoryManualAddAiSearchIngredientsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients for this portion'**
+  String get inventoryManualAddAiSearchIngredientsTitle;
+
+  /// No description provided for @inventoryManualAddAiSearchAmountColumn.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get inventoryManualAddAiSearchAmountColumn;
+
+  /// No description provided for @inventoryManualAddAiSearchTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get inventoryManualAddAiSearchTotalLabel;
+
+  /// No description provided for @inventoryManualAddAiSearchPer100Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved per 100 g'**
+  String get inventoryManualAddAiSearchPer100Title;
+
+  /// No description provided for @inventoryManualAddAiSearchPer100CardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'PER 100 G'**
+  String get inventoryManualAddAiSearchPer100CardTitle;
+
+  /// No description provided for @inventoryManualAddAiSearchPortionCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR PORTION'**
+  String get inventoryManualAddAiSearchPortionCardTitle;
+
+  /// No description provided for @inventoryManualAddAiSearchWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get inventoryManualAddAiSearchWeightLabel;
+
+  /// No description provided for @inventoryManualAddAiSearchWeightRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid weight.'**
+  String get inventoryManualAddAiSearchWeightRequired;
+
+  /// No description provided for @inventoryManualAddAiSearchDensityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust kcal density (per 100 g)'**
+  String get inventoryManualAddAiSearchDensityTitle;
+
+  /// No description provided for @inventoryManualAddAiSearchDensityHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Was the dish lighter or richer than expected? Scale calories per 100 g. Total nutrition updates automatically.'**
+  String get inventoryManualAddAiSearchDensityHint;
+
+  /// No description provided for @inventoryManualAddAiSearchDensityMinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal/100g (lighter)'**
+  String inventoryManualAddAiSearchDensityMinLabel(Object kcal);
+
+  /// No description provided for @inventoryManualAddAiSearchDensityBaseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Base: {kcal}'**
+  String inventoryManualAddAiSearchDensityBaseLabel(Object kcal);
+
+  /// No description provided for @inventoryManualAddAiSearchDensityMaxLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal/100g (richer)'**
+  String inventoryManualAddAiSearchDensityMaxLabel(Object kcal);
+
   /// No description provided for @inventoryManualAddStoreName.
   ///
   /// In en, this message translates to:

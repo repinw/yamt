@@ -253,6 +253,50 @@
       "Please allow microphone access to use voice search.",
   "inventoryManualAddVoiceSearchFailed":
       "Voice search could not be started. Please try again.",
+  "inventoryManualAddAiSearchAction": "Create with AI",
+  "inventoryManualAddAiSearchTitle": "Create food with AI",
+  "inventoryManualAddAiSearchPromptLabel": "Food description",
+  "inventoryManualAddAiSearchPromptHint": "For example: Doener Haehnchen",
+  "inventoryManualAddAiSearchGenerateAction": "Generate estimate",
+  "inventoryManualAddAiSearchPromptRequired":
+      "Please enter a food description.",
+  "inventoryManualAddAiSearchFailed":
+      "Could not generate a food estimate. Please try again.",
+  "inventoryManualAddAiSearchReadOnlyHint":
+      "Adjust weight or kcal per 100 g if the estimate feels off.",
+  "inventoryManualAddAiSearchIngredientsTitle": "Ingredients for this portion",
+  "inventoryManualAddAiSearchAmountColumn": "Amount",
+  "inventoryManualAddAiSearchTotalLabel": "Total",
+  "inventoryManualAddAiSearchPer100Title": "Saved per 100 g",
+  "inventoryManualAddAiSearchPer100CardTitle": "PER 100 G",
+  "inventoryManualAddAiSearchPortionCardTitle": "YOUR PORTION",
+  "inventoryManualAddAiSearchWeightLabel": "Weight",
+  "inventoryManualAddAiSearchWeightRequired":
+      "Enter a valid weight.",
+  "inventoryManualAddAiSearchDensityTitle":
+      "Adjust kcal density (per 100 g)",
+  "inventoryManualAddAiSearchDensityHint":
+      "Was the dish lighter or richer than expected? Scale calories per 100 g. Total nutrition updates automatically.",
+  "inventoryManualAddAiSearchDensityMinLabel":
+      "{kcal} kcal/100g (lighter)",
+  "@inventoryManualAddAiSearchDensityMinLabel": {
+    "placeholders": {
+      "kcal": {}
+    }
+  },
+  "inventoryManualAddAiSearchDensityBaseLabel": "Base: {kcal}",
+  "@inventoryManualAddAiSearchDensityBaseLabel": {
+    "placeholders": {
+      "kcal": {}
+    }
+  },
+  "inventoryManualAddAiSearchDensityMaxLabel":
+      "{kcal} kcal/100g (richer)",
+  "@inventoryManualAddAiSearchDensityMaxLabel": {
+    "placeholders": {
+      "kcal": {}
+    }
+  },
   "inventoryManualAddStoreName": "Added manually",
   "inventoryBarcodePortionDialogTitle": "Enter consumed amount",
   "inventoryBarcodePortionDialogConfirmAction": "Continue",

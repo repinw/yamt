@@ -305,6 +305,44 @@ class ManualProductActionSelector extends StatelessWidget {
   }
 }
 
+class ManualProductQuickActionsRow extends StatelessWidget {
+  const ManualProductQuickActionsRow({
+    required this.onAiSearchTap,
+    required this.onScanBarcode,
+    super.key,
+  });
+
+  final VoidCallback onAiSearchTap;
+  final VoidCallback onScanBarcode;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            key: const Key('receipt_review_manual_ai_search_button'),
+            onPressed: onAiSearchTap,
+            icon: const Icon(Icons.auto_awesome_rounded),
+            label: Text(l10n.inventoryManualAddAiSearchAction),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: OutlinedButton.icon(
+            key: const Key('receipt_review_manual_scan_button'),
+            onPressed: onScanBarcode,
+            icon: const Icon(Icons.qr_code_scanner_rounded),
+            label: Text(l10n.inventoryBarcodeMissingPromptScanNow),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class OptionalNutritionAddRow extends StatelessWidget {
   const OptionalNutritionAddRow({
     required this.label,

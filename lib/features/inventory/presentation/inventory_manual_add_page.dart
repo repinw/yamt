@@ -27,6 +27,7 @@ import 'package:yamt/features/product_search/provider/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryManualAddItemId = Uuid();
+const _inventoryManualAddGlobalFoodItemId = Uuid();
 const _inventoryAmountParser = InventoryAmountParser();
 
 /// Resolve inventory manual add eat flow max amount.
@@ -104,15 +105,9 @@ class _InventoryManualAddPageState
       itemToSave = resolvedEatItem;
     }
 
-    final barcode = itemToSave.normalizedBarcode;
-    if (barcode == null) {
-      _showSnackBar(AppLocalizations.of(context)!.inventoryManualAddSaveFailed);
-      return;
-    }
-
     final savedItem = await _persistProduct(
       item: itemToSave,
-      barcode: barcode,
+      barcode: itemToSave.normalizedBarcode,
       selectedProduct: result.selectedProduct,
       selectedGlobalFoodItemId: result.selectedGlobalFoodItemId,
       requiresGlobalPersistence: result.requiresGlobalPersistence,
@@ -215,7 +210,7 @@ class _InventoryManualAddPageState
 
   Future<InventoryItem?> _persistProduct({
     required InventoryItem item,
-    required String barcode,
+    required String? barcode,
     required bool requiresGlobalPersistence,
     OffProductSearchResult? selectedProduct,
     String? selectedGlobalFoodItemId,
@@ -258,8 +253,8 @@ class _InventoryManualAddPageState
       nutrition: globalProduct.nutrition,
       weight: inventoryWeight,
       foodFingerprint: globalProduct.resolvedFoodFingerprint,
-      barcodeCandidates: <String>[barcode],
-      barcodeResolvedAt: now,
+      barcodeCandidates: barcode == null ? const <String>[] : <String>[barcode],
+      barcodeResolvedAt: barcode == null ? null : now,
     ).withDerivedAmount(weight: inventoryWeight, quantity: 1);
 
     final inventorySaved = await ref
@@ -268,7 +263,7 @@ class _InventoryManualAddPageState
     if (!inventorySaved) {
       return null;
     }
-    if (globalSaved) {
+    if (globalSaved && barcode != null) {
       await ref
           .read(globalBarcodeCandidateRepositoryProvider)
           .recordSelection(
@@ -312,7 +307,7 @@ class _InventoryManualAddPageState
 
   GlobalFoodItem _buildGlobalFoodItem({
     required InventoryItem item,
-    required String barcode,
+    required String? barcode,
     required DateTime now,
     required String? packageWeight,
     OffProductSearchResult? selectedProduct,
@@ -342,7 +337,7 @@ class _InventoryManualAddPageState
 
   String? _selectedProductGlobalFoodItemId({
     required OffProductSearchResult? selectedProduct,
-    required String barcode,
+    required String? barcode,
   }) {
     if (selectedProduct == null) {
       return null;
@@ -350,10 +345,16 @@ class _InventoryManualAddPageState
     final normalizedBarcode = selectedProduct.code.trim().isEmpty
         ? barcode
         : selectedProduct.code;
+    if (normalizedBarcode == null || normalizedBarcode.isEmpty) {
+      return null;
+    }
     return 'off-$normalizedBarcode';
   }
 
-  String _globalFoodItemIdFor(InventoryItem item, {required String barcode}) {
+  String _globalFoodItemIdFor(InventoryItem item, {required String? barcode}) {
+    if (barcode == null || barcode.isEmpty) {
+      return 'manual-food-${_inventoryManualAddGlobalFoodItemId.v4()}';
+    }
     final normalizedName = normalizeGlobalFoodText(item.name);
     final normalizedBrand = normalizeGlobalFoodText(item.brand ?? '');
     final suffix = <String>[

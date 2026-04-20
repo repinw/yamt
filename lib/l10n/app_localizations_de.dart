@@ -506,7 +506,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryBarcodeMissingPromptMessage => 'Jetzt scannen für sofortiges Kalorien-Logging oder später per KI ergänzen lassen.';
 
   @override
-  String get inventoryBarcodeMissingPromptScanNow => 'Jetzt Barcode scannen';
+  String get inventoryBarcodeMissingPromptScanNow => 'Barcode';
 
   @override
   String get inventoryBarcodeMissingPromptLater => 'Später';
@@ -593,6 +593,75 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryManualAddVoiceSearchFailed => 'Sprachsuche konnte nicht gestartet werden. Bitte versuche es erneut.';
+
+  @override
+  String get inventoryManualAddAiSearchAction => 'KI-Vorschlag';
+
+  @override
+  String get inventoryManualAddAiSearchTitle => 'Lebensmittel mit KI erstellen';
+
+  @override
+  String get inventoryManualAddAiSearchPromptLabel => 'Lebensmittelbeschreibung';
+
+  @override
+  String get inventoryManualAddAiSearchPromptHint => 'Zum Beispiel: Doener Haehnchen';
+
+  @override
+  String get inventoryManualAddAiSearchGenerateAction => 'Schätzung erstellen';
+
+  @override
+  String get inventoryManualAddAiSearchPromptRequired => 'Bitte gib eine Lebensmittelbeschreibung ein.';
+
+  @override
+  String get inventoryManualAddAiSearchFailed => 'Die Lebensmittelschätzung konnte nicht erstellt werden. Bitte versuche es erneut.';
+
+  @override
+  String get inventoryManualAddAiSearchReadOnlyHint => 'Passe Gewicht oder kcal pro 100 g an, wenn sich die Schätzung falsch anfühlt.';
+
+  @override
+  String get inventoryManualAddAiSearchIngredientsTitle => 'Zutaten für diese Portion';
+
+  @override
+  String get inventoryManualAddAiSearchAmountColumn => 'Menge';
+
+  @override
+  String get inventoryManualAddAiSearchTotalLabel => 'Gesamt';
+
+  @override
+  String get inventoryManualAddAiSearchPer100Title => 'Gespeichert pro 100 g';
+
+  @override
+  String get inventoryManualAddAiSearchPer100CardTitle => 'PRO 100 G';
+
+  @override
+  String get inventoryManualAddAiSearchPortionCardTitle => 'DEINE PORTION';
+
+  @override
+  String get inventoryManualAddAiSearchWeightLabel => 'Gewicht';
+
+  @override
+  String get inventoryManualAddAiSearchWeightRequired => 'Bitte gib ein gültiges Gewicht ein.';
+
+  @override
+  String get inventoryManualAddAiSearchDensityTitle => 'Kaloriendichte anpassen (pro 100 g)';
+
+  @override
+  String get inventoryManualAddAiSearchDensityHint => 'War das Gericht eher leichter oder gehaltvoller als erwartet? Skaliere die Kalorien pro 100 g. Die Gesamtwerte passen sich automatisch an.';
+
+  @override
+  String inventoryManualAddAiSearchDensityMinLabel(Object kcal) {
+    return '$kcal kcal/100g (Leichter)';
+  }
+
+  @override
+  String inventoryManualAddAiSearchDensityBaseLabel(Object kcal) {
+    return 'Basis: $kcal';
+  }
+
+  @override
+  String inventoryManualAddAiSearchDensityMaxLabel(Object kcal) {
+    return '$kcal kcal/100g (Gehaltvoller)';
+  }
 
   @override
   String get inventoryManualAddStoreName => 'Manuell hinzugefügt';
