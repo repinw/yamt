@@ -1,6 +1,8 @@
 // Extracted internal widget bucket for manual product search form state sync.
 // ignore_for_file: public_member_api_docs
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
@@ -143,12 +145,14 @@ class ManualProductDetailsForm extends StatefulWidget {
 
 class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
   final _formKey = GlobalKey<FormBuilderState>();
+  final _nutritionOcrButtonAnchorKey = GlobalKey();
   bool _isPatchingFormValues = false;
 
   @override
   void didUpdateWidget(covariant ManualProductDetailsForm oldWidget) {
     super.didUpdateWidget(oldWidget);
     _patchChangedFormValues(oldWidget);
+    _scrollNutritionOcrButtonIntoViewIfNeeded(oldWidget);
   }
 
   void _patchChangedFormValues(ManualProductDetailsForm oldWidget) {
@@ -176,6 +180,36 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
     _isPatchingFormValues = true;
     formState.patchValue(changedValues);
     _isPatchingFormValues = false;
+  }
+
+  void _scrollNutritionOcrButtonIntoViewIfNeeded(
+    ManualProductDetailsForm oldWidget,
+  ) {
+    final didShowDetails = !oldWidget.showDetails && widget.showDetails;
+    final didEnableNutritionScan =
+        oldWidget.onScanNutritionLabel == null &&
+        widget.onScanNutritionLabel != null;
+    if (!widget.showDetails || (!didShowDetails && !didEnableNutritionScan)) {
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final context = _nutritionOcrButtonAnchorKey.currentContext;
+      if (context == null || !context.mounted) {
+        return;
+      }
+      unawaited(
+        Scrollable.ensureVisible(
+          context,
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          alignment: 0.24,
+        ),
+      );
+    });
   }
 
   // TODO(wladik): Keep this map in sync with the registered form fields.
@@ -297,6 +331,7 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
             ),
             const SizedBox(height: AppSpacing.sm),
             Align(
+              key: _nutritionOcrButtonAnchorKey,
               alignment: Alignment.centerLeft,
               child: OutlinedButton.icon(
                 key: const Key('receipt_review_manual_nutrition_ocr_button'),

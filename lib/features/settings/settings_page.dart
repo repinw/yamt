@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -172,9 +174,11 @@ class _ThemeModeTile extends ConsumerWidget {
             if (selectedMode == null) {
               return;
             }
-            ref
-                .read(themeModeControllerProvider.notifier)
-                .setThemeMode(selectedMode);
+            unawaited(
+              ref
+                  .read(themeModeControllerProvider.notifier)
+                  .setThemeMode(selectedMode),
+            );
           },
           items: [
             for (final mode in ThemeMode.values)
@@ -209,19 +213,22 @@ class _DiaryTile extends ConsumerWidget {
       title: Text(l10n.settingsDiaryTitle),
       subtitle: Text(l10n.settingsDiarySubtitle(eatingWindowLabel)),
       onTap: () {
-        showCalorieEatingWindowDialog(
-          context: context,
-          initialStartMinuteOfDay:
-              settings.normalizedEatingWindowStartMinuteOfDay,
-          initialEndMinuteOfDay: settings.normalizedEatingWindowEndMinuteOfDay,
-          onSaveEatingWindow: (startMinuteOfDay, endMinuteOfDay) {
-            return ref
-                .read(calorieGoalControllerProvider.notifier)
-                .setEatingWindow(
-                  startMinuteOfDay: startMinuteOfDay,
-                  endMinuteOfDay: endMinuteOfDay,
-                );
-          },
+        unawaited(
+          showCalorieEatingWindowDialog(
+            context: context,
+            initialStartMinuteOfDay:
+                settings.normalizedEatingWindowStartMinuteOfDay,
+            initialEndMinuteOfDay:
+                settings.normalizedEatingWindowEndMinuteOfDay,
+            onSaveEatingWindow: (startMinuteOfDay, endMinuteOfDay) {
+              return ref
+                  .read(calorieGoalControllerProvider.notifier)
+                  .setEatingWindow(
+                    startMinuteOfDay: startMinuteOfDay,
+                    endMinuteOfDay: endMinuteOfDay,
+                  );
+            },
+          ),
         );
       },
     );
@@ -250,9 +257,11 @@ class _SeedColorTile extends ConsumerWidget {
             if (selectedColorValue == null) {
               return;
             }
-            ref
-                .read(seedColorControllerProvider.notifier)
-                .setSeedColor(Color(selectedColorValue));
+            unawaited(
+              ref
+                  .read(seedColorControllerProvider.notifier)
+                  .setSeedColor(Color(selectedColorValue)),
+            );
           },
           items: [
             for (final color in AppSeedColors.values)
@@ -406,9 +415,9 @@ class _HealthConnectTile extends ConsumerWidget {
   }
 
   void _showSnackBar(BuildContext context, String message) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   String _tileTitle(AppLocalizations l10n, HealthConnectionStatus? status) {
@@ -463,7 +472,8 @@ class _NotImplementedTile extends StatelessWidget {
   }
 
   void _showNotImplementedSnackBar(BuildContext context) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 }
