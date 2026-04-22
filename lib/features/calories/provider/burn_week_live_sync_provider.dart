@@ -88,6 +88,16 @@ final burnWeekLiveSyncProvider = Provider.autoDispose<Object?>((ref) {
       );
     }
   }
+  final expectedWeekStartDayKey = diaryDayKey(syncWeekStartDate);
+  final expectedCurrentDayKey = diaryDayKey(todayOverviewValue.date);
+  final isAlreadySynced =
+      closedWeekStartDates.isEmpty &&
+      runState.currentWeekStartDayKey == expectedWeekStartDayKey &&
+      runState.lastActiveDayKey == expectedCurrentDayKey &&
+      runState.missedTrackingThisWeek == missedTrackingThisWeek;
+  if (isAlreadySynced) {
+    return null;
+  }
 
   final closedWeekSnapshots = [
     for (final closedWeekStartDate in closedWeekStartDates)

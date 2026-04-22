@@ -78,6 +78,7 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
 
   @override
   void dispose() {
+    _closeZoneDialog();
     _summaryModeSubscription?.close();
     _ticker?.cancel();
     super.dispose();

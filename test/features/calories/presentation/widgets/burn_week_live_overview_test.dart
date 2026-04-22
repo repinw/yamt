@@ -446,4 +446,85 @@ void main() {
     );
     expect(find.text('TODAY LEFT'), findsNothing);
   });
+
+  testWidgets('dispose closes an open zone dialog', (tester) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day, 12);
+    final showsOverview = ValueNotifier<bool>(true);
+    addTearDown(showsOverview.dispose);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: null,
+        effectiveDate: today,
+      ),
+    );
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry('today', loggedAt: today, totalKcal: 15000),
+      ],
+    );
+    final runStateRepository = _FakeBurnWeekRunStateRepository(
+      BurnWeekRunState(
+        currentWeekStartDayKey: '${today.year}-${today.month}-${today.day}',
+        runWeekNumber: 1,
+        starCount: 0,
+        heartCount: 0,
+        heartCreditKcal: 0,
+        starBrokeThisWeek: false,
+        missedTrackingThisWeek: false,
+      ),
+    );
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(
+          settingsRepository,
+        ),
+        burnWeekRunStateRepositoryProvider.overrideWithValue(
+          runStateRepository,
+        ),
+        healthConnectionControllerProvider.overrideWith(
+          _FakeHealthConnectionController.new,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: ValueListenableBuilder<bool>(
+              valueListenable: showsOverview,
+              builder: (context, isVisible, child) {
+                if (!isVisible) {
+                  return const SizedBox.shrink();
+                }
+                return const BurnWeekLiveOverview();
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Run over'), findsOneWidget);
+
+    showsOverview.value = false;
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(BurnWeekLiveOverview), findsNothing);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('Run over'), findsNothing);
+  });
 }
