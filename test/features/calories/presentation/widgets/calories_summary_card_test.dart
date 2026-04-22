@@ -1,10 +1,20 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'burn_week_live_overview.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_summary_card.dart';
@@ -13,10 +23,116 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_summary_card_classic_gauge.dart';
 import 'package:yamt/features/calories/provider/'
+    'burn_week_live_sync_provider.dart';
+import 'package:yamt/features/calories/provider/'
     'calorie_balance_summary_provider.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_summary_view_mode_controller.dart';
+import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/provider/health_connection_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../helpers/memory_app_preferences.dart';
+import '../../support/fake_calories_repositories.dart';
+
+class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
+  _FakeBurnWeekRunStateRepository(this.state);
+
+  BurnWeekRunState state;
+  int saveCount = 0;
+
+  @override
+  Future<BurnWeekRunState> readState() async => state;
+
+  @override
+  Future<bool> saveState(BurnWeekRunState nextState) async {
+    saveCount += 1;
+    state = nextState;
+    return true;
+  }
+}
+
+class _DelayedCalorieSettingsRepository implements CalorieSettingsRepository {
+  _DelayedCalorieSettingsRepository({
+    required this.initialSettings,
+    required this.initialDelay,
+  });
+
+  final CalorieGoalSettings initialSettings;
+  final Duration initialDelay;
+  final StreamController<CalorieGoalSettings> _controller =
+      StreamController<CalorieGoalSettings>.broadcast();
+
+  @override
+  Stream<CalorieGoalSettings> watchSettings() {
+    return Stream<CalorieGoalSettings>.multi((controller) {
+      final timer = Timer(initialDelay, () {
+        if (!controller.isClosed) {
+          controller.add(initialSettings);
+        }
+      });
+      final subscription = _controller.stream.listen(
+        controller.add,
+        onError: controller.addError,
+        onDone: controller.close,
+      );
+      controller.onCancel = () {
+        timer.cancel();
+        unawaited(subscription.cancel());
+      };
+    });
+  }
+
+  @override
+  Future<CalorieGoalSettings> readSettings() async {
+    return initialSettings;
+  }
+
+  @override
+  Future<bool> saveSettings(CalorieGoalSettings settings) async {
+    _controller.add(settings);
+    return true;
+  }
+
+  @override
+  Future<bool> setDailyGoal(double dailyKcalGoal) async => true;
+
+  @override
+  Future<bool> clearDailyGoal() async => true;
+
+  Future<void> dispose() {
+    return _controller.close();
+  }
+}
+
+class _FakeHealthConnectionController extends HealthConnectionController {
+  @override
+  FutureOr<HealthConnectionStatus> build() {
+    return const HealthConnectionStatus.unsupported();
+  }
+}
+
+CalorieEntry _entry(
+  String id, {
+  required DateTime loggedAt,
+  required double totalKcal,
+}) {
+  return CalorieEntry.create(
+    id: id,
+    userId: 'user-1',
+    name: 'Meal $id',
+    mealType: MealType.breakfast,
+    consumedAmount: 100,
+    consumedUnit: ConsumedUnit.grams,
+    per100Kcal: totalKcal,
+    per100Protein: 10,
+    per100Carbs: 10,
+    per100Fat: 10,
+    loggedAt: loggedAt,
+    createdAt: loggedAt,
+    updatedAt: loggedAt,
+  );
+}
 
 void main() {
   const labelStyle = TextStyle(fontSize: 12);
@@ -109,23 +225,50 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(_buildHarness());
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
 
-    expect(find.byKey(CaloriesPageKeys.summaryBalanceBar), findsOneWidget);
+    expect(find.byType(BurnWeekLiveOverview), findsOneWidget);
     expect(find.byType(ClassicSummaryHero), findsNothing);
 
     await tester.tap(find.byKey(CaloriesPageKeys.summaryModeOption('classic')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(CaloriesPageKeys.summaryBalanceBar), findsNothing);
+    expect(find.byType(BurnWeekLiveOverview), findsNothing);
     expect(find.byType(ClassicSummaryHero), findsOneWidget);
     expect(find.byType(ClassicSummaryGauge), findsOneWidget);
 
     await tester.tap(find.byKey(CaloriesPageKeys.summaryModeOption('balance')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.byKey(CaloriesPageKeys.summaryBalanceBar), findsOneWidget);
+    expect(find.byType(BurnWeekLiveOverview), findsOneWidget);
     expect(find.byType(ClassicSummaryHero), findsNothing);
+  });
+
+  testWidgets('switching to classic closes Burn Week zone dialogs', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_buildHarness());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    final scope = tester.widget<UncontrolledProviderScope>(
+      find.byType(UncontrolledProviderScope),
+    );
+    await scope.container
+        .read(calorieSummaryViewModeControllerProvider.notifier)
+        .setMode(CalorieSummaryViewMode.classic);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byType(BurnWeekLiveOverview), findsNothing);
+    expect(find.byType(ClassicSummaryHero), findsOneWidget);
+    expect(find.byType(AlertDialog), findsNothing);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    scope.container.dispose();
   });
 
   testWidgets('renders macro progress cards with current values and progress', (
@@ -182,90 +325,360 @@ void main() {
     expect(_macroBar(tester, 'carbs').widthFactor, 1.0);
   });
 
-  testWidgets('shows learned activity comparison in diary summary card', (
+  testWidgets('balance summary opens Burn Week details dialog', (tester) async {
+    await tester.pumpWidget(_buildHarness());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    await tester.tap(find.byTooltip('Show Burn Week details'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Burn Week details'), findsOneWidget);
+    expect(find.text('How this is calculated'), findsOneWidget);
+  });
+
+  testWidgets('classic mode still syncs Burn live activity state', (
     tester,
   ) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final runStateRepository = _FakeBurnWeekRunStateRepository(
+      BurnWeekRunState(
+        currentWeekStartDayKey: '${today.year}-${today.month}-${today.day}',
+        lastActiveDayKey: '2026-04-01',
+        runWeekNumber: 2,
+        starCount: 1,
+        heartCount: 2,
+        heartCreditKcal: 0,
+        starBrokeThisWeek: false,
+        missedTrackingThisWeek: false,
+      ),
+    );
+
     await tester.pumpWidget(
       _buildHarness(
-        balanceData: _balanceData(
-          activityDeltaKcal: 135,
-          activityComparisonKcal: 135,
-          carryoverKcal: 240,
-          usedLearnedTdee: true,
+        preferences: MemoryAppPreferences(
+          initialStrings: const <String, String>{
+            'calories_summary_view_mode': 'classic',
+          },
+        ),
+        runStateRepository: runStateRepository,
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.byType(BurnWeekLiveOverview), findsNothing);
+    expect(
+      runStateRepository.state.lastActiveDayKey,
+      '${today.year}-${today.month}-${today.day}',
+    );
+  });
+
+  testWidgets('sync restarts stale Burn run from the active goal cycle', (
+    tester,
+  ) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day, 12);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry('today', loggedAt: today, totalKcal: 1100),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: null,
+        effectiveDate: today,
+      ),
+    );
+    final runStateRepository = _FakeBurnWeekRunStateRepository(
+      BurnWeekRunState(
+        currentWeekStartDayKey:
+            '${yesterday.year}-${yesterday.month}-${yesterday.day}',
+        runWeekNumber: 3,
+        starCount: 2,
+        heartCount: 1,
+        heartCreditKcal: -500,
+        starBrokeThisWeek: true,
+        missedTrackingThisWeek: true,
+      ),
+    );
+    final container = ProviderContainer(
+      overrides: [
+        appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+        calorieBalanceSummaryProvider.overrideWith(
+          (ref) async => _balanceData(),
+        ),
+        burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieSettingsRepositoryProvider.overrideWithValue(
+          settingsRepository,
+        ),
+        burnWeekRunStateRepositoryProvider.overrideWithValue(
+          runStateRepository,
+        ),
+        healthConnectionControllerProvider.overrideWith(
+          _FakeHealthConnectionController.new,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const _BurnWeekLiveSyncTestBootstrap(
+          child: MaterialApp(
+            locale: Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: Center(
+                  child: SizedBox(
+                    width: 520,
+                    child: CaloriesSummaryCard(
+                      consumedKcal: 1100,
+                      goalKcal: 2000,
+                      remainingKcal: 900,
+                      progress: 1100 / 2000,
+                      totalProtein: 90,
+                      totalCarbs: 100,
+                      totalFat: 40,
+                      consumedLabel: 'Consumed',
+                      goalLabel: 'Goal',
+                      remainingLabel: 'Remaining',
+                      proteinLabel: 'Protein',
+                      carbsLabel: 'Carbs',
+                      fatLabel: 'Fat',
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
 
-    expect(
-      find.byKey(CaloriesPageKeys.summaryActivityDeltaNote),
-      findsOneWidget,
-    );
-    expect(find.text('Today vs usual: +135 kcal'), findsOneWidget);
-    expect(find.byKey(CaloriesPageKeys.summaryCarryoverNote), findsOneWidget);
-    expect(find.text('Carryover: +240 kcal'), findsOneWidget);
+    final todayKey = '${today.year}-${today.month}-${today.day}';
+    expect(runStateRepository.state.currentWeekStartDayKey, todayKey);
+    expect(runStateRepository.state.runWeekNumber, 1);
+    expect(runStateRepository.state.starCount, 0);
+    expect(runStateRepository.state.heartCount, 3);
   });
 
   testWidgets(
-    'shows negative learned activity comparison even when no bonus is applied',
+    'sync awards stars for multiple fully tracked closed weeks',
     (tester) async {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day, 12);
+      final oldestWeekStart = today.subtract(const Duration(days: 21));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          for (var dayOffset = 21; dayOffset >= 1; dayOffset -= 1)
+            _entry(
+              'day-$dayOffset',
+              loggedAt: today.subtract(Duration(days: dayOffset)),
+              totalKcal: 1100,
+            ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: oldestWeekStart,
+        ),
+      );
+      final runStateRepository = _FakeBurnWeekRunStateRepository(
+        BurnWeekRunState(
+          currentWeekStartDayKey:
+              '${oldestWeekStart.year}-'
+              '${oldestWeekStart.month}-${oldestWeekStart.day}',
+          runWeekNumber: 1,
+          starCount: 0,
+          heartCount: 3,
+          heartCreditKcal: 0,
+          starBrokeThisWeek: false,
+          missedTrackingThisWeek: false,
+        ),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+          calorieBalanceSummaryProvider.overrideWith(
+            (ref) async => _balanceData(),
+          ),
+          burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          burnWeekRunStateRepositoryProvider.overrideWithValue(
+            runStateRepository,
+          ),
+          healthConnectionControllerProvider.overrideWith(
+            _FakeHealthConnectionController.new,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
       await tester.pumpWidget(
-        _buildHarness(
-          balanceData: _balanceData(
-            activityComparisonKcal: -120,
-            usedLearnedTdee: true,
+        UncontrolledProviderScope(
+          container: container,
+          child: const _BurnWeekLiveSyncTestBootstrap(
+            child: MaterialApp(
+              locale: Locale('en'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: Center(
+                    child: SizedBox(
+                      width: 520,
+                      child: CaloriesSummaryCard(
+                        consumedKcal: 1100,
+                        goalKcal: 2000,
+                        remainingKcal: 900,
+                        progress: 1100 / 2000,
+                        totalProtein: 90,
+                        totalCarbs: 100,
+                        totalFat: 40,
+                        consumedLabel: 'Consumed',
+                        goalLabel: 'Goal',
+                        remainingLabel: 'Remaining',
+                        proteinLabel: 'Protein',
+                        carbsLabel: 'Carbs',
+                        fatLabel: 'Fat',
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.pump();
 
-      expect(
-        find.byKey(CaloriesPageKeys.summaryActivityDeltaNote),
-        findsOneWidget,
-      );
-      expect(find.text('Today vs usual: -120 kcal'), findsOneWidget);
+      final todayKey = '${today.year}-${today.month}-${today.day}';
+      expect(runStateRepository.state.currentWeekStartDayKey, todayKey);
+      expect(runStateRepository.state.runWeekNumber, 4);
+      expect(runStateRepository.state.starCount, 3);
+      expect(runStateRepository.state.heartCount, 3);
     },
   );
 
-  testWidgets('shows carryover in diary summary card without activity delta', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _buildHarness(
-        balanceData: _balanceData(carryoverKcal: -180),
-      ),
-    );
-    await tester.pumpAndSettle();
+  testWidgets(
+    'sync waits for loaded goal settings before scoring skipped days',
+    (tester) async {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day, 12);
+      final yesterday = today.subtract(const Duration(days: 1));
+      final logRepository = FakeCalorieLogRepository();
+      final settingsRepository = _DelayedCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: yesterday,
+        ).setSkippedIntakeDay(day: yesterday, isSkipped: true),
+        initialDelay: const Duration(milliseconds: 200),
+      );
+      final runStateRepository = _FakeBurnWeekRunStateRepository(
+        BurnWeekRunState(
+          currentWeekStartDayKey:
+              '${yesterday.year}-'
+              '${yesterday.month}-${yesterday.day}',
+          runWeekNumber: 1,
+          starCount: 0,
+          heartCount: 3,
+          heartCreditKcal: 0,
+          starBrokeThisWeek: false,
+          missedTrackingThisWeek: false,
+        ),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+          calorieBalanceSummaryProvider.overrideWith(
+            (ref) async => _balanceData(),
+          ),
+          burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          burnWeekRunStateRepositoryProvider.overrideWithValue(
+            runStateRepository,
+          ),
+          healthConnectionControllerProvider.overrideWith(
+            _FakeHealthConnectionController.new,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
 
-    expect(
-      find.byKey(CaloriesPageKeys.summaryActivityDeltaNote),
-      findsNothing,
-    );
-    expect(find.byKey(CaloriesPageKeys.summaryCarryoverNote), findsOneWidget);
-    expect(find.text('Carryover: -180 kcal'), findsOneWidget);
-  });
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const _BurnWeekLiveSyncTestBootstrap(
+            child: MaterialApp(
+              locale: Locale('en'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: Center(
+                    child: SizedBox(
+                      width: 520,
+                      child: CaloriesSummaryCard(
+                        consumedKcal: 1100,
+                        goalKcal: 2000,
+                        remainingKcal: 900,
+                        progress: 1100 / 2000,
+                        totalProtein: 90,
+                        totalCarbs: 100,
+                        totalFat: 40,
+                        consumedLabel: 'Consumed',
+                        goalLabel: 'Goal',
+                        remainingLabel: 'Remaining',
+                        proteinLabel: 'Protein',
+                        carbsLabel: 'Carbs',
+                        fatLabel: 'Fat',
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
 
-  testWidgets('shows bootstrap workout bonus hint before learned TDEE', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _buildHarness(
-        balanceData: _balanceData(activityDeltaKcal: 140),
-      ),
-    );
-    await tester.pumpAndSettle();
+      expect(runStateRepository.saveCount, 0);
+      expect(runStateRepository.state.missedTrackingThisWeek, isFalse);
 
-    expect(
-      find.byKey(CaloriesPageKeys.summaryActivityDeltaNote),
-      findsOneWidget,
-    );
-    expect(find.text('Workout bonus: +140 kcal'), findsOneWidget);
-    expect(find.byKey(CaloriesPageKeys.summaryActivityHint), findsOneWidget);
-    expect(
-      find.text('We are still learning your activity pattern.'),
-      findsOneWidget,
-    );
-  });
+      await tester.pump(const Duration(milliseconds: 250));
+
+      expect(runStateRepository.state.missedTrackingThisWeek, isFalse);
+    },
+  );
 
   testWidgets(
     'classic summary uses error color when remaining drops below zero',
@@ -408,6 +821,7 @@ void main() {
 Widget _buildHarness({
   AppPreferences? preferences,
   CalorieBalanceSummaryData? balanceData,
+  BurnWeekRunStateRepository? runStateRepository,
   double consumedKcal = 1600,
   double goalKcal = 2000,
   double remainingKcal = 400,
@@ -415,6 +829,35 @@ Widget _buildHarness({
   double totalProtein = 90,
   double totalFat = 40,
 }) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day, 12);
+  final yesterday = today.subtract(const Duration(days: 1));
+  final logRepository = FakeCalorieLogRepository(
+    initialEntries: <CalorieEntry>[
+      _entry('yesterday', loggedAt: yesterday, totalKcal: 900),
+      _entry('today', loggedAt: today, totalKcal: 1100),
+    ],
+  );
+  final settingsRepository = FakeCalorieSettingsRepository(
+    initialSettings: CalorieGoalSettings.single(
+      dailyKcalGoal: 2000,
+      calculatorProfile: null,
+      effectiveDate: today.subtract(const Duration(days: 6)),
+    ),
+  );
+  final effectiveRunStateRepository =
+      runStateRepository ??
+      _FakeBurnWeekRunStateRepository(
+        const BurnWeekRunState(
+          currentWeekStartDayKey: '2026-04-21',
+          runWeekNumber: 2,
+          starCount: 1,
+          heartCount: 2,
+          heartCreditKcal: 0,
+          starBrokeThisWeek: false,
+          missedTrackingThisWeek: false,
+        ),
+      );
   final container = ProviderContainer(
     overrides: [
       appPreferencesProvider.overrideWithValue(
@@ -423,34 +866,47 @@ Widget _buildHarness({
       calorieBalanceSummaryProvider.overrideWith(
         (ref) async => balanceData ?? _balanceData(),
       ),
+      burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
+      calorieLogRepositoryProvider.overrideWithValue(logRepository),
+      calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      burnWeekRunStateRepositoryProvider.overrideWithValue(
+        effectiveRunStateRepository,
+      ),
+      healthConnectionControllerProvider.overrideWith(
+        _FakeHealthConnectionController.new,
+      ),
     ],
   );
   addTearDown(container.dispose);
+  addTearDown(logRepository.dispose);
+  addTearDown(settingsRepository.dispose);
   return UncontrolledProviderScope(
     container: container,
-    child: MaterialApp(
-      locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: SingleChildScrollView(
-          child: Center(
-            child: SizedBox(
-              width: 520,
-              child: CaloriesSummaryCard(
-                consumedKcal: consumedKcal,
-                goalKcal: goalKcal,
-                remainingKcal: remainingKcal,
-                progress: goalKcal <= 0 ? 0 : consumedKcal / goalKcal,
-                totalProtein: totalProtein,
-                totalCarbs: totalCarbs,
-                totalFat: totalFat,
-                consumedLabel: 'Consumed',
-                goalLabel: 'Goal',
-                remainingLabel: 'Remaining',
-                proteinLabel: 'Protein',
-                carbsLabel: 'Carbs',
-                fatLabel: 'Fat',
+    child: _BurnWeekLiveSyncTestBootstrap(
+      child: MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: Center(
+              child: SizedBox(
+                width: 520,
+                child: CaloriesSummaryCard(
+                  consumedKcal: consumedKcal,
+                  goalKcal: goalKcal,
+                  remainingKcal: remainingKcal,
+                  progress: goalKcal <= 0 ? 0 : consumedKcal / goalKcal,
+                  totalProtein: totalProtein,
+                  totalCarbs: totalCarbs,
+                  totalFat: totalFat,
+                  consumedLabel: 'Consumed',
+                  goalLabel: 'Goal',
+                  remainingLabel: 'Remaining',
+                  proteinLabel: 'Protein',
+                  carbsLabel: 'Carbs',
+                  fatLabel: 'Fat',
+                ),
               ),
             ),
           ),
@@ -458,6 +914,41 @@ Widget _buildHarness({
       ),
     ),
   );
+}
+
+class _BurnWeekLiveSyncTestBootstrap extends ConsumerStatefulWidget {
+  const _BurnWeekLiveSyncTestBootstrap({required this.child});
+
+  final Widget child;
+
+  @override
+  ConsumerState<_BurnWeekLiveSyncTestBootstrap> createState() =>
+      _BurnWeekLiveSyncTestBootstrapState();
+}
+
+class _BurnWeekLiveSyncTestBootstrapState
+    extends ConsumerState<_BurnWeekLiveSyncTestBootstrap> {
+  ProviderSubscription<Object?>? _syncSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _syncSubscription = ref.listenManual<Object?>(
+      burnWeekLiveSyncProvider,
+      (_, __) {},
+    );
+  }
+
+  @override
+  void dispose() {
+    _syncSubscription?.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
+  }
 }
 
 RichText _macroValue(WidgetTester tester, String macroId) {

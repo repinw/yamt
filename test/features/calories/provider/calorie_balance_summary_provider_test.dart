@@ -330,8 +330,8 @@ void main() {
     },
   );
 
-  test('calorieBalanceSummary prorates todays goal from first goal time '
-      'when no earlier diary entries exist today', () async {
+  test('calorieBalanceSummary keeps a full-day goal when it was saved '
+      'later the same day', () async {
     final now = DateTime(2026, 4, 10, 19);
     final day = normalizeDiaryDay(now);
     final logRepository = FakeCalorieLogRepository(
@@ -365,53 +365,14 @@ void main() {
 
     final summary = await container.read(calorieBalanceSummaryProvider.future);
 
-    expect(summary.baseGoalKcal, closeTo(750, 0.001));
-    expect(summary.flexibleGoalKcal, closeTo(750, 0.001));
-    expect(summary.paceRatio, closeTo(0.5, 0.0001));
-    expect(summary.pacedGoalKcal, closeTo(375, 0.001));
-  });
-
-  test('calorieBalanceSummary keeps full-day pacing when diary already '
-      'had entries before goal was first set today', () async {
-    final now = DateTime(2026, 4, 10, 19);
-    final day = normalizeDiaryDay(now);
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _entry(
-          'before-goal',
-          loggedAt: day.add(const Duration(hours: 12)),
-          totalKcal: 300,
-        ),
-      ],
-    );
-    final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings: const CalorieGoalSettings.empty().applyGoalChange(
-        changedAt: DateTime(2026, 4, 10, 16),
-        dailyKcalGoal: 2000,
-        calculatorProfile: null,
-      ),
-    );
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    final container = ProviderContainer(
-      overrides: [
-        calorieLogRepositoryProvider.overrideWithValue(logRepository),
-        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-        calorieBalanceNowProvider.overrideWithValue(() => now),
-      ],
-    );
-    addTearDown(container.dispose);
-    container.read(calorieDayControllerProvider.notifier).setDay(day);
-
-    final summary = await container.read(calorieBalanceSummaryProvider.future);
-
+    expect(summary.baseGoalKcal, closeTo(2000, 0.001));
+    expect(summary.flexibleGoalKcal, closeTo(2000, 0.001));
     expect(summary.paceRatio, closeTo(13 / 16, 0.0001));
     expect(summary.pacedGoalKcal, closeTo(1625, 0.001));
   });
 
   test(
-    'calorieBalanceSummary carries a partial first-day surplus '
+    'calorieBalanceSummary carries the full first-day deficit '
     'into the next day',
     () async {
       final now = DateTime(2026, 4, 10, 14);
@@ -454,9 +415,9 @@ void main() {
 
       expect(summary.balanceStartDate, cycleStartDay);
       expect(summary.baseGoalKcal, 2136);
-      expect(summary.carryoverKcal, closeTo(-200, 0.001));
-      expect(summary.flexibleGoalKcal, closeTo(1936, 0.001));
-      expect(summary.pacedGoalKcal, closeTo(1936, 0.001));
+      expect(summary.carryoverKcal, closeTo(1402, 0.001));
+      expect(summary.flexibleGoalKcal, closeTo(3538, 0.001));
+      expect(summary.pacedGoalKcal, closeTo(3538, 0.001));
     },
   );
 

@@ -8,7 +8,7 @@ import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.d
 import 'package:yamt/l10n/app_localizations.dart';
 
 Widget _buildHarness({
-  required Future<bool> Function(DateTime goalStartAt) onSaveGoalStart,
+  required SaveCalorieGoalStart onSaveGoalStart,
 }) {
   return MaterialApp(
     locale: const Locale('en'),
@@ -23,7 +23,7 @@ Widget _buildHarness({
                 unawaited(
                   showCalorieGoalStartDialog(
                     context: context,
-                    initialGoalStartAt: DateTime(2026, 4, 10, 16, 30),
+                    initialGoalStartDate: DateTime(2026, 4, 10, 16, 30),
                     onSaveGoalStart: onSaveGoalStart,
                   ),
                 );
@@ -41,7 +41,9 @@ void main() {
   testWidgets('save failure shows the specific goal start error message', (
     tester,
   ) async {
-    await tester.pumpWidget(_buildHarness(onSaveGoalStart: (_) async => false));
+    await tester.pumpWidget(
+      _buildHarness(onSaveGoalStart: (_) async => false),
+    );
 
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();

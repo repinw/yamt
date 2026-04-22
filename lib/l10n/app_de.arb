@@ -656,7 +656,6 @@
   "caloriesAuthRequired": "Bitte melde dich an, um Kalorien zu verwalten.",
   "caloriesTodayAction": "Heute",
   "caloriesSetGoalAction": "Ziel manuell setzen",
-  "caloriesSetEatingWindowAction": "Essensfenster setzen",
   "caloriesShiftGoalStartAction": "Zielstart verschieben",
   "caloriesCalculatorAction": "Ziel neu berechnen",
   "caloriesGoalDialogTitle": "Tagesziel setzen",
@@ -671,7 +670,6 @@
       "Kalorienziel konnte nicht gelöscht werden.",
   "caloriesGoalStartDialogTitle": "Zielstart verschieben",
   "caloriesGoalStartDateLabel": "Datum",
-  "caloriesGoalStartTimeLabel": "Uhrzeit",
   "caloriesGoalStartSaveFailed":
       "Der Zielstart konnte nicht aktualisiert werden.",
   "caloriesEatingWindowDialogTitle": "Essensfenster setzen",
@@ -753,13 +751,11 @@
   "caloriesCalculatorDailyGoalLabel": "Tägliches Kalorienziel",
   "caloriesCalculatorGoalStartLabel": "Zielstart",
   "caloriesCalculatorGoalStartHint":
-      "Dein Kalorienziel-Verlauf beginnt ab diesem Zeitpunkt.",
+      "Dein Kalorienziel-Verlauf beginnt ab diesem Tag.",
   "caloriesCalculatorGoalStartChangeAction": "Ändern",
   "caloriesCalculatorEatingWindowLabel": "Essensfenster",
   "caloriesCalculatorEatingWindowHint":
       "Wird verwendet, um die heutige Tagebuch-Balance über den Tag zu takten.",
-  "caloriesCalculatorGoalStartFutureError":
-      "Der Zielstart darf nicht in der Zukunft liegen.",
   "caloriesCalculatorMinimumGoalWarning":
       "Beim Abnehmen darf das tägliche Ziel nicht unter {minimumKcal} kcal fallen. Das Ergebnis wurde auf dieses Minimum begrenzt.",
   "@caloriesCalculatorMinimumGoalWarning": {
@@ -857,6 +853,83 @@
   "caloriesRemainingLabel": "Verbleibend",
   "caloriesSummaryViewClassic": "Klassisch",
   "caloriesSummaryViewBalance": "Balance",
+  "caloriesOpenBurnWeekMockAction": "Burn-Week-Mock öffnen",
+  "burnWeekUseHeartTitle": "Herz einsetzen?",
+  "burnWeekUseHeartMessage":
+      "1 Herz kann einen ganzen Burn-Tag an Kalorien hinzufügen oder abziehen ({dayKcal} kcal).",
+  "@burnWeekUseHeartMessage": {
+    "placeholders": {
+      "dayKcal": {
+        "type": "int"
+      }
+    }
+  },
+  "burnWeekActionCancel": "Abbrechen",
+  "burnWeekActionYes": "Ja",
+  "burnWeekActionNo": "Nein",
+  "burnWeekActionRemoveDayKcal": "-1 Tages-kcal",
+  "burnWeekActionAddDayKcal": "+1 Tages-kcal",
+  "burnWeekRunOverTitle": "Run beendet",
+  "burnWeekRunRestartsOn": "Frischer Run startet am {date}.",
+  "@burnWeekRunRestartsOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "burnWeekZoneOutOfSafeZoneTitle": "Außerhalb der Sicherheitszone",
+  "burnWeekZoneBelowRecoverMessage":
+      "Du liegst unter dem Ziel. Nutze 1 Herz für einen ganzen Burn-Tag-Sprung oder iss mehr, um wieder ins Ziel zu kommen.",
+  "burnWeekZoneBelowRecoverNoHeartsMessage":
+      "Du liegst unter dem Ziel. Keine Herzen mehr übrig. Iss mehr, um wieder ins Ziel zu kommen.",
+  "burnWeekZoneBelowNeedsHeartTitle": "Zu weit unter dem Ziel",
+  "burnWeekZoneBelowNeedsHeartMessage":
+      "In dieser Woche bleiben nicht genug Kalorien übrig, um das nur mit Essen aufzuholen. 1 Herz zur Wiederherstellung nutzen?",
+  "burnWeekZoneBelowRunOverMessage":
+      "In dieser Woche bleiben nicht genug Kalorien übrig, um das nur mit Essen aufzuholen. Keine Herzen mehr übrig, daher startet am nächsten Tag ein frischer Run.",
+  "burnWeekZoneEatMoreTitle": "Mehr essen",
+  "burnWeekZoneEatMoreAction": "Mehr essen",
+  "burnWeekZoneEatMoreMessage":
+      "Iss mehr, um wieder ins Ziel zu kommen.",
+  "burnWeekZoneUseHeartAction": "Herz nutzen",
+  "burnWeekZoneAboveFastMessage":
+      "Du hast zu viel getrackt. Fasten hilft dir, wieder in Spur zu kommen.",
+  "burnWeekZoneAboveNeedsHeartMessage":
+      "Du liegst weit über dem Wochenlimit. 1 Herz nutzen, um einen ganzen Burn-Tag an Kalorien zu entfernen?",
+  "burnWeekZoneAboveRunOverMessage":
+      "Du liegst weit über dem Wochenlimit und hast keine Herzen mehr. Dieser Run endet und am nächsten Tag startet ein frischer Run.",
+  "burnWeekDetailsTitle": "Burn-Week-Details",
+  "burnWeekDetailsHowCalculated": "So wird es berechnet",
+  "burnWeekDetailsDailyGoal": "Tagesziel",
+  "burnWeekDetailsWeekTarget": "Wochenziel",
+  "burnWeekDetailsCurrentTime": "Aktuelle Zeit",
+  "burnWeekDetailsStarsHearts": "Sterne / Herzen",
+  "burnWeekDetailsHeartKcalUsed": "Verbrauchte Herz-kcal",
+  "burnWeekDetailsWeekRatio": "Wochenfortschritt",
+  "burnWeekDetailsTargetFormula": "Zielformel",
+  "burnWeekDetailsLoggedFoodSoFar": "Bisher erfasstes Essen",
+  "burnWeekDetailsPlannedLaterToday": "Später heute geplant",
+  "burnWeekDetailsGuardedBurnSoFar": "Bisherer Guarded Burn",
+  "burnWeekDetailsWeekCarryover": "Übertrag dieser Woche",
+  "burnWeekDetailsPreviousWeekOverflow": "Übertrag aus letzter Woche",
+  "burnWeekDetailsWeekLeftAfterFood": "Woche übrig nach Essen",
+  "burnWeekDetailsSportCounting": "Sport-Zählung",
+  "burnWeekDetailsSportCountingValue":
+      "Guarded Burn wird in HEUTE ÜBRIG abgezogen.",
+  "burnWeekDetailsSafeZone": "Sicherheitszone",
+  "burnWeekInfoTooltip": "Burn-Week-Details anzeigen",
+  "burnWeekWeekDayLabel": "Woche {week} Tag {day}",
+  "@burnWeekWeekDayLabel": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "burnWeekStatEaten": "Gegessen",
+  "burnWeekStatTodayLeft": "Heute übrig",
   "caloriesBalanceCarryoverNoteLabel": "Übertrag",
   "caloriesBalanceFlexGoalLabel": "Flex-Ziel",
   "caloriesBalanceScaleBufferLabel": "Defizit",

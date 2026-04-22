@@ -157,17 +157,16 @@ void main() {
         );
         addTearDown(container.dispose);
         final provider = calorieGoalCalculatorFormControllerProvider(null);
-        final goalStartAt = DateTime(2026, 4, 10, 16, 30);
+        final subscription = container.listen(provider, (_, __) {});
+        addTearDown(subscription.close);
+        final goalStartDate = DateTime(2026, 4, 10, 16, 30);
 
         await container.read(calorieGoalControllerProvider.future);
 
         final saveFuture = container
             .read(provider.notifier)
-            .save(
-              goalStartAt: goalStartAt,
-              eatingWindowStartMinuteOfDay: defaultEatingWindowStartMinuteOfDay,
-              eatingWindowEndMinuteOfDay: defaultEatingWindowEndMinuteOfDay,
-            );
+            .save(goalStartDate: goalStartDate);
+        await Future<void>.delayed(Duration.zero);
 
         expect(container.read(provider).isSaving, isTrue);
         expect(repository.saveCallCount, 1);
@@ -180,7 +179,7 @@ void main() {
         final settings = await repository.readSettings();
         expect(settings.dailyKcalGoal, 2136);
         expect(settings.calculatorProfile?.goalMode, CalorieGoalMode.maintain);
-        expect(settings.goalHistory.single.changedAt, goalStartAt);
+        expect(settings.goalHistory.single.changedAt, DateTime(2026, 4, 10));
       },
     );
 
@@ -199,16 +198,14 @@ void main() {
         );
         addTearDown(container.dispose);
         final provider = calorieGoalCalculatorFormControllerProvider(null);
+        final subscription = container.listen(provider, (_, __) {});
+        addTearDown(subscription.close);
 
         await container.read(calorieGoalControllerProvider.future);
 
         final saveFuture = container
             .read(provider.notifier)
-            .save(
-              goalStartAt: DateTime(2026, 4, 10, 18),
-              eatingWindowStartMinuteOfDay: defaultEatingWindowStartMinuteOfDay,
-              eatingWindowEndMinuteOfDay: defaultEatingWindowEndMinuteOfDay,
-            );
+            .save(goalStartDate: DateTime(2026, 4, 10, 18));
 
         expect(container.read(provider).isSaving, isTrue);
 
@@ -235,16 +232,15 @@ void main() {
           ],
         );
         final provider = calorieGoalCalculatorFormControllerProvider(null);
+        final subscription = container.listen(provider, (_, __) {});
+        addTearDown(subscription.close);
 
         await container.read(calorieGoalControllerProvider.future);
 
         final saveFuture = container
             .read(provider.notifier)
-            .save(
-              goalStartAt: DateTime(2026, 4, 10, 18),
-              eatingWindowStartMinuteOfDay: defaultEatingWindowStartMinuteOfDay,
-              eatingWindowEndMinuteOfDay: defaultEatingWindowEndMinuteOfDay,
-            );
+            .save(goalStartDate: DateTime(2026, 4, 10, 18));
+        await Future<void>.delayed(Duration.zero);
 
         expect(repository.saveCallCount, 1);
 

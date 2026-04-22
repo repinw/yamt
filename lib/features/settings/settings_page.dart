@@ -10,10 +10,6 @@ import 'package:yamt/core/theme/seed_color_controller.dart';
 import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/core/theme/theme_option_labels.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_eating_window_dialog.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -38,7 +34,6 @@ class SettingsPage extends StatelessWidget {
     final tiles = <Widget>[
       _HouseholdTile(l10n: l10n),
       _AccountTile(l10n: l10n),
-      const _DiaryTile(),
       const _HealthConnectTile(),
       const _ThemeModeTile(),
       const _SeedColorTile(),
@@ -189,48 +184,6 @@ class _ThemeModeTile extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _DiaryTile extends ConsumerWidget {
-  const _DiaryTile();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final settings =
-        ref.watch(calorieGoalControllerProvider).asData?.value ??
-        const CalorieGoalSettings.empty();
-    final eatingWindowLabel = formatEatingWindowLabel(
-      context,
-      startMinuteOfDay: settings.normalizedEatingWindowStartMinuteOfDay,
-      endMinuteOfDay: settings.normalizedEatingWindowEndMinuteOfDay,
-    );
-
-    return ListTile(
-      leading: const Icon(Icons.menu_book_outlined),
-      title: Text(l10n.settingsDiaryTitle),
-      subtitle: Text(l10n.settingsDiarySubtitle(eatingWindowLabel)),
-      onTap: () {
-        unawaited(
-          showCalorieEatingWindowDialog(
-            context: context,
-            initialStartMinuteOfDay:
-                settings.normalizedEatingWindowStartMinuteOfDay,
-            initialEndMinuteOfDay:
-                settings.normalizedEatingWindowEndMinuteOfDay,
-            onSaveEatingWindow: (startMinuteOfDay, endMinuteOfDay) {
-              return ref
-                  .read(calorieGoalControllerProvider.notifier)
-                  .setEatingWindow(
-                    startMinuteOfDay: startMinuteOfDay,
-                    endMinuteOfDay: endMinuteOfDay,
-                  );
-            },
-          ),
-        );
-      },
     );
   }
 }

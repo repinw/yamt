@@ -424,6 +424,15 @@ class CalorieGoalSettings {
     return resolvedEntry;
   }
 
+  /// Active goal entry for day.
+  CalorieGoalHistoryEntry? activeGoalEntryForDay(DateTime day) {
+    final entry = goalEntryForDay(day);
+    if (entry?.hasGoal != true) {
+      return null;
+    }
+    return entry;
+  }
+
   /// Next goal start after day.
   DateTime? nextGoalStartAfterDay(DateTime day) {
     final normalizedDay = normalizeDiaryDay(day);

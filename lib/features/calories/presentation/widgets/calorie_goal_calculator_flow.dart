@@ -7,8 +7,6 @@ import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_eating_window_dialog.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_activity_level_selector.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_input_controls.dart';
@@ -66,9 +64,7 @@ class _CalorieGoalCalculatorFlowState
   late final TextEditingController _heightController;
   late final TextEditingController _ageController;
   late final TextEditingController _goalSpeedController;
-  late DateTime _goalStartAt;
-  late int _eatingWindowStartMinuteOfDay;
-  late int _eatingWindowEndMinuteOfDay;
+  late DateTime _goalStartDate;
   _CalculatorOnboardingStep _currentStep = _CalculatorOnboardingStep.sex;
 
   @override
@@ -105,11 +101,12 @@ class _CalorieGoalCalculatorFlowState
     _goalSpeedController = TextEditingController(
       text: initialState.goalSpeedKgPerWeekText,
     );
-    _goalStartAt = CalorieGoalStartPicker.roundToMinute(DateTime.now());
-    _eatingWindowStartMinuteOfDay =
-        widget.initialSettings.normalizedEatingWindowStartMinuteOfDay;
-    _eatingWindowEndMinuteOfDay =
-        widget.initialSettings.normalizedEatingWindowEndMinuteOfDay;
+    final initialGoalEntry =
+        widget.initialSettings.activeGoalEntryForDay(DateTime.now()) ??
+        widget.initialSettings.latestGoalEntry;
+    _goalStartDate = CalorieGoalStartPicker.normalizeDate(
+      initialGoalEntry?.effectiveDate ?? DateTime.now(),
+    );
   }
 
   @override
@@ -142,11 +139,7 @@ class _CalorieGoalCalculatorFlowState
     );
     final saved = await ref
         .read(formProvider.notifier)
-        .save(
-          goalStartAt: _goalStartAt,
-          eatingWindowStartMinuteOfDay: _eatingWindowStartMinuteOfDay,
-          eatingWindowEndMinuteOfDay: _eatingWindowEndMinuteOfDay,
-        );
+        .save(goalStartDate: _goalStartDate);
     if (!mounted) {
       return;
     }
@@ -181,80 +174,21 @@ class _CalorieGoalCalculatorFlowState
   }
 
   Future<void> _pickGoalStart() async {
-    final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    final now = CalorieGoalStartPicker.roundToMinute(DateTime.now());
-    final initialGoalStart = _goalStartAt;
     final pickedDate = await CalorieGoalStartPicker.pickDate(
       context,
-      initialGoalStartAt: initialGoalStart,
-      now: now,
+      initialGoalStartDate: _goalStartDate,
+      now: DateTime.now(),
     );
-    if (pickedDate == null) {
-      return;
-    }
-    if (!mounted) {
+    if (pickedDate == null || !mounted) {
       return;
     }
 
-    if (!DateUtils.isSameDay(pickedDate, now)) {
-      final resetGoalStart = CalorieGoalStartPicker.sixAm(pickedDate);
-      if (CalorieGoalStartPicker.isSameMinute(_goalStartAt, resetGoalStart)) {
-        return;
-      }
-      setState(() {
-        _goalStartAt = resetGoalStart;
-      });
+    if (CalorieGoalStartPicker.isSameDay(_goalStartDate, pickedDate)) {
       return;
     }
 
-    final pickedTime = await CalorieGoalStartPicker.pickTime(
-      context,
-      initialGoalStartAt: initialGoalStart,
-    );
-    if (pickedTime == null) {
-      return;
-    }
-    if (!mounted) {
-      return;
-    }
-
-    final pickedGoalStart = CalorieGoalStartPicker.combineDateAndTime(
-      date: pickedDate,
-      time: pickedTime,
-    );
-    if (pickedGoalStart.isAfter(now)) {
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(l10n.caloriesCalculatorGoalStartFutureError)),
-        );
-      return;
-    }
-
-    if (CalorieGoalStartPicker.isSameMinute(_goalStartAt, pickedGoalStart)) {
-      return;
-    }
     setState(() {
-      _goalStartAt = pickedGoalStart;
+      _goalStartDate = pickedDate;
     });
-  }
-
-  Future<void> _pickEatingWindow() async {
-    await showCalorieEatingWindowDialog(
-      context: context,
-      initialStartMinuteOfDay: _eatingWindowStartMinuteOfDay,
-      initialEndMinuteOfDay: _eatingWindowEndMinuteOfDay,
-      onSaveEatingWindow: (startMinuteOfDay, endMinuteOfDay) async {
-        if (!mounted) {
-          return false;
-        }
-        setState(() {
-          _eatingWindowStartMinuteOfDay = startMinuteOfDay;
-          _eatingWindowEndMinuteOfDay = endMinuteOfDay;
-        });
-        return true;
-      },
-    );
   }
 }

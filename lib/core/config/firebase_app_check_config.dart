@@ -79,9 +79,7 @@ bool shouldActivateFirebaseAppCheck({
   }
 
   return switch (platform) {
-    TargetPlatform.android ||
-    TargetPlatform.iOS ||
-    TargetPlatform.macOS => true,
+    TargetPlatform.android || TargetPlatform.iOS => true,
     _ => false,
   };
 }
@@ -144,7 +142,7 @@ String describeFirebaseAppCheckMode({
       shouldUseDebugProvider
           ? 'Android debug provider'
           : 'Android Play Integrity',
-    TargetPlatform.iOS || TargetPlatform.macOS =>
+    TargetPlatform.iOS =>
       shouldUseDebugProvider
           ? 'Apple debug provider'
           : 'Apple App Attest with DeviceCheck fallback',

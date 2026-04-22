@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -11,6 +12,8 @@ import 'package:yamt/features/calories/application/'
     'calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
+import 'package:yamt/features/calories/presentation/'
+    'burn_week_mock_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/'
     'calorie_goal_onboarding_page.dart';
@@ -128,6 +131,13 @@ Raw<GoRouter> appRouter(Ref ref) {
         path: AppRoutes.homeSettingsHousehold,
         builder: (context, state) => const HouseholdPage(),
       ),
+      if (kDebugMode)
+        // Burn Week mock route is debug-only. Keep mock pages out of
+        // user-facing builds.
+        GoRoute(
+          path: AppRoutes.homeCaloriesBurnWeekMock,
+          builder: (context, state) => const BurnWeekMockPage(),
+        ),
       GoRoute(
         path: AppRoutes.homeStatisticsWeight,
         builder: (context, state) => const CalorieHealthTrendsPage(),

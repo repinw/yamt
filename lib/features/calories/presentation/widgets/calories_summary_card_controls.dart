@@ -86,7 +86,7 @@ class SummaryModeChip extends StatelessWidget {
   /// Callback invoked when the chip is tapped.
   final VoidCallback onTap;
 
-  /// Key used by widget tests to find the chip label.
+  /// Key used by widget tests to find and tap the chip.
   final Key textKey;
 
   @override
@@ -97,6 +97,7 @@ class SummaryModeChip extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        key: textKey,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         onTap: onTap,
         child: AnimatedContainer(
@@ -123,7 +124,6 @@ class SummaryModeChip extends StatelessWidget {
           ),
           child: Text(
             label,
-            key: textKey,
             style: textTheme.labelMedium?.copyWith(
               color: isSelected ? colors.primary : colors.onSurfaceVariant,
               fontWeight: FontWeight.w700,

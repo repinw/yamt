@@ -4,14 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_eating_window_dialog.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
 import 'package:yamt/features/calories/presentation/widgets/calorie_goal_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
+import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -29,7 +29,7 @@ const _diaryBranchIndex = 1;
 const _statisticsBranchIndex = 2;
 const _settingsBranchIndex = 3;
 
-enum _DiaryAppBarAction { setGoal, setEatingWindow, shiftGoalStart, calculator }
+enum _DiaryAppBarAction { setGoal, shiftGoalStart, calculator }
 
 /// Shell page that hosts the main app tabs and shared home chrome.
 @Dependencies([
@@ -223,14 +223,13 @@ class HomePage extends ConsumerWidget {
                   child: Text(l10n.caloriesSetGoalAction),
                 ),
                 PopupMenuItem<_DiaryAppBarAction>(
-                  key: CaloriesPageKeys.appBarMenuSetEatingWindowAction,
-                  value: _DiaryAppBarAction.setEatingWindow,
-                  child: Text(l10n.caloriesSetEatingWindowAction),
-                ),
-                PopupMenuItem<_DiaryAppBarAction>(
                   key: CaloriesPageKeys.appBarMenuShiftGoalStartAction,
                   value: _DiaryAppBarAction.shiftGoalStart,
-                  enabled: currentCalorieSettings?.hasGoal == true,
+                  enabled:
+                      currentCalorieSettings?.activeGoalEntryForDay(
+                        DateTime.now(),
+                      ) !=
+                      null,
                   child: Text(l10n.caloriesShiftGoalStartAction),
                 ),
                 PopupMenuItem<_DiaryAppBarAction>(
@@ -281,7 +280,10 @@ class HomePage extends ConsumerWidget {
           compactHomeChrome,
         ),
       ),
-      body: navigationShell,
+      body: _BurnWeekLiveSyncBootstrap(
+        isEnabled: currentTab == HomeTabType.diary,
+        child: navigationShell,
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: floatingActionButton,
       bottomNavigationBar: HomeBottomNavBar(
@@ -332,47 +334,31 @@ class HomePage extends ConsumerWidget {
               .clearGoal,
         );
         return;
-      case _DiaryAppBarAction.setEatingWindow:
-        final currentSettings =
-            ref.read(calorieGoalControllerProvider).asData?.value ??
-            const CalorieGoalSettings.empty();
-        await showCalorieEatingWindowDialog(
-          context: context,
-          initialStartMinuteOfDay:
-              currentSettings.normalizedEatingWindowStartMinuteOfDay,
-          initialEndMinuteOfDay:
-              currentSettings.normalizedEatingWindowEndMinuteOfDay,
-          onSaveEatingWindow: (startMinuteOfDay, endMinuteOfDay) {
-            return ref
-                .read(calorieGoalControllerProvider.notifier)
-                .setEatingWindow(
-                  startMinuteOfDay: startMinuteOfDay,
-                  endMinuteOfDay: endMinuteOfDay,
-                );
-          },
-        );
-        return;
       case _DiaryAppBarAction.shiftGoalStart:
         final currentSettings = ref
             .read(calorieGoalControllerProvider)
             .asData
             ?.value;
-        if (currentSettings == null || !currentSettings.hasGoal) {
+        if (currentSettings == null) {
           return;
         }
-        final currentGoalEntry =
-            currentSettings.cycleAnchorEntryForDay(DateTime.now()) ??
-            currentSettings.latestGoalEntry;
+        final currentGoalEntry = currentSettings.activeGoalEntryForDay(
+          DateTime.now(),
+        );
         if (currentGoalEntry == null) {
           return;
         }
         await showCalorieGoalStartDialog(
           context: context,
-          initialGoalStartAt: currentGoalEntry.effectiveChangedAt,
-          onSaveGoalStart: (goalStartAt) {
+          initialGoalStartDate: currentGoalEntry.effectiveDate,
+          onSaveGoalStart: (goalStartDate) {
+            final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
+            if (currentGoalEntry.effectiveDate == normalizedGoalStartDate) {
+              return Future<bool>.value(true);
+            }
             return ref
                 .read(calorieGoalControllerProvider.notifier)
-                .shiftGoalStart(goalStartAt: goalStartAt);
+                .shiftGoalStart(goalStartDate: goalStartDate);
           },
         );
         return;
@@ -386,5 +372,57 @@ class HomePage extends ConsumerWidget {
         );
         return;
     }
+  }
+}
+
+class _BurnWeekLiveSyncBootstrap extends ConsumerStatefulWidget {
+  const _BurnWeekLiveSyncBootstrap({
+    required this.child,
+    required this.isEnabled,
+  });
+
+  final Widget child;
+  final bool isEnabled;
+
+  @override
+  ConsumerState<_BurnWeekLiveSyncBootstrap> createState() =>
+      _BurnWeekLiveSyncBootstrapState();
+}
+
+class _BurnWeekLiveSyncBootstrapState
+    extends ConsumerState<_BurnWeekLiveSyncBootstrap> {
+  ProviderSubscription<Object?>? _syncSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _ensureSyncStarted();
+  }
+
+  @override
+  void didUpdateWidget(covariant _BurnWeekLiveSyncBootstrap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _ensureSyncStarted();
+  }
+
+  @override
+  void dispose() {
+    _syncSubscription?.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
+  }
+
+  void _ensureSyncStarted() {
+    if (!widget.isEnabled || _syncSubscription != null) {
+      return;
+    }
+    _syncSubscription = ref.listenManual<Object?>(
+      burnWeekLiveSyncProvider,
+      (_, __) {},
+    );
   }
 }

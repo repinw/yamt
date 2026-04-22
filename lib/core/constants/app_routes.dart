@@ -44,6 +44,9 @@ abstract final class AppRoutes {
   /// Calories home route.
   static const homeCalories = '/home/calories';
 
+  /// Burn Week mock route.
+  static const homeCaloriesBurnWeekMock = '/home/calories/burn-week';
+
   /// Calorie entry creation route.
   static const homeCaloriesEntryCreate = '/home/calories/entry/create';
 

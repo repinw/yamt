@@ -3,8 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_eating_window_dialog.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -117,14 +115,14 @@ class CalorieGoalCalculatorWarningCard extends StatelessWidget {
 class CalorieGoalCalculatorGoalStartCard extends StatelessWidget {
   /// The calorie goal calculator goal start card.
   const CalorieGoalCalculatorGoalStartCard({
-    required this.goalStartAt,
+    required this.goalStartDate,
     required this.onChangeRequested,
     super.key,
     this.enabled = true,
   });
 
-  /// The goal start at.
-  final DateTime goalStartAt;
+  /// The goal start date.
+  final DateTime goalStartDate;
 
   /// The on change requested.
   final VoidCallback onChangeRequested;
@@ -137,7 +135,7 @@ class CalorieGoalCalculatorGoalStartCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final dateFormat = DateFormat.yMMMd(locale).add_Hm();
+    final dateFormat = DateFormat.yMMMd(locale);
 
     return DecoratedBox(
       key: CalorieGoalCalculatorSheetKeys.goalStartCard,
@@ -158,7 +156,7 @@ class CalorieGoalCalculatorGoalStartCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              dateFormat.format(goalStartAt),
+              dateFormat.format(goalStartDate),
               key: CalorieGoalCalculatorSheetKeys.goalStartValue,
               style: Theme.of(
                 context,
@@ -175,85 +173,7 @@ class CalorieGoalCalculatorGoalStartCard extends StatelessWidget {
             OutlinedButton.icon(
               key: CalorieGoalCalculatorSheetKeys.goalStartChangeButton,
               onPressed: enabled ? onChangeRequested : null,
-              icon: const Icon(Icons.schedule_rounded),
-              label: Text(l10n.caloriesCalculatorGoalStartChangeAction),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Defines calorie goal calculator eating window card.
-class CalorieGoalCalculatorEatingWindowCard extends StatelessWidget {
-  /// The calorie goal calculator eating window card.
-  const CalorieGoalCalculatorEatingWindowCard({
-    required this.startMinuteOfDay,
-    required this.endMinuteOfDay,
-    required this.onChangeRequested,
-    super.key,
-    this.enabled = true,
-  });
-
-  /// The start minute of day.
-  final int startMinuteOfDay;
-
-  /// The end minute of day.
-  final int endMinuteOfDay;
-
-  /// The on change requested.
-  final VoidCallback onChangeRequested;
-
-  /// The enabled.
-  final bool enabled;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
-
-    return DecoratedBox(
-      key: CalorieGoalCalculatorSheetKeys.eatingWindowCard,
-      decoration: BoxDecoration(
-        border: Border.all(color: colors.outlineVariant),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-      ),
-      child: Padding(
-        padding: AppInsets.card,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.caloriesCalculatorEatingWindowLabel,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              formatEatingWindowLabel(
-                context,
-                startMinuteOfDay: startMinuteOfDay,
-                endMinuteOfDay: endMinuteOfDay,
-              ),
-              key: CalorieGoalCalculatorSheetKeys.eatingWindowValue,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              l10n.caloriesCalculatorEatingWindowHint,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            OutlinedButton.icon(
-              key: CalorieGoalCalculatorSheetKeys.eatingWindowChangeButton,
-              onPressed: enabled ? onChangeRequested : null,
-              icon: const Icon(Icons.schedule_rounded),
+              icon: const Icon(Icons.event_outlined),
               label: Text(l10n.caloriesCalculatorGoalStartChangeAction),
             ),
           ],

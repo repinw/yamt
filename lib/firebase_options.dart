@@ -25,7 +25,10 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -66,21 +69,6 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyB38XzsVo2n44ug8NRqUm-9KWPFl6g2ItM',
-    appId: '1:1081825170446:ios:de7cb0bdf9fdcf2cfc985f',
-    messagingSenderId: '1081825170446',
-    projectId: 'mealtrack-4b239',
-    databaseURL:
-        'https://mealtrack-4b239-default-rtdb.europe-west1.firebasedatabase.app',
-    storageBucket: 'mealtrack-4b239.firebasestorage.app',
-    androidClientId:
-        '1081825170446-dvbil6k7m45qed4etj3v4kbqsd7l4q0r.apps.googleusercontent.com',
-    iosClientId:
-        '1081825170446-983f1du3ein766kbqdvcb23pboubdbi7.apps.googleusercontent.com',
-    iosBundleId: 'de.yamt.app',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyB38XzsVo2n44ug8NRqUm-9KWPFl6g2ItM',
     appId: '1:1081825170446:ios:de7cb0bdf9fdcf2cfc985f',
     messagingSenderId: '1081825170446',

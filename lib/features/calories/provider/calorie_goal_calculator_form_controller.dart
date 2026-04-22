@@ -77,11 +77,7 @@ class CalorieGoalCalculatorFormController
   }
 
   /// Save.
-  Future<bool> save({
-    required DateTime goalStartAt,
-    required int eatingWindowStartMinuteOfDay,
-    required int eatingWindowEndMinuteOfDay,
-  }) async {
+  Future<bool> save({required DateTime goalStartDate}) async {
     final profile = state.profile;
     if (profile == null) {
       return false;
@@ -92,9 +88,7 @@ class CalorieGoalCalculatorFormController
         .read(calorieGoalControllerProvider.notifier)
         .saveCalculatedGoal(
           profile,
-          goalStartAt: goalStartAt,
-          eatingWindowStartMinuteOfDay: eatingWindowStartMinuteOfDay,
-          eatingWindowEndMinuteOfDay: eatingWindowEndMinuteOfDay,
+          goalStartDate: goalStartDate,
         );
     if (!ref.mounted) {
       return saved;

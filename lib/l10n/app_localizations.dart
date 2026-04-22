@@ -2405,12 +2405,6 @@ abstract class AppLocalizations {
   /// **'Set goal manually'**
   String get caloriesSetGoalAction;
 
-  /// No description provided for @caloriesSetEatingWindowAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Set eating window'**
-  String get caloriesSetEatingWindowAction;
-
   /// No description provided for @caloriesShiftGoalStartAction.
   ///
   /// In en, this message translates to:
@@ -2476,12 +2470,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Date'**
   String get caloriesGoalStartDateLabel;
-
-  /// No description provided for @caloriesGoalStartTimeLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Time'**
-  String get caloriesGoalStartTimeLabel;
 
   /// No description provided for @caloriesGoalStartSaveFailed.
   ///
@@ -2798,7 +2786,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesCalculatorGoalStartHint.
   ///
   /// In en, this message translates to:
-  /// **'Your calorie target history begins from this point.'**
+  /// **'Your calorie target history begins from this day.'**
   String get caloriesCalculatorGoalStartHint;
 
   /// No description provided for @caloriesCalculatorGoalStartChangeAction.
@@ -2818,12 +2806,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Used to pace today\'s diary balance throughout the day.'**
   String get caloriesCalculatorEatingWindowHint;
-
-  /// No description provided for @caloriesCalculatorGoalStartFutureError.
-  ///
-  /// In en, this message translates to:
-  /// **'Goal start can\'t be in the future.'**
-  String get caloriesCalculatorGoalStartFutureError;
 
   /// No description provided for @caloriesCalculatorMinimumGoalWarning.
   ///
@@ -3118,6 +3100,276 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Balance'**
   String get caloriesSummaryViewBalance;
+
+  /// No description provided for @caloriesOpenBurnWeekMockAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Burn Week mock'**
+  String get caloriesOpenBurnWeekMockAction;
+
+  /// No description provided for @burnWeekUseHeartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use heart?'**
+  String get burnWeekUseHeartTitle;
+
+  /// No description provided for @burnWeekUseHeartMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'1 heart can add or remove one full Burn day of calories ({dayKcal} kcal).'**
+  String burnWeekUseHeartMessage(int dayKcal);
+
+  /// No description provided for @burnWeekActionCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get burnWeekActionCancel;
+
+  /// No description provided for @burnWeekActionYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get burnWeekActionYes;
+
+  /// No description provided for @burnWeekActionNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get burnWeekActionNo;
+
+  /// No description provided for @burnWeekActionRemoveDayKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'-1 day kcal'**
+  String get burnWeekActionRemoveDayKcal;
+
+  /// No description provided for @burnWeekActionAddDayKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'+1 day kcal'**
+  String get burnWeekActionAddDayKcal;
+
+  /// No description provided for @burnWeekRunOverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Run over'**
+  String get burnWeekRunOverTitle;
+
+  /// No description provided for @burnWeekRunRestartsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh run starts on {date}.'**
+  String burnWeekRunRestartsOn(Object date);
+
+  /// No description provided for @burnWeekZoneOutOfSafeZoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of safe zone'**
+  String get burnWeekZoneOutOfSafeZoneTitle;
+
+  /// No description provided for @burnWeekZoneBelowRecoverMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You are below target. Use a heart for one full Burn day leap, or eat more to get back in target.'**
+  String get burnWeekZoneBelowRecoverMessage;
+
+  /// No description provided for @burnWeekZoneBelowRecoverNoHeartsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You are below target. No hearts left. Eat more to get back in target.'**
+  String get burnWeekZoneBelowRecoverNoHeartsMessage;
+
+  /// No description provided for @burnWeekZoneBelowNeedsHeartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Too far below target'**
+  String get burnWeekZoneBelowNeedsHeartTitle;
+
+  /// No description provided for @burnWeekZoneBelowNeedsHeartMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'There are not enough calories left in this week to recover by eating. Use 1 heart to restore?'**
+  String get burnWeekZoneBelowNeedsHeartMessage;
+
+  /// No description provided for @burnWeekZoneBelowRunOverMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'There are not enough calories left in this week to recover by eating. No hearts left, so a fresh run starts next day.'**
+  String get burnWeekZoneBelowRunOverMessage;
+
+  /// No description provided for @burnWeekZoneEatMoreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat more'**
+  String get burnWeekZoneEatMoreTitle;
+
+  /// No description provided for @burnWeekZoneEatMoreAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat more'**
+  String get burnWeekZoneEatMoreAction;
+
+  /// No description provided for @burnWeekZoneEatMoreMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat more to get back in target.'**
+  String get burnWeekZoneEatMoreMessage;
+
+  /// No description provided for @burnWeekZoneUseHeartAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Use heart'**
+  String get burnWeekZoneUseHeartAction;
+
+  /// No description provided for @burnWeekZoneAboveFastMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You tracked too much. Fasting will help to get on track.'**
+  String get burnWeekZoneAboveFastMessage;
+
+  /// No description provided for @burnWeekZoneAboveNeedsHeartMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You are way over weekly limit. Use 1 heart to reduce one full Burn day of calories?'**
+  String get burnWeekZoneAboveNeedsHeartMessage;
+
+  /// No description provided for @burnWeekZoneAboveRunOverMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You are way over weekly limit and have no hearts left. This run ends and a fresh run starts next day.'**
+  String get burnWeekZoneAboveRunOverMessage;
+
+  /// No description provided for @burnWeekDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Burn Week details'**
+  String get burnWeekDetailsTitle;
+
+  /// No description provided for @burnWeekDetailsHowCalculated.
+  ///
+  /// In en, this message translates to:
+  /// **'How this is calculated'**
+  String get burnWeekDetailsHowCalculated;
+
+  /// No description provided for @burnWeekDetailsDailyGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal'**
+  String get burnWeekDetailsDailyGoal;
+
+  /// No description provided for @burnWeekDetailsWeekTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Week target'**
+  String get burnWeekDetailsWeekTarget;
+
+  /// No description provided for @burnWeekDetailsCurrentTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Current time'**
+  String get burnWeekDetailsCurrentTime;
+
+  /// No description provided for @burnWeekDetailsStarsHearts.
+  ///
+  /// In en, this message translates to:
+  /// **'Stars / Hearts'**
+  String get burnWeekDetailsStarsHearts;
+
+  /// No description provided for @burnWeekDetailsHeartKcalUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart kcal used'**
+  String get burnWeekDetailsHeartKcalUsed;
+
+  /// No description provided for @burnWeekDetailsWeekRatio.
+  ///
+  /// In en, this message translates to:
+  /// **'Week ratio'**
+  String get burnWeekDetailsWeekRatio;
+
+  /// No description provided for @burnWeekDetailsTargetFormula.
+  ///
+  /// In en, this message translates to:
+  /// **'Target formula'**
+  String get burnWeekDetailsTargetFormula;
+
+  /// No description provided for @burnWeekDetailsLoggedFoodSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged food so far'**
+  String get burnWeekDetailsLoggedFoodSoFar;
+
+  /// No description provided for @burnWeekDetailsPlannedLaterToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned later today'**
+  String get burnWeekDetailsPlannedLaterToday;
+
+  /// No description provided for @burnWeekDetailsGuardedBurnSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'Guarded burn so far'**
+  String get burnWeekDetailsGuardedBurnSoFar;
+
+  /// No description provided for @burnWeekDetailsWeekCarryover.
+  ///
+  /// In en, this message translates to:
+  /// **'This week carryover'**
+  String get burnWeekDetailsWeekCarryover;
+
+  /// No description provided for @burnWeekDetailsPreviousWeekOverflow.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous week overflow'**
+  String get burnWeekDetailsPreviousWeekOverflow;
+
+  /// No description provided for @burnWeekDetailsWeekLeftAfterFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Week left after food'**
+  String get burnWeekDetailsWeekLeftAfterFood;
+
+  /// No description provided for @burnWeekDetailsSportCounting.
+  ///
+  /// In en, this message translates to:
+  /// **'Sport counting'**
+  String get burnWeekDetailsSportCounting;
+
+  /// No description provided for @burnWeekDetailsSportCountingValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Guarded burn is subtracted in TODAY LEFT.'**
+  String get burnWeekDetailsSportCountingValue;
+
+  /// No description provided for @burnWeekDetailsSafeZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe zone'**
+  String get burnWeekDetailsSafeZone;
+
+  /// No description provided for @burnWeekInfoTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Burn Week details'**
+  String get burnWeekInfoTooltip;
+
+  /// No description provided for @burnWeekWeekDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {week} day {day}'**
+  String burnWeekWeekDayLabel(int week, int day);
+
+  /// No description provided for @burnWeekStatEaten.
+  ///
+  /// In en, this message translates to:
+  /// **'Eaten'**
+  String get burnWeekStatEaten;
+
+  /// No description provided for @burnWeekStatTodayLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Today left'**
+  String get burnWeekStatTodayLeft;
 
   /// No description provided for @caloriesBalanceCarryoverNoteLabel.
   ///

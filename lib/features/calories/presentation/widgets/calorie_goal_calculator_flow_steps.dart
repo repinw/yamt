@@ -95,16 +95,9 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
             ],
             const SizedBox(height: AppSpacing.md),
             CalorieGoalCalculatorGoalStartCard(
-              goalStartAt: _goalStartAt,
+              goalStartDate: _goalStartDate,
               enabled: !state.isSaving,
               onChangeRequested: _pickGoalStart,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            CalorieGoalCalculatorEatingWindowCard(
-              startMinuteOfDay: _eatingWindowStartMinuteOfDay,
-              endMinuteOfDay: _eatingWindowEndMinuteOfDay,
-              enabled: !state.isSaving,
-              onChangeRequested: _pickEatingWindow,
             ),
           ],
         );

@@ -15,20 +15,24 @@ void main() {
       expect(result, isTrue);
     });
 
-    test('returns true on Apple platforms', () {
-      final iosResult = shouldActivateFirebaseAppCheck(
+    test('returns true on iOS', () {
+      final result = shouldActivateFirebaseAppCheck(
         isWeb: false,
         platform: TargetPlatform.iOS,
         webRecaptchaSiteKey: '',
       );
-      final macosResult = shouldActivateFirebaseAppCheck(
+
+      expect(result, isTrue);
+    });
+
+    test('returns false on macOS', () {
+      final result = shouldActivateFirebaseAppCheck(
         isWeb: false,
         platform: TargetPlatform.macOS,
         webRecaptchaSiteKey: '',
       );
 
-      expect(iosResult, isTrue);
-      expect(macosResult, isTrue);
+      expect(result, isFalse);
     });
 
     test('returns false on unsupported desktop platform', () {

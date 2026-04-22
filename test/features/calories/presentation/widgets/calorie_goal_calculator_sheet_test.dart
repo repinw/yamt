@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
+import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
@@ -135,7 +137,7 @@ void main() {
     );
     expect(
       find.byKey(CalorieGoalCalculatorSheetKeys.eatingWindowCard),
-      findsOneWidget,
+      findsNothing,
     );
     expect(find.text('1,680 kcal'), findsOneWidget);
   });
@@ -306,11 +308,9 @@ void main() {
     expect(settings.dailyKcalGoal, 2136);
   });
 
-  testWidgets('successful save keeps the configured eating window', (
+  testWidgets('successful save preserves the configured eating window', (
     tester,
   ) async {
-    final repository = FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
     final initialSettings = CalorieGoalSettings.single(
       dailyKcalGoal: 2000,
       calculatorProfile: null,
@@ -318,6 +318,10 @@ void main() {
       eatingWindowStartMinuteOfDay: 8 * 60,
       eatingWindowEndMinuteOfDay: 20 * 60,
     );
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: initialSettings,
+    );
+    addTearDown(repository.dispose);
 
     await tester.pumpWidget(
       _buildHarness(
@@ -355,6 +359,45 @@ void main() {
     expect(
       find.text('Could not save the calculated calorie target.'),
       findsOneWidget,
+    );
+  });
+
+  testWidgets('keeps existing goal start date when editing calculator goal', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    final goalStartDate = DateTime(2026, 4, 10, 16, 30);
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2136,
+          calculatorProfile: const CalorieCalculatorProfile(
+            sex: CalorieCalculatorSex.male,
+            weightKg: 80,
+            heightCm: 180,
+            ageYears: 30,
+            activityLevel: 1.2,
+            goalMode: CalorieGoalMode.maintain,
+            goalSpeedKgPerWeek: 0,
+          ),
+          effectiveDate: goalStartDate,
+          source: CalorieGoalSource.calculator,
+        ),
+      ),
+    );
+    await _openSheet(tester);
+    await _goToResultsWithDefaults(tester);
+
+    final goalStartValue = tester.widget<Text>(
+      find.byKey(CalorieGoalCalculatorSheetKeys.goalStartValue),
+    );
+
+    expect(
+      goalStartValue.data,
+      DateFormat.yMMMd('en').format(DateTime(2026, 4, 10)),
     );
   });
 }

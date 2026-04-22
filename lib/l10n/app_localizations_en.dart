@@ -1212,9 +1212,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesSetGoalAction => 'Set goal manually';
 
   @override
-  String get caloriesSetEatingWindowAction => 'Set eating window';
-
-  @override
   String get caloriesShiftGoalStartAction => 'Move goal start';
 
   @override
@@ -1246,9 +1243,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesGoalStartDateLabel => 'Date';
-
-  @override
-  String get caloriesGoalStartTimeLabel => 'Time';
 
   @override
   String get caloriesGoalStartSaveFailed => 'Could not update goal start.';
@@ -1409,7 +1403,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesCalculatorGoalStartLabel => 'Goal start';
 
   @override
-  String get caloriesCalculatorGoalStartHint => 'Your calorie target history begins from this point.';
+  String get caloriesCalculatorGoalStartHint => 'Your calorie target history begins from this day.';
 
   @override
   String get caloriesCalculatorGoalStartChangeAction => 'Change';
@@ -1419,9 +1413,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesCalculatorEatingWindowHint => 'Used to pace today\'s diary balance throughout the day.';
-
-  @override
-  String get caloriesCalculatorGoalStartFutureError => 'Goal start can\'t be in the future.';
 
   @override
   String caloriesCalculatorMinimumGoalWarning(int minimumKcal) {
@@ -1577,6 +1568,147 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesSummaryViewBalance => 'Balance';
+
+  @override
+  String get caloriesOpenBurnWeekMockAction => 'Open Burn Week mock';
+
+  @override
+  String get burnWeekUseHeartTitle => 'Use heart?';
+
+  @override
+  String burnWeekUseHeartMessage(int dayKcal) {
+    return '1 heart can add or remove one full Burn day of calories ($dayKcal kcal).';
+  }
+
+  @override
+  String get burnWeekActionCancel => 'Cancel';
+
+  @override
+  String get burnWeekActionYes => 'Yes';
+
+  @override
+  String get burnWeekActionNo => 'No';
+
+  @override
+  String get burnWeekActionRemoveDayKcal => '-1 day kcal';
+
+  @override
+  String get burnWeekActionAddDayKcal => '+1 day kcal';
+
+  @override
+  String get burnWeekRunOverTitle => 'Run over';
+
+  @override
+  String burnWeekRunRestartsOn(Object date) {
+    return 'Fresh run starts on $date.';
+  }
+
+  @override
+  String get burnWeekZoneOutOfSafeZoneTitle => 'Out of safe zone';
+
+  @override
+  String get burnWeekZoneBelowRecoverMessage => 'You are below target. Use a heart for one full Burn day leap, or eat more to get back in target.';
+
+  @override
+  String get burnWeekZoneBelowRecoverNoHeartsMessage => 'You are below target. No hearts left. Eat more to get back in target.';
+
+  @override
+  String get burnWeekZoneBelowNeedsHeartTitle => 'Too far below target';
+
+  @override
+  String get burnWeekZoneBelowNeedsHeartMessage => 'There are not enough calories left in this week to recover by eating. Use 1 heart to restore?';
+
+  @override
+  String get burnWeekZoneBelowRunOverMessage => 'There are not enough calories left in this week to recover by eating. No hearts left, so a fresh run starts next day.';
+
+  @override
+  String get burnWeekZoneEatMoreTitle => 'Eat more';
+
+  @override
+  String get burnWeekZoneEatMoreAction => 'Eat more';
+
+  @override
+  String get burnWeekZoneEatMoreMessage => 'Eat more to get back in target.';
+
+  @override
+  String get burnWeekZoneUseHeartAction => 'Use heart';
+
+  @override
+  String get burnWeekZoneAboveFastMessage => 'You tracked too much. Fasting will help to get on track.';
+
+  @override
+  String get burnWeekZoneAboveNeedsHeartMessage => 'You are way over weekly limit. Use 1 heart to reduce one full Burn day of calories?';
+
+  @override
+  String get burnWeekZoneAboveRunOverMessage => 'You are way over weekly limit and have no hearts left. This run ends and a fresh run starts next day.';
+
+  @override
+  String get burnWeekDetailsTitle => 'Burn Week details';
+
+  @override
+  String get burnWeekDetailsHowCalculated => 'How this is calculated';
+
+  @override
+  String get burnWeekDetailsDailyGoal => 'Daily goal';
+
+  @override
+  String get burnWeekDetailsWeekTarget => 'Week target';
+
+  @override
+  String get burnWeekDetailsCurrentTime => 'Current time';
+
+  @override
+  String get burnWeekDetailsStarsHearts => 'Stars / Hearts';
+
+  @override
+  String get burnWeekDetailsHeartKcalUsed => 'Heart kcal used';
+
+  @override
+  String get burnWeekDetailsWeekRatio => 'Week ratio';
+
+  @override
+  String get burnWeekDetailsTargetFormula => 'Target formula';
+
+  @override
+  String get burnWeekDetailsLoggedFoodSoFar => 'Logged food so far';
+
+  @override
+  String get burnWeekDetailsPlannedLaterToday => 'Planned later today';
+
+  @override
+  String get burnWeekDetailsGuardedBurnSoFar => 'Guarded burn so far';
+
+  @override
+  String get burnWeekDetailsWeekCarryover => 'This week carryover';
+
+  @override
+  String get burnWeekDetailsPreviousWeekOverflow => 'Previous week overflow';
+
+  @override
+  String get burnWeekDetailsWeekLeftAfterFood => 'Week left after food';
+
+  @override
+  String get burnWeekDetailsSportCounting => 'Sport counting';
+
+  @override
+  String get burnWeekDetailsSportCountingValue => 'Guarded burn is subtracted in TODAY LEFT.';
+
+  @override
+  String get burnWeekDetailsSafeZone => 'Safe zone';
+
+  @override
+  String get burnWeekInfoTooltip => 'Show Burn Week details';
+
+  @override
+  String burnWeekWeekDayLabel(int week, int day) {
+    return 'Week $week day $day';
+  }
+
+  @override
+  String get burnWeekStatEaten => 'Eaten';
+
+  @override
+  String get burnWeekStatTodayLeft => 'Today left';
 
   @override
   String get caloriesBalanceCarryoverNoteLabel => 'Carryover';

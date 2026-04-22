@@ -1212,9 +1212,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesSetGoalAction => 'Ziel manuell setzen';
 
   @override
-  String get caloriesSetEatingWindowAction => 'Essensfenster setzen';
-
-  @override
   String get caloriesShiftGoalStartAction => 'Zielstart verschieben';
 
   @override
@@ -1246,9 +1243,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesGoalStartDateLabel => 'Datum';
-
-  @override
-  String get caloriesGoalStartTimeLabel => 'Uhrzeit';
 
   @override
   String get caloriesGoalStartSaveFailed => 'Der Zielstart konnte nicht aktualisiert werden.';
@@ -1409,7 +1403,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorGoalStartLabel => 'Zielstart';
 
   @override
-  String get caloriesCalculatorGoalStartHint => 'Dein Kalorienziel-Verlauf beginnt ab diesem Zeitpunkt.';
+  String get caloriesCalculatorGoalStartHint => 'Dein Kalorienziel-Verlauf beginnt ab diesem Tag.';
 
   @override
   String get caloriesCalculatorGoalStartChangeAction => 'Ändern';
@@ -1419,9 +1413,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesCalculatorEatingWindowHint => 'Wird verwendet, um die heutige Tagebuch-Balance über den Tag zu takten.';
-
-  @override
-  String get caloriesCalculatorGoalStartFutureError => 'Der Zielstart darf nicht in der Zukunft liegen.';
 
   @override
   String caloriesCalculatorMinimumGoalWarning(int minimumKcal) {
@@ -1577,6 +1568,147 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesSummaryViewBalance => 'Balance';
+
+  @override
+  String get caloriesOpenBurnWeekMockAction => 'Burn-Week-Mock öffnen';
+
+  @override
+  String get burnWeekUseHeartTitle => 'Herz einsetzen?';
+
+  @override
+  String burnWeekUseHeartMessage(int dayKcal) {
+    return '1 Herz kann einen ganzen Burn-Tag an Kalorien hinzufügen oder abziehen ($dayKcal kcal).';
+  }
+
+  @override
+  String get burnWeekActionCancel => 'Abbrechen';
+
+  @override
+  String get burnWeekActionYes => 'Ja';
+
+  @override
+  String get burnWeekActionNo => 'Nein';
+
+  @override
+  String get burnWeekActionRemoveDayKcal => '-1 Tages-kcal';
+
+  @override
+  String get burnWeekActionAddDayKcal => '+1 Tages-kcal';
+
+  @override
+  String get burnWeekRunOverTitle => 'Run beendet';
+
+  @override
+  String burnWeekRunRestartsOn(Object date) {
+    return 'Frischer Run startet am $date.';
+  }
+
+  @override
+  String get burnWeekZoneOutOfSafeZoneTitle => 'Außerhalb der Sicherheitszone';
+
+  @override
+  String get burnWeekZoneBelowRecoverMessage => 'Du liegst unter dem Ziel. Nutze 1 Herz für einen ganzen Burn-Tag-Sprung oder iss mehr, um wieder ins Ziel zu kommen.';
+
+  @override
+  String get burnWeekZoneBelowRecoverNoHeartsMessage => 'Du liegst unter dem Ziel. Keine Herzen mehr übrig. Iss mehr, um wieder ins Ziel zu kommen.';
+
+  @override
+  String get burnWeekZoneBelowNeedsHeartTitle => 'Zu weit unter dem Ziel';
+
+  @override
+  String get burnWeekZoneBelowNeedsHeartMessage => 'In dieser Woche bleiben nicht genug Kalorien übrig, um das nur mit Essen aufzuholen. 1 Herz zur Wiederherstellung nutzen?';
+
+  @override
+  String get burnWeekZoneBelowRunOverMessage => 'In dieser Woche bleiben nicht genug Kalorien übrig, um das nur mit Essen aufzuholen. Keine Herzen mehr übrig, daher startet am nächsten Tag ein frischer Run.';
+
+  @override
+  String get burnWeekZoneEatMoreTitle => 'Mehr essen';
+
+  @override
+  String get burnWeekZoneEatMoreAction => 'Mehr essen';
+
+  @override
+  String get burnWeekZoneEatMoreMessage => 'Iss mehr, um wieder ins Ziel zu kommen.';
+
+  @override
+  String get burnWeekZoneUseHeartAction => 'Herz nutzen';
+
+  @override
+  String get burnWeekZoneAboveFastMessage => 'Du hast zu viel getrackt. Fasten hilft dir, wieder in Spur zu kommen.';
+
+  @override
+  String get burnWeekZoneAboveNeedsHeartMessage => 'Du liegst weit über dem Wochenlimit. 1 Herz nutzen, um einen ganzen Burn-Tag an Kalorien zu entfernen?';
+
+  @override
+  String get burnWeekZoneAboveRunOverMessage => 'Du liegst weit über dem Wochenlimit und hast keine Herzen mehr. Dieser Run endet und am nächsten Tag startet ein frischer Run.';
+
+  @override
+  String get burnWeekDetailsTitle => 'Burn-Week-Details';
+
+  @override
+  String get burnWeekDetailsHowCalculated => 'So wird es berechnet';
+
+  @override
+  String get burnWeekDetailsDailyGoal => 'Tagesziel';
+
+  @override
+  String get burnWeekDetailsWeekTarget => 'Wochenziel';
+
+  @override
+  String get burnWeekDetailsCurrentTime => 'Aktuelle Zeit';
+
+  @override
+  String get burnWeekDetailsStarsHearts => 'Sterne / Herzen';
+
+  @override
+  String get burnWeekDetailsHeartKcalUsed => 'Verbrauchte Herz-kcal';
+
+  @override
+  String get burnWeekDetailsWeekRatio => 'Wochenfortschritt';
+
+  @override
+  String get burnWeekDetailsTargetFormula => 'Zielformel';
+
+  @override
+  String get burnWeekDetailsLoggedFoodSoFar => 'Bisher erfasstes Essen';
+
+  @override
+  String get burnWeekDetailsPlannedLaterToday => 'Später heute geplant';
+
+  @override
+  String get burnWeekDetailsGuardedBurnSoFar => 'Bisherer Guarded Burn';
+
+  @override
+  String get burnWeekDetailsWeekCarryover => 'Übertrag dieser Woche';
+
+  @override
+  String get burnWeekDetailsPreviousWeekOverflow => 'Übertrag aus letzter Woche';
+
+  @override
+  String get burnWeekDetailsWeekLeftAfterFood => 'Woche übrig nach Essen';
+
+  @override
+  String get burnWeekDetailsSportCounting => 'Sport-Zählung';
+
+  @override
+  String get burnWeekDetailsSportCountingValue => 'Guarded Burn wird in HEUTE ÜBRIG abgezogen.';
+
+  @override
+  String get burnWeekDetailsSafeZone => 'Sicherheitszone';
+
+  @override
+  String get burnWeekInfoTooltip => 'Burn-Week-Details anzeigen';
+
+  @override
+  String burnWeekWeekDayLabel(int week, int day) {
+    return 'Woche $week Tag $day';
+  }
+
+  @override
+  String get burnWeekStatEaten => 'Gegessen';
+
+  @override
+  String get burnWeekStatTodayLeft => 'Heute übrig';
 
   @override
   String get caloriesBalanceCarryoverNoteLabel => 'Übertrag';
