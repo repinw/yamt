@@ -728,6 +728,19 @@
   "caloriesCalculatorGoalStartHint":
       "Your calorie target history begins from this day.",
   "caloriesCalculatorGoalStartChangeAction": "Change",
+  "caloriesCalculatorOnboardingStartTitle": "When should your goal start?",
+  "caloriesCalculatorOnboardingStartNowAction": "Start now",
+  "caloriesCalculatorOnboardingStartLaterAction": "Start later",
+  "caloriesCalculatorOnboardingStartLaterHint":
+      "Today stays consequence-free. Burn Week starts automatically from this day.",
+  "caloriesCalculatorOnboardingChooseFutureDateAction": "Choose day",
+  "caloriesCalculatorOnboardingCatchUpLabel":
+      "How much have you eaten so far?",
+  "caloriesCalculatorOnboardingCatchUpLowAction": "Little",
+  "caloriesCalculatorOnboardingCatchUpNormalAction": "Normal",
+  "caloriesCalculatorOnboardingCatchUpHighAction": "A lot",
+  "caloriesCalculatorOnboardingCatchUpHint":
+      "We place you safely into today's buffer zone.",
   "caloriesCalculatorEatingWindowLabel": "Eating window",
   "caloriesCalculatorEatingWindowHint":
       "Used to pace today's diary balance throughout the day.",
@@ -843,6 +856,14 @@
   "burnWeekRunOverTitle": "Run over",
   "burnWeekRunRestartsOn": "Fresh run starts on {date}.",
   "@burnWeekRunRestartsOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "burnWeekPracticeDayTitle": "Practice day",
+  "burnWeekPracticeDayMessage":
+      "Today does not count yet. You can try tracking, and Burn Week starts on {date}.",
+  "@burnWeekPracticeDayMessage": {
     "placeholders": {
       "date": {}
     }
@@ -1021,7 +1042,7 @@
   },
   "caloriesWeekBalanceStable": "Balanced since your goal started.",
   "caloriesWeekBalanceStartsLater":
-      "Your goal starts on {date}. The balance will begin automatically then.",
+      "This day is not counted yet. You can try tracking, and Burn Week plus the weekly check-in start on {date}.",
   "@caloriesWeekBalanceStartsLater": {
     "placeholders": {
       "date": {

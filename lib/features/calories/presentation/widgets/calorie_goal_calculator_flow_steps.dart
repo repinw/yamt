@@ -94,11 +94,28 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
               ),
             ],
             const SizedBox(height: AppSpacing.md),
-            CalorieGoalCalculatorGoalStartCard(
-              goalStartDate: _goalStartDate,
-              enabled: !state.isSaving,
-              onChangeRequested: _pickGoalStart,
-            ),
+            if (widget.isOnboarding)
+              CalorieGoalCalculatorOnboardingStartCard(
+                goalStartDate: _goalStartDate,
+                catchUpEstimate: _onboardingCatchUpEstimate,
+                startNowSelected:
+                    _onboardingGoalStartChoice ==
+                    _OnboardingGoalStartChoice.now,
+                startLaterSelected:
+                    _onboardingGoalStartChoice ==
+                    _OnboardingGoalStartChoice.later,
+                enabled: !state.isSaving,
+                onStartNowSelected: _selectOnboardingStartNow,
+                onStartLaterSelected: _selectOnboardingStartLater,
+                onChangeFutureDateRequested: _pickOnboardingFutureGoalStart,
+                onCatchUpEstimateSelected: _selectOnboardingCatchUpEstimate,
+              )
+            else
+              CalorieGoalCalculatorGoalStartCard(
+                goalStartDate: _goalStartDate,
+                enabled: !state.isSaving,
+                onChangeRequested: _pickGoalStart,
+              ),
           ],
         );
     }

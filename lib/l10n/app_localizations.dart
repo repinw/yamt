@@ -2795,6 +2795,66 @@ abstract class AppLocalizations {
   /// **'Change'**
   String get caloriesCalculatorGoalStartChangeAction;
 
+  /// No description provided for @caloriesCalculatorOnboardingStartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When should your goal start?'**
+  String get caloriesCalculatorOnboardingStartTitle;
+
+  /// No description provided for @caloriesCalculatorOnboardingStartNowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start now'**
+  String get caloriesCalculatorOnboardingStartNowAction;
+
+  /// No description provided for @caloriesCalculatorOnboardingStartLaterAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start later'**
+  String get caloriesCalculatorOnboardingStartLaterAction;
+
+  /// No description provided for @caloriesCalculatorOnboardingStartLaterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Today stays consequence-free. Burn Week starts automatically from this day.'**
+  String get caloriesCalculatorOnboardingStartLaterHint;
+
+  /// No description provided for @caloriesCalculatorOnboardingChooseFutureDateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose day'**
+  String get caloriesCalculatorOnboardingChooseFutureDateAction;
+
+  /// No description provided for @caloriesCalculatorOnboardingCatchUpLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'How much have you eaten so far?'**
+  String get caloriesCalculatorOnboardingCatchUpLabel;
+
+  /// No description provided for @caloriesCalculatorOnboardingCatchUpLowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Little'**
+  String get caloriesCalculatorOnboardingCatchUpLowAction;
+
+  /// No description provided for @caloriesCalculatorOnboardingCatchUpNormalAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get caloriesCalculatorOnboardingCatchUpNormalAction;
+
+  /// No description provided for @caloriesCalculatorOnboardingCatchUpHighAction.
+  ///
+  /// In en, this message translates to:
+  /// **'A lot'**
+  String get caloriesCalculatorOnboardingCatchUpHighAction;
+
+  /// No description provided for @caloriesCalculatorOnboardingCatchUpHint.
+  ///
+  /// In en, this message translates to:
+  /// **'We place you safely into today\'s buffer zone.'**
+  String get caloriesCalculatorOnboardingCatchUpHint;
+
   /// No description provided for @caloriesCalculatorEatingWindowLabel.
   ///
   /// In en, this message translates to:
@@ -3160,6 +3220,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fresh run starts on {date}.'**
   String burnWeekRunRestartsOn(Object date);
+
+  /// No description provided for @burnWeekPracticeDayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice day'**
+  String get burnWeekPracticeDayTitle;
+
+  /// No description provided for @burnWeekPracticeDayMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Today does not count yet. You can try tracking, and Burn Week starts on {date}.'**
+  String burnWeekPracticeDayMessage(Object date);
 
   /// No description provided for @burnWeekZoneOutOfSafeZoneTitle.
   ///
@@ -3608,7 +3680,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesWeekBalanceStartsLater.
   ///
   /// In en, this message translates to:
-  /// **'Your goal starts on {date}. The balance will begin automatically then.'**
+  /// **'This day is not counted yet. You can try tracking, and Burn Week plus the weekly check-in start on {date}.'**
   String caloriesWeekBalanceStartsLater(String date);
 
   /// No description provided for @caloriesWeekBalanceStartedToday.

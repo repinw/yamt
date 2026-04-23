@@ -53,4 +53,4 @@ final class DiaryActivitySummaryProvider
 }
 
 String _$diaryActivitySummaryHash() =>
-    r'e505684e491972dd79a45e0cebd28580304d90e0';
+    r'ed2a340eabc70eda2dadc4812c0852e6c43e913d';

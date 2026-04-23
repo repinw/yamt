@@ -46,4 +46,4 @@ final class CalorieGoalOnboardingCompletedProvider
 }
 
 String _$calorieGoalOnboardingCompletedHash() =>
-    r'dfb7c7819184e1a1fd314f59a69b7200fdb964bc';
+    r'ff181fe0213d2da986f262905463fd2e051f50d9';

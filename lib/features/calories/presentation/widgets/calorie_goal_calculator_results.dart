@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_onboarding_start.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -133,12 +134,209 @@ class CalorieGoalCalculatorGoalStartCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final dateFormat = DateFormat.yMMMd(locale);
 
-    return DecoratedBox(
+    return _GoalStartCardShell(
       key: CalorieGoalCalculatorSheetKeys.goalStartCard,
+      title: l10n.caloriesCalculatorGoalStartLabel,
+      children: [
+        Text(
+          dateFormat.format(goalStartDate),
+          key: CalorieGoalCalculatorSheetKeys.goalStartValue,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        _GoalStartCardHint(text: l10n.caloriesCalculatorGoalStartHint),
+        const SizedBox(height: AppSpacing.md),
+        OutlinedButton.icon(
+          key: CalorieGoalCalculatorSheetKeys.goalStartChangeButton,
+          onPressed: enabled ? onChangeRequested : null,
+          icon: const Icon(Icons.event_outlined),
+          label: Text(l10n.caloriesCalculatorGoalStartChangeAction),
+        ),
+      ],
+    );
+  }
+}
+
+/// Defines onboarding start card for same-day or future kickoff.
+class CalorieGoalCalculatorOnboardingStartCard extends StatelessWidget {
+  /// The onboarding start card.
+  const CalorieGoalCalculatorOnboardingStartCard({
+    required this.goalStartDate,
+    required this.catchUpEstimate,
+    required this.startNowSelected,
+    required this.startLaterSelected,
+    required this.onStartNowSelected,
+    required this.onStartLaterSelected,
+    required this.onChangeFutureDateRequested,
+    required this.onCatchUpEstimateSelected,
+    super.key,
+    this.enabled = true,
+  });
+
+  /// Selected goal start date.
+  final DateTime goalStartDate;
+
+  /// Selected catch-up estimate.
+  final CalorieGoalOnboardingCatchUpEstimate catchUpEstimate;
+
+  /// Whether "start now" is selected.
+  final bool startNowSelected;
+
+  /// Whether "start later" is selected.
+  final bool startLaterSelected;
+
+  /// Called when user chooses today.
+  final VoidCallback onStartNowSelected;
+
+  /// Called when user chooses later start.
+  final VoidCallback onStartLaterSelected;
+
+  /// Called when user wants another future day.
+  final VoidCallback onChangeFutureDateRequested;
+
+  /// Called when catch-up estimate changes.
+  final ValueChanged<CalorieGoalOnboardingCatchUpEstimate>
+  onCatchUpEstimateSelected;
+
+  /// Whether controls enabled.
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final dateFormat = DateFormat.yMMMd(locale);
+
+    return _GoalStartCardShell(
+      key: CalorieGoalCalculatorSheetKeys.goalStartCard,
+      title: l10n.caloriesCalculatorOnboardingStartTitle,
+      children: [
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: [
+            ChoiceChip(
+              key: CalorieGoalCalculatorSheetKeys.goalStartNowOption,
+              label: Text(l10n.caloriesCalculatorOnboardingStartNowAction),
+              selected: startNowSelected,
+              onSelected: enabled ? (_) => onStartNowSelected() : null,
+            ),
+            ChoiceChip(
+              key: CalorieGoalCalculatorSheetKeys.goalStartLaterOption,
+              label: Text(
+                l10n.caloriesCalculatorOnboardingStartLaterAction,
+              ),
+              selected: startLaterSelected,
+              onSelected: enabled ? (_) => onStartLaterSelected() : null,
+            ),
+          ],
+        ),
+        if (startNowSelected || startLaterSelected)
+          const SizedBox(height: AppSpacing.md),
+        if (startNowSelected) ...[
+          _GoalStartCardHint(
+            text: l10n.caloriesCalculatorOnboardingCatchUpLabel,
+            isBody: true,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              ChoiceChip(
+                key: CalorieGoalCalculatorSheetKeys.catchUpLowOption,
+                label: Text(
+                  l10n.caloriesCalculatorOnboardingCatchUpLowAction,
+                ),
+                selected:
+                    catchUpEstimate == CalorieGoalOnboardingCatchUpEstimate.low,
+                onSelected: enabled
+                    ? (_) => onCatchUpEstimateSelected(
+                        CalorieGoalOnboardingCatchUpEstimate.low,
+                      )
+                    : null,
+              ),
+              ChoiceChip(
+                key: CalorieGoalCalculatorSheetKeys.catchUpNormalOption,
+                label: Text(
+                  l10n.caloriesCalculatorOnboardingCatchUpNormalAction,
+                ),
+                selected:
+                    catchUpEstimate ==
+                    CalorieGoalOnboardingCatchUpEstimate.normal,
+                onSelected: enabled
+                    ? (_) => onCatchUpEstimateSelected(
+                        CalorieGoalOnboardingCatchUpEstimate.normal,
+                      )
+                    : null,
+              ),
+              ChoiceChip(
+                key: CalorieGoalCalculatorSheetKeys.catchUpHighOption,
+                label: Text(
+                  l10n.caloriesCalculatorOnboardingCatchUpHighAction,
+                ),
+                selected:
+                    catchUpEstimate ==
+                    CalorieGoalOnboardingCatchUpEstimate.high,
+                onSelected: enabled
+                    ? (_) => onCatchUpEstimateSelected(
+                        CalorieGoalOnboardingCatchUpEstimate.high,
+                      )
+                    : null,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          _GoalStartCardHint(
+            text: l10n.caloriesCalculatorOnboardingCatchUpHint,
+          ),
+        ] else if (startLaterSelected) ...[
+          Text(
+            dateFormat.format(goalStartDate),
+            key: CalorieGoalCalculatorSheetKeys.goalStartValue,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          _GoalStartCardHint(
+            text: l10n.caloriesCalculatorOnboardingStartLaterHint,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          OutlinedButton.icon(
+            key: CalorieGoalCalculatorSheetKeys.goalStartChangeButton,
+            onPressed: enabled ? onChangeFutureDateRequested : null,
+            icon: const Icon(Icons.event_outlined),
+            label: Text(
+              l10n.caloriesCalculatorOnboardingChooseFutureDateAction,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _GoalStartCardShell extends StatelessWidget {
+  const _GoalStartCardShell({
+    required this.title,
+    required this.children,
+    super.key,
+  });
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return DecoratedBox(
       decoration: BoxDecoration(
         border: Border.all(color: colors.outlineVariant),
         borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -149,36 +347,38 @@ class CalorieGoalCalculatorGoalStartCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.caloriesCalculatorGoalStartLabel,
+              title,
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              dateFormat.format(goalStartDate),
-              key: CalorieGoalCalculatorSheetKeys.goalStartValue,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              l10n.caloriesCalculatorGoalStartHint,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
-            ),
             const SizedBox(height: AppSpacing.md),
-            OutlinedButton.icon(
-              key: CalorieGoalCalculatorSheetKeys.goalStartChangeButton,
-              onPressed: enabled ? onChangeRequested : null,
-              icon: const Icon(Icons.event_outlined),
-              label: Text(l10n.caloriesCalculatorGoalStartChangeAction),
-            ),
+            ...children,
           ],
         ),
       ),
+    );
+  }
+}
+
+class _GoalStartCardHint extends StatelessWidget {
+  const _GoalStartCardHint({
+    required this.text,
+    this.isBody = false,
+  });
+
+  final String text;
+  final bool isBody;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final baseStyle = isBody
+        ? Theme.of(context).textTheme.bodyMedium
+        : Theme.of(context).textTheme.bodySmall;
+    return Text(
+      text,
+      style: baseStyle?.copyWith(color: colors.onSurfaceVariant),
     );
   }
 }

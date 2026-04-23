@@ -44,6 +44,7 @@ void main() {
     tester,
   ) async {
     final goalStartDate = DateTime(2026, 4, 10, 16, 30);
+    final countingStartDate = DateTime(2026, 4, 12);
     final initialSettings = CalorieGoalSettings.single(
       dailyKcalGoal: 2450,
       calculatorProfile: const CalorieCalculatorProfile(
@@ -56,6 +57,7 @@ void main() {
         goalSpeedKgPerWeek: 0,
       ),
       effectiveDate: goalStartDate,
+      countingStartDate: countingStartDate,
       source: CalorieGoalSource.calculator,
       weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
         windowStartDate: DateTime(2026, 4, 8),
@@ -79,7 +81,7 @@ void main() {
 
     expect(
       goalStartValue.data,
-      DateFormat.yMMMd('en').format(DateTime(2026, 4, 10)),
+      DateFormat.yMMMd('en').format(countingStartDate),
     );
   });
 }

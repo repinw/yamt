@@ -268,6 +268,31 @@ abstract final class CalorieGoalCalculatorSheetKeys {
     'calorie_calculator_goal_start_change_button',
   );
 
+  /// The onboarding start-now option.
+  static const goalStartNowOption = Key(
+    'calorie_calculator_goal_start_now_option',
+  );
+
+  /// The onboarding start-later option.
+  static const goalStartLaterOption = Key(
+    'calorie_calculator_goal_start_later_option',
+  );
+
+  /// The onboarding catch-up low option.
+  static const catchUpLowOption = Key(
+    'calorie_calculator_catch_up_low_option',
+  );
+
+  /// The onboarding catch-up normal option.
+  static const catchUpNormalOption = Key(
+    'calorie_calculator_catch_up_normal_option',
+  );
+
+  /// The onboarding catch-up high option.
+  static const catchUpHighOption = Key(
+    'calorie_calculator_catch_up_high_option',
+  );
+
   /// The eating window card.
   static const eatingWindowCard = Key('calorie_calculator_eating_window_card');
 

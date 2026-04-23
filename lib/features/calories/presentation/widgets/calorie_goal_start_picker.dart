@@ -7,16 +7,31 @@ abstract final class CalorieGoalStartPicker {
     BuildContext context, {
     required DateTime initialGoalStartDate,
     DateTime? now,
+    DateTime? firstDate,
+    DateTime? lastDate,
   }) async {
     final referenceDate = normalizeDate(now ?? DateTime.now());
+    final normalizedFirstDate = normalizeDate(
+      firstDate ??
+          DateTime(
+            referenceDate.year - 10,
+          ),
+    );
+    final normalizedLastDate = normalizeDate(lastDate ?? referenceDate);
     final normalizedInitialDate = normalizeDate(initialGoalStartDate);
+    final clampedInitialDate =
+        normalizedInitialDate.isBefore(
+          normalizedFirstDate,
+        )
+        ? normalizedFirstDate
+        : normalizedInitialDate.isAfter(normalizedLastDate)
+        ? normalizedLastDate
+        : normalizedInitialDate;
     final pickedDate = await showDatePicker(
       context: context,
-      initialDate: normalizedInitialDate.isAfter(referenceDate)
-          ? referenceDate
-          : normalizedInitialDate,
-      firstDate: DateTime(referenceDate.year - 10),
-      lastDate: referenceDate,
+      initialDate: clampedInitialDate,
+      firstDate: normalizedFirstDate,
+      lastDate: normalizedLastDate,
     );
     if (!context.mounted) {
       return null;

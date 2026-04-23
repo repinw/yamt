@@ -100,6 +100,7 @@ class CalorieWeekOverview {
     required this.todayFlexibleGoalKcal,
     required this.goalStartsInFuture,
     required this.nextGoalStartDate,
+    required this.futureGoalKcal,
   });
 
   /// The days.
@@ -123,11 +124,14 @@ class CalorieWeekOverview {
   /// The today flexible goal kcal.
   final double todayFlexibleGoalKcal;
 
-  /// The goal starts in future.
+  /// Whether official Burn Week and weekly check-in counting starts later.
   final bool goalStartsInFuture;
 
-  /// The next goal start date.
+  /// The next official counting start date.
   final DateTime? nextGoalStartDate;
+
+  /// The active goal kcal shown before official counting starts.
+  final double? futureGoalKcal;
 }
 
 /// Calorie week consumption snapshot.
@@ -249,8 +253,14 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     visibleOverviews: adjustedOverviews,
   );
   final hasActiveGoalToday = settings.goalEntryForDay(today)?.hasGoal == true;
+  final hasCountedGoalToday = settings.countingGoalEntryForDay(today) != null;
   final nextGoalStartDate = settings.nextGoalStartAfterDay(today);
-  final goalStartsInFuture = !hasActiveGoalToday && nextGoalStartDate != null;
+  final goalStartsInFuture = !hasCountedGoalToday && nextGoalStartDate != null;
+  final futureGoalKcal = hasActiveGoalToday
+      ? settings.goalKcalForDay(today)
+      : nextGoalStartDate == null
+      ? null
+      : settings.goalKcalForDay(nextGoalStartDate);
   final carryoverBeforeTodayKcal = cycleTotals.carryoverBeforeTodayKcal;
   final todayFlexibleGoalKcal = math.max<double>(
     0,
@@ -266,6 +276,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     todayFlexibleGoalKcal: todayFlexibleGoalKcal,
     goalStartsInFuture: goalStartsInFuture,
     nextGoalStartDate: nextGoalStartDate,
+    futureGoalKcal: futureGoalKcal,
   );
 }
 

@@ -107,7 +107,7 @@ class _CalorieLearnedTdeeGoalSheetState
         widget.initialSettings.activeGoalEntryForDay(DateTime.now()) ??
         widget.initialSettings.latestGoalEntry;
     _goalStartDate = CalorieGoalStartPicker.normalizeDate(
-      initialGoalEntry?.effectiveDate ?? DateTime.now(),
+      initialGoalEntry?.effectiveCountingStartDate ?? DateTime.now(),
     );
   }
 

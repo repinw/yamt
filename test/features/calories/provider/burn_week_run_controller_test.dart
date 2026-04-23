@@ -52,21 +52,106 @@ void main() {
     return container;
   }
 
+  Future<void> syncWeek(
+    ProviderContainer container, {
+    required DateTime currentDay,
+    required DateTime weekStartDate,
+    required bool missedTrackingThisWeek,
+    List<bool>? missedTrackingForClosedWeeks,
+  }) async {
+    await container.read(burnWeekRunControllerProvider.future);
+    await container
+        .read(burnWeekRunControllerProvider.notifier)
+        .syncForWeek(
+          currentDay: currentDay,
+          weekStartDate: weekStartDate,
+          missedTrackingThisWeek: missedTrackingThisWeek,
+          missedTrackingForClosedWeeks: missedTrackingForClosedWeeks,
+        );
+  }
+
+  BurnWeekRunState buildState({
+    required String? currentWeekStartDayKey,
+    String? lastActiveDayKey,
+    required int runWeekNumber,
+    required int starCount,
+    required int heartCount,
+    double heartCreditKcal = 0,
+    bool starBrokeThisWeek = false,
+    bool missedTrackingThisWeek = false,
+  }) {
+    return BurnWeekRunState(
+      currentWeekStartDayKey: currentWeekStartDayKey,
+      lastActiveDayKey: lastActiveDayKey,
+      runWeekNumber: runWeekNumber,
+      starCount: starCount,
+      heartCount: heartCount,
+      heartCreditKcal: heartCreditKcal,
+      starBrokeThisWeek: starBrokeThisWeek,
+      missedTrackingThisWeek: missedTrackingThisWeek,
+    );
+  }
+
+  Future<BurnWeekRunState> syncAcrossThreeClosedWeeks({
+    required List<bool> missedTrackingForClosedWeeks,
+  }) async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      buildState(
+        currentWeekStartDayKey: '2026-4-1',
+        runWeekNumber: 1,
+        starCount: 0,
+        heartCount: 3,
+      ),
+    );
+    final container = buildContainer(repository);
+
+    await syncWeek(
+      container,
+      currentDay: DateTime(2026, 4, 22),
+      weekStartDate: DateTime(2026, 4, 22),
+      missedTrackingThisWeek: false,
+      missedTrackingForClosedWeeks: missedTrackingForClosedWeeks,
+    );
+    return repository.state;
+  }
+
+  Future<BurnWeekRunState> syncClosingWeek({
+    required bool missedTrackingForClosedWeek,
+  }) async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      buildState(
+        currentWeekStartDayKey: '2026-4-14',
+        lastActiveDayKey: '2026-4-13',
+        runWeekNumber: 1,
+        starCount: 0,
+        heartCount: 3,
+      ),
+    );
+    final container = buildContainer(repository);
+
+    await syncWeek(
+      container,
+      currentDay: DateTime(2026, 4, 21),
+      weekStartDate: DateTime(2026, 4, 21),
+      missedTrackingThisWeek: false,
+      missedTrackingForClosedWeeks: <bool>[missedTrackingForClosedWeek],
+    );
+    return repository.state;
+  }
+
   test('syncForWeek initializes first week key', () async {
     final repository = _FakeBurnWeekRunStateRepository(
       const BurnWeekRunState.initial(),
     );
     final container = buildContainer(repository);
 
-    await container.read(burnWeekRunControllerProvider.future);
-    await container
-        .read(burnWeekRunControllerProvider.notifier)
-        .syncForWeek(
-          currentDay: DateTime(2026, 4, 21),
-          weekStartDate: DateTime(2026, 4, 21),
-          missedTrackingThisWeek: false,
-          missedTrackingForClosedWeeks: const <bool>[false],
-        );
+    await syncWeek(
+      container,
+      currentDay: DateTime(2026, 4, 21),
+      weekStartDate: DateTime(2026, 4, 21),
+      missedTrackingThisWeek: false,
+      missedTrackingForClosedWeeks: const <bool>[false],
+    );
 
     expect(repository.state.currentWeekStartDayKey, '2026-4-21');
     expect(repository.state.lastActiveDayKey, '2026-4-21');
@@ -76,31 +161,27 @@ void main() {
   });
 
   test(
-    'syncForWeek advances week and awards star after perfect week',
+      'syncForWeek advances week and awards star after perfect week',
     () async {
       final repository = _FakeBurnWeekRunStateRepository(
-        const BurnWeekRunState(
+        buildState(
           currentWeekStartDayKey: '2026-04-14',
           lastActiveDayKey: '2026-04-20',
           runWeekNumber: 1,
           starCount: 0,
           heartCount: 2,
           heartCreditKcal: 300,
-          starBrokeThisWeek: false,
-          missedTrackingThisWeek: false,
         ),
       );
       final container = buildContainer(repository);
 
-      await container.read(burnWeekRunControllerProvider.future);
-      await container
-          .read(burnWeekRunControllerProvider.notifier)
-          .syncForWeek(
-            currentDay: DateTime(2026, 4, 21),
-            weekStartDate: DateTime(2026, 4, 21),
-            missedTrackingThisWeek: false,
-            missedTrackingForClosedWeeks: const <bool>[false],
-          );
+      await syncWeek(
+        container,
+        currentDay: DateTime(2026, 4, 21),
+        weekStartDate: DateTime(2026, 4, 21),
+        missedTrackingThisWeek: false,
+        missedTrackingForClosedWeeks: const <bool>[false],
+      );
 
       expect(repository.state.currentWeekStartDayKey, '2026-4-21');
       expect(repository.state.runWeekNumber, 2);
@@ -114,28 +195,23 @@ void main() {
     'syncForWeek normalizes padded stored week keys without advancing',
     () async {
       final repository = _FakeBurnWeekRunStateRepository(
-        const BurnWeekRunState(
+        buildState(
           currentWeekStartDayKey: '2026-04-21',
           lastActiveDayKey: '2026-04-21',
           runWeekNumber: 2,
           starCount: 1,
           heartCount: 3,
-          heartCreditKcal: 0,
-          starBrokeThisWeek: false,
-          missedTrackingThisWeek: false,
         ),
       );
       final container = buildContainer(repository);
 
-      await container.read(burnWeekRunControllerProvider.future);
-      await container
-          .read(burnWeekRunControllerProvider.notifier)
-          .syncForWeek(
-            currentDay: DateTime(2026, 4, 21),
-            weekStartDate: DateTime(2026, 4, 21),
-            missedTrackingThisWeek: false,
-            missedTrackingForClosedWeeks: const <bool>[false],
-          );
+      await syncWeek(
+        container,
+        currentDay: DateTime(2026, 4, 21),
+        weekStartDate: DateTime(2026, 4, 21),
+        missedTrackingThisWeek: false,
+        missedTrackingForClosedWeeks: const <bool>[false],
+      );
 
       expect(repository.state.currentWeekStartDayKey, '2026-4-21');
       expect(repository.state.lastActiveDayKey, '2026-4-21');
@@ -146,14 +222,11 @@ void main() {
 
   test('usePositiveHeart spends heart and adds heart credit', () async {
     final repository = _FakeBurnWeekRunStateRepository(
-      const BurnWeekRunState(
+      buildState(
         currentWeekStartDayKey: '2026-04-21',
         runWeekNumber: 2,
         starCount: 0,
         heartCount: 3,
-        heartCreditKcal: 0,
-        starBrokeThisWeek: false,
-        missedTrackingThisWeek: false,
       ),
     );
     final container = buildContainer(repository);
@@ -165,6 +238,27 @@ void main() {
 
     expect(repository.state.heartCount, 2);
     expect(repository.state.heartCreditKcal, 500);
+  });
+
+  test('bootstrapRunFrom seeds a fresh onboarding position', () async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      const BurnWeekRunState.initial(),
+    );
+    final container = buildContainer(repository);
+
+    await container.read(burnWeekRunControllerProvider.future);
+    await container
+        .read(burnWeekRunControllerProvider.notifier)
+        .bootstrapRunFrom(
+          weekStartDate: DateTime(2026, 4, 21),
+          heartCreditKcal: 875,
+        );
+
+    expect(repository.state.currentWeekStartDayKey, '2026-4-21');
+    expect(repository.state.runWeekNumber, 1);
+    expect(repository.state.starCount, 0);
+    expect(repository.state.heartCount, 3);
+    expect(repository.state.heartCreditKcal, 875);
   });
 
   test(
@@ -273,126 +367,48 @@ void main() {
   );
 
   test('syncForWeek catches up across multiple missed weeks', () async {
-    final repository = _FakeBurnWeekRunStateRepository(
-      const BurnWeekRunState(
-        currentWeekStartDayKey: '2026-4-1',
-        runWeekNumber: 1,
-        starCount: 0,
-        heartCount: 3,
-        heartCreditKcal: 0,
-        starBrokeThisWeek: false,
-        missedTrackingThisWeek: false,
-      ),
+    final state = await syncAcrossThreeClosedWeeks(
+      missedTrackingForClosedWeeks: const <bool>[true, true, true],
     );
-    final container = buildContainer(repository);
 
-    await container.read(burnWeekRunControllerProvider.future);
-    await container
-        .read(burnWeekRunControllerProvider.notifier)
-        .syncForWeek(
-          currentDay: DateTime(2026, 4, 22),
-          weekStartDate: DateTime(2026, 4, 22),
-          missedTrackingThisWeek: false,
-          missedTrackingForClosedWeeks: const <bool>[true, true, true],
-        );
-
-    expect(repository.state.currentWeekStartDayKey, '2026-4-22');
-    expect(repository.state.runWeekNumber, 4);
-    expect(repository.state.starCount, 0);
+    expect(state.currentWeekStartDayKey, '2026-4-22');
+    expect(state.runWeekNumber, 4);
+    expect(state.starCount, 0);
   });
 
   test('syncForWeek scores multiple fully tracked closed weeks', () async {
-    final repository = _FakeBurnWeekRunStateRepository(
-      const BurnWeekRunState(
-        currentWeekStartDayKey: '2026-4-1',
-        runWeekNumber: 1,
-        starCount: 0,
-        heartCount: 3,
-        heartCreditKcal: 0,
-        starBrokeThisWeek: false,
-        missedTrackingThisWeek: false,
-      ),
+    final state = await syncAcrossThreeClosedWeeks(
+      missedTrackingForClosedWeeks: const <bool>[false, false, false],
     );
-    final container = buildContainer(repository);
 
-    await container.read(burnWeekRunControllerProvider.future);
-    await container
-        .read(burnWeekRunControllerProvider.notifier)
-        .syncForWeek(
-          currentDay: DateTime(2026, 4, 22),
-          weekStartDate: DateTime(2026, 4, 22),
-          missedTrackingThisWeek: false,
-          missedTrackingForClosedWeeks: const <bool>[false, false, false],
-        );
-
-    expect(repository.state.currentWeekStartDayKey, '2026-4-22');
-    expect(repository.state.runWeekNumber, 4);
-    expect(repository.state.starCount, 3);
+    expect(state.currentWeekStartDayKey, '2026-4-22');
+    expect(state.runWeekNumber, 4);
+    expect(state.starCount, 3);
   });
 
   test(
     'syncForWeek scores the closing week from missed-tracking state',
     () async {
-      final repository = _FakeBurnWeekRunStateRepository(
-        const BurnWeekRunState(
-          currentWeekStartDayKey: '2026-4-14',
-          lastActiveDayKey: '2026-4-13',
-          runWeekNumber: 1,
-          starCount: 0,
-          heartCount: 3,
-          heartCreditKcal: 0,
-          starBrokeThisWeek: false,
-          missedTrackingThisWeek: false,
-        ),
+      final state = await syncClosingWeek(
+        missedTrackingForClosedWeek: false,
       );
-      final container = buildContainer(repository);
 
-      await container.read(burnWeekRunControllerProvider.future);
-      await container
-          .read(burnWeekRunControllerProvider.notifier)
-          .syncForWeek(
-            currentDay: DateTime(2026, 4, 21),
-            weekStartDate: DateTime(2026, 4, 21),
-            missedTrackingThisWeek: false,
-            missedTrackingForClosedWeeks: const <bool>[false],
-          );
-
-      expect(repository.state.currentWeekStartDayKey, '2026-4-21');
-      expect(repository.state.lastActiveDayKey, '2026-4-21');
-      expect(repository.state.runWeekNumber, 2);
-      expect(repository.state.starCount, 1);
+      expect(state.currentWeekStartDayKey, '2026-4-21');
+      expect(state.lastActiveDayKey, '2026-4-21');
+      expect(state.runWeekNumber, 2);
+      expect(state.starCount, 1);
     },
   );
 
   test('syncForWeek honors a missed closed week from diary data', () async {
-    final repository = _FakeBurnWeekRunStateRepository(
-      const BurnWeekRunState(
-        currentWeekStartDayKey: '2026-4-14',
-        lastActiveDayKey: '2026-4-13',
-        runWeekNumber: 1,
-        starCount: 0,
-        heartCount: 3,
-        heartCreditKcal: 0,
-        starBrokeThisWeek: false,
-        missedTrackingThisWeek: false,
-      ),
+    final state = await syncClosingWeek(
+      missedTrackingForClosedWeek: true,
     );
-    final container = buildContainer(repository);
 
-    await container.read(burnWeekRunControllerProvider.future);
-    await container
-        .read(burnWeekRunControllerProvider.notifier)
-        .syncForWeek(
-          currentDay: DateTime(2026, 4, 21),
-          weekStartDate: DateTime(2026, 4, 21),
-          missedTrackingThisWeek: false,
-          missedTrackingForClosedWeeks: const <bool>[true],
-        );
-
-    expect(repository.state.currentWeekStartDayKey, '2026-4-21');
-    expect(repository.state.lastActiveDayKey, '2026-4-21');
-    expect(repository.state.runWeekNumber, 2);
-    expect(repository.state.starCount, 0);
+    expect(state.currentWeekStartDayKey, '2026-4-21');
+    expect(state.lastActiveDayKey, '2026-4-21');
+    expect(state.runWeekNumber, 2);
+    expect(state.starCount, 0);
   });
 
   test('restartRunFrom resets progress and anchors new week start', () async {

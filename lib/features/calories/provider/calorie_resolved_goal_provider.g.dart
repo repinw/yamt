@@ -72,7 +72,7 @@ final class ResolvedCalorieGoalForDayProvider
 }
 
 String _$resolvedCalorieGoalForDayHash() =>
-    r'aebce3743e56d9e813bba8b8b2fc131c72f317ef';
+    r'0e3cd6f33ada4e0eceb86014f5b663fca6856554';
 
 /// Resolved calorie goal for day.
 

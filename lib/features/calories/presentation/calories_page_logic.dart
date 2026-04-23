@@ -62,5 +62,6 @@ CalorieWeekOverview _fallbackWeekOverview({
     todayFlexibleGoalKcal: goalKcal,
     goalStartsInFuture: false,
     nextGoalStartDate: null,
+    futureGoalKcal: null,
   );
 }

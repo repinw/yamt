@@ -362,6 +362,59 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
     final numberFormat = NumberFormat.decimalPattern(locale);
     final colors = Theme.of(context).colorScheme;
     final now = DateTime.now();
+    if (weekOverview.goalStartsInFuture &&
+        weekOverview.nextGoalStartDate != null) {
+      final dateFormat = DateFormat.yMMMd(locale);
+      final futureGoalText = weekOverview.futureGoalKcal == null
+          ? null
+          : '${l10n.caloriesGoalLabel}: '
+                '${numberFormat.format(weekOverview.futureGoalKcal!.round())} '
+                'kcal';
+      return SizedBox(
+        height: 280,
+        child: Card(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.burnWeekPracticeDayTitle,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: colors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.burnWeekPracticeDayMessage(
+                      dateFormat.format(weekOverview.nextGoalStartDate!),
+                    ),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                  if (futureGoalText != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      futureGoalText,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: colors.onSurface,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     final storedWeekStartDate = tryParseBurnWeekDayKey(
       runState.currentWeekStartDayKey,
     );

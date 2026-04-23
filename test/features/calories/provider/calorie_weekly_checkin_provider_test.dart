@@ -756,6 +756,62 @@ void main() {
   });
 
   test(
+    'future counting start pauses weekly check in during sandbox days',
+    () async {
+      final today = DateTime(2026, 4, 22);
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: const CalorieGoalSettings.empty()
+            .applyGoalChange(
+              changedAt: DateTime(2026, 4, 1),
+              dailyKcalGoal: 2400,
+              calculatorProfile: null,
+            )
+            .applyGoalChange(
+              changedAt: DateTime(2026, 4, 8, 10),
+              dailyKcalGoal: 2350,
+              calculatorProfile: null,
+              source: CalorieGoalSource.weeklyCheckIn,
+              weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+                windowStartDate: DateTime(2026, 4),
+                windowEndDate: DateTime(2026, 4, 7),
+                trendWeightChangePerDay: -0.05,
+                calculatedTrueTdeeKcal: 2400,
+                averageActiveKcal: 200,
+                lowConfidence: false,
+              ),
+            )
+            .applyGoalChange(
+              changedAt: today,
+              dailyKcalGoal: 2100,
+              calculatorProfile: const CalorieCalculatorProfile.defaults(),
+              countingStartDate: today.add(const Duration(days: 2)),
+            ),
+      );
+      final logRepository = FakeCalorieLogRepository();
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[],
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = _createContainer(
+        today: today,
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        manualRepository: manualRepository,
+      );
+      addTearDown(container.dispose);
+
+      final viewModel = await container.read(
+        calorieWeeklyCheckInViewModelProvider.future,
+      );
+
+      expect(viewModel.hasPending, isFalse);
+      expect(viewModel.pendingWeeklyCheckIn, isNull);
+    },
+  );
+
+  test(
     'skipped intake day uses prior average and still allows calculation',
     () async {
       final today = DateTime(2026, 4, 15);

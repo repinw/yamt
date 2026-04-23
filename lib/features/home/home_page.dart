@@ -350,10 +350,11 @@ class HomePage extends ConsumerWidget {
         }
         await showCalorieGoalStartDialog(
           context: context,
-          initialGoalStartDate: currentGoalEntry.effectiveDate,
+          initialGoalStartDate: currentGoalEntry.effectiveCountingStartDate,
           onSaveGoalStart: (goalStartDate) {
             final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
-            if (currentGoalEntry.effectiveDate == normalizedGoalStartDate) {
+            if (currentGoalEntry.effectiveCountingStartDate ==
+                normalizedGoalStartDate) {
               return Future<bool>.value(true);
             }
             return ref

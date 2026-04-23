@@ -115,32 +115,77 @@ Widget _buildHarness({
   );
 }
 
+FakeCalorieSettingsRepository _settingsWithGoal(
+  DateTime effectiveDate, {
+  double dailyKcalGoal = 2000,
+}) {
+  return FakeCalorieSettingsRepository(
+    initialSettings: CalorieGoalSettings.single(
+      dailyKcalGoal: dailyKcalGoal,
+      calculatorProfile: null,
+      effectiveDate: effectiveDate,
+    ),
+  );
+}
+
+BurnWeekRunState _runStateForDay(
+  DateTime day, {
+  int runWeekNumber = 1,
+  int starCount = 0,
+  int heartCount = 3,
+  double heartCreditKcal = 0,
+  bool starBrokeThisWeek = false,
+  bool missedTrackingThisWeek = false,
+}) {
+  return BurnWeekRunState(
+    currentWeekStartDayKey: '${day.year}-${day.month}-${day.day}',
+    runWeekNumber: runWeekNumber,
+    starCount: starCount,
+    heartCount: heartCount,
+    heartCreditKcal: heartCreditKcal,
+    starBrokeThisWeek: starBrokeThisWeek,
+    missedTrackingThisWeek: missedTrackingThisWeek,
+  );
+}
+
+Future<void> _pumpOverviewScenario(
+  WidgetTester tester, {
+  required DateTime effectiveDate,
+  required List<CalorieEntry> entries,
+  required BurnWeekRunState runState,
+}) async {
+  final settingsRepository = _settingsWithGoal(effectiveDate);
+  final logRepository = FakeCalorieLogRepository(initialEntries: entries);
+  final runStateRepository = _FakeBurnWeekRunStateRepository(runState);
+  addTearDown(settingsRepository.dispose);
+  addTearDown(logRepository.dispose);
+
+  await tester.pumpWidget(
+    _buildHarness(
+      logRepository: logRepository,
+      settingsRepository: settingsRepository,
+      runStateRepository: runStateRepository,
+    ),
+  );
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 50));
+}
+
 void main() {
-  testWidgets('renders live Burn overview and details dialog', (tester) async {
+  testWidgets('future goal start shows practice day card', (tester) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day, 12);
+    final tomorrow = today.add(const Duration(days: 1));
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2000,
         calculatorProfile: null,
-        effectiveDate: today,
+        effectiveDate: tomorrow,
       ),
     );
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _entry('today', loggedAt: today, totalKcal: 1100),
-      ],
-    );
+    final logRepository = FakeCalorieLogRepository();
     final runStateRepository = _FakeBurnWeekRunStateRepository(
-      BurnWeekRunState(
-        currentWeekStartDayKey: '${today.year}-${today.month}-${today.day}',
-        runWeekNumber: 2,
-        starCount: 1,
-        heartCount: 2,
-        heartCreditKcal: 0,
-        starBrokeThisWeek: false,
-        missedTrackingThisWeek: false,
-      ),
+      const BurnWeekRunState.initial(),
     );
 
     await tester.pumpWidget(
@@ -152,6 +197,29 @@ void main() {
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text('Practice day'), findsOneWidget);
+    expect(find.textContaining('Burn Week starts on'), findsOneWidget);
+    expect(find.text('Goal: 2,000 kcal'), findsOneWidget);
+    expect(find.text('EATEN'), findsNothing);
+  });
+
+  testWidgets('renders live Burn overview and details dialog', (tester) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day, 12);
+    await _pumpOverviewScenario(
+      tester,
+      effectiveDate: today,
+      entries: <CalorieEntry>[
+        _entry('today', loggedAt: today, totalKcal: 1100),
+      ],
+      runState: _runStateForDay(
+        today,
+        runWeekNumber: 2,
+        starCount: 1,
+        heartCount: 2,
+      ),
+    );
 
     expect(find.text('EATEN'), findsOneWidget);
     expect(find.text('TODAY LEFT'), findsOneWidget);
@@ -173,31 +241,14 @@ void main() {
   ) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day, 12);
-    final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings.single(
-        dailyKcalGoal: 2000,
-        calculatorProfile: null,
-        effectiveDate: today,
-      ),
-    );
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
+    await _pumpOverviewScenario(
+      tester,
+      effectiveDate: today,
+      entries: <CalorieEntry>[
         _entry('today', loggedAt: today, totalKcal: 100),
       ],
+      runState: const BurnWeekRunState.initial(),
     );
-    final runStateRepository = _FakeBurnWeekRunStateRepository(
-      const BurnWeekRunState.initial(),
-    );
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        runStateRepository: runStateRepository,
-      ),
-    );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.text('1,900 kcal'), findsOneWidget);
 
@@ -213,40 +264,15 @@ void main() {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day, 12);
       final yesterday = today.subtract(const Duration(days: 1));
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 2000,
-          calculatorProfile: null,
-          effectiveDate: yesterday,
-        ),
-      );
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
+      await _pumpOverviewScenario(
+        tester,
+        effectiveDate: yesterday,
+        entries: <CalorieEntry>[
           _entry('yesterday', loggedAt: yesterday, totalKcal: 1800),
           _entry('today', loggedAt: today, totalKcal: 1100),
         ],
+        runState: _runStateForDay(today),
       );
-      final runStateRepository = _FakeBurnWeekRunStateRepository(
-        BurnWeekRunState(
-          currentWeekStartDayKey: '${today.year}-${today.month}-${today.day}',
-          runWeekNumber: 1,
-          starCount: 0,
-          heartCount: 3,
-          heartCreditKcal: 0,
-          starBrokeThisWeek: false,
-          missedTrackingThisWeek: false,
-        ),
-      );
-
-      await tester.pumpWidget(
-        _buildHarness(
-          logRepository: logRepository,
-          settingsRepository: settingsRepository,
-          runStateRepository: runStateRepository,
-        ),
-      );
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
 
       expect(find.text('900 kcal'), findsOneWidget);
     },
@@ -256,40 +282,15 @@ void main() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day, now.hour, now.minute);
     final laterToday = _futureSameDay(now);
-    final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings.single(
-        dailyKcalGoal: 2000,
-        calculatorProfile: null,
-        effectiveDate: today,
-      ),
-    );
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
+    await _pumpOverviewScenario(
+      tester,
+      effectiveDate: today,
+      entries: <CalorieEntry>[
         _entry('now', loggedAt: today, totalKcal: 300),
         _entry('later', loggedAt: laterToday, totalKcal: 500),
       ],
+      runState: _runStateForDay(today),
     );
-    final runStateRepository = _FakeBurnWeekRunStateRepository(
-      BurnWeekRunState(
-        currentWeekStartDayKey: '${today.year}-${today.month}-${today.day}',
-        runWeekNumber: 1,
-        starCount: 0,
-        heartCount: 3,
-        heartCreditKcal: 0,
-        starBrokeThisWeek: false,
-        missedTrackingThisWeek: false,
-      ),
-    );
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        runStateRepository: runStateRepository,
-      ),
-    );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.text('300 kcal'), findsOneWidget);
 
@@ -398,29 +399,20 @@ void main() {
     final today = DateTime(now.year, now.month, now.day, 12);
     final tomorrow = nextDiaryDay(today);
     final tomorrowKey = diaryDayKey(tomorrow);
-    final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings.single(
-        dailyKcalGoal: 2000,
-        calculatorProfile: null,
-        effectiveDate: today,
-      ),
-    );
+    final settingsRepository = _settingsWithGoal(today);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
         _entry('today', loggedAt: today, totalKcal: 15000),
       ],
     );
     final runStateRepository = _FakeBurnWeekRunStateRepository(
-      BurnWeekRunState(
-        currentWeekStartDayKey: '${today.year}-${today.month}-${today.day}',
-        runWeekNumber: 1,
-        starCount: 0,
+      _runStateForDay(
+        today,
         heartCount: 0,
-        heartCreditKcal: 0,
-        starBrokeThisWeek: false,
-        missedTrackingThisWeek: false,
       ),
     );
+    addTearDown(settingsRepository.dispose);
+    addTearDown(logRepository.dispose);
 
     await tester.pumpWidget(
       _buildHarness(
@@ -452,27 +444,16 @@ void main() {
     final today = DateTime(now.year, now.month, now.day, 12);
     final showsOverview = ValueNotifier<bool>(true);
     addTearDown(showsOverview.dispose);
-    final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings.single(
-        dailyKcalGoal: 2000,
-        calculatorProfile: null,
-        effectiveDate: today,
-      ),
-    );
+    final settingsRepository = _settingsWithGoal(today);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
         _entry('today', loggedAt: today, totalKcal: 15000),
       ],
     );
     final runStateRepository = _FakeBurnWeekRunStateRepository(
-      BurnWeekRunState(
-        currentWeekStartDayKey: '${today.year}-${today.month}-${today.day}',
-        runWeekNumber: 1,
-        starCount: 0,
+      _runStateForDay(
+        today,
         heartCount: 0,
-        heartCreditKcal: 0,
-        starBrokeThisWeek: false,
-        missedTrackingThisWeek: false,
       ),
     );
     final container = ProviderContainer(

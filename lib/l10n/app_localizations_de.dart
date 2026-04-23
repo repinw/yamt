@@ -1409,6 +1409,36 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorGoalStartChangeAction => 'Ändern';
 
   @override
+  String get caloriesCalculatorOnboardingStartTitle => 'Wann soll dein Ziel starten?';
+
+  @override
+  String get caloriesCalculatorOnboardingStartNowAction => 'Ab sofort';
+
+  @override
+  String get caloriesCalculatorOnboardingStartLaterAction => 'Später starten';
+
+  @override
+  String get caloriesCalculatorOnboardingStartLaterHint => 'Heute bleibt folgenfrei. Burn Week startet ab diesem Tag automatisch.';
+
+  @override
+  String get caloriesCalculatorOnboardingChooseFutureDateAction => 'Tag wählen';
+
+  @override
+  String get caloriesCalculatorOnboardingCatchUpLabel => 'Wie viel hast du bisher gegessen?';
+
+  @override
+  String get caloriesCalculatorOnboardingCatchUpLowAction => 'Wenig';
+
+  @override
+  String get caloriesCalculatorOnboardingCatchUpNormalAction => 'Normal';
+
+  @override
+  String get caloriesCalculatorOnboardingCatchUpHighAction => 'Viel';
+
+  @override
+  String get caloriesCalculatorOnboardingCatchUpHint => 'Wir setzen dich sicher in die heutige Pufferzone.';
+
+  @override
   String get caloriesCalculatorEatingWindowLabel => 'Essensfenster';
 
   @override
@@ -1601,6 +1631,14 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String burnWeekRunRestartsOn(Object date) {
     return 'Frischer Run startet am $date.';
+  }
+
+  @override
+  String get burnWeekPracticeDayTitle => 'Übungstag';
+
+  @override
+  String burnWeekPracticeDayMessage(Object date) {
+    return 'Heute zählt noch nicht. Du kannst Tracking testen, und Burn Week startet am $date.';
   }
 
   @override
@@ -1849,7 +1887,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String caloriesWeekBalanceStartsLater(String date) {
-    return 'Dein Ziel startet am $date. Die Bilanz beginnt dann automatisch.';
+    return 'Dieser Tag zählt noch nicht. Du kannst Tracking testen, und Burn Week plus der Wochen-Check-in starten am $date.';
   }
 
   @override

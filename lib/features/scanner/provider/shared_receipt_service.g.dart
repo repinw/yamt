@@ -84,7 +84,7 @@ final class SharedReceiptServiceProvider
 }
 
 String _$sharedReceiptServiceHash() =>
-    r'67c4d04b9edc4ec4bdbabaaf781e7284d535a60a';
+    r'961323c42e127b282c407361941f035cef5b5b7c';
 
 /// Defines shared receipt service.
 

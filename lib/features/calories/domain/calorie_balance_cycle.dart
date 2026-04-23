@@ -8,12 +8,12 @@ DateTime resolveCalorieBalanceCycleStartDate({
   DateTime? fallbackStartDate,
 }) {
   final normalizedDay = normalizeDiaryDay(day);
-  final activeGoalEntry = settings.goalEntryForDay(normalizedDay);
+  final activeGoalEntry = settings.countingGoalEntryForDay(normalizedDay);
   if (activeGoalEntry?.hasGoal == true) {
     final resolvedAnchor =
         settings.cycleAnchorEntryForDay(normalizedDay) ?? activeGoalEntry;
     if (resolvedAnchor != null) {
-      return normalizeDiaryDay(resolvedAnchor.effectiveDate);
+      return normalizeDiaryDay(resolvedAnchor.effectiveCountingStartDate);
     }
   }
   return settings.nextGoalStartAfterDay(normalizedDay) ??

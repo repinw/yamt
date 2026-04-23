@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -254,11 +255,13 @@ void main() {
   });
 
   testWidgets('diary menu opens the shift goal start dialog', (tester) async {
+    final countingStartDate = DateTime(2026, 4, 12);
     final repository = FakeCalorieSettingsRepository(
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
         effectiveDate: DateTime(2026, 4, 10, 16, 30),
+        countingStartDate: countingStartDate,
       ),
     );
     addTearDown(repository.dispose);
@@ -280,6 +283,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Move goal start'), findsOneWidget);
+    expect(
+      find.text(DateFormat.yMMMd('en').format(countingStartDate)),
+      findsOneWidget,
+    );
     expect(find.text('Start'), findsNothing);
     expect(find.text('End'), findsNothing);
   });

@@ -13,57 +13,59 @@ void main() {
   test(
     'resolveDisplayedWeekOverview keeps previous value during refresh',
     () async {
-    final previous = CalorieWeekOverview(
-      days: List<CalorieWeekDayOverview>.unmodifiable([
-        CalorieWeekDayOverview(
-          date: DateTime(2026, 3, 27),
-          totalKcal: 1600,
+      final previous = CalorieWeekOverview(
+        days: List<CalorieWeekDayOverview>.unmodifiable([
+          CalorieWeekDayOverview(
+            date: DateTime(2026, 3, 27),
+            totalKcal: 1600,
+            goalKcal: 2200,
+            entryCount: 1,
+          ),
+        ]),
+        totalConsumedKcal: 1600,
+        totalGoalKcal: 2200,
+        remainingKcal: 600,
+        balanceStartDate: DateTime(2026, 3, 27),
+        carryoverBeforeTodayKcal: 600,
+        todayFlexibleGoalKcal: 2200,
+        goalStartsInFuture: false,
+        nextGoalStartDate: null,
+        futureGoalKcal: null,
+      );
+      var currentFuture = Future<CalorieWeekOverview>.value(previous);
+      final provider = FutureProvider<CalorieWeekOverview>((ref) {
+        return currentFuture;
+      });
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final subscription = container.listen(
+        provider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      addTearDown(subscription.close);
+      await container.read(provider.future);
+
+      currentFuture = Future<CalorieWeekOverview>.delayed(
+        const Duration(milliseconds: 1),
+        () => previous,
+      );
+      container.refresh(provider);
+      final loading = subscription.read();
+
+      final visibleWindowEnd = DateTime(2026, 3, 27);
+
+      expect(
+        resolveDisplayedWeekOverview(
+          loading,
           goalKcal: 2200,
-          entryCount: 1,
+          visibleWindowEnd: visibleWindowEnd,
         ),
-      ]),
-      totalConsumedKcal: 1600,
-      totalGoalKcal: 2200,
-      remainingKcal: 600,
-      balanceStartDate: DateTime(2026, 3, 27),
-      carryoverBeforeTodayKcal: 600,
-      todayFlexibleGoalKcal: 2200,
-      goalStartsInFuture: false,
-      nextGoalStartDate: null,
-    );
-    var currentFuture = Future<CalorieWeekOverview>.value(previous);
-    final provider = FutureProvider<CalorieWeekOverview>((ref) {
-      return currentFuture;
-    });
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-
-    final subscription = container.listen(
-      provider,
-      (_, _) {},
-      fireImmediately: true,
-    );
-    addTearDown(subscription.close);
-    await container.read(provider.future);
-
-    currentFuture = Future<CalorieWeekOverview>.delayed(
-      const Duration(milliseconds: 1),
-      () => previous,
-    );
-    container.refresh(provider);
-    final loading = subscription.read();
-
-    final visibleWindowEnd = DateTime(2026, 3, 27);
-
-    expect(
-      resolveDisplayedWeekOverview(
-        loading,
-        goalKcal: 2200,
-        visibleWindowEnd: visibleWindowEnd,
-      ),
-      same(previous),
-    );
-  });
+        same(previous),
+      );
+    },
+  );
 
   test('resolveDisplayedWeekOverview falls back without previous value', () {
     final visibleWindowEnd = DateTime(2026, 3, 27);

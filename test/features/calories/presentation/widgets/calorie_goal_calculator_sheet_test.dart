@@ -367,6 +367,7 @@ void main() {
   ) async {
     final repository = FakeCalorieSettingsRepository();
     final goalStartDate = DateTime(2026, 4, 10, 16, 30);
+    final countingStartDate = DateTime(2026, 4, 12);
     addTearDown(repository.dispose);
 
     await tester.pumpWidget(
@@ -384,6 +385,7 @@ void main() {
             goalSpeedKgPerWeek: 0,
           ),
           effectiveDate: goalStartDate,
+          countingStartDate: countingStartDate,
           source: CalorieGoalSource.calculator,
         ),
       ),
@@ -397,7 +399,7 @@ void main() {
 
     expect(
       goalStartValue.data,
-      DateFormat.yMMMd('en').format(DateTime(2026, 4, 10)),
+      DateFormat.yMMMd('en').format(countingStartDate),
     );
   });
 }

@@ -64,6 +64,7 @@ void main() {
         todayFlexibleGoalKcal: 2000,
         goalStartsInFuture: false,
         nextGoalStartDate: null,
+        futureGoalKcal: null,
       ),
       todayOverview: CalorieWeekDayOverview(
         date: DateTime(2026, 4, 21),
@@ -140,6 +141,7 @@ void main() {
         todayFlexibleGoalKcal: 2000,
         goalStartsInFuture: false,
         nextGoalStartDate: null,
+        futureGoalKcal: null,
       ),
       todayOverview: CalorieWeekDayOverview(
         date: DateTime(2026, 4, 21),

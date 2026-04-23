@@ -264,6 +264,62 @@ void main() {
   });
 
   test(
+    'saveCalculatedGoal allows a future goal start for onboarding saves',
+    () async {
+      final today = normalizeDiaryDay(DateTime.now());
+      final futureGoalStart = today.add(const Duration(days: 2));
+      final initialSettings = CalorieGoalSettings.single(
+        dailyKcalGoal: 1900,
+        calculatorProfile: null,
+        effectiveDate: today,
+      );
+      final repository = FakeCalorieSettingsRepository(
+        initialSettings: initialSettings,
+      );
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(calorieGoalControllerProvider.future);
+
+      const profile = CalorieCalculatorProfile(
+        sex: CalorieCalculatorSex.male,
+        weightKg: 80,
+        heightCm: 180,
+        ageYears: 30,
+        activityLevel: 1.2,
+        goalMode: CalorieGoalMode.maintain,
+        goalSpeedKgPerWeek: 0,
+      );
+
+      final saved = await container
+          .read(calorieGoalControllerProvider.notifier)
+          .saveCalculatedGoal(
+            profile,
+            goalStartDate: futureGoalStart,
+            allowFutureGoalStart: true,
+          );
+
+      expect(saved, isTrue);
+      final settings = await repository.readSettings();
+      expect(settings.goalHistory, hasLength(1));
+      expect(settings.goalHistory.single.effectiveDate, today);
+      expect(
+        settings.goalHistory.single.effectiveCountingStartDate,
+        futureGoalStart,
+      );
+      expect(settings.goalKcalForDay(today), 2136);
+      expect(settings.goalKcalForDay(futureGoalStart), 2136);
+      expect(settings.nextGoalStartAfterDay(today), futureGoalStart);
+    },
+  );
+
+  test(
     'saveCalculatedGoal seeds initial calculator weight '
     'into weight history',
     () async {
@@ -552,7 +608,7 @@ void main() {
     },
   );
 
-  test('shiftGoalStart rejects a future goal start', () async {
+  test('shiftGoalStart allows a future official counting start', () async {
     final today = DateTime.now();
     final initialSettings = CalorieGoalSettings.single(
       dailyKcalGoal: 1900,
@@ -578,11 +634,20 @@ void main() {
         .read(calorieGoalControllerProvider.notifier)
         .shiftGoalStart(goalStartDate: futureGoalStart);
 
-    expect(saved, isFalse);
+    expect(saved, isTrue);
     final settings = await repository.readSettings();
     expect(settings.goalKcalForDay(today), 1900);
+    expect(settings.goalHistory.single.effectiveDate, normalizeDiaryDay(today));
+    expect(
+      settings.goalHistory.single.effectiveCountingStartDate,
+      normalizeDiaryDay(futureGoalStart),
+    );
+    expect(
+      settings.nextGoalStartAfterDay(today),
+      normalizeDiaryDay(futureGoalStart),
+    );
     expect(settings.goalHistory, hasLength(1));
-    expect(settings.goalHistory.single.changedAt, today);
+    expect(settings.goalHistory.single.changedAt, normalizeDiaryDay(today));
   });
 
   test('shiftGoalStart can move the eating window with the goal', () async {
@@ -676,7 +741,7 @@ void main() {
   );
 
   test(
-    'shiftGoalStart rejects future goal dates with eating window edits',
+    'shiftGoalStart allows future counting start with eating window edits',
     () async {
       final today = DateTime.now();
       final initialSettings = CalorieGoalSettings.single(
@@ -709,12 +774,23 @@ void main() {
             eatingWindowEndMinuteOfDay: (21 * 60) + 45,
           );
 
-      expect(saved, isFalse);
+      expect(saved, isTrue);
       final settings = await repository.readSettings();
       expect(settings.goalHistory, hasLength(1));
-      expect(settings.goalHistory.single.changedAt, today);
-      expect(settings.normalizedEatingWindowStartMinuteOfDay, 8 * 60);
-      expect(settings.normalizedEatingWindowEndMinuteOfDay, 20 * 60);
+      expect(
+        settings.goalHistory.single.changedAt,
+        normalizeDiaryDay(today),
+      );
+      expect(
+        settings.goalHistory.single.effectiveCountingStartDate,
+        normalizeDiaryDay(futureGoalStart),
+      );
+      expect(
+        settings.nextGoalStartAfterDay(today),
+        normalizeDiaryDay(futureGoalStart),
+      );
+      expect(settings.normalizedEatingWindowStartMinuteOfDay, (7 * 60) + 15);
+      expect(settings.normalizedEatingWindowEndMinuteOfDay, (21 * 60) + 45);
     },
   );
 
@@ -1016,7 +1092,7 @@ void main() {
     expect(settings.latestGoalEntry?.source, CalorieGoalSource.calculator);
   });
 
-  test('saveLearnedTdeeGoal rejects a future goal start', () async {
+  test('saveLearnedTdeeGoal allows a future official counting start', () async {
     final today = DateTime.now();
     final initialSettings = const CalorieGoalSettings.empty()
         .applyGoalChange(
@@ -1076,10 +1152,18 @@ void main() {
           goalStartDate: today.add(const Duration(days: 1)),
         );
 
-    expect(saved, isFalse);
+    expect(saved, isTrue);
     final settings = await repository.readSettings();
-    expect(settings.dailyKcalGoal, 2300);
-    expect(settings.latestGoalEntry?.source, CalorieGoalSource.weeklyCheckIn);
+    expect(settings.dailyKcalGoal, isNotNull);
+    expect(settings.latestGoalEntry?.effectiveDate, normalizeDiaryDay(today));
+    expect(
+      settings.latestGoalEntry?.effectiveCountingStartDate,
+      normalizeDiaryDay(today.add(const Duration(days: 1))),
+    );
+    expect(
+      settings.nextGoalStartAfterDay(today),
+      normalizeDiaryDay(today.add(const Duration(days: 1))),
+    );
     expect(settings.latestLearnedTdeeKcal, 2450);
   });
 

@@ -1409,6 +1409,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesCalculatorGoalStartChangeAction => 'Change';
 
   @override
+  String get caloriesCalculatorOnboardingStartTitle => 'When should your goal start?';
+
+  @override
+  String get caloriesCalculatorOnboardingStartNowAction => 'Start now';
+
+  @override
+  String get caloriesCalculatorOnboardingStartLaterAction => 'Start later';
+
+  @override
+  String get caloriesCalculatorOnboardingStartLaterHint => 'Today stays consequence-free. Burn Week starts automatically from this day.';
+
+  @override
+  String get caloriesCalculatorOnboardingChooseFutureDateAction => 'Choose day';
+
+  @override
+  String get caloriesCalculatorOnboardingCatchUpLabel => 'How much have you eaten so far?';
+
+  @override
+  String get caloriesCalculatorOnboardingCatchUpLowAction => 'Little';
+
+  @override
+  String get caloriesCalculatorOnboardingCatchUpNormalAction => 'Normal';
+
+  @override
+  String get caloriesCalculatorOnboardingCatchUpHighAction => 'A lot';
+
+  @override
+  String get caloriesCalculatorOnboardingCatchUpHint => 'We place you safely into today\'s buffer zone.';
+
+  @override
   String get caloriesCalculatorEatingWindowLabel => 'Eating window';
 
   @override
@@ -1601,6 +1631,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String burnWeekRunRestartsOn(Object date) {
     return 'Fresh run starts on $date.';
+  }
+
+  @override
+  String get burnWeekPracticeDayTitle => 'Practice day';
+
+  @override
+  String burnWeekPracticeDayMessage(Object date) {
+    return 'Today does not count yet. You can try tracking, and Burn Week starts on $date.';
   }
 
   @override
@@ -1849,7 +1887,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String caloriesWeekBalanceStartsLater(String date) {
-    return 'Your goal starts on $date. The balance will begin automatically then.';
+    return 'This day is not counted yet. You can try tracking, and Burn Week plus the weekly check-in start on $date.';
   }
 
   @override

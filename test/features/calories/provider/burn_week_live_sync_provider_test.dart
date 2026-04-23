@@ -27,6 +27,7 @@ class _RecordingBurnWeekRunController extends BurnWeekRunController {
   final BurnWeekRunState initialState;
   final List<_SyncCall> syncCalls = <_SyncCall>[];
   final List<DateTime> restartCalls = <DateTime>[];
+  var resetCallCount = 0;
 
   @override
   Future<BurnWeekRunState> build() async {
@@ -36,6 +37,11 @@ class _RecordingBurnWeekRunController extends BurnWeekRunController {
   @override
   Future<void> restartRunFrom({required DateTime weekStartDate}) async {
     restartCalls.add(normalizeDiaryDay(weekStartDate));
+  }
+
+  @override
+  Future<void> resetRun() async {
+    resetCallCount += 1;
   }
 
   @override
@@ -113,6 +119,9 @@ ProviderContainer _buildContainer({
 CalorieWeekOverview _weekOverview({
   required DateTime today,
   required DateTime balanceStartDate,
+  bool goalStartsInFuture = false,
+  DateTime? nextGoalStartDate,
+  double? futureGoalKcal,
   Set<DateTime> missingDays = const <DateTime>{},
 }) {
   final normalizedToday = normalizeDiaryDay(today);
@@ -143,8 +152,9 @@ CalorieWeekOverview _weekOverview({
     balanceStartDate: normalizeDiaryDay(balanceStartDate),
     carryoverBeforeTodayKcal: 0,
     todayFlexibleGoalKcal: 2000,
-    goalStartsInFuture: false,
-    nextGoalStartDate: null,
+    goalStartsInFuture: goalStartsInFuture,
+    nextGoalStartDate: nextGoalStartDate,
+    futureGoalKcal: futureGoalKcal,
   );
 }
 
@@ -189,6 +199,28 @@ Future<void> _activateSync(ProviderContainer container) async {
   await Future<void>.delayed(Duration.zero);
 }
 
+CalorieWeekDayOverview _defaultTodayOverview(
+  DateTime today, {
+  double totalKcal = 1000,
+  double goalKcal = 2000,
+  int entryCount = 1,
+}) {
+  return CalorieWeekDayOverview(
+    date: today,
+    totalKcal: totalKcal,
+    goalKcal: goalKcal,
+    entryCount: entryCount,
+  );
+}
+
+CalorieGoalSettings _activeGoalSettings(DateTime effectiveDate) {
+  return CalorieGoalSettings.single(
+    dailyKcalGoal: 2000,
+    calculatorProfile: null,
+    effectiveDate: effectiveDate,
+  );
+}
+
 void main() {
   group('burnWeekLiveSyncProvider', () {
     test('does nothing when the run state is already synchronized', () async {
@@ -200,17 +232,8 @@ void main() {
           today: today,
           balanceStartDate: today.subtract(const Duration(days: 6)),
         ),
-        todayOverview: CalorieWeekDayOverview(
-          date: today,
-          totalKcal: 1000,
-          goalKcal: 2000,
-          entryCount: 1,
-        ),
-        settings: CalorieGoalSettings.single(
-          dailyKcalGoal: 2000,
-          calculatorProfile: null,
-          effectiveDate: today.subtract(const Duration(days: 6)),
-        ),
+        todayOverview: _defaultTodayOverview(today),
+        settings: _activeGoalSettings(today.subtract(const Duration(days: 6))),
         initialRunState: BurnWeekRunState(
           currentWeekStartDayKey: diaryDayKey(
             today.subtract(const Duration(days: 6)),
@@ -243,17 +266,8 @@ void main() {
           today: today,
           balanceStartDate: today.subtract(const Duration(days: 6)),
         ),
-        todayOverview: CalorieWeekDayOverview(
-          date: today,
-          totalKcal: 1000,
-          goalKcal: 2000,
-          entryCount: 1,
-        ),
-        settings: CalorieGoalSettings.single(
-          dailyKcalGoal: 2000,
-          calculatorProfile: null,
-          effectiveDate: today.subtract(const Duration(days: 6)),
-        ),
+        todayOverview: _defaultTodayOverview(today),
+        settings: _activeGoalSettings(today.subtract(const Duration(days: 6))),
         initialRunState: BurnWeekRunState(
           currentWeekStartDayKey: diaryDayKey(tomorrow),
           lastActiveDayKey: diaryDayKey(today),
@@ -274,6 +288,37 @@ void main() {
       expect(controller.restartCalls, isEmpty);
     });
 
+    test('does nothing while the goal starts in the future', () async {
+      final today = normalizeDiaryDay(DateTime.now());
+      final tomorrow = nextDiaryDay(today);
+      late _RecordingBurnWeekRunController controller;
+      final container = _buildContainer(
+        today: today,
+        weekOverview: _weekOverview(
+          today: today,
+          balanceStartDate: tomorrow,
+          goalStartsInFuture: true,
+          nextGoalStartDate: tomorrow,
+        ),
+        todayOverview: _defaultTodayOverview(
+          today,
+          totalKcal: 0,
+          goalKcal: 0,
+          entryCount: 0,
+        ),
+        settings: _activeGoalSettings(tomorrow),
+        initialRunState: const BurnWeekRunState.initial(),
+        captureController: (value) => controller = value,
+      );
+      addTearDown(container.dispose);
+
+      await _activateSync(container);
+
+      expect(controller.syncCalls, isEmpty);
+      expect(controller.restartCalls, isEmpty);
+      expect(controller.resetCallCount, 0);
+    });
+
     test(
       'restarts when stored week start is outside the active cycle',
       () async {
@@ -285,17 +330,8 @@ void main() {
             today: today,
             balanceStartDate: today,
           ),
-          todayOverview: CalorieWeekDayOverview(
-            date: today,
-            totalKcal: 1000,
-            goalKcal: 2000,
-            entryCount: 1,
-          ),
-          settings: CalorieGoalSettings.single(
-            dailyKcalGoal: 2000,
-            calculatorProfile: null,
-            effectiveDate: today,
-          ),
+          todayOverview: _defaultTodayOverview(today),
+          settings: _activeGoalSettings(today),
           initialRunState: BurnWeekRunState(
             currentWeekStartDayKey: diaryDayKey(
               today.subtract(const Duration(days: 8)),
@@ -332,16 +368,9 @@ void main() {
             balanceStartDate: today.subtract(const Duration(days: 6)),
             missingDays: <DateTime>{missingDay},
           ),
-          todayOverview: CalorieWeekDayOverview(
-            date: today,
-            totalKcal: 1000,
-            goalKcal: 2000,
-            entryCount: 1,
-          ),
-          settings: CalorieGoalSettings.single(
-            dailyKcalGoal: 2000,
-            calculatorProfile: null,
-            effectiveDate: today.subtract(const Duration(days: 6)),
+          todayOverview: _defaultTodayOverview(today),
+          settings: _activeGoalSettings(
+            today.subtract(const Duration(days: 6)),
           ),
           initialRunState: BurnWeekRunState(
             currentWeekStartDayKey: diaryDayKey(
@@ -387,17 +416,8 @@ void main() {
           today: today,
           balanceStartDate: closedWeekStart,
         ),
-        todayOverview: CalorieWeekDayOverview(
-          date: today,
-          totalKcal: 1000,
-          goalKcal: 2000,
-          entryCount: 1,
-        ),
-        settings: CalorieGoalSettings.single(
-          dailyKcalGoal: 2000,
-          calculatorProfile: null,
-          effectiveDate: closedWeekStart,
-        ),
+        todayOverview: _defaultTodayOverview(today),
+        settings: _activeGoalSettings(closedWeekStart),
         initialRunState: BurnWeekRunState(
           currentWeekStartDayKey: diaryDayKey(closedWeekStart),
           lastActiveDayKey: diaryDayKey(

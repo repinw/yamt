@@ -95,6 +95,9 @@ CalorieGoalHistoryEntry _$CalorieGoalHistoryEntryFromJson(
   changedAt: const NullableFlexibleDateTimeConverter().fromJson(
     json['changed_at'],
   ),
+  countingStartDate: const NullableFlexibleDateTimeConverter().fromJson(
+    json['counting_start_date'],
+  ),
   source:
       $enumDecodeNullable(
         _$CalorieGoalSourceEnumMap,
@@ -121,6 +124,9 @@ Map<String, dynamic> _$CalorieGoalHistoryEntryToJson(
   ),
   'changed_at': const NullableFlexibleDateTimeConverter().toJson(
     instance.changedAt,
+  ),
+  'counting_start_date': const NullableFlexibleDateTimeConverter().toJson(
+    instance.countingStartDate,
   ),
   'source': _$CalorieGoalSourceEnumMap[instance.source]!,
   'weekly_check_in_snapshot': instance.weeklyCheckInSnapshot?.toJson(),

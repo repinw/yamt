@@ -45,6 +45,13 @@ final burnWeekLiveSyncProvider = Provider.autoDispose<Object?>((ref) {
     return;
   }
 
+  if (weekOverviewValue.goalStartsInFuture) {
+    if (!_isInitialBurnWeekRunState(runState)) {
+      _queueRunReset(ref);
+    }
+    return null;
+  }
+
   final storedWeekStartDate = tryParseBurnWeekDayKey(
     runState.currentWeekStartDayKey,
   );
@@ -173,4 +180,24 @@ void _queueRunRestart(Ref ref, {required DateTime weekStartDate}) {
           ),
     );
   });
+}
+
+void _queueRunReset(Ref ref) {
+  scheduleMicrotask(() {
+    if (!ref.mounted) {
+      return;
+    }
+    unawaited(ref.read(burnWeekRunControllerProvider.notifier).resetRun());
+  });
+}
+
+bool _isInitialBurnWeekRunState(BurnWeekRunState state) {
+  return state.currentWeekStartDayKey == null &&
+      state.lastActiveDayKey == null &&
+      state.runWeekNumber == 1 &&
+      state.starCount == 0 &&
+      state.heartCount == 3 &&
+      state.heartCreditKcal == 0 &&
+      !state.starBrokeThisWeek &&
+      !state.missedTrackingThisWeek;
 }

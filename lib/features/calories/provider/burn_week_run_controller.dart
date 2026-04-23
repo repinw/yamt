@@ -106,6 +106,20 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
     );
   }
 
+  /// Bootstraps Burn Week run from given day with onboarding placement.
+  Future<void> bootstrapRunFrom({
+    required DateTime weekStartDate,
+    required double heartCreditKcal,
+  }) {
+    return _save(
+      const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(weekStartDate),
+        heartCreditKcal: heartCreditKcal,
+      ),
+      previous: state.asData?.value,
+    );
+  }
+
   /// Uses one heart to add one daily-goal worth of kcal.
   Future<void> usePositiveHeart(double dailyGoalKcal) {
     return _consumeHeart(kcalDelta: dailyGoalKcal);
