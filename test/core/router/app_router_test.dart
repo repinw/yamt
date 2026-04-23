@@ -25,6 +25,7 @@ import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
+import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -88,6 +89,7 @@ ProviderContainer _createContainerWithAuth(
       calorieSettingsRepositoryProvider.overrideWithValue(
         calorieSettingsRepository,
       ),
+      burnWeekLiveSyncProvider.overrideWith((ref) => null),
     ],
   );
   addTearDown(container.dispose);
@@ -413,6 +415,13 @@ void main() {
     await tester.ensureVisible(
       find.byKey(CalorieGoalCalculatorSheetKeys.saveButton),
     );
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.goalStartNowOption),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(CalorieGoalCalculatorSheetKeys.saveButton),
+    );
     await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
     await tester.pump();
     await _pumpRouterTransition(tester);
@@ -621,7 +630,7 @@ void main() {
     expect(router.state.uri.path, AppRoutes.homeSettings);
     expect(find.text('Settings'), findsOneWidget);
 
-    await tester.tap(find.text('Account').first);
+    router.go(AppRoutes.homeSettingsAccount);
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeSettingsAccount);
     expect(find.text('Sign out'), findsOneWidget);

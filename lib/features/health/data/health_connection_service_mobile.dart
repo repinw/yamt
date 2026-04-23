@@ -23,6 +23,10 @@ const _iosAuthorizationTypes = <HealthDataType>[
   HealthDataType.WEIGHT,
   HealthDataType.WORKOUT,
 ];
+const _iosPermissionStatusTypes = <HealthDataType>[HealthDataType.WEIGHT];
+const _iosPermissionStatusPermissions = <HealthDataAccess>[
+  HealthDataAccess.WRITE,
+];
 
 const _androidReconnectRequiresRestartMessage =
     'Restart YAMT after disconnecting Health Connect before reconnecting.';
@@ -35,10 +39,17 @@ HealthConnectionService createHealthConnectionService() {
 /// Defines mobile health connection service.
 class MobileHealthConnectionService implements HealthConnectionService {
   /// Creates an instance.
-  MobileHealthConnectionService({Health? health})
-    : _health = health ?? Health();
+  MobileHealthConnectionService({
+    Health? health,
+    bool? isAndroid,
+    bool? isIOS,
+  }) : _health = health ?? Health(),
+       _isAndroid = isAndroid ?? Platform.isAndroid,
+       _isIOS = isIOS ?? Platform.isIOS;
 
   final Health _health;
+  final bool _isAndroid;
+  final bool _isIOS;
   bool _isConfigured = false;
   bool _requiresRestartAfterDisconnect = false;
 
@@ -71,7 +82,7 @@ class MobileHealthConnectionService implements HealthConnectionService {
       );
       return HealthConnectionStatus(
         platform: _platform,
-        healthConnectAvailability: Platform.isAndroid
+        healthConnectAvailability: _isAndroid
             ? HealthConnectAvailability.notInstalled
             : HealthConnectAvailability.notApplicable,
         permissionState: HealthPermissionState.unknown,
@@ -92,7 +103,7 @@ class MobileHealthConnectionService implements HealthConnectionService {
       return _applyRestartRequiredMessage(await loadStatus());
     }
 
-    if (Platform.isAndroid) {
+    if (_isAndroid) {
       final permission = await Permission.activityRecognition.request();
       if (!permission.isGranted) {
         return (await loadStatus()).copyWith(
@@ -105,7 +116,7 @@ class MobileHealthConnectionService implements HealthConnectionService {
       _authorizationTypes,
       permissions: _authorizationPermissions,
     );
-    if (authorized && Platform.isAndroid) {
+    if (authorized && _isAndroid) {
       await _requestHistoryIfAvailable();
     }
 
@@ -144,7 +155,7 @@ class MobileHealthConnectionService implements HealthConnectionService {
 
   @override
   Future<void> installHealthConnect() async {
-    if (!Platform.isAndroid) {
+    if (!_isAndroid) {
       return;
     }
     await _ensureConfigured();
@@ -158,7 +169,7 @@ class MobileHealthConnectionService implements HealthConnectionService {
     }
 
     await _ensureConfigured();
-    if (Platform.isAndroid) {
+    if (_isAndroid) {
       await _health.revokePermissions();
       _requiresRestartAfterDisconnect = true;
       return HealthDisconnectResult.disconnected;
@@ -170,16 +181,16 @@ class MobileHealthConnectionService implements HealthConnectionService {
         : HealthDisconnectResult.unsupported;
   }
 
-  bool get _isSupportedPlatform => Platform.isAndroid || Platform.isIOS;
+  bool get _isSupportedPlatform => _isAndroid || _isIOS;
 
-  HealthPlatform get _platform => Platform.isAndroid
+  HealthPlatform get _platform => _isAndroid
       ? HealthPlatform.android
-      : Platform.isIOS
+      : _isIOS
       ? HealthPlatform.ios
       : HealthPlatform.unsupported;
 
   List<HealthDataType> get _authorizationTypes =>
-      Platform.isAndroid ? _androidAuthorizationTypes : _iosAuthorizationTypes;
+      _isAndroid ? _androidAuthorizationTypes : _iosAuthorizationTypes;
 
   List<HealthDataAccess> get _authorizationPermissions =>
       _authorizationTypes.map(_authorizationAccessForType).toList();
@@ -208,7 +219,7 @@ class MobileHealthConnectionService implements HealthConnectionService {
   }
 
   Future<HealthConnectAvailability> _loadHealthConnectAvailability() async {
-    if (!Platform.isAndroid) {
+    if (!_isAndroid) {
       return HealthConnectAvailability.notApplicable;
     }
     final status = await _health.getHealthConnectSdkStatus();
@@ -223,19 +234,26 @@ class MobileHealthConnectionService implements HealthConnectionService {
   }
 
   Future<HealthPermissionState> _loadPermissionState() async {
+    if (_isIOS) {
+      // HealthKit does not reveal read authorization status on iOS.
+      // Use the required weight write permission as the best available
+      // signal that Apple Health access was granted for YAMT.
+      final hasPermissions = await _health.hasPermissions(
+        _iosPermissionStatusTypes,
+        permissions: _iosPermissionStatusPermissions,
+      );
+      return _permissionStateFromHasPermissions(hasPermissions);
+    }
+
     final hasPermissions = await _health.hasPermissions(
       _authorizationTypes,
       permissions: _authorizationPermissions,
     );
-    return switch (hasPermissions) {
-      true => HealthPermissionState.granted,
-      false => HealthPermissionState.notGranted,
-      null => HealthPermissionState.unknown,
-    };
+    return _permissionStateFromHasPermissions(hasPermissions);
   }
 
   Future<HealthHistoryAccess> _loadHistoryAccess() async {
-    if (!Platform.isAndroid) {
+    if (!_isAndroid) {
       return HealthHistoryAccess.notApplicable;
     }
     final historyAvailable = await _health.isHealthDataHistoryAvailable();
@@ -251,7 +269,7 @@ class MobileHealthConnectionService implements HealthConnectionService {
   HealthConnectionStatus _applyRestartRequiredMessage(
     HealthConnectionStatus status,
   ) {
-    if (!Platform.isAndroid || !_requiresRestartAfterDisconnect) {
+    if (!_isAndroid || !_requiresRestartAfterDisconnect) {
       return status;
     }
     return status.copyWith(
@@ -259,4 +277,12 @@ class MobileHealthConnectionService implements HealthConnectionService {
           status.errorMessage ?? _androidReconnectRequiresRestartMessage,
     );
   }
+}
+
+HealthPermissionState _permissionStateFromHasPermissions(bool? hasPermissions) {
+  return switch (hasPermissions) {
+    true => HealthPermissionState.granted,
+    false => HealthPermissionState.notGranted,
+    null => HealthPermissionState.unknown,
+  };
 }
