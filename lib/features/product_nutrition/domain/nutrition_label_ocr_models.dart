@@ -62,17 +62,15 @@ class NutritionLabelOcrDraft {
 
   /// Whether any nutrition value exists.
   bool get hasAnyNutritionValue {
-    return <double?>[
-      per100Kcal,
-      per100Protein,
-      per100Carbs,
-      per100Fat,
-      per100Salt,
-      per100SaturatedFat,
-      per100PolyunsaturatedFat,
-      per100Sugar,
-      per100Fiber,
-    ].any((value) => value != null);
+    return per100Kcal != null ||
+        per100Protein != null ||
+        per100Carbs != null ||
+        per100Fat != null ||
+        per100Salt != null ||
+        per100SaturatedFat != null ||
+        per100PolyunsaturatedFat != null ||
+        per100Sugar != null ||
+        per100Fiber != null;
   }
 
   /// Whether any value was detected at all.

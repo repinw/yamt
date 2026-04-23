@@ -10,8 +10,10 @@ import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 
-final Map<Ref, _PendingBurnWeekMutationState> _pendingBurnWeekMutations =
-    <Ref, _PendingBurnWeekMutationState>{};
+final _burnWeekMutationCoordinatorProvider =
+    Provider.autoDispose<_BurnWeekMutationCoordinator>(
+      (ref) => _BurnWeekMutationCoordinator(),
+    );
 
 /// How often Burn Week live sync should re-check the current day.
 final burnWeekLiveSyncTickerPeriodProvider = Provider<Duration?>(
@@ -21,9 +23,8 @@ final burnWeekLiveSyncTickerPeriodProvider = Provider<Duration?>(
 /// Keeps Burn Week sync active outside the widget tree.
 final Provider<Object?> burnWeekLiveSyncProvider =
     Provider.autoDispose<Object?>((ref) {
-      ref.onDispose(() {
-        _pendingBurnWeekMutations.remove(ref);
-      });
+      // Keep the mutation coordinator alive for as long as live sync is active.
+      ref.watch(_burnWeekMutationCoordinatorProvider);
       final tickerPeriod = ref.watch(burnWeekLiveSyncTickerPeriodProvider);
       if (tickerPeriod != null) {
         final ticker = Timer.periodic(tickerPeriod, (_) {
@@ -208,25 +209,19 @@ void _queuePendingBurnWeekMutation(
   required _PendingBurnWeekMutation mutation,
   required Future<void> Function() action,
 }) {
-  final pendingMutation = _pendingBurnWeekMutations[ref];
-  if (pendingMutation?.mutation == mutation) {
+  final mutationCoordinator = ref.read(_burnWeekMutationCoordinatorProvider);
+  if (mutationCoordinator.hasPendingMutation(mutation)) {
     return;
   }
-  _pendingBurnWeekMutations[ref] = _QueuedBurnWeekMutationState(
-    mutation,
-  );
+  mutationCoordinator.queue(mutation);
   scheduleMicrotask(() {
     if (!ref.mounted) {
       return;
     }
-    final pendingMutation = _pendingBurnWeekMutations[ref];
-    if (pendingMutation is! _QueuedBurnWeekMutationState ||
-        pendingMutation.mutation != mutation) {
+    final mutationCoordinator = ref.read(_burnWeekMutationCoordinatorProvider);
+    if (!mutationCoordinator.startIfQueued(mutation)) {
       return;
     }
-    _pendingBurnWeekMutations[ref] = _RunningBurnWeekMutationState(
-      mutation,
-    );
     unawaited(_runPendingBurnWeekMutation(ref, mutation, action));
   });
 }
@@ -251,11 +246,37 @@ Future<void> _runPendingBurnWeekMutation(
     await action();
   } finally {
     if (ref.mounted) {
-      final pendingMutation = _pendingBurnWeekMutations[ref];
-      if (pendingMutation is _RunningBurnWeekMutationState &&
-          pendingMutation.mutation == mutation) {
-        _pendingBurnWeekMutations.remove(ref);
-      }
+      ref.read(_burnWeekMutationCoordinatorProvider).clearIfRunning(mutation);
+    }
+  }
+}
+
+class _BurnWeekMutationCoordinator {
+  _PendingBurnWeekMutationState? _pendingMutation;
+
+  bool hasPendingMutation(_PendingBurnWeekMutation mutation) {
+    return _pendingMutation?.mutation == mutation;
+  }
+
+  void queue(_PendingBurnWeekMutation mutation) {
+    _pendingMutation = _QueuedBurnWeekMutationState(mutation);
+  }
+
+  bool startIfQueued(_PendingBurnWeekMutation mutation) {
+    final pendingMutation = _pendingMutation;
+    if (pendingMutation is! _QueuedBurnWeekMutationState ||
+        pendingMutation.mutation != mutation) {
+      return false;
+    }
+    _pendingMutation = _RunningBurnWeekMutationState(mutation);
+    return true;
+  }
+
+  void clearIfRunning(_PendingBurnWeekMutation mutation) {
+    final pendingMutation = _pendingMutation;
+    if (pendingMutation is _RunningBurnWeekMutationState &&
+        pendingMutation.mutation == mutation) {
+      _pendingMutation = null;
     }
   }
 }
