@@ -309,12 +309,13 @@ class _HealthConnectTile extends ConsumerWidget {
 
   Future<void> _confirmDisconnect(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
+    final status = ref.read(healthConnectionControllerProvider).asData?.value;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           title: Text(l10n.settingsHealthDisconnectDialogTitle),
-          content: Text(l10n.settingsHealthDisconnectDialogBody),
+          content: Text(_disconnectDialogBody(l10n, status)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -338,8 +339,11 @@ class _HealthConnectTile extends ConsumerWidget {
     if (!context.mounted) {
       return;
     }
-    final status = ref.read(healthConnectionControllerProvider).asData?.value;
-    _showSnackBar(context, _disconnectMessage(l10n, result, status));
+    final nextStatus = ref
+        .read(healthConnectionControllerProvider)
+        .asData
+        ?.value;
+    _showSnackBar(context, _disconnectMessage(l10n, result, nextStatus));
   }
 
   bool _shouldShowConnectFailure(HealthConnectionStatus status) {
@@ -356,8 +360,10 @@ class _HealthConnectTile extends ConsumerWidget {
     HealthConnectionStatus? status,
   ) {
     return switch (result) {
-      HealthDisconnectResult.disconnected =>
-        l10n.settingsHealthDisconnectSuccess,
+      HealthDisconnectResult.disconnected => switch (status?.platform) {
+        HealthPlatform.ios => l10n.settingsAppleHealthDisconnectSuccess,
+        _ => l10n.settingsHealthDisconnectSuccess,
+      },
       HealthDisconnectResult.openedSettings =>
         l10n.settingsHealthDisconnectOpenedSettings,
       HealthDisconnectResult.unsupported =>
@@ -397,6 +403,16 @@ class _HealthConnectTile extends ConsumerWidget {
     return switch (status?.platform) {
       HealthPlatform.ios => l10n.settingsAppleHealthDisconnectSubtitle,
       _ => l10n.settingsHealthDisconnectSubtitle,
+    };
+  }
+
+  String _disconnectDialogBody(
+    AppLocalizations l10n,
+    HealthConnectionStatus? status,
+  ) {
+    return switch (status?.platform) {
+      HealthPlatform.ios => l10n.settingsAppleHealthDisconnectDialogBody,
+      _ => l10n.settingsHealthDisconnectDialogBody,
     };
   }
 }

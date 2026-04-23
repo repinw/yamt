@@ -399,6 +399,87 @@ void main() {
       ]);
     },
   );
+
+  test(
+    'loadDayData creates standalone workout from active energy without workout',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final energyStart = day.add(const Duration(hours: 15));
+      final energyEnd = day.add(const Duration(hours: 16));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: const <HealthDataPoint>[],
+          HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[
+            _buildActiveEnergyPoint(
+              start: energyStart,
+              end: energyEnd,
+              calories: 500,
+            ),
+          ],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 4000,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+      final burnedCalories = calculateDiaryBurnedCalories(
+        stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
+        workoutCalories: summary.workouts.map(
+          (workout) => workout.totalCalories,
+        ),
+      );
+
+      expect(dayData.workouts, hasLength(1));
+      expect(dayData.workouts.single.activityLabel, isNull);
+      expect(dayData.workouts.single.totalCalories, 500);
+      expect(dayData.workouts.single.totalSteps, isNull);
+      expect(summary.stepsDuringWorkouts, 0);
+      expect(summary.stepsOutsideWorkouts, 4000);
+      expect(burnedCalories, 660);
+    },
+  );
+
+  test(
+    'loadDayData does not duplicate active energy already covered by workout',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 18));
+      final workoutEnd = day.add(const Duration(hours: 19));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 240,
+              totalSteps: 2800,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[
+            _buildActiveEnergyPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              calories: 500,
+            ),
+          ],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 6700,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+
+      expect(dayData.workouts, hasLength(1));
+      expect(dayData.workouts.single.totalCalories, 500);
+    },
+  );
 }
 
 class _FakeHealth extends Health {
@@ -481,6 +562,25 @@ HealthDataPoint _buildWorkoutPoint({
             totalEnergyBurned: totalCalories,
             totalSteps: workoutSummarySteps,
           ),
+  );
+}
+
+HealthDataPoint _buildActiveEnergyPoint({
+  required DateTime start,
+  required DateTime end,
+  required num calories,
+}) {
+  return HealthDataPoint(
+    uuid: 'energy-${start.millisecondsSinceEpoch}',
+    value: NumericHealthValue(numericValue: calories),
+    type: HealthDataType.ACTIVE_ENERGY_BURNED,
+    unit: HealthDataUnit.KILOCALORIE,
+    dateFrom: start,
+    dateTo: end,
+    sourcePlatform: HealthPlatformType.appleHealth,
+    sourceDeviceId: 'device-id',
+    sourceId: 'apple.health',
+    sourceName: 'Apple Health',
   );
 }
 

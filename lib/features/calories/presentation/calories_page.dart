@@ -45,6 +45,10 @@ import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/calories/provider/'
+    'diary_activity_summary_provider.dart';
+import 'package:yamt/features/health/provider/'
+    'health_connection_controller.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -65,11 +69,34 @@ class CaloriesPage extends ConsumerStatefulWidget {
   ConsumerState<CaloriesPage> createState() => _CaloriesPageState();
 }
 
-class _CaloriesPageState extends ConsumerState<CaloriesPage> {
+class _CaloriesPageState extends ConsumerState<CaloriesPage>
+    with WidgetsBindingObserver {
   CalorieDayViewData? _lastResolvedDayView;
   CalorieWeeklyCheckInViewModel? _lastWeeklyCheckInViewModel;
   String? _autoOpenedWeeklyCheckInWindowKey;
   var _weeklyCheckInDialogOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !mounted) {
+      return;
+    }
+    ref
+      ..invalidate(healthConnectionControllerProvider)
+      ..invalidate(diaryActivitySummaryProvider);
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -62,17 +62,29 @@ class MobileDiaryHealthService implements DiaryHealthService {
         .map(_buildActiveEnergySample)
         .whereType<HealthActiveEnergySample>()
         .toList(growable: false);
-    final workouts =
-        workoutPoints
-            .map(
-              (point) => _resolveWorkout(
-                point: point,
-                activeEnergySamples: activeEnergySamples,
-                userHeightCm: normalizedUserHeightCm,
-              ),
-            )
-            .toList(growable: false)
-          ..sort((left, right) => right.start.compareTo(left.start));
+    final resolvedWorkouts = workoutPoints
+        .map(
+          (point) => _resolveWorkout(
+            point: point,
+            activeEnergySamples: activeEnergySamples,
+            userHeightCm: normalizedUserHeightCm,
+          ),
+        )
+        .toList(growable: false);
+    final standaloneActiveEnergyWorkouts = activeEnergyPoints
+        .expand(
+          (point) => _buildStandaloneActiveEnergyWorkouts(
+            point: point,
+            dayStart: dayStart,
+            dayEnd: dayEnd,
+            workouts: resolvedWorkouts,
+          ),
+        )
+        .toList(growable: false);
+    final workouts = <HealthWorkoutSession>[
+      ...resolvedWorkouts,
+      ...standaloneActiveEnergyWorkouts,
+    ]..sort((left, right) => right.start.compareTo(left.start));
 
     return DiaryHealthDayData(
       totalSteps: totalSteps,
@@ -203,6 +215,149 @@ class MobileDiaryHealthService implements DiaryHealthService {
       endAt: point.dateTo.toLocal(),
       numericValue: numericValue,
     );
+  }
+
+  List<HealthWorkoutSession> _buildStandaloneActiveEnergyWorkouts({
+    required HealthDataPoint point,
+    required DateTime dayStart,
+    required DateTime dayEnd,
+    required List<HealthWorkoutSession> workouts,
+  }) {
+    final sample = _buildActiveEnergySample(point);
+    if (sample == null) {
+      return const <HealthWorkoutSession>[];
+    }
+
+    final clippedStart = sample.startAt.isAfter(dayStart)
+        ? sample.startAt
+        : dayStart;
+    final clippedEnd = sample.endAt.isBefore(dayEnd) ? sample.endAt : dayEnd;
+    if (!clippedEnd.isAfter(clippedStart)) {
+      return const <HealthWorkoutSession>[];
+    }
+
+    final overlappingWorkouts =
+        workouts
+            .where(
+              (workout) =>
+                  workout.endExclusive.isAfter(clippedStart) &&
+                  workout.start.isBefore(clippedEnd),
+            )
+            .toList(growable: false)
+          ..sort((left, right) => left.start.compareTo(right.start));
+
+    final standaloneWorkouts = <HealthWorkoutSession>[];
+    var cursor = clippedStart;
+    var segmentIndex = 0;
+
+    for (final workout in overlappingWorkouts) {
+      final overlapStart = workout.start.isAfter(clippedStart)
+          ? workout.start
+          : clippedStart;
+      final overlapEnd = workout.endExclusive.isBefore(clippedEnd)
+          ? workout.endExclusive
+          : clippedEnd;
+      if (!overlapEnd.isAfter(overlapStart)) {
+        continue;
+      }
+      if (overlapStart.isAfter(cursor)) {
+        final standaloneWorkout = _buildStandaloneActiveEnergyWorkoutSegment(
+          point: point,
+          sample: sample,
+          start: cursor,
+          endExclusive: overlapStart,
+          segmentIndex: segmentIndex,
+        );
+        if (standaloneWorkout != null) {
+          standaloneWorkouts.add(standaloneWorkout);
+          segmentIndex += 1;
+        }
+      }
+      if (overlapEnd.isAfter(cursor)) {
+        cursor = overlapEnd;
+      }
+      if (!clippedEnd.isAfter(cursor)) {
+        break;
+      }
+    }
+
+    if (clippedEnd.isAfter(cursor)) {
+      final standaloneWorkout = _buildStandaloneActiveEnergyWorkoutSegment(
+        point: point,
+        sample: sample,
+        start: cursor,
+        endExclusive: clippedEnd,
+        segmentIndex: segmentIndex,
+      );
+      if (standaloneWorkout != null) {
+        standaloneWorkouts.add(standaloneWorkout);
+      }
+    }
+
+    return standaloneWorkouts;
+  }
+
+  HealthWorkoutSession? _buildStandaloneActiveEnergyWorkoutSegment({
+    required HealthDataPoint point,
+    required HealthActiveEnergySample sample,
+    required DateTime start,
+    required DateTime endExclusive,
+    required int segmentIndex,
+  }) {
+    final calories = _activeEnergyValueForRange(
+      sample: sample,
+      start: start,
+      endExclusive: endExclusive,
+    );
+    if (calories <= 0) {
+      return null;
+    }
+
+    return HealthWorkoutSession(
+      id: _standaloneActiveEnergyWorkoutId(
+        point: point,
+        start: start,
+        segmentIndex: segmentIndex,
+      ),
+      start: start,
+      endExclusive: endExclusive,
+      durationMinutes: endExclusive.difference(start).inSeconds / 60,
+      activityLabel: null,
+      sourceName: point.sourceName.isEmpty ? null : point.sourceName,
+      totalCalories: calories.round(),
+      totalSteps: null,
+    );
+  }
+
+  String _standaloneActiveEnergyWorkoutId({
+    required HealthDataPoint point,
+    required DateTime start,
+    required int segmentIndex,
+  }) {
+    final baseId = point.uuid.isNotEmpty
+        ? point.uuid
+        : '${point.sourceId}:${start.toUtc().millisecondsSinceEpoch}';
+    return 'active-energy:$baseId:$segmentIndex';
+  }
+
+  double _activeEnergyValueForRange({
+    required HealthActiveEnergySample sample,
+    required DateTime start,
+    required DateTime endExclusive,
+  }) {
+    final sampleDurationMs = sample.endAt
+        .difference(sample.startAt)
+        .inMilliseconds;
+    if (sampleDurationMs <= 0) {
+      return sample.numericValue.toDouble();
+    }
+
+    final overlapMs = endExclusive.difference(start).inMilliseconds;
+    if (overlapMs <= 0) {
+      return 0;
+    }
+
+    return sample.numericValue.toDouble() * overlapMs / sampleDurationMs;
   }
 
   int? _estimateStepsFromWorkoutDistance(
