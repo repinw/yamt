@@ -5,18 +5,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_onboarding_start.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/'
+    'burn_week_run_controller.dart';
+import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_state.dart';
-import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 import '../support/fake_calories_repositories.dart';
@@ -205,7 +206,7 @@ void main() {
         );
         addTearDown(container.dispose);
         final provider = calorieGoalCalculatorFormControllerProvider(null);
-        final subscription = container.listen(provider, (_, __) {});
+        final subscription = container.listen(provider, (_, _) {});
         addTearDown(subscription.close);
         final goalStartDate = DateTime(2026, 4, 10, 16, 30);
 
@@ -246,7 +247,7 @@ void main() {
         );
         addTearDown(container.dispose);
         final provider = calorieGoalCalculatorFormControllerProvider(null);
-        final subscription = container.listen(provider, (_, __) {});
+        final subscription = container.listen(provider, (_, _) {});
         addTearDown(subscription.close);
 
         await container.read(calorieGoalControllerProvider.future);
@@ -280,7 +281,7 @@ void main() {
           ],
         );
         final provider = calorieGoalCalculatorFormControllerProvider(null);
-        final subscription = container.listen(provider, (_, __) {});
+        final subscription = container.listen(provider, (_, _) {});
         addTearDown(subscription.close);
 
         await container.read(calorieGoalControllerProvider.future);
@@ -394,6 +395,142 @@ void main() {
         expect(saved, isTrue);
         expect(runStateRepository.state.currentWeekStartDayKey, '2026-4-22');
         expect(runStateRepository.state.heartCreditKcal, closeTo(668, 0.001));
+      },
+    );
+
+    test(
+      'onboarding same-day low catch-up seeds the left safe-zone edge',
+      () async {
+        final settingsRepository = _BlockingCalorieSettingsRepository();
+        final now = DateTime(2026, 4, 22, 12);
+        final logRepository = FakeCalorieLogRepository(
+          initialEntries: <CalorieEntry>[
+            _todayLunchEntry(now),
+          ],
+        );
+        final runStateRepository = _FakeBurnWeekRunStateRepository(
+          const BurnWeekRunState.initial(),
+        );
+        addTearDown(settingsRepository.dispose);
+        addTearDown(logRepository.dispose);
+        final container = _buildOnboardingSaveHarness(
+          settingsRepository: settingsRepository,
+          logRepository: logRepository,
+          runStateRepository: runStateRepository,
+        );
+        final provider = calorieGoalCalculatorFormControllerProvider(null);
+
+        await _primeOnboardingSaveHarness(container);
+
+        final saved = await container
+            .read(provider.notifier)
+            .save(
+              goalStartDate: now,
+              allowFutureGoalStart: true,
+              syncBurnWeekForOnboarding: true,
+              onboardingCatchUpEstimate:
+                  CalorieGoalOnboardingCatchUpEstimate.low,
+              now: now,
+            );
+
+        expect(saved, isTrue);
+        expect(runStateRepository.state.currentWeekStartDayKey, '2026-4-22');
+        expect(runStateRepository.state.heartCreditKcal, closeTo(-400, 0.001));
+      },
+    );
+
+    test(
+      'onboarding same-day high catch-up seeds the right safe-zone edge',
+      () async {
+        final settingsRepository = _BlockingCalorieSettingsRepository();
+        final now = DateTime(2026, 4, 22, 12);
+        final logRepository = FakeCalorieLogRepository(
+          initialEntries: <CalorieEntry>[
+            _todayLunchEntry(now),
+          ],
+        );
+        final runStateRepository = _FakeBurnWeekRunStateRepository(
+          const BurnWeekRunState.initial(),
+        );
+        addTearDown(settingsRepository.dispose);
+        addTearDown(logRepository.dispose);
+        final container = _buildOnboardingSaveHarness(
+          settingsRepository: settingsRepository,
+          logRepository: logRepository,
+          runStateRepository: runStateRepository,
+        );
+        final provider = calorieGoalCalculatorFormControllerProvider(null);
+
+        await _primeOnboardingSaveHarness(container);
+
+        final saved = await container
+            .read(provider.notifier)
+            .save(
+              goalStartDate: now,
+              allowFutureGoalStart: true,
+              syncBurnWeekForOnboarding: true,
+              onboardingCatchUpEstimate:
+                  CalorieGoalOnboardingCatchUpEstimate.high,
+              now: now,
+            );
+
+        expect(saved, isTrue);
+        expect(runStateRepository.state.currentWeekStartDayKey, '2026-4-22');
+        expect(runStateRepository.state.heartCreditKcal, closeTo(2804, 0.001));
+      },
+    );
+
+    test(
+      'future onboarding start resets Burn Week even with catch-up selection',
+      () async {
+        final settingsRepository = _BlockingCalorieSettingsRepository();
+        final now = DateTime(2026, 4, 22, 12);
+        final logRepository = FakeCalorieLogRepository(
+          initialEntries: <CalorieEntry>[
+            _todayLunchEntry(now),
+          ],
+        );
+        final runStateRepository = _FakeBurnWeekRunStateRepository(
+          const BurnWeekRunState(
+            currentWeekStartDayKey: '2026-4-10',
+            lastActiveDayKey: '2026-4-10',
+            runWeekNumber: 3,
+            starCount: 2,
+            heartCount: 1,
+            heartCreditKcal: 900,
+            starBrokeThisWeek: true,
+            missedTrackingThisWeek: true,
+          ),
+        );
+        addTearDown(settingsRepository.dispose);
+        addTearDown(logRepository.dispose);
+        final container = _buildOnboardingSaveHarness(
+          settingsRepository: settingsRepository,
+          logRepository: logRepository,
+          runStateRepository: runStateRepository,
+        );
+        final provider = calorieGoalCalculatorFormControllerProvider(null);
+
+        await _primeOnboardingSaveHarness(container);
+
+        final saved = await container
+            .read(provider.notifier)
+            .save(
+              goalStartDate: now.add(const Duration(days: 2)),
+              allowFutureGoalStart: true,
+              syncBurnWeekForOnboarding: true,
+              onboardingCatchUpEstimate:
+                  CalorieGoalOnboardingCatchUpEstimate.high,
+              now: now,
+            );
+
+        expect(saved, isTrue);
+        expect(runStateRepository.state.currentWeekStartDayKey, isNull);
+        expect(runStateRepository.state.lastActiveDayKey, isNull);
+        expect(runStateRepository.state.runWeekNumber, 1);
+        expect(runStateRepository.state.starCount, 0);
+        expect(runStateRepository.state.heartCount, 3);
+        expect(runStateRepository.state.heartCreditKcal, 0);
       },
     );
   });

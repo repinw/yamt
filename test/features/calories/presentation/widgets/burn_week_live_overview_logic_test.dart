@@ -160,4 +160,18 @@ void main() {
     expect(metrics.consumedKcal, 600);
     expect(metrics.plannedLaterKcal, 500);
   });
+
+  test('current day progress stays bounded on DST transition dates', () {
+    final springForwardProgress = resolveBurnWeekCurrentDayProgress(
+      DateTime(2026, 3, 29, 23, 30),
+    );
+    final fallBackProgress = resolveBurnWeekCurrentDayProgress(
+      DateTime(2026, 10, 25, 23, 30),
+    );
+
+    expect(springForwardProgress, inInclusiveRange(0.0, 1.0));
+    expect(fallBackProgress, inInclusiveRange(0.0, 1.0));
+    expect(springForwardProgress, greaterThan(0.9));
+    expect(fallBackProgress, greaterThan(0.9));
+  });
 }

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
@@ -249,6 +250,46 @@ void main() {
     },
   );
 
+  test(
+    'syncForWeek stops safely when the advance cap is reached',
+    () async {
+      final repository = _FakeBurnWeekRunStateRepository(
+        buildState(
+          currentWeekStartDayKey: '2026-4-1',
+          runWeekNumber: 1,
+          starCount: 0,
+          heartCount: 3,
+        ),
+      );
+      final container = buildContainer(repository);
+      final cappedWeekStartDate =
+          DateTime(
+            2026,
+            4,
+          ).add(
+            const Duration(days: burnWeekDaysPerWeek * 1001),
+          );
+
+      await syncWeek(
+        container,
+        currentDay: cappedWeekStartDate,
+        weekStartDate: cappedWeekStartDate,
+        missedTrackingThisWeek: false,
+        missedTrackingForClosedWeeks: List<bool>.filled(1001, false),
+      );
+
+      expect(
+        repository.state.currentWeekStartDayKey,
+        diaryDayKey(cappedWeekStartDate),
+      );
+      expect(
+        repository.state.lastActiveDayKey,
+        diaryDayKey(cappedWeekStartDate),
+      );
+      expect(repository.state.runWeekNumber, 1001);
+    },
+  );
+
   test('usePositiveHeart spends heart and adds heart credit', () async {
     final repository = _FakeBurnWeekRunStateRepository(
       buildState(
@@ -267,6 +308,35 @@ void main() {
 
     expect(repository.state.heartCount, 2);
     expect(repository.state.heartCreditKcal, 500);
+  });
+
+  test('usePositiveHeart with zero hearts keeps the state unchanged', () async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      const BurnWeekRunState(
+        currentWeekStartDayKey: '2026-4-21',
+        lastActiveDayKey: '2026-4-21',
+        runWeekNumber: 4,
+        starCount: 2,
+        heartCount: 0,
+        heartCreditKcal: 150,
+        starBrokeThisWeek: true,
+        missedTrackingThisWeek: false,
+      ),
+    );
+    final container = buildContainer(repository);
+
+    await container.read(burnWeekRunControllerProvider.future);
+    await container
+        .read(burnWeekRunControllerProvider.notifier)
+        .usePositiveHeart(500);
+
+    expect(repository.state.currentWeekStartDayKey, '2026-4-21');
+    expect(repository.state.lastActiveDayKey, '2026-4-21');
+    expect(repository.state.runWeekNumber, 4);
+    expect(repository.state.starCount, 2);
+    expect(repository.state.heartCount, 0);
+    expect(repository.state.heartCreditKcal, 150);
+    expect(repository.state.starBrokeThisWeek, isTrue);
   });
 
   test('bootstrapRunFrom seeds a fresh onboarding position', () async {
@@ -360,6 +430,34 @@ void main() {
     expect(repository.state.heartCreditKcal, -700);
     expect(repository.state.starBrokeThisWeek, isTrue);
   });
+
+  test(
+    'breaking a star restores hearts to the next difficulty minimum',
+    () async {
+      final repository = _FakeBurnWeekRunStateRepository(
+        const BurnWeekRunState(
+          currentWeekStartDayKey: '2026-4-21',
+          runWeekNumber: 7,
+          starCount: 5,
+          heartCount: 1,
+          heartCreditKcal: 0,
+          starBrokeThisWeek: false,
+          missedTrackingThisWeek: false,
+        ),
+      );
+      final container = buildContainer(repository);
+
+      await container.read(burnWeekRunControllerProvider.future);
+      await container
+          .read(burnWeekRunControllerProvider.notifier)
+          .usePositiveHeart(500);
+
+      expect(repository.state.starCount, 4);
+      expect(repository.state.heartCount, 2);
+      expect(repository.state.heartCreditKcal, 500);
+      expect(repository.state.starBrokeThisWeek, isTrue);
+    },
+  );
 
   test(
     'using last heart with no stars applies credit and keeps run alive',
