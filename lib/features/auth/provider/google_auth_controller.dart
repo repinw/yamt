@@ -6,12 +6,18 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/config/google_sign_in_config.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
+import 'package:yamt/firebase_options.dart';
 
 part 'google_auth_controller.g.dart';
 
 /// Google sign in.
 @riverpod
 Future<GoogleSignIn> googleSignIn(Ref ref) async {
+  final clientId = kIsWeb
+      ? GoogleSignInConfig.webClientId
+      : defaultTargetPlatform == TargetPlatform.iOS
+      ? DefaultFirebaseOptions.ios.iosClientId
+      : null;
   final serverClientId =
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android
       ? null
@@ -19,7 +25,7 @@ Future<GoogleSignIn> googleSignIn(Ref ref) async {
   final signIn = GoogleSignIn.instance;
   await signIn.initialize(
     // coverage:ignore-start
-    clientId: kIsWeb ? GoogleSignInConfig.webClientId : null,
+    clientId: clientId,
     // coverage:ignore-end
     serverClientId: serverClientId,
   );
