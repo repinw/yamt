@@ -6,18 +6,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
-import 'package:yamt/features/calories/data/'
-    'calorie_nutrition_ocr_repository.dart';
-import 'package:yamt/features/calories/data/'
-    'calorie_nutrition_ocr_repository_contract.dart';
-import 'package:yamt/features/calories/domain/'
-    'calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/product_nutrition/data/'
+    'nutrition_label_ocr_repository.dart';
+import 'package:yamt/features/product_nutrition/data/'
+    'nutrition_label_ocr_repository_contract.dart';
+import 'package:yamt/features/product_nutrition/domain/'
+    'nutrition_label_ocr_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_page.dart';
 import 'package:yamt/features/product_search/provider/'
@@ -28,7 +28,7 @@ Widget _wrapPage({
   required InventoryItem item,
   OffProductSearchResult? selectedProduct,
   OffProductSearchRepository? offRepository,
-  CalorieNutritionOcrRepositoryContract? ocrRepository,
+  NutritionLabelOcrRepositoryContract? ocrRepository,
   InventoryItemRepository? inventoryRepository,
   VoiceSearchService? speechService,
   bool includeStoreInSearch = true,
@@ -47,7 +47,7 @@ Widget _wrapPage({
       if (offRepository != null)
         offProductSearchRepositoryProvider.overrideWithValue(offRepository),
       if (ocrRepository != null)
-        calorieNutritionOcrRepositoryProvider.overrideWithValue(ocrRepository),
+        nutritionLabelOcrRepositoryProvider.overrideWithValue(ocrRepository),
       if (speechService != null)
         voiceSearchServiceProvider.overrideWithValue(speechService),
     ],
@@ -173,14 +173,14 @@ class _ThrowingOffProductSearchRepository
 }
 
 class _FakeNutritionOcrRepository
-    implements CalorieNutritionOcrRepositoryContract {
+    implements NutritionLabelOcrRepositoryContract {
   _FakeNutritionOcrRepository({required this.onScanNutritionLabel});
 
-  final Future<CalorieNutritionOcrResult> Function(String barcode)
+  final Future<NutritionLabelOcrResult> Function(String barcode)
   onScanNutritionLabel;
 
   @override
-  Future<CalorieNutritionOcrResult> scanNutritionLabel({
+  Future<NutritionLabelOcrResult> scanNutritionLabel({
     required String barcode,
   }) {
     return onScanNutritionLabel(barcode);
@@ -1631,7 +1631,7 @@ void main() {
         selectedProduct: selectedProduct,
         ocrRepository: _FakeNutritionOcrRepository(
           onScanNutritionLabel: (_) async =>
-              const CalorieNutritionOcrResult.failed(errorCode: 'ocr_failed'),
+              const NutritionLabelOcrResult.failed(errorCode: 'ocr_failed'),
         ),
       ),
     );
@@ -1652,7 +1652,7 @@ void main() {
   testWidgets('save button is disabled while nutrition OCR is running', (
     tester,
   ) async {
-    final ocrCompleter = Completer<CalorieNutritionOcrResult>();
+    final ocrCompleter = Completer<NutritionLabelOcrResult>();
 
     await tester.pumpWidget(
       _wrapPage(
@@ -1695,7 +1695,7 @@ void main() {
 
     expect(saveButton().onPressed, isNull);
 
-    ocrCompleter.complete(const CalorieNutritionOcrResult.canceled());
+    ocrCompleter.complete(const NutritionLabelOcrResult.canceled());
     await tester.pumpAndSettle();
 
     expect(saveButton().onPressed, isNotNull);
@@ -1971,8 +1971,8 @@ void main() {
           ),
           ocrRepository: _FakeNutritionOcrRepository(
             onScanNutritionLabel: (barcode) async {
-              return CalorieNutritionOcrResult.succeeded(
-                draft: CalorieNutritionOcrDraft(
+              return NutritionLabelOcrResult.succeeded(
+                draft: NutritionLabelOcrDraft(
                   barcode: barcode,
                   quantityLabel: '500 ml',
                   per100Kcal: 11,
