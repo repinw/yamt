@@ -22,9 +22,17 @@ class _FakeCalorieGoalController extends CalorieGoalController {
 }
 
 class _RecordingBurnWeekRunController extends BurnWeekRunController {
-  _RecordingBurnWeekRunController(this.initialState);
+  _RecordingBurnWeekRunController(
+    this.initialState, {
+    this.syncBlocker,
+    this.restartBlocker,
+    this.resetBlocker,
+  });
 
   final BurnWeekRunState initialState;
+  final Completer<void>? syncBlocker;
+  final Completer<void>? restartBlocker;
+  final Completer<void>? resetBlocker;
   final List<_SyncCall> syncCalls = <_SyncCall>[];
   final List<DateTime> restartCalls = <DateTime>[];
   var resetCallCount = 0;
@@ -37,11 +45,13 @@ class _RecordingBurnWeekRunController extends BurnWeekRunController {
   @override
   Future<void> restartRunFrom({required DateTime weekStartDate}) async {
     restartCalls.add(normalizeDiaryDay(weekStartDate));
+    await restartBlocker?.future;
   }
 
   @override
   Future<void> resetRun() async {
     resetCallCount += 1;
+    await resetBlocker?.future;
   }
 
   @override
@@ -61,6 +71,7 @@ class _RecordingBurnWeekRunController extends BurnWeekRunController {
             : List<bool>.from(missedTrackingForClosedWeeks),
       ),
     );
+    await syncBlocker?.future;
   }
 }
 
@@ -86,6 +97,8 @@ ProviderContainer _buildContainer({
   required BurnWeekRunState initialRunState,
   Map<DateTime, CalorieWeekConsumptionSnapshot> snapshotsByWindowEnd =
       const <DateTime, CalorieWeekConsumptionSnapshot>{},
+  _RecordingBurnWeekRunController Function(BurnWeekRunState initialState)?
+  controllerFactory,
   required void Function(_RecordingBurnWeekRunController controller)
   captureController,
 }) {
@@ -107,7 +120,9 @@ ProviderContainer _buildContainer({
       ),
       burnWeekRunControllerProvider.overrideWith(
         () {
-          final controller = _RecordingBurnWeekRunController(initialRunState);
+          final controller =
+              controllerFactory?.call(initialRunState) ??
+              _RecordingBurnWeekRunController(initialRunState);
           captureController(controller);
           return controller;
         },
@@ -197,6 +212,11 @@ Future<void> _activateSync(ProviderContainer container) async {
   addTearDown(subscription.close);
   await Future<void>.delayed(Duration.zero);
   await Future<void>.delayed(Duration.zero);
+}
+
+Future<void> _primeSyncContainer(ProviderContainer container) async {
+  await container.read(calorieGoalControllerProvider.future);
+  await container.read(burnWeekRunControllerProvider.future);
 }
 
 CalorieWeekDayOverview _defaultTodayOverview(
@@ -452,5 +472,181 @@ void main() {
         <bool>[true],
       );
     });
+
+    test(
+      'dedupes identical queued sync work while sync is in flight',
+      () async {
+        final today = normalizeDiaryDay(DateTime.now());
+        final syncBlocker = Completer<void>();
+        late _RecordingBurnWeekRunController controller;
+        final container = _buildContainer(
+          today: today,
+          weekOverview: _weekOverview(
+            today: today,
+            balanceStartDate: today.subtract(const Duration(days: 6)),
+            missingDays: <DateTime>{today.subtract(const Duration(days: 2))},
+          ),
+          todayOverview: _defaultTodayOverview(today),
+          settings: _activeGoalSettings(
+            today.subtract(const Duration(days: 6)),
+          ),
+          initialRunState: BurnWeekRunState(
+            currentWeekStartDayKey: diaryDayKey(
+              today.subtract(const Duration(days: 6)),
+            ),
+            lastActiveDayKey: diaryDayKey(today),
+            runWeekNumber: 1,
+            starCount: 0,
+            heartCount: 3,
+            heartCreditKcal: 0,
+            starBrokeThisWeek: false,
+            missedTrackingThisWeek: false,
+          ),
+          controllerFactory: (initialState) => _RecordingBurnWeekRunController(
+            initialState,
+            syncBlocker: syncBlocker,
+          ),
+          captureController: (value) => controller = value,
+        );
+        addTearDown(container.dispose);
+        await _primeSyncContainer(container);
+
+        final subscription = container.listen<Object?>(
+          burnWeekLiveSyncProvider,
+          (_, _) {},
+        );
+        addTearDown(subscription.close);
+        container.invalidate(burnWeekLiveSyncProvider);
+        container.read(burnWeekLiveSyncProvider);
+        container.invalidate(burnWeekLiveSyncProvider);
+        container.read(burnWeekLiveSyncProvider);
+
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(controller.syncCalls, hasLength(1));
+
+        syncBlocker.complete();
+        await Future<void>.delayed(Duration.zero);
+      },
+    );
+
+    test(
+      'dedupes identical queued restart work while restart is in flight',
+      () async {
+        final today = normalizeDiaryDay(DateTime.now());
+        final restartBlocker = Completer<void>();
+        late _RecordingBurnWeekRunController controller;
+        final container = _buildContainer(
+          today: today,
+          weekOverview: _weekOverview(
+            today: today,
+            balanceStartDate: today,
+          ),
+          todayOverview: _defaultTodayOverview(today),
+          settings: _activeGoalSettings(today),
+          initialRunState: BurnWeekRunState(
+            currentWeekStartDayKey: diaryDayKey(
+              today.subtract(const Duration(days: 8)),
+            ),
+            lastActiveDayKey: diaryDayKey(today),
+            runWeekNumber: 2,
+            starCount: 1,
+            heartCount: 3,
+            heartCreditKcal: 0,
+            starBrokeThisWeek: false,
+            missedTrackingThisWeek: false,
+          ),
+          controllerFactory: (initialState) => _RecordingBurnWeekRunController(
+            initialState,
+            restartBlocker: restartBlocker,
+          ),
+          captureController: (value) => controller = value,
+        );
+        addTearDown(container.dispose);
+        await _primeSyncContainer(container);
+
+        final subscription = container.listen<Object?>(
+          burnWeekLiveSyncProvider,
+          (_, _) {},
+        );
+        addTearDown(subscription.close);
+        container.invalidate(burnWeekLiveSyncProvider);
+        container.read(burnWeekLiveSyncProvider);
+        container.invalidate(burnWeekLiveSyncProvider);
+        container.read(burnWeekLiveSyncProvider);
+
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(controller.restartCalls, <DateTime>[today]);
+
+        restartBlocker.complete();
+        await Future<void>.delayed(Duration.zero);
+      },
+    );
+
+    test(
+      'dedupes identical queued reset work while reset is in flight',
+      () async {
+        final today = normalizeDiaryDay(DateTime.now());
+        final tomorrow = nextDiaryDay(today);
+        final resetBlocker = Completer<void>();
+        late _RecordingBurnWeekRunController controller;
+        final container = _buildContainer(
+          today: today,
+          weekOverview: _weekOverview(
+            today: today,
+            balanceStartDate: tomorrow,
+            goalStartsInFuture: true,
+            nextGoalStartDate: tomorrow,
+          ),
+          todayOverview: _defaultTodayOverview(
+            today,
+            totalKcal: 0,
+            goalKcal: 0,
+            entryCount: 0,
+          ),
+          settings: _activeGoalSettings(tomorrow),
+          initialRunState: BurnWeekRunState(
+            currentWeekStartDayKey: diaryDayKey(
+              today.subtract(const Duration(days: 6)),
+            ),
+            lastActiveDayKey: diaryDayKey(today),
+            runWeekNumber: 2,
+            starCount: 1,
+            heartCount: 2,
+            heartCreditKcal: 600,
+            starBrokeThisWeek: false,
+            missedTrackingThisWeek: false,
+          ),
+          controllerFactory: (initialState) => _RecordingBurnWeekRunController(
+            initialState,
+            resetBlocker: resetBlocker,
+          ),
+          captureController: (value) => controller = value,
+        );
+        addTearDown(container.dispose);
+        await _primeSyncContainer(container);
+
+        final subscription = container.listen<Object?>(
+          burnWeekLiveSyncProvider,
+          (_, _) {},
+        );
+        addTearDown(subscription.close);
+        container.invalidate(burnWeekLiveSyncProvider);
+        container.read(burnWeekLiveSyncProvider);
+        container.invalidate(burnWeekLiveSyncProvider);
+        container.read(burnWeekLiveSyncProvider);
+
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(controller.resetCallCount, 1);
+
+        resetBlocker.complete();
+        await Future<void>.delayed(Duration.zero);
+      },
+    );
   });
 }

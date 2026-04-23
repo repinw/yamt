@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meta/meta.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -8,6 +9,9 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+
+final Map<Ref, _PendingBurnWeekMutationState> _pendingBurnWeekMutations =
+    <Ref, _PendingBurnWeekMutationState>{};
 
 /// How often Burn Week live sync should re-check the current day.
 final burnWeekLiveSyncTickerPeriodProvider = Provider<Duration?>(
@@ -17,6 +21,9 @@ final burnWeekLiveSyncTickerPeriodProvider = Provider<Duration?>(
 /// Keeps Burn Week sync active outside the widget tree.
 final Provider<Object?> burnWeekLiveSyncProvider =
     Provider.autoDispose<Object?>((ref) {
+      ref.onDispose(() {
+        _pendingBurnWeekMutations.remove(ref);
+      });
       final tickerPeriod = ref.watch(burnWeekLiveSyncTickerPeriodProvider);
       if (tickerPeriod != null) {
         final ticker = Timer.periodic(tickerPeriod, (_) {
@@ -150,44 +157,77 @@ void _queueRunSync(
   required bool missedTrackingThisWeek,
   List<bool>? missedTrackingForClosedWeeks,
 }) {
-  scheduleMicrotask(() {
-    if (!ref.mounted) {
-      return;
-    }
-    unawaited(
-      ref
+  _queuePendingBurnWeekMutation(
+    ref,
+    mutation: _PendingBurnWeekMutation.sync(
+      weekStartDate: weekStartDate,
+      missedTrackingThisWeek: missedTrackingThisWeek,
+      missedTrackingForClosedWeeks: missedTrackingForClosedWeeks,
+    ),
+    action: () {
+      return ref
           .read(burnWeekRunControllerProvider.notifier)
           .syncForWeek(
             currentDay: normalizeDiaryDay(DateTime.now()),
             weekStartDate: weekStartDate,
             missedTrackingThisWeek: missedTrackingThisWeek,
             missedTrackingForClosedWeeks: missedTrackingForClosedWeeks,
-          ),
-    );
-  });
+          );
+    },
+  );
 }
 
 void _queueRunRestart(Ref ref, {required DateTime weekStartDate}) {
-  scheduleMicrotask(() {
-    if (!ref.mounted) {
-      return;
-    }
-    unawaited(
-      ref
+  _queuePendingBurnWeekMutation(
+    ref,
+    mutation: _PendingBurnWeekMutation.restart(
+      weekStartDate: weekStartDate,
+    ),
+    action: () {
+      return ref
           .read(burnWeekRunControllerProvider.notifier)
           .restartRunFrom(
             weekStartDate: weekStartDate,
-          ),
-    );
-  });
+          );
+    },
+  );
 }
 
 void _queueRunReset(Ref ref) {
+  _queuePendingBurnWeekMutation(
+    ref,
+    mutation: const _PendingBurnWeekMutation.reset(),
+    action: () {
+      return ref.read(burnWeekRunControllerProvider.notifier).resetRun();
+    },
+  );
+}
+
+void _queuePendingBurnWeekMutation(
+  Ref ref, {
+  required _PendingBurnWeekMutation mutation,
+  required Future<void> Function() action,
+}) {
+  final pendingMutation = _pendingBurnWeekMutations[ref];
+  if (pendingMutation?.mutation == mutation) {
+    return;
+  }
+  _pendingBurnWeekMutations[ref] = _QueuedBurnWeekMutationState(
+    mutation,
+  );
   scheduleMicrotask(() {
     if (!ref.mounted) {
       return;
     }
-    unawaited(ref.read(burnWeekRunControllerProvider.notifier).resetRun());
+    final pendingMutation = _pendingBurnWeekMutations[ref];
+    if (pendingMutation is! _QueuedBurnWeekMutationState ||
+        pendingMutation.mutation != mutation) {
+      return;
+    }
+    _pendingBurnWeekMutations[ref] = _RunningBurnWeekMutationState(
+      mutation,
+    );
+    unawaited(_runPendingBurnWeekMutation(ref, mutation, action));
   });
 }
 
@@ -200,4 +240,75 @@ bool _isInitialBurnWeekRunState(BurnWeekRunState state) {
       state.heartCreditKcal == 0 &&
       !state.starBrokeThisWeek &&
       !state.missedTrackingThisWeek;
+}
+
+Future<void> _runPendingBurnWeekMutation(
+  Ref ref,
+  _PendingBurnWeekMutation mutation,
+  Future<void> Function() action,
+) async {
+  try {
+    await action();
+  } finally {
+    if (ref.mounted) {
+      final pendingMutation = _pendingBurnWeekMutations[ref];
+      if (pendingMutation is _RunningBurnWeekMutationState &&
+          pendingMutation.mutation == mutation) {
+        _pendingBurnWeekMutations.remove(ref);
+      }
+    }
+  }
+}
+
+sealed class _PendingBurnWeekMutationState {
+  const _PendingBurnWeekMutationState(this.mutation);
+
+  final _PendingBurnWeekMutation mutation;
+}
+
+class _QueuedBurnWeekMutationState extends _PendingBurnWeekMutationState {
+  const _QueuedBurnWeekMutationState(super.mutation);
+}
+
+class _RunningBurnWeekMutationState extends _PendingBurnWeekMutationState {
+  const _RunningBurnWeekMutationState(super.mutation);
+}
+
+@immutable
+class _PendingBurnWeekMutation {
+  const _PendingBurnWeekMutation._(this.key);
+
+  const _PendingBurnWeekMutation.reset() : this._('reset');
+
+  factory _PendingBurnWeekMutation.restart({
+    required DateTime weekStartDate,
+  }) {
+    return _PendingBurnWeekMutation._(
+      'restart:${diaryDayKey(normalizeDiaryDay(weekStartDate))}',
+    );
+  }
+
+  factory _PendingBurnWeekMutation.sync({
+    required DateTime weekStartDate,
+    required bool missedTrackingThisWeek,
+    List<bool>? missedTrackingForClosedWeeks,
+  }) {
+    final closedWeeksKey = (missedTrackingForClosedWeeks ?? const <bool>[])
+        .map((value) => value ? '1' : '0')
+        .join();
+    return _PendingBurnWeekMutation._(
+      'sync:${diaryDayKey(normalizeDiaryDay(weekStartDate))}'
+      ':${missedTrackingThisWeek ? '1' : '0'}:$closedWeeksKey',
+    );
+  }
+
+  final String key;
+
+  @override
+  bool operator ==(Object other) {
+    return other is _PendingBurnWeekMutation && other.key == key;
+  }
+
+  @override
+  int get hashCode => key.hashCode;
 }
