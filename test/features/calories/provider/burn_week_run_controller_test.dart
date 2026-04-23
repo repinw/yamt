@@ -72,10 +72,10 @@ void main() {
 
   BurnWeekRunState buildState({
     required String? currentWeekStartDayKey,
-    String? lastActiveDayKey,
     required int runWeekNumber,
     required int starCount,
     required int heartCount,
+    String? lastActiveDayKey,
     double heartCreditKcal = 0,
     bool starBrokeThisWeek = false,
     bool missedTrackingThisWeek = false,
@@ -161,7 +161,7 @@ void main() {
   });
 
   test(
-      'syncForWeek advances week and awards star after perfect week',
+    'syncForWeek advances week and awards star after perfect week',
     () async {
       final repository = _FakeBurnWeekRunStateRepository(
         buildState(
@@ -214,6 +214,35 @@ void main() {
       );
 
       expect(repository.state.currentWeekStartDayKey, '2026-4-21');
+      expect(repository.state.lastActiveDayKey, '2026-4-21');
+      expect(repository.state.runWeekNumber, 2);
+      expect(repository.state.starCount, 1);
+    },
+  );
+
+  test(
+    'syncForWeek snaps backward week targets without looping forever',
+    () async {
+      final repository = _FakeBurnWeekRunStateRepository(
+        buildState(
+          currentWeekStartDayKey: '2026-4-21',
+          lastActiveDayKey: '2026-4-21',
+          runWeekNumber: 2,
+          starCount: 1,
+          heartCount: 3,
+        ),
+      );
+      final container = buildContainer(repository);
+
+      await syncWeek(
+        container,
+        currentDay: DateTime(2026, 4, 21),
+        weekStartDate: DateTime(2026, 4, 14),
+        missedTrackingThisWeek: false,
+        missedTrackingForClosedWeeks: const <bool>[false],
+      );
+
+      expect(repository.state.currentWeekStartDayKey, '2026-4-14');
       expect(repository.state.lastActiveDayKey, '2026-4-21');
       expect(repository.state.runWeekNumber, 2);
       expect(repository.state.starCount, 1);

@@ -337,6 +337,7 @@ void main() {
             .save(
               goalStartDate: futureGoalStart,
               allowFutureGoalStart: true,
+              syncBurnWeekForOnboarding: true,
             );
 
         expect(saved, isTrue);
@@ -384,6 +385,7 @@ void main() {
             .save(
               goalStartDate: now,
               allowFutureGoalStart: true,
+              syncBurnWeekForOnboarding: true,
               onboardingCatchUpEstimate:
                   CalorieGoalOnboardingCatchUpEstimate.normal,
               now: now,

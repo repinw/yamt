@@ -17,7 +17,9 @@ abstract final class CalorieGoalStartPicker {
             referenceDate.year - 10,
           ),
     );
-    final normalizedLastDate = normalizeDate(lastDate ?? referenceDate);
+    final normalizedLastDate = normalizeDate(
+      lastDate ?? DateTime(referenceDate.year + 10, 12, 31),
+    );
     final normalizedInitialDate = normalizeDate(initialGoalStartDate);
     final clampedInitialDate =
         normalizedInitialDate.isBefore(

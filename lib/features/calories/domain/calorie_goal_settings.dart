@@ -196,7 +196,10 @@ class CalorieGoalHistoryEntry {
 
   /// The effective counting start date.
   DateTime get effectiveCountingStartDate {
-    return normalizeDiaryDay(countingStartDate ?? effectiveDate);
+    return _resolveNormalizedCountingStartDate(
+      effectiveDate: effectiveDate,
+      countingStartDate: countingStartDate,
+    );
   }
 
   /// Whether weekly check in.
@@ -252,13 +255,10 @@ class CalorieGoalSettings {
     int eatingWindowStartMinuteOfDay = defaultEatingWindowStartMinuteOfDay,
     int eatingWindowEndMinuteOfDay = defaultEatingWindowEndMinuteOfDay,
   }) {
-    final normalizedEffectiveDate = normalizeDiaryDay(effectiveDate);
-    final normalizedCountingStartDate =
-        normalizeDiaryDay(
-          countingStartDate ?? effectiveDate,
-        ).isBefore(normalizedEffectiveDate)
-        ? normalizedEffectiveDate
-        : normalizeDiaryDay(countingStartDate ?? effectiveDate);
+    final normalizedCountingStartDate = _resolveNormalizedCountingStartDate(
+      effectiveDate: effectiveDate,
+      countingStartDate: countingStartDate,
+    );
     return CalorieGoalSettings(
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
@@ -267,7 +267,7 @@ class CalorieGoalSettings {
         CalorieGoalHistoryEntry(
           dailyKcalGoal: dailyKcalGoal,
           calculatorProfile: calculatorProfile,
-          effectiveDate: normalizedEffectiveDate,
+          effectiveDate: normalizeDiaryDay(effectiveDate),
           changedAt: effectiveDate,
           countingStartDate: normalizedCountingStartDate,
           source: source,
@@ -577,15 +577,10 @@ class CalorieGoalSettings {
     bool replaceFutureHistory = false,
   }) {
     final effectiveDate = normalizeDiaryDay(changedAt);
-    final requestedCountingStartDate = normalizeDiaryDay(
-      countingStartDate ?? changedAt,
+    final normalizedCountingStartDate = _resolveNormalizedCountingStartDate(
+      effectiveDate: changedAt,
+      countingStartDate: countingStartDate,
     );
-    final normalizedCountingStartDate =
-        requestedCountingStartDate.isBefore(
-          effectiveDate,
-        )
-        ? effectiveDate
-        : requestedCountingStartDate;
     final nextHistory =
         <CalorieGoalHistoryEntry>[
           for (final entry in sortedGoalHistory)
@@ -754,6 +749,20 @@ bool _shouldKeepGoalHistoryEntry({
     return true;
   }
   return entry.effectiveDate.isBefore(effectiveDate);
+}
+
+DateTime _resolveNormalizedCountingStartDate({
+  required DateTime effectiveDate,
+  DateTime? countingStartDate,
+}) {
+  final normalizedEffectiveDate = normalizeDiaryDay(effectiveDate);
+  final normalizedCountingStartDate = normalizeDiaryDay(
+    countingStartDate ?? effectiveDate,
+  );
+  if (normalizedCountingStartDate.isBefore(normalizedEffectiveDate)) {
+    return normalizedEffectiveDate;
+  }
+  return normalizedCountingStartDate;
 }
 
 ({int startMinuteOfDay, int endMinuteOfDay}) _resolveEatingWindowMinutes({

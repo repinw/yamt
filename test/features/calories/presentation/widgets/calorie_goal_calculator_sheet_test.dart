@@ -402,4 +402,46 @@ void main() {
       DateFormat.yMMMd('en').format(countingStartDate),
     );
   });
+
+  testWidgets(
+    'save keeps future official start for existing sandbox goal',
+    (tester) async {
+      final repository = FakeCalorieSettingsRepository();
+      final futureGoalStart = DateTime.now().add(const Duration(days: 2));
+      addTearDown(repository.dispose);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          settingsRepository: repository,
+          initialSettings: CalorieGoalSettings.single(
+            dailyKcalGoal: 1680,
+            calculatorProfile: const CalorieCalculatorProfile.defaults(),
+            effectiveDate: DateTime.now(),
+            countingStartDate: futureGoalStart,
+            source: CalorieGoalSource.calculator,
+          ),
+        ),
+      );
+      await _openSheet(tester);
+      await _goToResultsWithDefaults(tester);
+      await _ensureSaveButtonVisible(tester);
+
+      await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Could not save the calculated calorie target.'),
+        findsNothing,
+      );
+      final settings = await repository.readSettings();
+      expect(
+        settings.latestGoalEntry?.effectiveCountingStartDate,
+        DateTime(
+          futureGoalStart.year,
+          futureGoalStart.month,
+          futureGoalStart.day,
+        ),
+      );
+    },
+  );
 }

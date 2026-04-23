@@ -53,4 +53,53 @@ void main() {
 
     expect(find.text('Could not update goal start.'), findsOneWidget);
   });
+
+  testWidgets('change date picker keeps future official starts selectable', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) {
+              return Center(
+                child: FilledButton(
+                  onPressed: () {
+                    unawaited(
+                      showCalorieGoalStartDialog(
+                        context: context,
+                        initialGoalStartDate: DateTime.now().add(
+                          const Duration(days: 2),
+                        ),
+                        onSaveGoalStart: (_) async => true,
+                      ),
+                    );
+                  },
+                  child: const Text('Open'),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CalorieGoalStartDialogKeys.changeDateButton));
+    await tester.pumpAndSettle();
+
+    final picker = tester.widget<CalendarDatePicker>(
+      find.byType(CalendarDatePicker),
+    );
+    expect(
+      picker.lastDate.isAfter(
+        DateUtils.dateOnly(DateTime.now().add(const Duration(days: 2))),
+      ),
+      isTrue,
+    );
+  });
 }

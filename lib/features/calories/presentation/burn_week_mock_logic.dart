@@ -1,13 +1,12 @@
 import 'dart:math' as math;
 
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
+
 /// Fallback goal used when no diary goal is available.
 const double burnWeekMockFallbackGoalKcal = 1400;
 
-/// Number of debug days shown in one Burn Week mock cycle.
-const int burnWeekMockDaysPerWeek = 7;
-
 /// Total debug seconds in one Burn Week mock cycle.
-const int burnWeekMockSecondsPerWeek = burnWeekMockDaysPerWeek * _secondsPerDay;
+const int burnWeekMockSecondsPerWeek = burnWeekDaysPerWeek * _secondsPerDay;
 
 const int _secondsPerDay = 24 * 60 * 60;
 
@@ -356,7 +355,7 @@ BurnWeekMockMetrics resolveBurnWeekMockMetrics({
 }) {
   final resolvedGoalKcal = resolveBurnWeekMockGoalKcal(goalKcal);
   final elapsedDays = resolveBurnWeekMockElapsedDays(elapsedDebugSeconds);
-  final weeklyGoalKcal = resolvedGoalKcal * burnWeekMockDaysPerWeek;
+  final weeklyGoalKcal = resolvedGoalKcal * burnWeekDaysPerWeek;
   final paceRatio = resolveBurnWeekMockPaceRatio(elapsedDebugSeconds);
   final targetKcal = resolvedGoalKcal * elapsedDays;
   final safeZoneWidthKcal = resolvedGoalKcal * safeZoneMultiplier;

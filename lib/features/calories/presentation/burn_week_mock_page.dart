@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/presentation/burn_week_mock_logic.dart';
@@ -531,7 +532,7 @@ class _BurnWeekMockPageState extends ConsumerState<BurnWeekMockPage> {
       }
 
       final completedDayNumber = (_elapsedDebugSeconds ~/ _debugSecondsPerDay)
-          .clamp(1, burnWeekMockDaysPerWeek);
+          .clamp(1, burnWeekDaysPerWeek);
       _resolveCompletedDay(completedDayNumber);
       if (_didResetRunDuringTick) {
         break;
@@ -1141,7 +1142,7 @@ String _formatTimeLeap(int seconds) {
 
 int _resolveDebugDayNumber(int elapsedDebugSeconds) {
   if (elapsedDebugSeconds >= burnWeekMockSecondsPerWeek) {
-    return burnWeekMockDaysPerWeek;
+    return burnWeekDaysPerWeek;
   }
   return (elapsedDebugSeconds ~/ _debugSecondsPerDay) + 1;
 }

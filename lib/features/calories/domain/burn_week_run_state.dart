@@ -1,3 +1,6 @@
+/// Number of days in one Burn Week.
+const int burnWeekDaysPerWeek = 7;
+
 /// Persistent Burn Week run state for real users.
 class BurnWeekRunState {
   /// Creates Burn Week run state.

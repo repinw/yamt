@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -33,14 +34,14 @@ BurnWeekMockMetrics resolveBurnWeekLiveMetrics({
     return sum + day.goalKcal;
   });
   final rawWeeklyGoalKcal = math.max<double>(
-    fallbackDailyGoalKcal * burnWeekMockDaysPerWeek,
+    fallbackDailyGoalKcal * burnWeekDaysPerWeek,
     currentWeekGoalKcal,
   );
   final adjustedWeeklyGoalKcal = math.max<double>(
     fallbackDailyGoalKcal,
     rawWeeklyGoalKcal + previousWeekOverflowKcal,
   );
-  final dailyGoalKcal = adjustedWeeklyGoalKcal / burnWeekMockDaysPerWeek;
+  final dailyGoalKcal = adjustedWeeklyGoalKcal / burnWeekDaysPerWeek;
   final completedDaysCount = weekOverview.days
       .where(
         (day) =>
@@ -241,7 +242,7 @@ DateTime resolveBurnWeekLiveWeekStartDate({
     currentDay: normalizedCurrentDay,
     balanceStartDate: balanceStartDate,
   );
-  final dayOffset = elapsedDays % burnWeekMockDaysPerWeek;
+  final dayOffset = elapsedDays % burnWeekDaysPerWeek;
   return normalizedCurrentDay.subtract(Duration(days: dayOffset));
 }
 
@@ -254,11 +255,11 @@ DateTime resolveBurnWeekLiveSyncWeekStartDate({
   final normalizedCurrentDay = normalizeDiaryDay(currentDay);
   while (!normalizedCurrentDay.isBefore(
     syncWeekStartDate.add(
-      const Duration(days: burnWeekMockDaysPerWeek),
+      const Duration(days: burnWeekDaysPerWeek),
     ),
   )) {
     syncWeekStartDate = syncWeekStartDate.add(
-      const Duration(days: burnWeekMockDaysPerWeek),
+      const Duration(days: burnWeekDaysPerWeek),
     );
   }
   return syncWeekStartDate;

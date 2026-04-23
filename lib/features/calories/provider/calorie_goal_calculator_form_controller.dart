@@ -85,6 +85,7 @@ class CalorieGoalCalculatorFormController
   Future<bool> save({
     required DateTime goalStartDate,
     bool allowFutureGoalStart = false,
+    bool syncBurnWeekForOnboarding = false,
     CalorieGoalOnboardingCatchUpEstimate? onboardingCatchUpEstimate,
     DateTime? now,
   }) async {
@@ -103,7 +104,7 @@ class CalorieGoalCalculatorFormController
           goalStartDate: goalStartDate,
           allowFutureGoalStart: allowFutureGoalStart,
         );
-    if (saved && ref.mounted && allowFutureGoalStart) {
+    if (saved && ref.mounted && syncBurnWeekForOnboarding) {
       await _applyOnboardingBurnWeekStart(
         goalStartDate: goalStartDate,
         now: referenceNow,

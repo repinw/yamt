@@ -142,11 +142,17 @@ class _CalorieGoalCalculatorFlowState
     final formProvider = calorieGoalCalculatorFormControllerProvider(
       widget.initialSettings.calculatorProfile,
     );
+    final allowsFutureGoalStart =
+        widget.isOnboarding ||
+        _goalStartDate.isAfter(
+          CalorieGoalStartPicker.normalizeDate(DateTime.now()),
+        );
     final saved = await ref
         .read(formProvider.notifier)
         .save(
           goalStartDate: _goalStartDate,
-          allowFutureGoalStart: widget.isOnboarding,
+          allowFutureGoalStart: allowsFutureGoalStart,
+          syncBurnWeekForOnboarding: widget.isOnboarding,
           onboardingCatchUpEstimate: widget.isOnboarding && _startsToday
               ? _onboardingCatchUpEstimate
               : null,

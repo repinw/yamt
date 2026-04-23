@@ -6,6 +6,8 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/burn_week_mock_logic.dart';
 
+const int _maxWeekSyncAdvances = 1000;
+
 /// Real Burn Week run controller.
 class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
   int _saveGeneration = 0;
@@ -29,13 +31,20 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
   }) async {
     final current = await future;
     final currentDayKey = diaryDayKey(normalizeDiaryDay(currentDay));
-    final weekStartDayKey = diaryDayKey(weekStartDate);
+    final normalizedWeekStartDate = normalizeDiaryDay(weekStartDate);
+    final weekStartDayKey = diaryDayKey(normalizedWeekStartDate);
     final currentWeekStartDayKey = _normalizeBurnWeekDayKey(
       current.currentWeekStartDayKey,
     );
+    final currentWeekStartDate = _parseBurnWeekDayKey(currentWeekStartDayKey);
     var next = current;
 
     if (currentWeekStartDayKey == null) {
+      next = current.copyWith(
+        currentWeekStartDayKey: weekStartDayKey,
+      );
+    } else if (currentWeekStartDate != null &&
+        currentWeekStartDate.isAfter(normalizedWeekStartDate)) {
       next = current.copyWith(
         currentWeekStartDayKey: weekStartDayKey,
       );
@@ -49,6 +58,17 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
       var advancedWeekCount = 0;
       while (_normalizeBurnWeekDayKey(next.currentWeekStartDayKey) !=
           weekStartDayKey) {
+        final currentLoopWeekStartDate = _parseBurnWeekDayKey(
+          _normalizeBurnWeekDayKey(next.currentWeekStartDayKey),
+        );
+        if (currentLoopWeekStartDate == null ||
+            !currentLoopWeekStartDate.isBefore(normalizedWeekStartDate) ||
+            advancedWeekCount >= _maxWeekSyncAdvances) {
+          next = next.copyWith(
+            currentWeekStartDayKey: weekStartDayKey,
+          );
+          break;
+        }
         final closingWeekMissedTracking = switch (advancedWeekCount) {
           _
               when missedTrackingForClosedWeeks != null &&
@@ -186,19 +206,15 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
   }
 
   String _resolveNextWeekStartDayKey(String currentWeekStartDayKey) {
-    final normalizedCurrentWeekStartDayKey = _normalizeBurnWeekDayKey(
-      currentWeekStartDayKey,
-    );
-    if (normalizedCurrentWeekStartDayKey == null) {
+    final currentWeekStartDate = _parseBurnWeekDayKey(currentWeekStartDayKey);
+    if (currentWeekStartDate == null) {
       return currentWeekStartDayKey;
     }
-    final parts = normalizedCurrentWeekStartDayKey.split('-');
-    final currentWeekStartDate = DateTime(
-      int.parse(parts[0]),
-      int.parse(parts[1]),
-      int.parse(parts[2]),
+    return diaryDayKey(
+      currentWeekStartDate.add(
+        const Duration(days: burnWeekDaysPerWeek),
+      ),
     );
-    return diaryDayKey(currentWeekStartDate.add(const Duration(days: 7)));
   }
 
   Future<void> _save(
@@ -240,6 +256,14 @@ final burnWeekRunControllerProvider =
     );
 
 String? _normalizeBurnWeekDayKey(String? dayKey) {
+  final parsedDayKey = _parseBurnWeekDayKey(dayKey);
+  if (parsedDayKey == null) {
+    return null;
+  }
+  return diaryDayKey(parsedDayKey);
+}
+
+DateTime? _parseBurnWeekDayKey(String? dayKey) {
   final normalizedDayKey = dayKey?.trim();
   if (normalizedDayKey == null || normalizedDayKey.isEmpty) {
     return null;
@@ -254,5 +278,5 @@ String? _normalizeBurnWeekDayKey(String? dayKey) {
   if (year == null || month == null || day == null) {
     return null;
   }
-  return diaryDayKey(DateTime(year, month, day));
+  return normalizeDiaryDay(DateTime(year, month, day));
 }
