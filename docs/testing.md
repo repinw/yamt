@@ -12,6 +12,13 @@ flutter test
 flutter test --coverage
 ```
 
+The repo caps default test concurrency in `dart_test.yaml` to keep
+RAM usage predictable on developer machines. Override it for a
+specific run with `flutter test --concurrency <n>` if needed.
+
+`flutter test --coverage` is notably heavier than a normal test run.
+Prefer targeted test folders while iterating on a feature.
+
 Run only a changed area while iterating:
 
 ```bash

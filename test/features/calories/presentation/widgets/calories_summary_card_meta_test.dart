@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
@@ -12,37 +11,6 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
   final numberFormat = NumberFormat.decimalPattern('en');
-
-  testWidgets('balance summary hero shows localized error fallback', (
-    tester,
-  ) async {
-    final container = ProviderContainer(
-      overrides: [
-        calorieBalanceSummaryProvider.overrideWith(
-          (ref) async => throw StateError('boom'),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: _buildHarness(
-          child: BalanceSummaryHeroContent(
-            numberFormat: numberFormat,
-            kcalUnit: 'kcal',
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text('Balance view is unavailable right now.'),
-      findsOneWidget,
-    );
-  });
 
   testWidgets('classic meta toggles show bootstrap workout hint text', (
     tester,

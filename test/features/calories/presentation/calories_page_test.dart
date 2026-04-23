@@ -22,6 +22,7 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/presentation/burn_week_mock_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/calories_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
@@ -207,6 +208,10 @@ Widget _buildHarness({
         },
       ),
       GoRoute(
+        path: AppRoutes.homeCaloriesBurnWeekMock,
+        builder: (context, state) => const BurnWeekMockPage(),
+      ),
+      GoRoute(
         path: AppRoutes.homeStatisticsWeight,
         builder: (context, state) => const Scaffold(body: Text('Trends')),
       ),
@@ -302,6 +307,10 @@ Widget _buildHarnessWithContainer({required ProviderContainer container}) {
             entryId: state.pathParameters['entryId'],
           );
         },
+      ),
+      GoRoute(
+        path: AppRoutes.homeCaloriesBurnWeekMock,
+        builder: (context, state) => const BurnWeekMockPage(),
       ),
       GoRoute(
         path: AppRoutes.homeStatisticsWeight,
@@ -446,11 +455,6 @@ void main() {
     expect(find.byType(CaloriesDayNavigationPager), findsOneWidget);
     await _scrollUntilVisible(
       tester,
-      find.byKey(CaloriesPageKeys.weekBalanceSummary),
-    );
-    expect(find.byKey(CaloriesPageKeys.weekBalanceSummary), findsOneWidget);
-    await _scrollUntilVisible(
-      tester,
       find.byKey(CaloriesPageKeys.sectionCard(MealType.breakfast.name)),
     );
     expect(
@@ -458,6 +462,46 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Skyr'), findsOneWidget);
+  });
+
+  testWidgets('opens Burn Week mock from diary button', (tester) async {
+    final today = DateTime.now();
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry(
+          'entry-1',
+          loggedAt: DateTime(today.year, today.month, today.day, 8),
+          mealType: MealType.breakfast,
+        ),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: DateTime(today.year, today.month, today.day),
+      ),
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.burnWeekMockOpenButton),
+    );
+    await tester.tap(find.byKey(CaloriesPageKeys.burnWeekMockOpenButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CaloriesPageKeys.burnWeekMockBar), findsOneWidget);
+    expect(find.text('Burn Week'), findsWidgets);
   });
 
   testWidgets('opens detail sheet when tapping regular diary entry', (
@@ -703,7 +747,8 @@ void main() {
     addTearDown(container.dispose);
 
     await tester.pumpWidget(_buildHarnessWithContainer(container: container));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
     expect(
       find.byKey(CalorieWeeklyCheckInDialogKeys.applyButton),
@@ -795,7 +840,8 @@ void main() {
     container.read(calorieDayControllerProvider.notifier).setDay(selectedDay);
 
     await tester.pumpWidget(_buildHarnessWithContainer(container: container));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
     await tester.tap(find.byKey(CalorieWeeklyCheckInDialogKeys.laterButton));
     await tester.pumpAndSettle();
@@ -861,7 +907,7 @@ void main() {
         CaloriesPageKeys.summaryModeOption('classic'),
       );
 
-      expect(find.byKey(CaloriesPageKeys.summaryBalanceBar), findsOneWidget);
+      expect(find.text('EATEN'), findsOneWidget);
       expect(
         tester.getCenter(balanceModeFinder).dx,
         lessThan(tester.getCenter(classicModeFinder).dx),
@@ -870,7 +916,7 @@ void main() {
       await tester.tap(classicModeFinder);
       await tester.pumpAndSettle();
 
-      expect(find.byKey(CaloriesPageKeys.summaryBalanceBar), findsNothing);
+      expect(find.text('EATEN'), findsNothing);
       expect(
         await preferences.getString('calories_summary_view_mode'),
         'classic',
@@ -885,80 +931,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byKey(CaloriesPageKeys.summaryBalanceBar), findsNothing);
+      expect(find.text('EATEN'), findsNothing);
     },
   );
-
-  testWidgets('keeps diary visible while switching days', (tester) async {
-    final today = DateTime.now();
-    final currentDay = DateTime(today.year, today.month, today.day);
-    final previousDay = currentDay.subtract(const Duration(days: 1));
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _entry(
-          'today-entry',
-          loggedAt: DateTime(
-            currentDay.year,
-            currentDay.month,
-            currentDay.day,
-            8,
-          ),
-          mealType: MealType.breakfast,
-          name: 'Today entry',
-        ),
-        _entry(
-          'previous-entry',
-          loggedAt: DateTime(
-            previousDay.year,
-            previousDay.month,
-            previousDay.day,
-            8,
-          ),
-          mealType: MealType.breakfast,
-          name: 'Previous entry',
-        ),
-      ],
-    );
-    final settingsRepository = FakeCalorieSettingsRepository();
-    final container = ProviderContainer(
-      overrides: [
-        calorieLogRepositoryProvider.overrideWithValue(logRepository),
-        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      ],
-    );
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-    addTearDown(container.dispose);
-
-    await tester.pumpWidget(_buildHarnessWithContainer(container: container));
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(CaloriesPageKeys.summaryCard), findsOneWidget);
-    expect(find.byType(CaloriesDayNavigationPager), findsOneWidget);
-
-    logRepository.initialEmissionDelay = const Duration(seconds: 1);
-    container.read(calorieDayControllerProvider.notifier).setDay(previousDay);
-    await tester.pump();
-
-    expect(find.byKey(CaloriesPageKeys.summaryCard), findsOneWidget);
-    expect(find.byType(CaloriesDayNavigationPager), findsOneWidget);
-    expect(
-      find.byKey(CaloriesPageKeys.reloadProgressIndicator),
-      findsOneWidget,
-    );
-
-    await tester.pump(const Duration(seconds: 1));
-    await tester.pumpAndSettle();
-
-    await _scrollUntilVisible(
-      tester,
-      find.byKey(CaloriesPageKeys.entryTile('previous-entry')),
-    );
-    expect(
-      find.byKey(CaloriesPageKeys.entryTile('previous-entry')),
-      findsOneWidget,
-    );
-  });
 
   testWidgets('long press on diary entry does not open delete dialog', (
     tester,
@@ -1301,10 +1276,5 @@ void main() {
 
     expect(find.byType(CaloriesDayNavigationPager), findsOneWidget);
     expect(find.byKey(CaloriesPageKeys.summaryCard), findsOneWidget);
-    await _scrollUntilVisible(
-      tester,
-      find.byKey(CaloriesPageKeys.weekBalanceSummary),
-    );
-    expect(find.byKey(CaloriesPageKeys.weekBalanceSummary), findsOneWidget);
   });
 }

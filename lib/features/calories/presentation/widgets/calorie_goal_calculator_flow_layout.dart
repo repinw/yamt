@@ -1,6 +1,10 @@
 part of 'calorie_goal_calculator_flow.dart';
 
 extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
+  bool _canSaveResults(CalorieGoalCalculatorFormState state) {
+    return state.canSave && !state.isSaving && _hasOnboardingStartChoice;
+  }
+
   Widget _buildOnboardingScaffold(BuildContext context, AppLocalizations l10n) {
     return Scaffold(
       body: SafeArea(
@@ -123,9 +127,7 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
                     child: currentStep == _CalculatorOnboardingStep.results
                         ? FilledButton(
                             key: CalorieGoalCalculatorSheetKeys.saveButton,
-                            onPressed: state.canSave && !state.isSaving
-                                ? _save
-                                : null,
+                            onPressed: _canSaveResults(state) ? _save : null,
                             child: state.isSaving
                                 ? const SizedBox.square(
                                     dimension: AppSizes.inlineProgressIndicator,

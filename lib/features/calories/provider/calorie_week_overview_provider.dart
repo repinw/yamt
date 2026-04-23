@@ -100,6 +100,7 @@ class CalorieWeekOverview {
     required this.todayFlexibleGoalKcal,
     required this.goalStartsInFuture,
     required this.nextGoalStartDate,
+    required this.futureGoalKcal,
   });
 
   /// The days.
@@ -123,11 +124,14 @@ class CalorieWeekOverview {
   /// The today flexible goal kcal.
   final double todayFlexibleGoalKcal;
 
-  /// The goal starts in future.
+  /// Whether official Burn Week and weekly check-in counting starts later.
   final bool goalStartsInFuture;
 
-  /// The next goal start date.
+  /// The next official counting start date.
   final DateTime? nextGoalStartDate;
+
+  /// The active goal kcal shown before official counting starts.
+  final double? futureGoalKcal;
 }
 
 /// Calorie week consumption snapshot.
@@ -230,32 +234,12 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     endExclusive: visibleWindowStart,
   );
   final historicalEntriesByDay = historicalEntries.groupByDiaryDayKey();
-  final shouldLoadVisibleCycleStartEntries =
-      _needsCycleStartDayEntries(
-        settings: settings,
-        cycleStartDate: balanceStartDate,
-      ) &&
-      !_isBeforeDay(balanceStartDate, visibleWindowStart) &&
-      !balanceStartDate.isAfter(today);
-  final visibleCycleStartEntries = shouldLoadVisibleCycleStartEntries
-      ? await _readEntriesForDaySafely(repository, balanceStartDate)
-      : const <CalorieEntry>[];
   final adjustedOverviews = overviews
       .map(
         (overview) => CalorieWeekDayOverview(
           date: overview.date,
           totalKcal: overview.totalKcal,
-          goalKcal:
-              resolveCalorieBalanceCycleDayAdjustment(
-                settings: settings,
-                cycleStartDate: balanceStartDate,
-                day: overview.date,
-                dayEntries: isSameDiaryDay(overview.date, balanceStartDate)
-                    ? visibleCycleStartEntries
-                    : const <CalorieEntry>[],
-                dailyGoalKcal: overview.goalKcal,
-              )?.adjustedGoalKcal ??
-              overview.goalKcal,
+          goalKcal: overview.goalKcal,
           entryCount: overview.entryCount,
         ),
       )
@@ -269,8 +253,14 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     visibleOverviews: adjustedOverviews,
   );
   final hasActiveGoalToday = settings.goalEntryForDay(today)?.hasGoal == true;
+  final hasCountedGoalToday = settings.countingGoalEntryForDay(today) != null;
   final nextGoalStartDate = settings.nextGoalStartAfterDay(today);
-  final goalStartsInFuture = !hasActiveGoalToday && nextGoalStartDate != null;
+  final goalStartsInFuture = !hasCountedGoalToday && nextGoalStartDate != null;
+  final futureGoalKcal = hasActiveGoalToday
+      ? settings.goalKcalForDay(today)
+      : nextGoalStartDate == null
+      ? null
+      : settings.goalKcalForDay(nextGoalStartDate);
   final carryoverBeforeTodayKcal = cycleTotals.carryoverBeforeTodayKcal;
   final todayFlexibleGoalKcal = math.max<double>(
     0,
@@ -286,6 +276,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     todayFlexibleGoalKcal: todayFlexibleGoalKcal,
     goalStartsInFuture: goalStartsInFuture,
     nextGoalStartDate: nextGoalStartDate,
+    futureGoalKcal: futureGoalKcal,
   );
 }
 
@@ -385,15 +376,7 @@ _calculateCycleTotals({
         0,
         (sum, entry) => sum + entry.totalKcal,
       );
-      final dayGoalKcal =
-          resolveCalorieBalanceCycleDayAdjustment(
-            settings: settings,
-            cycleStartDate: cycleStartDate,
-            day: day,
-            dayEntries: dayEntries,
-            dailyGoalKcal: settings.goalKcalForDay(day),
-          )?.adjustedGoalKcal ??
-          settings.goalKcalForDay(day);
+      final dayGoalKcal = settings.goalKcalForDay(day);
       totalConsumedKcal += dayConsumedKcal;
       totalGoalKcal += dayGoalKcal;
       carryoverBeforeTodayKcal += dayGoalKcal - dayConsumedKcal;
@@ -415,27 +398,6 @@ _calculateCycleTotals({
     totalConsumedKcal: totalConsumedKcal,
     totalGoalKcal: totalGoalKcal,
     carryoverBeforeTodayKcal: carryoverBeforeTodayKcal,
-  );
-}
-
-bool _needsCycleStartDayEntries({
-  required CalorieGoalSettings settings,
-  required DateTime cycleStartDate,
-}) {
-  final cycleStartEntry =
-      settings.cycleAnchorEntryForDay(cycleStartDate) ??
-      settings.goalEntryForDay(cycleStartDate);
-  if (cycleStartEntry?.hasGoal != true) {
-    return false;
-  }
-
-  final goalChangedAt = cycleStartEntry!.effectiveChangedAt.toLocal();
-  if (!isSameDiaryDay(goalChangedAt, cycleStartDate)) {
-    return false;
-  }
-
-  return goalChangedAt.isAfter(
-    settings.eatingWindowStartForDay(cycleStartDate),
   );
 }
 

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'burn_week_live_overview.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_summary_card_classic.dart';
@@ -140,17 +142,12 @@ class CaloriesSummaryCard extends ConsumerWidget {
                       .read(calorieSummaryViewModeControllerProvider.notifier)
                       .setMode,
                 ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: switch (viewMode) {
-                      CalorieSummaryViewMode.balance =>
-                        BalanceFlexGoalHeaderStat(
-                          numberFormat: numberFormat,
-                          kcalUnit: kcalUnit,
-                        ),
-                      CalorieSummaryViewMode.classic => ClassicHeaderStats(
+                if (viewMode == CalorieSummaryViewMode.classic) ...[
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: ClassicHeaderStats(
                         consumedLabel: consumedLabel,
                         consumedValue: consumedValue,
                         goalLabel: goalLabel,
@@ -158,22 +155,20 @@ class CaloriesSummaryCard extends ConsumerWidget {
                             '${numberFormat.format(classicGoalKcal.round())} '
                             '$kcalUnit',
                       ),
-                    },
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
-            if (viewMode == CalorieSummaryViewMode.balance)
-              SummaryActivityDeltaNote(
-                numberFormat: numberFormat,
-                kcalUnit: kcalUnit,
-              ),
             const SizedBox(height: AppSpacing.xl),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 220),
               switchInCurve: Curves.easeOutCubic,
               switchOutCurve: Curves.easeInCubic,
               child: switch (viewMode) {
+                CalorieSummaryViewMode.balance => const BurnWeekLiveOverview(
+                  key: ValueKey<String>('burn_week_live_overview'),
+                ),
                 CalorieSummaryViewMode.classic => ClassicSummaryHero(
                   key: const ValueKey<String>('classic_summary_hero'),
                   remainingKcal: classicRemainingKcal,
@@ -188,11 +183,6 @@ class CaloriesSummaryCard extends ConsumerWidget {
                   availableCarryoverKcal: availableClassicCarryoverKcal,
                   label: remainingLabel,
                   numberFormat: numberFormat,
-                ),
-                CalorieSummaryViewMode.balance => BalanceSummaryHero(
-                  key: const ValueKey<String>('balance_summary_hero'),
-                  numberFormat: numberFormat,
-                  kcalUnit: kcalUnit,
                 ),
               },
             ),

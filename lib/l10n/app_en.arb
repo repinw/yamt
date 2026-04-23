@@ -640,7 +640,6 @@
   "caloriesAuthRequired": "Please sign in to manage calories.",
   "caloriesTodayAction": "Today",
   "caloriesSetGoalAction": "Set goal manually",
-  "caloriesSetEatingWindowAction": "Set eating window",
   "caloriesShiftGoalStartAction": "Move goal start",
   "caloriesCalculatorAction": "Recalculate goal",
   "caloriesGoalDialogTitle": "Set daily goal",
@@ -652,7 +651,6 @@
   "caloriesGoalClearFailed": "Could not clear calorie goal.",
   "caloriesGoalStartDialogTitle": "Move goal start",
   "caloriesGoalStartDateLabel": "Date",
-  "caloriesGoalStartTimeLabel": "Time",
   "caloriesGoalStartSaveFailed": "Could not update goal start.",
   "caloriesEatingWindowDialogTitle": "Set eating window",
   "caloriesEatingWindowStartLabel": "Start",
@@ -728,13 +726,24 @@
   "caloriesCalculatorDailyGoalLabel": "Daily calorie target",
   "caloriesCalculatorGoalStartLabel": "Goal start",
   "caloriesCalculatorGoalStartHint":
-      "Your calorie target history begins from this point.",
+      "Your calorie target history begins from this day.",
   "caloriesCalculatorGoalStartChangeAction": "Change",
+  "caloriesCalculatorOnboardingStartTitle": "When should your goal start?",
+  "caloriesCalculatorOnboardingStartNowAction": "Start now",
+  "caloriesCalculatorOnboardingStartLaterAction": "Start later",
+  "caloriesCalculatorOnboardingStartLaterHint":
+      "Today stays consequence-free. Burn Week starts automatically from this day.",
+  "caloriesCalculatorOnboardingChooseFutureDateAction": "Choose day",
+  "caloriesCalculatorOnboardingCatchUpLabel":
+      "How much have you eaten so far?",
+  "caloriesCalculatorOnboardingCatchUpLowAction": "Little",
+  "caloriesCalculatorOnboardingCatchUpNormalAction": "Normal",
+  "caloriesCalculatorOnboardingCatchUpHighAction": "A lot",
+  "caloriesCalculatorOnboardingCatchUpHint":
+      "We place you safely into today's buffer zone.",
   "caloriesCalculatorEatingWindowLabel": "Eating window",
   "caloriesCalculatorEatingWindowHint":
       "Used to pace today's diary balance throughout the day.",
-  "caloriesCalculatorGoalStartFutureError":
-      "Goal start can't be in the future.",
   "caloriesCalculatorMinimumGoalWarning":
       "For weight loss, the daily target cannot go below {minimumKcal} kcal. The result was capped at this minimum.",
   "@caloriesCalculatorMinimumGoalWarning": {
@@ -828,6 +837,90 @@
   "caloriesRemainingLabel": "Remaining",
   "caloriesSummaryViewClassic": "Classic",
   "caloriesSummaryViewBalance": "Balance",
+  "caloriesOpenBurnWeekMockAction": "Open Burn Week mock",
+  "burnWeekUseHeartTitle": "Use heart?",
+  "burnWeekUseHeartMessage":
+      "1 heart can add or remove one full Burn day of calories ({dayKcal} kcal).",
+  "@burnWeekUseHeartMessage": {
+    "placeholders": {
+      "dayKcal": {
+        "type": "int"
+      }
+    }
+  },
+  "burnWeekActionCancel": "Cancel",
+  "burnWeekActionYes": "Yes",
+  "burnWeekActionNo": "No",
+  "burnWeekActionRemoveDayKcal": "-1 day kcal",
+  "burnWeekActionAddDayKcal": "+1 day kcal",
+  "burnWeekRunOverTitle": "Run over",
+  "burnWeekRunRestartsOn": "Fresh run starts on {date}.",
+  "@burnWeekRunRestartsOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "burnWeekPracticeDayTitle": "Practice day",
+  "burnWeekPracticeDayMessage":
+      "Today does not count yet. You can try tracking, and Burn Week starts on {date}.",
+  "@burnWeekPracticeDayMessage": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "burnWeekZoneOutOfSafeZoneTitle": "Out of safe zone",
+  "burnWeekZoneBelowRecoverMessage":
+      "You are below target. Use a heart for one full Burn day leap, or eat more to get back in target.",
+  "burnWeekZoneBelowRecoverNoHeartsMessage":
+      "You are below target. No hearts left. Eat more to get back in target.",
+  "burnWeekZoneBelowNeedsHeartTitle": "Too far below target",
+  "burnWeekZoneBelowNeedsHeartMessage":
+      "There are not enough calories left in this week to recover by eating. Use 1 heart to restore?",
+  "burnWeekZoneBelowRunOverMessage":
+      "There are not enough calories left in this week to recover by eating. No hearts left, so a fresh run starts next day.",
+  "burnWeekZoneEatMoreTitle": "Eat more",
+  "burnWeekZoneEatMoreAction": "Eat more",
+  "burnWeekZoneEatMoreMessage": "Eat more to get back in target.",
+  "burnWeekZoneUseHeartAction": "Use heart",
+  "burnWeekZoneAboveFastMessage":
+      "You tracked too much. Fasting will help to get on track.",
+  "burnWeekZoneAboveNeedsHeartMessage":
+      "You are way over weekly limit. Use 1 heart to reduce one full Burn day of calories?",
+  "burnWeekZoneAboveRunOverMessage":
+      "You are way over weekly limit and have no hearts left. This run ends and a fresh run starts next day.",
+  "burnWeekDetailsTitle": "Burn Week details",
+  "burnWeekDetailsHowCalculated": "How this is calculated",
+  "burnWeekDetailsDailyGoal": "Daily goal",
+  "burnWeekDetailsWeekTarget": "Week target",
+  "burnWeekDetailsCurrentTime": "Current time",
+  "burnWeekDetailsStarsHearts": "Stars / Hearts",
+  "burnWeekDetailsHeartKcalUsed": "Heart kcal used",
+  "burnWeekDetailsWeekRatio": "Week ratio",
+  "burnWeekDetailsTargetFormula": "Target formula",
+  "burnWeekDetailsLoggedFoodSoFar": "Logged food so far",
+  "burnWeekDetailsPlannedLaterToday": "Planned later today",
+  "burnWeekDetailsGuardedBurnSoFar": "Guarded burn so far",
+  "burnWeekDetailsWeekCarryover": "This week carryover",
+  "burnWeekDetailsPreviousWeekOverflow": "Previous week overflow",
+  "burnWeekDetailsWeekLeftAfterFood": "Week left after food",
+  "burnWeekDetailsSportCounting": "Sport counting",
+  "burnWeekDetailsSportCountingValue":
+      "Guarded burn is subtracted in TODAY LEFT.",
+  "burnWeekDetailsSafeZone": "Safe zone",
+  "burnWeekInfoTooltip": "Show Burn Week details",
+  "burnWeekWeekDayLabel": "Week {week} day {day}",
+  "@burnWeekWeekDayLabel": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "burnWeekStatEaten": "Eaten",
+  "burnWeekStatTodayLeft": "Today left",
   "caloriesBalanceCarryoverNoteLabel": "Carryover",
   "caloriesBalanceFlexGoalLabel": "Flex goal",
   "caloriesBalanceScaleBufferLabel": "Deficit",
@@ -949,7 +1042,7 @@
   },
   "caloriesWeekBalanceStable": "Balanced since your goal started.",
   "caloriesWeekBalanceStartsLater":
-      "Your goal starts on {date}. The balance will begin automatically then.",
+      "This day is not counted yet. You can try tracking, and Burn Week plus the weekly check-in start on {date}.",
   "@caloriesWeekBalanceStartsLater": {
     "placeholders": {
       "date": {

@@ -81,7 +81,7 @@ final class GoogleAuthControllerProvider
 }
 
 String _$googleAuthControllerHash() =>
-    r'4d423d58778235958f0c438128d8ac39ab3b647e';
+    r'd024e08df0fd085c7ce33e04816d69e1ea3ad5a9';
 
 /// Defines google auth controller.
 

@@ -45,6 +45,14 @@ void main() {
       const Key('calories_summary_macro_bar_protein'),
     );
     expect(
+      CaloriesPageKeys.burnWeekMockOpenButton,
+      const Key('calories_burn_week_open_button'),
+    );
+    expect(
+      CaloriesPageKeys.burnWeekMockQuickAction('+500'),
+      const Key('calories_burn_week_quick_action_+500'),
+    );
+    expect(
       CaloriesPageKeys.weekBalanceDayColumn('2026-04-16'),
       const Key('calories_week_balance_day_2026-04-16'),
     );

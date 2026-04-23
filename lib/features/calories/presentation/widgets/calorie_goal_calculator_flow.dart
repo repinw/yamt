@@ -6,8 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_eating_window_dialog.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_onboarding_start.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_activity_level_selector.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -35,6 +34,8 @@ enum CalorieGoalCalculatorFlowPresentation {
   /// Onboarding.
   onboarding,
 }
+
+enum _OnboardingGoalStartChoice { now, later }
 
 /// Defines calorie goal calculator flow.
 class CalorieGoalCalculatorFlow extends ConsumerStatefulWidget {
@@ -66,9 +67,9 @@ class _CalorieGoalCalculatorFlowState
   late final TextEditingController _heightController;
   late final TextEditingController _ageController;
   late final TextEditingController _goalSpeedController;
-  late DateTime _goalStartAt;
-  late int _eatingWindowStartMinuteOfDay;
-  late int _eatingWindowEndMinuteOfDay;
+  late DateTime _goalStartDate;
+  _OnboardingGoalStartChoice? _onboardingGoalStartChoice;
+  var _onboardingCatchUpEstimate = CalorieGoalOnboardingCatchUpEstimate.normal;
   _CalculatorOnboardingStep _currentStep = _CalculatorOnboardingStep.sex;
 
   @override
@@ -105,11 +106,12 @@ class _CalorieGoalCalculatorFlowState
     _goalSpeedController = TextEditingController(
       text: initialState.goalSpeedKgPerWeekText,
     );
-    _goalStartAt = CalorieGoalStartPicker.roundToMinute(DateTime.now());
-    _eatingWindowStartMinuteOfDay =
-        widget.initialSettings.normalizedEatingWindowStartMinuteOfDay;
-    _eatingWindowEndMinuteOfDay =
-        widget.initialSettings.normalizedEatingWindowEndMinuteOfDay;
+    final initialGoalEntry =
+        widget.initialSettings.activeGoalEntryForDay(DateTime.now()) ??
+        widget.initialSettings.latestGoalEntry;
+    _goalStartDate = CalorieGoalStartPicker.normalizeDate(
+      initialGoalEntry?.effectiveCountingStartDate ?? DateTime.now(),
+    );
   }
 
   @override
@@ -140,12 +142,20 @@ class _CalorieGoalCalculatorFlowState
     final formProvider = calorieGoalCalculatorFormControllerProvider(
       widget.initialSettings.calculatorProfile,
     );
+    final allowsFutureGoalStart =
+        widget.isOnboarding ||
+        _goalStartDate.isAfter(
+          CalorieGoalStartPicker.normalizeDate(DateTime.now()),
+        );
     final saved = await ref
         .read(formProvider.notifier)
         .save(
-          goalStartAt: _goalStartAt,
-          eatingWindowStartMinuteOfDay: _eatingWindowStartMinuteOfDay,
-          eatingWindowEndMinuteOfDay: _eatingWindowEndMinuteOfDay,
+          goalStartDate: _goalStartDate,
+          allowFutureGoalStart: allowsFutureGoalStart,
+          syncBurnWeekForOnboarding: widget.isOnboarding,
+          onboardingCatchUpEstimate: widget.isOnboarding && _startsToday
+              ? _onboardingCatchUpEstimate
+              : null,
         );
     if (!mounted) {
       return;
@@ -181,80 +191,90 @@ class _CalorieGoalCalculatorFlowState
   }
 
   Future<void> _pickGoalStart() async {
-    final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    final now = CalorieGoalStartPicker.roundToMinute(DateTime.now());
-    final initialGoalStart = _goalStartAt;
     final pickedDate = await CalorieGoalStartPicker.pickDate(
       context,
-      initialGoalStartAt: initialGoalStart,
-      now: now,
+      initialGoalStartDate: _goalStartDate,
+      now: DateTime.now(),
     );
-    if (pickedDate == null) {
-      return;
-    }
-    if (!mounted) {
+    if (pickedDate == null || !mounted) {
       return;
     }
 
-    if (!DateUtils.isSameDay(pickedDate, now)) {
-      final resetGoalStart = CalorieGoalStartPicker.sixAm(pickedDate);
-      if (CalorieGoalStartPicker.isSameMinute(_goalStartAt, resetGoalStart)) {
-        return;
-      }
-      setState(() {
-        _goalStartAt = resetGoalStart;
-      });
+    if (CalorieGoalStartPicker.isSameDay(_goalStartDate, pickedDate)) {
       return;
     }
 
-    final pickedTime = await CalorieGoalStartPicker.pickTime(
-      context,
-      initialGoalStartAt: initialGoalStart,
-    );
-    if (pickedTime == null) {
-      return;
-    }
-    if (!mounted) {
-      return;
-    }
-
-    final pickedGoalStart = CalorieGoalStartPicker.combineDateAndTime(
-      date: pickedDate,
-      time: pickedTime,
-    );
-    if (pickedGoalStart.isAfter(now)) {
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(l10n.caloriesCalculatorGoalStartFutureError)),
-        );
-      return;
-    }
-
-    if (CalorieGoalStartPicker.isSameMinute(_goalStartAt, pickedGoalStart)) {
-      return;
-    }
     setState(() {
-      _goalStartAt = pickedGoalStart;
+      _goalStartDate = pickedDate;
     });
   }
 
-  Future<void> _pickEatingWindow() async {
-    await showCalorieEatingWindowDialog(
-      context: context,
-      initialStartMinuteOfDay: _eatingWindowStartMinuteOfDay,
-      initialEndMinuteOfDay: _eatingWindowEndMinuteOfDay,
-      onSaveEatingWindow: (startMinuteOfDay, endMinuteOfDay) async {
-        if (!mounted) {
-          return false;
-        }
-        setState(() {
-          _eatingWindowStartMinuteOfDay = startMinuteOfDay;
-          _eatingWindowEndMinuteOfDay = endMinuteOfDay;
-        });
-        return true;
-      },
+  bool get _startsToday {
+    return CalorieGoalStartPicker.isSameDay(
+      _goalStartDate,
+      CalorieGoalStartPicker.normalizeDate(DateTime.now()),
     );
+  }
+
+  bool get _hasOnboardingStartChoice {
+    return !widget.isOnboarding || _onboardingGoalStartChoice != null;
+  }
+
+  void _selectOnboardingStartNow() {
+    final today = CalorieGoalStartPicker.normalizeDate(DateTime.now());
+    if (_onboardingGoalStartChoice == _OnboardingGoalStartChoice.now &&
+        _startsToday) {
+      return;
+    }
+    setState(() {
+      _onboardingGoalStartChoice = _OnboardingGoalStartChoice.now;
+      _goalStartDate = today;
+    });
+  }
+
+  void _selectOnboardingCatchUpEstimate(
+    CalorieGoalOnboardingCatchUpEstimate value,
+  ) {
+    if (_onboardingCatchUpEstimate == value) {
+      return;
+    }
+    setState(() {
+      _onboardingCatchUpEstimate = value;
+    });
+  }
+
+  Future<void> _selectOnboardingStartLater() async {
+    final today = CalorieGoalStartPicker.normalizeDate(DateTime.now());
+    if (_onboardingGoalStartChoice == _OnboardingGoalStartChoice.later &&
+        _goalStartDate.isAfter(today)) {
+      return;
+    }
+    setState(() {
+      _onboardingGoalStartChoice = _OnboardingGoalStartChoice.later;
+      _goalStartDate = today.add(const Duration(days: 1));
+    });
+  }
+
+  Future<void> _pickOnboardingFutureGoalStart() async {
+    final today = CalorieGoalStartPicker.normalizeDate(DateTime.now());
+    final pickedDate = await CalorieGoalStartPicker.pickDate(
+      context,
+      initialGoalStartDate: _goalStartDate.isAfter(today)
+          ? _goalStartDate
+          : today.add(const Duration(days: 1)),
+      now: DateTime.now(),
+      firstDate: today.add(const Duration(days: 1)),
+      lastDate: DateTime(today.year + 10, today.month, today.day),
+    );
+    if (pickedDate == null || !mounted) {
+      return;
+    }
+    if (CalorieGoalStartPicker.isSameDay(_goalStartDate, pickedDate)) {
+      return;
+    }
+    setState(() {
+      _onboardingGoalStartChoice = _OnboardingGoalStartChoice.later;
+      _goalStartDate = pickedDate;
+    });
   }
 }

@@ -65,3 +65,4 @@ IDEAS.md
 
 # Golden test failure artifacts
 test/**/failures/
+.agents/skills/jscpd/*

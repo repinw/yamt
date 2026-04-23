@@ -23,11 +23,11 @@ void main() {
     );
   });
 
-  test('currentPlatform returns macos options on macOS', () {
+  test('currentPlatform throws for macOS without generated options', () {
     debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
     expect(
-      DefaultFirebaseOptions.currentPlatform,
-      same(DefaultFirebaseOptions.macos),
+      () => DefaultFirebaseOptions.currentPlatform,
+      throwsUnsupportedError,
     );
   });
 
@@ -59,6 +59,5 @@ void main() {
     expect(DefaultFirebaseOptions.web.projectId, isNotEmpty);
     expect(DefaultFirebaseOptions.android.projectId, isNotEmpty);
     expect(DefaultFirebaseOptions.ios.projectId, isNotEmpty);
-    expect(DefaultFirebaseOptions.macos.projectId, isNotEmpty);
   });
 }

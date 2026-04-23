@@ -213,8 +213,13 @@ PendingCalorieGoalWeeklyCheckIn? _resolvePendingWeeklyCheckIn({
   required CalorieGoalSettings settings,
   required DateTime today,
 }) {
-  final anchorEntry = settings.cycleAnchorEntryForDay(today);
-  if (anchorEntry == null || settings.goalKcalForDay(today) <= 0) {
+  final countingGoalEntry = settings.countingGoalEntryForDay(today);
+  if (countingGoalEntry == null) {
+    return null;
+  }
+  final anchorEntry =
+      settings.cycleAnchorEntryForDay(today) ?? countingGoalEntry;
+  if (anchorEntry.hasGoal != true) {
     return null;
   }
   final firstWindowStartDate = _firstWeeklyCheckInWindowStartDate(anchorEntry);
@@ -629,7 +634,12 @@ String _windowKey(DateTime startDate, DateTime endDate) {
 DateTime _firstWeeklyCheckInWindowStartDate(
   CalorieGoalHistoryEntry anchorEntry,
 ) {
-  final anchorStartDate = normalizeDiaryDay(anchorEntry.effectiveDate);
+  final anchorStartDate = normalizeDiaryDay(
+    anchorEntry.effectiveCountingStartDate,
+  );
+  if (!isSameDiaryDay(anchorEntry.effectiveDate, anchorStartDate)) {
+    return anchorStartDate;
+  }
   if (!_startsOnPartialDiaryDay(anchorEntry.effectiveChangedAt)) {
     return anchorStartDate;
   }

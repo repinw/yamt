@@ -797,4 +797,34 @@ void main() {
 
     expect(manualAddRoute.path, AppRoutes.homeInventoryManualAdd);
   });
+
+  testWidgets('Burn Week mock route is reachable for authenticated user', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+      initialCalorieSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 4, 20),
+      ),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    container.read(appRouterProvider).go(AppRoutes.homeCaloriesBurnWeekMock);
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.homeCaloriesBurnWeekMock,
+    );
+    expect(find.text('Burn Week'), findsWidgets);
+  });
 }

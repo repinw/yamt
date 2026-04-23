@@ -14,6 +14,9 @@ import 'package:yamt/core/theme/theme_mode_controller.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
@@ -129,7 +132,7 @@ HealthConnectionStatus _connectedHealthStatus() {
   );
 }
 
-Future<void> _pumpSettingsPage(
+Future<FakeCalorieSettingsRepository> _pumpSettingsPage(
   WidgetTester tester, {
   FutureOr<String> Function(Ref ref)? appVersionOverride,
   AsyncValue<String>? appVersionValueOverride,
@@ -168,6 +171,8 @@ Future<void> _pumpSettingsPage(
       ),
     ),
   );
+
+  return settingsRepository;
 }
 
 ListTile _aboutTile(WidgetTester tester) {
@@ -206,7 +211,6 @@ void main() {
     expect(find.byIcon(Icons.language_outlined), findsOneWidget);
     expect(find.byIcon(Icons.group_outlined), findsOneWidget);
     expect(find.byIcon(Icons.person_outline), findsOneWidget);
-    expect(find.byIcon(Icons.menu_book_outlined), findsOneWidget);
     expect(find.byIcon(Icons.palette_outlined), findsOneWidget);
     expect(find.byIcon(Icons.format_paint_outlined), findsOneWidget);
 
@@ -225,9 +229,6 @@ void main() {
     );
     expect(find.text('Account'), findsOneWidget);
     expect(find.text('Manage profile and sign-in'), findsOneWidget);
-    expect(find.text('Diary'), findsOneWidget);
-    expect(find.textContaining('Eating window:'), findsOneWidget);
-
     await _scrollToText(tester, 'Health Connect');
     expect(find.byIcon(Icons.link_off), findsOneWidget);
     expect(find.text('Health Connect'), findsOneWidget);
@@ -361,19 +362,6 @@ void main() {
       ),
       findsOneWidget,
     );
-  });
-
-  testWidgets('Diary tile opens the eating window dialog', (tester) async {
-    await _pumpSettingsPage(
-      tester,
-      appVersionOverride: (ref) async => '1.1.0+2',
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Diary').first);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Set eating window'), findsOneWidget);
   });
 
   testWidgets('Household tile opens HouseholdPage', (tester) async {

@@ -24,7 +24,7 @@ import 'package:yamt/features/scanner/provider/receipt_capture_flow_controller.d
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
 ])
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await setupFirebase();

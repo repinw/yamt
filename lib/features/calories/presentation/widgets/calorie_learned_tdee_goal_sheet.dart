@@ -6,8 +6,6 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_eating_window_dialog.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_input_controls.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_results.dart';
@@ -51,9 +49,7 @@ class CalorieLearnedTdeeGoalSheet extends ConsumerStatefulWidget {
 class _CalorieLearnedTdeeGoalSheetState
     extends ConsumerState<CalorieLearnedTdeeGoalSheet> {
   late final TextEditingController _goalSpeedController;
-  late DateTime _goalStartAt;
-  late int _eatingWindowStartMinuteOfDay;
-  late int _eatingWindowEndMinuteOfDay;
+  late DateTime _goalStartDate;
   late CalorieGoalMode _goalMode;
   late String _lastNonMaintainGoalSpeedText;
   var _isSaving = false;
@@ -107,11 +103,12 @@ class _CalorieLearnedTdeeGoalSheetState
           ? '0'
           : _lastNonMaintainGoalSpeedText,
     );
-    _goalStartAt = CalorieGoalStartPicker.roundToMinute(DateTime.now());
-    _eatingWindowStartMinuteOfDay =
-        widget.initialSettings.normalizedEatingWindowStartMinuteOfDay;
-    _eatingWindowEndMinuteOfDay =
-        widget.initialSettings.normalizedEatingWindowEndMinuteOfDay;
+    final initialGoalEntry =
+        widget.initialSettings.activeGoalEntryForDay(DateTime.now()) ??
+        widget.initialSettings.latestGoalEntry;
+    _goalStartDate = CalorieGoalStartPicker.normalizeDate(
+      initialGoalEntry?.effectiveCountingStartDate ?? DateTime.now(),
+    );
   }
 
   @override
@@ -187,15 +184,8 @@ class _CalorieLearnedTdeeGoalSheetState
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   CalorieGoalCalculatorGoalStartCard(
-                    goalStartAt: _goalStartAt,
+                    goalStartDate: _goalStartDate,
                     onChangeRequested: _pickGoalStart,
-                    enabled: !_isSaving,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  CalorieGoalCalculatorEatingWindowCard(
-                    startMinuteOfDay: _eatingWindowStartMinuteOfDay,
-                    endMinuteOfDay: _eatingWindowEndMinuteOfDay,
-                    onChangeRequested: _pickEatingWindow,
                     enabled: !_isSaving,
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -253,9 +243,7 @@ class _CalorieLearnedTdeeGoalSheetState
         .saveLearnedTdeeGoal(
           goalMode: _goalMode,
           goalSpeedKgPerWeek: _goalSpeedKgPerWeek,
-          goalStartAt: _goalStartAt,
-          eatingWindowStartMinuteOfDay: _eatingWindowStartMinuteOfDay,
-          eatingWindowEndMinuteOfDay: _eatingWindowEndMinuteOfDay,
+          goalStartDate: _goalStartDate,
         );
 
     if (!mounted) {
@@ -286,68 +274,22 @@ class _CalorieLearnedTdeeGoalSheetState
   }
 
   Future<void> _pickGoalStart() async {
-    final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    final now = CalorieGoalStartPicker.roundToMinute(DateTime.now());
-    final initialGoalStart = _goalStartAt;
     final pickedDate = await CalorieGoalStartPicker.pickDate(
       context,
-      initialGoalStartAt: initialGoalStart,
-      now: now,
+      initialGoalStartDate: _goalStartDate,
+      now: DateTime.now(),
     );
     if (pickedDate == null || !mounted) {
       return;
     }
 
-    if (!DateUtils.isSameDay(pickedDate, now)) {
-      setState(() {
-        _goalStartAt = CalorieGoalStartPicker.sixAm(pickedDate);
-      });
-      return;
-    }
-
-    final pickedTime = await CalorieGoalStartPicker.pickTime(
-      context,
-      initialGoalStartAt: initialGoalStart,
-    );
-    if (pickedTime == null || !mounted) {
-      return;
-    }
-
-    final pickedGoalStart = CalorieGoalStartPicker.combineDateAndTime(
-      date: pickedDate,
-      time: pickedTime,
-    );
-    if (pickedGoalStart.isAfter(now)) {
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(l10n.caloriesCalculatorGoalStartFutureError)),
-        );
+    if (CalorieGoalStartPicker.isSameDay(_goalStartDate, pickedDate)) {
       return;
     }
 
     setState(() {
-      _goalStartAt = pickedGoalStart;
+      _goalStartDate = pickedDate;
     });
-  }
-
-  Future<void> _pickEatingWindow() async {
-    await showCalorieEatingWindowDialog(
-      context: context,
-      initialStartMinuteOfDay: _eatingWindowStartMinuteOfDay,
-      initialEndMinuteOfDay: _eatingWindowEndMinuteOfDay,
-      onSaveEatingWindow: (startMinuteOfDay, endMinuteOfDay) async {
-        if (!mounted) {
-          return false;
-        }
-        setState(() {
-          _eatingWindowStartMinuteOfDay = startMinuteOfDay;
-          _eatingWindowEndMinuteOfDay = endMinuteOfDay;
-        });
-        return true;
-      },
-    );
   }
 }
 

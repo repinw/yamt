@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,8 +15,6 @@ import 'package:yamt/features/calories/application/'
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/calories_page_logic.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_week_balance_summary_banner.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_weekly_checkin_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -158,11 +157,19 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage> {
           carbsLabel: l10n.caloriesCarbsLabel,
           fatLabel: l10n.caloriesFatLabel,
         ),
-        const SizedBox(height: AppSpacing.md),
-        CalorieWeekBalanceSummaryBanner(
-          overview: weekOverview,
-          referenceNow: referenceNow,
-        ),
+        if (kDebugMode) ...<Widget>[
+          const SizedBox(height: AppSpacing.md),
+          // Burn Week mock stays debug-only. Real users should only see
+          // the live Burn overview.
+          FilledButton.tonalIcon(
+            key: CaloriesPageKeys.burnWeekMockOpenButton,
+            onPressed: () {
+              unawaited(context.push<void>(AppRoutes.homeCaloriesBurnWeekMock));
+            },
+            icon: const Icon(Icons.local_fire_department_rounded),
+            label: Text(l10n.caloriesOpenBurnWeekMockAction),
+          ),
+        ],
         if (weeklyCheckIn != null && weeklyCheckIn.showDiaryHint) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
           CalorieWeeklyCheckInHintCard(

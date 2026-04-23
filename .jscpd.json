@@ -1,0 +1,30 @@
+{
+  "threshold": 0,
+  "absolute": true,
+  "gitignore": true,
+  "minLines": 8,
+  "minTokens": 80,
+  "pattern": "**/*.{dart,js}",
+  "ignore": [
+    ".dart_tool/**",
+    "build/**",
+    "coverage/**",
+    ".firebase/**",
+    "**/node_modules/**",
+    "**/*.g.dart",
+    "**/*.freezed.dart",
+    "lib/l10n/*.dart",
+    "lib/firebase_options.dart",
+    "**/generated_plugin_registrant.dart",
+    "**/*.arb",
+    "**/*.json",
+    "**/*.yaml",
+    "**/*.yml",
+    "**/*.md",
+    "android/**",
+    "ios/**",
+    "linux/**",
+    "macos/**",
+    "windows/**"
+  ]
+}

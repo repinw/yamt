@@ -180,15 +180,7 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
   final consumedKcal = shouldIgnoreSelectedDayForBalance
       ? 0.0
       : selectedEntries.fold<double>(0, (sum, entry) => sum + entry.totalKcal);
-  final cycleStartDayAdjustment = resolveCalorieBalanceCycleDayAdjustment(
-    settings: settings,
-    cycleStartDate: balanceStartDate,
-    day: selectedDay,
-    dayEntries: selectedEntries,
-    dailyGoalKcal: dailyBaseGoalKcal,
-  );
-  final baseGoalKcal =
-      cycleStartDayAdjustment?.adjustedGoalKcal ?? dailyBaseGoalKcal;
+  final baseGoalKcal = dailyBaseGoalKcal;
   final goalMode =
       goalEntry?.calculatorProfile?.goalMode ??
       settings.calculatorProfile?.goalMode ??
@@ -206,7 +198,6 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
     selectedDay: selectedDay,
     now: now,
     defaultPaceWindowStart: defaultPaceWindowStart,
-    customPaceWindowStart: cycleStartDayAdjustment?.paceWindowStart,
   );
   final paceRatio = _paceRatioForDay(
     selectedDay: selectedDay,
@@ -304,10 +295,9 @@ DateTime _resolvePaceWindowStart({
   required DateTime selectedDay,
   required DateTime now,
   required DateTime defaultPaceWindowStart,
-  DateTime? customPaceWindowStart,
 }) {
   if (_isSameDay(selectedDay, now)) {
-    return customPaceWindowStart ?? defaultPaceWindowStart;
+    return defaultPaceWindowStart;
   }
   return defaultPaceWindowStart;
 }
@@ -415,21 +405,12 @@ double _calculateCarryoverKcal({
     day = nextDiaryDay(day)
   ) {
     final dayEntries = entriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
-    final storedGoalKcal = settings.goalKcalForDay(day);
-    final adjustedGoalKcal =
-        resolveCalorieBalanceCycleDayAdjustment(
-          settings: settings,
-          cycleStartDate: cycleStartDate,
-          day: day,
-          dayEntries: dayEntries,
-          dailyGoalKcal: storedGoalKcal,
-        )?.adjustedGoalKcal ??
-        storedGoalKcal;
+    final dayGoalKcal = settings.goalKcalForDay(day);
     final consumedKcal = dayEntries.fold<double>(
       0,
       (sum, entry) => sum + entry.totalKcal,
     );
-    carryoverKcal += adjustedGoalKcal - consumedKcal;
+    carryoverKcal += dayGoalKcal - consumedKcal;
   }
   return carryoverKcal;
 }

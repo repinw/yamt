@@ -10,11 +10,6 @@ abstract final class CaloriesPageKeys {
     'calories_app_bar_calculator_action',
   );
 
-  /// The app bar menu set eating window action.
-  static const appBarMenuSetEatingWindowAction = Key(
-    'calories_app_bar_set_eating_window_action',
-  );
-
   /// The app bar menu shift goal start action.
   static const appBarMenuShiftGoalStartAction = Key(
     'calories_app_bar_shift_goal_start_action',
@@ -72,6 +67,25 @@ abstract final class CaloriesPageKeys {
   /// The summary carryover toggle.
   static const summaryCarryoverToggle = Key(
     'calories_summary_carryover_toggle',
+  );
+
+  /// Opens Burn Week mock page.
+  static const burnWeekMockOpenButton = Key('calories_burn_week_open_button');
+
+  /// Burn Week mock bar.
+  static const burnWeekMockBar = Key('calories_burn_week_bar');
+
+  /// Burn Week mock info card.
+  static const burnWeekMockInfoCard = Key('calories_burn_week_info_card');
+
+  /// Burn Week mock actual value.
+  static const burnWeekMockActualValue = Key(
+    'calories_burn_week_actual_value',
+  );
+
+  /// Burn Week mock target value.
+  static const burnWeekMockTargetValue = Key(
+    'calories_burn_week_target_value',
   );
 
   /// The reload progress indicator.
@@ -156,6 +170,11 @@ abstract final class CaloriesPageKeys {
     return Key('calories_summary_macro_bar_$macro');
   }
 
+  /// Burn Week mock quick action.
+  static Key burnWeekMockQuickAction(String delta) {
+    return Key('calories_burn_week_quick_action_$delta');
+  }
+
   /// Week balance day column.
   static Key weekBalanceDayColumn(String dayKey) {
     return Key('calories_week_balance_day_$dayKey');
@@ -196,8 +215,15 @@ abstract final class CalorieGoalStartDialogKeys {
   /// The change date button.
   static const changeDateButton = Key('calorie_goal_start_change_date_button');
 
-  /// The change time button.
-  static const changeTimeButton = Key('calorie_goal_start_change_time_button');
+  /// The change eating window start button.
+  static const changeEatingWindowStartButton = Key(
+    'calorie_goal_start_change_eating_window_start_button',
+  );
+
+  /// The change eating window end button.
+  static const changeEatingWindowEndButton = Key(
+    'calorie_goal_start_change_eating_window_end_button',
+  );
 
   /// The save button.
   static const saveButton = Key('calorie_goal_start_save_button');
@@ -240,6 +266,31 @@ abstract final class CalorieGoalCalculatorSheetKeys {
   /// The goal start change button.
   static const goalStartChangeButton = Key(
     'calorie_calculator_goal_start_change_button',
+  );
+
+  /// The onboarding start-now option.
+  static const goalStartNowOption = Key(
+    'calorie_calculator_goal_start_now_option',
+  );
+
+  /// The onboarding start-later option.
+  static const goalStartLaterOption = Key(
+    'calorie_calculator_goal_start_later_option',
+  );
+
+  /// The onboarding catch-up low option.
+  static const catchUpLowOption = Key(
+    'calorie_calculator_catch_up_low_option',
+  );
+
+  /// The onboarding catch-up normal option.
+  static const catchUpNormalOption = Key(
+    'calorie_calculator_catch_up_normal_option',
+  );
+
+  /// The onboarding catch-up high option.
+  static const catchUpHighOption = Key(
+    'calorie_calculator_catch_up_high_option',
   );
 
   /// The eating window card.
@@ -368,18 +419,4 @@ abstract final class CalorieEntryDetailKeys {
   static Key ingredientKcalCell(int index) {
     return Key('calorie_entry_detail_ingredient_kcal_$index');
   }
-}
-
-/// Defines calorie eating window dialog keys.
-abstract final class CalorieEatingWindowDialogKeys {
-  /// The change start button.
-  static const changeStartButton = Key(
-    'calorie_eating_window_change_start_button',
-  );
-
-  /// The change end button.
-  static const changeEndButton = Key('calorie_eating_window_change_end_button');
-
-  /// The save button.
-  static const saveButton = Key('calorie_eating_window_save_button');
 }

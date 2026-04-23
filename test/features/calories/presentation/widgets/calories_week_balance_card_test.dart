@@ -34,6 +34,7 @@ void main() {
         todayFlexibleGoalKcal: 2400,
         goalStartsInFuture: false,
         nextGoalStartDate: null,
+        futureGoalKcal: null,
       );
 
       await tester.pumpWidget(_buildHarness(overview: overview));
@@ -221,6 +222,7 @@ void main() {
           todayFlexibleGoalKcal: 2000,
           goalStartsInFuture: true,
           nextGoalStartDate: nextGoalStartDate,
+          futureGoalKcal: 2000,
         ),
       ),
     );
@@ -228,8 +230,8 @@ void main() {
     final expectedDate = DateFormat.yMMMd('en').format(nextGoalStartDate);
     expect(
       find.text(
-        'Your goal starts on $expectedDate. '
-        'The balance will begin automatically then.',
+        'This day is not counted yet. You can try tracking, and Burn Week '
+        'plus the weekly check-in start on $expectedDate.',
       ),
       findsOneWidget,
     );
@@ -260,6 +262,7 @@ void main() {
           todayFlexibleGoalKcal: 2000,
           goalStartsInFuture: false,
           nextGoalStartDate: null,
+          futureGoalKcal: null,
         ),
       ),
     );
@@ -309,6 +312,7 @@ CalorieWeekOverview _overview({
     todayFlexibleGoalKcal: 2400,
     goalStartsInFuture: false,
     nextGoalStartDate: null,
+    futureGoalKcal: null,
   );
 }
 

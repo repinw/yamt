@@ -1,8 +1,13 @@
 import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_onboarding_start.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/presentation/burn_week_mock_logic.dart';
+import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_state.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
@@ -78,28 +83,91 @@ class CalorieGoalCalculatorFormController
 
   /// Save.
   Future<bool> save({
-    required DateTime goalStartAt,
-    required int eatingWindowStartMinuteOfDay,
-    required int eatingWindowEndMinuteOfDay,
+    required DateTime goalStartDate,
+    bool allowFutureGoalStart = false,
+    bool syncBurnWeekForOnboarding = false,
+    CalorieGoalOnboardingCatchUpEstimate? onboardingCatchUpEstimate,
+    DateTime? now,
   }) async {
     final profile = state.profile;
-    if (profile == null) {
+    final calculation = state.calculation;
+    if (profile == null || calculation == null) {
       return false;
     }
 
+    final referenceNow = now ?? DateTime.now();
     state = state.copyWith(isSaving: true);
     final saved = await ref
         .read(calorieGoalControllerProvider.notifier)
         .saveCalculatedGoal(
           profile,
-          goalStartAt: goalStartAt,
-          eatingWindowStartMinuteOfDay: eatingWindowStartMinuteOfDay,
-          eatingWindowEndMinuteOfDay: eatingWindowEndMinuteOfDay,
+          goalStartDate: goalStartDate,
+          allowFutureGoalStart: allowFutureGoalStart,
         );
+    if (saved && ref.mounted && syncBurnWeekForOnboarding) {
+      await _applyOnboardingBurnWeekStart(
+        goalStartDate: goalStartDate,
+        now: referenceNow,
+        dailyGoalKcal: calculation.finalGoalKcal,
+        catchUpEstimate: onboardingCatchUpEstimate,
+      );
+    }
     if (!ref.mounted) {
       return saved;
     }
     state = state.copyWith(isSaving: false);
     return saved;
+  }
+
+  Future<void> _applyOnboardingBurnWeekStart({
+    required DateTime goalStartDate,
+    required DateTime now,
+    required double dailyGoalKcal,
+    required CalorieGoalOnboardingCatchUpEstimate? catchUpEstimate,
+  }) async {
+    final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
+    final normalizedToday = normalizeDiaryDay(now);
+    final controller = ref.read(burnWeekRunControllerProvider.notifier);
+    if (normalizedGoalStartDate.isAfter(normalizedToday)) {
+      await controller.resetRun();
+      return;
+    }
+    if (catchUpEstimate == null) {
+      await controller.restartRunFrom(weekStartDate: normalizedGoalStartDate);
+      return;
+    }
+
+    final entries = await ref
+        .read(calorieLogRepositoryProvider)
+        .readEntriesForDay(normalizedToday);
+    if (!ref.mounted) {
+      return;
+    }
+    final loggedKcalSoFar = entries.fold<double>(0, (sum, entry) {
+      if (entry.loggedAt.isAfter(now)) {
+        return sum;
+      }
+      return sum + entry.totalKcal;
+    });
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final dayProgress = (now.difference(startOfDay).inSeconds / (24 * 60 * 60))
+        .clamp(0.0, 1.0);
+    final targetKcal = dailyGoalKcal * dayProgress;
+    final safeZoneWidthKcal =
+        dailyGoalKcal * resolveBurnWeekMockDifficulty(0).safeZoneMultiplier;
+    final desiredConsumedKcal = switch (catchUpEstimate) {
+      CalorieGoalOnboardingCatchUpEstimate.low =>
+        targetKcal - safeZoneWidthKcal,
+      CalorieGoalOnboardingCatchUpEstimate.normal => targetKcal,
+      CalorieGoalOnboardingCatchUpEstimate.high =>
+        targetKcal + safeZoneWidthKcal,
+    };
+    final effectiveDesiredConsumedKcal = desiredConsumedKcal < 0
+        ? 0.0
+        : desiredConsumedKcal;
+    await controller.bootstrapRunFrom(
+      weekStartDate: normalizedGoalStartDate,
+      heartCreditKcal: effectiveDesiredConsumedKcal - loggedKcalSoFar,
+    );
   }
 }

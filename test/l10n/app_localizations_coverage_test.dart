@@ -308,7 +308,6 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.caloriesGoalClearFailed,
     l10n.caloriesGoalStartDialogTitle,
     l10n.caloriesGoalStartDateLabel,
-    l10n.caloriesGoalStartTimeLabel,
     l10n.caloriesGoalStartSaveFailed,
     l10n.caloriesCalculatorSheetTitle,
     l10n.caloriesCalculatorOnboardingTitle,

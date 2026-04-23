@@ -6,7 +6,12 @@ class GoogleSignInConfig {
   GoogleSignInConfig._();
 
   /// Web OAuth client ID, or `null` when no ID was configured.
-  static String? get webClientId => _webClientId.isEmpty ? null : _webClientId;
+  static String get webClientId {
+    if (_webClientId.isNotEmpty) {
+      return _webClientId;
+    }
+    return _fallbackWebClientId;
+  }
 
   /// Server client ID for native platforms, or `null` on web.
   static String? get serverClientId {
@@ -19,4 +24,9 @@ class GoogleSignInConfig {
   static const String _webClientId = String.fromEnvironment(
     'GOOGLE_WEB_CLIENT_ID',
   );
+
+  // Public OAuth client IDs are safe to ship and keep local/dev builds
+  // working even when the dart-define is omitted.
+  static const String _fallbackWebClientId =
+      '1081825170446-0rf8tbq9eo9t0vboejfdei0k0e1kgcgl.apps.googleusercontent.com';
 }

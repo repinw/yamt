@@ -1,95 +1,71 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:intl/date_symbol_data_local.dart';
-import 'package:intl/intl.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/calories_page_logic.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_visible_window_controller.dart';
-import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
-import 'package:yamt/l10n/app_localizations.dart';
-
-const _positiveAccentColor = Color(0xFF0D47A1);
-const _warningAccentColor = Color(0xFFB3261E);
-
-CalorieWeekOverview _overview({
-  required int dayOffset,
-  required double totalConsumedKcal,
-  required double totalGoalKcal,
-  required double remainingKcal,
-  double? carryoverBeforeTodayKcal,
-}) {
-  return CalorieWeekOverview(
-    days: List<CalorieWeekDayOverview>.unmodifiable([
-      CalorieWeekDayOverview(
-        date: DateTime(2026, 3, 27).subtract(Duration(days: dayOffset)),
-        totalKcal: totalConsumedKcal,
-        goalKcal: totalGoalKcal,
-        entryCount: 1,
-      ),
-    ]),
-    totalConsumedKcal: totalConsumedKcal,
-    totalGoalKcal: totalGoalKcal,
-    remainingKcal: remainingKcal,
-    balanceStartDate: DateTime(2026, 3, 27).subtract(Duration(days: dayOffset)),
-    carryoverBeforeTodayKcal: carryoverBeforeTodayKcal ?? remainingKcal,
-    todayFlexibleGoalKcal: totalGoalKcal,
-    goalStartsInFuture: false,
-    nextGoalStartDate: null,
-  );
-}
+import 'package:yamt/features/calories/provider/'
+    'calorie_week_overview_provider.dart';
 
 void main() {
-  final l10n = lookupAppLocalizations(const Locale('en'));
-
-  setUpAll(() async {
-    await initializeDateFormatting('en');
-  });
-
   test(
     'resolveDisplayedWeekOverview keeps previous value during refresh',
     () async {
-    final previous = _overview(
-      dayOffset: 0,
-      totalConsumedKcal: 1600,
-      totalGoalKcal: 2200,
-      remainingKcal: 600,
-    );
-    var currentFuture = Future<CalorieWeekOverview>.value(previous);
-    final provider = FutureProvider<CalorieWeekOverview>((ref) {
-      return currentFuture;
-    });
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
+      final previous = CalorieWeekOverview(
+        days: List<CalorieWeekDayOverview>.unmodifiable([
+          CalorieWeekDayOverview(
+            date: DateTime(2026, 3, 27),
+            totalKcal: 1600,
+            goalKcal: 2200,
+            entryCount: 1,
+          ),
+        ]),
+        totalConsumedKcal: 1600,
+        totalGoalKcal: 2200,
+        remainingKcal: 600,
+        balanceStartDate: DateTime(2026, 3, 27),
+        carryoverBeforeTodayKcal: 600,
+        todayFlexibleGoalKcal: 2200,
+        goalStartsInFuture: false,
+        nextGoalStartDate: null,
+        futureGoalKcal: null,
+      );
+      var currentFuture = Future<CalorieWeekOverview>.value(previous);
+      final provider = FutureProvider<CalorieWeekOverview>((ref) {
+        return currentFuture;
+      });
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
 
-    final subscription = container.listen(
-      provider,
-      (_, _) {},
-      fireImmediately: true,
-    );
-    addTearDown(subscription.close);
-    await container.read(provider.future);
+      final subscription = container.listen(
+        provider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      addTearDown(subscription.close);
+      await container.read(provider.future);
 
-    currentFuture = Future<CalorieWeekOverview>.delayed(
-      const Duration(milliseconds: 1),
-      () => previous,
-    );
-    container.refresh(provider);
-    final loading = subscription.read();
+      currentFuture = Future<CalorieWeekOverview>.delayed(
+        const Duration(milliseconds: 1),
+        () => previous,
+      );
+      container.refresh(provider);
+      final loading = subscription.read();
 
-    final visibleWindowEnd = DateTime(2026, 3, 27);
+      final visibleWindowEnd = DateTime(2026, 3, 27);
 
-    expect(
-      resolveDisplayedWeekOverview(
-        loading,
-        goalKcal: 2200,
-        visibleWindowEnd: visibleWindowEnd,
-      ),
-      same(previous),
-    );
-  });
+      expect(
+        resolveDisplayedWeekOverview(
+          loading,
+          goalKcal: 2200,
+          visibleWindowEnd: visibleWindowEnd,
+        ),
+        same(previous),
+      );
+    },
+  );
 
   test('resolveDisplayedWeekOverview falls back without previous value', () {
     final visibleWindowEnd = DateTime(2026, 3, 27);
@@ -104,175 +80,6 @@ void main() {
     expect(resolved.totalGoalKcal, 15400);
     expect(resolved.remainingKcal, 15400);
   });
-
-  test(
-    'week balance banner content shows started today when balance starts now',
-    () {
-      final overview = _overview(
-        dayOffset: 0,
-        totalConsumedKcal: 1600,
-        totalGoalKcal: 2200,
-        remainingKcal: 0,
-      );
-
-      final content = resolveWeekBalanceSummaryBannerContent(
-        overview: overview,
-        l10n: l10n,
-        referenceNow: DateTime(2026, 3, 27, 10),
-        positiveAccentColor: _positiveAccentColor,
-        warningColor: _warningAccentColor,
-      );
-
-      expect(content.message, l10n.caloriesWeekBalanceStartedToday);
-      expect(content.accentColor, _positiveAccentColor);
-      expect(
-        content.backgroundColor,
-        _positiveAccentColor.withValues(alpha: 0.08),
-      );
-    },
-  );
-
-  test(
-    'week balance banner content shows saved state for positive carryover',
-    () {
-      final overview = _overview(
-        dayOffset: 2,
-        totalConsumedKcal: 1600,
-        totalGoalKcal: 2200,
-        remainingKcal: 420,
-      );
-
-      final content = resolveWeekBalanceSummaryBannerContent(
-        overview: overview,
-        l10n: l10n,
-        referenceNow: DateTime(2026, 3, 27, 10),
-        positiveAccentColor: _positiveAccentColor,
-        warningColor: _warningAccentColor,
-      );
-
-      expect(content.message, l10n.caloriesWeekBalanceSaved(420));
-      expect(content.accentColor, _positiveAccentColor);
-      expect(
-        content.backgroundColor,
-        _positiveAccentColor.withValues(alpha: 0.08),
-      );
-    },
-  );
-
-  test(
-    'week balance banner content shows overspent state for negative carryover',
-    () {
-      final overview = _overview(
-        dayOffset: 2,
-        totalConsumedKcal: 2600,
-        totalGoalKcal: 2200,
-        remainingKcal: -250,
-      );
-
-      final content = resolveWeekBalanceSummaryBannerContent(
-        overview: overview,
-        l10n: l10n,
-        referenceNow: DateTime(2026, 3, 27, 10),
-        positiveAccentColor: _positiveAccentColor,
-        warningColor: _warningAccentColor,
-      );
-
-      expect(content.message, l10n.caloriesWeekBalanceOverspent(250));
-      expect(content.accentColor, _warningAccentColor);
-      expect(
-        content.backgroundColor,
-        _warningAccentColor.withValues(alpha: 0.08),
-      );
-    },
-  );
-
-  test(
-    'week balance banner content uses todays intake in the current balance',
-    () {
-      final overview = _overview(
-        dayOffset: 2,
-        totalConsumedKcal: 2600,
-        totalGoalKcal: 2200,
-        remainingKcal: -150,
-        carryoverBeforeTodayKcal: 300,
-      );
-
-      final content = resolveWeekBalanceSummaryBannerContent(
-        overview: overview,
-        l10n: l10n,
-        referenceNow: DateTime(2026, 3, 27, 10),
-        positiveAccentColor: _positiveAccentColor,
-        warningColor: _warningAccentColor,
-      );
-
-      expect(content.message, l10n.caloriesWeekBalanceOverspent(150));
-      expect(content.accentColor, _warningAccentColor);
-      expect(
-        content.backgroundColor,
-        _warningAccentColor.withValues(alpha: 0.08),
-      );
-    },
-  );
-
-  test('week balance banner content shows stable state for zero carryover', () {
-    final overview = _overview(
-      dayOffset: 2,
-      totalConsumedKcal: 2200,
-      totalGoalKcal: 2200,
-      remainingKcal: 0,
-    );
-
-    final content = resolveWeekBalanceSummaryBannerContent(
-      overview: overview,
-      l10n: l10n,
-      referenceNow: DateTime(2026, 3, 27, 10),
-      positiveAccentColor: _positiveAccentColor,
-      warningColor: _warningAccentColor,
-    );
-
-    expect(content.message, l10n.caloriesWeekBalanceStable);
-    expect(content.accentColor, _positiveAccentColor);
-    expect(
-      content.backgroundColor,
-      _positiveAccentColor.withValues(alpha: 0.08),
-    );
-  });
-
-  test(
-    'week balance banner content shows future-start state for upcoming goals',
-    () {
-      final sourceOverview = _overview(
-        dayOffset: 0,
-        totalConsumedKcal: 0,
-        totalGoalKcal: 2200,
-        remainingKcal: 0,
-      );
-      final overview = CalorieWeekOverview(
-        days: sourceOverview.days,
-        totalConsumedKcal: sourceOverview.totalConsumedKcal,
-        totalGoalKcal: sourceOverview.totalGoalKcal,
-        remainingKcal: sourceOverview.remainingKcal,
-        balanceStartDate: sourceOverview.balanceStartDate,
-        carryoverBeforeTodayKcal: sourceOverview.carryoverBeforeTodayKcal,
-        todayFlexibleGoalKcal: sourceOverview.todayFlexibleGoalKcal,
-        goalStartsInFuture: true,
-        nextGoalStartDate: DateTime(2026, 3, 28),
-      );
-
-      final content = resolveWeekBalanceSummaryBannerContent(
-        overview: overview,
-        l10n: l10n,
-        referenceNow: DateTime(2026, 3, 27, 10),
-        positiveAccentColor: _positiveAccentColor,
-        warningColor: _warningAccentColor,
-      );
-
-      final startLabel = DateFormat.yMMMd(
-        l10n.localeName,
-      ).format(DateTime(2026, 3, 28));
-      expect(content.message, l10n.caloriesWeekBalanceStartsLater(startLabel));
-    },
-  );
 
   test(
     'visible-window settle keeps the selected day when it stays visible',
