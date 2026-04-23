@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/'
-    'calorie_nutrition_ocr_repository_contract.dart';
-import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_lookup_repository_contract.dart';
@@ -20,6 +18,10 @@ import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
+import 'package:yamt/features/product_nutrition/data/'
+    'nutrition_label_ocr_repository_contract.dart';
+import 'package:yamt/features/product_nutrition/domain/'
+    'nutrition_label_ocr_models.dart';
 
 class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   FakeCalorieLogRepository({List<CalorieEntry>? initialEntries})
@@ -422,15 +424,15 @@ class FakeCalorieProductLookupRepository
   }
 }
 
-class FakeCalorieNutritionOcrRepository
-    implements CalorieNutritionOcrRepositoryContract {
-  FakeCalorieNutritionOcrRepository({required this.onScanNutritionLabel});
+class FakeNutritionLabelOcrRepository
+    implements NutritionLabelOcrRepositoryContract {
+  FakeNutritionLabelOcrRepository({required this.onScanNutritionLabel});
 
-  final Future<CalorieNutritionOcrResult> Function(String barcode)
+  final Future<NutritionLabelOcrResult> Function(String barcode)
   onScanNutritionLabel;
 
   @override
-  Future<CalorieNutritionOcrResult> scanNutritionLabel({
+  Future<NutritionLabelOcrResult> scanNutritionLabel({
     required String barcode,
   }) {
     return onScanNutritionLabel(barcode);

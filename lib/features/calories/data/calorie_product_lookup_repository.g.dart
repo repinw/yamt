@@ -59,7 +59,7 @@ final class CalorieLookupFunctionsProvider
 }
 
 String _$calorieLookupFunctionsHash() =>
-    r'33b92a7e259965f8b10febe5e7ff1f1821f762d4';
+    r'2a7ac80b68eac6a9106b6836d0116ab69eac7f1b';
 
 /// Calorie off lookup client.
 

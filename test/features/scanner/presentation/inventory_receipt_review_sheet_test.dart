@@ -8,12 +8,6 @@ import 'package:intl/intl.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:yamt/features/calories/data/'
-    'calorie_nutrition_ocr_repository.dart';
-import 'package:yamt/features/calories/data/'
-    'calorie_nutrition_ocr_repository_contract.dart';
-import 'package:yamt/features/calories/domain/'
-    'calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -24,6 +18,12 @@ import 'package:yamt/features/inventory/domain/'
     'global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/product_nutrition/data/'
+    'nutrition_label_ocr_repository.dart';
+import 'package:yamt/features/product_nutrition/data/'
+    'nutrition_label_ocr_repository_contract.dart';
+import 'package:yamt/features/product_nutrition/domain/'
+    'nutrition_label_ocr_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_review_sheet.dart';
@@ -160,14 +160,14 @@ class _CompletingOffProductSearchRepository
 }
 
 class _FakeNutritionOcrRepository
-    implements CalorieNutritionOcrRepositoryContract {
+    implements NutritionLabelOcrRepositoryContract {
   _FakeNutritionOcrRepository({required this.onScanNutritionLabel});
 
-  final Future<CalorieNutritionOcrResult> Function(String barcode)
+  final Future<NutritionLabelOcrResult> Function(String barcode)
   onScanNutritionLabel;
 
   @override
-  Future<CalorieNutritionOcrResult> scanNutritionLabel({
+  Future<NutritionLabelOcrResult> scanNutritionLabel({
     required String barcode,
   }) {
     return onScanNutritionLabel(barcode);
@@ -989,8 +989,8 @@ void main() {
       );
       final ocrRepository = _FakeNutritionOcrRepository(
         onScanNutritionLabel: (barcode) async {
-          return CalorieNutritionOcrResult.succeeded(
-            draft: CalorieNutritionOcrDraft(
+          return NutritionLabelOcrResult.succeeded(
+            draft: NutritionLabelOcrDraft(
               barcode: barcode,
               name: 'Manual OCR Product',
               brand: 'OCR Brand',
@@ -1021,7 +1021,7 @@ void main() {
           overrides: <Override>[
             globalFoodItemMatcherProvider.overrideWithValue(matcher),
             offProductSearchRepositoryProvider.overrideWithValue(offRepository),
-            calorieNutritionOcrRepositoryProvider.overrideWithValue(
+            nutritionLabelOcrRepositoryProvider.overrideWithValue(
               ocrRepository,
             ),
           ],

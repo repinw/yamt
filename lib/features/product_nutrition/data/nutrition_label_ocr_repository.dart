@@ -9,42 +9,41 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/calories/data/'
-    'calorie_nutrition_ocr_repository_contract.dart';
-import 'package:yamt/features/calories/domain/'
-    'calorie_product_lookup_models.dart';
+import 'package:yamt/features/product_nutrition/data/'
+    'nutrition_label_ocr_repository_contract.dart';
+import 'package:yamt/features/product_nutrition/domain/'
+    'nutrition_label_ocr_models.dart';
 
-part 'calorie_nutrition_ocr_repository.g.dart';
+part 'nutrition_label_ocr_repository.g.dart';
 
-const _ocrLogName = 'CalorieNutritionOcrRepository';
+const _ocrLogName = 'NutritionLabelOcrRepository';
 const _ocrTemplateId = 'nutrition-template-id';
 const _vertexLocation = 'global';
 const _defaultMimeType = 'application/octet-stream';
-const _lookupHeaderLength = 32;
 
-/// Defines calorie nutrition ocr error codes.
-abstract final class CalorieNutritionOcrErrorCodes {
+/// Defines nutrition label OCR error codes.
+abstract final class NutritionLabelOcrErrorCodes {
   /// The camera not supported.
   static const cameraNotSupported = 'ocr_camera_not_supported';
 
   /// The template config failed.
   static const templateConfigFailed = 'ocr_template_config_failed';
 
-  /// The ai request failed.
+  /// The AI request failed.
   static const aiRequestFailed = 'ocr_ai_request_failed';
 
   /// The parse failed.
   static const parseFailed = 'ocr_parse_failed';
 }
 
-/// Defines calorie nutrition template config client.
-abstract interface class CalorieNutritionTemplateConfigClient {
+/// Defines nutrition label template config client.
+abstract interface class NutritionLabelTemplateConfigClient {
   /// Load template id.
   Future<String> loadTemplateId();
 }
 
-/// Defines calorie nutrition template model client.
-abstract interface class CalorieNutritionTemplateModelClient {
+/// Defines nutrition label template model client.
+abstract interface class NutritionLabelTemplateModelClient {
   /// Generate content.
   Future<String?> generateContent({
     required String templateId,
@@ -52,48 +51,46 @@ abstract interface class CalorieNutritionTemplateModelClient {
   });
 }
 
-/// Calorie nutrition ocr repository.
+/// Nutrition label OCR repository.
 @riverpod
-CalorieNutritionOcrRepositoryContract calorieNutritionOcrRepository(Ref ref) {
-  final imagePicker = ref.watch(calorieNutritionImagePickerProvider);
-  return _FirebaseCalorieNutritionOcrRepository(
+NutritionLabelOcrRepositoryContract nutritionLabelOcrRepository(Ref ref) {
+  final imagePicker = ref.watch(nutritionLabelImagePickerProvider);
+  return _FirebaseNutritionLabelOcrRepository(
     imagePicker: imagePicker,
-    configClient: ref.watch(calorieNutritionTemplateConfigClientProvider),
-    modelClient: ref.watch(calorieNutritionTemplateModelClientProvider),
+    configClient: ref.watch(nutritionLabelTemplateConfigClientProvider),
+    modelClient: ref.watch(nutritionLabelTemplateModelClientProvider),
   );
 }
 
-/// Calorie nutrition image picker.
+/// Nutrition label image picker.
 @riverpod
-ImagePicker calorieNutritionImagePicker(Ref ref) {
+ImagePicker nutritionLabelImagePicker(Ref ref) {
   return ImagePicker();
 }
 
-/// Calorie nutrition template config client.
+/// Nutrition label template config client.
 @riverpod
-CalorieNutritionTemplateConfigClient calorieNutritionTemplateConfigClient(
-  Ref ref,
-) {
-  return const _StaticCalorieNutritionTemplateConfigClient(
+NutritionLabelTemplateConfigClient nutritionLabelTemplateConfigClient(Ref ref) {
+  return const _StaticNutritionLabelTemplateConfigClient(
     templateId: _ocrTemplateId,
   );
 }
 
-/// Calorie nutrition template model client.
+/// Nutrition label template model client.
 @riverpod
-CalorieNutritionTemplateModelClient calorieNutritionTemplateModelClient(
-  Ref ref,
-) {
-  return _FirebaseCalorieNutritionTemplateModelClient(
+NutritionLabelTemplateModelClient nutritionLabelTemplateModelClient(Ref ref) {
+  return _FirebaseNutritionLabelTemplateModelClient(
     model: FirebaseAI.vertexAI(
       location: _vertexLocation,
     ).templateGenerativeModel(),
   );
 }
 
-class _StaticCalorieNutritionTemplateConfigClient
-    implements CalorieNutritionTemplateConfigClient {
-  const _StaticCalorieNutritionTemplateConfigClient({required this.templateId});
+class _StaticNutritionLabelTemplateConfigClient
+    implements NutritionLabelTemplateConfigClient {
+  const _StaticNutritionLabelTemplateConfigClient({
+    required this.templateId,
+  });
 
   final String templateId;
 
@@ -103,9 +100,9 @@ class _StaticCalorieNutritionTemplateConfigClient
   }
 }
 
-class _FirebaseCalorieNutritionTemplateModelClient
-    implements CalorieNutritionTemplateModelClient {
-  _FirebaseCalorieNutritionTemplateModelClient({
+class _FirebaseNutritionLabelTemplateModelClient
+    implements NutritionLabelTemplateModelClient {
+  _FirebaseNutritionLabelTemplateModelClient({
     required TemplateGenerativeModel model,
   }) : _model = model;
 
@@ -121,25 +118,22 @@ class _FirebaseCalorieNutritionTemplateModelClient
   }
 }
 
-class _FirebaseCalorieNutritionOcrRepository
-    implements CalorieNutritionOcrRepositoryContract {
-  _FirebaseCalorieNutritionOcrRepository({
+class _FirebaseNutritionLabelOcrRepository
+    implements NutritionLabelOcrRepositoryContract {
+  _FirebaseNutritionLabelOcrRepository({
     required ImagePicker imagePicker,
-    required CalorieNutritionTemplateConfigClient configClient,
-    required CalorieNutritionTemplateModelClient modelClient,
-    DateTime Function()? now,
+    required NutritionLabelTemplateConfigClient configClient,
+    required NutritionLabelTemplateModelClient modelClient,
   }) : _imagePicker = imagePicker,
        _configClient = configClient,
-       _modelClient = modelClient,
-       _now = now ?? DateTime.now;
+       _modelClient = modelClient;
 
   final ImagePicker _imagePicker;
-  final CalorieNutritionTemplateConfigClient _configClient;
-  final CalorieNutritionTemplateModelClient _modelClient;
-  final DateTime Function() _now;
+  final NutritionLabelTemplateConfigClient _configClient;
+  final NutritionLabelTemplateModelClient _modelClient;
 
   @override
-  Future<CalorieNutritionOcrResult> scanNutritionLabel({
+  Future<NutritionLabelOcrResult> scanNutritionLabel({
     required String barcode,
   }) async {
     log(
@@ -148,8 +142,8 @@ class _FirebaseCalorieNutritionOcrRepository
     );
     if (!_isCameraSupported()) {
       log('Nutrition label OCR not supported on platform.', name: _ocrLogName);
-      return const CalorieNutritionOcrResult.failed(
-        errorCode: CalorieNutritionOcrErrorCodes.cameraNotSupported,
+      return const NutritionLabelOcrResult.failed(
+        errorCode: NutritionLabelOcrErrorCodes.cameraNotSupported,
       );
     }
 
@@ -160,7 +154,7 @@ class _FirebaseCalorieNutritionOcrRepository
           'Nutrition label OCR canceled before image capture.',
           name: _ocrLogName,
         );
-        return const CalorieNutritionOcrResult.canceled();
+        return const NutritionLabelOcrResult.canceled();
       }
 
       final bytes = await image.readAsBytes();
@@ -173,8 +167,8 @@ class _FirebaseCalorieNutritionOcrRepository
       final templateId = await _loadTemplateId();
       if (templateId == null) {
         log('Nutrition label OCR missing template id.', name: _ocrLogName);
-        return const CalorieNutritionOcrResult.failed(
-          errorCode: CalorieNutritionOcrErrorCodes.templateConfigFailed,
+        return const NutritionLabelOcrResult.failed(
+          errorCode: NutritionLabelOcrErrorCodes.templateConfigFailed,
         );
       }
 
@@ -192,28 +186,16 @@ class _FirebaseCalorieNutritionOcrRepository
           'Nutrition label OCR response could not be parsed.',
           name: _ocrLogName,
         );
-        return const CalorieNutritionOcrResult.failed(
-          errorCode: CalorieNutritionOcrErrorCodes.parseFailed,
+        return const NutritionLabelOcrResult.failed(
+          errorCode: NutritionLabelOcrErrorCodes.parseFailed,
         );
       }
-      final profile = draft.toProfile(now: _now());
-      if (profile == null) {
-        log(
-          'Nutrition label OCR returned partial values for barcode $barcode. '
-          'kcal=${draft.per100Kcal}',
-          name: _ocrLogName,
-        );
-      } else {
-        log(
-          'Nutrition label OCR succeeded for barcode $barcode. '
-          'kcal=${profile.per100Kcal}',
-          name: _ocrLogName,
-        );
-      }
-      return CalorieNutritionOcrResult.succeeded(
-        profile: profile,
-        draft: draft,
+      log(
+        'Nutrition label OCR succeeded for barcode $barcode. '
+        'kcal=${draft.per100Kcal}',
+        name: _ocrLogName,
       );
+      return NutritionLabelOcrResult.succeeded(draft: draft);
     } on Exception catch (error, stackTrace) {
       log(
         'OCR nutrition label failed for barcode $barcode.',
@@ -221,8 +203,8 @@ class _FirebaseCalorieNutritionOcrRepository
         error: error,
         stackTrace: stackTrace,
       );
-      return const CalorieNutritionOcrResult.failed(
-        errorCode: CalorieNutritionOcrErrorCodes.aiRequestFailed,
+      return const NutritionLabelOcrResult.failed(
+        errorCode: NutritionLabelOcrErrorCodes.aiRequestFailed,
       );
     }
   }
@@ -251,7 +233,7 @@ class _FirebaseCalorieNutritionOcrRepository
     }
   }
 
-  CalorieNutritionOcrDraft? _parseDraft(
+  NutritionLabelOcrDraft? _parseDraft(
     String? responseText, {
     required String barcode,
   }) {
@@ -312,7 +294,7 @@ class _FirebaseCalorieNutritionOcrRepository
     final sugar = _extractDouble(flat, const <String>['sugar', 'sugars']);
     final fiber = _extractDouble(flat, const <String>['fiber', 'fibre']);
 
-    final draft = CalorieNutritionOcrDraft(
+    final draft = NutritionLabelOcrDraft(
       barcode: barcode,
       name: name,
       brand: brand,
@@ -384,8 +366,8 @@ class _FirebaseCalorieNutritionOcrRepository
 
   double? _extractDouble(Map<String, Object?> payload, List<String> keys) {
     for (final key in keys) {
-      final value = payload[key];
-      final parsed = _toDouble(value);
+      final rawValue = payload[key];
+      final parsed = _parseDouble(rawValue);
       if (parsed != null) {
         return parsed;
       }
@@ -393,29 +375,21 @@ class _FirebaseCalorieNutritionOcrRepository
     return null;
   }
 
-  double? _toDouble(Object? value) {
-    if (value is num) {
-      return value.toDouble();
+  double? _parseDouble(Object? rawValue) {
+    if (rawValue is num) {
+      return rawValue.toDouble();
     }
-    if (value is! String) {
+    if (rawValue is! String) {
       return null;
     }
-    final normalized = value.replaceAll(',', '.').trim();
-    if (normalized.isEmpty) {
-      return null;
-    }
+    final normalized = rawValue.replaceAll(',', '.').trim();
     return double.tryParse(normalized);
   }
 
-  String _detectMimeType({required String fileName, required List<int> bytes}) {
-    final length = bytes.length < _lookupHeaderLength
-        ? bytes.length
-        : _lookupHeaderLength;
-    final header = bytes.sublist(0, length);
-    final mime = lookupMimeType(fileName, headerBytes: header);
-    if (mime == null || mime.isEmpty) {
-      return _defaultMimeType;
-    }
-    return mime;
+  String _detectMimeType({
+    required String fileName,
+    required Uint8List bytes,
+  }) {
+    return lookupMimeType(fileName, headerBytes: bytes) ?? _defaultMimeType;
   }
 }

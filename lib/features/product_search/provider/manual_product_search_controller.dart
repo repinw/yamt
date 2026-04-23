@@ -6,10 +6,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/utils/store_name_normalizer.dart';
-import 'package:yamt/features/calories/data/'
-    'calorie_nutrition_ocr_repository.dart';
-import 'package:yamt/features/calories/domain/'
-    'calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
@@ -18,6 +14,10 @@ import 'package:yamt/features/inventory/domain/'
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/product_nutrition/data/'
+    'nutrition_label_ocr_repository.dart';
+import 'package:yamt/features/product_nutrition/domain/'
+    'nutrition_label_ocr_models.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form_utils.dart';
 
@@ -411,7 +411,7 @@ class InventoryReceiptManualProductState {
   final InventoryReceiptManualProductSelection? selectedProduct;
 
   /// The ocr draft.
-  final CalorieNutritionOcrDraft? ocrDraft;
+  final NutritionLabelOcrDraft? ocrDraft;
 
   /// Whether running nutrition ocr.
   final bool isRunningNutritionOcr;
@@ -565,7 +565,7 @@ class InventoryReceiptManualProductState {
           : selectedProduct as InventoryReceiptManualProductSelection?,
       ocrDraft: ocrDraft == _keepValue
           ? this.ocrDraft
-          : ocrDraft as CalorieNutritionOcrDraft?,
+          : ocrDraft as NutritionLabelOcrDraft?,
       isRunningNutritionOcr:
           isRunningNutritionOcr ?? this.isRunningNutritionOcr,
       error: error == _keepValue
@@ -876,24 +876,23 @@ class InventoryReceiptManualProductController
 
     try {
       final result = await ref
-          .read(calorieNutritionOcrRepositoryProvider)
+          .read(nutritionLabelOcrRepositoryProvider)
           .scanNutritionLabel(barcode: barcode);
       if (!ref.mounted) {
         return InventoryReceiptManualProductNutritionScanOutcome.canceled;
       }
 
       switch (result.status) {
-        case CalorieNutritionOcrStatus.succeeded:
-          final draft =
-              result.draft ?? _buildOcrDraftFromProfile(result.profile);
+        case NutritionLabelOcrStatus.succeeded:
+          final draft = result.draft;
           if (draft == null) {
             return InventoryReceiptManualProductNutritionScanOutcome.canceled;
           }
           _applyOcrDraft(draft);
           return InventoryReceiptManualProductNutritionScanOutcome.applied;
-        case CalorieNutritionOcrStatus.canceled:
+        case NutritionLabelOcrStatus.canceled:
           return InventoryReceiptManualProductNutritionScanOutcome.canceled;
-        case CalorieNutritionOcrStatus.failed:
+        case NutritionLabelOcrStatus.failed:
           return InventoryReceiptManualProductNutritionScanOutcome.failed;
       }
     } finally {
@@ -1166,7 +1165,7 @@ class InventoryReceiptManualProductController
     );
   }
 
-  void _applyOcrDraft(CalorieNutritionOcrDraft draft) {
+  void _applyOcrDraft(NutritionLabelOcrDraft draft) {
     final ocrWeightInput = _resolveOcrWeightInput(draft.quantityLabel);
     state = state.copyWith(
       ocrDraft: draft,
@@ -1190,23 +1189,6 @@ class InventoryReceiptManualProductController
       isAddingOptionalNutrition: false,
       optionalNutritionValueText: '',
       error: null,
-    );
-  }
-
-  CalorieNutritionOcrDraft? _buildOcrDraftFromProfile(
-    CalorieProductProfile? profile,
-  ) {
-    if (profile == null) {
-      return null;
-    }
-    return CalorieNutritionOcrDraft(
-      barcode: profile.barcode,
-      name: profile.name,
-      brand: profile.brand,
-      per100Kcal: profile.per100Kcal,
-      per100Protein: profile.per100Protein,
-      per100Carbs: profile.per100Carbs,
-      per100Fat: profile.per100Fat,
     );
   }
 
@@ -1457,7 +1439,6 @@ class InventoryReceiptManualProductController
     }
     return null;
   }
-
 }
 
 String? _initialSearchStoreName(InventoryItem item) {
