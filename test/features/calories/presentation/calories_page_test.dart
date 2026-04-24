@@ -333,7 +333,7 @@ Widget _buildHarnessWithContainer({required ProviderContainer container}) {
   );
 }
 
-Finder get _pageListView => find.byType(ListView).first;
+Finder get _pageListView => find.byKey(CaloriesPageKeys.diaryList);
 
 Future<void> _scrollUntilVisible(WidgetTester tester, Finder finder) async {
   for (var attempt = 0; attempt < 12; attempt++) {
@@ -553,6 +553,10 @@ void main() {
     await _scrollUntilVisible(
       tester,
       find.byKey(CaloriesPageKeys.burnWeekMockOpenButton),
+    );
+    expect(
+      find.byKey(CaloriesPageKeys.calorieDebugDumpButton),
+      findsOneWidget,
     );
     await tester.tap(find.byKey(CaloriesPageKeys.burnWeekMockOpenButton));
     await tester.pumpAndSettle();

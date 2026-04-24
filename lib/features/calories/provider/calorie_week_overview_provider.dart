@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
+import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -63,7 +64,8 @@ class CalorieWeekDayOverview {
     required this.totalKcal,
     required this.goalKcal,
     required this.entryCount,
-  });
+    double? baseGoalKcal,
+  }) : baseGoalKcal = baseGoalKcal ?? goalKcal;
 
   /// The date.
   final DateTime date;
@@ -73,6 +75,9 @@ class CalorieWeekDayOverview {
 
   /// The goal kcal.
   final double goalKcal;
+
+  /// The saved base goal kcal before daily activity adjustment.
+  final double baseGoalKcal;
 
   /// The entry count.
   final int entryCount;
@@ -201,6 +206,9 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
   final snapshot = await ref.watch(
     calorieWeekConsumptionSnapshotForWindowProvider(visibleWindowEnd).future,
   );
+  if (!ref.mounted) {
+    throw StateError('Calorie week overview disposed.');
+  }
   final repository = ref.watch(calorieLogRepositoryProvider);
   final goalState = ref.watch(calorieGoalControllerProvider);
   final settings = goalState.asData?.value ?? const CalorieGoalSettings.empty();
@@ -209,6 +217,9 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       (day) => ref.watch(resolvedCalorieGoalForDayProvider(day.date).future),
     ),
   );
+  if (!ref.mounted) {
+    throw StateError('Calorie week overview disposed.');
+  }
   final overviews = snapshot.days
       .asMap()
       .entries
@@ -217,6 +228,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
           date: entry.value.date,
           totalKcal: entry.value.totalKcal,
           goalKcal: resolvedGoals[entry.key].goalKcal,
+          baseGoalKcal: resolvedGoals[entry.key].storedGoalKcal,
           entryCount: entry.value.entryCount,
         ),
       )
@@ -234,22 +246,41 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     endExclusive: visibleWindowStart,
   );
   final historicalEntriesByDay = historicalEntries.groupByDiaryDayKey();
+  if (!ref.mounted) {
+    throw StateError('Calorie week overview disposed.');
+  }
+  final historicalDays = _buildCarryoverDateRange(
+    startInclusive: balanceStartDate,
+    endExclusive: visibleWindowStart,
+  );
+  final historicalGoals = await Future.wait(
+    historicalDays.map(
+      (day) => ref.watch(resolvedCalorieGoalForDayProvider(day).future),
+    ),
+  );
+  if (!ref.mounted) {
+    throw StateError('Calorie week overview disposed.');
+  }
+  final historicalCarryoverDays = _resolveCarryoverDays(
+    days: historicalDays,
+    resolvedGoals: historicalGoals,
+    entriesByDay: historicalEntriesByDay,
+  );
   final adjustedOverviews = overviews
       .map(
         (overview) => CalorieWeekDayOverview(
           date: overview.date,
           totalKcal: overview.totalKcal,
           goalKcal: overview.goalKcal,
+          baseGoalKcal: overview.baseGoalKcal,
           entryCount: overview.entryCount,
         ),
       )
       .toList(growable: false);
   final cycleTotals = _calculateCycleTotals(
-    settings: settings,
     cycleStartDate: balanceStartDate,
     today: today,
-    visibleWindowStart: visibleWindowStart,
-    historicalEntriesByDay: historicalEntriesByDay,
+    historicalCarryoverDays: historicalCarryoverDays,
     visibleOverviews: adjustedOverviews,
   );
   final hasActiveGoalToday = settings.goalEntryForDay(today)?.hasGoal == true;
@@ -261,7 +292,13 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       : nextGoalStartDate == null
       ? null
       : settings.goalKcalForDay(nextGoalStartDate);
-  final carryoverBeforeTodayKcal = cycleTotals.carryoverBeforeTodayKcal;
+  final carryoverBeforeTodayKcal = CalorieBudgetCalculator.distributeCarryover(
+    carryoverKcal: cycleTotals.carryoverBeforeTodayKcal,
+    remainingDays: resolveRemainingCalorieGoalRunDays(
+      settings: settings,
+      day: today,
+    ),
+  );
   final todayFlexibleGoalKcal = math.max<double>(
     0,
     adjustedOverviews.last.goalKcal + carryoverBeforeTodayKcal,
@@ -301,6 +338,7 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
     date: normalizedDay,
     totalKcal: totalKcal,
     goalKcal: resolvedGoal.goalKcal,
+    baseGoalKcal: resolvedGoal.storedGoalKcal,
     entryCount: entries.length,
   );
 }
@@ -353,11 +391,9 @@ Future<List<CalorieEntry>> _readEntriesInRangeSafely({
   double carryoverBeforeTodayKcal,
 })
 _calculateCycleTotals({
-  required CalorieGoalSettings settings,
   required DateTime cycleStartDate,
   required DateTime today,
-  required DateTime visibleWindowStart,
-  required Map<String, List<CalorieEntry>> historicalEntriesByDay,
+  required List<CalorieCarryoverDay> historicalCarryoverDays,
   required List<CalorieWeekDayOverview> visibleOverviews,
 }) {
   var totalConsumedKcal = 0.0;
@@ -365,21 +401,10 @@ _calculateCycleTotals({
   var carryoverBeforeTodayKcal = 0.0;
 
   if (!cycleStartDate.isAfter(today)) {
-    for (
-      var day = normalizeDiaryDay(cycleStartDate);
-      day.isBefore(normalizeDiaryDay(visibleWindowStart));
-      day = nextDiaryDay(day)
-    ) {
-      final dayEntries =
-          historicalEntriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
-      final dayConsumedKcal = dayEntries.fold<double>(
-        0,
-        (sum, entry) => sum + entry.totalKcal,
-      );
-      final dayGoalKcal = settings.goalKcalForDay(day);
-      totalConsumedKcal += dayConsumedKcal;
-      totalGoalKcal += dayGoalKcal;
-      carryoverBeforeTodayKcal += dayGoalKcal - dayConsumedKcal;
+    for (final day in historicalCarryoverDays) {
+      totalConsumedKcal += day.consumedKcal;
+      totalGoalKcal += day.goalKcal;
+      carryoverBeforeTodayKcal += day.goalKcal - day.consumedKcal;
     }
 
     for (final day in visibleOverviews) {
@@ -399,6 +424,49 @@ _calculateCycleTotals({
     totalGoalKcal: totalGoalKcal,
     carryoverBeforeTodayKcal: carryoverBeforeTodayKcal,
   );
+}
+
+List<DateTime> _buildCarryoverDateRange({
+  required DateTime startInclusive,
+  required DateTime endExclusive,
+}) {
+  if (!startInclusive.isBefore(endExclusive)) {
+    return const <DateTime>[];
+  }
+
+  final days = <DateTime>[];
+  for (
+    var day = normalizeDiaryDay(startInclusive);
+    day.isBefore(normalizeDiaryDay(endExclusive));
+    day = nextDiaryDay(day)
+  ) {
+    days.add(day);
+  }
+  return List<DateTime>.unmodifiable(days);
+}
+
+List<CalorieCarryoverDay> _resolveCarryoverDays({
+  required List<DateTime> days,
+  required List<ResolvedCalorieGoalData> resolvedGoals,
+  required Map<String, List<CalorieEntry>> entriesByDay,
+}) {
+  return days
+      .asMap()
+      .entries
+      .map((entry) {
+        final day = entry.value;
+        final dayEntries =
+            entriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
+        final consumedKcal = dayEntries.fold<double>(
+          0,
+          (sum, entry) => sum + entry.totalKcal,
+        );
+        return CalorieCarryoverDay(
+          goalKcal: resolvedGoals[entry.key].goalKcal,
+          consumedKcal: consumedKcal,
+        );
+      })
+      .toList(growable: false);
 }
 
 bool _isBeforeDay(DateTime left, DateTime right) {

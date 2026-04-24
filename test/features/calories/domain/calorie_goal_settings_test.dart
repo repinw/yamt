@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_migration.dart';
 
 void main() {
   test('empty settings have no goal', () {
@@ -9,14 +10,7 @@ void main() {
     expect(settings.hasGoal, isFalse);
     expect(settings.dailyKcalGoal, isNull);
     expect(settings.updatedAt, isNull);
-    expect(
-      settings.normalizedEatingWindowStartMinuteOfDay,
-      defaultEatingWindowStartMinuteOfDay,
-    );
-    expect(
-      settings.normalizedEatingWindowEndMinuteOfDay,
-      defaultEatingWindowEndMinuteOfDay,
-    );
+    expect(settings.calorieMathVersion, currentCalorieMathVersion);
   });
 
   test('json conversion preserves goal values', () {
@@ -32,34 +26,101 @@ void main() {
         goalSpeedKgPerWeek: 0.5,
       ),
       effectiveDate: DateTime(2026, 2, 25, 11),
+      expectedActivityKcal: 420,
+      activityTrackingStartDate: DateTime(2026, 2, 26, 14),
     );
 
     final decoded = CalorieGoalSettings.fromJson(settings.toJson());
 
     expect(decoded.dailyKcalGoal, 2300);
+    expect(decoded.calorieMathVersion, currentCalorieMathVersion);
+    expect(decoded.expectedActivityKcal, 420);
     expect(decoded.calculatorProfile?.sex, CalorieCalculatorSex.female);
     expect(decoded.calculatorProfile?.goalMode, CalorieGoalMode.lose);
     expect(decoded.updatedAt, DateTime(2026, 2, 25, 11));
     expect(decoded.goalHistory, hasLength(1));
     expect(decoded.goalHistory.single.effectiveDate, DateTime(2026, 2, 25));
     expect(decoded.goalHistory.single.changedAt, DateTime(2026, 2, 25, 11));
-    expect(decoded.normalizedEatingWindowStartMinuteOfDay, 360);
-    expect(decoded.normalizedEatingWindowEndMinuteOfDay, 1320);
+    expect(decoded.goalHistory.single.expectedActivityKcal, 420);
+    expect(decoded.expectedActivityKcalForDay(DateTime(2026, 2, 26)), 420);
+    expect(decoded.activityTrackingStartDate, DateTime(2026, 2, 26));
+    expect(
+      decoded.isActivityTrackingActiveForDay(DateTime(2026, 2, 25)),
+      false,
+    );
+    expect(decoded.isActivityTrackingActiveForDay(DateTime(2026, 2, 26)), true);
   });
 
-  test('json conversion preserves a custom eating window', () {
-    final settings = CalorieGoalSettings.single(
-      dailyKcalGoal: 2300,
-      calculatorProfile: null,
-      effectiveDate: DateTime(2026, 2, 25, 11),
-      eatingWindowStartMinuteOfDay: 8 * 60,
-      eatingWindowEndMinuteOfDay: (20 * 60) + 30,
+  test('json without math version decodes as legacy', () {
+    final decoded = CalorieGoalSettings.fromJson({
+      'daily_kcal_goal': 2100,
+      'updated_at': DateTime(2026, 2, 25, 11),
+      'goal_history': const <Object>[],
+      'skipped_intake_day_keys': const <Object>[],
+    });
+
+    expect(decoded.calorieMathVersion, legacyCalorieMathVersion);
+  });
+
+  test('hard migration preserves future counting start', () {
+    final today = DateTime(2026, 4, 24, 10);
+    final tomorrow = DateTime(2026, 4, 25);
+    final legacySettings = CalorieGoalSettings.fromJson({
+      'daily_kcal_goal': 2100,
+      'updated_at': today,
+      'goal_history': [
+        {
+          'daily_kcal_goal': 2100,
+          'effective_date': today,
+          'changed_at': today,
+          'counting_start_date': tomorrow,
+          'source': 'manual',
+        },
+      ],
+      'skipped_intake_day_keys': const <Object>[],
+    });
+
+    final migrated = migrateCalorieGoalSettingsToCurrentMath(
+      settings: legacySettings,
+      now: today,
     );
 
-    final decoded = CalorieGoalSettings.fromJson(settings.toJson());
+    expect(migrated.calorieMathVersion, currentCalorieMathVersion);
+    expect(migrated.goalHistory.single.effectiveDate, tomorrow);
+    expect(migrated.goalHistory.single.effectiveCountingStartDate, tomorrow);
+    expect(migrated.nextGoalStartAfterDay(today), tomorrow);
+  });
 
-    expect(decoded.normalizedEatingWindowStartMinuteOfDay, 8 * 60);
-    expect(decoded.normalizedEatingWindowEndMinuteOfDay, (20 * 60) + 30);
+  test('hard migration preserves active run day', () {
+    final today = DateTime(2026, 4, 24, 10);
+    final originalStartDate = DateTime(2026, 4, 8);
+    final currentRunStartDate = DateTime(2026, 4, 22);
+    final legacySettings = CalorieGoalSettings.fromJson({
+      'daily_kcal_goal': 2100,
+      'updated_at': today,
+      'goal_history': [
+        {
+          'daily_kcal_goal': 2100,
+          'effective_date': originalStartDate,
+          'changed_at': DateTime(2026, 4, 8, 9),
+          'counting_start_date': originalStartDate,
+          'source': 'manual',
+        },
+      ],
+      'skipped_intake_day_keys': const <Object>[],
+    });
+
+    final migrated = migrateCalorieGoalSettingsToCurrentMath(
+      settings: legacySettings,
+      now: today,
+    );
+
+    expect(migrated.calorieMathVersion, currentCalorieMathVersion);
+    expect(migrated.goalHistory.single.effectiveDate, currentRunStartDate);
+    expect(
+      migrated.goalHistory.single.effectiveCountingStartDate,
+      currentRunStartDate,
+    );
   });
 
   test('resolves goal history by day and resets balance on latest change', () {
@@ -124,15 +185,18 @@ void main() {
           changedAt: DateTime(2026, 2, 20, 8),
           dailyKcalGoal: 2400,
           calculatorProfile: null,
+          expectedActivityKcal: 300,
         )
         .applyGoalChange(
           changedAt: DateTime(2026, 2, 24, 9),
           dailyKcalGoal: 1800,
           calculatorProfile: null,
+          expectedActivityKcal: 450,
         )
         .withoutLatestGoalEntry();
 
     expect(settings.dailyKcalGoal, 2400);
+    expect(settings.expectedActivityKcal, 300);
     expect(settings.goalHistory, hasLength(1));
     expect(settings.goalKcalForDay(DateTime(2026, 2, 23)), 2400);
     expect(settings.goalKcalForDay(DateTime(2026, 2, 25)), 2400);
@@ -159,66 +223,5 @@ void main() {
       ]),
       DateTime(2026, 2, 24),
     );
-  });
-
-  test('applyEatingWindowChange keeps goal history unchanged', () {
-    final settings =
-        CalorieGoalSettings.single(
-          dailyKcalGoal: 2000,
-          calculatorProfile: null,
-          effectiveDate: DateTime(2026, 2, 20, 8),
-        ).applyEatingWindowChange(
-          changedAt: DateTime(2026, 2, 21, 9),
-          startMinuteOfDay: (7 * 60) + 30,
-          endMinuteOfDay: 21 * 60,
-        );
-
-    expect(settings.goalHistory, hasLength(1));
-    expect(settings.normalizedEatingWindowStartMinuteOfDay, (7 * 60) + 30);
-    expect(settings.normalizedEatingWindowEndMinuteOfDay, 21 * 60);
-  });
-
-  test('negative eating window minutes clamp to start of day', () {
-    final settings = CalorieGoalSettings.single(
-      dailyKcalGoal: 2300,
-      calculatorProfile: null,
-      effectiveDate: DateTime(2026, 2, 25, 11),
-      eatingWindowStartMinuteOfDay: -10,
-      eatingWindowEndMinuteOfDay: 120,
-    );
-
-    expect(settings.normalizedEatingWindowStartMinuteOfDay, 0);
-    expect(settings.normalizedEatingWindowEndMinuteOfDay, 120);
-  });
-
-  test('eating window minutes above day range clamp to final minute', () {
-    final settings = CalorieGoalSettings.single(
-      dailyKcalGoal: 2300,
-      calculatorProfile: null,
-      effectiveDate: DateTime(2026, 2, 25, 11),
-      eatingWindowStartMinuteOfDay: 1200,
-      eatingWindowEndMinuteOfDay: 1500,
-    );
-
-    expect(settings.normalizedEatingWindowStartMinuteOfDay, 1200);
-    expect(settings.normalizedEatingWindowEndMinuteOfDay, 1439);
-  });
-
-  test('isValidEatingWindowMinutes rejects identical start and end', () {
-    final isValid = isValidEatingWindowMinutes(
-      startMinuteOfDay: 8 * 60,
-      endMinuteOfDay: 8 * 60,
-    );
-
-    expect(isValid, isFalse);
-  });
-
-  test('isValidEatingWindowMinutes rejects end before start', () {
-    final isValid = isValidEatingWindowMinutes(
-      startMinuteOfDay: 22 * 60,
-      endMinuteOfDay: 6 * 60,
-    );
-
-    expect(isValid, isFalse);
   });
 }

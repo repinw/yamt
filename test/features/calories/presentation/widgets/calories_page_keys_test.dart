@@ -9,6 +9,10 @@ void main() {
       const Key('calories_summary_activity_hint'),
     );
     expect(
+      CaloriesPageKeys.diaryList,
+      const Key('calories_diary_list'),
+    );
+    expect(
       CaloriesPageKeys.sectionCard('breakfast'),
       const Key('calories_section_card_breakfast'),
     );
@@ -47,6 +51,10 @@ void main() {
     expect(
       CaloriesPageKeys.burnWeekMockOpenButton,
       const Key('calories_burn_week_open_button'),
+    );
+    expect(
+      CaloriesPageKeys.calorieDebugDumpButton,
+      const Key('calories_debug_dump_button'),
     );
     expect(
       CaloriesPageKeys.burnWeekMockQuickAction('+500'),

@@ -18,6 +18,9 @@ abstract final class CaloriesPageKeys {
   /// The week strip.
   static const weekStrip = Key('calories_week_strip');
 
+  /// The diary page list.
+  static const diaryList = Key('calories_diary_list');
+
   /// The week buffer card.
   static const weekBufferCard = Key('calories_week_buffer_card');
 
@@ -71,6 +74,9 @@ abstract final class CaloriesPageKeys {
 
   /// Opens Burn Week mock page.
   static const burnWeekMockOpenButton = Key('calories_burn_week_open_button');
+
+  /// Prints calorie debug dump.
+  static const calorieDebugDumpButton = Key('calories_debug_dump_button');
 
   /// Burn Week mock bar.
   static const burnWeekMockBar = Key('calories_burn_week_bar');
@@ -215,18 +221,17 @@ abstract final class CalorieGoalStartDialogKeys {
   /// The change date button.
   static const changeDateButton = Key('calorie_goal_start_change_date_button');
 
-  /// The change eating window start button.
-  static const changeEatingWindowStartButton = Key(
-    'calorie_goal_start_change_eating_window_start_button',
-  );
-
-  /// The change eating window end button.
-  static const changeEatingWindowEndButton = Key(
-    'calorie_goal_start_change_eating_window_end_button',
-  );
-
   /// The save button.
   static const saveButton = Key('calorie_goal_start_save_button');
+}
+
+/// Defines same-day goal start food tracking dialog keys.
+abstract final class CalorieGoalStartFoodTrackingDialogKeys {
+  /// The no/start fresh button.
+  static const noButton = Key('calorie_goal_start_food_tracking_no');
+
+  /// The yes/count today button.
+  static const yesButton = Key('calorie_goal_start_food_tracking_yes');
 }
 
 /// Defines calorie goal calculator sheet keys.
@@ -291,19 +296,6 @@ abstract final class CalorieGoalCalculatorSheetKeys {
   /// The onboarding catch-up high option.
   static const catchUpHighOption = Key(
     'calorie_calculator_catch_up_high_option',
-  );
-
-  /// The eating window card.
-  static const eatingWindowCard = Key('calorie_calculator_eating_window_card');
-
-  /// The eating window value.
-  static const eatingWindowValue = Key(
-    'calorie_calculator_eating_window_value',
-  );
-
-  /// The eating window change button.
-  static const eatingWindowChangeButton = Key(
-    'calorie_calculator_eating_window_change_button',
   );
 
   /// The warning card.

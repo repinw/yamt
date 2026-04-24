@@ -7,57 +7,81 @@ This document summarizes the agreed product rules for:
 - manual target recalculation
 - activity handling before and after learning
 
-## 1. Weekly TDEE Bugfix
+## 1. Goal Runs And Starter Day
 
-Problem:
+Goal runs are anchored to the user's goal start, not to calendar weeks.
 
-- If a user starts the goal mid-day, the first day is only partial.
-- Using that partial day as a full day in the first 7-day learning window
-  pulls the learned TDEE down incorrectly.
+Normal future start:
 
-Agreed rule:
+- If the user starts tomorrow or later, that date is day 1.
+- The first check-in is due after 7 full counted days.
+- The first learning window uses all 7 days.
 
-- If the goal starts mid-day, the first weekly check-in waits for 7 full days.
-- The partial start day is ignored for first-week TDEE learning.
-- We do not scale the partial day up.
-- We do not use a 6-day learning window.
+Same-day start:
 
-Example:
+- Today is a starter day.
+- The goal is active today and the app can show a useful budget.
+- The starter day is not used for learned TDEE calculation.
+- The first check-in is due after 6 normal tracked days.
+- The first learning window uses only those 6 full days.
+- Later check-ins use normal 7-day windows.
 
-- Goal starts on April 8 at 18:00.
-- Full tracking days are April 9 through April 15.
-- The first weekly check-in is due on April 16.
+Same-day manual recalculation:
+
+- The app checks today's food entries and asks whether today was tracked.
+- If the user says today was not tracked, today becomes a starter day.
+- If the user says today was tracked, today counts as day 1 of the new run.
+- Old carryover is cut either way when the new target starts.
+
+Example for same-day start on April 24, 2026:
+
+- April 24: starter day, active budget, excluded from learning
+- April 25-30: counted days
+- May 1: first check-in due, calculation uses April 25-30
+- May 1-7: next normal 7-day window
+- May 8: next check-in
 
 Weight handling for that first shifted window:
 
 - The onboarding/start-day weight can still be used as the start baseline.
-- Missing day-2 weight is acceptable if a usable start baseline exists.
+- Missing first counted-day weight is acceptable if a usable start baseline
+  exists.
 - An end-of-window weight is still required.
 - If no usable baseline weight or no end weight exists, block the check-in.
 
 ## 2. Flex Target And Carryover
 
-Flex target is calculated forward from the current cycle without
-reinterpreting old days every day.
+Flex target uses one canonical carryover balance for Classic and Balance.
+Classic switches can hide activity or carryover for the current display, but
+they do not create a separate carryover ledger.
 
 Core rules:
 
 ```text
-carryover_in[today] = carryover_out[yesterday]
+cycle_carryover_before_today =
+  sum(full_day_goal[finished_day] - eaten[finished_day])
 
-raw_flex_target[today] = base_target[today] + carryover_in[today]
+remaining_cycle_days =
+  count(today through the end of the current 7-day run)
+
+daily_carryover_adjustment =
+  cycle_carryover_before_today / remaining_cycle_days
+
+raw_flex_target[today] =
+  base_target[today] + activity_bonus[today] + daily_carryover_adjustment
 
 display_flex_target[today] = max(0, raw_flex_target[today])
-
-carryover_out[today] = raw_flex_target[today] - eaten_today
 ```
 
 Notes:
 
-- Surplus lowers the next day's flex target.
-- Deficit raises the next day's flex target.
+- Eating too much lowers the following days by spreading the overage across
+  the remaining days in the current run.
+- Eating too little raises the following days by spreading the unused calories
+  across the remaining days in the current run.
 - Carryover must come from the raw balance, not the clamped display value.
-- Past days are not re-decided every day.
+- Past days use the canonical full-day goal, including activity bonus that was
+  available on that day.
 
 Forward recalculation only happens if history changes, for example:
 
@@ -84,21 +108,36 @@ Implications:
 
 ## 4. Activity Before The First Weekly Check-In
 
-Strict learned activity delta should not be used before the app has enough
-data.
+The selected PAL is converted into expected daily activity kcal and saved with
+the goal snapshot.
 
-At the same time, a user who starts fresh and does sport on a full first day
-should feel rewarded.
+```text
+expectedActivityKcal = BMR * (PAL - 1)
+```
 
-Agreed direction:
+Rules:
 
-- Before the first weekly check-in, use a bootstrap activity bonus.
-- Bonus applies only on full days.
-- Bonus is positive-only.
-- Do not apply negative activity penalties during the first learning week.
-- Do not add all burned calories.
-- Use only a fraction of workout calories.
-- Show a small hint that the app is still learning the user's sport behavior.
+- Non-tracking users keep the normal PAL-based target.
+- Tracking users compare tracked activity against expected activity.
+- Today should never feel punished for tracking a workout.
+- User-facing activity adjustment is positive-only:
+
+```text
+rawExtraActivity = max(0, trackedActivityKcal - expectedActivityKcal)
+activityBonus = rawExtraActivity * 0.5
+```
+
+- If tracking starts mid-run, days before tracking are unknown, not zero.
+- Tracking logic starts from the tracking start date only.
+- The first Health Connect action that returns `ready` writes
+  `activityTrackingStartDate` as the current diary day.
+- Passive status loading must not write settings, because calorie providers
+  can be loading at the same time.
+- If old users have no tracking start date yet, calorie math treats the
+  current diary day as the start for that calculation. Earlier days stay
+  unknown until a real tracking start date is saved.
+- The saved expected activity kcal is a snapshot. It changes only when the
+  user recalculates the goal or a learned goal update writes a new baseline.
 
 Reason:
 
@@ -108,9 +147,13 @@ Reason:
 Suggested product behavior:
 
 - Base target still comes from TDEE and chosen activity level.
-- Bootstrap workout bonus adds only a modest extra allowance.
+- Activity tracking can add extra allowance above the expected baseline.
+- Tracker calories are noisy, so only 50% of above-baseline activity becomes
+  eatable calories.
 - If the user does not eat all of that bonus, normal carryover can still move
   it forward.
+- Classic can hide today's activity bonus, but the canonical Balance ledger
+  still uses it for carryover.
 
 ## 5. Activity After 7 Full Days
 
@@ -119,17 +162,23 @@ After the first weekly check-in:
 - calculate average burned/active calories across the learning window
 - store that average as the expected activity baseline
 - keep learned TDEE as the learned base target input
+- learn maintenance TDEE separately from the user's target mode and speed
 
 Important:
 
 - Average burned calories are not added on top of learned TDEE again.
 - Learned TDEE already includes the user's average activity pattern.
+- The weekly check-in must smooth maintenance TDEE, not target calories.
+- Lose/gain/maintain is applied after smoothing the learned maintenance TDEE.
 
 Day logic:
 
 ```text
-baseTarget = learnedTdee +/- deficit_or_surplus
-activityBonus = max(0, todayBurned - avgBurned)
+measuredTdee = avgIntake - weightChangePerDay * 7000
+smoothedTdee = blend(oldLearnedTdee, measuredTdee)
+baseTarget = smoothedTdee +/- deficit_or_surplus
+rawExtraActivity = max(0, todayBurned - avgBurned)
+activityBonus = rawExtraActivity * 0.5
 dynamicTargetToday = baseTarget + activityBonus
 flexTargetToday = dynamicTargetToday + carryover
 ```
@@ -151,3 +200,27 @@ The system should feel fair and motivating:
 - manual recalculation should create a clean restart
 - early workouts should feel rewarded
 - normal or rest days should not feel punitive
+
+## 7. Legacy Math Migration
+
+Legacy settings without `calorieMathVersion` are hard-migrated to version `2`.
+
+Rules:
+
+- Keep the active daily goal and calculator profile.
+- Backfill `expectedActivityKcal` from learned activity first, then stored
+  expected activity, then `BMR * (PAL - 1)`.
+- Replace old goal history with one fresh goal snapshot.
+- Preserve the active 7-day run day for already active goals by restarting the
+  migrated snapshot at the current run start.
+- This drops legacy carryover before the current run without pushing a user
+  from week 3 day 3 back to day 1.
+- Preserve future goal starts if the user has selected tomorrow or later.
+- Drop pending weekly check-ins, skipped starter days, old carryover, and old
+  eating-window fields.
+
+Reason:
+
+- Small existing user base.
+- Old carryover/activity/window math can create large wrong targets.
+- A hard restart gives predictable numbers under the new single math model.

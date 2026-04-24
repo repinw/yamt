@@ -135,10 +135,6 @@ void main() {
       find.byKey(CalorieGoalCalculatorSheetKeys.goalStartCard),
       findsOneWidget,
     );
-    expect(
-      find.byKey(CalorieGoalCalculatorSheetKeys.eatingWindowCard),
-      findsNothing,
-    );
     expect(find.text('1,680 kcal'), findsOneWidget);
   });
 
@@ -301,44 +297,15 @@ void main() {
     await _ensureSaveButtonVisible(tester);
     await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
     await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
+    );
+    await tester.pumpAndSettle();
 
     expect(find.text('Calorie calculator'), findsNothing);
     final settings = await repository.readSettings();
     expect(settings.calculatorProfile, isNotNull);
     expect(settings.dailyKcalGoal, 2136);
-  });
-
-  testWidgets('successful save preserves the configured eating window', (
-    tester,
-  ) async {
-    final initialSettings = CalorieGoalSettings.single(
-      dailyKcalGoal: 2000,
-      calculatorProfile: null,
-      effectiveDate: DateTime(2026, 4, 1, 8),
-      eatingWindowStartMinuteOfDay: 8 * 60,
-      eatingWindowEndMinuteOfDay: 20 * 60,
-    );
-    final repository = FakeCalorieSettingsRepository(
-      initialSettings: initialSettings,
-    );
-    addTearDown(repository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        settingsRepository: repository,
-        initialSettings: initialSettings,
-      ),
-    );
-    await _openSheet(tester);
-
-    await _goToResultsWithDefaults(tester);
-    await _ensureSaveButtonVisible(tester);
-    await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
-    await tester.pumpAndSettle();
-
-    final settings = await repository.readSettings();
-    expect(settings.normalizedEatingWindowStartMinuteOfDay, 8 * 60);
-    expect(settings.normalizedEatingWindowEndMinuteOfDay, 20 * 60);
   });
 
   testWidgets('save failure keeps the sheet open and shows feedback', (
@@ -353,6 +320,10 @@ void main() {
     await _goToResultsWithDefaults(tester);
     await _ensureSaveButtonVisible(tester);
     await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Calorie calculator'), findsOneWidget);

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
@@ -11,6 +13,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_results.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_start_food_tracking_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_picker.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -234,17 +238,23 @@ class _CalorieLearnedTdeeGoalSheetState
 
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context)!;
+    final controller = ref.read(calorieGoalControllerProvider.notifier);
+    final logRepository = ref.read(calorieLogRepositoryProvider);
+    final countGoalStartDayForLearning =
+        await _resolveCountGoalStartDayForLearning(logRepository);
+    if (countGoalStartDayForLearning == null && _startsToday) {
+      return;
+    }
     setState(() {
       _isSaving = true;
     });
 
-    final saved = await ref
-        .read(calorieGoalControllerProvider.notifier)
-        .saveLearnedTdeeGoal(
-          goalMode: _goalMode,
-          goalSpeedKgPerWeek: _goalSpeedKgPerWeek,
-          goalStartDate: _goalStartDate,
-        );
+    final saved = await controller.saveLearnedTdeeGoal(
+      goalMode: _goalMode,
+      goalSpeedKgPerWeek: _goalSpeedKgPerWeek,
+      goalStartDate: _goalStartDate,
+      countGoalStartDayForLearning: countGoalStartDayForLearning,
+    );
 
     if (!mounted) {
       return;
@@ -290,6 +300,30 @@ class _CalorieLearnedTdeeGoalSheetState
     setState(() {
       _goalStartDate = pickedDate;
     });
+  }
+
+  bool get _startsToday {
+    return CalorieGoalStartPicker.isSameDay(
+      _goalStartDate,
+      CalorieGoalStartPicker.normalizeDate(DateTime.now()),
+    );
+  }
+
+  Future<bool?> _resolveCountGoalStartDayForLearning(
+    CalorieLogRepositoryContract logRepository,
+  ) async {
+    if (!_startsToday) {
+      return null;
+    }
+    final today = CalorieGoalStartPicker.normalizeDate(DateTime.now());
+    final entries = await logRepository.readEntriesForDay(today);
+    if (!mounted) {
+      return null;
+    }
+    return showCalorieGoalStartFoodTrackingDialog(
+      context,
+      entryCount: entries.length,
+    );
   }
 }
 

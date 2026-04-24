@@ -86,6 +86,7 @@ class CalorieGoalCalculatorFormController
     required DateTime goalStartDate,
     bool allowFutureGoalStart = false,
     bool syncBurnWeekForOnboarding = false,
+    bool? countGoalStartDayForLearning,
     CalorieGoalOnboardingCatchUpEstimate? onboardingCatchUpEstimate,
     DateTime? now,
   }) async {
@@ -103,6 +104,7 @@ class CalorieGoalCalculatorFormController
           profile,
           goalStartDate: goalStartDate,
           allowFutureGoalStart: allowFutureGoalStart,
+          countGoalStartDayForLearning: countGoalStartDayForLearning,
         );
     if (saved && ref.mounted && syncBurnWeekForOnboarding) {
       await _applyOnboardingBurnWeekStart(

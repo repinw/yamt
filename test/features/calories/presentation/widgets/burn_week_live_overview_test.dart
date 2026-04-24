@@ -174,7 +174,7 @@ Future<void> _pumpOverviewScenario(
 void main() {
   testWidgets('future goal start shows practice day card', (tester) async {
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day, 12);
+    final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: CalorieGoalSettings.single(
@@ -206,7 +206,7 @@ void main() {
 
   testWidgets('renders live Burn overview and details dialog', (tester) async {
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day, 12);
+    final today = DateTime(now.year, now.month, now.day);
     await _pumpOverviewScenario(
       tester,
       effectiveDate: today,
@@ -230,7 +230,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Burn Week details'), findsOneWidget);
-    expect(find.text('How this is calculated'), findsOneWidget);
+    expect(find.textContaining('Balance recalculates'), findsOneWidget);
 
     await tester.tap(find.text('Close'));
     await tester.pumpAndSettle();
@@ -240,7 +240,7 @@ void main() {
     tester,
   ) async {
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day, 12);
+    final today = DateTime(now.year, now.month, now.day);
     await _pumpOverviewScenario(
       tester,
       effectiveDate: today,
@@ -259,22 +259,22 @@ void main() {
   });
 
   testWidgets(
-    'fresh restarted run ignores carryover from days before current week',
+    'today left keeps cycle carryover after a fresh Burn Week restart',
     (tester) async {
       final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day, 12);
+      final today = DateTime(now.year, now.month, now.day);
       final yesterday = today.subtract(const Duration(days: 1));
       await _pumpOverviewScenario(
         tester,
         effectiveDate: yesterday,
         entries: <CalorieEntry>[
           _entry('yesterday', loggedAt: yesterday, totalKcal: 1800),
-          _entry('today', loggedAt: today, totalKcal: 1100),
+          _entry('today', loggedAt: today, totalKcal: 1000),
         ],
         runState: _runStateForDay(today),
       );
 
-      expect(find.text('900 kcal'), findsOneWidget);
+      expect(find.text('1,200 kcal'), findsOneWidget);
     },
   );
 
@@ -293,6 +293,7 @@ void main() {
     );
 
     expect(find.text('300 kcal'), findsOneWidget);
+    expect(find.text('1,200 kcal'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Show Burn Week details'));
     await tester.pumpAndSettle();
@@ -396,7 +397,7 @@ void main() {
 
   testWidgets('run over restarts from tomorrow', (tester) async {
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day, 12);
+    final today = DateTime(now.year, now.month, now.day);
     final tomorrow = nextDiaryDay(today);
     final tomorrowKey = diaryDayKey(tomorrow);
     final settingsRepository = _settingsWithGoal(today);
@@ -441,7 +442,7 @@ void main() {
 
   testWidgets('dispose closes an open zone dialog', (tester) async {
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day, 12);
+    final today = DateTime(now.year, now.month, now.day);
     final showsOverview = ValueNotifier<bool>(true);
     addTearDown(showsOverview.dispose);
     final settingsRepository = _settingsWithGoal(today);

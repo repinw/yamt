@@ -14,8 +14,20 @@ import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/health/domain/diary_health_day_data.dart';
+import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/health_workout_session.dart';
+import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
+import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
 
 import '../support/fake_calories_repositories.dart';
+
+const _readyHealthStatus = HealthConnectionStatus(
+  platform: HealthPlatform.android,
+  healthConnectAvailability: HealthConnectAvailability.available,
+  permissionState: HealthPermissionState.granted,
+  historyAccess: HealthHistoryAccess.granted,
+);
 
 CalorieEntry _entry(
   String id, {
@@ -117,6 +129,76 @@ void main() {
     expect(overview.totalGoalKcal, 14000);
     expect(overview.remainingKcal, 13000);
   });
+
+  test(
+    'calorieWeekOverview includes past activity bonus in spread carryover',
+    () async {
+      final today = DateTime(2026, 4, 10);
+      final yesterday = today.subtract(const Duration(days: 1));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'yesterday',
+            loggedAt: yesterday.add(const Duration(hours: 12)),
+            totalKcal: 1500,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: yesterday,
+          expectedActivityKcal: 0,
+          activityTrackingStartDate: yesterday,
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          healthConnectionServiceProvider.overrideWith(
+            (ref) => FakeHealthConnectionService(_readyHealthStatus),
+          ),
+          diaryHealthServiceProvider.overrideWith(
+            (ref) => FakeDiaryHealthService(
+              <String, DiaryHealthDayData>{
+                diaryDayKey(yesterday): DiaryHealthDayData(
+                  totalSteps: 0,
+                  workouts: <HealthWorkoutSession>[
+                    HealthWorkoutSession(
+                      id: 'run-1',
+                      start: yesterday.add(const Duration(hours: 8)),
+                      endExclusive: yesterday.add(const Duration(hours: 9)),
+                      durationMinutes: 60,
+                      activityLabel: 'Run',
+                      sourceName: 'Health',
+                      totalCalories: 1000,
+                      totalSteps: 0,
+                    ),
+                  ],
+                ),
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final provider = calorieWeekOverviewForWindowProvider(today);
+      final subscription = container.listen(provider, (_, _) {});
+      addTearDown(subscription.close);
+      final overview = await container.read(provider.future);
+
+      expect(overview.carryoverBeforeTodayKcal, closeTo(166.667, 0.001));
+      expect(overview.todayFlexibleGoalKcal, closeTo(2166.667, 0.001));
+    },
+  );
 
   test(
     'calorieWeekOverview anchors the visible window to window controller',
@@ -533,8 +615,8 @@ void main() {
     expect(overview.totalConsumedKcal, 3800);
     expect(overview.totalGoalKcal, 3600);
     expect(overview.remainingKcal, -200);
-    expect(overview.carryoverBeforeTodayKcal, -300);
-    expect(overview.todayFlexibleGoalKcal, 1500);
+    expect(overview.carryoverBeforeTodayKcal, -50);
+    expect(overview.todayFlexibleGoalKcal, 1750);
   });
 
   test(
@@ -586,8 +668,8 @@ void main() {
       final overview = await container.read(calorieWeekOverviewProvider.future);
 
       expect(overview.balanceStartDate, cycleStartDay);
-      expect(overview.carryoverBeforeTodayKcal, closeTo(-300, 0.001));
-      expect(overview.todayFlexibleGoalKcal, closeTo(1700, 0.001));
+      expect(overview.carryoverBeforeTodayKcal, closeTo(-60, 0.001));
+      expect(overview.todayFlexibleGoalKcal, closeTo(1940, 0.001));
       expect(overview.totalConsumedKcal, 18300);
       expect(overview.totalGoalKcal, 20000);
       expect(overview.remainingKcal, 1700);
@@ -664,8 +746,8 @@ void main() {
       final overview = await container.read(calorieWeekOverviewProvider.future);
 
       expect(overview.balanceStartDate, cycleStartDay);
-      expect(overview.carryoverBeforeTodayKcal, closeTo(-300, 0.001));
-      expect(overview.todayFlexibleGoalKcal, closeTo(1600, 0.001));
+      expect(overview.carryoverBeforeTodayKcal, closeTo(-60, 0.001));
+      expect(overview.todayFlexibleGoalKcal, closeTo(1840, 0.001));
     },
   );
 

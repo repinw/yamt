@@ -36,6 +36,44 @@ void main() {
     expect(previousOverflowKcal, 0);
   });
 
+  test(
+    'current Burn Week carryover uses base goals without activity bonus',
+    () {
+      final carryover = resolveBurnWeekCarryoverBeforeTodayKcal(
+        weekOverview: CalorieWeekOverview(
+          days: <CalorieWeekDayOverview>[
+            CalorieWeekDayOverview(
+              date: DateTime(2026, 4, 20),
+              totalKcal: 1500,
+              goalKcal: 2350,
+              baseGoalKcal: 2000,
+              entryCount: 1,
+            ),
+            CalorieWeekDayOverview(
+              date: DateTime(2026, 4, 21),
+              totalKcal: 0,
+              goalKcal: 2000,
+              entryCount: 0,
+            ),
+          ],
+          totalConsumedKcal: 1500,
+          totalGoalKcal: 4350,
+          remainingKcal: 2850,
+          balanceStartDate: DateTime(2026, 4, 20),
+          carryoverBeforeTodayKcal: 500,
+          todayFlexibleGoalKcal: 2500,
+          goalStartsInFuture: false,
+          nextGoalStartDate: null,
+          futureGoalKcal: null,
+        ),
+        currentWeekStartDate: DateTime(2026, 4, 20),
+        today: DateTime(2026, 4, 21),
+      );
+
+      expect(carryover, 500);
+    },
+  );
+
   test('live metrics ignore pre-start goal spikes from older visible days', () {
     final today = DateTime(2026, 4, 21, 12);
     final metrics = resolveBurnWeekLiveMetrics(

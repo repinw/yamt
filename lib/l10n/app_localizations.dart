@@ -2567,36 +2567,6 @@ abstract class AppLocalizations {
   /// **'Could not update goal start.'**
   String get caloriesGoalStartSaveFailed;
 
-  /// No description provided for @caloriesEatingWindowDialogTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Set eating window'**
-  String get caloriesEatingWindowDialogTitle;
-
-  /// No description provided for @caloriesEatingWindowStartLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Start'**
-  String get caloriesEatingWindowStartLabel;
-
-  /// No description provided for @caloriesEatingWindowEndLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'End'**
-  String get caloriesEatingWindowEndLabel;
-
-  /// No description provided for @caloriesEatingWindowInvalidRange.
-  ///
-  /// In en, this message translates to:
-  /// **'The end time must be later than the start time.'**
-  String get caloriesEatingWindowInvalidRange;
-
-  /// No description provided for @caloriesEatingWindowSaveFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not update the eating window.'**
-  String get caloriesEatingWindowSaveFailed;
-
   /// No description provided for @caloriesCalculatorSheetTitle.
   ///
   /// In en, this message translates to:
@@ -2945,18 +2915,6 @@ abstract class AppLocalizations {
   /// **'We place you safely into today\'s buffer zone.'**
   String get caloriesCalculatorOnboardingCatchUpHint;
 
-  /// No description provided for @caloriesCalculatorEatingWindowLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Eating window'**
-  String get caloriesCalculatorEatingWindowLabel;
-
-  /// No description provided for @caloriesCalculatorEatingWindowHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Used to pace today\'s diary balance throughout the day.'**
-  String get caloriesCalculatorEatingWindowHint;
-
   /// No description provided for @caloriesCalculatorMinimumGoalWarning.
   ///
   /// In en, this message translates to:
@@ -2974,6 +2932,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not save the calculated calorie target.'**
   String get caloriesCalculatorSaveFailed;
+
+  /// No description provided for @caloriesGoalStartFoodTrackingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Did you track today\'s food?'**
+  String get caloriesGoalStartFoodTrackingTitle;
+
+  /// No description provided for @caloriesGoalStartFoodTrackingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'I found {entryCount} food entries today. Count today as a full tracking day for this new target?'**
+  String caloriesGoalStartFoodTrackingBody(int entryCount);
+
+  /// No description provided for @caloriesGoalStartNoFoodTrackingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No food tracked today'**
+  String get caloriesGoalStartNoFoodTrackingTitle;
+
+  /// No description provided for @caloriesGoalStartNoFoodTrackingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Today will be a starter day. Your new target starts now, but weekly learning starts tomorrow.'**
+  String get caloriesGoalStartNoFoodTrackingBody;
+
+  /// No description provided for @caloriesGoalStartFoodTrackingNoAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start fresh'**
+  String get caloriesGoalStartFoodTrackingNoAction;
+
+  /// No description provided for @caloriesGoalStartFoodTrackingYesAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Count today'**
+  String get caloriesGoalStartFoodTrackingYesAction;
+
+  /// No description provided for @caloriesGoalStartFoodTrackingOkAction.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get caloriesGoalStartFoodTrackingOkAction;
 
   /// No description provided for @caloriesLearnedTdeeSheetTitle.
   ///
@@ -3068,7 +3068,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesActivityWorkoutBonusLabel.
   ///
   /// In en, this message translates to:
-  /// **'Workout bonus'**
+  /// **'Activity bonus'**
   String get caloriesActivityWorkoutBonusLabel;
 
   /// No description provided for @caloriesActivityLearningHint.
@@ -3257,6 +3257,24 @@ abstract class AppLocalizations {
   /// **'Open Burn Week mock'**
   String get caloriesOpenBurnWeekMockAction;
 
+  /// No description provided for @caloriesDebugDumpAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Print calorie debug table'**
+  String get caloriesDebugDumpAction;
+
+  /// No description provided for @caloriesDebugDumpPrinted.
+  ///
+  /// In en, this message translates to:
+  /// **'Printed calorie debug table ({rowCount} rows).'**
+  String caloriesDebugDumpPrinted(int rowCount);
+
+  /// No description provided for @caloriesDebugDumpFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not print calorie debug table.'**
+  String get caloriesDebugDumpFailed;
+
   /// No description provided for @burnWeekUseHeartTitle.
   ///
   /// In en, this message translates to:
@@ -3401,6 +3419,120 @@ abstract class AppLocalizations {
   /// **'You are way over weekly limit and have no hearts left. This run ends and a fresh run starts next day.'**
   String get burnWeekZoneAboveRunOverMessage;
 
+  /// No description provided for @calorieBudgetDetailsInfoTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Show calorie details'**
+  String get calorieBudgetDetailsInfoTooltip;
+
+  /// No description provided for @calorieBudgetDetailsActualLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Actual (you)'**
+  String get calorieBudgetDetailsActualLabel;
+
+  /// No description provided for @calorieBudgetDetailsTargetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Target (goal)'**
+  String get calorieBudgetDetailsTargetLabel;
+
+  /// No description provided for @calorieBudgetDetailsConsumedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Consumed'**
+  String get calorieBudgetDetailsConsumedLabel;
+
+  /// No description provided for @calorieBudgetDetailsBudgetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget'**
+  String get calorieBudgetDetailsBudgetLabel;
+
+  /// No description provided for @calorieBudgetDetailsClassicTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic details'**
+  String get calorieBudgetDetailsClassicTitle;
+
+  /// No description provided for @calorieBudgetDetailsClassicExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget starts with your saved daily target. Extra activity is half of the calories above your expected activity baseline. Carryover is the finished-day balance spread across the remaining days in this 7-day run. Classic lets you switch activity and carryover off for this view; Balance keeps them on automatically.'**
+  String get calorieBudgetDetailsClassicExplanation;
+
+  /// No description provided for @calorieBudgetDetailsBalanceExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget starts with your saved daily target. Extra activity is half of the calories above your expected activity baseline. Carryover is the finished-day balance spread across the remaining days in this 7-day run. Classic lets you switch activity and carryover off for this view; Balance keeps them on automatically.'**
+  String get calorieBudgetDetailsBalanceExplanation;
+
+  /// No description provided for @calorieBudgetDetailsBaseGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Base goal'**
+  String get calorieBudgetDetailsBaseGoal;
+
+  /// No description provided for @calorieBudgetDetailsActivityIncluded.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity included'**
+  String get calorieBudgetDetailsActivityIncluded;
+
+  /// No description provided for @calorieBudgetDetailsActivityAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity available'**
+  String get calorieBudgetDetailsActivityAvailable;
+
+  /// No description provided for @calorieBudgetDetailsCarryoverIncluded.
+  ///
+  /// In en, this message translates to:
+  /// **'Carryover included'**
+  String get calorieBudgetDetailsCarryoverIncluded;
+
+  /// No description provided for @calorieBudgetDetailsCarryoverAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Carryover available'**
+  String get calorieBudgetDetailsCarryoverAvailable;
+
+  /// No description provided for @calorieBudgetDetailsTodayBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Today budget'**
+  String get calorieBudgetDetailsTodayBudget;
+
+  /// No description provided for @calorieBudgetDetailsFoodToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Food today'**
+  String get calorieBudgetDetailsFoodToday;
+
+  /// No description provided for @calorieBudgetDetailsRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining'**
+  String get calorieBudgetDetailsRemaining;
+
+  /// No description provided for @calorieBudgetDetailsMinimumFloor.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum floor'**
+  String get calorieBudgetDetailsMinimumFloor;
+
+  /// No description provided for @calorieBudgetDetailsCarryoverRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Carryover rule'**
+  String get calorieBudgetDetailsCarryoverRule;
+
+  /// No description provided for @calorieBudgetDetailsCarryoverRuleValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Carryover uses finished days with their full available goals, including activity bonus, then spreads the result across the remaining run days.'**
+  String get calorieBudgetDetailsCarryoverRuleValue;
+
   /// No description provided for @burnWeekDetailsTitle.
   ///
   /// In en, this message translates to:
@@ -3467,11 +3599,11 @@ abstract class AppLocalizations {
   /// **'Planned later today'**
   String get burnWeekDetailsPlannedLaterToday;
 
-  /// No description provided for @burnWeekDetailsGuardedBurnSoFar.
+  /// No description provided for @burnWeekDetailsActivityBonusSoFar.
   ///
   /// In en, this message translates to:
-  /// **'Guarded burn so far'**
-  String get burnWeekDetailsGuardedBurnSoFar;
+  /// **'Activity bonus so far'**
+  String get burnWeekDetailsActivityBonusSoFar;
 
   /// No description provided for @burnWeekDetailsWeekCarryover.
   ///
@@ -3500,7 +3632,7 @@ abstract class AppLocalizations {
   /// No description provided for @burnWeekDetailsSportCountingValue.
   ///
   /// In en, this message translates to:
-  /// **'Guarded burn is subtracted in TODAY LEFT.'**
+  /// **'Expected activity is already in your base goal. Half of activity above that expectation is added as eatable kcal.'**
   String get burnWeekDetailsSportCountingValue;
 
   /// No description provided for @burnWeekDetailsSafeZone.
@@ -4312,12 +4444,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Diary'**
   String get settingsDiaryTitle;
-
-  /// No description provided for @settingsDiarySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Eating window: {window}'**
-  String settingsDiarySubtitle(String window);
 
   /// No description provided for @settingsColorTitle.
   ///

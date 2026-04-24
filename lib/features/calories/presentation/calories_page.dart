@@ -9,7 +9,10 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_debug_dump_service.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -47,8 +50,12 @@ import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/calories/provider/'
     'diary_activity_summary_provider.dart';
+import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
 import 'package:yamt/features/health/provider/'
     'health_connection_controller.dart';
+import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
+import 'package:yamt/features/health/provider/'
+    'manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -146,6 +153,7 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
         DateUtils.isSameDay(latestGoalEntry?.effectiveDate, referenceNow);
 
     return ListView(
+      key: CaloriesPageKeys.diaryList,
       padding: responsivePagePadding(
         context,
         top: AppSpacing.lg,
@@ -195,6 +203,13 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
             },
             icon: const Icon(Icons.local_fire_department_rounded),
             label: Text(l10n.caloriesOpenBurnWeekMockAction),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          FilledButton.tonalIcon(
+            key: CaloriesPageKeys.calorieDebugDumpButton,
+            onPressed: () => unawaited(_printCalorieDebugDump()),
+            icon: const Icon(Icons.table_chart_rounded),
+            label: Text(l10n.caloriesDebugDumpAction),
           ),
         ],
         if (weeklyCheckIn != null && weeklyCheckIn.showDiaryHint) ...<Widget>[
@@ -382,6 +397,61 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
         .read(calorieHealthTrendsWindowControllerProvider.notifier)
         .setWindowEnd(resolvedWindowEnd);
     unawaited(context.push(AppRoutes.homeStatisticsWeight));
+  }
+
+  Future<void> _printCalorieDebugDump() async {
+    final l10n = AppLocalizations.of(context)!;
+    final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
+    final diaryHealthService = ref.read(diaryHealthServiceProvider);
+    final healthWeightService = ref.read(healthWeightServiceProvider);
+    final manualWeightRepository = ref.read(
+      manualHealthWeightRepositoryProvider,
+    );
+    final healthStatusFuture = ref.read(
+      healthConnectionControllerProvider.future,
+    );
+    final settingsFuture = ref.read(calorieGoalControllerProvider.future);
+
+    try {
+      final result = await buildCalorieDebugDump(
+        calorieLogRepository: calorieLogRepository,
+        diaryHealthService: diaryHealthService,
+        healthWeightService: healthWeightService,
+        manualWeightRepository: manualWeightRepository,
+        healthStatusFuture: healthStatusFuture,
+        settingsFuture: settingsFuture,
+        now: widget.referenceNow ?? DateTime.now(),
+      );
+      developer.log(
+        'Calorie debug dump\n${result.table}',
+        name: 'CalorieDebugDump',
+      );
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(l10n.caloriesDebugDumpPrinted(result.rowCount)),
+          ),
+        );
+    } on Object catch (error, stackTrace) {
+      developer.log(
+        'Failed to build calorie debug dump.',
+        name: 'CalorieDebugDump',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(l10n.caloriesDebugDumpFailed)),
+        );
+    }
   }
 
   Future<void> _toggleSkippedSelectedDay({

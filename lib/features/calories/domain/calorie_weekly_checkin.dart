@@ -2,9 +2,12 @@ import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_adjustment.dart';
+import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
+import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 
 /// The minimum resolved daily calorie goal kcal.
-const minimumResolvedDailyCalorieGoalKcal = 1500.0;
+const double minimumResolvedDailyCalorieGoalKcal =
+    minimumDailyCalorieBudgetKcal;
 
 /// The weekly check in window length days.
 const weeklyCheckInWindowLengthDays = 7;
@@ -44,6 +47,7 @@ class CalorieWeeklyCheckInCalculation {
   const CalorieWeeklyCheckInCalculation({
     required this.trendWeightChangePerDay,
     required this.averageIntakeKcal,
+    required this.measuredTrueTdeeKcal,
     required this.calculatedTrueTdeeKcal,
     required this.newGoalKcal,
     required this.lastWeekAverageActiveKcal,
@@ -58,7 +62,10 @@ class CalorieWeeklyCheckInCalculation {
   /// The average intake kcal.
   final double averageIntakeKcal;
 
-  /// The calculated true tdee kcal.
+  /// The measured true tdee kcal before smoothing.
+  final double measuredTrueTdeeKcal;
+
+  /// The smoothed learned maintenance tdee kcal.
   final double calculatedTrueTdeeKcal;
 
   /// The new goal kcal.
@@ -82,18 +89,22 @@ abstract final class CalorieWeeklyCheckInCalculator {
   /// Calculate.
   static CalorieWeeklyCheckInCalculation calculate({
     required double previousGoalKcal,
+    required double previousLearnedTdeeKcal,
+    required CalorieGoalMode goalMode,
+    required double goalSpeedKgPerWeek,
     required List<double> intakeKcalByDay,
     required List<int> lastWeekActiveKcalByDay,
     required int todayActiveKcal,
     required List<CalorieWeeklyCheckInWeightPoint> weightPoints,
   }) {
     assert(
-      intakeKcalByDay.length == weeklyCheckInWindowLengthDays,
-      'Weekly check-in requires exactly 7 intake values.',
+      intakeKcalByDay.length >= weeklyCheckInWindowLengthDays - 1 &&
+          intakeKcalByDay.length <= weeklyCheckInWindowLengthDays,
+      'Weekly check-in requires 6 or 7 intake values.',
     );
     assert(
-      lastWeekActiveKcalByDay.length == weeklyCheckInWindowLengthDays,
-      'Weekly check-in requires exactly 7 activity values.',
+      lastWeekActiveKcalByDay.length == intakeKcalByDay.length,
+      'Weekly check-in activity values must match intake values.',
     );
     assert(
       weightPoints.length >= 2,
@@ -103,11 +114,19 @@ abstract final class CalorieWeeklyCheckInCalculator {
     final smoothedWeightPoints = _smoothWeightPoints(weightPoints);
     final trendWeightChangePerDay = _calculateSlope(smoothedWeightPoints);
     final averageIntakeKcal = _averageDouble(intakeKcalByDay);
-    final calculatedTrueTdeeKcal =
+    final measuredTrueTdeeKcal =
         averageIntakeKcal - (trendWeightChangePerDay * _kcalPerKilogram);
-    final rawNewGoalKcal =
-        (previousGoalKcal * _emaHistoryWeight) +
-        (calculatedTrueTdeeKcal * _emaNewDataWeight);
+    final calculatedTrueTdeeKcal =
+        (previousLearnedTdeeKcal * _emaHistoryWeight) +
+        (measuredTrueTdeeKcal * _emaNewDataWeight);
+    final rawNewGoalKcal = calculateGoalFromLearnedTdee(
+      learnedTdeeKcal: calculatedTrueTdeeKcal,
+      goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
+          ? 0.0
+          : goalSpeedKgPerWeek,
+      isLosing: goalMode == CalorieGoalMode.lose,
+      isGaining: goalMode == CalorieGoalMode.gain,
+    );
     final newGoalKcal = _clampGoalAdjustment(
       previousGoalKcal: previousGoalKcal,
       newGoalKcal: rawNewGoalKcal,
@@ -134,6 +153,10 @@ abstract final class CalorieWeeklyCheckInCalculator {
       final message =
           'WEEKLY_TDEE_DEBUG '
           'previousGoalKcal=${previousGoalKcal.toStringAsFixed(2)} '
+          'previousLearnedTdeeKcal='
+          '${previousLearnedTdeeKcal.toStringAsFixed(2)} '
+          'goalMode=${goalMode.name} '
+          'goalSpeedKgPerWeek=${goalSpeedKgPerWeek.toStringAsFixed(2)} '
           'intakeKcalByDay=[$intakeLabel] '
           'lastWeekActiveKcalByDay=[$activeLabel] '
           'todayActiveKcal=$todayActiveKcal '
@@ -141,6 +164,8 @@ abstract final class CalorieWeeklyCheckInCalculator {
           '-> trendWeightChangePerDay='
           '${trendWeightChangePerDay.toStringAsFixed(5)} '
           'averageIntakeKcal=${averageIntakeKcal.toStringAsFixed(2)} '
+          'measuredTrueTdeeKcal='
+          '${measuredTrueTdeeKcal.toStringAsFixed(2)} '
           'calculatedTrueTdeeKcal='
           '${calculatedTrueTdeeKcal.toStringAsFixed(2)} '
           'rawNewGoalKcal=${rawNewGoalKcal.toStringAsFixed(2)} '
@@ -155,6 +180,7 @@ abstract final class CalorieWeeklyCheckInCalculator {
     return CalorieWeeklyCheckInCalculation(
       trendWeightChangePerDay: trendWeightChangePerDay,
       averageIntakeKcal: averageIntakeKcal,
+      measuredTrueTdeeKcal: measuredTrueTdeeKcal,
       calculatedTrueTdeeKcal: calculatedTrueTdeeKcal,
       newGoalKcal: newGoalKcal,
       lastWeekAverageActiveKcal: lastWeekAverageActiveKcal,

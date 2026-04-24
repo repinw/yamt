@@ -4,15 +4,19 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_onboarding_start.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_activity_level_selector.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_input_controls.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_results.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_start_food_tracking_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_picker.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -69,7 +73,8 @@ class _CalorieGoalCalculatorFlowState
   late final TextEditingController _goalSpeedController;
   late DateTime _goalStartDate;
   _OnboardingGoalStartChoice? _onboardingGoalStartChoice;
-  var _onboardingCatchUpEstimate = CalorieGoalOnboardingCatchUpEstimate.normal;
+  CalorieGoalOnboardingCatchUpEstimate _onboardingCatchUpEstimate =
+      CalorieGoalOnboardingCatchUpEstimate.normal;
   _CalculatorOnboardingStep _currentStep = _CalculatorOnboardingStep.sex;
 
   @override
@@ -142,21 +147,27 @@ class _CalorieGoalCalculatorFlowState
     final formProvider = calorieGoalCalculatorFormControllerProvider(
       widget.initialSettings.calculatorProfile,
     );
+    final formNotifier = ref.read(formProvider.notifier);
+    final logRepository = ref.read(calorieLogRepositoryProvider);
     final allowsFutureGoalStart =
         widget.isOnboarding ||
         _goalStartDate.isAfter(
           CalorieGoalStartPicker.normalizeDate(DateTime.now()),
         );
-    final saved = await ref
-        .read(formProvider.notifier)
-        .save(
-          goalStartDate: _goalStartDate,
-          allowFutureGoalStart: allowsFutureGoalStart,
-          syncBurnWeekForOnboarding: widget.isOnboarding,
-          onboardingCatchUpEstimate: widget.isOnboarding && _startsToday
-              ? _onboardingCatchUpEstimate
-              : null,
-        );
+    final countGoalStartDayForLearning =
+        await _resolveCountGoalStartDayForLearning(logRepository);
+    if (countGoalStartDayForLearning == null && _shouldAskTrackedFoodToday) {
+      return;
+    }
+    final saved = await formNotifier.save(
+      goalStartDate: _goalStartDate,
+      allowFutureGoalStart: allowsFutureGoalStart,
+      syncBurnWeekForOnboarding: widget.isOnboarding,
+      countGoalStartDayForLearning: countGoalStartDayForLearning,
+      onboardingCatchUpEstimate: widget.isOnboarding && _startsToday
+          ? _onboardingCatchUpEstimate
+          : null,
+    );
     if (!mounted) {
       return;
     }
@@ -213,6 +224,27 @@ class _CalorieGoalCalculatorFlowState
     return CalorieGoalStartPicker.isSameDay(
       _goalStartDate,
       CalorieGoalStartPicker.normalizeDate(DateTime.now()),
+    );
+  }
+
+  bool get _shouldAskTrackedFoodToday {
+    return !widget.isOnboarding && _startsToday;
+  }
+
+  Future<bool?> _resolveCountGoalStartDayForLearning(
+    CalorieLogRepositoryContract logRepository,
+  ) async {
+    if (!_shouldAskTrackedFoodToday) {
+      return null;
+    }
+    final today = CalorieGoalStartPicker.normalizeDate(DateTime.now());
+    final entries = await logRepository.readEntriesForDay(today);
+    if (!mounted) {
+      return null;
+    }
+    return showCalorieGoalStartFoodTrackingDialog(
+      context,
+      entryCount: entries.length,
     );
   }
 

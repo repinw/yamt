@@ -677,13 +677,6 @@
   "caloriesGoalStartDialogTitle": "Move goal start",
   "caloriesGoalStartDateLabel": "Date",
   "caloriesGoalStartSaveFailed": "Could not update goal start.",
-  "caloriesEatingWindowDialogTitle": "Set eating window",
-  "caloriesEatingWindowStartLabel": "Start",
-  "caloriesEatingWindowEndLabel": "End",
-  "caloriesEatingWindowInvalidRange":
-      "The end time must be later than the start time.",
-  "caloriesEatingWindowSaveFailed":
-      "Could not update the eating window.",
   "caloriesCalculatorSheetTitle": "Calorie calculator",
   "caloriesCalculatorOnboardingTitle": "Set your calorie goal",
   "caloriesCalculatorOnboardingSubtitle":
@@ -766,9 +759,6 @@
   "caloriesCalculatorOnboardingCatchUpHighAction": "A lot",
   "caloriesCalculatorOnboardingCatchUpHint":
       "We place you safely into today's buffer zone.",
-  "caloriesCalculatorEatingWindowLabel": "Eating window",
-  "caloriesCalculatorEatingWindowHint":
-      "Used to pace today's diary balance throughout the day.",
   "caloriesCalculatorMinimumGoalWarning":
       "For weight loss, the daily target cannot go below {minimumKcal} kcal. The result was capped at this minimum.",
   "@caloriesCalculatorMinimumGoalWarning": {
@@ -781,6 +771,22 @@
   "caloriesCalculatorSaveAction": "Save target",
   "caloriesCalculatorSaveFailed":
       "Could not save the calculated calorie target.",
+  "caloriesGoalStartFoodTrackingTitle": "Did you track today's food?",
+  "caloriesGoalStartFoodTrackingBody":
+      "I found {entryCount} food entries today. Count today as a full tracking day for this new target?",
+  "@caloriesGoalStartFoodTrackingBody": {
+    "placeholders": {
+      "entryCount": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesGoalStartNoFoodTrackingTitle": "No food tracked today",
+  "caloriesGoalStartNoFoodTrackingBody":
+      "Today will be a starter day. Your new target starts now, but weekly learning starts tomorrow.",
+  "caloriesGoalStartFoodTrackingNoAction": "Start fresh",
+  "caloriesGoalStartFoodTrackingYesAction": "Count today",
+  "caloriesGoalStartFoodTrackingOkAction": "OK",
   "caloriesLearnedTdeeSheetTitle": "Recalculate from learned TDEE",
   "caloriesLearnedTdeeSheetSubtitle":
       "Use your last successful weekly check-in instead of an activity estimate.",
@@ -800,7 +806,7 @@
   "caloriesWeeklyCheckInDialogNewTargetLabel": "New target",
   "caloriesActivityTodayVsUsualLabel": "Today vs usual",
   "caloriesActivityVsUsualLabel": "Activity vs usual",
-  "caloriesActivityWorkoutBonusLabel": "Workout bonus",
+  "caloriesActivityWorkoutBonusLabel": "Activity bonus",
   "caloriesActivityLearningHint":
       "We are still learning your activity pattern.",
   "caloriesWeeklyCheckInDialogLowConfidence":
@@ -863,6 +869,16 @@
   "caloriesSummaryViewClassic": "Classic",
   "caloriesSummaryViewBalance": "Balance",
   "caloriesOpenBurnWeekMockAction": "Open Burn Week mock",
+  "caloriesDebugDumpAction": "Print calorie debug table",
+  "caloriesDebugDumpPrinted": "Printed calorie debug table ({rowCount} rows).",
+  "@caloriesDebugDumpPrinted": {
+    "placeholders": {
+      "rowCount": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesDebugDumpFailed": "Could not print calorie debug table.",
   "burnWeekUseHeartTitle": "Use heart?",
   "burnWeekUseHeartMessage":
       "1 heart can add or remove one full Burn day of calories ({dayKcal} kcal).",
@@ -913,6 +929,28 @@
       "You are way over weekly limit. Use 1 heart to reduce one full Burn day of calories?",
   "burnWeekZoneAboveRunOverMessage":
       "You are way over weekly limit and have no hearts left. This run ends and a fresh run starts next day.",
+  "calorieBudgetDetailsInfoTooltip": "Show calorie details",
+  "calorieBudgetDetailsActualLabel": "Actual (you)",
+  "calorieBudgetDetailsTargetLabel": "Target (goal)",
+  "calorieBudgetDetailsConsumedLabel": "Consumed",
+  "calorieBudgetDetailsBudgetLabel": "Budget",
+  "calorieBudgetDetailsClassicTitle": "Classic details",
+  "calorieBudgetDetailsClassicExplanation":
+      "Budget starts with your saved daily target. Extra activity is half of the calories above your expected activity baseline. Carryover is the finished-day balance spread across the remaining days in this 7-day run. Classic lets you switch activity and carryover off for this view; Balance keeps them on automatically.",
+  "calorieBudgetDetailsBalanceExplanation":
+      "Budget starts with your saved daily target. Extra activity is half of the calories above your expected activity baseline. Carryover is the finished-day balance spread across the remaining days in this 7-day run. Classic lets you switch activity and carryover off for this view; Balance keeps them on automatically.",
+  "calorieBudgetDetailsBaseGoal": "Base goal",
+  "calorieBudgetDetailsActivityIncluded": "Activity included",
+  "calorieBudgetDetailsActivityAvailable": "Activity available",
+  "calorieBudgetDetailsCarryoverIncluded": "Carryover included",
+  "calorieBudgetDetailsCarryoverAvailable": "Carryover available",
+  "calorieBudgetDetailsTodayBudget": "Today budget",
+  "calorieBudgetDetailsFoodToday": "Food today",
+  "calorieBudgetDetailsRemaining": "Remaining",
+  "calorieBudgetDetailsMinimumFloor": "Minimum floor",
+  "calorieBudgetDetailsCarryoverRule": "Carryover rule",
+  "calorieBudgetDetailsCarryoverRuleValue":
+      "Carryover uses finished days with their full available goals, including activity bonus, then spreads the result across the remaining run days.",
   "burnWeekDetailsTitle": "Burn Week details",
   "burnWeekDetailsHowCalculated": "How this is calculated",
   "burnWeekDetailsDailyGoal": "Daily goal",
@@ -924,13 +962,13 @@
   "burnWeekDetailsTargetFormula": "Target formula",
   "burnWeekDetailsLoggedFoodSoFar": "Logged food so far",
   "burnWeekDetailsPlannedLaterToday": "Planned later today",
-  "burnWeekDetailsGuardedBurnSoFar": "Guarded burn so far",
+  "burnWeekDetailsActivityBonusSoFar": "Activity bonus so far",
   "burnWeekDetailsWeekCarryover": "This week carryover",
   "burnWeekDetailsPreviousWeekOverflow": "Previous week overflow",
   "burnWeekDetailsWeekLeftAfterFood": "Week left after food",
   "burnWeekDetailsSportCounting": "Sport counting",
   "burnWeekDetailsSportCountingValue":
-      "Guarded burn is subtracted in TODAY LEFT.",
+      "Expected activity is already in your base goal. Half of activity above that expectation is added as eatable kcal.",
   "burnWeekDetailsSafeZone": "Safe zone",
   "burnWeekInfoTooltip": "Show Burn Week details",
   "burnWeekWeekDayLabel": "Week {week} day {day}",
@@ -1207,14 +1245,6 @@
   "settingsThemeLight": "Light",
   "settingsThemeDark": "Dark",
   "settingsDiaryTitle": "Diary",
-  "settingsDiarySubtitle": "Eating window: {window}",
-  "@settingsDiarySubtitle": {
-    "placeholders": {
-      "window": {
-        "type": "String"
-      }
-    }
-  },
   "settingsColorTitle": "Accent color",
   "settingsColorLime": "Lime",
   "settingsColorBlue": "Blue",

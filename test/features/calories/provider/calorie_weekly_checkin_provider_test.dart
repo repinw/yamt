@@ -141,7 +141,7 @@ void main() {
   });
 
   test(
-    'mid-day start waits for seven full days before first weekly check-in',
+    'same-day starter creates first check-in after 6 normal tracked days',
     () async {
       final today = DateTime(2026, 4, 15);
       final goalStart = DateTime(2026, 4, 8, 18);
@@ -171,8 +171,17 @@ void main() {
         calorieWeeklyCheckInViewModelProvider.future,
       );
 
-      expect(viewModel.hasPending, isFalse);
-      expect(viewModel.shouldAutoOpen, isFalse);
+      expect(viewModel.hasPending, isTrue);
+      expect(viewModel.shouldAutoOpen, isTrue);
+      expect(
+        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        DateTime(2026, 4, 9),
+      );
+      expect(
+        viewModel.pendingWeeklyCheckIn?.windowEndDate,
+        DateTime(2026, 4, 14),
+      );
+      expect(viewModel.days, hasLength(6));
       expect(viewModel.calculation, isNull);
     },
   );
@@ -191,7 +200,7 @@ void main() {
       );
       final logRepository = FakeCalorieLogRepository(
         initialEntries: <CalorieEntry>[
-          for (var index = 0; index < 7; index += 1)
+          for (var index = 0; index < 6; index += 1)
             _entry(
               'entry-$index',
               DateTime(2026, 4, 9).add(Duration(days: index, hours: 8)),
@@ -202,7 +211,7 @@ void main() {
       final manualRepository = FakeManualHealthWeightRepository(
         <ManualHealthWeightEntry>[
           ManualHealthWeightEntry(day: goalStart, weightKg: 82),
-          ManualHealthWeightEntry(day: DateTime(2026, 4, 15), weightKg: 81.4),
+          ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 81.4),
         ],
       );
       addTearDown(logRepository.dispose);
@@ -227,10 +236,11 @@ void main() {
       );
       expect(
         viewModel.pendingWeeklyCheckIn?.windowEndDate,
-        DateTime(2026, 4, 15),
+        DateTime(2026, 4, 14),
       );
       expect(viewModel.days.first.day, DateTime(2026, 4, 9));
       expect(viewModel.days.first.weightKg, 82);
+      expect(viewModel.days, hasLength(6));
     },
   );
 
@@ -762,7 +772,7 @@ void main() {
       final settingsRepository = FakeCalorieSettingsRepository(
         initialSettings: const CalorieGoalSettings.empty()
             .applyGoalChange(
-              changedAt: DateTime(2026, 4, 1),
+              changedAt: DateTime(2026, 4),
               dailyKcalGoal: 2400,
               calculatorProfile: null,
             )

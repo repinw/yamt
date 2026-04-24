@@ -1,10 +1,11 @@
 import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
+import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 
 /// The minimum calorie goal kcal.
-const minimumCalorieGoalKcal = 1200.0;
+const double minimumCalorieGoalKcal = minimumDailyCalorieBudgetKcal;
 const _kcalPerKilogram = 7000.0;
 const _daysPerWeek = 7.0;
 const _calculatorLogName = 'CalorieGoalCalculator';
@@ -15,6 +16,7 @@ class CalorieGoalCalculationResult {
   const CalorieGoalCalculationResult({
     required this.bmrKcal,
     required this.tdeeKcal,
+    required this.expectedActivityKcal,
     required this.dailyAdjustmentKcal,
     required this.finalGoalKcal,
     required this.wasClampedToMinimum,
@@ -25,6 +27,9 @@ class CalorieGoalCalculationResult {
 
   /// The tdee kcal.
   final double tdeeKcal;
+
+  /// Expected daily activity kcal from PAL.
+  final double expectedActivityKcal;
 
   /// The daily adjustment kcal.
   final double dailyAdjustmentKcal;
@@ -44,6 +49,7 @@ abstract final class CalorieGoalCalculator {
   ) {
     final bmrKcal = _calculateBmr(profile);
     final tdeeKcal = bmrKcal * profile.activityLevel;
+    final expectedActivityKcal = tdeeKcal - bmrKcal;
     final goalSpeedKgPerWeek = profile.goalMode == CalorieGoalMode.maintain
         ? 0.0
         : profile.goalSpeedKgPerWeek;
@@ -61,6 +67,7 @@ abstract final class CalorieGoalCalculator {
     final result = CalorieGoalCalculationResult(
       bmrKcal: bmrKcal,
       tdeeKcal: tdeeKcal,
+      expectedActivityKcal: expectedActivityKcal,
       dailyAdjustmentKcal: dailyAdjustmentKcal,
       finalGoalKcal: wasClampedToMinimum
           ? minimumCalorieGoalKcal
@@ -79,6 +86,7 @@ abstract final class CalorieGoalCalculator {
           'goalSpeedKgPerWeek=${_format(profile.goalSpeedKgPerWeek)} '
           '-> bmrKcal=${_format(result.bmrKcal)} '
           'tdeeKcal=${_format(result.tdeeKcal)} '
+          'expectedActivityKcal=${_format(result.expectedActivityKcal)} '
           'dailyAdjustmentKcal=${_format(result.dailyAdjustmentKcal)} '
           'finalGoalKcal=${_format(result.finalGoalKcal)} '
           'wasClampedToMinimum=${result.wasClampedToMinimum}';

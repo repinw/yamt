@@ -697,13 +697,6 @@
   "caloriesGoalStartDateLabel": "Datum",
   "caloriesGoalStartSaveFailed":
       "Der Zielstart konnte nicht aktualisiert werden.",
-  "caloriesEatingWindowDialogTitle": "Essensfenster setzen",
-  "caloriesEatingWindowStartLabel": "Beginn",
-  "caloriesEatingWindowEndLabel": "Ende",
-  "caloriesEatingWindowInvalidRange":
-      "Die Endzeit muss nach der Startzeit liegen.",
-  "caloriesEatingWindowSaveFailed":
-      "Das Essensfenster konnte nicht aktualisiert werden.",
   "caloriesCalculatorSheetTitle": "Kalorienrechner",
   "caloriesCalculatorStepProgress": "Schritt {current} von {total}",
   "@caloriesCalculatorStepProgress": {
@@ -792,9 +785,6 @@
   "caloriesCalculatorOnboardingCatchUpHighAction": "Viel",
   "caloriesCalculatorOnboardingCatchUpHint":
       "Wir setzen dich sicher in die heutige Pufferzone.",
-  "caloriesCalculatorEatingWindowLabel": "Essensfenster",
-  "caloriesCalculatorEatingWindowHint":
-      "Wird verwendet, um die heutige Tagebuch-Balance über den Tag zu takten.",
   "caloriesCalculatorMinimumGoalWarning":
       "Beim Abnehmen darf das tägliche Ziel nicht unter {minimumKcal} kcal fallen. Das Ergebnis wurde auf dieses Minimum begrenzt.",
   "@caloriesCalculatorMinimumGoalWarning": {
@@ -807,6 +797,23 @@
   "caloriesCalculatorSaveAction": "Ziel speichern",
   "caloriesCalculatorSaveFailed":
       "Das berechnete Kalorienziel konnte nicht gespeichert werden.",
+  "caloriesGoalStartFoodTrackingTitle":
+      "Hast du dein Essen heute getrackt?",
+  "caloriesGoalStartFoodTrackingBody":
+      "Ich habe heute {entryCount} Essenseinträge gefunden. Soll heute als voller Tracking-Tag für dieses neue Ziel zählen?",
+  "@caloriesGoalStartFoodTrackingBody": {
+    "placeholders": {
+      "entryCount": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesGoalStartNoFoodTrackingTitle": "Heute kein Essen getrackt",
+  "caloriesGoalStartNoFoodTrackingBody":
+      "Heute wird ein Starter-Tag. Dein neues Ziel startet jetzt, aber das wöchentliche Lernen startet morgen.",
+  "caloriesGoalStartFoodTrackingNoAction": "Frisch starten",
+  "caloriesGoalStartFoodTrackingYesAction": "Heute mitzählen",
+  "caloriesGoalStartFoodTrackingOkAction": "OK",
   "caloriesLearnedTdeeSheetTitle": "Ziel aus gelerntem TDEE neu berechnen",
   "caloriesLearnedTdeeSheetSubtitle":
       "Verwende deinen letzten erfolgreichen Wochen-Check-in statt einer Aktivitätsschätzung.",
@@ -827,7 +834,7 @@
   "caloriesWeeklyCheckInDialogNewTargetLabel": "Neues Ziel",
   "caloriesActivityTodayVsUsualLabel": "Heute vs. üblich",
   "caloriesActivityVsUsualLabel": "Aktivität vs. üblich",
-  "caloriesActivityWorkoutBonusLabel": "Trainingsbonus",
+  "caloriesActivityWorkoutBonusLabel": "Aktivitätsbonus",
   "caloriesActivityLearningHint":
       "Wir lernen dein Aktivitätsmuster noch.",
   "caloriesWeeklyCheckInDialogLowConfidence":
@@ -893,6 +900,18 @@
   "caloriesSummaryViewClassic": "Klassisch",
   "caloriesSummaryViewBalance": "Balance",
   "caloriesOpenBurnWeekMockAction": "Burn-Week-Mock öffnen",
+  "caloriesDebugDumpAction": "Kalorien-Debug-Tabelle ausgeben",
+  "caloriesDebugDumpPrinted":
+      "Kalorien-Debug-Tabelle ausgegeben ({rowCount} Zeilen).",
+  "@caloriesDebugDumpPrinted": {
+    "placeholders": {
+      "rowCount": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesDebugDumpFailed":
+      "Kalorien-Debug-Tabelle konnte nicht ausgegeben werden.",
   "burnWeekUseHeartTitle": "Herz einsetzen?",
   "burnWeekUseHeartMessage":
       "1 Herz kann einen ganzen Burn-Tag an Kalorien hinzufügen oder abziehen ({dayKcal} kcal).",
@@ -944,6 +963,28 @@
       "Du liegst weit über dem Wochenlimit. 1 Herz nutzen, um einen ganzen Burn-Tag an Kalorien zu entfernen?",
   "burnWeekZoneAboveRunOverMessage":
       "Du liegst weit über dem Wochenlimit und hast keine Herzen mehr. Dieser Run endet und am nächsten Tag startet ein frischer Run.",
+  "calorieBudgetDetailsInfoTooltip": "Kalorien-Details anzeigen",
+  "calorieBudgetDetailsActualLabel": "Ist (du)",
+  "calorieBudgetDetailsTargetLabel": "Soll (Ziel)",
+  "calorieBudgetDetailsConsumedLabel": "Gegessen",
+  "calorieBudgetDetailsBudgetLabel": "Budget",
+  "calorieBudgetDetailsClassicTitle": "Klassisch-Details",
+  "calorieBudgetDetailsClassicExplanation":
+      "Das Budget startet mit deinem gespeicherten Tagesziel. Extra-Aktivität ist die Hälfte der Kalorien über deiner erwarteten Aktivitäts-Basis. Übertrag ist die Bilanz abgeschlossener Tage, verteilt auf die übrigen Tage dieses 7-Tage-Runs. Klassisch kann Aktivität und Übertrag in dieser Ansicht ausblenden; Balance rechnet beides automatisch ein.",
+  "calorieBudgetDetailsBalanceExplanation":
+      "Das Budget startet mit deinem gespeicherten Tagesziel. Extra-Aktivität ist die Hälfte der Kalorien über deiner erwarteten Aktivitäts-Basis. Übertrag ist die Bilanz abgeschlossener Tage, verteilt auf die übrigen Tage dieses 7-Tage-Runs. Klassisch kann Aktivität und Übertrag in dieser Ansicht ausblenden; Balance rechnet beides automatisch ein.",
+  "calorieBudgetDetailsBaseGoal": "Basisziel",
+  "calorieBudgetDetailsActivityIncluded": "Aktivität eingerechnet",
+  "calorieBudgetDetailsActivityAvailable": "Aktivität verfügbar",
+  "calorieBudgetDetailsCarryoverIncluded": "Übertrag eingerechnet",
+  "calorieBudgetDetailsCarryoverAvailable": "Übertrag verfügbar",
+  "calorieBudgetDetailsTodayBudget": "Heutiges Budget",
+  "calorieBudgetDetailsFoodToday": "Essen heute",
+  "calorieBudgetDetailsRemaining": "Verbleibend",
+  "calorieBudgetDetailsMinimumFloor": "Mindestgrenze",
+  "calorieBudgetDetailsCarryoverRule": "Übertrag-Regel",
+  "calorieBudgetDetailsCarryoverRuleValue":
+      "Übertrag nutzt abgeschlossene Tage mit ihrem ganzen verfügbaren Ziel inklusive Aktivitätsbonus und verteilt das Ergebnis auf die übrigen Run-Tage.",
   "burnWeekDetailsTitle": "Burn-Week-Details",
   "burnWeekDetailsHowCalculated": "So wird es berechnet",
   "burnWeekDetailsDailyGoal": "Tagesziel",
@@ -955,13 +996,13 @@
   "burnWeekDetailsTargetFormula": "Zielformel",
   "burnWeekDetailsLoggedFoodSoFar": "Bisher erfasstes Essen",
   "burnWeekDetailsPlannedLaterToday": "Später heute geplant",
-  "burnWeekDetailsGuardedBurnSoFar": "Bisherer Guarded Burn",
+  "burnWeekDetailsActivityBonusSoFar": "Bisheriger Aktivitätsbonus",
   "burnWeekDetailsWeekCarryover": "Übertrag dieser Woche",
   "burnWeekDetailsPreviousWeekOverflow": "Übertrag aus letzter Woche",
   "burnWeekDetailsWeekLeftAfterFood": "Woche übrig nach Essen",
   "burnWeekDetailsSportCounting": "Sport-Zählung",
   "burnWeekDetailsSportCountingValue":
-      "Guarded Burn wird in HEUTE ÜBRIG abgezogen.",
+      "Erwartete Aktivität steckt bereits im Basisziel. Die Hälfte der Aktivität über dieser Erwartung wird als essbare kcal addiert.",
   "burnWeekDetailsSafeZone": "Sicherheitszone",
   "burnWeekInfoTooltip": "Burn-Week-Details anzeigen",
   "burnWeekWeekDayLabel": "Woche {week} Tag {day}",
@@ -1250,14 +1291,6 @@
   "settingsThemeLight": "Hell",
   "settingsThemeDark": "Dunkel",
   "settingsDiaryTitle": "Tagebuch",
-  "settingsDiarySubtitle": "Essensfenster: {window}",
-  "@settingsDiarySubtitle": {
-    "placeholders": {
-      "window": {
-        "type": "String"
-      }
-    }
-  },
   "settingsColorTitle": "Akzentfarbe",
   "settingsColorLime": "Limette",
   "settingsColorBlue": "Blau",
