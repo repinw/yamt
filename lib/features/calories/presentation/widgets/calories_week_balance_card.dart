@@ -13,7 +13,6 @@ const _weekBalanceChartHeadroomFactor = 1.1;
 const _weekBalanceChartHeight = 64.0;
 const _weekBalanceGoalLineHeight = 2.0;
 const _weekBalanceGoalLineAdjustment = 1.0;
-const _weekBalanceSummaryIconSize = 18.0;
 
 /// Defines calories week balance card.
 class CaloriesWeekBalanceCard extends StatelessWidget {
@@ -54,13 +53,6 @@ class CaloriesWeekBalanceCard extends StatelessWidget {
               days: overview.days,
               balanceStartDate: overview.balanceStartDate,
               chartMaxKcal: chartMaxKcal,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _WeekBalanceSummary(
-              remainingKcal: overview.remainingKcal,
-              balanceStartDate: overview.balanceStartDate,
-              goalStartsInFuture: overview.goalStartsInFuture,
-              nextGoalStartDate: overview.nextGoalStartDate,
             ),
           ],
         ),
@@ -245,81 +237,6 @@ class _WeekBalanceDayColumn extends StatelessWidget {
   bool _isToday(DateTime date) {
     final today = normalizeDiaryDay(DateTime.now());
     return normalizeDiaryDay(date) == today;
-  }
-}
-
-class _WeekBalanceSummary extends StatelessWidget {
-  const _WeekBalanceSummary({
-    required this.remainingKcal,
-    required this.balanceStartDate,
-    required this.goalStartsInFuture,
-    required this.nextGoalStartDate,
-  });
-
-  final double remainingKcal;
-  final DateTime balanceStartDate;
-  final bool goalStartsInFuture;
-  final DateTime? nextGoalStartDate;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
-    final isGoalStartToday =
-        normalizeDiaryDay(balanceStartDate) ==
-        normalizeDiaryDay(DateTime.now());
-    final currentBalanceKcal = remainingKcal;
-    final accentColor = currentBalanceKcal < 0 ? colors.error : colors.primary;
-    final backgroundColor = currentBalanceKcal < 0
-        ? colors.error.withValues(alpha: 0.08)
-        : colors.primary.withValues(alpha: 0.08);
-    final absoluteBalance = currentBalanceKcal.abs().round();
-    final futureGoalStartLabel = nextGoalStartDate == null
-        ? null
-        : DateFormat.yMMMd(
-            Localizations.localeOf(context).toLanguageTag(),
-          ).format(nextGoalStartDate!);
-
-    final message = switch ((isGoalStartToday, currentBalanceKcal)) {
-      _ when goalStartsInFuture && futureGoalStartLabel != null =>
-        l10n.caloriesWeekBalanceStartsLater(futureGoalStartLabel),
-      (true, _) => l10n.caloriesWeekBalanceStartedToday,
-      (_, > 0) => l10n.caloriesWeekBalanceSaved(absoluteBalance),
-      (_, < 0) => l10n.caloriesWeekBalanceOverspent(absoluteBalance),
-      _ => l10n.caloriesWeekBalanceStable,
-    };
-
-    return DecoratedBox(
-      key: CaloriesPageKeys.weekBalanceSummary,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              Icons.info_outline,
-              key: CaloriesPageKeys.weekBalanceSummaryIcon,
-              size: _weekBalanceSummaryIconSize,
-              color: accentColor,
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                message,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: accentColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 
