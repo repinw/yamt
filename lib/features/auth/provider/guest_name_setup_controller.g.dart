@@ -8,6 +8,53 @@ part of 'guest_name_setup_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Whether guest setup can be canceled.
+
+@ProviderFor(canCancelGuestSetup)
+final canCancelGuestSetupProvider = CanCancelGuestSetupProvider._();
+
+/// Whether guest setup can be canceled.
+
+final class CanCancelGuestSetupProvider
+    extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  /// Whether guest setup can be canceled.
+  CanCancelGuestSetupProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'canCancelGuestSetupProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$canCancelGuestSetupHash();
+
+  @$internal
+  @override
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    return canCancelGuestSetup(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$canCancelGuestSetupHash() =>
+    r'037723490c48673084a0c77909d31717d1c9ca07';
+
 /// Defines guest name setup controller.
 
 @ProviderFor(GuestNameSetupController)
@@ -37,7 +84,7 @@ final class GuestNameSetupControllerProvider
 }
 
 String _$guestNameSetupControllerHash() =>
-    r'92cf06929ee8cf7447f53b43ee3379d994deeb86';
+    r'41f1caf6021718e10eac4a8f03806d70a1d76ddc';
 
 /// Defines guest name setup controller.
 

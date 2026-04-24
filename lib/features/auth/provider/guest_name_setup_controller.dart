@@ -14,6 +14,15 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 
 part 'guest_name_setup_controller.g.dart';
 
+/// Whether guest setup can be canceled.
+@riverpod
+bool canCancelGuestSetup(Ref ref) {
+  final authState = ref.watch(authStateChangesProvider);
+  final currentUser =
+      authState.asData?.value ?? ref.watch(firebaseAuthProvider).currentUser;
+  return currentUser?.isAnonymous ?? false;
+}
+
 /// Defines guest name setup form defaults.
 class GuestNameSetupFormDefaults {
   /// The guest name setup form defaults.
@@ -38,12 +47,6 @@ class GuestNameSetupFormDefaults {
 class GuestNameSetupController extends _$GuestNameSetupController {
   @override
   FutureOr<void> build() {}
-
-  /// Whether guest setup can be canceled.
-  bool canCancelGuestSetup() {
-    final currentUser = _currentUser();
-    return currentUser?.isAnonymous ?? false;
-  }
 
   /// Initial form defaults.
   GuestNameSetupFormDefaults initialFormDefaults() {
@@ -70,7 +73,7 @@ class GuestNameSetupController extends _$GuestNameSetupController {
 
   /// Cancel anonymous guest setup and return to auth.
   Future<void> cancelGuestSetup() async {
-    if (!canCancelGuestSetup()) {
+    if (!ref.read(canCancelGuestSetupProvider)) {
       return;
     }
 
