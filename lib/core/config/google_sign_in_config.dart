@@ -28,5 +28,6 @@ class GoogleSignInConfig {
   // Public OAuth client IDs are safe to ship and keep local/dev builds
   // working even when the dart-define is omitted.
   static const String _fallbackWebClientId =
-      '1081825170446-0rf8tbq9eo9t0vboejfdei0k0e1kgcgl.apps.googleusercontent.com';
+      '1081825170446-0rf8tbq9eo9t0vboejfdei0k0e1kgcgl'
+      '.apps.googleusercontent.com';
 }

@@ -37,7 +37,8 @@ class CalorieWeeklyCheckInHintCard extends StatelessWidget {
   final VoidCallback onOpenHealthTrends;
 
   /// The on toggle selected day skipped.
-  final Future<void> Function(bool isSkipped) onToggleSelectedDaySkipped;
+  final Future<void> Function({required bool isSkipped})
+  onToggleSelectedDaySkipped;
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +109,7 @@ class CalorieWeeklyCheckInHintCard extends StatelessWidget {
                     onPressed: () {
                       unawaited(
                         onToggleSelectedDaySkipped(
-                          !selectedDayData.isSkippedIntakeDay,
+                          isSkipped: !selectedDayData.isSkippedIntakeDay,
                         ),
                       );
                     },
