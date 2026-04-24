@@ -158,7 +158,7 @@ final class AppRouterProvider
   static final $allTransitiveDependencies0 = inventoryItemRepositoryProvider;
   static final $allTransitiveDependencies1 = calorieEntryDeleteFlowProvider;
   static final $allTransitiveDependencies2 =
-      CalorieEntryDeleteFlowProvider.$allTransitiveDependencies0;
+      CalorieEntryDeleteFlowProvider.$allTransitiveDependencies1;
   static final $allTransitiveDependencies3 =
       CalorieEntryDeleteFlowProvider.$allTransitiveDependencies2;
   static final $allTransitiveDependencies4 =

@@ -2110,6 +2110,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesDeleteRestoreFailed => 'Das Nahrungsmittel konnte nicht zurück in den Vorrat gelegt werden.';
 
   @override
+  String get caloriesMissingInventorySourceDialogTitle => 'Nahrungsmittel nicht mehr im Vorrat';
+
+  @override
+  String caloriesMissingInventorySourceDialogMessage(String name) {
+    return '\"$name\" ist nicht mehr im Vorrat und kann nicht zurückgelegt werden. Nur aus dem Tagebuch löschen?';
+  }
+
+  @override
+  String get caloriesDeleteDiaryOnlyConfirmAction => 'Aus Tagebuch löschen';
+
+  @override
   String get caloriesDeleteFailed => 'Eintrag konnte nicht gelöscht werden.';
 
   @override

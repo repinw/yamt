@@ -2110,6 +2110,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesDeleteRestoreFailed => 'The food could not be added back to inventory.';
 
   @override
+  String get caloriesMissingInventorySourceDialogTitle => 'Food no longer in inventory';
+
+  @override
+  String caloriesMissingInventorySourceDialogMessage(String name) {
+    return '\"$name\" is no longer in inventory, so it cannot be returned. Delete it from the diary only?';
+  }
+
+  @override
+  String get caloriesDeleteDiaryOnlyConfirmAction => 'Delete from diary';
+
+  @override
   String get caloriesDeleteFailed => 'Could not delete entry.';
 
   @override

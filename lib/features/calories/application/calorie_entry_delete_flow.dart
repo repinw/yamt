@@ -1,8 +1,11 @@
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/calories/provider/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
@@ -18,6 +21,9 @@ enum CalorieEntryDeleteFailureReason {
 
   /// Restore failed.
   restoreFailed,
+
+  /// Restore source was already removed from inventory.
+  sourceMissing,
 }
 
 /// Defines calorie entry delete result.
@@ -51,29 +57,82 @@ class CalorieEntryDeleteResult {
 }
 
 /// The calorie entry delete flow provider.
-@Riverpod(dependencies: [InventoryItemsController, PreparedMealsController])
+@Riverpod(
+  dependencies: [
+    inventoryItemRepository,
+    InventoryItemsController,
+    PreparedMealsController,
+  ],
+)
 CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
+  final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
+  final inventoryItemRepository = ref.read(inventoryItemRepositoryProvider);
+  final inventoryController = ref.read(
+    inventoryItemsControllerProvider.notifier,
+  );
+  final overviewRevision = ref.read(calorieOverviewRevisionProvider.notifier);
+  final preparedMealRepository = ref.read(preparedMealRepositoryProvider);
+  final preparedMealsController = ref.read(
+    preparedMealsControllerProvider.notifier,
+  );
+
   return CalorieEntryDeleteFlow(
-    deleteEntryById: ref
-        .read(calorieEntriesControllerProvider.notifier)
-        .deleteEntry,
-    restoreConsumedItem: ref
-        .read(inventoryItemsControllerProvider.notifier)
-        .restoreConsumedItem,
-    rollbackRestoredItem: (itemId, amount, {consumedAt}) => ref
-        .read(inventoryItemsControllerProvider.notifier)
-        .eatItem(itemId, amount, consumedAt: consumedAt),
-    restorePreparedMealPortions: ref
-        .read(preparedMealsControllerProvider.notifier)
-        .restorePreparedMealPortions,
+    deleteEntryById: (entryId) async {
+      final deleted = await calorieLogRepository.deleteEntry(entryId);
+      if (deleted) {
+        overviewRevision.markChanged();
+      }
+      return deleted;
+    },
+    restoreConsumedItem: inventoryController.restoreConsumedItem,
+    rollbackRestoredItem: inventoryController.eatItem,
+    sourceInventoryItemExists: (itemId) async {
+      final normalizedItemId = itemId.trim();
+      if (normalizedItemId.isEmpty) {
+        return false;
+      }
+      try {
+        final loadedItems = await inventoryItemRepository.readAll();
+        return loadedItems.any((item) => item.id == normalizedItemId);
+      } on Object catch (error, stackTrace) {
+        log(
+          'Failed to check inventory restore source. Trying restore anyway '
+          '(itemId=$normalizedItemId).',
+          name: _deleteFlowLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+        return true;
+      }
+    },
+    restorePreparedMealPortions:
+        preparedMealsController.restorePreparedMealPortions,
     rollbackRestoredPreparedMeal:
-        ({required mealId, required discardedPortions}) => ref
-            .read(preparedMealsControllerProvider.notifier)
-            .throwAwayPreparedMeal(
+        ({required mealId, required discardedPortions}) =>
+            preparedMealsController.throwAwayPreparedMeal(
               mealId: mealId,
               discardedPortions: discardedPortions,
               reason: InventoryDiscardReason.other,
             ),
+    sourcePreparedMealExists: (mealId) async {
+      final normalizedMealId = mealId.trim();
+      if (normalizedMealId.isEmpty) {
+        return false;
+      }
+      try {
+        final loadedMeals = await preparedMealRepository.readAll();
+        return loadedMeals.any((meal) => meal.id == normalizedMealId);
+      } on Object catch (error, stackTrace) {
+        log(
+          'Failed to check prepared meal restore source. Trying restore '
+          'anyway (mealId=$normalizedMealId).',
+          name: _deleteFlowLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+        return true;
+      }
+    },
   );
 }
 
@@ -90,6 +149,7 @@ class CalorieEntryDeleteFlow {
       DateTime? consumedAt,
     })
     rollbackRestoredItem,
+    required Future<bool> Function(String itemId) sourceInventoryItemExists,
     required Future<bool> Function({
       required String mealId,
       required int portions,
@@ -100,16 +160,20 @@ class CalorieEntryDeleteFlow {
       required int discardedPortions,
     })
     rollbackRestoredPreparedMeal,
+    required Future<bool> Function(String mealId) sourcePreparedMealExists,
   }) : _deleteEntryById = deleteEntryById,
        _restoreConsumedItem = restoreConsumedItem,
        _rollbackRestoredItem = rollbackRestoredItem,
+       _sourceInventoryItemExists = sourceInventoryItemExists,
        _restorePreparedMealPortions = restorePreparedMealPortions,
-       _rollbackRestoredPreparedMeal = rollbackRestoredPreparedMeal;
+       _rollbackRestoredPreparedMeal = rollbackRestoredPreparedMeal,
+       _sourcePreparedMealExists = sourcePreparedMealExists;
 
   final Future<bool> Function(String entryId) _deleteEntryById;
   final Future<bool> Function(String itemId, int amount) _restoreConsumedItem;
   final Future<bool> Function(String itemId, int amount, {DateTime? consumedAt})
   _rollbackRestoredItem;
+  final Future<bool> Function(String itemId) _sourceInventoryItemExists;
   final Future<bool> Function({required String mealId, required int portions})
   _restorePreparedMealPortions;
   final Future<bool> Function({
@@ -117,6 +181,28 @@ class CalorieEntryDeleteFlow {
     required int discardedPortions,
   })
   _rollbackRestoredPreparedMeal;
+  final Future<bool> Function(String mealId) _sourcePreparedMealExists;
+
+  /// Whether the entry's inventory restore source still exists.
+  Future<bool> canRestoreSource(CalorieEntry entry) async {
+    if (entry.canReturnPreparedMealToInventory) {
+      final mealId = entry.bundleSourcePreparedMealId?.trim();
+      if (mealId == null || mealId.isEmpty) {
+        return false;
+      }
+      return _sourcePreparedMealExists(mealId);
+    }
+
+    if (entry.canRestoreToInventory) {
+      final itemId = entry.sourceInventoryItemId?.trim();
+      if (itemId == null || itemId.isEmpty) {
+        return false;
+      }
+      return _sourceInventoryItemExists(itemId);
+    }
+
+    return false;
+  }
 
   /// Delete entry.
   Future<CalorieEntryDeleteResult> deleteEntry({
@@ -160,6 +246,18 @@ class CalorieEntryDeleteFlow {
         amountToRestore < 1) {
       return const CalorieEntryDeleteResult.failure(
         CalorieEntryDeleteFailureReason.restoreFailed,
+      );
+    }
+
+    final sourceExists = await _sourceInventoryItemExists(sourceItemId);
+    if (!sourceExists) {
+      log(
+        'deleteEntry(): inventory restore source missing '
+        '(entryId=${entry.id}, itemId=$sourceItemId).',
+        name: _deleteFlowLogName,
+      );
+      return const CalorieEntryDeleteResult.failure(
+        CalorieEntryDeleteFailureReason.sourceMissing,
       );
     }
 
@@ -210,6 +308,18 @@ class CalorieEntryDeleteFlow {
       );
       return const CalorieEntryDeleteResult.failure(
         CalorieEntryDeleteFailureReason.restoreFailed,
+      );
+    }
+
+    final sourceExists = await _sourcePreparedMealExists(sourceMealId);
+    if (!sourceExists) {
+      log(
+        '_returnPreparedMealToInventory(): prepared meal source missing '
+        '(entryId=${entry.id}, mealId=$sourceMealId).',
+        name: _deleteFlowLogName,
+      );
+      return const CalorieEntryDeleteResult.failure(
+        CalorieEntryDeleteFailureReason.sourceMissing,
       );
     }
 

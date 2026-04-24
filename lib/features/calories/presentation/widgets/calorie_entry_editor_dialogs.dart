@@ -62,3 +62,33 @@ Future<bool?> showCalorieEntryReturnToInventoryDialog(
     },
   );
 }
+
+/// Show delete-only confirmation when the inventory source is gone.
+Future<bool?> showCalorieEntryMissingInventorySourceDialog(
+  BuildContext context, {
+  required CalorieEntry entry,
+}) {
+  final l10n = AppLocalizations.of(context)!;
+
+  return showDialog<bool>(
+    context: context,
+    builder: (dialogContext) {
+      return AlertDialog(
+        title: Text(l10n.caloriesMissingInventorySourceDialogTitle),
+        content: Text(
+          l10n.caloriesMissingInventorySourceDialogMessage(entry.name),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.inventoryReceiptReviewCancelAction),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.caloriesDeleteDiaryOnlyConfirmAction),
+          ),
+        ],
+      );
+    },
+  );
+}

@@ -4097,6 +4097,24 @@ abstract class AppLocalizations {
   /// **'The food could not be added back to inventory.'**
   String get caloriesDeleteRestoreFailed;
 
+  /// No description provided for @caloriesMissingInventorySourceDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Food no longer in inventory'**
+  String get caloriesMissingInventorySourceDialogTitle;
+
+  /// No description provided for @caloriesMissingInventorySourceDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{name}\" is no longer in inventory, so it cannot be returned. Delete it from the diary only?'**
+  String caloriesMissingInventorySourceDialogMessage(String name);
+
+  /// No description provided for @caloriesDeleteDiaryOnlyConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete from diary'**
+  String get caloriesDeleteDiaryOnlyConfirmAction;
+
   /// No description provided for @caloriesDeleteFailed.
   ///
   /// In en, this message translates to:
