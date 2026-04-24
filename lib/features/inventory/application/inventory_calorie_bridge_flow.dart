@@ -101,6 +101,10 @@ class InventoryCalorieBridgeFlow {
       itemBrand: item.brand,
       consumedAmount: consumedAmount,
       consumedUnit: consumedUnit,
+      portionBaseAmount: request.portionBaseAmount,
+      portionBaseUnit: request.portionBaseUnit,
+      portionCount: request.portionCount,
+      portionLabel: request.portionLabel,
     );
   }
 

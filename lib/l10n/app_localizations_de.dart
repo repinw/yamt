@@ -411,6 +411,35 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryAmountDialogAllRemainingAction => 'Alles/Rest';
 
   @override
+  String get inventoryItemEatSheetPortionModeTitle => 'Portionen';
+
+  @override
+  String get inventoryItemEatSheetUsePortionsToggle => 'Portionsanzahl verwenden';
+
+  @override
+  String get inventoryItemEatSheetPortionLabelFieldLabel => 'Portionsname';
+
+  @override
+  String get inventoryItemEatSheetPortionCountFieldLabel => 'Anzahl';
+
+  @override
+  String get inventoryItemEatSheetPortionAmountFieldLabel => 'Menge pro Portion';
+
+  @override
+  String get inventoryItemEatSheetDecreasePortionCountAction => 'Portionen verringern';
+
+  @override
+  String get inventoryItemEatSheetIncreasePortionCountAction => 'Portionen erhöhen';
+
+  @override
+  String get inventoryItemEatSheetDefaultPortionLabel => 'Portion';
+
+  @override
+  String inventoryItemEatSheetPortionTotalLabel(String amount, String unit) {
+    return 'Gesamt: $amount $unit';
+  }
+
+  @override
   String get inventoryItemEatSheetInedibleAmountLabel => 'Nicht essbaren Anteil abziehen';
 
   @override

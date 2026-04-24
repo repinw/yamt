@@ -8,9 +8,11 @@ import 'package:yamt/features/calories/presentation/models/'
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_entry_post_persist_hook.dart';
+import 'package:yamt/features/inventory/application/'
+    'global_food_serving_suggestion_repository.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/inventory/domain/global_food_serving_suggestion.dart';
-import 'package:yamt/features/inventory/domain/'
-    'global_food_serving_suggestion_repository_contract.dart';
 
 import '../support/fake_calories_repositories.dart';
 
@@ -23,6 +25,7 @@ class _FakeGlobalFoodServingSuggestionRepository
       double amount,
       ConsumedUnit unit,
       DateTime selectedAt,
+      String? label,
     })
   >
   calls =
@@ -33,6 +36,7 @@ class _FakeGlobalFoodServingSuggestionRepository
           double amount,
           ConsumedUnit unit,
           DateTime selectedAt,
+          String? label,
         })
       >[];
 
@@ -52,6 +56,7 @@ class _FakeGlobalFoodServingSuggestionRepository
     required ConsumedUnit unit,
     required DateTime selectedAt,
     String? globalFoodItemId,
+    String? label,
   }) async {
     calls.add((
       foodFingerprint: foodFingerprint,
@@ -59,18 +64,19 @@ class _FakeGlobalFoodServingSuggestionRepository
       amount: amount,
       unit: unit,
       selectedAt: selectedAt,
+      label: label,
     ));
   }
 }
 
-CalorieEntry _entry() {
+CalorieEntry _entry({double consumedAmount = 35}) {
   final now = DateTime.parse('2026-04-12T10:00:00.000Z');
   return CalorieEntry.create(
     id: 'entry-1',
     userId: 'user-1',
     name: 'Cheese',
     mealType: MealType.lunch,
-    consumedAmount: 35,
+    consumedAmount: consumedAmount,
     consumedUnit: ConsumedUnit.grams,
     per100Kcal: 320,
     per100Protein: 24,
@@ -138,8 +144,46 @@ void main() {
       expect(servingRepository.calls.single.globalFoodItemId, 'off-cheese');
       expect(servingRepository.calls.single.amount, 35);
       expect(servingRepository.calls.single.unit, ConsumedUnit.grams);
+      expect(servingRepository.calls.single.label, isNull);
     },
   );
+
+  test('inventory post-persist hook learns base portion with label', () async {
+    final servingRepository = _FakeGlobalFoodServingSuggestionRepository();
+    final container = ProviderContainer(
+      overrides: [
+        globalFoodServingSuggestionRepositoryProvider.overrideWithValue(
+          servingRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final hook = container.read(inventoryCalorieEntryPostPersistHookProvider);
+    await hook(
+      entry: _entry(consumedAmount: 75),
+      inventoryContext: const CalorieInventoryCreateContext(
+        inventoryItemId: 'inventory-1',
+        foodFingerprint: 'cheese__brand',
+        globalFoodItemId: 'off-cheese',
+        pendingConsumptionId: 'pending-1',
+        inventoryAmountToRestore: 75,
+        itemName: 'Cheese',
+        itemBrand: 'Brand',
+        consumedAmount: 75,
+        consumedUnit: ConsumedUnit.grams,
+        portionBaseAmount: 25,
+        portionBaseUnit: ConsumedUnit.grams,
+        portionCount: 3,
+        portionLabel: 'Scheibe',
+      ),
+    );
+
+    expect(servingRepository.calls, hasLength(1));
+    expect(servingRepository.calls.single.amount, 25);
+    expect(servingRepository.calls.single.unit, ConsumedUnit.grams);
+    expect(servingRepository.calls.single.label, 'Scheibe');
+  });
 
   test('saveEntry skips serving suggestion learning when save fails', () async {
     final logRepository = FakeCalorieLogRepository()..saveShouldFail = true;

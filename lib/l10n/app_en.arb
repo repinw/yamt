@@ -164,6 +164,25 @@
   "inventoryItemEatSheetQuickSelectLabel": "Quick select",
   "inventoryItemEatSheetAllAction": "All",
   "inventoryAmountDialogAllRemainingAction": "All/Rest",
+  "inventoryItemEatSheetPortionModeTitle": "Portions",
+  "inventoryItemEatSheetUsePortionsToggle": "Use portion count",
+  "inventoryItemEatSheetPortionLabelFieldLabel": "Portion label",
+  "inventoryItemEatSheetPortionCountFieldLabel": "Count",
+  "inventoryItemEatSheetPortionAmountFieldLabel": "Amount per portion",
+  "inventoryItemEatSheetDecreasePortionCountAction": "Decrease portions",
+  "inventoryItemEatSheetIncreasePortionCountAction": "Increase portions",
+  "inventoryItemEatSheetDefaultPortionLabel": "Portion",
+  "inventoryItemEatSheetPortionTotalLabel": "Total: {amount} {unit}",
+  "@inventoryItemEatSheetPortionTotalLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
   "inventoryItemEatSheetInedibleAmountLabel": "Subtract inedible part",
   "inventoryItemEatSheetInedibleAmountHint":
       "Optional, e.g. bones or shells. Calories are calculated only for the edible remainder.",

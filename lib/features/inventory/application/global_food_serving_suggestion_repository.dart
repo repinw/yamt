@@ -50,5 +50,6 @@ class _UnavailableGlobalFoodServingSuggestionRepository
     required ConsumedUnit unit,
     required DateTime selectedAt,
     String? globalFoodItemId,
+    String? label,
   }) async {}
 }

@@ -57,6 +57,7 @@ class _FakeGlobalFoodServingSuggestionRepository
     required ConsumedUnit unit,
     required DateTime selectedAt,
     String? globalFoodItemId,
+    String? label,
   }) async {}
 }
 
@@ -81,6 +82,31 @@ InventoryItem _amountItemWithServing() {
       per100Protein: 3.3,
       per100Carbs: 4.8,
       per100Fat: 3.5,
+    ),
+  );
+}
+
+InventoryItem _slicedCheeseItem() {
+  return InventoryItem.create(
+    id: 'item-sliced-cheese',
+    name: 'Sliced cheese',
+    brand: 'Acme',
+    entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
+    storeName: 'Store',
+    quantity: 1,
+    initialAmount: 200,
+    currentAmount: 200,
+    amountUnit: InventoryAmountUnit.gram,
+    weight: '200 g',
+    servingSize: '1 slice (25 g)',
+    servingQuantity: 25,
+    servingQuantityUnit: 'g',
+    nutrition: const GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+      per100Kcal: 350,
+      per100Protein: 25,
+      per100Carbs: 1,
+      per100Fat: 27,
     ),
   );
 }
@@ -597,9 +623,9 @@ void main() {
     );
 
     await _openSheet(tester);
-    expect(find.text('125 g'), findsOneWidget);
+    expect(find.text('125 g'), findsWidgets);
 
-    await tester.tap(find.text('125 g'));
+    await tester.tap(find.text('125 g').first);
     await tester.pump();
 
     final amountField = tester.widget<TextField>(
@@ -626,8 +652,51 @@ void main() {
     await tester.tap(find.text('75 g'));
     await tester.pump();
 
-    final manualField = tester.widget<TextField>(find.byType(TextField).at(1));
-    expect(manualField.controller?.text, '75');
+    final portionAmountField = tester.widget<TextField>(
+      find.byKey(const Key('inventory_item_portion_amount_field')),
+    );
+    expect(portionAmountField.controller?.text, '75');
+  });
+
+  testWidgets('logs fixed-unit item from portion count and label', (
+    tester,
+  ) async {
+    InventoryItemEatRequest? result;
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _slicedCheeseItem(),
+        maxAmount: 200,
+        onResult: (value) {
+          result = value;
+        },
+      ),
+    );
+
+    await _openSheet(tester);
+    expect(find.text('Portions'), findsOneWidget);
+
+    final labelField = tester.widget<TextField>(
+      find.byKey(const Key('inventory_item_portion_label_field')),
+    );
+    expect(labelField.controller?.text, 'slice');
+
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_portion_count_field')),
+      '3',
+    );
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_portion_label_field')),
+      'Scheibe',
+    );
+    await _tapConfirmButton(tester);
+
+    expect(result, isNotNull);
+    expect(result?.inventoryAmount, 75);
+    expect(result?.calorieAmount, isNull);
+    expect(result?.portionBaseAmount, 25);
+    expect(result?.portionBaseUnit, ConsumedUnit.grams);
+    expect(result?.portionCount, 3);
+    expect(result?.portionLabel, 'Scheibe');
   });
 
   testWidgets('prefills fixed-unit amount from learned personal suggestion', (
@@ -656,7 +725,7 @@ void main() {
       find.byKey(const Key('inventory_item_amount_dialog_field')),
     );
     expect(amountField.controller?.text, '135');
-    expect(find.text('135 g'), findsOneWidget);
+    expect(find.text('135 g'), findsWidgets);
   });
 
   testWidgets('shows learned manual portion suggestions before metadata', (
@@ -696,8 +765,10 @@ void main() {
 
     await _openSheet(tester);
 
-    final manualField = tester.widget<TextField>(find.byType(TextField).at(1));
-    expect(manualField.controller?.text, '35');
+    final portionAmountField = tester.widget<TextField>(
+      find.byKey(const Key('inventory_item_portion_amount_field')),
+    );
+    expect(portionAmountField.controller?.text, '35');
     expect(find.text('35 g'), findsOneWidget);
     expect(find.text('34 g'), findsOneWidget);
     expect(find.text('75 g'), findsOneWidget);

@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_parsing_utils.dart';
@@ -9,9 +10,14 @@ const String globalServingItemKeyPrefix = 'global';
 const String fingerprintServingItemKeyPrefix = 'fingerprint';
 
 /// Defines serving size suggestion.
+@immutable
 class ServingSizeSuggestion {
   /// The serving size suggestion.
-  const ServingSizeSuggestion({required this.amount, required this.unit});
+  const ServingSizeSuggestion({
+    required this.amount,
+    required this.unit,
+    this.label,
+  });
 
   /// The amount.
   final double amount;
@@ -19,19 +25,24 @@ class ServingSizeSuggestion {
   /// The unit.
   final ConsumedUnit unit;
 
+  /// The user-facing portion label.
+  final String? label;
+
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         other is ServingSizeSuggestion &&
             other.amount == amount &&
-            other.unit == unit;
+            other.unit == unit &&
+            other.label == label;
   }
 
   @override
-  int get hashCode => Object.hash(amount, unit);
+  int get hashCode => Object.hash(amount, unit, label);
 }
 
 /// Defines global food serving suggestion.
+@immutable
 class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
   /// The global food serving suggestion.
   const GlobalFoodServingSuggestion({
@@ -43,6 +54,7 @@ class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
     required this.updatedAt,
     required super.amount,
     required super.unit,
+    super.label,
     this.globalFoodItemId,
   });
 
@@ -57,6 +69,7 @@ class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
       globalFoodItemId: _readOptionalString(json['global_food_item_id']),
       amount: amount,
       unit: unit,
+      label: _readOptionalString(json['label']),
       selectionCount: _readPositiveInt(json['selection_count']) ?? 1,
       uniqueUserCount: _readPositiveInt(json['unique_user_count']) ?? 1,
       createdAt: _readDateTime(json['created_at']) ?? updatedAt,
@@ -93,6 +106,7 @@ class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
       'global_food_item_id': globalFoodItemId,
       'amount': amount,
       'unit': unit.jsonValue,
+      'label': label,
       'selection_count': selectionCount,
       'unique_user_count': uniqueUserCount,
       'created_at': createdAt.toIso8601String(),
@@ -107,6 +121,7 @@ class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
     Object? globalFoodItemId = _keepValue,
     double? amount,
     ConsumedUnit? unit,
+    Object? label = _keepValue,
     int? selectionCount,
     int? uniqueUserCount,
     DateTime? createdAt,
@@ -120,6 +135,7 @@ class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
           : globalFoodItemId as String?,
       amount: amount ?? this.amount,
       unit: unit ?? this.unit,
+      label: label == _keepValue ? this.label : label as String?,
       selectionCount: selectionCount ?? this.selectionCount,
       uniqueUserCount: uniqueUserCount ?? this.uniqueUserCount,
       createdAt: createdAt ?? this.createdAt,
@@ -136,6 +152,7 @@ class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
             other.globalFoodItemId == globalFoodItemId &&
             other.amount == amount &&
             other.unit == unit &&
+            other.label == label &&
             other.selectionCount == selectionCount &&
             other.uniqueUserCount == uniqueUserCount &&
             other.createdAt == createdAt &&
@@ -150,6 +167,7 @@ class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
       globalFoodItemId,
       amount,
       unit,
+      label,
       selectionCount,
       uniqueUserCount,
       createdAt,
@@ -208,7 +226,8 @@ String buildServingSuggestionDocumentId({
   required double amount,
   required ConsumedUnit unit,
 }) {
-  return '${itemKey}_${unit.jsonValue}_${buildServingSuggestionAmountKey(amount)}';
+  final amountKey = buildServingSuggestionAmountKey(amount);
+  return '${itemKey}_${unit.jsonValue}_$amountKey';
 }
 
 /// Build serving suggestion amount key.

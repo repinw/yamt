@@ -96,6 +96,7 @@ void main() {
         globalFoodItemId: 'off-cheese',
         amount: 35,
         unit: ConsumedUnit.grams,
+        label: 'Scheibe',
         selectedAt: DateTime.parse('2026-04-10T10:00:00.000Z'),
       );
       await repository.recordSelection(
@@ -103,6 +104,7 @@ void main() {
         globalFoodItemId: 'off-cheese',
         amount: 35,
         unit: ConsumedUnit.grams,
+        label: 'Scheibe',
         selectedAt: DateTime.parse('2026-04-11T10:00:00.000Z'),
       );
 
@@ -131,12 +133,98 @@ void main() {
 
       expect(sharedSnapshot.data()!['selection_count'], 2);
       expect(sharedSnapshot.data()!['unique_user_count'], 1);
+      expect(sharedSnapshot.data()!['label'], isNull);
       expect(globalPrefSnapshot.data()!['amount'], 35);
+      expect(globalPrefSnapshot.data()!['label'], 'Scheibe');
       expect(fingerprintPrefSnapshot.data()!['amount'], 35);
+      expect(fingerprintPrefSnapshot.data()!['label'], 'Scheibe');
       expect(
         voteSnapshot.data()!['suggestion_id'],
         'global_off-cheese_g_35000',
       );
+    },
+  );
+
+  test(
+    'recordSelection keeps same-serving labels when later call has none',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      final repository = FirestoreGlobalFoodServingSuggestionRepository(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
+
+      await repository.recordSelection(
+        foodFingerprint: 'cheese__brand',
+        globalFoodItemId: 'off-cheese',
+        amount: 35,
+        unit: ConsumedUnit.grams,
+        label: 'Scheibe',
+        selectedAt: DateTime.parse('2026-04-10T10:00:00.000Z'),
+      );
+      await repository.recordSelection(
+        foodFingerprint: 'cheese__brand',
+        globalFoodItemId: 'off-cheese',
+        amount: 35,
+        unit: ConsumedUnit.grams,
+        selectedAt: DateTime.parse('2026-04-11T10:00:00.000Z'),
+      );
+
+      final globalPrefSnapshot = await firestore
+          .collection(_usersCollection)
+          .doc('user-1')
+          .collection(_prefsCollection)
+          .doc('global_off-cheese')
+          .get();
+      final fingerprintPrefSnapshot = await firestore
+          .collection(_usersCollection)
+          .doc('user-1')
+          .collection(_prefsCollection)
+          .doc('fingerprint_cheese__brand')
+          .get();
+
+      expect(globalPrefSnapshot.data()!['label'], 'Scheibe');
+      expect(fingerprintPrefSnapshot.data()!['label'], 'Scheibe');
+    },
+  );
+
+  test(
+    'recordSelection keeps labels without shared serving document',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      final repository = FirestoreGlobalFoodServingSuggestionRepository(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
+
+      await repository.recordSelection(
+        foodFingerprint: 'cheese__brand',
+        globalFoodItemId: 'pending-cheese__brand',
+        amount: 35,
+        unit: ConsumedUnit.grams,
+        label: 'Scheibe',
+        selectedAt: DateTime.parse('2026-04-10T10:00:00.000Z'),
+      );
+      await repository.recordSelection(
+        foodFingerprint: 'cheese__brand',
+        globalFoodItemId: 'pending-cheese__brand',
+        amount: 35,
+        unit: ConsumedUnit.grams,
+        selectedAt: DateTime.parse('2026-04-11T10:00:00.000Z'),
+      );
+
+      final sharedSnapshot = await firestore
+          .collection(_globalCollection)
+          .get();
+      final fingerprintPrefSnapshot = await firestore
+          .collection(_usersCollection)
+          .doc('user-1')
+          .collection(_prefsCollection)
+          .doc('fingerprint_cheese__brand')
+          .get();
+
+      expect(sharedSnapshot.docs, isEmpty);
+      expect(fingerprintPrefSnapshot.data()!['label'], 'Scheibe');
     },
   );
 

@@ -332,6 +332,31 @@ void main() {
     },
   );
 
+  test('buildInventoryContext keeps portion learning metadata', () {
+    final item = _amountItemWithNutrition();
+    final request = InventoryItemEatRequest(
+      inventoryAmount: 75,
+      loggedAt: DateTime.parse('2026-04-06T12:30:00Z'),
+      mealType: MealType.lunch,
+      portionBaseAmount: 25,
+      portionBaseUnit: ConsumedUnit.grams,
+      portionCount: 3,
+      portionLabel: 'Scheibe',
+    );
+
+    final context = InventoryCalorieBridgeFlow.buildInventoryContext(
+      item: item,
+      pendingConsumptionId: 'pending-1',
+      request: request,
+    );
+
+    expect(context.consumedAmount, 75);
+    expect(context.portionBaseAmount, 25);
+    expect(context.portionBaseUnit, ConsumedUnit.grams);
+    expect(context.portionCount, 3);
+    expect(context.portionLabel, 'Scheibe');
+  });
+
   test('buildInventoryContext throws without manual portion when required', () {
     final item = _portionItemWithNutrition();
     final request = InventoryItemEatRequest(

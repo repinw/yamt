@@ -77,6 +77,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
     required ConsumedUnit unit,
     required DateTime selectedAt,
     String? globalFoodItemId,
+    String? label,
   }) async {
     final currentUserId = _currentUserId?.trim();
     if (currentUserId == null || currentUserId.isEmpty || amount <= 0) {
@@ -87,6 +88,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
     if (normalizedAmount <= 0) {
       return;
     }
+    final normalizedLabel = _readOptionalString(label);
 
     final fingerprintKey = buildFingerprintServingItemKey(foodFingerprint);
     final globalKey = buildGlobalServingItemKey(globalFoodItemId);
@@ -95,39 +97,50 @@ class FirestoreGlobalFoodServingSuggestionRepository
     }
 
     final nowText = selectedAt.toIso8601String();
-    final preferenceDocuments =
-        <DocumentReference<Map<String, dynamic>>, Map<String, dynamic>>{
-          if (fingerprintKey != null)
-            _userDocument(
-              userId: currentUserId,
-              collectionName: _prefsCollection,
-              documentId: fingerprintKey,
-            ): _buildPreferenceData(
-              itemKey: fingerprintKey,
-              globalFoodItemId: globalKey == null ? null : globalFoodItemId,
-              foodFingerprint: foodFingerprint,
-              amount: normalizedAmount,
-              unit: unit,
-              updatedAtText: nowText,
-            ),
-          if (globalKey != null)
-            _userDocument(
-              userId: currentUserId,
-              collectionName: _prefsCollection,
-              documentId: globalKey,
-            ): _buildPreferenceData(
-              itemKey: globalKey,
-              globalFoodItemId: globalFoodItemId,
-              foodFingerprint: foodFingerprint,
-              amount: normalizedAmount,
-              unit: unit,
-              updatedAtText: nowText,
-            ),
-        };
+    final preferenceTargets = <_PreferenceWriteTarget>[
+      if (fingerprintKey != null)
+        _PreferenceWriteTarget(
+          document: _userDocument(
+            userId: currentUserId,
+            collectionName: _prefsCollection,
+            documentId: fingerprintKey,
+          ),
+          itemKey: fingerprintKey,
+          globalFoodItemId: globalKey == null ? null : globalFoodItemId,
+          foodFingerprint: foodFingerprint,
+        ),
+      if (globalKey != null)
+        _PreferenceWriteTarget(
+          document: _userDocument(
+            userId: currentUserId,
+            collectionName: _prefsCollection,
+            documentId: globalKey,
+          ),
+          itemKey: globalKey,
+          globalFoodItemId: globalFoodItemId,
+          foodFingerprint: foodFingerprint,
+        ),
+    ];
 
     if (globalKey == null) {
-      for (final entry in preferenceDocuments.entries) {
-        await entry.key.set(entry.value);
+      for (final target in preferenceTargets) {
+        final label = await _resolvePreferenceLabel(
+          document: target.document,
+          amount: normalizedAmount,
+          unit: unit,
+          newLabel: normalizedLabel,
+        );
+        await target.document.set(
+          _buildPreferenceData(
+            itemKey: target.itemKey,
+            globalFoodItemId: target.globalFoodItemId,
+            foodFingerprint: target.foodFingerprint,
+            amount: normalizedAmount,
+            unit: unit,
+            label: label,
+            updatedAtText: nowText,
+          ),
+        );
       }
       return;
     }
@@ -149,6 +162,28 @@ class FirestoreGlobalFoodServingSuggestionRepository
       final voteSnapshot = await transaction.get(voteRef);
       final currentData =
           suggestionSnapshot.data() ?? const <String, dynamic>{};
+      final preferenceDataByDocument =
+          <DocumentReference<Map<String, dynamic>>, Map<String, dynamic>>{};
+      for (final target in preferenceTargets) {
+        final preferenceSnapshot = normalizedLabel == null
+            ? await transaction.get(target.document)
+            : null;
+        final label = _resolvePreferenceLabelFromData(
+          data: preferenceSnapshot?.data(),
+          amount: normalizedAmount,
+          unit: unit,
+          newLabel: normalizedLabel,
+        );
+        preferenceDataByDocument[target.document] = _buildPreferenceData(
+          itemKey: target.itemKey,
+          globalFoodItemId: target.globalFoodItemId,
+          foodFingerprint: target.foodFingerprint,
+          amount: normalizedAmount,
+          unit: unit,
+          label: label,
+          updatedAtText: nowText,
+        );
+      }
       final selectionCount = _readPositiveInt(currentData['selection_count']);
       final uniqueUserCount = _readPositiveInt(
         currentData['unique_user_count'],
@@ -158,7 +193,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
           (uniqueUserCount ?? 0) + (voteSnapshot.exists ? 0 : 1);
       final globalId = globalFoodItemId?.trim();
 
-      for (final entry in preferenceDocuments.entries) {
+      for (final entry in preferenceDataByDocument.entries) {
         transaction.set(entry.key, entry.value);
       }
 
@@ -238,6 +273,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
     return ServingSizeSuggestion(
       amount: amount,
       unit: ConsumedUnit.fromJsonValue(newestData['unit'] as String?),
+      label: _readOptionalString(newestData['label']),
     );
   }
 
@@ -315,6 +351,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
     required ConsumedUnit unit,
     required String updatedAtText,
     String? globalFoodItemId,
+    String? label,
   }) {
     return <String, dynamic>{
       'item_key': itemKey,
@@ -322,9 +359,42 @@ class FirestoreGlobalFoodServingSuggestionRepository
       'food_fingerprint': foodFingerprint.trim(),
       'amount': amount,
       'unit': unit.jsonValue,
+      'label': label,
       'updated_at': updatedAtText,
     };
   }
+
+  Future<String?> _resolvePreferenceLabel({
+    required DocumentReference<Map<String, dynamic>> document,
+    required double amount,
+    required ConsumedUnit unit,
+    required String? newLabel,
+  }) async {
+    if (newLabel != null) {
+      return newLabel;
+    }
+    final snapshot = await document.get();
+    return _resolvePreferenceLabelFromData(
+      data: snapshot.data(),
+      amount: amount,
+      unit: unit,
+      newLabel: newLabel,
+    );
+  }
+}
+
+class _PreferenceWriteTarget {
+  const _PreferenceWriteTarget({
+    required this.document,
+    required this.itemKey,
+    required this.foodFingerprint,
+    required this.globalFoodItemId,
+  });
+
+  final DocumentReference<Map<String, dynamic>> document;
+  final String itemKey;
+  final String foodFingerprint;
+  final String? globalFoodItemId;
 }
 
 int? _readPositiveInt(Object? value) {
@@ -341,4 +411,38 @@ double? _readPositiveDouble(Object? value) {
 
 DateTime? _readDateTime(Object? value) {
   return readDateTime(value);
+}
+
+String? _readOptionalString(Object? value) {
+  if (value is! String) {
+    return null;
+  }
+  final trimmed = value.trim();
+  if (trimmed.isEmpty) {
+    return null;
+  }
+  return trimmed;
+}
+
+String? _resolvePreferenceLabelFromData({
+  required Map<String, dynamic>? data,
+  required double amount,
+  required ConsumedUnit unit,
+  required String? newLabel,
+}) {
+  if (newLabel != null) {
+    return newLabel;
+  }
+  if (data == null) {
+    return null;
+  }
+  final existingAmount = _readPositiveDouble(data['amount']);
+  if (existingAmount == null || existingAmount != amount) {
+    return null;
+  }
+  final existingUnit = ConsumedUnit.fromJsonValue(data['unit'] as String?);
+  if (existingUnit != unit) {
+    return null;
+  }
+  return _readOptionalString(data['label']);
 }

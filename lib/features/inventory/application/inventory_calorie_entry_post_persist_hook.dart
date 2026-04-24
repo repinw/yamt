@@ -23,12 +23,49 @@ final inventoryCalorieEntryPostPersistHookProvider =
         if (inventoryContext == null || entry.consumedAmount <= 0) {
           return;
         }
+        final learnedServing = _resolveLearnedServing(
+          entry: entry,
+          inventoryContext: inventoryContext,
+        );
         await repository.recordSelection(
           foodFingerprint: inventoryContext.foodFingerprint,
           globalFoodItemId: inventoryContext.globalFoodItemId,
-          amount: entry.consumedAmount,
-          unit: entry.consumedUnit,
+          amount: learnedServing.amount,
+          unit: learnedServing.unit,
+          label: learnedServing.label,
           selectedAt: entry.updatedAt,
         );
       };
     });
+
+({double amount, ConsumedUnit unit, String? label}) _resolveLearnedServing({
+  required CalorieEntry entry,
+  required CalorieInventoryCreateContext inventoryContext,
+}) {
+  final baseAmount = inventoryContext.portionBaseAmount;
+  final baseUnit = inventoryContext.portionBaseUnit;
+  final count = inventoryContext.portionCount;
+  if (baseAmount == null || baseUnit == null || count == null) {
+    return (
+      amount: entry.consumedAmount,
+      unit: entry.consumedUnit,
+      label: null,
+    );
+  }
+
+  final expectedAmount = baseAmount * count;
+  final amountChanged = (entry.consumedAmount - expectedAmount).abs() > 0.001;
+  if (entry.consumedUnit != baseUnit || amountChanged) {
+    return (
+      amount: entry.consumedAmount,
+      unit: entry.consumedUnit,
+      label: null,
+    );
+  }
+
+  return (
+    amount: baseAmount,
+    unit: baseUnit,
+    label: inventoryContext.portionLabel,
+  );
+}

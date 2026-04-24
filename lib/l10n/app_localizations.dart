@@ -887,6 +887,60 @@ abstract class AppLocalizations {
   /// **'All/Rest'**
   String get inventoryAmountDialogAllRemainingAction;
 
+  /// No description provided for @inventoryItemEatSheetPortionModeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Portions'**
+  String get inventoryItemEatSheetPortionModeTitle;
+
+  /// No description provided for @inventoryItemEatSheetUsePortionsToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use portion count'**
+  String get inventoryItemEatSheetUsePortionsToggle;
+
+  /// No description provided for @inventoryItemEatSheetPortionLabelFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion label'**
+  String get inventoryItemEatSheetPortionLabelFieldLabel;
+
+  /// No description provided for @inventoryItemEatSheetPortionCountFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get inventoryItemEatSheetPortionCountFieldLabel;
+
+  /// No description provided for @inventoryItemEatSheetPortionAmountFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount per portion'**
+  String get inventoryItemEatSheetPortionAmountFieldLabel;
+
+  /// No description provided for @inventoryItemEatSheetDecreasePortionCountAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease portions'**
+  String get inventoryItemEatSheetDecreasePortionCountAction;
+
+  /// No description provided for @inventoryItemEatSheetIncreasePortionCountAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase portions'**
+  String get inventoryItemEatSheetIncreasePortionCountAction;
+
+  /// No description provided for @inventoryItemEatSheetDefaultPortionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion'**
+  String get inventoryItemEatSheetDefaultPortionLabel;
+
+  /// No description provided for @inventoryItemEatSheetPortionTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total: {amount} {unit}'**
+  String inventoryItemEatSheetPortionTotalLabel(String amount, String unit);
+
   /// No description provided for @inventoryItemEatSheetInedibleAmountLabel.
   ///
   /// In en, this message translates to:

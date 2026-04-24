@@ -167,6 +167,25 @@
   "inventoryItemEatSheetQuickSelectLabel": "Schnellwahl",
   "inventoryItemEatSheetAllAction": "Alles",
   "inventoryAmountDialogAllRemainingAction": "Alles/Rest",
+  "inventoryItemEatSheetPortionModeTitle": "Portionen",
+  "inventoryItemEatSheetUsePortionsToggle": "Portionsanzahl verwenden",
+  "inventoryItemEatSheetPortionLabelFieldLabel": "Portionsname",
+  "inventoryItemEatSheetPortionCountFieldLabel": "Anzahl",
+  "inventoryItemEatSheetPortionAmountFieldLabel": "Menge pro Portion",
+  "inventoryItemEatSheetDecreasePortionCountAction": "Portionen verringern",
+  "inventoryItemEatSheetIncreasePortionCountAction": "Portionen erhöhen",
+  "inventoryItemEatSheetDefaultPortionLabel": "Portion",
+  "inventoryItemEatSheetPortionTotalLabel": "Gesamt: {amount} {unit}",
+  "@inventoryItemEatSheetPortionTotalLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
   "inventoryItemEatSheetInedibleAmountLabel":
       "Nicht essbaren Anteil abziehen",
   "inventoryItemEatSheetInedibleAmountHint":

@@ -130,6 +130,7 @@ void main() {
       servingQuantityUnit: 'kg',
     );
     final clItem = _amountItem(
+      unit: InventoryAmountUnit.milliliter,
       servingQuantity: 12.5,
       servingQuantityUnit: 'cl',
     );
