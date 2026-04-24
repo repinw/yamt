@@ -15,31 +15,79 @@ class ServingSuggestionResolution {
     required this.portionDefaultSuggestion,
   });
 
-  /// Documented member.
-  final List<({String label, int value})> inventoryServingOptions;
+  /// Inventory amount quick options.
+  final List<InventoryServingOption> inventoryServingOptions;
 
-  /// Documented member.
-  final List<
-    ({String label, double amount, ConsumedUnit unit, String? portionLabel})
-  >
-  manualServingSuggestions;
+  /// Suggested servings for manual calorie amount input.
+  final List<PortionSuggestion> manualServingSuggestions;
 
   /// Suggested portions for multiplier input.
-  final List<
-    ({String label, double amount, ConsumedUnit unit, String? portionLabel})
-  >
-  portionSuggestions;
+  final List<PortionSuggestion> portionSuggestions;
 
   /// The inventory default amount.
   final int? inventoryDefaultAmount;
 
-  /// Final.
-  final ({double amount, ConsumedUnit unit, String? portionLabel})?
-  manualDefaultSuggestion;
+  /// The default manual serving suggestion.
+  final PortionSuggestion? manualDefaultSuggestion;
 
   /// The default portion suggestion.
-  final ({double amount, ConsumedUnit unit, String? portionLabel})?
-  portionDefaultSuggestion;
+  final PortionSuggestion? portionDefaultSuggestion;
+}
+
+/// Inventory amount quick option.
+class InventoryServingOption {
+  /// The inventory serving option.
+  const InventoryServingOption({required this.label, required this.value});
+
+  /// User-facing label.
+  final String label;
+
+  /// Inventory amount value in the item's storage scale.
+  final int value;
+}
+
+/// Portion suggestion with display and learning metadata.
+class PortionSuggestion {
+  /// The portion suggestion.
+  const PortionSuggestion({
+    required this.label,
+    required this.amount,
+    required this.unit,
+    this.portionLabel,
+  });
+
+  /// User-facing suggestion label.
+  final String label;
+
+  /// Base amount per portion.
+  final double amount;
+
+  /// Unit for [amount].
+  final ConsumedUnit unit;
+
+  /// User-facing portion name, for example "slice" or "can".
+  final String? portionLabel;
+}
+
+class _InventoryServingCandidate {
+  const _InventoryServingCandidate({
+    required this.label,
+    required this.amount,
+    required this.unit,
+    this.portionLabel,
+  });
+
+  final String label;
+  final double amount;
+  final InventoryAmountUnit unit;
+  final String? portionLabel;
+}
+
+class _ServingAmount {
+  const _ServingAmount({required this.amount, required this.unit});
+
+  final double amount;
+  final InventoryAmountUnit unit;
 }
 
 /// Defines serving suggestion resolver.
@@ -67,14 +115,7 @@ class ServingSuggestionResolver {
     );
     final manualServingSuggestions = requiresManualPortion
         ? portionSuggestions
-        : const <
-            ({
-              String label,
-              double amount,
-              ConsumedUnit unit,
-              String? portionLabel,
-            })
-          >[];
+        : const <PortionSuggestion>[];
 
     final inventoryDefault = _resolveInventoryDefault(
       item: item,
@@ -120,8 +161,7 @@ class ServingSuggestionResolver {
     return value;
   }
 
-  ({double amount, ConsumedUnit unit, String? portionLabel})?
-  _resolveManualDefault({
+  PortionSuggestion? _resolveManualDefault({
     required GlobalFoodServingSuggestionSet learned,
     required bool requiresManualPortion,
   }) {
@@ -132,22 +172,31 @@ class ServingSuggestionResolver {
     if (suggestion == null) {
       return null;
     }
-    return (
+    return PortionSuggestion(
+      label: _formatLearnedServingLabel(
+        amount: suggestion.amount,
+        unit: suggestion.unit,
+        portionLabel: suggestion.label,
+      ),
       amount: suggestion.amount,
       unit: suggestion.unit,
       portionLabel: suggestion.label,
     );
   }
 
-  ({double amount, ConsumedUnit unit, String? portionLabel})?
-  _resolvePortionDefault({
+  PortionSuggestion? _resolvePortionDefault({
     required InventoryItem item,
     required GlobalFoodServingSuggestionSet learned,
   }) {
     final learnedSuggestion = learned.defaultSuggestion;
     if (learnedSuggestion != null &&
         _canUsePortionSuggestionForItem(item, learnedSuggestion.unit)) {
-      return (
+      return PortionSuggestion(
+        label: _formatLearnedServingLabel(
+          amount: learnedSuggestion.amount,
+          unit: learnedSuggestion.unit,
+          portionLabel: learnedSuggestion.label,
+        ),
         amount: learnedSuggestion.amount,
         unit: learnedSuggestion.unit,
         portionLabel: learnedSuggestion.label,
@@ -162,23 +211,24 @@ class ServingSuggestionResolver {
     if (unit == null) {
       return null;
     }
-    return (
+    return PortionSuggestion(
+      label: structured.label,
       amount: structured.amount,
       unit: unit,
       portionLabel: structured.portionLabel,
     );
   }
 
-  List<({String label, int value})> _inventoryServingSuggestions({
+  List<InventoryServingOption> _inventoryServingSuggestions({
     required InventoryItem item,
     required GlobalFoodServingSuggestionSet learned,
     required int maxAmount,
   }) {
     if (!item.usesAmountProgress || item.amountUnit == null) {
-      return const <({String label, int value})>[];
+      return const <InventoryServingOption>[];
     }
 
-    final options = <({String label, int value})>[];
+    final options = <InventoryServingOption>[];
     final seenValues = <int>{};
 
     for (final suggestion in _buildLearnedInventoryServingSuggestions(
@@ -193,7 +243,9 @@ class ServingSuggestionResolver {
       if (value < 1 || value > maxAmount || !seenValues.add(value)) {
         continue;
       }
-      options.add((label: suggestion.label, value: value));
+      options.add(
+        InventoryServingOption(label: suggestion.label, value: value),
+      );
     }
 
     final structured = _resolvedServingSuggestion(item);
@@ -202,27 +254,20 @@ class ServingSuggestionResolver {
         _isWholeNumber(structured.amount)) {
       final value = structured.amount.round();
       if (value >= 1 && value <= maxAmount && seenValues.add(value)) {
-        options.add((label: structured.label, value: value));
+        options.add(
+          InventoryServingOption(label: structured.label, value: value),
+        );
       }
     }
 
     return options;
   }
 
-  List<({String label, double amount, ConsumedUnit unit, String? portionLabel})>
-  _portionServingSuggestions({
+  List<PortionSuggestion> _portionServingSuggestions({
     required InventoryItem item,
     required GlobalFoodServingSuggestionSet learned,
   }) {
-    final suggestions =
-        <
-          ({
-            String label,
-            double amount,
-            ConsumedUnit unit,
-            String? portionLabel,
-          })
-        >[];
+    final suggestions = <PortionSuggestion>[];
     final seenKeys = <String>{};
 
     final personal = learned.personalSuggestion;
@@ -233,16 +278,18 @@ class ServingSuggestionResolver {
         unit: personal.unit,
       );
       if (seenKeys.add(key)) {
-        suggestions.add((
-          label: _formatLearnedServingLabel(
+        suggestions.add(
+          PortionSuggestion(
+            label: _formatLearnedServingLabel(
+              amount: personal.amount,
+              unit: personal.unit,
+              portionLabel: personal.label,
+            ),
             amount: personal.amount,
             unit: personal.unit,
             portionLabel: personal.label,
           ),
-          amount: personal.amount,
-          unit: personal.unit,
-          portionLabel: personal.label,
-        ));
+        );
       }
     }
 
@@ -257,16 +304,18 @@ class ServingSuggestionResolver {
       if (!seenKeys.add(key)) {
         continue;
       }
-      suggestions.add((
-        label: _formatLearnedServingLabel(
+      suggestions.add(
+        PortionSuggestion(
+          label: _formatLearnedServingLabel(
+            amount: suggestion.amount,
+            unit: suggestion.unit,
+            portionLabel: suggestion.label,
+          ),
           amount: suggestion.amount,
           unit: suggestion.unit,
           portionLabel: suggestion.label,
         ),
-        amount: suggestion.amount,
-        unit: suggestion.unit,
-        portionLabel: suggestion.label,
-      ));
+      );
     }
 
     final structured = _resolvedServingSuggestion(item);
@@ -279,12 +328,14 @@ class ServingSuggestionResolver {
           unit: consumedUnit,
         );
         if (seenKeys.add(key)) {
-          suggestions.add((
-            label: structured.label,
-            amount: structured.amount,
-            unit: consumedUnit,
-            portionLabel: structured.portionLabel,
-          ));
+          suggestions.add(
+            PortionSuggestion(
+              label: structured.label,
+              amount: structured.amount,
+              unit: consumedUnit,
+              portionLabel: structured.portionLabel,
+            ),
+          );
         }
       }
     }
@@ -292,40 +343,26 @@ class ServingSuggestionResolver {
     return suggestions.take(5).toList(growable: false);
   }
 
-  List<
-    ({
-      String label,
-      double amount,
-      InventoryAmountUnit unit,
-      String? portionLabel,
-    })
-  >
-  _buildLearnedInventoryServingSuggestions({
+  List<_InventoryServingCandidate> _buildLearnedInventoryServingSuggestions({
     required GlobalFoodServingSuggestionSet learned,
   }) {
-    final suggestions =
-        <
-          ({
-            String label,
-            double amount,
-            InventoryAmountUnit unit,
-            String? portionLabel,
-          })
-        >[];
+    final suggestions = <_InventoryServingCandidate>[];
     final personal = learned.personalSuggestion;
     if (personal != null) {
       final inventoryUnit = _inventoryUnitForConsumedUnit(personal.unit);
       if (inventoryUnit != null) {
-        suggestions.add((
-          label: _formatLearnedServingLabel(
+        suggestions.add(
+          _InventoryServingCandidate(
+            label: _formatLearnedServingLabel(
+              amount: personal.amount,
+              unit: personal.unit,
+              portionLabel: personal.label,
+            ),
             amount: personal.amount,
-            unit: personal.unit,
+            unit: inventoryUnit,
             portionLabel: personal.label,
           ),
-          amount: personal.amount,
-          unit: inventoryUnit,
-          portionLabel: personal.label,
-        ));
+        );
       }
     }
 
@@ -334,27 +371,23 @@ class ServingSuggestionResolver {
       if (inventoryUnit == null) {
         continue;
       }
-      suggestions.add((
-        label: _formatLearnedServingLabel(
+      suggestions.add(
+        _InventoryServingCandidate(
+          label: _formatLearnedServingLabel(
+            amount: suggestion.amount,
+            unit: suggestion.unit,
+            portionLabel: suggestion.label,
+          ),
           amount: suggestion.amount,
-          unit: suggestion.unit,
+          unit: inventoryUnit,
           portionLabel: suggestion.label,
         ),
-        amount: suggestion.amount,
-        unit: inventoryUnit,
-        portionLabel: suggestion.label,
-      ));
+      );
     }
     return suggestions;
   }
 
-  ({
-    String label,
-    double amount,
-    InventoryAmountUnit unit,
-    String? portionLabel,
-  })?
-  _resolvedServingSuggestion(InventoryItem item) {
+  _InventoryServingCandidate? _resolvedServingSuggestion(InventoryItem item) {
     final structuredSuggestion = _suggestionFromStructuredServing(item);
     if (structuredSuggestion != null &&
         !_matchesPackageWeight(item, structuredSuggestion)) {
@@ -374,7 +407,7 @@ class ServingSuggestionResolver {
       return null;
     }
 
-    final suggestion = (
+    final suggestion = _InventoryServingCandidate(
       label: servingSize,
       amount: parsed.amount.toDouble(),
       unit: parsed.unit,
@@ -386,13 +419,9 @@ class ServingSuggestionResolver {
     return suggestion;
   }
 
-  ({
-    String label,
-    double amount,
-    InventoryAmountUnit unit,
-    String? portionLabel,
-  })?
-  _suggestionFromStructuredServing(InventoryItem item) {
+  _InventoryServingCandidate? _suggestionFromStructuredServing(
+    InventoryItem item,
+  ) {
     final quantity = item.servingQuantity;
     final unit = item.servingQuantityUnit;
     if (quantity == null || unit == null || quantity <= 0) {
@@ -401,22 +430,35 @@ class ServingSuggestionResolver {
 
     final normalizedUnit = unit.trim().toLowerCase();
     final converted = switch (normalizedUnit) {
-      'g' ||
-      'gr' ||
-      'gram' ||
-      'grams' => (amount: quantity, unit: InventoryAmountUnit.gram),
-      'kg' ||
-      'kilogram' ||
-      'kilograms' => (amount: quantity * 1000, unit: InventoryAmountUnit.gram),
-      'mg' => (amount: quantity / 1000, unit: InventoryAmountUnit.gram),
-      'ml' => (amount: quantity, unit: InventoryAmountUnit.milliliter),
-      'cl' => (amount: quantity * 10, unit: InventoryAmountUnit.milliliter),
-      'dl' => (amount: quantity * 100, unit: InventoryAmountUnit.milliliter),
-      'l' || 'liter' || 'liters' || 'litre' || 'litres' => (
+      'g' || 'gr' || 'gram' || 'grams' => _ServingAmount(
+        amount: quantity,
+        unit: InventoryAmountUnit.gram,
+      ),
+      'kg' || 'kilogram' || 'kilograms' => _ServingAmount(
+        amount: quantity * 1000,
+        unit: InventoryAmountUnit.gram,
+      ),
+      'mg' => _ServingAmount(
+        amount: quantity / 1000,
+        unit: InventoryAmountUnit.gram,
+      ),
+      'ml' => _ServingAmount(
+        amount: quantity,
+        unit: InventoryAmountUnit.milliliter,
+      ),
+      'cl' => _ServingAmount(
+        amount: quantity * 10,
+        unit: InventoryAmountUnit.milliliter,
+      ),
+      'dl' => _ServingAmount(
+        amount: quantity * 100,
+        unit: InventoryAmountUnit.milliliter,
+      ),
+      'l' || 'liter' || 'liters' || 'litre' || 'litres' => _ServingAmount(
         amount: quantity * 1000,
         unit: InventoryAmountUnit.milliliter,
       ),
-      'pc' || 'piece' || 'pieces' || 'st' || 'stk' => (
+      'pc' || 'piece' || 'pieces' || 'st' || 'stk' => _ServingAmount(
         amount: quantity * inventoryPieceAmountScale,
         unit: InventoryAmountUnit.piece,
       ),
@@ -426,7 +468,7 @@ class ServingSuggestionResolver {
       return null;
     }
 
-    return (
+    return _InventoryServingCandidate(
       label: item.servingSize ?? _formatServingLabel(converted),
       amount: converted.amount,
       unit: converted.unit,
@@ -436,13 +478,7 @@ class ServingSuggestionResolver {
 
   bool _matchesPackageWeight(
     InventoryItem item,
-    ({
-      String label,
-      double amount,
-      InventoryAmountUnit unit,
-      String? portionLabel,
-    })
-    suggestion,
+    _InventoryServingCandidate suggestion,
   ) {
     final weight = item.weight;
     if (weight == null) {
@@ -464,9 +500,7 @@ class ServingSuggestionResolver {
     return normalizedWeight.isNotEmpty && normalizedWeight == normalizedServing;
   }
 
-  String _formatServingLabel(
-    ({double amount, InventoryAmountUnit unit}) serving,
-  ) {
+  String _formatServingLabel(_ServingAmount serving) {
     final code = serving.unit.code;
     final value = serving.unit == InventoryAmountUnit.piece
         ? formatInventoryAmountValue(
@@ -542,6 +576,9 @@ class ServingSuggestionResolver {
         .trim();
     if (withoutLeadingCount.isEmpty ||
         withoutLeadingCount.contains(RegExp(r'\d'))) {
+      return null;
+    }
+    if (!withoutLeadingCount.contains(RegExp(r'[A-Za-zÀ-ÖØ-öø-ÿ]'))) {
       return null;
     }
 

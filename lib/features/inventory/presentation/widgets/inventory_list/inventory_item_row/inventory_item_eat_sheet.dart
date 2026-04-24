@@ -12,14 +12,14 @@ import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_serving_suggestion_repository.dart';
-import 'package:yamt/features/inventory/application/'
-    'inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/application/serving_suggestion_resolver.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_item_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_request.dart';
@@ -32,6 +32,7 @@ part 'inventory_item_eat_sheet_display.dart';
 part 'inventory_item_eat_sheet_hero.dart';
 part 'inventory_item_eat_sheet_input_sections.dart';
 part 'inventory_item_eat_sheet_models.dart';
+part 'inventory_item_new_portion_dialog.dart';
 part 'inventory_item_eat_sheet_view.dart';
 
 /// Show inventory item eat sheet.
@@ -82,6 +83,7 @@ class _InventoryItemEatSheetState
   static const _inventoryAmountModeId = 'inventory';
   static const _newPortionAmountModeId = 'new_portion';
 
+  late final InventoryItemEatSheetController _eatController;
   late final TextEditingController _inventoryAmountController;
   late final FocusNode _inventoryAmountFocusNode = FocusNode();
   late final TextEditingController _inedibleAmountController =
@@ -117,47 +119,31 @@ class _InventoryItemEatSheetState
   }
 
   bool get _requiresManualCaloriePortion {
-    return inventoryItemRequiresManualCaloriePortion(widget.item);
+    return _eatController.requiresManualCaloriePortion;
   }
 
   bool get _supportsInedibleAmountAdjustment {
-    return inventoryItemUsesFixedCalorieUnit(widget.item);
+    return _eatController.supportsInedibleAmountAdjustment;
   }
 
   List<ConsumedUnit> get _availablePortionUnits {
-    final fixedUnit = inventoryItemConsumedUnit(widget.item);
-    if (fixedUnit != null) {
-      return <ConsumedUnit>[fixedUnit];
-    }
-    return const <ConsumedUnit>[
-      ConsumedUnit.grams,
-      ConsumedUnit.milliliters,
-    ];
+    return _eatController.availablePortionUnits;
   }
 
   bool get _canUsePortions {
-    return widget.item.nutrition?.hasAnyNutritionValue == true;
+    return _eatController.canUsePortions;
   }
 
   InventoryAmountUnit get _inventoryAmountUnit {
-    if (widget.item.usesAmountProgress && widget.item.amountUnit != null) {
-      return widget.item.amountUnit!;
-    }
-    return InventoryAmountUnit.piece;
+    return _eatController.inventoryAmountUnit;
   }
 
   int get _inventoryAmountScale {
-    if (widget.item.usesAmountProgress) {
-      return widget.item.amountScale;
-    }
-    return 1;
+    return _eatController.inventoryAmountScale;
   }
 
   bool get _allowsFractionalInventoryAmount {
-    return inventoryAmountAllowsFractionalInput(
-      unit: _inventoryAmountUnit,
-      scale: _inventoryAmountScale,
-    );
+    return _eatController.allowsFractionalInventoryAmount;
   }
 
   TextEditingController get _activeAmountController {
@@ -173,32 +159,21 @@ class _InventoryItemEatSheetState
   }
 
   int get _defaultInventoryAmount {
-    final defaultAmount = _allowsFractionalInventoryAmount
-        ? _inventoryAmountScale
-        : 1;
-    final amount = widget.initialInventoryAmount;
-    if (amount == null || amount < 1) {
-      if (defaultAmount > widget.maxAmount) {
-        return widget.maxAmount;
-      }
-      return defaultAmount;
-    }
-    if (amount > widget.maxAmount) {
-      return widget.maxAmount;
-    }
-    return amount;
+    return _eatController.defaultInventoryAmount(
+      widget.initialInventoryAmount,
+    );
   }
 
   @override
   void initState() {
     super.initState();
+    _eatController = InventoryItemEatSheetController(
+      item: widget.item,
+      maxAmount: widget.maxAmount,
+    );
     _selectedPortionUnit = _availablePortionUnits.first;
     _inventoryAmountController = TextEditingController(
-      text: formatInventoryAmountValue(
-        amount: _defaultInventoryAmount,
-        unit: _inventoryAmountUnit,
-        scale: _inventoryAmountScale,
-      ),
+      text: _eatController.formatInventoryAmount(_defaultInventoryAmount),
     );
     _inventoryAmountFocusNode.addListener(_selectAllInventoryAmount);
     _inedibleAmountFocusNode.addListener(_selectAllInedibleAmount);
@@ -343,14 +318,17 @@ class _InventoryItemEatSheetState
     return widget.item.amountUnit!.localizedName(l10n);
   }
 
-  List<({String label, int value})> _buildQuickOptions(
+  List<InventoryServingOption> _buildQuickOptions(
     AppLocalizations l10n,
     String? unitLabel,
-    List<({String label, int value})> servingOptions,
+    List<InventoryServingOption> servingOptions,
   ) {
     final values = <int>{widget.maxAmount};
-    final options = <({String label, int value})>[
-      (label: l10n.inventoryItemEatSheetAllAction, value: widget.maxAmount),
+    final options = <InventoryServingOption>[
+      InventoryServingOption(
+        label: l10n.inventoryItemEatSheetAllAction,
+        value: widget.maxAmount,
+      ),
     ];
     for (final suggestion in servingOptions) {
       if (values.add(suggestion.value)) {
@@ -379,7 +357,7 @@ class _InventoryItemEatSheetState
                   unit: _inventoryAmountUnit,
                   scale: _inventoryAmountScale,
                 )} $unitLabel';
-          options.add((label: label, value: value));
+          options.add(InventoryServingOption(label: label, value: value));
         }
         return options;
       }
@@ -387,7 +365,12 @@ class _InventoryItemEatSheetState
         if (value >= widget.maxAmount || !values.add(value)) {
           continue;
         }
-        options.add((label: '$value${unitLabel ?? ''}', value: value));
+        options.add(
+          InventoryServingOption(
+            label: '$value${unitLabel ?? ''}',
+            value: value,
+          ),
+        );
       }
       return options;
     }
@@ -396,42 +379,32 @@ class _InventoryItemEatSheetState
       if (value >= widget.maxAmount || !values.add(value)) {
         continue;
       }
-      options.add((label: '$value', value: value));
+      options.add(InventoryServingOption(label: '$value', value: value));
     }
     return options;
   }
 
-  List<({String label, int value})> _buildPortionCountQuickOptions(
+  List<InventoryServingOption> _buildPortionCountQuickOptions(
     AppLocalizations l10n,
   ) {
     final label = _portionLabelForDisplay(l10n);
     return [
       for (final value in const [1, 2, 3])
-        (label: '$value $label', value: value),
+        InventoryServingOption(label: '$value $label', value: value),
     ];
   }
 
   int? _selectedQuickAmount() {
-    if (_usesPortionMode) {
-      final count = _parsePositiveAmount(_portionCountController.text);
-      if (count == null || !_isWholeNumber(count)) {
-        return null;
-      }
-      return count.round();
-    }
-    return parseInventoryAmountInput(
-      rawValue: _inventoryAmountController.text,
-      unit: _inventoryAmountUnit,
-      scale: _inventoryAmountScale,
+    return _eatController.selectedQuickAmount(
+      usesPortionMode: _usesPortionMode,
+      inventoryAmountText: _inventoryAmountController.text,
+      portionCountText: _portionCountController.text,
     );
   }
 
   List<_InventoryItemEatAmountModeOption> _buildAmountModeOptions(
     AppLocalizations l10n,
-    List<
-      ({String label, double amount, ConsumedUnit unit, String? portionLabel})
-    >
-    portionSuggestions,
+    List<PortionSuggestion> portionSuggestions,
   ) {
     final options = <_InventoryItemEatAmountModeOption>[
       _InventoryItemEatAmountModeOption(
@@ -475,7 +448,9 @@ class _InventoryItemEatSheetState
     if (!_usesPortionMode) {
       return null;
     }
-    final amount = _parsePositiveAmount(_portionAmountController.text);
+    final amount = _eatController.parsePositiveAmount(
+      _portionAmountController.text,
+    );
     if (amount == null) {
       return null;
     }
@@ -539,32 +514,18 @@ class _InventoryItemEatSheetState
   }
 
   String _inventoryAmountModeLabel(AppLocalizations l10n) {
-    return switch (_inventoryAmountUnit) {
-      InventoryAmountUnit.gram => l10n.inventoryItemEatSheetUnitGram,
-      InventoryAmountUnit.milliliter =>
-        l10n.inventoryItemEatSheetUnitMilliliter,
-      InventoryAmountUnit.piece => l10n.inventoryItemEatSheetUnitPiece,
-    };
+    return _eatController.inventoryAmountModeLabel(l10n);
   }
 
   String _portionLabelForDisplay(AppLocalizations l10n) {
-    final label = _portionLabelController.text.trim();
-    if (label.isEmpty) {
-      return _defaultPortionLabel(l10n);
-    }
-    return label;
+    return _eatController.portionLabelForDisplay(
+      l10n: l10n,
+      rawLabel: _portionLabelController.text,
+    );
   }
 
   String _defaultPortionLabel(AppLocalizations l10n) {
-    if (_requiresManualCaloriePortion &&
-        _inventoryAmountUnit == InventoryAmountUnit.piece) {
-      return l10n.inventoryItemEatSheetUnitPiece;
-    }
-    return l10n.inventoryItemEatSheetDefaultPortionLabel;
-  }
-
-  bool _isWholeNumber(double value) {
-    return (value - value.roundToDouble()).abs() < 0.001;
+    return _eatController.defaultPortionLabel(l10n);
   }
 
   ServingSuggestionResolution _resolveServingResolution() {
@@ -602,9 +563,7 @@ class _InventoryItemEatSheetState
     );
   }
 
-  void _applyPortionDefault(
-    ({double amount, ConsumedUnit unit, String? portionLabel}) suggestion,
-  ) {
+  void _applyPortionDefault(PortionSuggestion suggestion) {
     _usesPortionMode = true;
     _portionAmountController.text = formatInventoryNutritionValue(
       suggestion.amount,
@@ -692,10 +651,8 @@ class _InventoryItemEatSheetState
   void _selectInventoryAmount(int amount) {
     _didManuallyEditInventoryAmount = true;
     _updateState(() {
-      _inventoryAmountController.text = formatInventoryAmountValue(
-        amount: amount,
-        unit: _inventoryAmountUnit,
-        scale: _inventoryAmountScale,
+      _inventoryAmountController.text = _eatController.formatInventoryAmount(
+        amount,
       );
       _inventoryAmountErrorText = null;
     });
@@ -835,81 +792,32 @@ class _InventoryItemEatSheetState
   }
 
   ConsumedUnit _normalizePortionUnit(ConsumedUnit unit) {
-    final availableUnits = _availablePortionUnits;
-    if (availableUnits.contains(unit)) {
-      return unit;
-    }
-    return availableUnits.first;
+    return _eatController.normalizePortionUnit(unit);
   }
 
   void _syncAmountsFromPortionInput() {
-    final portion = _parsePortionInput();
-    if (portion == null) {
-      return;
-    }
-    final inventoryAmount = _resolveInventoryAmountFromPortion(
-      count: portion.count,
-      totalAmount: portion.totalAmount,
-      unit: portion.unit,
+    final inventoryAmount = _eatController.inventoryAmountFromPortionInput(
+      usesPortionMode: _usesPortionMode,
+      countText: _portionCountController.text,
+      amountText: _portionAmountController.text,
+      unit: _selectedPortionUnit,
     );
     if (inventoryAmount == null) {
       return;
     }
 
-    _inventoryAmountController.text = formatInventoryAmountValue(
-      amount: inventoryAmount,
-      unit: _inventoryAmountUnit,
-      scale: _inventoryAmountScale,
+    _inventoryAmountController.text = _eatController.formatInventoryAmount(
+      inventoryAmount,
     );
   }
 
-  ({double count, double baseAmount, double totalAmount, ConsumedUnit unit})?
-  _parsePortionInput() {
-    if (!_usesPortionMode) {
-      return null;
-    }
-    final count = _parsePositiveAmount(_portionCountController.text);
-    final baseAmount = _parsePositiveAmount(_portionAmountController.text);
-    if (count == null || baseAmount == null) {
-      return null;
-    }
-    return (
-      count: count,
-      baseAmount: baseAmount,
-      totalAmount: count * baseAmount,
+  InventoryItemEatPortionInput? _parsePortionInput() {
+    return _eatController.parsePortionInput(
+      usesPortionMode: _usesPortionMode,
+      countText: _portionCountController.text,
+      amountText: _portionAmountController.text,
       unit: _selectedPortionUnit,
     );
-  }
-
-  int? _resolveInventoryAmountFromPortion({
-    required double count,
-    required double totalAmount,
-    required ConsumedUnit unit,
-  }) {
-    final inventoryUnit = _inventoryUnitForConsumedUnit(unit);
-    if (inventoryItemUsesFixedCalorieUnit(widget.item)) {
-      if (inventoryUnit != _inventoryAmountUnit) {
-        return null;
-      }
-      final rounded = totalAmount.round();
-      if ((totalAmount - rounded).abs() > 0.001) {
-        return null;
-      }
-      return rounded;
-    }
-
-    return parseInventoryAmountInput(
-      rawValue: formatInventoryNutritionValue(count),
-      unit: _inventoryAmountUnit,
-      scale: _inventoryAmountScale,
-    );
-  }
-
-  InventoryAmountUnit? _inventoryUnitForConsumedUnit(ConsumedUnit unit) {
-    return switch (unit) {
-      ConsumedUnit.grams => InventoryAmountUnit.gram,
-      ConsumedUnit.milliliters => InventoryAmountUnit.milliliter,
-    };
   }
 
   String? _portionTotalLabel(AppLocalizations l10n) {
@@ -930,40 +838,31 @@ class _InventoryItemEatSheetState
     if (_usesPortionMode) {
       return _portionTotalLabel(l10n);
     }
-    final amount = parseInventoryAmountInput(
-      rawValue: _inventoryAmountController.text,
-      unit: _inventoryAmountUnit,
-      scale: _inventoryAmountScale,
+    final amount = _eatController.parseInventoryAmount(
+      _inventoryAmountController.text,
     );
     if (amount == null) {
       return null;
     }
     return l10n.inventoryItemEatSheetPortionTotalLabel(
-      formatInventoryAmountValue(
-        amount: amount,
-        unit: _inventoryAmountUnit,
-        scale: _inventoryAmountScale,
-      ),
+      _eatController.formatInventoryAmount(amount),
       _inventoryAmountUnit.code,
     );
   }
 
   String _inedibleAmountSummary(AppLocalizations l10n) {
     final rawAmount = _inedibleAmountController.text.trim();
-    final parsedAmount = _parseNonNegativeAmount(rawAmount);
+    final parsedAmount = _eatController.parseNonNegativeAmount(rawAmount);
     final amountLabel = formatInventoryNutritionValue(parsedAmount ?? 0);
     return '${l10n.inventoryItemEatSheetInedibleAmountHint} '
         '($amountLabel${_inventoryAmountUnit.code})';
   }
 
   String? _normalizedPortionLabel(AppLocalizations l10n) {
-    final label = _portionLabelController.text.trim();
-    if (label.isEmpty ||
-        label == _defaultPortionLabel(l10n) ||
-        label == l10n.inventoryItemEatSheetDefaultPortionLabel) {
-      return null;
-    }
-    return label;
+    return _eatController.normalizedPortionLabel(
+      l10n: l10n,
+      rawLabel: _portionLabelController.text,
+    );
   }
 
   void _selectMealType(MealType mealType) {
@@ -991,10 +890,8 @@ class _InventoryItemEatSheetState
   }
 
   Future<void> _promptForPortionFromInventoryInput() async {
-    final inventoryAmount = parseInventoryAmountInput(
-      rawValue: _inventoryAmountController.text,
-      unit: _inventoryAmountUnit,
-      scale: _inventoryAmountScale,
+    final inventoryAmount = _eatController.parseInventoryAmount(
+      _inventoryAmountController.text,
     );
     if (inventoryAmount == null ||
         inventoryAmount < 1 ||
@@ -1007,10 +904,8 @@ class _InventoryItemEatSheetState
 
     _didManuallyEditPortion = true;
     _updateState(() {
-      _portionCountController.text = formatInventoryAmountValue(
-        amount: inventoryAmount,
-        unit: _inventoryAmountUnit,
-        scale: _inventoryAmountScale,
+      _portionCountController.text = _eatController.formatInventoryAmount(
+        inventoryAmount,
       );
       _portionCountErrorText = null;
       _portionAmountErrorText = null;
@@ -1019,103 +914,42 @@ class _InventoryItemEatSheetState
   }
 
   void _submit() {
-    final rawInventoryAmount = parseInventoryAmountInput(
-      rawValue: _inventoryAmountController.text,
-      unit: _inventoryAmountUnit,
-      scale: _inventoryAmountScale,
+    final draft = _eatController.buildSubmissionDraft(
+      usesPortionMode: _usesPortionMode,
+      inventoryAmountText: _inventoryAmountController.text,
+      portionCountText: _portionCountController.text,
+      portionAmountText: _portionAmountController.text,
+      portionUnit: _selectedPortionUnit,
+      inedibleAmountText: _inedibleAmountController.text,
     );
-    final portionCount = _usesPortionMode
-        ? _parsePositiveAmount(_portionCountController.text)
-        : null;
-    final portionBaseAmount = _usesPortionMode
-        ? _parsePositiveAmount(_portionAmountController.text)
-        : null;
-    final portionTotalAmount = portionCount != null && portionBaseAmount != null
-        ? portionCount * portionBaseAmount
-        : null;
-    final portionInventoryAmount = portionTotalAmount == null
-        ? null
-        : _resolveInventoryAmountFromPortion(
-            count: portionCount!,
-            totalAmount: portionTotalAmount,
-            unit: _selectedPortionUnit,
-          );
-    final inventoryAmount = _usesPortionMode
-        ? portionInventoryAmount
-        : rawInventoryAmount;
-    final isInventoryAmountValid =
-        inventoryAmount != null &&
-        inventoryAmount >= 1 &&
-        inventoryAmount <= widget.maxAmount;
-    final rawInedibleAmount = _inedibleAmountController.text.trim();
-    final inedibleAmount = _parseNonNegativeAmount(rawInedibleAmount);
-    final hasInvalidInedibleAmount =
-        rawInedibleAmount.isNotEmpty && inedibleAmount == null;
-    final hasTooLargeInedibleAmount =
-        inventoryAmount != null &&
-        inedibleAmount != null &&
-        inedibleAmount >= inventoryAmount;
-    final needsManualCalorieAmount =
-        _requiresManualCaloriePortion && !_usesPortionMode;
-    final hasInvalidPortionCount = _usesPortionMode && portionCount == null;
-    final hasInvalidPortionAmount =
-        _usesPortionMode && portionBaseAmount == null;
 
-    if (!isInventoryAmountValid ||
-        hasInvalidPortionCount ||
-        hasInvalidPortionAmount ||
-        hasInvalidInedibleAmount ||
-        hasTooLargeInedibleAmount) {
-      final l10n = AppLocalizations.of(context)!;
-      _updateState(() {
-        if (!isInventoryAmountValid) {
-          _inventoryAmountErrorText = widget.invalidAmountMessage;
-        }
-        if (hasInvalidInedibleAmount) {
-          _inedibleAmountErrorText = l10n.caloriesNonNegativeNumberValidation;
-        } else if (hasTooLargeInedibleAmount) {
-          _inedibleAmountErrorText =
-              l10n.inventoryItemEatSheetInedibleAmountError;
-        }
-        if (hasInvalidInedibleAmount || hasTooLargeInedibleAmount) {
-          _isInedibleAmountExpanded = true;
-        }
-        if (hasInvalidPortionCount) {
-          _portionCountErrorText = l10n.caloriesPositiveNumberValidation;
-        }
-        if (hasInvalidPortionAmount) {
-          _portionAmountErrorText = l10n.caloriesPositiveNumberValidation;
-        }
-      });
+    if (draft.hasValidationErrors) {
+      _applySubmitValidationErrors(draft);
       return;
     }
 
-    if (needsManualCalorieAmount) {
+    if (draft.needsManualCalorieAmount) {
       unawaited(_promptForPortionFromInventoryInput());
       return;
     }
 
-    final confirmedInventoryAmount = inventoryAmount;
-    final fixedUnitCalorieAmount = _resolveFixedUnitCalorieAmount(
-      inventoryAmount: confirmedInventoryAmount,
-      inedibleAmount: inedibleAmount,
-    );
+    final confirmedInventoryAmount = draft.inventoryAmount!;
     Navigator.of(context).pop(
       InventoryItemEatRequest(
         inventoryAmount: confirmedInventoryAmount,
         loggedAt: _selectedLoggedAt,
         mealType: _selectedMealType,
         calorieAmount: _requiresManualCaloriePortion
-            ? portionTotalAmount!
-            : fixedUnitCalorieAmount,
+            ? draft.portionTotalAmount!
+            : draft.fixedUnitCalorieAmount,
         calorieUnit: _requiresManualCaloriePortion
             ? _selectedPortionUnit
-            : fixedUnitCalorieAmount == null
+            : draft.fixedUnitCalorieAmount == null
             ? null
-            : inventoryItemConsumedUnit(widget.item),
-        portionBaseAmount: _usesPortionMode ? portionBaseAmount! : null,
+            : _eatController.fixedCalorieUnit,
+        portionBaseAmount: _usesPortionMode ? draft.portionBaseAmount! : null,
         portionBaseUnit: _usesPortionMode ? _selectedPortionUnit : null,
-        portionCount: _usesPortionMode ? portionCount! : null,
+        portionCount: _usesPortionMode ? draft.portionCount! : null,
         portionLabel: _usesPortionMode
             ? _normalizedPortionLabel(AppLocalizations.of(context)!)
             : null,
@@ -1123,90 +957,41 @@ class _InventoryItemEatSheetState
     );
   }
 
+  void _applySubmitValidationErrors(
+    InventoryItemEatSubmissionDraft draft,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    _updateState(() {
+      if (draft.hasInvalidInventoryAmount) {
+        _inventoryAmountErrorText = widget.invalidAmountMessage;
+      }
+      if (draft.hasInvalidInedibleAmount) {
+        _inedibleAmountErrorText = l10n.caloriesNonNegativeNumberValidation;
+      } else if (draft.hasTooLargeInedibleAmount) {
+        _inedibleAmountErrorText =
+            l10n.inventoryItemEatSheetInedibleAmountError;
+      }
+      if (draft.hasInvalidInedibleAmount || draft.hasTooLargeInedibleAmount) {
+        _isInedibleAmountExpanded = true;
+      }
+      if (draft.hasInvalidPortionCount) {
+        _portionCountErrorText = l10n.caloriesPositiveNumberValidation;
+      }
+      if (draft.hasInvalidPortionAmount) {
+        _portionAmountErrorText = l10n.caloriesPositiveNumberValidation;
+      }
+    });
+  }
+
   double? _resolvedNutritionAmount() {
-    if (_usesPortionMode) {
-      final portion = _parsePortionInput();
-      if (portion == null) {
-        return null;
-      }
-      if (_supportsInedibleAmountAdjustment) {
-        final rawInedibleAmount = _inedibleAmountController.text.trim();
-        final inedibleAmount = _parseNonNegativeAmount(rawInedibleAmount);
-        if (rawInedibleAmount.isNotEmpty && inedibleAmount == null) {
-          return null;
-        }
-        final consumedAmount = portion.totalAmount - (inedibleAmount ?? 0);
-        return consumedAmount <= 0 ? null : consumedAmount;
-      }
-      return portion.totalAmount;
-    }
-
-    if (_requiresManualCaloriePortion) {
-      return null;
-    }
-
-    final inventoryAmount = parseInventoryAmountInput(
-      rawValue: _inventoryAmountController.text,
-      unit: _inventoryAmountUnit,
-      scale: _inventoryAmountScale,
+    return _eatController.resolvedNutritionAmount(
+      usesPortionMode: _usesPortionMode,
+      portionCountText: _portionCountController.text,
+      portionAmountText: _portionAmountController.text,
+      portionUnit: _selectedPortionUnit,
+      inventoryAmountText: _inventoryAmountController.text,
+      inedibleAmountText: _inedibleAmountController.text,
     );
-    if (inventoryAmount == null || inventoryAmount < 1) {
-      return null;
-    }
-
-    final rawInedibleAmount = _inedibleAmountController.text.trim();
-    final inedibleAmount = _parseNonNegativeAmount(rawInedibleAmount);
-    if (rawInedibleAmount.isNotEmpty && inedibleAmount == null) {
-      return null;
-    }
-
-    return _resolveConsumedAmount(
-      inventoryAmount: inventoryAmount,
-      inedibleAmount: inedibleAmount,
-    );
-  }
-
-  double? _resolveFixedUnitCalorieAmount({
-    required int inventoryAmount,
-    required double? inedibleAmount,
-  }) {
-    if (inedibleAmount == null || inedibleAmount <= 0) {
-      return null;
-    }
-
-    return _resolveConsumedAmount(
-      inventoryAmount: inventoryAmount,
-      inedibleAmount: inedibleAmount,
-    );
-  }
-
-  double? _resolveConsumedAmount({
-    required int inventoryAmount,
-    required double? inedibleAmount,
-  }) {
-    final consumedAmount = inventoryAmount - (inedibleAmount ?? 0);
-    if (consumedAmount <= 0) {
-      return null;
-    }
-    return consumedAmount.toDouble();
-  }
-
-  double? _parsePositiveAmount(String rawValue) {
-    final normalized = rawValue.trim().replaceAll(',', '.');
-    final parsed = double.tryParse(normalized);
-    if (parsed == null || parsed <= 0) {
-      return null;
-    }
-    return parsed;
-  }
-
-  double? _parseNonNegativeAmount(String rawValue) {
-    final normalized = rawValue.trim().replaceAll(',', '.');
-    final parsed = double.tryParse(normalized);
-    if (parsed == null || parsed < 0) {
-      return null;
-    }
-    return parsed;
   }
 
   void _selectAllInventoryAmount() {
@@ -1281,165 +1066,4 @@ class _InventoryItemEatSheetState
       );
     });
   }
-}
-
-class _NewPortionDialog extends StatefulWidget {
-  const _NewPortionDialog({
-    required this.initialLabel,
-    required this.initialAmount,
-    required this.initialUnit,
-    required this.availableUnits,
-  });
-
-  final String initialLabel;
-  final String initialAmount;
-  final ConsumedUnit initialUnit;
-  final List<ConsumedUnit> availableUnits;
-
-  @override
-  State<_NewPortionDialog> createState() => _NewPortionDialogState();
-}
-
-class _NewPortionDialogState extends State<_NewPortionDialog> {
-  final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _labelController;
-  late final TextEditingController _amountController;
-  late ConsumedUnit _selectedUnit;
-
-  @override
-  void initState() {
-    super.initState();
-    _labelController = TextEditingController(text: widget.initialLabel);
-    _amountController = TextEditingController(text: widget.initialAmount);
-    _selectedUnit = widget.availableUnits.contains(widget.initialUnit)
-        ? widget.initialUnit
-        : widget.availableUnits.first;
-  }
-
-  @override
-  void dispose() {
-    _labelController.dispose();
-    _amountController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return AlertDialog(
-      title: Text(l10n.inventoryItemEatSheetNewPortionTitle),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              key: const Key('inventory_item_portion_label_field'),
-              controller: _labelController,
-              textInputAction: TextInputAction.next,
-              decoration: InputDecoration(
-                labelText: l10n.inventoryItemEatSheetPortionLabelFieldLabel,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            TextFormField(
-              key: const Key('inventory_item_portion_amount_field'),
-              controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              textInputAction: TextInputAction.done,
-              decoration: InputDecoration(
-                labelText: l10n.inventoryItemEatSheetPortionAmountFieldLabel,
-              ),
-              validator: (value) {
-                final amount = _parsePositiveAmount(value ?? '');
-                if (amount == null) {
-                  return l10n.caloriesPositiveNumberValidation;
-                }
-                return null;
-              },
-              onFieldSubmitted: (_) => _submit(l10n),
-            ),
-            if (widget.availableUnits.length > 1) ...[
-              const SizedBox(height: AppSpacing.lg),
-              DropdownButtonFormField<ConsumedUnit>(
-                key: const Key('inventory_item_portion_unit_field'),
-                initialValue: _selectedUnit,
-                items: [
-                  for (final unit in widget.availableUnits)
-                    DropdownMenuItem<ConsumedUnit>(
-                      value: unit,
-                      child: Text(unit.localizedName(l10n)),
-                    ),
-                ],
-                onChanged: (value) {
-                  if (value == null) {
-                    return;
-                  }
-                  setState(() {
-                    _selectedUnit = value;
-                  });
-                },
-              ),
-            ],
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.inventoryReceiptReviewCancelAction),
-        ),
-        FilledButton(
-          onPressed: () => _submit(l10n),
-          child: Text(l10n.inventoryItemEatSheetSavePortionAction),
-        ),
-      ],
-    );
-  }
-
-  void _submit(AppLocalizations l10n) {
-    final formState = _formKey.currentState;
-    if (formState == null || !formState.validate()) {
-      return;
-    }
-
-    final amount = _parsePositiveAmount(_amountController.text);
-    if (amount == null) {
-      return;
-    }
-
-    final label = _labelController.text.trim();
-    final defaultLabel = l10n.inventoryItemEatSheetDefaultPortionLabel;
-    Navigator.of(context).pop(
-      _NewPortionDialogResult(
-        amount: amount,
-        unit: _selectedUnit,
-        label: label.isEmpty || label == defaultLabel ? null : label,
-      ),
-    );
-  }
-
-  double? _parsePositiveAmount(String rawValue) {
-    final normalized = rawValue.trim().replaceAll(',', '.');
-    final parsed = double.tryParse(normalized);
-    if (parsed == null || parsed <= 0) {
-      return null;
-    }
-    return parsed;
-  }
-}
-
-class _NewPortionDialogResult {
-  const _NewPortionDialogResult({
-    required this.amount,
-    required this.unit,
-    required this.label,
-  });
-
-  final double amount;
-  final ConsumedUnit unit;
-  final String? label;
 }

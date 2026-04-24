@@ -62,7 +62,7 @@ class _InventoryItemEatSheetAmountSectionData {
   final String? errorText;
   final int? selectedAmount;
   final bool allowFractionalInput;
-  final List<({String label, int value})> quickOptions;
+  final List<InventoryServingOption> quickOptions;
   final ValueChanged<String> onChanged;
   final VoidCallback onClearAndFocus;
   final VoidCallback onSubmitted;
@@ -111,10 +111,7 @@ class _InventoryItemEatSheetManualPortionSectionData {
   final FocusNode focusNode;
   final String? errorText;
   final ConsumedUnit selectedUnit;
-  final List<
-    ({String label, double amount, ConsumedUnit unit, String? portionLabel})
-  >
-  suggestions;
+  final List<PortionSuggestion> suggestions;
   final ValueChanged<String> onAmountChanged;
   final ValueChanged<ConsumedUnit> onUnitChanged;
   final VoidCallback onSubmitted;
