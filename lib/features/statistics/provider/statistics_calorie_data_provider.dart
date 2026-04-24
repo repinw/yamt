@@ -46,6 +46,7 @@ statisticsCalorieDataProvider =
           settings: settings,
           startDate: startDate,
           endDate: today,
+          shouldIncludeDay: (day) => !settings.isGoalPracticeDay(day),
         );
       } on Object catch (error, stackTrace) {
         log(

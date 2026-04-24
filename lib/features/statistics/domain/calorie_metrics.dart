@@ -1,6 +1,9 @@
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 
+/// Decides whether a calendar day should be included in calorie statistics.
+typedef StatisticsCalorieDayFilter = bool Function(DateTime day);
+
 /// Defines statistics macro type.
 enum StatisticsMacroType {
   /// Carbs.
@@ -97,11 +100,15 @@ class StatisticsCalorieSnapshot {
 }
 
 /// Build statistics calorie snapshot.
+///
+/// [shouldIncludeDay] can remove consequence-free practice days from all
+/// aggregates while keeping the underlying diary entries untouched.
 StatisticsCalorieSnapshot buildStatisticsCalorieSnapshot({
   required List<CalorieEntry> entries,
   required CalorieGoalSettings settings,
   required DateTime startDate,
   required DateTime endDate,
+  StatisticsCalorieDayFilter? shouldIncludeDay,
 }) {
   final normalizedStart = _normalizeDay(startDate);
   final normalizedEnd = _normalizeDay(endDate);
@@ -123,6 +130,10 @@ StatisticsCalorieSnapshot buildStatisticsCalorieSnapshot({
 
   var cursor = normalizedStart;
   while (!cursor.isAfter(safeEnd)) {
+    if (shouldIncludeDay != null && !shouldIncludeDay(cursor)) {
+      cursor = cursor.add(const Duration(days: 1));
+      continue;
+    }
     final dayEntries = entriesByDay[_dayKey(cursor)] ?? const <CalorieEntry>[];
     final totalDayKcal = dayEntries.fold<double>(
       0,
