@@ -452,6 +452,16 @@ class CalorieGoalSettings {
     return entry;
   }
 
+  /// Whether the day is a consequence-free practice day for an active goal.
+  bool isGoalPracticeDay(DateTime day) {
+    final normalizedDay = normalizeDiaryDay(day);
+    final entry = goalEntryForDay(normalizedDay);
+    if (entry?.hasGoal != true) {
+      return nextGoalStartAfterDay(normalizedDay) != null;
+    }
+    return entry!.effectiveCountingStartDate.isAfter(normalizedDay);
+  }
+
   /// Next official counting start after day.
   DateTime? nextGoalStartAfterDay(DateTime day) {
     final normalizedDay = normalizeDiaryDay(day);
