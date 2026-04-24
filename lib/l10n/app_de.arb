@@ -1122,35 +1122,6 @@
   "caloriesWorkoutsMinuteUnit": "Min",
   "caloriesWeekBufferTitle": "Wochenbilanz",
   "caloriesWeekBalanceTodayLabel": "Heu",
-  "caloriesWeekBalanceSaved": "Seit Zielstart {kcal} kcal gespart.",
-  "@caloriesWeekBalanceSaved": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesWeekBalanceOverspent":
-      "Seit Zielstart {kcal} kcal überschritten.",
-  "@caloriesWeekBalanceOverspent": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesWeekBalanceStable": "Seit Zielstart ausgeglichen.",
-  "caloriesWeekBalanceStartsLater":
-      "Dieser Tag zählt noch nicht. Du kannst Tracking testen, und Burn Week plus der Wochen-Check-in starten am {date}.",
-  "@caloriesWeekBalanceStartsLater": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "caloriesWeekBalanceStartedToday":
-      "Dein Zielstart ist heute. Die Bilanz baut sich ab jetzt auf.",
   "caloriesHealthTrendsPageTitle": "Gesundheitstrends",
   "caloriesHealthTrendsChartTitle": "7-Tage-Gesundheitschart",
   "caloriesHealthTrendsChartSubtitle":

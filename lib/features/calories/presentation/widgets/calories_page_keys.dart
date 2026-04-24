@@ -27,14 +27,6 @@ abstract final class CaloriesPageKeys {
   /// The week balance chart.
   static const weekBalanceChart = Key('calories_week_balance_chart');
 
-  /// The week balance summary.
-  static const weekBalanceSummary = Key('calories_week_balance_summary');
-
-  /// The week balance summary icon.
-  static const weekBalanceSummaryIcon = Key(
-    'calories_week_balance_summary_icon',
-  );
-
   /// The summary card.
   static const summaryCard = Key('calories_summary_card');
 

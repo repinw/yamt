@@ -1080,36 +1080,6 @@
   "caloriesWorkoutsMinuteUnit": "min",
   "caloriesWeekBufferTitle": "Weekly balance",
   "caloriesWeekBalanceTodayLabel": "Today",
-  "caloriesWeekBalanceSaved":
-      "You saved {kcal} kcal since your goal started.",
-  "@caloriesWeekBalanceSaved": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesWeekBalanceOverspent":
-      "You went over by {kcal} kcal since your goal started.",
-  "@caloriesWeekBalanceOverspent": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "caloriesWeekBalanceStable": "Balanced since your goal started.",
-  "caloriesWeekBalanceStartsLater":
-      "This day is not counted yet. You can try tracking, and Burn Week plus the weekly check-in start on {date}.",
-  "@caloriesWeekBalanceStartsLater": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "caloriesWeekBalanceStartedToday":
-      "Your goal starts today. The balance will build up from here.",
   "caloriesHealthTrendsPageTitle": "Health trends",
   "caloriesHealthTrendsChartTitle": "7-day health chart",
   "caloriesHealthTrendsChartSubtitle":

@@ -3881,36 +3881,6 @@ abstract class AppLocalizations {
   /// **'Today'**
   String get caloriesWeekBalanceTodayLabel;
 
-  /// No description provided for @caloriesWeekBalanceSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'You saved {kcal} kcal since your goal started.'**
-  String caloriesWeekBalanceSaved(int kcal);
-
-  /// No description provided for @caloriesWeekBalanceOverspent.
-  ///
-  /// In en, this message translates to:
-  /// **'You went over by {kcal} kcal since your goal started.'**
-  String caloriesWeekBalanceOverspent(int kcal);
-
-  /// No description provided for @caloriesWeekBalanceStable.
-  ///
-  /// In en, this message translates to:
-  /// **'Balanced since your goal started.'**
-  String get caloriesWeekBalanceStable;
-
-  /// No description provided for @caloriesWeekBalanceStartsLater.
-  ///
-  /// In en, this message translates to:
-  /// **'This day is not counted yet. You can try tracking, and Burn Week plus the weekly check-in start on {date}.'**
-  String caloriesWeekBalanceStartsLater(String date);
-
-  /// No description provided for @caloriesWeekBalanceStartedToday.
-  ///
-  /// In en, this message translates to:
-  /// **'Your goal starts today. The balance will build up from here.'**
-  String get caloriesWeekBalanceStartedToday;
-
   /// No description provided for @caloriesHealthTrendsPageTitle.
   ///
   /// In en, this message translates to:

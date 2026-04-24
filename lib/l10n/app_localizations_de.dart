@@ -1988,27 +1988,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeekBalanceTodayLabel => 'Heu';
 
   @override
-  String caloriesWeekBalanceSaved(int kcal) {
-    return 'Seit Zielstart $kcal kcal gespart.';
-  }
-
-  @override
-  String caloriesWeekBalanceOverspent(int kcal) {
-    return 'Seit Zielstart $kcal kcal überschritten.';
-  }
-
-  @override
-  String get caloriesWeekBalanceStable => 'Seit Zielstart ausgeglichen.';
-
-  @override
-  String caloriesWeekBalanceStartsLater(String date) {
-    return 'Dieser Tag zählt noch nicht. Du kannst Tracking testen, und Burn Week plus der Wochen-Check-in starten am $date.';
-  }
-
-  @override
-  String get caloriesWeekBalanceStartedToday => 'Dein Zielstart ist heute. Die Bilanz baut sich ab jetzt auf.';
-
-  @override
   String get caloriesHealthTrendsPageTitle => 'Gesundheitstrends';
 
   @override
