@@ -48,7 +48,7 @@ CalorieEntry _entry(
 
 void main() {
   test(
-    'calorieBalanceSummary starts at zero before the eating window',
+    'calorieBalanceSummary paces from start of the full day',
     () async {
       final now = DateTime(2026, 4, 10, 5, 30);
       final day = normalizeDiaryDay(now);
@@ -88,13 +88,13 @@ void main() {
         calorieBalanceSummaryProvider.future,
       );
 
-      expect(summary.paceRatio, 0.0);
-      expect(summary.pacedGoalKcal, 0.0);
+      expect(summary.paceRatio, closeTo(5.5 / 24, 0.0001));
+      expect(summary.pacedGoalKcal, closeTo(458.333, 0.001));
     },
   );
 
   test(
-    'calorieBalanceSummary uses the eating-window midpoint for pacing',
+    'calorieBalanceSummary uses full-day elapsed time for pacing',
     () async {
       final now = DateTime(2026, 4, 10, 14);
       final day = normalizeDiaryDay(now);
@@ -127,54 +127,13 @@ void main() {
         calorieBalanceSummaryProvider.future,
       );
 
-      expect(summary.paceRatio, closeTo(0.5, 0.0001));
-      expect(summary.pacedGoalKcal, closeTo(1000, 0.001));
+      expect(summary.paceRatio, closeTo(14 / 24, 0.0001));
+      expect(summary.pacedGoalKcal, closeTo(1166.667, 0.001));
     },
   );
 
   test(
-    'calorieBalanceSummary uses a custom eating window for pacing',
-    () async {
-      final now = DateTime(2026, 4, 10, 15);
-      final day = normalizeDiaryDay(now);
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: _historyEntries(day),
-      );
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 2000,
-          calculatorProfile: null,
-          effectiveDate: day.subtract(const Duration(days: 6)),
-          eatingWindowStartMinuteOfDay: 9 * 60,
-          eatingWindowEndMinuteOfDay: 21 * 60,
-        ),
-      );
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
-
-      final container = ProviderContainer(
-        overrides: [
-          calorieLogRepositoryProvider.overrideWithValue(logRepository),
-          calorieSettingsRepositoryProvider.overrideWithValue(
-            settingsRepository,
-          ),
-          calorieBalanceNowProvider.overrideWithValue(() => now),
-        ],
-      );
-      addTearDown(container.dispose);
-      container.read(calorieDayControllerProvider.notifier).setDay(day);
-
-      final summary = await container.read(
-        calorieBalanceSummaryProvider.future,
-      );
-
-      expect(summary.paceRatio, closeTo(0.5, 0.0001));
-      expect(summary.pacedGoalKcal, closeTo(1000, 0.001));
-    },
-  );
-
-  test(
-    'calorieBalanceSummary is fully paced after the eating window',
+    'calorieBalanceSummary keeps pacing late in the full day',
     () async {
       final now = DateTime(2026, 4, 10, 22, 30);
       final day = normalizeDiaryDay(now);
@@ -207,13 +166,13 @@ void main() {
         calorieBalanceSummaryProvider.future,
       );
 
-      expect(summary.paceRatio, 1.0);
-      expect(summary.pacedGoalKcal, 2000);
+      expect(summary.paceRatio, closeTo(22.5 / 24, 0.0001));
+      expect(summary.pacedGoalKcal, closeTo(1875, 0.001));
     },
   );
 
   test(
-    'calorieBalanceSummary stays at zero exactly at eating window start',
+    'calorieBalanceSummary paces six hours into the full day',
     () async {
       final now = DateTime(2026, 4, 10, 6);
       final day = normalizeDiaryDay(now);
@@ -246,13 +205,13 @@ void main() {
         calorieBalanceSummaryProvider.future,
       );
 
-      expect(summary.paceRatio, 0.0);
-      expect(summary.pacedGoalKcal, 0.0);
+      expect(summary.paceRatio, closeTo(0.25, 0.0001));
+      expect(summary.pacedGoalKcal, closeTo(500, 0.001));
     },
   );
 
   test(
-    'calorieBalanceSummary is fully paced exactly at eating window end',
+    'calorieBalanceSummary paces twenty-two hours into the full day',
     () async {
       final now = DateTime(2026, 4, 10, 22);
       final day = normalizeDiaryDay(now);
@@ -285,8 +244,8 @@ void main() {
         calorieBalanceSummaryProvider.future,
       );
 
-      expect(summary.paceRatio, 1.0);
-      expect(summary.pacedGoalKcal, 2000);
+      expect(summary.paceRatio, closeTo(22 / 24, 0.0001));
+      expect(summary.pacedGoalKcal, closeTo(1833.333, 0.001));
     },
   );
 
@@ -337,13 +296,13 @@ void main() {
       );
 
       expect(summary.carryoverKcal, 200);
-      expect(summary.paceRatio, closeTo(0.5, 0.0001));
-      expect(summary.pacedGoalKcal, closeTo(1200, 0.001));
+      expect(summary.paceRatio, closeTo(14 / 24, 0.0001));
+      expect(summary.pacedGoalKcal, closeTo(1366.667, 0.001));
     },
   );
 
   test(
-    'calorieBalanceSummary excludes past activity bonus from carryover',
+    'calorieBalanceSummary includes past activity bonus in spread carryover',
     () async {
       final now = DateTime(2026, 4, 10, 14);
       final day = normalizeDiaryDay(now);
@@ -362,6 +321,8 @@ void main() {
           dailyKcalGoal: 2000,
           calculatorProfile: null,
           effectiveDate: yesterday,
+          expectedActivityKcal: 0,
+          activityTrackingStartDate: yesterday,
         ),
       );
       addTearDown(logRepository.dispose);
@@ -407,7 +368,7 @@ void main() {
         calorieBalanceSummaryProvider.future,
       );
 
-      expect(summary.carryoverKcal, 500);
+      expect(summary.carryoverKcal, closeTo(166.667, 0.001));
     },
   );
 
@@ -448,13 +409,13 @@ void main() {
 
     expect(summary.baseGoalKcal, closeTo(2000, 0.001));
     expect(summary.flexibleGoalKcal, closeTo(2000, 0.001));
-    expect(summary.paceRatio, closeTo(13 / 16, 0.0001));
-    expect(summary.pacedGoalKcal, closeTo(1625, 0.001));
+    expect(summary.paceRatio, closeTo(19 / 24, 0.0001));
+    expect(summary.pacedGoalKcal, closeTo(1583.333, 0.001));
   });
 
   test(
-    'calorieBalanceSummary carries the full first-day deficit '
-    'into the next day',
+    'calorieBalanceSummary spreads the first-day deficit '
+    'across remaining run days',
     () async {
       final now = DateTime(2026, 4, 10, 14);
       final selectedDay = DateTime(2026, 4, 9);
@@ -496,9 +457,9 @@ void main() {
 
       expect(summary.balanceStartDate, cycleStartDay);
       expect(summary.baseGoalKcal, 2136);
-      expect(summary.carryoverKcal, closeTo(1402, 0.001));
-      expect(summary.flexibleGoalKcal, closeTo(3538, 0.001));
-      expect(summary.pacedGoalKcal, closeTo(3538, 0.001));
+      expect(summary.carryoverKcal, closeTo(233.667, 0.001));
+      expect(summary.flexibleGoalKcal, closeTo(2369.667, 0.001));
+      expect(summary.pacedGoalKcal, closeTo(2369.667, 0.001));
     },
   );
 
@@ -552,9 +513,9 @@ void main() {
       );
 
       expect(summary.balanceStartDate, cycleStartDay);
-      expect(summary.carryoverKcal, closeTo(-300, 0.001));
-      expect(summary.flexibleGoalKcal, closeTo(1700, 0.001));
-      expect(summary.pacedGoalKcal, closeTo(1700, 0.001));
+      expect(summary.carryoverKcal, closeTo(-60, 0.001));
+      expect(summary.flexibleGoalKcal, closeTo(1940, 0.001));
+      expect(summary.pacedGoalKcal, closeTo(1940, 0.001));
     },
   );
 
@@ -604,9 +565,9 @@ void main() {
       );
 
       expect(summary.isCurrentDay, isFalse);
-      expect(summary.carryoverKcal, 200);
-      expect(summary.flexibleGoalKcal, 2200);
-      expect(summary.pacedGoalKcal, 2200);
+      expect(summary.carryoverKcal, 100);
+      expect(summary.flexibleGoalKcal, 2100);
+      expect(summary.pacedGoalKcal, 2100);
     },
   );
 
@@ -647,7 +608,7 @@ void main() {
 
       expect(summary.carryoverKcal, 12000);
       expect(summary.flexibleGoalKcal, 14000);
-      expect(summary.pacedGoalKcal, 13000);
+      expect(summary.pacedGoalKcal, closeTo(13166.667, 0.001));
     },
   );
 

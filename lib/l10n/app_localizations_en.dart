@@ -1295,21 +1295,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesGoalStartSaveFailed => 'Could not update goal start.';
 
   @override
-  String get caloriesEatingWindowDialogTitle => 'Set eating window';
-
-  @override
-  String get caloriesEatingWindowStartLabel => 'Start';
-
-  @override
-  String get caloriesEatingWindowEndLabel => 'End';
-
-  @override
-  String get caloriesEatingWindowInvalidRange => 'The end time must be later than the start time.';
-
-  @override
-  String get caloriesEatingWindowSaveFailed => 'Could not update the eating window.';
-
-  @override
   String get caloriesCalculatorSheetTitle => 'Calorie calculator';
 
   @override
@@ -1486,12 +1471,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesCalculatorOnboardingCatchUpHint => 'We place you safely into today\'s buffer zone.';
 
   @override
-  String get caloriesCalculatorEatingWindowLabel => 'Eating window';
-
-  @override
-  String get caloriesCalculatorEatingWindowHint => 'Used to pace today\'s diary balance throughout the day.';
-
-  @override
   String caloriesCalculatorMinimumGoalWarning(int minimumKcal) {
     return 'For weight loss, the daily target cannot go below $minimumKcal kcal. The result was capped at this minimum.';
   }
@@ -1501,6 +1480,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesCalculatorSaveFailed => 'Could not save the calculated calorie target.';
+
+  @override
+  String get caloriesGoalStartFoodTrackingTitle => 'Did you track today\'s food?';
+
+  @override
+  String caloriesGoalStartFoodTrackingBody(int entryCount) {
+    return 'I found $entryCount food entries today. Count today as a full tracking day for this new target?';
+  }
+
+  @override
+  String get caloriesGoalStartNoFoodTrackingTitle => 'No food tracked today';
+
+  @override
+  String get caloriesGoalStartNoFoodTrackingBody => 'Today will be a starter day. Your new target starts now, but weekly learning starts tomorrow.';
+
+  @override
+  String get caloriesGoalStartFoodTrackingNoAction => 'Start fresh';
+
+  @override
+  String get caloriesGoalStartFoodTrackingYesAction => 'Count today';
+
+  @override
+  String get caloriesGoalStartFoodTrackingOkAction => 'OK';
 
   @override
   String get caloriesLearnedTdeeSheetTitle => 'Recalculate from learned TDEE';
@@ -1548,7 +1550,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesActivityVsUsualLabel => 'Activity vs usual';
 
   @override
-  String get caloriesActivityWorkoutBonusLabel => 'Workout bonus';
+  String get caloriesActivityWorkoutBonusLabel => 'Activity bonus';
 
   @override
   String get caloriesActivityLearningHint => 'We are still learning your activity pattern.';
@@ -1757,10 +1759,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calorieBudgetDetailsClassicTitle => 'Classic details';
 
   @override
-  String get calorieBudgetDetailsClassicExplanation => 'Classic starts with your saved daily target. Optional switches add today\'s extra activity and carryover from finished days. Remaining = budget - food logged today.';
+  String get calorieBudgetDetailsClassicExplanation => 'Budget starts with your saved daily target. Extra activity is half of the calories above your expected activity baseline. Carryover is the finished-day balance spread across the remaining days in this 7-day run. Classic lets you switch activity and carryover off for this view; Balance keeps them on automatically.';
 
   @override
-  String get calorieBudgetDetailsBalanceExplanation => 'Balance recalculates automatically. Today left uses the same full-day budget as Classic with both switches on: base goal + today activity + carryover - food today. The bar still paces the current week.';
+  String get calorieBudgetDetailsBalanceExplanation => 'Budget starts with your saved daily target. Extra activity is half of the calories above your expected activity baseline. Carryover is the finished-day balance spread across the remaining days in this 7-day run. Classic lets you switch activity and carryover off for this view; Balance keeps them on automatically.';
 
   @override
   String get calorieBudgetDetailsBaseGoal => 'Base goal';
@@ -1793,7 +1795,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calorieBudgetDetailsCarryoverRule => 'Carryover rule';
 
   @override
-  String get calorieBudgetDetailsCarryoverRuleValue => 'Carryover uses finished days with their base goals. Activity bonus is day-local and is not saved into future carryover.';
+  String get calorieBudgetDetailsCarryoverRuleValue => 'Carryover uses finished days with their full available goals, including activity bonus, then spreads the result across the remaining run days.';
 
   @override
   String get burnWeekDetailsTitle => 'Burn Week details';
@@ -1844,7 +1846,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get burnWeekDetailsSportCounting => 'Sport counting';
 
   @override
-  String get burnWeekDetailsSportCountingValue => 'Expected activity is already in your base goal. Only activity above that expectation is added as eatable kcal.';
+  String get burnWeekDetailsSportCountingValue => 'Expected activity is already in your base goal. Half of activity above that expectation is added as eatable kcal.';
 
   @override
   String get burnWeekDetailsSafeZone => 'Safe zone';
@@ -2282,11 +2284,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDiaryTitle => 'Diary';
-
-  @override
-  String settingsDiarySubtitle(String window) {
-    return 'Eating window: $window';
-  }
 
   @override
   String get settingsColorTitle => 'Accent color';

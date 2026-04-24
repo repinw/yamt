@@ -12,7 +12,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 void main() {
   final numberFormat = NumberFormat.decimalPattern('en');
 
-  testWidgets('classic meta toggles show bootstrap workout hint text', (
+  testWidgets('classic meta toggles show pre-learning activity hint text', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -30,7 +30,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('Workout bonus: +140 kcal'), findsOneWidget);
+    expect(find.text('Activity bonus: +140 kcal'), findsOneWidget);
     expect(find.byKey(CaloriesPageKeys.summaryActivityHint), findsOneWidget);
     expect(
       find.text('We are still learning your activity pattern.'),
@@ -124,7 +124,7 @@ void main() {
                   value = nextValue;
                 });
               },
-              label: 'Workout bonus: +140 kcal',
+              label: 'Activity bonus: +140 kcal',
               supportingText: 'Learning hint',
               toggleKey: CaloriesPageKeys.summaryActivityDeltaToggle,
               textKey: CaloriesPageKeys.summaryActivityDeltaNote,

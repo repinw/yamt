@@ -3,7 +3,9 @@ import 'dart:developer' show log;
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
@@ -219,7 +221,7 @@ PendingCalorieGoalWeeklyCheckIn? _resolvePendingWeeklyCheckIn({
   }
   final anchorEntry =
       settings.cycleAnchorEntryForDay(today) ?? countingGoalEntry;
-  if (anchorEntry.hasGoal != true) {
+  if (!anchorEntry.hasGoal) {
     return null;
   }
   final firstWindowStartDate = _firstWeeklyCheckInWindowStartDate(anchorEntry);
@@ -239,21 +241,22 @@ PendingCalorieGoalWeeklyCheckIn? _resolvePendingWeeklyCheckIn({
   }
 
   final persistedPending = settings.pendingWeeklyCheckIn;
-  for (var index = 0; ; index += 1) {
-    final windowStartDate = firstWindowStartDate.add(
-      Duration(days: index * weeklyCheckInWindowLengthDays),
+  var windowStartDate = firstWindowStartDate;
+  while (true) {
+    final windowLengthDays = _weeklyCheckInWindowLengthDaysForStart(
+      anchorEntry: anchorEntry,
+      windowStartDate: windowStartDate,
     );
-    final dueDate = windowStartDate.add(
-      const Duration(days: weeklyCheckInWindowLengthDays),
-    );
+    final dueDate = windowStartDate.add(Duration(days: windowLengthDays));
     if (dueDate.isAfter(today)) {
       return null;
     }
     final windowEndDate = windowStartDate.add(
-      const Duration(days: weeklyCheckInWindowLengthDays - 1),
+      Duration(days: windowLengthDays - 1),
     );
     final windowKey = _windowKey(windowStartDate, windowEndDate);
     if (resolvedWindowKeys.contains(windowKey)) {
+      windowStartDate = nextDiaryDay(windowEndDate);
       continue;
     }
 
@@ -295,8 +298,9 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
   required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
   required DateTime today,
 }) async {
+  final windowLengthDays = _windowLengthDays(pendingWeeklyCheckIn);
   final days = <DateTime>[
-    for (var index = 0; index < weeklyCheckInWindowLengthDays; index += 1)
+    for (var index = 0; index < windowLengthDays; index += 1)
       addDiaryDays(pendingWeeklyCheckIn.windowStartDate, index),
   ];
   final calorieEntries = await ref
@@ -542,10 +546,21 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
           weightKg: windowDays[index].weightKg!,
         ),
   ];
+  final previousGoalKcal = settings.goalKcalForDay(
+    pendingWeeklyCheckIn.windowEndDate,
+  );
+  final calculatorProfile = _calculatorProfileForDay(
+    settings: settings,
+    day: pendingWeeklyCheckIn.windowEndDate,
+  );
   final calculation = CalorieWeeklyCheckInCalculator.calculate(
-    previousGoalKcal: settings.goalKcalForDay(
-      pendingWeeklyCheckIn.windowEndDate,
+    previousGoalKcal: previousGoalKcal,
+    previousLearnedTdeeKcal: _previousLearnedTdeeKcal(
+      settings: settings,
+      day: pendingWeeklyCheckIn.windowEndDate,
     ),
+    goalMode: calculatorProfile?.goalMode ?? CalorieGoalMode.maintain,
+    goalSpeedKgPerWeek: calculatorProfile?.goalSpeedKgPerWeek ?? 0,
     intakeKcalByDay: windowDays
         .map((day) => day.resolvedIntakeKcal ?? day.loggedIntakeKcal)
         .toList(growable: false),
@@ -573,9 +588,7 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
         '..${diaryDayKey(pendingWeeklyCheckIn.windowEndDate)} '
         'today=${diaryDayKey(today)} '
         'previousGoalKcal='
-        '${settings.goalKcalForDay(
-          pendingWeeklyCheckIn.windowEndDate,
-        ).toStringAsFixed(2)} '
+        '${previousGoalKcal.toStringAsFixed(2)} '
         'days=[$daysLabel]';
     log(message, name: _weeklyCheckInProviderLogName);
   }
@@ -588,6 +601,32 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
     missingWeightDays: missingWeightDays,
     lowConfidence: weightPoints.length <= 2,
   );
+}
+
+CalorieCalculatorProfile? _calculatorProfileForDay({
+  required CalorieGoalSettings settings,
+  required DateTime day,
+}) {
+  return settings.activeGoalEntryForDay(day)?.calculatorProfile ??
+      settings.calculatorProfile;
+}
+
+double _previousLearnedTdeeKcal({
+  required CalorieGoalSettings settings,
+  required DateTime day,
+}) {
+  final learnedTdeeKcal = settings.latestLearnedTdeeKcal;
+  if (learnedTdeeKcal != null) {
+    return learnedTdeeKcal;
+  }
+  final calculatorProfile = _calculatorProfileForDay(
+    settings: settings,
+    day: day,
+  );
+  if (calculatorProfile != null) {
+    return CalorieGoalCalculator.calculate(calculatorProfile).tdeeKcal;
+  }
+  return settings.goalKcalForDay(day);
 }
 
 Map<String, double> _representativeWeightByDay(
@@ -640,10 +679,18 @@ DateTime _firstWeeklyCheckInWindowStartDate(
   if (!isSameDiaryDay(anchorEntry.effectiveDate, anchorStartDate)) {
     return anchorStartDate;
   }
-  if (!_startsOnPartialDiaryDay(anchorEntry.effectiveChangedAt)) {
+  if (!_hasStarterDay(anchorEntry)) {
     return anchorStartDate;
   }
   return nextDiaryDay(anchorStartDate);
+}
+
+bool _hasStarterDay(CalorieGoalHistoryEntry anchorEntry) {
+  return isSameDiaryDay(
+        anchorEntry.effectiveDate,
+        anchorEntry.effectiveCountingStartDate,
+      ) &&
+      _startsOnPartialDiaryDay(anchorEntry.effectiveChangedAt);
 }
 
 bool _startsOnPartialDiaryDay(DateTime changedAt) {
@@ -652,6 +699,27 @@ bool _startsOnPartialDiaryDay(DateTime changedAt) {
       changedAt.second != 0 ||
       changedAt.millisecond != 0 ||
       changedAt.microsecond != 0;
+}
+
+int _weeklyCheckInWindowLengthDaysForStart({
+  required CalorieGoalHistoryEntry anchorEntry,
+  required DateTime windowStartDate,
+}) {
+  if (_hasStarterDay(anchorEntry) &&
+      _isFirstWeeklyCheckInWindowStart(
+        anchorEntry: anchorEntry,
+        windowStartDate: windowStartDate,
+      )) {
+    return weeklyCheckInWindowLengthDays - 1;
+  }
+  return weeklyCheckInWindowLengthDays;
+}
+
+int _windowLengthDays(PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn) {
+  return pendingWeeklyCheckIn.windowEndDate
+          .difference(pendingWeeklyCheckIn.windowStartDate)
+          .inDays +
+      1;
 }
 
 bool _isFirstWeeklyCheckInWindowStart({
@@ -674,7 +742,7 @@ DateTime? _anchorWeightSourceDayForWindow({
   )) {
     return null;
   }
-  if (isSameDiaryDay(anchorEntry.effectiveDate, windowStartDate)) {
+  if (!_hasStarterDay(anchorEntry)) {
     return null;
   }
   return normalizeDiaryDay(anchorEntry.effectiveDate);

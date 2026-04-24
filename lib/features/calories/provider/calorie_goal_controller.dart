@@ -56,18 +56,8 @@ class CalorieGoalController extends _$CalorieGoalController {
     CalorieCalculatorProfile profile, {
     required DateTime goalStartDate,
     bool allowFutureGoalStart = false,
-    int? eatingWindowStartMinuteOfDay,
-    int? eatingWindowEndMinuteOfDay,
+    bool? countGoalStartDayForLearning,
   }) async {
-    if (eatingWindowStartMinuteOfDay != null &&
-        eatingWindowEndMinuteOfDay != null &&
-        !isValidEatingWindowMinutes(
-          startMinuteOfDay: eatingWindowStartMinuteOfDay,
-          endMinuteOfDay: eatingWindowEndMinuteOfDay,
-        )) {
-      return false;
-    }
-
     final calculation = CalorieGoalCalculator.calculate(profile);
     final previousSettings = await _currentSettings();
     final normalizedToday = normalizeDiaryDay(DateTime.now());
@@ -85,47 +75,41 @@ class CalorieGoalController extends _$CalorieGoalController {
         )
         ? normalizedToday
         : normalizedGoalStartDate;
-    final updatesEatingWindow =
-        eatingWindowStartMinuteOfDay != null &&
-        eatingWindowEndMinuteOfDay != null;
+    final changedAt = _goalChangeTimestamp(
+      normalizedEffectiveDate: normalizedEffectiveDate,
+      normalizedToday: normalizedToday,
+      countGoalStartDayForLearning: countGoalStartDayForLearning,
+    );
+    final expectedActivityChanged =
+        currentGoalEntry?.expectedActivityKcal != null &&
+        currentGoalEntry?.expectedActivityKcal !=
+            calculation.expectedActivityKcal;
     final goalChanged =
         currentGoalEntry?.effectiveDate != normalizedEffectiveDate ||
         currentGoalEntry?.effectiveCountingStartDate !=
             normalizedGoalStartDate ||
         currentGoalEntry?.dailyKcalGoal != calculation.finalGoalKcal ||
+        _goalStartDayTrackingChanged(
+          currentGoalEntry: currentGoalEntry,
+          normalizedGoalStartDate: normalizedGoalStartDate,
+          countGoalStartDayForLearning: countGoalStartDayForLearning,
+        ) ||
+        expectedActivityChanged ||
         !_sameCalculatorProfile(currentGoalEntry?.calculatorProfile, profile) ||
         currentGoalEntry?.source != CalorieGoalSource.calculator;
-    final eatingWindowChanged =
-        updatesEatingWindow &&
-        (previousSettings.normalizedEatingWindowStartMinuteOfDay !=
-                eatingWindowStartMinuteOfDay ||
-            previousSettings.normalizedEatingWindowEndMinuteOfDay !=
-                eatingWindowEndMinuteOfDay);
     if (!goalChanged) {
-      if (!eatingWindowChanged) {
-        return true;
-      }
-      return setEatingWindow(
-        startMinuteOfDay: eatingWindowStartMinuteOfDay,
-        endMinuteOfDay: eatingWindowEndMinuteOfDay,
-      );
+      return true;
     }
-    var nextSettings = previousSettings.applyGoalChange(
-      changedAt: normalizedEffectiveDate,
+    final nextSettings = previousSettings.applyGoalChange(
+      changedAt: changedAt,
       dailyKcalGoal: calculation.finalGoalKcal,
       calculatorProfile: profile,
+      expectedActivityKcal: calculation.expectedActivityKcal,
       countingStartDate: normalizedGoalStartDate,
       source: CalorieGoalSource.calculator,
       weeklyCheckInSnapshot: currentGoalEntry?.weeklyCheckInSnapshot,
       replaceFutureHistory: true,
     );
-    if (updatesEatingWindow) {
-      nextSettings = nextSettings.applyEatingWindowChange(
-        changedAt: normalizedGoalStartDate,
-        startMinuteOfDay: eatingWindowStartMinuteOfDay,
-        endMinuteOfDay: eatingWindowEndMinuteOfDay,
-      );
-    }
     final saved = await _persistSettings(nextSettings);
     if (!saved || !ref.mounted) {
       return saved;
@@ -140,24 +124,10 @@ class CalorieGoalController extends _$CalorieGoalController {
   /// Shift goal start.
   Future<bool> shiftGoalStart({
     required DateTime goalStartDate,
-    int? eatingWindowStartMinuteOfDay,
-    int? eatingWindowEndMinuteOfDay,
   }) {
     final previousSettings =
         state.asData?.value ?? const CalorieGoalSettings.empty();
     if (!previousSettings.hasGoal) {
-      return Future<bool>.value(false);
-    }
-    final updatesEatingWindow =
-        eatingWindowStartMinuteOfDay != null ||
-        eatingWindowEndMinuteOfDay != null;
-    if (updatesEatingWindow &&
-        (eatingWindowStartMinuteOfDay == null ||
-            eatingWindowEndMinuteOfDay == null ||
-            !isValidEatingWindowMinutes(
-              startMinuteOfDay: eatingWindowStartMinuteOfDay,
-              endMinuteOfDay: eatingWindowEndMinuteOfDay,
-            ))) {
       return Future<bool>.value(false);
     }
 
@@ -169,6 +139,9 @@ class CalorieGoalController extends _$CalorieGoalController {
     final currentCalculatorProfile =
         currentGoalEntry?.calculatorProfile ??
         previousSettings.calculatorProfile;
+    final currentExpectedActivityKcal =
+        currentGoalEntry?.expectedActivityKcal ??
+        previousSettings.expectedActivityKcal;
     final currentSource = currentGoalEntry?.source ?? CalorieGoalSource.manual;
     final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
     final normalizedToday = normalizeDiaryDay(DateTime.now());
@@ -178,40 +151,26 @@ class CalorieGoalController extends _$CalorieGoalController {
         )
         ? normalizedToday
         : normalizedGoalStartDate;
+    final changedAt = _goalChangeTimestamp(
+      normalizedEffectiveDate: normalizedEffectiveDate,
+      normalizedToday: normalizedToday,
+    );
     final goalStartChanged =
         currentGoalEntry?.effectiveDate != normalizedEffectiveDate ||
         currentGoalEntry?.effectiveCountingStartDate != normalizedGoalStartDate;
-    final eatingWindowChanged =
-        updatesEatingWindow &&
-        (previousSettings.normalizedEatingWindowStartMinuteOfDay !=
-                eatingWindowStartMinuteOfDay ||
-            previousSettings.normalizedEatingWindowEndMinuteOfDay !=
-                eatingWindowEndMinuteOfDay);
     if (!goalStartChanged) {
-      if (!eatingWindowChanged) {
-        return Future<bool>.value(true);
-      }
-      return setEatingWindow(
-        startMinuteOfDay: eatingWindowStartMinuteOfDay!,
-        endMinuteOfDay: eatingWindowEndMinuteOfDay!,
-      );
+      return Future<bool>.value(true);
     }
-    var nextSettings = previousSettings.applyGoalChange(
-      changedAt: normalizedEffectiveDate,
+    final nextSettings = previousSettings.applyGoalChange(
+      changedAt: changedAt,
       dailyKcalGoal: currentDailyKcalGoal,
       calculatorProfile: currentCalculatorProfile,
+      expectedActivityKcal: currentExpectedActivityKcal,
       countingStartDate: normalizedGoalStartDate,
       source: currentSource,
       weeklyCheckInSnapshot: currentGoalEntry?.weeklyCheckInSnapshot,
       replaceFutureHistory: true,
     );
-    if (updatesEatingWindow) {
-      nextSettings = nextSettings.applyEatingWindowChange(
-        changedAt: normalizedGoalStartDate,
-        startMinuteOfDay: eatingWindowStartMinuteOfDay!,
-        endMinuteOfDay: eatingWindowEndMinuteOfDay!,
-      );
-    }
     return _persistSettings(nextSettings);
   }
 
@@ -226,28 +185,6 @@ class CalorieGoalController extends _$CalorieGoalController {
         calculatorProfile: null,
       ),
     );
-  }
-
-  /// Set eating window.
-  Future<bool> setEatingWindow({
-    required int startMinuteOfDay,
-    required int endMinuteOfDay,
-  }) async {
-    if (!isValidEatingWindowMinutes(
-      startMinuteOfDay: startMinuteOfDay,
-      endMinuteOfDay: endMinuteOfDay,
-    )) {
-      return false;
-    }
-
-    final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
-    final now = DateTime.now();
-    final nextSettings = previous.applyEatingWindowChange(
-      changedAt: now,
-      startMinuteOfDay: startMinuteOfDay,
-      endMinuteOfDay: endMinuteOfDay,
-    );
-    return _persistSettings(nextSettings);
   }
 
   /// Set pending weekly check in.
@@ -301,22 +238,25 @@ class CalorieGoalController extends _$CalorieGoalController {
     return setSkippedIntakeDay(day: day, isSkipped: false);
   }
 
+  /// Mark health activity tracking as active from a day.
+  Future<bool> markActivityTrackingStarted({DateTime? startedAt}) async {
+    final previous = await _currentSettings();
+    final nextSettings = previous.markActivityTrackingStarted(
+      startedAt ?? DateTime.now(),
+    );
+    if (identical(previous, nextSettings)) {
+      return Future<bool>.value(true);
+    }
+    return _persistSettings(nextSettings);
+  }
+
   /// Save learned tdee goal.
   Future<bool> saveLearnedTdeeGoal({
     required CalorieGoalMode goalMode,
     required double goalSpeedKgPerWeek,
     required DateTime goalStartDate,
-    int? eatingWindowStartMinuteOfDay,
-    int? eatingWindowEndMinuteOfDay,
+    bool? countGoalStartDayForLearning,
   }) async {
-    if (eatingWindowStartMinuteOfDay != null &&
-        eatingWindowEndMinuteOfDay != null &&
-        !isValidEatingWindowMinutes(
-          startMinuteOfDay: eatingWindowStartMinuteOfDay,
-          endMinuteOfDay: eatingWindowEndMinuteOfDay,
-        )) {
-      return false;
-    }
     final previousSettings = await _currentSettings();
     final learnedTdeeKcal = previousSettings.latestLearnedTdeeKcal;
     if (learnedTdeeKcal == null) {
@@ -339,6 +279,11 @@ class CalorieGoalController extends _$CalorieGoalController {
         )
         ? normalizedToday
         : normalizedGoalStartDate;
+    final changedAt = _goalChangeTimestamp(
+      normalizedEffectiveDate: normalizedEffectiveDate,
+      normalizedToday: normalizedToday,
+      countGoalStartDayForLearning: countGoalStartDayForLearning,
+    );
     final currentGoalEntry =
         previousSettings.activeGoalEntryForDay(DateTime.now()) ??
         previousSettings.latestGoalEntry;
@@ -349,38 +294,41 @@ class CalorieGoalController extends _$CalorieGoalController {
           isLosing: goalMode == CalorieGoalMode.lose,
           isGaining: goalMode == CalorieGoalMode.gain,
         );
-    final updatesEatingWindow =
-        eatingWindowStartMinuteOfDay != null &&
-        eatingWindowEndMinuteOfDay != null;
+    final nextExpectedActivityKcal =
+        currentGoalEntry?.weeklyCheckInSnapshot?.averageActiveKcal ??
+        previousSettings
+            .latestLearnedTdeeEntry
+            ?.weeklyCheckInSnapshot
+            ?.averageActiveKcal ??
+        currentGoalEntry?.expectedActivityKcal ??
+        previousSettings.expectedActivityKcal;
+    final expectedActivityChanged =
+        currentGoalEntry?.expectedActivityKcal != null &&
+        currentGoalEntry?.expectedActivityKcal != nextExpectedActivityKcal;
     final goalChanged =
         currentGoalEntry?.effectiveDate != normalizedEffectiveDate ||
         currentGoalEntry?.effectiveCountingStartDate !=
             normalizedGoalStartDate ||
         currentGoalEntry?.dailyKcalGoal != nextDailyKcalGoal ||
+        _goalStartDayTrackingChanged(
+          currentGoalEntry: currentGoalEntry,
+          normalizedGoalStartDate: normalizedGoalStartDate,
+          countGoalStartDayForLearning: countGoalStartDayForLearning,
+        ) ||
+        expectedActivityChanged ||
         !_sameCalculatorProfile(
           currentGoalEntry?.calculatorProfile,
           nextProfile,
         ) ||
         currentGoalEntry?.source != CalorieGoalSource.calculator;
-    final eatingWindowChanged =
-        updatesEatingWindow &&
-        (previousSettings.normalizedEatingWindowStartMinuteOfDay !=
-                eatingWindowStartMinuteOfDay ||
-            previousSettings.normalizedEatingWindowEndMinuteOfDay !=
-                eatingWindowEndMinuteOfDay);
     if (!goalChanged) {
-      if (!eatingWindowChanged) {
-        return Future<bool>.value(true);
-      }
-      return setEatingWindow(
-        startMinuteOfDay: eatingWindowStartMinuteOfDay,
-        endMinuteOfDay: eatingWindowEndMinuteOfDay,
-      );
+      return Future<bool>.value(true);
     }
-    var nextSettings = previousSettings.applyGoalChange(
-      changedAt: normalizedEffectiveDate,
+    final nextSettings = previousSettings.applyGoalChange(
+      changedAt: changedAt,
       dailyKcalGoal: nextDailyKcalGoal,
       calculatorProfile: nextProfile,
+      expectedActivityKcal: nextExpectedActivityKcal,
       countingStartDate: normalizedGoalStartDate,
       source: CalorieGoalSource.calculator,
       weeklyCheckInSnapshot:
@@ -388,13 +336,6 @@ class CalorieGoalController extends _$CalorieGoalController {
           previousSettings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot,
       replaceFutureHistory: true,
     );
-    if (updatesEatingWindow) {
-      nextSettings = nextSettings.applyEatingWindowChange(
-        changedAt: normalizedGoalStartDate,
-        startMinuteOfDay: eatingWindowStartMinuteOfDay,
-        endMinuteOfDay: eatingWindowEndMinuteOfDay,
-      );
-    }
     return _persistSettings(nextSettings);
   }
 
@@ -409,6 +350,7 @@ class CalorieGoalController extends _$CalorieGoalController {
       changedAt: completedAt,
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: previousSettings.calculatorProfile,
+      expectedActivityKcal: weeklyCheckInSnapshot.averageActiveKcal,
       source: CalorieGoalSource.weeklyCheckIn,
       weeklyCheckInSnapshot: weeklyCheckInSnapshot,
     );
@@ -565,4 +507,48 @@ bool _sameCalculatorProfile(
       left.activityLevel == right.activityLevel &&
       left.goalMode == right.goalMode &&
       left.goalSpeedKgPerWeek == right.goalSpeedKgPerWeek;
+}
+
+DateTime _goalChangeTimestamp({
+  required DateTime normalizedEffectiveDate,
+  required DateTime normalizedToday,
+  bool? countGoalStartDayForLearning,
+}) {
+  if (isSameDiaryDay(normalizedEffectiveDate, normalizedToday)) {
+    if (countGoalStartDayForLearning == true) {
+      return normalizedEffectiveDate;
+    }
+    return DateTime.now();
+  }
+  return normalizedEffectiveDate;
+}
+
+bool _goalStartDayTrackingChanged({
+  required CalorieGoalHistoryEntry? currentGoalEntry,
+  required DateTime normalizedGoalStartDate,
+  required bool? countGoalStartDayForLearning,
+}) {
+  if (countGoalStartDayForLearning == null || currentGoalEntry == null) {
+    return false;
+  }
+  if (!isSameDiaryDay(
+    currentGoalEntry.effectiveCountingStartDate,
+    normalizedGoalStartDate,
+  )) {
+    return false;
+  }
+  return _goalEntryCountsStartDay(currentGoalEntry) !=
+      countGoalStartDayForLearning;
+}
+
+bool _goalEntryCountsStartDay(CalorieGoalHistoryEntry entry) {
+  if (!isSameDiaryDay(entry.effectiveDate, entry.effectiveCountingStartDate)) {
+    return true;
+  }
+  final changedAt = entry.effectiveChangedAt;
+  return changedAt.hour == 0 &&
+      changedAt.minute == 0 &&
+      changedAt.second == 0 &&
+      changedAt.millisecond == 0 &&
+      changedAt.microsecond == 0;
 }

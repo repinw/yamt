@@ -243,11 +243,6 @@ void main() {
       find.byKey(CaloriesPageKeys.appBarMenuCalculatorAction),
       findsOneWidget,
     );
-    expect(
-      find.text('Set eating window'),
-      findsNothing,
-    );
-
     await tester.tap(find.byKey(CaloriesPageKeys.appBarMenuCalculatorAction));
     await tester.pumpAndSettle();
 

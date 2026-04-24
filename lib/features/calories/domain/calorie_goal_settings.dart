@@ -8,12 +8,12 @@ part 'calorie_goal_settings.g.dart';
 /// The default daily calorie goal kcal.
 const defaultDailyCalorieGoalKcal = 2500.0;
 
-/// The default eating window start minute of day.
-const int defaultEatingWindowStartMinuteOfDay = 6 * 60;
+/// The current calorie math data version.
+const currentCalorieMathVersion = 2;
 
-/// The default eating window end minute of day.
-const int defaultEatingWindowEndMinuteOfDay = 22 * 60;
-const int _minutesPerDay = 24 * 60;
+/// Legacy version used when stored settings have no version.
+const legacyCalorieMathVersion = 1;
+
 const _keepValue = Object();
 
 /// Defines calorie goal source.
@@ -149,6 +149,7 @@ class CalorieGoalHistoryEntry {
     required this.calculatorProfile,
     required this.effectiveDate,
     required this.changedAt,
+    this.expectedActivityKcal,
     this.countingStartDate,
     this.source = CalorieGoalSource.manual,
     this.weeklyCheckInSnapshot,
@@ -165,6 +166,10 @@ class CalorieGoalHistoryEntry {
 
   /// The calculator profile.
   final CalorieCalculatorProfile? calculatorProfile;
+
+  /// Expected daily activity kcal for this goal snapshot.
+  @NullableFlexibleDoubleConverter()
+  final double? expectedActivityKcal;
 
   /// The effective date.
   @FlexibleDateTimeConverter()
@@ -221,10 +226,11 @@ class CalorieGoalSettings {
     required this.calculatorProfile,
     required this.updatedAt,
     required this.goalHistory,
-    required this.eatingWindowStartMinuteOfDay,
-    required this.eatingWindowEndMinuteOfDay,
     required this.pendingWeeklyCheckIn,
     required this.skippedIntakeDayKeys,
+    required this.calorieMathVersion,
+    this.expectedActivityKcal,
+    this.activityTrackingStartDate,
   });
 
   /// Creates a [CalorieGoalSettings] for from json.
@@ -232,14 +238,15 @@ class CalorieGoalSettings {
     return _$CalorieGoalSettingsFromJson(json);
   }
 
-  /// The eating window start minute of day.
+  /// Creates empty calorie goal settings.
   const CalorieGoalSettings.empty()
     : dailyKcalGoal = null,
       calculatorProfile = null,
+      calorieMathVersion = currentCalorieMathVersion,
+      expectedActivityKcal = null,
+      activityTrackingStartDate = null,
       updatedAt = null,
       goalHistory = const <CalorieGoalHistoryEntry>[],
-      eatingWindowStartMinuteOfDay = defaultEatingWindowStartMinuteOfDay,
-      eatingWindowEndMinuteOfDay = defaultEatingWindowEndMinuteOfDay,
       pendingWeeklyCheckIn = null,
       skippedIntakeDayKeys = const <String>[];
 
@@ -248,12 +255,12 @@ class CalorieGoalSettings {
     required double? dailyKcalGoal,
     required CalorieCalculatorProfile? calculatorProfile,
     required DateTime effectiveDate,
+    double? expectedActivityKcal,
+    DateTime? activityTrackingStartDate,
     DateTime? countingStartDate,
     DateTime? updatedAt,
     CalorieGoalSource source = CalorieGoalSource.manual,
     CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot,
-    int eatingWindowStartMinuteOfDay = defaultEatingWindowStartMinuteOfDay,
-    int eatingWindowEndMinuteOfDay = defaultEatingWindowEndMinuteOfDay,
   }) {
     final normalizedCountingStartDate = _resolveNormalizedCountingStartDate(
       effectiveDate: effectiveDate,
@@ -262,11 +269,17 @@ class CalorieGoalSettings {
     return CalorieGoalSettings(
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
+      calorieMathVersion: currentCalorieMathVersion,
+      expectedActivityKcal: expectedActivityKcal,
+      activityTrackingStartDate: activityTrackingStartDate == null
+          ? null
+          : normalizeDiaryDay(activityTrackingStartDate),
       updatedAt: updatedAt ?? effectiveDate,
       goalHistory: <CalorieGoalHistoryEntry>[
         CalorieGoalHistoryEntry(
           dailyKcalGoal: dailyKcalGoal,
           calculatorProfile: calculatorProfile,
+          expectedActivityKcal: expectedActivityKcal,
           effectiveDate: normalizeDiaryDay(effectiveDate),
           changedAt: effectiveDate,
           countingStartDate: normalizedCountingStartDate,
@@ -274,8 +287,6 @@ class CalorieGoalSettings {
           weeklyCheckInSnapshot: weeklyCheckInSnapshot,
         ),
       ],
-      eatingWindowStartMinuteOfDay: eatingWindowStartMinuteOfDay,
-      eatingWindowEndMinuteOfDay: eatingWindowEndMinuteOfDay,
       pendingWeeklyCheckIn: null,
       skippedIntakeDayKeys: const <String>[],
     );
@@ -288,6 +299,18 @@ class CalorieGoalSettings {
   /// The calculator profile.
   final CalorieCalculatorProfile? calculatorProfile;
 
+  /// The calorie math data version.
+  @JsonKey(defaultValue: legacyCalorieMathVersion)
+  final int calorieMathVersion;
+
+  /// Expected daily activity kcal from PAL or learned activity baseline.
+  @NullableFlexibleDoubleConverter()
+  final double? expectedActivityKcal;
+
+  /// First day where health activity tracking should affect calorie math.
+  @NullableFlexibleDateTimeConverter()
+  final DateTime? activityTrackingStartDate;
+
   /// The updated at.
   @NullableFlexibleDateTimeConverter()
   final DateTime? updatedAt;
@@ -295,14 +318,6 @@ class CalorieGoalSettings {
   /// The goal history.
   @JsonKey(defaultValue: <CalorieGoalHistoryEntry>[])
   final List<CalorieGoalHistoryEntry> goalHistory;
-
-  /// The eating window start minute of day.
-  @JsonKey(defaultValue: defaultEatingWindowStartMinuteOfDay)
-  final int eatingWindowStartMinuteOfDay;
-
-  /// The eating window end minute of day.
-  @JsonKey(defaultValue: defaultEatingWindowEndMinuteOfDay)
-  final int eatingWindowEndMinuteOfDay;
 
   /// The pending weekly check in.
   final PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn;
@@ -316,38 +331,6 @@ class CalorieGoalSettings {
 
   /// Whether learned tdee.
   bool get hasLearnedTdee => latestLearnedTdeeKcal != null;
-
-  /// The normalized eating window start minute of day.
-  int get normalizedEatingWindowStartMinuteOfDay {
-    return _resolveEatingWindowMinutes(
-      startMinuteOfDay: eatingWindowStartMinuteOfDay,
-      endMinuteOfDay: eatingWindowEndMinuteOfDay,
-    ).startMinuteOfDay;
-  }
-
-  /// The normalized eating window end minute of day.
-  int get normalizedEatingWindowEndMinuteOfDay {
-    return _resolveEatingWindowMinutes(
-      startMinuteOfDay: eatingWindowStartMinuteOfDay,
-      endMinuteOfDay: eatingWindowEndMinuteOfDay,
-    ).endMinuteOfDay;
-  }
-
-  /// Eating window start for day.
-  DateTime eatingWindowStartForDay(DateTime day) {
-    return _dateTimeForMinuteOfDay(
-      day: day,
-      minuteOfDay: normalizedEatingWindowStartMinuteOfDay,
-    );
-  }
-
-  /// Eating window end for day.
-  DateTime eatingWindowEndForDay(DateTime day) {
-    return _dateTimeForMinuteOfDay(
-      day: day,
-      minuteOfDay: normalizedEatingWindowEndMinuteOfDay,
-    );
-  }
 
   /// The sorted goal history.
   List<CalorieGoalHistoryEntry> get sortedGoalHistory {
@@ -495,6 +478,34 @@ class CalorieGoalSettings {
         : 0.0;
   }
 
+  /// Expected activity kcal for day.
+  double? expectedActivityKcalForDay(DateTime day) {
+    return goalEntryForDay(day)?.expectedActivityKcal ?? expectedActivityKcal;
+  }
+
+  /// Whether health activity should be counted for day.
+  bool isActivityTrackingActiveForDay(DateTime day) {
+    final startDate = activityTrackingStartDate;
+    if (startDate == null) {
+      return false;
+    }
+    return !normalizeDiaryDay(day).isBefore(normalizeDiaryDay(startDate));
+  }
+
+  /// Marks the first activity tracking day without moving it forward.
+  CalorieGoalSettings markActivityTrackingStarted(DateTime startedAt) {
+    final normalizedStartedAt = normalizeDiaryDay(startedAt);
+    final currentStartDate = activityTrackingStartDate;
+    if (currentStartDate != null &&
+        !normalizeDiaryDay(currentStartDate).isAfter(normalizedStartedAt)) {
+      return this;
+    }
+    return copyWith(
+      activityTrackingStartDate: normalizedStartedAt,
+      updatedAt: startedAt,
+    );
+  }
+
   /// Balance start for window.
   DateTime balanceStartForWindow(Iterable<DateTime> days) {
     final normalizedDays = days.map(normalizeDiaryDay).toList(growable: false)
@@ -557,10 +568,11 @@ class CalorieGoalSettings {
     return CalorieGoalSettings(
       dailyKcalGoal: previousGoal?.dailyKcalGoal,
       calculatorProfile: previousGoal?.calculatorProfile,
+      calorieMathVersion: currentCalorieMathVersion,
+      expectedActivityKcal: previousGoal?.expectedActivityKcal,
+      activityTrackingStartDate: activityTrackingStartDate,
       updatedAt: updatedAt,
       goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextHistory),
-      eatingWindowStartMinuteOfDay: eatingWindowStartMinuteOfDay,
-      eatingWindowEndMinuteOfDay: eatingWindowEndMinuteOfDay,
       pendingWeeklyCheckIn: pendingWeeklyCheckIn,
       skippedIntakeDayKeys: skippedIntakeDayKeys,
     );
@@ -571,6 +583,7 @@ class CalorieGoalSettings {
     required DateTime changedAt,
     required double? dailyKcalGoal,
     required CalorieCalculatorProfile? calculatorProfile,
+    double? expectedActivityKcal,
     DateTime? countingStartDate,
     CalorieGoalSource source = CalorieGoalSource.manual,
     CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot,
@@ -593,6 +606,7 @@ class CalorieGoalSettings {
           CalorieGoalHistoryEntry(
             dailyKcalGoal: dailyKcalGoal,
             calculatorProfile: calculatorProfile,
+            expectedActivityKcal: expectedActivityKcal,
             effectiveDate: effectiveDate,
             changedAt: changedAt,
             countingStartDate: normalizedCountingStartDate,
@@ -610,29 +624,13 @@ class CalorieGoalSettings {
     return CalorieGoalSettings(
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
+      calorieMathVersion: currentCalorieMathVersion,
+      expectedActivityKcal: expectedActivityKcal,
+      activityTrackingStartDate: activityTrackingStartDate,
       updatedAt: changedAt,
       goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextHistory),
-      eatingWindowStartMinuteOfDay: eatingWindowStartMinuteOfDay,
-      eatingWindowEndMinuteOfDay: eatingWindowEndMinuteOfDay,
       pendingWeeklyCheckIn: null,
       skippedIntakeDayKeys: skippedIntakeDayKeys,
-    );
-  }
-
-  /// Apply eating window change.
-  CalorieGoalSettings applyEatingWindowChange({
-    required DateTime changedAt,
-    required int startMinuteOfDay,
-    required int endMinuteOfDay,
-  }) {
-    final resolvedWindow = _resolveEatingWindowMinutes(
-      startMinuteOfDay: startMinuteOfDay,
-      endMinuteOfDay: endMinuteOfDay,
-    );
-    return copyWith(
-      updatedAt: changedAt,
-      eatingWindowStartMinuteOfDay: resolvedWindow.startMinuteOfDay,
-      eatingWindowEndMinuteOfDay: resolvedWindow.endMinuteOfDay,
     );
   }
 
@@ -648,10 +646,11 @@ class CalorieGoalSettings {
     return CalorieGoalSettings(
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
+      calorieMathVersion: calorieMathVersion,
+      expectedActivityKcal: expectedActivityKcal,
+      activityTrackingStartDate: activityTrackingStartDate,
       updatedAt: updatedAt,
       goalHistory: goalHistory,
-      eatingWindowStartMinuteOfDay: eatingWindowStartMinuteOfDay,
-      eatingWindowEndMinuteOfDay: eatingWindowEndMinuteOfDay,
       pendingWeeklyCheckIn: pendingWeeklyCheckIn,
       skippedIntakeDayKeys: skippedIntakeDayKeys,
     );
@@ -686,10 +685,11 @@ class CalorieGoalSettings {
     return CalorieGoalSettings(
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
+      calorieMathVersion: calorieMathVersion,
+      expectedActivityKcal: expectedActivityKcal,
+      activityTrackingStartDate: activityTrackingStartDate,
       updatedAt: updatedAt,
       goalHistory: goalHistory,
-      eatingWindowStartMinuteOfDay: eatingWindowStartMinuteOfDay,
-      eatingWindowEndMinuteOfDay: eatingWindowEndMinuteOfDay,
       pendingWeeklyCheckIn: pendingWeeklyCheckIn,
       skippedIntakeDayKeys: List<String>.unmodifiable(nextKeys),
     );
@@ -699,36 +699,28 @@ class CalorieGoalSettings {
   CalorieGoalSettings copyWith({
     double? dailyKcalGoal,
     CalorieCalculatorProfile? calculatorProfile,
+    int? calorieMathVersion,
+    double? expectedActivityKcal,
+    DateTime? activityTrackingStartDate,
     DateTime? updatedAt,
     List<CalorieGoalHistoryEntry>? goalHistory,
-    int? eatingWindowStartMinuteOfDay,
-    int? eatingWindowEndMinuteOfDay,
     PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn,
     List<String>? skippedIntakeDayKeys,
   }) {
     return CalorieGoalSettings(
       dailyKcalGoal: dailyKcalGoal ?? this.dailyKcalGoal,
       calculatorProfile: calculatorProfile ?? this.calculatorProfile,
+      calorieMathVersion: calorieMathVersion ?? this.calorieMathVersion,
+      expectedActivityKcal: expectedActivityKcal ?? this.expectedActivityKcal,
+      activityTrackingStartDate: activityTrackingStartDate == null
+          ? this.activityTrackingStartDate
+          : normalizeDiaryDay(activityTrackingStartDate),
       updatedAt: updatedAt ?? this.updatedAt,
       goalHistory: goalHistory ?? this.goalHistory,
-      eatingWindowStartMinuteOfDay:
-          eatingWindowStartMinuteOfDay ?? this.eatingWindowStartMinuteOfDay,
-      eatingWindowEndMinuteOfDay:
-          eatingWindowEndMinuteOfDay ?? this.eatingWindowEndMinuteOfDay,
       pendingWeeklyCheckIn: pendingWeeklyCheckIn ?? this.pendingWeeklyCheckIn,
       skippedIntakeDayKeys: skippedIntakeDayKeys ?? this.skippedIntakeDayKeys,
     );
   }
-}
-
-/// Is valid eating window minutes.
-bool isValidEatingWindowMinutes({
-  required int startMinuteOfDay,
-  required int endMinuteOfDay,
-}) {
-  final normalizedStart = _normalizeMinuteOfDay(startMinuteOfDay);
-  final normalizedEnd = _normalizeMinuteOfDay(endMinuteOfDay);
-  return normalizedStart < normalizedEnd;
 }
 
 bool _isSameDay(DateTime left, DateTime right) {
@@ -765,34 +757,6 @@ DateTime _resolveNormalizedCountingStartDate({
   return normalizedCountingStartDate;
 }
 
-({int startMinuteOfDay, int endMinuteOfDay}) _resolveEatingWindowMinutes({
-  required int startMinuteOfDay,
-  required int endMinuteOfDay,
-}) {
-  final normalizedStart = _normalizeMinuteOfDay(startMinuteOfDay);
-  final normalizedEnd = _normalizeMinuteOfDay(endMinuteOfDay);
-  if (normalizedStart >= normalizedEnd) {
-    return (
-      startMinuteOfDay: defaultEatingWindowStartMinuteOfDay,
-      endMinuteOfDay: defaultEatingWindowEndMinuteOfDay,
-    );
-  }
-  return (startMinuteOfDay: normalizedStart, endMinuteOfDay: normalizedEnd);
-}
-
-int _normalizeMinuteOfDay(int value) {
-  return value.clamp(0, _minutesPerDay - 1);
-}
-
 String _dayKey(DateTime day) {
   return normalizeDiaryDay(day).toIso8601String().split('T').first;
-}
-
-DateTime _dateTimeForMinuteOfDay({
-  required DateTime day,
-  required int minuteOfDay,
-}) {
-  final hour = minuteOfDay ~/ 60;
-  final minute = minuteOfDay % 60;
-  return DateTime(day.year, day.month, day.day, hour, minute);
 }

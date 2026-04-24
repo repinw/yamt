@@ -20,6 +20,7 @@ void main() {
 
       expect(result.bmrKcal, 1771.25);
       expect(result.tdeeKcal, 2125.5);
+      expect(result.expectedActivityKcal, 354.25);
       expect(result.dailyAdjustmentKcal, 0);
       expect(result.finalGoalKcal, 2125.5);
       expect(result.wasClampedToMinimum, isFalse);
@@ -41,6 +42,7 @@ void main() {
 
     expect(result.bmrKcal, 1605.25);
     expect(result.tdeeKcal, 1926.3);
+    expect(result.expectedActivityKcal, closeTo(321.05, 0.000001));
     expect(result.dailyAdjustmentKcal, 0);
     expect(result.finalGoalKcal, 1926.3);
     expect(result.wasClampedToMinimum, isFalse);
@@ -61,6 +63,7 @@ void main() {
 
     expect(result.bmrKcal, 1411.5);
     expect(result.tdeeKcal, closeTo(2187.825, 0.000001));
+    expect(result.expectedActivityKcal, closeTo(776.325, 0.000001));
     expect(result.dailyAdjustmentKcal, 500);
     expect(result.finalGoalKcal, closeTo(1687.825, 0.000001));
     expect(result.wasClampedToMinimum, isFalse);
@@ -107,6 +110,7 @@ void main() {
     final result = CalorieGoalCalculator.calculate(profile);
 
     expect(result.dailyAdjustmentKcal, 250);
+    expect(result.expectedActivityKcal, 936.375);
     expect(result.finalGoalKcal, 2888.875);
     expect(result.wasClampedToMinimum, isFalse);
   });

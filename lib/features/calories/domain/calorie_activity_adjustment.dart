@@ -1,12 +1,9 @@
 import 'dart:math' as math;
 
-/// Fraction of workout calories granted as a temporary bootstrap bonus.
-const bootstrapWorkoutBonusFraction = 0.35;
+/// Fraction of above-baseline tracker activity granted as eatable calories.
+const activityCreditFactor = 0.5;
 
-/// Maximum temporary bootstrap workout bonus for a single day.
-const bootstrapWorkoutBonusMaxKcal = 300.0;
-
-/// Calculates the learned daily activity bonus after the first weekly check-in.
+/// Calculates signed activity against an expected baseline.
 double calculateLearnedActivityComparisonKcal({
   required int todayActiveKcal,
   required double averageActiveKcal,
@@ -14,31 +11,17 @@ double calculateLearnedActivityComparisonKcal({
   return todayActiveKcal - averageActiveKcal;
 }
 
-/// Calculates the learned daily activity bonus after the first weekly check-in.
+/// Calculates eatable activity above an expected baseline.
 double calculateLearnedActivityBonusKcal({
   required int todayActiveKcal,
   required double averageActiveKcal,
 }) {
-  return math.max<double>(
+  final rawExtraActivityKcal = math.max<double>(
     0,
     calculateLearnedActivityComparisonKcal(
       todayActiveKcal: todayActiveKcal,
       averageActiveKcal: averageActiveKcal,
     ),
   );
-}
-
-/// Calculates the temporary workout bonus before the first weekly check-in.
-double calculateBootstrapWorkoutBonusKcal({
-  required int workoutCalories,
-}) {
-  if (workoutCalories <= 0) {
-    return 0;
-  }
-  return math
-      .min<double>(
-        bootstrapWorkoutBonusMaxKcal,
-        workoutCalories * bootstrapWorkoutBonusFraction,
-      )
-      .roundToDouble();
+  return rawExtraActivityKcal * activityCreditFactor;
 }

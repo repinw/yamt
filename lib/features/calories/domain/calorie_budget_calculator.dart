@@ -138,6 +138,15 @@ abstract final class CalorieBudgetCalculator {
     );
   }
 
+  /// Spread carryover across remaining days in the active goal run.
+  static double distributeCarryover({
+    required double carryoverKcal,
+    required int remainingDays,
+  }) {
+    final resolvedRemainingDays = math.max(1, remainingDays);
+    return carryoverKcal / resolvedRemainingDays;
+  }
+
   /// Calculate Classic budget with optional activity and carryover toggles.
   static CalorieClassicBudgetBreakdown calculateClassicBudget({
     required double storedGoalKcal,
@@ -151,14 +160,19 @@ abstract final class CalorieBudgetCalculator {
         ? activityDeltaKcal
         : 0.0;
     final includedCarryoverKcal = includeCarryover ? carryoverKcal : 0.0;
+    final baseGoalBeforeMinimumKcal =
+        storedGoalKcal + includedActivityDeltaKcal;
+    final baseGoalKcal = storedGoalKcal <= 0
+        ? storedGoalKcal
+        : math.max<double>(
+            minimumDailyCalorieBudgetKcal,
+            baseGoalBeforeMinimumKcal,
+          );
     final goalBeforeMinimumKcal =
         storedGoalKcal + includedActivityDeltaKcal + includedCarryoverKcal;
     final goalKcal = storedGoalKcal <= 0
         ? storedGoalKcal
-        : math.max<double>(
-            minimumDailyCalorieBudgetKcal,
-            goalBeforeMinimumKcal,
-          );
+        : math.max<double>(0, baseGoalKcal + includedCarryoverKcal);
     return CalorieClassicBudgetBreakdown(
       baseGoalKcal: storedGoalKcal,
       activityDeltaKcal: activityDeltaKcal,
@@ -170,7 +184,7 @@ abstract final class CalorieBudgetCalculator {
       goalKcal: goalKcal,
       remainingKcal: goalKcal - consumedKcal,
       wasClampedToMinimum:
-          storedGoalKcal > 0 && goalKcal != goalBeforeMinimumKcal,
+          storedGoalKcal > 0 && baseGoalKcal != baseGoalBeforeMinimumKcal,
     );
   }
 

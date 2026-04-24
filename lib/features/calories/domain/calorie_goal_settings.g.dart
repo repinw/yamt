@@ -95,6 +95,9 @@ CalorieGoalHistoryEntry _$CalorieGoalHistoryEntryFromJson(
   changedAt: const NullableFlexibleDateTimeConverter().fromJson(
     json['changed_at'],
   ),
+  expectedActivityKcal: const NullableFlexibleDoubleConverter().fromJson(
+    json['expected_activity_kcal'],
+  ),
   countingStartDate: const NullableFlexibleDateTimeConverter().fromJson(
     json['counting_start_date'],
   ),
@@ -119,6 +122,9 @@ Map<String, dynamic> _$CalorieGoalHistoryEntryToJson(
     instance.dailyKcalGoal,
   ),
   'calculator_profile': instance.calculatorProfile?.toJson(),
+  'expected_activity_kcal': const NullableFlexibleDoubleConverter().toJson(
+    instance.expectedActivityKcal,
+  ),
   'effective_date': const FlexibleDateTimeConverter().toJson(
     instance.effectiveDate,
   ),
@@ -159,10 +165,6 @@ CalorieGoalSettings _$CalorieGoalSettingsFromJson(Map<String, dynamic> json) =>
               )
               .toList() ??
           [],
-      eatingWindowStartMinuteOfDay:
-          (json['eating_window_start_minute_of_day'] as num?)?.toInt() ?? 360,
-      eatingWindowEndMinuteOfDay:
-          (json['eating_window_end_minute_of_day'] as num?)?.toInt() ?? 1320,
       pendingWeeklyCheckIn: json['pending_weekly_check_in'] == null
           ? null
           : PendingCalorieGoalWeeklyCheckIn.fromJson(
@@ -173,6 +175,12 @@ CalorieGoalSettings _$CalorieGoalSettingsFromJson(Map<String, dynamic> json) =>
               ?.map((e) => e as String)
               .toList() ??
           [],
+      calorieMathVersion: (json['calorie_math_version'] as num?)?.toInt() ?? 1,
+      expectedActivityKcal: const NullableFlexibleDoubleConverter().fromJson(
+        json['expected_activity_kcal'],
+      ),
+      activityTrackingStartDate: const NullableFlexibleDateTimeConverter()
+          .fromJson(json['activity_tracking_start_date']),
     );
 
 Map<String, dynamic> _$CalorieGoalSettingsToJson(
@@ -182,12 +190,16 @@ Map<String, dynamic> _$CalorieGoalSettingsToJson(
     instance.dailyKcalGoal,
   ),
   'calculator_profile': instance.calculatorProfile?.toJson(),
+  'calorie_math_version': instance.calorieMathVersion,
+  'expected_activity_kcal': const NullableFlexibleDoubleConverter().toJson(
+    instance.expectedActivityKcal,
+  ),
+  'activity_tracking_start_date': const NullableFlexibleDateTimeConverter()
+      .toJson(instance.activityTrackingStartDate),
   'updated_at': const NullableFlexibleDateTimeConverter().toJson(
     instance.updatedAt,
   ),
   'goal_history': instance.goalHistory.map((e) => e.toJson()).toList(),
-  'eating_window_start_minute_of_day': instance.eatingWindowStartMinuteOfDay,
-  'eating_window_end_minute_of_day': instance.eatingWindowEndMinuteOfDay,
   'pending_weekly_check_in': instance.pendingWeeklyCheckIn?.toJson(),
   'skipped_intake_day_keys': instance.skippedIntakeDayKeys,
 };

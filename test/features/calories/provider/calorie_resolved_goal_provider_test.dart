@@ -50,15 +50,20 @@ ProviderContainer _createContainer({
 
 void main() {
   test(
-    'recalculates bootstrap workout bonus for a selected historical day',
+    'recalculates expected activity delta for a selected historical day',
     () async {
       final today = DateTime(2026, 4, 15);
       final selectedDay = DateTime(2026, 4, 14);
-      final settings = const CalorieGoalSettings.empty().applyGoalChange(
-        dailyKcalGoal: 2100,
-        changedAt: DateTime(2026, 4, 13, 9),
-        calculatorProfile: null,
-      );
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            dailyKcalGoal: 2100,
+            changedAt: DateTime(2026, 4, 13, 9),
+            calculatorProfile: null,
+            expectedActivityKcal: 500,
+          )
+          .copyWith(
+            activityTrackingStartDate: selectedDay,
+          );
 
       final container = _createContainer(
         today: today,
@@ -91,24 +96,96 @@ void main() {
 
       expect(resolvedGoal.day, normalizeDiaryDay(selectedDay));
       expect(resolvedGoal.storedGoalKcal, 2100);
-      expect(resolvedGoal.goalKcal, 2240);
-      expect(resolvedGoal.activityDeltaKcal, 140);
-      expect(resolvedGoal.activityComparisonKcal, 0);
+      expect(resolvedGoal.goalKcal, 2150);
+      expect(resolvedGoal.activityDeltaKcal, 50);
+      expect(resolvedGoal.activityComparisonKcal, 100);
+      expect(resolvedGoal.expectedActivityKcal, 500);
       expect(resolvedGoal.todayActiveKcal, 600);
+      expect(resolvedGoal.isActivityTrackingActive, isTrue);
       expect(resolvedGoal.usedLearnedTdee, isFalse);
-      expect(resolvedGoal.usesBootstrapActivityBonus, isTrue);
+      expect(resolvedGoal.usesPreLearningActivityBonus, isTrue);
     },
   );
 
   test(
-    'adds bootstrap workout bonus before learned TDEE on a full day',
+    'treats missing tracking start as today and ignores earlier health data',
+    () async {
+      final today = DateTime.now();
+      final selectedDay = today.subtract(const Duration(days: 1));
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: const CalorieGoalSettings.empty().applyGoalChange(
+          dailyKcalGoal: 2100,
+          changedAt: DateTime(2026, 4, 13, 9),
+          calculatorProfile: null,
+          expectedActivityKcal: 500,
+        ),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          calorieBalanceNowProvider.overrideWith(
+            (ref) =>
+                () => today,
+          ),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          healthConnectionServiceProvider.overrideWith(
+            (ref) => FakeHealthConnectionService(_readyStatus),
+          ),
+          diaryHealthServiceProvider.overrideWith(
+            (ref) => FakeDiaryHealthService(
+              <String, DiaryHealthDayData>{
+                diaryDayKey(selectedDay): DiaryHealthDayData(
+                  totalSteps: 5000,
+                  workouts: <HealthWorkoutSession>[
+                    HealthWorkoutSession(
+                      id: 'before-tracking-run',
+                      start: selectedDay.add(const Duration(hours: 18)),
+                      endExclusive: selectedDay.add(
+                        const Duration(hours: 19),
+                      ),
+                      durationMinutes: 60,
+                      activityLabel: 'Run',
+                      sourceName: 'Health',
+                      totalCalories: 400,
+                      totalSteps: 0,
+                    ),
+                  ],
+                ),
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final resolvedGoal = await container.read(
+        resolvedCalorieGoalForDayProvider(selectedDay).future,
+      );
+      final persistedSettings = await settingsRepository.readSettings();
+
+      expect(persistedSettings.activityTrackingStartDate, isNull);
+      expect(resolvedGoal.isActivityTrackingActive, isFalse);
+      expect(resolvedGoal.todayActiveKcal, 0);
+      expect(resolvedGoal.activityDeltaKcal, 0);
+      expect(resolvedGoal.activityComparisonKcal, 0);
+      expect(resolvedGoal.goalKcal, 2100);
+    },
+  );
+
+  test(
+    'adds positive activity delta before learned TDEE on a full day',
     () async {
       final today = DateTime(2026, 4, 15);
-      final settings = const CalorieGoalSettings.empty().applyGoalChange(
-        dailyKcalGoal: 2100,
-        changedAt: DateTime(2026, 4, 14, 9),
-        calculatorProfile: null,
-      );
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            dailyKcalGoal: 2100,
+            changedAt: DateTime(2026, 4, 14, 9),
+            calculatorProfile: null,
+            expectedActivityKcal: 500,
+          )
+          .copyWith(activityTrackingStartDate: today);
       final diaryHealthService = FakeDiaryHealthService(
         <String, DiaryHealthDayData>{
           diaryDayKey(today): DiaryHealthDayData(
@@ -141,22 +218,26 @@ void main() {
       );
 
       expect(resolvedGoal.storedGoalKcal, 2100);
-      expect(resolvedGoal.activityDeltaKcal, 140);
-      expect(resolvedGoal.activityComparisonKcal, 0);
-      expect(resolvedGoal.goalKcal, 2240);
+      expect(resolvedGoal.activityDeltaKcal, 50);
+      expect(resolvedGoal.activityComparisonKcal, 100);
+      expect(resolvedGoal.expectedActivityKcal, 500);
+      expect(resolvedGoal.goalKcal, 2150);
       expect(resolvedGoal.todayActiveKcal, 600);
+      expect(resolvedGoal.isActivityTrackingActive, isTrue);
       expect(resolvedGoal.usedLearnedTdee, isFalse);
-      expect(resolvedGoal.usesBootstrapActivityBonus, isTrue);
+      expect(resolvedGoal.usesPreLearningActivityBonus, isTrue);
     },
   );
 
-  test('skips bootstrap workout bonus on a partial first day', () async {
+  test('does not add activity delta without an expected baseline', () async {
     final today = DateTime(2026, 4, 15, 18);
-    final settings = const CalorieGoalSettings.empty().applyGoalChange(
-      changedAt: today,
-      dailyKcalGoal: 2100,
-      calculatorProfile: null,
-    );
+    final settings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          changedAt: today,
+          dailyKcalGoal: 2100,
+          calculatorProfile: null,
+        )
+        .copyWith(activityTrackingStartDate: today);
 
     final container = _createContainer(
       today: today,
@@ -190,11 +271,14 @@ void main() {
     expect(resolvedGoal.goalKcal, 2100);
     expect(resolvedGoal.activityDeltaKcal, 0);
     expect(resolvedGoal.activityComparisonKcal, 0);
-    expect(resolvedGoal.usesBootstrapActivityBonus, isFalse);
+    expect(resolvedGoal.expectedActivityKcal, 0);
+    expect(resolvedGoal.todayActiveKcal, 500);
+    expect(resolvedGoal.isActivityTrackingActive, isTrue);
+    expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
   });
 
   test(
-    'does not clamp a bootstrap resolved goal above the 1200 floor',
+    'does not clamp a resolved goal above the 1200 floor',
     () async {
       final today = DateTime(2026, 4, 15);
       final settings = const CalorieGoalSettings.empty().applyGoalChange(
@@ -226,14 +310,17 @@ void main() {
   );
 
   test(
-    'skips bootstrap workout bonus when first-day start has only microseconds',
+    'same-day starter still compares against expected activity baseline',
     () async {
       final today = DateTime(2026, 4, 15, 0, 0, 0, 0, 1);
-      final settings = const CalorieGoalSettings.empty().applyGoalChange(
-        changedAt: today,
-        dailyKcalGoal: 2100,
-        calculatorProfile: null,
-      );
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: today,
+            dailyKcalGoal: 2100,
+            calculatorProfile: null,
+            expectedActivityKcal: 300,
+          )
+          .copyWith(activityTrackingStartDate: today);
 
       final container = _createContainer(
         today: today,
@@ -264,10 +351,11 @@ void main() {
         resolvedCalorieGoalForDayProvider(today).future,
       );
 
-      expect(resolvedGoal.goalKcal, 2100);
-      expect(resolvedGoal.activityDeltaKcal, 0);
-      expect(resolvedGoal.activityComparisonKcal, 0);
-      expect(resolvedGoal.usesBootstrapActivityBonus, isFalse);
+      expect(resolvedGoal.goalKcal, 2175);
+      expect(resolvedGoal.activityDeltaKcal, 75);
+      expect(resolvedGoal.activityComparisonKcal, 150);
+      expect(resolvedGoal.expectedActivityKcal, 300);
+      expect(resolvedGoal.usesPreLearningActivityBonus, isTrue);
     },
   );
 
@@ -294,7 +382,8 @@ void main() {
               averageActiveKcal: 200,
               lowConfidence: false,
             ),
-          );
+          )
+          .copyWith(activityTrackingStartDate: today);
 
       final container = _createContainer(
         today: today,
@@ -325,11 +414,11 @@ void main() {
         resolvedCalorieGoalForDayProvider(today).future,
       );
 
-      expect(resolvedGoal.activityDeltaKcal, 100);
+      expect(resolvedGoal.activityDeltaKcal, 50);
       expect(resolvedGoal.activityComparisonKcal, 100);
-      expect(resolvedGoal.goalKcal, 2200);
+      expect(resolvedGoal.goalKcal, 2150);
       expect(resolvedGoal.usedLearnedTdee, isTrue);
-      expect(resolvedGoal.usesBootstrapActivityBonus, isFalse);
+      expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
     },
   );
 
@@ -357,7 +446,8 @@ void main() {
               averageActiveKcal: 200,
               lowConfidence: false,
             ),
-          );
+          )
+          .copyWith(activityTrackingStartDate: selectedDay);
 
       final container = _createContainer(
         today: today,
@@ -389,10 +479,10 @@ void main() {
       );
 
       expect(resolvedGoal.activityComparisonKcal, 100);
-      expect(resolvedGoal.activityDeltaKcal, 100);
-      expect(resolvedGoal.goalKcal, 2200);
+      expect(resolvedGoal.activityDeltaKcal, 50);
+      expect(resolvedGoal.goalKcal, 2150);
       expect(resolvedGoal.usedLearnedTdee, isTrue);
-      expect(resolvedGoal.usesBootstrapActivityBonus, isFalse);
+      expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
     },
   );
 
@@ -419,7 +509,8 @@ void main() {
               averageActiveKcal: 400,
               lowConfidence: false,
             ),
-          );
+          )
+          .copyWith(activityTrackingStartDate: today);
 
       final container = _createContainer(
         today: today,

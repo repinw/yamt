@@ -131,7 +131,7 @@ void main() {
   });
 
   test(
-    'calorieWeekOverview excludes past activity bonus from carryover',
+    'calorieWeekOverview includes past activity bonus in spread carryover',
     () async {
       final today = DateTime(2026, 4, 10);
       final yesterday = today.subtract(const Duration(days: 1));
@@ -149,6 +149,8 @@ void main() {
           dailyKcalGoal: 2000,
           calculatorProfile: null,
           effectiveDate: yesterday,
+          expectedActivityKcal: 0,
+          activityTrackingStartDate: yesterday,
         ),
       );
       addTearDown(logRepository.dispose);
@@ -193,8 +195,8 @@ void main() {
       addTearDown(subscription.close);
       final overview = await container.read(provider.future);
 
-      expect(overview.carryoverBeforeTodayKcal, 500);
-      expect(overview.todayFlexibleGoalKcal, 2500);
+      expect(overview.carryoverBeforeTodayKcal, closeTo(166.667, 0.001));
+      expect(overview.todayFlexibleGoalKcal, closeTo(2166.667, 0.001));
     },
   );
 
@@ -613,8 +615,8 @@ void main() {
     expect(overview.totalConsumedKcal, 3800);
     expect(overview.totalGoalKcal, 3600);
     expect(overview.remainingKcal, -200);
-    expect(overview.carryoverBeforeTodayKcal, -300);
-    expect(overview.todayFlexibleGoalKcal, 1500);
+    expect(overview.carryoverBeforeTodayKcal, -50);
+    expect(overview.todayFlexibleGoalKcal, 1750);
   });
 
   test(
@@ -666,8 +668,8 @@ void main() {
       final overview = await container.read(calorieWeekOverviewProvider.future);
 
       expect(overview.balanceStartDate, cycleStartDay);
-      expect(overview.carryoverBeforeTodayKcal, closeTo(-300, 0.001));
-      expect(overview.todayFlexibleGoalKcal, closeTo(1700, 0.001));
+      expect(overview.carryoverBeforeTodayKcal, closeTo(-60, 0.001));
+      expect(overview.todayFlexibleGoalKcal, closeTo(1940, 0.001));
       expect(overview.totalConsumedKcal, 18300);
       expect(overview.totalGoalKcal, 20000);
       expect(overview.remainingKcal, 1700);
@@ -744,8 +746,8 @@ void main() {
       final overview = await container.read(calorieWeekOverviewProvider.future);
 
       expect(overview.balanceStartDate, cycleStartDay);
-      expect(overview.carryoverBeforeTodayKcal, closeTo(-300, 0.001));
-      expect(overview.todayFlexibleGoalKcal, closeTo(1600, 0.001));
+      expect(overview.carryoverBeforeTodayKcal, closeTo(-60, 0.001));
+      expect(overview.todayFlexibleGoalKcal, closeTo(1840, 0.001));
     },
   );
 

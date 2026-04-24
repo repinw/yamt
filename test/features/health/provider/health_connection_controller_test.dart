@@ -2,10 +2,14 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
 import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
+
+import '../../calories/support/fake_calories_repositories.dart';
 
 const _installRequiredStatus = HealthConnectionStatus(
   platform: HealthPlatform.android,
@@ -100,9 +104,16 @@ class _FakeHealthConnectionService implements HealthConnectionService {
 }
 
 ProviderContainer _createContainer(_FakeHealthConnectionService service) {
+  final calorieSettingsRepository = FakeCalorieSettingsRepository();
   final container = ProviderContainer(
-    overrides: [healthConnectionServiceProvider.overrideWith((ref) => service)],
+    overrides: [
+      calorieSettingsRepositoryProvider.overrideWithValue(
+        calorieSettingsRepository,
+      ),
+      healthConnectionServiceProvider.overrideWith((ref) => service),
+    ],
   );
+  addTearDown(calorieSettingsRepository.dispose);
   addTearDown(container.dispose);
   return container;
 }
@@ -186,6 +197,36 @@ void main() {
       expect(service.requestHistoryAuthorizationCallCount, 1);
     },
   );
+
+  test('ready authorization marks activity tracking start day', () async {
+    final service = _FakeHealthConnectionService()
+      ..status = _permissionRequiredStatus
+      ..onRequestAuthorization = () async => _readyStatus;
+    final calorieSettingsRepository = FakeCalorieSettingsRepository();
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(
+          calorieSettingsRepository,
+        ),
+        healthConnectionServiceProvider.overrideWith((ref) => service),
+      ],
+    );
+    addTearDown(calorieSettingsRepository.dispose);
+    addTearDown(container.dispose);
+
+    final expectedTrackingStartBefore = normalizeDiaryDay(DateTime.now());
+    await container.read(healthConnectionControllerProvider.future);
+    await container
+        .read(healthConnectionControllerProvider.notifier)
+        .requestAuthorization();
+    final settings = await calorieSettingsRepository.readSettings();
+    final expectedTrackingStartAfter = normalizeDiaryDay(DateTime.now());
+
+    expect([
+      expectedTrackingStartBefore,
+      expectedTrackingStartAfter,
+    ], contains(settings.activityTrackingStartDate));
+  });
 
   test(
     'requestAuthorization returns fallback status when service throws',

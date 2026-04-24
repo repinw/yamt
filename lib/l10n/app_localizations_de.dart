@@ -1295,21 +1295,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesGoalStartSaveFailed => 'Der Zielstart konnte nicht aktualisiert werden.';
 
   @override
-  String get caloriesEatingWindowDialogTitle => 'Essensfenster setzen';
-
-  @override
-  String get caloriesEatingWindowStartLabel => 'Beginn';
-
-  @override
-  String get caloriesEatingWindowEndLabel => 'Ende';
-
-  @override
-  String get caloriesEatingWindowInvalidRange => 'Die Endzeit muss nach der Startzeit liegen.';
-
-  @override
-  String get caloriesEatingWindowSaveFailed => 'Das Essensfenster konnte nicht aktualisiert werden.';
-
-  @override
   String get caloriesCalculatorSheetTitle => 'Kalorienrechner';
 
   @override
@@ -1486,12 +1471,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorOnboardingCatchUpHint => 'Wir setzen dich sicher in die heutige Pufferzone.';
 
   @override
-  String get caloriesCalculatorEatingWindowLabel => 'Essensfenster';
-
-  @override
-  String get caloriesCalculatorEatingWindowHint => 'Wird verwendet, um die heutige Tagebuch-Balance über den Tag zu takten.';
-
-  @override
   String caloriesCalculatorMinimumGoalWarning(int minimumKcal) {
     return 'Beim Abnehmen darf das tägliche Ziel nicht unter $minimumKcal kcal fallen. Das Ergebnis wurde auf dieses Minimum begrenzt.';
   }
@@ -1501,6 +1480,29 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesCalculatorSaveFailed => 'Das berechnete Kalorienziel konnte nicht gespeichert werden.';
+
+  @override
+  String get caloriesGoalStartFoodTrackingTitle => 'Hast du dein Essen heute getrackt?';
+
+  @override
+  String caloriesGoalStartFoodTrackingBody(int entryCount) {
+    return 'Ich habe heute $entryCount Essenseinträge gefunden. Soll heute als voller Tracking-Tag für dieses neue Ziel zählen?';
+  }
+
+  @override
+  String get caloriesGoalStartNoFoodTrackingTitle => 'Heute kein Essen getrackt';
+
+  @override
+  String get caloriesGoalStartNoFoodTrackingBody => 'Heute wird ein Starter-Tag. Dein neues Ziel startet jetzt, aber das wöchentliche Lernen startet morgen.';
+
+  @override
+  String get caloriesGoalStartFoodTrackingNoAction => 'Frisch starten';
+
+  @override
+  String get caloriesGoalStartFoodTrackingYesAction => 'Heute mitzählen';
+
+  @override
+  String get caloriesGoalStartFoodTrackingOkAction => 'OK';
 
   @override
   String get caloriesLearnedTdeeSheetTitle => 'Ziel aus gelerntem TDEE neu berechnen';
@@ -1548,7 +1550,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesActivityVsUsualLabel => 'Aktivität vs. üblich';
 
   @override
-  String get caloriesActivityWorkoutBonusLabel => 'Trainingsbonus';
+  String get caloriesActivityWorkoutBonusLabel => 'Aktivitätsbonus';
 
   @override
   String get caloriesActivityLearningHint => 'Wir lernen dein Aktivitätsmuster noch.';
@@ -1757,10 +1759,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get calorieBudgetDetailsClassicTitle => 'Klassisch-Details';
 
   @override
-  String get calorieBudgetDetailsClassicExplanation => 'Klassisch startet mit deinem gespeicherten Tagesziel. Optionale Schalter addieren heutige Extra-Aktivität und den Übertrag aus abgeschlossenen Tagen. Verbleibend = Budget - heute erfasstes Essen.';
+  String get calorieBudgetDetailsClassicExplanation => 'Das Budget startet mit deinem gespeicherten Tagesziel. Extra-Aktivität ist die Hälfte der Kalorien über deiner erwarteten Aktivitäts-Basis. Übertrag ist die Bilanz abgeschlossener Tage, verteilt auf die übrigen Tage dieses 7-Tage-Runs. Klassisch kann Aktivität und Übertrag in dieser Ansicht ausblenden; Balance rechnet beides automatisch ein.';
 
   @override
-  String get calorieBudgetDetailsBalanceExplanation => 'Balance berechnet automatisch neu. Heute übrig nutzt dasselbe Tagesbudget wie Klassisch mit beiden Schaltern an: Basisziel + heutige Aktivität + Übertrag - Essen heute. Der Balken bleibt auf die aktuelle Woche getaktet.';
+  String get calorieBudgetDetailsBalanceExplanation => 'Das Budget startet mit deinem gespeicherten Tagesziel. Extra-Aktivität ist die Hälfte der Kalorien über deiner erwarteten Aktivitäts-Basis. Übertrag ist die Bilanz abgeschlossener Tage, verteilt auf die übrigen Tage dieses 7-Tage-Runs. Klassisch kann Aktivität und Übertrag in dieser Ansicht ausblenden; Balance rechnet beides automatisch ein.';
 
   @override
   String get calorieBudgetDetailsBaseGoal => 'Basisziel';
@@ -1793,7 +1795,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get calorieBudgetDetailsCarryoverRule => 'Übertrag-Regel';
 
   @override
-  String get calorieBudgetDetailsCarryoverRuleValue => 'Übertrag nutzt abgeschlossene Tage mit ihren Basiszielen. Aktivitätsbonus gilt nur für den Tag selbst und wird nicht in künftigen Übertrag gespeichert.';
+  String get calorieBudgetDetailsCarryoverRuleValue => 'Übertrag nutzt abgeschlossene Tage mit ihrem ganzen verfügbaren Ziel inklusive Aktivitätsbonus und verteilt das Ergebnis auf die übrigen Run-Tage.';
 
   @override
   String get burnWeekDetailsTitle => 'Burn-Week-Details';
@@ -1844,7 +1846,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get burnWeekDetailsSportCounting => 'Sport-Zählung';
 
   @override
-  String get burnWeekDetailsSportCountingValue => 'Erwartete Aktivität steckt bereits im Basisziel. Nur Aktivität über dieser Erwartung wird als essbare kcal addiert.';
+  String get burnWeekDetailsSportCountingValue => 'Erwartete Aktivität steckt bereits im Basisziel. Die Hälfte der Aktivität über dieser Erwartung wird als essbare kcal addiert.';
 
   @override
   String get burnWeekDetailsSafeZone => 'Sicherheitszone';
@@ -2282,11 +2284,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsDiaryTitle => 'Tagebuch';
-
-  @override
-  String settingsDiarySubtitle(String window) {
-    return 'Essensfenster: $window';
-  }
 
   @override
   String get settingsColorTitle => 'Akzentfarbe';
