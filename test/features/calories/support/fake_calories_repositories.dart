@@ -19,7 +19,7 @@ import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/product_nutrition/data/'
-    'nutrition_label_ocr_repository_contract.dart';
+    'nutrition_label_ocr_repository.dart';
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
 
@@ -424,8 +424,7 @@ class FakeCalorieProductLookupRepository
   }
 }
 
-class FakeNutritionLabelOcrRepository
-    implements NutritionLabelOcrRepositoryContract {
+class FakeNutritionLabelOcrRepository implements NutritionLabelOcrRepository {
   FakeNutritionLabelOcrRepository({required this.onScanNutritionLabel});
 
   final Future<NutritionLabelOcrResult> Function(String barcode)

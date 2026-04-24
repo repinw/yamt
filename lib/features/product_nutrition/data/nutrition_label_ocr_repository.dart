@@ -9,8 +9,6 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/product_nutrition/data/'
-    'nutrition_label_ocr_repository_contract.dart';
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
 
@@ -36,26 +34,21 @@ abstract final class NutritionLabelOcrErrorCodes {
   static const parseFailed = 'ocr_parse_failed';
 }
 
-/// Defines nutrition label template config client.
-abstract interface class NutritionLabelTemplateConfigClient {
-  /// Load template id.
-  Future<String> loadTemplateId();
-}
+/// Loads nutrition label template id.
+typedef NutritionLabelTemplateConfigClient = Future<String> Function();
 
-/// Defines nutrition label template model client.
-abstract interface class NutritionLabelTemplateModelClient {
-  /// Generate content.
-  Future<String?> generateContent({
-    required String templateId,
-    required Map<String, Object?> inputs,
-  });
-}
+/// Generates nutrition label template content.
+typedef NutritionLabelTemplateModelClient =
+    Future<String?> Function({
+      required String templateId,
+      required Map<String, Object?> inputs,
+    });
 
 /// Nutrition label OCR repository.
 @riverpod
-NutritionLabelOcrRepositoryContract nutritionLabelOcrRepository(Ref ref) {
+NutritionLabelOcrRepository nutritionLabelOcrRepository(Ref ref) {
   final imagePicker = ref.watch(nutritionLabelImagePickerProvider);
-  return _FirebaseNutritionLabelOcrRepository(
+  return NutritionLabelOcrRepository(
     imagePicker: imagePicker,
     configClient: ref.watch(nutritionLabelTemplateConfigClientProvider),
     modelClient: ref.watch(nutritionLabelTemplateModelClientProvider),
@@ -71,56 +64,28 @@ ImagePicker nutritionLabelImagePicker(Ref ref) {
 /// Nutrition label template config client.
 @riverpod
 NutritionLabelTemplateConfigClient nutritionLabelTemplateConfigClient(Ref ref) {
-  return const _StaticNutritionLabelTemplateConfigClient(
-    templateId: _ocrTemplateId,
-  );
+  return () async => _ocrTemplateId;
 }
 
 /// Nutrition label template model client.
 @riverpod
 NutritionLabelTemplateModelClient nutritionLabelTemplateModelClient(Ref ref) {
-  return _FirebaseNutritionLabelTemplateModelClient(
-    model: FirebaseAI.vertexAI(
-      location: _vertexLocation,
-    ).templateGenerativeModel(),
-  );
-}
-
-class _StaticNutritionLabelTemplateConfigClient
-    implements NutritionLabelTemplateConfigClient {
-  const _StaticNutritionLabelTemplateConfigClient({
-    required this.templateId,
-  });
-
-  final String templateId;
-
-  @override
-  Future<String> loadTemplateId() async {
-    return templateId;
-  }
-}
-
-class _FirebaseNutritionLabelTemplateModelClient
-    implements NutritionLabelTemplateModelClient {
-  _FirebaseNutritionLabelTemplateModelClient({
-    required TemplateGenerativeModel model,
-  }) : _model = model;
-
-  final TemplateGenerativeModel _model;
-
-  @override
-  Future<String?> generateContent({
+  final model = FirebaseAI.vertexAI(
+    location: _vertexLocation,
+  ).templateGenerativeModel();
+  return ({
     required String templateId,
     required Map<String, Object?> inputs,
   }) async {
-    final response = await _model.generateContent(templateId, inputs: inputs);
+    final response = await model.generateContent(templateId, inputs: inputs);
     return response.text;
-  }
+  };
 }
 
-class _FirebaseNutritionLabelOcrRepository
-    implements NutritionLabelOcrRepositoryContract {
-  _FirebaseNutritionLabelOcrRepository({
+/// Scans nutrition labels with Firebase AI.
+class NutritionLabelOcrRepository {
+  /// Creates nutrition label OCR repository.
+  NutritionLabelOcrRepository({
     required ImagePicker imagePicker,
     required NutritionLabelTemplateConfigClient configClient,
     required NutritionLabelTemplateModelClient modelClient,
@@ -132,7 +97,7 @@ class _FirebaseNutritionLabelOcrRepository
   final NutritionLabelTemplateConfigClient _configClient;
   final NutritionLabelTemplateModelClient _modelClient;
 
-  @override
+  /// Scan nutrition label.
   Future<NutritionLabelOcrResult> scanNutritionLabel({
     required String barcode,
   }) async {
@@ -173,7 +138,7 @@ class _FirebaseNutritionLabelOcrRepository
       }
 
       log('Calling OCR model with template "$templateId".', name: _ocrLogName);
-      final responseText = await _modelClient.generateContent(
+      final responseText = await _modelClient(
         templateId: templateId,
         inputs: <String, Object?>{
           'mimeType': mimeType,
@@ -219,7 +184,7 @@ class _FirebaseNutritionLabelOcrRepository
 
   Future<String?> _loadTemplateId() async {
     try {
-      final templateId = await _configClient.loadTemplateId();
+      final templateId = await _configClient();
       log('Resolved OCR template id: $templateId', name: _ocrLogName);
       return templateId;
     } on Object catch (error, stackTrace) {
@@ -321,9 +286,13 @@ class _FirebaseNutritionLabelOcrRepository
         .replaceAll('```json', '')
         .replaceAll('```', '')
         .trim();
-    final decoded = jsonDecode(cleaned);
-    if (decoded is Map<String, dynamic>) {
-      return decoded;
+    try {
+      final decoded = jsonDecode(cleaned);
+      if (decoded is Map<String, dynamic>) {
+        return decoded;
+      }
+    } on FormatException {
+      return null;
     }
     return null;
   }
