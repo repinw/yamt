@@ -1262,8 +1262,8 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryManualAddEatSucceeded.
   ///
   /// In en, this message translates to:
-  /// **'{itemName} eaten.'**
-  String inventoryManualAddEatSucceeded(Object itemName);
+  /// **'Added to diary'**
+  String get inventoryManualAddEatSucceeded;
 
   /// No description provided for @inventoryManualAddSearchDialogTitle.
   ///
