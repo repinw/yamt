@@ -601,9 +601,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryManualAddSaved => 'Product added to inventory.';
 
   @override
-  String inventoryManualAddEatSucceeded(Object itemName) {
-    return '$itemName eaten.';
-  }
+  String get inventoryManualAddEatSucceeded => 'Added to diary';
 
   @override
   String get inventoryManualAddSearchDialogTitle => 'Product search';

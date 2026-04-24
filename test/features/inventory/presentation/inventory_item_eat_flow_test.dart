@@ -19,6 +19,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
+import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -248,97 +249,170 @@ ProviderSubscription<AsyncValue<List<CalorieEntry>>> _keepCaloriesAlive(
   InventoryItemsController,
   inventoryBackedCalorieEntrySaveFlow,
 ])
+class _DirectSaveFlowHarness {
+  _DirectSaveFlowHarness._({
+    required this.item,
+    required this.container,
+    required this.commitStore,
+    required this.pendingConsumption,
+  });
+
+  final InventoryItem item;
+  final ProviderContainer container;
+  final _RecordingCommitStore commitStore;
+  final PendingInventoryConsumption pendingConsumption;
+  CalorieEntryCreateArgs? openedArgs;
+
+  static Future<_DirectSaveFlowHarness> pump({
+    required WidgetTester tester,
+    required InventoryItem item,
+    required InventoryItemEatRequest request,
+  }) async {
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[item],
+    );
+    final calorieLogRepository = FakeCalorieLogRepository();
+    final commitStore = _RecordingCommitStore();
+    final auth = _MockFirebaseAuth();
+    final user = _MockUser();
+    addTearDown(repository.dispose);
+    addTearDown(calorieLogRepository.dispose);
+
+    when(() => user.uid).thenReturn('user-1');
+    when(() => auth.currentUser).thenReturn(user);
+
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(commitStore),
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        firebaseAuthProvider.overrideWithValue(auth),
+      ],
+    );
+    addTearDown(container.dispose);
+    container
+        .read(calorieDayControllerProvider.notifier)
+        .setDay(
+          request.loggedAt,
+        );
+    final inventorySubscription = _keepInventoryAlive(container);
+    final caloriesSubscription = _keepCaloriesAlive(container);
+    addTearDown(inventorySubscription.close);
+    addTearDown(caloriesSubscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final pendingConsumption = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .stagePendingConsumption(item.id, request.inventoryAmount);
+    expect(pendingConsumption, isNotNull);
+
+    final harness = _DirectSaveFlowHarness._(
+      item: item,
+      container: container,
+      commitStore: commitStore,
+      pendingConsumption: pendingConsumption!,
+    );
+    final router = GoRouter(
+      routes: <RouteBase>[
+        GoRoute(
+          path: AppRoutes.root,
+          builder: (context, state) {
+            return Scaffold(
+              body: _CompleteEatFlowButton(
+                item: item,
+                request: request,
+                pendingConsumptionId: harness.pendingConsumption.id,
+              ),
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.homeCaloriesEntryCreate,
+          builder: (context, state) {
+            harness.openedArgs = state.extra as CalorieEntryCreateArgs?;
+            return const Scaffold(body: Text('editor'));
+          },
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      routerAppWithContainer(container: container, router: router),
+    );
+    return harness;
+  }
+
+  Future<void> complete(WidgetTester tester) async {
+    await tester.tap(find.text('eat'));
+    await tester.pumpAndSettle();
+  }
+}
+
+@Dependencies([
+  InventoryItemsController,
+  inventoryBackedCalorieEntrySaveFlow,
+])
 void main() {
+  test('shouldAwaitCompletion mirrors direct-save policy', () {
+    final loggedAt = DateTime.parse('2026-04-06T12:30:00Z');
+
+    expect(
+      InventoryItemEatFlow.shouldAwaitCompletion(
+        _amountItemWithNutrition(),
+        InventoryItemEatRequest(
+          inventoryAmount: 250,
+          loggedAt: loggedAt,
+          mealType: MealType.lunch,
+        ),
+      ),
+      isTrue,
+    );
+    expect(
+      InventoryItemEatFlow.shouldAwaitCompletion(
+        _portionItemWithNutrition(),
+        InventoryItemEatRequest(
+          inventoryAmount: 1,
+          loggedAt: loggedAt,
+          mealType: MealType.lunch,
+        ),
+      ),
+      isFalse,
+    );
+  });
+
   testWidgets(
     'complete direct-saves piece portions without opening calorie editor',
     (tester) async {
       final item = _portionItemWithNutrition();
-      final repository = _FakeInventoryItemRepository(
-        initialItems: <InventoryItem>[item],
-      );
-      final calorieLogRepository = FakeCalorieLogRepository();
-      final commitStore = _RecordingCommitStore();
-      final auth = _MockFirebaseAuth();
-      final user = _MockUser();
-      CalorieEntryCreateArgs? openedArgs;
-      addTearDown(repository.dispose);
-      addTearDown(calorieLogRepository.dispose);
-
-      when(() => user.uid).thenReturn('user-1');
-      when(() => auth.currentUser).thenReturn(user);
-
-      final container = ProviderContainer(
-        overrides: [
-          inventoryItemRepositoryProvider.overrideWithValue(repository),
-          inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
-            commitStore,
-          ),
-          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
-          firebaseAuthProvider.overrideWithValue(auth),
-        ],
-      );
-      addTearDown(container.dispose);
-      final inventorySubscription = _keepInventoryAlive(container);
-      final caloriesSubscription = _keepCaloriesAlive(container);
-      addTearDown(inventorySubscription.close);
-      addTearDown(caloriesSubscription.close);
-
-      await container.read(inventoryItemsControllerProvider.future);
-      final pendingConsumption = await container
-          .read(inventoryItemsControllerProvider.notifier)
-          .stagePendingConsumption(item.id, 1);
-      expect(pendingConsumption, isNotNull);
-      final resolvedPendingConsumption = pendingConsumption!;
       final loggedAt = DateTime.parse('2026-04-06T18:45:00Z');
-
-      final router = GoRouter(
-        routes: <RouteBase>[
-          GoRoute(
-            path: AppRoutes.root,
-            builder: (context, state) {
-              return Scaffold(
-                body: _CompleteEatFlowButton(
-                  item: item,
-                  request: InventoryItemEatRequest(
-                    inventoryAmount: 1,
-                    loggedAt: loggedAt,
-                    mealType: MealType.dinner,
-                    calorieAmount: 2.5,
-                    calorieUnit: ConsumedUnit.grams,
-                    portionBaseAmount: 2.5,
-                    portionBaseUnit: ConsumedUnit.grams,
-                    portionCount: 1,
-                  ),
-                  pendingConsumptionId: resolvedPendingConsumption.id,
-                ),
-              );
-            },
-          ),
-          GoRoute(
-            path: AppRoutes.homeCaloriesEntryCreate,
-            builder: (context, state) {
-              openedArgs = state.extra as CalorieEntryCreateArgs?;
-              return const Scaffold(body: Text('editor'));
-            },
-          ),
-        ],
+      final harness = await _DirectSaveFlowHarness.pump(
+        tester: tester,
+        item: item,
+        request: InventoryItemEatRequest(
+          inventoryAmount: 1,
+          loggedAt: loggedAt,
+          mealType: MealType.dinner,
+          calorieAmount: 2.5,
+          calorieUnit: ConsumedUnit.grams,
+          portionBaseAmount: 2.5,
+          portionBaseUnit: ConsumedUnit.grams,
+          portionCount: 1,
+        ),
       );
 
-      await tester.pumpWidget(
-        routerAppWithContainer(container: container, router: router),
-      );
-
-      await tester.tap(find.text('eat'));
-      await tester.pumpAndSettle();
+      await harness.complete(tester);
 
       expect(find.text('editor'), findsNothing);
-      expect(openedArgs, isNull);
-      expect(commitStore.pendingConsumption?.id, resolvedPendingConsumption.id);
-      expect(commitStore.pendingConsumption?.amount, 1);
-      expect(commitStore.entry?.mealType, MealType.dinner);
-      expect(commitStore.entry?.loggedAt, loggedAt);
-      expect(commitStore.entry?.consumedAmount, 2.5);
-      expect(commitStore.entry?.consumedUnit, ConsumedUnit.grams);
+      expect(harness.openedArgs, isNull);
+      expect(
+        harness.commitStore.pendingConsumption?.id,
+        harness.pendingConsumption.id,
+      );
+      expect(harness.commitStore.pendingConsumption?.amount, 1);
+      expect(harness.commitStore.entry?.mealType, MealType.dinner);
+      expect(harness.commitStore.entry?.loggedAt, loggedAt);
+      expect(harness.commitStore.entry?.consumedAmount, 2.5);
+      expect(harness.commitStore.entry?.consumedUnit, ConsumedUnit.grams);
     },
   );
 
@@ -443,44 +517,62 @@ void main() {
     'complete direct-saves successfully without navigating to the editor',
     (tester) async {
       final item = _amountItemWithNutrition();
-      final repository = _FakeInventoryItemRepository(
-        initialItems: <InventoryItem>[item],
+      final harness = await _DirectSaveFlowHarness.pump(
+        tester: tester,
+        item: item,
+        request: InventoryItemEatRequest(
+          inventoryAmount: 250,
+          loggedAt: DateTime.parse('2026-04-06T12:30:00Z'),
+          mealType: MealType.lunch,
+        ),
       );
-      final calorieLogRepository = FakeCalorieLogRepository();
-      final commitStore = _RecordingCommitStore();
-      final auth = _MockFirebaseAuth();
-      final user = _MockUser();
+
+      await harness.complete(tester);
+
+      expect(find.text('editor'), findsNothing);
+      expect(harness.openedArgs, isNull);
+      expect(
+        harness.commitStore.pendingConsumption?.id,
+        harness.pendingConsumption.id,
+      );
+      expect(harness.commitStore.pendingConsumption?.amount, 250);
+      expect(harness.commitStore.entry?.mealType, MealType.lunch);
+      expect(harness.commitStore.entry?.consumedAmount, 250);
+      expect(
+        harness.container
+            .read(inventoryItemsControllerProvider.notifier)
+            .hasPendingConsumption(harness.pendingConsumption.id),
+        isFalse,
+      );
+      expect(
+        harness.container
+            .read(inventoryItemsControllerProvider)
+            .value
+            ?.single
+            .currentAmount,
+        500,
+      );
+      expect(
+        harness.container
+            .read(calorieEntriesControllerProvider)
+            .value
+            ?.single
+            .name,
+        item.name,
+      );
+      expect(
+        find.text('Ins Tagebuch eingetragen'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'complete opens calorie editor and shows feedback when editor saves',
+    (tester) async {
+      final item = _amountItemWithNutrition();
+      final loggedAt = DateTime.parse('2026-04-06T12:30:00Z');
       CalorieEntryCreateArgs? openedArgs;
-      addTearDown(repository.dispose);
-      addTearDown(calorieLogRepository.dispose);
-
-      when(() => user.uid).thenReturn('user-1');
-      when(() => auth.currentUser).thenReturn(user);
-
-      final container = ProviderContainer(
-        overrides: [
-          inventoryItemRepositoryProvider.overrideWithValue(repository),
-          inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
-            commitStore,
-          ),
-          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
-          firebaseAuthProvider.overrideWithValue(auth),
-        ],
-      );
-      addTearDown(container.dispose);
-      final inventorySubscription = _keepInventoryAlive(container);
-      final caloriesSubscription = _keepCaloriesAlive(container);
-      addTearDown(inventorySubscription.close);
-      addTearDown(caloriesSubscription.close);
-
-      await container.read(inventoryItemsControllerProvider.future);
-      final pendingConsumption = await container
-          .read(inventoryItemsControllerProvider.notifier)
-          .stagePendingConsumption(item.id, 250);
-      expect(pendingConsumption, isNotNull);
-      final resolvedPendingConsumption = pendingConsumption!;
-      final loggedAt = DateTime.now();
-
       final router = GoRouter(
         routes: <RouteBase>[
           GoRoute(
@@ -490,11 +582,12 @@ void main() {
                 body: _CompleteEatFlowButton(
                   item: item,
                   request: InventoryItemEatRequest(
-                    inventoryAmount: 250,
+                    inventoryAmount: 1,
                     loggedAt: loggedAt,
                     mealType: MealType.lunch,
+                    calorieAmount: 120,
+                    calorieUnit: ConsumedUnit.milliliters,
                   ),
-                  pendingConsumptionId: resolvedPendingConsumption.id,
                 ),
               );
             },
@@ -503,47 +596,30 @@ void main() {
             path: AppRoutes.homeCaloriesEntryCreate,
             builder: (context, state) {
               openedArgs = state.extra as CalorieEntryCreateArgs?;
-              return const Scaffold(body: Text('editor'));
+              return Scaffold(
+                body: ElevatedButton(
+                  onPressed: () => context.pop(true),
+                  child: const Text('save'),
+                ),
+              );
             },
           ),
         ],
       );
 
-      await tester.pumpWidget(
-        routerAppWithContainer(container: container, router: router),
-      );
+      await tester.pumpWidget(routerApp(router: router));
 
       await tester.tap(find.text('eat'));
       await tester.pumpAndSettle();
 
-      expect(find.text('editor'), findsNothing);
-      expect(openedArgs, isNull);
-      expect(commitStore.pendingConsumption?.id, resolvedPendingConsumption.id);
-      expect(commitStore.pendingConsumption?.amount, 250);
-      expect(commitStore.entry?.mealType, MealType.lunch);
-      expect(commitStore.entry?.consumedAmount, 250);
-      expect(
-        container
-            .read(inventoryItemsControllerProvider.notifier)
-            .hasPendingConsumption(resolvedPendingConsumption.id),
-        isFalse,
-      );
-      expect(
-        container
-            .read(inventoryItemsControllerProvider)
-            .value
-            ?.single
-            .currentAmount,
-        500,
-      );
-      expect(
-        container.read(calorieEntriesControllerProvider).value?.single.name,
-        item.name,
-      );
-      expect(
-        find.text('${item.name} gegessen.'),
-        findsOneWidget,
-      );
+      expect(openedArgs?.preselectedMealType, MealType.lunch);
+      expect(openedArgs?.preselectedLoggedAt, loggedAt);
+      expect(openedArgs?.inventoryContext?.pendingConsumptionId, 'pending-1');
+
+      await tester.tap(find.text('save'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ins Tagebuch eingetragen'), findsOneWidget);
     },
   );
 }

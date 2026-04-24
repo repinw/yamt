@@ -45,9 +45,7 @@ class InventoryItemEatFlow {
   }) async {
     try {
       final l10n = AppLocalizations.of(context)!;
-      final successMessage = l10n.inventoryManualAddEatSucceeded(
-        itemBeforeMutation.name.trim(),
-      );
+      final successMessage = l10n.inventoryManualAddEatSucceeded;
       final profile = InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(
         itemBeforeMutation,
       );

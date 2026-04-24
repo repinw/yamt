@@ -273,7 +273,7 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.inventoryManualAddLookupFailed,
     l10n.inventoryManualAddSaveFailed,
     l10n.inventoryManualAddSaved,
-    l10n.inventoryManualAddEatSucceeded('Milk'),
+    l10n.inventoryManualAddEatSucceeded,
     l10n.inventoryManualAddSearchDialogTitle,
     l10n.inventoryManualAddEatNowOption,
     l10n.inventoryManualAddEatNowRequiresNutrition,

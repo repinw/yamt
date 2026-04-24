@@ -850,7 +850,7 @@ void main() {
     expect(inventoryCommitStore.pendingConsumption, isNotNull);
     expect(inventoryCommitStore.pendingConsumption?.itemId, isNotEmpty);
     expect(inventoryCommitStore.pendingConsumption?.amount, 1000);
-    expect(find.text('Milk eaten.'), findsOneWidget);
+    expect(find.text('Added to diary'), findsOneWidget);
   });
 
   testWidgets(
