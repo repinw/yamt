@@ -23,6 +23,9 @@ class NutritionMetricsStrip extends StatelessWidget {
     this.height = 72,
     this.radius = 24,
     this.dividerHeight = 28,
+    this.highlightedMetricIndex,
+    this.metricValueKeyPrefix,
+    this.metricLabelKeyPrefix,
   });
 
   /// The metrics to display.
@@ -39,6 +42,15 @@ class NutritionMetricsStrip extends StatelessWidget {
 
   /// The divider height.
   final double dividerHeight;
+
+  /// Optional metric index whose value uses the primary color.
+  final int? highlightedMetricIndex;
+
+  /// Optional key prefix for metric value text widgets.
+  final String? metricValueKeyPrefix;
+
+  /// Optional key prefix for metric label text widgets.
+  final String? metricLabelKeyPrefix;
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +79,9 @@ class NutritionMetricsStrip extends StatelessWidget {
                 child: _NutritionMetricCell(
                   metric: metrics[index],
                   colorScheme: resolvedColorScheme,
+                  isHighlighted: index == highlightedMetricIndex,
+                  valueKey: _metricKey(metricValueKeyPrefix, index),
+                  labelKey: _metricKey(metricLabelKeyPrefix, index),
                 ),
               ),
               if (index < metrics.length - 1)
@@ -86,19 +101,36 @@ class NutritionMetricsStrip extends StatelessWidget {
       ),
     );
   }
+
+  Key? _metricKey(String? prefix, int index) {
+    if (prefix == null || prefix.isEmpty) {
+      return null;
+    }
+    return Key('${prefix}_$index');
+  }
 }
 
 class _NutritionMetricCell extends StatelessWidget {
   const _NutritionMetricCell({
     required this.metric,
     required this.colorScheme,
+    required this.isHighlighted,
+    required this.valueKey,
+    required this.labelKey,
   });
 
   final NutritionMetric metric;
   final ColorScheme colorScheme;
+  final bool isHighlighted;
+  final Key? valueKey;
+  final Key? labelKey;
 
   @override
   Widget build(BuildContext context) {
+    final valueColor = isHighlighted
+        ? colorScheme.primary
+        : colorScheme.onSurface;
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.xs,
@@ -108,6 +140,7 @@ class _NutritionMetricCell extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
+            key: labelKey,
             metric.label.toUpperCase(),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -120,11 +153,12 @@ class _NutritionMetricCell extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xxs),
           Text(
+            key: valueKey,
             metric.value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: colorScheme.onSurface,
+              color: valueColor,
               fontWeight: FontWeight.w800,
             ),
           ),

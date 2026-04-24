@@ -1264,9 +1264,18 @@ void main() {
       );
       expect(amountField.controller?.text, '1.5');
 
-      await tester.enterText(find.byType(TextField).at(1), '150');
-
       final logButton = find.text('Log');
+      await tester.ensureVisible(logButton);
+      await tester.tap(logButton);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('inventory_item_portion_amount_field')),
+        '150',
+      );
+      await tester.tap(find.text('Save portion'));
+      await tester.pumpAndSettle();
+
       await tester.ensureVisible(logButton);
       await tester.tap(logButton);
       await tester.pumpAndSettle();
@@ -1278,6 +1287,7 @@ void main() {
         inventoryPieceAmountScale,
       );
       expect(inventoryRepository.appendedItems.single.currentAmount, 1500);
+      expect(inventoryCommitStore.pendingConsumption?.amount, 1500);
     },
   );
 

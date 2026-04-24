@@ -4,24 +4,30 @@ class _InventoryItemEatAmountCard extends StatelessWidget {
   const _InventoryItemEatAmountCard({
     required this.controller,
     required this.focusNode,
-    required this.unitLabel,
+    required this.modeOptions,
+    required this.selectedModeId,
     required this.errorText,
     required this.allowFractionalInput,
     required this.clearTooltip,
     required this.onChanged,
     required this.onClearAndFocus,
     required this.onSubmitted,
+    required this.onModeSelected,
   });
+
+  static const _amountFieldWidth = 100.0;
 
   final TextEditingController controller;
   final FocusNode focusNode;
-  final String? unitLabel;
+  final List<_InventoryItemEatAmountModeOption> modeOptions;
+  final String selectedModeId;
   final String? errorText;
   final bool allowFractionalInput;
   final String clearTooltip;
   final ValueChanged<String> onChanged;
   final VoidCallback onClearAndFocus;
   final VoidCallback onSubmitted;
+  final ValueChanged<String> onModeSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -30,72 +36,109 @@ class _InventoryItemEatAmountCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(
-                    AppInventoryEditorial.cardRadius,
-                  ),
-                  border: Border.all(
-                    color: AppInventoryEditorialSurfaces.ghostBorder(colors),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xxxl,
-                    vertical: AppSpacing.xxl,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          key: const Key('inventory_item_amount_dialog_field'),
-                          controller: controller,
-                          focusNode: focusNode,
-                          keyboardType: TextInputType.numberWithOptions(
-                            decimal: allowFractionalInput,
-                          ),
-                          textInputAction: TextInputAction.done,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: '0',
-                            isCollapsed: true,
-                          ),
-                          style: Theme.of(context).textTheme.displaySmall
-                              ?.copyWith(fontWeight: FontWeight.w800),
-                          onChanged: onChanged,
-                          onSubmitted: (_) => onSubmitted(),
-                        ),
-                      ),
-                      if (unitLabel != null) ...[
-                        const SizedBox(width: AppSpacing.md),
-                        Text(
-                          unitLabel!,
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: colors.onSurfaceVariant,
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(
+              color: colors.primary.withValues(
+                alpha: focusNode.hasFocus ? 0.72 : 0.28,
               ),
             ),
-            const SizedBox(width: AppSpacing.sm),
-            IconButton(
-              key: const Key('inventory_item_amount_dialog_clear_button'),
-              tooltip: clearTooltip,
-              onPressed: onClearAndFocus,
-              visualDensity: VisualDensity.compact,
-              icon: const Icon(Icons.cleaning_services_outlined),
-              color: colors.onSurfaceVariant,
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 64),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: _amountFieldWidth,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xxl,
+                      vertical: AppSpacing.lg,
+                    ),
+                    child: TextField(
+                      key: const Key('inventory_item_amount_dialog_field'),
+                      controller: controller,
+                      focusNode: focusNode,
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: allowFractionalInput,
+                      ),
+                      textInputAction: TextInputAction.done,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        hintText: '0',
+                        isCollapsed: true,
+                      ),
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        height: 1,
+                      ),
+                      onChanged: onChanged,
+                      onSubmitted: (_) => onSubmitted(),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 64,
+                  color: AppInventoryEditorialSurfaces.ghostBorder(colors),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: AppSpacing.lg,
+                      right: AppSpacing.md,
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        key: const Key(
+                          'inventory_item_amount_mode_dropdown',
+                        ),
+                        value: selectedModeId,
+                        isExpanded: true,
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                        dropdownColor: colors.surfaceContainerHigh,
+                        icon: Icon(
+                          Icons.expand_more_rounded,
+                          color: colors.onSurfaceVariant,
+                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: colors.onSurface,
+                              fontWeight: FontWeight.w700,
+                            ),
+                        items: [
+                          for (final option in modeOptions)
+                            DropdownMenuItem<String>(
+                              value: option.id,
+                              child: Text(
+                                option.label,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                        ],
+                        onChanged: (value) {
+                          if (value == null) {
+                            return;
+                          }
+                          onModeSelected(value);
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  key: const Key('inventory_item_amount_dialog_clear_button'),
+                  tooltip: clearTooltip,
+                  onPressed: onClearAndFocus,
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.close_rounded),
+                  color: colors.onSurfaceVariant,
+                ),
+              ],
             ),
-          ],
+          ),
         ),
         if (errorText != null) ...[
           const SizedBox(height: AppSpacing.sm),
@@ -190,16 +233,22 @@ class _InventoryItemEatInedibleAmountSection extends StatelessWidget {
     required this.amountFocusNode,
     required this.amountErrorText,
     required this.unitLabel,
+    required this.summaryText,
+    required this.isExpanded,
     required this.onAmountChanged,
     required this.onSubmitted,
+    required this.onToggleExpanded,
   });
 
   final TextEditingController amountController;
   final FocusNode amountFocusNode;
   final String? amountErrorText;
   final String unitLabel;
+  final String summaryText;
+  final bool isExpanded;
   final ValueChanged<String> onAmountChanged;
   final VoidCallback onSubmitted;
+  final VoidCallback onToggleExpanded;
 
   @override
   Widget build(BuildContext context) {
@@ -210,47 +259,68 @@ class _InventoryItemEatInedibleAmountSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _InventoryItemEatLeadingIcon(
-                icon: Icons.info_outline_rounded,
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              key: const Key('inventory_item_inedible_amount_toggle'),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              onTap: onToggleExpanded,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                child: Row(
                   children: [
-                    _InventoryItemEatCardTitle(
-                      text: l10n.inventoryItemEatSheetInedibleAmountLabel,
+                    const _InventoryItemEatLeadingIcon(
+                      icon: Icons.info_outline_rounded,
                     ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      l10n.inventoryItemEatSheetInedibleAmountHint,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colors.onSurfaceVariant,
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _InventoryItemEatCardTitle(
+                            text: l10n.inventoryItemEatSheetInedibleAmountLabel,
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            summaryText,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: colors.onSurfaceVariant),
+                          ),
+                        ],
                       ),
+                    ),
+                    Icon(
+                      isExpanded
+                          ? Icons.keyboard_arrow_up_rounded
+                          : Icons.chevron_right_rounded,
+                      color: colors.onSurfaceVariant,
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          TextField(
-            key: const Key('inventory_item_inedible_amount_dialog_field'),
-            controller: amountController,
-            focusNode: amountFocusNode,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            textInputAction: TextInputAction.done,
-            decoration: InputDecoration(
-              labelText: l10n.inventoryItemEatSheetInedibleAmountFieldLabel,
-              suffixText: unitLabel,
-              errorText: amountErrorText,
             ),
-            onChanged: onAmountChanged,
-            onSubmitted: (_) => onSubmitted(),
           ),
+          if (isExpanded) ...[
+            const SizedBox(height: AppSpacing.lg),
+            TextField(
+              key: const Key('inventory_item_inedible_amount_dialog_field'),
+              controller: amountController,
+              focusNode: amountFocusNode,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              textInputAction: TextInputAction.done,
+              decoration: InputDecoration(
+                labelText: l10n.inventoryItemEatSheetInedibleAmountFieldLabel,
+                suffixText: unitLabel,
+                errorText: amountErrorText,
+              ),
+              onChanged: onAmountChanged,
+              onSubmitted: (_) => onSubmitted(),
+            ),
+          ],
         ],
       ),
     );

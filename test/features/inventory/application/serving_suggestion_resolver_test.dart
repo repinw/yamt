@@ -130,6 +130,7 @@ void main() {
       servingQuantityUnit: 'kg',
     );
     final clItem = _amountItem(
+      unit: InventoryAmountUnit.milliliter,
       servingQuantity: 12.5,
       servingQuantityUnit: 'cl',
     );
@@ -212,5 +213,86 @@ void main() {
 
     expect(resolution.manualServingSuggestions, isEmpty);
     expect(resolution.inventoryServingOptions, isEmpty);
+  });
+
+  group('derives structured serving portion labels', () {
+    test('removes parenthesized amounts and leading counts', () {
+      final sliceResolution = resolver.resolve(
+        item: _amountItem(
+          servingSize: '1 slice (25g)',
+          servingQuantity: 25,
+          servingQuantityUnit: 'g',
+        ),
+        learned: const GlobalFoodServingSuggestionSet.empty(),
+        maxAmount: 1000,
+        requiresManualPortion: true,
+      );
+      final germanResolution = resolver.resolve(
+        item: _amountItem(
+          servingSize: '2 x Scheibe',
+          servingQuantity: 34,
+          servingQuantityUnit: 'g',
+        ),
+        learned: const GlobalFoodServingSuggestionSet.empty(),
+        maxAmount: 1000,
+        requiresManualPortion: true,
+      );
+
+      expect(
+        sliceResolution.manualServingSuggestions.single.portionLabel,
+        'slice',
+      );
+      expect(
+        germanResolution.manualServingSuggestions.single.portionLabel,
+        'Scheibe',
+      );
+    });
+
+    test('ignores labels with digits', () {
+      final resolution = resolver.resolve(
+        item: _amountItem(
+          servingSize: 'Portion 1',
+          servingQuantity: 25,
+          servingQuantityUnit: 'g',
+        ),
+        learned: const GlobalFoodServingSuggestionSet.empty(),
+        maxAmount: 1000,
+        requiresManualPortion: true,
+      );
+
+      expect(resolution.manualServingSuggestions.single.portionLabel, isNull);
+    });
+
+    test('ignores blank and symbol-only labels', () {
+      final blankResolution = resolver.resolve(
+        item: _amountItem(
+          servingSize: '   ',
+          servingQuantity: 25,
+          servingQuantityUnit: 'g',
+        ),
+        learned: const GlobalFoodServingSuggestionSet.empty(),
+        maxAmount: 1000,
+        requiresManualPortion: true,
+      );
+      final symbolResolution = resolver.resolve(
+        item: _amountItem(
+          servingSize: '*** (25 g)',
+          servingQuantity: 25,
+          servingQuantityUnit: 'g',
+        ),
+        learned: const GlobalFoodServingSuggestionSet.empty(),
+        maxAmount: 1000,
+        requiresManualPortion: true,
+      );
+
+      expect(
+        blankResolution.manualServingSuggestions.single.portionLabel,
+        isNull,
+      );
+      expect(
+        symbolResolution.manualServingSuggestions.single.portionLabel,
+        isNull,
+      );
+    });
   });
 }

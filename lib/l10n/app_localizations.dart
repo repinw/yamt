@@ -887,6 +887,96 @@ abstract class AppLocalizations {
   /// **'All/Rest'**
   String get inventoryAmountDialogAllRemainingAction;
 
+  /// No description provided for @inventoryItemEatSheetPortionModeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Portions'**
+  String get inventoryItemEatSheetPortionModeTitle;
+
+  /// No description provided for @inventoryItemEatSheetUsePortionsToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use portion count'**
+  String get inventoryItemEatSheetUsePortionsToggle;
+
+  /// No description provided for @inventoryItemEatSheetPortionLabelFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion label'**
+  String get inventoryItemEatSheetPortionLabelFieldLabel;
+
+  /// No description provided for @inventoryItemEatSheetPortionCountFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get inventoryItemEatSheetPortionCountFieldLabel;
+
+  /// No description provided for @inventoryItemEatSheetPortionAmountFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount per portion'**
+  String get inventoryItemEatSheetPortionAmountFieldLabel;
+
+  /// No description provided for @inventoryItemEatSheetDecreasePortionCountAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease portions'**
+  String get inventoryItemEatSheetDecreasePortionCountAction;
+
+  /// No description provided for @inventoryItemEatSheetIncreasePortionCountAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase portions'**
+  String get inventoryItemEatSheetIncreasePortionCountAction;
+
+  /// No description provided for @inventoryItemEatSheetDefaultPortionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion'**
+  String get inventoryItemEatSheetDefaultPortionLabel;
+
+  /// No description provided for @inventoryItemEatSheetNewPortionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'+ New portion...'**
+  String get inventoryItemEatSheetNewPortionAction;
+
+  /// No description provided for @inventoryItemEatSheetNewPortionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New portion'**
+  String get inventoryItemEatSheetNewPortionTitle;
+
+  /// No description provided for @inventoryItemEatSheetSavePortionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save portion'**
+  String get inventoryItemEatSheetSavePortionAction;
+
+  /// No description provided for @inventoryItemEatSheetUnitGram.
+  ///
+  /// In en, this message translates to:
+  /// **'Gram'**
+  String get inventoryItemEatSheetUnitGram;
+
+  /// No description provided for @inventoryItemEatSheetUnitMilliliter.
+  ///
+  /// In en, this message translates to:
+  /// **'Milliliter'**
+  String get inventoryItemEatSheetUnitMilliliter;
+
+  /// No description provided for @inventoryItemEatSheetUnitPiece.
+  ///
+  /// In en, this message translates to:
+  /// **'Piece'**
+  String get inventoryItemEatSheetUnitPiece;
+
+  /// No description provided for @inventoryItemEatSheetPortionTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total: {amount} {unit}'**
+  String inventoryItemEatSheetPortionTotalLabel(String amount, String unit);
+
   /// No description provided for @inventoryItemEatSheetInedibleAmountLabel.
   ///
   /// In en, this message translates to:
@@ -896,7 +986,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryItemEatSheetInedibleAmountHint.
   ///
   /// In en, this message translates to:
-  /// **'Optional, e.g. bones or shells. Calories are calculated only for the edible remainder.'**
+  /// **'Optional, e.g. bones'**
   String get inventoryItemEatSheetInedibleAmountHint;
 
   /// No description provided for @inventoryItemEatSheetInedibleAmountFieldLabel.

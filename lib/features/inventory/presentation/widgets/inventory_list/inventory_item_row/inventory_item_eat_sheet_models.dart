@@ -36,11 +36,12 @@ class _InventoryItemEatSheetHeroData {
 
 class _InventoryItemEatSheetAmountSectionData {
   const _InventoryItemEatSheetAmountSectionData({
-    required this.label,
     required this.clearTooltip,
     required this.controller,
     required this.focusNode,
-    required this.unitLabel,
+    required this.modeOptions,
+    required this.selectedModeId,
+    required this.totalLabel,
     required this.errorText,
     required this.selectedAmount,
     required this.allowFractionalInput,
@@ -49,21 +50,46 @@ class _InventoryItemEatSheetAmountSectionData {
     required this.onClearAndFocus,
     required this.onSubmitted,
     required this.onQuickOptionSelected,
+    required this.onModeSelected,
   });
 
-  final String label;
   final String clearTooltip;
   final TextEditingController controller;
   final FocusNode focusNode;
-  final String? unitLabel;
+  final List<_InventoryItemEatAmountModeOption> modeOptions;
+  final String selectedModeId;
+  final String? totalLabel;
   final String? errorText;
   final int? selectedAmount;
   final bool allowFractionalInput;
-  final List<({String label, int value})> quickOptions;
+  final List<InventoryServingOption> quickOptions;
   final ValueChanged<String> onChanged;
   final VoidCallback onClearAndFocus;
   final VoidCallback onSubmitted;
   final ValueChanged<int> onQuickOptionSelected;
+  final ValueChanged<String> onModeSelected;
+}
+
+class _InventoryItemEatAmountModeOption {
+  const _InventoryItemEatAmountModeOption({
+    required this.id,
+    required this.label,
+    this.amount,
+    this.unit,
+    this.portionLabel,
+    this.isNewPortion = false,
+  });
+
+  final String id;
+  final String label;
+  final double? amount;
+  final ConsumedUnit? unit;
+  final String? portionLabel;
+  final bool isNewPortion;
+
+  bool get isPortion {
+    return amount != null && unit != null && !isNewPortion;
+  }
 }
 
 class _InventoryItemEatSheetManualPortionSectionData {
@@ -85,7 +111,7 @@ class _InventoryItemEatSheetManualPortionSectionData {
   final FocusNode focusNode;
   final String? errorText;
   final ConsumedUnit selectedUnit;
-  final List<({String label, double amount, ConsumedUnit unit})> suggestions;
+  final List<PortionSuggestion> suggestions;
   final ValueChanged<String> onAmountChanged;
   final ValueChanged<ConsumedUnit> onUnitChanged;
   final VoidCallback onSubmitted;
@@ -115,16 +141,22 @@ class _InventoryItemEatSheetInedibleSectionData {
     required this.focusNode,
     required this.errorText,
     required this.unitLabel,
+    required this.summaryText,
+    required this.isExpanded,
     required this.onChanged,
     required this.onSubmitted,
+    required this.onToggleExpanded,
   });
 
   final TextEditingController controller;
   final FocusNode focusNode;
   final String? errorText;
   final String unitLabel;
+  final String summaryText;
+  final bool isExpanded;
   final ValueChanged<String> onChanged;
   final VoidCallback onSubmitted;
+  final VoidCallback onToggleExpanded;
 }
 
 class _InventoryItemEatSheetFooterData {

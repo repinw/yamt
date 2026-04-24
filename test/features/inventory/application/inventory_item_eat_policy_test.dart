@@ -139,7 +139,7 @@ void main() {
     expect(inventoryItemConsumedUnit(quantityOnlyItem), isNull);
   });
 
-  test('allows direct save only for fixed-unit items with nutrition', () {
+  test('allows direct save for fixed units and manual piece portions', () {
     final gramItem = _inventoryItem(
       id: 'gram-item',
       name: 'Yogurt',
@@ -177,6 +177,10 @@ void main() {
         quantityOnlyItem,
         _eatRequest(calorieAmount: 1.5, calorieUnit: ConsumedUnit.grams),
       ),
+      isTrue,
+    );
+    expect(
+      canDirectlySaveInventoryItemEatRequest(quantityOnlyItem, _eatRequest()),
       isFalse,
     );
   });

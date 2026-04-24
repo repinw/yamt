@@ -15,6 +15,10 @@ class CalorieInventoryCreateContext {
     required this.itemBrand,
     required this.consumedAmount,
     required this.consumedUnit,
+    this.portionBaseAmount,
+    this.portionBaseUnit,
+    this.portionCount,
+    this.portionLabel,
   });
 
   /// The inventory item id.
@@ -43,6 +47,25 @@ class CalorieInventoryCreateContext {
 
   /// The consumed unit.
   final ConsumedUnit consumedUnit;
+
+  /// The learned base amount per portion.
+  final double? portionBaseAmount;
+
+  /// The learned base unit per portion.
+  final ConsumedUnit? portionBaseUnit;
+
+  /// The selected portion count.
+  final double? portionCount;
+
+  /// The user-facing portion label.
+  final String? portionLabel;
+
+  /// Whether context has portion learning data.
+  bool get hasPortionLearning {
+    return portionBaseAmount != null &&
+        portionBaseUnit != null &&
+        portionCount != null;
+  }
 }
 
 /// Defines calorie entry create args.

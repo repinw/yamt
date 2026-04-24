@@ -10,9 +10,22 @@ class InventoryItemEatRequest {
     required this.mealType,
     this.calorieAmount,
     this.calorieUnit,
+    this.portionBaseAmount,
+    this.portionBaseUnit,
+    this.portionCount,
+    this.portionLabel,
   }) : assert(
          (calorieAmount == null) == (calorieUnit == null),
          'calorieAmount and calorieUnit must either both be null or set.',
+       ),
+       assert(
+         (portionBaseAmount == null &&
+                 portionBaseUnit == null &&
+                 portionCount == null) ||
+             (portionBaseAmount != null &&
+                 portionBaseUnit != null &&
+                 portionCount != null),
+         'Portion amount, unit, and count must all be set together.',
        );
 
   /// The inventory amount.
@@ -30,8 +43,27 @@ class InventoryItemEatRequest {
   /// The calorie unit.
   final ConsumedUnit? calorieUnit;
 
+  /// The learned base amount per portion.
+  final double? portionBaseAmount;
+
+  /// The learned base unit per portion.
+  final ConsumedUnit? portionBaseUnit;
+
+  /// The selected portion count.
+  final double? portionCount;
+
+  /// The user-facing portion label.
+  final String? portionLabel;
+
   /// Whether manual calorie portion.
   bool get hasManualCaloriePortion {
     return calorieAmount != null && calorieUnit != null;
+  }
+
+  /// Whether request carries portion learning data.
+  bool get hasPortionLearning {
+    return portionBaseAmount != null &&
+        portionBaseUnit != null &&
+        portionCount != null;
   }
 }

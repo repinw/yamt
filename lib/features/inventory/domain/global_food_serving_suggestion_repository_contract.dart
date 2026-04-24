@@ -17,5 +17,6 @@ abstract interface class GlobalFoodServingSuggestionRepository {
     required ConsumedUnit unit,
     required DateTime selectedAt,
     String? globalFoodItemId,
+    String? label,
   });
 }

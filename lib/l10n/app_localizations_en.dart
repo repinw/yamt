@@ -411,10 +411,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryAmountDialogAllRemainingAction => 'All/Rest';
 
   @override
+  String get inventoryItemEatSheetPortionModeTitle => 'Portions';
+
+  @override
+  String get inventoryItemEatSheetUsePortionsToggle => 'Use portion count';
+
+  @override
+  String get inventoryItemEatSheetPortionLabelFieldLabel => 'Portion label';
+
+  @override
+  String get inventoryItemEatSheetPortionCountFieldLabel => 'Count';
+
+  @override
+  String get inventoryItemEatSheetPortionAmountFieldLabel => 'Amount per portion';
+
+  @override
+  String get inventoryItemEatSheetDecreasePortionCountAction => 'Decrease portions';
+
+  @override
+  String get inventoryItemEatSheetIncreasePortionCountAction => 'Increase portions';
+
+  @override
+  String get inventoryItemEatSheetDefaultPortionLabel => 'Portion';
+
+  @override
+  String get inventoryItemEatSheetNewPortionAction => '+ New portion...';
+
+  @override
+  String get inventoryItemEatSheetNewPortionTitle => 'New portion';
+
+  @override
+  String get inventoryItemEatSheetSavePortionAction => 'Save portion';
+
+  @override
+  String get inventoryItemEatSheetUnitGram => 'Gram';
+
+  @override
+  String get inventoryItemEatSheetUnitMilliliter => 'Milliliter';
+
+  @override
+  String get inventoryItemEatSheetUnitPiece => 'Piece';
+
+  @override
+  String inventoryItemEatSheetPortionTotalLabel(String amount, String unit) {
+    return 'Total: $amount $unit';
+  }
+
+  @override
   String get inventoryItemEatSheetInedibleAmountLabel => 'Subtract inedible part';
 
   @override
-  String get inventoryItemEatSheetInedibleAmountHint => 'Optional, e.g. bones or shells. Calories are calculated only for the edible remainder.';
+  String get inventoryItemEatSheetInedibleAmountHint => 'Optional, e.g. bones';
 
   @override
   String get inventoryItemEatSheetInedibleAmountFieldLabel => 'Inedible amount';
