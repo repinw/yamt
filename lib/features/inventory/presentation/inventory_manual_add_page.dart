@@ -16,6 +16,8 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_dialogs.dart';
+import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_list/inventory_item_row/inventory_item_eat_sheet.dart';
@@ -104,10 +106,15 @@ class _InventoryManualAddPageState
       }
       itemToSave = resolvedEatItem;
     }
+    final promptResult = await _resolveMissingBarcode(itemToSave);
+    if (!mounted || promptResult == null) {
+      return;
+    }
+    itemToSave = promptResult.item;
 
     final savedItem = await _persistProduct(
       item: itemToSave,
-      barcode: itemToSave.normalizedBarcode,
+      barcode: promptResult.barcode,
       selectedProduct: result.selectedProduct,
       selectedGlobalFoodItemId: result.selectedGlobalFoodItemId,
       requiresGlobalPersistence: result.requiresGlobalPersistence,
@@ -149,7 +156,10 @@ class _InventoryManualAddPageState
       return item;
     }
 
-    final eatAmount = await _showEatAmountDialog(item);
+    final eatAmount = await showInventoryManualAddEatAmountDialog(
+      context: context,
+      initialUnit: _defaultEatAmountUnit(item),
+    );
     if (!mounted || eatAmount == null) {
       return null;
     }
@@ -175,29 +185,35 @@ class _InventoryManualAddPageState
     );
   }
 
+  Future<_ManualBarcodePromptResult?> _resolveMissingBarcode(
+    InventoryItem item,
+  ) async {
+    final currentBarcode = item.normalizedBarcode;
+    if (currentBarcode != null) {
+      return _ManualBarcodePromptResult(item: item, barcode: currentBarcode);
+    }
+
+    final enteredBarcode = await showInventoryManualAddMissingBarcodeDialog(
+      context: context,
+    );
+    if (!mounted || enteredBarcode == null) {
+      return null;
+    }
+    if (enteredBarcode.isEmpty) {
+      return _ManualBarcodePromptResult(item: item, barcode: null);
+    }
+
+    final updatedItem = item.copyWith(barcode: enteredBarcode);
+    return _ManualBarcodePromptResult(
+      item: updatedItem,
+      barcode: updatedItem.normalizedBarcode,
+    );
+  }
+
   bool _requiresEatAmountPrompt(InventoryItem item) {
     return item.weight == null ||
         item.amountUnit == null ||
         item.initialAmount < 1;
-  }
-
-  Future<_ManualEatAmountDialogResult?> _showEatAmountDialog(
-    InventoryItem item,
-  ) {
-    final l10n = AppLocalizations.of(context)!;
-    return showDialog<_ManualEatAmountDialogResult>(
-      context: context,
-      builder: (dialogContext) {
-        return _ManualEatAmountDialog(
-          title: l10n.inventoryBarcodePortionDialogTitle,
-          confirmLabel: l10n.inventoryBarcodePortionDialogConfirmAction,
-          cancelLabel: l10n.inventoryReceiptReviewCancelAction,
-          amountLabel: l10n.inventoryItemEatSheetAmountLabel,
-          invalidAmountMessage: l10n.inventoryReceiptReviewInvalidNumber,
-          initialUnit: _defaultEatAmountUnit(item),
-        );
-      },
-    );
   }
 
   void _closeEditorsIfNeeded() {
@@ -476,187 +492,12 @@ class _InventoryManualAddPageState
   }
 }
 
-class _ManualEatAmountDialogResult {
-  const _ManualEatAmountDialogResult({
-    required this.amount,
-    required this.unit,
+class _ManualBarcodePromptResult {
+  const _ManualBarcodePromptResult({
+    required this.item,
+    required this.barcode,
   });
 
-  final int amount;
-  final InventoryAmountUnit unit;
-}
-
-class _ManualEatAmountDialog extends StatefulWidget {
-  const _ManualEatAmountDialog({
-    required this.title,
-    required this.confirmLabel,
-    required this.cancelLabel,
-    required this.amountLabel,
-    required this.invalidAmountMessage,
-    required this.initialUnit,
-  });
-
-  final String title;
-  final String confirmLabel;
-  final String cancelLabel;
-  final String amountLabel;
-  final String invalidAmountMessage;
-  final InventoryAmountUnit initialUnit;
-
-  @override
-  State<_ManualEatAmountDialog> createState() => _ManualEatAmountDialogState();
-}
-
-class _ManualEatAmountDialogState extends State<_ManualEatAmountDialog> {
-  final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _amountController;
-  late final FocusNode _amountFocusNode;
-  late InventoryAmountUnit _selectedUnit;
-
-  @override
-  void initState() {
-    super.initState();
-    _amountController = TextEditingController();
-    _amountFocusNode = FocusNode()..addListener(_handleFocusChanged);
-    _selectedUnit = widget.initialUnit;
-  }
-
-  @override
-  void dispose() {
-    _amountFocusNode
-      ..removeListener(_handleFocusChanged)
-      ..dispose();
-    _amountController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final amountScale = _selectedUnit == InventoryAmountUnit.piece
-        ? inventoryPieceAmountScale
-        : 1;
-    final allowsFractionalInput = inventoryAmountAllowsFractionalInput(
-      unit: _selectedUnit,
-      scale: amountScale,
-    );
-
-    return AlertDialog(
-      title: Text(widget.title),
-      content: Form(
-        key: _formKey,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: TextFormField(
-                key: const Key('inventory_manual_add_eat_amount_field'),
-                controller: _amountController,
-                focusNode: _amountFocusNode,
-                autofocus: true,
-                keyboardType: TextInputType.numberWithOptions(
-                  decimal: allowsFractionalInput,
-                ),
-                textInputAction: TextInputAction.done,
-                decoration: InputDecoration(labelText: widget.amountLabel),
-                validator: _validateAmount,
-                onFieldSubmitted: (_) => _submit(),
-              ),
-            ),
-            const SizedBox(width: 12),
-            SizedBox(
-              width: 112,
-              child: DropdownButtonFormField<InventoryAmountUnit>(
-                key: const Key('inventory_manual_add_eat_unit_field'),
-                initialValue: _selectedUnit,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-                items: [
-                  DropdownMenuItem<InventoryAmountUnit>(
-                    value: InventoryAmountUnit.gram,
-                    child: Text(l10n.inventoryUnitGram),
-                  ),
-                  DropdownMenuItem<InventoryAmountUnit>(
-                    value: InventoryAmountUnit.milliliter,
-                    child: Text(l10n.inventoryUnitMilliliter),
-                  ),
-                  DropdownMenuItem<InventoryAmountUnit>(
-                    value: InventoryAmountUnit.piece,
-                    child: Text(l10n.inventoryUnitPiece),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value == null) {
-                    return;
-                  }
-                  setState(() {
-                    _selectedUnit = value;
-                  });
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          key: const Key('inventory_manual_add_eat_cancel_button'),
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(widget.cancelLabel),
-        ),
-        FilledButton(
-          key: const Key('inventory_manual_add_eat_confirm_button'),
-          onPressed: _submit,
-          child: Text(widget.confirmLabel),
-        ),
-      ],
-    );
-  }
-
-  String? _validateAmount(String? value) {
-    final parsed = parseInventoryAmountInput(
-      rawValue: value ?? '',
-      unit: _selectedUnit,
-      scale: _selectedUnit == InventoryAmountUnit.piece
-          ? inventoryPieceAmountScale
-          : 1,
-    );
-    if (parsed == null || parsed < 1) {
-      return widget.invalidAmountMessage;
-    }
-    return null;
-  }
-
-  void _submit() {
-    final formState = _formKey.currentState;
-    if (formState == null || !formState.validate()) {
-      return;
-    }
-
-    final parsed = parseInventoryAmountInput(
-      rawValue: _amountController.text,
-      unit: _selectedUnit,
-      scale: _selectedUnit == InventoryAmountUnit.piece
-          ? inventoryPieceAmountScale
-          : 1,
-    );
-    if (parsed == null) {
-      return;
-    }
-
-    Navigator.of(context).pop(
-      _ManualEatAmountDialogResult(amount: parsed, unit: _selectedUnit),
-    );
-  }
-
-  void _handleFocusChanged() {
-    if (!_amountFocusNode.hasFocus) {
-      return;
-    }
-    _amountController.selection = TextSelection(
-      baseOffset: 0,
-      extentOffset: _amountController.text.length,
-    );
-  }
+  final InventoryItem item;
+  final String? barcode;
 }

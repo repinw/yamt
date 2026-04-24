@@ -272,6 +272,14 @@
   "inventoryManualAddEatNowSizeLabel": "Sofort essen Menge",
   "inventoryManualAddEatNowRequiresNutrition":
       "Nur verfügbar, wenn Nährwerte vorhanden sind.",
+  "inventoryManualAddMissingBarcodeTitle": "Barcode eintragen?",
+  "inventoryManualAddMissingBarcodeMessage":
+      "Dieses Produkt hat noch keinen Barcode. Trage ihn jetzt ein, damit es später wiedererkannt wird, oder speichere es ohne Barcode.",
+  "inventoryManualAddMissingBarcodeLabel": "Barcode",
+  "inventoryManualAddMissingBarcodeRequired":
+      "Trage einen Barcode ein oder speichere ohne Barcode.",
+  "inventoryManualAddMissingBarcodeSaveWithout": "Ohne Barcode speichern",
+  "inventoryManualAddMissingBarcodeSave": "Speichern",
   "inventoryManualAddVoiceSearchStartTooltip": "Sprachsuche starten",
   "inventoryManualAddVoiceSearchStopTooltip": "Sprachsuche beenden",
   "inventoryManualAddVoiceSearchUnavailable":

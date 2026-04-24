@@ -1307,6 +1307,42 @@ abstract class AppLocalizations {
   /// **'Only available when nutrition values are present.'**
   String get inventoryManualAddEatNowRequiresNutrition;
 
+  /// No description provided for @inventoryManualAddMissingBarcodeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add barcode?'**
+  String get inventoryManualAddMissingBarcodeTitle;
+
+  /// No description provided for @inventoryManualAddMissingBarcodeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This product has no barcode yet. Enter one now so it can be recognized next time, or save it without a barcode.'**
+  String get inventoryManualAddMissingBarcodeMessage;
+
+  /// No description provided for @inventoryManualAddMissingBarcodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode'**
+  String get inventoryManualAddMissingBarcodeLabel;
+
+  /// No description provided for @inventoryManualAddMissingBarcodeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a barcode or save without one.'**
+  String get inventoryManualAddMissingBarcodeRequired;
+
+  /// No description provided for @inventoryManualAddMissingBarcodeSaveWithout.
+  ///
+  /// In en, this message translates to:
+  /// **'Save without barcode'**
+  String get inventoryManualAddMissingBarcodeSaveWithout;
+
+  /// No description provided for @inventoryManualAddMissingBarcodeSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get inventoryManualAddMissingBarcodeSave;
+
   /// No description provided for @inventoryManualAddVoiceSearchStartTooltip.
   ///
   /// In en, this message translates to:
