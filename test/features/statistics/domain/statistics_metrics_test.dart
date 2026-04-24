@@ -152,4 +152,77 @@ void main() {
       closeTo(1.0, 0.0001),
     );
   });
+
+  test('buildStatisticsCalorieSnapshot excludes practice days', () {
+    final settings = CalorieGoalSettings.single(
+      dailyKcalGoal: 2000,
+      calculatorProfile: null,
+      effectiveDate: DateTime(2026, 3, 20),
+      countingStartDate: DateTime(2026, 3, 21),
+      source: CalorieGoalSource.calculator,
+    );
+
+    final snapshot = buildStatisticsCalorieSnapshot(
+      entries: [
+        _entry(
+          'practice',
+          loggedAt: DateTime(2026, 3, 20, 18),
+          totalKcal: 800,
+          protein: 20,
+          carbs: 80,
+          fat: 30,
+        ),
+        _entry(
+          'counted',
+          loggedAt: DateTime(2026, 3, 21, 8),
+          totalKcal: 1800,
+          protein: 120,
+          carbs: 150,
+          fat: 60,
+        ),
+      ],
+      settings: settings,
+      startDate: DateTime(2026, 3, 20),
+      endDate: DateTime(2026, 3, 21),
+      shouldIncludeDay: (day) => !settings.isGoalPracticeDay(day),
+    );
+
+    expect(snapshot.days, hasLength(1));
+    expect(snapshot.days.single.date, DateTime(2026, 3, 21));
+    expect(snapshot.totalEntries, 1);
+    expect(snapshot.averageTrackedKcal, 1800);
+    expect(snapshot.balanceRemainingKcal, 200);
+  });
+
+  test('buildStatisticsCalorieSnapshot keeps same-day quick starts', () {
+    final settings = CalorieGoalSettings.single(
+      dailyKcalGoal: 2000,
+      calculatorProfile: null,
+      effectiveDate: DateTime(2026, 3, 20, 18),
+      source: CalorieGoalSource.calculator,
+    );
+
+    final snapshot = buildStatisticsCalorieSnapshot(
+      entries: [
+        _entry(
+          'quick-start',
+          loggedAt: DateTime(2026, 3, 20, 18),
+          totalKcal: 800,
+          protein: 20,
+          carbs: 80,
+          fat: 30,
+        ),
+      ],
+      settings: settings,
+      startDate: DateTime(2026, 3, 20),
+      endDate: DateTime(2026, 3, 20),
+      shouldIncludeDay: (day) => !settings.isGoalPracticeDay(day),
+    );
+
+    expect(snapshot.days, hasLength(1));
+    expect(snapshot.totalEntries, 1);
+    expect(snapshot.trackedDayCount, 1);
+    expect(snapshot.averageTrackedKcal, 800);
+    expect(snapshot.balanceRemainingKcal, 1200);
+  });
 }

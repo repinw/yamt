@@ -62,6 +62,55 @@ void main() {
     expect(decoded.calorieMathVersion, legacyCalorieMathVersion);
   });
 
+  test('detects only future-start practice days', () {
+    final today = DateTime(2026, 4, 24);
+    final tomorrow = DateTime(2026, 4, 25);
+    const emptySettings = CalorieGoalSettings.empty();
+    final futureStartSettings = CalorieGoalSettings.single(
+      dailyKcalGoal: 2100,
+      calculatorProfile: null,
+      effectiveDate: today,
+      countingStartDate: tomorrow,
+      source: CalorieGoalSource.calculator,
+    );
+    final futureEffectiveStartSettings = CalorieGoalSettings.single(
+      dailyKcalGoal: 2100,
+      calculatorProfile: null,
+      effectiveDate: tomorrow,
+      countingStartDate: tomorrow,
+      source: CalorieGoalSource.calculator,
+    );
+    final partialStartSettings = CalorieGoalSettings.single(
+      dailyKcalGoal: 2100,
+      calculatorProfile: null,
+      effectiveDate: DateTime(2026, 4, 24, 18),
+      source: CalorieGoalSource.calculator,
+    );
+    final weeklyCheckInSettings = CalorieGoalSettings.single(
+      dailyKcalGoal: 2100,
+      calculatorProfile: null,
+      effectiveDate: DateTime(2026, 4, 24, 18),
+      source: CalorieGoalSource.weeklyCheckIn,
+    );
+    final noGoalSettings = CalorieGoalSettings.single(
+      dailyKcalGoal: null,
+      calculatorProfile: null,
+      effectiveDate: today,
+      countingStartDate: tomorrow,
+      source: CalorieGoalSource.calculator,
+    );
+
+    expect(emptySettings.isGoalPracticeDay(today), isFalse);
+    expect(noGoalSettings.isGoalPracticeDay(today), isFalse);
+    expect(futureStartSettings.isGoalPracticeDay(today), isTrue);
+    expect(futureStartSettings.isGoalPracticeDay(tomorrow), isFalse);
+    expect(futureEffectiveStartSettings.isGoalPracticeDay(today), isTrue);
+    expect(futureEffectiveStartSettings.isGoalPracticeDay(tomorrow), isFalse);
+    expect(partialStartSettings.isGoalPracticeDay(today), isFalse);
+    expect(partialStartSettings.isGoalPracticeDay(tomorrow), isFalse);
+    expect(weeklyCheckInSettings.isGoalPracticeDay(today), isFalse);
+  });
+
   test('hard migration preserves future counting start', () {
     final today = DateTime(2026, 4, 24, 10);
     final tomorrow = DateTime(2026, 4, 25);
