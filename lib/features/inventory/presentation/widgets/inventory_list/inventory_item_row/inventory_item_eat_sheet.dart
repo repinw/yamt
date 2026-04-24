@@ -89,9 +89,6 @@ class _InventoryItemEatSheetState
   late final TextEditingController _inedibleAmountController =
       TextEditingController();
   late final FocusNode _inedibleAmountFocusNode = FocusNode();
-  late final TextEditingController _portionLabelController =
-      TextEditingController();
-  late final FocusNode _portionLabelFocusNode = FocusNode();
   late final TextEditingController _portionCountController =
       TextEditingController(text: '1');
   late final FocusNode _portionCountFocusNode = FocusNode();
@@ -107,6 +104,7 @@ class _InventoryItemEatSheetState
   String? _inedibleAmountErrorText;
   String? _portionAmountErrorText;
   String? _portionCountErrorText;
+  String? _currentPortionLabel;
   var _didManuallyEditInventoryAmount = false;
   var _didManuallyEditPortion = false;
   var _usesPortionMode = false;
@@ -196,10 +194,8 @@ class _InventoryItemEatSheetState
     _portionCountFocusNode
       ..removeListener(_selectAllPortionCount)
       ..dispose();
-    _portionLabelFocusNode.dispose();
     _inventoryAmountController.dispose();
     _inedibleAmountController.dispose();
-    _portionLabelController.dispose();
     _portionCountController.dispose();
     _portionAmountController.dispose();
     super.dispose();
@@ -218,8 +214,8 @@ class _InventoryItemEatSheetState
 
     _updateState(() {
       _learnedServingSuggestions = suggestions;
-      _applyLearnedDefaults();
     });
+    _applyLearnedDefaults();
   }
 
   @override
@@ -520,7 +516,7 @@ class _InventoryItemEatSheetState
   String _portionLabelForDisplay(AppLocalizations l10n) {
     return _eatController.portionLabelForDisplay(
       l10n: l10n,
-      rawLabel: _portionLabelController.text,
+      rawLabel: _currentPortionLabel ?? '',
     );
   }
 
@@ -564,16 +560,18 @@ class _InventoryItemEatSheetState
   }
 
   void _applyPortionDefault(PortionSuggestion suggestion) {
-    _usesPortionMode = true;
-    _portionAmountController.text = formatInventoryNutritionValue(
-      suggestion.amount,
-    );
-    _selectedPortionUnit = _normalizePortionUnit(suggestion.unit);
     _applyPortionLabel(suggestion.portionLabel);
-    if (_portionCountController.text.trim().isEmpty) {
-      _portionCountController.text = '1';
-    }
-    _syncAmountsFromPortionInput();
+    _updateState(() {
+      _usesPortionMode = true;
+      _portionAmountController.text = formatInventoryNutritionValue(
+        suggestion.amount,
+      );
+      _selectedPortionUnit = _normalizePortionUnit(suggestion.unit);
+      if (_portionCountController.text.trim().isEmpty) {
+        _portionCountController.text = '1';
+      }
+      _syncAmountsFromPortionInput();
+    });
   }
 
   List<({String label, String value})> _buildNutritionMetrics(
@@ -769,11 +767,11 @@ class _InventoryItemEatSheetState
     required String? portionLabel,
   }) {
     _didManuallyEditPortion = true;
+    _applyPortionLabel(portionLabel);
     _updateState(() {
       _usesPortionMode = true;
       _portionAmountController.text = formatInventoryNutritionValue(amount);
       _selectedPortionUnit = _normalizePortionUnit(unit);
-      _applyPortionLabel(portionLabel);
       _portionAmountErrorText = null;
       _portionCountErrorText = null;
       _syncAmountsFromPortionInput();
@@ -782,13 +780,11 @@ class _InventoryItemEatSheetState
 
   void _applyPortionLabel(String? label) {
     final normalized = label?.trim();
-    if (normalized == null || normalized.isEmpty) {
-      _portionLabelController.text = _defaultPortionLabel(
-        AppLocalizations.of(context)!,
-      );
-      return;
-    }
-    _portionLabelController.text = normalized;
+    _updateState(() {
+      _currentPortionLabel = normalized == null || normalized.isEmpty
+          ? null
+          : normalized;
+    });
   }
 
   ConsumedUnit _normalizePortionUnit(ConsumedUnit unit) {
@@ -861,7 +857,7 @@ class _InventoryItemEatSheetState
   String? _normalizedPortionLabel(AppLocalizations l10n) {
     return _eatController.normalizedPortionLabel(
       l10n: l10n,
-      rawLabel: _portionLabelController.text,
+      rawLabel: _currentPortionLabel ?? '',
     );
   }
 
