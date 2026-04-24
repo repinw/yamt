@@ -265,6 +265,14 @@
   "inventoryManualAddEatNowSizeLabel": "Eat now amount",
   "inventoryManualAddEatNowRequiresNutrition":
       "Only available when nutrition values are present.",
+  "inventoryManualAddMissingBarcodeTitle": "Add barcode?",
+  "inventoryManualAddMissingBarcodeMessage":
+      "This product has no barcode yet. Enter one now so it can be recognized next time, or save it without a barcode.",
+  "inventoryManualAddMissingBarcodeLabel": "Barcode",
+  "inventoryManualAddMissingBarcodeRequired":
+      "Enter a barcode or save without one.",
+  "inventoryManualAddMissingBarcodeSaveWithout": "Save without barcode",
+  "inventoryManualAddMissingBarcodeSave": "Save",
   "inventoryManualAddVoiceSearchStartTooltip": "Start voice search",
   "inventoryManualAddVoiceSearchStopTooltip": "Stop voice search",
   "inventoryManualAddVoiceSearchUnavailable":

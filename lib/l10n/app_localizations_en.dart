@@ -625,6 +625,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryManualAddEatNowRequiresNutrition => 'Only available when nutrition values are present.';
 
   @override
+  String get inventoryManualAddMissingBarcodeTitle => 'Add barcode?';
+
+  @override
+  String get inventoryManualAddMissingBarcodeMessage => 'This product has no barcode yet. Enter one now so it can be recognized next time, or save it without a barcode.';
+
+  @override
+  String get inventoryManualAddMissingBarcodeLabel => 'Barcode';
+
+  @override
+  String get inventoryManualAddMissingBarcodeRequired => 'Enter a barcode or save without one.';
+
+  @override
+  String get inventoryManualAddMissingBarcodeSaveWithout => 'Save without barcode';
+
+  @override
+  String get inventoryManualAddMissingBarcodeSave => 'Save';
+
+  @override
   String get inventoryManualAddVoiceSearchStartTooltip => 'Start voice search';
 
   @override
