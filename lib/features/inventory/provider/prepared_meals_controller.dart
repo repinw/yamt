@@ -330,7 +330,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     return recoverPreparedMealHouseholdAccess(
       ref: ref,
       isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      setIsRecoveringHouseholdAccess: ({required bool value}) {
+      setIsRecoveringHouseholdAccess: ({required value}) {
         _isRecoveringHouseholdAccess = value;
       },
       setState: (nextState) {

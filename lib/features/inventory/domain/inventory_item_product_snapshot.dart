@@ -1,7 +1,9 @@
+import 'package:meta/meta.dart';
 import 'package:yamt/features/inventory/domain/food_fingerprint.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 
 /// Defines inventory item product snapshot.
+@immutable
 class InventoryItemProductSnapshot {
   /// The inventory item product snapshot.
   const InventoryItemProductSnapshot({

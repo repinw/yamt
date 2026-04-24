@@ -556,7 +556,7 @@ class PreparedMealTemplatesController
     return recoverControllerHouseholdAccess<PreparedMeal>(
       ref: ref,
       isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      setIsRecoveringHouseholdAccess: ({required bool value}) {
+      setIsRecoveringHouseholdAccess: ({required value}) {
         _isRecoveringHouseholdAccess = value;
       },
       setState: (nextState) {

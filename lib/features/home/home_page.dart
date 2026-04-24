@@ -423,7 +423,7 @@ class _BurnWeekLiveSyncBootstrapState
     }
     _syncSubscription = ref.listenManual<Object?>(
       burnWeekLiveSyncProvider,
-      (_, __) {},
+      (_, _) {},
     );
   }
 }

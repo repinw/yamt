@@ -1,11 +1,13 @@
 import 'package:collection/collection.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 part 'prepared_meal.g.dart';
 
 /// Defines recipe ingredient amount conversion.
+@immutable
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class RecipeIngredientAmountConversion {
   /// The recipe ingredient amount conversion.
@@ -55,6 +57,7 @@ class RecipeIngredientAmountConversion {
 }
 
 /// Defines prepared meal.
+@immutable
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PreparedMeal {
   /// The prepared meal.
@@ -353,6 +356,7 @@ class PreparedMeal {
 }
 
 /// Defines prepared meal component.
+@immutable
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PreparedMealComponent {
   /// The prepared meal component.

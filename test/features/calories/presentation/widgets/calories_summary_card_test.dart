@@ -696,7 +696,6 @@ void main() {
             },
           ),
           balanceData: _balanceData(baseGoalKcal: 1500),
-          consumedKcal: 1600,
           goalKcal: 1500,
           remainingKcal: -100,
         ),
@@ -936,7 +935,7 @@ class _BurnWeekLiveSyncTestBootstrapState
     super.initState();
     _syncSubscription = ref.listenManual<Object?>(
       burnWeekLiveSyncProvider,
-      (_, __) {},
+      (_, _) {},
     );
   }
 

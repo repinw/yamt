@@ -1,8 +1,10 @@
+import 'package:meta/meta.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/utils/json_parsing_utils.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 
 /// Defines global barcode candidate.
+@immutable
 class GlobalBarcodeCandidate {
   /// The global barcode candidate.
   const GlobalBarcodeCandidate({

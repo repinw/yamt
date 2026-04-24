@@ -27,7 +27,7 @@ void main() {
   });
 
   test('fromJson derives missing normalized fields and fingerprint', () {
-    final item = GlobalFoodItem.fromJson(<String, dynamic>{
+    final item = GlobalFoodItem.fromJson(const <String, dynamic>{
       'id': 'milk',
       'name': 'Whole Milk',
       'brand': 'Acme',

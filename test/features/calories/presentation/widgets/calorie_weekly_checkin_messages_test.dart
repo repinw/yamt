@@ -1,5 +1,5 @@
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_weekly_checkin_messages.dart';
@@ -27,7 +27,7 @@ void main() {
   test('formats multiple missing weight dates', () {
     final l10n = AppLocalizationsEn();
     final missingWeightDays = <DateTime>[
-      DateTime(2026, 4, 1),
+      DateTime(2026, 4),
       DateTime(2026, 4, 7),
     ];
 
