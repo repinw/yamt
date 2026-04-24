@@ -3,12 +3,13 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
-    'prepared_meal_cover.dart';
+    'prepared_meal_image_picker_field.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_sheet_widgets.dart';
 import 'package:yamt/features/inventory/provider/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -62,13 +63,13 @@ class PreparedMealCreationSheet extends ConsumerStatefulWidget {
 }
 
 class _PreparedMealCreationSheetState
-    extends ConsumerState<PreparedMealCreationSheet> {
+    extends ConsumerState<PreparedMealCreationSheet>
+    with PreparedMealImagePickerStateMixin<PreparedMealCreationSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _portionsController;
   late final List<_PreparedMealItemDraft> _drafts;
   Uint8List? _imageBytes;
-  var _isPickingImage = false;
 
   @override
   void initState() {
@@ -95,193 +96,65 @@ class _PreparedMealCreationSheetState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: AppSpacing.xl,
-          right: AppSpacing.xl,
-          top: AppSpacing.lg,
-          bottom: MediaQuery.viewInsetsOf(context).bottom + AppSpacing.xxxl,
+    return PreparedMealSheetContainer(
+      formKey: _formKey,
+      children: [
+        Text(
+          l10n.preparedMealCreateTitle,
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
         ),
-        child: DecoratedBox(
-          decoration: AppInventoryEditorialSurfaces.liftedCardDecoration(
-            colors,
-            borderRadius: BorderRadius.circular(
-              AppInventoryEditorial.cardRadius,
-            ),
-          ),
-          child: Padding(
-            padding: AppInsets.card,
-            child: Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.preparedMealCreateTitle,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    TextFormField(
-                      controller: _nameController,
-                      textInputAction: TextInputAction.next,
-                      decoration: InputDecoration(
-                        labelText: l10n.preparedMealNameLabel,
-                        suffixIcon: IconButton(
-                          tooltip: l10n.preparedMealClearNameAction,
-                          onPressed: _nameController.clear,
-                          icon: const Icon(Icons.cleaning_services_outlined),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return l10n.preparedMealInvalidName;
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    TextFormField(
-                      controller: _portionsController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: l10n.preparedMealPortionsLabel,
-                      ),
-                      validator: (value) {
-                        final portions = int.tryParse(value?.trim() ?? '');
-                        if (portions == null || portions < 1) {
-                          return l10n.preparedMealInvalidPortions;
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text(
-                      l10n.preparedMealImageLabel,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        PreparedMealCover(
-                          label: _nameController.text,
-                          imageBytes: _imageBytes,
-                          size: 88,
-                          borderRadius: BorderRadius.circular(AppRadius.xl),
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Wrap(
-                                spacing: AppSpacing.sm,
-                                runSpacing: AppSpacing.sm,
-                                children: [
-                                  if (_supportsCamera)
-                                    FilledButton.tonalIcon(
-                                      onPressed: _isPickingImage
-                                          ? null
-                                          : () => _pickImage(
-                                              _PreparedMealImageSource.camera,
-                                            ),
-                                      icon: const Icon(
-                                        Icons.photo_camera_outlined,
-                                      ),
-                                      label: Text(
-                                        l10n.preparedMealImageCameraAction,
-                                      ),
-                                    ),
-                                  FilledButton.tonalIcon(
-                                    onPressed: _isPickingImage
-                                        ? null
-                                        : () => _pickImage(
-                                            _PreparedMealImageSource.file,
-                                          ),
-                                    icon: const Icon(
-                                      Icons.add_photo_alternate_outlined,
-                                    ),
-                                    label: Text(
-                                      _imageBytes == null
-                                          ? l10n.preparedMealAddImageAction
-                                          : l10n.preparedMealChangeImageAction,
-                                    ),
-                                  ),
-                                  if (_imageBytes != null)
-                                    TextButton.icon(
-                                      onPressed: _isPickingImage
-                                          ? null
-                                          : _clearImage,
-                                      icon: const Icon(
-                                        Icons.delete_outline_rounded,
-                                      ),
-                                      label: Text(
-                                        l10n.preparedMealRemoveImageAction,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(height: AppSpacing.xs),
-                              Text(
-                                l10n.preparedMealImageHint,
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: colors.onSurfaceVariant),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text(
-                      l10n.preparedMealIngredientsTitle,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    ..._drafts.map((draft) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-                        child: _PreparedMealItemEditorCard(draft: draft),
-                      );
-                    }),
-                    const SizedBox(height: AppSpacing.md),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Text(
-                              l10n.inventoryReceiptReviewCancelAction,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: FilledButton(
-                            onPressed: _submit,
-                            child: Text(l10n.preparedMealCreateAction),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+        const SizedBox(height: AppSpacing.md),
+        PreparedMealNameField(
+          controller: _nameController,
+          textInputAction: TextInputAction.next,
         ),
-      ),
+        const SizedBox(height: AppSpacing.md),
+        TextFormField(
+          controller: _portionsController,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            labelText: l10n.preparedMealPortionsLabel,
+          ),
+          validator: (value) {
+            final portions = int.tryParse(value?.trim() ?? '');
+            if (portions == null || portions < 1) {
+              return l10n.preparedMealInvalidPortions;
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        PreparedMealImagePickerField(
+          label: _nameController.text,
+          imageBytes: _imageBytes,
+          supportsCamera: supportsPreparedMealCamera,
+          isPickingImage: isPickingPreparedMealImage,
+          onPickImage: _pickImage,
+          onClearImage: _clearImage,
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        Text(
+          l10n.preparedMealIngredientsTitle,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        ..._drafts.map((draft) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+            child: _PreparedMealItemEditorCard(draft: draft),
+          );
+        }),
+        const SizedBox(height: AppSpacing.md),
+        PreparedMealSheetActions(
+          primaryLabel: l10n.preparedMealCreateAction,
+          onPrimaryPressed: _submit,
+        ),
+      ],
     );
   }
 
@@ -364,39 +237,13 @@ class _PreparedMealCreationSheetState
     return double.tryParse(rawValue.trim().replaceAll(',', '.'));
   }
 
-  bool get _supportsCamera {
-    return ref.read(preparedMealImagePickerProvider).supportsCamera;
-  }
-
-  Future<void> _pickImage(_PreparedMealImageSource source) async {
-    setState(() {
-      _isPickingImage = true;
-    });
-
-    try {
-      final picker = ref.read(preparedMealImagePickerProvider);
-      final imageBytes = await switch (source) {
-        _PreparedMealImageSource.camera => picker.pickFromCamera(),
-        _PreparedMealImageSource.file => picker.pickFromFile(),
-      };
-      if (!mounted || imageBytes == null) {
-        return;
-      }
-      setState(() {
+  Future<void> _pickImage(PreparedMealImageSource source) {
+    return pickPreparedMealImage(
+      source: source,
+      onPicked: (imageBytes) {
         _imageBytes = imageBytes;
-      });
-    } on PreparedMealImagePickerException catch (error) {
-      if (!mounted) {
-        return;
-      }
-      _showImageError(error.code);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isPickingImage = false;
-        });
-      }
-    }
+      },
+    );
   }
 
   void _clearImage() {
@@ -404,22 +251,7 @@ class _PreparedMealCreationSheetState
       _imageBytes = null;
     });
   }
-
-  void _showImageError(String errorCode) {
-    final l10n = AppLocalizations.of(context)!;
-    final message = switch (errorCode) {
-      PreparedMealImagePickerErrorCodes.imageTooLarge =>
-        l10n.preparedMealImageTooLarge,
-      _ => l10n.preparedMealImagePickFailed,
-    };
-
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
-  }
 }
-
-enum _PreparedMealImageSource { camera, file }
 
 class _PreparedMealItemEditorCard extends StatelessWidget {
   const _PreparedMealItemEditorCard({required this.draft});

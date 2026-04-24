@@ -10,6 +10,7 @@
     "build/**",
     "coverage/**",
     ".firebase/**",
+    ".cortex/**",
     "**/node_modules/**",
     "**/*.g.dart",
     "**/*.freezed.dart",
