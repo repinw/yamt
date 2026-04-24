@@ -11,8 +11,8 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_edit_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import '../../../../../support/fake_prepared_meal_image_picker.dart';
 import '../../../../../support/fake_local_image_store.dart';
+import '../../../../../support/fake_prepared_meal_image_picker.dart';
 import '../../../../../support/prepared_meal_test_data.dart';
 
 class _EditSheetHarness extends StatefulWidget {
@@ -161,6 +161,5 @@ PreparedMeal _meal() {
   return preparedMealTestData(
     imageAssetId: 'asset-meal-1',
     totalPortions: 2,
-    remainingPortions: 2,
   );
 }

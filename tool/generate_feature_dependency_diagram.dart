@@ -166,7 +166,7 @@ bool _isSourceFile(String path) {
 }
 
 String? _ownerFeature(String relativePath) {
-  final normalized = relativePath.replaceAll('\\', '/');
+  final normalized = relativePath.replaceAll(r'\', '/');
   final parts = normalized.split('/');
   if (parts.length < 3 || parts[0] != 'lib' || parts[1] != 'features') {
     return null;
@@ -175,8 +175,8 @@ String? _ownerFeature(String relativePath) {
 }
 
 String _relativeToRoot(String rootPath, String path) {
-  final normalizedRoot = rootPath.replaceAll('\\', '/');
-  final normalizedPath = path.replaceAll('\\', '/');
+  final normalizedRoot = rootPath.replaceAll(r'\', '/');
+  final normalizedPath = path.replaceAll(r'\', '/');
   if (!normalizedPath.startsWith(normalizedRoot)) {
     return normalizedPath;
   }
@@ -196,7 +196,7 @@ String _join(String first, String second, [String? third, String? fourth]) {
 }
 
 String _basename(String path) {
-  final normalized = path.replaceAll('\\', '/');
+  final normalized = path.replaceAll(r'\', '/');
   final parts = normalized.split('/');
   return parts.isEmpty ? normalized : parts.last;
 }

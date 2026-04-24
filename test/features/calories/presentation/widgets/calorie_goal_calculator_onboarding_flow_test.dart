@@ -45,13 +45,13 @@ Widget _buildHarness({
 
   return UncontrolledProviderScope(
     container: container,
-    child: MaterialApp(
-      locale: const Locale('en'),
+    child: const MaterialApp(
+      locale: Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: CalorieGoalCalculatorFlow(
-          initialSettings: const CalorieGoalSettings.empty(),
+          initialSettings: CalorieGoalSettings.empty(),
           presentation: CalorieGoalCalculatorFlowPresentation.onboarding,
         ),
       ),
@@ -153,7 +153,7 @@ void main() {
     final settingsRepository = FakeCalorieSettingsRepository();
     final logRepository = FakeCalorieLogRepository();
     final runStateRepository = _FakeBurnWeekRunStateRepository(
-      BurnWeekRunState(
+      const BurnWeekRunState(
         currentWeekStartDayKey: '2026-4-20',
         lastActiveDayKey: '2026-4-22',
         runWeekNumber: 2,

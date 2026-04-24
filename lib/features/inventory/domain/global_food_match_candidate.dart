@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 
 /// Defines global food match reason.
@@ -22,6 +23,7 @@ enum GlobalFoodMatchReason {
 }
 
 /// Defines global food match candidate.
+@immutable
 class GlobalFoodMatchCandidate {
   /// The global food match candidate.
   const GlobalFoodMatchCandidate({

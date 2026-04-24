@@ -28,7 +28,7 @@ void main() {
       ),
     );
     final decoration = decoratedBox.decoration as BoxDecoration;
-    final border = decoration.border as Border;
+    final border = decoration.border! as Border;
     expect(border.top.color, borderColor.withValues(alpha: 0.7));
   });
 }

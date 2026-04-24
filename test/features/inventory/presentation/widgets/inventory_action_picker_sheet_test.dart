@@ -91,7 +91,7 @@ void main() {
     );
 
     final ink = tester.widget<Ink>(find.byType(Ink));
-    final decoration = ink.decoration as BoxDecoration;
+    final decoration = ink.decoration! as BoxDecoration;
     expect(decoration.color, backgroundColor);
 
     final title = tester.widget<Text>(find.text('Other'));

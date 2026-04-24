@@ -1,8 +1,10 @@
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 /// Defines receipt review item draft.
+@immutable
 class ReceiptReviewItemDraft {
   /// The receipt review item draft.
   const ReceiptReviewItemDraft({

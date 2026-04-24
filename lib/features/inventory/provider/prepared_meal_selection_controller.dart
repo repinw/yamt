@@ -1,9 +1,11 @@
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'prepared_meal_selection_controller.g.dart';
 
 /// Defines prepared meal selection state.
+@immutable
 class PreparedMealSelectionState {
   /// The prepared meal selection state.
   const PreparedMealSelectionState({

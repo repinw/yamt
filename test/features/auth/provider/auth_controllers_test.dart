@@ -499,7 +499,7 @@ void main() {
       final user = _MockFirebaseUser();
       when(() => user.isAnonymous).thenReturn(true);
       when(() => auth.currentUser).thenReturn(user);
-      when(() => auth.signOut()).thenAnswer((_) async {});
+      when(auth.signOut).thenAnswer((_) async {});
       final container = ProviderContainer(
         overrides: [
           authStateChangesProvider.overrideWith((ref) => const Stream.empty()),
@@ -512,7 +512,7 @@ void main() {
           .read(guestNameSetupControllerProvider.notifier)
           .cancelGuestSetup();
 
-      verify(() => auth.signOut()).called(1);
+      verify(auth.signOut).called(1);
       expect(
         container.read(guestNameSetupControllerProvider).hasError,
         isFalse,
@@ -536,7 +536,7 @@ void main() {
           .read(guestNameSetupControllerProvider.notifier)
           .cancelGuestSetup();
 
-      verifyNever(() => auth.signOut());
+      verifyNever(auth.signOut);
       expect(
         container.read(guestNameSetupControllerProvider),
         const AsyncData<void>(null),

@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:meta/meta.dart';
 import 'package:yamt/core/utils/store_name_normalizer.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 
 /// Learns how a store-specific OCR receipt name maps to a global food item.
+@immutable
 class GlobalFoodReceiptAlias {
   /// The global food receipt alias.
   const GlobalFoodReceiptAlias({

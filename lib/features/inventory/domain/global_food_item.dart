@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 import 'package:yamt/core/utils/store_name_normalizer.dart';
 import 'package:yamt/features/inventory/domain/food_fingerprint.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -17,6 +18,7 @@ enum GlobalFoodItemStatus {
 }
 
 /// Defines global food item.
+@immutable
 class GlobalFoodItem {
   /// The global food item.
   const GlobalFoodItem({
@@ -410,13 +412,14 @@ List<String> buildGlobalFoodSearchTokens({
     if (value.isEmpty) {
       continue;
     }
-    tokens.add(value);
-    tokens.addAll(
-      value
-          .split(' ')
-          .map((token) => token.trim())
-          .where((token) => token.isNotEmpty),
-    );
+    tokens
+      ..add(value)
+      ..addAll(
+        value
+            .split(' ')
+            .map((token) => token.trim())
+            .where((token) => token.isNotEmpty),
+      );
   }
   return tokens.toList(growable: false);
 }

@@ -340,7 +340,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     return recoverControllerHouseholdAccess<InventoryItem>(
       ref: ref,
       isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      setIsRecoveringHouseholdAccess: ({required bool value}) {
+      setIsRecoveringHouseholdAccess: ({required value}) {
         _isRecoveringHouseholdAccess = value;
       },
       setState: (nextState) {
