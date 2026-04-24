@@ -493,6 +493,55 @@ void main() {
       await future;
       expect(repository.saveCalls, 1);
     });
+
+    test('cancelGuestSetup signs out anonymous users', () async {
+      final auth = _MockFirebaseAuth();
+      final user = _MockFirebaseUser();
+      when(() => user.isAnonymous).thenReturn(true);
+      when(() => auth.currentUser).thenReturn(user);
+      when(() => auth.signOut()).thenAnswer((_) async {});
+      final container = ProviderContainer(
+        overrides: [
+          authStateChangesProvider.overrideWith((ref) => const Stream.empty()),
+          firebaseAuthProvider.overrideWithValue(auth),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(guestNameSetupControllerProvider.notifier)
+          .cancelGuestSetup();
+
+      verify(() => auth.signOut()).called(1);
+      expect(
+        container.read(guestNameSetupControllerProvider).hasError,
+        isFalse,
+      );
+    });
+
+    test('cancelGuestSetup ignores linked users', () async {
+      final auth = _MockFirebaseAuth();
+      final user = _MockFirebaseUser();
+      when(() => user.isAnonymous).thenReturn(false);
+      when(() => auth.currentUser).thenReturn(user);
+      final container = ProviderContainer(
+        overrides: [
+          authStateChangesProvider.overrideWith((ref) => const Stream.empty()),
+          firebaseAuthProvider.overrideWithValue(auth),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(guestNameSetupControllerProvider.notifier)
+          .cancelGuestSetup();
+
+      verifyNever(() => auth.signOut());
+      expect(
+        container.read(guestNameSetupControllerProvider),
+        const AsyncData<void>(null),
+      );
+    });
   });
 
   group('GoogleAuthController', () {

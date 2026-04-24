@@ -60,6 +60,7 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(guestNameSetupControllerProvider);
+    final canCancelGuestSetup = ref.watch(canCancelGuestSetupProvider);
     final authErrorViewModel = ref.watch(authErrorViewModelProvider);
 
     ref.listen<AsyncValue<void>>(guestNameSetupControllerProvider, (
@@ -83,7 +84,17 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
     });
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.authGuestNameSetupTitle)),
+      appBar: AppBar(
+        leading: canCancelGuestSetup
+            ? IconButton(
+                key: const Key('guest_name_setup_back_button'),
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                icon: const Icon(Icons.arrow_back),
+                onPressed: state.isLoading ? null : _cancelGuestSetup,
+              )
+            : null,
+        title: Text(l10n.authGuestNameSetupTitle),
+      ),
       body: Padding(
         padding: AppInsets.page,
         child: Column(
@@ -171,6 +182,15 @@ class _GuestNameSetupPageState extends ConsumerState<GuestNameSetupPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _cancelGuestSetup() async {
+    if (ref.read(guestNameSetupControllerProvider).isLoading) {
+      return;
+    }
+    await ref
+        .read(guestNameSetupControllerProvider.notifier)
+        .cancelGuestSetup();
   }
 
   Future<void> _submit(AppLocalizations l10n) async {

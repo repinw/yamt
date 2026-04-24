@@ -49,23 +49,27 @@ Widget _wrapWithRouter(
   FakeAuthRepository repository, {
   String? displayName,
   bool isFirstSignIn = true,
+  bool isAnonymous = false,
+  _MockFirebaseAuth? firebaseAuth,
   MemoryAppPreferences? appPreferences,
 }) {
-  final auth = _MockFirebaseAuth();
-  if (displayName == null) {
+  final auth = firebaseAuth ?? _MockFirebaseAuth();
+  if (displayName == null && !isAnonymous) {
     when(() => auth.currentUser).thenReturn(null);
   } else {
     final user = _MockUser();
-    final metadata = _MockUserMetadata();
-    final createdAt = DateTime.utc(2026, 2, 1, 9);
-    final lastSignInAt = isFirstSignIn
-        ? createdAt
-        : createdAt.add(const Duration(days: 2));
     when(() => user.displayName).thenReturn(displayName);
-    when(() => user.isAnonymous).thenReturn(false);
-    when(() => metadata.creationTime).thenReturn(createdAt);
-    when(() => metadata.lastSignInTime).thenReturn(lastSignInAt);
-    when(() => user.metadata).thenReturn(metadata);
+    when(() => user.isAnonymous).thenReturn(isAnonymous);
+    if (!isAnonymous) {
+      final metadata = _MockUserMetadata();
+      final createdAt = DateTime.utc(2026, 2, 1, 9);
+      final lastSignInAt = isFirstSignIn
+          ? createdAt
+          : createdAt.add(const Duration(days: 2));
+      when(() => metadata.creationTime).thenReturn(createdAt);
+      when(() => metadata.lastSignInTime).thenReturn(lastSignInAt);
+      when(() => user.metadata).thenReturn(metadata);
+    }
     when(() => auth.currentUser).thenReturn(user);
   }
 
@@ -114,6 +118,21 @@ void main() {
 
     expect(find.text('Please enter a display name.'), findsOneWidget);
     expect(repository.guestNameUpdateCalls, 0);
+  });
+
+  testWidgets('clears inline name error when user types', (tester) async {
+    final repository = FakeAuthRepository();
+    await tester.pumpWidget(_wrapWithRouter(repository));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('Please enter a display name.'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'Guest Wlad');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please enter a display name.'), findsNothing);
   });
 
   testWidgets('submits guest name to repository', (tester) async {
@@ -190,6 +209,85 @@ void main() {
     expect(field.controller?.text, 'Google Name');
   });
 
+  testWidgets('back button signs out anonymous guest', (tester) async {
+    final repository = FakeAuthRepository();
+    final auth = _MockFirebaseAuth();
+    when(auth.signOut).thenAnswer((_) async {});
+    await tester.pumpWidget(
+      _wrapWithRouter(
+        repository,
+        isAnonymous: true,
+        firebaseAuth: auth,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('guest_name_setup_back_button')));
+    await tester.pumpAndSettle();
+
+    verify(auth.signOut).called(1);
+    expect(repository.guestNameUpdateCalls, 0);
+  });
+
+  testWidgets('back button shows snackbar when guest sign out fails', (
+    tester,
+  ) async {
+    final repository = FakeAuthRepository();
+    final auth = _MockFirebaseAuth();
+    when(auth.signOut).thenThrow(
+      FirebaseAuthException(code: 'network-request-failed'),
+    );
+    await tester.pumpWidget(
+      _wrapWithRouter(
+        repository,
+        isAnonymous: true,
+        firebaseAuth: auth,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('guest_name_setup_back_button')));
+    await tester.pump();
+
+    expect(
+      find.text('Network error. Please check your connection.'),
+      findsOneWidget,
+    );
+    verify(auth.signOut).called(1);
+  });
+
+  testWidgets('back button is disabled while guest name is saving', (
+    tester,
+  ) async {
+    final completer = Completer<void>();
+    final repository = _DelayedGuestNameRepository(completer);
+    await tester.pumpWidget(
+      _wrapWithRouter(repository, isAnonymous: true),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'Guest Wlad');
+    await tester.tap(find.text('Continue'));
+    await tester.pump();
+
+    final backButton = tester.widget<IconButton>(
+      find.byKey(const Key('guest_name_setup_back_button')),
+    );
+    expect(backButton.onPressed, isNull);
+    completer.complete();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('hides guest back button for linked users', (tester) async {
+    final repository = FakeAuthRepository();
+    await tester.pumpWidget(
+      _wrapWithRouter(repository, displayName: 'Google Name'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('guest_name_setup_back_button')), findsNothing);
+  });
+
   testWidgets('changing color selection does not persist before save', (
     tester,
   ) async {
@@ -206,6 +304,24 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(preferences.getIntSync('preferred_seed_color'), isNull);
+  });
+
+  testWidgets('changing theme selection does not persist before save', (
+    tester,
+  ) async {
+    final repository = FakeAuthRepository();
+    final preferences = MemoryAppPreferences();
+    await tester.pumpWidget(
+      _wrapWithRouter(repository, appPreferences: preferences),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(DropdownButtonFormField<ThemeMode>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dark').last);
+    await tester.pumpAndSettle();
+
+    expect(preferences.getStringSync('preferred_theme_mode'), isNull);
   });
 
   testWidgets('shows snackbar when profile save fails', (tester) async {
