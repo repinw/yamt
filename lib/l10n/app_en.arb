@@ -172,6 +172,12 @@
   "inventoryItemEatSheetDecreasePortionCountAction": "Decrease portions",
   "inventoryItemEatSheetIncreasePortionCountAction": "Increase portions",
   "inventoryItemEatSheetDefaultPortionLabel": "Portion",
+  "inventoryItemEatSheetNewPortionAction": "+ New portion...",
+  "inventoryItemEatSheetNewPortionTitle": "New portion",
+  "inventoryItemEatSheetSavePortionAction": "Save portion",
+  "inventoryItemEatSheetUnitGram": "Gram",
+  "inventoryItemEatSheetUnitMilliliter": "Milliliter",
+  "inventoryItemEatSheetUnitPiece": "Piece",
   "inventoryItemEatSheetPortionTotalLabel": "Total: {amount} {unit}",
   "@inventoryItemEatSheetPortionTotalLabel": {
     "placeholders": {
@@ -185,7 +191,7 @@
   },
   "inventoryItemEatSheetInedibleAmountLabel": "Subtract inedible part",
   "inventoryItemEatSheetInedibleAmountHint":
-      "Optional, e.g. bones or shells. Calories are calculated only for the edible remainder.",
+      "Optional, e.g. bones",
   "inventoryItemEatSheetInedibleAmountFieldLabel": "Inedible amount",
   "inventoryItemEatSheetInedibleAmountError":
       "The deducted amount must be smaller than the eaten amount.",

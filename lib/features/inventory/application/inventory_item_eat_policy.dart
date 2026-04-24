@@ -32,14 +32,16 @@ bool canDirectlySaveInventoryItemEatRequest(
   InventoryItem item,
   InventoryItemEatRequest request,
 ) {
-  if (!inventoryItemUsesFixedCalorieUnit(item) ||
-      item.nutrition?.hasAnyNutritionValue != true) {
+  if (item.nutrition?.hasAnyNutritionValue != true) {
     return false;
   }
 
-  if (!request.hasManualCaloriePortion) {
-    return true;
+  if (inventoryItemUsesFixedCalorieUnit(item)) {
+    if (!request.hasManualCaloriePortion) {
+      return true;
+    }
+    return request.calorieUnit == inventoryItemConsumedUnit(item);
   }
 
-  return request.calorieUnit == inventoryItemConsumedUnit(item);
+  return request.hasManualCaloriePortion;
 }

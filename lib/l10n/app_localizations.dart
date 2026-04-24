@@ -935,6 +935,42 @@ abstract class AppLocalizations {
   /// **'Portion'**
   String get inventoryItemEatSheetDefaultPortionLabel;
 
+  /// No description provided for @inventoryItemEatSheetNewPortionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'+ New portion...'**
+  String get inventoryItemEatSheetNewPortionAction;
+
+  /// No description provided for @inventoryItemEatSheetNewPortionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New portion'**
+  String get inventoryItemEatSheetNewPortionTitle;
+
+  /// No description provided for @inventoryItemEatSheetSavePortionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save portion'**
+  String get inventoryItemEatSheetSavePortionAction;
+
+  /// No description provided for @inventoryItemEatSheetUnitGram.
+  ///
+  /// In en, this message translates to:
+  /// **'Gram'**
+  String get inventoryItemEatSheetUnitGram;
+
+  /// No description provided for @inventoryItemEatSheetUnitMilliliter.
+  ///
+  /// In en, this message translates to:
+  /// **'Milliliter'**
+  String get inventoryItemEatSheetUnitMilliliter;
+
+  /// No description provided for @inventoryItemEatSheetUnitPiece.
+  ///
+  /// In en, this message translates to:
+  /// **'Piece'**
+  String get inventoryItemEatSheetUnitPiece;
+
   /// No description provided for @inventoryItemEatSheetPortionTotalLabel.
   ///
   /// In en, this message translates to:
@@ -950,7 +986,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryItemEatSheetInedibleAmountHint.
   ///
   /// In en, this message translates to:
-  /// **'Optional, e.g. bones or shells. Calories are calculated only for the edible remainder.'**
+  /// **'Optional, e.g. bones'**
   String get inventoryItemEatSheetInedibleAmountHint;
 
   /// No description provided for @inventoryItemEatSheetInedibleAmountFieldLabel.

@@ -58,6 +58,9 @@ class _InventoryItemEatQuickChip extends StatelessWidget {
     required this.onPressed,
   });
 
+  static const _horizontalPadding = 10.0;
+  static const _verticalPadding = 5.0;
+
   final String label;
   final bool isSelected;
   final VoidCallback onPressed;
@@ -77,12 +80,12 @@ class _InventoryItemEatQuickChip extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.xl),
           ),
           padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xxl,
-            vertical: AppSpacing.md,
+            horizontal: _horizontalPadding,
+            vertical: _verticalPadding,
           ),
           child: Text(
             label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: isSelected ? colors.onPrimary : colors.onSurfaceVariant,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
             ),
@@ -107,65 +110,10 @@ class _InventoryItemEatQuickChipScroller extends StatelessWidget {
           for (var index = 0; index < children.length; index++) ...[
             children[index],
             if (index < children.length - 1)
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: AppSpacing.xs),
           ],
         ],
       ),
-    );
-  }
-}
-
-class _InventoryItemEatNutritionMetric extends StatelessWidget {
-  const _InventoryItemEatNutritionMetric({
-    required this.index,
-    required this.label,
-    required this.value,
-    this.isHighlighted = false,
-  });
-
-  final int index;
-  final String label;
-  final String value;
-  final bool isHighlighted;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final valueColor = isHighlighted ? colors.primary : colors.onSurface;
-    final valueText = Text(
-      key: Key('inventory_item_nutrition_value_$index'),
-      value,
-      maxLines: 1,
-      softWrap: false,
-      textAlign: TextAlign.center,
-      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-        color: valueColor,
-        fontWeight: FontWeight.w800,
-        height: 1,
-      ),
-    );
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: FittedBox(fit: BoxFit.scaleDown, child: valueText),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          key: Key('inventory_item_nutrition_label_$index'),
-          label.toUpperCase(),
-          maxLines: 1,
-          softWrap: false,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: colors.onSurfaceVariant.withValues(alpha: 0.82),
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.35,
-          ),
-        ),
-      ],
     );
   }
 }

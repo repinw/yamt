@@ -247,6 +247,25 @@ Future<void> _tapConfirmButton(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _selectAmountMode(WidgetTester tester, String label) async {
+  final dropdown = find.byKey(const Key('inventory_item_amount_mode_dropdown'));
+  await tester.ensureVisible(dropdown);
+  await tester.tap(dropdown);
+  await tester.pumpAndSettle();
+
+  final option = find.text(label).last;
+  await tester.ensureVisible(option);
+  await tester.tap(option);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _expandInedibleAmountSection(WidgetTester tester) async {
+  final toggle = find.byKey(const Key('inventory_item_inedible_amount_toggle'));
+  await tester.ensureVisible(toggle);
+  await tester.tap(toggle);
+  await tester.pumpAndSettle();
+}
+
 DateTime _targetLoggedAtDate() {
   final today = DateUtils.dateOnly(DateTime.now());
   if (today.day > 1) {
@@ -467,7 +486,7 @@ void main() {
   );
 
   testWidgets(
-    'shows validation error when manual calorie portion is required but empty',
+    'asks for a portion weight when a piece item has no learned weight',
     (tester) async {
       InventoryItemEatRequest? result;
       await tester.pumpWidget(
@@ -485,10 +504,10 @@ void main() {
 
       expect(result, isNull);
       expect(
-        find.text('Please enter a number greater than zero.'),
+        find.byKey(const Key('inventory_item_portion_amount_field')),
         findsOneWidget,
       );
-      expect(find.text('Banana'), findsOneWidget);
+      expect(find.text('New portion'), findsOneWidget);
     },
   );
 
@@ -517,13 +536,21 @@ void main() {
         find.byKey(const Key('inventory_item_amount_dialog_field')),
         '1,5',
       );
-      await tester.enterText(find.byType(TextField).at(1), '150');
+      await _tapConfirmButton(tester);
+      await tester.enterText(
+        find.byKey(const Key('inventory_item_portion_amount_field')),
+        '150',
+      );
+      await tester.tap(find.text('Save portion'));
+      await tester.pumpAndSettle();
       await _tapConfirmButton(tester);
 
       expect(result, isNotNull);
       expect(result?.inventoryAmount, 1500);
-      expect(result?.calorieAmount, 150);
+      expect(result?.calorieAmount, 225);
       expect(result?.calorieUnit, ConsumedUnit.grams);
+      expect(result?.portionBaseAmount, 150);
+      expect(result?.portionCount, 1.5);
     },
   );
 
@@ -547,6 +574,7 @@ void main() {
         find.byKey(const Key('inventory_item_amount_dialog_field')),
         '120',
       );
+      await _expandInedibleAmountSection(tester);
       await tester.enterText(
         find.byKey(const Key('inventory_item_inedible_amount_dialog_field')),
         '20',
@@ -580,6 +608,7 @@ void main() {
         find.byKey(const Key('inventory_item_amount_dialog_field')),
         '120',
       );
+      await _expandInedibleAmountSection(tester);
       await tester.enterText(
         find.byKey(const Key('inventory_item_inedible_amount_dialog_field')),
         '120',
@@ -646,16 +675,56 @@ void main() {
     );
 
     await _openSheet(tester);
-    expect(find.text('75 g'), findsOneWidget);
+    expect(find.text('Piece (75g)'), findsOneWidget);
 
-    await tester.ensureVisible(find.text('75 g'));
-    await tester.tap(find.text('75 g'));
-    await tester.pump();
-
-    final portionAmountField = tester.widget<TextField>(
-      find.byKey(const Key('inventory_item_portion_amount_field')),
+    final amountField = tester.widget<TextField>(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
     );
-    expect(portionAmountField.controller?.text, '75');
+    expect(amountField.controller?.text, '1');
+  });
+
+  testWidgets('asks for a new portion weight when logging raw pieces', (
+    tester,
+  ) async {
+    InventoryItemEatRequest? result;
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _pieceItemWithServingSuggestion(),
+        maxAmount: 2,
+        onResult: (value) {
+          result = value;
+        },
+      ),
+    );
+
+    await _openSheet(tester);
+    await _selectAmountMode(tester, 'Piece');
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      '2',
+    );
+    await _tapConfirmButton(tester);
+
+    expect(result, isNull);
+    expect(
+      find.byKey(const Key('inventory_item_portion_amount_field')),
+      findsOneWidget,
+    );
+
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_portion_amount_field')),
+      '80',
+    );
+    await tester.tap(find.text('Save portion'));
+    await tester.pumpAndSettle();
+    await _tapConfirmButton(tester);
+
+    expect(result, isNotNull);
+    expect(result?.inventoryAmount, 2);
+    expect(result?.calorieAmount, 160);
+    expect(result?.calorieUnit, ConsumedUnit.grams);
+    expect(result?.portionBaseAmount, 80);
+    expect(result?.portionCount, 2);
   });
 
   testWidgets('logs fixed-unit item from portion count and label', (
@@ -673,20 +742,21 @@ void main() {
     );
 
     await _openSheet(tester);
-    expect(find.text('Portions'), findsOneWidget);
-
-    final labelField = tester.widget<TextField>(
-      find.byKey(const Key('inventory_item_portion_label_field')),
-    );
-    expect(labelField.controller?.text, 'slice');
-
-    await tester.enterText(
-      find.byKey(const Key('inventory_item_portion_count_field')),
-      '3',
-    );
+    await _selectAmountMode(tester, '+ New portion...');
     await tester.enterText(
       find.byKey(const Key('inventory_item_portion_label_field')),
       'Scheibe',
+    );
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_portion_amount_field')),
+      '25',
+    );
+    await tester.tap(find.text('Save portion'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      '3',
     );
     await _tapConfirmButton(tester);
 
@@ -765,13 +835,19 @@ void main() {
 
     await _openSheet(tester);
 
-    final portionAmountField = tester.widget<TextField>(
-      find.byKey(const Key('inventory_item_portion_amount_field')),
+    final amountField = tester.widget<TextField>(
+      find.byKey(const Key('inventory_item_amount_dialog_field')),
     );
-    expect(portionAmountField.controller?.text, '35');
-    expect(find.text('35 g'), findsOneWidget);
-    expect(find.text('34 g'), findsOneWidget);
-    expect(find.text('75 g'), findsOneWidget);
+    expect(amountField.controller?.text, '1');
+    expect(find.text('Piece (35g)'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_mode_dropdown')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Piece (34g)'), findsOneWidget);
+    expect(find.text('Piece (75g)'), findsOneWidget);
   });
 
   testWidgets('logged-at card switches between compact and labeled states', (

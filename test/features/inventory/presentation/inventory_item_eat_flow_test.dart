@@ -88,8 +88,8 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
   }) async {
     this.entry = entry;
     this.pendingConsumption = pendingConsumption;
-    return const InventoryCalorieEntryCommitResult(
-      itemId: 'item-1',
+    return InventoryCalorieEntryCommitResult(
+      itemId: pendingConsumption.itemId,
       quantity: 1,
       currentAmount: 500,
     );
@@ -250,10 +250,47 @@ ProviderSubscription<AsyncValue<List<CalorieEntry>>> _keepCaloriesAlive(
 ])
 void main() {
   testWidgets(
-    'complete opens calorie editor with loggedAt and mealType prefilled',
+    'complete direct-saves piece portions without opening calorie editor',
     (tester) async {
+      final item = _portionItemWithNutrition();
+      final repository = _FakeInventoryItemRepository(
+        initialItems: <InventoryItem>[item],
+      );
+      final calorieLogRepository = FakeCalorieLogRepository();
+      final commitStore = _RecordingCommitStore();
+      final auth = _MockFirebaseAuth();
+      final user = _MockUser();
       CalorieEntryCreateArgs? openedArgs;
+      addTearDown(repository.dispose);
+      addTearDown(calorieLogRepository.dispose);
+
+      when(() => user.uid).thenReturn('user-1');
+      when(() => auth.currentUser).thenReturn(user);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+          inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
+            commitStore,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+          firebaseAuthProvider.overrideWithValue(auth),
+        ],
+      );
+      addTearDown(container.dispose);
+      final inventorySubscription = _keepInventoryAlive(container);
+      final caloriesSubscription = _keepCaloriesAlive(container);
+      addTearDown(inventorySubscription.close);
+      addTearDown(caloriesSubscription.close);
+
+      await container.read(inventoryItemsControllerProvider.future);
+      final pendingConsumption = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .stagePendingConsumption(item.id, 1);
+      expect(pendingConsumption, isNotNull);
+      final resolvedPendingConsumption = pendingConsumption!;
       final loggedAt = DateTime.parse('2026-04-06T18:45:00Z');
+
       final router = GoRouter(
         routes: <RouteBase>[
           GoRoute(
@@ -261,14 +298,18 @@ void main() {
             builder: (context, state) {
               return Scaffold(
                 body: _CompleteEatFlowButton(
-                  item: _portionItemWithNutrition(),
+                  item: item,
                   request: InventoryItemEatRequest(
                     inventoryAmount: 1,
                     loggedAt: loggedAt,
                     mealType: MealType.dinner,
                     calorieAmount: 2.5,
                     calorieUnit: ConsumedUnit.grams,
+                    portionBaseAmount: 2.5,
+                    portionBaseUnit: ConsumedUnit.grams,
+                    portionCount: 1,
                   ),
+                  pendingConsumptionId: resolvedPendingConsumption.id,
                 ),
               );
             },
@@ -283,16 +324,21 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(routerApp(router: router));
+      await tester.pumpWidget(
+        routerAppWithContainer(container: container, router: router),
+      );
 
       await tester.tap(find.text('eat'));
       await tester.pumpAndSettle();
 
-      expect(openedArgs, isNotNull);
-      expect(openedArgs?.preselectedMealType, MealType.dinner);
-      expect(openedArgs?.preselectedLoggedAt, loggedAt);
-      expect(openedArgs?.inventoryContext?.consumedAmount, 2.5);
-      expect(openedArgs?.inventoryContext?.consumedUnit, ConsumedUnit.grams);
+      expect(find.text('editor'), findsNothing);
+      expect(openedArgs, isNull);
+      expect(commitStore.pendingConsumption?.id, resolvedPendingConsumption.id);
+      expect(commitStore.pendingConsumption?.amount, 1);
+      expect(commitStore.entry?.mealType, MealType.dinner);
+      expect(commitStore.entry?.loggedAt, loggedAt);
+      expect(commitStore.entry?.consumedAmount, 2.5);
+      expect(commitStore.entry?.consumedUnit, ConsumedUnit.grams);
     },
   );
 

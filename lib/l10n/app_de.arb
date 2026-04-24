@@ -175,6 +175,12 @@
   "inventoryItemEatSheetDecreasePortionCountAction": "Portionen verringern",
   "inventoryItemEatSheetIncreasePortionCountAction": "Portionen erhöhen",
   "inventoryItemEatSheetDefaultPortionLabel": "Portion",
+  "inventoryItemEatSheetNewPortionAction": "+ Neue Portion...",
+  "inventoryItemEatSheetNewPortionTitle": "Neue Portion",
+  "inventoryItemEatSheetSavePortionAction": "Portion speichern",
+  "inventoryItemEatSheetUnitGram": "Gramm",
+  "inventoryItemEatSheetUnitMilliliter": "Milliliter",
+  "inventoryItemEatSheetUnitPiece": "Stück",
   "inventoryItemEatSheetPortionTotalLabel": "Gesamt: {amount} {unit}",
   "@inventoryItemEatSheetPortionTotalLabel": {
     "placeholders": {
@@ -189,7 +195,7 @@
   "inventoryItemEatSheetInedibleAmountLabel":
       "Nicht essbaren Anteil abziehen",
   "inventoryItemEatSheetInedibleAmountHint":
-      "Optional, zum Beispiel Knochen oder Schalen. Kalorien werden nur für den essbaren Rest berechnet.",
+      "Optional, z. B. Knochen",
   "inventoryItemEatSheetInedibleAmountFieldLabel":
       "Nicht essbarer Anteil",
   "inventoryItemEatSheetInedibleAmountError":

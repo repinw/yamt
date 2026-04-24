@@ -197,38 +197,3 @@ class _InventoryItemEatMealTypeSelector extends StatelessWidget {
     );
   }
 }
-
-class _InventoryItemEatNutritionMetricsRow extends StatelessWidget {
-  const _InventoryItemEatNutritionMetricsRow({required this.metrics});
-
-  final List<({String label, String value})> metrics;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return Row(
-      children: [
-        for (var index = 0; index < metrics.length; index++) ...[
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-              child: _InventoryItemEatNutritionMetric(
-                index: index,
-                label: metrics[index].label,
-                value: metrics[index].value,
-                isHighlighted: index == 0,
-              ),
-            ),
-          ),
-          if (index < metrics.length - 1)
-            Container(
-              width: 1,
-              height: 34,
-              color: colors.outlineVariant.withValues(alpha: 0.3),
-            ),
-        ],
-      ],
-    );
-  }
-}

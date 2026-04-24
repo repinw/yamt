@@ -435,6 +435,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemEatSheetDefaultPortionLabel => 'Portion';
 
   @override
+  String get inventoryItemEatSheetNewPortionAction => '+ New portion...';
+
+  @override
+  String get inventoryItemEatSheetNewPortionTitle => 'New portion';
+
+  @override
+  String get inventoryItemEatSheetSavePortionAction => 'Save portion';
+
+  @override
+  String get inventoryItemEatSheetUnitGram => 'Gram';
+
+  @override
+  String get inventoryItemEatSheetUnitMilliliter => 'Milliliter';
+
+  @override
+  String get inventoryItemEatSheetUnitPiece => 'Piece';
+
+  @override
   String inventoryItemEatSheetPortionTotalLabel(String amount, String unit) {
     return 'Total: $amount $unit';
   }
@@ -443,7 +461,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemEatSheetInedibleAmountLabel => 'Subtract inedible part';
 
   @override
-  String get inventoryItemEatSheetInedibleAmountHint => 'Optional, e.g. bones or shells. Calories are calculated only for the edible remainder.';
+  String get inventoryItemEatSheetInedibleAmountHint => 'Optional, e.g. bones';
 
   @override
   String get inventoryItemEatSheetInedibleAmountFieldLabel => 'Inedible amount';

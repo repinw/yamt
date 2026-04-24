@@ -37,8 +37,9 @@ class _InventoryItemEatSheetView extends StatelessWidget {
                   ),
                 ),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
+                    Flexible(
                       child: SingleChildScrollView(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,30 +56,32 @@ class _InventoryItemEatSheetView extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
+                                  if (data.nutritionMetrics.isNotEmpty) ...[
+                                    NutritionMetricsStrip(
+                                      metrics: [
+                                        for (final metric
+                                            in data.nutritionMetrics)
+                                          NutritionMetric(
+                                            label: metric.label,
+                                            value: metric.value,
+                                          ),
+                                      ],
+                                      highlightedMetricIndex: 0,
+                                      metricValueKeyPrefix:
+                                          'inventory_item_nutrition_value',
+                                      metricLabelKeyPrefix:
+                                          'inventory_item_nutrition_label',
+                                    ),
+                                    const SizedBox(height: AppSpacing.xxl),
+                                  ],
                                   _InventoryItemEatAmountSection(
                                     data: data.amountSection,
                                   ),
-                                  if (data.portionSection
-                                      case final portion?) ...[
-                                    const SizedBox(height: AppSpacing.md),
-                                    _InventoryItemEatPortionSection(
-                                      data: portion,
-                                    ),
-                                  ],
                                   if (data.manualPortionSection
                                       case final manual?) ...[
                                     const SizedBox(height: AppSpacing.md),
                                     _InventoryItemEatManualSection(
                                       data: manual,
-                                    ),
-                                  ],
-                                  if (data.nutritionMetrics.isNotEmpty) ...[
-                                    const SizedBox(height: AppSpacing.md),
-                                    _InventoryItemEatSectionCard(
-                                      child:
-                                          _InventoryItemEatNutritionMetricsRow(
-                                            metrics: data.nutritionMetrics,
-                                          ),
                                     ),
                                   ],
                                   const SizedBox(height: AppSpacing.xxxl),
@@ -93,8 +96,12 @@ class _InventoryItemEatSheetView extends StatelessWidget {
                                       amountFocusNode: inedible.focusNode,
                                       amountErrorText: inedible.errorText,
                                       unitLabel: inedible.unitLabel,
+                                      summaryText: inedible.summaryText,
+                                      isExpanded: inedible.isExpanded,
                                       onAmountChanged: inedible.onChanged,
                                       onSubmitted: inedible.onSubmitted,
+                                      onToggleExpanded:
+                                          inedible.onToggleExpanded,
                                     ),
                                   ],
                                 ],
@@ -163,147 +170,6 @@ class _InventoryItemEatSheetView extends StatelessWidget {
   }
 }
 
-class _InventoryItemEatPortionSection extends StatelessWidget {
-  const _InventoryItemEatPortionSection({required this.data});
-
-  final _InventoryItemEatSheetPortionSectionData data;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
-
-    return _InventoryItemEatSectionCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SwitchListTile(
-            key: const Key('inventory_item_portion_mode_switch'),
-            value: data.isEnabled,
-            onChanged: data.onEnabledChanged,
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            title: _InventoryItemEatCardTitle(text: data.title),
-            subtitle: Text(data.usePortionsLabel),
-          ),
-          if (data.isEnabled) ...[
-            const SizedBox(height: AppSpacing.md),
-            TextField(
-              key: const Key('inventory_item_portion_label_field'),
-              controller: data.labelController,
-              focusNode: data.labelFocusNode,
-              textInputAction: TextInputAction.next,
-              decoration: InputDecoration(labelText: data.labelFieldLabel),
-              onChanged: data.onLabelChanged,
-              onSubmitted: (_) => data.onSubmitted(),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Row(
-              children: [
-                IconButton(
-                  key: const Key('inventory_item_portion_decrement_button'),
-                  tooltip: data.decrementTooltip,
-                  onPressed: () => data.onCountStep(-1),
-                  icon: const Icon(Icons.remove_circle_outline_rounded),
-                ),
-                Expanded(
-                  child: TextField(
-                    key: const Key('inventory_item_portion_count_field'),
-                    controller: data.countController,
-                    focusNode: data.countFocusNode,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(
-                      labelText: data.countFieldLabel,
-                      errorText: data.countErrorText,
-                    ),
-                    onChanged: data.onCountChanged,
-                    onSubmitted: (_) => data.onSubmitted(),
-                  ),
-                ),
-                IconButton(
-                  key: const Key('inventory_item_portion_increment_button'),
-                  tooltip: data.incrementTooltip,
-                  onPressed: () => data.onCountStep(1),
-                  icon: const Icon(Icons.add_circle_outline_rounded),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            TextField(
-              key: const Key('inventory_item_portion_amount_field'),
-              controller: data.amountController,
-              focusNode: data.amountFocusNode,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              textInputAction: TextInputAction.done,
-              decoration: InputDecoration(
-                labelText: data.amountFieldLabel,
-                errorText: data.amountErrorText,
-              ),
-              onChanged: data.onAmountChanged,
-              onSubmitted: (_) => data.onSubmitted(),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            SegmentedButton<ConsumedUnit>(
-              segments: [
-                for (final unit in data.availableUnits)
-                  ButtonSegment<ConsumedUnit>(
-                    value: unit,
-                    label: Text(unit.localizedName(l10n)),
-                  ),
-              ],
-              selected: {data.selectedUnit},
-              onSelectionChanged: (selection) {
-                if (selection.isEmpty) {
-                  return;
-                }
-                data.onUnitChanged(selection.first);
-              },
-              showSelectedIcon: false,
-            ),
-            if (data.totalLabel != null) ...[
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                data.totalLabel!,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-            if (data.suggestions.isNotEmpty) ...[
-              const SizedBox(height: AppSpacing.lg),
-              _InventoryItemEatQuickChipScroller(
-                children: [
-                  for (final suggestion in data.suggestions)
-                    _InventoryItemEatQuickChip(
-                      label: suggestion.label,
-                      isSelected:
-                          data.selectedUnit == suggestion.unit &&
-                          data.amountController.text.trim() ==
-                              formatInventoryNutritionValue(
-                                suggestion.amount,
-                              ),
-                      onPressed: () => data.onSuggestionPressed(
-                        amount: suggestion.amount,
-                        unit: suggestion.unit,
-                        portionLabel: suggestion.portionLabel,
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ],
-        ],
-      ),
-    );
-  }
-}
-
 class _InventoryItemEatAmountSection extends StatelessWidget {
   const _InventoryItemEatAmountSection({required this.data});
 
@@ -311,38 +177,68 @@ class _InventoryItemEatAmountSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _InventoryItemEatSectionCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _InventoryItemEatCardTitle(text: data.label),
+    final colors = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _InventoryItemEatAmountCard(
+          controller: data.controller,
+          focusNode: data.focusNode,
+          modeOptions: data.modeOptions,
+          selectedModeId: data.selectedModeId,
+          errorText: data.errorText,
+          allowFractionalInput: data.allowFractionalInput,
+          clearTooltip: data.clearTooltip,
+          onChanged: data.onChanged,
+          onClearAndFocus: data.onClearAndFocus,
+          onSubmitted: data.onSubmitted,
+          onModeSelected: data.onModeSelected,
+        ),
+        if (data.quickOptions.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),
-          _InventoryItemEatAmountCard(
-            controller: data.controller,
-            focusNode: data.focusNode,
-            unitLabel: data.unitLabel,
-            errorText: data.errorText,
-            allowFractionalInput: data.allowFractionalInput,
-            clearTooltip: data.clearTooltip,
-            onChanged: data.onChanged,
-            onClearAndFocus: data.onClearAndFocus,
-            onSubmitted: data.onSubmitted,
-          ),
-          if (data.quickOptions.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.lg),
-            _InventoryItemEatQuickChipScroller(
-              children: [
-                for (final option in data.quickOptions)
-                  _InventoryItemEatQuickChip(
-                    label: option.label,
-                    isSelected: data.selectedAmount == option.value,
-                    onPressed: () => data.onQuickOptionSelected(option.value),
+          Row(
+            children: [
+              Expanded(
+                child: _InventoryItemEatQuickChipScroller(
+                  children: [
+                    for (final option in data.quickOptions)
+                      _InventoryItemEatQuickChip(
+                        label: option.label,
+                        isSelected: data.selectedAmount == option.value,
+                        onPressed: () {
+                          data.onQuickOptionSelected(option.value);
+                        },
+                      ),
+                  ],
+                ),
+              ),
+              if (data.totalLabel != null) ...[
+                const SizedBox(width: AppSpacing.md),
+                Text(
+                  data.totalLabel!,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontWeight: FontWeight.w700,
                   ),
+                ),
               ],
+            ],
+          ),
+        ] else if (data.totalLabel != null) ...[
+          const SizedBox(height: AppSpacing.md),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              data.totalLabel!,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colors.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ],
+          ),
         ],
-      ),
+      ],
     );
   }
 }

@@ -435,6 +435,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemEatSheetDefaultPortionLabel => 'Portion';
 
   @override
+  String get inventoryItemEatSheetNewPortionAction => '+ Neue Portion...';
+
+  @override
+  String get inventoryItemEatSheetNewPortionTitle => 'Neue Portion';
+
+  @override
+  String get inventoryItemEatSheetSavePortionAction => 'Portion speichern';
+
+  @override
+  String get inventoryItemEatSheetUnitGram => 'Gramm';
+
+  @override
+  String get inventoryItemEatSheetUnitMilliliter => 'Milliliter';
+
+  @override
+  String get inventoryItemEatSheetUnitPiece => 'Stück';
+
+  @override
   String inventoryItemEatSheetPortionTotalLabel(String amount, String unit) {
     return 'Gesamt: $amount $unit';
   }
@@ -443,7 +461,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemEatSheetInedibleAmountLabel => 'Nicht essbaren Anteil abziehen';
 
   @override
-  String get inventoryItemEatSheetInedibleAmountHint => 'Optional, zum Beispiel Knochen oder Schalen. Kalorien werden nur für den essbaren Rest berechnet.';
+  String get inventoryItemEatSheetInedibleAmountHint => 'Optional, z. B. Knochen';
 
   @override
   String get inventoryItemEatSheetInedibleAmountFieldLabel => 'Nicht essbarer Anteil';
