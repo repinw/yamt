@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/presentation/burn_week_mock_logic.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_metric_stat_card.dart';
 
 const _burnWeekBarTrackHeight = 32.0;
 const _burnWeekBarMarkerWidth = 3.0;
@@ -167,7 +169,7 @@ class BurnWeekOverviewCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: _BurnWeekOverviewStatCard(
+                  child: CalorieMetricStatCard(
                     key: primaryStat.key,
                     title: primaryStat.title,
                     value: primaryStat.value,
@@ -176,7 +178,7 @@ class BurnWeekOverviewCard extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
-                  child: _BurnWeekOverviewStatCard(
+                  child: CalorieMetricStatCard(
                     key: secondaryStat.key,
                     title: secondaryStat.title,
                     value: secondaryStat.value,
@@ -363,54 +365,5 @@ class _BurnWeekOverviewBar extends StatelessWidget {
 
   String _formatKcal(double value) {
     return '${numberFormat.format(value.round())} $kcalUnit';
-  }
-}
-
-class _BurnWeekOverviewStatCard extends StatelessWidget {
-  const _BurnWeekOverviewStatCard({
-    required this.title,
-    required this.value,
-    required this.borderColor,
-    super.key,
-  });
-
-  final String title;
-  final String value;
-  final Color borderColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: borderColor.withValues(alpha: 0.7)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          children: [
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: colors.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              value,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: borderColor,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
