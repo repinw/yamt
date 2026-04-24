@@ -287,27 +287,6 @@ bool hasClassicSummaryMetaToggles(CalorieBalanceSummaryData data) {
   return data.activityDeltaKcal.round() != 0 || data.carryoverKcal.round() != 0;
 }
 
-/// Resolves the classic-mode goal after optional daily adjustments.
-double resolveClassicGoalKcal({
-  required double goalKcal,
-  required CalorieBalanceSummaryData? balanceData,
-  required bool includeActivityDelta,
-  required bool includeCarryover,
-}) {
-  if (balanceData == null) {
-    return goalKcal;
-  }
-
-  var resolvedGoalKcal = goalKcal;
-  if (!includeActivityDelta && balanceData.activityDeltaKcal.round() != 0) {
-    resolvedGoalKcal -= balanceData.activityDeltaKcal;
-  }
-  if (includeCarryover) {
-    resolvedGoalKcal += balanceData.carryoverKcal;
-  }
-  return resolvedGoalKcal;
-}
-
 double _displayedActivityMetaKcal(CalorieBalanceSummaryData data) {
   return data.usedLearnedTdee
       ? data.activityComparisonKcal

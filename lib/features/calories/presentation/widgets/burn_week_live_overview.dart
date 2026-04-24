@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
+import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/burn_week_mock_logic.dart';
@@ -477,7 +478,7 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
           currentWeekStartDate: currentWeekStartDate,
           today: todayOverview.date,
         );
-    final weekGuardedBurnKcal = resolveBurnWeekGuardedBurnKcal(
+    final weekActivityBonusKcal = resolveBurnWeekActivityBonusKcal(
       weekOverview: weekOverview,
       currentWeekStartDate: currentWeekStartDate,
       resolvedGoalStates: resolvedGoalStates,
@@ -501,13 +502,24 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
       plannedLaterTodayKcal: plannedLaterTodayKcal,
       safeZoneMultiplier: difficulty.safeZoneMultiplier,
     );
+    final todayResolvedGoal = _resolvedGoalForDay(
+      weekOverview: weekOverview,
+      resolvedGoalStates: resolvedGoalStates,
+      day: todayOverview.date,
+    );
+    final fullDayBudget = CalorieBudgetCalculator.calculateFullDayBudget(
+      storedGoalKcal:
+          todayResolvedGoal?.storedGoalKcal ?? todayOverview.goalKcal,
+      activityDeltaKcal: todayResolvedGoal?.activityDeltaKcal ?? 0,
+      carryoverKcal: weekOverview.carryoverBeforeTodayKcal,
+      consumedKcal: todayOverview.totalKcal,
+    );
     _queueZoneDialogIfNeeded(
       metrics: metrics,
       runState: runState,
     );
     final weekRemainingAfterFoodKcal =
         metrics.weeklyGoalKcal - metrics.consumedKcal;
-    final todayBudgetKcal = metrics.dailyGoalKcal * (completedDaysCount + 1);
     const kcalUnit = 'kcal';
     final weekDayLabel = formatBurnWeekLiveWeekDayLabel(
       currentDay: todayOverview.date,
@@ -516,8 +528,7 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
       l10n: l10n,
     );
     final currentTimeLabel = formatBurnWeekLiveClockTime(now);
-    final todayLeftKcal =
-        todayBudgetKcal - metrics.consumedKcal - weekGuardedBurnKcal;
+    final todayLeftKcal = fullDayBudget.remainingKcal;
     final todayActualKcal = todayOverview.totalKcal - plannedLaterTodayKcal;
     final todayActualText =
         '${numberFormat.format(todayActualKcal.round())} $kcalUnit';
@@ -547,8 +558,8 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
         '${numberFormat.format(metrics.consumedKcal.round())} $kcalUnit';
     final plannedLaterTodayText =
         '${numberFormat.format(plannedLaterTodayKcal.round())} $kcalUnit';
-    final weekGuardedBurnText = formatBurnWeekBurnedKcal(
-      weekGuardedBurnKcal,
+    final weekActivityBonusText = formatBurnWeekSignedKcal(
+      weekActivityBonusKcal,
       numberFormat,
       kcalUnit,
     );
@@ -560,6 +571,10 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
     final weekRemainingAfterFoodText =
         '${numberFormat.format(weekRemainingAfterFoodKcal.round())} '
         '$kcalUnit';
+    final fullDayBudgetText =
+        '${numberFormat.format(fullDayBudget.goalKcal.round())} $kcalUnit';
+    final todayFoodBudgetText =
+        '${numberFormat.format(todayOverview.totalKcal.round())} $kcalUnit';
     final heartCreditText = formatBurnWeekSignedKcal(
       runState.heartCreditKcal,
       numberFormat,
@@ -595,7 +610,10 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
               targetFormulaText: targetFormulaText,
               weekEatenSoFarText: weekEatenSoFarText,
               plannedLaterTodayText: plannedLaterTodayText,
-              weekGuardedBurnText: weekGuardedBurnText,
+              todayBudgetText: fullDayBudgetText,
+              todayFoodText: todayFoodBudgetText,
+              todayLeftText: todayLeftText,
+              weekActivityBonusText: weekActivityBonusText,
               weekCarryoverText: weekCarryoverText,
               previousWeekOverflowText: previousWeekOverflowText,
               weekRemainingAfterFoodText: weekRemainingAfterFoodText,
@@ -620,4 +638,18 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
       ),
     );
   }
+}
+
+ResolvedCalorieGoalData? _resolvedGoalForDay({
+  required CalorieWeekOverview weekOverview,
+  required List<AsyncValue<ResolvedCalorieGoalData>> resolvedGoalStates,
+  required DateTime day,
+}) {
+  for (var index = 0; index < weekOverview.days.length; index += 1) {
+    if (!isSameDiaryDay(weekOverview.days[index].date, day)) {
+      continue;
+    }
+    return resolvedGoalStates[index].asData?.value;
+  }
+  return null;
 }

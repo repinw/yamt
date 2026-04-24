@@ -172,6 +172,7 @@ CalorieBalanceSummaryData _balanceData({
     balanceStartDate: now.subtract(const Duration(days: 6)),
     paceWindowStart: DateTime(2026, 4, 10, 6),
     paceWindowEnd: DateTime(2026, 4, 10, 22),
+    storedGoalKcal: 2000 - activityDeltaKcal,
     baseGoalKcal: 2000,
     carryoverKcal: carryoverKcal,
     goalMode: CalorieGoalMode.maintain,

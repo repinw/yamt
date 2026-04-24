@@ -9,8 +9,20 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_summary_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
+import 'package:yamt/features/health/domain/diary_health_day_data.dart';
+import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/health_workout_session.dart';
+import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
+import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
 
 import '../support/fake_calories_repositories.dart';
+
+const _readyHealthStatus = HealthConnectionStatus(
+  platform: HealthPlatform.android,
+  healthConnectAvailability: HealthConnectAvailability.available,
+  permissionState: HealthPermissionState.granted,
+  historyAccess: HealthHistoryAccess.granted,
+);
 
 CalorieEntry _entry(
   String id, {
@@ -327,6 +339,75 @@ void main() {
       expect(summary.carryoverKcal, 200);
       expect(summary.paceRatio, closeTo(0.5, 0.0001));
       expect(summary.pacedGoalKcal, closeTo(1200, 0.001));
+    },
+  );
+
+  test(
+    'calorieBalanceSummary excludes past activity bonus from carryover',
+    () async {
+      final now = DateTime(2026, 4, 10, 14);
+      final day = normalizeDiaryDay(now);
+      final yesterday = day.subtract(const Duration(days: 1));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'yesterday-buffer',
+            loggedAt: yesterday.add(const Duration(hours: 12)),
+            totalKcal: 1500,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: yesterday,
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieBalanceNowProvider.overrideWithValue(() => now),
+          healthConnectionServiceProvider.overrideWith(
+            (ref) => FakeHealthConnectionService(_readyHealthStatus),
+          ),
+          diaryHealthServiceProvider.overrideWith(
+            (ref) => FakeDiaryHealthService(
+              <String, DiaryHealthDayData>{
+                diaryDayKey(yesterday): DiaryHealthDayData(
+                  totalSteps: 0,
+                  workouts: <HealthWorkoutSession>[
+                    HealthWorkoutSession(
+                      id: 'run-1',
+                      start: yesterday.add(const Duration(hours: 8)),
+                      endExclusive: yesterday.add(const Duration(hours: 9)),
+                      durationMinutes: 60,
+                      activityLabel: 'Run',
+                      sourceName: 'Health',
+                      totalCalories: 1000,
+                      totalSteps: 0,
+                    ),
+                  ],
+                ),
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(calorieDayControllerProvider.notifier).setDay(day);
+
+      final summary = await container.read(
+        calorieBalanceSummaryProvider.future,
+      );
+
+      expect(summary.carryoverKcal, 500);
     },
   );
 
@@ -836,6 +917,7 @@ CalorieBalanceSummaryData _summaryData({
       resolvedSelectedDay.day,
       22,
     ),
+    storedGoalKcal: baseGoalKcal,
     baseGoalKcal: baseGoalKcal,
     carryoverKcal: carryoverKcal,
     goalMode: goalMode,
@@ -860,6 +942,7 @@ extension on CalorieBalanceSummaryData {
       balanceStartDate: balanceStartDate,
       paceWindowStart: paceWindowStart,
       paceWindowEnd: paceWindowEnd,
+      storedGoalKcal: baseGoalKcal,
       baseGoalKcal: baseGoalKcal,
       carryoverKcal: carryoverKcal,
       goalMode: goalMode,

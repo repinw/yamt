@@ -893,6 +893,18 @@
   "caloriesSummaryViewClassic": "Klassisch",
   "caloriesSummaryViewBalance": "Balance",
   "caloriesOpenBurnWeekMockAction": "Burn-Week-Mock öffnen",
+  "caloriesDebugDumpAction": "Kalorien-Debug-Tabelle ausgeben",
+  "caloriesDebugDumpPrinted":
+      "Kalorien-Debug-Tabelle ausgegeben ({rowCount} Zeilen).",
+  "@caloriesDebugDumpPrinted": {
+    "placeholders": {
+      "rowCount": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesDebugDumpFailed":
+      "Kalorien-Debug-Tabelle konnte nicht ausgegeben werden.",
   "burnWeekUseHeartTitle": "Herz einsetzen?",
   "burnWeekUseHeartMessage":
       "1 Herz kann einen ganzen Burn-Tag an Kalorien hinzufügen oder abziehen ({dayKcal} kcal).",
@@ -944,6 +956,28 @@
       "Du liegst weit über dem Wochenlimit. 1 Herz nutzen, um einen ganzen Burn-Tag an Kalorien zu entfernen?",
   "burnWeekZoneAboveRunOverMessage":
       "Du liegst weit über dem Wochenlimit und hast keine Herzen mehr. Dieser Run endet und am nächsten Tag startet ein frischer Run.",
+  "calorieBudgetDetailsInfoTooltip": "Kalorien-Details anzeigen",
+  "calorieBudgetDetailsActualLabel": "Ist (du)",
+  "calorieBudgetDetailsTargetLabel": "Soll (Ziel)",
+  "calorieBudgetDetailsConsumedLabel": "Gegessen",
+  "calorieBudgetDetailsBudgetLabel": "Budget",
+  "calorieBudgetDetailsClassicTitle": "Klassisch-Details",
+  "calorieBudgetDetailsClassicExplanation":
+      "Klassisch startet mit deinem gespeicherten Tagesziel. Optionale Schalter addieren heutige Extra-Aktivität und den Übertrag aus abgeschlossenen Tagen. Verbleibend = Budget - heute erfasstes Essen.",
+  "calorieBudgetDetailsBalanceExplanation":
+      "Balance berechnet automatisch neu. Heute übrig nutzt dasselbe Tagesbudget wie Klassisch mit beiden Schaltern an: Basisziel + heutige Aktivität + Übertrag - Essen heute. Der Balken bleibt auf die aktuelle Woche getaktet.",
+  "calorieBudgetDetailsBaseGoal": "Basisziel",
+  "calorieBudgetDetailsActivityIncluded": "Aktivität eingerechnet",
+  "calorieBudgetDetailsActivityAvailable": "Aktivität verfügbar",
+  "calorieBudgetDetailsCarryoverIncluded": "Übertrag eingerechnet",
+  "calorieBudgetDetailsCarryoverAvailable": "Übertrag verfügbar",
+  "calorieBudgetDetailsTodayBudget": "Heutiges Budget",
+  "calorieBudgetDetailsFoodToday": "Essen heute",
+  "calorieBudgetDetailsRemaining": "Verbleibend",
+  "calorieBudgetDetailsMinimumFloor": "Mindestgrenze",
+  "calorieBudgetDetailsCarryoverRule": "Übertrag-Regel",
+  "calorieBudgetDetailsCarryoverRuleValue":
+      "Übertrag nutzt abgeschlossene Tage mit ihren Basiszielen. Aktivitätsbonus gilt nur für den Tag selbst und wird nicht in künftigen Übertrag gespeichert.",
   "burnWeekDetailsTitle": "Burn-Week-Details",
   "burnWeekDetailsHowCalculated": "So wird es berechnet",
   "burnWeekDetailsDailyGoal": "Tagesziel",
@@ -955,13 +989,13 @@
   "burnWeekDetailsTargetFormula": "Zielformel",
   "burnWeekDetailsLoggedFoodSoFar": "Bisher erfasstes Essen",
   "burnWeekDetailsPlannedLaterToday": "Später heute geplant",
-  "burnWeekDetailsGuardedBurnSoFar": "Bisherer Guarded Burn",
+  "burnWeekDetailsActivityBonusSoFar": "Bisheriger Aktivitätsbonus",
   "burnWeekDetailsWeekCarryover": "Übertrag dieser Woche",
   "burnWeekDetailsPreviousWeekOverflow": "Übertrag aus letzter Woche",
   "burnWeekDetailsWeekLeftAfterFood": "Woche übrig nach Essen",
   "burnWeekDetailsSportCounting": "Sport-Zählung",
   "burnWeekDetailsSportCountingValue":
-      "Guarded Burn wird in HEUTE ÜBRIG abgezogen.",
+      "Erwartete Aktivität steckt bereits im Basisziel. Nur Aktivität über dieser Erwartung wird als essbare kcal addiert.",
   "burnWeekDetailsSafeZone": "Sicherheitszone",
   "burnWeekInfoTooltip": "Burn-Week-Details anzeigen",
   "burnWeekWeekDayLabel": "Woche {week} Tag {day}",

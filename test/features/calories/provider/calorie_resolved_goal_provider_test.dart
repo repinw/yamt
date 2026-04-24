@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_summary_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.dart';
@@ -195,7 +194,7 @@ void main() {
   });
 
   test(
-    'clamps a bootstrap resolved goal to 1500 when stored goal is lower',
+    'does not clamp a bootstrap resolved goal above the 1200 floor',
     () async {
       final today = DateTime(2026, 4, 15);
       final settings = const CalorieGoalSettings.empty().applyGoalChange(
@@ -220,9 +219,9 @@ void main() {
       expect(resolvedGoal.storedGoalKcal, 1400);
       expect(resolvedGoal.activityDeltaKcal, 0);
       expect(resolvedGoal.activityComparisonKcal, 0);
-      expect(resolvedGoal.goalKcal, minimumResolvedDailyCalorieGoalKcal);
+      expect(resolvedGoal.goalKcal, 1400);
       expect(resolvedGoal.usedLearnedTdee, isFalse);
-      expect(resolvedGoal.wasClampedToMinimum, isTrue);
+      expect(resolvedGoal.wasClampedToMinimum, isFalse);
     },
   );
 
@@ -443,7 +442,7 @@ void main() {
   );
 
   test(
-    'clamps a learned resolved goal to 1500 when stored goal is below minimum',
+    'does not clamp a learned resolved goal above the 1200 floor',
     () async {
       final today = DateTime(2026, 4, 15);
       final settings = const CalorieGoalSettings.empty()
@@ -480,8 +479,8 @@ void main() {
         resolvedCalorieGoalForDayProvider(today).future,
       );
 
-      expect(resolvedGoal.goalKcal, 1500);
-      expect(resolvedGoal.wasClampedToMinimum, isTrue);
+      expect(resolvedGoal.goalKcal, 1450);
+      expect(resolvedGoal.wasClampedToMinimum, isFalse);
     },
   );
 }

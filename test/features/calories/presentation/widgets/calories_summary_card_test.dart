@@ -334,7 +334,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Burn Week details'), findsOneWidget);
-    expect(find.text('How this is calculated'), findsOneWidget);
+    expect(find.textContaining('Balance recalculates'), findsOneWidget);
+
+    await tester.tap(find.text('Close'));
+    await tester.pumpAndSettle();
   });
 
   testWidgets('classic mode still syncs Burn live activity state', (
@@ -687,14 +690,16 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _buildHarness(
+          preferences: MemoryAppPreferences(
+            initialStrings: const <String, String>{
+              'calories_summary_view_mode': 'classic',
+            },
+          ),
+          balanceData: _balanceData(baseGoalKcal: 1500),
+          consumedKcal: 1600,
           goalKcal: 1500,
           remainingKcal: -100,
         ),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.tap(
-        find.byKey(CaloriesPageKeys.summaryModeOption('classic')),
       );
       await tester.pumpAndSettle();
 
@@ -715,6 +720,11 @@ void main() {
     (tester) async {
       await tester.pumpWidget(
         _buildHarness(
+          preferences: MemoryAppPreferences(
+            initialStrings: const <String, String>{
+              'calories_summary_view_mode': 'classic',
+            },
+          ),
           balanceData: _balanceData(
             activityDeltaKcal: 135,
             activityComparisonKcal: 135,
@@ -722,11 +732,6 @@ void main() {
             usedLearnedTdee: true,
           ),
         ),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.tap(
-        find.byKey(CaloriesPageKeys.summaryModeOption('classic')),
       );
       await tester.pumpAndSettle();
 
@@ -778,6 +783,7 @@ void main() {
     (tester) async {
       final preferences = MemoryAppPreferences(
         initialStrings: <String, String>{
+          'calories_summary_view_mode': 'classic',
           'calories_summary_classic_include_activity_delta': 'false',
           'calories_summary_classic_include_carryover': 'true',
         },
@@ -793,11 +799,6 @@ void main() {
             usedLearnedTdee: true,
           ),
         ),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.tap(
-        find.byKey(CaloriesPageKeys.summaryModeOption('classic')),
       );
       await tester.pumpAndSettle();
 
@@ -974,6 +975,7 @@ Color? _currentValueColor(RichText value) {
 }
 
 CalorieBalanceSummaryData _balanceData({
+  double baseGoalKcal = 2000,
   double activityDeltaKcal = 0,
   double activityComparisonKcal = 0,
   double carryoverKcal = 0,
@@ -987,11 +989,12 @@ CalorieBalanceSummaryData _balanceData({
     balanceStartDate: now.subtract(const Duration(days: 6)),
     paceWindowStart: DateTime(2026, 4, 10, 6),
     paceWindowEnd: DateTime(2026, 4, 10, 22),
-    baseGoalKcal: 2000,
+    storedGoalKcal: baseGoalKcal - activityDeltaKcal,
+    baseGoalKcal: baseGoalKcal,
     carryoverKcal: carryoverKcal,
     goalMode: CalorieGoalMode.maintain,
-    flexibleGoalKcal: 2000 + carryoverKcal,
-    pacedGoalKcal: 1000 + carryoverKcal,
+    flexibleGoalKcal: baseGoalKcal + carryoverKcal,
+    pacedGoalKcal: (baseGoalKcal / 2) + carryoverKcal,
     consumedKcal: 1000,
     deltaKcal: 0,
     paceRatio: 0.5,

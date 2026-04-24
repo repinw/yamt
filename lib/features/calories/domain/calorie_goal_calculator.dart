@@ -1,10 +1,11 @@
 import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
+import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 
 /// The minimum calorie goal kcal.
-const minimumCalorieGoalKcal = 1200.0;
+const double minimumCalorieGoalKcal = minimumDailyCalorieBudgetKcal;
 const _kcalPerKilogram = 7000.0;
 const _daysPerWeek = 7.0;
 const _calculatorLogName = 'CalorieGoalCalculator';

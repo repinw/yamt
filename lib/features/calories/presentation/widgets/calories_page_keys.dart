@@ -18,6 +18,9 @@ abstract final class CaloriesPageKeys {
   /// The week strip.
   static const weekStrip = Key('calories_week_strip');
 
+  /// The diary page list.
+  static const diaryList = Key('calories_diary_list');
+
   /// The week buffer card.
   static const weekBufferCard = Key('calories_week_buffer_card');
 
@@ -71,6 +74,9 @@ abstract final class CaloriesPageKeys {
 
   /// Opens Burn Week mock page.
   static const burnWeekMockOpenButton = Key('calories_burn_week_open_button');
+
+  /// Prints calorie debug dump.
+  static const calorieDebugDumpButton = Key('calories_debug_dump_button');
 
   /// Burn Week mock bar.
   static const burnWeekMockBar = Key('calories_burn_week_bar');

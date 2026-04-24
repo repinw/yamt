@@ -1650,6 +1650,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesOpenBurnWeekMockAction => 'Burn-Week-Mock öffnen';
 
   @override
+  String get caloriesDebugDumpAction => 'Kalorien-Debug-Tabelle ausgeben';
+
+  @override
+  String caloriesDebugDumpPrinted(int rowCount) {
+    return 'Kalorien-Debug-Tabelle ausgegeben ($rowCount Zeilen).';
+  }
+
+  @override
+  String get caloriesDebugDumpFailed => 'Kalorien-Debug-Tabelle konnte nicht ausgegeben werden.';
+
+  @override
   String get burnWeekUseHeartTitle => 'Herz einsetzen?';
 
   @override
@@ -1728,6 +1739,63 @@ class AppLocalizationsDe extends AppLocalizations {
   String get burnWeekZoneAboveRunOverMessage => 'Du liegst weit über dem Wochenlimit und hast keine Herzen mehr. Dieser Run endet und am nächsten Tag startet ein frischer Run.';
 
   @override
+  String get calorieBudgetDetailsInfoTooltip => 'Kalorien-Details anzeigen';
+
+  @override
+  String get calorieBudgetDetailsActualLabel => 'Ist (du)';
+
+  @override
+  String get calorieBudgetDetailsTargetLabel => 'Soll (Ziel)';
+
+  @override
+  String get calorieBudgetDetailsConsumedLabel => 'Gegessen';
+
+  @override
+  String get calorieBudgetDetailsBudgetLabel => 'Budget';
+
+  @override
+  String get calorieBudgetDetailsClassicTitle => 'Klassisch-Details';
+
+  @override
+  String get calorieBudgetDetailsClassicExplanation => 'Klassisch startet mit deinem gespeicherten Tagesziel. Optionale Schalter addieren heutige Extra-Aktivität und den Übertrag aus abgeschlossenen Tagen. Verbleibend = Budget - heute erfasstes Essen.';
+
+  @override
+  String get calorieBudgetDetailsBalanceExplanation => 'Balance berechnet automatisch neu. Heute übrig nutzt dasselbe Tagesbudget wie Klassisch mit beiden Schaltern an: Basisziel + heutige Aktivität + Übertrag - Essen heute. Der Balken bleibt auf die aktuelle Woche getaktet.';
+
+  @override
+  String get calorieBudgetDetailsBaseGoal => 'Basisziel';
+
+  @override
+  String get calorieBudgetDetailsActivityIncluded => 'Aktivität eingerechnet';
+
+  @override
+  String get calorieBudgetDetailsActivityAvailable => 'Aktivität verfügbar';
+
+  @override
+  String get calorieBudgetDetailsCarryoverIncluded => 'Übertrag eingerechnet';
+
+  @override
+  String get calorieBudgetDetailsCarryoverAvailable => 'Übertrag verfügbar';
+
+  @override
+  String get calorieBudgetDetailsTodayBudget => 'Heutiges Budget';
+
+  @override
+  String get calorieBudgetDetailsFoodToday => 'Essen heute';
+
+  @override
+  String get calorieBudgetDetailsRemaining => 'Verbleibend';
+
+  @override
+  String get calorieBudgetDetailsMinimumFloor => 'Mindestgrenze';
+
+  @override
+  String get calorieBudgetDetailsCarryoverRule => 'Übertrag-Regel';
+
+  @override
+  String get calorieBudgetDetailsCarryoverRuleValue => 'Übertrag nutzt abgeschlossene Tage mit ihren Basiszielen. Aktivitätsbonus gilt nur für den Tag selbst und wird nicht in künftigen Übertrag gespeichert.';
+
+  @override
   String get burnWeekDetailsTitle => 'Burn-Week-Details';
 
   @override
@@ -1761,7 +1829,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get burnWeekDetailsPlannedLaterToday => 'Später heute geplant';
 
   @override
-  String get burnWeekDetailsGuardedBurnSoFar => 'Bisherer Guarded Burn';
+  String get burnWeekDetailsActivityBonusSoFar => 'Bisheriger Aktivitätsbonus';
 
   @override
   String get burnWeekDetailsWeekCarryover => 'Übertrag dieser Woche';
@@ -1776,7 +1844,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get burnWeekDetailsSportCounting => 'Sport-Zählung';
 
   @override
-  String get burnWeekDetailsSportCountingValue => 'Guarded Burn wird in HEUTE ÜBRIG abgezogen.';
+  String get burnWeekDetailsSportCountingValue => 'Erwartete Aktivität steckt bereits im Basisziel. Nur Aktivität über dieser Erwartung wird als essbare kcal addiert.';
 
   @override
   String get burnWeekDetailsSafeZone => 'Sicherheitszone';

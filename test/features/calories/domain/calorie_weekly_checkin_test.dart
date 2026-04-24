@@ -69,15 +69,15 @@ void main() {
     'clamps dynamic today goal to minimum floor when stored goal is lower',
     () {
       final result = CalorieWeeklyCheckInCalculator.calculate(
-        previousGoalKcal: 1400,
+        previousGoalKcal: 1100,
         intakeKcalByDay: const <double>[
-          1400,
-          1400,
-          1400,
-          1400,
-          1400,
-          1400,
-          1400,
+          1100,
+          1100,
+          1100,
+          1100,
+          1100,
+          1100,
+          1100,
         ],
         lastWeekActiveKcalByDay: const <int>[0, 0, 0, 0, 0, 0, 0],
         todayActiveKcal: 0,

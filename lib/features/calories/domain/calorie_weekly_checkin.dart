@@ -2,9 +2,11 @@ import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_adjustment.dart';
+import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 
 /// The minimum resolved daily calorie goal kcal.
-const minimumResolvedDailyCalorieGoalKcal = 1500.0;
+const double minimumResolvedDailyCalorieGoalKcal =
+    minimumDailyCalorieBudgetKcal;
 
 /// The weekly check in window length days.
 const weeklyCheckInWindowLengthDays = 7;

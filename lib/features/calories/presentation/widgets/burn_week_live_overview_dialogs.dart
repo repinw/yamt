@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_budget_details_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Callback fired when a Burn Week dialog route is created and pushed.
@@ -37,7 +38,10 @@ class BurnWeekLiveDetailsData {
     required this.targetFormulaText,
     required this.weekEatenSoFarText,
     required this.plannedLaterTodayText,
-    required this.weekGuardedBurnText,
+    required this.todayBudgetText,
+    required this.todayFoodText,
+    required this.todayLeftText,
+    required this.weekActivityBonusText,
     required this.weekCarryoverText,
     required this.previousWeekOverflowText,
     required this.weekRemainingAfterFoodText,
@@ -74,8 +78,17 @@ class BurnWeekLiveDetailsData {
   /// Planned later today text.
   final String plannedLaterTodayText;
 
-  /// Week guarded burn text.
-  final String weekGuardedBurnText;
+  /// Full day budget text.
+  final String todayBudgetText;
+
+  /// Today food text.
+  final String todayFoodText;
+
+  /// Today remaining text.
+  final String todayLeftText;
+
+  /// Week activity bonus text.
+  final String weekActivityBonusText;
 
   /// Week carryover text.
   final String weekCarryoverText;
@@ -258,128 +271,91 @@ Future<void> showBurnWeekDetailsDialog({
   required BuildContext context,
   required BurnWeekLiveDetailsData data,
 }) {
-  final colors = Theme.of(context).colorScheme;
   final l10n = AppLocalizations.of(context)!;
-  return showDialog<void>(
+  return showCalorieBudgetDetailsDialog(
     context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text(l10n.burnWeekDetailsTitle),
-        content: SingleChildScrollView(
-          child: SizedBox(
-            width: 360,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _LiveDialogStatCard(
-                        title: 'ACTUAL (YOU)',
-                        value: data.actualText,
-                        borderColor: colors.primary,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: _LiveDialogStatCard(
-                        title: 'TARGET (GOAL)',
-                        value: data.targetText,
-                        borderColor: colors.secondary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Card(
-                  margin: EdgeInsets.zero,
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.burnWeekDetailsHowCalculated,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsDailyGoal,
-                          value: data.dailyGoalText,
-                        ),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsWeekTarget,
-                          value: data.weeklyGoalText,
-                        ),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsCurrentTime,
-                          value: data.currentTimeLabel,
-                        ),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsStarsHearts,
-                          value: data.starsHeartsText,
-                        ),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsHeartKcalUsed,
-                          value: data.heartCreditText,
-                        ),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsWeekRatio,
-                          value: data.weekRatioText,
-                        ),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsTargetFormula,
-                          value: data.targetFormulaText,
-                        ),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsLoggedFoodSoFar,
-                          value: data.weekEatenSoFarText,
-                        ),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsPlannedLaterToday,
-                          value: data.plannedLaterTodayText,
-                        ),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsGuardedBurnSoFar,
-                          value: data.weekGuardedBurnText,
-                        ),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsWeekCarryover,
-                          value: data.weekCarryoverText,
-                        ),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsPreviousWeekOverflow,
-                          value: data.previousWeekOverflowText,
-                        ),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsWeekLeftAfterFood,
-                          value: data.weekRemainingAfterFoodText,
-                        ),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsSportCounting,
-                          value: l10n.burnWeekDetailsSportCountingValue,
-                        ),
-                        _LiveInfoLine(
-                          label: l10n.burnWeekDetailsSafeZone,
-                          value: '${data.safeMinText} to ${data.safeMaxText}',
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+    data: CalorieBudgetDetailsData(
+      title: l10n.burnWeekDetailsTitle,
+      primaryLabel: l10n.calorieBudgetDetailsActualLabel,
+      primaryValue: data.actualText,
+      secondaryLabel: l10n.calorieBudgetDetailsTargetLabel,
+      secondaryValue: data.targetText,
+      explanation: l10n.calorieBudgetDetailsBalanceExplanation,
+      lines: [
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsDailyGoal,
+          value: data.dailyGoalText,
         ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(MaterialLocalizations.of(context).closeButtonLabel),
-          ),
-        ],
-      );
-    },
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsWeekTarget,
+          value: data.weeklyGoalText,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsCurrentTime,
+          value: data.currentTimeLabel,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsStarsHearts,
+          value: data.starsHeartsText,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsHeartKcalUsed,
+          value: data.heartCreditText,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsWeekRatio,
+          value: data.weekRatioText,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsTargetFormula,
+          value: data.targetFormulaText,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsLoggedFoodSoFar,
+          value: data.weekEatenSoFarText,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsPlannedLaterToday,
+          value: data.plannedLaterTodayText,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.calorieBudgetDetailsTodayBudget,
+          value: data.todayBudgetText,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.calorieBudgetDetailsFoodToday,
+          value: data.todayFoodText,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.calorieBudgetDetailsRemaining,
+          value: data.todayLeftText,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsActivityBonusSoFar,
+          value: data.weekActivityBonusText,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsWeekCarryover,
+          value: data.weekCarryoverText,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsPreviousWeekOverflow,
+          value: data.previousWeekOverflowText,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsWeekLeftAfterFood,
+          value: data.weekRemainingAfterFoodText,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsSportCounting,
+          value: l10n.burnWeekDetailsSportCountingValue,
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.burnWeekDetailsSafeZone,
+          value: '${data.safeMinText} - ${data.safeMaxText}',
+        ),
+      ],
+    ),
   );
 }
 
@@ -404,80 +380,4 @@ Future<T?> _showBurnWeekDialog<T>({
   );
   onRouteReady?.call(navigator, route);
   return navigator.push(route);
-}
-
-class _LiveDialogStatCard extends StatelessWidget {
-  const _LiveDialogStatCard({
-    required this.title,
-    required this.value,
-    required this.borderColor,
-  });
-
-  final String title;
-  final String value;
-  final Color borderColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: borderColor.withValues(alpha: 0.7)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          children: [
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: colors.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              value,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: borderColor,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LiveInfoLine extends StatelessWidget {
-  const _LiveInfoLine({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.bodyMedium;
-    final colors = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: RichText(
-        text: TextSpan(
-          style: style?.copyWith(color: colors.onSurface),
-          children: [
-            TextSpan(
-              text: '$label: ',
-              style: style?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            TextSpan(text: value),
-          ],
-        ),
-      ),
-    );
-  }
 }

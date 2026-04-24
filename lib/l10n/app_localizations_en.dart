@@ -1650,6 +1650,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesOpenBurnWeekMockAction => 'Open Burn Week mock';
 
   @override
+  String get caloriesDebugDumpAction => 'Print calorie debug table';
+
+  @override
+  String caloriesDebugDumpPrinted(int rowCount) {
+    return 'Printed calorie debug table ($rowCount rows).';
+  }
+
+  @override
+  String get caloriesDebugDumpFailed => 'Could not print calorie debug table.';
+
+  @override
   String get burnWeekUseHeartTitle => 'Use heart?';
 
   @override
@@ -1728,6 +1739,63 @@ class AppLocalizationsEn extends AppLocalizations {
   String get burnWeekZoneAboveRunOverMessage => 'You are way over weekly limit and have no hearts left. This run ends and a fresh run starts next day.';
 
   @override
+  String get calorieBudgetDetailsInfoTooltip => 'Show calorie details';
+
+  @override
+  String get calorieBudgetDetailsActualLabel => 'Actual (you)';
+
+  @override
+  String get calorieBudgetDetailsTargetLabel => 'Target (goal)';
+
+  @override
+  String get calorieBudgetDetailsConsumedLabel => 'Consumed';
+
+  @override
+  String get calorieBudgetDetailsBudgetLabel => 'Budget';
+
+  @override
+  String get calorieBudgetDetailsClassicTitle => 'Classic details';
+
+  @override
+  String get calorieBudgetDetailsClassicExplanation => 'Classic starts with your saved daily target. Optional switches add today\'s extra activity and carryover from finished days. Remaining = budget - food logged today.';
+
+  @override
+  String get calorieBudgetDetailsBalanceExplanation => 'Balance recalculates automatically. Today left uses the same full-day budget as Classic with both switches on: base goal + today activity + carryover - food today. The bar still paces the current week.';
+
+  @override
+  String get calorieBudgetDetailsBaseGoal => 'Base goal';
+
+  @override
+  String get calorieBudgetDetailsActivityIncluded => 'Activity included';
+
+  @override
+  String get calorieBudgetDetailsActivityAvailable => 'Activity available';
+
+  @override
+  String get calorieBudgetDetailsCarryoverIncluded => 'Carryover included';
+
+  @override
+  String get calorieBudgetDetailsCarryoverAvailable => 'Carryover available';
+
+  @override
+  String get calorieBudgetDetailsTodayBudget => 'Today budget';
+
+  @override
+  String get calorieBudgetDetailsFoodToday => 'Food today';
+
+  @override
+  String get calorieBudgetDetailsRemaining => 'Remaining';
+
+  @override
+  String get calorieBudgetDetailsMinimumFloor => 'Minimum floor';
+
+  @override
+  String get calorieBudgetDetailsCarryoverRule => 'Carryover rule';
+
+  @override
+  String get calorieBudgetDetailsCarryoverRuleValue => 'Carryover uses finished days with their base goals. Activity bonus is day-local and is not saved into future carryover.';
+
+  @override
   String get burnWeekDetailsTitle => 'Burn Week details';
 
   @override
@@ -1761,7 +1829,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get burnWeekDetailsPlannedLaterToday => 'Planned later today';
 
   @override
-  String get burnWeekDetailsGuardedBurnSoFar => 'Guarded burn so far';
+  String get burnWeekDetailsActivityBonusSoFar => 'Activity bonus so far';
 
   @override
   String get burnWeekDetailsWeekCarryover => 'This week carryover';
@@ -1776,7 +1844,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get burnWeekDetailsSportCounting => 'Sport counting';
 
   @override
-  String get burnWeekDetailsSportCountingValue => 'Guarded burn is subtracted in TODAY LEFT.';
+  String get burnWeekDetailsSportCountingValue => 'Expected activity is already in your base goal. Only activity above that expectation is added as eatable kcal.';
 
   @override
   String get burnWeekDetailsSafeZone => 'Safe zone';

@@ -1,9 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'burn_week_live_overview.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_budget_details_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -103,24 +108,22 @@ class CaloriesSummaryCard extends ConsumerWidget {
     );
     final includeClassicActivityDelta = classicAdjustments.includeActivityDelta;
     final includeClassicCarryover = classicAdjustments.includeCarryover;
-    final classicGoalKcal = resolveClassicGoalKcal(
-      goalKcal: goalKcal,
-      balanceData: balanceData,
-      includeActivityDelta: includeClassicActivityDelta,
-      includeCarryover: includeClassicCarryover,
-    );
     final availableClassicActivityDeltaKcal =
         balanceData?.activityDeltaKcal ?? 0.0;
     final availableClassicCarryoverKcal = balanceData?.carryoverKcal ?? 0.0;
-    final classicActivityDeltaKcal = includeClassicActivityDelta
-        ? availableClassicActivityDeltaKcal
-        : 0.0;
-    final classicCarryoverKcal = includeClassicCarryover
-        ? availableClassicCarryoverKcal
-        : 0.0;
-    final classicBaseGoalKcal =
-        classicGoalKcal - classicActivityDeltaKcal - classicCarryoverKcal;
-    final classicRemainingKcal = classicGoalKcal - consumedKcal;
+    final classicBudget = CalorieBudgetCalculator.calculateClassicBudget(
+      storedGoalKcal: balanceData?.storedGoalKcal ?? goalKcal,
+      activityDeltaKcal: availableClassicActivityDeltaKcal,
+      carryoverKcal: availableClassicCarryoverKcal,
+      consumedKcal: consumedKcal,
+      includeActivityDelta: includeClassicActivityDelta,
+      includeCarryover: includeClassicCarryover,
+    );
+    final classicGoalKcal = classicBudget.goalKcal;
+    final classicActivityDeltaKcal = classicBudget.includedActivityDeltaKcal;
+    final classicCarryoverKcal = classicBudget.includedCarryoverKcal;
+    final classicBaseGoalKcal = classicBudget.baseGoalKcal;
+    final classicRemainingKcal = classicBudget.remainingKcal;
 
     return DecoratedBox(
       key: CaloriesPageKeys.summaryCard,
@@ -156,6 +159,24 @@ class CaloriesSummaryCard extends ConsumerWidget {
                             '$kcalUnit',
                       ),
                     ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      unawaited(
+                        _showClassicBudgetDetails(
+                          context: context,
+                          l10n: l10n,
+                          numberFormat: numberFormat,
+                          kcalUnit: kcalUnit,
+                          budget: classicBudget,
+                          availableActivityDeltaKcal:
+                              availableClassicActivityDeltaKcal,
+                          availableCarryoverKcal: availableClassicCarryoverKcal,
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.info_outline_rounded),
+                    tooltip: l10n.calorieBudgetDetailsInfoTooltip,
                   ),
                 ],
               ],
@@ -253,4 +274,110 @@ class CaloriesSummaryCard extends ConsumerWidget {
       ),
     );
   }
+}
+
+Future<void> _showClassicBudgetDetails({
+  required BuildContext context,
+  required AppLocalizations l10n,
+  required NumberFormat numberFormat,
+  required String kcalUnit,
+  required CalorieClassicBudgetBreakdown budget,
+  required double availableActivityDeltaKcal,
+  required double availableCarryoverKcal,
+}) {
+  return showCalorieBudgetDetailsDialog(
+    context: context,
+    data: CalorieBudgetDetailsData(
+      title: l10n.calorieBudgetDetailsClassicTitle,
+      primaryLabel: l10n.calorieBudgetDetailsConsumedLabel,
+      primaryValue: _formatKcal(budget.consumedKcal, numberFormat, kcalUnit),
+      secondaryLabel: l10n.calorieBudgetDetailsBudgetLabel,
+      secondaryValue: _formatKcal(budget.goalKcal, numberFormat, kcalUnit),
+      explanation: l10n.calorieBudgetDetailsClassicExplanation,
+      lines: [
+        CalorieBudgetDetailsLine(
+          label: l10n.calorieBudgetDetailsBaseGoal,
+          value: _formatKcal(budget.baseGoalKcal, numberFormat, kcalUnit),
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.calorieBudgetDetailsActivityIncluded,
+          value: _formatSignedKcal(
+            budget.includedActivityDeltaKcal,
+            numberFormat,
+            kcalUnit,
+          ),
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.calorieBudgetDetailsActivityAvailable,
+          value: _formatSignedKcal(
+            availableActivityDeltaKcal,
+            numberFormat,
+            kcalUnit,
+          ),
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.calorieBudgetDetailsCarryoverIncluded,
+          value: _formatSignedKcal(
+            budget.includedCarryoverKcal,
+            numberFormat,
+            kcalUnit,
+          ),
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.calorieBudgetDetailsCarryoverAvailable,
+          value: _formatSignedKcal(
+            availableCarryoverKcal,
+            numberFormat,
+            kcalUnit,
+          ),
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.calorieBudgetDetailsTodayBudget,
+          value: _formatKcal(budget.goalKcal, numberFormat, kcalUnit),
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.calorieBudgetDetailsFoodToday,
+          value: _formatKcal(budget.consumedKcal, numberFormat, kcalUnit),
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.calorieBudgetDetailsRemaining,
+          value: _formatSignedKcal(
+            budget.remainingKcal,
+            numberFormat,
+            kcalUnit,
+          ),
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.calorieBudgetDetailsMinimumFloor,
+          value: _formatKcal(
+            minimumDailyCalorieBudgetKcal,
+            numberFormat,
+            kcalUnit,
+          ),
+        ),
+        CalorieBudgetDetailsLine(
+          label: l10n.calorieBudgetDetailsCarryoverRule,
+          value: l10n.calorieBudgetDetailsCarryoverRuleValue,
+        ),
+      ],
+    ),
+  );
+}
+
+String _formatKcal(
+  double value,
+  NumberFormat numberFormat,
+  String kcalUnit,
+) {
+  return '${numberFormat.format(value.round())} $kcalUnit';
+}
+
+String _formatSignedKcal(
+  double value,
+  NumberFormat numberFormat,
+  String kcalUnit,
+) {
+  final roundedValue = value.round();
+  final sign = roundedValue > 0 ? '+' : '';
+  return '$sign${numberFormat.format(roundedValue)} $kcalUnit';
 }

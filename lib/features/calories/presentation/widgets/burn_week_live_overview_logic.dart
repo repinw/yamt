@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
+import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -113,13 +114,20 @@ double resolveBurnWeekCarryoverBeforeTodayKcal({
   required DateTime currentWeekStartDate,
   required DateTime today,
 }) {
-  return weekOverview.days
-      .where(
-        (day) =>
-            !isBeforeBurnWeekDay(day.date, currentWeekStartDate) &&
-            isBeforeBurnWeekDay(day.date, today),
-      )
-      .fold<double>(0, (sum, day) => sum + day.goalKcal - day.totalKcal);
+  return CalorieBudgetCalculator.calculateCarryover(
+    weekOverview.days
+        .where(
+          (day) =>
+              !isBeforeBurnWeekDay(day.date, currentWeekStartDate) &&
+              isBeforeBurnWeekDay(day.date, today),
+        )
+        .map(
+          (day) => CalorieCarryoverDay(
+            goalKcal: day.baseGoalKcal,
+            consumedKcal: day.totalKcal,
+          ),
+        ),
+  );
 }
 
 /// Resolves overflow that should affect the current Burn Week only.
@@ -134,8 +142,8 @@ double resolveBurnWeekPreviousOverflowKcal({
   return cycleCarryoverBeforeTodayKcal - currentWeekCarryoverBeforeTodayKcal;
 }
 
-/// Resolves guarded burn sum inside current Burn Week.
-double resolveBurnWeekGuardedBurnKcal({
+/// Resolves eatable activity bonus sum inside current Burn Week.
+double resolveBurnWeekActivityBonusKcal({
   required CalorieWeekOverview weekOverview,
   required DateTime currentWeekStartDate,
   required List<AsyncValue<ResolvedCalorieGoalData>> resolvedGoalStates,
@@ -149,19 +157,6 @@ double resolveBurnWeekGuardedBurnKcal({
     total += resolvedGoalStates[index].asData?.value.activityDeltaKcal ?? 0;
   }
   return total;
-}
-
-/// Formats guarded burn as signed negative kcal string.
-String formatBurnWeekBurnedKcal(
-  double value,
-  NumberFormat numberFormat,
-  String kcalUnit,
-) {
-  final roundedValue = value.round();
-  if (roundedValue == 0) {
-    return '0 $kcalUnit';
-  }
-  return '-${numberFormat.format(roundedValue.abs())} $kcalUnit';
 }
 
 /// Formats signed kcal string.

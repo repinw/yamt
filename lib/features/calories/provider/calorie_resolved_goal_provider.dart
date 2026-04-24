@@ -3,8 +3,8 @@ import 'dart:developer' show log;
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_adjustment.dart';
+import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_summary_provider.dart';
@@ -118,9 +118,9 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
             workoutCalories: dayActivity.totalWorkoutCalories,
           )
         : 0.0;
-    final resolvedGoalKcal = (storedGoalKcal + activityDeltaKcal).clamp(
-      minimumResolvedDailyCalorieGoalKcal,
-      double.infinity,
+    final goalBreakdown = CalorieBudgetCalculator.resolveDailyGoal(
+      storedGoalKcal: storedGoalKcal,
+      activityDeltaKcal: activityDeltaKcal,
     );
     if (!kReleaseMode) {
       final message =
@@ -130,23 +130,20 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
           'todayActiveKcal=${dayActivity.todayActiveKcal} '
           'bootstrapActivityBonusKcal='
           '${activityDeltaKcal.toStringAsFixed(2)} '
-          'resolvedGoalKcal=${resolvedGoalKcal.toStringAsFixed(2)}';
+          'resolvedGoalKcal=${goalBreakdown.goalKcal.toStringAsFixed(2)}';
       log(message, name: _resolvedGoalLogName);
     }
 
     return ResolvedCalorieGoalData(
       day: normalizedDay,
       storedGoalKcal: storedGoalKcal,
-      goalKcal: resolvedGoalKcal,
+      goalKcal: goalBreakdown.goalKcal,
       activityDeltaKcal: activityDeltaKcal,
       lastWeekAverageActiveKcal: 0,
       todayActiveKcal: dayActivity.todayActiveKcal,
       usedLearnedTdee: false,
       usesBootstrapActivityBonus: activityDeltaKcal > 0,
-      wasClampedToMinimum:
-          resolvedGoalKcal == minimumResolvedDailyCalorieGoalKcal &&
-          storedGoalKcal + activityDeltaKcal <
-              minimumResolvedDailyCalorieGoalKcal,
+      wasClampedToMinimum: goalBreakdown.wasClampedToMinimum,
     );
   }
 
@@ -160,9 +157,9 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
     todayActiveKcal: dayActivity.todayActiveKcal,
     averageActiveKcal: averageActiveKcal,
   );
-  final resolvedGoalKcal = (storedGoalKcal + activityDeltaKcal).clamp(
-    minimumResolvedDailyCalorieGoalKcal,
-    double.infinity,
+  final goalBreakdown = CalorieBudgetCalculator.resolveDailyGoal(
+    storedGoalKcal: storedGoalKcal,
+    activityDeltaKcal: activityDeltaKcal,
   );
   if (!kReleaseMode) {
     final message =
@@ -172,24 +169,21 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
         'todayActiveKcal=${dayActivity.todayActiveKcal} '
         'activityComparisonKcal=${activityComparisonKcal.toStringAsFixed(2)} '
         'activityDeltaKcal=${activityDeltaKcal.toStringAsFixed(2)} '
-        'resolvedGoalKcal=${resolvedGoalKcal.toStringAsFixed(2)}';
+        'resolvedGoalKcal=${goalBreakdown.goalKcal.toStringAsFixed(2)}';
     log(message, name: _resolvedGoalLogName);
   }
 
   return ResolvedCalorieGoalData(
     day: normalizedDay,
     storedGoalKcal: storedGoalKcal,
-    goalKcal: resolvedGoalKcal,
+    goalKcal: goalBreakdown.goalKcal,
     activityDeltaKcal: activityDeltaKcal,
     activityComparisonKcal: activityComparisonKcal,
     lastWeekAverageActiveKcal: averageActiveKcal,
     todayActiveKcal: dayActivity.todayActiveKcal,
     usedLearnedTdee: true,
     usesBootstrapActivityBonus: false,
-    wasClampedToMinimum:
-        resolvedGoalKcal == minimumResolvedDailyCalorieGoalKcal &&
-        storedGoalKcal + activityDeltaKcal <
-            minimumResolvedDailyCalorieGoalKcal,
+    wasClampedToMinimum: goalBreakdown.wasClampedToMinimum,
   );
 }
 
