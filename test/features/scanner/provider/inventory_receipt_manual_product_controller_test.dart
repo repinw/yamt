@@ -6,15 +6,12 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_nutrition/data/'
     'nutrition_label_ocr_repository.dart';
-import 'package:yamt/features/product_nutrition/data/'
-    'nutrition_label_ocr_repository_contract.dart';
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
 import 'package:yamt/features/scanner/provider/'
     'inventory_receipt_manual_product_controller.dart';
 
-class _FakeNutritionOcrRepository
-    implements NutritionLabelOcrRepositoryContract {
+class _FakeNutritionOcrRepository implements NutritionLabelOcrRepository {
   _FakeNutritionOcrRepository({required this.onScanNutritionLabel});
 
   final Future<NutritionLabelOcrResult> Function(String barcode)

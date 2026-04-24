@@ -19,11 +19,11 @@ final nutritionLabelOcrRepositoryProvider =
 final class NutritionLabelOcrRepositoryProvider
     extends
         $FunctionalProvider<
-          NutritionLabelOcrRepositoryContract,
-          NutritionLabelOcrRepositoryContract,
-          NutritionLabelOcrRepositoryContract
+          NutritionLabelOcrRepository,
+          NutritionLabelOcrRepository,
+          NutritionLabelOcrRepository
         >
-    with $Provider<NutritionLabelOcrRepositoryContract> {
+    with $Provider<NutritionLabelOcrRepository> {
   /// Nutrition label OCR repository.
   NutritionLabelOcrRepositoryProvider._()
     : super(
@@ -41,28 +41,26 @@ final class NutritionLabelOcrRepositoryProvider
 
   @$internal
   @override
-  $ProviderElement<NutritionLabelOcrRepositoryContract> $createElement(
+  $ProviderElement<NutritionLabelOcrRepository> $createElement(
     $ProviderPointer pointer,
   ) => $ProviderElement(pointer);
 
   @override
-  NutritionLabelOcrRepositoryContract create(Ref ref) {
+  NutritionLabelOcrRepository create(Ref ref) {
     return nutritionLabelOcrRepository(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(NutritionLabelOcrRepositoryContract value) {
+  Override overrideWithValue(NutritionLabelOcrRepository value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<NutritionLabelOcrRepositoryContract>(
-        value,
-      ),
+      providerOverride: $SyncValueProvider<NutritionLabelOcrRepository>(value),
     );
   }
 }
 
 String _$nutritionLabelOcrRepositoryHash() =>
-    r'e7d421ec06e4de47d98b1ea9c358cdf12e9076b2';
+    r'80eb7156a3b8d25b48c48a245c1cf65d1b48c58e';
 
 /// Nutrition label image picker.
 
@@ -166,7 +164,7 @@ final class NutritionLabelTemplateConfigClientProvider
 }
 
 String _$nutritionLabelTemplateConfigClientHash() =>
-    r'ed13df53660fa6f80cb2252c553d90218996a0ba';
+    r'd590f27758458c9ec4534a634b85ab00908e4932';
 
 /// Nutrition label template model client.
 
@@ -223,4 +221,4 @@ final class NutritionLabelTemplateModelClientProvider
 }
 
 String _$nutritionLabelTemplateModelClientHash() =>
-    r'd92932edbdb0e1e560099f16674a0d7fa77fe6b9';
+    r'a4b3a6445a314b1a8aa3329246181b7c1e9327bc';
