@@ -2028,6 +2028,114 @@ void main() {
     );
   });
 
+  testWidgets('ai manual item canceling missing barcode aborts saving', (
+    tester,
+  ) async {
+    final offRepository = _RecordingOffProductSearchRepository(
+      const <OffProductSearchResult>[],
+    );
+    final inventoryRepository = _RecordingInventoryItemRepository();
+    addTearDown(inventoryRepository.dispose);
+    final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+    final barcodeCandidateRepository =
+        _RecordingGlobalBarcodeCandidateRepository();
+    final aiRepository = _FakeProductAiSearchRepository(
+      onGenerateFoodFromText: (prompt) async {
+        return _aiDraft();
+      },
+    );
+
+    await tester.pumpWidget(
+      _buildHarness(
+        offRepository: offRepository,
+        inventoryRepository: inventoryRepository,
+        globalFoodRepository: globalFoodRepository,
+        barcodeCandidateRepository: barcodeCandidateRepository,
+        productAiSearchRepository: aiRepository,
+      ),
+    );
+    await _pumpUi(tester);
+
+    await _openAiManualResult(tester);
+    await tester.tap(
+      find.byKey(const Key('manual_product_ai_save_button')),
+    );
+    await _pumpUi(tester);
+
+    expect(
+      find.byKey(const Key('inventory_manual_add_missing_barcode_field')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(
+        const Key('inventory_manual_add_missing_barcode_cancel_button'),
+      ),
+    );
+    await _pumpUi(tester);
+
+    expect(
+      find.byKey(const Key('inventory_manual_add_missing_barcode_field')),
+      findsNothing,
+    );
+    expect(globalFoodRepository.appendedItems, isEmpty);
+    expect(inventoryRepository.appendedItems, isEmpty);
+    expect(barcodeCandidateRepository.recordedSelections, isEmpty);
+  });
+
+  testWidgets('ai manual item requires a barcode before saving dialog input', (
+    tester,
+  ) async {
+    final offRepository = _RecordingOffProductSearchRepository(
+      const <OffProductSearchResult>[],
+    );
+    final inventoryRepository = _RecordingInventoryItemRepository();
+    addTearDown(inventoryRepository.dispose);
+    final globalFoodRepository = _RecordingGlobalFoodItemRepository();
+    final barcodeCandidateRepository =
+        _RecordingGlobalBarcodeCandidateRepository();
+    final aiRepository = _FakeProductAiSearchRepository(
+      onGenerateFoodFromText: (prompt) async {
+        return _aiDraft();
+      },
+    );
+
+    await tester.pumpWidget(
+      _buildHarness(
+        offRepository: offRepository,
+        inventoryRepository: inventoryRepository,
+        globalFoodRepository: globalFoodRepository,
+        barcodeCandidateRepository: barcodeCandidateRepository,
+        productAiSearchRepository: aiRepository,
+      ),
+    );
+    await _pumpUi(tester);
+
+    await _openAiManualResult(tester);
+    await tester.tap(
+      find.byKey(const Key('manual_product_ai_save_button')),
+    );
+    await _pumpUi(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('inventory_manual_add_missing_barcode_field')),
+      '   ',
+    );
+    await tester.tap(
+      find.byKey(const Key('inventory_manual_add_missing_barcode_save_button')),
+    );
+    await _pumpUi(tester);
+
+    expect(
+      find.byKey(const Key('inventory_manual_add_missing_barcode_field')),
+      findsOneWidget,
+    );
+    expect(find.text('Enter a barcode or save without one.'), findsOneWidget);
+    expect(globalFoodRepository.appendedItems, isEmpty);
+    expect(inventoryRepository.appendedItems, isEmpty);
+    expect(barcodeCandidateRepository.recordedSelections, isEmpty);
+  });
+
   test('resolveInventoryManualAddEatFlowMaxAmount guards invalid items', () {
     final quantitylessItem = InventoryItem.create(
       id: 'item-0',
