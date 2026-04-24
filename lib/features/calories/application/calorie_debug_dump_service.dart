@@ -228,6 +228,9 @@ _DebugDumpRow _summaryRow({
   required DateTime endExclusive,
   required HealthConnectionStatus healthStatus,
 }) {
+  final endDay = _formatDay(endExclusive);
+  final healthState = healthStatus.accessState.name;
+
   return _DebugDumpRow(
     sortAt: startInclusive,
     typeOrder: -1,
@@ -244,7 +247,7 @@ _DebugDumpRow _summaryRow({
       '',
       '',
       'app',
-      'end=${_formatDay(endExclusive)}; health=${healthStatus.accessState.name}',
+      'end=$endDay; health=$healthState',
     ],
   );
 }
@@ -428,7 +431,7 @@ class _DebugDumpRow {
     required this.sortAt,
     required this.typeOrder,
     required this.cells,
-  }) : assert(cells.length == 13);
+  }) : assert(cells.length == 13, 'Debug dump rows must have 13 cells.');
 
   final DateTime sortAt;
   final int typeOrder;

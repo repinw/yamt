@@ -19,8 +19,8 @@ class FakePreparedMealImagePicker implements PreparedMealImagePicker {
   @override
   final bool supportsCamera;
 
-  var cameraPickCount = 0;
-  var filePickCount = 0;
+  int cameraPickCount = 0;
+  int filePickCount = 0;
 
   @override
   Future<Uint8List?> pickFromCamera() async {

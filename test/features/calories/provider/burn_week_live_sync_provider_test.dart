@@ -35,7 +35,9 @@ class _RecordingBurnWeekRunController extends BurnWeekRunController {
   final Completer<void>? resetBlocker;
   final List<_SyncCall> syncCalls = <_SyncCall>[];
   final List<DateTime> restartCalls = <DateTime>[];
-  var resetCallCount = 0;
+  int _resetCallCount = 0;
+
+  int resetCallCount() => _resetCallCount;
 
   @override
   Future<BurnWeekRunState> build() async {
@@ -50,7 +52,7 @@ class _RecordingBurnWeekRunController extends BurnWeekRunController {
 
   @override
   Future<void> resetRun() async {
-    resetCallCount += 1;
+    _resetCallCount += 1;
     await resetBlocker?.future;
   }
 
@@ -95,12 +97,12 @@ ProviderContainer _buildContainer({
   required CalorieWeekDayOverview todayOverview,
   required CalorieGoalSettings settings,
   required BurnWeekRunState initialRunState,
+  required void Function(_RecordingBurnWeekRunController controller)
+  captureController,
   Map<DateTime, CalorieWeekConsumptionSnapshot> snapshotsByWindowEnd =
       const <DateTime, CalorieWeekConsumptionSnapshot>{},
   _RecordingBurnWeekRunController Function(BurnWeekRunState initialState)?
   controllerFactory,
-  required void Function(_RecordingBurnWeekRunController controller)
-  captureController,
 }) {
   return ProviderContainer(
     overrides: [
@@ -207,7 +209,7 @@ Future<void> _activateSync(ProviderContainer container) async {
   await container.read(burnWeekRunControllerProvider.future);
   final subscription = container.listen<Object?>(
     burnWeekLiveSyncProvider,
-    (_, __) {},
+    (_, _) {},
   );
   addTearDown(subscription.close);
   await Future<void>.delayed(Duration.zero);
@@ -217,6 +219,14 @@ Future<void> _activateSync(ProviderContainer container) async {
 Future<void> _primeSyncContainer(ProviderContainer container) async {
   await container.read(calorieGoalControllerProvider.future);
   await container.read(burnWeekRunControllerProvider.future);
+}
+
+void _queueLiveSyncRefresh(ProviderContainer container) {
+  container
+    ..invalidate(burnWeekLiveSyncProvider)
+    ..read(burnWeekLiveSyncProvider)
+    ..invalidate(burnWeekLiveSyncProvider)
+    ..read(burnWeekLiveSyncProvider);
 }
 
 CalorieWeekDayOverview _defaultTodayOverview(
@@ -336,7 +346,7 @@ void main() {
 
       expect(controller.syncCalls, isEmpty);
       expect(controller.restartCalls, isEmpty);
-      expect(controller.resetCallCount, 0);
+      expect(controller.resetCallCount(), 0);
     });
 
     test(
@@ -516,10 +526,7 @@ void main() {
           (_, _) {},
         );
         addTearDown(subscription.close);
-        container.invalidate(burnWeekLiveSyncProvider);
-        container.read(burnWeekLiveSyncProvider);
-        container.invalidate(burnWeekLiveSyncProvider);
-        container.read(burnWeekLiveSyncProvider);
+        _queueLiveSyncRefresh(container);
 
         await Future<void>.delayed(Duration.zero);
         await Future<void>.delayed(Duration.zero);
@@ -571,10 +578,7 @@ void main() {
           (_, _) {},
         );
         addTearDown(subscription.close);
-        container.invalidate(burnWeekLiveSyncProvider);
-        container.read(burnWeekLiveSyncProvider);
-        container.invalidate(burnWeekLiveSyncProvider);
-        container.read(burnWeekLiveSyncProvider);
+        _queueLiveSyncRefresh(container);
 
         await Future<void>.delayed(Duration.zero);
         await Future<void>.delayed(Duration.zero);
@@ -634,15 +638,12 @@ void main() {
           (_, _) {},
         );
         addTearDown(subscription.close);
-        container.invalidate(burnWeekLiveSyncProvider);
-        container.read(burnWeekLiveSyncProvider);
-        container.invalidate(burnWeekLiveSyncProvider);
-        container.read(burnWeekLiveSyncProvider);
+        _queueLiveSyncRefresh(container);
 
         await Future<void>.delayed(Duration.zero);
         await Future<void>.delayed(Duration.zero);
 
-        expect(controller.resetCallCount, 1);
+        expect(controller.resetCallCount(), 1);
 
         resetBlocker.complete();
         await Future<void>.delayed(Duration.zero);

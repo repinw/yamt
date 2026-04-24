@@ -10,7 +10,8 @@ import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 
-final _burnWeekMutationCoordinatorProvider =
+final Provider<_BurnWeekMutationCoordinator>
+_burnWeekMutationCoordinatorProvider =
     Provider.autoDispose<_BurnWeekMutationCoordinator>(
       (ref) => _BurnWeekMutationCoordinator(),
     );
@@ -158,6 +159,8 @@ void _queueRunSync(
   required bool missedTrackingThisWeek,
   List<bool>? missedTrackingForClosedWeeks,
 }) {
+  final controller = ref.read(burnWeekRunControllerProvider.notifier);
+  final currentDay = normalizeDiaryDay(DateTime.now());
   _queuePendingBurnWeekMutation(
     ref,
     mutation: _PendingBurnWeekMutation.sync(
@@ -166,41 +169,37 @@ void _queueRunSync(
       missedTrackingForClosedWeeks: missedTrackingForClosedWeeks,
     ),
     action: () {
-      return ref
-          .read(burnWeekRunControllerProvider.notifier)
-          .syncForWeek(
-            currentDay: normalizeDiaryDay(DateTime.now()),
-            weekStartDate: weekStartDate,
-            missedTrackingThisWeek: missedTrackingThisWeek,
-            missedTrackingForClosedWeeks: missedTrackingForClosedWeeks,
-          );
+      return controller.syncForWeek(
+        currentDay: currentDay,
+        weekStartDate: weekStartDate,
+        missedTrackingThisWeek: missedTrackingThisWeek,
+        missedTrackingForClosedWeeks: missedTrackingForClosedWeeks,
+      );
     },
   );
 }
 
 void _queueRunRestart(Ref ref, {required DateTime weekStartDate}) {
+  final controller = ref.read(burnWeekRunControllerProvider.notifier);
   _queuePendingBurnWeekMutation(
     ref,
     mutation: _PendingBurnWeekMutation.restart(
       weekStartDate: weekStartDate,
     ),
     action: () {
-      return ref
-          .read(burnWeekRunControllerProvider.notifier)
-          .restartRunFrom(
-            weekStartDate: weekStartDate,
-          );
+      return controller.restartRunFrom(
+        weekStartDate: weekStartDate,
+      );
     },
   );
 }
 
 void _queueRunReset(Ref ref) {
+  final controller = ref.read(burnWeekRunControllerProvider.notifier);
   _queuePendingBurnWeekMutation(
     ref,
     mutation: const _PendingBurnWeekMutation.reset(),
-    action: () {
-      return ref.read(burnWeekRunControllerProvider.notifier).resetRun();
-    },
+    action: controller.resetRun,
   );
 }
 
@@ -215,14 +214,12 @@ void _queuePendingBurnWeekMutation(
   }
   mutationCoordinator.queue(mutation);
   scheduleMicrotask(() {
-    if (!ref.mounted) {
-      return;
-    }
-    final mutationCoordinator = ref.read(_burnWeekMutationCoordinatorProvider);
     if (!mutationCoordinator.startIfQueued(mutation)) {
       return;
     }
-    unawaited(_runPendingBurnWeekMutation(ref, mutation, action));
+    unawaited(
+      _runPendingBurnWeekMutation(mutationCoordinator, mutation, action),
+    );
   });
 }
 
@@ -238,16 +235,14 @@ bool _isInitialBurnWeekRunState(BurnWeekRunState state) {
 }
 
 Future<void> _runPendingBurnWeekMutation(
-  Ref ref,
+  _BurnWeekMutationCoordinator mutationCoordinator,
   _PendingBurnWeekMutation mutation,
   Future<void> Function() action,
 ) async {
   try {
     await action();
   } finally {
-    if (ref.mounted) {
-      ref.read(_burnWeekMutationCoordinatorProvider).clearIfRunning(mutation);
-    }
+    mutationCoordinator.clearIfRunning(mutation);
   }
 }
 

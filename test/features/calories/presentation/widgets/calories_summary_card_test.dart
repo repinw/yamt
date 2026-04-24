@@ -334,7 +334,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Burn Week details'), findsOneWidget);
-    expect(find.textContaining('Balance recalculates'), findsOneWidget);
+    expect(find.textContaining('Budget starts'), findsOneWidget);
 
     await tester.tap(find.text('Close'));
     await tester.pumpAndSettle();

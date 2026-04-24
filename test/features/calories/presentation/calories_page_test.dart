@@ -17,8 +17,10 @@ import 'package:yamt/features/auth/provider/auth_service.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
+import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
@@ -55,6 +57,21 @@ import '../../../support/fake_local_image_store.dart';
 import '../support/fake_calories_repositories.dart';
 
 class _MockUser extends Mock implements User {}
+
+class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
+  BurnWeekRunState state = const BurnWeekRunState.initial();
+
+  @override
+  Future<BurnWeekRunState> readState() async {
+    return state;
+  }
+
+  @override
+  Future<bool> saveState(BurnWeekRunState state) async {
+    this.state = state;
+    return true;
+  }
+}
 
 CalorieEntry _entry(
   String id, {
@@ -168,6 +185,9 @@ List<Override> _weeklyCheckInOverrides({
     manualHealthWeightRepositoryProvider.overrideWithValue(
       FakeManualHealthWeightRepository(weights),
     ),
+    burnWeekRunStateRepositoryProvider.overrideWithValue(
+      _FakeBurnWeekRunStateRepository(),
+    ),
   ];
 }
 
@@ -231,6 +251,14 @@ Widget _buildHarness({
         authStateChangesProvider.overrideWith(
           (ref) => Stream<User?>.value(user),
         ),
+      if (referenceNow != null) ...[
+        calorieDayControllerProvider.overrideWith(
+          () => _TestCalorieDayController(referenceNow),
+        ),
+        calorieVisibleWindowControllerProvider.overrideWith(
+          () => _TestCalorieVisibleWindowController(referenceNow),
+        ),
+      ],
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       ...overrides,
@@ -278,6 +306,25 @@ class _ManagedProviderContainerScopeState
       child: widget.child,
     );
   }
+}
+
+class _TestCalorieDayController extends CalorieDayController {
+  _TestCalorieDayController(this.initialDay);
+
+  final DateTime initialDay;
+
+  @override
+  DateTime build() => _normalizeDay(initialDay);
+}
+
+class _TestCalorieVisibleWindowController
+    extends CalorieVisibleWindowController {
+  _TestCalorieVisibleWindowController(this.initialDay);
+
+  final DateTime initialDay;
+
+  @override
+  DateTime build() => _normalizeDay(initialDay);
 }
 
 @Dependencies([
@@ -336,6 +383,8 @@ Widget _buildHarnessWithContainer({required ProviderContainer container}) {
 Finder get _pageListView => find.byKey(CaloriesPageKeys.diaryList);
 
 Future<void> _scrollUntilVisible(WidgetTester tester, Finder finder) async {
+  await _dismissBurnWeekZoneDialogIfShown(tester);
+
   for (var attempt = 0; attempt < 12; attempt++) {
     if (finder.evaluate().isNotEmpty) {
       await tester.ensureVisible(finder.first);
@@ -352,6 +401,20 @@ Future<void> _scrollUntilVisible(WidgetTester tester, Finder finder) async {
   }
 
   expect(finder, findsOneWidget);
+}
+
+Future<void> _dismissBurnWeekZoneDialogIfShown(WidgetTester tester) async {
+  for (var attempt = 0; attempt < 3; attempt++) {
+    final action = ['No', 'Close', 'Eat more']
+        .map(find.text)
+        .where((finder) => finder.evaluate().isNotEmpty)
+        .firstOrNull;
+    if (action == null) {
+      return;
+    }
+    await tester.tap(action.last, warnIfMissed: false);
+    await tester.pumpAndSettle();
+  }
 }
 
 class _CountingDiaryHealthService implements DiaryHealthService {
@@ -426,6 +489,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(CaloriesPageKeys.summaryCard), findsOneWidget);
+    await _dismissBurnWeekZoneDialogIfShown(tester);
     await _scrollUntilVisible(
       tester,
       find.byKey(CaloriesPageKeys.entryTile('retry-entry')),

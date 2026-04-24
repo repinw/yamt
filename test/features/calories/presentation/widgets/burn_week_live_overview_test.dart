@@ -230,7 +230,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Burn Week details'), findsOneWidget);
-    expect(find.textContaining('Balance recalculates'), findsOneWidget);
+    expect(find.textContaining('Budget starts'), findsOneWidget);
 
     await tester.tap(find.text('Close'));
     await tester.pumpAndSettle();
@@ -274,7 +274,7 @@ void main() {
         runState: _runStateForDay(today),
       );
 
-      expect(find.text('1,200 kcal'), findsOneWidget);
+      expect(find.text('1,033 kcal'), findsOneWidget);
     },
   );
 

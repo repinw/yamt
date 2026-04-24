@@ -7,7 +7,8 @@ void main() {
     expect(GoogleSignInConfig.webClientId, isNotEmpty);
     expect(
       GoogleSignInConfig.webClientId,
-      '1081825170446-0rf8tbq9eo9t0vboejfdei0k0e1kgcgl.apps.googleusercontent.com',
+      '1081825170446-0rf8tbq9eo9t0vboejfdei0k0e1kgcgl'
+      '.apps.googleusercontent.com',
     );
   });
 

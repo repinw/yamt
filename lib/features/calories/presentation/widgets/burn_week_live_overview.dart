@@ -23,6 +23,8 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/calories/provider/'
     'calorie_summary_view_mode_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_weekly_checkin_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Live Burn Week overview backed by real diary data.
@@ -88,9 +90,13 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
   void _queueZoneDialogIfNeeded({
     required BurnWeekMockMetrics metrics,
     required BurnWeekRunState runState,
+    required bool hasAutoOpeningWeeklyCheckIn,
   }) {
     final expectedEpoch = _zoneDialogEpoch;
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (hasAutoOpeningWeeklyCheckIn) {
+        return;
+      }
       if (!_canShowZoneDialogs(expectedEpoch)) {
         return;
       }
@@ -99,6 +105,7 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
           metrics: metrics,
           runState: runState,
           expectedEpoch: expectedEpoch,
+          hasAutoOpeningWeeklyCheckIn: hasAutoOpeningWeeklyCheckIn,
         ),
       );
     });
@@ -108,7 +115,15 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
     required BurnWeekMockMetrics metrics,
     required BurnWeekRunState runState,
     required int expectedEpoch,
+    required bool hasAutoOpeningWeeklyCheckIn,
   }) async {
+    if (hasAutoOpeningWeeklyCheckIn) {
+      return;
+    }
+    await WidgetsBinding.instance.endOfFrame;
+    if (hasAutoOpeningWeeklyCheckIn) {
+      return;
+    }
     if (!_canShowZoneDialogs(expectedEpoch)) {
       return;
     }
@@ -147,6 +162,10 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
 
   bool _canShowZoneDialogs(int expectedEpoch) {
     if (!mounted || expectedEpoch != _zoneDialogEpoch) {
+      return false;
+    }
+    final route = ModalRoute.of(context);
+    if (route != null && !route.isCurrent) {
       return false;
     }
     return ref.read(calorieSummaryViewModeControllerProvider) ==
@@ -344,6 +363,12 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
     final runStateAsync = ref.watch(burnWeekRunControllerProvider);
     final runState =
         runStateAsync.asData?.value ?? const BurnWeekRunState.initial();
+    final weeklyCheckInState = ref.watch(calorieWeeklyCheckInViewModelProvider);
+    final weeklyCheckInViewModel = weeklyCheckInState.asData?.value;
+    final hasAutoOpeningWeeklyCheckIn =
+        weeklyCheckInState.isLoading ||
+        (weeklyCheckInViewModel?.pendingWeeklyCheckIn != null &&
+            weeklyCheckInViewModel?.shouldAutoOpen == true);
 
     final weekOverview = weekOverviewState.value;
     final todayOverview = todayOverviewState.value;
@@ -517,6 +542,7 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
     _queueZoneDialogIfNeeded(
       metrics: metrics,
       runState: runState,
+      hasAutoOpeningWeeklyCheckIn: hasAutoOpeningWeeklyCheckIn,
     );
     final weekRemainingAfterFoodKcal =
         metrics.weeklyGoalKcal - metrics.consumedKcal;

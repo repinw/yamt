@@ -391,10 +391,19 @@ void main() {
       find.byKey(const Key('inventory_item_amount_dialog_field')),
       '1',
     );
-    await tester.enterText(find.byType(TextField).last, '25');
     await tester.ensureVisible(
       find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
     );
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_portion_amount_field')),
+      '25',
+    );
+    await tester.tap(find.text('Save portion'));
+    await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
     );

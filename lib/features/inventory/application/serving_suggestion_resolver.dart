@@ -578,7 +578,7 @@ class ServingSuggestionResolver {
         withoutLeadingCount.contains(RegExp(r'\d'))) {
       return null;
     }
-    if (!withoutLeadingCount.contains(RegExp(r'[A-Za-zÀ-ÖØ-öø-ÿ]'))) {
+    if (!withoutLeadingCount.contains(RegExp('[A-Za-zÀ-ÖØ-öø-ÿ]'))) {
       return null;
     }
 

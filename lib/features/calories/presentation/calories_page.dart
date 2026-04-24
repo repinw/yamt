@@ -223,7 +223,7 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
               visibleWindowEnd:
                   weeklyCheckIn.pendingWeeklyCheckIn?.windowEndDate,
             ),
-            onToggleSelectedDaySkipped: (isSkipped) {
+            onToggleSelectedDaySkipped: ({required isSkipped}) {
               return _toggleSkippedSelectedDay(
                 selectedDay: selectedDay,
                 isSkipped: isSkipped,
