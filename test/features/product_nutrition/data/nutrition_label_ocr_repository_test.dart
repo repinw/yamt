@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:yamt/features/product_nutrition/data/'
@@ -145,6 +146,30 @@ void main() {
     expect(modelClient.callCount, 0);
   });
 
+  test('scan returns ai failure when image picker throws', () async {
+    _setCameraPlatform(TargetPlatform.android);
+    final configClient = _FakeConfigClient();
+    final modelClient = _FakeModelClient(responseText: '{"name":"Yogurt"}');
+    final repository = _repository(
+      imagePicker: _FakeImagePicker(
+        onPickImage: (source) async {
+          throw PlatformException(code: 'camera_access_denied');
+        },
+      ),
+      configClient: configClient.loadTemplateId,
+      modelClient: modelClient.generateContent,
+    );
+
+    final result = await repository.scanNutritionLabel(
+      barcode: '4006381333931',
+    );
+
+    expect(result.status, NutritionLabelOcrStatus.failed);
+    expect(result.errorCode, NutritionLabelOcrErrorCodes.aiRequestFailed);
+    expect(configClient.callCount, 0);
+    expect(modelClient.callCount, 0);
+  });
+
   test('scan parses nested OCR response into draft', () async {
     _setCameraPlatform(TargetPlatform.android);
     final bytes = Uint8List.fromList(<int>[0xFF, 0xD8, 0xFF, 0xE0]);
@@ -228,6 +253,37 @@ void main() {
     expect(result.status, NutritionLabelOcrStatus.failed);
     expect(result.errorCode, NutritionLabelOcrErrorCodes.parseFailed);
   });
+
+  test(
+    'scan returns parse failure when OCR response is malformed JSON',
+    () async {
+      _setCameraPlatform(TargetPlatform.android);
+      final repository = _repository(
+        imagePicker: _FakeImagePicker(
+          onPickImage: (source) async {
+            return XFile.fromData(
+              Uint8List.fromList(<int>[0x00]),
+              name: 'label.bin',
+            );
+          },
+        ),
+        modelClient: _FakeModelClient(
+          responseText: '''
+```json
+{ invalid: json,
+```
+''',
+        ).generateContent,
+      );
+
+      final result = await repository.scanNutritionLabel(
+        barcode: '4006381333931',
+      );
+
+      expect(result.status, NutritionLabelOcrStatus.failed);
+      expect(result.errorCode, NutritionLabelOcrErrorCodes.parseFailed);
+    },
+  );
 
   test('scan returns template config failure when template id fails', () async {
     _setCameraPlatform(TargetPlatform.android);

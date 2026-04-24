@@ -286,9 +286,13 @@ class NutritionLabelOcrRepository {
         .replaceAll('```json', '')
         .replaceAll('```', '')
         .trim();
-    final decoded = jsonDecode(cleaned);
-    if (decoded is Map<String, dynamic>) {
-      return decoded;
+    try {
+      final decoded = jsonDecode(cleaned);
+      if (decoded is Map<String, dynamic>) {
+        return decoded;
+      }
+    } on FormatException {
+      return null;
     }
     return null;
   }
