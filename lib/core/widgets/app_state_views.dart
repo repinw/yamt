@@ -27,6 +27,7 @@ class AppErrorRetryView extends StatelessWidget {
     required this.message,
     required this.retryLabel,
     this.retryButtonKey,
+    this.icon = Icons.error_outline,
     super.key,
   });
 
@@ -41,6 +42,9 @@ class AppErrorRetryView extends StatelessWidget {
 
   /// Optional key for feature-level tests.
   final Key? retryButtonKey;
+
+  /// Error icon shown above the message.
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +61,7 @@ class AppErrorRetryView extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.wifi_tethering_error_rounded,
+                  icon,
                   color: colors.error,
                   size: AppSizes.welcomeIcon * 0.45,
                 ),

@@ -35,11 +35,27 @@ void main() {
 
     expect(find.text('Could not load data.'), findsOneWidget);
     expect(find.byKey(retryKey), findsOneWidget);
-    expect(find.byIcon(Icons.wifi_tethering_error_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.error_outline), findsOneWidget);
 
     await tester.tap(find.byKey(retryKey));
     await tester.pump();
 
     expect(retryCount, 1);
+  });
+
+  testWidgets('AppErrorRetryView supports custom error icon', (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        AppErrorRetryView(
+          message: 'Network unavailable.',
+          retryLabel: 'Retry',
+          icon: Icons.wifi_tethering_error_rounded,
+          onRetry: () {},
+        ),
+      ),
+    );
+
+    expect(find.byIcon(Icons.wifi_tethering_error_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.error_outline), findsNothing);
   });
 }
