@@ -1,3 +1,4 @@
+import 'dart:developer' show log;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -167,6 +168,17 @@ mixin PreparedMealImagePickerStateMixin<T extends ConsumerStatefulWidget>
         return;
       }
       showPreparedMealImageError(error.code);
+    } on Object catch (error, stackTrace) {
+      if (!mounted) {
+        return;
+      }
+      log(
+        'Failed to pick prepared meal image.',
+        name: 'PreparedMealImagePickerField',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      showPreparedMealImageError(_fallbackErrorCode(source));
     } finally {
       if (mounted) {
         setState(() {
@@ -188,5 +200,14 @@ mixin PreparedMealImagePickerStateMixin<T extends ConsumerStatefulWidget>
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  String _fallbackErrorCode(PreparedMealImageSource source) {
+    return switch (source) {
+      PreparedMealImageSource.camera =>
+        PreparedMealImagePickerErrorCodes.cameraPickFailed,
+      PreparedMealImageSource.file =>
+        PreparedMealImagePickerErrorCodes.filePickFailed,
+    };
   }
 }

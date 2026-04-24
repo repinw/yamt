@@ -1,51 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_action_dialogs.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-PreparedMeal _meal() {
-  final sourceItem = InventoryItem.create(
-    id: 'item-1',
-    name: 'Rice',
-    entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
-    storeName: 'Store',
-    quantity: 1,
-    initialAmount: 200,
-    currentAmount: 200,
-    amountUnit: InventoryAmountUnit.gram,
-  );
+import '../../../../../support/prepared_meal_test_data.dart';
 
-  return PreparedMeal(
-    id: 'meal-1',
-    name: 'Rice bowl',
-    totalPortions: 3,
-    remainingPortions: 2,
-    totalKcal: 400,
-    totalProtein: 20,
-    totalCarbs: 40,
-    totalFat: 8,
-    createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
-    updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
-    components: [
-      PreparedMealComponent(
-        inventoryItemId: sourceItem.id,
-        name: sourceItem.name,
-        brand: sourceItem.brand,
-        imageUrl: sourceItem.imageUrl,
-        usedAmount: 100,
-        usedUnit: InventoryAmountUnit.gram,
-        totalKcal: 400,
-        totalProtein: 20,
-        totalCarbs: 40,
-        totalFat: 8,
-        sourceItemSnapshot: sourceItem,
-      ),
-    ],
-  );
-}
+PreparedMeal _meal() => preparedMealTestData();
 
 class _ActionDialogsHarness extends StatefulWidget {
   const _ActionDialogsHarness({required this.meal, this.pickLoggedDay});

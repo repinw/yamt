@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +7,8 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_creation_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../../../../support/fake_prepared_meal_image_picker.dart';
 
 InventoryItem _item({
   required String id,
@@ -32,17 +32,6 @@ InventoryItem _item({
       per100Fat: 5,
     ),
   );
-}
-
-class _FakePreparedMealImagePicker implements PreparedMealImagePicker {
-  @override
-  Future<Uint8List?> pickFromCamera() async => null;
-
-  @override
-  Future<Uint8List?> pickFromFile() async => null;
-
-  @override
-  bool get supportsCamera => false;
 }
 
 class _CreationSheetHarness extends StatefulWidget {
@@ -74,7 +63,7 @@ class _CreationSheetHarnessState extends State<_CreationSheetHarness> {
               setState(() {
                 _resultLabel =
                     'created:${result.name}:${result.totalPortions}:'
-                    '${result.items.length}';
+                    '${result.items.length}:${result.imageBytes != null}';
               });
             },
             child: const Text('Open'),
@@ -86,26 +75,35 @@ class _CreationSheetHarnessState extends State<_CreationSheetHarness> {
   }
 }
 
+Future<void> _pumpCreationSheetHarness(
+  WidgetTester tester, {
+  required List<InventoryItem> items,
+  FakePreparedMealImagePicker? imagePicker,
+}) {
+  return tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        preparedMealImagePickerProvider.overrideWithValue(
+          imagePicker ?? FakePreparedMealImagePicker(),
+        ),
+      ],
+      child: MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _CreationSheetHarness(items: items),
+      ),
+    ),
+  );
+}
+
 void main() {
   testWidgets('shows snackbar when submit contains invalid fields', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          preparedMealImagePickerProvider.overrideWithValue(
-            _FakePreparedMealImagePicker(),
-          ),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: _CreationSheetHarness(
-            items: <InventoryItem>[_item(id: 'rice', name: 'Rice')],
-          ),
-        ),
-      ),
+    await _pumpCreationSheetHarness(
+      tester,
+      items: <InventoryItem>[_item(id: 'rice', name: 'Rice')],
     );
 
     await tester.tap(find.text('Open'));
@@ -123,25 +121,12 @@ void main() {
   });
 
   testWidgets('returns meal result on happy path submit', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          preparedMealImagePickerProvider.overrideWithValue(
-            _FakePreparedMealImagePicker(),
-          ),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: _CreationSheetHarness(
-            items: <InventoryItem>[
-              _item(id: 'rice', name: 'Rice'),
-              _item(id: 'beans', name: 'Beans'),
-            ],
-          ),
-        ),
-      ),
+    await _pumpCreationSheetHarness(
+      tester,
+      items: <InventoryItem>[
+        _item(id: 'rice', name: 'Rice'),
+        _item(id: 'beans', name: 'Beans'),
+      ],
     );
 
     await tester.tap(find.text('Open'));
@@ -157,6 +142,56 @@ void main() {
     await tester.tap(createButton);
     await tester.pumpAndSettle();
 
-    expect(find.text('created:Lunch Box:3:2'), findsOneWidget);
+    expect(find.text('created:Lunch Box:3:2:false'), findsOneWidget);
+  });
+
+  testWidgets('returns picked file image on happy path submit', (
+    tester,
+  ) async {
+    await _pumpCreationSheetHarness(
+      tester,
+      items: <InventoryItem>[_item(id: 'rice', name: 'Rice')],
+      imagePicker: FakePreparedMealImagePicker(
+        fileBytes: tinyPreparedMealPngBytes(),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Add image'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Meal name'),
+      'Rice Bowl',
+    );
+    final createButton = find.widgetWithText(FilledButton, 'Create meal');
+    await tester.ensureVisible(createButton);
+    await tester.tap(createButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('created:Rice Bowl:1:1:true'), findsOneWidget);
+  });
+
+  testWidgets('shows fallback image picker error without submitting', (
+    tester,
+  ) async {
+    await _pumpCreationSheetHarness(
+      tester,
+      items: <InventoryItem>[_item(id: 'rice', name: 'Rice')],
+      imagePicker: FakePreparedMealImagePicker(
+        fileException: Exception('Unexpected picker failure.'),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Add image'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Could not pick the meal image.'), findsOneWidget);
+    expect(find.textContaining('created:'), findsNothing);
   });
 }

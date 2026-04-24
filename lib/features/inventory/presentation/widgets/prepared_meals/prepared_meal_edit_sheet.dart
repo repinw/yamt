@@ -68,14 +68,11 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet>
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.meal.name);
-    _nameController.addListener(_onNameChanged);
   }
 
   @override
   void dispose() {
-    _nameController
-      ..removeListener(_onNameChanged)
-      ..dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -101,6 +98,7 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet>
         PreparedMealNameField(
           controller: _nameController,
           textInputAction: TextInputAction.done,
+          onChanged: _onNameChanged,
         ),
         const SizedBox(height: AppSpacing.lg),
         PreparedMealImagePickerField(
@@ -154,7 +152,7 @@ class _PreparedMealEditSheetState extends ConsumerState<PreparedMealEditSheet>
     );
   }
 
-  void _onNameChanged() {
+  void _onNameChanged(String _) {
     if (!mounted) {
       return;
     }

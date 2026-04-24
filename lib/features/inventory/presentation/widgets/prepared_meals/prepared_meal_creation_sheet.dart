@@ -110,6 +110,7 @@ class _PreparedMealCreationSheetState
         PreparedMealNameField(
           controller: _nameController,
           textInputAction: TextInputAction.next,
+          onChanged: _onNameChanged,
         ),
         const SizedBox(height: AppSpacing.md),
         TextFormField(
@@ -250,6 +251,13 @@ class _PreparedMealCreationSheetState
     setState(() {
       _imageBytes = null;
     });
+  }
+
+  void _onNameChanged(String _) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
   }
 }
 

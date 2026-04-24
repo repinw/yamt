@@ -62,6 +62,7 @@ class PreparedMealNameField extends StatelessWidget {
     required this.controller,
     required this.textInputAction,
     super.key,
+    this.onChanged,
   });
 
   /// The field controller.
@@ -70,6 +71,9 @@ class PreparedMealNameField extends StatelessWidget {
   /// The keyboard action.
   final TextInputAction textInputAction;
 
+  /// Called when the name changes.
+  final ValueChanged<String>? onChanged;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -77,11 +81,15 @@ class PreparedMealNameField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       textInputAction: textInputAction,
+      onChanged: onChanged,
       decoration: InputDecoration(
         labelText: l10n.preparedMealNameLabel,
         suffixIcon: IconButton(
           tooltip: l10n.preparedMealClearNameAction,
-          onPressed: controller.clear,
+          onPressed: () {
+            controller.clear();
+            onChanged?.call(controller.text);
+          },
           icon: const Icon(Icons.cleaning_services_outlined),
         ),
       ),
