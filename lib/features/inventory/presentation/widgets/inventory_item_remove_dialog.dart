@@ -70,7 +70,7 @@ class _InventoryItemRemoveDialog extends StatelessWidget {
       ),
       children: [
         if (canReduceAmount) ...[
-          _InventoryItemRemoveOption(
+          InventoryActionPickerOptionTile(
             icon: Icons.delete_outline_rounded,
             title: l10n.inventoryItemRemoveDiscardAction,
             subtitle: l10n.inventoryItemRemoveDiscardSubtitle,
@@ -80,7 +80,7 @@ class _InventoryItemRemoveDialog extends StatelessWidget {
                 _close(context, InventoryItemRemovalChoice.discarded),
           ),
           const SizedBox(height: AppSpacing.sm),
-          _InventoryItemRemoveOption(
+          InventoryActionPickerOptionTile(
             icon: Icons.restaurant_rounded,
             title: l10n.inventoryItemRemoveConsumeElsewhereAction,
             subtitle: l10n.inventoryItemRemoveConsumeElsewhereSubtitle,
@@ -93,7 +93,7 @@ class _InventoryItemRemoveDialog extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
         ],
-        _InventoryItemRemoveOption(
+        InventoryActionPickerOptionTile(
           icon: Icons.close_rounded,
           title: l10n.inventoryItemRemoveDeleteAction,
           subtitle: l10n.inventoryItemRemoveDeleteSubtitle,
@@ -111,73 +111,5 @@ class _InventoryItemRemoveDialog extends StatelessWidget {
   void _close(BuildContext context, InventoryItemRemovalChoice choice) {
     FocusManager.instance.primaryFocus?.unfocus();
     Navigator.of(context, rootNavigator: useRootNavigator).pop(choice);
-  }
-}
-
-class _InventoryItemRemoveOption extends StatelessWidget {
-  const _InventoryItemRemoveOption({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.foregroundColor,
-    required this.backgroundColor,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color foregroundColor;
-  final Color backgroundColor;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-          ),
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Row(
-            children: [
-              InventoryActionPickerOptionIcon(
-                icon: icon,
-                foregroundColor: foregroundColor,
-                backgroundColor: backgroundColor,
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: foregroundColor,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: foregroundColor.withValues(alpha: 0.78),
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

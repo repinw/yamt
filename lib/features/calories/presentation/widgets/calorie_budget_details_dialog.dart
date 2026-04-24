@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_metric_stat_card.dart';
 
 /// One detail row in the calorie budget dialog.
 class CalorieBudgetDetailsLine {
@@ -71,7 +73,7 @@ Future<void> showCalorieBudgetDetailsDialog({
                 Row(
                   children: [
                     Expanded(
-                      child: _BudgetDialogStatCard(
+                      child: CalorieMetricStatCard(
                         title: data.primaryLabel,
                         value: data.primaryValue,
                         borderColor: colors.primary,
@@ -79,7 +81,7 @@ Future<void> showCalorieBudgetDetailsDialog({
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
-                      child: _BudgetDialogStatCard(
+                      child: CalorieMetricStatCard(
                         title: data.secondaryLabel,
                         value: data.secondaryValue,
                         borderColor: colors.secondary,
@@ -123,54 +125,6 @@ Future<void> showCalorieBudgetDetailsDialog({
       );
     },
   );
-}
-
-class _BudgetDialogStatCard extends StatelessWidget {
-  const _BudgetDialogStatCard({
-    required this.title,
-    required this.value,
-    required this.borderColor,
-  });
-
-  final String title;
-  final String value;
-  final Color borderColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: borderColor.withValues(alpha: 0.7)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          children: [
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: colors.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              value,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: borderColor,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _BudgetInfoLine extends StatelessWidget {

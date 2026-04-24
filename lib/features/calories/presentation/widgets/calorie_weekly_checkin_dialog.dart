@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_weekly_checkin_messages.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -113,7 +115,12 @@ class _CalorieWeeklyCheckInDialog extends StatelessWidget {
             if (viewModel.isBlocked) ...<Widget>[
               const SizedBox(height: AppSpacing.md),
               Text(
-                _blockedMessage(l10n, viewModel, locale),
+                resolveCalorieWeeklyCheckInBlockedMessage(
+                  l10n: l10n,
+                  viewModel: viewModel,
+                  locale: locale,
+                  fallbackMessage: '',
+                ),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],
@@ -148,52 +155,6 @@ class _CalorieWeeklyCheckInDialog extends StatelessWidget {
           ),
       ],
     );
-  }
-
-  String _blockedMessage(
-    AppLocalizations l10n,
-    CalorieWeeklyCheckInViewModel viewModel,
-    String locale,
-  ) {
-    final reason = viewModel.blockedReason;
-    final pending = viewModel.pendingWeeklyCheckIn;
-    final dateFormat = DateFormat.yMMMd(locale);
-    final missingWeightDates = viewModel.missingWeightDays
-        .map(dateFormat.format)
-        .toList(growable: false);
-    return switch (reason) {
-      CalorieWeeklyCheckInBlockedReason.missingIntakeDays =>
-        l10n.caloriesWeeklyCheckInBlockedMissingIntake,
-      CalorieWeeklyCheckInBlockedReason.tooManyMissingIntakeDays =>
-        l10n.caloriesWeeklyCheckInBlockedTooManyMissingIntake,
-      CalorieWeeklyCheckInBlockedReason.skippedDayWithoutPriorAverage =>
-        l10n.caloriesWeeklyCheckInBlockedSkippedWithoutAverage,
-      CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight
-          when missingWeightDates.length > 1 =>
-        l10n.caloriesWeeklyCheckInBlockedMissingWeightDates(
-          missingWeightDates.join(', '),
-        ),
-      CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight =>
-        l10n.caloriesWeeklyCheckInBlockedMissingStartWeightOn(
-          dateFormat.format(
-            pending?.windowStartDate ?? viewModel.missingWeightDays.first,
-          ),
-        ),
-      CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight
-          when missingWeightDates.length > 1 =>
-        l10n.caloriesWeeklyCheckInBlockedMissingWeightDates(
-          missingWeightDates.join(', '),
-        ),
-      CalorieWeeklyCheckInBlockedReason.unstableWeightData =>
-        l10n.caloriesWeeklyCheckInBlockedUnstableWeight,
-      CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight =>
-        l10n.caloriesWeeklyCheckInBlockedMissingEndWeightOn(
-          dateFormat.format(
-            pending?.windowEndDate ?? viewModel.missingWeightDays.last,
-          ),
-        ),
-      null => '',
-    };
   }
 }
 

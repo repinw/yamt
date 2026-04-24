@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_weekly_checkin_messages.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -144,7 +146,12 @@ class CalorieWeeklyCheckInHintCard extends StatelessWidget {
     if (viewModel.hasPending) {
       final pending = viewModel.pendingWeeklyCheckIn;
       final baseMessage = viewModel.isBlocked
-          ? _blockedMessage(l10n, locale)
+          ? resolveCalorieWeeklyCheckInBlockedMessage(
+              l10n: l10n,
+              viewModel: viewModel,
+              locale: locale,
+              fallbackMessage: l10n.caloriesWeeklyCheckInHintBlockedBody,
+            )
           : l10n.caloriesWeeklyCheckInHintReadyBody;
       if (pending == null) {
         return baseMessage;
@@ -158,51 +165,6 @@ class CalorieWeeklyCheckInHintCard extends StatelessWidget {
       CalorieLearnedTdeeFreshness.urgent =>
         l10n.caloriesWeeklyCheckInHintUrgentBody,
       _ => l10n.caloriesWeeklyCheckInHintStaleBody,
-    };
-  }
-
-  String _blockedMessage(
-    AppLocalizations l10n,
-    String locale,
-  ) {
-    final reason = viewModel.blockedReason;
-    final pending = viewModel.pendingWeeklyCheckIn;
-    final dateFormat = DateFormat.yMMMd(locale);
-    final missingWeightDates = viewModel.missingWeightDays
-        .map(dateFormat.format)
-        .toList(growable: false);
-    return switch (reason) {
-      CalorieWeeklyCheckInBlockedReason.missingIntakeDays =>
-        l10n.caloriesWeeklyCheckInBlockedMissingIntake,
-      CalorieWeeklyCheckInBlockedReason.tooManyMissingIntakeDays =>
-        l10n.caloriesWeeklyCheckInBlockedTooManyMissingIntake,
-      CalorieWeeklyCheckInBlockedReason.skippedDayWithoutPriorAverage =>
-        l10n.caloriesWeeklyCheckInBlockedSkippedWithoutAverage,
-      CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight
-          when missingWeightDates.length > 1 =>
-        l10n.caloriesWeeklyCheckInBlockedMissingWeightDates(
-          missingWeightDates.join(', '),
-        ),
-      CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight =>
-        l10n.caloriesWeeklyCheckInBlockedMissingStartWeightOn(
-          dateFormat.format(
-            pending?.windowStartDate ?? viewModel.missingWeightDays.first,
-          ),
-        ),
-      CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight
-          when missingWeightDates.length > 1 =>
-        l10n.caloriesWeeklyCheckInBlockedMissingWeightDates(
-          missingWeightDates.join(', '),
-        ),
-      CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight =>
-        l10n.caloriesWeeklyCheckInBlockedMissingEndWeightOn(
-          dateFormat.format(
-            pending?.windowEndDate ?? viewModel.missingWeightDays.last,
-          ),
-        ),
-      CalorieWeeklyCheckInBlockedReason.unstableWeightData =>
-        l10n.caloriesWeeklyCheckInBlockedUnstableWeight,
-      null => l10n.caloriesWeeklyCheckInHintBlockedBody,
     };
   }
 }

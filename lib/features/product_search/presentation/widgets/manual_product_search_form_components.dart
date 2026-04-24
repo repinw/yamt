@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
+import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -144,6 +146,75 @@ class ManualProductSearchShell extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class ManualProductSearchToolbar extends StatelessWidget {
+  const ManualProductSearchToolbar({
+    required this.searchController,
+    required this.onAiSearchTap,
+    required this.onScanBarcode,
+    required this.clearButtonKey,
+    required this.fieldKey,
+    super.key,
+    this.isSearching = false,
+    this.readOnly = false,
+    this.autofocus = false,
+    this.onTap,
+    this.onChanged,
+    this.onVoiceSearchPressed,
+    this.voiceSearchService,
+    this.voiceSearchController,
+    this.startVoiceSearchOnMount = false,
+  });
+
+  final TextEditingController searchController;
+  final VoidCallback onAiSearchTap;
+  final VoidCallback onScanBarcode;
+  final Key clearButtonKey;
+  final Key fieldKey;
+  final bool isSearching;
+  final bool readOnly;
+  final bool autofocus;
+  final VoidCallback? onTap;
+  final ValueChanged<String>? onChanged;
+  final VoidCallback? onVoiceSearchPressed;
+  final VoiceSearchService? voiceSearchService;
+  final TextVoiceSearchController? voiceSearchController;
+  final bool startVoiceSearchOnMount;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextVoiceSearchBar(
+          controller: searchController,
+          label: l10n.inventoryReceiptReviewManualSearchLabel,
+          hintText: l10n.inventoryReceiptReviewManualSearchLabel,
+          isSearching: isSearching,
+          voiceButtonKey: const Key(
+            'receipt_review_manual_voice_search_button',
+          ),
+          clearButtonKey: clearButtonKey,
+          fieldKey: fieldKey,
+          readOnly: readOnly,
+          autofocus: autofocus,
+          onTap: onTap,
+          onChanged: onChanged,
+          onVoiceSearchPressed: onVoiceSearchPressed,
+          voiceSearchService: voiceSearchService,
+          voiceSearchController: voiceSearchController,
+          startVoiceSearchOnMount: startVoiceSearchOnMount,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        ManualProductQuickActionsRow(
+          onAiSearchTap: onAiSearchTap,
+          onScanBarcode: onScanBarcode,
+        ),
+      ],
     );
   }
 }

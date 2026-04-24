@@ -172,3 +172,99 @@ class InventoryActionPickerOptionIcon extends StatelessWidget {
     );
   }
 }
+
+/// Shared tappable tile for inventory action picker options.
+class InventoryActionPickerOptionTile extends StatelessWidget {
+  /// The inventory action picker option tile.
+  const InventoryActionPickerOptionTile({
+    required this.icon,
+    required this.title,
+    required this.foregroundColor,
+    required this.backgroundColor,
+    required this.onPressed,
+    super.key,
+    this.subtitle,
+  });
+
+  /// Leading icon data.
+  final IconData icon;
+
+  /// Primary label.
+  final String title;
+
+  /// Optional secondary label.
+  final String? subtitle;
+
+  /// Text and icon color.
+  final Color foregroundColor;
+
+  /// Tile background color.
+  final Color backgroundColor;
+
+  /// Tap action.
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final subtitleText = subtitle;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+          ),
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Row(
+            children: [
+              InventoryActionPickerOptionIcon(
+                icon: icon,
+                foregroundColor: foregroundColor,
+                backgroundColor: backgroundColor,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: subtitleText == null
+                    ? Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: foregroundColor,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: foregroundColor,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                          const SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            subtitleText,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: foregroundColor.withValues(
+                                    alpha: 0.78,
+                                  ),
+                                  height: 1.3,
+                                ),
+                          ),
+                        ],
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

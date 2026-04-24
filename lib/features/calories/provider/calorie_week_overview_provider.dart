@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
+import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -249,7 +250,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
   if (!ref.mounted) {
     throw StateError('Calorie week overview disposed.');
   }
-  final historicalDays = _buildCarryoverDateRange(
+  final historicalDays = buildCalorieCarryoverDateRange(
     startInclusive: balanceStartDate,
     endExclusive: visibleWindowStart,
   );
@@ -261,9 +262,12 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
   if (!ref.mounted) {
     throw StateError('Calorie week overview disposed.');
   }
-  final historicalCarryoverDays = _resolveCarryoverDays(
+  final historicalGoalKcals = historicalGoals
+      .map((goal) => goal.goalKcal)
+      .toList(growable: false);
+  final historicalCarryoverDays = buildCalorieCarryoverDays(
     days: historicalDays,
-    resolvedGoals: historicalGoals,
+    goalKcals: historicalGoalKcals,
     entriesByDay: historicalEntriesByDay,
   );
   final adjustedOverviews = overviews
@@ -424,49 +428,6 @@ _calculateCycleTotals({
     totalGoalKcal: totalGoalKcal,
     carryoverBeforeTodayKcal: carryoverBeforeTodayKcal,
   );
-}
-
-List<DateTime> _buildCarryoverDateRange({
-  required DateTime startInclusive,
-  required DateTime endExclusive,
-}) {
-  if (!startInclusive.isBefore(endExclusive)) {
-    return const <DateTime>[];
-  }
-
-  final days = <DateTime>[];
-  for (
-    var day = normalizeDiaryDay(startInclusive);
-    day.isBefore(normalizeDiaryDay(endExclusive));
-    day = nextDiaryDay(day)
-  ) {
-    days.add(day);
-  }
-  return List<DateTime>.unmodifiable(days);
-}
-
-List<CalorieCarryoverDay> _resolveCarryoverDays({
-  required List<DateTime> days,
-  required List<ResolvedCalorieGoalData> resolvedGoals,
-  required Map<String, List<CalorieEntry>> entriesByDay,
-}) {
-  return days
-      .asMap()
-      .entries
-      .map((entry) {
-        final day = entry.value;
-        final dayEntries =
-            entriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
-        final consumedKcal = dayEntries.fold<double>(
-          0,
-          (sum, entry) => sum + entry.totalKcal,
-        );
-        return CalorieCarryoverDay(
-          goalKcal: resolvedGoals[entry.key].goalKcal,
-          consumedKcal: consumedKcal,
-        );
-      })
-      .toList(growable: false);
 }
 
 bool _isBeforeDay(DateTime left, DateTime right) {

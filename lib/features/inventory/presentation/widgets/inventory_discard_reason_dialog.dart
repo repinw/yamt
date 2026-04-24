@@ -64,7 +64,7 @@ class _InventoryDiscardReasonDialog extends StatelessWidget {
       ),
       children: [
         for (final reason in InventoryDiscardReason.values) ...[
-          _InventoryDiscardReasonOption(
+          InventoryActionPickerOptionTile(
             icon: _reasonIcon(reason),
             title: reason.localizedLabel(l10n),
             foregroundColor: _reasonForegroundColor(colors, reason),
@@ -123,58 +123,5 @@ class _InventoryDiscardReasonDialog extends StatelessWidget {
         colors.primaryContainer.withValues(alpha: 0.42),
       InventoryDiscardReason.other => colors.surfaceContainerHigh,
     };
-  }
-}
-
-class _InventoryDiscardReasonOption extends StatelessWidget {
-  const _InventoryDiscardReasonOption({
-    required this.icon,
-    required this.title,
-    required this.foregroundColor,
-    required this.backgroundColor,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final String title;
-  final Color foregroundColor;
-  final Color backgroundColor;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-          ),
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Row(
-            children: [
-              InventoryActionPickerOptionIcon(
-                icon: icon,
-                foregroundColor: foregroundColor,
-                backgroundColor: backgroundColor,
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: foregroundColor,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

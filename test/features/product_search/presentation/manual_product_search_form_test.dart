@@ -4,6 +4,8 @@ import 'package:yamt/features/inventory/data/off_product_search_repository.dart'
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search/presentation/widgets/'
+    'manual_product_search_form_components.dart';
+import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form.dart';
 import 'package:yamt/features/product_search/provider/'
     'manual_product_search_controller.dart';
@@ -199,6 +201,51 @@ Finder _editableTextWithin(Key key) {
 }
 
 void main() {
+  testWidgets('manual search toolbar wires field and quick actions', (
+    tester,
+  ) async {
+    final searchController = TextEditingController(text: 'Banane');
+    addTearDown(searchController.dispose);
+
+    var searchTapped = 0;
+    var voiceTapped = 0;
+    var aiTapped = 0;
+    var scanTapped = 0;
+
+    await tester.pumpWidget(
+      _wrapForm(
+        builder: (_) => ManualProductSearchToolbar(
+          searchController: searchController,
+          clearButtonKey: const Key('toolbar_clear_button'),
+          fieldKey: const Key('toolbar_field'),
+          readOnly: true,
+          onTap: () => searchTapped += 1,
+          onVoiceSearchPressed: () => voiceTapped += 1,
+          onAiSearchTap: () => aiTapped += 1,
+          onScanBarcode: () => scanTapped += 1,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('toolbar_field')));
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+    );
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_ai_search_button')),
+    );
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_scan_button')),
+    );
+    await tester.pump();
+
+    expect(searchTapped, 1);
+    expect(voiceTapped, 1);
+    expect(aiTapped, 1);
+    expect(scanTapped, 1);
+  });
+
   testWidgets('launcher shows ai and scan actions below search bar', (
     tester,
   ) async {

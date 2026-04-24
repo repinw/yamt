@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
@@ -11,7 +10,6 @@ import 'package:yamt/features/product_search/presentation/widgets/'
     'manual_product_search_form_details.dart';
 import 'package:yamt/features/product_search/provider/'
     'manual_product_search_controller.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 
 export 'manual_product_search_form_components.dart'
     show InventoryReceiptManualProductPreviewData;
@@ -73,35 +71,20 @@ class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return ManualProductSearchShell(
       title: title,
       onClose: onClose,
-      searchBar: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextVoiceSearchBar(
-            controller: searchController,
-            label: l10n.inventoryReceiptReviewManualSearchLabel,
-            hintText: l10n.inventoryReceiptReviewManualSearchLabel,
-            voiceButtonKey: const Key(
-              'receipt_review_manual_voice_search_button',
-            ),
-            clearButtonKey: const Key(
-              'receipt_review_manual_launcher_search_clear_button',
-            ),
-            fieldKey: const Key('receipt_review_manual_launcher_search_field'),
-            readOnly: true,
-            onTap: onSearchTap,
-            onVoiceSearchPressed: onVoiceSearchTap,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          ManualProductQuickActionsRow(
-            onAiSearchTap: onAiSearchTap,
-            onScanBarcode: onScanBarcode,
-          ),
-        ],
+      searchBar: ManualProductSearchToolbar(
+        searchController: searchController,
+        clearButtonKey: const Key(
+          'receipt_review_manual_launcher_search_clear_button',
+        ),
+        fieldKey: const Key('receipt_review_manual_launcher_search_field'),
+        readOnly: true,
+        onTap: onSearchTap,
+        onVoiceSearchPressed: onVoiceSearchTap,
+        onAiSearchTap: onAiSearchTap,
+        onScanBarcode: onScanBarcode,
       ),
       body: ManualProductRecentItems(
         items: recentItems,
@@ -392,38 +375,21 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return ManualProductSearchShell(
       title: title,
       onClose: onCancel,
-      searchBar: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextVoiceSearchBar(
-            controller: searchController,
-            label: l10n.inventoryReceiptReviewManualSearchLabel,
-            hintText: l10n.inventoryReceiptReviewManualSearchLabel,
-            isSearching: isSearching,
-            voiceButtonKey: const Key(
-              'receipt_review_manual_voice_search_button',
-            ),
-            clearButtonKey: const Key(
-              'receipt_review_manual_search_clear_button',
-            ),
-            fieldKey: const Key('receipt_review_manual_search_field'),
-            autofocus: autofocusSearch,
-            onChanged: onSearchChanged,
-            voiceSearchService: voiceSearchService,
-            voiceSearchController: voiceSearchController,
-            startVoiceSearchOnMount: startVoiceSearchOnMount,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          ManualProductQuickActionsRow(
-            onAiSearchTap: onAiSearchTap,
-            onScanBarcode: onScanBarcode,
-          ),
-        ],
+      searchBar: ManualProductSearchToolbar(
+        searchController: searchController,
+        clearButtonKey: const Key('receipt_review_manual_search_clear_button'),
+        fieldKey: const Key('receipt_review_manual_search_field'),
+        isSearching: isSearching,
+        autofocus: autofocusSearch,
+        onChanged: onSearchChanged,
+        voiceSearchService: voiceSearchService,
+        voiceSearchController: voiceSearchController,
+        startVoiceSearchOnMount: startVoiceSearchOnMount,
+        onAiSearchTap: onAiSearchTap,
+        onScanBarcode: onScanBarcode,
       ),
       body: ManualProductDetailsForm(
         searchResults: searchResults,
