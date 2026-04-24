@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
@@ -12,6 +13,15 @@ import 'package:yamt/features/auth/provider/auth_repository.dart';
 import 'package:yamt/features/auth/provider/auth_service.dart';
 
 part 'guest_name_setup_controller.g.dart';
+
+/// Whether guest setup can be canceled.
+@riverpod
+bool canCancelGuestSetup(Ref ref) {
+  final authState = ref.watch(authStateChangesProvider);
+  final currentUser =
+      authState.asData?.value ?? ref.watch(firebaseAuthProvider).currentUser;
+  return currentUser?.isAnonymous ?? false;
+}
 
 /// Defines guest name setup form defaults.
 class GuestNameSetupFormDefaults {
@@ -40,9 +50,7 @@ class GuestNameSetupController extends _$GuestNameSetupController {
 
   /// Initial form defaults.
   GuestNameSetupFormDefaults initialFormDefaults() {
-    final authState = ref.read(authStateChangesProvider);
-    final currentUser =
-        authState.asData?.value ?? ref.read(firebaseAuthProvider).currentUser;
+    final currentUser = _currentUser();
     final seedColor = ref.read(seedColorControllerProvider);
     final themeMode = ref.read(themeModeControllerProvider);
 
@@ -61,6 +69,25 @@ class GuestNameSetupController extends _$GuestNameSetupController {
       seedColor: seedColor,
       themeMode: themeMode,
     );
+  }
+
+  /// Cancel anonymous guest setup and return to auth.
+  Future<void> cancelGuestSetup() async {
+    if (!ref.read(canCancelGuestSetupProvider)) {
+      return;
+    }
+
+    state = const AsyncLoading();
+    final nextState = await AsyncValue.guard(
+      ref.read(firebaseAuthProvider).signOut,
+    );
+    if (!ref.mounted) {
+      return;
+    }
+    if (!nextState.hasError) {
+      ref.invalidate(authStateChangesProvider);
+    }
+    state = nextState;
   }
 
   /// Save display name.
@@ -101,5 +128,11 @@ class GuestNameSetupController extends _$GuestNameSetupController {
         ..invalidate(authStateChangesProvider);
     }
     state = nextState;
+  }
+
+  User? _currentUser() {
+    final authState = ref.read(authStateChangesProvider);
+    return authState.asData?.value ??
+        ref.read(firebaseAuthProvider).currentUser;
   }
 }
