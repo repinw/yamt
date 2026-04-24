@@ -2234,7 +2234,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsHealthDisconnectSubtitle => 'Remove Health Connect access for YAMT.';
 
   @override
-  String get settingsAppleHealthDisconnectSubtitle => 'Remove Apple Health access for YAMT.';
+  String get settingsAppleHealthDisconnectSubtitle => 'Stop using Apple Health in YAMT.';
 
   @override
   String get settingsHealthDisconnectDialogTitle => 'Disconnect health access?';
@@ -2243,10 +2243,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsHealthDisconnectDialogBody => 'YAMT will lose access to Health Connect until you connect it again.';
 
   @override
+  String get settingsAppleHealthDisconnectDialogBody => 'YAMT will stop using Apple Health data until you connect it again. Apple Health permissions on your iPhone stay unchanged.';
+
+  @override
   String get settingsHealthDisconnectAction => 'Disconnect';
 
   @override
   String get settingsHealthDisconnectSuccess => 'Health access disconnected. Restart YAMT before reconnecting Health Connect.';
+
+  @override
+  String get settingsAppleHealthDisconnectSuccess => 'Apple Health disconnected in YAMT. You can reconnect it anytime from Settings.';
 
   @override
   String get settingsHealthDisconnectOpenedSettings => 'Opened Settings so you can manage Apple Health access.';

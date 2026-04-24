@@ -4352,7 +4352,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAppleHealthDisconnectSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Remove Apple Health access for YAMT.'**
+  /// **'Stop using Apple Health in YAMT.'**
   String get settingsAppleHealthDisconnectSubtitle;
 
   /// No description provided for @settingsHealthDisconnectDialogTitle.
@@ -4367,6 +4367,12 @@ abstract class AppLocalizations {
   /// **'YAMT will lose access to Health Connect until you connect it again.'**
   String get settingsHealthDisconnectDialogBody;
 
+  /// No description provided for @settingsAppleHealthDisconnectDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'YAMT will stop using Apple Health data until you connect it again. Apple Health permissions on your iPhone stay unchanged.'**
+  String get settingsAppleHealthDisconnectDialogBody;
+
   /// No description provided for @settingsHealthDisconnectAction.
   ///
   /// In en, this message translates to:
@@ -4378,6 +4384,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Health access disconnected. Restart YAMT before reconnecting Health Connect.'**
   String get settingsHealthDisconnectSuccess;
+
+  /// No description provided for @settingsAppleHealthDisconnectSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple Health disconnected in YAMT. You can reconnect it anytime from Settings.'**
+  String get settingsAppleHealthDisconnectSuccess;
 
   /// No description provided for @settingsHealthDisconnectOpenedSettings.
   ///

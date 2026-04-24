@@ -1259,13 +1259,17 @@
   "settingsHealthDisconnectSubtitle":
       "Entferne den Health-Connect-Zugriff für YAMT.",
   "settingsAppleHealthDisconnectSubtitle":
-      "Entferne den Apple-Health-Zugriff für YAMT.",
+      "Stoppe die Nutzung von Apple Health in YAMT.",
   "settingsHealthDisconnectDialogTitle": "Health-Zugriff trennen?",
   "settingsHealthDisconnectDialogBody":
       "YAMT verliert den Zugriff auf Health Connect, bis du es erneut verbindest.",
+  "settingsAppleHealthDisconnectDialogBody":
+      "YAMT nutzt Apple-Health-Daten nicht mehr, bis du es erneut verbindest. Die Apple-Health-Berechtigungen auf deinem iPhone bleiben unverändert.",
   "settingsHealthDisconnectAction": "Trennen",
   "settingsHealthDisconnectSuccess":
       "Health-Zugriff getrennt. Starte YAMT neu, bevor du Health Connect erneut verbindest.",
+  "settingsAppleHealthDisconnectSuccess":
+      "Apple Health in YAMT getrennt. Du kannst es jederzeit in den Einstellungen wieder verbinden.",
   "settingsHealthDisconnectOpenedSettings":
       "Einstellungen geöffnet, damit du den Apple-Health-Zugriff verwalten kannst.",
   "settingsHealthDisconnectFailed":

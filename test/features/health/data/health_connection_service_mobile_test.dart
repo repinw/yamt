@@ -3,6 +3,8 @@ import 'package:health/health.dart';
 import 'package:yamt/features/health/data/health_connection_service_mobile.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 
+import '../../../helpers/memory_app_preferences.dart';
+
 void main() {
   test(
     'loadStatus treats iOS weight write permission as granted access',
@@ -29,14 +31,13 @@ void main() {
   );
 
   test(
-    'requestAuthorization keeps iOS access blocked without weight write',
+    'requestAuthorization keeps iOS not granted without weight write',
     () async {
-      final fakeHealth = _FakeHealth(
-        hasPermissionsResult: false,
-        requestAuthorizationResult: true,
-      );
+      final preferences = MemoryAppPreferences();
+      final fakeHealth = _FakeHealth(hasPermissionsResult: false);
       final service = MobileHealthConnectionService(
         health: fakeHealth,
+        preferences: preferences,
         isAndroid: false,
         isIOS: true,
       );
@@ -46,18 +47,85 @@ void main() {
       expect(status.permissionState, HealthPermissionState.notGranted);
       expect(status.accessState, HealthDataAccessState.permissionRequired);
       expect(fakeHealth.requestAuthorizationCallCount, 1);
+      expect(
+        await preferences.getString('ios_health_connection_enabled_v1'),
+        '1',
+      );
     },
   );
+
+  test('loadStatus ignores stale remembered iOS authorization', () async {
+    final preferences = MemoryAppPreferences(
+      initialStrings: <String, String>{
+        'ios_health_authorization_requested_v1': '1',
+        'ios_health_connection_enabled_v1': '1',
+      },
+    );
+    final fakeHealth = _FakeHealth(hasPermissionsResult: false);
+    final service = MobileHealthConnectionService(
+      health: fakeHealth,
+      preferences: preferences,
+      isAndroid: false,
+      isIOS: true,
+    );
+
+    final status = await service.loadStatus();
+
+    expect(status.permissionState, HealthPermissionState.notGranted);
+    expect(status.accessState, HealthDataAccessState.permissionRequired);
+  });
+
+  test('disconnect on iOS disables local Apple Health access', () async {
+    final preferences = MemoryAppPreferences(
+      initialStrings: <String, String>{'ios_health_connection_enabled_v1': '1'},
+    );
+    final fakeHealth = _FakeHealth(hasPermissionsResult: true);
+    final service = MobileHealthConnectionService(
+      health: fakeHealth,
+      preferences: preferences,
+      isAndroid: false,
+      isIOS: true,
+    );
+
+    final result = await service.disconnect();
+    final status = await service.loadStatus();
+
+    expect(result, HealthDisconnectResult.disconnected);
+    expect(status.permissionState, HealthPermissionState.notGranted);
+    expect(status.accessState, HealthDataAccessState.permissionRequired);
+    expect(
+      await preferences.getString('ios_health_connection_enabled_v1'),
+      '0',
+    );
+  });
+
+  test('requestAuthorization re-enables local Apple Health access', () async {
+    final preferences = MemoryAppPreferences(
+      initialStrings: <String, String>{'ios_health_connection_enabled_v1': '0'},
+    );
+    final fakeHealth = _FakeHealth(hasPermissionsResult: true);
+    final service = MobileHealthConnectionService(
+      health: fakeHealth,
+      preferences: preferences,
+      isAndroid: false,
+      isIOS: true,
+    );
+
+    final status = await service.requestAuthorization();
+
+    expect(status.permissionState, HealthPermissionState.granted);
+    expect(status.accessState, HealthDataAccessState.ready);
+    expect(
+      await preferences.getString('ios_health_connection_enabled_v1'),
+      '1',
+    );
+  });
 }
 
 class _FakeHealth extends Health {
-  _FakeHealth({
-    required this.hasPermissionsResult,
-    this.requestAuthorizationResult = true,
-  });
+  _FakeHealth({required this.hasPermissionsResult});
 
   final bool? hasPermissionsResult;
-  final bool requestAuthorizationResult;
 
   int requestAuthorizationCallCount = 0;
   List<HealthDataType>? lastHasPermissionsTypes;
@@ -82,6 +150,6 @@ class _FakeHealth extends Health {
     List<HealthDataAccess>? permissions,
   }) async {
     requestAuthorizationCallCount += 1;
-    return requestAuthorizationResult;
+    return true;
   }
 }

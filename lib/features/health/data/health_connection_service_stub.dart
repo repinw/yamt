@@ -1,8 +1,11 @@
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 
 /// Create health connection service.
-HealthConnectionService createHealthConnectionService() {
+HealthConnectionService createHealthConnectionService({
+  AppPreferences? preferences,
+}) {
   return const _UnsupportedHealthConnectionService();
 }
 

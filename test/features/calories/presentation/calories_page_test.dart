@@ -38,8 +38,11 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/calories/provider/'
     'calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/health/data/diary_health_service.dart';
+import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
+import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
 import 'package:yamt/features/health/provider/'
     'health_connection_service_provider.dart';
 import 'package:yamt/features/health/provider/'
@@ -351,6 +354,19 @@ Future<void> _scrollUntilVisible(WidgetTester tester, Finder finder) async {
   expect(finder, findsOneWidget);
 }
 
+class _CountingDiaryHealthService implements DiaryHealthService {
+  int loadCallCount = 0;
+
+  @override
+  Future<DiaryHealthDayData> loadDayData({
+    required DateTime day,
+    double? userHeightCm,
+  }) async {
+    loadCallCount += 1;
+    return const DiaryHealthDayData(totalSteps: 0, workouts: []);
+  }
+}
+
 @Dependencies([
   calorieEntryDeleteFlow,
   InventoryItemsController,
@@ -418,6 +434,47 @@ void main() {
       find.byKey(CaloriesPageKeys.entryTile('retry-entry')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('refreshes Apple Health workouts after app resume', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    final diaryHealthService = _CountingDiaryHealthService();
+    const readyStatus = HealthConnectionStatus(
+      platform: HealthPlatform.ios,
+      healthConnectAvailability: HealthConnectAvailability.notApplicable,
+      permissionState: HealthPermissionState.granted,
+      historyAccess: HealthHistoryAccess.notApplicable,
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        overrides: <Override>[
+          healthConnectionServiceProvider.overrideWithValue(
+            FakeHealthConnectionService(readyStatus),
+          ),
+          diaryHealthServiceProvider.overrideWithValue(diaryHealthService),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final initialLoadCount = diaryHealthService.loadCallCount;
+    expect(initialLoadCount, greaterThan(0));
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(diaryHealthService.loadCallCount, greaterThan(initialLoadCount));
   });
 
   testWidgets('renders redesigned diary summary and meal sections', (

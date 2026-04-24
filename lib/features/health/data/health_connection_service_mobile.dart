@@ -3,10 +3,16 @@ import 'dart:io' show Platform;
 
 import 'package:health/health.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 
 const _logName = 'HealthConnectionService';
+
+const _iosHealthConnectionEnabledPreferenceKey =
+    'ios_health_connection_enabled_v1';
+const _iosConnectionEnabledValue = '1';
+const _iosConnectionDisabledValue = '0';
 
 const _androidAuthorizationTypes = <HealthDataType>[
   HealthDataType.STEPS,
@@ -32,8 +38,10 @@ const _androidReconnectRequiresRestartMessage =
     'Restart YAMT after disconnecting Health Connect before reconnecting.';
 
 /// Create health connection service.
-HealthConnectionService createHealthConnectionService() {
-  return MobileHealthConnectionService();
+HealthConnectionService createHealthConnectionService({
+  AppPreferences? preferences,
+}) {
+  return MobileHealthConnectionService(preferences: preferences);
 }
 
 /// Defines mobile health connection service.
@@ -41,13 +49,16 @@ class MobileHealthConnectionService implements HealthConnectionService {
   /// Creates an instance.
   MobileHealthConnectionService({
     Health? health,
+    AppPreferences? preferences,
     bool? isAndroid,
     bool? isIOS,
   }) : _health = health ?? Health(),
+       _preferences = preferences,
        _isAndroid = isAndroid ?? Platform.isAndroid,
        _isIOS = isIOS ?? Platform.isIOS;
 
   final Health _health;
+  final AppPreferences? _preferences;
   final bool _isAndroid;
   final bool _isIOS;
   bool _isConfigured = false;
@@ -116,6 +127,9 @@ class MobileHealthConnectionService implements HealthConnectionService {
       _authorizationTypes,
       permissions: _authorizationPermissions,
     );
+    if (authorized && _isIOS) {
+      await _markIosConnectionEnabled();
+    }
     if (authorized && _isAndroid) {
       await _requestHistoryIfAvailable();
     }
@@ -175,10 +189,10 @@ class MobileHealthConnectionService implements HealthConnectionService {
       return HealthDisconnectResult.disconnected;
     }
 
-    final opened = await openAppSettings();
-    return opened
-        ? HealthDisconnectResult.openedSettings
-        : HealthDisconnectResult.unsupported;
+    // HealthKit access cannot be revoked programmatically on iOS, so
+    // disconnect Apple Health locally inside YAMT instead.
+    await _markIosConnectionDisabled();
+    return HealthDisconnectResult.disconnected;
   }
 
   bool get _isSupportedPlatform => _isAndroid || _isIOS;
@@ -235,9 +249,13 @@ class MobileHealthConnectionService implements HealthConnectionService {
 
   Future<HealthPermissionState> _loadPermissionState() async {
     if (_isIOS) {
+      if (!await _isIosConnectionEnabled()) {
+        return HealthPermissionState.notGranted;
+      }
+
       // HealthKit does not reveal read authorization status on iOS.
       // Use the required weight write permission as the best available
-      // signal that Apple Health access was granted for YAMT.
+      // signal for whether YAMT currently has usable Apple Health access.
       final hasPermissions = await _health.hasPermissions(
         _iosPermissionStatusTypes,
         permissions: _iosPermissionStatusPermissions,
@@ -275,6 +293,36 @@ class MobileHealthConnectionService implements HealthConnectionService {
     return status.copyWith(
       errorMessage:
           status.errorMessage ?? _androidReconnectRequiresRestartMessage,
+    );
+  }
+
+  Future<bool> _isIosConnectionEnabled() async {
+    if (!_isIOS || _preferences == null) {
+      return true;
+    }
+    final value = await _preferences.getString(
+      _iosHealthConnectionEnabledPreferenceKey,
+    );
+    return value != _iosConnectionDisabledValue;
+  }
+
+  Future<void> _markIosConnectionEnabled() async {
+    if (!_isIOS || _preferences == null) {
+      return;
+    }
+    await _preferences.setString(
+      _iosHealthConnectionEnabledPreferenceKey,
+      _iosConnectionEnabledValue,
+    );
+  }
+
+  Future<void> _markIosConnectionDisabled() async {
+    if (!_isIOS || _preferences == null) {
+      return;
+    }
+    await _preferences.setString(
+      _iosHealthConnectionEnabledPreferenceKey,
+      _iosConnectionDisabledValue,
     );
   }
 }

@@ -399,6 +399,146 @@ void main() {
       ]);
     },
   );
+
+  test(
+    'loadDayData attaches interval steps to standalone active energy',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final energyStart = day.add(const Duration(hours: 15));
+      final energyEnd = day.add(const Duration(hours: 16));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: const <HealthDataPoint>[],
+          HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[
+            _buildActiveEnergyPoint(
+              start: energyStart,
+              end: energyEnd,
+              calories: 500,
+            ),
+          ],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 4000,
+          _intervalKey(energyStart, energyEnd): 1000,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+      final summary = buildDiaryActivitySummary(day: day, dayData: dayData);
+      final burnedCalories = calculateDiaryBurnedCalories(
+        stepsOutsideWorkouts: summary.stepsOutsideWorkouts,
+        workoutCalories: summary.workouts.map(
+          (workout) => workout.totalCalories,
+        ),
+      );
+
+      expect(dayData.workouts, hasLength(1));
+      expect(dayData.workouts.single.activityLabel, isNull);
+      expect(dayData.workouts.single.totalCalories, 500);
+      expect(dayData.workouts.single.totalSteps, 1000);
+      expect(summary.stepsDuringWorkouts, 1000);
+      expect(summary.stepsOutsideWorkouts, 3000);
+      expect(burnedCalories, 620);
+    },
+  );
+
+  test(
+    'loadDayData does not duplicate active energy already covered by workout',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final workoutStart = day.add(const Duration(hours: 18));
+      final workoutEnd = day.add(const Duration(hours: 19));
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              totalCalories: 240,
+              totalSteps: 2800,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[
+            _buildActiveEnergyPoint(
+              start: workoutStart,
+              end: workoutEnd,
+              calories: 500,
+            ),
+          ],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 6700,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+
+      expect(dayData.workouts, hasLength(1));
+      expect(dayData.workouts.single.totalCalories, 500);
+    },
+  );
+
+  test(
+    'loadDayData allocates overlapping active energy once across workouts',
+    () async {
+      final day = DateTime(2026, 4, 17);
+      final dayEnd = day.add(const Duration(days: 1));
+      final firstWorkoutStart = day.add(const Duration(hours: 10));
+      final firstWorkoutEnd = day.add(const Duration(hours: 11));
+      final secondWorkoutStart = day.add(
+        const Duration(hours: 10, minutes: 30),
+      );
+      final secondWorkoutEnd = day.add(
+        const Duration(hours: 11, minutes: 30),
+      );
+      final fakeHealth = _FakeHealth(
+        healthDataPoints: <HealthDataType, List<HealthDataPoint>>{
+          HealthDataType.WORKOUT: <HealthDataPoint>[
+            _buildWorkoutPoint(
+              uuid: 'workout-1',
+              start: firstWorkoutStart,
+              end: firstWorkoutEnd,
+              totalCalories: 999,
+            ),
+            _buildWorkoutPoint(
+              uuid: 'workout-2',
+              start: secondWorkoutStart,
+              end: secondWorkoutEnd,
+              totalCalories: 999,
+            ),
+          ],
+          HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[
+            _buildActiveEnergyPoint(
+              start: firstWorkoutStart,
+              end: secondWorkoutEnd,
+              calories: 900,
+            ),
+          ],
+        },
+        totalStepsResponses: <String, int?>{
+          _intervalKey(day, dayEnd): 0,
+        },
+      );
+      final service = MobileDiaryHealthService(health: fakeHealth);
+
+      final dayData = await service.loadDayData(day: day);
+      final totalWorkoutCalories = dayData.workouts.fold<int>(
+        0,
+        (sum, workout) => sum + (workout.totalCalories ?? 0),
+      );
+
+      expect(dayData.workouts, hasLength(2));
+      expect(
+        dayData.workouts.map((workout) => workout.totalCalories),
+        unorderedEquals(<int>[600, 300]),
+      );
+      expect(totalWorkoutCalories, 900);
+    },
+  );
 }
 
 class _FakeHealth extends Health {
@@ -443,6 +583,7 @@ HealthDataPoint _buildWorkoutPoint({
   required DateTime start,
   required DateTime end,
   required int totalCalories,
+  String uuid = 'run-1',
   HealthWorkoutActivityType activityType = HealthWorkoutActivityType.RUNNING,
   int? totalSteps,
   int? totalDistance,
@@ -451,7 +592,7 @@ HealthDataPoint _buildWorkoutPoint({
   int? workoutSummarySteps,
 }) {
   return HealthDataPoint(
-    uuid: 'run-1',
+    uuid: uuid,
     value: WorkoutHealthValue(
       workoutActivityType: activityType,
       totalEnergyBurned: totalCalories,
@@ -481,6 +622,25 @@ HealthDataPoint _buildWorkoutPoint({
             totalEnergyBurned: totalCalories,
             totalSteps: workoutSummarySteps,
           ),
+  );
+}
+
+HealthDataPoint _buildActiveEnergyPoint({
+  required DateTime start,
+  required DateTime end,
+  required num calories,
+}) {
+  return HealthDataPoint(
+    uuid: 'energy-${start.millisecondsSinceEpoch}',
+    value: NumericHealthValue(numericValue: calories),
+    type: HealthDataType.ACTIVE_ENERGY_BURNED,
+    unit: HealthDataUnit.KILOCALORIE,
+    dateFrom: start,
+    dateTo: end,
+    sourcePlatform: HealthPlatformType.appleHealth,
+    sourceDeviceId: 'device-id',
+    sourceId: 'apple.health',
+    sourceName: 'Apple Health',
   );
 }
 

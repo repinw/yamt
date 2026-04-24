@@ -91,11 +91,13 @@ class _FakeHealthConnectionService implements HealthConnectionService {
   @override
   Future<HealthDisconnectResult> disconnect() async {
     disconnectCallCount += 1;
-    _status = const HealthConnectionStatus(
-      platform: HealthPlatform.android,
-      healthConnectAvailability: HealthConnectAvailability.available,
+    _status = HealthConnectionStatus(
+      platform: _status.platform,
+      healthConnectAvailability: _status.healthConnectAvailability,
       permissionState: HealthPermissionState.notGranted,
-      historyAccess: HealthHistoryAccess.notGranted,
+      historyAccess: _status.platform == HealthPlatform.android
+          ? HealthHistoryAccess.notGranted
+          : HealthHistoryAccess.notApplicable,
     );
     return disconnectResult;
   }
@@ -359,6 +361,57 @@ void main() {
       find.text(
         'Health access disconnected. Restart YAMT before reconnecting '
         'Health Connect.',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Apple Health tile disconnects locally on iPhone', (
+    tester,
+  ) async {
+    final healthService = _FakeHealthConnectionService(
+      disconnectResult: HealthDisconnectResult.disconnected,
+      status: const HealthConnectionStatus(
+        platform: HealthPlatform.ios,
+        healthConnectAvailability: HealthConnectAvailability.notApplicable,
+        permissionState: HealthPermissionState.granted,
+        historyAccess: HealthHistoryAccess.notApplicable,
+      ),
+    );
+
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      healthService: healthService,
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Apple Health');
+    expect(
+      find.text('Stop using Apple Health in YAMT.'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Apple Health').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Disconnect health access?'), findsOneWidget);
+    expect(
+      find.text(
+        'YAMT will stop using Apple Health data until you connect it again. '
+        'Apple Health permissions on your iPhone stay unchanged.',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Disconnect'));
+    await tester.pumpAndSettle();
+
+    expect(healthService.disconnectCallCount, 1);
+    expect(
+      find.text(
+        'Apple Health disconnected in YAMT. You can reconnect it anytime '
+        'from Settings.',
       ),
       findsOneWidget,
     );
