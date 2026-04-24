@@ -1220,6 +1220,18 @@
       "Nahrungsmittel wieder in den Vorrat legen?",
   "caloriesDeleteRestoreFailed":
       "Das Nahrungsmittel konnte nicht zurück in den Vorrat gelegt werden.",
+  "caloriesMissingInventorySourceDialogTitle":
+      "Nahrungsmittel nicht mehr im Vorrat",
+  "caloriesMissingInventorySourceDialogMessage":
+      "\"{name}\" ist nicht mehr im Vorrat und kann nicht zurückgelegt werden. Nur aus dem Tagebuch löschen?",
+  "@caloriesMissingInventorySourceDialogMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "caloriesDeleteDiaryOnlyConfirmAction": "Aus Tagebuch löschen",
   "caloriesDeleteFailed": "Eintrag konnte nicht gelöscht werden.",
   "caloriesAddEntryTitle": "Kalorien-Eintrag hinzufügen",
   "caloriesEditEntryTitle": "Kalorien-Eintrag bearbeiten",

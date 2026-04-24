@@ -32,6 +32,7 @@ final class CalorieEntryDeleteFlowProvider
         name: r'calorieEntryDeleteFlowProvider',
         isAutoDispose: true,
         dependencies: <ProviderOrFamily>[
+          inventoryItemRepositoryProvider,
           inventoryItemsControllerProvider,
           preparedMealsControllerProvider,
         ],
@@ -42,9 +43,8 @@ final class CalorieEntryDeleteFlowProvider
         ],
       );
 
-  static final $allTransitiveDependencies0 = inventoryItemsControllerProvider;
-  static final $allTransitiveDependencies1 =
-      InventoryItemsControllerProvider.$allTransitiveDependencies0;
+  static final $allTransitiveDependencies0 = inventoryItemRepositoryProvider;
+  static final $allTransitiveDependencies1 = inventoryItemsControllerProvider;
   static final $allTransitiveDependencies2 = preparedMealsControllerProvider;
 
   @override
@@ -71,4 +71,4 @@ final class CalorieEntryDeleteFlowProvider
 }
 
 String _$calorieEntryDeleteFlowHash() =>
-    r'62c5b2a7de7d3aabde9a1d7d594a2455db076d1c';
+    r'495299f1935e1a210eee846d26c2b70475607dda';

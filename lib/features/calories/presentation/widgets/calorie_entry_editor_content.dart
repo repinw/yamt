@@ -530,23 +530,55 @@ class _CalorieEntryEditorContentState
     BuildContext context, {
     required CalorieEntry entry,
   }) async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showCalorieEntryReturnToInventoryDialog(
-      context,
-      entry: entry,
-    );
-    if (confirmed != true || !mounted || !context.mounted) {
+    final deleteFlow = ref.read(calorieEntryDeleteFlowProvider);
+    final sourceCanBeRestored = await deleteFlow.canRestoreSource(entry);
+    if (!context.mounted) {
+      return;
+    }
+    if (!mounted) {
       return;
     }
 
-    final deleteFlow = ref.read(calorieEntryDeleteFlowProvider);
+    final bool? confirmed;
+    if (sourceCanBeRestored) {
+      confirmed = await showCalorieEntryReturnToInventoryDialog(
+        context,
+        entry: entry,
+      );
+    } else {
+      confirmed = await showCalorieEntryMissingInventorySourceDialog(
+        context,
+        entry: entry,
+      );
+    }
+    if (confirmed != true || !mounted) {
+      return;
+    }
+    if (!context.mounted) {
+      return;
+    }
+
+    await _deleteEntryFromDetails(
+      context,
+      entry: entry,
+      deleteFlow: deleteFlow,
+      restoreToInventory: sourceCanBeRestored,
+    );
+  }
+
+  Future<void> _deleteEntryFromDetails(
+    BuildContext context, {
+    required CalorieEntry entry,
+    required CalorieEntryDeleteFlow deleteFlow,
+    required bool restoreToInventory,
+  }) async {
     setState(() {
       _isSaving = true;
     });
 
     final result = await deleteFlow.deleteEntry(
       entry: entry,
-      restoreToInventory: true,
+      restoreToInventory: restoreToInventory,
     );
     if (!mounted || !context.mounted) {
       return;
@@ -561,16 +593,50 @@ class _CalorieEntryEditorContentState
       return;
     }
 
+    if (restoreToInventory &&
+        result.failureReason == CalorieEntryDeleteFailureReason.sourceMissing) {
+      await _confirmDeleteEntryOnly(
+        context,
+        entry: entry,
+        deleteFlow: deleteFlow,
+      );
+      return;
+    }
+
     final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    final l10n = AppLocalizations.of(context)!;
     final message = switch (result.failureReason) {
       CalorieEntryDeleteFailureReason.restoreFailed =>
         entry.canReturnPreparedMealToInventory
             ? l10n.caloriesReturnPreparedMealFailed
             : l10n.caloriesDeleteRestoreFailed,
+      CalorieEntryDeleteFailureReason.sourceMissing =>
+        l10n.caloriesDeleteFailed,
       CalorieEntryDeleteFailureReason.deleteFailed ||
       null => l10n.caloriesDeleteFailed,
     };
     messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _confirmDeleteEntryOnly(
+    BuildContext context, {
+    required CalorieEntry entry,
+    required CalorieEntryDeleteFlow deleteFlow,
+  }) async {
+    final confirmed = await showCalorieEntryMissingInventorySourceDialog(
+      context,
+      entry: entry,
+    );
+    if (confirmed != true || !mounted || !context.mounted) {
+      return;
+    }
+
+    await _deleteEntryFromDetails(
+      context,
+      entry: entry,
+      deleteFlow: deleteFlow,
+      restoreToInventory: false,
+    );
   }
 
   Future<void> _requestCloseExistingEntry(

@@ -85,21 +85,54 @@ class _RecordingInventorySaveFlow
   }
 }
 
-CalorieEntryDeleteFlow _restoreFailingDeleteFlow() {
+CalorieEntryDeleteFlow _calorieEntryDeleteFlow({
+  Future<bool> Function(String entryId)? deleteEntryById,
+  Future<bool> Function(String itemId, int amount)? restoreConsumedItem,
+  Future<bool> Function(String itemId, int amount, {DateTime? consumedAt})?
+  rollbackRestoredItem,
+  Future<bool> Function(String itemId)? sourceInventoryItemExists,
+  Future<bool> Function({required String mealId, required int portions})?
+  restorePreparedMealPortions,
+  Future<bool> Function({
+    required String mealId,
+    required int discardedPortions,
+  })?
+  rollbackRestoredPreparedMeal,
+  Future<bool> Function(String mealId)? sourcePreparedMealExists,
+}) {
   return CalorieEntryDeleteFlow(
-    deleteEntryById: (entryId) async => true,
-    restoreConsumedItem: (itemId, amount) async => false,
-    rollbackRestoredItem: (itemId, amount, {consumedAt}) async => true,
+    deleteEntryById: deleteEntryById ?? (entryId) async => true,
+    restoreConsumedItem: restoreConsumedItem ?? (itemId, amount) async => true,
+    rollbackRestoredItem:
+        rollbackRestoredItem ?? (itemId, amount, {consumedAt}) async => true,
+    sourceInventoryItemExists:
+        sourceInventoryItemExists ?? (itemId) async => true,
     restorePreparedMealPortions:
-        ({
-          required mealId,
-          required portions,
-        }) async => false,
+        restorePreparedMealPortions ??
+        ({required mealId, required portions}) async => true,
     rollbackRestoredPreparedMeal:
-        ({
-          required mealId,
-          required discardedPortions,
-        }) async => true,
+        rollbackRestoredPreparedMeal ??
+        ({required mealId, required discardedPortions}) async => true,
+    sourcePreparedMealExists:
+        sourcePreparedMealExists ?? (mealId) async => true,
+  );
+}
+
+CalorieEntryDeleteFlow _restoreFailingDeleteFlow() {
+  return _calorieEntryDeleteFlow(
+    restoreConsumedItem: (itemId, amount) async => false,
+    restorePreparedMealPortions: ({required mealId, required portions}) async =>
+        false,
+  );
+}
+
+CalorieEntryDeleteFlow _sourceDisappearsDeleteFlow() {
+  var sourceChecks = 0;
+  return _calorieEntryDeleteFlow(
+    sourceInventoryItemExists: (itemId) async {
+      sourceChecks += 1;
+      return sourceChecks == 1;
+    },
   );
 }
 
@@ -679,6 +712,110 @@ void main() {
             .onPressed,
         isNotNull,
       );
+    },
+  );
+
+  testWidgets(
+    'details flow deletes diary entry only when inventory source is gone',
+    (tester) async {
+      final existing = _entry(
+        'entry-source-gone',
+        sourceInventoryItemId: 'missing-item',
+        sourceInventoryAmountToRestore: 2,
+      );
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[existing],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository();
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: const <InventoryItem>[],
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+      addTearDown(inventoryRepository.dispose);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          logRepository: logRepository,
+          settingsRepository: settingsRepository,
+          initialLocation: AppRoutes.homeCaloriesEntryDetailsPath(
+            'entry-source-gone',
+          ),
+          additionalOverrides: [
+            inventoryItemRepositoryProvider.overrideWithValue(
+              inventoryRepository,
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Food no longer in inventory'), findsOneWidget);
+      expect(
+        find.text(
+          '"Skyr" is no longer in inventory, so it cannot be returned. '
+          'Delete it from the diary only?',
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Delete from diary'));
+      await tester.pumpAndSettle();
+
+      expect(logRepository.entries, isEmpty);
+      expect(find.text('Calorie entry details'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'details flow asks delete-only when source disappears during restore',
+    (tester) async {
+      final existing = _entry(
+        'entry-source-race',
+        sourceInventoryItemId: 'inventory-1',
+        sourceInventoryAmountToRestore: 2,
+      );
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[existing],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository();
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          logRepository: logRepository,
+          settingsRepository: settingsRepository,
+          initialLocation: AppRoutes.homeCaloriesEntryDetailsPath(
+            'entry-source-race',
+          ),
+          additionalOverrides: [
+            calorieEntryDeleteFlowProvider.overrideWithValue(
+              _sourceDisappearsDeleteFlow(),
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Return to inventory').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Food no longer in inventory'), findsOneWidget);
+
+      await tester.tap(find.text('Delete from diary'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Calorie entry details'), findsNothing);
     },
   );
 
