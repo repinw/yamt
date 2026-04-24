@@ -62,25 +62,29 @@ class MobileDiaryHealthService implements DiaryHealthService {
         .map(_buildActiveEnergySample)
         .whereType<HealthActiveEnergySample>()
         .toList(growable: false);
-    final resolvedWorkouts = workoutPoints
+    final baseWorkouts = workoutPoints
         .map(
-          (point) => _resolveWorkout(
+          (point) => _resolveWorkoutBase(
             point: point,
-            activeEnergySamples: activeEnergySamples,
             userHeightCm: normalizedUserHeightCm,
           ),
         )
         .toList(growable: false);
-    final standaloneActiveEnergyWorkouts = activeEnergyPoints
-        .expand(
-          (point) => _buildStandaloneActiveEnergyWorkouts(
-            point: point,
-            dayStart: dayStart,
-            dayEnd: dayEnd,
-            workouts: resolvedWorkouts,
-          ),
-        )
-        .toList(growable: false);
+    final resolvedWorkouts = _mergeWorkoutCaloriesWithoutDoubleCounting(
+      workouts: baseWorkouts,
+      activeEnergySamples: activeEnergySamples,
+    );
+    final standaloneActiveEnergyWorkouts = <HealthWorkoutSession>[];
+    for (final point in activeEnergyPoints) {
+      standaloneActiveEnergyWorkouts.addAll(
+        await _buildStandaloneActiveEnergyWorkouts(
+          point: point,
+          dayStart: dayStart,
+          dayEnd: dayEnd,
+          workouts: resolvedWorkouts,
+        ),
+      );
+    }
     final workouts = <HealthWorkoutSession>[
       ...resolvedWorkouts,
       ...standaloneActiveEnergyWorkouts,
@@ -100,20 +104,57 @@ class MobileDiaryHealthService implements DiaryHealthService {
     _isConfigured = true;
   }
 
-  HealthWorkoutSession _resolveWorkout({
+  HealthWorkoutSession _resolveWorkoutBase({
     required HealthDataPoint point,
-    required List<HealthActiveEnergySample> activeEnergySamples,
     required double? userHeightCm,
   }) {
-    final workout = _backfillWorkoutSteps(
+    return _backfillWorkoutSteps(
       workout: _buildWorkoutSession(point),
       point: point,
       userHeightCm: userHeightCm,
     );
-    return mergeWorkoutCalories(
-      workout: workout,
-      activeEnergySamples: activeEnergySamples,
-    );
+  }
+
+  List<HealthWorkoutSession> _mergeWorkoutCaloriesWithoutDoubleCounting({
+    required List<HealthWorkoutSession> workouts,
+    required List<HealthActiveEnergySample> activeEnergySamples,
+  }) {
+    final allocatedIntervals = <_DateTimeInterval>[];
+    final orderedWorkouts = workouts.toList(growable: false)
+      ..sort(_compareWorkoutStartThenEnd);
+    final resolvedWorkouts = <HealthWorkoutSession>[];
+
+    for (final workout in orderedWorkouts) {
+      final workoutInterval = _DateTimeInterval(
+        workout.start,
+        workout.endExclusive,
+      );
+      final availableIntervals = _subtractIntervals(
+        intervals: <_DateTimeInterval>[workoutInterval],
+        blockers: allocatedIntervals,
+      );
+      final visibleCalories = _activeEnergyValueForIntervals(
+        samples: activeEnergySamples,
+        intervals: availableIntervals,
+      );
+      final overlappedCalories = _activeEnergyValueForIntervals(
+        samples: activeEnergySamples,
+        intervals: <_DateTimeInterval>[workoutInterval],
+      );
+
+      if (visibleCalories > 0) {
+        resolvedWorkouts.add(
+          workout.copyWith(totalCalories: visibleCalories.round()),
+        );
+      } else if (overlappedCalories > 0) {
+        resolvedWorkouts.add(_copyWorkoutWithTotalCalories(workout, null));
+      } else {
+        resolvedWorkouts.add(workout);
+      }
+      allocatedIntervals.add(workoutInterval);
+    }
+
+    return resolvedWorkouts;
   }
 
   HealthWorkoutSession _buildWorkoutSession(HealthDataPoint point) {
@@ -217,12 +258,12 @@ class MobileDiaryHealthService implements DiaryHealthService {
     );
   }
 
-  List<HealthWorkoutSession> _buildStandaloneActiveEnergyWorkouts({
+  Future<List<HealthWorkoutSession>> _buildStandaloneActiveEnergyWorkouts({
     required HealthDataPoint point,
     required DateTime dayStart,
     required DateTime dayEnd,
     required List<HealthWorkoutSession> workouts,
-  }) {
+  }) async {
     final sample = _buildActiveEnergySample(point);
     if (sample == null) {
       return const <HealthWorkoutSession>[];
@@ -261,13 +302,14 @@ class MobileDiaryHealthService implements DiaryHealthService {
         continue;
       }
       if (overlapStart.isAfter(cursor)) {
-        final standaloneWorkout = _buildStandaloneActiveEnergyWorkoutSegment(
-          point: point,
-          sample: sample,
-          start: cursor,
-          endExclusive: overlapStart,
-          segmentIndex: segmentIndex,
-        );
+        final standaloneWorkout =
+            await _buildStandaloneActiveEnergyWorkoutSegment(
+              point: point,
+              sample: sample,
+              start: cursor,
+              endExclusive: overlapStart,
+              segmentIndex: segmentIndex,
+            );
         if (standaloneWorkout != null) {
           standaloneWorkouts.add(standaloneWorkout);
           segmentIndex += 1;
@@ -282,13 +324,14 @@ class MobileDiaryHealthService implements DiaryHealthService {
     }
 
     if (clippedEnd.isAfter(cursor)) {
-      final standaloneWorkout = _buildStandaloneActiveEnergyWorkoutSegment(
-        point: point,
-        sample: sample,
-        start: cursor,
-        endExclusive: clippedEnd,
-        segmentIndex: segmentIndex,
-      );
+      final standaloneWorkout =
+          await _buildStandaloneActiveEnergyWorkoutSegment(
+            point: point,
+            sample: sample,
+            start: cursor,
+            endExclusive: clippedEnd,
+            segmentIndex: segmentIndex,
+          );
       if (standaloneWorkout != null) {
         standaloneWorkouts.add(standaloneWorkout);
       }
@@ -297,13 +340,13 @@ class MobileDiaryHealthService implements DiaryHealthService {
     return standaloneWorkouts;
   }
 
-  HealthWorkoutSession? _buildStandaloneActiveEnergyWorkoutSegment({
+  Future<HealthWorkoutSession?> _buildStandaloneActiveEnergyWorkoutSegment({
     required HealthDataPoint point,
     required HealthActiveEnergySample sample,
     required DateTime start,
     required DateTime endExclusive,
     required int segmentIndex,
-  }) {
+  }) async {
     final calories = _activeEnergyValueForRange(
       sample: sample,
       start: start,
@@ -312,6 +355,10 @@ class MobileDiaryHealthService implements DiaryHealthService {
     if (calories <= 0) {
       return null;
     }
+    final totalSteps = await _health.getTotalStepsInInterval(
+      start,
+      endExclusive,
+    );
 
     return HealthWorkoutSession(
       id: _standaloneActiveEnergyWorkoutId(
@@ -325,7 +372,7 @@ class MobileDiaryHealthService implements DiaryHealthService {
       activityLabel: null,
       sourceName: point.sourceName.isEmpty ? null : point.sourceName,
       totalCalories: calories.round(),
-      totalSteps: null,
+      totalSteps: _positiveStepCount(totalSteps),
     );
   }
 
@@ -338,26 +385,6 @@ class MobileDiaryHealthService implements DiaryHealthService {
         ? point.uuid
         : '${point.sourceId}:${start.toUtc().millisecondsSinceEpoch}';
     return 'active-energy:$baseId:$segmentIndex';
-  }
-
-  double _activeEnergyValueForRange({
-    required HealthActiveEnergySample sample,
-    required DateTime start,
-    required DateTime endExclusive,
-  }) {
-    final sampleDurationMs = sample.endAt
-        .difference(sample.startAt)
-        .inMilliseconds;
-    if (sampleDurationMs <= 0) {
-      return sample.numericValue.toDouble();
-    }
-
-    final overlapMs = endExclusive.difference(start).inMilliseconds;
-    if (overlapMs <= 0) {
-      return 0;
-    }
-
-    return sample.numericValue.toDouble() * overlapMs / sampleDurationMs;
   }
 
   int? _estimateStepsFromWorkoutDistance(
@@ -454,4 +481,115 @@ double? _normalizeUserHeightCm(double? userHeightCm) {
     _minPersonalizedHeightCm,
     _maxPersonalizedHeightCm,
   );
+}
+
+double _activeEnergyValueForRange({
+  required HealthActiveEnergySample sample,
+  required DateTime start,
+  required DateTime endExclusive,
+}) {
+  final overlapStart = start.isAfter(sample.startAt) ? start : sample.startAt;
+  final overlapEnd = endExclusive.isBefore(sample.endAt)
+      ? endExclusive
+      : sample.endAt;
+  if (!overlapEnd.isAfter(overlapStart)) {
+    return 0;
+  }
+
+  final sampleDurationMs = sample.endAt
+      .difference(sample.startAt)
+      .inMilliseconds;
+  if (sampleDurationMs <= 0) {
+    return sample.numericValue.toDouble();
+  }
+
+  final overlapMs = overlapEnd.difference(overlapStart).inMilliseconds;
+  if (overlapMs <= 0) {
+    return 0;
+  }
+
+  return sample.numericValue.toDouble() * overlapMs / sampleDurationMs;
+}
+
+int _compareWorkoutStartThenEnd(
+  HealthWorkoutSession left,
+  HealthWorkoutSession right,
+) {
+  final startComparison = left.start.compareTo(right.start);
+  if (startComparison != 0) {
+    return startComparison;
+  }
+  return left.endExclusive.compareTo(right.endExclusive);
+}
+
+HealthWorkoutSession _copyWorkoutWithTotalCalories(
+  HealthWorkoutSession workout,
+  int? totalCalories,
+) {
+  return HealthWorkoutSession(
+    id: workout.id,
+    start: workout.start,
+    endExclusive: workout.endExclusive,
+    durationMinutes: workout.durationMinutes,
+    activityLabel: workout.activityLabel,
+    sourceName: workout.sourceName,
+    totalCalories: totalCalories,
+    totalSteps: workout.totalSteps,
+  );
+}
+
+double _activeEnergyValueForIntervals({
+  required List<HealthActiveEnergySample> samples,
+  required List<_DateTimeInterval> intervals,
+}) {
+  var total = 0.0;
+  for (final sample in samples) {
+    for (final interval in intervals) {
+      total += _activeEnergyValueForRange(
+        sample: sample,
+        start: interval.start,
+        endExclusive: interval.endExclusive,
+      );
+    }
+  }
+  return total;
+}
+
+List<_DateTimeInterval> _subtractIntervals({
+  required List<_DateTimeInterval> intervals,
+  required List<_DateTimeInterval> blockers,
+}) {
+  var remaining = intervals;
+  for (final blocker in blockers) {
+    remaining = remaining
+        .expand((interval) => interval.subtract(blocker))
+        .toList(growable: false);
+  }
+  return remaining;
+}
+
+class _DateTimeInterval {
+  const _DateTimeInterval(this.start, this.endExclusive);
+
+  final DateTime start;
+  final DateTime endExclusive;
+
+  List<_DateTimeInterval> subtract(_DateTimeInterval blocker) {
+    final overlapStart = blocker.start.isAfter(start) ? blocker.start : start;
+    final overlapEnd = blocker.endExclusive.isBefore(endExclusive)
+        ? blocker.endExclusive
+        : endExclusive;
+    if (!overlapEnd.isAfter(overlapStart)) {
+      return <_DateTimeInterval>[this];
+    }
+
+    final remaining = <_DateTimeInterval>[];
+    if (overlapStart.isAfter(start)) {
+      remaining.add(_DateTimeInterval(start, overlapStart));
+    }
+    if (endExclusive.isAfter(overlapEnd)) {
+      remaining.add(_DateTimeInterval(overlapEnd, endExclusive));
+    }
+    return remaining;
+  }
 }
