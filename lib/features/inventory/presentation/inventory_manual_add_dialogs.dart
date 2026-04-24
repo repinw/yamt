@@ -250,13 +250,7 @@ class _ManualEatAmountDialogState extends State<_ManualEatAmountDialog> {
   }
 
   String? _validateAmount(String? value) {
-    final parsed = parseInventoryAmountInput(
-      rawValue: value ?? '',
-      unit: _selectedUnit,
-      scale: _selectedUnit == InventoryAmountUnit.piece
-          ? inventoryPieceAmountScale
-          : 1,
-    );
+    final parsed = _parseAmount(value ?? '');
     if (parsed == null || parsed < 1) {
       return AppLocalizations.of(context)!.inventoryReceiptReviewInvalidNumber;
     }
@@ -269,13 +263,7 @@ class _ManualEatAmountDialogState extends State<_ManualEatAmountDialog> {
       return;
     }
 
-    final parsed = parseInventoryAmountInput(
-      rawValue: _amountController.text,
-      unit: _selectedUnit,
-      scale: _selectedUnit == InventoryAmountUnit.piece
-          ? inventoryPieceAmountScale
-          : 1,
-    );
+    final parsed = _parseAmount(_amountController.text);
     if (parsed == null) {
       return;
     }
@@ -285,6 +273,16 @@ class _ManualEatAmountDialogState extends State<_ManualEatAmountDialog> {
         amount: parsed,
         unit: _selectedUnit,
       ),
+    );
+  }
+
+  int? _parseAmount(String text) {
+    return parseInventoryAmountInput(
+      rawValue: text,
+      unit: _selectedUnit,
+      scale: _selectedUnit == InventoryAmountUnit.piece
+          ? inventoryPieceAmountScale
+          : 1,
     );
   }
 
