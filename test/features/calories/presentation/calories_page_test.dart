@@ -24,10 +24,10 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
-import 'package:yamt/features/calories/presentation/'
-    'calorie_health_trends_page_keys.dart';
 import 'package:yamt/features/calories/presentation/burn_week_mock_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
+import 'package:yamt/features/calories/presentation/'
+    'calorie_health_trends_page_keys.dart';
 import 'package:yamt/features/calories/presentation/calories_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';

@@ -255,7 +255,6 @@ void main() {
               entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
               storeName: 'Store',
               quantity: 1,
-              initialQuantity: 1,
               weight: '500g',
             )
             .withDerivedAmount(weight: '500g', quantity: 1)

@@ -449,7 +449,7 @@ void main() {
 
   test('updateItem rejects fully consumed items', () async {
     final consumedAt = DateTime.parse('2026-04-07T13:00:00Z');
-    final original = _item(id: 'a', quantity: 0, initialQuantity: 1).copyWith(
+    final original = _item(id: 'a', quantity: 0).copyWith(
       lastConsumedAt: consumedAt,
     );
     final repository = _FakeInventoryItemRepository(
