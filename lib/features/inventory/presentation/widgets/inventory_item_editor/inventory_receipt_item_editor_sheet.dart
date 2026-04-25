@@ -198,14 +198,14 @@ class _InventoryReceiptItemEditorSheetState
               name: ReceiptItemEditorFormFieldName.isDeposit,
               fallback: false,
             )
-          : false,
+          : widget.item.isDeposit,
       isDiscount: widget.showReviewOnlyFields
           ? _readFormValue(
               values: values,
               name: ReceiptItemEditorFormFieldName.isDiscount,
               fallback: false,
             )
-          : false,
+          : widget.item.isDiscount,
     );
   }
 

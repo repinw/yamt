@@ -7,7 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
   testWidgets(
-    'inventory mode hides receipt-only fields without dropping discounts',
+    'inventory mode hides receipt-only fields without dropping hidden values',
     (tester) async {
       InventoryItem? editedItem;
       final sourceItem = InventoryItem.create(
@@ -66,8 +66,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(editedItem, isNotNull);
-      expect(editedItem?.isDeposit, isFalse);
-      expect(editedItem?.isDiscount, isFalse);
+      expect(editedItem?.isDeposit, isTrue);
+      expect(editedItem?.isDiscount, isTrue);
       expect(editedItem?.discounts, sourceItem.discounts);
     },
   );
