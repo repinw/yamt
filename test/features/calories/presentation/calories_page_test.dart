@@ -24,6 +24,8 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
+import 'package:yamt/features/calories/presentation/'
+    'calorie_health_trends_page_keys.dart';
 import 'package:yamt/features/calories/presentation/burn_week_mock_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/calories_page.dart';
@@ -40,13 +42,17 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/calories/provider/'
     'calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
 import 'package:yamt/features/health/provider/'
     'health_connection_service_provider.dart';
+import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
 import 'package:yamt/features/health/provider/'
     'manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -191,6 +197,21 @@ List<Override> _weeklyCheckInOverrides({
   ];
 }
 
+List<Override> _todayWeightPromptOverrides({
+  required DateTime today,
+  required FakeManualHealthWeightRepository manualRepository,
+  required MemoryAppPreferences preferences,
+}) {
+  return <Override>[
+    appPreferencesProvider.overrideWithValue(preferences),
+    calorieBalanceNowProvider.overrideWithValue(() => today),
+    healthConnectionServiceProvider.overrideWithValue(
+      FakeHealthConnectionService(const HealthConnectionStatus.unsupported()),
+    ),
+    manualHealthWeightRepositoryProvider.overrideWithValue(manualRepository),
+  ];
+}
+
 @Dependencies([
   calorieEntryDeleteFlow,
   InventoryItemsController,
@@ -201,6 +222,7 @@ Widget _buildHarness({
   required FakeCalorieSettingsRepository settingsRepository,
   List<Override> overrides = const <Override>[],
   DateTime? referenceNow,
+  DateTime? initialSelectedDay,
   bool authenticated = true,
 }) {
   final router = GoRouter(
@@ -251,14 +273,16 @@ Widget _buildHarness({
         authStateChangesProvider.overrideWith(
           (ref) => Stream<User?>.value(user),
         ),
-      if (referenceNow != null) ...[
+      if (referenceNow != null || initialSelectedDay != null)
         calorieDayControllerProvider.overrideWith(
-          () => _TestCalorieDayController(referenceNow),
+          () => _TestCalorieDayController(
+            initialSelectedDay ?? referenceNow!,
+          ),
         ),
+      if (referenceNow != null)
         calorieVisibleWindowControllerProvider.overrideWith(
           () => _TestCalorieVisibleWindowController(referenceNow),
         ),
-      ],
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       ...overrides,
@@ -583,6 +607,316 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Skyr'), findsOneWidget);
+  });
+
+  testWidgets('shows today weight prompt when today has no weight', (
+    tester,
+  ) async {
+    final today = DateTime(2026, 3, 20);
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[],
+    );
+    final preferences = MemoryAppPreferences();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        referenceNow: today,
+        overrides: _todayWeightPromptOverrides(
+          today: today,
+          manualRepository: manualRepository,
+          preferences: preferences,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.todayWeightPromptCard),
+    );
+
+    expect(find.byKey(CaloriesPageKeys.todayWeightPromptCard), findsOneWidget);
+    expect(find.text("Add today's weight?"), findsOneWidget);
+  });
+
+  testWidgets('today weight prompt saves weight through existing dialog', (
+    tester,
+  ) async {
+    final today = DateTime(2026, 3, 20);
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[],
+    );
+    final preferences = MemoryAppPreferences();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        referenceNow: today,
+        overrides: _todayWeightPromptOverrides(
+          today: today,
+          manualRepository: manualRepository,
+          preferences: preferences,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.todayWeightPromptCard),
+    );
+
+    await tester.tap(find.byKey(CaloriesPageKeys.todayWeightPromptAddButton));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(CalorieHealthTrendsPageKeys.weightDialogField),
+      '72.4',
+    );
+    await tester.tap(
+      find.byKey(CalorieHealthTrendsPageKeys.weightDialogSaveButton),
+    );
+    await tester.pumpAndSettle();
+
+    expect(manualRepository.entries, hasLength(1));
+    expect(manualRepository.entries.single.day, DateTime(2026, 3, 20));
+    expect(manualRepository.entries.single.weightKg, 72.4);
+    expect(find.byKey(CaloriesPageKeys.todayWeightPromptCard), findsNothing);
+  });
+
+  testWidgets('today weight prompt dismissal persists for today', (
+    tester,
+  ) async {
+    final today = DateTime(2026, 3, 20);
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[],
+    );
+    final preferences = MemoryAppPreferences();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        referenceNow: today,
+        overrides: _todayWeightPromptOverrides(
+          today: today,
+          manualRepository: manualRepository,
+          preferences: preferences,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.todayWeightPromptCard),
+    );
+
+    await tester.tap(
+      find.byKey(CaloriesPageKeys.todayWeightPromptDismissButton),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CaloriesPageKeys.todayWeightPromptCard), findsNothing);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        referenceNow: today,
+        overrides: _todayWeightPromptOverrides(
+          today: today,
+          manualRepository: manualRepository,
+          preferences: preferences,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CaloriesPageKeys.todayWeightPromptCard), findsNothing);
+  });
+
+  testWidgets('today weight prompt hides for past selected days', (
+    tester,
+  ) async {
+    final today = DateTime(2026, 3, 20);
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[],
+    );
+    final preferences = MemoryAppPreferences();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        referenceNow: today,
+        initialSelectedDay: DateTime(2026, 3, 19),
+        overrides: _todayWeightPromptOverrides(
+          today: today,
+          manualRepository: manualRepository,
+          preferences: preferences,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CaloriesPageKeys.todayWeightPromptCard), findsNothing);
+  });
+
+  testWidgets('today weight prompt hides when today already has weight', (
+    tester,
+  ) async {
+    final today = DateTime(2026, 3, 20);
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[
+        ManualHealthWeightEntry(day: today, weightKg: 72.1),
+      ],
+    );
+    final preferences = MemoryAppPreferences();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        referenceNow: today,
+        overrides: _todayWeightPromptOverrides(
+          today: today,
+          manualRepository: manualRepository,
+          preferences: preferences,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CaloriesPageKeys.todayWeightPromptCard), findsNothing);
+  });
+
+  testWidgets('today weight prompt hides when health has today weight', (
+    tester,
+  ) async {
+    final today = DateTime(2026, 3, 20);
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[],
+    );
+    final preferences = MemoryAppPreferences();
+    const readyStatus = HealthConnectionStatus(
+      platform: HealthPlatform.android,
+      healthConnectAvailability: HealthConnectAvailability.available,
+      permissionState: HealthPermissionState.granted,
+      historyAccess: HealthHistoryAccess.granted,
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        referenceNow: today,
+        overrides: <Override>[
+          appPreferencesProvider.overrideWithValue(preferences),
+          calorieBalanceNowProvider.overrideWithValue(() => today),
+          healthConnectionServiceProvider.overrideWithValue(
+            FakeHealthConnectionService(readyStatus),
+          ),
+          diaryHealthServiceProvider.overrideWithValue(
+            FakeDiaryHealthService(const <String, DiaryHealthDayData>{}),
+          ),
+          healthWeightServiceProvider.overrideWithValue(
+            FakeHealthWeightService(<HealthWeightSample>[
+              HealthWeightSample(
+                recordedAt: DateTime(2026, 3, 20, 7),
+                weightKg: 72.1,
+              ),
+            ]),
+          ),
+          manualHealthWeightRepositoryProvider.overrideWithValue(
+            manualRepository,
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CaloriesPageKeys.todayWeightPromptCard), findsNothing);
+  });
+
+  testWidgets('today weight prompt hides behind missing-weight check-in hint', (
+    tester,
+  ) async {
+    final today = DateTime(2026, 3, 20);
+    final logRepository = FakeCalorieLogRepository();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[],
+    );
+    final preferences = MemoryAppPreferences();
+    final pending = PendingCalorieGoalWeeklyCheckIn(
+      windowStartDate: DateTime(2026, 3, 13),
+      windowEndDate: DateTime(2026, 3, 19),
+      dueDate: today,
+    );
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        referenceNow: today,
+        overrides: <Override>[
+          ..._todayWeightPromptOverrides(
+            today: today,
+            manualRepository: manualRepository,
+            preferences: preferences,
+          ),
+          calorieWeeklyCheckInViewModelProvider.overrideWith((ref) async {
+            return CalorieWeeklyCheckInViewModel(
+              pendingWeeklyCheckIn: pending,
+              shouldAutoOpen: false,
+              days: const <CalorieWeeklyCheckInWindowDay>[],
+              calculation: null,
+              blockedReason:
+                  CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight,
+              missingIntakeDays: const <DateTime>[],
+              missingWeightDays: <DateTime>[pending.windowStartDate],
+              freshness: CalorieLearnedTdeeFreshness.none,
+              latestLearnedTdeeAt: null,
+              lowConfidence: false,
+            );
+          }),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _scrollUntilVisible(
+      tester,
+      find.byKey(CaloriesPageKeys.weeklyCheckInHintCard),
+    );
+
+    expect(find.byKey(CaloriesPageKeys.weeklyCheckInHintCard), findsOneWidget);
+    expect(find.byKey(CaloriesPageKeys.todayWeightPromptCard), findsNothing);
   });
 
   testWidgets('opens Burn Week mock from diary button', (tester) async {

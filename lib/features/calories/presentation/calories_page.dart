@@ -19,6 +19,8 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/calories_page_logic.dart';
 import 'package:yamt/features/calories/presentation/meal_type_l10n.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_today_weight_prompt_card.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_weekly_checkin_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_weekly_checkin_hint_card.dart';
@@ -191,6 +193,11 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
           proteinLabel: l10n.caloriesProteinLabel,
           carbsLabel: l10n.caloriesCarbsLabel,
           fatLabel: l10n.caloriesFatLabel,
+        ),
+        CalorieTodayWeightPromptCard(
+          selectedDay: selectedDay,
+          referenceNow: referenceNow,
+          weeklyCheckIn: weeklyCheckIn,
         ),
         if (kDebugMode) ...<Widget>[
           const SizedBox(height: AppSpacing.md),

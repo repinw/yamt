@@ -724,6 +724,11 @@
   "caloriesCalculatorWeightEmpty": "Bitte gib dein Gewicht ein.",
   "caloriesCalculatorWeightInvalid":
       "Bitte gib ein gültiges Gewicht ein.",
+  "caloriesTodayWeightPromptTitle": "Gewicht für heute eintragen?",
+  "caloriesTodayWeightPromptBody":
+      "Optional: Dein heutiges Gewicht hilft, Gesundheitstrends und Wochen-Check-ins genauer zu machen.",
+  "caloriesTodayWeightPromptAddAction": "Gewicht eintragen",
+  "caloriesTodayWeightPromptDismissAction": "Nicht jetzt",
   "caloriesCalculatorHeightLabel": "Größe (cm)",
   "caloriesCalculatorHeightEmpty": "Bitte gib deine Größe ein.",
   "caloriesCalculatorHeightInvalid":

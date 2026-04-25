@@ -2675,6 +2675,30 @@ abstract class AppLocalizations {
   /// **'Please enter a valid weight.'**
   String get caloriesCalculatorWeightInvalid;
 
+  /// No description provided for @caloriesTodayWeightPromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add today\'s weight?'**
+  String get caloriesTodayWeightPromptTitle;
+
+  /// No description provided for @caloriesTodayWeightPromptBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional: today\'s weight helps health trends and weekly check-ins stay accurate.'**
+  String get caloriesTodayWeightPromptBody;
+
+  /// No description provided for @caloriesTodayWeightPromptAddAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add weight'**
+  String get caloriesTodayWeightPromptAddAction;
+
+  /// No description provided for @caloriesTodayWeightPromptDismissAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get caloriesTodayWeightPromptDismissAction;
+
   /// No description provided for @caloriesCalculatorHeightLabel.
   ///
   /// In en, this message translates to:
