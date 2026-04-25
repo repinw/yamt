@@ -871,7 +871,7 @@ void main() {
     },
   );
 
-  testWidgets('edit action currently shows not-implemented feedback', (
+  testWidgets('edit action opens the inventory item editor', (
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
@@ -888,7 +888,11 @@ void main() {
     await tester.pumpAndSettle();
     await _tapVisible(tester, find.text('Edit'));
 
-    expect(find.text('Not implemented yet'), findsOneWidget);
+    expect(find.text('Edit inventory item'), findsOneWidget);
+    expect(find.text('Discounts'), findsNothing);
+    expect(find.text('Is deposit item'), findsNothing);
+    expect(find.text('Is discount item'), findsNothing);
+    expect(find.text('Not implemented yet'), findsNothing);
   });
 
   testWidgets('remove action can delete item and restore it via undo', (
