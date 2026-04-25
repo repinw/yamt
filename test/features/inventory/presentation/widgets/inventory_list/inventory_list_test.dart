@@ -7,6 +7,7 @@ import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/household/provider/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -37,12 +38,20 @@ InventoryItem _item({
   );
 }
 
-@Dependencies([inventoryItemRepository, InventoryItemsController])
+@Dependencies([
+  inventoryItemRepository,
+  InventoryItemsController,
+  preparedMealImagePicker,
+])
 Widget _buildTestApp({required List<InventoryItem> items}) {
   return _buildInventoryTestApp(items: items);
 }
 
-@Dependencies([inventoryItemRepository, InventoryItemsController])
+@Dependencies([
+  inventoryItemRepository,
+  InventoryItemsController,
+  preparedMealImagePicker,
+])
 Widget _buildInventoryTestApp({
   required List<InventoryItem> items,
   List<PreparedMeal> preparedMeals = const <PreparedMeal>[],
@@ -91,7 +100,11 @@ Widget _buildInventoryTestApp({
   );
 }
 
-@Dependencies([inventoryItemRepository, InventoryItemsController])
+@Dependencies([
+  inventoryItemRepository,
+  InventoryItemsController,
+  preparedMealImagePicker,
+])
 Widget _buildInventoryListBody({
   required List<InventoryItem> items,
   required List<PreparedMeal> preparedMeals,
@@ -160,7 +173,7 @@ List<String> _visibleInventoryItemNames(WidgetTester tester) {
       .toList(growable: false);
 }
 
-@Dependencies([InventoryItemsController])
+@Dependencies([InventoryItemsController, preparedMealImagePicker])
 List<String> _visiblePreparedMealNames(WidgetTester tester) {
   return tester
       .widgetList<PreparedMealCard>(find.byType(PreparedMealCard))
@@ -258,7 +271,11 @@ class _StaticInventoryItemsController extends InventoryItemsController {
   List<InventoryItem> build() => _items;
 }
 
-@Dependencies([inventoryItemRepository, InventoryItemsController])
+@Dependencies([
+  inventoryItemRepository,
+  InventoryItemsController,
+  preparedMealImagePicker,
+])
 class _InventoryListPersistenceHarness extends StatefulWidget {
   const _InventoryListPersistenceHarness({
     required this.items,
@@ -303,7 +320,11 @@ class _InventoryListPersistenceHarnessState
   }
 }
 
-@Dependencies([inventoryItemRepository, InventoryItemsController])
+@Dependencies([
+  inventoryItemRepository,
+  InventoryItemsController,
+  preparedMealImagePicker,
+])
 void main() {
   testWidgets('filter switch updates in sheet and hides fully consumed items', (
     tester,

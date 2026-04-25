@@ -1,9 +1,13 @@
+// Test harness overrides scoped provider without full app scope.
+// ignore_for_file: scoped_providers_should_specify_dependencies
+
 import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_image_picker_field.dart';
@@ -11,6 +15,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../../support/fake_prepared_meal_image_picker.dart';
 
+@Dependencies([preparedMealImagePicker])
 void main() {
   testWidgets('sets loading while picking and forwards picked bytes', (
     tester,
@@ -92,6 +97,7 @@ void main() {
   });
 }
 
+@Dependencies([preparedMealImagePicker])
 class _ImagePickerMixinHarness extends ConsumerStatefulWidget {
   const _ImagePickerMixinHarness({required this.onPicked});
 
@@ -116,12 +122,14 @@ class _ImagePickerMixinHarnessState
           Text('picked:${_pickedBytes != null}'),
           TextButton(
             onPressed: () {
-              pickPreparedMealImage(
-                source: PreparedMealImageSource.file,
-                onPicked: (imageBytes) {
-                  _pickedBytes = imageBytes;
-                  widget.onPicked(imageBytes);
-                },
+              unawaited(
+                pickPreparedMealImage(
+                  source: PreparedMealImageSource.file,
+                  onPicked: (imageBytes) {
+                    _pickedBytes = imageBytes;
+                    widget.onPicked(imageBytes);
+                  },
+                ),
               );
             },
             child: const Text('Pick file'),
@@ -133,7 +141,7 @@ class _ImagePickerMixinHarnessState
 }
 
 class _ControlledPreparedMealImagePicker implements PreparedMealImagePicker {
-  Completer<Uint8List?>? _fileCompleter;
+  late Completer<Uint8List?> _fileCompleter;
 
   @override
   bool get supportsCamera => false;
@@ -149,11 +157,11 @@ class _ControlledPreparedMealImagePicker implements PreparedMealImagePicker {
   }
 
   void completeFilePick(Uint8List? bytes) {
-    _fileCompleter!.complete(bytes);
+    _fileCompleter.complete(bytes);
   }
 
   void failFilePick(Object error) {
-    _fileCompleter!.completeError(error);
+    _fileCompleter.completeError(error);
   }
 }
 

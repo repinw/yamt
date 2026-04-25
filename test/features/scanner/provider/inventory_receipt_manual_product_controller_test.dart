@@ -334,8 +334,7 @@ void main() {
       );
       addTearDown(subscription.close);
 
-      final notifier = container.read(provider.notifier);
-      notifier.updateKcalText('700');
+      final notifier = container.read(provider.notifier)..updateKcalText('700');
 
       final payload = notifier.buildSavePayload();
 
@@ -383,9 +382,9 @@ void main() {
     );
     addTearDown(subscription.close);
 
-    final notifier = container.read(provider.notifier);
-    notifier.updateNameText('Mein Oel');
-    notifier.updateBrandText('Hausmarke');
+    final notifier = container.read(provider.notifier)
+      ..updateNameText('Mein Oel')
+      ..updateBrandText('Hausmarke');
 
     final payload = notifier.buildSavePayload();
 
@@ -426,14 +425,14 @@ void main() {
     );
     addTearDown(subscription.close);
 
-    final notifier = container.read(provider.notifier);
-    notifier.updateKcalText('0');
-    notifier.updateSaturatedFatText('0');
-    notifier.updateProteinText('0');
-    notifier.updateCarbsText('0');
-    notifier.updateSugarText('0');
-    notifier.updateFatText('0');
-    notifier.updateSaltText('0');
+    final notifier = container.read(provider.notifier)
+      ..updateKcalText('0')
+      ..updateSaturatedFatText('0')
+      ..updateProteinText('0')
+      ..updateCarbsText('0')
+      ..updateSugarText('0')
+      ..updateFatText('0')
+      ..updateSaltText('0');
 
     final payload = notifier.buildSavePayload();
 
@@ -477,8 +476,7 @@ void main() {
     );
     addTearDown(subscription.close);
 
-    final notifier = container.read(provider.notifier);
-    notifier.startAddingOptionalNutrition();
+    container.read(provider.notifier).startAddingOptionalNutrition();
     final state = container.read(provider);
 
     expect(state.availableOptionalNutritionTypes, const [
@@ -557,17 +555,19 @@ void main() {
       expect(state.nameText, 'Olivenoel');
       expect(state.brandText, 'Gut Bio');
 
-      notifier.startAddingOptionalNutrition();
-      notifier.updateOptionalNutritionValueText('0');
-      notifier.applyOptionalNutrition();
+      notifier
+        ..startAddingOptionalNutrition()
+        ..updateOptionalNutritionValueText('0')
+        ..applyOptionalNutrition();
       final polyState = container.read(provider);
       expect(polyState.showPolyunsaturatedFatField, isTrue);
       expect(polyState.polyunsaturatedFatText, '0');
       expect(polyState.showFiberField, isFalse);
 
-      notifier.startAddingOptionalNutrition();
-      notifier.updateOptionalNutritionValueText('1');
-      notifier.applyOptionalNutrition();
+      notifier
+        ..startAddingOptionalNutrition()
+        ..updateOptionalNutritionValueText('1')
+        ..applyOptionalNutrition();
       final fiberState = container.read(provider);
       expect(fiberState.showFiberField, isTrue);
       expect(fiberState.fiberText, '1');

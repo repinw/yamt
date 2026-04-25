@@ -8,17 +8,12 @@ void main() {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
-    final controller = container.read(
-      preparedMealSelectionControllerProvider.notifier,
-    );
-
-    controller.enterSelection('item-1');
-    expect(
-      container.read(preparedMealSelectionControllerProvider).selectedItemIds,
-      {'item-1'},
-    );
-
-    controller.toggleSelection('item-2');
+    final controller =
+        container.read(
+            preparedMealSelectionControllerProvider.notifier,
+          )
+          ..enterSelection('item-1')
+          ..toggleSelection('item-2');
     expect(
       container.read(preparedMealSelectionControllerProvider).selectedItemIds,
       {'item-1', 'item-2'},

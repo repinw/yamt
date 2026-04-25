@@ -1,6 +1,6 @@
 part of 'prepared_meal_card.dart';
 
-@Dependencies([InventoryItemsController])
+@Dependencies([InventoryItemsController, preparedMealImagePicker])
 mixin _PreparedMealCardActions on ConsumerState<PreparedMealCard> {
   bool get expandedState;
   set expandedState(bool value);

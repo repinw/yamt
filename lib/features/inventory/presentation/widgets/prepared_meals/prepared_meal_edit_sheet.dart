@@ -2,9 +2,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_image_picker_field.dart';
@@ -32,6 +34,7 @@ class PreparedMealEditSheetResult {
 }
 
 /// Show prepared meal edit sheet.
+@Dependencies([preparedMealImagePicker])
 Future<PreparedMealEditSheetResult?> showPreparedMealEditSheet({
   required BuildContext context,
   required PreparedMeal meal,
@@ -45,6 +48,7 @@ Future<PreparedMealEditSheetResult?> showPreparedMealEditSheet({
 }
 
 /// Defines prepared meal edit sheet.
+@Dependencies([preparedMealImagePicker])
 class PreparedMealEditSheet extends ConsumerStatefulWidget {
   /// The prepared meal edit sheet.
   const PreparedMealEditSheet({required this.meal, super.key});

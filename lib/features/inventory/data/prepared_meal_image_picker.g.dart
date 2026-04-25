@@ -31,8 +31,8 @@ final class PreparedMealImagePickerProvider
         retry: null,
         name: r'preparedMealImagePickerProvider',
         isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
+        dependencies: <ProviderOrFamily>[],
+        $allTransitiveDependencies: <ProviderOrFamily>[],
       );
 
   @override
@@ -59,4 +59,4 @@ final class PreparedMealImagePickerProvider
 }
 
 String _$preparedMealImagePickerHash() =>
-    r'e42c0d5f7528c5727d0924bf8914ed84fdb1c1dc';
+    r'0bcc751df47c7afcbb6664dc89f402223a581e75';

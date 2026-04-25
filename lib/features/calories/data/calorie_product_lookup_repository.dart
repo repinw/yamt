@@ -1,3 +1,6 @@
+// Lookup client stays class-based for provider overrides and test fakes.
+// ignore_for_file: one_member_abstracts
+
 import 'dart:async';
 import 'dart:developer' show log;
 

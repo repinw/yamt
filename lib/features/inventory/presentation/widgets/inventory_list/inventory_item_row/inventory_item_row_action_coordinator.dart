@@ -19,6 +19,7 @@ class InventoryItemRowActionCoordinator {
   final bool Function() isWorking;
 
   /// The set working.
+  // ignore: avoid_positional_boolean_parameters
   final void Function(bool isWorking) setWorking;
 
   /// Whether mounted.

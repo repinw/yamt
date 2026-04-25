@@ -1,3 +1,6 @@
+// Image picker is reached through provider wiring and widget tests.
+// ignore_for_file: unreachable_from_main
+
 import 'dart:developer' show log;
 import 'dart:isolate';
 import 'dart:math' as math;
@@ -60,7 +63,7 @@ abstract interface class PreparedMealImagePicker {
 }
 
 /// Prepared meal image picker.
-@riverpod
+@Riverpod(dependencies: [])
 PreparedMealImagePicker preparedMealImagePicker(Ref ref) {
   return _DevicePreparedMealImagePicker(
     imagePicker: ImagePicker(),

@@ -15,6 +15,7 @@ import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -53,7 +54,7 @@ part 'prepared_meal_card_pending_ingredient.dart';
 const _preparedMealCardLogName = 'PreparedMealCard';
 
 /// Defines prepared meal card.
-@Dependencies([InventoryItemsController])
+@Dependencies([InventoryItemsController, preparedMealImagePicker])
 class PreparedMealCard extends ConsumerStatefulWidget {
   /// The prepared meal card.
   const PreparedMealCard({
@@ -109,6 +110,8 @@ class PreparedMealCard extends ConsumerStatefulWidget {
   final Future<bool> Function(
     String mealId,
     String name,
+    // Callback mirrors PreparedMealEditSheetResult shape.
+    // ignore: avoid_positional_boolean_parameters
     bool imageChanged,
     Uint8List? imageBytes,
   )

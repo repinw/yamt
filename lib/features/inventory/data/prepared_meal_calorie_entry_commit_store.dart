@@ -1,3 +1,6 @@
+// Commit store stays class-based for provider overrides and test fakes.
+// ignore_for_file: one_member_abstracts
+
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';

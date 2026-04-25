@@ -16,9 +16,9 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_dialogs.dart';
-import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_manual_add_dialogs.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_list/inventory_item_row/inventory_item_eat_sheet.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';

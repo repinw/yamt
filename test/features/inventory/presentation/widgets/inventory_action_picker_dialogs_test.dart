@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -157,7 +159,7 @@ class _DialogHarness extends StatelessWidget {
             body: Center(
               child: TextButton(
                 onPressed: () {
-                  openDialog(context);
+                  unawaited(openDialog(context));
                 },
                 child: Text(triggerLabel),
               ),
