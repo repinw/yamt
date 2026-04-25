@@ -100,7 +100,9 @@ class _SharedReceiptListenerState extends ConsumerState<SharedReceiptListener> {
     String path;
     try {
       path = ref.read(appRouterProvider).state.uri.path;
-    } on Object {
+      // Router state may be unavailable while the listener starts.
+      // ignore: avoid_catching_errors
+    } on StateError {
       return false;
     }
 
