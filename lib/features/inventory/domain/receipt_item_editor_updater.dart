@@ -1,7 +1,7 @@
 import 'package:yamt/core/utils/store_name_normalizer.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/domain/receipt_item_input_parser.dart';
-import 'package:yamt/features/scanner/domain/'
+import 'package:yamt/features/inventory/domain/receipt_item_input_parser.dart';
+import 'package:yamt/features/inventory/domain/'
     'receipt_item_quantity_normalizer.dart';
 
 /// Defines receipt item editor apply error.

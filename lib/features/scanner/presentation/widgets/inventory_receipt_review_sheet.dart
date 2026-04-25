@@ -13,6 +13,8 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_item_editor/inventory_receipt_item_editor_sheet.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 import 'package:yamt/features/scanner/domain/'
     'receipt_review_item_processor.dart';
@@ -21,8 +23,6 @@ import 'package:yamt/features/scanner/domain/'
     'receipt_review_weight_confirmation.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
-    'inventory_receipt_item_editor_sheet.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'
     'inventory_receipt_manual_product_page.dart';
 import 'package:yamt/features/scanner/presentation/widgets/'

@@ -2,24 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/domain/receipt_item_editor_updater.dart';
-import 'package:yamt/features/scanner/domain/receipt_item_input_parser.dart';
-import 'package:yamt/features/scanner/domain/'
+import 'package:yamt/features/inventory/domain/receipt_item_editor_updater.dart';
+import 'package:yamt/features/inventory/domain/receipt_item_input_parser.dart';
+import 'package:yamt/features/inventory/domain/'
     'receipt_item_quantity_normalizer.dart';
-import 'package:yamt/features/scanner/presentation/models/receipt_item_editor_draft.dart';
-import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_action_row.dart';
-import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_form_field_metadata.dart';
-import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_form_section.dart';
-import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_weight_unit_fallback_option.dart';
+import 'package:yamt/features/inventory/presentation/models/receipt_item_editor_draft.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_action_row.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_form_field_metadata.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_form_section.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_weight_unit_fallback_option.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory receipt item editor sheet.
 class InventoryReceiptItemEditorSheet extends StatefulWidget {
   /// The inventory receipt item editor sheet.
-  const InventoryReceiptItemEditorSheet({required this.item, super.key});
+  const InventoryReceiptItemEditorSheet({
+    required this.item,
+    super.key,
+    this.title,
+    this.showDiscountFields = true,
+    this.showReviewOnlyFields = true,
+  });
 
   /// The item.
   final InventoryItem item;
+
+  /// Optional sheet title override.
+  final String? title;
+
+  /// Whether to show receipt discount fields.
+  final bool showDiscountFields;
+
+  /// Whether to show receipt review-only classification fields.
+  final bool showReviewOnlyFields;
 
   @override
   State<InventoryReceiptItemEditorSheet> createState() =>
@@ -72,7 +87,7 @@ class _InventoryReceiptItemEditorSheetState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.inventoryReceiptReviewEditTitle,
+              widget.title ?? l10n.inventoryReceiptReviewEditTitle,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -86,6 +101,8 @@ class _InventoryReceiptItemEditorSheetState
                 initialDiscountEntries: _discountEntries,
                 onDiscountEntriesChanged: _onDiscountEntriesChanged,
                 discountsErrorText: _discountsErrorText,
+                showDiscountFields: widget.showDiscountFields,
+                showReviewOnlyFields: widget.showReviewOnlyFields,
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -175,16 +192,20 @@ class _InventoryReceiptItemEditorSheetState
       ),
       discountEntries: List<MapEntry<String, String>>.from(_discountEntries),
       receiptDate: widget.item.receiptDate,
-      isDeposit: _readFormValue(
-        values: values,
-        name: ReceiptItemEditorFormFieldName.isDeposit,
-        fallback: false,
-      ),
-      isDiscount: _readFormValue(
-        values: values,
-        name: ReceiptItemEditorFormFieldName.isDiscount,
-        fallback: false,
-      ),
+      isDeposit: widget.showReviewOnlyFields
+          ? _readFormValue(
+              values: values,
+              name: ReceiptItemEditorFormFieldName.isDeposit,
+              fallback: false,
+            )
+          : widget.item.isDeposit,
+      isDiscount: widget.showReviewOnlyFields
+          ? _readFormValue(
+              values: values,
+              name: ReceiptItemEditorFormFieldName.isDiscount,
+              fallback: false,
+            )
+          : widget.item.isDiscount,
     );
   }
 
@@ -319,6 +340,9 @@ class _InventoryReceiptItemEditorSheetState
   }
 
   bool _isReviewOnlySelection() {
+    if (!widget.showReviewOnlyFields) {
+      return false;
+    }
     return _readFormValue(
           values: _currentValues,
           name: ReceiptItemEditorFormFieldName.isDeposit,

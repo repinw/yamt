@@ -245,11 +245,12 @@ void main() {
     'addItem rolls back optimistic state when append returns false',
     () async {
       final existingItem = _item(id: 'a');
-      final repository = _FakeInventoryItemRepository(
-        initialItems: <InventoryItem>[existingItem],
-      )
-        ..emitRealtimeOnAppend = false
-        ..appendShouldFail = true;
+      final repository =
+          _FakeInventoryItemRepository(
+              initialItems: <InventoryItem>[existingItem],
+            )
+            ..emitRealtimeOnAppend = false
+            ..appendShouldFail = true;
       addTearDown(repository.dispose);
 
       final container = ProviderContainer(
@@ -279,11 +280,12 @@ void main() {
 
   test('addItem rolls back optimistic state when append throws', () async {
     final existingItem = _item(id: 'a');
-    final repository = _FakeInventoryItemRepository(
-      initialItems: <InventoryItem>[existingItem],
-    )
-      ..emitRealtimeOnAppend = false
-      ..appendShouldThrow = true;
+    final repository =
+        _FakeInventoryItemRepository(
+            initialItems: <InventoryItem>[existingItem],
+          )
+          ..emitRealtimeOnAppend = false
+          ..appendShouldThrow = true;
     addTearDown(repository.dispose);
 
     final container = ProviderContainer(
@@ -308,6 +310,209 @@ void main() {
       container.read(inventoryItemsControllerProvider).value,
       <InventoryItem>[existingItem],
     );
+  });
+
+  test(
+    'buildInventoryItemEditSaveItem preserves stock for metadata-only edits',
+    () {
+      final consumedAt = DateTime.parse('2026-04-07T13:00:00Z');
+      final currentItem = _item(
+        id: 'a',
+        quantity: 2,
+        initialQuantity: 2,
+        weight: '500g',
+      ).copyWith(lastConsumedAt: consumedAt);
+      final editedItem = currentItem.copyWith(
+        name: 'Edited Milk',
+        storeName: 'Edited Store',
+        initialQuantity: 99,
+        currentAmount: 123,
+        lastConsumedAt: null,
+      );
+
+      final savedItem = buildInventoryItemEditSaveItem(
+        currentItem: currentItem,
+        editedItem: editedItem,
+      );
+
+      expect(savedItem.name, 'Edited Milk');
+      expect(savedItem.storeName, 'Edited Store');
+      expect(savedItem.quantity, currentItem.quantity);
+      expect(savedItem.initialQuantity, currentItem.initialQuantity);
+      expect(savedItem.initialAmount, currentItem.initialAmount);
+      expect(savedItem.currentAmount, currentItem.currentAmount);
+      expect(savedItem.amountScale, currentItem.amountScale);
+      expect(savedItem.amountUnit, currentItem.amountUnit);
+      expect(savedItem.lastConsumedAt, consumedAt);
+    },
+  );
+
+  test('buildInventoryItemEditSaveItem accepts stock definition changes', () {
+    final currentItem = _item(id: 'a', weight: '500g');
+    final quantityChangedItem = currentItem
+        .copyWith(name: 'Two Milks', initialQuantity: 2)
+        .withDerivedAmount(weight: '500g', quantity: 2);
+    final unitChangedItem = currentItem.withDerivedAmount(
+      weight: '500ml',
+      quantity: currentItem.quantity,
+    );
+
+    expect(
+      buildInventoryItemEditSaveItem(
+        currentItem: currentItem,
+        editedItem: quantityChangedItem,
+      ),
+      quantityChangedItem,
+    );
+    expect(
+      buildInventoryItemEditSaveItem(
+        currentItem: currentItem,
+        editedItem: unitChangedItem,
+      ),
+      unitChangedItem,
+    );
+  });
+
+  test('updateItem replaces the matching inventory item', () async {
+    final original = _item(id: 'a');
+    final untouched = _item(id: 'b', name: 'Butter');
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[original, untouched],
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final updated = original
+        .copyWith(name: 'Edited Milk', storeName: 'Edited Store')
+        .withDerivedAmount(weight: '500g', quantity: 2);
+
+    final saved = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .updateItem(updated);
+
+    expect(saved, isTrue);
+    expect(
+      container.read(inventoryItemsControllerProvider).value,
+      <InventoryItem>[updated, untouched],
+    );
+    expect(await repository.readAll(), <InventoryItem>[updated, untouched]);
+  });
+
+  test('updateItem rejects partially consumed items', () async {
+    final consumedAt = DateTime.parse('2026-04-07T13:00:00Z');
+    final original = _item(
+      id: 'a',
+      weight: '500g',
+    ).copyWith(currentAmount: 250, lastConsumedAt: consumedAt);
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[original],
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final editorResult = original
+        .copyWith(name: 'Edited Milk', initialQuantity: original.quantity)
+        .withDerivedAmount(
+          weight: original.weight,
+          quantity: original.quantity,
+        );
+
+    final saved = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .updateItem(editorResult);
+
+    expect(saved, isFalse);
+    expect(
+      container.read(inventoryItemsControllerProvider).value,
+      <InventoryItem>[original],
+    );
+    expect(await repository.readAll(), <InventoryItem>[original]);
+  });
+
+  test('updateItem rejects fully consumed items', () async {
+    final consumedAt = DateTime.parse('2026-04-07T13:00:00Z');
+    final original = _item(id: 'a', quantity: 0).copyWith(
+      lastConsumedAt: consumedAt,
+    );
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[original],
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+    final editorResult = original.copyWith(
+      name: 'Edited Milk',
+      quantity: 1,
+      initialQuantity: 1,
+    );
+
+    final saved = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .updateItem(editorResult);
+
+    expect(saved, isFalse);
+    expect(
+      container.read(inventoryItemsControllerProvider).value,
+      <InventoryItem>[original],
+    );
+    expect(await repository.readAll(), <InventoryItem>[original]);
+  });
+
+  test('updateItem returns false when the item no longer exists', () async {
+    final existingItem = _item(id: 'a');
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[existingItem],
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+
+    await container.read(inventoryItemsControllerProvider.future);
+
+    final saved = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .updateItem(_item(id: 'missing', name: 'Missing'));
+
+    expect(saved, isFalse);
+    expect(
+      container.read(inventoryItemsControllerProvider).value,
+      <InventoryItem>[existingItem],
+    );
+    expect(await repository.readAll(), <InventoryItem>[existingItem]);
   });
 
   test(

@@ -230,6 +230,10 @@
   "inventoryItemRemoveDeleteSubtitle":
       "Fehleingabe, nicht in Statistiken werten",
   "inventoryItemThrowAwayAction": "Wegwerfen",
+  "inventoryItemEditTitle": "Vorratsartikel bearbeiten",
+  "inventoryItemUpdatedMessage": "Vorratsartikel wurde aktualisiert.",
+  "inventoryItemEditRequiresFullItem":
+      "Du kannst den Artikel nur bearbeiten, solange er noch vollständig vorhanden ist.",
   "inventoryItemSwapCandidateAction": "Tauschen",
   "inventoryItemSwapCandidateRequiresFullItem":
       "Du kannst den Kandidaten nur tauschen, solange der Artikel noch vollständig vorhanden ist.",

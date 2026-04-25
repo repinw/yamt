@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
-    'receipt_item_editor_weight_unit_fallback_option.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_item_editor/receipt_item_editor_weight_unit_fallback_option.dart';
 
 void main() {
   test('resolve maps every fallback option to expected unit', () {

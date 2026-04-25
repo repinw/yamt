@@ -197,6 +197,104 @@ void main() {
     expect(find.text('Remove'), findsOneWidget);
   });
 
+  testWidgets('opens the item editor from the expanded edit action', (
+    tester,
+  ) async {
+    final bucket = PageStorageBucket();
+
+    await tester.pumpWidget(
+      _InventoryItemRowHost(showRow: true, bucket: bucket),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Milk'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edit inventory item'), findsOneWidget);
+    expect(find.text('Discounts'), findsNothing);
+    expect(find.text('Is deposit item'), findsNothing);
+    expect(find.text('Is discount item'), findsNothing);
+    expect(find.text('Not implemented yet'), findsNothing);
+  });
+
+  testWidgets('skips saving when the expanded edit action returns no changes', (
+    tester,
+  ) async {
+    final bucket = PageStorageBucket();
+
+    await tester.pumpWidget(
+      _InventoryItemRowHost(showRow: true, bucket: bucket),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Milk'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Apply changes'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Apply changes'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edit inventory item'), findsNothing);
+    expect(find.text('Inventory item updated.'), findsNothing);
+    expect(find.text('Action failed. Please try again.'), findsNothing);
+  });
+
+  testWidgets('shows a snackbar instead of editing non-full items', (
+    tester,
+  ) async {
+    final bucket = PageStorageBucket();
+    final partialItem =
+        InventoryItem.create(
+              id: 'milk',
+              name: 'Milk',
+              entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
+              storeName: 'Store',
+              quantity: 1,
+              weight: '500g',
+            )
+            .withDerivedAmount(weight: '500g', quantity: 1)
+            .copyWith(
+              currentAmount: 250,
+            );
+
+    await tester.pumpWidget(
+      _InventoryItemRowHost(
+        showRow: true,
+        bucket: bucket,
+        item: partialItem,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Milk'));
+    await tester.pumpAndSettle();
+
+    final editButtonFinder = find.ancestor(
+      of: find.text('Edit'),
+      matching: find.byType(TextButton),
+    );
+    final editButton = tester.widget<TextButton>(editButtonFinder);
+
+    expect(editButton.onPressed, isNotNull);
+
+    await tester.tap(find.text('Edit'));
+    await tester.pump();
+
+    expect(
+      find.text(
+        'You can edit the item only while it is still fully available.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Edit inventory item'), findsNothing);
+    expect(find.text('Remove'), findsOneWidget);
+  });
+
   testWidgets('shows nutrition metrics inside one segmented strip', (
     tester,
   ) async {

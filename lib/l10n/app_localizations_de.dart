@@ -529,6 +529,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemThrowAwayAction => 'Wegwerfen';
 
   @override
+  String get inventoryItemEditTitle => 'Vorratsartikel bearbeiten';
+
+  @override
+  String get inventoryItemUpdatedMessage => 'Vorratsartikel wurde aktualisiert.';
+
+  @override
+  String get inventoryItemEditRequiresFullItem => 'Du kannst den Artikel nur bearbeiten, solange er noch vollständig vorhanden ist.';
+
+  @override
   String get inventoryItemSwapCandidateAction => 'Tauschen';
 
   @override

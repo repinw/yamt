@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/domain/receipt_item_editor_updater.dart';
+import 'package:yamt/features/inventory/domain/receipt_item_editor_updater.dart';
 
 InventoryItem _sourceItem() {
   return InventoryItem.create(
