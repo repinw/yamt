@@ -312,6 +312,67 @@ void main() {
     );
   });
 
+  test(
+    'buildInventoryItemEditSaveItem preserves stock for metadata-only edits',
+    () {
+      final consumedAt = DateTime.parse('2026-04-07T13:00:00Z');
+      final currentItem = _item(
+        id: 'a',
+        quantity: 2,
+        initialQuantity: 2,
+        weight: '500g',
+      ).copyWith(lastConsumedAt: consumedAt);
+      final editedItem = currentItem.copyWith(
+        name: 'Edited Milk',
+        storeName: 'Edited Store',
+        initialQuantity: 99,
+        currentAmount: 123,
+        lastConsumedAt: null,
+      );
+
+      final savedItem = buildInventoryItemEditSaveItem(
+        currentItem: currentItem,
+        editedItem: editedItem,
+      );
+
+      expect(savedItem.name, 'Edited Milk');
+      expect(savedItem.storeName, 'Edited Store');
+      expect(savedItem.quantity, currentItem.quantity);
+      expect(savedItem.initialQuantity, currentItem.initialQuantity);
+      expect(savedItem.initialAmount, currentItem.initialAmount);
+      expect(savedItem.currentAmount, currentItem.currentAmount);
+      expect(savedItem.amountScale, currentItem.amountScale);
+      expect(savedItem.amountUnit, currentItem.amountUnit);
+      expect(savedItem.lastConsumedAt, consumedAt);
+    },
+  );
+
+  test('buildInventoryItemEditSaveItem accepts stock definition changes', () {
+    final currentItem = _item(id: 'a', weight: '500g');
+    final quantityChangedItem = currentItem
+        .copyWith(name: 'Two Milks', initialQuantity: 2)
+        .withDerivedAmount(weight: '500g', quantity: 2);
+    final unitChangedItem = currentItem.withDerivedAmount(
+      weight: '500ml',
+      quantity: currentItem.quantity,
+    );
+
+    expect(
+      buildInventoryItemEditSaveItem(
+        currentItem: currentItem,
+        editedItem: quantityChangedItem,
+      ),
+      quantityChangedItem,
+    );
+    expect(
+      buildInventoryItemEditSaveItem(
+        currentItem: currentItem,
+        editedItem: unitChangedItem,
+      ),
+      unitChangedItem,
+    );
+  });
+
   test('updateItem replaces the matching inventory item', () async {
     final original = _item(id: 'a');
     final untouched = _item(id: 'b', name: 'Butter');

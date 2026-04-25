@@ -331,7 +331,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
           );
         },
       );
-      if (!mounted || editedItem == null) {
+      if (!mounted || editedItem == null || editedItem == widget.item) {
         return;
       }
 

@@ -219,6 +219,31 @@ void main() {
     expect(find.text('Not implemented yet'), findsNothing);
   });
 
+  testWidgets('skips saving when the expanded edit action returns no changes', (
+    tester,
+  ) async {
+    final bucket = PageStorageBucket();
+
+    await tester.pumpWidget(
+      _InventoryItemRowHost(showRow: true, bucket: bucket),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Milk'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Apply changes'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Apply changes'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edit inventory item'), findsNothing);
+    expect(find.text('Inventory item updated.'), findsNothing);
+    expect(find.text('Action failed. Please try again.'), findsNothing);
+  });
+
   testWidgets('shows a snackbar instead of editing non-full items', (
     tester,
   ) async {
