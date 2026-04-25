@@ -1349,6 +1349,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesCalculatorWeightInvalid => 'Please enter a valid weight.';
 
   @override
+  String get caloriesTodayWeightPromptTitle => 'Add today\'s weight?';
+
+  @override
+  String get caloriesTodayWeightPromptBody => 'Optional: today\'s weight helps health trends and weekly check-ins stay accurate.';
+
+  @override
+  String get caloriesTodayWeightPromptAddAction => 'Add weight';
+
+  @override
+  String get caloriesTodayWeightPromptDismissAction => 'Not now';
+
+  @override
   String get caloriesCalculatorHeightLabel => 'Height (cm)';
 
   @override

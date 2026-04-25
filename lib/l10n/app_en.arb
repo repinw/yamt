@@ -703,6 +703,11 @@
   "caloriesCalculatorWeightLabel": "Weight (kg)",
   "caloriesCalculatorWeightEmpty": "Please enter your weight.",
   "caloriesCalculatorWeightInvalid": "Please enter a valid weight.",
+  "caloriesTodayWeightPromptTitle": "Add today's weight?",
+  "caloriesTodayWeightPromptBody":
+      "Optional: today's weight helps health trends and weekly check-ins stay accurate.",
+  "caloriesTodayWeightPromptAddAction": "Add weight",
+  "caloriesTodayWeightPromptDismissAction": "Not now",
   "caloriesCalculatorHeightLabel": "Height (cm)",
   "caloriesCalculatorHeightEmpty": "Please enter your height.",
   "caloriesCalculatorHeightInvalid": "Please enter a valid height.",

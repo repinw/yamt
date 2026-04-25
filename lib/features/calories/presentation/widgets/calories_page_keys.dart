@@ -117,6 +117,21 @@ abstract final class CaloriesPageKeys {
     'calories_weekly_checkin_skip_day_button',
   );
 
+  /// Today's weight prompt card.
+  static const todayWeightPromptCard = Key(
+    'calories_today_weight_prompt_card',
+  );
+
+  /// Today's weight prompt add button.
+  static const todayWeightPromptAddButton = Key(
+    'calories_today_weight_prompt_add_button',
+  );
+
+  /// Today's weight prompt dismiss button.
+  static const todayWeightPromptDismissButton = Key(
+    'calories_today_weight_prompt_dismiss_button',
+  );
+
   /// The add options manual button.
   static const addOptionsManualButton = Key('calories_add_options_manual');
 

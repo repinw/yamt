@@ -1349,6 +1349,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorWeightInvalid => 'Bitte gib ein gültiges Gewicht ein.';
 
   @override
+  String get caloriesTodayWeightPromptTitle => 'Gewicht für heute eintragen?';
+
+  @override
+  String get caloriesTodayWeightPromptBody => 'Optional: Dein heutiges Gewicht hilft, Gesundheitstrends und Wochen-Check-ins genauer zu machen.';
+
+  @override
+  String get caloriesTodayWeightPromptAddAction => 'Gewicht eintragen';
+
+  @override
+  String get caloriesTodayWeightPromptDismissAction => 'Nicht jetzt';
+
+  @override
   String get caloriesCalculatorHeightLabel => 'Größe (cm)';
 
   @override
