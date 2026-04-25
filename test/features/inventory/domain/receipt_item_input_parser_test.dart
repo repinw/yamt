@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/scanner/domain/receipt_item_input_parser.dart';
+import 'package:yamt/features/inventory/domain/receipt_item_input_parser.dart';
 
 void main() {
   const parser = ReceiptItemInputParser();

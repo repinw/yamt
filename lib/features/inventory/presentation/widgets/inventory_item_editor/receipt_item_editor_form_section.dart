@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
-import 'package:yamt/features/scanner/presentation/models/receipt_item_editor_draft.dart';
-import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_discount_rows_field.dart';
-import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_form_field_metadata.dart';
-import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_weight_unit_fallback_option.dart';
+import 'package:yamt/features/inventory/presentation/models/receipt_item_editor_draft.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_discount_rows_field.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_form_field_metadata.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_weight_unit_fallback_option.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines receipt item editor form section.

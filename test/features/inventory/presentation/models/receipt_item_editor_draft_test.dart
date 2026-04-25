@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/presentation/models/'
+import 'package:yamt/features/inventory/presentation/models/'
     'receipt_item_editor_draft.dart';
 
 void main() {

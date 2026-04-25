@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
-    'inventory_receipt_item_editor_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_item_editor/inventory_receipt_item_editor_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {

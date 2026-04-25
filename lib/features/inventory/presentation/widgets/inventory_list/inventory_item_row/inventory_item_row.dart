@@ -37,9 +37,9 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row_view_data.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_nutrition_strip.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_item_editor/inventory_receipt_item_editor_sheet.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
-import 'package:yamt/features/scanner/presentation/widgets/'
-    'inventory_receipt_item_editor_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory item row.

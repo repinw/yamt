@@ -6,9 +6,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/core/utils/store_name_normalizer.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
-import 'package:yamt/features/scanner/domain/'
+import 'package:yamt/features/inventory/domain/'
     'receipt_item_quantity_normalizer.dart';
+import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_review_item_draft.dart';
 
 part 'receipt_to_review_item_draft_mapper.g.dart';

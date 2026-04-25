@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/domain/receipt_item_editor_updater.dart';
-import 'package:yamt/features/scanner/domain/receipt_item_input_parser.dart';
-import 'package:yamt/features/scanner/domain/'
+import 'package:yamt/features/inventory/domain/receipt_item_editor_updater.dart';
+import 'package:yamt/features/inventory/domain/receipt_item_input_parser.dart';
+import 'package:yamt/features/inventory/domain/'
     'receipt_item_quantity_normalizer.dart';
-import 'package:yamt/features/scanner/presentation/models/receipt_item_editor_draft.dart';
-import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_action_row.dart';
-import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_form_field_metadata.dart';
-import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_form_section.dart';
-import 'package:yamt/features/scanner/presentation/widgets/receipt_item_editor_weight_unit_fallback_option.dart';
+import 'package:yamt/features/inventory/presentation/models/receipt_item_editor_draft.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_action_row.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_form_field_metadata.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_form_section.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_weight_unit_fallback_option.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory receipt item editor sheet.
