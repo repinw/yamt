@@ -91,6 +91,40 @@ int _maxReducibleAmount(InventoryItem item) {
   return quantity > 0 ? quantity : 0;
 }
 
+/// Builds an edited item while preserving remaining stock for metadata edits.
+@visibleForTesting
+InventoryItem buildInventoryItemEditSaveItem({
+  required InventoryItem currentItem,
+  required InventoryItem editedItem,
+}) {
+  if (!_hasSameInventoryStockDefinition(
+    currentItem: currentItem,
+    editedItem: editedItem,
+  )) {
+    return editedItem;
+  }
+
+  return editedItem.copyWith(
+    quantity: currentItem.quantity,
+    initialQuantity: currentItem.initialQuantity,
+    initialAmount: currentItem.initialAmount,
+    currentAmount: currentItem.currentAmount,
+    amountScale: currentItem.amountScale,
+    amountUnit: currentItem.amountUnit,
+    lastConsumedAt: currentItem.lastConsumedAt,
+  );
+}
+
+bool _hasSameInventoryStockDefinition({
+  required InventoryItem currentItem,
+  required InventoryItem editedItem,
+}) {
+  return editedItem.quantity == currentItem.quantity &&
+      editedItem.initialAmount == currentItem.initialAmount &&
+      editedItem.amountScale == currentItem.amountScale &&
+      editedItem.amountUnit == currentItem.amountUnit;
+}
+
 /// Build restored items.
 @visibleForTesting
 List<InventoryItem>? buildRestoredItems({
@@ -735,6 +769,30 @@ class InventoryItemsController extends _$InventoryItemsController {
       item: item,
       addItem: ref.read(shoppingListControllerProvider.notifier).addItem,
     );
+  }
+
+  /// Update item.
+  Future<bool> updateItem(InventoryItem item) {
+    return _runSerializedMutation(() async {
+      final currentItems = await _currentPersistedItems();
+      final itemIndex = currentItems.indexWhere(
+        (currentItem) => currentItem.id == item.id,
+      );
+      if (itemIndex < 0) {
+        return false;
+      }
+      final currentItem = currentItems[itemIndex];
+      if (!currentItem.isFullyAvailable) {
+        return false;
+      }
+
+      final nextItems = List<InventoryItem>.from(currentItems);
+      nextItems[itemIndex] = buildInventoryItemEditSaveItem(
+        currentItem: currentItem,
+        editedItem: item,
+      );
+      return _saveItems(previousItems: currentItems, nextItems: nextItems);
+    });
   }
 
   /// Replaces the product reference on an existing full inventory item.

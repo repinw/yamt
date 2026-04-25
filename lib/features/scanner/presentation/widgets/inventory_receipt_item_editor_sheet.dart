@@ -16,10 +16,25 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines inventory receipt item editor sheet.
 class InventoryReceiptItemEditorSheet extends StatefulWidget {
   /// The inventory receipt item editor sheet.
-  const InventoryReceiptItemEditorSheet({required this.item, super.key});
+  const InventoryReceiptItemEditorSheet({
+    required this.item,
+    super.key,
+    this.title,
+    this.showDiscountFields = true,
+    this.showReviewOnlyFields = true,
+  });
 
   /// The item.
   final InventoryItem item;
+
+  /// Optional sheet title override.
+  final String? title;
+
+  /// Whether to show receipt discount fields.
+  final bool showDiscountFields;
+
+  /// Whether to show receipt review-only classification fields.
+  final bool showReviewOnlyFields;
 
   @override
   State<InventoryReceiptItemEditorSheet> createState() =>
@@ -72,7 +87,7 @@ class _InventoryReceiptItemEditorSheetState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.inventoryReceiptReviewEditTitle,
+              widget.title ?? l10n.inventoryReceiptReviewEditTitle,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -86,6 +101,8 @@ class _InventoryReceiptItemEditorSheetState
                 initialDiscountEntries: _discountEntries,
                 onDiscountEntriesChanged: _onDiscountEntriesChanged,
                 discountsErrorText: _discountsErrorText,
+                showDiscountFields: widget.showDiscountFields,
+                showReviewOnlyFields: widget.showReviewOnlyFields,
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -175,16 +192,20 @@ class _InventoryReceiptItemEditorSheetState
       ),
       discountEntries: List<MapEntry<String, String>>.from(_discountEntries),
       receiptDate: widget.item.receiptDate,
-      isDeposit: _readFormValue(
-        values: values,
-        name: ReceiptItemEditorFormFieldName.isDeposit,
-        fallback: false,
-      ),
-      isDiscount: _readFormValue(
-        values: values,
-        name: ReceiptItemEditorFormFieldName.isDiscount,
-        fallback: false,
-      ),
+      isDeposit: widget.showReviewOnlyFields
+          ? _readFormValue(
+              values: values,
+              name: ReceiptItemEditorFormFieldName.isDeposit,
+              fallback: false,
+            )
+          : false,
+      isDiscount: widget.showReviewOnlyFields
+          ? _readFormValue(
+              values: values,
+              name: ReceiptItemEditorFormFieldName.isDiscount,
+              fallback: false,
+            )
+          : false,
     );
   }
 
@@ -319,6 +340,9 @@ class _InventoryReceiptItemEditorSheetState
   }
 
   bool _isReviewOnlySelection() {
+    if (!widget.showReviewOnlyFields) {
+      return false;
+    }
     return _readFormValue(
           values: _currentValues,
           name: ReceiptItemEditorFormFieldName.isDeposit,

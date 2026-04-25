@@ -38,6 +38,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_nutrition_strip.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
+import 'package:yamt/features/scanner/presentation/widgets/'
+    'inventory_receipt_item_editor_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory item row.
@@ -111,6 +113,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
 
   var _isExpanded = false;
   var _isWorking = false;
+  var _isEditSheetOpen = false;
   var _didRestoreExpansionState = false;
   late final InventoryItemRowActionCoordinator _actionCoordinator;
 
@@ -165,7 +168,9 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       onToggleExpanded: widget.isSelectionMode
           ? (widget.onSelectionToggle ?? () {})
           : _toggleExpanded,
-      onEditPressed: _isWorking ? () {} : _onEditPressed,
+      onEditPressed: layoutData.isEditActionEnabled
+          ? (_isWorking ? () {} : _onEditPressed)
+          : null,
       onPrimaryActionPressed: onPrimaryActionPressed,
       onQuickShoppingListActionPressed: onQuickShoppingListActionPressed,
       onSwapCandidatePressed: _isWorking ? () {} : _onSwapCandidatePressed,
@@ -241,7 +246,11 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   }
 
   void _onEditPressed() {
-    _showActionSnackBar(widget.l10n.commonNotImplementedYet);
+    if (!widget.item.isFullyAvailable) {
+      _showActionSnackBar(widget.l10n.inventoryItemEditRequiresFullItem);
+      return;
+    }
+    unawaited(_runEditFlow());
   }
 
   void _onAddToShoppingListPressed() {
@@ -298,6 +307,42 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       if (mounted) {
         _setWorking(false);
       }
+    }
+  }
+
+  Future<void> _runEditFlow() async {
+    if (_isWorking || _isEditSheetOpen) {
+      return;
+    }
+
+    _isEditSheetOpen = true;
+    try {
+      final editedItem = await showModalBottomSheet<InventoryItem>(
+        context: context,
+        isScrollControlled: true,
+        useRootNavigator: true,
+        useSafeArea: true,
+        builder: (sheetContext) {
+          return InventoryReceiptItemEditorSheet(
+            item: widget.item,
+            title: widget.l10n.inventoryItemEditTitle,
+            showDiscountFields: false,
+            showReviewOnlyFields: false,
+          );
+        },
+      );
+      if (!mounted || editedItem == null) {
+        return;
+      }
+
+      final controller = ref.read(inventoryItemsControllerProvider.notifier);
+      await _actionCoordinator.runAction(
+        () => controller.updateItem(editedItem),
+        successMessage: widget.l10n.inventoryItemUpdatedMessage,
+        failureMessage: widget.l10n.inventoryItemActionFailed,
+      );
+    } finally {
+      _isEditSheetOpen = false;
     }
   }
 
@@ -591,6 +636,7 @@ class _InventoryItemRowLayoutData {
     required this.isPrimaryActionEnabled,
     required this.isShoppingListPrimaryAction,
     required this.isQuickShoppingListActionEnabled,
+    required this.isEditActionEnabled,
     required this.isRemoveActionEnabled,
   });
 
@@ -613,6 +659,7 @@ class _InventoryItemRowLayoutData {
     final brand = item.brand?.trim() ?? '';
     final hasBrand = brand.isNotEmpty;
     final canRunSecondaryActions = !isSelectionMode && !isWorking;
+    final isEditActionEnabled = !isSelectionMode;
     final isRemoveActionEnabled = canRunSecondaryActions;
     final isPrimaryActionEnabled =
         canRunSecondaryActions &&
@@ -693,6 +740,7 @@ class _InventoryItemRowLayoutData {
       isPrimaryActionEnabled: isPrimaryActionEnabled,
       isShoppingListPrimaryAction: isShoppingListPrimaryAction,
       isQuickShoppingListActionEnabled: isQuickShoppingListActionEnabled,
+      isEditActionEnabled: isEditActionEnabled,
       isRemoveActionEnabled: isRemoveActionEnabled,
     );
   }
@@ -703,6 +751,7 @@ class _InventoryItemRowLayoutData {
   final bool isPrimaryActionEnabled;
   final bool isShoppingListPrimaryAction;
   final bool isQuickShoppingListActionEnabled;
+  final bool isEditActionEnabled;
   final bool isRemoveActionEnabled;
 }
 
@@ -787,7 +836,7 @@ class _InventoryItemRowCard extends StatelessWidget {
   final String editLabel;
   final String swapCandidateLabel;
   final VoidCallback onToggleExpanded;
-  final VoidCallback onEditPressed;
+  final VoidCallback? onEditPressed;
   final VoidCallback? onPrimaryActionPressed;
   final VoidCallback? onQuickShoppingListActionPressed;
   final VoidCallback onSwapCandidatePressed;
@@ -874,7 +923,7 @@ class _InventoryItemRowBody extends StatelessWidget {
   final String editLabel;
   final String swapCandidateLabel;
   final VoidCallback onToggleExpanded;
-  final VoidCallback onEditPressed;
+  final VoidCallback? onEditPressed;
   final VoidCallback? onPrimaryActionPressed;
   final VoidCallback? onQuickShoppingListActionPressed;
   final VoidCallback onSwapCandidatePressed;

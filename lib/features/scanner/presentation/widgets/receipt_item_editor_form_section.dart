@@ -17,6 +17,8 @@ class ReceiptItemEditorFormSection extends StatelessWidget {
     required this.initialDiscountEntries,
     required this.onDiscountEntriesChanged,
     required this.discountsErrorText,
+    this.showDiscountFields = true,
+    this.showReviewOnlyFields = true,
     super.key,
   });
 
@@ -37,6 +39,12 @@ class ReceiptItemEditorFormSection extends StatelessWidget {
 
   /// The discounts error text.
   final String? discountsErrorText;
+
+  /// Whether to show receipt discount fields.
+  final bool showDiscountFields;
+
+  /// Whether to show receipt review-only classification fields.
+  final bool showReviewOnlyFields;
 
   @override
   Widget build(BuildContext context) {
@@ -64,20 +72,23 @@ class ReceiptItemEditorFormSection extends StatelessWidget {
           weightValidator: weightValidator,
           onSubmit: onSubmit,
         ),
-        ReceiptEditorDiscountRowsField(
-          initialEntries: initialDiscountEntries,
-          onChanged: onDiscountEntriesChanged,
-          errorText: discountsErrorText,
-          onSubmit: onSubmit,
-        ),
-        _ReceiptEditorSwitchField(
-          name: ReceiptItemEditorFormFieldName.isDeposit,
-          title: l10n.inventoryReceiptReviewFieldIsDeposit,
-        ),
-        _ReceiptEditorSwitchField(
-          name: ReceiptItemEditorFormFieldName.isDiscount,
-          title: l10n.inventoryReceiptReviewFieldIsDiscount,
-        ),
+        if (showDiscountFields)
+          ReceiptEditorDiscountRowsField(
+            initialEntries: initialDiscountEntries,
+            onChanged: onDiscountEntriesChanged,
+            errorText: discountsErrorText,
+            onSubmit: onSubmit,
+          ),
+        if (showReviewOnlyFields) ...[
+          _ReceiptEditorSwitchField(
+            name: ReceiptItemEditorFormFieldName.isDeposit,
+            title: l10n.inventoryReceiptReviewFieldIsDeposit,
+          ),
+          _ReceiptEditorSwitchField(
+            name: ReceiptItemEditorFormFieldName.isDiscount,
+            title: l10n.inventoryReceiptReviewFieldIsDiscount,
+          ),
+        ],
       ],
     );
   }

@@ -223,6 +223,10 @@
   "inventoryItemRemoveDeleteSubtitle":
       "Input mistake, do not count in statistics",
   "inventoryItemThrowAwayAction": "Throw away",
+  "inventoryItemEditTitle": "Edit inventory item",
+  "inventoryItemUpdatedMessage": "Inventory item updated.",
+  "inventoryItemEditRequiresFullItem":
+      "You can edit the item only while it is still fully available.",
   "inventoryItemSwapCandidateAction": "Swap candidate",
   "inventoryItemSwapCandidateRequiresFullItem":
       "You can swap the candidate only while the item is still fully available.",

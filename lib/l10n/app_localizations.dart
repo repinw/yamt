@@ -1115,6 +1115,24 @@ abstract class AppLocalizations {
   /// **'Throw away'**
   String get inventoryItemThrowAwayAction;
 
+  /// No description provided for @inventoryItemEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit inventory item'**
+  String get inventoryItemEditTitle;
+
+  /// No description provided for @inventoryItemUpdatedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory item updated.'**
+  String get inventoryItemUpdatedMessage;
+
+  /// No description provided for @inventoryItemEditRequiresFullItem.
+  ///
+  /// In en, this message translates to:
+  /// **'You can edit the item only while it is still fully available.'**
+  String get inventoryItemEditRequiresFullItem;
+
   /// No description provided for @inventoryItemSwapCandidateAction.
   ///
   /// In en, this message translates to:

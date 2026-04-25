@@ -529,6 +529,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemThrowAwayAction => 'Throw away';
 
   @override
+  String get inventoryItemEditTitle => 'Edit inventory item';
+
+  @override
+  String get inventoryItemUpdatedMessage => 'Inventory item updated.';
+
+  @override
+  String get inventoryItemEditRequiresFullItem => 'You can edit the item only while it is still fully available.';
+
+  @override
   String get inventoryItemSwapCandidateAction => 'Swap candidate';
 
   @override

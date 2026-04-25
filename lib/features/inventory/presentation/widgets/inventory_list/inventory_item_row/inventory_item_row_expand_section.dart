@@ -42,7 +42,7 @@ class InventoryItemRowExpandSection extends StatelessWidget {
   final String removeLabel;
 
   /// The on edit pressed.
-  final VoidCallback onEditPressed;
+  final VoidCallback? onEditPressed;
 
   /// The on remove pressed.
   final VoidCallback? onRemovePressed;
@@ -94,7 +94,7 @@ class _InventoryItemActionPanel extends StatelessWidget {
   final String editLabel;
   final String swapCandidateLabel;
   final String removeLabel;
-  final VoidCallback onEditPressed;
+  final VoidCallback? onEditPressed;
   final VoidCallback? onRemovePressed;
   final VoidCallback onSwapCandidatePressed;
 
