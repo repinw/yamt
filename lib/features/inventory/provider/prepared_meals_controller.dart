@@ -40,6 +40,8 @@ const _preparedMealsControllerLogName = 'PreparedMealsController';
 class PreparedMealsController extends _$PreparedMealsController {
   static const _uuid = Uuid();
 
+  // Subscription is cancelled by _disposeSubscription.
+  // ignore: cancel_subscriptions
   StreamSubscription<List<PreparedMeal>>? _mealsSubscription;
   int _subscriptionGeneration = 0;
   final _mutationQueue = SerializedMutationQueue();
@@ -65,14 +67,15 @@ class PreparedMealsController extends _$PreparedMealsController {
 
   @override
   FutureOr<List<PreparedMeal>> build() {
-    ref.watch(householdDataOwnerUserIdProvider);
+    ref
+      ..watch(householdDataOwnerUserIdProvider)
+      ..watch(preparedMealRepositoryProvider)
+      ..onDispose(() {
+        unawaited(_disposeSubscription());
+      });
     _currentDataOwnerUserId = ref.watch(
       effectiveHouseholdDataOwnerUserIdProvider,
     );
-    ref.watch(preparedMealRepositoryProvider);
-    ref.onDispose(() {
-      unawaited(_disposeSubscription());
-    });
     return _restartSubscription();
   }
 

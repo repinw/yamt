@@ -56,9 +56,9 @@ dev_dependencies:
   file: ^7.0.1
   firebase_core_platform_interface: ^6.0.2
   flutter_cache_manager: ^3.4.1
-  flutter_lints: ^6.0.0
   flutter_driver:
     sdk: flutter
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
   freezed: ^3.2.3

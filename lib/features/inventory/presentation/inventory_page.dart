@@ -12,6 +12,7 @@ import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/features/calories/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -42,6 +43,7 @@ const _preparedMealImageAssetUuid = Uuid();
   inventoryItemRepository,
   InventoryItemsController,
   PreparedMealsController,
+  preparedMealImagePicker,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
   inventoryBackedCalorieEntrySaveFlow,

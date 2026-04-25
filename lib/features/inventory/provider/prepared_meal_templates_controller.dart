@@ -65,6 +65,8 @@ class PreparedMealTemplatesController
     extends _$PreparedMealTemplatesController {
   static const _uuid = Uuid();
 
+  // Subscription is cancelled by _disposeSubscription.
+  // ignore: cancel_subscriptions
   StreamSubscription<List<PreparedMeal>>? _templatesSubscription;
   int _subscriptionGeneration = 0;
   final _mutationQueue = SerializedMutationQueue();
@@ -73,14 +75,15 @@ class PreparedMealTemplatesController
 
   @override
   FutureOr<List<PreparedMeal>> build() {
-    ref.watch(householdDataOwnerUserIdProvider);
+    ref
+      ..watch(householdDataOwnerUserIdProvider)
+      ..watch(preparedMealTemplateRepositoryProvider)
+      ..onDispose(() {
+        unawaited(_disposeSubscription());
+      });
     _currentDataOwnerUserId = ref.watch(
       effectiveHouseholdDataOwnerUserIdProvider,
     );
-    ref.watch(preparedMealTemplateRepositoryProvider);
-    ref.onDispose(() {
-      unawaited(_disposeSubscription());
-    });
     return _restartSubscription();
   }
 
@@ -789,13 +792,13 @@ String _capitalizeWord(String word) {
 }
 
 List<PreparedMeal> _sortTemplates(List<PreparedMeal> templates) {
-  final sortedTemplates = List<PreparedMeal>.from(templates);
-  sortedTemplates.sort((left, right) {
-    final byUpdate = right.updatedAt.compareTo(left.updatedAt);
-    if (byUpdate != 0) {
-      return byUpdate;
-    }
-    return right.createdAt.compareTo(left.createdAt);
-  });
+  final sortedTemplates = List<PreparedMeal>.from(templates)
+    ..sort((left, right) {
+      final byUpdate = right.updatedAt.compareTo(left.updatedAt);
+      if (byUpdate != 0) {
+        return byUpdate;
+      }
+      return right.createdAt.compareTo(left.createdAt);
+    });
   return List<PreparedMeal>.unmodifiable(sortedTemplates);
 }

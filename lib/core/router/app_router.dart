@@ -27,6 +27,7 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_add_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/provider/inventory_items_controller.dart';
@@ -82,6 +83,7 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
     inventoryBackedCalorieEntrySaveFlow,
     InventoryItemsController,
     PreparedMealsController,
+    preparedMealImagePicker,
     ReceiptCaptureFlowController,
     ReceiptBatchFlowController,
   ],

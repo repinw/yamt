@@ -57,10 +57,8 @@ void main() {
     }
   }
 
-  final output = File(
-    _join(root.path, 'docs', 'architecture.generated.md'),
-  );
-  output.writeAsStringSync(
+  final outputPath = _join(root.path, 'docs', 'architecture.generated.md');
+  File(outputPath).writeAsStringSync(
     _buildDocument(
       featureNames: featureNames,
       dependencyMap: dependencyMap,
@@ -68,7 +66,7 @@ void main() {
     ),
   );
 
-  stdout.writeln('Wrote ${_relativeToRoot(root.path, output.path)}');
+  stdout.writeln('Wrote ${_relativeToRoot(root.path, outputPath)}');
 }
 
 String _buildDocument({

@@ -1,3 +1,6 @@
+// Parser stays class-based for provider overrides and test fakes.
+// ignore_for_file: one_member_abstracts
+
 import 'dart:convert';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';

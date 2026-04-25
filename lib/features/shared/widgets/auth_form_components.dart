@@ -20,7 +20,7 @@ String _resolveValidationLocaleName(BuildContext context) {
     try {
       ValidationBuilder(localeName: localeName);
       return localeName;
-    } on ArgumentError {
+    } on Object {
       // Try the next locale candidate.
     }
   }

@@ -211,6 +211,8 @@ typedef InventoryItemDiscardResult = ({
 class InventoryItemsController extends _$InventoryItemsController {
   static const _uuid = Uuid();
 
+  // Subscription is cancelled by _disposeRealtimeSubscription.
+  // ignore: cancel_subscriptions
   StreamSubscription<List<InventoryItem>>? _itemsSubscription;
   int _subscriptionGeneration = 0;
   final _mutationQueue = SerializedMutationQueue();
@@ -224,14 +226,15 @@ class InventoryItemsController extends _$InventoryItemsController {
 
   @override
   FutureOr<List<InventoryItem>> build() {
-    ref.watch(householdDataOwnerUserIdProvider);
+    ref
+      ..watch(householdDataOwnerUserIdProvider)
+      ..watch(inventoryItemRepositoryProvider)
+      ..onDispose(() {
+        unawaited(_disposeRealtimeSubscription());
+      });
     _currentDataOwnerUserId = ref.watch(
       effectiveHouseholdDataOwnerUserIdProvider,
     );
-    ref.watch(inventoryItemRepositoryProvider);
-    ref.onDispose(() {
-      unawaited(_disposeRealtimeSubscription());
-    });
     return _restartRealtimeSubscription();
   }
 
@@ -364,7 +367,10 @@ class InventoryItemsController extends _$InventoryItemsController {
     log(
       'Permission denied while watching inventory. '
       'shouldRecover=$shouldRecover '
-      '${_buildScopeDebugDetails(actualDataOwnerUserId: actualDataOwnerUserId, effectiveDataOwnerUserId: effectiveDataOwnerUserId)}',
+      '${_buildScopeDebugDetails(
+        actualDataOwnerUserId: actualDataOwnerUserId,
+        effectiveDataOwnerUserId: effectiveDataOwnerUserId,
+      )}',
       name: _controllerLogName,
     );
   }
@@ -373,7 +379,12 @@ class InventoryItemsController extends _$InventoryItemsController {
   void onSkippedHouseholdAccessRecovery() {
     log(
       'Inventory access recovery had no owner swap candidate. '
-      '${_buildScopeDebugDetails(actualDataOwnerUserId: ref.read(householdDataOwnerUserIdProvider), effectiveDataOwnerUserId: ref.read(effectiveHouseholdDataOwnerUserIdProvider))}',
+      '${_buildScopeDebugDetails(
+        actualDataOwnerUserId: ref.read(householdDataOwnerUserIdProvider),
+        effectiveDataOwnerUserId: ref.read(
+          effectiveHouseholdDataOwnerUserIdProvider,
+        ),
+      )}',
       name: _controllerLogName,
     );
   }

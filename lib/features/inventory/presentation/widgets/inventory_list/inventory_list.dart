@@ -17,6 +17,7 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_search_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -56,7 +57,11 @@ import 'package:yamt/l10n/app_localizations.dart';
 enum _InventoryItemSortCriterion { added, eaten, alphabetical, quantity }
 
 /// Defines inventory list.
-@Dependencies([inventoryItemRepository, InventoryItemsController])
+@Dependencies([
+  inventoryItemRepository,
+  InventoryItemsController,
+  preparedMealImagePicker,
+])
 class InventoryList extends ConsumerStatefulWidget {
   /// The inventory list.
   const InventoryList({
@@ -144,6 +149,8 @@ class InventoryList extends ConsumerStatefulWidget {
   final Future<bool> Function(
     String mealId,
     String name,
+    // Callback mirrors PreparedMealEditSheetResult shape.
+    // ignore: avoid_positional_boolean_parameters
     bool imageChanged,
     Uint8List? imageBytes,
 
@@ -631,16 +638,26 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     final criterion = _inventoryItemSortCriterionFor(_inventoryItemSortMode);
     final ascending = _isInventoryItemSortAscending(_inventoryItemSortMode);
 
+    final directionLabel = _inventoryItemSortDirectionLabel(
+      l10n,
+      criterion: criterion,
+      ascending: ascending,
+    );
     return '${_inventoryItemSortCriterionLabel(l10n, criterion)} - '
-        '${_inventoryItemSortDirectionLabel(l10n, criterion: criterion, ascending: ascending)}';
+        '$directionLabel';
   }
 
   String _preparedMealSortModeLabel(AppLocalizations l10n) {
     final criterion = _preparedMealSorter.criterionFor(_preparedMealSortMode);
     final ascending = _preparedMealSorter.isAscending(_preparedMealSortMode);
 
+    final directionLabel = _preparedMealSortDirectionLabel(
+      l10n,
+      criterion: criterion,
+      ascending: ascending,
+    );
     return '${_preparedMealSortCriterionLabel(l10n, criterion)} - '
-        '${_preparedMealSortDirectionLabel(l10n, criterion: criterion, ascending: ascending)}';
+        '$directionLabel';
   }
 
   _InventoryItemSortCriterion _inventoryItemSortCriterionFor(

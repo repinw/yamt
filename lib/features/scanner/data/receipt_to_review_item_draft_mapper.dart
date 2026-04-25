@@ -1,3 +1,6 @@
+// Mapper stays class-based for provider overrides and test fakes.
+// ignore_for_file: one_member_abstracts
+
 import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/currency_format.dart';

@@ -27,6 +27,7 @@ import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
@@ -382,6 +383,7 @@ ShoppingListItem _shoppingItem(
   inventoryItemRepository,
   InventoryItemsController,
   PreparedMealsController,
+  preparedMealImagePicker,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
   inventoryBackedCalorieEntrySaveFlow,
@@ -461,6 +463,7 @@ Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
   inventoryItemRepository,
   InventoryItemsController,
   PreparedMealsController,
+  preparedMealImagePicker,
   ReceiptCaptureFlowController,
   ReceiptBatchFlowController,
   inventoryBackedCalorieEntrySaveFlow,

@@ -43,7 +43,7 @@ class CalorieGoalCalculatorFormState {
         ? _formatDouble(profile.goalSpeedKgPerWeek)
         : '0.5';
 
-    return _create(
+    return CalorieGoalCalculatorFormState._create(
       sex: profile.sex,
       weightKgText: _formatDouble(profile.weightKg),
       heightCmText: _formatDouble(profile.heightCm),
@@ -54,6 +54,61 @@ class CalorieGoalCalculatorFormState {
       goalMode: profile.goalMode,
       goalSpeedKgPerWeekText: normalizedGoalSpeedText,
       lastNonMaintainGoalSpeedText: preservedGoalSpeedText,
+    );
+  }
+
+  factory CalorieGoalCalculatorFormState._create({
+    required CalorieCalculatorSex sex,
+    required String weightKgText,
+    required String heightCmText,
+    required String ageYearsText,
+    required CalorieActivityLevelOption activityLevelOption,
+    required CalorieGoalMode goalMode,
+    required String goalSpeedKgPerWeekText,
+    required String lastNonMaintainGoalSpeedText,
+    bool isSaving = false,
+  }) {
+    final weightError = _validatePositiveDouble(weightKgText);
+    final heightError = _validatePositiveDouble(heightCmText);
+    final ageError = _validatePositiveInt(ageYearsText);
+    final goalSpeedError = goalMode == CalorieGoalMode.maintain
+        ? null
+        : _validatePositiveDouble(goalSpeedKgPerWeekText);
+    final profile =
+        weightError == null &&
+            heightError == null &&
+            ageError == null &&
+            goalSpeedError == null
+        ? CalorieCalculatorProfile(
+            sex: sex,
+            weightKg: _parsePositiveDouble(weightKgText)!,
+            heightCm: _parsePositiveDouble(heightCmText)!,
+            ageYears: _parsePositiveInt(ageYearsText)!,
+            activityLevel: activityLevelOption.palValue,
+            goalMode: goalMode,
+            goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
+                ? 0
+                : _parsePositiveDouble(goalSpeedKgPerWeekText)!,
+          )
+        : null;
+
+    return CalorieGoalCalculatorFormState(
+      sex: sex,
+      weightKgText: weightKgText,
+      heightCmText: heightCmText,
+      ageYearsText: ageYearsText,
+      activityLevelOption: activityLevelOption,
+      goalMode: goalMode,
+      goalSpeedKgPerWeekText: goalSpeedKgPerWeekText,
+      lastNonMaintainGoalSpeedText: lastNonMaintainGoalSpeedText,
+      weightError: weightError,
+      heightError: heightError,
+      ageError: ageError,
+      goalSpeedError: goalSpeedError,
+      calculation: profile == null
+          ? null
+          : CalorieGoalCalculator.calculate(profile),
+      isSaving: isSaving,
     );
   }
 
@@ -144,7 +199,7 @@ class CalorieGoalCalculatorFormState {
     String? lastNonMaintainGoalSpeedText,
     bool? isSaving,
   }) {
-    return _create(
+    return CalorieGoalCalculatorFormState._create(
       sex: sex ?? this.sex,
       weightKgText: weightKgText ?? this.weightKgText,
       heightCmText: heightCmText ?? this.heightCmText,
@@ -156,61 +211,6 @@ class CalorieGoalCalculatorFormState {
       lastNonMaintainGoalSpeedText:
           lastNonMaintainGoalSpeedText ?? this.lastNonMaintainGoalSpeedText,
       isSaving: isSaving ?? this.isSaving,
-    );
-  }
-
-  static CalorieGoalCalculatorFormState _create({
-    required CalorieCalculatorSex sex,
-    required String weightKgText,
-    required String heightCmText,
-    required String ageYearsText,
-    required CalorieActivityLevelOption activityLevelOption,
-    required CalorieGoalMode goalMode,
-    required String goalSpeedKgPerWeekText,
-    required String lastNonMaintainGoalSpeedText,
-    bool isSaving = false,
-  }) {
-    final weightError = _validatePositiveDouble(weightKgText);
-    final heightError = _validatePositiveDouble(heightCmText);
-    final ageError = _validatePositiveInt(ageYearsText);
-    final goalSpeedError = goalMode == CalorieGoalMode.maintain
-        ? null
-        : _validatePositiveDouble(goalSpeedKgPerWeekText);
-    final profile =
-        weightError == null &&
-            heightError == null &&
-            ageError == null &&
-            goalSpeedError == null
-        ? CalorieCalculatorProfile(
-            sex: sex,
-            weightKg: _parsePositiveDouble(weightKgText)!,
-            heightCm: _parsePositiveDouble(heightCmText)!,
-            ageYears: _parsePositiveInt(ageYearsText)!,
-            activityLevel: activityLevelOption.palValue,
-            goalMode: goalMode,
-            goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
-                ? 0
-                : _parsePositiveDouble(goalSpeedKgPerWeekText)!,
-          )
-        : null;
-
-    return CalorieGoalCalculatorFormState(
-      sex: sex,
-      weightKgText: weightKgText,
-      heightCmText: heightCmText,
-      ageYearsText: ageYearsText,
-      activityLevelOption: activityLevelOption,
-      goalMode: goalMode,
-      goalSpeedKgPerWeekText: goalSpeedKgPerWeekText,
-      lastNonMaintainGoalSpeedText: lastNonMaintainGoalSpeedText,
-      weightError: weightError,
-      heightError: heightError,
-      ageError: ageError,
-      goalSpeedError: goalSpeedError,
-      calculation: profile == null
-          ? null
-          : CalorieGoalCalculator.calculate(profile),
-      isSaving: isSaving,
     );
   }
 

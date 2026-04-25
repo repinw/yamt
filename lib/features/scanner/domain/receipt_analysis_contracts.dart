@@ -1,3 +1,6 @@
+// Contracts stay class-based for provider overrides and test fakes.
+// ignore_for_file: one_member_abstracts
+
 import 'package:yamt/features/scanner/domain/receipt_analysis_models.dart';
 import 'package:yamt/features/scanner/domain/receipt_input_models.dart';
 

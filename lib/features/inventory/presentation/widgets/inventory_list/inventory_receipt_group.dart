@@ -146,8 +146,7 @@ List<InventoryReceiptGroup> groupInventoryItemsByReceipt(
       })
       .toList(growable: false);
 
-  groups.sort(_compareGroups);
-  return groups;
+  return groups..sort(_compareGroups);
 }
 
 int _compareGroups(InventoryReceiptGroup a, InventoryReceiptGroup b) {

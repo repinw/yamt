@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -48,22 +50,24 @@ void main() {
           builder: (context) {
             return TextButton(
               onPressed: () {
-                showModalBottomSheet<void>(
-                  context: context,
-                  builder: (context) {
-                    return PreparedMealSheetContainer(
-                      formKey: GlobalKey<FormState>(),
-                      children: [
-                        const Text('Sheet body'),
-                        PreparedMealSheetActions(
-                          primaryLabel: 'Save',
-                          onPrimaryPressed: () {
-                            primaryTapCount += 1;
-                          },
-                        ),
-                      ],
-                    );
-                  },
+                unawaited(
+                  showModalBottomSheet<void>(
+                    context: context,
+                    builder: (context) {
+                      return PreparedMealSheetContainer(
+                        formKey: GlobalKey<FormState>(),
+                        children: [
+                          const Text('Sheet body'),
+                          PreparedMealSheetActions(
+                            primaryLabel: 'Save',
+                            onPrimaryPressed: () {
+                              primaryTapCount += 1;
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 );
               },
               child: const Text('Open'),

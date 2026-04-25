@@ -140,6 +140,7 @@ final class AppRouterProvider
           inventoryBackedCalorieEntrySaveFlowProvider,
           inventoryItemsControllerProvider,
           preparedMealsControllerProvider,
+          preparedMealImagePickerProvider,
           receiptCaptureFlowControllerProvider,
           receiptBatchFlowControllerProvider,
         ],
@@ -152,6 +153,7 @@ final class AppRouterProvider
           AppRouterProvider.$allTransitiveDependencies5,
           AppRouterProvider.$allTransitiveDependencies6,
           AppRouterProvider.$allTransitiveDependencies7,
+          AppRouterProvider.$allTransitiveDependencies8,
         },
       );
 
@@ -163,11 +165,12 @@ final class AppRouterProvider
       CalorieEntryDeleteFlowProvider.$allTransitiveDependencies2;
   static final $allTransitiveDependencies4 =
       inventoryBackedCalorieEntrySaveFlowProvider;
-  static final $allTransitiveDependencies5 =
-      receiptCaptureFlowControllerProvider;
+  static final $allTransitiveDependencies5 = preparedMealImagePickerProvider;
   static final $allTransitiveDependencies6 =
+      receiptCaptureFlowControllerProvider;
+  static final $allTransitiveDependencies7 =
       ReceiptCaptureFlowControllerProvider.$allTransitiveDependencies0;
-  static final $allTransitiveDependencies7 = receiptBatchFlowControllerProvider;
+  static final $allTransitiveDependencies8 = receiptBatchFlowControllerProvider;
 
   @override
   String debugGetCreateSourceHash() => _$appRouterHash();
@@ -191,4 +194,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'65a67697d354b210402e576eea647444d3daa51f';
+String _$appRouterHash() => r'ecfff8df1fea923c7444c5a0f116d4424baeeb1d';

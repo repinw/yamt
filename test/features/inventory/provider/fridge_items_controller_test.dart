@@ -43,7 +43,7 @@ class _FakeFridgeItemRepository implements InventoryItemRepository {
         onError: controller.addError,
         onDone: controller.close,
       );
-      onReadAll().then(controller.add, onError: controller.addError);
+      unawaited(onReadAll().then(controller.add, onError: controller.addError));
       controller.onCancel = () {
         unawaited(watchSubscription.cancel());
       };
@@ -59,7 +59,14 @@ class _FakeFridgeItemRepository implements InventoryItemRepository {
     savedItems = List<InventoryItem>.from(items);
 
     if (_saveErrors.isNotEmpty) {
-      throw _saveErrors.removeFirst();
+      final error = _saveErrors.removeFirst();
+      if (error is Error) {
+        throw error;
+      }
+      if (error is Exception) {
+        throw error;
+      }
+      throw StateError(error.toString());
     }
     if (saveAllShouldThrow) {
       throw StateError('saveAll failed');
@@ -93,7 +100,7 @@ class _FakeFridgeItemRepository implements InventoryItemRepository {
     _watchController.addError(error, stackTrace);
   }
 
-  void enqueueSaveResult(bool result) {
+  void enqueueSaveResult({required bool result}) {
     _saveResults.add(result);
   }
 
@@ -639,12 +646,13 @@ void main() {
   test(
     'deleteItem applies optimistic update and rolls back on save failure',
     () async {
-      final repository = _FakeFridgeItemRepository(
-        onReadAll: () async => <InventoryItem>[_item('a'), _item('b')],
-      );
-      repository.saveDelay = const Duration(milliseconds: 20);
-      repository.saveAllShouldFail = true;
-      repository.emitRealtimeOnSave = false;
+      final repository =
+          _FakeFridgeItemRepository(
+              onReadAll: () async => <InventoryItem>[_item('a'), _item('b')],
+            )
+            ..saveDelay = const Duration(milliseconds: 20)
+            ..saveAllShouldFail = true
+            ..emitRealtimeOnSave = false;
       addTearDown(repository.dispose);
 
       final container = ProviderContainer(
@@ -688,12 +696,13 @@ void main() {
   );
 
   test('deleteItem rolls back on save exception and returns false', () async {
-    final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <InventoryItem>[_item('a'), _item('b')],
-    );
-    repository.saveDelay = const Duration(milliseconds: 20);
-    repository.saveAllShouldThrow = true;
-    repository.emitRealtimeOnSave = false;
+    final repository =
+        _FakeFridgeItemRepository(
+            onReadAll: () async => <InventoryItem>[_item('a'), _item('b')],
+          )
+          ..saveDelay = const Duration(milliseconds: 20)
+          ..saveAllShouldThrow = true
+          ..emitRealtimeOnSave = false;
     addTearDown(repository.dispose);
 
     final container = ProviderContainer(
@@ -738,13 +747,14 @@ void main() {
   test(
     'sequential deletes keep consistent state when first save fails',
     () async {
-      final repository = _FakeFridgeItemRepository(
-        onReadAll: () async => <InventoryItem>[_item('a'), _item('b')],
-      );
-      repository.saveDelay = const Duration(milliseconds: 20);
-      repository.emitRealtimeOnSave = false;
-      repository.enqueueSaveResult(false);
-      repository.enqueueSaveResult(true);
+      final repository =
+          _FakeFridgeItemRepository(
+              onReadAll: () async => <InventoryItem>[_item('a'), _item('b')],
+            )
+            ..saveDelay = const Duration(milliseconds: 20)
+            ..emitRealtimeOnSave = false
+            ..enqueueSaveResult(result: false)
+            ..enqueueSaveResult(result: true);
       addTearDown(repository.dispose);
 
       final container = ProviderContainer(
@@ -948,12 +958,15 @@ void main() {
   );
 
   test('eatItem rolls back quantity change when save throws', () async {
-    final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <InventoryItem>[_item('a').copyWith(quantity: 3)],
-    );
-    repository.saveDelay = const Duration(milliseconds: 20);
-    repository.saveAllShouldThrow = true;
-    repository.emitRealtimeOnSave = false;
+    final repository =
+        _FakeFridgeItemRepository(
+            onReadAll: () async => <InventoryItem>[
+              _item('a').copyWith(quantity: 3),
+            ],
+          )
+          ..saveDelay = const Duration(milliseconds: 20)
+          ..saveAllShouldThrow = true
+          ..emitRealtimeOnSave = false;
     addTearDown(repository.dispose);
 
     final container = ProviderContainer(
@@ -993,12 +1006,15 @@ void main() {
   });
 
   test('eatItem rolls back optimistic depletion when save throws', () async {
-    final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <InventoryItem>[_item('a').copyWith(quantity: 1)],
-    );
-    repository.saveDelay = const Duration(milliseconds: 20);
-    repository.saveAllShouldThrow = true;
-    repository.emitRealtimeOnSave = false;
+    final repository =
+        _FakeFridgeItemRepository(
+            onReadAll: () async => <InventoryItem>[
+              _item('a').copyWith(quantity: 1),
+            ],
+          )
+          ..saveDelay = const Duration(milliseconds: 20)
+          ..saveAllShouldThrow = true
+          ..emitRealtimeOnSave = false;
     addTearDown(repository.dispose);
 
     final container = ProviderContainer(

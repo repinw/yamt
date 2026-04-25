@@ -8,6 +8,7 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -141,7 +142,7 @@ Widget _wrapCard(Widget child) {
   );
 }
 
-@Dependencies([InventoryItemsController])
+@Dependencies([InventoryItemsController, preparedMealImagePicker])
 void main() {
   testWidgets('PreparedMealCard shows expand indicator and rotates it', (
     tester,

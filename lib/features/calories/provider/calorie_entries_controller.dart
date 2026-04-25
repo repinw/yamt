@@ -103,6 +103,8 @@ class CalorieDayViewData {
 /// Defines calorie entries controller.
 @riverpod
 class CalorieEntriesController extends _$CalorieEntriesController {
+  // Subscription is cancelled by _disposeSubscription.
+  // ignore: cancel_subscriptions
   StreamSubscription<List<CalorieEntry>>? _entriesSubscription;
   Future<void> _mutationQueue = Future<void>.value();
 

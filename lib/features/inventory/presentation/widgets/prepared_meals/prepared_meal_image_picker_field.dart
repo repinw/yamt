@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:yamt/core/constants/app_ui_constants.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -132,6 +133,7 @@ class PreparedMealImagePickerField extends StatelessWidget {
 }
 
 /// Shares prepared meal image picking behavior between sheets.
+@Dependencies([preparedMealImagePicker])
 mixin PreparedMealImagePickerStateMixin<T extends ConsumerStatefulWidget>
     on ConsumerState<T> {
   /// Whether image picking is in progress.
@@ -197,9 +199,9 @@ mixin PreparedMealImagePickerStateMixin<T extends ConsumerStatefulWidget>
       _ => l10n.preparedMealImagePickFailed,
     };
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   String _fallbackErrorCode(PreparedMealImageSource source) {

@@ -57,8 +57,9 @@ class _SharedReceiptListenerState extends ConsumerState<SharedReceiptListener> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(sharedReceiptServiceProvider);
-    ref.watch(appRouterProvider);
+    ref
+      ..watch(sharedReceiptServiceProvider)
+      ..watch(appRouterProvider);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -99,7 +100,7 @@ class _SharedReceiptListenerState extends ConsumerState<SharedReceiptListener> {
     String path;
     try {
       path = ref.read(appRouterProvider).state.uri.path;
-    } on StateError {
+    } on Object {
       return false;
     }
 
