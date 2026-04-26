@@ -8,6 +8,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_summary_provider.dart';
+import 'package:yamt/features/calories/provider/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
@@ -542,6 +543,12 @@ void main() {
         manualWeightRepository: manualRepository,
       );
       addTearDown(container.dispose);
+      final subscription = container.listen(
+        resolvedCalorieGoalForDayProvider(today),
+        (_, _) {},
+        fireImmediately: true,
+      );
+      addTearDown(subscription.close);
 
       final resolvedToday = await container.read(
         resolvedCalorieGoalForDayProvider(today).future,
@@ -555,6 +562,24 @@ void main() {
       expect(resolvedToday.usedLearnedTdee, isTrue);
       expect(resolvedHistorical.storedGoalKcal, 2400);
       expect(resolvedHistorical.goalKcal, 2400);
+
+      for (var index = 0; index < 8; index += 1) {
+        await logRepository.saveEntry(
+          _entry(
+            id: 'day-$index',
+            loggedAt: startDay.add(Duration(days: index, hours: 8)),
+            totalKcal: 1000,
+          ),
+        );
+      }
+      container.read(calorieOverviewRevisionProvider.notifier).markChanged();
+
+      final recomputedToday = await container.read(
+        resolvedCalorieGoalForDayProvider(today).future,
+      );
+
+      expect(recomputedToday.storedGoalKcal, 2350);
+      expect(recomputedToday.goalKcal, 2350);
     },
   );
 

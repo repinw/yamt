@@ -7,6 +7,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_summary_provider.dart';
+import 'package:yamt/features/calories/provider/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
@@ -667,6 +668,12 @@ void main() {
         ),
       );
       addTearDown(container.dispose);
+      final subscription = container.listen(
+        calorieWeeklyCheckInViewModelProvider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      addTearDown(subscription.close);
 
       final viewModel = await container.read(
         calorieWeeklyCheckInViewModelProvider.future,
@@ -689,6 +696,20 @@ void main() {
         closeTo(-0.08506, 0.00001),
       );
       expect(viewModel.calculation?.averageIntakeKcal, closeTo(2080, 0.01));
+
+      await logRepository.saveEntry(
+        _entry('previous-entry-0', DateTime(2026, 4, 8, 8), 3000),
+      );
+      container.read(calorieOverviewRevisionProvider.notifier).markChanged();
+
+      final recomputedViewModel = await container.read(
+        calorieWeeklyCheckInViewModelProvider.future,
+      );
+
+      expect(
+        recomputedViewModel.calculation?.averageIntakeKcal,
+        closeTo(2151.43, 0.01),
+      );
     },
   );
 

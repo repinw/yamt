@@ -8,6 +8,8 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_overview_revision_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -45,6 +47,8 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
   required DateTime today,
   required double storedGoalKcal,
 }) async {
+  ref.watch(calorieOverviewRevisionProvider);
+
   final normalizedDay = normalizeDiaryDay(day);
   if (!isSameDiaryDay(normalizedDay, today)) {
     return null;
