@@ -610,7 +610,6 @@ class _BurnWeekOverviewViewModel {
     required this.heartCount,
     required this.canUseHeart,
     required this.shouldQueueZoneDialog,
-    this.kcalUnit = 'kcal',
   });
 
   factory _BurnWeekOverviewViewModel.fromLive({
@@ -859,7 +858,6 @@ class _BurnWeekOverviewViewModel {
       heartCount: displayHeartCount,
       canUseHeart: displayHeartCount != null && displayHeartCount > 0,
       shouldQueueZoneDialog: shouldQueueZoneDialog,
-      kcalUnit: kcalUnit,
     );
   }
 
@@ -872,7 +870,7 @@ class _BurnWeekOverviewViewModel {
   final int? heartCount;
   final bool canUseHeart;
   final bool shouldQueueZoneDialog;
-  final String kcalUnit;
+  String get kcalUnit => 'kcal';
 }
 
 CalorieClassicBudgetBreakdown _resolveFullDayBudget({

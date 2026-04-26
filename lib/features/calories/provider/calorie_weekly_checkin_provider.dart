@@ -1170,9 +1170,9 @@ class _WeeklyCheckInWindowDates {
   List<DateTime> get healthWeightStartCandidates {
     return <DateTime>[
       learningStartDate,
-      if (anchorWeightSourceDay != null) anchorWeightSourceDay!,
+      ?anchorWeightSourceDay,
       if (shouldUseLearningPreviousBoundary) learningPreviousBoundaryDay,
-      if (previousBoundaryDay != null) previousBoundaryDay!,
+      ?previousBoundaryDay,
     ];
   }
 

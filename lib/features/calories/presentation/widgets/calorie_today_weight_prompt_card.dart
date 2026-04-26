@@ -102,7 +102,6 @@ class CalorieTodayWeightPromptCard extends ConsumerWidget {
                           onPressed: () => unawaited(
                             _openWeightDialog(
                               context: context,
-                              ref: ref,
                               day: today,
                             ),
                           ),
@@ -134,12 +133,12 @@ class CalorieTodayWeightPromptCard extends ConsumerWidget {
 
   Future<void> _openWeightDialog({
     required BuildContext context,
-    required WidgetRef ref,
     required DateTime day,
   }) {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final dayLabel = DateFormat.yMMMd(locale).format(day);
-    final controller = ref.read(
+    final container = ProviderScope.containerOf(context, listen: false);
+    final controller = container.read(
       manualHealthWeightEntriesControllerProvider.notifier,
     );
 
@@ -150,7 +149,7 @@ class CalorieTodayWeightPromptCard extends ConsumerWidget {
       hasManualWeight: false,
       onSaveWeight: (weightKg) async {
         final saved = await controller.saveEntry(day: day, weightKg: weightKg);
-        ref
+        container
           ..invalidate(calorieHealthTrendSnapshotProvider)
           ..invalidate(calorieWeeklyCheckInViewModelProvider);
         return saved;

@@ -82,6 +82,7 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
     with WidgetsBindingObserver {
   CalorieDayViewData? _lastResolvedDayView;
   CalorieWeeklyCheckInViewModel? _lastWeeklyCheckInViewModel;
+  CalorieWeeklyCheckInViewModel? _deferredWeeklyCheckInViewModel;
   String? _autoOpenedWeeklyCheckInWindowKey;
   var _weeklyCheckInDialogOpen = false;
 
@@ -331,8 +332,12 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
     if (!mounted ||
         viewModel == null ||
         pending == null ||
-        !viewModel.shouldAutoOpen ||
-        _weeklyCheckInDialogOpen) {
+        !viewModel.shouldAutoOpen) {
+      return;
+    }
+
+    if (_weeklyCheckInDialogOpen) {
+      _deferredWeeklyCheckInViewModel = viewModel;
       return;
     }
 
@@ -348,17 +353,13 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
     });
   }
 
-  void _scheduleCurrentWeeklyCheckInDialogCheck() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      final viewModel = ref
-          .read(calorieWeeklyCheckInViewModelProvider)
-          .asData
-          ?.value;
-      _scheduleWeeklyCheckInDialog(viewModel);
-    });
+  void _scheduleDeferredWeeklyCheckInDialog() {
+    final deferredViewModel = _deferredWeeklyCheckInViewModel;
+    _deferredWeeklyCheckInViewModel = null;
+    if (deferredViewModel == null) {
+      return;
+    }
+    _scheduleWeeklyCheckInDialog(deferredViewModel);
   }
 
   Future<void> _openWeeklyCheckInDialog(
@@ -413,7 +414,7 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
       }
     } finally {
       _weeklyCheckInDialogOpen = false;
-      _scheduleCurrentWeeklyCheckInDialogCheck();
+      _scheduleDeferredWeeklyCheckInDialog();
     }
   }
 
