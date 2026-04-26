@@ -8,6 +8,7 @@ import 'package:yamt/features/calories/presentation/calorie_health_trends_page_k
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_health_weight_dialog.dart';
 import 'package:yamt/features/calories/provider/calorie_health_trend_provider.dart';
+import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/'
     'manual_health_weight_entries_controller.dart';
@@ -90,15 +91,21 @@ class CalorieHealthWeightList extends ConsumerWidget {
           day: point.day,
           weightKg: weightKg,
         );
-        container.invalidate(calorieHealthTrendSnapshotProvider);
+        _refreshWeightDependents(container);
         return saved;
       },
       onClearWeight: () async {
         final deleted = await controller.deleteEntryForDay(point.day);
-        container.invalidate(calorieHealthTrendSnapshotProvider);
+        _refreshWeightDependents(container);
         return deleted;
       },
     );
+  }
+
+  void _refreshWeightDependents(ProviderContainer container) {
+    container
+      ..invalidate(calorieHealthTrendSnapshotProvider)
+      ..invalidate(calorieWeeklyCheckInViewModelProvider);
   }
 
   String _weightSourceLabel({

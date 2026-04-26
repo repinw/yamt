@@ -14,6 +14,7 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'burn_week_live_overview.dart';
+import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -86,6 +87,7 @@ Widget _buildHarness({
       containerOverride ??
       ProviderContainer(
         overrides: [
+          burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
           calorieLogRepositoryProvider.overrideWithValue(logRepository),
           calorieSettingsRepositoryProvider.overrideWithValue(
             settingsRepository,
@@ -258,6 +260,49 @@ void main() {
     expect(find.textContaining('x 6 full days +'), findsNothing);
   });
 
+  testWidgets('rendering overview starts live week sync', (tester) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final cycleStart = today.subtract(const Duration(days: 14));
+    final dayProgress =
+        now.difference(today).inSeconds / const Duration(days: 1).inSeconds;
+    final settingsRepository = _settingsWithGoal(cycleStart);
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        for (var dayOffset = 14; dayOffset >= 1; dayOffset -= 1)
+          _entry(
+            'day-$dayOffset',
+            loggedAt: today.subtract(Duration(days: dayOffset)),
+            totalKcal: 1000,
+          ),
+        _entry(
+          'today',
+          loggedAt: today,
+          totalKcal: 2000 * dayProgress,
+        ),
+      ],
+    );
+    final runStateRepository = _FakeBurnWeekRunStateRepository(
+      const BurnWeekRunState.initial(),
+    );
+    addTearDown(settingsRepository.dispose);
+    addTearDown(logRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        runStateRepository: runStateRepository,
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+
+    expect(runStateRepository.state.currentWeekStartDayKey, diaryDayKey(today));
+    expect(runStateRepository.state.runWeekNumber, 3);
+    expect(runStateRepository.state.starCount, 2);
+  });
+
   testWidgets(
     'today left keeps cycle carryover after a fresh Burn Week restart',
     (tester) async {
@@ -338,6 +383,7 @@ void main() {
     );
     final container = ProviderContainer(
       overrides: [
+        burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
         burnWeekRunStateRepositoryProvider.overrideWithValue(
@@ -459,6 +505,7 @@ void main() {
     );
     final container = ProviderContainer(
       overrides: [
+        burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
         calorieSettingsRepositoryProvider.overrideWithValue(
           settingsRepository,

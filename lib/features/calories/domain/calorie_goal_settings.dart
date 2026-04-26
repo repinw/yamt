@@ -610,6 +610,8 @@ class CalorieGoalSettings {
             if (_shouldKeepGoalHistoryEntry(
               entry: entry,
               effectiveDate: effectiveDate,
+              source: source,
+              weeklyCheckInSnapshot: weeklyCheckInSnapshot,
               replaceFutureHistory: replaceFutureHistory,
             ))
               entry,
@@ -742,15 +744,35 @@ bool _isSameDay(DateTime left, DateTime right) {
 bool _shouldKeepGoalHistoryEntry({
   required CalorieGoalHistoryEntry entry,
   required DateTime effectiveDate,
+  required CalorieGoalSource source,
+  required CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot,
   required bool replaceFutureHistory,
 }) {
   if (_isSameDay(entry.effectiveDate, effectiveDate)) {
+    if (source == CalorieGoalSource.weeklyCheckIn &&
+        entry.source == CalorieGoalSource.weeklyCheckIn &&
+        weeklyCheckInSnapshot != null &&
+        entry.weeklyCheckInSnapshot != null &&
+        !_sameWeeklyCheckInWindow(
+          entry.weeklyCheckInSnapshot!,
+          weeklyCheckInSnapshot,
+        )) {
+      return true;
+    }
     return false;
   }
   if (!replaceFutureHistory) {
     return true;
   }
   return entry.effectiveDate.isBefore(effectiveDate);
+}
+
+bool _sameWeeklyCheckInWindow(
+  CalorieGoalWeeklyCheckInSnapshot left,
+  CalorieGoalWeeklyCheckInSnapshot right,
+) {
+  return _isSameDay(left.windowStartDate, right.windowStartDate) &&
+      _isSameDay(left.windowEndDate, right.windowEndDate);
 }
 
 DateTime _resolveNormalizedCountingStartDate({

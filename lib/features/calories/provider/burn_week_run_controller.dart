@@ -37,11 +37,47 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
       current.currentWeekStartDayKey,
     );
     final currentWeekStartDate = _parseBurnWeekDayKey(currentWeekStartDayKey);
+    final closedWeekCount = missedTrackingForClosedWeeks?.length ?? 0;
     var next = current;
 
     if (currentWeekStartDayKey == null) {
+      if (closedWeekCount == 0) {
+        next = current.copyWith(
+          currentWeekStartDayKey: weekStartDayKey,
+        );
+      } else {
+        next = current.copyWith(
+          currentWeekStartDayKey: diaryDayKey(
+            normalizedWeekStartDate.subtract(
+              Duration(days: burnWeekDaysPerWeek * closedWeekCount),
+            ),
+          ),
+        );
+        next = _advanceToSyncedWeek(
+          current: next,
+          weekStartDayKey: weekStartDayKey,
+          normalizedWeekStartDate: normalizedWeekStartDate,
+          missedTrackingForClosedWeeks: missedTrackingForClosedWeeks,
+        );
+      }
+    } else if (_shouldReplayBackfilledClosedWeeks(
+      current: current,
+      currentWeekStartDayKey: currentWeekStartDayKey,
+      weekStartDayKey: weekStartDayKey,
+      closedWeekCount: closedWeekCount,
+    )) {
       next = current.copyWith(
-        currentWeekStartDayKey: weekStartDayKey,
+        currentWeekStartDayKey: diaryDayKey(
+          normalizedWeekStartDate.subtract(
+            Duration(days: burnWeekDaysPerWeek * closedWeekCount),
+          ),
+        ),
+      );
+      next = _advanceToSyncedWeek(
+        current: next,
+        weekStartDayKey: weekStartDayKey,
+        normalizedWeekStartDate: normalizedWeekStartDate,
+        missedTrackingForClosedWeeks: missedTrackingForClosedWeeks,
       );
     } else if (currentWeekStartDate != null &&
         currentWeekStartDate.isAfter(normalizedWeekStartDate)) {
@@ -55,38 +91,12 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
           currentWeekStartDayKey: currentWeekStartDayKey,
         );
       }
-      var advancedWeekCount = 0;
-      while (_normalizeBurnWeekDayKey(next.currentWeekStartDayKey) !=
-          weekStartDayKey) {
-        final currentLoopWeekStartDate = _parseBurnWeekDayKey(
-          _normalizeBurnWeekDayKey(next.currentWeekStartDayKey),
-        );
-        if (currentLoopWeekStartDate == null ||
-            !currentLoopWeekStartDate.isBefore(normalizedWeekStartDate) ||
-            advancedWeekCount >= _maxWeekSyncAdvances) {
-          next = next.copyWith(
-            currentWeekStartDayKey: weekStartDayKey,
-          );
-          break;
-        }
-        final closingWeekMissedTracking = switch (advancedWeekCount) {
-          _
-              when missedTrackingForClosedWeeks != null &&
-                  advancedWeekCount < missedTrackingForClosedWeeks.length =>
-            missedTrackingForClosedWeeks[advancedWeekCount],
-          _ => true,
-        };
-        final closingWeekState = next.copyWith(
-          missedTrackingThisWeek: closingWeekMissedTracking,
-        );
-        next = _advanceToNextWeek(
-          current: closingWeekState,
-          nextWeekStartDayKey: _resolveNextWeekStartDayKey(
-            _normalizeBurnWeekDayKey(next.currentWeekStartDayKey)!,
-          ),
-        );
-        advancedWeekCount += 1;
-      }
+      next = _advanceToSyncedWeek(
+        current: next,
+        weekStartDayKey: weekStartDayKey,
+        normalizedWeekStartDate: normalizedWeekStartDate,
+        missedTrackingForClosedWeeks: missedTrackingForClosedWeeks,
+      );
     } else if (current.currentWeekStartDayKey != weekStartDayKey) {
       next = current.copyWith(
         currentWeekStartDayKey: weekStartDayKey,
@@ -106,6 +116,47 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
       return;
     }
     await _save(next, previous: current);
+  }
+
+  BurnWeekRunState _advanceToSyncedWeek({
+    required BurnWeekRunState current,
+    required String weekStartDayKey,
+    required DateTime normalizedWeekStartDate,
+    required List<bool>? missedTrackingForClosedWeeks,
+  }) {
+    var next = current;
+    var advancedWeekCount = 0;
+    while (_normalizeBurnWeekDayKey(next.currentWeekStartDayKey) !=
+        weekStartDayKey) {
+      final currentLoopWeekStartDate = _parseBurnWeekDayKey(
+        _normalizeBurnWeekDayKey(next.currentWeekStartDayKey),
+      );
+      if (currentLoopWeekStartDate == null ||
+          !currentLoopWeekStartDate.isBefore(normalizedWeekStartDate) ||
+          advancedWeekCount >= _maxWeekSyncAdvances) {
+        return next.copyWith(
+          currentWeekStartDayKey: weekStartDayKey,
+        );
+      }
+      final closingWeekMissedTracking = switch (advancedWeekCount) {
+        _
+            when missedTrackingForClosedWeeks != null &&
+                advancedWeekCount < missedTrackingForClosedWeeks.length =>
+          missedTrackingForClosedWeeks[advancedWeekCount],
+        _ => true,
+      };
+      final closingWeekState = next.copyWith(
+        missedTrackingThisWeek: closingWeekMissedTracking,
+      );
+      next = _advanceToNextWeek(
+        current: closingWeekState,
+        nextWeekStartDayKey: _resolveNextWeekStartDayKey(
+          _normalizeBurnWeekDayKey(next.currentWeekStartDayKey)!,
+        ),
+      );
+      advancedWeekCount += 1;
+    }
+    return next;
   }
 
   /// Resets whole Burn Week run back to fresh state.
@@ -246,6 +297,21 @@ class BurnWeekRunController extends AsyncNotifier<BurnWeekRunState> {
         left.heartCreditKcal == right.heartCreditKcal &&
         left.starBrokeThisWeek == right.starBrokeThisWeek &&
         left.missedTrackingThisWeek == right.missedTrackingThisWeek;
+  }
+
+  bool _shouldReplayBackfilledClosedWeeks({
+    required BurnWeekRunState current,
+    required String? currentWeekStartDayKey,
+    required String weekStartDayKey,
+    required int closedWeekCount,
+  }) {
+    return closedWeekCount > 0 &&
+        currentWeekStartDayKey == weekStartDayKey &&
+        current.runWeekNumber == 1 &&
+        current.starCount == 0 &&
+        current.heartCount == 3 &&
+        current.heartCreditKcal == 0 &&
+        !current.starBrokeThisWeek;
   }
 }
 

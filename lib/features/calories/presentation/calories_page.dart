@@ -321,6 +321,12 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
     AsyncValue<CalorieWeeklyCheckInViewModel> next,
   ) {
     final viewModel = next.asData?.value;
+    _scheduleWeeklyCheckInDialog(viewModel);
+  }
+
+  void _scheduleWeeklyCheckInDialog(
+    CalorieWeeklyCheckInViewModel? viewModel,
+  ) {
     final pending = viewModel?.pendingWeeklyCheckIn;
     if (!mounted ||
         viewModel == null ||
@@ -339,6 +345,19 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
         return;
       }
       unawaited(_openWeeklyCheckInDialog(viewModel));
+    });
+  }
+
+  void _scheduleCurrentWeeklyCheckInDialogCheck() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final viewModel = ref
+          .read(calorieWeeklyCheckInViewModelProvider)
+          .asData
+          ?.value;
+      _scheduleWeeklyCheckInDialog(viewModel);
     });
   }
 
@@ -394,6 +413,7 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
       }
     } finally {
       _weeklyCheckInDialogOpen = false;
+      _scheduleCurrentWeeklyCheckInDialogCheck();
     }
   }
 

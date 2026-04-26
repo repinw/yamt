@@ -95,14 +95,21 @@ final Provider<Object?> burnWeekLiveSyncProvider =
         settings: settings,
       );
       final closedWeekStartDates = <DateTime>[];
-      if (storedWeekStartDate != null) {
-        var closedWeekStartDate = storedWeekStartDate;
-        while (closedWeekStartDate.isBefore(syncWeekStartDate)) {
-          closedWeekStartDates.add(closedWeekStartDate);
-          closedWeekStartDate = closedWeekStartDate.add(
-            const Duration(days: burnWeekDaysPerWeek),
-          );
-        }
+      var closedWeekStartDate =
+          _shouldRepairBackfilledInitialRun(
+            runState: runState,
+            storedWeekStartDate: storedWeekStartDate,
+            balanceStartDate: weekOverviewValue.balanceStartDate,
+            today: todayOverviewValue.date,
+            syncWeekStartDate: syncWeekStartDate,
+          )
+          ? weekOverviewValue.balanceStartDate
+          : storedWeekStartDate ?? weekOverviewValue.balanceStartDate;
+      while (closedWeekStartDate.isBefore(syncWeekStartDate)) {
+        closedWeekStartDates.add(closedWeekStartDate);
+        closedWeekStartDate = closedWeekStartDate.add(
+          const Duration(days: burnWeekDaysPerWeek),
+        );
       }
       final expectedWeekStartDayKey = diaryDayKey(syncWeekStartDate);
       final expectedCurrentDayKey = diaryDayKey(todayOverviewValue.date);
@@ -232,6 +239,51 @@ bool _isInitialBurnWeekRunState(BurnWeekRunState state) {
       state.heartCreditKcal == 0 &&
       !state.starBrokeThisWeek &&
       !state.missedTrackingThisWeek;
+}
+
+bool _shouldRepairBackfilledInitialRun({
+  required BurnWeekRunState runState,
+  required DateTime? storedWeekStartDate,
+  required DateTime balanceStartDate,
+  required DateTime today,
+  required DateTime syncWeekStartDate,
+}) {
+  if (storedWeekStartDate == null || !_looksLikeFreshRun(runState)) {
+    return false;
+  }
+
+  final normalizedBalanceStartDate = normalizeDiaryDay(balanceStartDate);
+  final normalizedStoredWeekStartDate = normalizeDiaryDay(storedWeekStartDate);
+  final normalizedSyncWeekStartDate = normalizeDiaryDay(syncWeekStartDate);
+  if (!normalizedBalanceStartDate.isBefore(normalizedStoredWeekStartDate) ||
+      !_isSameDiaryDay(
+        normalizedStoredWeekStartDate,
+        normalizedSyncWeekStartDate,
+      )) {
+    return false;
+  }
+
+  final cycleWeekStartDate = resolveBurnWeekLiveSyncWeekStartDate(
+    currentDay: today,
+    currentWeekStartDate: resolveBurnWeekLiveWeekStartDate(
+      currentDay: today,
+      balanceStartDate: normalizedBalanceStartDate,
+      storedWeekStartDayKey: null,
+    ),
+  );
+  return _isSameDiaryDay(cycleWeekStartDate, normalizedStoredWeekStartDate);
+}
+
+bool _looksLikeFreshRun(BurnWeekRunState state) {
+  return state.runWeekNumber == 1 &&
+      state.starCount == 0 &&
+      state.heartCount == 3 &&
+      state.heartCreditKcal == 0 &&
+      !state.starBrokeThisWeek;
+}
+
+bool _isSameDiaryDay(DateTime left, DateTime right) {
+  return diaryDayKey(left) == diaryDayKey(right);
 }
 
 Future<void> _runPendingBurnWeekMutation(

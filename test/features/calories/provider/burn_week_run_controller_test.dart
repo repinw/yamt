@@ -151,7 +151,6 @@ void main() {
       currentDay: DateTime(2026, 4, 21),
       weekStartDate: DateTime(2026, 4, 21),
       missedTrackingThisWeek: false,
-      missedTrackingForClosedWeeks: const <bool>[false],
     );
 
     expect(repository.state.currentWeekStartDayKey, '2026-4-21');
@@ -160,6 +159,58 @@ void main() {
     expect(repository.state.heartCount, 3);
     expect(repository.state.runWeekNumber, 1);
   });
+
+  test(
+    'syncForWeek bootstraps closed weeks when initial state is stale',
+    () async {
+      final repository = _FakeBurnWeekRunStateRepository(
+        const BurnWeekRunState.initial(),
+      );
+      final container = buildContainer(repository);
+
+      await syncWeek(
+        container,
+        currentDay: DateTime(2026, 4, 26),
+        weekStartDate: DateTime(2026, 4, 22),
+        missedTrackingThisWeek: false,
+        missedTrackingForClosedWeeks: const <bool>[false, false],
+      );
+
+      expect(repository.state.currentWeekStartDayKey, '2026-4-22');
+      expect(repository.state.lastActiveDayKey, '2026-4-26');
+      expect(repository.state.runWeekNumber, 3);
+      expect(repository.state.starCount, 2);
+    },
+  );
+
+  test(
+    'syncForWeek repairs current-week state that skipped closed weeks',
+    () async {
+      final repository = _FakeBurnWeekRunStateRepository(
+        buildState(
+          currentWeekStartDayKey: '2026-4-22',
+          lastActiveDayKey: '2026-4-26',
+          runWeekNumber: 1,
+          starCount: 0,
+          heartCount: 3,
+        ),
+      );
+      final container = buildContainer(repository);
+
+      await syncWeek(
+        container,
+        currentDay: DateTime(2026, 4, 26),
+        weekStartDate: DateTime(2026, 4, 22),
+        missedTrackingThisWeek: false,
+        missedTrackingForClosedWeeks: const <bool>[false, false],
+      );
+
+      expect(repository.state.currentWeekStartDayKey, '2026-4-22');
+      expect(repository.state.lastActiveDayKey, '2026-4-26');
+      expect(repository.state.runWeekNumber, 3);
+      expect(repository.state.starCount, 2);
+    },
+  );
 
   test(
     'syncForWeek advances week and awards star after perfect week',

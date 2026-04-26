@@ -328,19 +328,19 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
           anchorEntry: anchorEntry,
           windowStartDate: pendingWeeklyCheckIn.windowStartDate,
         );
-  final windowStartDayKey = diaryDayKey(pendingWeeklyCheckIn.windowStartDate);
-  final weightByDay = <String, double>{
-    for (final entry in manualEntries)
-      if (!entry.day.isBefore(pendingWeeklyCheckIn.windowStartDate) &&
-          !entry.day.isAfter(pendingWeeklyCheckIn.windowEndDate))
-        diaryDayKey(entry.day): entry.weightKg,
-  };
-  final anchorManualWeightKg = anchorWeightSourceDay == null
+  final isFirstWindow =
+      anchorEntry != null &&
+      _isFirstWeeklyCheckInWindowStart(
+        anchorEntry: anchorEntry,
+        windowStartDate: pendingWeeklyCheckIn.windowStartDate,
+      );
+  final previousBoundaryDay = isFirstWindow
       ? null
-      : _manualWeightForDay(manualEntries, anchorWeightSourceDay);
-  if (anchorManualWeightKg != null) {
-    weightByDay.putIfAbsent(windowStartDayKey, () => anchorManualWeightKg);
-  }
+      : previousDiaryDay(pendingWeeklyCheckIn.windowStartDate);
+  final nextBoundaryDay = nextDiaryDay(pendingWeeklyCheckIn.windowEndDate);
+  final weightByDay = <String, double>{};
+  final weightPointByDay = <String, CalorieWeeklyCheckInWeightPoint>{};
+  final manualWeightByDay = _manualWeightByDay(manualEntries);
   final activeKcalByDay = <String, int>{
     for (final day in days) diaryDayKey(day): 0,
   };
@@ -349,24 +349,20 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
   final userHeightCm = settings.calculatorProfile?.heightCm;
 
   if (status.accessState == HealthDataAccessState.ready) {
+    final healthStartInclusive = _earliestDay(
+      <DateTime>[
+        pendingWeeklyCheckIn.windowStartDate,
+        if (anchorWeightSourceDay != null) anchorWeightSourceDay,
+        if (previousBoundaryDay != null) previousBoundaryDay,
+      ],
+    );
     final healthWeightSamples = await ref
         .watch(healthWeightServiceProvider)
         .loadWeightSamples(
-          startInclusive:
-              anchorWeightSourceDay ?? pendingWeeklyCheckIn.windowStartDate,
-          endExclusive: pendingWeeklyCheckIn.windowEndDate.add(
-            const Duration(days: 1),
-          ),
+          startInclusive: healthStartInclusive,
+          endExclusive: nextDiaryDay(nextBoundaryDay),
         );
     representativeWeightByDay = _representativeWeightByDay(healthWeightSamples);
-    for (final day in days) {
-      final dayKey = diaryDayKey(day);
-      final weightKg = representativeWeightByDay[dayKey];
-      if (weightKg == null) {
-        continue;
-      }
-      weightByDay.putIfAbsent(dayKey, () => weightKg);
-    }
 
     final diaryHealthService = ref.watch(diaryHealthServiceProvider);
     final windowDayData = await Future.wait(
@@ -392,27 +388,87 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
       ),
     );
   }
+
+  for (var index = 0; index < days.length; index += 1) {
+    final day = days[index];
+    _putWeightIfAbsent(
+      weightByDay: weightByDay,
+      weightPointByDay: weightPointByDay,
+      displayDay: day,
+      weightKg: manualWeightByDay[diaryDayKey(day)],
+      dayIndex: index,
+    );
+    _putWeightIfAbsent(
+      weightByDay: weightByDay,
+      weightPointByDay: weightPointByDay,
+      displayDay: day,
+      weightKg: representativeWeightByDay[diaryDayKey(day)],
+      dayIndex: index,
+    );
+  }
+
   if (anchorWeightSourceDay != null) {
-    final anchorHealthWeightKg =
-        representativeWeightByDay[diaryDayKey(anchorWeightSourceDay)];
-    if (anchorHealthWeightKg != null) {
-      weightByDay.putIfAbsent(windowStartDayKey, () => anchorHealthWeightKg);
-    }
+    final anchorDayKey = diaryDayKey(anchorWeightSourceDay);
+    _putWeightIfAbsent(
+      weightByDay: weightByDay,
+      weightPointByDay: weightPointByDay,
+      displayDay: pendingWeeklyCheckIn.windowStartDate,
+      weightKg: manualWeightByDay[anchorDayKey],
+      dayIndex: 0,
+    );
+    _putWeightIfAbsent(
+      weightByDay: weightByDay,
+      weightPointByDay: weightPointByDay,
+      displayDay: pendingWeeklyCheckIn.windowStartDate,
+      weightKg: representativeWeightByDay[anchorDayKey],
+      dayIndex: 0,
+    );
   }
-  if (anchorEntry != null &&
-      _isFirstWeeklyCheckInWindowStart(
-        anchorEntry: anchorEntry,
-        windowStartDate: pendingWeeklyCheckIn.windowStartDate,
-      )) {
+  if (isFirstWindow) {
     final anchorWeightKg = anchorEntry.calculatorProfile?.weightKg;
-    if (anchorWeightKg != null) {
-      weightByDay.putIfAbsent(windowStartDayKey, () => anchorWeightKg);
-    }
+    _putWeightIfAbsent(
+      weightByDay: weightByDay,
+      weightPointByDay: weightPointByDay,
+      displayDay: pendingWeeklyCheckIn.windowStartDate,
+      weightKg: anchorWeightKg,
+      dayIndex: 0,
+    );
   }
+  if (previousBoundaryDay != null) {
+    final previousBoundaryDayKey = diaryDayKey(previousBoundaryDay);
+    _putWeightIfAbsent(
+      weightByDay: weightByDay,
+      weightPointByDay: weightPointByDay,
+      displayDay: pendingWeeklyCheckIn.windowStartDate,
+      weightKg: manualWeightByDay[previousBoundaryDayKey],
+      dayIndex: 0,
+    );
+    _putWeightIfAbsent(
+      weightByDay: weightByDay,
+      weightPointByDay: weightPointByDay,
+      displayDay: pendingWeeklyCheckIn.windowStartDate,
+      weightKg: representativeWeightByDay[previousBoundaryDayKey],
+      dayIndex: 0,
+    );
+  }
+  final nextBoundaryDayKey = diaryDayKey(nextBoundaryDay);
+  _putWeightIfAbsent(
+    weightByDay: weightByDay,
+    weightPointByDay: weightPointByDay,
+    displayDay: pendingWeeklyCheckIn.windowEndDate,
+    weightKg: manualWeightByDay[nextBoundaryDayKey],
+    dayIndex: windowLengthDays,
+  );
+  _putWeightIfAbsent(
+    weightByDay: weightByDay,
+    weightPointByDay: weightPointByDay,
+    displayDay: pendingWeeklyCheckIn.windowEndDate,
+    weightKg: representativeWeightByDay[nextBoundaryDayKey],
+    dayIndex: windowLengthDays,
+  );
 
   final missingIntakeDays = <DateTime>[];
   final missingWeightDays = <DateTime>[];
-  final resolvedIntakeKcalByDay = <String, double>{};
   final windowDays = <CalorieWeeklyCheckInWindowDay>[];
   final resolvedWindowIntake = <double>[];
 
@@ -460,7 +516,6 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
     final day = windowDays[index];
     if (day.hasEntries) {
       resolvedWindowIntake.add(day.loggedIntakeKcal);
-      resolvedIntakeKcalByDay[diaryDayKey(day.day)] = day.loggedIntakeKcal;
       windowDays[index] = CalorieWeeklyCheckInWindowDay(
         day: day.day,
         hasEntries: true,
@@ -497,7 +552,6 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
         resolvedWindowIntake.fold<double>(0, (sum, value) => sum + value) /
         resolvedWindowIntake.length;
     resolvedWindowIntake.add(interpolatedIntakeKcal);
-    resolvedIntakeKcalByDay[diaryDayKey(day.day)] = interpolatedIntakeKcal;
     windowDays[index] = CalorieWeeklyCheckInWindowDay(
       day: day.day,
       hasEntries: false,
@@ -538,14 +592,8 @@ Future<_CalorieWeeklyCheckInDayData> _loadWindowDayData({
     );
   }
 
-  final weightPoints = <CalorieWeeklyCheckInWeightPoint>[
-    for (var index = 0; index < windowDays.length; index += 1)
-      if (windowDays[index].weightKg != null)
-        CalorieWeeklyCheckInWeightPoint(
-          dayIndex: index,
-          weightKg: windowDays[index].weightKg!,
-        ),
-  ];
+  final weightPoints = weightPointByDay.values.toList(growable: false)
+    ..sort((left, right) => left.dayIndex.compareTo(right.dayIndex));
   final previousGoalKcal = settings.goalKcalForDay(
     pendingWeeklyCheckIn.windowEndDate,
   );
@@ -748,16 +796,45 @@ DateTime? _anchorWeightSourceDayForWindow({
   return normalizeDiaryDay(anchorEntry.effectiveDate);
 }
 
-double? _manualWeightForDay(
+Map<String, double> _manualWeightByDay(
   List<ManualHealthWeightEntry> manualEntries,
-  DateTime day,
 ) {
-  for (final entry in manualEntries) {
-    if (isSameDiaryDay(entry.day, day)) {
-      return entry.weightKg;
+  return <String, double>{
+    for (final entry in manualEntries) diaryDayKey(entry.day): entry.weightKg,
+  };
+}
+
+void _putWeightIfAbsent({
+  required Map<String, double> weightByDay,
+  required Map<String, CalorieWeeklyCheckInWeightPoint> weightPointByDay,
+  required DateTime displayDay,
+  required double? weightKg,
+  required int dayIndex,
+}) {
+  if (weightKg == null) {
+    return;
+  }
+  final displayDayKey = diaryDayKey(displayDay);
+  if (weightByDay.containsKey(displayDayKey)) {
+    return;
+  }
+  weightByDay[displayDayKey] = weightKg;
+  weightPointByDay[displayDayKey] = CalorieWeeklyCheckInWeightPoint(
+    dayIndex: dayIndex,
+    weightKg: weightKg,
+  );
+}
+
+DateTime _earliestDay(List<DateTime> days) {
+  assert(days.isNotEmpty, 'At least one day is required.');
+  var earliest = normalizeDiaryDay(days.first);
+  for (final day in days.skip(1)) {
+    final normalizedDay = normalizeDiaryDay(day);
+    if (normalizedDay.isBefore(earliest)) {
+      earliest = normalizedDay;
     }
   }
-  return null;
+  return earliest;
 }
 
 class _CalorieWeeklyCheckInDayData {

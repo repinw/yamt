@@ -150,7 +150,9 @@ class CalorieTodayWeightPromptCard extends ConsumerWidget {
       hasManualWeight: false,
       onSaveWeight: (weightKg) async {
         final saved = await controller.saveEntry(day: day, weightKg: weightKg);
-        ref.invalidate(calorieHealthTrendSnapshotProvider);
+        ref
+          ..invalidate(calorieHealthTrendSnapshotProvider)
+          ..invalidate(calorieWeeklyCheckInViewModelProvider);
         return saved;
       },
       onClearWeight: () async => true,

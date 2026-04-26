@@ -15,6 +15,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'burn_week_live_overview_logic.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'burn_week_overview_card.dart';
+import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
@@ -352,6 +353,7 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(burnWeekLiveSyncProvider);
     final today = normalizeDiaryDay(DateTime.now());
     final weekOverviewState = ref.watch(
       calorieWeekOverviewForWindowProvider(today),
