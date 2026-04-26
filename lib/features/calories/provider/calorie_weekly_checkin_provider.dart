@@ -873,6 +873,9 @@ double _sumCalories(List<CalorieEntry> entries) {
 }
 
 double _averageDouble(List<double> values) {
+  if (values.isEmpty) {
+    return 0;
+  }
   return values.fold<double>(0, (sum, value) => sum + value) / values.length;
 }
 

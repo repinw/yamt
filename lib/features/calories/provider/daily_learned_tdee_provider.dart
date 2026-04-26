@@ -259,6 +259,9 @@ Map<String, double> _representativeWeightByDay(
 }
 
 double _medianWeight(List<double> values) {
+  if (values.isEmpty) {
+    return 0;
+  }
   final sorted = List<double>.from(values)..sort();
   final middleIndex = sorted.length ~/ 2;
   if (sorted.length.isOdd) {
