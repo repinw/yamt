@@ -1903,6 +1903,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get burnWeekStatTodayLeft => 'Heute übrig';
 
   @override
+  String get burnWeekStatDayLeft => 'Tag übrig';
+
+  @override
   String get caloriesBalanceCarryoverNoteLabel => 'Übertrag';
 
   @override

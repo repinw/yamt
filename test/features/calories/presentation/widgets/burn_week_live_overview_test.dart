@@ -15,6 +15,7 @@ import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'burn_week_live_overview.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
+import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -77,11 +78,18 @@ DateTime _futureSameDay(DateTime now) {
   return DateTime(now.year, now.month, now.day, 23, 59, 59);
 }
 
+Finder _richTextContaining(String text) {
+  return find.byWidgetPredicate(
+    (widget) => widget is RichText && widget.text.toPlainText().contains(text),
+  );
+}
+
 Widget _buildHarness({
   required FakeCalorieLogRepository logRepository,
   required FakeCalorieSettingsRepository settingsRepository,
   required BurnWeekRunStateRepository runStateRepository,
   ProviderContainer? containerOverride,
+  DateTime? selectedDay,
 }) {
   final container =
       containerOverride ??
@@ -100,6 +108,9 @@ Widget _buildHarness({
           ),
         ],
       );
+  if (selectedDay != null) {
+    container.read(calorieDayControllerProvider.notifier).setDay(selectedDay);
+  }
   if (containerOverride == null) {
     addTearDown(container.dispose);
     addTearDown(logRepository.dispose);
@@ -174,6 +185,107 @@ Future<void> _pumpOverviewScenario(
 }
 
 void main() {
+  testWidgets('renders selected past day snapshot instead of live today', (
+    tester,
+  ) async {
+    final liveToday = normalizeDiaryDay(DateTime.now());
+    final selectedDay = liveToday.subtract(const Duration(days: 1));
+    final cycleStart = selectedDay.subtract(const Duration(days: 2));
+    final settingsRepository = _settingsWithGoal(cycleStart);
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        _entry('cycle-start', loggedAt: cycleStart, totalKcal: 2000),
+        _entry(
+          'before-selected',
+          loggedAt: selectedDay.subtract(const Duration(days: 1)),
+          totalKcal: 2000,
+        ),
+        _entry('selected', loggedAt: selectedDay, totalKcal: 1200),
+        _entry('live-today', loggedAt: liveToday, totalKcal: 3500),
+      ],
+    );
+    final runStateRepository = _FakeBurnWeekRunStateRepository(
+      _runStateForDay(
+        liveToday,
+        runWeekNumber: 9,
+        starCount: 7,
+        heartCount: 1,
+      ),
+    );
+    addTearDown(settingsRepository.dispose);
+    addTearDown(logRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        runStateRepository: runStateRepository,
+        selectedDay: selectedDay,
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text('Week 1 day 3'), findsOneWidget);
+    expect(find.text('DAY LEFT'), findsOneWidget);
+    expect(find.text('TODAY LEFT'), findsNothing);
+    expect(find.text('800 kcal'), findsOneWidget);
+    expect(find.text('x 7'), findsNothing);
+    expect(find.text('x 1'), findsNothing);
+  });
+
+  testWidgets('past day snapshot uses snapshot week for previous overflow', (
+    tester,
+  ) async {
+    final liveToday = normalizeDiaryDay(DateTime.now());
+    final selectedDay = liveToday.subtract(const Duration(days: 1));
+    final cycleStart = selectedDay.subtract(const Duration(days: 8));
+    final settingsRepository = _settingsWithGoal(cycleStart);
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        for (var index = 0; index < 7; index += 1)
+          _entry(
+            'week-one-$index',
+            loggedAt: cycleStart.add(Duration(days: index)),
+            totalKcal: 2500,
+          ),
+        _entry(
+          'week-two-start',
+          loggedAt: cycleStart.add(const Duration(days: 7)),
+          totalKcal: 2000,
+        ),
+        _entry('selected', loggedAt: selectedDay, totalKcal: 1000),
+      ],
+    );
+    final runStateRepository = _FakeBurnWeekRunStateRepository(
+      _runStateForDay(liveToday),
+    );
+    addTearDown(settingsRepository.dispose);
+    addTearDown(logRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        runStateRepository: runStateRepository,
+        selectedDay: selectedDay,
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text('Week 2 day 2'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Show Burn Week details'));
+    await tester.pumpAndSettle();
+
+    expect(_richTextContaining('Week target: 13,417 kcal'), findsOneWidget);
+    expect(
+      _richTextContaining('Previous week overflow: -583 kcal'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('future goal start shows practice day card', (tester) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);

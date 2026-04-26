@@ -3743,6 +3743,12 @@ abstract class AppLocalizations {
   /// **'Today left'**
   String get burnWeekStatTodayLeft;
 
+  /// No description provided for @burnWeekStatDayLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Day left'**
+  String get burnWeekStatDayLeft;
+
   /// No description provided for @caloriesBalanceCarryoverNoteLabel.
   ///
   /// In en, this message translates to:

@@ -151,12 +151,12 @@ abstract final class CalorieWeeklyCheckInCalculator {
   }) {
     assert(
       intakeKcalByDay.length >= weeklyCheckInWindowLengthDays - 1 &&
-          intakeKcalByDay.length <= weeklyCheckInWindowLengthDays,
-      'Weekly check-in requires 6 or 7 intake values.',
+          intakeKcalByDay.length <= dailyLearnedTdeeMaximumLookbackDays,
+      'Weekly check-in requires 6 to 28 intake values.',
     );
     assert(
-      lastWeekActiveKcalByDay.length == intakeKcalByDay.length,
-      'Weekly check-in activity values must match intake values.',
+      lastWeekActiveKcalByDay.isNotEmpty,
+      'Weekly check-in activity baseline values must not be empty.',
     );
     assert(
       weightPoints.length >= 2,

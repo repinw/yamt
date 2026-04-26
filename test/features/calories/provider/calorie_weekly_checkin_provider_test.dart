@@ -527,6 +527,70 @@ void main() {
   );
 
   test(
+    'uses available trend weights when exact start weight is missing',
+    () async {
+      final today = DateTime(2026, 4, 15);
+      final goalStart = DateTime(2026, 4, 8);
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2400,
+          calculatorProfile: null,
+          effectiveDate: goalStart,
+        ),
+      );
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          for (var index = 0; index < 7; index += 1)
+            _entry(
+              'entry-$index',
+              goalStart.add(Duration(days: index, hours: 8)),
+              2100 + (index * 10),
+            ),
+        ],
+      );
+      final healthWeightService = FakeHealthWeightService(
+        <HealthWeightSample>[
+          HealthWeightSample(
+            recordedAt: DateTime(2026, 4, 9, 7),
+            weightKg: 82,
+          ),
+          HealthWeightSample(
+            recordedAt: DateTime(2026, 4, 14, 7),
+            weightKg: 81.4,
+          ),
+        ],
+      );
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[],
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = _createContainer(
+        today: today,
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        manualRepository: manualRepository,
+        healthConnectionService: FakeHealthConnectionService(_readyStatus),
+        healthWeightService: healthWeightService,
+        diaryHealthService: FakeDiaryHealthService(
+          const <String, DiaryHealthDayData>{},
+        ),
+      );
+      addTearDown(container.dispose);
+
+      final viewModel = await container.read(
+        calorieWeeklyCheckInViewModelProvider.future,
+      );
+
+      expect(viewModel.isReady, isTrue);
+      expect(viewModel.blockedReason, isNull);
+      expect(viewModel.missingWeightDays, isEmpty);
+      expect(viewModel.calculation, isNotNull);
+    },
+  );
+
+  test(
     'second overdue window uses previous and next boundary weights',
     () async {
       final today = DateTime(2026, 4, 23);
@@ -557,6 +621,12 @@ void main() {
         initialEntries: <CalorieEntry>[
           for (var index = 0; index < 7; index += 1)
             _entry(
+              'previous-entry-$index',
+              DateTime(2026, 4, 8).add(Duration(days: index, hours: 8)),
+              2000 + (index * 10),
+            ),
+          for (var index = 0; index < 7; index += 1)
+            _entry(
               'entry-$index',
               DateTime(2026, 4, 15).add(Duration(days: index, hours: 8)),
               2100 + (index * 10),
@@ -565,6 +635,10 @@ void main() {
       );
       final healthWeightService = FakeHealthWeightService(
         <HealthWeightSample>[
+          HealthWeightSample(
+            recordedAt: DateTime(2026, 4, 8, 7),
+            weightKg: 82.6,
+          ),
           HealthWeightSample(
             recordedAt: DateTime(2026, 4, 14, 7),
             weightKg: 82,
@@ -610,6 +684,11 @@ void main() {
       expect(viewModel.missingWeightDays, isEmpty);
       expect(viewModel.days.first.weightKg, 82);
       expect(viewModel.days.last.weightKg, 81.4);
+      expect(
+        viewModel.calculation?.trendWeightChangePerDay,
+        closeTo(-0.08506, 0.00001),
+      );
+      expect(viewModel.calculation?.averageIntakeKcal, closeTo(2080, 0.01));
     },
   );
 

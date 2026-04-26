@@ -17,6 +17,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'burn_week_overview_card.dart';
 import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
+import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/provider/'
@@ -353,8 +354,15 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(burnWeekLiveSyncProvider);
-    final today = normalizeDiaryDay(DateTime.now());
+    final wallNow = DateTime.now();
+    final liveToday = normalizeDiaryDay(wallNow);
+    final selectedDay = ref.watch(calorieDayControllerProvider);
+    final displayDay = normalizeDiaryDay(selectedDay);
+    final usesSnapshot = displayDay.isBefore(liveToday);
+    final today = usesSnapshot ? displayDay : liveToday;
+    if (!usesSnapshot) {
+      ref.watch(burnWeekLiveSyncProvider);
+    }
     final weekOverviewState = ref.watch(
       calorieWeekOverviewForWindowProvider(today),
     );
@@ -368,9 +376,10 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
     final weeklyCheckInState = ref.watch(calorieWeeklyCheckInViewModelProvider);
     final weeklyCheckInViewModel = weeklyCheckInState.asData?.value;
     final hasAutoOpeningWeeklyCheckIn =
-        weeklyCheckInState.isLoading ||
-        (weeklyCheckInViewModel?.pendingWeeklyCheckIn != null &&
-            weeklyCheckInViewModel?.shouldAutoOpen == true);
+        !usesSnapshot &&
+        (weeklyCheckInState.isLoading ||
+            (weeklyCheckInViewModel?.pendingWeeklyCheckIn != null &&
+                weeklyCheckInViewModel?.shouldAutoOpen == true));
 
     final weekOverview = weekOverviewState.value;
     final todayOverview = todayOverviewState.value;
@@ -389,7 +398,7 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
     final l10n = AppLocalizations.of(context)!;
     final numberFormat = NumberFormat.decimalPattern(locale);
     final colors = Theme.of(context).colorScheme;
-    final now = DateTime.now();
+    final now = usesSnapshot ? _snapshotEndOfDay(today) : wallNow;
     if (weekOverview.goalStartsInFuture &&
         weekOverview.nextGoalStartDate != null) {
       final dateFormat = DateFormat.yMMMd(locale);
@@ -447,6 +456,7 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
       runState.currentWeekStartDayKey,
     );
     final hasScheduledRestart =
+        !usesSnapshot &&
         storedWeekStartDate != null &&
         storedWeekStartDate.isAfter(todayOverview.date);
     if (hasScheduledRestart) {
@@ -485,12 +495,26 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
         ),
       );
     }
-    final difficulty = resolveBurnWeekMockDifficulty(runState.starCount);
-    final todayProgress = resolveBurnWeekCurrentDayProgress(now);
+    final snapshotRunWeekNumber = _resolveSnapshotRunWeekNumber(
+      currentDay: todayOverview.date,
+      balanceStartDate: weekOverview.balanceStartDate,
+    );
+    final runWeekNumber = usesSnapshot
+        ? snapshotRunWeekNumber
+        : runState.runWeekNumber;
+    final starCount = usesSnapshot ? 0 : runState.starCount;
+    final heartCount = usesSnapshot ? 0 : runState.heartCount;
+    final heartCreditKcal = usesSnapshot ? 0.0 : runState.heartCreditKcal;
+    final difficulty = resolveBurnWeekMockDifficulty(starCount);
+    final todayProgress = usesSnapshot
+        ? 1.0
+        : resolveBurnWeekCurrentDayProgress(now);
     final currentWeekStartDate = resolveBurnWeekLiveWeekStartDate(
       currentDay: todayOverview.date,
       balanceStartDate: weekOverview.balanceStartDate,
-      storedWeekStartDayKey: runState.currentWeekStartDayKey,
+      storedWeekStartDayKey: !usesSnapshot
+          ? runState.currentWeekStartDayKey
+          : null,
     );
     final completedDaysCount = weekOverview.days
         .where(
@@ -513,7 +537,7 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
     final previousWeekOverflowKcal = resolveBurnWeekPreviousOverflowKcal(
       cycleCarryoverBeforeTodayKcal: weekOverview.carryoverBeforeTodayKcal,
       currentWeekCarryoverBeforeTodayKcal: weekCarryoverBeforeTodayKcal,
-      runWeekNumber: runState.runWeekNumber,
+      runWeekNumber: runWeekNumber,
     );
     final plannedLaterTodayKcal = resolveBurnWeekPlannedLaterTodayKcal(
       todayEntries: todayEntries,
@@ -525,7 +549,7 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
       todayOverview: todayOverview,
       currentWeekStartDate: currentWeekStartDate,
       previousWeekOverflowKcal: previousWeekOverflowKcal,
-      heartCreditKcal: runState.heartCreditKcal,
+      heartCreditKcal: heartCreditKcal,
       plannedLaterTodayKcal: plannedLaterTodayKcal,
       safeZoneMultiplier: difficulty.safeZoneMultiplier,
     );
@@ -541,18 +565,20 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
       carryoverKcal: weekOverview.carryoverBeforeTodayKcal,
       consumedKcal: todayOverview.totalKcal,
     );
-    _queueZoneDialogIfNeeded(
-      metrics: metrics,
-      runState: runState,
-      hasAutoOpeningWeeklyCheckIn: hasAutoOpeningWeeklyCheckIn,
-    );
+    if (!usesSnapshot) {
+      _queueZoneDialogIfNeeded(
+        metrics: metrics,
+        runState: runState,
+        hasAutoOpeningWeeklyCheckIn: hasAutoOpeningWeeklyCheckIn,
+      );
+    }
     final weekRemainingAfterFoodKcal =
         metrics.weeklyGoalKcal - metrics.consumedKcal;
     const kcalUnit = 'kcal';
     final weekDayLabel = formatBurnWeekLiveWeekDayLabel(
       currentDay: todayOverview.date,
       currentWeekStartDate: currentWeekStartDate,
-      runWeekNumber: runState.runWeekNumber,
+      runWeekNumber: runWeekNumber,
       l10n: l10n,
     );
     final currentTimeLabel = formatBurnWeekLiveClockTime(now);
@@ -604,21 +630,22 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
     final todayFoodBudgetText =
         '${numberFormat.format(todayOverview.totalKcal.round())} $kcalUnit';
     final heartCreditText = formatBurnWeekSignedKcal(
-      runState.heartCreditKcal,
+      heartCreditKcal,
       numberFormat,
       kcalUnit,
     );
-    final starsHeartsText =
-        '${runState.starCount} stars / ${runState.heartCount} hearts';
+    final starsHeartsText = !usesSnapshot
+        ? '$starCount stars / $heartCount hearts'
+        : '-';
 
     return BurnWeekOverviewCard(
       title: weekDayLabel,
       metrics: metrics,
       numberFormat: numberFormat,
       kcalUnit: kcalUnit,
-      starCount: runState.starCount,
-      heartCount: runState.heartCount,
-      onHeartTap: runState.heartCount > 0
+      starCount: usesSnapshot ? null : starCount,
+      heartCount: usesSnapshot ? null : heartCount,
+      onHeartTap: !usesSnapshot && heartCount > 0
           ? () => _showUseHeartDialog(
               dailyGoalKcal: metrics.dailyGoalKcal,
               runState: runState,
@@ -660,12 +687,31 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
         borderColor: colors.tertiary,
       ),
       secondaryStat: BurnWeekOverviewStatData(
-        title: l10n.burnWeekStatTodayLeft.toUpperCase(),
+        title:
+            (usesSnapshot
+                    ? l10n.burnWeekStatDayLeft
+                    : l10n.burnWeekStatTodayLeft)
+                .toUpperCase(),
         value: todayLeftText,
         borderColor: todayLeftKcal < 0 ? colors.error : colors.primary,
       ),
     );
   }
+}
+
+DateTime _snapshotEndOfDay(DateTime day) {
+  return nextDiaryDay(day).subtract(const Duration(microseconds: 1));
+}
+
+int _resolveSnapshotRunWeekNumber({
+  required DateTime currentDay,
+  required DateTime balanceStartDate,
+}) {
+  final elapsedDays = resolveBurnWeekLiveElapsedDays(
+    currentDay: currentDay,
+    balanceStartDate: balanceStartDate,
+  );
+  return (elapsedDays ~/ burnWeekDaysPerWeek) + 1;
 }
 
 ResolvedCalorieGoalData? _resolvedGoalForDay({

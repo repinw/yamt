@@ -60,5 +60,22 @@ void main() {
         expect(startDate, DateTime(2026, 4, 12));
       },
     );
+
+    test('does not start before the first logged food day', () {
+      final settings = CalorieGoalSettings.single(
+        dailyKcalGoal: 2300,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 4, 2, 18),
+      );
+
+      final startDate = resolveCalorieBalanceCycleStartDate(
+        settings: settings,
+        day: DateTime(2026, 4, 8, 14),
+        fallbackStartDate: DateTime(2026, 4, 2),
+        firstEntryDate: DateTime(2026, 4, 8, 9),
+      );
+
+      expect(startDate, DateTime(2026, 4, 8));
+    });
   });
 }
