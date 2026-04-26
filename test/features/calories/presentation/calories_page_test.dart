@@ -1121,6 +1121,82 @@ void main() {
     expect(settings.pendingWeeklyCheckIn, isNull);
   });
 
+  testWidgets('applying one overdue check-in auto-opens next window', (
+    tester,
+  ) async {
+    final today = _normalizeDay(DateTime.now());
+    final goalStart = today.subtract(const Duration(days: 14));
+    final secondWindowStart = goalStart.add(const Duration(days: 7));
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[
+        for (var index = 0; index < 14; index += 1)
+          _entry(
+            'weekly-$index',
+            loggedAt: goalStart.add(Duration(days: index, hours: 8)),
+            mealType: MealType.breakfast,
+            name: 'Weekly $index',
+          ),
+      ],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: goalStart,
+      ),
+    );
+    final weights = <ManualHealthWeightEntry>[
+      ManualHealthWeightEntry(day: goalStart, weightKg: 84),
+      ManualHealthWeightEntry(day: secondWindowStart, weightKg: 83.4),
+      ManualHealthWeightEntry(day: today, weightKg: 82.8),
+    ];
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        overrides: _weeklyCheckInOverrides(today: today, weights: weights),
+        referenceNow: today,
+        authenticated: false,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CalorieWeeklyCheckInDialogKeys.dialog),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(CalorieWeeklyCheckInDialogKeys.applyButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CalorieWeeklyCheckInDialogKeys.dialog),
+      findsOneWidget,
+    );
+    var settings = await settingsRepository.readSettings();
+    expect(
+      settings.pendingWeeklyCheckIn?.windowStartDate,
+      secondWindowStart,
+    );
+
+    await tester.tap(find.byKey(CalorieWeeklyCheckInDialogKeys.applyButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CalorieWeeklyCheckInDialogKeys.dialog),
+      findsNothing,
+    );
+    settings = await settingsRepository.readSettings();
+    expect(settings.pendingWeeklyCheckIn, isNull);
+    expect(
+      settings.latestGoalEntry?.weeklyCheckInSnapshot?.windowStartDate,
+      secondWindowStart,
+    );
+  });
+
   testWidgets('weekly check-in Later leaves hint and can reopen dialog', (
     tester,
   ) async {

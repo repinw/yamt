@@ -971,6 +971,64 @@ void main() {
     );
   });
 
+  test('saveWeeklyCheckInGoal keeps same-day overdue snapshots', () async {
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: const CalorieGoalSettings.empty().applyGoalChange(
+        changedAt: DateTime(2026, 4, 8),
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+      ),
+    );
+    addTearDown(repository.dispose);
+
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+
+    final controller = container.read(calorieGoalControllerProvider.notifier);
+    final firstSaved = await controller.saveWeeklyCheckInGoal(
+      completedAt: DateTime(2026, 4, 25, 10),
+      dailyKcalGoal: 2300,
+      weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+        windowStartDate: DateTime(2026, 4, 8),
+        windowEndDate: DateTime(2026, 4, 14),
+        trendWeightChangePerDay: -0.08,
+        calculatedTrueTdeeKcal: 2315,
+        averageActiveKcal: 220,
+        lowConfidence: false,
+      ),
+    );
+    final secondSaved = await controller.saveWeeklyCheckInGoal(
+      completedAt: DateTime(2026, 4, 25, 11),
+      dailyKcalGoal: 2250,
+      weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+        windowStartDate: DateTime(2026, 4, 15),
+        windowEndDate: DateTime(2026, 4, 21),
+        trendWeightChangePerDay: -0.04,
+        calculatedTrueTdeeKcal: 2280,
+        averageActiveKcal: 210,
+        lowConfidence: true,
+      ),
+    );
+
+    expect(firstSaved, isTrue);
+    expect(secondSaved, isTrue);
+    final settings = await repository.readSettings();
+    final snapshots = settings.goalHistory
+        .map((entry) => entry.weeklyCheckInSnapshot)
+        .whereType<CalorieGoalWeeklyCheckInSnapshot>()
+        .toList(growable: false);
+    expect(snapshots, hasLength(2));
+    expect(snapshots.first.windowStartDate, DateTime(2026, 4, 8));
+    expect(snapshots.last.windowStartDate, DateTime(2026, 4, 15));
+    expect(settings.latestGoalEntry?.dailyKcalGoal, 2250);
+  });
+
   test('saveLearnedTdeeGoal uses learned TDEE and goal speed', () async {
     final initialSettings = const CalorieGoalSettings.empty()
         .applyGoalChange(

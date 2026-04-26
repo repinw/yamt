@@ -464,6 +464,54 @@ void main() {
   );
 
   test(
+    'calorieBalanceSummary ignores empty days before first food log',
+    () async {
+      final selectedDay = DateTime(2026, 4, 8);
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'first-tracked-day',
+            loggedAt: selectedDay.add(const Duration(hours: 9)),
+            totalKcal: 1200,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2300,
+          calculatorProfile: null,
+          effectiveDate: DateTime(2026, 4, 2),
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieBalanceNowProvider.overrideWithValue(
+            () => selectedDay.add(const Duration(hours: 18)),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(calorieDayControllerProvider.notifier).setDay(selectedDay);
+
+      final summary = await container.read(
+        calorieBalanceSummaryProvider.future,
+      );
+
+      expect(summary.balanceStartDate, selectedDay);
+      expect(summary.carryoverKcal, 0);
+      expect(summary.flexibleGoalKcal, 2300);
+      expect(summary.pacedGoalKcal, closeTo(1725, 0.001));
+    },
+  );
+
+  test(
     'calorieBalanceSummary keeps carryover from before the visible week',
     () async {
       final now = DateTime(2026, 4, 11, 14);

@@ -1,17 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_summary_provider.dart';
+import 'package:yamt/features/calories/provider/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
+import 'package:yamt/features/health/data/health_weight_service.dart';
+import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
+import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
 import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
+import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
+import 'package:yamt/features/health/provider/'
+    'manual_health_weight_repository_provider.dart';
 
 import '../support/fake_calories_repositories.dart';
 
@@ -27,24 +39,69 @@ ProviderContainer _createContainer({
   required CalorieGoalSettings settings,
   required DiaryHealthService diaryHealthService,
   HealthConnectionService? healthConnectionService,
+  CalorieLogRepositoryContract? logRepository,
+  HealthWeightService? healthWeightService,
+  ManualHealthWeightRepository? manualWeightRepository,
 }) {
   final settingsRepository = FakeCalorieSettingsRepository(
     initialSettings: settings,
   );
+  final overrides = [
+    calorieBalanceNowProvider.overrideWith(
+      (ref) =>
+          () => today,
+    ),
+    calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+    healthConnectionServiceProvider.overrideWith(
+      (ref) =>
+          healthConnectionService ??
+          FakeHealthConnectionService(
+            _readyStatus,
+          ),
+    ),
+    diaryHealthServiceProvider.overrideWith((ref) => diaryHealthService),
+  ];
+  if (logRepository != null) {
+    overrides.add(
+      calorieLogRepositoryProvider.overrideWithValue(logRepository),
+    );
+  }
+  if (healthWeightService != null) {
+    overrides.add(
+      healthWeightServiceProvider.overrideWith((ref) => healthWeightService),
+    );
+  }
+  if (manualWeightRepository != null) {
+    overrides.add(
+      manualHealthWeightRepositoryProvider.overrideWith(
+        (ref) => manualWeightRepository,
+      ),
+    );
+  }
   return ProviderContainer(
-    overrides: [
-      calorieBalanceNowProvider.overrideWith(
-        (ref) =>
-            () => today,
-      ),
-      calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      healthConnectionServiceProvider.overrideWith(
-        (ref) =>
-            healthConnectionService ??
-            FakeHealthConnectionService(_readyStatus),
-      ),
-      diaryHealthServiceProvider.overrideWith((ref) => diaryHealthService),
-    ],
+    overrides: overrides,
+  );
+}
+
+CalorieEntry _entry({
+  required String id,
+  required DateTime loggedAt,
+  required double totalKcal,
+}) {
+  return CalorieEntry.create(
+    id: id,
+    userId: 'user-1',
+    name: 'Item $id',
+    mealType: MealType.breakfast,
+    consumedAmount: 100,
+    consumedUnit: ConsumedUnit.grams,
+    per100Kcal: totalKcal,
+    per100Protein: 10,
+    per100Carbs: 5,
+    per100Fat: 1,
+    loggedAt: loggedAt,
+    createdAt: loggedAt,
+    updatedAt: loggedAt,
   );
 }
 
@@ -419,6 +476,110 @@ void main() {
       expect(resolvedGoal.goalKcal, 2150);
       expect(resolvedGoal.usedLearnedTdee, isTrue);
       expect(resolvedGoal.usesPreLearningActivityBonus, isFalse);
+    },
+  );
+
+  test(
+    'applies capped daily learned TDEE EMA to current learned goal',
+    () async {
+      final startDay = DateTime(2026, 4, 8);
+      final today = DateTime(2026, 4, 16);
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: DateTime(2026, 4, 1, 9),
+            dailyKcalGoal: 2400,
+            calculatorProfile: null,
+          )
+          .applyGoalChange(
+            changedAt: DateTime(2026, 4, 15),
+            dailyKcalGoal: 2400,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: startDay,
+              windowEndDate: DateTime(2026, 4, 14),
+              trendWeightChangePerDay: 0,
+              calculatedTrueTdeeKcal: 2400,
+              averageActiveKcal: 0,
+              lowConfidence: false,
+            ),
+          )
+          .copyWith(activityTrackingStartDate: today);
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          for (var index = 0; index < 8; index += 1)
+            _entry(
+              id: 'day-$index',
+              loggedAt: startDay.add(Duration(days: index, hours: 8)),
+              totalKcal: 2500,
+            ),
+        ],
+      );
+      final healthWeightService = FakeHealthWeightService(
+        <HealthWeightSample>[
+          HealthWeightSample(
+            recordedAt: startDay.add(const Duration(hours: 7)),
+            weightKg: 80,
+          ),
+          HealthWeightSample(
+            recordedAt: today.add(const Duration(hours: 7)),
+            weightKg: 79.2,
+          ),
+        ],
+      );
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[],
+      );
+      addTearDown(logRepository.dispose);
+
+      final container = _createContainer(
+        today: today,
+        settings: settings,
+        diaryHealthService: FakeDiaryHealthService(
+          const <String, DiaryHealthDayData>{},
+        ),
+        logRepository: logRepository,
+        healthWeightService: healthWeightService,
+        manualWeightRepository: manualRepository,
+      );
+      addTearDown(container.dispose);
+      final subscription = container.listen(
+        resolvedCalorieGoalForDayProvider(today),
+        (_, _) {},
+        fireImmediately: true,
+      );
+      addTearDown(subscription.close);
+
+      final resolvedToday = await container.read(
+        resolvedCalorieGoalForDayProvider(today).future,
+      );
+      final resolvedHistorical = await container.read(
+        resolvedCalorieGoalForDayProvider(DateTime(2026, 4, 15)).future,
+      );
+
+      expect(resolvedToday.storedGoalKcal, 2450);
+      expect(resolvedToday.goalKcal, 2450);
+      expect(resolvedToday.usedLearnedTdee, isTrue);
+      expect(resolvedHistorical.storedGoalKcal, 2400);
+      expect(resolvedHistorical.goalKcal, 2400);
+
+      for (var index = 0; index < 8; index += 1) {
+        await logRepository.saveEntry(
+          _entry(
+            id: 'day-$index',
+            loggedAt: startDay.add(Duration(days: index, hours: 8)),
+            totalKcal: 1000,
+          ),
+        );
+      }
+      container.read(calorieOverviewRevisionProvider.notifier).markChanged();
+
+      final recomputedToday = await container.read(
+        resolvedCalorieGoalForDayProvider(today).future,
+      );
+
+      expect(recomputedToday.storedGoalKcal, 2350);
+      expect(recomputedToday.goalKcal, 2350);
     },
   );
 

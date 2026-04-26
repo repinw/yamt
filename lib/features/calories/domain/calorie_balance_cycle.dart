@@ -9,18 +9,52 @@ DateTime resolveCalorieBalanceCycleStartDate({
   required CalorieGoalSettings settings,
   required DateTime day,
   DateTime? fallbackStartDate,
+  DateTime? firstEntryDate,
 }) {
   final normalizedDay = normalizeDiaryDay(day);
+  DateTime resolvedStartDate;
   final activeGoalEntry = settings.countingGoalEntryForDay(normalizedDay);
   if (activeGoalEntry?.hasGoal == true) {
     final resolvedAnchor =
         settings.cycleAnchorEntryForDay(normalizedDay) ?? activeGoalEntry;
     if (resolvedAnchor != null) {
-      return normalizeDiaryDay(resolvedAnchor.effectiveCountingStartDate);
+      resolvedStartDate = normalizeDiaryDay(
+        resolvedAnchor.effectiveCountingStartDate,
+      );
+      return _clampBalanceStartToFirstEntry(
+        startDate: resolvedStartDate,
+        day: normalizedDay,
+        firstEntryDate: firstEntryDate,
+      );
     }
   }
-  return settings.nextGoalStartAfterDay(normalizedDay) ??
+  resolvedStartDate =
+      settings.nextGoalStartAfterDay(normalizedDay) ??
       normalizeDiaryDay(fallbackStartDate ?? normalizedDay);
+  return _clampBalanceStartToFirstEntry(
+    startDate: resolvedStartDate,
+    day: normalizedDay,
+    firstEntryDate: firstEntryDate,
+  );
+}
+
+DateTime _clampBalanceStartToFirstEntry({
+  required DateTime startDate,
+  required DateTime day,
+  required DateTime? firstEntryDate,
+}) {
+  final normalizedStartDate = normalizeDiaryDay(startDate);
+  if (firstEntryDate == null) {
+    return normalizedStartDate;
+  }
+  final normalizedFirstEntryDate = normalizeDiaryDay(firstEntryDate);
+  if (normalizedFirstEntryDate.isAfter(day)) {
+    return day;
+  }
+  if (normalizedStartDate.isBefore(normalizedFirstEntryDate)) {
+    return normalizedFirstEntryDate;
+  }
+  return normalizedStartDate;
 }
 
 /// Resolve the active 7-day run start for a given day.

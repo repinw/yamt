@@ -996,6 +996,7 @@
   },
   "burnWeekStatEaten": "Eaten",
   "burnWeekStatTodayLeft": "Today left",
+  "burnWeekStatDayLeft": "Day left",
   "caloriesBalanceCarryoverNoteLabel": "Carryover",
   "caloriesBalanceFlexGoalLabel": "Flex goal",
   "caloriesBalanceScaleBufferLabel": "Deficit",

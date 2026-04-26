@@ -236,10 +236,15 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       .toList(growable: false);
   final today = snapshot.days.last.date;
   final visibleWindowStart = snapshot.days.first.date;
+  final firstEntryDate = await repository.readFirstEntryDate();
+  if (!ref.mounted) {
+    throw StateError('Calorie week overview disposed.');
+  }
   final balanceStartDate = resolveCalorieBalanceCycleStartDate(
     settings: settings,
     day: today,
     fallbackStartDate: visibleWindowStart,
+    firstEntryDate: firstEntryDate,
   );
   final historicalEntries = await _readEntriesInRangeSafely(
     repository: repository,

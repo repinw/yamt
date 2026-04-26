@@ -30,7 +30,9 @@ String resolveCalorieWeeklyCheckInBlockedMessage({
     CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight =>
       l10n.caloriesWeeklyCheckInBlockedMissingStartWeightOn(
         dateFormat.format(
-          pending?.windowStartDate ?? viewModel.missingWeightDays.first,
+          viewModel.missingWeightDays.isNotEmpty
+              ? viewModel.missingWeightDays.first
+              : pending?.windowStartDate ?? DateTime.now(),
         ),
       ),
     CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight
@@ -41,7 +43,9 @@ String resolveCalorieWeeklyCheckInBlockedMessage({
     CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight =>
       l10n.caloriesWeeklyCheckInBlockedMissingEndWeightOn(
         dateFormat.format(
-          pending?.windowEndDate ?? viewModel.missingWeightDays.last,
+          viewModel.missingWeightDays.isNotEmpty
+              ? viewModel.missingWeightDays.last
+              : pending?.windowEndDate ?? DateTime.now(),
         ),
       ),
     CalorieWeeklyCheckInBlockedReason.unstableWeightData =>

@@ -162,6 +162,10 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
     throw StateError('Calorie balance summary disposed.');
   }
   final repository = ref.watch(calorieLogRepositoryProvider);
+  final firstEntryDate = await repository.readFirstEntryDate();
+  if (!ref.mounted) {
+    throw StateError('Calorie balance summary disposed.');
+  }
 
   final windowDays = buildDiaryVisibleDays(anchorDay: selectedDay);
   final windowStartDate = windowDays.first;
@@ -169,6 +173,7 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
     settings: settings,
     day: selectedDay,
     fallbackStartDate: windowStartDate,
+    firstEntryDate: firstEntryDate,
   );
   final historyEntries = await _readHistoryEntriesSafely(
     startInclusive: balanceStartDate,

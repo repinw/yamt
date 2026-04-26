@@ -10,6 +10,7 @@ import 'package:yamt/features/calories/domain/diary_activity_summary.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_balance_summary_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/provider/daily_learned_tdee_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
 import 'package:yamt/features/health/provider/health_connection_controller.dart';
@@ -202,11 +203,30 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
           averageActiveKcal: averageActiveKcal,
         )
       : 0.0;
+  final dailyLearnedGoal = await ref.watch(
+    dailyLearnedTdeeGoalForDayProvider(
+      day: normalizedDay,
+      today: now,
+      storedGoalKcal: storedGoalKcal,
+    ).future,
+  );
+  if (!ref.mounted) {
+    throw StateError('Resolved calorie goal disposed.');
+  }
+  final effectiveStoredGoalKcal =
+      dailyLearnedGoal?.newGoalKcal ?? storedGoalKcal;
   final goalBreakdown = CalorieBudgetCalculator.resolveDailyGoal(
-    storedGoalKcal: storedGoalKcal,
+    storedGoalKcal: effectiveStoredGoalKcal,
     activityDeltaKcal: activityDeltaKcal,
   );
   if (!kReleaseMode) {
+    final dailyLearnedTargetKcal =
+        dailyLearnedGoal?.newGoalKcal.toStringAsFixed(2) ?? 'null';
+    final dailyLearnedMeasuredTdeeKcal =
+        dailyLearnedGoal?.measured.measuredTrueTdeeKcal.toStringAsFixed(2) ??
+        'null';
+    final dailyLearnedCalculatedTdeeKcal =
+        dailyLearnedGoal?.calculatedTrueTdeeKcal.toStringAsFixed(2) ?? 'null';
     final message =
         'CALC_GOAL_DEBUG '
         'day=${diaryDayKey(normalizedDay)} '
@@ -214,13 +234,16 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
         'todayActiveKcal=${dayActivity.todayActiveKcal} '
         'activityComparisonKcal=${activityComparisonKcal.toStringAsFixed(2)} '
         'activityDeltaKcal=${activityDeltaKcal.toStringAsFixed(2)} '
+        'dailyLearnedTargetKcal=$dailyLearnedTargetKcal '
+        'dailyLearnedMeasuredTdeeKcal=$dailyLearnedMeasuredTdeeKcal '
+        'dailyLearnedCalculatedTdeeKcal=$dailyLearnedCalculatedTdeeKcal '
         'resolvedGoalKcal=${goalBreakdown.goalKcal.toStringAsFixed(2)}';
     log(message, name: _resolvedGoalLogName);
   }
 
   return ResolvedCalorieGoalData(
     day: normalizedDay,
-    storedGoalKcal: storedGoalKcal,
+    storedGoalKcal: effectiveStoredGoalKcal,
     goalKcal: goalBreakdown.goalKcal,
     activityDeltaKcal: activityDeltaKcal,
     activityComparisonKcal: activityComparisonKcal,

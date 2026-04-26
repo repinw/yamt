@@ -366,8 +366,8 @@ void main() {
       0,
     );
     expect(overview.totalConsumedKcal, 600);
-    expect(overview.totalGoalKcal, 14000);
-    expect(overview.remainingKcal, 13400);
+    expect(overview.totalGoalKcal, 6000);
+    expect(overview.remainingKcal, 5400);
   });
 
   test(
@@ -677,6 +677,57 @@ void main() {
   );
 
   test(
+    'calorieWeekOverview ignores empty days before first food log',
+    () async {
+      final today = DateTime(2026, 4, 8);
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'first-tracked-day',
+            loggedAt: today.add(const Duration(hours: 9)),
+            totalKcal: 1200,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2300,
+          calculatorProfile: null,
+          effectiveDate: DateTime(2026, 4, 2),
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final provider = calorieWeekOverviewForWindowProvider(today);
+      final subscription = container.listen(provider, (_, _) {});
+      addTearDown(subscription.close);
+
+      final overview = await container.read(provider.future);
+
+      expect(overview.days.last.date, today);
+      expect(
+        overview.days.first.date,
+        today.subtract(const Duration(days: 6)),
+      );
+
+      expect(overview.balanceStartDate, today);
+      expect(overview.carryoverBeforeTodayKcal, 0);
+      expect(overview.todayFlexibleGoalKcal, 2300);
+    },
+  );
+
+  test(
     'calorieWeekOverview keeps the same balance cycle through weekly check-ins',
     () async {
       final today = DateTime(2026, 4, 10);
@@ -803,7 +854,7 @@ void main() {
       );
 
       expect(initialOverview.totalConsumedKcal, 600);
-      expect(initialOverview.totalGoalKcal, 17500);
+      expect(initialOverview.totalGoalKcal, 2500);
       expect(readCount, diaryVisibleDayCount);
 
       final updatedOverview = Completer<CalorieWeekOverview>();

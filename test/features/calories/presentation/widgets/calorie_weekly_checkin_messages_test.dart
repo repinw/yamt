@@ -50,7 +50,7 @@ void main() {
     );
   });
 
-  test('formats single missing end weight from pending window', () {
+  test('formats single missing end weight from missing date', () {
     final l10n = AppLocalizationsEn();
     final pending = PendingCalorieGoalWeeklyCheckIn(
       windowStartDate: DateTime(2026, 4),
@@ -71,7 +71,7 @@ void main() {
 
     expect(
       message,
-      l10n.caloriesWeeklyCheckInBlockedMissingEndWeightOn('Apr 7, 2026'),
+      l10n.caloriesWeeklyCheckInBlockedMissingEndWeightOn('Apr 5, 2026'),
     );
   });
 }

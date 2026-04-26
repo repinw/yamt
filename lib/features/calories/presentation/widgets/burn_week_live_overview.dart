@@ -15,7 +15,9 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'burn_week_live_overview_logic.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'burn_week_overview_card.dart';
+import 'package:yamt/features/calories/provider/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
+import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/provider/'
@@ -352,23 +354,28 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
 
   @override
   Widget build(BuildContext context) {
-    final today = normalizeDiaryDay(DateTime.now());
+    final displayMode = _BurnWeekDisplayMode.fromSelection(
+      wallNow: DateTime.now(),
+      selectedDay: ref.watch(calorieDayControllerProvider),
+    );
+    if (displayMode.isLive) {
+      ref.watch(burnWeekLiveSyncProvider);
+    }
     final weekOverviewState = ref.watch(
-      calorieWeekOverviewForWindowProvider(today),
+      calorieWeekOverviewForWindowProvider(displayMode.day),
     );
     final todayOverviewState = ref.watch(
-      calorieWeekDayOverviewForDateProvider(today),
+      calorieWeekDayOverviewForDateProvider(displayMode.day),
     );
-    final todayEntriesState = ref.watch(_burnWeekEntriesForDayProvider(today));
+    final todayEntriesState = ref.watch(
+      _burnWeekEntriesForDayProvider(displayMode.day),
+    );
     final runStateAsync = ref.watch(burnWeekRunControllerProvider);
     final runState =
         runStateAsync.asData?.value ?? const BurnWeekRunState.initial();
     final weeklyCheckInState = ref.watch(calorieWeeklyCheckInViewModelProvider);
-    final weeklyCheckInViewModel = weeklyCheckInState.asData?.value;
     final hasAutoOpeningWeeklyCheckIn =
-        weeklyCheckInState.isLoading ||
-        (weeklyCheckInViewModel?.pendingWeeklyCheckIn != null &&
-            weeklyCheckInViewModel?.shouldAutoOpen == true);
+        displayMode.isLive && _hasAutoOpeningWeeklyCheckIn(weeklyCheckInState);
 
     final weekOverview = weekOverviewState.value;
     final todayOverview = todayOverviewState.value;
@@ -387,7 +394,6 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
     final l10n = AppLocalizations.of(context)!;
     final numberFormat = NumberFormat.decimalPattern(locale);
     final colors = Theme.of(context).colorScheme;
-    final now = DateTime.now();
     if (weekOverview.goalStartsInFuture &&
         weekOverview.nextGoalStartDate != null) {
       final dateFormat = DateFormat.yMMMd(locale);
@@ -441,13 +447,11 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
         ),
       );
     }
-    final storedWeekStartDate = tryParseBurnWeekDayKey(
-      runState.currentWeekStartDayKey,
+    final scheduledRestartDate = displayMode.scheduledRestartDate(
+      runState: runState,
+      today: todayOverview.date,
     );
-    final hasScheduledRestart =
-        storedWeekStartDate != null &&
-        storedWeekStartDate.isAfter(todayOverview.date);
-    if (hasScheduledRestart) {
+    if (scheduledRestartDate != null) {
       final dateFormat = DateFormat.yMMMd(locale);
       return SizedBox(
         height: 280,
@@ -469,7 +473,7 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
                   const SizedBox(height: 12),
                   Text(
                     l10n.burnWeekRunRestartsOn(
-                      dateFormat.format(storedWeekStartDate),
+                      dateFormat.format(scheduledRestartDate),
                     ),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -483,12 +487,222 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
         ),
       );
     }
-    final difficulty = resolveBurnWeekMockDifficulty(runState.starCount);
-    final todayProgress = resolveBurnWeekCurrentDayProgress(now);
+    final overviewViewModel = displayMode.isSnapshot
+        ? _BurnWeekOverviewViewModel.fromSnapshot(
+            mode: displayMode,
+            weekOverview: weekOverview,
+            todayOverview: todayOverview,
+            todayEntries: todayEntries,
+            resolvedGoalStates: resolvedGoalStates,
+            l10n: l10n,
+            numberFormat: numberFormat,
+            colors: colors,
+          )
+        : _BurnWeekOverviewViewModel.fromLive(
+            mode: displayMode,
+            runState: runState,
+            weekOverview: weekOverview,
+            todayOverview: todayOverview,
+            todayEntries: todayEntries,
+            resolvedGoalStates: resolvedGoalStates,
+            l10n: l10n,
+            numberFormat: numberFormat,
+            colors: colors,
+          );
+    if (overviewViewModel.shouldQueueZoneDialog) {
+      _queueZoneDialogIfNeeded(
+        metrics: overviewViewModel.metrics,
+        runState: runState,
+        hasAutoOpeningWeeklyCheckIn: hasAutoOpeningWeeklyCheckIn,
+      );
+    }
+
+    return BurnWeekOverviewCard(
+      title: overviewViewModel.title,
+      metrics: overviewViewModel.metrics,
+      numberFormat: numberFormat,
+      kcalUnit: overviewViewModel.kcalUnit,
+      starCount: overviewViewModel.starCount,
+      heartCount: overviewViewModel.heartCount,
+      onHeartTap: overviewViewModel.canUseHeart
+          ? () => _showUseHeartDialog(
+              dailyGoalKcal: overviewViewModel.metrics.dailyGoalKcal,
+              runState: runState,
+            )
+          : null,
+      onInfoPressed: () {
+        unawaited(
+          showBurnWeekDetailsDialog(
+            context: context,
+            data: overviewViewModel.detailsData,
+          ),
+        );
+      },
+      infoTooltip: l10n.burnWeekInfoTooltip,
+      primaryStat: overviewViewModel.primaryStat,
+      secondaryStat: overviewViewModel.secondaryStat,
+    );
+  }
+}
+
+bool _hasAutoOpeningWeeklyCheckIn(
+  AsyncValue<CalorieWeeklyCheckInViewModel> state,
+) {
+  final viewModel = state.asData?.value;
+  return state.isLoading ||
+      (viewModel?.pendingWeeklyCheckIn != null &&
+          viewModel?.shouldAutoOpen == true);
+}
+
+class _BurnWeekDisplayMode {
+  const _BurnWeekDisplayMode._({
+    required this.day,
+    required this.now,
+    required this.isSnapshot,
+  });
+
+  factory _BurnWeekDisplayMode.fromSelection({
+    required DateTime wallNow,
+    required DateTime selectedDay,
+  }) {
+    final liveToday = normalizeDiaryDay(wallNow);
+    final displayDay = normalizeDiaryDay(selectedDay);
+    final isSnapshot = displayDay.isBefore(liveToday);
+    final day = isSnapshot ? displayDay : liveToday;
+    return _BurnWeekDisplayMode._(
+      day: day,
+      now: isSnapshot ? _snapshotEndOfDay(day) : wallNow,
+      isSnapshot: isSnapshot,
+    );
+  }
+
+  final DateTime day;
+  final DateTime now;
+  final bool isSnapshot;
+
+  bool get isLive => !isSnapshot;
+
+  DateTime? scheduledRestartDate({
+    required BurnWeekRunState runState,
+    required DateTime today,
+  }) {
+    if (isSnapshot) {
+      return null;
+    }
+    final storedWeekStartDate = tryParseBurnWeekDayKey(
+      runState.currentWeekStartDayKey,
+    );
+    if (storedWeekStartDate == null || !storedWeekStartDate.isAfter(today)) {
+      return null;
+    }
+    return storedWeekStartDate;
+  }
+}
+
+class _BurnWeekOverviewViewModel {
+  const _BurnWeekOverviewViewModel({
+    required this.title,
+    required this.metrics,
+    required this.detailsData,
+    required this.primaryStat,
+    required this.secondaryStat,
+    required this.starCount,
+    required this.heartCount,
+    required this.canUseHeart,
+    required this.shouldQueueZoneDialog,
+  });
+
+  factory _BurnWeekOverviewViewModel.fromLive({
+    required _BurnWeekDisplayMode mode,
+    required BurnWeekRunState runState,
+    required CalorieWeekOverview weekOverview,
+    required CalorieWeekDayOverview todayOverview,
+    required List<CalorieEntry> todayEntries,
+    required List<AsyncValue<ResolvedCalorieGoalData>> resolvedGoalStates,
+    required AppLocalizations l10n,
+    required NumberFormat numberFormat,
+    required ColorScheme colors,
+  }) {
+    return _BurnWeekOverviewViewModel._resolve(
+      mode: mode,
+      weekOverview: weekOverview,
+      todayOverview: todayOverview,
+      todayEntries: todayEntries,
+      resolvedGoalStates: resolvedGoalStates,
+      l10n: l10n,
+      numberFormat: numberFormat,
+      colors: colors,
+      runWeekNumber: runState.runWeekNumber,
+      storedWeekStartDayKey: runState.currentWeekStartDayKey,
+      difficultyStarCount: runState.starCount,
+      displayStarCount: runState.starCount,
+      displayHeartCount: runState.heartCount,
+      heartCreditKcal: runState.heartCreditKcal,
+      todayProgress: resolveBurnWeekCurrentDayProgress(mode.now),
+      secondaryStatTitle: l10n.burnWeekStatTodayLeft,
+      shouldQueueZoneDialog: true,
+    );
+  }
+
+  factory _BurnWeekOverviewViewModel.fromSnapshot({
+    required _BurnWeekDisplayMode mode,
+    required CalorieWeekOverview weekOverview,
+    required CalorieWeekDayOverview todayOverview,
+    required List<CalorieEntry> todayEntries,
+    required List<AsyncValue<ResolvedCalorieGoalData>> resolvedGoalStates,
+    required AppLocalizations l10n,
+    required NumberFormat numberFormat,
+    required ColorScheme colors,
+  }) {
+    return _BurnWeekOverviewViewModel._resolve(
+      mode: mode,
+      weekOverview: weekOverview,
+      todayOverview: todayOverview,
+      todayEntries: todayEntries,
+      resolvedGoalStates: resolvedGoalStates,
+      l10n: l10n,
+      numberFormat: numberFormat,
+      colors: colors,
+      runWeekNumber: _resolveSnapshotRunWeekNumber(
+        currentDay: todayOverview.date,
+        balanceStartDate: weekOverview.balanceStartDate,
+      ),
+      storedWeekStartDayKey: null,
+      difficultyStarCount: 0,
+      displayStarCount: null,
+      displayHeartCount: null,
+      heartCreditKcal: 0,
+      todayProgress: 1,
+      secondaryStatTitle: l10n.burnWeekStatDayLeft,
+      shouldQueueZoneDialog: false,
+    );
+  }
+
+  factory _BurnWeekOverviewViewModel._resolve({
+    required _BurnWeekDisplayMode mode,
+    required CalorieWeekOverview weekOverview,
+    required CalorieWeekDayOverview todayOverview,
+    required List<CalorieEntry> todayEntries,
+    required List<AsyncValue<ResolvedCalorieGoalData>> resolvedGoalStates,
+    required AppLocalizations l10n,
+    required NumberFormat numberFormat,
+    required ColorScheme colors,
+    required int runWeekNumber,
+    required String? storedWeekStartDayKey,
+    required int difficultyStarCount,
+    required int? displayStarCount,
+    required int? displayHeartCount,
+    required double heartCreditKcal,
+    required double todayProgress,
+    required String secondaryStatTitle,
+    required bool shouldQueueZoneDialog,
+  }) {
+    const kcalUnit = 'kcal';
+    final difficulty = resolveBurnWeekMockDifficulty(difficultyStarCount);
     final currentWeekStartDate = resolveBurnWeekLiveWeekStartDate(
       currentDay: todayOverview.date,
       balanceStartDate: weekOverview.balanceStartDate,
-      storedWeekStartDayKey: runState.currentWeekStartDayKey,
+      storedWeekStartDayKey: storedWeekStartDayKey,
     );
     final completedDaysCount = weekOverview.days
         .where(
@@ -511,159 +725,193 @@ class _BurnWeekLiveOverviewState extends ConsumerState<BurnWeekLiveOverview> {
     final previousWeekOverflowKcal = resolveBurnWeekPreviousOverflowKcal(
       cycleCarryoverBeforeTodayKcal: weekOverview.carryoverBeforeTodayKcal,
       currentWeekCarryoverBeforeTodayKcal: weekCarryoverBeforeTodayKcal,
-      runWeekNumber: runState.runWeekNumber,
+      runWeekNumber: runWeekNumber,
     );
     final plannedLaterTodayKcal = resolveBurnWeekPlannedLaterTodayKcal(
       todayEntries: todayEntries,
-      now: now,
+      now: mode.now,
     );
     final metrics = resolveBurnWeekLiveMetrics(
-      now: now,
+      now: mode.now,
       weekOverview: weekOverview,
       todayOverview: todayOverview,
       currentWeekStartDate: currentWeekStartDate,
       previousWeekOverflowKcal: previousWeekOverflowKcal,
-      heartCreditKcal: runState.heartCreditKcal,
+      heartCreditKcal: heartCreditKcal,
       plannedLaterTodayKcal: plannedLaterTodayKcal,
       safeZoneMultiplier: difficulty.safeZoneMultiplier,
     );
-    final todayResolvedGoal = _resolvedGoalForDay(
+    final fullDayBudget = _resolveFullDayBudget(
       weekOverview: weekOverview,
+      todayOverview: todayOverview,
       resolvedGoalStates: resolvedGoalStates,
-      day: todayOverview.date,
     );
-    final fullDayBudget = CalorieBudgetCalculator.calculateFullDayBudget(
-      storedGoalKcal:
-          todayResolvedGoal?.storedGoalKcal ?? todayOverview.goalKcal,
-      activityDeltaKcal: todayResolvedGoal?.activityDeltaKcal ?? 0,
-      carryoverKcal: weekOverview.carryoverBeforeTodayKcal,
-      consumedKcal: todayOverview.totalKcal,
-    );
-    _queueZoneDialogIfNeeded(
-      metrics: metrics,
-      runState: runState,
-      hasAutoOpeningWeeklyCheckIn: hasAutoOpeningWeeklyCheckIn,
-    );
-    final weekRemainingAfterFoodKcal =
-        metrics.weeklyGoalKcal - metrics.consumedKcal;
-    const kcalUnit = 'kcal';
-    final weekDayLabel = formatBurnWeekLiveWeekDayLabel(
-      currentDay: todayOverview.date,
-      currentWeekStartDate: currentWeekStartDate,
-      runWeekNumber: runState.runWeekNumber,
-      l10n: l10n,
-    );
-    final currentTimeLabel = formatBurnWeekLiveClockTime(now);
     final todayLeftKcal = fullDayBudget.remainingKcal;
     final todayActualKcal = todayOverview.totalKcal - plannedLaterTodayKcal;
-    final todayActualText =
-        '${numberFormat.format(todayActualKcal.round())} $kcalUnit';
-    final todayLeftText =
-        '${numberFormat.format(todayLeftKcal.round())} $kcalUnit';
-    final actualText =
-        '${numberFormat.format(metrics.consumedKcal.round())} $kcalUnit';
-    final targetText =
-        '${numberFormat.format(metrics.targetKcal.round())} $kcalUnit';
-    final dailyGoalText =
-        '${numberFormat.format(metrics.dailyGoalKcal.round())} $kcalUnit';
-    final weeklyGoalText =
-        '${numberFormat.format(metrics.weeklyGoalKcal.round())} $kcalUnit';
-    final safeMinText =
-        '${numberFormat.format(metrics.safeZoneMinKcal.round())} $kcalUnit';
-    final safeMaxText =
-        '${numberFormat.format(metrics.safeZoneMaxKcal.round())} $kcalUnit';
+    final todayActualText = _formatKcal(
+      todayActualKcal,
+      numberFormat,
+      kcalUnit,
+    );
+    final todayLeftText = _formatKcal(todayLeftKcal, numberFormat, kcalUnit);
+    final dailyGoalText = _formatKcal(
+      metrics.dailyGoalKcal,
+      numberFormat,
+      kcalUnit,
+    );
+    final targetText = _formatKcal(metrics.targetKcal, numberFormat, kcalUnit);
     final ratioText = metrics.paceRatio.toStringAsFixed(3);
-    final weekRatioText = '${(metrics.paceRatio * 100).round()}% ($ratioText)';
-    final targetFormulaText =
-        '$dailyGoalText x $completedDaysCount full days + '
-        '${(todayProgress * 100).round()}% today = $targetText';
-    final weekCarryoverText =
-        '${numberFormat.format(weekCarryoverBeforeTodayKcal.round())} '
-        '$kcalUnit';
-    final weekEatenSoFarText =
-        '${numberFormat.format(metrics.consumedKcal.round())} $kcalUnit';
-    final plannedLaterTodayText =
-        '${numberFormat.format(plannedLaterTodayKcal.round())} $kcalUnit';
-    final weekActivityBonusText = formatBurnWeekSignedKcal(
-      weekActivityBonusKcal,
-      numberFormat,
-      kcalUnit,
+    final detailsData = BurnWeekLiveDetailsData(
+      actualText: _formatKcal(metrics.consumedKcal, numberFormat, kcalUnit),
+      targetText: targetText,
+      dailyGoalText: dailyGoalText,
+      weeklyGoalText: _formatKcal(
+        metrics.weeklyGoalKcal,
+        numberFormat,
+        kcalUnit,
+      ),
+      currentTimeLabel: formatBurnWeekLiveClockTime(mode.now),
+      weekRatioText: '${(metrics.paceRatio * 100).round()}% ($ratioText)',
+      targetFormulaText:
+          '$dailyGoalText x $completedDaysCount full days + '
+          '${(todayProgress * 100).round()}% today = $targetText',
+      weekEatenSoFarText: _formatKcal(
+        metrics.consumedKcal,
+        numberFormat,
+        kcalUnit,
+      ),
+      plannedLaterTodayText: _formatKcal(
+        plannedLaterTodayKcal,
+        numberFormat,
+        kcalUnit,
+      ),
+      todayBudgetText: _formatKcal(
+        fullDayBudget.goalKcal,
+        numberFormat,
+        kcalUnit,
+      ),
+      todayFoodText: _formatKcal(
+        todayOverview.totalKcal,
+        numberFormat,
+        kcalUnit,
+      ),
+      todayLeftText: todayLeftText,
+      weekActivityBonusText: formatBurnWeekSignedKcal(
+        weekActivityBonusKcal,
+        numberFormat,
+        kcalUnit,
+      ),
+      weekCarryoverText: _formatKcal(
+        weekCarryoverBeforeTodayKcal,
+        numberFormat,
+        kcalUnit,
+      ),
+      previousWeekOverflowText: formatBurnWeekSignedKcal(
+        previousWeekOverflowKcal,
+        numberFormat,
+        kcalUnit,
+      ),
+      weekRemainingAfterFoodText: _formatKcal(
+        metrics.weeklyGoalKcal - metrics.consumedKcal,
+        numberFormat,
+        kcalUnit,
+      ),
+      safeMinText: _formatKcal(
+        metrics.safeZoneMinKcal,
+        numberFormat,
+        kcalUnit,
+      ),
+      safeMaxText: _formatKcal(
+        metrics.safeZoneMaxKcal,
+        numberFormat,
+        kcalUnit,
+      ),
+      starsHeartsText: displayStarCount == null || displayHeartCount == null
+          ? '-'
+          : '$displayStarCount stars / $displayHeartCount hearts',
+      heartCreditText: formatBurnWeekSignedKcal(
+        heartCreditKcal,
+        numberFormat,
+        kcalUnit,
+      ),
     );
-    final previousWeekOverflowText = formatBurnWeekSignedKcal(
-      previousWeekOverflowKcal,
-      numberFormat,
-      kcalUnit,
-    );
-    final weekRemainingAfterFoodText =
-        '${numberFormat.format(weekRemainingAfterFoodKcal.round())} '
-        '$kcalUnit';
-    final fullDayBudgetText =
-        '${numberFormat.format(fullDayBudget.goalKcal.round())} $kcalUnit';
-    final todayFoodBudgetText =
-        '${numberFormat.format(todayOverview.totalKcal.round())} $kcalUnit';
-    final heartCreditText = formatBurnWeekSignedKcal(
-      runState.heartCreditKcal,
-      numberFormat,
-      kcalUnit,
-    );
-    final starsHeartsText =
-        '${runState.starCount} stars / ${runState.heartCount} hearts';
-
-    return BurnWeekOverviewCard(
-      title: weekDayLabel,
+    return _BurnWeekOverviewViewModel(
+      title: formatBurnWeekLiveWeekDayLabel(
+        currentDay: todayOverview.date,
+        currentWeekStartDate: currentWeekStartDate,
+        runWeekNumber: runWeekNumber,
+        l10n: l10n,
+      ),
       metrics: metrics,
-      numberFormat: numberFormat,
-      kcalUnit: kcalUnit,
-      starCount: runState.starCount,
-      heartCount: runState.heartCount,
-      onHeartTap: runState.heartCount > 0
-          ? () => _showUseHeartDialog(
-              dailyGoalKcal: metrics.dailyGoalKcal,
-              runState: runState,
-            )
-          : null,
-      onInfoPressed: () {
-        unawaited(
-          showBurnWeekDetailsDialog(
-            context: context,
-            data: BurnWeekLiveDetailsData(
-              actualText: actualText,
-              targetText: targetText,
-              dailyGoalText: dailyGoalText,
-              weeklyGoalText: weeklyGoalText,
-              currentTimeLabel: currentTimeLabel,
-              weekRatioText: weekRatioText,
-              targetFormulaText: targetFormulaText,
-              weekEatenSoFarText: weekEatenSoFarText,
-              plannedLaterTodayText: plannedLaterTodayText,
-              todayBudgetText: fullDayBudgetText,
-              todayFoodText: todayFoodBudgetText,
-              todayLeftText: todayLeftText,
-              weekActivityBonusText: weekActivityBonusText,
-              weekCarryoverText: weekCarryoverText,
-              previousWeekOverflowText: previousWeekOverflowText,
-              weekRemainingAfterFoodText: weekRemainingAfterFoodText,
-              safeMinText: safeMinText,
-              safeMaxText: safeMaxText,
-              starsHeartsText: starsHeartsText,
-              heartCreditText: heartCreditText,
-            ),
-          ),
-        );
-      },
-      infoTooltip: l10n.burnWeekInfoTooltip,
+      detailsData: detailsData,
       primaryStat: BurnWeekOverviewStatData(
         title: l10n.burnWeekStatEaten.toUpperCase(),
         value: todayActualText,
         borderColor: colors.tertiary,
       ),
       secondaryStat: BurnWeekOverviewStatData(
-        title: l10n.burnWeekStatTodayLeft.toUpperCase(),
+        title: secondaryStatTitle.toUpperCase(),
         value: todayLeftText,
         borderColor: todayLeftKcal < 0 ? colors.error : colors.primary,
       ),
+      starCount: displayStarCount,
+      heartCount: displayHeartCount,
+      canUseHeart: displayHeartCount != null && displayHeartCount > 0,
+      shouldQueueZoneDialog: shouldQueueZoneDialog,
     );
   }
+
+  final String title;
+  final BurnWeekMockMetrics metrics;
+  final BurnWeekLiveDetailsData detailsData;
+  final BurnWeekOverviewStatData primaryStat;
+  final BurnWeekOverviewStatData secondaryStat;
+  final int? starCount;
+  final int? heartCount;
+  final bool canUseHeart;
+  final bool shouldQueueZoneDialog;
+  String get kcalUnit => 'kcal';
+}
+
+CalorieClassicBudgetBreakdown _resolveFullDayBudget({
+  required CalorieWeekOverview weekOverview,
+  required CalorieWeekDayOverview todayOverview,
+  required List<AsyncValue<ResolvedCalorieGoalData>> resolvedGoalStates,
+}) {
+  final todayResolvedGoal = _resolvedGoalForDay(
+    weekOverview: weekOverview,
+    resolvedGoalStates: resolvedGoalStates,
+    day: todayOverview.date,
+  );
+  return CalorieBudgetCalculator.calculateFullDayBudget(
+    storedGoalKcal: todayResolvedGoal?.storedGoalKcal ?? todayOverview.goalKcal,
+    activityDeltaKcal: todayResolvedGoal?.activityDeltaKcal ?? 0,
+    carryoverKcal: weekOverview.carryoverBeforeTodayKcal,
+    consumedKcal: todayOverview.totalKcal,
+  );
+}
+
+String _formatKcal(
+  double value,
+  NumberFormat numberFormat,
+  String kcalUnit,
+) {
+  return '${numberFormat.format(value.round())} $kcalUnit';
+}
+
+DateTime _snapshotEndOfDay(DateTime day) {
+  return nextDiaryDay(day).subtract(const Duration(microseconds: 1));
+}
+
+int _resolveSnapshotRunWeekNumber({
+  required DateTime currentDay,
+  required DateTime balanceStartDate,
+}) {
+  final elapsedDays = resolveBurnWeekLiveElapsedDays(
+    currentDay: currentDay,
+    balanceStartDate: balanceStartDate,
+  );
+  return (elapsedDays ~/ burnWeekDaysPerWeek) + 1;
 }
 
 ResolvedCalorieGoalData? _resolvedGoalForDay({
