@@ -8,6 +8,11 @@ void main() {
     expect(addDiaryDays(DateTime(2026, 10, 25), 1).hour, 0);
   });
 
+  test('addDiaryDays stays on calendar midnights across DST boundaries', () {
+    expect(addDiaryDays(DateTime(2026, 3, 29), 1), DateTime(2026, 3, 30));
+    expect(addDiaryDays(DateTime(2026, 10, 25), 1), DateTime(2026, 10, 26));
+  });
+
   test('buildDiaryVisibleDays stays aligned to local calendar days', () {
     final days = buildDiaryVisibleDays(anchorDay: DateTime(2026, 10, 26));
 

@@ -172,16 +172,26 @@ Future<List<_DebugDumpRow>> _loadHealthRows({
   );
   rows.addAll(weightSamples.map(_healthWeightRow));
 
+  final activityDays = <DateTime>[];
   for (
     var day = normalizeDiaryDay(activityStartInclusive);
     day.isBefore(endExclusive);
     day = nextDiaryDay(day)
   ) {
-    final data = await diaryHealthService.loadDayData(
-      day: day,
-      userHeightCm: userHeightCm,
-    );
-    rows.addAll(_activityRows(day: day, data: data));
+    activityDays.add(day);
+  }
+  final activityRows = await Future.wait([
+    for (final day in activityDays)
+      () async {
+        final data = await diaryHealthService.loadDayData(
+          day: day,
+          userHeightCm: userHeightCm,
+        );
+        return _activityRows(day: day, data: data);
+      }(),
+  ]);
+  for (final dayRows in activityRows) {
+    rows.addAll(dayRows);
   }
   return rows;
 }
@@ -519,17 +529,23 @@ Future<_DebugWeeklyHealthData> _loadDebugWeeklyHealthData({
       for (final day in date.windowDays) diaryDayKey(day): day,
     for (final window in windows) diaryDayKey(window.dueDate): window.dueDate,
   };
-  final activeKcalByDay = <String, int>{};
-  for (final day in activeDays.values) {
-    final dayData = await diaryHealthService.loadDayData(
-      day: day,
-      userHeightCm: settings.calculatorProfile?.heightCm,
-    );
-    activeKcalByDay[diaryDayKey(day)] = _resolveActiveKcal(
-      day: day,
-      dayData: dayData,
-    );
-  }
+  final activeDayData = await Future.wait([
+    for (final day in activeDays.values)
+      () async {
+        final dayData = await diaryHealthService.loadDayData(
+          day: day,
+          userHeightCm: settings.calculatorProfile?.heightCm,
+        );
+        return (day: day, dayData: dayData);
+      }(),
+  ]);
+  final activeKcalByDay = <String, int>{
+    for (final result in activeDayData)
+      diaryDayKey(result.day): _resolveActiveKcal(
+        day: result.day,
+        dayData: result.dayData,
+      ),
+  };
 
   return _DebugWeeklyHealthData(
     activeKcalByDay: Map<String, int>.unmodifiable(activeKcalByDay),

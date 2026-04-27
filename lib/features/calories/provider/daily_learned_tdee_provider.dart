@@ -422,21 +422,28 @@ Future<Map<String, int>> _loadActiveKcalByDay(
 
   final diaryHealthService = ref.watch(diaryHealthServiceProvider);
   final userHeightCm = settings.calculatorProfile?.heightCm;
-  for (final day in {
+  final days = {
     for (final window in windows)
       for (final windowDay in window.windowDays)
         diaryDayKey(windowDay): windowDay,
-  }.values) {
-    final dayData = await diaryHealthService.loadDayData(
-      day: day,
-      userHeightCm: userHeightCm,
-    );
-    if (!ref.mounted) {
-      throw StateError('Weekly learned TDEE disposed.');
-    }
-    activeKcalByDay[diaryDayKey(day)] = _resolveActiveKcal(
-      day: day,
-      dayData: dayData,
+  }.values.toList(growable: false);
+  final dayDataResults = await Future.wait([
+    for (final day in days)
+      () async {
+        final dayData = await diaryHealthService.loadDayData(
+          day: day,
+          userHeightCm: userHeightCm,
+        );
+        return (day: day, dayData: dayData);
+      }(),
+  ]);
+  if (!ref.mounted) {
+    throw StateError('Weekly learned TDEE disposed.');
+  }
+  for (final result in dayDataResults) {
+    activeKcalByDay[diaryDayKey(result.day)] = _resolveActiveKcal(
+      day: result.day,
+      dayData: result.dayData,
     );
   }
   return activeKcalByDay;
