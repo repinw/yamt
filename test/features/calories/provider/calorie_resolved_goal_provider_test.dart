@@ -480,7 +480,7 @@ void main() {
   );
 
   test(
-    'applies capped daily learned TDEE EMA to current learned goal',
+    'keeps learned target stable until the next weekly check-in',
     () async {
       final startDay = DateTime(2026, 4, 8);
       final today = DateTime(2026, 4, 16);
@@ -557,8 +557,8 @@ void main() {
         resolvedCalorieGoalForDayProvider(DateTime(2026, 4, 15)).future,
       );
 
-      expect(resolvedToday.storedGoalKcal, 2450);
-      expect(resolvedToday.goalKcal, 2450);
+      expect(resolvedToday.storedGoalKcal, 2400);
+      expect(resolvedToday.goalKcal, 2400);
       expect(resolvedToday.usedLearnedTdee, isTrue);
       expect(resolvedHistorical.storedGoalKcal, 2400);
       expect(resolvedHistorical.goalKcal, 2400);
@@ -578,8 +578,8 @@ void main() {
         resolvedCalorieGoalForDayProvider(today).future,
       );
 
-      expect(recomputedToday.storedGoalKcal, 2350);
-      expect(recomputedToday.goalKcal, 2350);
+      expect(recomputedToday.storedGoalKcal, 2400);
+      expect(recomputedToday.goalKcal, 2400);
     },
   );
 
