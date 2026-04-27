@@ -764,6 +764,12 @@
   "caloriesCalculatorOnboardingStartLaterHint":
       "Today stays consequence-free. Burn Week starts automatically from this day.",
   "caloriesCalculatorOnboardingChooseFutureDateAction": "Choose day",
+  "caloriesCalculatorOnboardingTodayTrackingLabel":
+      "How will you track today?",
+  "caloriesCalculatorOnboardingTodayTrackingExactAction":
+      "Full day exact",
+  "caloriesCalculatorOnboardingTodayTrackingEstimateAction":
+      "Estimate so far",
   "caloriesCalculatorOnboardingCatchUpLabel":
       "How much have you eaten so far?",
   "caloriesCalculatorOnboardingCatchUpLowAction": "Little",

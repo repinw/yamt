@@ -1493,6 +1493,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesCalculatorOnboardingChooseFutureDateAction => 'Tag wählen';
 
   @override
+  String get caloriesCalculatorOnboardingTodayTrackingLabel => 'Wie trackst du heute?';
+
+  @override
+  String get caloriesCalculatorOnboardingTodayTrackingExactAction => 'Ganzer Tag exakt';
+
+  @override
+  String get caloriesCalculatorOnboardingTodayTrackingEstimateAction => 'Bisher schätzen';
+
+  @override
   String get caloriesCalculatorOnboardingCatchUpLabel => 'Wie viel hast du bisher gegessen?';
 
   @override

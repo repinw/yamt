@@ -73,6 +73,7 @@ class _CalorieGoalCalculatorFlowState
   late final TextEditingController _goalSpeedController;
   late DateTime _goalStartDate;
   _OnboardingGoalStartChoice? _onboardingGoalStartChoice;
+  CalorieGoalOnboardingTodayTracking? _onboardingTodayTrackingChoice;
   CalorieGoalOnboardingCatchUpEstimate _onboardingCatchUpEstimate =
       CalorieGoalOnboardingCatchUpEstimate.normal;
   _CalculatorOnboardingStep _currentStep = _CalculatorOnboardingStep.sex;
@@ -159,12 +160,17 @@ class _CalorieGoalCalculatorFlowState
     if (countGoalStartDayForLearning == null && _shouldAskTrackedFoodToday) {
       return;
     }
+    final useOnboardingEstimate =
+        widget.isOnboarding &&
+        _startsToday &&
+        _onboardingTodayTrackingChoice ==
+            CalorieGoalOnboardingTodayTracking.estimate;
     final saved = await formNotifier.save(
       goalStartDate: _goalStartDate,
       allowFutureGoalStart: allowsFutureGoalStart,
       syncBurnWeekForOnboarding: widget.isOnboarding,
       countGoalStartDayForLearning: countGoalStartDayForLearning,
-      onboardingCatchUpEstimate: widget.isOnboarding && _startsToday
+      onboardingCatchUpEstimate: useOnboardingEstimate
           ? _onboardingCatchUpEstimate
           : null,
     );
@@ -234,6 +240,16 @@ class _CalorieGoalCalculatorFlowState
   Future<bool?> _resolveCountGoalStartDayForLearning(
     CalorieLogRepositoryContract logRepository,
   ) async {
+    if (widget.isOnboarding) {
+      if (!_startsToday) {
+        return null;
+      }
+      return switch (_onboardingTodayTrackingChoice) {
+        CalorieGoalOnboardingTodayTracking.exact => true,
+        CalorieGoalOnboardingTodayTracking.estimate => false,
+        null => null,
+      };
+    }
     if (!_shouldAskTrackedFoodToday) {
       return null;
     }
@@ -249,7 +265,16 @@ class _CalorieGoalCalculatorFlowState
   }
 
   bool get _hasOnboardingStartChoice {
-    return !widget.isOnboarding || _onboardingGoalStartChoice != null;
+    if (!widget.isOnboarding) {
+      return true;
+    }
+    if (_onboardingGoalStartChoice == null) {
+      return false;
+    }
+    if (!_startsToday) {
+      return true;
+    }
+    return _onboardingTodayTrackingChoice != null;
   }
 
   void _selectOnboardingStartNow() {
@@ -261,6 +286,17 @@ class _CalorieGoalCalculatorFlowState
     setState(() {
       _onboardingGoalStartChoice = _OnboardingGoalStartChoice.now;
       _goalStartDate = today;
+    });
+  }
+
+  void _selectOnboardingTodayTracking(
+    CalorieGoalOnboardingTodayTracking value,
+  ) {
+    if (_onboardingTodayTrackingChoice == value) {
+      return;
+    }
+    setState(() {
+      _onboardingTodayTrackingChoice = value;
     });
   }
 
@@ -283,6 +319,7 @@ class _CalorieGoalCalculatorFlowState
     }
     setState(() {
       _onboardingGoalStartChoice = _OnboardingGoalStartChoice.later;
+      _onboardingTodayTrackingChoice = null;
       _goalStartDate = today.add(const Duration(days: 1));
     });
   }
@@ -306,6 +343,7 @@ class _CalorieGoalCalculatorFlowState
     }
     setState(() {
       _onboardingGoalStartChoice = _OnboardingGoalStartChoice.later;
+      _onboardingTodayTrackingChoice = null;
       _goalStartDate = pickedDate;
     });
   }

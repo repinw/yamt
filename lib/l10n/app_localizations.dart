@@ -2963,6 +2963,24 @@ abstract class AppLocalizations {
   /// **'Choose day'**
   String get caloriesCalculatorOnboardingChooseFutureDateAction;
 
+  /// No description provided for @caloriesCalculatorOnboardingTodayTrackingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'How will you track today?'**
+  String get caloriesCalculatorOnboardingTodayTrackingLabel;
+
+  /// No description provided for @caloriesCalculatorOnboardingTodayTrackingExactAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Full day exact'**
+  String get caloriesCalculatorOnboardingTodayTrackingExactAction;
+
+  /// No description provided for @caloriesCalculatorOnboardingTodayTrackingEstimateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimate so far'**
+  String get caloriesCalculatorOnboardingTodayTrackingEstimateAction;
+
   /// No description provided for @caloriesCalculatorOnboardingCatchUpLabel.
   ///
   /// In en, this message translates to:

@@ -89,7 +89,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
       return false;
     }
 
-    final completedAt = DateTime.now();
+    final completedAt = pendingWeeklyCheckIn.dueDate;
     final saved = await ref
         .read(calorieGoalControllerProvider.notifier)
         .saveWeeklyCheckInGoal(

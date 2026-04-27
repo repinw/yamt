@@ -1,0 +1,89 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_weekly_checkin_controller.dart';
+import 'package:yamt/features/calories/provider/'
+    'calorie_weekly_checkin_provider.dart';
+
+import '../support/fake_calories_repositories.dart';
+
+void main() {
+  test(
+    'applyWeeklyCheckIn makes overdue target effective on due date',
+    () async {
+      final goalStart = DateTime(2026, 4, 8);
+      final dueDate = DateTime(2026, 4, 15);
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2426.875,
+          calculatorProfile: const CalorieCalculatorProfile(
+            sex: CalorieCalculatorSex.male,
+            weightKg: 84,
+            heightCm: 172,
+            ageYears: 31,
+            activityLevel: 1.375,
+            goalMode: CalorieGoalMode.maintain,
+            goalSpeedKgPerWeek: 0,
+          ),
+          effectiveDate: goalStart,
+          source: CalorieGoalSource.calculator,
+        ),
+      );
+      addTearDown(settingsRepository.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(calorieGoalControllerProvider.future);
+
+      final saved = await container
+          .read(calorieWeeklyCheckInControllerProvider.notifier)
+          .applyWeeklyCheckIn(
+            CalorieWeeklyCheckInViewModel(
+              pendingWeeklyCheckIn: PendingCalorieGoalWeeklyCheckIn(
+                windowStartDate: goalStart,
+                windowEndDate: DateTime(2026, 4, 14),
+                dueDate: dueDate,
+                dismissedAt: DateTime(2026, 4, 27, 10),
+              ),
+              shouldAutoOpen: false,
+              days: const <CalorieWeeklyCheckInWindowDay>[],
+              calculation: const CalorieWeeklyCheckInCalculation(
+                trendWeightChangePerDay: -0.10893,
+                averageIntakeKcal: 2460.85,
+                measuredTrueTdeeKcal: 3223.35,
+                calculatedTrueTdeeKcal: 2665.82,
+                newGoalKcal: 2626.875,
+                lastWeekAverageActiveKcal: 300,
+                todayActiveKcal: 8,
+                activityDeltaKcal: 0,
+                dynamicGoalTodayKcal: 2626.875,
+              ),
+              blockedReason: null,
+              missingIntakeDays: const <DateTime>[],
+              missingWeightDays: const <DateTime>[],
+              freshness: CalorieLearnedTdeeFreshness.none,
+              latestLearnedTdeeAt: null,
+              lowConfidence: false,
+            ),
+          );
+
+      expect(saved, isTrue);
+      final settings = await settingsRepository.readSettings();
+      expect(settings.goalKcalForDay(DateTime(2026, 4, 14)), 2426.875);
+      expect(settings.goalKcalForDay(dueDate), 2627);
+      expect(settings.latestGoalEntry?.effectiveDate, dueDate);
+      expect(settings.latestGoalEntry?.source, CalorieGoalSource.weeklyCheckIn);
+      expect(settings.pendingWeeklyCheckIn, isNull);
+    },
+  );
+}

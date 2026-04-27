@@ -790,6 +790,12 @@
   "caloriesCalculatorOnboardingStartLaterHint":
       "Heute bleibt folgenfrei. Burn Week startet ab diesem Tag automatisch.",
   "caloriesCalculatorOnboardingChooseFutureDateAction": "Tag wählen",
+  "caloriesCalculatorOnboardingTodayTrackingLabel":
+      "Wie trackst du heute?",
+  "caloriesCalculatorOnboardingTodayTrackingExactAction":
+      "Ganzer Tag exakt",
+  "caloriesCalculatorOnboardingTodayTrackingEstimateAction":
+      "Bisher schätzen",
   "caloriesCalculatorOnboardingCatchUpLabel":
       "Wie viel hast du bisher gegessen?",
   "caloriesCalculatorOnboardingCatchUpLowAction": "Wenig",

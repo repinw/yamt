@@ -419,6 +419,10 @@ void main() {
       find.byKey(CalorieGoalCalculatorSheetKeys.goalStartNowOption),
     );
     await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.todayTrackingExactOption),
+    );
+    await tester.pumpAndSettle();
     await tester.ensureVisible(
       find.byKey(CalorieGoalCalculatorSheetKeys.saveButton),
     );

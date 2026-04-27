@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
@@ -230,12 +231,13 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
   final totalCarryoverKcal = CalorieBudgetCalculator.calculateCarryover(
     carryoverDays,
   );
+  final remainingDays = resolveRemainingCalorieGoalRunDays(
+    settings: settings,
+    day: selectedDay,
+  );
   final carryoverKcal = CalorieBudgetCalculator.distributeCarryover(
     carryoverKcal: totalCarryoverKcal,
-    remainingDays: resolveRemainingCalorieGoalRunDays(
-      settings: settings,
-      day: selectedDay,
-    ),
+    remainingDays: remainingDays,
   );
   final flexibleGoalKcal = math.max<double>(0, baseGoalKcal + carryoverKcal);
   final defaultPaceWindowStart = normalizeDiaryDay(selectedDay);
@@ -263,6 +265,40 @@ Future<CalorieBalanceSummaryData> calorieBalanceSummary(Ref ref) async {
   final referenceGoalKcal = math.max(baseGoalKcal, flexibleGoalKcal);
   final deadZoneKcal = math.max<double>(60, referenceGoalKcal * 0.04);
   final rangeKcal = math.max<double>(400, referenceGoalKcal * 0.4);
+
+  if (!kReleaseMode) {
+    final historyDebug = carryoverDays
+        .asMap()
+        .entries
+        .map((entry) {
+          final day = carryoverHistoryDays[entry.key];
+          final carryoverDay = entry.value;
+          final balanceKcal = carryoverDay.goalKcal - carryoverDay.consumedKcal;
+          return '${diaryDayKey(day)}:'
+              'goal=${carryoverDay.goalKcal.toStringAsFixed(2)},'
+              'eaten=${carryoverDay.consumedKcal.toStringAsFixed(2)},'
+              'balance=${balanceKcal.toStringAsFixed(2)}';
+        })
+        .join(' | ');
+    log(
+      'BALANCE_SUMMARY_DEBUG '
+      'day=${diaryDayKey(selectedDay)} '
+      'now=${diaryDayKey(now)} '
+      'balanceStart=${diaryDayKey(balanceStartDate)} '
+      'storedGoalKcal=${resolvedGoal.storedGoalKcal.toStringAsFixed(2)} '
+      'baseGoalKcal=${baseGoalKcal.toStringAsFixed(2)} '
+      'totalCarryoverKcal=${totalCarryoverKcal.toStringAsFixed(2)} '
+      'remainingDays=$remainingDays '
+      'carryoverKcal=${carryoverKcal.toStringAsFixed(2)} '
+      'flexibleGoalKcal=${flexibleGoalKcal.toStringAsFixed(2)} '
+      'pacedGoalKcal=${pacedGoalKcal.toStringAsFixed(2)} '
+      'consumedKcal=${consumedKcal.toStringAsFixed(2)} '
+      'activityDeltaKcal=${resolvedGoal.activityDeltaKcal.toStringAsFixed(2)} '
+      'usedLearnedTdee=${resolvedGoal.usedLearnedTdee} '
+      'history=[$historyDebug]',
+      name: _balanceSummaryLogName,
+    );
+  }
 
   return CalorieBalanceSummaryData(
     selectedDay: selectedDay,

@@ -97,6 +97,7 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
             if (widget.isOnboarding)
               CalorieGoalCalculatorOnboardingStartCard(
                 goalStartDate: _goalStartDate,
+                todayTrackingChoice: _onboardingTodayTrackingChoice,
                 catchUpEstimate: _onboardingCatchUpEstimate,
                 startNowSelected:
                     _onboardingGoalStartChoice ==
@@ -107,6 +108,7 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
                 enabled: !state.isSaving,
                 onStartNowSelected: _selectOnboardingStartNow,
                 onStartLaterSelected: _selectOnboardingStartLater,
+                onTodayTrackingSelected: _selectOnboardingTodayTracking,
                 onChangeFutureDateRequested: _pickOnboardingFutureGoalStart,
                 onCatchUpEstimateSelected: _selectOnboardingCatchUpEstimate,
               )
