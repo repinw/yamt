@@ -86,11 +86,7 @@ class MobileDiaryHealthService implements DiaryHealthService {
               );
               return data;
             })
-            .whenComplete(() {
-              if (_inFlightByKey.remove(cacheKey) == null) {
-                return;
-              }
-            });
+            .whenComplete(() => _removeInFlightDayData(cacheKey));
     _inFlightByKey[cacheKey] = future;
     return future;
   }
@@ -259,6 +255,10 @@ class MobileDiaryHealthService implements DiaryHealthService {
       return null;
     }
     return cacheEntry.data;
+  }
+
+  bool _removeInFlightDayData(String cacheKey) {
+    return _inFlightByKey.remove(cacheKey) != null;
   }
 
   Future<void> _ensureConfigured() async {

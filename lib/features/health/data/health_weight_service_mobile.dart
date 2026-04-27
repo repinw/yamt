@@ -29,7 +29,7 @@ class MobileHealthWeightService implements HealthWeightService {
   final DateTime Function() _now;
   final Duration _cacheTtl;
   bool _isConfigured = false;
-  _WeightSampleCache? _cache;
+  _WeightSampleCacheEntry? _cache;
 
   @override
   Future<List<HealthWeightSample>> loadWeightSamples({
@@ -65,7 +65,7 @@ class MobileHealthWeightService implements HealthWeightService {
             .whereType<HealthWeightSample>()
             .toList(growable: false)
           ..sort((left, right) => left.recordedAt.compareTo(right.recordedAt));
-    _cache = _WeightSampleCache(
+    _cache = _WeightSampleCacheEntry(
       startInclusive: startInclusive,
       endExclusive: queryEndExclusive,
       loadedAt: _now(),
@@ -206,8 +206,8 @@ class MobileHealthWeightService implements HealthWeightService {
   }
 }
 
-class _WeightSampleCache {
-  const _WeightSampleCache({
+class _WeightSampleCacheEntry {
+  const _WeightSampleCacheEntry({
     required this.startInclusive,
     required this.endExclusive,
     required this.loadedAt,
