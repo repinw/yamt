@@ -14,7 +14,7 @@ import '../support/fake_calories_repositories.dart';
 
 void main() {
   test(
-    'applyWeeklyCheckIn only marks the summary as seen',
+    'applyWeeklyCheckIn stores learned cache without changing active goal',
     () async {
       final goalStart = DateTime(2026, 4, 8);
       final dueDate = DateTime(2026, 4, 15);
@@ -83,8 +83,12 @@ void main() {
       expect(settings.goalKcalForDay(dueDate), 2426.875);
       expect(settings.latestGoalEntry?.effectiveDate, goalStart);
       expect(settings.latestGoalEntry?.source, CalorieGoalSource.calculator);
-      expect(settings.pendingWeeklyCheckIn?.windowKey, '2026-4-8:2026-4-14');
-      expect(settings.pendingWeeklyCheckIn?.isDismissed, isTrue);
+      expect(settings.pendingWeeklyCheckIn, isNull);
+      expect(settings.hasLearnedTdee, isTrue);
+      expect(settings.latestLearnedTdeeKcal, 2665.82);
+      final snapshot = settings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot;
+      expect(snapshot?.windowStartDate, goalStart);
+      expect(snapshot?.windowEndDate, DateTime(2026, 4, 14));
     },
   );
 }

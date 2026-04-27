@@ -774,6 +774,71 @@ void main() {
   );
 
   test(
+    'dismissed summary cascades learned tdee into the next window',
+    () async {
+      final today = DateTime(2026, 4, 22);
+      final goalStart = DateTime(2026, 4, 8);
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings:
+            CalorieGoalSettings.single(
+              dailyKcalGoal: 2400,
+              calculatorProfile: null,
+              effectiveDate: goalStart,
+            ).copyWithPendingWeeklyCheckIn(
+              PendingCalorieGoalWeeklyCheckIn(
+                windowStartDate: DateTime(2026, 4, 8),
+                windowEndDate: DateTime(2026, 4, 14),
+                dueDate: DateTime(2026, 4, 15),
+                dismissedAt: DateTime(2026, 4, 15, 10),
+              ),
+            ),
+      );
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          for (var index = 0; index < 14; index += 1)
+            _entry(
+              'entry-$index',
+              goalStart.add(Duration(days: index, hours: 8)),
+              3000,
+            ),
+        ],
+      );
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[
+          ManualHealthWeightEntry(day: goalStart, weightKg: 80),
+          ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 80),
+          ManualHealthWeightEntry(day: DateTime(2026, 4, 21), weightKg: 80),
+        ],
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = _createContainer(
+        today: today,
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        manualRepository: manualRepository,
+      );
+      addTearDown(container.dispose);
+
+      final viewModel = await container.read(
+        calorieWeeklyCheckInViewModelProvider.future,
+      );
+
+      expect(
+        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        DateTime(2026, 4, 15),
+      );
+      expect(viewModel.isReady, isTrue);
+      expect(
+        viewModel.calculation?.calculatedTrueTdeeKcal,
+        closeTo(2706, 0.01),
+      );
+      expect(viewModel.calculation?.newGoalKcal, closeTo(2706, 0.01));
+    },
+  );
+
+  test(
     'freshness becomes urgent after 28 days without learned refresh',
     () async {
       final today = DateTime(2026, 5, 10);

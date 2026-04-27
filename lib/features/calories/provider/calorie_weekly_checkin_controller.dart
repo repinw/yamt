@@ -89,9 +89,32 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
       return false;
     }
 
-    final saved = await ref
-        .read(calorieGoalControllerProvider.notifier)
-        .dismissPendingWeeklyCheckIn();
+    final goalController = ref.read(calorieGoalControllerProvider.notifier);
+    final savedSnapshot = await goalController.saveWeeklyCheckInGoal(
+      completedAt: pendingWeeklyCheckIn.dueDate,
+      dailyKcalGoal: calculation.newGoalKcal,
+      weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+        windowStartDate: pendingWeeklyCheckIn.windowStartDate,
+        windowEndDate: pendingWeeklyCheckIn.windowEndDate,
+        trendWeightChangePerDay: calculation.trendWeightChangePerDay,
+        calculatedTrueTdeeKcal: calculation.calculatedTrueTdeeKcal,
+        averageActiveKcal: calculation.lastWeekAverageActiveKcal,
+        lowConfidence: viewModel.lowConfidence,
+      ),
+    );
+
+    if (!ref.mounted) {
+      return savedSnapshot;
+    }
+    if (!savedSnapshot) {
+      state = AsyncError(
+        StateError('Failed to persist learned TDEE cache.'),
+        StackTrace.empty,
+      );
+      return false;
+    }
+
+    final saved = await goalController.dismissPendingWeeklyCheckIn();
 
     if (!ref.mounted) {
       return saved;

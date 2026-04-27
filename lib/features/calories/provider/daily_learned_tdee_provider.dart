@@ -59,9 +59,9 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
 
   final normalizedDay = normalizeDiaryDay(day);
   final normalizedToday = normalizeDiaryDay(today);
-  if (normalizedDay.isAfter(normalizedToday)) {
-    return null;
-  }
+  final learningReferenceDay = normalizedDay.isAfter(normalizedToday)
+      ? normalizedToday
+      : normalizedDay;
 
   final settings = await ref.watch(calorieGoalControllerProvider.future);
   if (!ref.mounted) {
@@ -74,7 +74,7 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
 
   final windows = _weeklyLearnedWindowsForDay(
     anchorEntry: anchorEntry,
-    day: normalizedDay,
+    day: learningReferenceDay,
   );
   if (windows.isEmpty) {
     return null;
@@ -118,7 +118,10 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
   final healthWeights = await _loadHealthWeights(
     ref,
     healthStatus: healthStatus,
-    startDate: firstLearningStartDate,
+    startDate: _weightStartDateForLearning(
+      anchorEntry: anchorEntry,
+      firstLearningStartDate: firstLearningStartDate,
+    ),
     endDateExclusive: nextDiaryDay(lastWindow.nextBoundaryDay),
   );
   if (!ref.mounted) {
@@ -284,6 +287,21 @@ DateTime _learningStartDateForWindow({
   return normalizeDiaryDay(anchorStartDate);
 }
 
+DateTime _weightStartDateForLearning({
+  required CalorieGoalHistoryEntry anchorEntry,
+  required DateTime firstLearningStartDate,
+}) {
+  final anchorWeightSourceDay = _anchorWeightSourceDayForWindow(
+    anchorEntry: anchorEntry,
+    windowStartDate: _firstWeeklyCheckInWindowStartDate(anchorEntry),
+  );
+  if (anchorWeightSourceDay != null &&
+      anchorWeightSourceDay.isBefore(firstLearningStartDate)) {
+    return anchorWeightSourceDay;
+  }
+  return firstLearningStartDate;
+}
+
 Future<List<HealthWeightSample>> _loadHealthWeights(
   Ref ref, {
   required HealthConnectionStatus healthStatus,
@@ -391,11 +409,22 @@ List<CalorieWeeklyCheckInWeightPoint> _weeklyWeightPoints({
     anchorEntry: anchorEntry,
     windowStartDate: window.windowStartDate,
   )) {
+    final anchorWeightSourceDay = _anchorWeightSourceDayForWindow(
+      anchorEntry: anchorEntry,
+      windowStartDate: window.windowStartDate,
+    );
+    final anchorWeightKey = anchorWeightSourceDay == null
+        ? null
+        : diaryDayKey(anchorWeightSourceDay);
     _putWeightPoint(
       pointsByDay: weightPointsByDay,
       displayDay: window.windowStartDate,
       dayIndex: window.dayIndexFor(window.windowStartDate),
       weightKg:
+          (anchorWeightKey == null
+              ? null
+              : manualWeightByDay[anchorWeightKey] ??
+                    representativeWeightByDay[anchorWeightKey]) ??
           anchorEntry.calculatorProfile?.weightKg ??
           settings.calculatorProfile?.weightKg,
     );
@@ -650,6 +679,22 @@ bool _isFirstWeeklyCheckInWindowStart({
     _firstWeeklyCheckInWindowStartDate(anchorEntry),
     windowStartDate,
   );
+}
+
+DateTime? _anchorWeightSourceDayForWindow({
+  required CalorieGoalHistoryEntry anchorEntry,
+  required DateTime windowStartDate,
+}) {
+  if (!_isFirstWeeklyCheckInWindowStart(
+    anchorEntry: anchorEntry,
+    windowStartDate: windowStartDate,
+  )) {
+    return null;
+  }
+  if (!_hasStarterDay(anchorEntry)) {
+    return null;
+  }
+  return normalizeDiaryDay(anchorEntry.effectiveDate);
 }
 
 class _WeeklyLearnedWindow {
