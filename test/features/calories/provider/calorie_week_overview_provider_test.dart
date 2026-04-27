@@ -797,8 +797,8 @@ void main() {
       final overview = await container.read(calorieWeekOverviewProvider.future);
 
       expect(overview.balanceStartDate, cycleStartDay);
-      expect(overview.carryoverBeforeTodayKcal, closeTo(-60, 0.001));
-      expect(overview.todayFlexibleGoalKcal, closeTo(1840, 0.001));
+      expect(overview.carryoverBeforeTodayKcal, closeTo(-40, 0.001));
+      expect(overview.todayFlexibleGoalKcal, closeTo(1960, 0.001));
     },
   );
 

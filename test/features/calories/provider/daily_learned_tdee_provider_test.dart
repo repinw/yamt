@@ -476,7 +476,7 @@ void main() {
       effectiveDate: startDay,
       source: CalorieGoalSource.calculator,
       weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-        windowStartDate: DateTime(2026, 4, 1),
+        windowStartDate: DateTime(2026, 4),
         windowEndDate: DateTime(2026, 4, 7),
         trendWeightChangePerDay: 0,
         calculatedTrueTdeeKcal: 2700,

@@ -290,10 +290,17 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
       return;
     }
     _lastWeeklyCheckInViewModel = nextValue;
-    final controller = ref.read(
-      calorieWeeklyCheckInControllerProvider.notifier,
-    );
-    unawaited(controller.syncLearnedTdeeCache(nextValue));
+    final pending = nextValue.pendingWeeklyCheckIn;
+    final willAutoOpen =
+        pending != null &&
+        nextValue.shouldAutoOpen &&
+        _autoOpenedWeeklyCheckInWindowKey != pending.windowKey;
+    if (!willAutoOpen && !_weeklyCheckInDialogOpen) {
+      final controller = ref.read(
+        calorieWeeklyCheckInControllerProvider.notifier,
+      );
+      unawaited(controller.syncLearnedTdeeCache(nextValue));
+    }
     _maybeOpenWeeklyCheckInDialog(previous, next);
   }
 
@@ -412,6 +419,7 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
           return;
         case CalorieWeeklyCheckInDialogAction.later:
         case null:
+          await controller.syncLearnedTdeeCache(viewModel);
           return;
       }
     } finally {

@@ -190,9 +190,7 @@ Future<List<_DebugDumpRow>> _loadHealthRows({
         return _activityRows(day: day, data: data);
       }(),
   ]);
-  for (final dayRows in activityRows) {
-    rows.addAll(dayRows);
-  }
+  activityRows.forEach(rows.addAll);
   return rows;
 }
 

@@ -116,10 +116,14 @@ class CalorieWeeklyCheckInViewModel {
     required this.freshness,
     required this.latestLearnedTdeeAt,
     required this.lowConfidence,
+    this.cacheWeeklyCheckIn,
   });
 
   /// The pending weekly check in.
   final PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn;
+
+  /// Weekly window whose learned TDEE cache can be refreshed.
+  final PendingCalorieGoalWeeklyCheckIn? cacheWeeklyCheckIn;
 
   /// Whether auto open.
   final bool shouldAutoOpen;
@@ -158,11 +162,14 @@ class CalorieWeeklyCheckInViewModel {
   bool get isReady => hasPending && !isBlocked && calculation != null;
 
   /// The show diary hint.
-  bool get showDiaryHint =>
-      (pendingWeeklyCheckIn != null &&
-          pendingWeeklyCheckIn?.isDismissed != true) ||
-      freshness == CalorieLearnedTdeeFreshness.stale ||
-      freshness == CalorieLearnedTdeeFreshness.urgent;
+  bool get showDiaryHint {
+    final pending = pendingWeeklyCheckIn;
+    if (pending != null) {
+      return !pending.isDismissed;
+    }
+    return freshness == CalorieLearnedTdeeFreshness.stale ||
+        freshness == CalorieLearnedTdeeFreshness.urgent;
+  }
 }
 
 /// Calorie weekly check in view model.
@@ -178,12 +185,15 @@ Future<CalorieWeeklyCheckInViewModel> calorieWeeklyCheckInViewModel(
     settings: settings,
     today: today,
   );
+  final cacheWeeklyCheckIn =
+      pendingWeeklyCheckIn ??
+      _resolveLatestCompletedWeeklyCheckIn(settings: settings, today: today);
   final freshness = _resolveLearnedTdeeFreshness(
     settings: settings,
     today: today,
   );
 
-  if (pendingWeeklyCheckIn == null) {
+  if (cacheWeeklyCheckIn == null) {
     return CalorieWeeklyCheckInViewModel(
       pendingWeeklyCheckIn: null,
       shouldAutoOpen: false,
@@ -201,13 +211,14 @@ Future<CalorieWeeklyCheckInViewModel> calorieWeeklyCheckInViewModel(
   final dayData = await _loadWindowDayData(
     ref: ref,
     settings: settings,
-    pendingWeeklyCheckIn: pendingWeeklyCheckIn,
+    pendingWeeklyCheckIn: cacheWeeklyCheckIn,
     today: today,
   );
 
   return CalorieWeeklyCheckInViewModel(
     pendingWeeklyCheckIn: pendingWeeklyCheckIn,
-    shouldAutoOpen: !pendingWeeklyCheckIn.isDismissed,
+    cacheWeeklyCheckIn: cacheWeeklyCheckIn,
+    shouldAutoOpen: pendingWeeklyCheckIn?.isDismissed == false,
     days: dayData.days,
     calculation: dayData.calculation,
     blockedReason: dayData.blockedReason,
@@ -217,6 +228,44 @@ Future<CalorieWeeklyCheckInViewModel> calorieWeeklyCheckInViewModel(
     latestLearnedTdeeAt: settings.latestLearnedTdeeChangedAt,
     lowConfidence: dayData.lowConfidence,
   );
+}
+
+PendingCalorieGoalWeeklyCheckIn? _resolveLatestCompletedWeeklyCheckIn({
+  required CalorieGoalSettings settings,
+  required DateTime today,
+}) {
+  final countingGoalEntry = settings.countingGoalEntryForDay(today);
+  if (countingGoalEntry == null) {
+    return null;
+  }
+  final anchorEntry =
+      settings.cycleAnchorEntryForDay(today) ?? countingGoalEntry;
+  if (!anchorEntry.hasGoal) {
+    return null;
+  }
+
+  PendingCalorieGoalWeeklyCheckIn? latestWindow;
+  var windowStartDate = CalorieWeeklyWindowResolver.firstWindowStartDate(
+    anchorEntry,
+  );
+  while (true) {
+    final windowLengthDays =
+        CalorieWeeklyWindowResolver.windowLengthDaysForStart(
+          anchorEntry: anchorEntry,
+          windowStartDate: windowStartDate,
+        );
+    final dueDate = addDiaryDays(windowStartDate, windowLengthDays);
+    if (dueDate.isAfter(today)) {
+      return latestWindow;
+    }
+    final windowEndDate = addDiaryDays(windowStartDate, windowLengthDays - 1);
+    latestWindow = PendingCalorieGoalWeeklyCheckIn(
+      windowStartDate: windowStartDate,
+      windowEndDate: windowEndDate,
+      dueDate: dueDate,
+    );
+    windowStartDate = nextDiaryDay(windowEndDate);
+  }
 }
 
 PendingCalorieGoalWeeklyCheckIn? _resolvePendingWeeklyCheckIn({
@@ -251,6 +300,7 @@ PendingCalorieGoalWeeklyCheckIn? _resolvePendingWeeklyCheckIn({
   }
 
   final persistedPending = settings.pendingWeeklyCheckIn;
+  PendingCalorieGoalWeeklyCheckIn? resolvedPersistedPending;
   var windowStartDate = firstWindowStartDate;
   while (true) {
     final windowLengthDays =
@@ -258,19 +308,22 @@ PendingCalorieGoalWeeklyCheckIn? _resolvePendingWeeklyCheckIn({
           anchorEntry: anchorEntry,
           windowStartDate: windowStartDate,
         );
-    final dueDate = windowStartDate.add(Duration(days: windowLengthDays));
+    final dueDate = addDiaryDays(windowStartDate, windowLengthDays);
     if (dueDate.isAfter(today)) {
-      return null;
+      return resolvedPersistedPending;
     }
-    final windowEndDate = windowStartDate.add(
-      Duration(days: windowLengthDays - 1),
-    );
+    final windowEndDate = addDiaryDays(windowStartDate, windowLengthDays - 1);
     final windowKey = _windowKey(windowStartDate, windowEndDate);
+    final isPersistedPending =
+        persistedPending != null && persistedPending.windowKey == windowKey;
     if (resolvedWindowKeys.contains(windowKey)) {
+      if (isPersistedPending) {
+        resolvedPersistedPending = persistedPending;
+      }
       windowStartDate = nextDiaryDay(windowEndDate);
       continue;
     }
-    if (persistedPending != null && persistedPending.windowKey == windowKey) {
+    if (isPersistedPending) {
       return persistedPending;
     }
 

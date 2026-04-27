@@ -182,6 +182,9 @@ Historical edits:
 - Cached weekly learned TDEE snapshots are convenience/cache, not truth.
 - Weekly check-in UI is acknowledgement and explanation; the math source is
   the diary history.
+- If a weekly check-in is blocked by missing source data and the user dismisses
+  it, the app keeps using the last valid learned TDEE. The blocked window stays
+  parked until the missing data is entered, then the cascade can continue.
 
 After each weekly boundary:
 

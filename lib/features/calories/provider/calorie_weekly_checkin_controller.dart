@@ -71,23 +71,28 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     CalorieWeeklyCheckInViewModel viewModel,
   ) async {
     final pendingWeeklyCheckIn = viewModel.pendingWeeklyCheckIn;
+    final cacheWeeklyCheckIn =
+        viewModel.cacheWeeklyCheckIn ?? pendingWeeklyCheckIn;
     final calculation = viewModel.calculation;
-    if (pendingWeeklyCheckIn == null ||
+    if (cacheWeeklyCheckIn == null ||
         calculation == null ||
         viewModel.isBlocked) {
       return true;
     }
 
-    final synced = await syncPendingWeeklyCheckIn(pendingWeeklyCheckIn);
-    if (!ref.mounted) {
-      return false;
-    }
-    if (!synced) {
-      return false;
+    if (pendingWeeklyCheckIn != null &&
+        pendingWeeklyCheckIn.windowKey == cacheWeeklyCheckIn.windowKey) {
+      final synced = await syncPendingWeeklyCheckIn(pendingWeeklyCheckIn);
+      if (!ref.mounted) {
+        return false;
+      }
+      if (!synced) {
+        return false;
+      }
     }
 
     final weeklyCheckInSnapshot = _weeklyCheckInSnapshot(
-      pendingWeeklyCheckIn: pendingWeeklyCheckIn,
+      weeklyCheckIn: cacheWeeklyCheckIn,
       calculation: calculation,
       lowConfidence: viewModel.lowConfidence,
     );
@@ -106,7 +111,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     return ref
         .read(calorieGoalControllerProvider.notifier)
         .saveWeeklyCheckInGoal(
-          completedAt: pendingWeeklyCheckIn.dueDate,
+          completedAt: cacheWeeklyCheckIn.dueDate,
           dailyKcalGoal: calculation.newGoalKcal,
           weeklyCheckInSnapshot: weeklyCheckInSnapshot,
         );
@@ -176,13 +181,21 @@ bool _hasMatchingWeeklyCheckInSnapshot({
   required double dailyKcalGoal,
   required CalorieGoalWeeklyCheckInSnapshot weeklyCheckInSnapshot,
 }) {
-  return settings.sortedGoalHistory.any((entry) {
+  var hasSameWindowSnapshot = false;
+  for (final entry in settings.sortedGoalHistory) {
     final snapshot = entry.weeklyCheckInSnapshot;
     if (snapshot == null) {
-      return false;
+      continue;
     }
-    return _sameWeeklyCheckInSnapshot(snapshot, weeklyCheckInSnapshot) &&
-        _sameDouble(entry.dailyKcalGoal, dailyKcalGoal) &&
+    if (!_sameWeeklyCheckInSnapshot(snapshot, weeklyCheckInSnapshot)) {
+      continue;
+    }
+    hasSameWindowSnapshot = true;
+    final goalMatches =
+        !entry.isWeeklyCheckIn ||
+        _sameDouble(entry.dailyKcalGoal, dailyKcalGoal);
+    final matches =
+        goalMatches &&
         snapshot.lowConfidence == weeklyCheckInSnapshot.lowConfidence &&
         _sameDouble(
           snapshot.trendWeightChangePerDay,
@@ -196,7 +209,11 @@ bool _hasMatchingWeeklyCheckInSnapshot({
           snapshot.averageActiveKcal,
           weeklyCheckInSnapshot.averageActiveKcal,
         );
-  });
+    if (!matches) {
+      return false;
+    }
+  }
+  return hasSameWindowSnapshot;
 }
 
 bool _sameWeeklyCheckInSnapshot(
@@ -215,13 +232,13 @@ bool _sameDouble(double? left, double? right) {
 }
 
 CalorieGoalWeeklyCheckInSnapshot _weeklyCheckInSnapshot({
-  required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
+  required PendingCalorieGoalWeeklyCheckIn weeklyCheckIn,
   required CalorieWeeklyCheckInCalculation calculation,
   required bool lowConfidence,
 }) {
   return CalorieGoalWeeklyCheckInSnapshot(
-    windowStartDate: pendingWeeklyCheckIn.windowStartDate,
-    windowEndDate: pendingWeeklyCheckIn.windowEndDate,
+    windowStartDate: weeklyCheckIn.windowStartDate,
+    windowEndDate: weeklyCheckIn.windowEndDate,
     trendWeightChangePerDay: calculation.trendWeightChangePerDay,
     calculatedTrueTdeeKcal: calculation.calculatedTrueTdeeKcal,
     averageActiveKcal: calculation.lastWeekAverageActiveKcal,

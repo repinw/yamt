@@ -363,7 +363,10 @@ class CalorieGoalController extends _$CalorieGoalController {
       expectedActivityKcal: previousSettings.expectedActivityKcal,
       activityTrackingStartDate: snapshotSettings.activityTrackingStartDate,
       updatedAt: snapshotSettings.updatedAt,
-      goalHistory: snapshotSettings.goalHistory,
+      goalHistory: _refreshCopiedWeeklyCheckInSnapshots(
+        entries: snapshotSettings.goalHistory,
+        weeklyCheckInSnapshot: weeklyCheckInSnapshot,
+      ),
       pendingWeeklyCheckIn: previousSettings.pendingWeeklyCheckIn,
       skippedIntakeDayKeys: snapshotSettings.skippedIntakeDayKeys,
     );
@@ -520,6 +523,43 @@ bool _sameCalculatorProfile(
       left.activityLevel == right.activityLevel &&
       left.goalMode == right.goalMode &&
       left.goalSpeedKgPerWeek == right.goalSpeedKgPerWeek;
+}
+
+List<CalorieGoalHistoryEntry> _refreshCopiedWeeklyCheckInSnapshots({
+  required List<CalorieGoalHistoryEntry> entries,
+  required CalorieGoalWeeklyCheckInSnapshot weeklyCheckInSnapshot,
+}) {
+  return List<CalorieGoalHistoryEntry>.unmodifiable([
+    for (final entry in entries)
+      if (!entry.isWeeklyCheckIn &&
+          _isSameWeeklyCheckInWindow(
+            entry.weeklyCheckInSnapshot,
+            weeklyCheckInSnapshot,
+          ))
+        CalorieGoalHistoryEntry(
+          dailyKcalGoal: entry.dailyKcalGoal,
+          calculatorProfile: entry.calculatorProfile,
+          expectedActivityKcal: entry.expectedActivityKcal,
+          effectiveDate: entry.effectiveDate,
+          changedAt: entry.changedAt,
+          countingStartDate: entry.countingStartDate,
+          source: entry.source,
+          weeklyCheckInSnapshot: weeklyCheckInSnapshot,
+        )
+      else
+        entry,
+  ]);
+}
+
+bool _isSameWeeklyCheckInWindow(
+  CalorieGoalWeeklyCheckInSnapshot? left,
+  CalorieGoalWeeklyCheckInSnapshot right,
+) {
+  if (left == null) {
+    return false;
+  }
+  return isSameDiaryDay(left.windowStartDate, right.windowStartDate) &&
+      isSameDiaryDay(left.windowEndDate, right.windowEndDate);
 }
 
 DateTime _goalChangeTimestamp({
