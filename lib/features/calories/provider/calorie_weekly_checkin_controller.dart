@@ -86,11 +86,20 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
       return false;
     }
 
+    final weeklyCheckInSnapshot = _weeklyCheckInSnapshot(
+      pendingWeeklyCheckIn: pendingWeeklyCheckIn,
+      calculation: calculation,
+      lowConfidence: viewModel.lowConfidence,
+    );
     final settings = await ref.read(calorieGoalControllerProvider.future);
     if (!ref.mounted) {
       return false;
     }
-    if (_hasWeeklyCheckInSnapshot(settings, pendingWeeklyCheckIn)) {
+    if (_hasMatchingWeeklyCheckInSnapshot(
+      settings: settings,
+      dailyKcalGoal: calculation.newGoalKcal,
+      weeklyCheckInSnapshot: weeklyCheckInSnapshot,
+    )) {
       return true;
     }
 
@@ -99,11 +108,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         .saveWeeklyCheckInGoal(
           completedAt: pendingWeeklyCheckIn.dueDate,
           dailyKcalGoal: calculation.newGoalKcal,
-          weeklyCheckInSnapshot: _weeklyCheckInSnapshot(
-            pendingWeeklyCheckIn: pendingWeeklyCheckIn,
-            calculation: calculation,
-            lowConfidence: viewModel.lowConfidence,
-          ),
+          weeklyCheckInSnapshot: weeklyCheckInSnapshot,
         );
   }
 
@@ -166,24 +171,47 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
   }
 }
 
-bool _hasWeeklyCheckInSnapshot(
-  CalorieGoalSettings settings,
-  PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
-) {
+bool _hasMatchingWeeklyCheckInSnapshot({
+  required CalorieGoalSettings settings,
+  required double dailyKcalGoal,
+  required CalorieGoalWeeklyCheckInSnapshot weeklyCheckInSnapshot,
+}) {
   return settings.sortedGoalHistory.any((entry) {
     final snapshot = entry.weeklyCheckInSnapshot;
     if (snapshot == null) {
       return false;
     }
-    return isSameDiaryDay(
-          snapshot.windowStartDate,
-          pendingWeeklyCheckIn.windowStartDate,
+    return _sameWeeklyCheckInSnapshot(snapshot, weeklyCheckInSnapshot) &&
+        _sameDouble(entry.dailyKcalGoal, dailyKcalGoal) &&
+        snapshot.lowConfidence == weeklyCheckInSnapshot.lowConfidence &&
+        _sameDouble(
+          snapshot.trendWeightChangePerDay,
+          weeklyCheckInSnapshot.trendWeightChangePerDay,
         ) &&
-        isSameDiaryDay(
-          snapshot.windowEndDate,
-          pendingWeeklyCheckIn.windowEndDate,
+        _sameDouble(
+          snapshot.calculatedTrueTdeeKcal,
+          weeklyCheckInSnapshot.calculatedTrueTdeeKcal,
+        ) &&
+        _sameDouble(
+          snapshot.averageActiveKcal,
+          weeklyCheckInSnapshot.averageActiveKcal,
         );
   });
+}
+
+bool _sameWeeklyCheckInSnapshot(
+  CalorieGoalWeeklyCheckInSnapshot left,
+  CalorieGoalWeeklyCheckInSnapshot right,
+) {
+  return isSameDiaryDay(left.windowStartDate, right.windowStartDate) &&
+      isSameDiaryDay(left.windowEndDate, right.windowEndDate);
+}
+
+bool _sameDouble(double? left, double? right) {
+  if (left == null || right == null) {
+    return left == right;
+  }
+  return (left - right).abs() < 0.0001;
 }
 
 CalorieGoalWeeklyCheckInSnapshot _weeklyCheckInSnapshot({
