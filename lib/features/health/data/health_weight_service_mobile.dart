@@ -6,6 +6,8 @@ import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
 const _logName = 'HealthWeightService';
 const _weightTypes = <HealthDataType>[HealthDataType.WEIGHT];
+const _weightCacheTtl = Duration(minutes: 5);
+const _recentPastWeightQueryWindow = Duration(days: 30);
 
 /// Create health weight service.
 HealthWeightService createHealthWeightService() {
@@ -15,10 +17,19 @@ HealthWeightService createHealthWeightService() {
 /// Defines mobile health weight service.
 class MobileHealthWeightService implements HealthWeightService {
   /// Creates an instance.
-  MobileHealthWeightService({Health? health}) : _health = health ?? Health();
+  MobileHealthWeightService({
+    Health? health,
+    DateTime Function()? now,
+    Duration cacheTtl = _weightCacheTtl,
+  }) : _health = health ?? Health(),
+       _now = now ?? DateTime.now,
+       _cacheTtl = cacheTtl;
 
   final Health _health;
+  final DateTime Function() _now;
+  final Duration _cacheTtl;
   bool _isConfigured = false;
+  _WeightSampleCache? _cache;
 
   @override
   Future<List<HealthWeightSample>> loadWeightSamples({
@@ -27,27 +38,55 @@ class MobileHealthWeightService implements HealthWeightService {
   }) async {
     await _ensureConfigured();
 
+    final queryEndExclusive = _queryEndExclusive(endExclusive);
+    final cachedSamples = _cachedSamples(
+      startInclusive: startInclusive,
+      endExclusive: endExclusive,
+    );
+    if (cachedSamples != null) {
+      log(
+        'Read weight samples from cache. '
+        'start=${startInclusive.toIso8601String()} '
+        'end=${endExclusive.toIso8601String()} '
+        'count=${cachedSamples.length}',
+        name: _logName,
+      );
+      return cachedSamples;
+    }
+
     final points = await _health.getHealthDataFromTypes(
       types: _weightTypes,
       startTime: startInclusive,
-      endTime: endExclusive,
+      endTime: queryEndExclusive,
     );
-    final samples =
+    final querySamples =
         points
             .map(_buildSample)
             .whereType<HealthWeightSample>()
             .toList(growable: false)
           ..sort((left, right) => left.recordedAt.compareTo(right.recordedAt));
+    _cache = _WeightSampleCache(
+      startInclusive: startInclusive,
+      endExclusive: queryEndExclusive,
+      loadedAt: _now(),
+      samples: List<HealthWeightSample>.unmodifiable(querySamples),
+    );
+    final samples = _filterSamples(
+      querySamples,
+      startInclusive: startInclusive,
+      endExclusive: endExclusive,
+    );
 
     log(
       'Read weight samples. '
       'start=${startInclusive.toIso8601String()} '
       'end=${endExclusive.toIso8601String()} '
+      'queryEnd=${queryEndExclusive.toIso8601String()} '
       'count=${samples.length}',
       name: _logName,
     );
 
-    return List<HealthWeightSample>.unmodifiable(samples);
+    return samples;
   }
 
   @override
@@ -89,6 +128,9 @@ class MobileHealthWeightService implements HealthWeightService {
       'saved=$saved',
       name: _logName,
     );
+    if (saved) {
+      _cache = null;
+    }
 
     return saved;
   }
@@ -99,6 +141,53 @@ class MobileHealthWeightService implements HealthWeightService {
     }
     await _health.configure();
     _isConfigured = true;
+  }
+
+  DateTime _queryEndExclusive(DateTime requestedEndExclusive) {
+    final now = _now();
+    if (!requestedEndExclusive.isBefore(now)) {
+      return requestedEndExclusive;
+    }
+    if (now.difference(requestedEndExclusive) > _recentPastWeightQueryWindow) {
+      return requestedEndExclusive;
+    }
+    return now;
+  }
+
+  List<HealthWeightSample>? _cachedSamples({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) {
+    final cache = _cache;
+    if (cache == null || _now().difference(cache.loadedAt) > _cacheTtl) {
+      _cache = null;
+      return null;
+    }
+    final cacheContainsRequest =
+        !startInclusive.isBefore(cache.startInclusive) &&
+        !endExclusive.isAfter(cache.endExclusive);
+    if (!cacheContainsRequest) {
+      return null;
+    }
+    return _filterSamples(
+      cache.samples,
+      startInclusive: startInclusive,
+      endExclusive: endExclusive,
+    );
+  }
+
+  List<HealthWeightSample> _filterSamples(
+    List<HealthWeightSample> samples, {
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) {
+    return List<HealthWeightSample>.unmodifiable(
+      samples.where(
+        (sample) =>
+            !sample.recordedAt.isBefore(startInclusive) &&
+            sample.recordedAt.isBefore(endExclusive),
+      ),
+    );
   }
 
   HealthWeightSample? _buildSample(HealthDataPoint point) {
@@ -115,4 +204,18 @@ class MobileHealthWeightService implements HealthWeightService {
       weightKg: numericValue.toDouble(),
     );
   }
+}
+
+class _WeightSampleCache {
+  const _WeightSampleCache({
+    required this.startInclusive,
+    required this.endExclusive,
+    required this.loadedAt,
+    required this.samples,
+  });
+
+  final DateTime startInclusive;
+  final DateTime endExclusive;
+  final DateTime loadedAt;
+  final List<HealthWeightSample> samples;
 }
