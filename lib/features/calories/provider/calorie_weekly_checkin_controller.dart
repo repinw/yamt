@@ -1,5 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
@@ -64,6 +66,47 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     return saved;
   }
 
+  /// Sync learned TDEE cache for a ready weekly check in.
+  Future<bool> syncLearnedTdeeCache(
+    CalorieWeeklyCheckInViewModel viewModel,
+  ) async {
+    final pendingWeeklyCheckIn = viewModel.pendingWeeklyCheckIn;
+    final calculation = viewModel.calculation;
+    if (pendingWeeklyCheckIn == null ||
+        calculation == null ||
+        viewModel.isBlocked) {
+      return true;
+    }
+
+    final synced = await syncPendingWeeklyCheckIn(pendingWeeklyCheckIn);
+    if (!ref.mounted) {
+      return false;
+    }
+    if (!synced) {
+      return false;
+    }
+
+    final settings = await ref.read(calorieGoalControllerProvider.future);
+    if (!ref.mounted) {
+      return false;
+    }
+    if (_hasWeeklyCheckInSnapshot(settings, pendingWeeklyCheckIn)) {
+      return true;
+    }
+
+    return ref
+        .read(calorieGoalControllerProvider.notifier)
+        .saveWeeklyCheckInGoal(
+          completedAt: pendingWeeklyCheckIn.dueDate,
+          dailyKcalGoal: calculation.newGoalKcal,
+          weeklyCheckInSnapshot: _weeklyCheckInSnapshot(
+            pendingWeeklyCheckIn: pendingWeeklyCheckIn,
+            calculation: calculation,
+            lowConfidence: viewModel.lowConfidence,
+          ),
+        );
+  }
+
   /// Apply weekly check in.
   Future<bool> applyWeeklyCheckIn(
     CalorieWeeklyCheckInViewModel viewModel,
@@ -90,18 +133,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     }
 
     final goalController = ref.read(calorieGoalControllerProvider.notifier);
-    final savedSnapshot = await goalController.saveWeeklyCheckInGoal(
-      completedAt: pendingWeeklyCheckIn.dueDate,
-      dailyKcalGoal: calculation.newGoalKcal,
-      weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-        windowStartDate: pendingWeeklyCheckIn.windowStartDate,
-        windowEndDate: pendingWeeklyCheckIn.windowEndDate,
-        trendWeightChangePerDay: calculation.trendWeightChangePerDay,
-        calculatedTrueTdeeKcal: calculation.calculatedTrueTdeeKcal,
-        averageActiveKcal: calculation.lastWeekAverageActiveKcal,
-        lowConfidence: viewModel.lowConfidence,
-      ),
-    );
+    final savedSnapshot = await syncLearnedTdeeCache(viewModel);
 
     if (!ref.mounted) {
       return savedSnapshot;
@@ -132,4 +164,39 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         .read(calorieGoalControllerProvider.notifier)
         .setSkippedIntakeDay(day: day, isSkipped: isSkipped);
   }
+}
+
+bool _hasWeeklyCheckInSnapshot(
+  CalorieGoalSettings settings,
+  PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
+) {
+  return settings.sortedGoalHistory.any((entry) {
+    final snapshot = entry.weeklyCheckInSnapshot;
+    if (snapshot == null) {
+      return false;
+    }
+    return isSameDiaryDay(
+          snapshot.windowStartDate,
+          pendingWeeklyCheckIn.windowStartDate,
+        ) &&
+        isSameDiaryDay(
+          snapshot.windowEndDate,
+          pendingWeeklyCheckIn.windowEndDate,
+        );
+  });
+}
+
+CalorieGoalWeeklyCheckInSnapshot _weeklyCheckInSnapshot({
+  required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
+  required CalorieWeeklyCheckInCalculation calculation,
+  required bool lowConfidence,
+}) {
+  return CalorieGoalWeeklyCheckInSnapshot(
+    windowStartDate: pendingWeeklyCheckIn.windowStartDate,
+    windowEndDate: pendingWeeklyCheckIn.windowEndDate,
+    trendWeightChangePerDay: calculation.trendWeightChangePerDay,
+    calculatedTrueTdeeKcal: calculation.calculatedTrueTdeeKcal,
+    averageActiveKcal: calculation.lastWeekAverageActiveKcal,
+    lowConfidence: lowConfidence,
+  );
 }

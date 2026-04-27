@@ -364,7 +364,7 @@ class CalorieGoalController extends _$CalorieGoalController {
       activityTrackingStartDate: snapshotSettings.activityTrackingStartDate,
       updatedAt: snapshotSettings.updatedAt,
       goalHistory: snapshotSettings.goalHistory,
-      pendingWeeklyCheckIn: snapshotSettings.pendingWeeklyCheckIn,
+      pendingWeeklyCheckIn: previousSettings.pendingWeeklyCheckIn,
       skippedIntakeDayKeys: snapshotSettings.skippedIntakeDayKeys,
     );
     return _persistSettings(nextSettings);

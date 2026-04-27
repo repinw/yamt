@@ -374,6 +374,33 @@ void main() {
   );
 
   test(
+    'ignores stale learned snapshot when source intake is removed',
+    () async {
+      final startDay = DateTime(2026, 4, 8);
+      final today = DateTime(2026, 4, 15);
+      final settings = _learnedSettings(
+        startDay: startDay,
+        windowEndDate: DateTime(2026, 4, 14),
+        dailyGoalKcal: 2580,
+        learnedTdeeKcal: 2580,
+      );
+      final harness = _DailyLearnedHarness(
+        settings: settings,
+        entries: const <CalorieEntry>[],
+        healthWeights: <HealthWeightSample>[
+          HealthWeightSample(recordedAt: startDay, weightKg: 80),
+          HealthWeightSample(recordedAt: today, weightKg: 80),
+        ],
+      );
+      addTearDown(harness.dispose);
+
+      final result = await _readDailyLearned(harness.container, today: today);
+
+      expect(result, isNull);
+    },
+  );
+
+  test(
     'invalidates later learned snapshot when earlier source window changes',
     () async {
       final startDay = DateTime(2026, 4, 8);

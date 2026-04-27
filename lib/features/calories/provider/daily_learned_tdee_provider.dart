@@ -104,7 +104,7 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
     storedGoalKcal: storedGoalKcal,
   );
   if (entries.isEmpty) {
-    return snapshotFallback;
+    return null;
   }
 
   final healthStatus = await ref.watch(

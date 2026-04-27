@@ -290,6 +290,10 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
       return;
     }
     _lastWeeklyCheckInViewModel = nextValue;
+    final controller = ref.read(
+      calorieWeeklyCheckInControllerProvider.notifier,
+    );
+    unawaited(controller.syncLearnedTdeeCache(nextValue));
     _maybeOpenWeeklyCheckInDialog(previous, next);
   }
 

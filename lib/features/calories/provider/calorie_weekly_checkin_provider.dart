@@ -278,13 +278,12 @@ PendingCalorieGoalWeeklyCheckIn? _resolvePendingWeeklyCheckIn({
       continue;
     }
     final windowKey = _windowKey(windowStartDate, windowEndDate);
+    if (persistedPending != null && persistedPending.windowKey == windowKey) {
+      return persistedPending;
+    }
     if (resolvedWindowKeys.contains(windowKey)) {
       windowStartDate = nextDiaryDay(windowEndDate);
       continue;
-    }
-
-    if (persistedPending != null && persistedPending.windowKey == windowKey) {
-      return persistedPending;
     }
 
     return PendingCalorieGoalWeeklyCheckIn(
