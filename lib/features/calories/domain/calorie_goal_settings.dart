@@ -348,7 +348,7 @@ class CalorieGoalSettings {
   /// The latest goal entry.
   CalorieGoalHistoryEntry? get latestGoalEntry {
     for (final entry in sortedGoalHistory.reversed) {
-      if (entry.hasGoal) {
+      if (entry.hasGoal && !entry.isWeeklyCheckIn) {
         return entry;
       }
     }
@@ -424,6 +424,9 @@ class CalorieGoalSettings {
       if (entry.effectiveDate.isAfter(normalizedDay)) {
         break;
       }
+      if (entry.isWeeklyCheckIn) {
+        continue;
+      }
       resolvedEntry = entry;
     }
 
@@ -466,7 +469,7 @@ class CalorieGoalSettings {
   DateTime? nextGoalStartAfterDay(DateTime day) {
     final normalizedDay = normalizeDiaryDay(day);
     for (final entry in sortedGoalHistory) {
-      if (!entry.hasGoal) {
+      if (!entry.hasGoal || entry.isWeeklyCheckIn) {
         continue;
       }
       final countingStartDate = entry.effectiveCountingStartDate;
@@ -534,6 +537,9 @@ class CalorieGoalSettings {
       }
       if (entry.effectiveDate.isAfter(windowEnd)) {
         break;
+      }
+      if (entry.isWeeklyCheckIn) {
+        continue;
       }
       final countingStartDate = entry.effectiveCountingStartDate;
       if (countingStartDate.isBefore(windowStart) ||
@@ -749,6 +755,9 @@ bool _shouldKeepGoalHistoryEntry({
   required bool replaceFutureHistory,
 }) {
   if (_isSameDay(entry.effectiveDate, effectiveDate)) {
+    if (entry.isWeeklyCheckIn != (source == CalorieGoalSource.weeklyCheckIn)) {
+      return true;
+    }
     if (source == CalorieGoalSource.weeklyCheckIn &&
         entry.source == CalorieGoalSource.weeklyCheckIn &&
         weeklyCheckInSnapshot != null &&

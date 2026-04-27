@@ -764,6 +764,12 @@
   "caloriesCalculatorOnboardingStartLaterHint":
       "Today stays consequence-free. Burn Week starts automatically from this day.",
   "caloriesCalculatorOnboardingChooseFutureDateAction": "Choose day",
+  "caloriesCalculatorOnboardingTodayTrackingLabel":
+      "How will you track today?",
+  "caloriesCalculatorOnboardingTodayTrackingExactAction":
+      "Full day exact",
+  "caloriesCalculatorOnboardingTodayTrackingEstimateAction":
+      "Estimate so far",
   "caloriesCalculatorOnboardingCatchUpLabel":
       "How much have you eaten so far?",
   "caloriesCalculatorOnboardingCatchUpLowAction": "Little",
@@ -809,9 +815,9 @@
       "Could not save the learned TDEE target.",
   "caloriesWeeklyCheckInDialogTitle": "Weekly check-in",
   "caloriesWeeklyCheckInDialogReadyBody":
-      "Review your last 7 completed days and apply an updated target from today.",
+      "Review your last 7 completed days. Your target already uses this learning automatically.",
   "caloriesWeeklyCheckInDialogBlockedBody":
-      "We still need a bit more data before we can update your target.",
+      "We still need a bit more data before this weekly summary is complete.",
   "caloriesWeeklyCheckInDialogWindowLabel": "Window",
   "caloriesWeeklyCheckInDialogTrendLabel": "Weight trend",
   "caloriesWeeklyCheckInDialogTrueTdeeLabel": "Learned TDEE",
@@ -825,16 +831,16 @@
       "Low confidence: only start and end weights were available.",
   "caloriesWeeklyCheckInBlockedUnstableWeight":
       "Weight data was too noisy this week for a reliable TDEE update. Add steadier weigh-ins and try again.",
-  "caloriesWeeklyCheckInApplyAction": "Apply target",
+  "caloriesWeeklyCheckInApplyAction": "Done",
   "caloriesWeeklyCheckInLaterAction": "Later",
   "caloriesWeeklyCheckInApplyFailed":
-      "Could not apply the weekly check-in.",
+      "Could not close the weekly check-in.",
   "caloriesWeeklyCheckInHintReadyTitle": "Weekly check-in ready",
   "caloriesWeeklyCheckInHintReadyBody":
-      "Your last 7 completed days are ready for a target refresh.",
+      "Your last 7 completed days are ready to review.",
   "caloriesWeeklyCheckInHintBlockedTitle": "Weekly check-in needs data",
   "caloriesWeeklyCheckInHintBlockedBody":
-      "Finish the missing intake or weight data to refresh your target.",
+      "Finish the missing intake or weight data to complete the summary.",
   "caloriesWeeklyCheckInHintContinueAction": "Continue",
   "caloriesWeeklyCheckInHintStaleTitle": "Target getting stale",
   "caloriesWeeklyCheckInHintStaleBody":

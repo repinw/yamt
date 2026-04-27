@@ -133,8 +133,17 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
     healthStatus: healthStatus,
     userHeightCm: settings.calculatorProfile?.heightCm,
   );
-  final learnedEntry = settings.learnedTdeeEntryForDay(normalizedDay);
-  if (learnedEntry == null) {
+  final learnedGoal = await ref.watch(
+    dailyLearnedTdeeGoalForDayProvider(
+      day: normalizedDay,
+      today: now,
+      storedGoalKcal: storedGoalKcal,
+    ).future,
+  );
+  if (!ref.mounted) {
+    throw StateError('Resolved calorie goal disposed.');
+  }
+  if (learnedGoal == null) {
     final expectedActivityKcal = _expectedActivityKcalForDay(
       settings: settings,
       day: normalizedDay,
@@ -189,8 +198,7 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
     );
   }
 
-  final averageActiveKcal =
-      learnedEntry.weeklyCheckInSnapshot?.averageActiveKcal ?? 0;
+  final averageActiveKcal = learnedGoal.averageActiveKcal;
   final activityComparisonKcal = dayActivity.isTrackingActive
       ? calculateLearnedActivityComparisonKcal(
           todayActiveKcal: dayActivity.todayActiveKcal,
@@ -203,30 +211,11 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
           averageActiveKcal: averageActiveKcal,
         )
       : 0.0;
-  final dailyLearnedGoal = await ref.watch(
-    dailyLearnedTdeeGoalForDayProvider(
-      day: normalizedDay,
-      today: now,
-      storedGoalKcal: storedGoalKcal,
-    ).future,
-  );
-  if (!ref.mounted) {
-    throw StateError('Resolved calorie goal disposed.');
-  }
-  final effectiveStoredGoalKcal =
-      dailyLearnedGoal?.newGoalKcal ?? storedGoalKcal;
   final goalBreakdown = CalorieBudgetCalculator.resolveDailyGoal(
-    storedGoalKcal: effectiveStoredGoalKcal,
+    storedGoalKcal: learnedGoal.newGoalKcal,
     activityDeltaKcal: activityDeltaKcal,
   );
   if (!kReleaseMode) {
-    final dailyLearnedTargetKcal =
-        dailyLearnedGoal?.newGoalKcal.toStringAsFixed(2) ?? 'null';
-    final dailyLearnedMeasuredTdeeKcal =
-        dailyLearnedGoal?.measured.measuredTrueTdeeKcal.toStringAsFixed(2) ??
-        'null';
-    final dailyLearnedCalculatedTdeeKcal =
-        dailyLearnedGoal?.calculatedTrueTdeeKcal.toStringAsFixed(2) ?? 'null';
     final message =
         'CALC_GOAL_DEBUG '
         'day=${diaryDayKey(normalizedDay)} '
@@ -234,16 +223,16 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
         'todayActiveKcal=${dayActivity.todayActiveKcal} '
         'activityComparisonKcal=${activityComparisonKcal.toStringAsFixed(2)} '
         'activityDeltaKcal=${activityDeltaKcal.toStringAsFixed(2)} '
-        'dailyLearnedTargetKcal=$dailyLearnedTargetKcal '
-        'dailyLearnedMeasuredTdeeKcal=$dailyLearnedMeasuredTdeeKcal '
-        'dailyLearnedCalculatedTdeeKcal=$dailyLearnedCalculatedTdeeKcal '
+        'learnedTargetKcal=${learnedGoal.newGoalKcal.toStringAsFixed(2)} '
+        'learnedTdeeKcal='
+        '${learnedGoal.calculatedTrueTdeeKcal.toStringAsFixed(2)} '
         'resolvedGoalKcal=${goalBreakdown.goalKcal.toStringAsFixed(2)}';
     log(message, name: _resolvedGoalLogName);
   }
 
   return ResolvedCalorieGoalData(
     day: normalizedDay,
-    storedGoalKcal: effectiveStoredGoalKcal,
+    storedGoalKcal: learnedGoal.newGoalKcal,
     goalKcal: goalBreakdown.goalKcal,
     activityDeltaKcal: activityDeltaKcal,
     activityComparisonKcal: activityComparisonKcal,

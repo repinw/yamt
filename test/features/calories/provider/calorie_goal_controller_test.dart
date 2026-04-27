@@ -822,8 +822,8 @@ void main() {
 
       expect(saved, isTrue);
       final settings = await repository.readSettings();
-      expect(settings.latestGoalEntry?.dailyKcalGoal, 2300);
-      expect(settings.latestGoalEntry?.source, CalorieGoalSource.weeklyCheckIn);
+      expect(settings.latestGoalEntry?.dailyKcalGoal, 2200);
+      expect(settings.latestGoalEntry?.source, CalorieGoalSource.manual);
       expect(settings.latestGoalEntry?.weeklyCheckInSnapshot, isNotNull);
       expect(settings.hasLearnedTdee, isTrue);
       expect(settings.latestLearnedTdeeKcal, 2315);
@@ -831,7 +831,7 @@ void main() {
         settings.goalKcalForDay(today.subtract(const Duration(days: 3))),
         2200,
       );
-      expect(settings.goalKcalForDay(today), 2300);
+      expect(settings.goalKcalForDay(today), 2200);
     },
   );
 
@@ -959,14 +959,14 @@ void main() {
 
     expect(saved, isTrue);
     final settings = await repository.readSettings();
-    expect(settings.dailyKcalGoal, 2300);
+    expect(settings.dailyKcalGoal, 2200);
     expect(settings.hasLearnedTdee, isTrue);
     expect(settings.latestLearnedTdeeKcal, 2315);
-    expect(settings.latestGoalEntry?.source, CalorieGoalSource.weeklyCheckIn);
+    expect(settings.latestGoalEntry?.source, CalorieGoalSource.manual);
     expect(settings.goalKcalForDay(DateTime(2026, 4, 14)), 2200);
-    expect(settings.goalKcalForDay(DateTime(2026, 4, 15)), 2300);
+    expect(settings.goalKcalForDay(DateTime(2026, 4, 15)), 2200);
     expect(
-      settings.latestGoalEntry?.weeklyCheckInSnapshot?.windowEndDate,
+      settings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot?.windowEndDate,
       DateTime(2026, 4, 14),
     );
   });
@@ -1026,7 +1026,8 @@ void main() {
     expect(snapshots, hasLength(2));
     expect(snapshots.first.windowStartDate, DateTime(2026, 4, 8));
     expect(snapshots.last.windowStartDate, DateTime(2026, 4, 15));
-    expect(settings.latestGoalEntry?.dailyKcalGoal, 2250);
+    expect(settings.latestGoalEntry?.dailyKcalGoal, 2200);
+    expect(settings.latestLearnedTdeeEntry?.dailyKcalGoal, 2250);
   });
 
   test('saveLearnedTdeeGoal uses learned TDEE and goal speed', () async {

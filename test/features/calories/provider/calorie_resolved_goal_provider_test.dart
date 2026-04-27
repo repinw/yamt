@@ -105,6 +105,51 @@ CalorieEntry _entry({
   );
 }
 
+List<CalorieEntry> _weeklySourceEntries({
+  required DateTime startDay,
+  required double dailyKcal,
+}) {
+  return <CalorieEntry>[
+    for (var index = 0; index < 7; index += 1)
+      _entry(
+        id: 'source-$index',
+        loggedAt: startDay.add(Duration(days: index, hours: 8)),
+        totalKcal: dailyKcal,
+      ),
+  ];
+}
+
+List<HealthWeightSample> _stableBoundaryWeights({
+  required DateTime startDay,
+  required DateTime boundaryDay,
+}) {
+  return <HealthWeightSample>[
+    HealthWeightSample(recordedAt: startDay, weightKg: 80),
+    HealthWeightSample(recordedAt: boundaryDay, weightKg: 80),
+  ];
+}
+
+DiaryHealthDayData _healthDayWithWorkout({
+  required DateTime day,
+  required int totalCalories,
+}) {
+  return DiaryHealthDayData(
+    totalSteps: 0,
+    workouts: <HealthWorkoutSession>[
+      HealthWorkoutSession(
+        id: 'workout-${diaryDayKey(day)}',
+        start: day.add(const Duration(hours: 18)),
+        endExclusive: day.add(const Duration(hours: 19)),
+        durationMinutes: 60,
+        activityLabel: 'Run',
+        sourceName: 'Health',
+        totalCalories: totalCalories,
+        totalSteps: 0,
+      ),
+    ],
+  );
+}
+
 void main() {
   test(
     'recalculates expected activity delta for a selected historical day',
@@ -420,10 +465,18 @@ void main() {
     'adds only positive learned activity bonus after weekly check-in',
     () async {
       final today = DateTime(2026, 4, 15);
+      final sourceStart = today.subtract(const Duration(days: 7));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: _weeklySourceEntries(
+          startDay: sourceStart,
+          dailyKcal: 2100,
+        ),
+      );
+      addTearDown(logRepository.dispose);
       final settings = const CalorieGoalSettings.empty()
           .applyGoalChange(
-            changedAt: DateTime(2026, 4, 1, 9),
-            dailyKcalGoal: 2200,
+            changedAt: sourceStart,
+            dailyKcalGoal: 2100,
             calculatorProfile: null,
           )
           .applyGoalChange(
@@ -432,11 +485,11 @@ void main() {
             calculatorProfile: null,
             source: CalorieGoalSource.weeklyCheckIn,
             weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: today.subtract(const Duration(days: 7)),
+              windowStartDate: sourceStart,
               windowEndDate: today.subtract(const Duration(days: 1)),
               trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 2300,
-              averageActiveKcal: 200,
+              calculatedTrueTdeeKcal: 2100,
+              averageActiveKcal: 0,
               lowConfidence: false,
             ),
           )
@@ -447,22 +500,18 @@ void main() {
         settings: settings,
         diaryHealthService: FakeDiaryHealthService(
           <String, DiaryHealthDayData>{
-            diaryDayKey(today): DiaryHealthDayData(
-              totalSteps: 5000,
-              workouts: <HealthWorkoutSession>[
-                HealthWorkoutSession(
-                  id: 'run-1',
-                  start: today.add(const Duration(hours: 18)),
-                  endExclusive: today.add(const Duration(hours: 19)),
-                  durationMinutes: 60,
-                  activityLabel: 'Run',
-                  sourceName: 'Health',
-                  totalCalories: 100,
-                  totalSteps: 0,
-                ),
-              ],
+            diaryDayKey(today): _healthDayWithWorkout(
+              day: today,
+              totalCalories: 100,
             ),
           },
+        ),
+        logRepository: logRepository,
+        healthWeightService: FakeHealthWeightService(
+          _stableBoundaryWeights(startDay: sourceStart, boundaryDay: today),
+        ),
+        manualWeightRepository: FakeManualHealthWeightRepository(
+          <ManualHealthWeightEntry>[],
         ),
       );
       addTearDown(container.dispose);
@@ -480,7 +529,7 @@ void main() {
   );
 
   test(
-    'applies capped daily learned TDEE EMA to current learned goal',
+    'keeps learned target stable until the next weekly check-in',
     () async {
       final startDay = DateTime(2026, 4, 8);
       final today = DateTime(2026, 4, 16);
@@ -557,8 +606,8 @@ void main() {
         resolvedCalorieGoalForDayProvider(DateTime(2026, 4, 15)).future,
       );
 
-      expect(resolvedToday.storedGoalKcal, 2450);
-      expect(resolvedToday.goalKcal, 2450);
+      expect(resolvedToday.storedGoalKcal, 2400);
+      expect(resolvedToday.goalKcal, 2400);
       expect(resolvedToday.usedLearnedTdee, isTrue);
       expect(resolvedHistorical.storedGoalKcal, 2400);
       expect(resolvedHistorical.goalKcal, 2400);
@@ -578,8 +627,8 @@ void main() {
         resolvedCalorieGoalForDayProvider(today).future,
       );
 
-      expect(recomputedToday.storedGoalKcal, 2350);
-      expect(recomputedToday.goalKcal, 2350);
+      expect(recomputedToday.storedGoalKcal, 2400);
+      expect(recomputedToday.goalKcal, 2400);
     },
   );
 
@@ -588,23 +637,32 @@ void main() {
     () async {
       final today = DateTime(2026, 4, 16);
       final selectedDay = DateTime(2026, 4, 15);
+      final sourceStart = DateTime(2026, 4, 5);
+      final sourceBoundary = DateTime(2026, 4, 12);
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: _weeklySourceEntries(
+          startDay: sourceStart,
+          dailyKcal: 2100,
+        ),
+      );
+      addTearDown(logRepository.dispose);
       final settings = const CalorieGoalSettings.empty()
           .applyGoalChange(
-            changedAt: DateTime(2026, 4, 1, 9),
-            dailyKcalGoal: 2200,
+            changedAt: sourceStart,
+            dailyKcalGoal: 2100,
             calculatorProfile: null,
           )
           .applyGoalChange(
-            changedAt: DateTime(2026, 4, 12),
+            changedAt: sourceBoundary,
             dailyKcalGoal: 2100,
             calculatorProfile: null,
             source: CalorieGoalSource.weeklyCheckIn,
             weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: DateTime(2026, 4, 5),
-              windowEndDate: DateTime(2026, 4, 11),
+              windowStartDate: sourceStart,
+              windowEndDate: previousDiaryDay(sourceBoundary),
               trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 2300,
-              averageActiveKcal: 200,
+              calculatedTrueTdeeKcal: 2100,
+              averageActiveKcal: 0,
               lowConfidence: false,
             ),
           )
@@ -615,22 +673,21 @@ void main() {
         settings: settings,
         diaryHealthService: FakeDiaryHealthService(
           <String, DiaryHealthDayData>{
-            diaryDayKey(selectedDay): DiaryHealthDayData(
-              totalSteps: 5000,
-              workouts: <HealthWorkoutSession>[
-                HealthWorkoutSession(
-                  id: 'history-learned-run',
-                  start: selectedDay.add(const Duration(hours: 18)),
-                  endExclusive: selectedDay.add(const Duration(hours: 19)),
-                  durationMinutes: 60,
-                  activityLabel: 'Run',
-                  sourceName: 'Health',
-                  totalCalories: 100,
-                  totalSteps: 0,
-                ),
-              ],
+            diaryDayKey(selectedDay): _healthDayWithWorkout(
+              day: selectedDay,
+              totalCalories: 100,
             ),
           },
+        ),
+        logRepository: logRepository,
+        healthWeightService: FakeHealthWeightService(
+          _stableBoundaryWeights(
+            startDay: sourceStart,
+            boundaryDay: sourceBoundary,
+          ),
+        ),
+        manualWeightRepository: FakeManualHealthWeightRepository(
+          <ManualHealthWeightEntry>[],
         ),
       );
       addTearDown(container.dispose);
@@ -651,10 +708,18 @@ void main() {
     'does not lower learned goal on a rest day below the stored goal',
     () async {
       final today = DateTime(2026, 4, 15);
+      final sourceStart = today.subtract(const Duration(days: 7));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: _weeklySourceEntries(
+          startDay: sourceStart,
+          dailyKcal: 2000,
+        ),
+      );
+      addTearDown(logRepository.dispose);
       final settings = const CalorieGoalSettings.empty()
           .applyGoalChange(
-            changedAt: DateTime(2026, 4, 1, 9),
-            dailyKcalGoal: 2100,
+            changedAt: sourceStart,
+            dailyKcalGoal: 2000,
             calculatorProfile: null,
           )
           .applyGoalChange(
@@ -663,10 +728,10 @@ void main() {
             calculatorProfile: null,
             source: CalorieGoalSource.weeklyCheckIn,
             weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: today.subtract(const Duration(days: 7)),
+              windowStartDate: sourceStart,
               windowEndDate: today.subtract(const Duration(days: 1)),
               trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 2200,
+              calculatedTrueTdeeKcal: 2000,
               averageActiveKcal: 400,
               lowConfidence: false,
             ),
@@ -677,7 +742,22 @@ void main() {
         today: today,
         settings: settings,
         diaryHealthService: FakeDiaryHealthService(
-          <String, DiaryHealthDayData>{},
+          <String, DiaryHealthDayData>{
+            for (var index = 0; index < 7; index += 1)
+              diaryDayKey(
+                sourceStart.add(Duration(days: index)),
+              ): _healthDayWithWorkout(
+                day: sourceStart.add(Duration(days: index)),
+                totalCalories: 400,
+              ),
+          },
+        ),
+        logRepository: logRepository,
+        healthWeightService: FakeHealthWeightService(
+          _stableBoundaryWeights(startDay: sourceStart, boundaryDay: today),
+        ),
+        manualWeightRepository: FakeManualHealthWeightRepository(
+          <ManualHealthWeightEntry>[],
         ),
       );
       addTearDown(container.dispose);
@@ -697,10 +777,18 @@ void main() {
     'does not clamp a learned resolved goal above the 1200 floor',
     () async {
       final today = DateTime(2026, 4, 15);
+      final sourceStart = today.subtract(const Duration(days: 7));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: _weeklySourceEntries(
+          startDay: sourceStart,
+          dailyKcal: 1450,
+        ),
+      );
+      addTearDown(logRepository.dispose);
       final settings = const CalorieGoalSettings.empty()
           .applyGoalChange(
-            changedAt: DateTime(2026, 4, 1, 9),
-            dailyKcalGoal: 1600,
+            changedAt: sourceStart,
+            dailyKcalGoal: 1450,
             calculatorProfile: null,
           )
           .applyGoalChange(
@@ -709,10 +797,10 @@ void main() {
             calculatorProfile: null,
             source: CalorieGoalSource.weeklyCheckIn,
             weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-              windowStartDate: today.subtract(const Duration(days: 7)),
+              windowStartDate: sourceStart,
               windowEndDate: today.subtract(const Duration(days: 1)),
               trendWeightChangePerDay: 0,
-              calculatedTrueTdeeKcal: 2000,
+              calculatedTrueTdeeKcal: 1450,
               averageActiveKcal: 0,
               lowConfidence: false,
             ),
@@ -723,6 +811,13 @@ void main() {
         settings: settings,
         diaryHealthService: FakeDiaryHealthService(
           <String, DiaryHealthDayData>{},
+        ),
+        logRepository: logRepository,
+        healthWeightService: FakeHealthWeightService(
+          _stableBoundaryWeights(startDay: sourceStart, boundaryDay: today),
+        ),
+        manualWeightRepository: FakeManualHealthWeightRepository(
+          <ManualHealthWeightEntry>[],
         ),
       );
       addTearDown(container.dispose);

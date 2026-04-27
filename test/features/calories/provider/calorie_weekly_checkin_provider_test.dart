@@ -714,7 +714,7 @@ void main() {
   );
 
   test(
-    'dismissed pending window keeps hint but suppresses auto-open',
+    'dismissed pending window is treated as already seen',
     () async {
       final today = DateTime(2026, 4, 15);
       final goalStart = DateTime(2026, 4, 8);
@@ -769,7 +769,214 @@ void main() {
 
       expect(viewModel.hasPending, isTrue);
       expect(viewModel.shouldAutoOpen, isFalse);
-      expect(viewModel.showDiaryHint, isTrue);
+      expect(viewModel.showDiaryHint, isFalse);
+    },
+  );
+
+  test(
+    'dismissed summary without cache stays available for hidden sync',
+    () async {
+      final today = DateTime(2026, 4, 22);
+      final goalStart = DateTime(2026, 4, 8);
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings:
+            CalorieGoalSettings.single(
+              dailyKcalGoal: 2400,
+              calculatorProfile: null,
+              effectiveDate: goalStart,
+            ).copyWithPendingWeeklyCheckIn(
+              PendingCalorieGoalWeeklyCheckIn(
+                windowStartDate: DateTime(2026, 4, 8),
+                windowEndDate: DateTime(2026, 4, 14),
+                dueDate: DateTime(2026, 4, 15),
+                dismissedAt: DateTime(2026, 4, 15, 10),
+              ),
+            ),
+      );
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          for (var index = 0; index < 14; index += 1)
+            _entry(
+              'entry-$index',
+              goalStart.add(Duration(days: index, hours: 8)),
+              3000,
+            ),
+        ],
+      );
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[
+          ManualHealthWeightEntry(day: goalStart, weightKg: 80),
+          ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 80),
+          ManualHealthWeightEntry(day: DateTime(2026, 4, 21), weightKg: 80),
+        ],
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = _createContainer(
+        today: today,
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        manualRepository: manualRepository,
+      );
+      addTearDown(container.dispose);
+
+      final viewModel = await container.read(
+        calorieWeeklyCheckInViewModelProvider.future,
+      );
+
+      expect(
+        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        DateTime(2026, 4, 8),
+      );
+      expect(
+        viewModel.pendingWeeklyCheckIn?.windowEndDate,
+        DateTime(2026, 4, 14),
+      );
+      expect(viewModel.isReady, isTrue);
+      expect(viewModel.shouldAutoOpen, isFalse);
+      expect(viewModel.showDiaryHint, isFalse);
+    },
+  );
+
+  test(
+    'saved summary seeds cascade from pre-window tdee',
+    () async {
+      final today = DateTime(2026, 4, 22);
+      final goalStart = DateTime(2026, 4, 8);
+      final weekOneSnapshot = CalorieGoalWeeklyCheckInSnapshot(
+        windowStartDate: DateTime(2026, 4, 8),
+        windowEndDate: DateTime(2026, 4, 14),
+        trendWeightChangePerDay: 0,
+        calculatedTrueTdeeKcal: 2580,
+        averageActiveKcal: 0,
+        lowConfidence: false,
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings:
+            CalorieGoalSettings.single(
+              dailyKcalGoal: 2400,
+              calculatorProfile: null,
+              effectiveDate: goalStart,
+            ).applyGoalChange(
+              changedAt: DateTime(2026, 4, 15),
+              dailyKcalGoal: 2580,
+              calculatorProfile: null,
+              source: CalorieGoalSource.weeklyCheckIn,
+              weeklyCheckInSnapshot: weekOneSnapshot,
+            ),
+      );
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          for (var index = 0; index < 14; index += 1)
+            _entry(
+              'entry-$index',
+              goalStart.add(Duration(days: index, hours: 8)),
+              3000,
+            ),
+        ],
+      );
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[
+          ManualHealthWeightEntry(day: goalStart, weightKg: 80),
+          ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 80),
+          ManualHealthWeightEntry(day: DateTime(2026, 4, 21), weightKg: 80),
+        ],
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = _createContainer(
+        today: today,
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        manualRepository: manualRepository,
+      );
+      addTearDown(container.dispose);
+
+      final viewModel = await container.read(
+        calorieWeeklyCheckInViewModelProvider.future,
+      );
+
+      expect(
+        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        DateTime(2026, 4, 15),
+      );
+      expect(viewModel.isReady, isTrue);
+      expect(
+        viewModel.calculation?.calculatedTrueTdeeKcal,
+        closeTo(2706, 0.01),
+      );
+      expect(viewModel.calculation?.newGoalKcal, closeTo(2706, 0.01));
+    },
+  );
+
+  test(
+    'resolved latest window stays available for hidden cache sync',
+    () async {
+      final today = DateTime(2026, 4, 16);
+      final goalStart = DateTime(2026, 4, 8);
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings:
+            CalorieGoalSettings.single(
+              dailyKcalGoal: 2400,
+              calculatorProfile: null,
+              effectiveDate: goalStart,
+            ).applyGoalChange(
+              changedAt: DateTime(2026, 4, 15),
+              dailyKcalGoal: 2500,
+              calculatorProfile: null,
+              source: CalorieGoalSource.weeklyCheckIn,
+              weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+                windowStartDate: goalStart,
+                windowEndDate: DateTime(2026, 4, 14),
+                trendWeightChangePerDay: 0,
+                calculatedTrueTdeeKcal: 2500,
+                averageActiveKcal: 0,
+                lowConfidence: false,
+              ),
+            ),
+      );
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          for (var index = 0; index < 7; index += 1)
+            _entry(
+              'entry-$index',
+              goalStart.add(Duration(days: index, hours: 8)),
+              3000,
+            ),
+        ],
+      );
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[
+          ManualHealthWeightEntry(day: goalStart, weightKg: 80),
+          ManualHealthWeightEntry(day: DateTime(2026, 4, 14), weightKg: 80),
+        ],
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = _createContainer(
+        today: today,
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        manualRepository: manualRepository,
+      );
+      addTearDown(container.dispose);
+
+      final viewModel = await container.read(
+        calorieWeeklyCheckInViewModelProvider.future,
+      );
+
+      expect(viewModel.hasPending, isFalse);
+      expect(viewModel.pendingWeeklyCheckIn, isNull);
+      expect(viewModel.cacheWeeklyCheckIn?.windowStartDate, goalStart);
+      expect(
+        viewModel.cacheWeeklyCheckIn?.windowEndDate,
+        DateTime(2026, 4, 14),
+      );
+      expect(viewModel.calculation, isNotNull);
+      expect(viewModel.showDiaryHint, isFalse);
     },
   );
 
@@ -874,6 +1081,68 @@ void main() {
   );
 
   test(
+    'dismissed blocked summary keeps using old learned tdee silently',
+    () async {
+      final today = DateTime(2026, 4, 22);
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: DateTime(2026, 4),
+            dailyKcalGoal: 2400,
+            calculatorProfile: null,
+          )
+          .applyGoalChange(
+            changedAt: DateTime(2026, 4, 8),
+            dailyKcalGoal: 2350,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: DateTime(2026, 4),
+              windowEndDate: DateTime(2026, 4, 7),
+              trendWeightChangePerDay: -0.05,
+              calculatedTrueTdeeKcal: 2400,
+              averageActiveKcal: 200,
+              lowConfidence: false,
+            ),
+          )
+          .copyWithPendingWeeklyCheckIn(
+            PendingCalorieGoalWeeklyCheckIn(
+              windowStartDate: DateTime(2026, 4, 8),
+              windowEndDate: DateTime(2026, 4, 14),
+              dueDate: DateTime(2026, 4, 15),
+              dismissedAt: DateTime(2026, 4, 15, 10),
+            ),
+          );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: settings,
+      );
+      final logRepository = FakeCalorieLogRepository();
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[],
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = _createContainer(
+        today: today,
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        manualRepository: manualRepository,
+      );
+      addTearDown(container.dispose);
+
+      final viewModel = await container.read(
+        calorieWeeklyCheckInViewModelProvider.future,
+      );
+
+      expect(viewModel.hasPending, isTrue);
+      expect(viewModel.pendingWeeklyCheckIn?.isDismissed, isTrue);
+      expect(viewModel.isBlocked, isTrue);
+      expect(viewModel.freshness, CalorieLearnedTdeeFreshness.stale);
+      expect(viewModel.showDiaryHint, isFalse);
+    },
+  );
+
+  test(
     'first unresolved overdue window stays pending when multiple exist',
     () async {
       final today = DateTime(2026, 4, 22);
@@ -940,6 +1209,71 @@ void main() {
       expect(
         viewModel.pendingWeeklyCheckIn?.windowEndDate,
         DateTime(2026, 4, 14),
+      );
+    },
+  );
+
+  test(
+    'cached persisted summary does not block next unresolved window',
+    () async {
+      final today = DateTime(2026, 4, 22);
+      final goalStart = DateTime(2026, 4, 8);
+      final firstWindow = PendingCalorieGoalWeeklyCheckIn(
+        windowStartDate: goalStart,
+        windowEndDate: DateTime(2026, 4, 14),
+        dueDate: DateTime(2026, 4, 15),
+      );
+      final settings = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: goalStart,
+            dailyKcalGoal: 2400,
+            calculatorProfile: null,
+          )
+          .applyGoalChange(
+            changedAt: DateTime(2026, 4, 15),
+            dailyKcalGoal: 2580,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: goalStart,
+              windowEndDate: DateTime(2026, 4, 14),
+              trendWeightChangePerDay: 0,
+              calculatedTrueTdeeKcal: 2580,
+              averageActiveKcal: 0,
+              lowConfidence: false,
+            ),
+          )
+          .copyWithPendingWeeklyCheckIn(firstWindow);
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: settings,
+      );
+      final logRepository = FakeCalorieLogRepository();
+      final manualRepository = FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[],
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = _createContainer(
+        today: today,
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        manualRepository: manualRepository,
+      );
+      addTearDown(container.dispose);
+
+      final viewModel = await container.read(
+        calorieWeeklyCheckInViewModelProvider.future,
+      );
+
+      expect(viewModel.hasPending, isTrue);
+      expect(
+        viewModel.pendingWeeklyCheckIn?.windowStartDate,
+        DateTime(2026, 4, 15),
+      );
+      expect(
+        viewModel.pendingWeeklyCheckIn?.windowEndDate,
+        DateTime(2026, 4, 21),
       );
     },
   );

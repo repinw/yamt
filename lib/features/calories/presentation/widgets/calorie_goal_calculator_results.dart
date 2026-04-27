@@ -167,11 +167,13 @@ class CalorieGoalCalculatorOnboardingStartCard extends StatelessWidget {
   /// The onboarding start card.
   const CalorieGoalCalculatorOnboardingStartCard({
     required this.goalStartDate,
+    required this.todayTrackingChoice,
     required this.catchUpEstimate,
     required this.startNowSelected,
     required this.startLaterSelected,
     required this.onStartNowSelected,
     required this.onStartLaterSelected,
+    required this.onTodayTrackingSelected,
     required this.onChangeFutureDateRequested,
     required this.onCatchUpEstimateSelected,
     super.key,
@@ -180,6 +182,9 @@ class CalorieGoalCalculatorOnboardingStartCard extends StatelessWidget {
 
   /// Selected goal start date.
   final DateTime goalStartDate;
+
+  /// How today will be tracked when starting immediately.
+  final CalorieGoalOnboardingTodayTracking? todayTrackingChoice;
 
   /// Selected catch-up estimate.
   final CalorieGoalOnboardingCatchUpEstimate catchUpEstimate;
@@ -195,6 +200,10 @@ class CalorieGoalCalculatorOnboardingStartCard extends StatelessWidget {
 
   /// Called when user chooses later start.
   final VoidCallback onStartLaterSelected;
+
+  /// Called when user chooses exact or estimated tracking for today.
+  final ValueChanged<CalorieGoalOnboardingTodayTracking>
+  onTodayTrackingSelected;
 
   /// Called when user wants another future day.
   final VoidCallback onChangeFutureDateRequested;
@@ -239,6 +248,50 @@ class CalorieGoalCalculatorOnboardingStartCard extends StatelessWidget {
         if (startNowSelected || startLaterSelected)
           const SizedBox(height: AppSpacing.md),
         if (startNowSelected) ...[
+          _GoalStartCardHint(
+            text: l10n.caloriesCalculatorOnboardingTodayTrackingLabel,
+            isBody: true,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              ChoiceChip(
+                key: CalorieGoalCalculatorSheetKeys.todayTrackingExactOption,
+                label: Text(
+                  l10n.caloriesCalculatorOnboardingTodayTrackingExactAction,
+                ),
+                selected:
+                    todayTrackingChoice ==
+                    CalorieGoalOnboardingTodayTracking.exact,
+                onSelected: enabled
+                    ? (_) => onTodayTrackingSelected(
+                        CalorieGoalOnboardingTodayTracking.exact,
+                      )
+                    : null,
+              ),
+              ChoiceChip(
+                key: CalorieGoalCalculatorSheetKeys.todayTrackingEstimateOption,
+                label: Text(
+                  l10n.caloriesCalculatorOnboardingTodayTrackingEstimateAction,
+                ),
+                selected:
+                    todayTrackingChoice ==
+                    CalorieGoalOnboardingTodayTracking.estimate,
+                onSelected: enabled
+                    ? (_) => onTodayTrackingSelected(
+                        CalorieGoalOnboardingTodayTracking.estimate,
+                      )
+                    : null,
+              ),
+            ],
+          ),
+        ],
+        if (startNowSelected &&
+            todayTrackingChoice ==
+                CalorieGoalOnboardingTodayTracking.estimate) ...[
+          const SizedBox(height: AppSpacing.md),
           _GoalStartCardHint(
             text: l10n.caloriesCalculatorOnboardingCatchUpLabel,
             isBody: true,

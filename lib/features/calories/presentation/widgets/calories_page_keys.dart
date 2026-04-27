@@ -290,6 +290,16 @@ abstract final class CalorieGoalCalculatorSheetKeys {
     'calorie_calculator_goal_start_later_option',
   );
 
+  /// The onboarding exact today tracking option.
+  static const todayTrackingExactOption = Key(
+    'calorie_calculator_today_tracking_exact_option',
+  );
+
+  /// The onboarding estimated today tracking option.
+  static const todayTrackingEstimateOption = Key(
+    'calorie_calculator_today_tracking_estimate_option',
+  );
+
   /// The onboarding catch-up low option.
   static const catchUpLowOption = Key(
     'calorie_calculator_catch_up_low_option',

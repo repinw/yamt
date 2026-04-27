@@ -1493,6 +1493,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesCalculatorOnboardingChooseFutureDateAction => 'Choose day';
 
   @override
+  String get caloriesCalculatorOnboardingTodayTrackingLabel => 'How will you track today?';
+
+  @override
+  String get caloriesCalculatorOnboardingTodayTrackingExactAction => 'Full day exact';
+
+  @override
+  String get caloriesCalculatorOnboardingTodayTrackingEstimateAction => 'Estimate so far';
+
+  @override
   String get caloriesCalculatorOnboardingCatchUpLabel => 'How much have you eaten so far?';
 
   @override
@@ -1563,10 +1572,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesWeeklyCheckInDialogTitle => 'Weekly check-in';
 
   @override
-  String get caloriesWeeklyCheckInDialogReadyBody => 'Review your last 7 completed days and apply an updated target from today.';
+  String get caloriesWeeklyCheckInDialogReadyBody => 'Review your last 7 completed days. Your target already uses this learning automatically.';
 
   @override
-  String get caloriesWeeklyCheckInDialogBlockedBody => 'We still need a bit more data before we can update your target.';
+  String get caloriesWeeklyCheckInDialogBlockedBody => 'We still need a bit more data before this weekly summary is complete.';
 
   @override
   String get caloriesWeeklyCheckInDialogWindowLabel => 'Window';
@@ -1599,25 +1608,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesWeeklyCheckInBlockedUnstableWeight => 'Weight data was too noisy this week for a reliable TDEE update. Add steadier weigh-ins and try again.';
 
   @override
-  String get caloriesWeeklyCheckInApplyAction => 'Apply target';
+  String get caloriesWeeklyCheckInApplyAction => 'Done';
 
   @override
   String get caloriesWeeklyCheckInLaterAction => 'Later';
 
   @override
-  String get caloriesWeeklyCheckInApplyFailed => 'Could not apply the weekly check-in.';
+  String get caloriesWeeklyCheckInApplyFailed => 'Could not close the weekly check-in.';
 
   @override
   String get caloriesWeeklyCheckInHintReadyTitle => 'Weekly check-in ready';
 
   @override
-  String get caloriesWeeklyCheckInHintReadyBody => 'Your last 7 completed days are ready for a target refresh.';
+  String get caloriesWeeklyCheckInHintReadyBody => 'Your last 7 completed days are ready to review.';
 
   @override
   String get caloriesWeeklyCheckInHintBlockedTitle => 'Weekly check-in needs data';
 
   @override
-  String get caloriesWeeklyCheckInHintBlockedBody => 'Finish the missing intake or weight data to refresh your target.';
+  String get caloriesWeeklyCheckInHintBlockedBody => 'Finish the missing intake or weight data to complete the summary.';
 
   @override
   String get caloriesWeeklyCheckInHintContinueAction => 'Continue';

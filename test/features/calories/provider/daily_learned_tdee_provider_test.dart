@@ -2,15 +2,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/meal_type.dart';
 import 'package:yamt/features/calories/provider/daily_learned_tdee_provider.dart';
+import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
+import 'package:yamt/features/health/provider/diary_health_service_provider.dart';
 import 'package:yamt/features/health/provider/health_connection_service_provider.dart';
 import 'package:yamt/features/health/provider/health_weight_service_provider.dart';
 import 'package:yamt/features/health/provider/'
@@ -58,32 +61,56 @@ List<CalorieEntry> _dailyEntries({
   ];
 }
 
+List<HealthWeightSample> _stableBoundaryWeights({
+  required DateTime startDay,
+  required int boundaryCount,
+  double weightKg = 80,
+}) {
+  return <HealthWeightSample>[
+    for (var index = 0; index <= boundaryCount; index += 1)
+      HealthWeightSample(
+        recordedAt: startDay.add(
+          Duration(days: index * weeklyCheckInWindowLengthDays),
+        ),
+        weightKg: weightKg,
+      ),
+  ];
+}
+
+CalorieGoalSettings _baseSettings({
+  required DateTime startDay,
+  double dailyGoalKcal = 2400,
+}) {
+  return const CalorieGoalSettings.empty().applyGoalChange(
+    changedAt: startDay,
+    dailyKcalGoal: dailyGoalKcal,
+    calculatorProfile: null,
+  );
+}
+
 CalorieGoalSettings _learnedSettings({
   required DateTime startDay,
   required DateTime windowEndDate,
   double dailyGoalKcal = 2400,
   double learnedTdeeKcal = 2400,
 }) {
-  return const CalorieGoalSettings.empty()
-      .applyGoalChange(
-        changedAt: startDay.subtract(const Duration(days: 1)),
-        dailyKcalGoal: dailyGoalKcal,
-        calculatorProfile: null,
-      )
-      .applyGoalChange(
-        changedAt: nextDiaryDay(windowEndDate),
-        dailyKcalGoal: dailyGoalKcal,
-        calculatorProfile: null,
-        source: CalorieGoalSource.weeklyCheckIn,
-        weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-          windowStartDate: startDay,
-          windowEndDate: windowEndDate,
-          trendWeightChangePerDay: 0,
-          calculatedTrueTdeeKcal: learnedTdeeKcal,
-          averageActiveKcal: 0,
-          lowConfidence: false,
-        ),
-      );
+  return _baseSettings(
+    startDay: startDay,
+    dailyGoalKcal: dailyGoalKcal,
+  ).applyGoalChange(
+    changedAt: nextDiaryDay(windowEndDate),
+    dailyKcalGoal: dailyGoalKcal,
+    calculatorProfile: null,
+    source: CalorieGoalSource.weeklyCheckIn,
+    weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: startDay,
+      windowEndDate: windowEndDate,
+      trendWeightChangePerDay: 0,
+      calculatedTrueTdeeKcal: learnedTdeeKcal,
+      averageActiveKcal: 0,
+      lowConfidence: false,
+    ),
+  );
 }
 
 class _DailyLearnedHarness {
@@ -105,6 +132,11 @@ class _DailyLearnedHarness {
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
         healthConnectionServiceProvider.overrideWith(
           (ref) => FakeHealthConnectionService(_readyStatus),
+        ),
+        diaryHealthServiceProvider.overrideWith(
+          (ref) => FakeDiaryHealthService(
+            const <String, DiaryHealthDayData>{},
+          ),
         ),
         healthWeightServiceProvider.overrideWith(
           (ref) => FakeHealthWeightService(healthWeights),
@@ -131,11 +163,12 @@ class _DailyLearnedHarness {
 Future<DailyLearnedTdeeGoalData?> _readDailyLearned(
   ProviderContainer container, {
   required DateTime today,
+  DateTime? day,
   double storedGoalKcal = 2400,
 }) {
   return container.read(
     dailyLearnedTdeeGoalForDayProvider(
-      day: today,
+      day: day ?? today,
       today: today,
       storedGoalKcal: storedGoalKcal,
     ).future,
@@ -158,10 +191,10 @@ void main() {
         count: dailyLearnedTdeeMaximumLookbackDays,
         kcalForIndex: (_) => 2500,
       ),
-      healthWeights: <HealthWeightSample>[
-        HealthWeightSample(recordedAt: startDay, weightKg: 80),
-        HealthWeightSample(recordedAt: today, weightKg: 80),
-      ],
+      healthWeights: _stableBoundaryWeights(
+        startDay: startDay,
+        boundaryCount: 4,
+      ),
     );
     addTearDown(harness.dispose);
 
@@ -171,14 +204,17 @@ void main() {
     expect(result!.measured.averageIntakeKcal, closeTo(2500, 0.01));
     expect(result.measured.trendWeightChangePerDay, closeTo(0, 0.00001));
     expect(result.measured.measuredTrueTdeeKcal, closeTo(2500, 0.01));
-    expect(result.calculatedTrueTdeeKcal, closeTo(2430, 0.01));
-    expect(result.newGoalKcal, closeTo(2430, 0.01));
+    expect(result.calculatedTrueTdeeKcal, closeTo(2475.99, 0.01));
+    expect(result.newGoalKcal, closeTo(2475.99, 0.01));
   });
 
   test(
     'uses median health weight for odd and even daily sample counts',
     () async {
       final startDay = DateTime(2026, 4);
+      final firstDueDate = startDay.add(
+        const Duration(days: weeklyCheckInWindowLengthDays),
+      );
       final today = startDay.add(
         const Duration(days: dailyLearnedTdeeMinimumCompleteDays),
       );
@@ -202,9 +238,9 @@ void main() {
             recordedAt: startDay.add(const Duration(hours: 2)),
             weightKg: 200,
           ),
-          HealthWeightSample(recordedAt: today, weightKg: 70),
+          HealthWeightSample(recordedAt: firstDueDate, weightKg: 70),
           HealthWeightSample(
-            recordedAt: today.add(const Duration(hours: 1)),
+            recordedAt: firstDueDate.add(const Duration(hours: 1)),
             weightKg: 90,
           ),
         ],
@@ -225,7 +261,7 @@ void main() {
     () async {
       final startDay = DateTime(2026, 4);
       final today = startDay.add(
-        const Duration(days: dailyLearnedTdeeMinimumCompleteDays - 1),
+        const Duration(days: weeklyCheckInWindowLengthDays - 1),
       );
       final harness = _DailyLearnedHarness(
         settings: _learnedSettings(
@@ -234,7 +270,7 @@ void main() {
         ),
         entries: _dailyEntries(
           startDay: startDay,
-          count: dailyLearnedTdeeMinimumCompleteDays - 1,
+          count: weeklyCheckInWindowLengthDays - 1,
           kcalForIndex: (_) => 2500,
         ),
         healthWeights: <HealthWeightSample>[
@@ -256,10 +292,7 @@ void main() {
       const Duration(days: dailyLearnedTdeeMinimumCompleteDays),
     );
     final harness = _DailyLearnedHarness(
-      settings: _learnedSettings(
-        startDay: startDay,
-        windowEndDate: startDay.add(const Duration(days: 6)),
-      ),
+      settings: _baseSettings(startDay: startDay),
       entries: _dailyEntries(
         startDay: startDay,
         count: dailyLearnedTdeeMinimumCompleteDays,
@@ -274,6 +307,248 @@ void main() {
     final result = await _readDailyLearned(harness.container, today: today);
 
     expect(result, isNull);
+  });
+
+  test('uses latest completed learned target for future days', () async {
+    final startDay = DateTime(2026, 4, 8);
+    final today = DateTime(2026, 4, 15);
+    final futureDay = DateTime(2026, 4, 16);
+    final harness = _DailyLearnedHarness(
+      settings: _baseSettings(startDay: startDay),
+      entries: _dailyEntries(
+        startDay: startDay,
+        count: weeklyCheckInWindowLengthDays,
+        kcalForIndex: (_) => 3000,
+      ),
+      healthWeights: <HealthWeightSample>[
+        HealthWeightSample(recordedAt: startDay, weightKg: 80),
+        HealthWeightSample(recordedAt: today, weightKg: 80),
+      ],
+    );
+    addTearDown(harness.dispose);
+
+    final result = await _readDailyLearned(
+      harness.container,
+      day: futureDay,
+      today: today,
+    );
+
+    expect(result, isNotNull);
+    expect(result!.measured.averageIntakeKcal, closeTo(3000, 0.01));
+    expect(result.calculatedTrueTdeeKcal, closeTo(2580, 0.01));
+    expect(result.newGoalKcal, closeTo(2580, 0.01));
+  });
+
+  test(
+    'ignores stale learned snapshot when source intake is invalid',
+    () async {
+      final startDay = DateTime(2026, 4, 8);
+      final today = DateTime(2026, 4, 15);
+      final settings = _learnedSettings(
+        startDay: startDay,
+        windowEndDate: DateTime(2026, 4, 14),
+        dailyGoalKcal: 2580,
+        learnedTdeeKcal: 2580,
+      );
+      final harness = _DailyLearnedHarness(
+        settings: settings,
+        entries: <CalorieEntry>[
+          for (var index = 1; index < weeklyCheckInWindowLengthDays; index += 1)
+            _entry(
+              'entry-$index',
+              startDay.add(Duration(days: index, hours: 8)),
+              3000,
+            ),
+        ],
+        healthWeights: <HealthWeightSample>[
+          HealthWeightSample(recordedAt: startDay, weightKg: 80),
+          HealthWeightSample(recordedAt: today, weightKg: 80),
+        ],
+      );
+      addTearDown(harness.dispose);
+
+      final result = await _readDailyLearned(harness.container, today: today);
+
+      expect(result, isNull);
+    },
+  );
+
+  test(
+    'ignores stale learned snapshot when source intake is removed',
+    () async {
+      final startDay = DateTime(2026, 4, 8);
+      final today = DateTime(2026, 4, 15);
+      final settings = _learnedSettings(
+        startDay: startDay,
+        windowEndDate: DateTime(2026, 4, 14),
+        dailyGoalKcal: 2580,
+        learnedTdeeKcal: 2580,
+      );
+      final harness = _DailyLearnedHarness(
+        settings: settings,
+        entries: const <CalorieEntry>[],
+        healthWeights: <HealthWeightSample>[
+          HealthWeightSample(recordedAt: startDay, weightKg: 80),
+          HealthWeightSample(recordedAt: today, weightKg: 80),
+        ],
+      );
+      addTearDown(harness.dispose);
+
+      final result = await _readDailyLearned(harness.container, today: today);
+
+      expect(result, isNull);
+    },
+  );
+
+  test(
+    'invalidates later learned snapshot when earlier source window changes',
+    () async {
+      final startDay = DateTime(2026, 4, 8);
+      final weekTwoStart = DateTime(2026, 4, 15);
+      final today = DateTime(2026, 4, 22);
+      final settings = _baseSettings(startDay: startDay)
+          .applyGoalChange(
+            changedAt: weekTwoStart,
+            dailyKcalGoal: 2580,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: startDay,
+              windowEndDate: DateTime(2026, 4, 14),
+              trendWeightChangePerDay: 0,
+              calculatedTrueTdeeKcal: 2580,
+              averageActiveKcal: 0,
+              lowConfidence: false,
+            ),
+          )
+          .applyGoalChange(
+            changedAt: today,
+            dailyKcalGoal: 2650,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: weekTwoStart,
+              windowEndDate: DateTime(2026, 4, 21),
+              trendWeightChangePerDay: 0,
+              calculatedTrueTdeeKcal: 2650,
+              averageActiveKcal: 0,
+              lowConfidence: false,
+            ),
+          );
+      final harness = _DailyLearnedHarness(
+        settings: settings,
+        entries: <CalorieEntry>[
+          for (var index = 1; index < 14; index += 1)
+            _entry(
+              'entry-$index',
+              startDay.add(Duration(days: index, hours: 8)),
+              3000,
+            ),
+        ],
+        healthWeights: <HealthWeightSample>[
+          HealthWeightSample(recordedAt: startDay, weightKg: 80),
+          HealthWeightSample(recordedAt: weekTwoStart, weightKg: 80),
+          HealthWeightSample(recordedAt: today, weightKg: 80),
+        ],
+      );
+      addTearDown(harness.dispose);
+
+      final result = await _readDailyLearned(harness.container, today: today);
+
+      expect(result, isNull);
+    },
+  );
+
+  test('seeds same-day learned goal from anchor snapshot', () async {
+    final startDay = DateTime(2026, 4, 8);
+    final today = DateTime(2026, 4, 15);
+    final settings = CalorieGoalSettings.single(
+      dailyKcalGoal: 2700,
+      calculatorProfile: const CalorieCalculatorProfile(
+        sex: CalorieCalculatorSex.male,
+        weightKg: 120,
+        heightCm: 190,
+        ageYears: 30,
+        activityLevel: 1.9,
+        goalMode: CalorieGoalMode.maintain,
+        goalSpeedKgPerWeek: 0,
+      ),
+      effectiveDate: startDay,
+      source: CalorieGoalSource.calculator,
+      weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+        windowStartDate: DateTime(2026, 4),
+        windowEndDate: DateTime(2026, 4, 7),
+        trendWeightChangePerDay: 0,
+        calculatedTrueTdeeKcal: 2700,
+        averageActiveKcal: 0,
+        lowConfidence: false,
+      ),
+    );
+    final harness = _DailyLearnedHarness(
+      settings: settings,
+      entries: _dailyEntries(
+        startDay: startDay,
+        count: weeklyCheckInWindowLengthDays,
+        kcalForIndex: (_) => 2700,
+      ),
+      healthWeights: <HealthWeightSample>[
+        HealthWeightSample(recordedAt: startDay, weightKg: 80),
+        HealthWeightSample(recordedAt: today, weightKg: 80),
+      ],
+    );
+    addTearDown(harness.dispose);
+
+    final result = await _readDailyLearned(
+      harness.container,
+      today: today,
+      storedGoalKcal: 2700,
+    );
+
+    expect(result, isNotNull);
+    expect(result!.calculatedTrueTdeeKcal, closeTo(2700, 0.01));
+    expect(result.newGoalKcal, closeTo(2700, 0.01));
+  });
+
+  test('uses real starter-day weight before calculator fallback', () async {
+    final goalStart = DateTime(2026, 4, 8, 18);
+    final firstCountedDay = DateTime(2026, 4, 9);
+    final today = DateTime(2026, 4, 15);
+    final settings = const CalorieGoalSettings.empty().applyGoalChange(
+      changedAt: goalStart,
+      dailyKcalGoal: 2400,
+      calculatorProfile: const CalorieCalculatorProfile(
+        sex: CalorieCalculatorSex.male,
+        weightKg: 90,
+        heightCm: 180,
+        ageYears: 30,
+        activityLevel: 1.2,
+        goalMode: CalorieGoalMode.maintain,
+        goalSpeedKgPerWeek: 0,
+      ),
+      source: CalorieGoalSource.calculator,
+    );
+    final harness = _DailyLearnedHarness(
+      settings: settings,
+      entries: _dailyEntries(
+        startDay: firstCountedDay,
+        count: weeklyCheckInWindowLengthDays - 1,
+        kcalForIndex: (_) => 2500,
+      ),
+      healthWeights: <HealthWeightSample>[
+        HealthWeightSample(recordedAt: DateTime(2026, 4, 8, 7), weightKg: 80),
+        HealthWeightSample(recordedAt: DateTime(2026, 4, 15, 7), weightKg: 78),
+      ],
+    );
+    addTearDown(harness.dispose);
+
+    final result = await _readDailyLearned(harness.container, today: today);
+
+    expect(result, isNotNull);
+    expect(
+      result!.measured.trendWeightChangePerDay,
+      closeTo(-0.33333, 0.00001),
+    );
+    expect(result.measured.measuredTrueTdeeKcal, closeTo(4833.33, 0.01));
   });
 
   test('interpolates skipped intake days from prior average', () async {
@@ -297,7 +572,12 @@ void main() {
       ],
       healthWeights: <HealthWeightSample>[
         HealthWeightSample(recordedAt: startDay, weightKg: 80),
-        HealthWeightSample(recordedAt: today, weightKg: 80),
+        HealthWeightSample(
+          recordedAt: startDay.add(
+            const Duration(days: weeklyCheckInWindowLengthDays),
+          ),
+          weightKg: 80,
+        ),
       ],
     );
     addTearDown(harness.dispose);
@@ -305,8 +585,8 @@ void main() {
     final result = await _readDailyLearned(harness.container, today: today);
 
     expect(result, isNotNull);
-    expect(result!.measured.averageIntakeKcal, closeTo(2388.89, 0.01));
-    expect(result.calculatedTrueTdeeKcal, closeTo(2396.67, 0.01));
-    expect(result.newGoalKcal, closeTo(2396.67, 0.01));
+    expect(result!.measured.averageIntakeKcal, closeTo(2357.14, 0.01));
+    expect(result.calculatedTrueTdeeKcal, closeTo(2387.14, 0.01));
+    expect(result.newGoalKcal, closeTo(2387.14, 0.01));
   });
 }

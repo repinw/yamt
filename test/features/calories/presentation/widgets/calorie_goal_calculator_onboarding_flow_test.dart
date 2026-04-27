@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_flow.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -121,6 +122,14 @@ void main() {
       findsNothing,
     );
     expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.todayTrackingExactOption),
+      findsNothing,
+    );
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.todayTrackingEstimateOption),
+      findsNothing,
+    );
+    expect(
       find.byKey(CalorieGoalCalculatorSheetKeys.goalStartChangeButton),
       findsNothing,
     );
@@ -130,11 +139,42 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final enabledSaveButton = tester.widget<FilledButton>(
+    final blockedSaveButton = tester.widget<FilledButton>(
       find.byKey(CalorieGoalCalculatorSheetKeys.saveButton),
     );
 
-    expect(enabledSaveButton.onPressed, isNotNull);
+    expect(blockedSaveButton.onPressed, isNull);
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.todayTrackingExactOption),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.todayTrackingEstimateOption),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.catchUpLowOption),
+      findsNothing,
+    );
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.catchUpNormalOption),
+      findsNothing,
+    );
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.catchUpHighOption),
+      findsNothing,
+    );
+
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.todayTrackingEstimateOption),
+    );
+    await tester.pumpAndSettle();
+
+    final estimateSaveButton = tester.widget<FilledButton>(
+      find.byKey(CalorieGoalCalculatorSheetKeys.saveButton),
+    );
+
+    expect(estimateSaveButton.onPressed, isNotNull);
     expect(
       find.byKey(CalorieGoalCalculatorSheetKeys.catchUpLowOption),
       findsOneWidget,
@@ -147,6 +187,50 @@ void main() {
       find.byKey(CalorieGoalCalculatorSheetKeys.catchUpHighOption),
       findsOneWidget,
     );
+  });
+
+  testWidgets('onboarding exact today counts start day for learning', (
+    tester,
+  ) async {
+    final settingsRepository = FakeCalorieSettingsRepository();
+    final logRepository = FakeCalorieLogRepository();
+    final runStateRepository = _FakeBurnWeekRunStateRepository(
+      const BurnWeekRunState.initial(),
+    );
+    addTearDown(settingsRepository.dispose);
+    addTearDown(logRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: settingsRepository,
+        logRepository: logRepository,
+        runStateRepository: runStateRepository,
+      ),
+    );
+    await _goToResultsWithDefaults(tester);
+
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.goalStartNowOption),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieGoalCalculatorSheetKeys.todayTrackingExactOption),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(CalorieGoalCalculatorSheetKeys.saveButton),
+    );
+    await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
+    await tester.pumpAndSettle();
+
+    final today = normalizeDiaryDay(DateTime.now());
+    final settings = await settingsRepository.readSettings();
+    final goalEntry = settings.goalHistory.single;
+    expect(goalEntry.effectiveDate, today);
+    expect(goalEntry.effectiveCountingStartDate, today);
+    expect(goalEntry.changedAt, today);
+    expect(runStateRepository.state.currentWeekStartDayKey, diaryDayKey(today));
+    expect(runStateRepository.state.heartCreditKcal, 0);
   });
 
   testWidgets('onboarding can save a future goal start', (tester) async {

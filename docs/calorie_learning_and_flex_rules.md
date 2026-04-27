@@ -155,9 +155,38 @@ Suggested product behavior:
 - Classic can hide today's activity bonus, but the canonical Balance ledger
   still uses it for carryover.
 
-## 5. Activity After 7 Full Days
+## 5. Weekly Learned TDEE After 7 Full Days
 
-After the first weekly check-in:
+Learned TDEE updates on 7-day boundaries, not every day.
+
+Reason:
+
+- The user needs a stable base target for meal planning.
+- Daily TDEE changes make the budget feel random and hard to trust.
+- Food, weight, and activity are noisy; a 7-day boundary gives enough signal.
+
+Boundary logic:
+
+- Days 1-7 are learned together.
+- The learned target from days 1-7 applies from day 8.
+- Days 1-14 are learned together at the second boundary.
+- The learned target from days 1-14 applies from day 15.
+- Later windows keep the same pattern, capped by the maximum learning lookback.
+- Between boundaries, the learned base target stays fixed.
+
+Historical edits:
+
+- Food, skipped-day, weight, activity, or goal-start changes are source data.
+- When source history changes, affected weekly calculations must be rebuilt
+  forward from that changed day.
+- Cached weekly learned TDEE snapshots are convenience/cache, not truth.
+- Weekly check-in UI is acknowledgement and explanation; the math source is
+  the diary history.
+- If a weekly check-in is blocked by missing source data and the user dismisses
+  it, the app keeps using the last valid learned TDEE. The blocked window stays
+  parked until the missing data is entered, then the cascade can continue.
+
+After each weekly boundary:
 
 - calculate average burned/active calories across the learning window
 - store that average as the expected activity baseline
@@ -170,16 +199,24 @@ Important:
 - Learned TDEE already includes the user's average activity pattern.
 - The weekly check-in must smooth maintenance TDEE, not target calories.
 - Lose/gain/maintain is applied after smoothing the learned maintenance TDEE.
+- Daily activity and carryover can still change the display target, but the
+  learned base target changes only at weekly boundaries.
 
-Day logic:
+Weekly boundary logic:
 
 ```text
 measuredTdee = avgIntake - weightChangePerDay * 7000
 smoothedTdee = blend(oldLearnedTdee, measuredTdee)
 baseTarget = smoothedTdee +/- deficit_or_surplus
+weeklyBaseTarget = clamp_change_from_previous_week(baseTarget)
+```
+
+Daily display logic after a learned weekly target exists:
+
+```text
 rawExtraActivity = max(0, todayBurned - avgBurned)
 activityBonus = rawExtraActivity * 0.5
-dynamicTargetToday = baseTarget + activityBonus
+dynamicTargetToday = weeklyBaseTarget + activityBonus
 flexTargetToday = dynamicTargetToday + carryover
 ```
 
