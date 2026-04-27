@@ -336,12 +336,11 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
       return;
     }
 
-    if (_weeklyCheckInDialogOpen) {
-      _deferredWeeklyCheckInViewModel = viewModel;
+    if (_autoOpenedWeeklyCheckInWindowKey == pending.windowKey) {
       return;
     }
-
-    if (_autoOpenedWeeklyCheckInWindowKey == pending.windowKey) {
+    if (_weeklyCheckInDialogOpen) {
+      _deferredWeeklyCheckInViewModel = viewModel;
       return;
     }
     _autoOpenedWeeklyCheckInWindowKey = pending.windowKey;
@@ -409,7 +408,6 @@ class _CaloriesPageState extends ConsumerState<CaloriesPage>
           return;
         case CalorieWeeklyCheckInDialogAction.later:
         case null:
-          await controller.dismissPendingWeeklyCheckIn(pending);
           return;
       }
     } finally {

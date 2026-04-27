@@ -843,9 +843,9 @@
       "Das Ziel aus dem gelernten TDEE konnte nicht gespeichert werden.",
   "caloriesWeeklyCheckInDialogTitle": "Wochen-Check-in",
   "caloriesWeeklyCheckInDialogReadyBody":
-      "Prüfe deine letzten 7 abgeschlossenen Tage und übernimm ab heute ein aktualisiertes Ziel.",
+      "Prüfe deine letzten 7 abgeschlossenen Tage. Dein Ziel nutzt diese Lernwerte bereits automatisch.",
   "caloriesWeeklyCheckInDialogBlockedBody":
-      "Uns fehlen noch ein paar Daten, bevor wir dein Ziel aktualisieren können.",
+      "Uns fehlen noch ein paar Daten, bevor diese Wochenzusammenfassung vollständig ist.",
   "caloriesWeeklyCheckInDialogWindowLabel": "Zeitraum",
   "caloriesWeeklyCheckInDialogTrendLabel": "Gewichtstrend",
   "caloriesWeeklyCheckInDialogTrueTdeeLabel": "Gelernter TDEE",
@@ -859,17 +859,17 @@
       "Niedrige Sicherheit: Es lagen nur Start- und Endgewicht vor.",
   "caloriesWeeklyCheckInBlockedUnstableWeight":
       "Die Gewichtsdaten waren diese Woche zu unruhig für ein verlässliches TDEE-Update. Füge gleichmäßigere Wiegewerte hinzu und versuche es erneut.",
-  "caloriesWeeklyCheckInApplyAction": "Ziel übernehmen",
+  "caloriesWeeklyCheckInApplyAction": "Fertig",
   "caloriesWeeklyCheckInLaterAction": "Später",
   "caloriesWeeklyCheckInApplyFailed":
-      "Der Wochen-Check-in konnte nicht übernommen werden.",
+      "Der Wochen-Check-in konnte nicht geschlossen werden.",
   "caloriesWeeklyCheckInHintReadyTitle": "Wochen-Check-in bereit",
   "caloriesWeeklyCheckInHintReadyBody":
-      "Deine letzten 7 abgeschlossenen Tage sind für ein Ziel-Update bereit.",
+      "Deine letzten 7 abgeschlossenen Tage sind bereit zur Prüfung.",
   "caloriesWeeklyCheckInHintBlockedTitle":
       "Wochen-Check-in braucht Daten",
   "caloriesWeeklyCheckInHintBlockedBody":
-      "Ergänze fehlende Aufnahme- oder Gewichtsdaten, um dein Ziel zu aktualisieren.",
+      "Ergänze fehlende Aufnahme- oder Gewichtsdaten, um die Zusammenfassung zu vervollständigen.",
   "caloriesWeeklyCheckInHintContinueAction": "Fortsetzen",
   "caloriesWeeklyCheckInHintStaleTitle": "Ziel wird alt",
   "caloriesWeeklyCheckInHintStaleBody":

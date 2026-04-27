@@ -714,7 +714,7 @@ void main() {
   );
 
   test(
-    'dismissed pending window keeps hint but suppresses auto-open',
+    'dismissed pending window is treated as already seen',
     () async {
       final today = DateTime(2026, 4, 15);
       final goalStart = DateTime(2026, 4, 8);
@@ -767,9 +767,9 @@ void main() {
         calorieWeeklyCheckInViewModelProvider.future,
       );
 
-      expect(viewModel.hasPending, isTrue);
+      expect(viewModel.hasPending, isFalse);
       expect(viewModel.shouldAutoOpen, isFalse);
-      expect(viewModel.showDiaryHint, isTrue);
+      expect(viewModel.showDiaryHint, isFalse);
     },
   );
 

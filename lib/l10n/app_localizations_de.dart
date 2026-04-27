@@ -1572,10 +1572,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeeklyCheckInDialogTitle => 'Wochen-Check-in';
 
   @override
-  String get caloriesWeeklyCheckInDialogReadyBody => 'Prüfe deine letzten 7 abgeschlossenen Tage und übernimm ab heute ein aktualisiertes Ziel.';
+  String get caloriesWeeklyCheckInDialogReadyBody => 'Prüfe deine letzten 7 abgeschlossenen Tage. Dein Ziel nutzt diese Lernwerte bereits automatisch.';
 
   @override
-  String get caloriesWeeklyCheckInDialogBlockedBody => 'Uns fehlen noch ein paar Daten, bevor wir dein Ziel aktualisieren können.';
+  String get caloriesWeeklyCheckInDialogBlockedBody => 'Uns fehlen noch ein paar Daten, bevor diese Wochenzusammenfassung vollständig ist.';
 
   @override
   String get caloriesWeeklyCheckInDialogWindowLabel => 'Zeitraum';
@@ -1608,25 +1608,25 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeeklyCheckInBlockedUnstableWeight => 'Die Gewichtsdaten waren diese Woche zu unruhig für ein verlässliches TDEE-Update. Füge gleichmäßigere Wiegewerte hinzu und versuche es erneut.';
 
   @override
-  String get caloriesWeeklyCheckInApplyAction => 'Ziel übernehmen';
+  String get caloriesWeeklyCheckInApplyAction => 'Fertig';
 
   @override
   String get caloriesWeeklyCheckInLaterAction => 'Später';
 
   @override
-  String get caloriesWeeklyCheckInApplyFailed => 'Der Wochen-Check-in konnte nicht übernommen werden.';
+  String get caloriesWeeklyCheckInApplyFailed => 'Der Wochen-Check-in konnte nicht geschlossen werden.';
 
   @override
   String get caloriesWeeklyCheckInHintReadyTitle => 'Wochen-Check-in bereit';
 
   @override
-  String get caloriesWeeklyCheckInHintReadyBody => 'Deine letzten 7 abgeschlossenen Tage sind für ein Ziel-Update bereit.';
+  String get caloriesWeeklyCheckInHintReadyBody => 'Deine letzten 7 abgeschlossenen Tage sind bereit zur Prüfung.';
 
   @override
   String get caloriesWeeklyCheckInHintBlockedTitle => 'Wochen-Check-in braucht Daten';
 
   @override
-  String get caloriesWeeklyCheckInHintBlockedBody => 'Ergänze fehlende Aufnahme- oder Gewichtsdaten, um dein Ziel zu aktualisieren.';
+  String get caloriesWeeklyCheckInHintBlockedBody => 'Ergänze fehlende Aufnahme- oder Gewichtsdaten, um die Zusammenfassung zu vervollständigen.';
 
   @override
   String get caloriesWeeklyCheckInHintContinueAction => 'Fortsetzen';

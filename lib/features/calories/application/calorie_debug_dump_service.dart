@@ -218,17 +218,32 @@ Future<List<_DebugDumpRow>> _weeklyCheckInRows({
     healthWeightService: healthWeightService,
   );
 
-  return [
-    for (final window in windows)
-      _weeklyCheckInRow(
-        settings: settings,
-        window: window,
-        dates: datesByWindow[window]!,
-        entriesByDay: entriesByDay,
-        manualWeightByDay: manualWeightByDay,
-        healthData: healthData,
-      ),
-  ];
+  var previousGoalKcal = settings.goalKcalForDay(windows.first.windowEndDate);
+  var previousLearnedTdeeKcal = _previousLearnedTdeeKcalBeforeDay(
+    settings: settings,
+    day: windows.first.windowStartDate,
+    fallbackDay: windows.first.windowEndDate,
+  );
+  final rows = <_DebugDumpRow>[];
+  for (final window in windows) {
+    final result = _weeklyCheckInRow(
+      settings: settings,
+      window: window,
+      dates: datesByWindow[window]!,
+      entriesByDay: entriesByDay,
+      manualWeightByDay: manualWeightByDay,
+      healthData: healthData,
+      previousGoalKcal: previousGoalKcal,
+      previousLearnedTdeeKcal: previousLearnedTdeeKcal,
+    );
+    rows.add(result.row);
+    final calculation = result.calculation;
+    if (calculation != null) {
+      previousGoalKcal = calculation.newGoalKcal.roundToDouble();
+      previousLearnedTdeeKcal = calculation.calculatedTrueTdeeKcal;
+    }
+  }
+  return List<_DebugDumpRow>.unmodifiable(rows);
 }
 
 List<PendingCalorieGoalWeeklyCheckIn> _resolveDebugWeeklyCheckInWindows({
@@ -269,13 +284,15 @@ List<PendingCalorieGoalWeeklyCheckIn> _resolveDebugWeeklyCheckInWindows({
   return List<PendingCalorieGoalWeeklyCheckIn>.unmodifiable(windows);
 }
 
-_DebugDumpRow _weeklyCheckInRow({
+_DebugWeeklyRowResult _weeklyCheckInRow({
   required CalorieGoalSettings settings,
   required PendingCalorieGoalWeeklyCheckIn window,
   required _DebugWeeklyDates dates,
   required Map<String, List<CalorieEntry>> entriesByDay,
   required Map<String, double> manualWeightByDay,
   required _DebugWeeklyHealthData healthData,
+  required double previousGoalKcal,
+  required double previousLearnedTdeeKcal,
 }) {
   final weightData = _mergeDebugWeeklyWeights(
     settings: settings,
@@ -292,13 +309,16 @@ _DebugDumpRow _weeklyCheckInRow({
   );
   final blockedWindowReason = windowIntake.blockedReason;
   if (blockedWindowReason != null) {
-    return _blockedWeeklyCheckInRow(
-      window: window,
-      dates: dates,
-      reason: blockedWindowReason,
-      windowDays: windowIntake.days,
-      missingIntakeDays: windowIntake.missingIntakeDays,
-      missingWeightDays: const <DateTime>[],
+    return _DebugWeeklyRowResult(
+      row: _blockedWeeklyCheckInRow(
+        window: window,
+        dates: dates,
+        reason: blockedWindowReason,
+        windowDays: windowIntake.days,
+        missingIntakeDays: windowIntake.missingIntakeDays,
+        missingWeightDays: const <DateTime>[],
+      ),
+      calculation: null,
     );
   }
 
@@ -309,13 +329,16 @@ _DebugDumpRow _weeklyCheckInRow({
   );
   final blockedLearningReason = learningIntake.blockedReason;
   if (blockedLearningReason != null) {
-    return _blockedWeeklyCheckInRow(
-      window: window,
-      dates: dates,
-      reason: blockedLearningReason,
-      windowDays: windowIntake.days,
-      missingIntakeDays: learningIntake.missingIntakeDays,
-      missingWeightDays: const <DateTime>[],
+    return _DebugWeeklyRowResult(
+      row: _blockedWeeklyCheckInRow(
+        window: window,
+        dates: dates,
+        reason: blockedLearningReason,
+        windowDays: windowIntake.days,
+        missingIntakeDays: learningIntake.missingIntakeDays,
+        missingWeightDays: const <DateTime>[],
+      ),
+      calculation: null,
     );
   }
 
@@ -324,22 +347,20 @@ _DebugDumpRow _weeklyCheckInRow({
     weightData: weightData,
   );
   if (missingWeight != null) {
-    return _blockedWeeklyCheckInRow(
-      window: window,
-      dates: dates,
-      reason: missingWeight.reason,
-      windowDays: windowIntake.days,
-      missingIntakeDays: windowIntake.missingIntakeDays,
-      missingWeightDays: missingWeight.missingWeightDays,
+    return _DebugWeeklyRowResult(
+      row: _blockedWeeklyCheckInRow(
+        window: window,
+        dates: dates,
+        reason: missingWeight.reason,
+        windowDays: windowIntake.days,
+        missingIntakeDays: windowIntake.missingIntakeDays,
+        missingWeightDays: missingWeight.missingWeightDays,
+      ),
+      calculation: null,
     );
   }
 
-  final previousGoalKcal = settings.goalKcalForDay(window.windowEndDate);
   final calculatorProfile = _calculatorProfileForDay(
-    settings: settings,
-    day: window.windowEndDate,
-  );
-  final previousLearnedTdeeKcal = _previousLearnedTdeeKcalForDay(
     settings: settings,
     day: window.windowEndDate,
   );
@@ -356,15 +377,18 @@ _DebugDumpRow _weeklyCheckInRow({
         healthData.activeKcalByDay[diaryDayKey(window.dueDate)] ?? 0,
     weightPoints: weightData.weightPoints,
   );
-  return _readyWeeklyCheckInRow(
-    window: window,
-    dates: dates,
-    previousGoalKcal: previousGoalKcal,
-    previousLearnedTdeeKcal: previousLearnedTdeeKcal,
+  return _DebugWeeklyRowResult(
+    row: _readyWeeklyCheckInRow(
+      window: window,
+      dates: dates,
+      previousGoalKcal: previousGoalKcal,
+      previousLearnedTdeeKcal: previousLearnedTdeeKcal,
+      calculation: calculation,
+      windowDays: windowIntake.days,
+      intakeKcalByDay: learningIntake.intakeKcalByDay,
+      weightPoints: weightData.weightPoints,
+    ),
     calculation: calculation,
-    windowDays: windowIntake.days,
-    intakeKcalByDay: learningIntake.intakeKcalByDay,
-    weightPoints: weightData.weightPoints,
   );
 }
 
@@ -844,25 +868,34 @@ CalorieCalculatorProfile? _calculatorProfileForDay({
       settings.calculatorProfile;
 }
 
-double _previousLearnedTdeeKcalForDay({
+double _previousLearnedTdeeKcalBeforeDay({
   required CalorieGoalSettings settings,
   required DateTime day,
+  required DateTime fallbackDay,
 }) {
-  final learnedTdeeKcal = settings
-      .learnedTdeeEntryForDay(day)
-      ?.weeklyCheckInSnapshot
-      ?.calculatedTrueTdeeKcal;
+  final normalizedDay = normalizeDiaryDay(day);
+  CalorieGoalHistoryEntry? learnedEntry;
+  for (final entry in settings.sortedGoalHistory) {
+    if (!entry.effectiveDate.isBefore(normalizedDay)) {
+      break;
+    }
+    if (entry.hasLearnedTdee) {
+      learnedEntry = entry;
+    }
+  }
+  final learnedTdeeKcal =
+      learnedEntry?.weeklyCheckInSnapshot?.calculatedTrueTdeeKcal;
   if (learnedTdeeKcal != null) {
     return learnedTdeeKcal;
   }
   final calculatorProfile = _calculatorProfileForDay(
     settings: settings,
-    day: day,
+    day: fallbackDay,
   );
   if (calculatorProfile != null) {
     return CalorieGoalCalculator.calculate(calculatorProfile).tdeeKcal;
   }
-  return settings.goalKcalForDay(day);
+  return settings.goalKcalForDay(fallbackDay);
 }
 
 int _resolveActiveKcal({
@@ -1441,6 +1474,16 @@ class _DebugWeeklyWeightData {
 
   final Map<String, double> weightByDay;
   final List<CalorieWeeklyCheckInWeightPoint> weightPoints;
+}
+
+class _DebugWeeklyRowResult {
+  const _DebugWeeklyRowResult({
+    required this.row,
+    required this.calculation,
+  });
+
+  final _DebugDumpRow row;
+  final CalorieWeeklyCheckInCalculation? calculation;
 }
 
 class _DebugWeeklyWindowDay {

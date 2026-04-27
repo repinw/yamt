@@ -3116,13 +3116,13 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesWeeklyCheckInDialogReadyBody.
   ///
   /// In en, this message translates to:
-  /// **'Review your last 7 completed days and apply an updated target from today.'**
+  /// **'Review your last 7 completed days. Your target already uses this learning automatically.'**
   String get caloriesWeeklyCheckInDialogReadyBody;
 
   /// No description provided for @caloriesWeeklyCheckInDialogBlockedBody.
   ///
   /// In en, this message translates to:
-  /// **'We still need a bit more data before we can update your target.'**
+  /// **'We still need a bit more data before this weekly summary is complete.'**
   String get caloriesWeeklyCheckInDialogBlockedBody;
 
   /// No description provided for @caloriesWeeklyCheckInDialogWindowLabel.
@@ -3188,7 +3188,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesWeeklyCheckInApplyAction.
   ///
   /// In en, this message translates to:
-  /// **'Apply target'**
+  /// **'Done'**
   String get caloriesWeeklyCheckInApplyAction;
 
   /// No description provided for @caloriesWeeklyCheckInLaterAction.
@@ -3200,7 +3200,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesWeeklyCheckInApplyFailed.
   ///
   /// In en, this message translates to:
-  /// **'Could not apply the weekly check-in.'**
+  /// **'Could not close the weekly check-in.'**
   String get caloriesWeeklyCheckInApplyFailed;
 
   /// No description provided for @caloriesWeeklyCheckInHintReadyTitle.
@@ -3212,7 +3212,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesWeeklyCheckInHintReadyBody.
   ///
   /// In en, this message translates to:
-  /// **'Your last 7 completed days are ready for a target refresh.'**
+  /// **'Your last 7 completed days are ready to review.'**
   String get caloriesWeeklyCheckInHintReadyBody;
 
   /// No description provided for @caloriesWeeklyCheckInHintBlockedTitle.
@@ -3224,7 +3224,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesWeeklyCheckInHintBlockedBody.
   ///
   /// In en, this message translates to:
-  /// **'Finish the missing intake or weight data to refresh your target.'**
+  /// **'Finish the missing intake or weight data to complete the summary.'**
   String get caloriesWeeklyCheckInHintBlockedBody;
 
   /// No description provided for @caloriesWeeklyCheckInHintContinueAction.

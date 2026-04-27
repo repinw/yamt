@@ -35,6 +35,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calories_day_navigation_pager.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/'
+    'burn_week_live_sync_provider.dart';
+import 'package:yamt/features/calories/provider/'
     'calorie_balance_summary_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
 import 'package:yamt/features/calories/provider/'
@@ -188,6 +190,9 @@ List<Override> _weeklyCheckInOverrides({
     healthConnectionServiceProvider.overrideWithValue(
       FakeHealthConnectionService(const HealthConnectionStatus.unsupported()),
     ),
+    diaryHealthServiceProvider.overrideWithValue(
+      FakeDiaryHealthService(const <String, DiaryHealthDayData>{}),
+    ),
     manualHealthWeightRepositoryProvider.overrideWithValue(
       FakeManualHealthWeightRepository(weights),
     ),
@@ -285,6 +290,7 @@ Widget _buildHarness({
         ),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
       ...overrides,
     ],
     child: MaterialApp.router(
@@ -1076,7 +1082,7 @@ void main() {
     );
   });
 
-  testWidgets('weekly check-in Apply saves without disposed controller crash', (
+  testWidgets('weekly check-in Done closes without disposed controller crash', (
     tester,
   ) async {
     final today = DateTime(2026, 3, 20);
@@ -1117,8 +1123,8 @@ void main() {
     expect(tester.takeException(), isNull);
 
     final settings = await settingsRepository.readSettings();
-    expect(settings.latestGoalEntry?.source, CalorieGoalSource.weeklyCheckIn);
-    expect(settings.pendingWeeklyCheckIn, isNull);
+    expect(settings.latestGoalEntry?.source, CalorieGoalSource.manual);
+    expect(settings.pendingWeeklyCheckIn?.isDismissed, isTrue);
   });
 
   testWidgets('applying one overdue check-in auto-opens next window', (
@@ -1190,11 +1196,9 @@ void main() {
       findsNothing,
     );
     settings = await settingsRepository.readSettings();
-    expect(settings.pendingWeeklyCheckIn, isNull);
-    expect(
-      settings.latestGoalEntry?.weeklyCheckInSnapshot?.windowStartDate,
-      secondWindowStart,
-    );
+    expect(settings.pendingWeeklyCheckIn?.isDismissed, isTrue);
+    expect(settings.latestGoalEntry?.source, CalorieGoalSource.manual);
+    expect(settings.latestGoalEntry?.weeklyCheckInSnapshot, isNull);
   });
 
   testWidgets('weekly check-in Later leaves hint and can reopen dialog', (
@@ -1273,6 +1277,7 @@ void main() {
       overrides: [
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+        burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
         ..._weeklyCheckInOverrides(
           today: today,
           weights: _weeklyCheckInWeights(today, includeEnd: false),
@@ -1360,6 +1365,7 @@ void main() {
       overrides: [
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+        burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
         ..._weeklyCheckInOverrides(
           today: today,
           weights: _weeklyCheckInWeights(today),

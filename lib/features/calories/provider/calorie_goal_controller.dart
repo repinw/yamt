@@ -168,7 +168,9 @@ class CalorieGoalController extends _$CalorieGoalController {
       expectedActivityKcal: currentExpectedActivityKcal,
       countingStartDate: normalizedGoalStartDate,
       source: currentSource,
-      weeklyCheckInSnapshot: currentGoalEntry?.weeklyCheckInSnapshot,
+      weeklyCheckInSnapshot:
+          currentGoalEntry?.weeklyCheckInSnapshot ??
+          previousSettings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot,
       replaceFutureHistory: true,
     );
     return _persistSettings(nextSettings);
@@ -346,13 +348,24 @@ class CalorieGoalController extends _$CalorieGoalController {
     required CalorieGoalWeeklyCheckInSnapshot weeklyCheckInSnapshot,
   }) async {
     final previousSettings = await _currentSettings();
-    final nextSettings = previousSettings.applyGoalChange(
+    final snapshotSettings = previousSettings.applyGoalChange(
       changedAt: completedAt,
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: previousSettings.calculatorProfile,
       expectedActivityKcal: weeklyCheckInSnapshot.averageActiveKcal,
       source: CalorieGoalSource.weeklyCheckIn,
       weeklyCheckInSnapshot: weeklyCheckInSnapshot,
+    );
+    final nextSettings = CalorieGoalSettings(
+      dailyKcalGoal: previousSettings.dailyKcalGoal,
+      calculatorProfile: previousSettings.calculatorProfile,
+      calorieMathVersion: snapshotSettings.calorieMathVersion,
+      expectedActivityKcal: previousSettings.expectedActivityKcal,
+      activityTrackingStartDate: snapshotSettings.activityTrackingStartDate,
+      updatedAt: snapshotSettings.updatedAt,
+      goalHistory: snapshotSettings.goalHistory,
+      pendingWeeklyCheckIn: snapshotSettings.pendingWeeklyCheckIn,
+      skippedIntakeDayKeys: snapshotSettings.skippedIntakeDayKeys,
     );
     return _persistSettings(nextSettings);
   }

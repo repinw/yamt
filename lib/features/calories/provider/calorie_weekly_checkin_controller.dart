@@ -89,21 +89,9 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
       return false;
     }
 
-    final completedAt = pendingWeeklyCheckIn.dueDate;
     final saved = await ref
         .read(calorieGoalControllerProvider.notifier)
-        .saveWeeklyCheckInGoal(
-          completedAt: completedAt,
-          dailyKcalGoal: calculation.newGoalKcal.roundToDouble(),
-          weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-            windowStartDate: pendingWeeklyCheckIn.windowStartDate,
-            windowEndDate: pendingWeeklyCheckIn.windowEndDate,
-            trendWeightChangePerDay: calculation.trendWeightChangePerDay,
-            calculatedTrueTdeeKcal: calculation.calculatedTrueTdeeKcal,
-            averageActiveKcal: calculation.lastWeekAverageActiveKcal,
-            lowConfidence: viewModel.lowConfidence,
-          ),
-        );
+        .dismissPendingWeeklyCheckIn();
 
     if (!ref.mounted) {
       return saved;

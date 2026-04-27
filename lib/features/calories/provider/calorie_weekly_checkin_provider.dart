@@ -245,6 +245,12 @@ PendingCalorieGoalWeeklyCheckIn? _resolvePendingWeeklyCheckIn({
   }
 
   final persistedPending = settings.pendingWeeklyCheckIn;
+  final dismissedPending = persistedPending?.isDismissed == true
+      ? persistedPending
+      : null;
+  if (dismissedPending != null) {
+    resolvedWindowKeys.add(dismissedPending.windowKey);
+  }
   var windowStartDate = firstWindowStartDate;
   while (true) {
     final windowLengthDays = _weeklyCheckInWindowLengthDaysForStart(
@@ -258,6 +264,13 @@ PendingCalorieGoalWeeklyCheckIn? _resolvePendingWeeklyCheckIn({
     final windowEndDate = windowStartDate.add(
       Duration(days: windowLengthDays - 1),
     );
+    if (persistedPending != null &&
+        (windowEndDate.isBefore(persistedPending.windowEndDate) ||
+            (dismissedPending != null &&
+                !windowEndDate.isAfter(dismissedPending.windowEndDate)))) {
+      windowStartDate = nextDiaryDay(windowEndDate);
+      continue;
+    }
     final windowKey = _windowKey(windowStartDate, windowEndDate);
     if (resolvedWindowKeys.contains(windowKey)) {
       windowStartDate = nextDiaryDay(windowEndDate);

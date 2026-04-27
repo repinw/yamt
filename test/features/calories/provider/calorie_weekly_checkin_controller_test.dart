@@ -14,7 +14,7 @@ import '../support/fake_calories_repositories.dart';
 
 void main() {
   test(
-    'applyWeeklyCheckIn makes overdue target effective on due date',
+    'applyWeeklyCheckIn only marks the summary as seen',
     () async {
       final goalStart = DateTime(2026, 4, 8);
       final dueDate = DateTime(2026, 4, 15);
@@ -80,10 +80,11 @@ void main() {
       expect(saved, isTrue);
       final settings = await settingsRepository.readSettings();
       expect(settings.goalKcalForDay(DateTime(2026, 4, 14)), 2426.875);
-      expect(settings.goalKcalForDay(dueDate), 2627);
-      expect(settings.latestGoalEntry?.effectiveDate, dueDate);
-      expect(settings.latestGoalEntry?.source, CalorieGoalSource.weeklyCheckIn);
-      expect(settings.pendingWeeklyCheckIn, isNull);
+      expect(settings.goalKcalForDay(dueDate), 2426.875);
+      expect(settings.latestGoalEntry?.effectiveDate, goalStart);
+      expect(settings.latestGoalEntry?.source, CalorieGoalSource.calculator);
+      expect(settings.pendingWeeklyCheckIn?.windowKey, '2026-4-8:2026-4-14');
+      expect(settings.pendingWeeklyCheckIn?.isDismissed, isTrue);
     },
   );
 }
