@@ -339,6 +339,40 @@ void main() {
     expect(result.newGoalKcal, closeTo(2580, 0.01));
   });
 
+  test(
+    'ignores stale learned snapshot when source intake is invalid',
+    () async {
+      final startDay = DateTime(2026, 4, 8);
+      final today = DateTime(2026, 4, 15);
+      final settings = _learnedSettings(
+        startDay: startDay,
+        windowEndDate: DateTime(2026, 4, 14),
+        dailyGoalKcal: 2580,
+        learnedTdeeKcal: 2580,
+      );
+      final harness = _DailyLearnedHarness(
+        settings: settings,
+        entries: <CalorieEntry>[
+          for (var index = 1; index < weeklyCheckInWindowLengthDays; index += 1)
+            _entry(
+              'entry-$index',
+              startDay.add(Duration(days: index, hours: 8)),
+              3000,
+            ),
+        ],
+        healthWeights: <HealthWeightSample>[
+          HealthWeightSample(recordedAt: startDay, weightKg: 80),
+          HealthWeightSample(recordedAt: today, weightKg: 80),
+        ],
+      );
+      addTearDown(harness.dispose);
+
+      final result = await _readDailyLearned(harness.container, today: today);
+
+      expect(result, isNull);
+    },
+  );
+
   test('uses real starter-day weight before calculator fallback', () async {
     final goalStart = DateTime(2026, 4, 8, 18);
     final firstCountedDay = DateTime(2026, 4, 9);

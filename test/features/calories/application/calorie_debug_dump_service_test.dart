@@ -99,24 +99,24 @@ void main() {
     },
   );
 
-  test('buildCalorieDebugDump prints weekly check-in calculations', () async {
+  test('buildCalorieDebugDump cascades exact weekly check-in goals', () async {
     final start = DateTime(2026, 4, 8);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
-        for (var index = 0; index < 7; index += 1)
+        for (var index = 0; index < 14; index += 1)
           _entry(
             id: 'food-$index',
             name: 'Day $index food',
             loggedAt: addDiaryDays(start, index).add(
               const Duration(hours: 12),
             ),
-            kcal: 2000,
+            kcal: 2002,
           ),
       ],
     );
     final diaryHealthService = FakeDiaryHealthService(
       <String, DiaryHealthDayData>{
-        for (var index = 0; index < 8; index += 1)
+        for (var index = 0; index < 15; index += 1)
           diaryDayKey(addDiaryDays(start, index)): const DiaryHealthDayData(
             totalSteps: 0,
             workouts: <HealthWorkoutSession>[],
@@ -124,7 +124,7 @@ void main() {
       },
     );
     final healthWeightService = FakeHealthWeightService(<HealthWeightSample>[
-      for (var index = 0; index < 7; index += 1)
+      for (var index = 0; index < 14; index += 1)
         HealthWeightSample(
           recordedAt: addDiaryDays(start, index).add(
             const Duration(hours: 7),
@@ -149,16 +149,19 @@ void main() {
           effectiveDate: start,
         ),
       ),
-      now: DateTime(2026, 4, 15, 12),
+      now: DateTime(2026, 4, 22, 12),
     );
 
     expect(result.table, contains('weekly_checkin'));
     expect(result.table, contains('learned_tdee'));
     expect(result.table, contains('window=2026-4-8..2026-4-14'));
+    expect(result.table, contains('window=2026-4-15..2026-4-21'));
     expect(result.table, contains('learning_window=2026-4-8..2026-4-14'));
+    expect(result.table, contains('learning_window=2026-4-8..2026-4-21'));
     expect(result.table, contains('previous_goal=2000'));
-    expect(result.table, contains('learned_tdee=2000'));
-    expect(result.table, contains('new_goal=2000'));
+    expect(result.table, contains('previous_goal=2000.60'));
+    expect(result.table, contains('learned_tdee=2000.60'));
+    expect(result.table, contains('new_goal=2000.60'));
   });
 }
 

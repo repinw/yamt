@@ -239,7 +239,7 @@ Future<List<_DebugDumpRow>> _weeklyCheckInRows({
     rows.add(result.row);
     final calculation = result.calculation;
     if (calculation != null) {
-      previousGoalKcal = calculation.newGoalKcal.roundToDouble();
+      previousGoalKcal = calculation.newGoalKcal;
       previousLearnedTdeeKcal = calculation.calculatedTrueTdeeKcal;
     }
   }

@@ -468,7 +468,9 @@ _WeeklyLearningSeed _cascadedPreviousLearningSeedForWindow({
   if (anchorEntry == null) {
     return _baseLearningSeedForWindow(
       settings: settings,
+      windowStartDate: pendingWeeklyCheckIn.windowStartDate,
       windowEndDate: pendingWeeklyCheckIn.windowEndDate,
+      anchorEntry: null,
     );
   }
 
@@ -483,7 +485,9 @@ _WeeklyLearningSeed _cascadedPreviousLearningSeedForWindow({
   );
   var seed = _baseLearningSeedForWindow(
     settings: settings,
+    windowStartDate: windowStartDate,
     windowEndDate: firstWindowEndDate,
+    anchorEntry: anchorEntry,
   );
 
   while (windowStartDate.isBefore(pendingWeeklyCheckIn.windowStartDate)) {
@@ -548,33 +552,64 @@ _WeeklyLearningSeed _cascadedPreviousLearningSeedForWindow({
 
 _WeeklyLearningSeed _baseLearningSeedForWindow({
   required CalorieGoalSettings settings,
+  required DateTime windowStartDate,
   required DateTime windowEndDate,
+  required CalorieGoalHistoryEntry? anchorEntry,
 }) {
   return _WeeklyLearningSeed(
     previousGoalKcal: settings.goalKcalForDay(windowEndDate),
-    previousLearnedTdeeKcal: _previousLearnedTdeeKcal(
+    previousLearnedTdeeKcal: _previousLearnedTdeeKcalBeforeDay(
       settings: settings,
-      day: windowEndDate,
+      day: windowStartDate,
+      fallbackDay: windowEndDate,
+      anchorEntry: anchorEntry,
     ),
   );
 }
 
-double _previousLearnedTdeeKcal({
+double _previousLearnedTdeeKcalBeforeDay({
   required CalorieGoalSettings settings,
   required DateTime day,
+  required DateTime fallbackDay,
+  required CalorieGoalHistoryEntry? anchorEntry,
 }) {
-  final learnedTdeeKcal = settings.latestLearnedTdeeKcal;
+  final learnedTdeeKcal = _latestLearnedBeforeDay(
+    settings: settings,
+    day: day,
+  )?.weeklyCheckInSnapshot?.calculatedTrueTdeeKcal;
   if (learnedTdeeKcal != null) {
     return learnedTdeeKcal;
   }
+  final anchorLearnedTdeeKcal =
+      anchorEntry?.weeklyCheckInSnapshot?.calculatedTrueTdeeKcal;
+  if (anchorLearnedTdeeKcal != null) {
+    return anchorLearnedTdeeKcal;
+  }
   final calculatorProfile = _calculatorProfileForDay(
     settings: settings,
-    day: day,
+    day: fallbackDay,
   );
   if (calculatorProfile != null) {
     return CalorieGoalCalculator.calculate(calculatorProfile).tdeeKcal;
   }
-  return settings.goalKcalForDay(day);
+  return settings.goalKcalForDay(fallbackDay);
+}
+
+CalorieGoalHistoryEntry? _latestLearnedBeforeDay({
+  required CalorieGoalSettings settings,
+  required DateTime day,
+}) {
+  final normalizedDay = normalizeDiaryDay(day);
+  CalorieGoalHistoryEntry? learnedEntry;
+  for (final entry in settings.sortedGoalHistory) {
+    if (!entry.effectiveDate.isBefore(normalizedDay)) {
+      break;
+    }
+    if (entry.hasLearnedTdee) {
+      learnedEntry = entry;
+    }
+  }
+  return learnedEntry;
 }
 
 _WeeklyCheckInWindowDates _resolveWeeklyCheckInWindowDates({
