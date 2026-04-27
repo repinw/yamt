@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_adjustment.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_domain_math.dart';
 
 /// The minimum resolved daily calorie goal kcal.
 const double minimumResolvedDailyCalorieGoalKcal =
@@ -265,7 +266,7 @@ abstract final class CalorieWeeklyCheckInCalculator {
   }) {
     final smoothedWeightPoints = _smoothWeightPoints(weightPoints);
     final trendWeightChangePerDay = _calculateSlope(smoothedWeightPoints);
-    final averageIntakeKcal = _averageDouble(intakeKcalByDay);
+    final averageIntakeKcal = CalorieDomainMath.average(intakeKcalByDay);
     final measuredTrueTdeeKcal =
         averageIntakeKcal - (trendWeightChangePerDay * _kcalPerKilogram);
     return CalorieMeasuredTdeeCalculation(
@@ -374,10 +375,6 @@ abstract final class CalorieWeeklyCheckInCalculator {
       return 0;
     }
     return numerator / denominator;
-  }
-
-  static double _averageDouble(List<double> values) {
-    return values.fold<double>(0, (sum, value) => sum + value) / values.length;
   }
 
   static double _averageInt(List<int> values) {
