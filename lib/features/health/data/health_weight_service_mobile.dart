@@ -54,11 +54,13 @@ class MobileHealthWeightService implements HealthWeightService {
       return cachedSamples;
     }
 
-    final points = await _health.getHealthDataFromTypes(
-      types: _weightTypes,
-      startTime: startInclusive,
-      endTime: queryEndExclusive,
-    );
+    final points = queryEndExclusive.isAfter(startInclusive)
+        ? await _health.getHealthDataFromTypes(
+            types: _weightTypes,
+            startTime: startInclusive,
+            endTime: queryEndExclusive,
+          )
+        : const <HealthDataPoint>[];
     final querySamples =
         points
             .map(_buildSample)
@@ -67,7 +69,10 @@ class MobileHealthWeightService implements HealthWeightService {
           ..sort((left, right) => left.recordedAt.compareTo(right.recordedAt));
     _cache = _WeightSampleCacheEntry(
       startInclusive: startInclusive,
-      endExclusive: queryEndExclusive,
+      endExclusive: _cacheEndExclusive(
+        requestedEndExclusive: endExclusive,
+        queryEndExclusive: queryEndExclusive,
+      ),
       loadedAt: _now(),
       samples: List<HealthWeightSample>.unmodifiable(querySamples),
     );
@@ -145,13 +150,23 @@ class MobileHealthWeightService implements HealthWeightService {
 
   DateTime _queryEndExclusive(DateTime requestedEndExclusive) {
     final now = _now();
-    if (!requestedEndExclusive.isBefore(now)) {
-      return requestedEndExclusive;
+    if (requestedEndExclusive.isAfter(now)) {
+      return now;
     }
     if (now.difference(requestedEndExclusive) > _recentPastWeightQueryWindow) {
       return requestedEndExclusive;
     }
     return now;
+  }
+
+  DateTime _cacheEndExclusive({
+    required DateTime requestedEndExclusive,
+    required DateTime queryEndExclusive,
+  }) {
+    if (requestedEndExclusive.isAfter(queryEndExclusive)) {
+      return requestedEndExclusive;
+    }
+    return queryEndExclusive;
   }
 
   List<HealthWeightSample>? _cachedSamples({

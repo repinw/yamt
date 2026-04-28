@@ -45,6 +45,42 @@ void main() {
     },
   );
 
+  test('caches future requests after querying only through now', () async {
+    final now = DateTime(2026, 4, 28, 12);
+    final requestedStart = DateTime(2026, 4, 27);
+    final requestedEnd = DateTime(2026, 5, 3);
+    final fakeHealth = _FakeHealth(
+      healthDataPoints: <HealthDataPoint>[
+        _buildWeightPoint(
+          recordedAt: DateTime(2026, 4, 27, 8),
+          weightKg: 83.5,
+        ),
+        _buildWeightPoint(
+          recordedAt: DateTime(2026, 4, 29, 8),
+          weightKg: 83.2,
+        ),
+      ],
+    );
+    final service = MobileHealthWeightService(
+      health: fakeHealth,
+      now: () => now,
+    );
+
+    final samples = await service.loadWeightSamples(
+      startInclusive: requestedStart,
+      endExclusive: requestedEnd,
+    );
+    final cachedSamples = await service.loadWeightSamples(
+      startInclusive: requestedStart,
+      endExclusive: requestedEnd,
+    );
+
+    expect(fakeHealth.requestedStartTimes.single, requestedStart);
+    expect(fakeHealth.requestedEndTimes.single, now);
+    expect(samples, hasLength(1));
+    expect(cachedSamples, hasLength(1));
+  });
+
   test('keeps exact query end for old historical ranges', () async {
     final now = DateTime(2026, 4, 27, 12);
     final requestedStart = DateTime(2024);
