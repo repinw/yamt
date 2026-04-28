@@ -131,6 +131,52 @@ void main() {
     ]);
   });
 
+  test('loadDayData evicts old entries when cache reaches cap', () async {
+    var now = DateTime(2026, 4, 27, 12);
+    final totalStepsResponses = <String, int?>{};
+    for (var offset = 0; offset < 31; offset += 1) {
+      final day = DateTime(2026, 4, 1 + offset);
+      totalStepsResponses[_intervalKey(day, day.add(const Duration(days: 1)))] =
+          6000 + offset;
+    }
+    final fakeHealth = _FakeHealth(
+      healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
+        HealthDataType.WORKOUT: <HealthDataPoint>[],
+        HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
+      },
+      totalStepsResponses: totalStepsResponses,
+    );
+    final service = MobileDiaryHealthService(
+      health: fakeHealth,
+      now: () => now,
+    );
+
+    for (var offset = 0; offset < 31; offset += 1) {
+      now = now.add(const Duration(seconds: 1));
+      await service.loadDayData(day: DateTime(2026, 4, 1 + offset));
+    }
+    final firstDay = DateTime(2026, 4);
+    final lastDay = DateTime(2026, 5);
+    await service.loadDayData(day: firstDay);
+    await service.loadDayData(day: lastDay);
+
+    expect(
+      fakeHealth.requestedStepIntervals.where(
+        (key) =>
+            key ==
+            _intervalKey(firstDay, firstDay.add(const Duration(days: 1))),
+      ),
+      hasLength(2),
+    );
+    expect(
+      fakeHealth.requestedStepIntervals.where(
+        (key) =>
+            key == _intervalKey(lastDay, lastDay.add(const Duration(days: 1))),
+      ),
+      hasLength(1),
+    );
+  });
+
   test(
     'loadDayData prefers workout summary steps before inferring from distance',
     () async {

@@ -11,6 +11,7 @@ const _activeEnergyQueryTypes = <HealthDataType>[
   HealthDataType.ACTIVE_ENERGY_BURNED,
 ];
 const _diaryHealthCacheTtl = Duration(minutes: 5);
+const _maxDiaryHealthCacheEntries = 30;
 const _defaultCalculatorProfileHeightCm = 180.0;
 const _minPersonalizedHeightCm = 120.0;
 const _maxPersonalizedHeightCm = 250.0;
@@ -80,10 +81,12 @@ class MobileDiaryHealthService implements DiaryHealthService {
               normalizedUserHeightCm: normalizedUserHeightCm,
             )
             .then((data) {
+              final loadedAt = _now();
               _cacheByKey[cacheKey] = _DiaryHealthDayCacheEntry(
-                loadedAt: _now(),
+                loadedAt: loadedAt,
                 data: data,
               );
+              _trimDayDataCache(loadedAt);
               return data;
             })
             .whenComplete(() => _removeInFlightDayData(cacheKey));
@@ -259,6 +262,26 @@ class MobileDiaryHealthService implements DiaryHealthService {
 
   bool _removeInFlightDayData(String cacheKey) {
     return _inFlightByKey.remove(cacheKey) != null;
+  }
+
+  void _trimDayDataCache(DateTime now) {
+    _cacheByKey.removeWhere(
+      (_, entry) => now.difference(entry.loadedAt) > _cacheTtl,
+    );
+    if (_cacheByKey.length <= _maxDiaryHealthCacheEntries) {
+      return;
+    }
+
+    final entriesByAge = _cacheByKey.entries.toList(growable: false)
+      ..sort(
+        (left, right) => left.value.loadedAt.compareTo(
+          right.value.loadedAt,
+        ),
+      );
+    final entriesToRemove = _cacheByKey.length - _maxDiaryHealthCacheEntries;
+    for (final entry in entriesByAge.take(entriesToRemove)) {
+      _cacheByKey.remove(entry.key);
+    }
   }
 
   Future<void> _ensureConfigured() async {
