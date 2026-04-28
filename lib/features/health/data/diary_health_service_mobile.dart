@@ -1,12 +1,17 @@
+import 'dart:developer' show log;
+
 import 'package:health/health.dart';
 import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_workout_session.dart';
 
+const _logName = 'DiaryHealthService';
 const _workoutQueryTypes = <HealthDataType>[HealthDataType.WORKOUT];
 const _activeEnergyQueryTypes = <HealthDataType>[
   HealthDataType.ACTIVE_ENERGY_BURNED,
 ];
+const _diaryHealthCacheTtl = Duration(minutes: 5);
+const _maxDiaryHealthCacheEntries = 30;
 const _defaultCalculatorProfileHeightCm = 180.0;
 const _minPersonalizedHeightCm = 120.0;
 const _maxPersonalizedHeightCm = 250.0;
@@ -31,21 +36,82 @@ DiaryHealthService createDiaryHealthService() => MobileDiaryHealthService();
 /// Defines mobile diary health service.
 class MobileDiaryHealthService implements DiaryHealthService {
   /// Creates an instance.
-  MobileDiaryHealthService({Health? health}) : _health = health ?? Health();
+  MobileDiaryHealthService({
+    Health? health,
+    DateTime Function()? now,
+    Duration cacheTtl = _diaryHealthCacheTtl,
+  }) : _health = health ?? Health(),
+       _now = now ?? DateTime.now,
+       _cacheTtl = cacheTtl;
 
   final Health _health;
+  final DateTime Function() _now;
+  final Duration _cacheTtl;
   bool _isConfigured = false;
+  final Map<String, _DiaryHealthDayCacheEntry> _cacheByKey =
+      <String, _DiaryHealthDayCacheEntry>{};
+  final Map<String, Future<DiaryHealthDayData>> _inFlightByKey =
+      <String, Future<DiaryHealthDayData>>{};
 
   @override
   Future<DiaryHealthDayData> loadDayData({
     required DateTime day,
     double? userHeightCm,
   }) async {
-    await _ensureConfigured();
-
     final normalizedUserHeightCm = _normalizeUserHeightCm(userHeightCm);
     final dayStart = DateTime(day.year, day.month, day.day);
     final dayEnd = dayStart.add(const Duration(days: 1));
+    final cacheKey = _cacheKey(
+      dayStart: dayStart,
+      normalizedUserHeightCm: normalizedUserHeightCm,
+    );
+    final cachedData = _cachedDayData(cacheKey);
+    if (cachedData != null) {
+      _logCachedDayData(dayStart: dayStart, data: cachedData);
+      return cachedData;
+    }
+    final pendingData = _inFlightByKey[cacheKey];
+    if (pendingData != null) {
+      return pendingData;
+    }
+    final future =
+        _loadConfiguredDayDataFromHealth(
+              dayStart: dayStart,
+              dayEnd: dayEnd,
+              normalizedUserHeightCm: normalizedUserHeightCm,
+            )
+            .then((data) {
+              final loadedAt = _now();
+              _cacheByKey[cacheKey] = _DiaryHealthDayCacheEntry(
+                loadedAt: loadedAt,
+                data: data,
+              );
+              _trimDayDataCache(loadedAt);
+              return data;
+            })
+            .whenComplete(() => _removeInFlightDayData(cacheKey));
+    _inFlightByKey[cacheKey] = future;
+    return future;
+  }
+
+  Future<DiaryHealthDayData> _loadConfiguredDayDataFromHealth({
+    required DateTime dayStart,
+    required DateTime dayEnd,
+    required double? normalizedUserHeightCm,
+  }) async {
+    await _ensureConfigured();
+    return _loadDayDataFromHealth(
+      dayStart: dayStart,
+      dayEnd: dayEnd,
+      normalizedUserHeightCm: normalizedUserHeightCm,
+    );
+  }
+
+  Future<DiaryHealthDayData> _loadDayDataFromHealth({
+    required DateTime dayStart,
+    required DateTime dayEnd,
+    required double? normalizedUserHeightCm,
+  }) async {
     final totalSteps =
         await _health.getTotalStepsInInterval(dayStart, dayEnd) ?? 0;
     final workoutPoints = await _health.getHealthDataFromTypes(
@@ -90,10 +156,132 @@ class MobileDiaryHealthService implements DiaryHealthService {
       ...standaloneActiveEnergyWorkouts,
     ]..sort((left, right) => right.start.compareTo(left.start));
 
+    _logHealthDayData(
+      dayStart: dayStart,
+      totalSteps: totalSteps,
+      workoutPoints: workoutPoints,
+      activeEnergyPoints: activeEnergyPoints,
+      workouts: workouts,
+    );
+
     return DiaryHealthDayData(
       totalSteps: totalSteps,
       workouts: List<HealthWorkoutSession>.unmodifiable(workouts),
     );
+  }
+
+  void _logCachedDayData({
+    required DateTime dayStart,
+    required DiaryHealthDayData data,
+  }) {
+    log(
+      'Read day data from cache. '
+      'day=${dayStart.toIso8601String()} '
+      'steps=${data.totalSteps} '
+      'workouts=${data.workouts.length} '
+      'workout_kcal=${_sumWorkoutCalories(data.workouts)} '
+      'workout_steps=${_sumWorkoutSteps(data.workouts)}',
+      name: _logName,
+    );
+  }
+
+  void _logHealthDayData({
+    required DateTime dayStart,
+    required int totalSteps,
+    required List<HealthDataPoint> workoutPoints,
+    required List<HealthDataPoint> activeEnergyPoints,
+    required List<HealthWorkoutSession> workouts,
+  }) {
+    log(
+      'Read day data. '
+      'day=${dayStart.toIso8601String()} '
+      'steps=$totalSteps '
+      'workout_points=${workoutPoints.length} '
+      'active_energy_points=${activeEnergyPoints.length} '
+      'workouts=${workouts.length} '
+      'workout_kcal=${_sumWorkoutCalories(workouts)} '
+      'workout_steps=${_sumWorkoutSteps(workouts)} '
+      'workout_sources=${_sourceNames(workoutPoints)} '
+      'active_energy_sources=${_sourceNames(activeEnergyPoints)}',
+      name: _logName,
+    );
+    if (totalSteps > 0 && workoutPoints.isEmpty && activeEnergyPoints.isEmpty) {
+      log(
+        'Read day data has steps only. '
+        'day=${dayStart.toIso8601String()} '
+        'Health Connect returned no workouts or active energy.',
+        name: _logName,
+      );
+    }
+  }
+
+  int _sumWorkoutCalories(List<HealthWorkoutSession> workouts) {
+    return workouts.fold<int>(
+      0,
+      (sum, workout) => sum + (workout.totalCalories ?? 0),
+    );
+  }
+
+  int _sumWorkoutSteps(List<HealthWorkoutSession> workouts) {
+    return workouts.fold<int>(
+      0,
+      (sum, workout) => sum + (workout.totalSteps ?? 0),
+    );
+  }
+
+  String _sourceNames(List<HealthDataPoint> points) {
+    final sourceNames =
+        points
+            .map((point) => point.sourceName)
+            .where((sourceName) => sourceName.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+    return sourceNames.isEmpty ? '[]' : sourceNames.join(',');
+  }
+
+  String _cacheKey({
+    required DateTime dayStart,
+    required double? normalizedUserHeightCm,
+  }) {
+    final heightKey = normalizedUserHeightCm?.toStringAsFixed(2) ?? 'default';
+    return '${dayStart.millisecondsSinceEpoch}:$heightKey';
+  }
+
+  DiaryHealthDayData? _cachedDayData(String cacheKey) {
+    final cacheEntry = _cacheByKey[cacheKey];
+    if (cacheEntry == null) {
+      return null;
+    }
+    if (_now().difference(cacheEntry.loadedAt) > _cacheTtl) {
+      _cacheByKey.remove(cacheKey);
+      return null;
+    }
+    return cacheEntry.data;
+  }
+
+  bool _removeInFlightDayData(String cacheKey) {
+    return _inFlightByKey.remove(cacheKey) != null;
+  }
+
+  void _trimDayDataCache(DateTime now) {
+    _cacheByKey.removeWhere(
+      (_, entry) => now.difference(entry.loadedAt) > _cacheTtl,
+    );
+    if (_cacheByKey.length <= _maxDiaryHealthCacheEntries) {
+      return;
+    }
+
+    final entriesByAge = _cacheByKey.entries.toList(growable: false)
+      ..sort(
+        (left, right) => left.value.loadedAt.compareTo(
+          right.value.loadedAt,
+        ),
+      );
+    final entriesToRemove = _cacheByKey.length - _maxDiaryHealthCacheEntries;
+    for (final entry in entriesByAge.take(entriesToRemove)) {
+      _cacheByKey.remove(entry.key);
+    }
   }
 
   Future<void> _ensureConfigured() async {
@@ -470,6 +658,16 @@ class MobileDiaryHealthService implements DiaryHealthService {
     final lowerCaseWord = word.toLowerCase();
     return '${lowerCaseWord[0].toUpperCase()}${lowerCaseWord.substring(1)}';
   }
+}
+
+class _DiaryHealthDayCacheEntry {
+  const _DiaryHealthDayCacheEntry({
+    required this.loadedAt,
+    required this.data,
+  });
+
+  final DateTime loadedAt;
+  final DiaryHealthDayData data;
 }
 
 double? _normalizeUserHeightCm(double? userHeightCm) {
