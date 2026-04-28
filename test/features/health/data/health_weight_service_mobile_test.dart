@@ -187,12 +187,108 @@ void main() {
     expect(fakeHealth.writeCalls, 1);
     expect(fakeHealth.requestedEndTimes, hasLength(2));
   });
+
+  test('keeps cache when weight write returns false', () async {
+    final now = DateTime(2026, 4, 27, 12);
+    final requestedStart = DateTime(2026, 4, 8);
+    final requestedEnd = DateTime(2026, 4, 23);
+    final healthDataPoints = <HealthDataPoint>[
+      _buildWeightPoint(
+        recordedAt: DateTime(2026, 4, 14, 8),
+        weightKg: 83.5,
+      ),
+    ];
+    final fakeHealth = _FakeHealth(
+      healthDataPoints: healthDataPoints,
+      writeSucceeds: false,
+    );
+    final service = MobileHealthWeightService(
+      health: fakeHealth,
+      now: () => now,
+    );
+
+    await service.loadWeightSamples(
+      startInclusive: requestedStart,
+      endExclusive: requestedEnd,
+    );
+    healthDataPoints.add(
+      _buildWeightPoint(
+        recordedAt: DateTime(2026, 4, 15, 8),
+        weightKg: 83.2,
+      ),
+    );
+    final saved = await service.saveWeightSample(
+      recordedAt: DateTime(2026, 4, 15, 8),
+      weightKg: 83.2,
+    );
+    final cachedSamples = await service.loadWeightSamples(
+      startInclusive: requestedStart,
+      endExclusive: requestedEnd,
+    );
+
+    expect(saved, isFalse);
+    expect(cachedSamples, hasLength(1));
+    expect(fakeHealth.writeCalls, 1);
+    expect(fakeHealth.requestedEndTimes, hasLength(1));
+  });
+
+  test('keeps cache when weight write throws', () async {
+    final now = DateTime(2026, 4, 27, 12);
+    final requestedStart = DateTime(2026, 4, 8);
+    final requestedEnd = DateTime(2026, 4, 23);
+    final healthDataPoints = <HealthDataPoint>[
+      _buildWeightPoint(
+        recordedAt: DateTime(2026, 4, 14, 8),
+        weightKg: 83.5,
+      ),
+    ];
+    final fakeHealth = _FakeHealth(
+      healthDataPoints: healthDataPoints,
+      writeError: Exception('weight write failed'),
+    );
+    final service = MobileHealthWeightService(
+      health: fakeHealth,
+      now: () => now,
+    );
+
+    await service.loadWeightSamples(
+      startInclusive: requestedStart,
+      endExclusive: requestedEnd,
+    );
+    healthDataPoints.add(
+      _buildWeightPoint(
+        recordedAt: DateTime(2026, 4, 15, 8),
+        weightKg: 83.2,
+      ),
+    );
+    await expectLater(
+      service.saveWeightSample(
+        recordedAt: DateTime(2026, 4, 15, 8),
+        weightKg: 83.2,
+      ),
+      throwsA(isA<Exception>()),
+    );
+    final cachedSamples = await service.loadWeightSamples(
+      startInclusive: requestedStart,
+      endExclusive: requestedEnd,
+    );
+
+    expect(cachedSamples, hasLength(1));
+    expect(fakeHealth.writeCalls, 1);
+    expect(fakeHealth.requestedEndTimes, hasLength(1));
+  });
 }
 
 class _FakeHealth extends Health {
-  _FakeHealth({required this.healthDataPoints});
+  _FakeHealth({
+    required this.healthDataPoints,
+    this.writeSucceeds = true,
+    this.writeError,
+  });
 
   final List<HealthDataPoint> healthDataPoints;
+  final bool writeSucceeds;
+  final Exception? writeError;
   final List<DateTime> requestedStartTimes = <DateTime>[];
   final List<DateTime> requestedEndTimes = <DateTime>[];
   int writeCalls = 0;
@@ -248,7 +344,11 @@ class _FakeHealth extends Health {
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
     writeCalls += 1;
-    return true;
+    final error = writeError;
+    if (error != null) {
+      throw error;
+    }
+    return writeSucceeds;
   }
 }
 

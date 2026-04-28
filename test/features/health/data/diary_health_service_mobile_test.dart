@@ -66,6 +66,39 @@ void main() {
     expect(fakeHealth.requestedHealthDataTypes, hasLength(2));
   });
 
+  test('loadDayData retries after in-flight health read fails', () async {
+    final day = DateTime(2026, 4, 17);
+    final dayEnd = day.add(const Duration(days: 1));
+    final fakeHealth = _FakeHealth(
+      healthDataFailuresRemaining: 1,
+      healthDataPoints: const <HealthDataType, List<HealthDataPoint>>{
+        HealthDataType.WORKOUT: <HealthDataPoint>[],
+        HealthDataType.ACTIVE_ENERGY_BURNED: <HealthDataPoint>[],
+      },
+      totalStepsResponses: <String, int?>{
+        _intervalKey(day, dayEnd): 6772,
+      },
+    );
+    final service = MobileDiaryHealthService(health: fakeHealth);
+
+    await expectLater(
+      service.loadDayData(day: day),
+      throwsA(isA<StateError>()),
+    );
+    final retryRead = await service.loadDayData(day: day);
+
+    expect(retryRead.totalSteps, 6772);
+    expect(fakeHealth.requestedStepIntervals, <String>[
+      _intervalKey(day, dayEnd),
+      _intervalKey(day, dayEnd),
+    ]);
+    expect(fakeHealth.requestedHealthDataTypes, <List<HealthDataType>>[
+      <HealthDataType>[HealthDataType.WORKOUT],
+      <HealthDataType>[HealthDataType.WORKOUT],
+      <HealthDataType>[HealthDataType.ACTIVE_ENERGY_BURNED],
+    ]);
+  });
+
   test('loadDayData refreshes cache after ttl expires', () async {
     final day = DateTime(2026, 4, 17);
     final dayEnd = day.add(const Duration(days: 1));
@@ -640,11 +673,13 @@ class _FakeHealth extends Health {
     required this.healthDataPoints,
     required this.totalStepsResponses,
     this.configureCompleter,
+    this.healthDataFailuresRemaining = 0,
   });
 
   final Map<HealthDataType, List<HealthDataPoint>> healthDataPoints;
   final Map<String, int?> totalStepsResponses;
   final Completer<void>? configureCompleter;
+  int healthDataFailuresRemaining;
   final List<String> requestedStepIntervals = <String>[];
   final List<List<HealthDataType>> requestedHealthDataTypes =
       <List<HealthDataType>>[];
@@ -665,6 +700,10 @@ class _FakeHealth extends Health {
     List<RecordingMethod> recordingMethodsToFilter = const [],
   }) async {
     requestedHealthDataTypes.add(types);
+    if (healthDataFailuresRemaining > 0) {
+      healthDataFailuresRemaining -= 1;
+      throw StateError('health data read failed');
+    }
     return types
         .expand((type) => healthDataPoints[type] ?? const <HealthDataPoint>[])
         .toList(growable: false);
